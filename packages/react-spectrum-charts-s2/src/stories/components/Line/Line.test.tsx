@@ -238,12 +238,12 @@ describe('Line', () => {
     expect(points[4].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
     expect(points[5].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
 
-    expect(points[0].getAttribute('stroke')).toEqual('#F8F8F8');
-    expect(points[1].getAttribute('stroke')).toEqual('#F8F8F8');
-    expect(points[2].getAttribute('stroke')).toEqual('#F8F8F8');
-    expect(points[3].getAttribute('stroke')).toEqual('#F8F8F8');
-    expect(points[4].getAttribute('stroke')).toEqual('#F8F8F8');
-    expect(points[5].getAttribute('stroke')).toEqual('#F8F8F8');
+    expect(points[0].getAttribute('stroke')).toEqual('white');
+    expect(points[1].getAttribute('stroke')).toEqual('white');
+    expect(points[2].getAttribute('stroke')).toEqual('white');
+    expect(points[3].getAttribute('stroke')).toEqual('white');
+    expect(points[4].getAttribute('stroke')).toEqual('white');
+    expect(points[5].getAttribute('stroke')).toEqual('white');
 
     expect(points[0].getAttribute('stroke-opacity')).toBeNull();
     expect(points[1].getAttribute('stroke-opacity')).toBeNull();
@@ -265,15 +265,15 @@ describe('Line', () => {
 
       const backgroundPoints = await findAllMarksByGroupName(chart, 'line0_pointBackground');
       expect(backgroundPoints.length).toBe(1);
-      expect(backgroundPoints[0].getAttribute('fill')).toEqual('#F8F8F8');
-      expect(backgroundPoints[0].getAttribute('stroke')).toEqual('#F8F8F8');
+      expect(backgroundPoints[0].getAttribute('fill')).toEqual('white');
+      expect(backgroundPoints[0].getAttribute('stroke')).toEqual('white');
       expect(backgroundPoints[0]).toHaveAttribute('stroke-width', '2');
       expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
       expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
 
       const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point_highlight');
       expect(hoverPoints.length).toBe(1);
-      expect(hoverPoints[0].getAttribute('fill')).toEqual('#F8F8F8');
+      expect(hoverPoints[0].getAttribute('fill')).toEqual('white');
       expect(hoverPoints[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
       expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
       expect(hoverPoints[0]).toHaveAttribute('stroke-opacity', '1');
@@ -295,12 +295,12 @@ describe('Line', () => {
       expect(points[4].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
       expect(points[5].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
 
-      expect(points[0].getAttribute('stroke')).toEqual('#F8F8F8');
-      expect(points[1].getAttribute('stroke')).toEqual('#F8F8F8');
-      expect(points[2].getAttribute('stroke')).toEqual('#F8F8F8');
-      expect(points[3].getAttribute('stroke')).toEqual('#F8F8F8');
-      expect(points[4].getAttribute('stroke')).toEqual('#F8F8F8');
-      expect(points[5].getAttribute('stroke')).toEqual('#F8F8F8');
+      expect(points[0].getAttribute('stroke')).toEqual('white');
+      expect(points[1].getAttribute('stroke')).toEqual('white');
+      expect(points[2].getAttribute('stroke')).toEqual('white');
+      expect(points[3].getAttribute('stroke')).toEqual('white');
+      expect(points[4].getAttribute('stroke')).toEqual('white');
+      expect(points[5].getAttribute('stroke')).toEqual('white');
 
       expect(points[0].getAttribute('stroke-opacity')).toBeNull();
       expect(points[1].getAttribute('stroke-opacity')).toBeNull();
@@ -315,8 +315,8 @@ describe('Line', () => {
 
       const backgroundPoints = await findAllMarksByGroupName(chart, 'line0_pointBackground');
       expect(backgroundPoints.length).toBe(1);
-      expect(backgroundPoints[0].getAttribute('fill')).toEqual('#F8F8F8');
-      expect(backgroundPoints[0].getAttribute('stroke')).toEqual('#F8F8F8');
+      expect(backgroundPoints[0].getAttribute('fill')).toEqual('white');
+      expect(backgroundPoints[0].getAttribute('stroke')).toEqual('white');
       expect(backgroundPoints[0]).toHaveAttribute('stroke-width', '6');
       expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
       expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
@@ -383,7 +383,7 @@ describe('Line', () => {
       // series color fill
       expect(point.getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
       // full opacity backgroundColor border
-      expect(point.getAttribute('stroke')).toEqual('#F8F8F8');
+      expect(point.getAttribute('stroke')).toEqual('white');
       expect(point.getAttribute('stroke-opacity')).toEqual('1');
       expect(point.getAttribute('stroke-width')).toEqual('2');
     });

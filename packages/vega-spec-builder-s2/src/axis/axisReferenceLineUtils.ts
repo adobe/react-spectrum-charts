@@ -9,25 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-  EncodeEntry,
-  GuideEncodeEntry,
-  Mark,
-  NumericValueRef,
-  ProductionRule,
-  RuleMark,
-  ScaleType,
-  SignalRef,
-  SymbolMark,
-  TextEncodeEntry,
-  TextMark,
-} from 'vega';
+import { Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, ScaleType, SignalRef, TextMark } from 'vega';
 
-import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
+import {
+  DEFAULT_FONT_COLOR,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
+  REFERENCE_LINE_END_CAP_PATH,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
+  REFERENCE_LINE_LABEL_FONT_WEIGHT,
+  REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
+  REFERENCE_LINE_START_CAP_PATH,
+} from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
-import { getPathFromIcon, getStrokeDashFromLineType } from '../specUtils';
-import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
+import { AxisSpecOptions, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
 import { isVerticalAxis } from './axisUtils';
 
 export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {
@@ -42,14 +37,8 @@ const applyReferenceLineOptionDefaults = (
   index: number
 ): ReferenceLineSpecOptions => ({
   ...options,
-  color: options.color || 'gray-800',
   colorScheme: axisOptions.colorScheme,
-  iconColor: options.iconColor || DEFAULT_FONT_COLOR,
-  labelColor: options.labelColor || DEFAULT_FONT_COLOR,
-  labelFontWeight: options.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
-  layer: options.layer ?? 'front',
   name: `${axisOptions.name}ReferenceLine${index}`,
-  lineType: options.lineType ?? 'solid',
 });
 
 export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined): boolean => {
@@ -57,23 +46,28 @@ export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined
   return Boolean(scaleType && supportedScaleTypes.includes(scaleType));
 };
 
+/**
+ * S2 reference lines are horizontal only — only emits marks for vertical axes (left/right).
+ */
 export const getReferenceLineMarks = (
   axisOptions: AxisSpecOptions,
   scaleName: string
-): { back: Mark[]; front: Mark[] } => {
-  const referenceLineMarks: { back: Mark[]; front: Mark[] } = { back: [], front: [] };
-  const referenceLines = getReferenceLines(axisOptions);
+): Mark[] => {
+  if (!isVerticalAxis(axisOptions.position)) {
+    return [];
+  }
 
-  for (const referenceLine of referenceLines) {
-    const { layer } = referenceLine;
+  const marks: Mark[] = [];
+  for (const referenceLine of getReferenceLines(axisOptions)) {
     const positionEncoding = getPositionEncoding(axisOptions, referenceLine, scaleName);
-    referenceLineMarks[layer].push(
+    marks.push(
       getReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding),
-      ...getReferenceLineSymbolMark(axisOptions, referenceLine, positionEncoding),
-      ...getReferenceLineTextMark(axisOptions, referenceLine, positionEncoding)
+      getReferenceLineStartCapMark(axisOptions, referenceLine, positionEncoding),
+      getReferenceLineEndCapMark(axisOptions, referenceLine, positionEncoding),
+      ...getReferenceLineTextMark(referenceLine, positionEncoding)
     );
   }
-  return referenceLineMarks;
+  return marks;
 };
 
 export const getPositionEncoding = (
@@ -94,231 +88,129 @@ export const getPositionEncoding = (
   return { scale: scaleName, value };
 };
 
+/**
+ * Horizontal rule line — spans from x: 5 to x2: width - 5 (aligned with caps).
+ */
 export const getReferenceLineRuleMark = (
-  { position, ticks }: AxisSpecOptions,
-  { color, colorScheme, name, lineType }: ReferenceLineSpecOptions,
+  { colorScheme }: AxisSpecOptions,
+  { name }: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): RuleMark => {
-  const startOffset = ticks ? 9 : 0;
-
-  const positionOptions: { [key in Position]: Partial<EncodeEntry> } = {
-    top: {
-      x: positionEncoding,
-      y: { value: -startOffset },
-      y2: { signal: 'height' },
-    },
-    bottom: {
-      x: positionEncoding,
-      y: { value: 0 },
-      y2: { signal: `height + ${startOffset}` },
-    },
-    left: {
-      x: { value: -startOffset },
-      x2: { signal: 'width' },
-      y: positionEncoding,
-    },
-    right: {
-      x: { value: 0 },
-      x2: { signal: `width + ${startOffset}` },
-      y: positionEncoding,
-    },
-  };
-
   return {
     name,
     type: 'rule',
     interactive: false,
     encode: {
       enter: {
-        stroke: { value: getS2ColorValue(color, colorScheme) },
-        strokeDash: { value: getStrokeDashFromLineType(lineType ?? 'solid') },
+        stroke: { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
+        strokeWidth: { value: 2 },
+        strokeCap: { value: 'round' },
+        strokeJoin: { value: 'round' },
       },
       update: {
-        ...positionOptions[position],
+        x: { value: 10 },
+        x2: { signal: 'width - 7' },
+        y: positionEncoding as NumericValueRef,
       },
     },
   };
 };
 
 /**
- * Gets position values for additional marks for the reference line.
- * @param offset
- * @param positionEncoding
- * @param horizontalOffset
- * @returns SymbolMark
+ * Left-pointing arrow cap at the left edge of the chart area.
  */
-const getAdditiveMarkPositionOptions = (
-  offset: number,
-  positionEncoding: ProductionRule<NumericValueRef> | SignalRef,
-  horizontalOffset?: number
-) => ({
-  top: {
-    x: positionEncoding,
-    y: { value: -offset },
-  },
-  bottom: {
-    x: positionEncoding,
-    y: { signal: `height + ${offset}` },
-  },
-  left: {
-    x: { value: -offset },
-    y: { ...positionEncoding, offset: horizontalOffset },
-  },
-  right: {
-    x: { signal: `width + ${offset}` },
-    y: { ...positionEncoding, offset: horizontalOffset },
-  },
-});
+export const getReferenceLineStartCapMark = (
+  _axisOptions: AxisSpecOptions,
+  { colorScheme, name }: ReferenceLineSpecOptions,
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+): PathMark => ({
+    name: `${name}_startCap`,
+    type: 'path',
+    interactive: false,
+    encode: {
+      enter: {
+        path: { value: REFERENCE_LINE_START_CAP_PATH },
+        fill: { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
+      },
+      update: {
+        x: { value: 5 },
+        y: positionEncoding as NumericValueRef,
+      },
+    },
+  });
 
 /**
- * Gets the reference line symbol mark
- * @param AxisSpecOptions
- * @param ReferenceLineSpecOptions
- * @param referenceLineIndex
- * @param positionEncoding
- * @returns SymbolMark
+ * Right-pointing arrow cap at the right edge of the chart area.
  */
-export const getReferenceLineSymbolMark = (
-  { colorScheme, position }: AxisSpecOptions,
-  { icon, iconColor, name }: ReferenceLineSpecOptions,
+export const getReferenceLineEndCapMark = (
+  _axisOptions: AxisSpecOptions,
+  { colorScheme, name }: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
-): SymbolMark[] => {
-  if (!icon) return [];
+): PathMark => ({
+    name: `${name}_endCap`,
+    type: 'path',
+    interactive: false,
+    encode: {
+      enter: {
+        path: { value: REFERENCE_LINE_END_CAP_PATH },
+        fill: { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
+      },
+      update: {
+        x: { signal: 'width - 5' },
+        y: positionEncoding as NumericValueRef,
+      },
+    },
+  });
 
-  // offset the icon from the edge of the chart area
-  const OFFSET = 24;
-  const positionOptions = getAdditiveMarkPositionOptions(OFFSET, positionEncoding);
+/**
+ * Two text marks: background halo then foreground.
+ * Label is below the line, right-aligned, with S2 typography.
+ */
+export const getReferenceLineTextMark = (
+  { colorScheme, label, name }: ReferenceLineSpecOptions,
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+): TextMark[] => {
+  if (!label) return [];
+
+  const sharedEnter = {
+    text: { value: label },
+    x: { signal: 'width' },
+    y: positionEncoding as NumericValueRef,
+    dy: { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE },
+    baseline: { value: 'top' as const },
+    align: { value: 'right' as const },
+  };
+
+  const sharedUpdate = {
+    fontWeight: { value: REFERENCE_LINE_LABEL_FONT_WEIGHT },
+  };
 
   return [
     {
-      name: `${name}_symbol`,
-      type: 'symbol',
+      name: `${name}_labelBackground`,
+      type: 'text',
+      interactive: false,
       encode: {
         enter: {
-          shape: {
-            value: getPathFromIcon(icon),
-          },
-          size: { value: 324 },
-          fill: { value: getS2ColorValue(iconColor, colorScheme) },
+          ...sharedEnter,
+          fill: { value: 'transparent' },
+          stroke: { signal: REFERENCE_LINE_LABEL_BACKGROUND_STROKE },
+          strokeWidth: { value: REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH },
         },
-        update: {
-          ...positionOptions[position],
-        },
+        update: sharedUpdate,
       },
     },
-  ];
-};
-
-/**
- * Gets the reference line text mark
- * @param AxisSpecOptions
- * @param ReferenceLineSpecOptions
- * @param referenceLineIndex
- * @param positionEncoding
- * @returns TextMark
- */
-export const getReferenceLineTextMark = (
-  axisOptions: AxisSpecOptions,
-  referenceLineOptions: ReferenceLineSpecOptions,
-  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
-): TextMark[] => {
-  const { label, name } = referenceLineOptions;
-  if (!label) return [];
-
-  return [
     {
       name: `${name}_label`,
       type: 'text',
+      interactive: false,
       encode: {
-        ...getReferenceLineLabelsEncoding(axisOptions, { ...referenceLineOptions, label }, positionEncoding),
+        enter: {
+          ...sharedEnter,
+          fill: { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
+        },
+        update: sharedUpdate,
       },
     },
   ];
-};
-
-/**
- * Calculates the vertical and horizontal offsets for reference line labels based on axis position and icon presence
- * @param position The axis position
- * @param icon Whether an icon is present
- * @returns Object containing verticalOffset and horizontalOffset values
- */
-const calculateReferenceLineOffsets = (
-  position: Position,
-  icon?: string
-): { verticalOffset: number; horizontalOffset: number } => {
-  const isVertical = isVerticalAxis(position);
-  let verticalOffset = isVertical ? 40 : 28;
-  let horizontalOffset = isVertical ? 4 : 5;
-
-  if (icon) {
-    if (isVertical) {
-      verticalOffset += 25;
-    } else {
-      verticalOffset += 20;
-    }
-    if (!isVertical) {
-      horizontalOffset += 25;
-      verticalOffset += 2;
-    }
-  }
-
-  return { verticalOffset, horizontalOffset };
-};
-
-/**
- * Gets the reference line label encoding
- * @param labelFontWeight
- * @param label
- * @param position
- * @param positionEncoding
- * @param icon
- * @returns updateEncoding
- */
-export const getReferenceLineLabelsEncoding = (
-  { position }: AxisSpecOptions,
-  { colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecOptions & { label: string },
-  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
-): GuideEncodeEntry<TextEncodeEntry> => {
-  const { verticalOffset, horizontalOffset } = calculateReferenceLineOffsets(position, icon);
-  const positionOptions = getAdditiveMarkPositionOptions(verticalOffset, positionEncoding, horizontalOffset);
-
-  return {
-    update: {
-      text: [
-        {
-          value: label,
-        },
-      ],
-      fontWeight: [
-        // default to the primary label font weight
-        { value: labelFontWeight },
-      ],
-      fill: { value: getS2ColorValue(labelColor, colorScheme) },
-      ...getEncodedLabelBaselineAlign(position),
-      ...positionOptions[position],
-    },
-  };
-};
-
-/**
- * Will return the label align or baseline based on the position
- * These properties are used within the reference line label encoding
- * If this is a vertical axis, it will return the correct baseline property and value
- * Otherwise, it will return the correct align property and value
- * @param position
- * @returns align | baseline
- */
-export const getEncodedLabelBaselineAlign = (position: Position): EncodeEntry => {
-  switch (position) {
-    case 'top':
-    case 'bottom':
-      return {
-        align: { value: 'center' },
-      };
-    case 'left':
-    case 'right':
-      return {
-        baseline: { value: 'center' },
-      };
-  }
 };

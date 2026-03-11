@@ -36,22 +36,10 @@ const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement =
   const chartProps = useChartProps({ data, width: 600 });
   return (
     <Chart {...chartProps}>
-      <Axis position="bottom" baseline ticks>
-        <ReferenceLine {...args} />
-      </Axis>
-      <Bar dimension="y" metric="x" />
-    </Chart>
-  );
-};
-
-const ReferenceLineHorizontalStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
-  const chartProps = useChartProps({ data, width: 600 });
-  return (
-    <Chart {...chartProps}>
       <Axis position="left" baseline ticks>
         <ReferenceLine {...args} />
       </Axis>
-      <Axis position="bottom" baseline ticks></Axis>
+      <Axis position="bottom" baseline ticks />
       <Bar dimension="y" metric="x" />
     </Chart>
   );
@@ -60,73 +48,12 @@ const ReferenceLineHorizontalStory: StoryFn<typeof ReferenceLine> = (args): Reac
 const Basic = bindWithProps(ReferenceLineStory);
 Basic.args = {
   value: 3,
-  position: 'center',
-};
-
-const Icon = bindWithProps(ReferenceLineStory);
-Icon.args = {
-  value: 3,
-  icon: 'date',
-  position: 'center',
 };
 
 const Label = bindWithProps(ReferenceLineStory);
 Label.args = {
   value: 3,
-  label: 'Jul 4',
-  position: 'center',
+  label: 'Target',
 };
 
-const Supreme = bindWithProps(ReferenceLineStory);
-Supreme.args = {
-  value: 3,
-  icon: 'date',
-  label: 'Jul 4',
-  position: 'center',
-};
-
-const Horizontal = bindWithProps(ReferenceLineHorizontalStory);
-Horizontal.args = {
-  value: 3,
-  position: 'center',
-};
-
-const HorizontalIcon = bindWithProps(ReferenceLineHorizontalStory);
-HorizontalIcon.args = {
-  value: 3,
-  icon: 'date',
-  position: 'center',
-};
-
-const HorizontalLabel = bindWithProps(ReferenceLineHorizontalStory);
-HorizontalLabel.args = {
-  value: 3,
-  label: 'Jul 4',
-  position: 'center',
-};
-
-const HorizontalSupreme = bindWithProps(ReferenceLineHorizontalStory);
-HorizontalSupreme.args = {
-  value: 3,
-  icon: 'date',
-  label: 'Jul 4',
-  position: 'center',
-};
-
-const ReferenceLineDashed = bindWithProps(ReferenceLineStory);
-ReferenceLineDashed.args = {
-  value: 3,
-  lineType: 'dashed',
-};
-
-export {
-  Basic,
-  Icon,
-  Label,
-  Supreme,
-  Horizontal,
-  HorizontalIcon,
-  HorizontalLabel,
-  HorizontalSupreme,
-  ReferenceLineDashed,
-};
+export { Basic, Label };
