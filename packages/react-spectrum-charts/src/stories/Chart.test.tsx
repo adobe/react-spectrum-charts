@@ -17,7 +17,7 @@ import { ChartHandle } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../Chart';
 import { Axis, Bar, ChartTooltip, Line } from '../components';
-import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen } from '../test-utils';
+import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen, waitFor } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { getElement } from '../utils';
 import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story';
@@ -407,6 +407,76 @@ describe('Chart', () => {
       expect(bars[14]).toHaveAttribute('opacity', '1');
       expect(bars[13]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
       expect(bars[15]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+    });
+  });
+
+  describe('onVegaViewReady', () => {
+    test('calls onVegaViewReady with the Vega view when the chart is ready', async () => {
+      const onVegaViewReady = jest.fn();
+      render(
+        <Chart data={data} renderer="svg" onVegaViewReady={onVegaViewReady}>
+          <Axis position="bottom" baseline ticks />
+          <Axis position="left" grid />
+          <Line dimension="x" metric="y" color="series" scaleType="linear" />
+        </Chart>
+      );
+
+      await findChart();
+      await waitFor(() => {
+        expect(onVegaViewReady).toHaveBeenCalled();
+      });
+
+      expect(onVegaViewReady).toHaveBeenCalledTimes(1);
+      const view = onVegaViewReady.mock.calls[0][0];
+      expect(view).toBeDefined();
+      expect(typeof view.scale).toBe('function');
+      expect(typeof view.padding).toBe('function');
+    });
+
+    test('calls onVegaViewReady again when data changes and view is recreated', async () => {
+      const onVegaViewReady = jest.fn();
+      const initialData = data.slice(0, 8);
+      const { rerender } = render(
+        <Chart data={initialData} renderer="svg" onVegaViewReady={onVegaViewReady}>
+          <Axis position="bottom" baseline ticks />
+          <Axis position="left" grid />
+          <Line dimension="x" metric="y" color="series" scaleType="linear" />
+        </Chart>
+      );
+
+      await findChart();
+      await waitFor(() => {
+        expect(onVegaViewReady).toHaveBeenCalled();
+      });
+      expect(onVegaViewReady).toHaveBeenCalledTimes(1);
+
+      const newData = data.slice(0, 12);
+      rerender(
+        <Chart data={newData} renderer="svg" onVegaViewReady={onVegaViewReady}>
+          <Axis position="bottom" baseline ticks />
+          <Axis position="left" grid />
+          <Line dimension="x" metric="y" color="series" scaleType="linear" />
+        </Chart>
+      );
+
+      await waitFor(() => {
+        expect(onVegaViewReady).toHaveBeenCalledTimes(2);
+      });
+      const secondView = onVegaViewReady.mock.calls[1][0];
+      expect(secondView).toBeDefined();
+      expect(typeof secondView.scale).toBe('function');
+    });
+
+    test('chart renders without onVegaViewReady provided', async () => {
+      render(
+        <Chart data={data} renderer="svg">
+          <Axis position="bottom" baseline ticks />
+          <Axis position="left" grid />
+          <Line dimension="x" metric="y" color="series" scaleType="linear" />
+        </Chart>
+      );
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
     });
   });
 });

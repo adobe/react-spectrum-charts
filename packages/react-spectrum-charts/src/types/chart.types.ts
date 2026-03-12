@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { Config, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
+import { Config, Locale, NumberLocale, Padding, TimeLocale, View } from 'vega';
 
 import { Theme } from '@react-types/provider';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '@spectrum-charts/locales';
@@ -86,6 +86,8 @@ export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' 
   locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
   /** Chart padding */
   padding?: Padding;
+  /** Called when the Vega view is created or recreated (e.g. after spec/data change) */
+  onVegaViewReady?: (view: View) => void;
   /** Method to use for rendering the chart. 'canvas' is ideal for large data sets. */
   renderer?: 'svg' | 'canvas';
   /** Sets what the tooltip should be anchored to. Defaults to `cursor`. */
