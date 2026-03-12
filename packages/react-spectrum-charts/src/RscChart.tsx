@@ -9,11 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject, forwardRef, useEffect, useMemo, useState } from 'react';
+import { MutableRefObject, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+
+import { View } from 'vega';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
 import { ChartHandle, Datum, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder';
+
+import { KeyboardFocusOverlay } from './components/KeyboardFocusOverlay';
+import { extractBarKeyboardTargets, KeyboardTarget } from './hooks/useKeyboardTargets';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
@@ -25,6 +30,7 @@ import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import { RscChartProps } from './types';
 import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals } from './utils';
+import { Legend } from './components';
 
 interface ChartDialogProps {
   targetElement: MutableRefObject<HTMLElement | null>;
@@ -62,7 +68,16 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
     idKey,
   } = props;
 
-  const { chartView, chartId, popoverAnchorRef, isPopoverOpen, setIsPopoverOpen } = useChartContext();
+  const {
+    chartView,
+    chartId,
+    popoverAnchorRef,
+    isPopoverOpen,
+    setIsPopoverOpen,
+    selectedData,
+    selectedDataBounds,
+    selectedDataName,
+  } = useChartContext();
 
   const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
 
@@ -107,6 +122,39 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
   useChartImperativeHandle(forwardedRef, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
 
+  // Keyboard navigation: bar component names for overlay target extraction
+  const barComponentNames = useMemo(
+    () => sanitizedChildren.filter((c) => c.type?.displayName === 'Bar').map((c) => c.props.name as string),
+    [sanitizedChildren]
+  );
+  const [keyboardTargets, setKeyboardTargets] = useState<KeyboardTarget[]>([]);
+
+  const onViewReady = useCallback(
+    (view: View) => {
+      setKeyboardTargets(extractBarKeyboardTargets(view, padding, barComponentNames));
+    },
+    [padding, barComponentNames]
+  );
+
+  // Re-extract keyboard targets after chart resize (bar pixel bounds change)
+  useEffect(() => {
+    if (chartView.current && barComponentNames.length) {
+      setTimeout(() => {
+        if (chartView.current) {
+          chartView.current.runAsync().then((v) => {
+            setKeyboardTargets(extractBarKeyboardTargets(v, padding, barComponentNames));
+          });
+        }
+      }, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartWidth, chartHeight]);
+
+  const markHasPopover = useMemo(
+    () => popovers.some((p) => p.parent !== Legend.displayName),
+    [popovers]
+  );
+
   return (
     <>
       <div
@@ -129,7 +177,20 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
         signals={signals}
         tooltip={tooltipOptions} // legend show/hide relies on this
         onNewView={onNewView}
+        onViewReady={onViewReady}
       />
+      {keyboardTargets.length > 0 && (
+        <KeyboardFocusOverlay
+          targets={keyboardTargets}
+          chartId={chartId}
+          chartView={chartView}
+          markHasPopover={markHasPopover}
+          specSignalNames={specSignalNames}
+          selectedData={selectedData}
+          selectedDataBounds={selectedDataBounds}
+          selectedDataName={selectedDataName}
+        />
+      )}
       {popovers.map((popover) => (
         <ChartDialog
           key={popover.key}

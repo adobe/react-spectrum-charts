@@ -83,7 +83,7 @@ const handleMarkClick = (
   triggerPopover(chartId, itemName, trigger);
 };
 
-const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
+export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
   if (!itemName) return;
   (
     document.querySelector(

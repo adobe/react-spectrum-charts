@@ -61,3 +61,9 @@ this removes transitions in the vega tooltip
   width: auto;
   height: 100%;
 }
+.rsc-keyboard-focus-button:focus-visible {
+  outline: 2px solid var(--spectrum-blue-800, #1473e6);
+  outline-offset: 2px;
+  opacity: 1 !important;
+  background: transparent;
+}

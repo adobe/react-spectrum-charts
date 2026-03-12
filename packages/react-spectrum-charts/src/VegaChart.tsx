@@ -40,6 +40,7 @@ export interface VegaChartProps {
   height: number;
   locale: ChartProps['locale'];
   onNewView: (view: View) => void;
+  onViewReady?: (view: View) => void;
   padding: Padding;
   renderer: Renderers;
   signals?: Record<string, unknown>;
@@ -56,6 +57,7 @@ export const VegaChart: FC<VegaChartProps> = ({
   height,
   locale,
   onNewView,
+  onViewReady,
   padding,
   renderer = 'svg',
   signals,
@@ -120,8 +122,8 @@ export const VegaChart: FC<VegaChartProps> = ({
         onNewView(view);
         view.resize();
         view.runAsync();
-        // One additional render to settle all resize calculations
-        setTimeout(() => view.runAsync(), 0);
+        // One additional render to settle all resize calculations, then notify that the view is ready
+        setTimeout(() => view.runAsync().then(() => onViewReady?.(view)), 0);
       });
     }
     return () => {
