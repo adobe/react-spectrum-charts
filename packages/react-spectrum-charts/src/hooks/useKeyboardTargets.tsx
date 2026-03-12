@@ -65,15 +65,17 @@ function collectBarItems(
 ): void {
   if (!marks?.length) return;
 
-  for (const mark of marks) {
-    if (mark.marktype === 'group') {
-      // Descend into group items (SceneGroup[]) → each has its own items (Mark[])
-      for (const groupItem of mark.items ?? []) {
+  for (const node of marks) {
+    if (!node) continue;
+
+    if (node.marktype === 'group') {
+      // Mark for a group: node.items are SceneGroup instances, each with .items = Mark[]
+      for (const groupItem of node.items ?? []) {
         collectBarItems(groupItem.items ?? [], barComponentNames, targets, leftPadding, topPadding, origin);
       }
-    } else if (mark.marktype === 'rect' && barComponentNames.includes(mark.name)) {
-      // This is the actual bar rect mark (exact name match — excludes _background, _dimensionHoverArea, etc.)
-      for (const item of mark.items ?? []) {
+    } else if (node.marktype === 'rect' && barComponentNames.includes(node.name)) {
+      // Mark for a rect: node.items are SceneItem instances (rendered bar rects)
+      for (const item of node.items ?? []) {
         if (!item.datum) continue;
         const vegaBounds = getItemBounds(item);
         targets.push({
@@ -86,10 +88,15 @@ function collectBarItems(
             width: vegaBounds.x2 - vegaBounds.x1,
             height: vegaBounds.y2 - vegaBounds.y1,
           },
-          markName: mark.name as string,
+          markName: node.name as string,
           ariaLabel: generateAriaLabel(item.datum as Datum),
         });
       }
+    } else if (!node.marktype && Array.isArray(node.items)) {
+      // SceneGroup (GroupItem): no marktype, but has .items = Mark[] — recurse into child marks.
+      // This handles the root scenegraph structure where root.items[0] is a SceneGroup,
+      // not a Mark, and the actual spec marks are inside it.
+      collectBarItems(node.items, barComponentNames, targets, leftPadding, topPadding, origin);
     }
   }
 }
