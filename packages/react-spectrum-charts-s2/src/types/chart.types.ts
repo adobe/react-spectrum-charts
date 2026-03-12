@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { Config, Locale, NumberLocale, Padding, TimeLocale } from 'vega';
+import { Config, Locale, NumberLocale, Padding, TimeLocale, View } from 'vega';
 
 import { Theme } from '@react-types/provider';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '@spectrum-charts/locales';
@@ -28,28 +28,12 @@ import {
 import { AxisElement } from './axis';
 import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
 import { LegendElement } from './legend.types';
-import {
-  BarAnnotationElement,
-  BarElement,
-  DonutElement,
-  DonutSummaryElement,
-  LineElement,
-} from './marks';
+import { BarAnnotationElement, BarElement, DonutElement, DonutSummaryElement, LineElement } from './marks';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
 
-export type ChartChildElement =
-  | AxisElement
-  | BarElement
-  | DonutElement
-  | LegendElement
-  | LineElement
-  | TitleElement;
-export type MarkChildElement =
-  | BarAnnotationElement
-  | ChartPopoverElement
-  | ChartTooltipElement
-  | DonutSummaryElement;
+export type ChartChildElement = AxisElement | BarElement | DonutElement | LegendElement | LineElement | TitleElement;
+export type MarkChildElement = BarAnnotationElement | ChartPopoverElement | ChartTooltipElement | DonutSummaryElement;
 
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {
   // children is optional because it is a pain to make this required with how children get defined in stories
@@ -66,6 +50,8 @@ export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' 
   locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
   /** Chart padding */
   padding?: Padding;
+  /** Called when the Vega view is created or recreated (e.g. after spec/data change) */
+  onVegaViewReady?: (view: View) => void;
   /** Method to use for rendering the chart. 'canvas' is ideal for large data sets. */
   renderer?: 'svg' | 'canvas';
   /** Sets what the tooltip should be anchored to. Defaults to `cursor`. */

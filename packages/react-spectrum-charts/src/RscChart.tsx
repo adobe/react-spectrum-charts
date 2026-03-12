@@ -52,6 +52,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
     lineWidths,
     locale,
     opacities,
+    onVegaViewReady,
     padding,
     renderer,
     s2,
@@ -128,7 +129,10 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
         padding={padding}
         signals={signals}
         tooltip={tooltipOptions} // legend show/hide relies on this
-        onNewView={onNewView}
+        onNewView={(view) => {
+          onNewView(view);
+          onVegaViewReady?.(view);
+        }}
       />
       {popovers.map((popover) => (
         <ChartDialog

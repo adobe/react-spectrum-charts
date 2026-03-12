@@ -51,6 +51,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>((props, forwardedRef) =
     maxWidth,
     minHeight,
     minWidth,
+    onVegaViewReady,
     theme,
     title,
     UNSAFE_vegaSpec,
@@ -107,6 +108,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>((props, forwardedRef) =
     chartWidth,
     chartHeight,
     UNSAFE_vegaSpec,
+    onVegaViewReady,
     ...otherProps,
   };
 
