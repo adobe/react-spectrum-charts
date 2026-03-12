@@ -9,9 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject, forwardRef, useEffect, useMemo, useState } from 'react';
+import { MutableRefObject, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
+import { View as VegaView } from 'vega';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
 import { ChartHandle, Datum, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder';
 
@@ -108,6 +109,14 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
   useChartImperativeHandle(forwardedRef, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
 
+  const handleNewView = useCallback(
+    (view: VegaView) => {
+      onNewView(view);
+      onVegaViewReady?.(view);
+    },
+    [onNewView, onVegaViewReady]
+  );
+
   return (
     <>
       <div
@@ -129,10 +138,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
         padding={padding}
         signals={signals}
         tooltip={tooltipOptions} // legend show/hide relies on this
-        onNewView={(view) => {
-          onNewView(view);
-          onVegaViewReady?.(view);
-        }}
+        onNewView={handleNewView}
       />
       {popovers.map((popover) => (
         <ChartDialog
