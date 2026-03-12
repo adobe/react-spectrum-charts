@@ -26,6 +26,12 @@ export interface BarOptions {
   metric?: string;
   /** Bar color or key in the data that is used as the color facet */
   color?: ColorFacet | DualFacet;
+  /**
+   * Data field whose value is the CSS color for each bar (one color per row).
+   * When set, bar fill uses this field instead of the color scale; takes precedence over {@link color}.
+   * Distinct from {@link color} (which maps through the color scale).
+   */
+  colorOverride?: string;
   /** Data field used for the bar categories (x-axis for a vertical bar) */
   dimension?: string;
   /** Data type field used for the bar categories (x-axis for a vertical bar) */

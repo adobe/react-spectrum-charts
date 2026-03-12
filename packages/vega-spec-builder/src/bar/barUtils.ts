@@ -280,16 +280,23 @@ export const getBaseBarEnterEncodings = (options: BarSpecOptions): EncodeEntry =
   ...getCornerRadiusEncodings(options),
 });
 
-export const getBarEnterEncodings = ({
-  chartTooltips,
-  color,
-  colorScheme,
-  name,
-  opacity,
-}: BarSpecOptions): EncodeEntry => ({
-  fill: getColorProductionRule(color, colorScheme),
-  fillOpacity: getOpacityProductionRule(opacity),
-  tooltip: getTooltip(chartTooltips, name),
+/**
+ * Returns the Vega fill encoding for the bar. When {@link BarSpecOptions.colorOverride} is set
+ * it takes precedence and the bar fill is taken from that data field (one color per row).
+ * Otherwise fill is from the color scale via {@link getColorProductionRule} using {@link BarSpecOptions.color}.
+ */
+export const getBarFillEncoding = (options: BarSpecOptions): ColorValueRef => {
+  const { colorOverride, color, colorScheme } = options;
+  if (colorOverride) {
+    return { signal: `datum[${JSON.stringify(colorOverride)}]` };
+  }
+  return getColorProductionRule(color, colorScheme);
+};
+
+export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
+  fill: getBarFillEncoding(options),
+  fillOpacity: getOpacityProductionRule(options.opacity),
+  tooltip: getTooltip(options.chartTooltips, options.name),
 });
 
 export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
@@ -300,14 +307,9 @@ export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => (
   strokeWidth: getStrokeWidth(options),
 });
 
-export const getStroke = ({
-  name,
-  chartPopovers,
-  color,
-  colorScheme,
-  idKey,
-}: BarSpecOptions): ProductionRule<ColorValueRef> => {
-  const defaultProductionRule = getColorProductionRule(color, colorScheme);
+export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef> => {
+  const { name, chartPopovers, colorScheme, idKey } = options;
+  const defaultProductionRule = getBarFillEncoding(options);
   if (!hasPopover({ chartPopovers })) {
     return [defaultProductionRule];
   }

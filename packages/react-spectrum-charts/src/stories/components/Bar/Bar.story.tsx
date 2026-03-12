@@ -22,7 +22,7 @@ import { Annotation } from '../../../components/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barData, barDataWithUTC } from './data';
+import { barData, barDataWithBarColor, barDataWithUTC } from './data';
 
 export default {
   title: 'RSC/Bar',
@@ -135,6 +135,17 @@ const BarDimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
+const ColorPerBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barDataWithBarColor, width: 600, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args} />
+    </Chart>
+  );
+};
+
 const defaultProps: BarProps = {
   dimension: 'browser',
   metric: 'downloads',
@@ -221,9 +232,16 @@ TooltipOnDimensionArea.args = {
   ...defaultProps,
 };
 
+const ColorPerBar = bindWithProps(ColorPerBarStory);
+ColorPerBar.args = {
+  ...defaultProps,
+  colorOverride: 'barColor',
+};
+
 export {
   BarWithUTCDatetimeFormat,
   Basic,
+  ColorPerBar,
   HasSquareCorners,
   Horizontal,
   LineType,
