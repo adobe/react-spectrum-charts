@@ -15,7 +15,7 @@ the vega tooltip won't pick up spectrum variables
 set all the default styling
 */
 #vg-tooltip-element.vg-tooltip {
-  border-radius: 4px;
+  border-radius: 8px;
   font-family: adobe-clean-ux, adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
     sans-serif;
   font-size: 14px;
@@ -35,16 +35,21 @@ this removes transitions in the vega tooltip
 /* double scope light-theme so that it has higher precedence */
 #vg-tooltip-element.vg-tooltip.light-theme.light-theme {
   color-scheme: light;
-  border: 1px solid #cacaca;
+  border: 1px solid #e1e1e1;
   background-color: #fff;
   color: #4b4b4b;
+  /* S2 "drop shadow/elevated" token — inlined because the tooltip renders outside the Spectrum provider
+     DOM scope and cannot resolve CSS custom properties. filter: drop-shadow() is not used because it
+     only supports a single layer and cannot replicate this three-layer effect. */
+  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 6px 0 rgba(0, 0, 0, 0.04), 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 }
 /* double scope dark-theme so that it has higher precedence */
 #vg-tooltip-element.vg-tooltip.dark-theme.dark-theme {
   color-scheme: dark;
-  border: 1px solid #494949;
-  background-color: #000;
+  border: 1px solid #323232;
+  background-color: #111111;
   color: #c8c8c8;
+  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 6px 0 rgba(0, 0, 0, 0.04), 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 }
 #vg-tooltip-element.vg-tooltip .legend-tooltip {
   max-width: 150px;
