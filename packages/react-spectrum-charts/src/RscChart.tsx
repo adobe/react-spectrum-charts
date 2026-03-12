@@ -16,6 +16,7 @@ import { View } from 'vega';
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
 import { ChartHandle, Datum, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder';
+import { toCamelCase } from '@spectrum-charts/utils';
 
 import { KeyboardFocusOverlay } from './components/KeyboardFocusOverlay';
 import { extractBarKeyboardTargets, KeyboardTarget } from './hooks/useKeyboardTargets';
@@ -122,11 +123,18 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
   useChartImperativeHandle(forwardedRef, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
 
-  // Keyboard navigation: bar component names for overlay target extraction
-  const barComponentNames = useMemo(
-    () => sanitizedChildren.filter((c) => c.type?.displayName === 'Bar').map((c) => c.props.name as string),
-    [sanitizedChildren]
-  );
+  // Keyboard navigation: bar component names for overlay target extraction.
+  // Replicates the naming logic in barSpecBuilder: toCamelCase(name || `bar${index}`)
+  // where barCount starts at -1 and increments before use (so first bar is index 0).
+  const barComponentNames = useMemo(() => {
+    let barIndex = -1;
+    return sanitizedChildren
+      .filter((c) => c.type?.displayName === 'Bar')
+      .map((c) => {
+        barIndex++;
+        return toCamelCase((c.props.name as string | undefined) || `bar${barIndex}`);
+      });
+  }, [sanitizedChildren]);
   const [keyboardTargets, setKeyboardTargets] = useState<KeyboardTarget[]>([]);
 
   const onViewReady = useCallback(
