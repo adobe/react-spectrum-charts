@@ -28,6 +28,12 @@ export type LegendLabel = { seriesName: string | number; label: string; maxLengt
 export interface LegendOptions {
   /** color or key in the data that is used as the color facet for the symbols */
   color?: ColorFacet;
+  /**
+   * Override color for specific legend entries. Keys are values of the color facet (e.g. category
+   * labels); values are CSS colors. Use when the mark (e.g. Bar) uses colorOverrides so the legend
+   * symbols match.
+   */
+  colorOverrides?: Record<string, string>;
   /** series that should be hidden by default (uncontrolled) */
   defaultHiddenSeries?: string[];
   /** descriptions for each of the series */

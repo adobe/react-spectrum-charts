@@ -158,11 +158,13 @@ export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): 
   Boolean('chartTooltips' in options && options.chartTooltips?.length);
 
 /**
- * Gets the color encoding
- * @param color
- * @param colorScheme
- * @param colorScaleType
- * @returns ColorValueRef
+ * Returns the Vega color encoding for a mark (fill/stroke). Maps through the ordinal/linear color
+ * scale or resolves a fixed color via the theme.
+ *
+ * @param color - Data field key, fixed color, or dual facet [primary, secondary]
+ * @param colorScheme - 'light' | 'dark' for resolving theme color names
+ * @param colorScaleType - 'ordinal' (default) or 'linear' scale name
+ * @returns ColorValueRef for use in encode.fill or encode.stroke
  */
 export const getColorProductionRule = (
   color: ColorFacet | DualFacet,
@@ -182,11 +184,13 @@ export const getColorProductionRule = (
 };
 
 /**
- * gets the color encoding in a signal string format
- * @param color
- * @param colorScheme
- * @param colorScaleType
- * @returns string
+ * Returns the color encoding as a Vega expression string (e.g. for use in signals or formulas).
+ * Delegates to {@link getColorProductionRule}.
+ *
+ * @param color - Data field key, fixed color, or dual facet
+ * @param colorScheme - 'light' | 'dark' for theme resolution
+ * @param colorScaleType - 'ordinal' (default) or 'linear'
+ * @returns Expression string (e.g. `scale('color', datum.category)`)
  */
 export const getColorProductionRuleSignalString = (
   color: ColorFacet | DualFacet,

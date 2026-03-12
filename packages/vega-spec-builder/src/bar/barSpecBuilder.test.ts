@@ -559,6 +559,14 @@ describe('barSpecBuilder', () => {
           },
         ]);
       });
+
+      test('should not add color scale domain when options.color is undefined', () => {
+        const options = { ...defaultBarOptions, color: undefined } as unknown as Parameters<typeof addScales>[1];
+        const scales = addScales([{ name: COLOR_SCALE, type: 'ordinal' }], options);
+        const colorScale = scales.find((s) => s.name === COLOR_SCALE);
+        expect(colorScale).toEqual({ name: COLOR_SCALE, type: 'ordinal' });
+        expect(colorScale).not.toHaveProperty('domain');
+      });
     });
 
     describe('dualMetricAxis scales', () => {

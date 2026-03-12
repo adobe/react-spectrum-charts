@@ -326,7 +326,9 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
   }
   addDimensionScale(scales, options);
   addTrellisScale(scales, options);
-  addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+  if (options.color !== undefined) {
+    addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+  }
   addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
   addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
   addSecondaryScales(scales, options);

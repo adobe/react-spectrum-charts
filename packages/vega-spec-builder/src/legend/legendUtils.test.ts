@@ -9,9 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE } from '@spectrum-charts/constants';
+import {
+  COLOR_SCALE,
+  DEFAULT_LEGEND_COLUMN_PADDING,
+  DEFAULT_LEGEND_SYMBOL_WIDTH,
+  FILTERED_TABLE,
+} from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
+import { LegendSpecOptions } from '../types';
 import { defaultLegendOptions } from './legendTestUtils';
 import {
   getClickEncodings,
@@ -21,6 +27,7 @@ import {
   getSymbolType,
   mergeLegendEncodings,
 } from './legendUtils';
+import type { Facet } from './legendUtils';
 
 describe('getSymbolEncodings()', () => {
   test('no factes and no custom values, should return all the defaults', () => {
@@ -33,6 +40,131 @@ describe('getSymbolEncodings()', () => {
           stroke: [{ value: spectrumColors.light['categorical-100'] }],
         },
       },
+    });
+  });
+
+  describe('colorOverrides', () => {
+    test('returns production rules with one override and scale fallback when color and colorOverrides are set', () => {
+      const options: LegendSpecOptions = {
+        ...defaultLegendOptions,
+        color: 'browser',
+        colorOverrides: { Firefox: '#e34850' },
+      };
+      const result = getSymbolEncodings([], options);
+      const fill = result.symbols.update?.fill as unknown[];
+      expect(fill).toHaveLength(2); // override + scale fallback (no hidden rules)
+      expect(fill[0]).toStrictEqual({
+        test: "data('legend0Aggregate')[datum.index].browser === \"Firefox\"",
+        value: '#e34850',
+      });
+      expect(fill[1]).toHaveProperty('signal');
+      expect((fill[1] as { signal: string }).signal).toContain("scale('color'");
+    });
+
+    test('returns multiple override rules in order before scale fallback', () => {
+      const options: LegendSpecOptions = {
+        ...defaultLegendOptions,
+        color: 'browser',
+        colorOverrides: { Firefox: '#e34850', Chrome: '#2680eb', Safari: '#2d9d78' },
+      };
+      const result = getSymbolEncodings([], options);
+      const fill = result.symbols.update?.fill as unknown[];
+      expect(fill).toHaveLength(4); // 3 overrides + scale fallback (no hidden rules)
+      expect(fill[0]).toStrictEqual({
+        test: "data('legend0Aggregate')[datum.index].browser === \"Firefox\"",
+        value: '#e34850',
+      });
+      expect(fill[1]).toStrictEqual({
+        test: "data('legend0Aggregate')[datum.index].browser === \"Chrome\"",
+        value: '#2680eb',
+      });
+      expect(fill[2]).toStrictEqual({
+        test: "data('legend0Aggregate')[datum.index].browser === \"Safari\"",
+        value: '#2d9d78',
+      });
+      expect(fill[3]).toHaveProperty('signal');
+    });
+
+    test('uses scale-only path when colorOverrides is empty object', () => {
+      const options: LegendSpecOptions = {
+        ...defaultLegendOptions,
+        color: 'browser',
+        colorOverrides: {},
+      };
+      const result = getSymbolEncodings([], options);
+      const fill = result.symbols.update?.fill as unknown[];
+      expect(fill).toHaveLength(1);
+      expect(fill[0]).toHaveProperty('signal');
+    });
+
+    test('uses scale-only path when colorOverrides is set but no color field (no color option, no color facet)', () => {
+      const options: LegendSpecOptions = {
+        ...defaultLegendOptions,
+        colorOverrides: { Firefox: '#e34850' },
+      };
+      const result = getSymbolEncodings([], options);
+      const fill = result.symbols.update?.fill as unknown[];
+      expect(fill).toHaveLength(1);
+      expect(fill[0]).toStrictEqual({ value: spectrumColors.light['categorical-100'] });
+    });
+
+    test('uses color field from facets when color is not a string but color facet exists', () => {
+      const facets: Facet[] = [{ facetType: COLOR_SCALE, field: 'browser' }];
+      const options: LegendSpecOptions = {
+        ...defaultLegendOptions,
+        colorOverrides: { Firefox: '#e34850' },
+      };
+      const result = getSymbolEncodings(facets, options);
+      const fill = result.symbols.update?.fill as unknown[];
+      expect(fill).toHaveLength(2);
+      expect(fill[0]).toStrictEqual({
+        test: "data('legend0Aggregate')[datum.index].browser === \"Firefox\"",
+        value: '#e34850',
+      });
+    });
+
+    test('places hidden-series rules before colorOverride rules when isToggleable', () => {
+      const options: LegendSpecOptions = {
+        ...defaultLegendOptions,
+        color: 'browser',
+        colorOverrides: { Firefox: '#e34850' },
+        isToggleable: true,
+      };
+      const result = getSymbolEncodings([], options);
+      const fill = result.symbols.update?.fill as unknown[];
+      expect(fill.length).toBeGreaterThanOrEqual(2);
+      expect(fill[0]).toHaveProperty('test');
+      expect((fill[0] as { test: string }).test).toMatch(/hiddenSeries|filteredTable/i);
+      expect(fill[1]).toStrictEqual({
+        test: "data('legend0Aggregate')[datum.index].browser === \"Firefox\"",
+        value: '#e34850',
+      });
+    });
+
+    test('escapes dimension value in test expression via JSON.stringify', () => {
+      const dimVal = 'Label with "quotes"';
+      const options: LegendSpecOptions = {
+        ...defaultLegendOptions,
+        color: 'label',
+        colorOverrides: { [dimVal]: '#e34850' },
+      };
+      const result = getSymbolEncodings([], options);
+      const fill = result.symbols.update?.fill as unknown[];
+      const expectedTest = `data('legend0Aggregate')[datum.index].label === ${JSON.stringify(dimVal)}`;
+      expect(fill[0]).toStrictEqual({
+        test: expectedTest,
+        value: '#e34850',
+      });
+    });
+
+    test('fill and stroke receive the same colorEncoding', () => {
+      const options: LegendSpecOptions = {
+        ...defaultLegendOptions,
+        color: 'browser',
+        colorOverrides: { Firefox: '#e34850' },
+      };
+      const result = getSymbolEncodings([], options);
+      expect(result.symbols.update?.fill).toStrictEqual(result.symbols.update?.stroke);
     });
   });
 });

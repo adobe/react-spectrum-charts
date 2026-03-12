@@ -72,6 +72,37 @@ If you only have one series in your data, both the `type` and `color` props can 
 ![Horizontal dodged bar chart](/img/bar_dodgedHorizontal_light.png#gh-light-mode-only)
 ![Horizontal dodged bar chart](/img/bar_dodgedHorizontal_dark.png#gh-dark-mode-only)
 
+#### Color scheme for bars
+
+Use the Chart's `colors` prop to set the palette for the chart (including bars). Pass an array of hex/CSS colors or a scale name (e.g. `'categorical12'`). Bars colored by a dimension will use this palette.
+
+```jsx
+<Chart data={data} colors={['#e34850', '#2680eb', '#2d9d78', '#e68619', '#ae7cbf']}>
+  <Axis position="bottom" baseline title="Browser" />
+  <Axis position="left" grid title="Downloads" />
+  <Bar dimension="browser" metric="downloads" color="browser" />
+  <Legend position="top" title="Browser" />
+</Chart>
+```
+
+#### Override one or more bar colors
+
+Use `colorOverrides` to give specific bars a different color while the rest use the color scale. Keys are values of the `dimension` (e.g. category labels); values are CSS colors. Pass the same `colorOverrides` to `Legend` so the legend symbols match the bar colors.
+
+```jsx
+<Chart data={data}>
+  <Axis position="bottom" baseline title="Browser" />
+  <Axis position="left" grid title="Downloads" />
+  <Bar
+    dimension="browser"
+    metric="downloads"
+    color="browser"
+    colorOverrides={{ Firefox: '#e34850' }}
+  />
+  <Legend position="top" title="Browser" color="browser" colorOverrides={{ Firefox: '#e34850' }} />
+</Chart>
+```
+
 #### Trellised Bar
 
 ```jsx
@@ -116,7 +147,13 @@ If you only have one series in your data, both the `type` and `color` props can 
             <td>color</td>
             <td>string | [string, string]</td>
             <td>'series'</td>
-            <td>The key in the data that defines what color that bar will be, or a dual facet array for more complex color mapping. This is not a color value itself but rather the key in the data that will map to the colors scale.<br/>For example: A stacked bar chart that has a different color for each operating system, `color` would be set to the name of the key in the data that defines which operating system it is (color="operatingSystem").</td>
+            <td>Data key for bar color (maps to the color scale).</td>
+        </tr>
+        <tr>
+            <td>colorOverrides</td>
+            <td>Record&lt;string, string&gt;</td>
+            <td>–</td>
+            <td>Map dimension values to CSS colors. Overridden bars use these colors; others use the color scale. Only when <code>color</code> is a field.</td>
         </tr>
         <tr>
             <td>dimension</td>

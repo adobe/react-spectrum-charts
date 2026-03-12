@@ -21,6 +21,7 @@ import {
 } from 'vega';
 
 import {
+  COLOR_SCALE,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
@@ -275,36 +276,61 @@ export const getBaseBarEnterEncodings = (options: BarSpecOptions): EncodeEntry =
   ...getCornerRadiusEncodings(options),
 });
 
-export const getBarEnterEncodings = ({
-  chartTooltips,
-  color,
-  colorScheme,
-  name,
-  opacity,
-}: BarSpecOptions): EncodeEntry => ({
-  fill: getColorProductionRule(color, colorScheme),
-  fillOpacity: getOpacityProductionRule(opacity),
-  tooltip: getTooltip(chartTooltips, name),
-});
+/**
+ * Returns the fill/stroke color encoding for the bar. When colorOverrides is set, overridden
+ * dimension values use the given colors; others use the color scale.
+ */
+export const getBarColorEncoding = (
+  options: BarSpecOptions
+): ColorValueRef | ProductionRule<ColorValueRef> => {
+  const { color, colorOverrides, dimension } = options;
+  if (colorOverrides && typeof color === 'string' && dimension) {
+    return [
+      ...Object.entries(colorOverrides).map(([dimVal, overrideColor]) => ({
+        test: `datum.${dimension} === ${JSON.stringify(dimVal)}`,
+        value: overrideColor,
+      })),
+      { scale: COLOR_SCALE, field: color },
+    ];
+  }
+  return getColorProductionRule(options.color, options.colorScheme, 'ordinal');
+};
 
-export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
-  cursor: getCursor(options.chartPopovers, options.hasOnClick),
-  opacity: getMarkOpacity(options),
-  stroke: getStroke(options),
-  strokeDash: getStrokeDash(options),
-  strokeWidth: getStrokeWidth(options),
-});
+/**
+ * Returns enter-phase encodings for the bar mark (fill, fillOpacity, tooltip).
+ * Fill behavior is defined by {@link getBarColorEncoding}.
+ */
+export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => {
+  const { chartTooltips, name, opacity } = options;
+  return {
+    fill: getBarColorEncoding(options),
+    fillOpacity: getOpacityProductionRule(opacity),
+    tooltip: getTooltip(chartTooltips, name),
+  };
+};
 
-export const getStroke = ({
-  name,
-  chartPopovers,
-  color,
-  colorScheme,
-  idKey,
-}: BarSpecOptions): ProductionRule<ColorValueRef> => {
-  const defaultProductionRule = getColorProductionRule(color, colorScheme);
+export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => {
+  const base = {
+    cursor: getCursor(options.chartPopovers, options.hasOnClick),
+    opacity: getMarkOpacity(options),
+    stroke: getStroke(options),
+    strokeDash: getStrokeDash(options),
+    strokeWidth: getStrokeWidth(options),
+  };
+  // When colorOverrides is used, also set fill in update so Vega applies it (enter-only can be skipped in some paths)
+  const fillEncoding = getBarColorEncoding(options);
+  if (Array.isArray(fillEncoding)) {
+    return { ...base, fill: fillEncoding };
+  }
+  return base;
+};
+
+export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef> => {
+  const { name, chartPopovers, colorScheme, idKey } = options;
+  const defaultRule = getBarColorEncoding(options);
+  const defaultRules = Array.isArray(defaultRule) ? defaultRule : [defaultRule];
   if (!hasPopover({ chartPopovers })) {
-    return [defaultProductionRule];
+    return defaultRules;
   }
 
   return [
@@ -312,7 +338,7 @@ export const getStroke = ({
       test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
       value: getS2ColorValue('static-blue', colorScheme),
     },
-    defaultProductionRule,
+    ...defaultRules,
   ];
 };
 

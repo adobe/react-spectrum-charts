@@ -18,6 +18,15 @@ export const barData = [
   { browser: 'Explorer', downloads: 500, percentLabel: '1.0%' },
 ];
 
+/** Data with a color per bar (e.g. for reference or for building colorOverrides from data). */
+export const barDataWithLiteralColors = [
+  { browser: 'Chrome', downloads: 27000, barColor: '#e34850' },
+  { browser: 'Firefox', downloads: 8000, barColor: '#2680eb' },
+  { browser: 'Safari', downloads: 7750, barColor: '#2d9d78' },
+  { browser: 'Edge', downloads: 7600, barColor: '#e68619' },
+  { browser: 'Explorer', downloads: 500, barColor: '#ae7cbf' },
+];
+
 export const barDataLongLabels = [
   { browser: 'Google Chrome', downloads: 27000 },
   { browser: 'Mozilla Firefox', downloads: 8000 },

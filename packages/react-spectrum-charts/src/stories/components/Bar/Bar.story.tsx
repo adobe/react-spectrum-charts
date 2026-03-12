@@ -17,12 +17,15 @@ import { GROUP_DATA } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartTooltip } from '../../../components';
+import { Axis, Bar, ChartTooltip, Legend } from '../../../components';
 import { Annotation } from '../../../components/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
+import { BarProps, LegendProps } from '../../../types';
 import { barData, barDataWithUTC } from './data';
+
+/** Shared palette for color stories (custom palette, colorOverrides). */
+const STORY_PALETTE = ['#e34850', '#2680eb', '#2d9d78', '#e68619', '#ae7cbf'];
 
 export default {
   title: 'RSC/Bar',
@@ -221,9 +224,61 @@ TooltipOnDimensionArea.args = {
   ...defaultProps,
 };
 
+/**
+ * Color scheme (Chart `colors`) + override one or more bars (`colorOverrides`).
+ * Toggle palette: default or custom; Firefox is overridden to yellow in both.
+ */
+type BarColorsArgs = BarProps & { colorSource: 'defaultPalette' | 'customPalette' };
+
+const BarColorsStory: StoryFn<BarColorsArgs> = (args): ReactElement => {
+  const { colorSource, ...barArgs } = args;
+  const chartProps = useChartProps({
+    data: barData,
+    width: 600,
+    height: 600,
+    ...(colorSource === 'customPalette' && { colors: STORY_PALETTE }),
+  });
+  const barProps: BarProps = {
+    ...defaultProps,
+    ...barArgs,
+    color: 'browser',
+  };
+  const legendProps: LegendProps = {
+    position: 'top',
+    title: 'Browser',
+    color: 'browser',
+    colorOverrides: barArgs.colorOverrides,
+  };
+  return (
+    <Chart {...chartProps}>
+      <Axis position={barArgs.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={barArgs.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...barProps} />
+      <Legend {...legendProps} />
+    </Chart>
+  );
+};
+
+const BarColors = bindWithProps(BarColorsStory);
+BarColors.args = {
+  ...defaultProps,
+  color: 'browser',
+  colorOverrides: { Firefox: '#39FF14' },
+  colorSource: 'customPalette',
+};
+BarColors.argTypes = {
+  colorSource: {
+    name: 'Palette',
+    options: ['defaultPalette', 'customPalette'],
+    control: { type: 'select' },
+    description: 'Default chart palette or custom Chart `colors`. Use Controls to set colorOverrides (e.g. Firefox bar).',
+  },
+};
+
 export {
   BarWithUTCDatetimeFormat,
   Basic,
+  BarColors,
   HasSquareCorners,
   Horizontal,
   LineType,

@@ -35,9 +35,11 @@ import {
   defaultStackedYEncodings,
 } from './barTestUtils';
 import {
+  getBarColorEncoding,
   getBarDimensionAreaPositionEncodings,
   getBarDimensionHoverArea,
   getBarPadding,
+  getBarUpdateEncodings,
   getBaseBarEnterEncodings,
   getBaseScaleName,
   getCornerRadiusEncodings,
@@ -381,6 +383,87 @@ describe('barUtils', () => {
     });
   });
 
+  describe('getBarColorEncoding()', () => {
+    test('returns scale ref for default options', () => {
+      const encoding = getBarColorEncoding(defaultBarOptions);
+      expect(encoding).toStrictEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
+    });
+    test('returns production rule when colorOverrides is set', () => {
+      const options: BarSpecOptions = {
+        ...defaultBarOptions,
+        color: 'browser',
+        dimension: 'browser',
+        colorOverrides: { Firefox: '#e34850' },
+      };
+      const encoding = getBarColorEncoding(options);
+      expect(Array.isArray(encoding)).toBe(true);
+      expect((encoding as unknown[])[0]).toStrictEqual({
+        test: 'datum.browser === "Firefox"',
+        value: '#e34850',
+      });
+      expect((encoding as unknown[])[1]).toStrictEqual({ scale: COLOR_SCALE, field: 'browser' });
+    });
+    test('returns scale ref when colorOverrides is set but color is not a string (fixed color)', () => {
+      const options: BarSpecOptions = {
+        ...defaultBarOptions,
+        color: { value: 'red-500' },
+        dimension: 'browser',
+        colorOverrides: { Firefox: '#e34850' },
+      };
+      const encoding = getBarColorEncoding(options);
+      expect(Array.isArray(encoding)).toBe(false);
+      expect(encoding).toHaveProperty('value');
+    });
+    test('returns scale ref when colorOverrides is set but dimension is missing', () => {
+      const options: BarSpecOptions = {
+        ...defaultBarOptions,
+        color: 'browser',
+        dimension: undefined,
+        colorOverrides: { Firefox: '#e34850' },
+      };
+      const encoding = getBarColorEncoding(options);
+      expect(Array.isArray(encoding)).toBe(false);
+      expect(encoding).toStrictEqual({ scale: COLOR_SCALE, field: 'browser' });
+    });
+    test('returns production rule with multiple overrides and fallback', () => {
+      const options: BarSpecOptions = {
+        ...defaultBarOptions,
+        color: 'browser',
+        dimension: 'browser',
+        colorOverrides: { Firefox: '#e34850', Chrome: '#2680eb' },
+      };
+      const encoding = getBarColorEncoding(options);
+      expect(Array.isArray(encoding)).toBe(true);
+      const arr = encoding as unknown[];
+      expect(arr).toHaveLength(3);
+      expect(arr[0]).toStrictEqual({ test: 'datum.browser === "Firefox"', value: '#e34850' });
+      expect(arr[1]).toStrictEqual({ test: 'datum.browser === "Chrome"', value: '#2680eb' });
+      expect(arr[2]).toStrictEqual({ scale: COLOR_SCALE, field: 'browser' });
+    });
+  });
+
+  describe('getBarUpdateEncodings()', () => {
+    test('does not include fill when colorOverrides is not set', () => {
+      const encodings = getBarUpdateEncodings(defaultBarOptions);
+      expect(encodings).not.toHaveProperty('fill');
+    });
+    test('includes fill in update when colorOverrides is set', () => {
+      const options: BarSpecOptions = {
+        ...defaultBarOptions,
+        color: 'browser',
+        dimension: 'browser',
+        colorOverrides: { Firefox: '#e34850' },
+      };
+      const encodings = getBarUpdateEncodings(options);
+      expect(encodings).toHaveProperty('fill');
+      expect(Array.isArray(encodings.fill)).toBe(true);
+      expect((encodings.fill as unknown[])[0]).toStrictEqual({
+        test: 'datum.browser === "Firefox"',
+        value: '#e34850',
+      });
+    });
+  });
+
   describe('getStroke()', () => {
     test('should return production rule with one item in array if there is not a popover', () => {
       const strokeRule = getStroke(defaultBarOptions);
@@ -394,6 +477,20 @@ describe('barUtils', () => {
         test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
         value: 'static-blue',
       });
+    });
+    test('should return selected rule plus colorOverride rules when colorOverrides and popover are set', () => {
+      const strokeRule = getStroke({
+        ...defaultBarOptions,
+        color: 'browser',
+        dimension: 'browser',
+        colorOverrides: { Firefox: '#e34850' },
+        chartPopovers: [{}],
+      });
+      expect(strokeRule).toHaveLength(3); // selected, override, scale fallback
+      expect(strokeRule[0]).toHaveProperty('test');
+      expect(strokeRule[0]).toHaveProperty('value', 'static-blue');
+      expect(strokeRule[1]).toStrictEqual({ test: 'datum.browser === "Firefox"', value: '#e34850' });
+      expect(strokeRule[2]).toStrictEqual({ scale: COLOR_SCALE, field: 'browser' });
     });
   });
 
