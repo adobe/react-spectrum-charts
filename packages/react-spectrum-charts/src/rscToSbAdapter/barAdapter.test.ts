@@ -57,4 +57,14 @@ describe('getBarOptions()', () => {
     const options = getBarOptions({});
     expect(options).not.toHaveProperty('color');
   });
+  it('should pass through colorOverride when provided', () => {
+    const options = getBarOptions({
+      dimension: 'browser',
+      metric: 'downloads',
+      colorOverride: 'barColor',
+    });
+    expect(options).toHaveProperty('colorOverride', 'barColor');
+    expect(options).toHaveProperty('dimension', 'browser');
+    expect(options).toHaveProperty('metric', 'downloads');
+  });
 });
