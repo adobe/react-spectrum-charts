@@ -15,6 +15,7 @@ import {
   CONTROLLED_HIGHLIGHTED_ITEM,
   DEFAULT_OPACITY_RULE,
   DIMENSION_HOVER_AREA,
+  FADE_FACTOR,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
@@ -26,6 +27,7 @@ import { defaultSignals } from '../specTestUtils';
 import { baseData } from '../specUtils';
 import { BarSpecOptions, ChartTooltipOptions, LineSpecOptions } from '../types';
 import {
+  addAxisThumbnailHoverOpacityRules,
   addHoverdDimenstionAreaOpacityRules,
   addHoveredItemOpacityRules,
   addTooltipData,
@@ -231,5 +233,44 @@ describe('hasTooltipWithDimensionAreaTarget()', () => {
   });
   test('should return false if targets does not include dimensionArea', () => {
     expect(hasTooltipWithDimensionAreaTarget([{ targets: ['item'] }, {}])).toBe(false);
+  });
+});
+
+describe('addAxisThumbnailHoverOpacityRules()', () => {
+  test('should add opacity rule when there are no existing hover rules', () => {
+    const opacityRules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+    addAxisThumbnailHoverOpacityRules(opacityRules, 'axis0AxisThumbnail0', 'category');
+
+    expect(opacityRules).toHaveLength(2);
+    // Rule is inserted before DEFAULT_OPACITY_RULE (at index 1)
+    expect(opacityRules[0]).toBe(DEFAULT_OPACITY_RULE);
+    expect(opacityRules[1]).toHaveProperty('test', 'isValid(axis0AxisThumbnail0_hoveredItem)');
+    expect(opacityRules[1]).toHaveProperty(
+      'signal',
+      `axis0AxisThumbnail0_hoveredItem.category === datum.category ? 1 : ${FADE_FACTOR}`
+    );
+  });
+
+  test('should insert rule after existing hover rules', () => {
+    const opacityRules: ({ test?: string } & NumericValueRef)[] = [
+      { test: `isValid(bar0_${HOVERED_ITEM})`, signal: 'someSignal' },
+      DEFAULT_OPACITY_RULE,
+    ];
+    addAxisThumbnailHoverOpacityRules(opacityRules, 'axis0AxisThumbnail0', 'category');
+
+    expect(opacityRules).toHaveLength(3);
+    expect(opacityRules[0].test).toContain(HOVERED_ITEM);
+    expect(opacityRules[1]).toHaveProperty('test', 'isValid(axis0AxisThumbnail0_hoveredItem)');
+    expect(opacityRules[2]).toBe(DEFAULT_OPACITY_RULE);
+  });
+
+  test('should use correct dimension field in signal expression', () => {
+    const opacityRules: ({ test?: string } & NumericValueRef)[] = [];
+    addAxisThumbnailHoverOpacityRules(opacityRules, 'axis0AxisThumbnail0', 'browser');
+
+    expect(opacityRules[0]).toHaveProperty(
+      'signal',
+      `axis0AxisThumbnail0_hoveredItem.browser === datum.browser ? 1 : ${FADE_FACTOR}`
+    );
   });
 });

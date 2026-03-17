@@ -162,3 +162,41 @@ export const addHoveredItemSignal = (
 
   signal.on.push({ events: `@${targetName}:mouseover`, update }, { events: `@${targetName}:mouseout`, update: 'null' });
 };
+
+/**
+ * Adds a hoveredGroup signal for axis thumbnail highlighting.
+ * When a thumbnail is hovered, the signal is set to the dimension value.
+ */
+export const addAxisThumbnailHoveredGroupSignal = (
+  signals: Signal[],
+  axisName: string,
+  axisThumbnailName: string,
+  dimensionField: string
+): void => {
+  const hoveredGroupSignalName = `${axisName}_hoveredGroup`;
+  let signal = signals.find((s) => s.name === hoveredGroupSignalName);
+  if (!signal) {
+    signal = {
+      description: `Tracks the hovered dimension group for ${axisName}`,
+      name: hoveredGroupSignalName,
+      value: null,
+      on: [],
+    };
+    signals.push(signal);
+  }
+
+  if (signal.on === undefined) {
+    signal.on = [];
+  }
+
+  signal.on.push(
+    {
+      events: `@${axisThumbnailName}:mouseover`,
+      update: `datum.${dimensionField}`,
+    },
+    {
+      events: `@${axisThumbnailName}:mouseout`,
+      update: 'null',
+    }
+  );
+};

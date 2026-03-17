@@ -469,3 +469,83 @@ Axis thumbnails are currently supported only on **band scales**, which are typic
 - Thumbnails are automatically hidden when there isn't enough space to display them properly
 - The component automatically handles label positioning to prevent overlap with thumbnails
 - Thumbnails are rendered as Vega image marks and support all standard image formats
+
+### ChartTooltip
+
+A `ChartTooltip` can be used as a child of `Axis` to display tooltips when hovering over axis thumbnails. When a thumbnail is hovered, bars with matching dimension values are automatically highlighted.
+
+`ChartTooltip` must be used together with `AxisThumbnail` as a child of `Axis`, otherwise the tooltip will not appear. The tooltip only works with bar charts and always highlights bars by dimension, regardless of the `highlightBy` or `targets` props.
+
+```jsx
+const data = [
+    {"browser": "Chrome", "downloads": 27000, "thumbnail": "/chrome.png"},
+    {"browser": "Firefox", "downloads": 8000, "thumbnail": "/firefox.png"},
+    {"browser": "Safari", "downloads": 7750, "thumbnail": "/safari.png"},
+    {"browser": "Edge", "downloads": 7600, "thumbnail": "/edge.png"},
+    {"browser": "Explorer", "downloads": 500, "thumbnail": "/explorer.png"}
+]
+
+<Chart data={data}>
+  <Bar dimension="browser" metric="downloads" />
+  <Axis position="bottom" baseline>
+    <AxisThumbnail urlKey="thumbnail" />
+    <ChartTooltip>
+      {(datum) => {
+        const d = datum[GROUP_DATA]?.[0] ?? datum;
+        
+        return (
+          <div>
+            <div>Browser: {d.browser}</div>
+            <div>Total Downloads: {d.downloads}</div>
+          </div>
+        );
+      }}
+    </ChartTooltip>
+  </Axis>
+</Chart>
+```
+
+#### ChartTooltip Props
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>default</th>
+            <th>description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>children*</td>
+            <td>(datum: Datum) => ReactNode</td>
+            <td>–</td>
+            <td>Callback function that receives the datum and returns the tooltip content. For thumbnail tooltips, the datum may include a <code>GROUP_DATA</code> property containing all datums for the hovered dimension when multiple data points share the same dimension value (e.g., in stacked or dodged bar charts).</td>
+        </tr>
+        <tr>
+            <td>excludeDataKeys</td>
+            <td>string[]</td>
+            <td>–</td>
+            <td>The keys in the data that will disable the tooltip if they have truthy values.</td>
+        </tr>
+        <tr>
+            <td>highlightBy</td>
+            <td>'series' | 'dimension' | 'item' | string[]</td>
+            <td>–</td>
+            <td><strong>Not applicable for axis tooltips.</strong> This prop is ignored when <code>ChartTooltip</code> is used as a child of <code>Axis</code>. Axis tooltips always highlight bars by dimension.</td>
+        </tr>
+        <tr>
+            <td>targets</td>
+            <td>('dimensionArea' | 'item')[]</td>
+            <td>–</td>
+            <td><strong>Not applicable for axis tooltips.</strong> This prop is ignored when <code>ChartTooltip</code> is used as a child of <code>Axis</code>. Axis tooltips always target the thumbnail.</td>
+        </tr>
+    </tbody>
+</table>
+
+#### Requirements
+
+- **Requires AxisThumbnail**: `ChartTooltip` must be used together with `AxisThumbnail` as a child of `Axis`. Without `AxisThumbnail`, the tooltip will not appear.
+- **Bar Charts Only**: This feature only works with bar charts.
+- **Dimension-Based Highlighting**: When hovering over a thumbnail, bars with matching dimension values are automatically highlighted. The `highlightBy` and `targets` props are ignored and have no effect.

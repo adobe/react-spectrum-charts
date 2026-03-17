@@ -133,6 +133,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
             axisAnnotations: [],
             axisThumbnails: [],
             baseline: true,
+            chartTooltips: [],
             position: 'bottom',
             referenceLines: [],
             title: 'Browser',
@@ -140,6 +141,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
           {
             axisAnnotations: [],
             axisThumbnails: [],
+            chartTooltips: [],
             grid: true,
             position: 'left',
             referenceLines: [],
@@ -293,6 +295,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
           {
             axisAnnotations: [],
             axisThumbnails: [],
+            chartTooltips: [],
             grid: true,
             labelFormat: 'percentage',
             position: 'bottom',
@@ -302,6 +305,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
           {
             axisAnnotations: [],
             axisThumbnails: [],
+            chartTooltips: [],
             grid: true,
             position: 'left',
             referenceLines: [],

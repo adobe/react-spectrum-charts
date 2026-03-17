@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, GroupMark, Mark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -895,6 +895,116 @@ describe('Spec builder, Axis', () => {
         expect(marks[2]).toHaveProperty('type', 'image');
         expect(marks[2]).toHaveProperty('name', 'testAxisAxisThumbnail1');
       });
+    });
+
+    describe('chartTooltips with axisThumbnails', () => {
+      // Helper function to create a fresh mock bar mark for each test
+      // (since setThumbnailHoverOpacityForMarks mutates the mark, we need a fresh copy each time)
+      const createMockBarMark = (): Mark => ({
+        name: 'bar0',
+        type: 'rect',
+        from: { data: 'filteredTable' },
+        encode: {
+          update: {
+            opacity: [{ value: 1 }],
+          },
+        },
+      });
+
+      test('should add opacity rules to bar marks when both chartTooltips and axisThumbnails are present', () => {
+        const marks = addAxesMarks([createMockBarMark()], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          scaleField: 'category',
+          name: 'testAxis',
+          position: 'bottom',
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          chartTooltips: [{}],
+          usermeta: {},
+        });
+
+        // Should have the bar mark with opacity rules added
+        const barMark = marks.find((m) => m.name === 'bar0');
+        expect(barMark).toBeDefined();
+        const opacity = (barMark?.encode?.update?.opacity as ProductionRule<NumericValueRef>[]) || [];
+        
+        // Should have the thumbnail highlight opacity rule added
+        const hasThumbnailOpacityRule = opacity.some(
+          (rule) =>
+            'test' in rule &&
+            typeof rule.test === 'string' &&
+            rule.test.includes('testAxis_hoveredGroup') &&
+            'signal' in rule &&
+            typeof rule.signal === 'string' &&
+            rule.signal.includes('testAxis_hoveredGroup')
+        );
+        expect(hasThumbnailOpacityRule).toBe(true);
+      });
+
+      test('should not add opacity rules when chartTooltips are present but no axisThumbnails', () => {
+        const marks = addAxesMarks([createMockBarMark()], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          scaleField: 'category',
+          name: 'testAxis',
+          position: 'bottom',
+          axisThumbnails: [],
+          chartTooltips: [{}],
+          usermeta: {},
+        });
+
+        // Should not have thumbnail marks
+        const thumbnailMarks = marks.filter((m) => m.type === 'image');
+        expect(thumbnailMarks).toHaveLength(0);
+
+        // Bar mark should not have thumbnail opacity rules
+        const barMark = marks.find((m) => m.name === 'bar0');
+        expect(barMark).toBeDefined();
+        const opacity = (barMark?.encode?.update?.opacity as ProductionRule<NumericValueRef>[]) || [];
+        
+        const hasThumbnailOpacityRule = opacity.some(
+          (rule) =>
+            'test' in rule &&
+            typeof rule.test === 'string' &&
+            rule.test.includes('testAxis_hoveredGroup')
+        );
+        expect(hasThumbnailOpacityRule).toBe(false);
+      });
+
+      test('should not add opacity rules when axisThumbnails are present but no chartTooltips', () => {
+        const marks = addAxesMarks([createMockBarMark()], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleType: 'band',
+          scaleField: 'category',
+          name: 'testAxis',
+          position: 'bottom',
+          axisThumbnails: [{ urlKey: 'thumbnail' }],
+          chartTooltips: [],
+          usermeta: {},
+        });
+
+        // Should have thumbnail marks
+        const thumbnailMarks = marks.filter((m) => m.type === 'image');
+        expect(thumbnailMarks.length).toBeGreaterThan(0);
+
+        // Bar mark should not have thumbnail opacity rules (no tooltips)
+        const barMark = marks.find((m) => m.name === 'bar0');
+        expect(barMark).toBeDefined();
+        const opacity = (barMark?.encode?.update?.opacity as ProductionRule<NumericValueRef>[]) || [];
+        
+        const hasThumbnailOpacityRule = opacity.some(
+          (rule) =>
+            'test' in rule &&
+            typeof rule.test === 'string' &&
+            rule.test.includes('testAxis_hoveredGroup')
+        );
+        expect(hasThumbnailOpacityRule).toBe(false);
+      });
+
+      
     });
 
     describe('dualMetricAxis', () => {

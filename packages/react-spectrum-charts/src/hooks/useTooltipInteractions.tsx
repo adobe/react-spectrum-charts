@@ -78,6 +78,40 @@ const getDimensionAreaTooltipMarkup = (
   );
 };
 
+const getAxisTooltipMarkup = (
+  value: Datum,
+  tooltips: TooltipDetail[],
+  chartView: { current?: { data: (name: string) => Datum[] } } | null
+): string | undefined => {
+  const componentName = value[COMPONENT_NAME];
+  if (typeof componentName !== 'string' || !componentName.startsWith('axis')) {
+    return;
+  }
+
+  // get the correct tooltip to render based on the hovered item
+  const tooltip = tooltips.find((t) => t.name === componentName);
+  if (!(tooltip?.callback) || 'index' in value) {
+    return;
+  }
+
+  const tableData = chartView?.current?.data(FILTERED_TABLE);
+  const dimensionField = value.dimensionField;
+  if (tableData && dimensionField && value[dimensionField] !== undefined) {
+    const dimensionValue = value[dimensionField];
+    const matchingDatums = tableData.filter((d) => d[dimensionField] === dimensionValue);
+    
+    if (matchingDatums.length > 1) {
+      value[GROUP_DATA] = matchingDatums;
+    }
+  }
+
+  return renderToStaticMarkup(
+    <div className="rsc-tooltip" data-testid="rsc-tooltip">
+      {tooltip.callback(value)}
+    </div>
+  );
+};
+
 const getDataTooltipMarkup = (
   value: Datum,
   tooltips: TooltipDetail[],
@@ -133,6 +167,9 @@ const useTooltipInteractions = (props: RscChartProps, sanitizedChildren: ChartCh
 
         const dimensionAreaTooltip = getDimensionAreaTooltipMarkup(value, tooltips, chartView);
         if (dimensionAreaTooltip !== undefined) return dimensionAreaTooltip;
+
+        const axisTooltip = getAxisTooltipMarkup(value, tooltips, chartView);
+        if (axisTooltip !== undefined) return axisTooltip;
 
         const dataTooltip = getDataTooltipMarkup(
           value,
