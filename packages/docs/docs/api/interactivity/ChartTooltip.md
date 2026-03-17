@@ -64,6 +64,36 @@ const data = [
 
 In this example, two separate tooltips are defined: one for hovering over the actual bar marks (`item`) that shows individual segment data, and another for hovering anywhere within the dimension area (`dimensionArea`) that shows aggregated data across the dimension. The datum shape differs between these targets, so they require separate tooltip implementations.
 
+### Tooltip on axis thumbnails (Bar only)
+
+`ChartTooltip` can be used as a child of `Axis` to display tooltips when hovering over axis thumbnails. This requires `AxisThumbnail` to be present as a child of `Axis`, and only works with bar charts. When hovering a thumbnail, bars with matching dimension values are automatically highlighted. The `highlightBy` and `targets` props are ignored for axis tooltips.
+
+```jsx
+const data = [
+  {"browser": "Chrome", "downloads": 27000, "thumbnail": "/chrome.png"},
+  {"browser": "Firefox", "downloads": 8000, "thumbnail": "/firefox.png"},
+  {"browser": "Safari", "downloads": 7750, "thumbnail": "/safari.png"}
+]
+
+<Chart data={data}>
+  <Bar dimension="browser" metric="downloads" />
+  <Axis position="bottom" baseline>
+    <AxisThumbnail urlKey="thumbnail" />
+    <ChartTooltip>
+      {(datum) => {
+        const d = datum[GROUP_DATA]?.[0] ?? datum;
+        return (
+          <div>
+            <div>Browser: {d.browser}</div>
+            <div>Downloads: {d.downloads?.toLocaleString()}</div>
+          </div>
+        );
+      }}
+    </ChartTooltip>
+  </Axis>
+</Chart>
+```
+
 ## Props
 
 <table>
