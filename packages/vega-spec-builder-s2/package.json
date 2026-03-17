@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/vega-spec-builder-s2",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vega spec builder for Spectrum 2 charts (S2 always enabled)",
   "browser": "dist/index.js",
   "main": "dist/index.js",
@@ -39,4 +39,3 @@
     "webpack-cli": "^5.0.1"
   }
 }
-
