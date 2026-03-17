@@ -67,6 +67,12 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Spectrum 2 (Alpha)',
+      collapsed: false,
+      items: ['spectrum2/overview', 'spectrum2/line'],
+    },
+    {
+      type: 'category',
       label: 'For Developers',
       items: ['developers/DeveloperDocs', 'developers/LearningVega', 'developers/McpServer'],
     },
