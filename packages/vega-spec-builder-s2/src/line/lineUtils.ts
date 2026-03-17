@@ -71,6 +71,7 @@ export interface LineMarkOptions {
   metricRanges?: MetricRangeOptions[];
   name: string;
   opacity: OpacityFacet;
+  pointSize?: number;
   popoverMarkName?: string;
   scaleType: ScaleType;
   scatterPaths?: ScatterPathOptions[];

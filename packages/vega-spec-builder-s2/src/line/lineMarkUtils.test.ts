@@ -92,7 +92,7 @@ describe('getLineHoverMarks()', () => {
       )
     ).toHaveLength(4);
   });
-  test('should return 7 marks if a popover is present', () => {
+  test('should return 6 marks if a popover is present', () => {
     expect(
       getLineHoverMarks(
         {
@@ -102,7 +102,7 @@ describe('getLineHoverMarks()', () => {
         },
         'line0_facet'
       )
-    ).toHaveLength(7);
+    ).toHaveLength(6);
   });
   test('should have opacity of 0 if a selected item exists', () => {
     const marks = getLineHoverMarks(
