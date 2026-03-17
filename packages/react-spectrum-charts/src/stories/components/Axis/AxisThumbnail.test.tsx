@@ -23,7 +23,6 @@ import {
   getPopoverTriggerButtons,
   render,
   hoverNthElement,
-  unhoverNthElement,
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
@@ -130,7 +129,7 @@ describe('AxisThumbnail', () => {
 
   test('YAxisWithTooltip adjusts bar opacity on thumbnail hover', async () => {
     render(<YAxisWithTooltip {...YAxisWithTooltip.args} />);
-    let chart = await findChart();
+    const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
     // Get thumbnail marks
@@ -174,7 +173,7 @@ describe('AxisThumbnail', () => {
 
   test('DodgedBarWithTooltips adjusts bar opacity on thumbnail hover', async () => {
     render(<DodgedBarWithTooltips {...DodgedBarWithTooltips.args} />);
-    let chart = await findChart();
+    const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
     // Get thumbnail marks

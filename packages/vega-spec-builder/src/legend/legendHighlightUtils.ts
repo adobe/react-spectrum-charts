@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
+import { Mark, NumericValueRef, ProductionRule } from 'vega';
 
 import {
   CONTROLLED_HIGHLIGHTED_SERIES,

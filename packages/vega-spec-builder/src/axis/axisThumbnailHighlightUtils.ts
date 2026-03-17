@@ -26,7 +26,7 @@ export const setThumbnailHoverOpacityForMarks = (
 ): void => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
-  const barMarks = flatMarks.filter((mark) => markUsesDimensionField(mark, dimensionField));
+  const barMarks = flatMarks.filter((mark) => markUsesDimensionField(mark));
 
   barMarks.forEach((mark) => {
     if (!mark.encode) {
@@ -68,7 +68,7 @@ const getThumbnailHighlightOpacityRule = (
  * Determines if the supplied mark uses the dimension field.
  * This is used to identify bar marks that should be highlighted when thumbnails are hovered.
  */
-const markUsesDimensionField = (mark: Mark, dimensionField: string): boolean => {
+const markUsesDimensionField = (mark: Mark): boolean => {
   // Check if mark is a rect (bar mark)
   if (mark.type !== 'rect') {
     return false;
