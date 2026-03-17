@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/line",
+  "title": "Line (S2)",
+  "description": "The Line component in the S2 package supports all the props from the base Line component plus several S2-exclusive features: gradients, interpolation, inline direct labels, and Spectrum 2 styled point display.",
+  "source": "@site/docs/spectrum2/line.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/line",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/line",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/line.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Spectrum 2 Overview",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/overview"
+  },
+  "next": {
+    "title": "Developer Docs",
+    "permalink": "/react-spectrum-charts/docs/docs/developers/DeveloperDocs"
+  }
+}

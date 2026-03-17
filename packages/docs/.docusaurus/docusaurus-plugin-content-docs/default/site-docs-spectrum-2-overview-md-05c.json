@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/overview",
+  "title": "Spectrum 2 Overview",
+  "description": "Spectrum 2 support in React Spectrum Charts is actively under development. The S2 package still has some Spectrum 1 dependencies that are being incrementally migrated. We will make an effort not to introduce breaking API changes to Spectrum 2 features prior to Adobe Summit.",
+  "source": "@site/docs/spectrum2/overview.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/overview",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/overview.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "ChartPopover",
+    "permalink": "/react-spectrum-charts/docs/docs/api/interactivity/ChartPopover"
+  },
+  "next": {
+    "title": "Line (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/line"
+  }
+}
