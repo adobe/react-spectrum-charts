@@ -42,4 +42,6 @@ module.exports = {
     '<rootDir>/packages/*/src/**/*.spec.{js,jsx,ts,tsx}',
   ],
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/', '/coverage/'],
+  watchPathIgnorePatterns: ['<rootDir>/.claude/'],
+  modulePathIgnorePatterns: ['<rootDir>/.claude/'],
 };
