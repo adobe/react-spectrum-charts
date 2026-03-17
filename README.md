@@ -72,6 +72,16 @@ yarn add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 pnpm add @adobe/react-spectrum-charts @adobe/react-spectrum vega vega-lite
 ```
 
+### Spectrum 2 (alpha)
+
+A separate alpha package provides Spectrum 2 support with additional features (line gradients, direct labels, interpolation, S2 reference lines):
+
+```bash
+yarn add @spectrum-charts/react-spectrum-charts-s2@alpha @adobe/react-spectrum vega vega-lite
+```
+
+See the [Spectrum 2 docs](https://opensource.adobe.com/react-spectrum-charts/docs/spectrum2/overview) for details.
+
 ## Usage
 
 `react-spectrum-charts` is designed in a way that makes composing charts similar to composing any other app content in JSX.
