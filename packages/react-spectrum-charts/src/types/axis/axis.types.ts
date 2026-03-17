@@ -14,13 +14,14 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { AxisOptions } from '@spectrum-charts/vega-spec-builder';
 
 import { Children } from '../util.types';
+import { ChartTooltipElement } from '../dialogs';
 import { AxisAnnotationElement } from './axisAnnotation.types';
 import { AxisThumbnailElement } from './axisThumbnail.types';
 import { ReferenceLineElement } from './referenceLine.types';
 
-export type AxisChildElement = AxisAnnotationElement | AxisThumbnailElement | ReferenceLineElement;
+export type AxisChildElement = AxisAnnotationElement | AxisThumbnailElement | ReferenceLineElement | ChartTooltipElement;
 
-export interface AxisProps extends Omit<AxisOptions, 'axisAnnotations' | 'axisThumbnails' | 'referenceLines'> {
+export interface AxisProps extends Omit<AxisOptions, 'axisAnnotations' | 'axisThumbnails' | 'referenceLines' | 'chartTooltips'> {
   /** Child components that add supplemental content to the axis */
   children?: Children<AxisChildElement>;
 }

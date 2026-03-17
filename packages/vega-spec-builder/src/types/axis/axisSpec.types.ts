@@ -13,6 +13,7 @@ import { Align, Baseline, FontWeight, NumberValue, ScaleType } from 'vega';
 
 import { ColorScheme } from '../chartSpec.types';
 import { NumberFormat, Orientation, PartiallyRequired, Position } from '../specUtil.types';
+import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
 import { AxisAnnotationOptions } from './axisAnnotationSpec.types';
 import { AxisThumbnailOptions } from './axisThumbnailSpec.types';
 import { ReferenceLineOptions } from './referenceLineSpec.types';
@@ -151,6 +152,7 @@ export interface AxisOptions {
   // children
   axisAnnotations?: AxisAnnotationOptions[];
   axisThumbnails?: AxisThumbnailOptions[];
+  chartTooltips?: ChartTooltipOptions[];
   referenceLines?: ReferenceLineOptions[];
 }
 

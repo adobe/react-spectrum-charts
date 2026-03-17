@@ -11,6 +11,7 @@
  */
 import React from 'react';
 
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -21,9 +22,14 @@ import {
   findChart,
   getPopoverTriggerButtons,
   render,
+  hoverNthElement,
+  unhoverNthElement,
+  within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, Popover, YAxis } from './AxisThumbnail.story';
+// Mock Image so that Vega's image loading completes immediately in jsdom.
+import '../../../test-utils/__mocks__/image.mock.js';
+import { Basic, Popover, YAxis, YAxisWithTooltip, DodgedBarWithTooltips } from './AxisThumbnail.story';
 import { Resizable } from './AxisThumbnailResize.story';
 
 describe('AxisThumbnail', () => {
@@ -100,5 +106,114 @@ describe('AxisThumbnail', () => {
     for (const node of initialThumbnails) {
       expect(node.isConnected).toBe(true);
     }
+  });
+
+  test('YAxisWithTooltip shows tooltip on thumbnail hover', async () => {
+    render(<YAxisWithTooltip {...YAxisWithTooltip.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    // Get thumbnail marks
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    expect(thumbnailMarks.length).toBeGreaterThan(0);
+    // Hover over first thumbnail
+    await hoverNthElement(thumbnailMarks, 0);
+    const tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeInTheDocument();
+
+    // Verify tooltip content contains expected data
+    const tooltipContent = within(tooltip);
+    expect(tooltipContent.getByText(/Browser:/)).toBeInTheDocument();
+    expect(tooltipContent.getByText(/Downloads:/)).toBeInTheDocument();
+
+  });
+
+  test('YAxisWithTooltip adjusts bar opacity on thumbnail hover', async () => {
+    render(<YAxisWithTooltip {...YAxisWithTooltip.args} />);
+    let chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    // Get thumbnail marks
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    expect(thumbnailMarks.length).toBeGreaterThan(0);
+
+    let bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toEqual(5);
+    expect(allElementsHaveAttributeValue(bars, 'opacity', 1)).toBeTruthy();
+
+    // Hover over first thumbnail
+    await hoverNthElement(thumbnailMarks, 0);
+    const tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeInTheDocument();
+
+    bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars[0]).toHaveAttribute('opacity', '1');
+    expect(bars[2]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+  });
+
+  test('DodgedBarWithTooltips shows tooltip on thumbnail hover with GROUP_DATA', async () => {
+    render(<DodgedBarWithTooltips {...DodgedBarWithTooltips.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    // Get thumbnail marks
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    expect(thumbnailMarks.length).toBeGreaterThan(0);
+
+    // Hover over first thumbnail
+    await hoverNthElement(thumbnailMarks, 0);
+    const tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeInTheDocument();
+
+    // Verify tooltip content contains expected data
+    const tooltipContent = within(tooltip);
+    expect(tooltipContent.getByText(/Browser:/)).toBeInTheDocument();
+    expect(tooltipContent.getByText(/Total Users:/)).toBeInTheDocument();
+
+  });
+
+  test('DodgedBarWithTooltips adjusts bar opacity on thumbnail hover', async () => {
+    render(<DodgedBarWithTooltips {...DodgedBarWithTooltips.args} />);
+    let chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    // Get thumbnail marks
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    expect(thumbnailMarks.length).toBeGreaterThan(0);
+
+    let bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toBeGreaterThan(0);
+    expect(allElementsHaveAttributeValue(bars, 'opacity', 1)).toBeTruthy();
+
+    // Hover over first thumbnail
+    await hoverNthElement(thumbnailMarks, 0);
+    const tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeInTheDocument();
+
+    bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars[0]).toHaveAttribute('opacity', '1');
+    expect(bars[1]).toHaveAttribute('opacity', '1');
+    expect(bars[3]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+  });
+
+  test('DodgedBarWithTooltips shows tooltip on bar hover', async () => {
+    render(<DodgedBarWithTooltips {...DodgedBarWithTooltips.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    // Get bars
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars.length).toBeGreaterThan(0);
+
+    // Hover over first bar
+    await hoverNthElement(bars, 0);
+    const tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(tooltip).toBeInTheDocument();
+
+    // Verify tooltip content contains expected data
+    const tooltipContent = within(tooltip);
+    expect(tooltipContent.getByText(/Operating system:/)).toBeInTheDocument();
+    expect(tooltipContent.getByText(/Browser:/)).toBeInTheDocument();
+    expect(tooltipContent.getByText(/Users:/)).toBeInTheDocument();
   });
 });

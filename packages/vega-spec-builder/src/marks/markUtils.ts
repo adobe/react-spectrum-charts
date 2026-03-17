@@ -15,6 +15,7 @@ import {
   ColorValueRef,
   EncodeEntry,
   GroupMark,
+  Mark,
   NumericValueRef,
   PathMark,
   ProductionRule,
@@ -478,4 +479,24 @@ export const getInteractiveMarkName = (
   if ('trendlines' in options && options.trendlines?.some((trendline) => isInteractive(trendline))) {
     return `${name}Trendline`;
   }
+};
+
+/**
+ * Recursively flattens all nested marks into a flat array.
+ * This is useful for traversing nested group marks to find specific mark types.
+ * @param marks - Array of marks that may contain nested group marks
+ * @returns Flat array of all marks including nested ones
+ */
+export const flattenMarks = (marks: Mark[]): Mark[] => {
+  let result = marks;
+  for (const mark of marks) {
+    if (isGroupMark(mark) && mark.marks) {
+      result = [...result, ...flattenMarks(mark.marks)];
+    }
+  }
+  return result;
+};
+
+const isGroupMark = (mark: Mark): mark is GroupMark => {
+  return mark.type === 'group';
 };

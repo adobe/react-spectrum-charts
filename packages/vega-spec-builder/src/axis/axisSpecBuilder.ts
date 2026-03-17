@@ -46,8 +46,10 @@ import {
   getAxisThumbnailLabelOffset,
   getAxisThumbnailMarks,
   getAxisThumbnails,
+  getAxisTooltips,
   scaleTypeSupportsThumbnails,
 } from './axisThumbnailUtils';
+import { setThumbnailHoverOpacityForMarks } from './axisThumbnailHighlightUtils';
 import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
 import {
   getBaselineRule,
@@ -69,6 +71,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
       axisThumbnails = [],
       baseline = false,
       baselineOffset = 0,
+      chartTooltips = [],
       colorScheme = DEFAULT_COLOR_SCHEME,
       granularity = DEFAULT_GRANULARITY,
       grid = false,
@@ -103,6 +106,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
       axisThumbnails,
       baseline,
       baselineOffset,
+      chartTooltips,
       colorScheme,
       granularity,
       grid,
@@ -127,7 +131,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     const dualMetricAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
 
     spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
-    spec.signals = addAxisSignals(spec.signals ?? [], axisOptions, scaleName);
+    spec.signals = addAxisSignals(spec.signals ?? [], axisOptions, scaleName, scaleField);
 
     // set custom range if applicable
     if (range && (scaleType === 'linear' || scaleType === 'time')) {
@@ -173,32 +177,36 @@ export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: Scale
   }
 });
 
-export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string]>((signals, options, scaleName) => {
-  const { name, labels, position, subLabels, labelOrientation } = options;
-  if (labels?.length) {
-    // add all the label properties to a signal so that the axis encoding can use it to style each label correctly
-    signals.push(getGenericValueSignal(`${name}_labels`, getLabelSignalValue(labels, position, labelOrientation)));
+export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string, string?]>(
+  (signals, options, scaleName, scaleField) => {
+    const { name, labels, position, subLabels, labelOrientation } = options;
+    if (labels?.length) {
+      // add all the label properties to a signal so that the axis encoding can use it to style each label correctly
+      signals.push(getGenericValueSignal(`${name}_labels`, getLabelSignalValue(labels, position, labelOrientation)));
+    }
+    if (hasSubLabels(options)) {
+      // add all the sublabel properties to a signal so that the axis encoding can use it to style each sublabel correctly
+      signals.push(
+        getGenericValueSignal(
+          `${name}_subLabels`,
+          subLabels.map((label) => ({
+            ...label,
+            // convert label align to vega align
+            ...getControlledLabelAnchorValues(position, labelOrientation, label.align),
+          }))
+        )
+      );
+    }
+    for (const annotation of getAxisAnnotationsFromChildren(options)) {
+      addAxisAnnotationSignals(signals, annotation);
+    }
+    const chartTooltips = getAxisTooltips(options);
+    const hasTooltip = chartTooltips.length > 0;
+    for (const axisThumbnail of getAxisThumbnails(options)) {
+      addAxisThumbnailSignals(signals, axisThumbnail.name, name, scaleName, scaleField ?? '', hasTooltip);
+    }
   }
-  if (hasSubLabels(options)) {
-    // add all the sublabel properties to a signal so that the axis encoding can use it to style each sublabel correctly
-    signals.push(
-      getGenericValueSignal(
-        `${name}_subLabels`,
-        subLabels.map((label) => ({
-          ...label,
-          // convert label align to vega align
-          ...getControlledLabelAnchorValues(position, labelOrientation, label.align),
-        }))
-      )
-    );
-  }
-  for (const annotation of getAxisAnnotationsFromChildren(options)) {
-    addAxisAnnotationSignals(signals, annotation);
-  }
-  for (const axisThumbnail of getAxisThumbnails(options)) {
-    addAxisThumbnailSignals(signals, axisThumbnail.name, scaleName);
-  }
-});
+);
 
 /**
  * Gets the labels that have style properties on them and gets the correct alignment value based on axis position
@@ -571,6 +579,11 @@ export const addAxesMarks = produce<
   if (scaleTypeSupportsThumbnails(scaleType) && scaleField) {
     const axisThumbnailMarks = getAxisThumbnailMarks(options, scaleName, scaleField);
     marks.push(...axisThumbnailMarks);
+
+    const chartTooltips = getAxisTooltips(options);
+    if (chartTooltips.length > 0 && axisThumbnailMarks.length > 0) {
+      setThumbnailHoverOpacityForMarks(options.name, scaleField, marks);
+    }
   }
 });
 

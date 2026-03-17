@@ -21,6 +21,7 @@ import {
   getAxisThumbnailMarks,
   getAxisThumbnailPosition,
   getAxisThumbnails,
+  getAxisTooltips,
   scaleTypeSupportsThumbnails,
 } from './axisThumbnailUtils';
 
@@ -124,13 +125,40 @@ describe('axisThumbnailUtils', () => {
     });
   });
 
+  describe('getAxisTooltips', () => {
+    test('should return empty array when chartTooltips is empty', () => {
+      const axisOptions: AxisSpecOptions = {
+        ...defaultAxisOptions,
+        chartTooltips: [],
+      };
+
+      const result = getAxisTooltips(axisOptions);
+
+      expect(result).toEqual([]);
+    });
+
+    test('should return chartTooltips array when provided', () => {
+      const tooltipOptions = [{ highlightBy: 'dimension' as const }];
+      const axisOptions: AxisSpecOptions = {
+        ...defaultAxisOptions,
+        chartTooltips: tooltipOptions,
+      };
+
+      const result = getAxisTooltips(axisOptions);
+
+      expect(result).toEqual(tooltipOptions);
+    });
+  });
+
   describe('addAxisThumbnailSignals', () => {
     test('should add thumbnail size signal to signals array', () => {
       const signals: Signal[] = [];
       const axisThumbnailName = 'testThumbnail';
+      const axisName = 'axis0';
       const scaleName = 'xScale';
+      const dimensionField = 'category';
 
-      addAxisThumbnailSignals(signals, axisThumbnailName, scaleName);
+      addAxisThumbnailSignals(signals, axisThumbnailName, axisName, scaleName, dimensionField, false);
 
       expect(signals).toHaveLength(1);
       expect(signals[0]).toEqual({
@@ -143,9 +171,11 @@ describe('axisThumbnailUtils', () => {
       const existingSignal = { name: 'existingSignal', update: 'value' };
       const signals: Signal[] = [existingSignal];
       const axisThumbnailName = 'testThumbnail';
+      const axisName = 'axis0';
       const scaleName = 'yScale';
+      const dimensionField = 'category';
 
-      addAxisThumbnailSignals(signals, axisThumbnailName, scaleName);
+      addAxisThumbnailSignals(signals, axisThumbnailName, axisName, scaleName, dimensionField, false);
 
       expect(signals).toHaveLength(2);
       expect(signals[0]).toBe(existingSignal);
@@ -153,6 +183,67 @@ describe('axisThumbnailUtils', () => {
         name: 'testThumbnailThumbnailSize',
         update: `min(bandwidth(\'yScale\'), ${MAX_THUMBNAIL_SIZE})`,
       });
+    });
+
+    test('should add hoveredGroup signal when hasTooltip is true', () => {
+      const signals: Signal[] = [];
+      const axisThumbnailName = 'testThumbnail';
+      const axisName = 'axis0';
+      const scaleName = 'xScale';
+      const dimensionField = 'category';
+
+      addAxisThumbnailSignals(signals, axisThumbnailName, axisName, scaleName, dimensionField, true);
+
+      expect(signals).toHaveLength(2);
+      expect(signals[0]).toEqual({
+        name: 'testThumbnailThumbnailSize',
+        update: `min(bandwidth(\'xScale\'), ${MAX_THUMBNAIL_SIZE})`,
+      });
+      const hoveredGroupSignal = signals.find((s) => s.name === 'axis0_hoveredGroup');
+      expect(hoveredGroupSignal).toBeDefined();
+      expect(hoveredGroupSignal?.on).toHaveLength(2);
+      expect(hoveredGroupSignal?.on?.[0]).toHaveProperty('events', '@testThumbnail:mouseover');
+      expect(hoveredGroupSignal?.on?.[0]).toHaveProperty('update', 'datum.category');
+      expect(hoveredGroupSignal?.on?.[1]).toHaveProperty('events', '@testThumbnail:mouseout');
+      expect(hoveredGroupSignal?.on?.[1]).toHaveProperty('update', 'null');
+    });
+
+    test('should not add hoveredGroup signal when hasTooltip is false', () => {
+      const signals: Signal[] = [];
+      const axisThumbnailName = 'testThumbnail';
+      const axisName = 'axis0';
+      const scaleName = 'xScale';
+      const dimensionField = 'category';
+
+      addAxisThumbnailSignals(signals, axisThumbnailName, axisName, scaleName, dimensionField, false);
+
+      expect(signals).toHaveLength(1);
+      const hoveredGroupSignal = signals.find((s) => s.name === 'axis0_hoveredGroup');
+      expect(hoveredGroupSignal).toBeUndefined();
+    });
+
+    test('should append to existing hoveredGroup signal when hasTooltip is true', () => {
+      const existingHoveredGroupSignal = {
+        name: 'axis0_hoveredGroup',
+        value: null,
+        on: [
+          { events: '@otherThumbnail:mouseover', update: 'datum.category' },
+          { events: '@otherThumbnail:mouseout', update: 'null' },
+        ],
+      };
+      const signals: Signal[] = [existingHoveredGroupSignal];
+      const axisThumbnailName = 'testThumbnail';
+      const axisName = 'axis0';
+      const scaleName = 'xScale';
+      const dimensionField = 'category';
+
+      addAxisThumbnailSignals(signals, axisThumbnailName, axisName, scaleName, dimensionField, true);
+
+      expect(signals).toHaveLength(2);
+      const hoveredGroupSignal = signals.find((s) => s.name === 'axis0_hoveredGroup');
+      expect(hoveredGroupSignal?.on).toHaveLength(4);
+      expect(hoveredGroupSignal?.on?.[2]).toHaveProperty('events', '@testThumbnail:mouseover');
+      expect(hoveredGroupSignal?.on?.[3]).toHaveProperty('events', '@testThumbnail:mouseout');
     });
   });
 

@@ -14,6 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Content, View } from '@adobe/react-spectrum';
+import { GROUP_DATA } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
@@ -129,4 +130,108 @@ const Popover = bindWithProps(ChartPopoverSvgStory);
 Popover.args = { children: dialogContent, width: 'auto' };
 Popover.storyName = 'Popover';
 
-export { Basic, YAxis, Popover };
+const DodgedBarWithTooltipsStory: StoryFn<typeof ChartTooltip> = (): ReactElement => {
+  const chartProps = useChartProps({ data: chartPopoverDataWithThumbnails, renderer: 'svg', width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series" type="dodged">
+        <ChartTooltip>
+          {(datum) => {
+            console.log('DODGED TOOLTIP datum:', datum);
+            return (
+              <div>
+                <div>Operating system: {datum.series}</div>
+                <div>Browser: {datum.category}</div>
+                <div>Users: {datum.value?.toLocaleString()}</div>
+              </div>
+            );
+          }}
+        </ChartTooltip>
+      </Bar>
+      <Axis position="bottom" baseline>
+        <AxisThumbnail urlKey="thumbnail" />
+        <ChartTooltip>
+          {(datum) => {
+            const d = datum[GROUP_DATA]?.[0] ?? datum;
+            
+            return (
+              <div>
+                <div>Browser: {d.category}</div>
+                <div>Total Users: {d.value?.toLocaleString()}</div>
+              </div>
+            );
+          }}
+        </ChartTooltip>
+      </Axis>
+    </Chart>
+  );
+};
+
+const DodgedBarWithTooltips = bindWithProps(DodgedBarWithTooltipsStory);
+DodgedBarWithTooltips.args = {};
+DodgedBarWithTooltips.storyName = 'Dodged Bar with Tooltips';
+
+const AxisThumbnailTooltipStory: StoryFn<StoryArgs> = (args): ReactElement => {
+  const { orientation, width, ...axisThumbnailProps } = args;
+  const chartProps = useChartProps({ data, width: width || 'auto', height: '100%', padding: 2 });
+
+  return (
+    <View
+      backgroundColor="gray-50"
+      overflow="hidden"
+      width={800}
+      minWidth={150}
+      maxWidth={1200}
+      height={400}
+      minHeight={150}
+      maxHeight={800}
+      borderColor="gray-200"
+      borderWidth="thin"
+      padding={16}
+      UNSAFE_style={{
+        resize: 'both',
+      }}
+    >
+      <Chart {...chartProps}>
+        <Bar orientation={orientation} dimension="browser" metric="downloads">
+          <ChartTooltip targets={['item', 'dimensionArea']}>
+            {(datum) => {
+              const d = datum[GROUP_DATA]?.[0] ?? datum;
+              console.log('TOOLTIP datum:', d);
+              return (
+                <div>
+                  <div>Browser: {d.browser}</div>
+                  <div>Downloads: {d.downloads?.toLocaleString()}</div>
+                </div>
+              );
+            }}
+          </ChartTooltip>
+        </Bar>
+        <Axis position={orientation === 'horizontal' ? 'left' : 'bottom'} baseline>
+          <AxisThumbnail {...axisThumbnailProps} />
+          <ChartTooltip>
+            {(datum) => {
+              const d = datum[GROUP_DATA]?.[0] ?? datum;
+              
+              return (
+                <div>
+                  <div>Browser: {d.browser}</div>
+                  <div>Downloads: {d.downloads?.toLocaleString()}</div>
+                </div>
+              );
+            }}
+          </ChartTooltip>
+        </Axis>
+      </Chart>
+    </View>
+  );
+};
+
+const YAxisWithTooltip = bindWithProps(AxisThumbnailTooltipStory);
+YAxisWithTooltip.args = {
+  urlKey: 'thumbnail',
+  orientation: 'horizontal',
+};
+YAxisWithTooltip.storyName = 'YAxis with Tooltip';
+
+export { Basic, YAxis, Popover, DodgedBarWithTooltips, YAxisWithTooltip };

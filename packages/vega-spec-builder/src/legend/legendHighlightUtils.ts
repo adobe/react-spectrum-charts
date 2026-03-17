@@ -20,6 +20,8 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { flattenMarks } from '../marks/markUtils';
+
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
  */
@@ -110,21 +112,3 @@ export const encodingUsesScale = <T>(encoding?: ProductionRule<T>): boolean => {
   return false;
 };
 
-/**
- * Recursively flattens all nested marks into a flat array
- * @param marks
- * @returns
- */
-export const flattenMarks = (marks: Mark[]): Mark[] => {
-  let result = marks;
-  for (const mark of marks) {
-    if (isGroupMark(mark) && mark.marks) {
-      result = [...result, ...flattenMarks(mark.marks)];
-    }
-  }
-  return result;
-};
-
-const isGroupMark = (mark: Mark): mark is GroupMark => {
-  return mark.type === 'group';
-};

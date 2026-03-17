@@ -242,6 +242,30 @@ export const addHoverdDimenstionAreaOpacityRules = (
   });
 };
 
+/**
+ * Adds opacity rules for axis thumbnail hover interactions.
+ * When an axis thumbnail is hovered, marks with matching dimension values will be highlighted.
+ *
+ * @param opacityRules - The array of opacity rules to modify
+ * @param axisThumbnailName - The name of the axis thumbnail (e.g., 'axis0AxisThumbnail0')
+ * @param dimensionField - The dimension field to match against (e.g., 'browser')
+ */
+export const addAxisThumbnailHoverOpacityRules = (
+  opacityRules: ({ test?: string } & NumericValueRef)[],
+  axisThumbnailName: string,
+  dimensionField: string
+) => {
+  const hoveredItemSignal = `${axisThumbnailName}_${HOVERED_ITEM}`;
+  // Find the index where to insert the rule (after existing hover rules)
+  const startIndex = opacityRules.findIndex((rule) => rule.test?.includes(HOVERED_ITEM)) + 1;
+  const insertIndex = startIndex > 0 ? startIndex : opacityRules.length;
+
+  opacityRules.splice(insertIndex, 0, {
+    test: `isValid(${hoveredItemSignal})`,
+    signal: `${hoveredItemSignal}.${dimensionField} === datum.${dimensionField} ? 1 : ${FADE_FACTOR}`,
+  });
+};
+
 export const hasTooltipWithDimensionAreaTarget = (chartTooltips: ChartTooltipOptions[]) => {
   return chartTooltips.some(({ targets }) => targets?.includes('dimensionArea'));
 };

@@ -13,8 +13,9 @@ import { ImageMark, ScaleType, Signal, TextEncodeEntry } from 'vega';
 
 import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/constants';
 
-import { getGenericUpdateSignal } from '../signal/signalSpecBuilder';
-import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, Position } from '../types';
+import { getTooltip } from '../marks/markUtils';
+import { addAxisThumbnailHoveredGroupSignal, getGenericUpdateSignal } from '../signal/signalSpecBuilder';
+import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, ChartTooltipOptions, Position } from '../types';
 
 /**
  * Extracts and processes axis thumbnail options from the main axis options.
@@ -61,18 +62,42 @@ export const scaleTypeSupportsThumbnails = (scaleType: ScaleType | undefined): b
 };
 
 /**
+ * Gets the tooltips associated with an axis.
+ *
+ * @param axisOptions - The complete axis specification options
+ * @returns An array of chart tooltip options
+ */
+export const getAxisTooltips = (axisOptions: AxisSpecOptions): ChartTooltipOptions[] => {
+  return axisOptions.chartTooltips ?? [];
+};
+
+/**
  * Adds thumbnail size calculation signals to the signals array.
  * Creates a signal that calculates the appropriate thumbnail size based on the scale bandwidth
  * and maximum thumbnail size constraints.
  *
  * @param signals - The array of Vega signals to append the thumbnail size signal to
  * @param axisThumbnailName - The name of the thumbnail for signal generation
+ * @param axisName - The name of the axis (e.g., "axis0") for hoveredGroup signal
  * @param scaleName - The name of the scale to calculate bandwidth from
+ * @param dimensionField - The dimension field name for hoveredGroup signal
+ * @param highlight - Whether highlighting is enabled for this thumbnail
  */
-export const addAxisThumbnailSignals = (signals: Signal[], axisThumbnailName: string, scaleName: string) => {
+export const addAxisThumbnailSignals = (
+  signals: Signal[],
+  axisThumbnailName: string,
+  axisName: string,
+  scaleName: string,
+  dimensionField: string,
+  hasTooltip: boolean
+) => {
   signals.push(
     getGenericUpdateSignal(`${axisThumbnailName}ThumbnailSize`, `min(bandwidth('${scaleName}'), ${MAX_THUMBNAIL_SIZE})`)
   );
+
+  if (hasTooltip) {
+    addAxisThumbnailHoveredGroupSignal(signals, axisName, axisThumbnailName, dimensionField);
+  }
 };
 
 /**
@@ -90,26 +115,28 @@ export const getAxisThumbnailMarks = (
   scaleName: string,
   scaleField: string
 ): ImageMark[] => {
-  const { position } = axisOptions;
-
+  const { position, name: axisName } = axisOptions;
+  const chartTooltips = getAxisTooltips(axisOptions);
   const thumbnails: ImageMark[] = [];
   const axisThumbnails = getAxisThumbnails(axisOptions);
-  for (const { name, urlKey } of axisThumbnails) {
+  for (const { name: thumbnailName, urlKey } of axisThumbnails) {
+    const tooltip = getTooltip(chartTooltips, axisName, false, { dimensionField: scaleField });
     thumbnails.push({
       type: 'image',
-      name,
+      name: thumbnailName,
       from: { data: FILTERED_TABLE },
       encode: {
         enter: {
           url: { field: urlKey },
+          ...(tooltip ? { tooltip } : {}),
         },
         update: {
-          ...getAxisThumbnailPosition(scaleName, scaleField, position, name),
-          width: { signal: `${name}ThumbnailSize` },
-          height: { signal: `${name}ThumbnailSize` },
+          ...getAxisThumbnailPosition(scaleName, scaleField, position, thumbnailName),
+          width: { signal: `${thumbnailName}ThumbnailSize` },
+          height: { signal: `${thumbnailName}ThumbnailSize` },
           opacity: [
             {
-              test: `${name}ThumbnailSize < ${MIN_THUMBNAIL_SIZE}`,
+              test: `${thumbnailName}ThumbnailSize < ${MIN_THUMBNAIL_SIZE}`,
               value: 0,
             },
             { value: 1 },

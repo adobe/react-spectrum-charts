@@ -14,7 +14,11 @@ import { Signal } from 'vega';
 import { FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
-import { addHoveredItemSignal, getHighlightSignalUpdateExpression } from './signalSpecBuilder';
+import {
+  addAxisThumbnailHoveredGroupSignal,
+  addHoveredItemSignal,
+  getHighlightSignalUpdateExpression,
+} from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
   let signals: Signal[];
@@ -77,6 +81,60 @@ describe('signalSpecBuilder', () => {
       expect(signals).toHaveLength(1);
       expect(signals[0]).toHaveProperty('name', `line0_${HOVERED_ITEM}`);
       expect(signals[0]?.on?.[0]).toHaveProperty('update', 'datum.datum');
+    });
+  });
+
+  describe('addAxisThumbnailHoveredGroupSignal()', () => {
+    test('should create new hoveredGroup signal if it does not exist', () => {
+      signals = [];
+      addAxisThumbnailHoveredGroupSignal(signals, 'axis0', 'axis0AxisThumbnail0', 'category');
+
+      expect(signals).toHaveLength(1);
+      const signal = signals[0];
+      expect(signal).toHaveProperty('name', 'axis0_hoveredGroup');
+      expect(signal).toHaveProperty('value', null);
+      expect(signal.on).toHaveLength(2);
+      expect(signal.on?.[0]).toHaveProperty('events', '@axis0AxisThumbnail0:mouseover');
+      expect(signal.on?.[0]).toHaveProperty('update', 'datum.category');
+      expect(signal.on?.[1]).toHaveProperty('events', '@axis0AxisThumbnail0:mouseout');
+      expect(signal.on?.[1]).toHaveProperty('update', 'null');
+    });
+
+    test('should append to existing hoveredGroup signal', () => {
+      const existingSignal = {
+        name: 'axis0_hoveredGroup',
+        value: null,
+        on: [
+          { events: '@axis0AxisThumbnail1:mouseover', update: 'datum.category' },
+          { events: '@axis0AxisThumbnail1:mouseout', update: 'null' },
+        ],
+      };
+      signals = [existingSignal];
+      addAxisThumbnailHoveredGroupSignal(signals, 'axis0', 'axis0AxisThumbnail0', 'category');
+
+      expect(signals).toHaveLength(1);
+      expect(signals[0].on).toHaveLength(4);
+      expect(signals[0].on?.[2]).toHaveProperty('events', '@axis0AxisThumbnail0:mouseover');
+      expect(signals[0].on?.[3]).toHaveProperty('events', '@axis0AxisThumbnail0:mouseout');
+    });
+
+    test('should initialize on array if signal exists but on is undefined', () => {
+      const existingSignal = {
+        name: 'axis0_hoveredGroup',
+        value: null,
+      };
+      signals = [existingSignal];
+      addAxisThumbnailHoveredGroupSignal(signals, 'axis0', 'axis0AxisThumbnail0', 'category');
+
+      expect(signals[0].on).toBeDefined();
+      expect(signals[0].on).toHaveLength(2);
+    });
+
+    test('should use correct dimension field in update expression', () => {
+      signals = [];
+      addAxisThumbnailHoveredGroupSignal(signals, 'axis0', 'axis0AxisThumbnail0', 'browser');
+
+      expect(signals[0].on?.[0]).toHaveProperty('update', 'datum.browser');
     });
   });
 });
