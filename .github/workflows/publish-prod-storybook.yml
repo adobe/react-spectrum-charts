@@ -65,6 +65,6 @@ jobs:
 
       - name: Commit and push changes to 'gh-pages' branch
         run: |
-          git add -- . ':!dist-storybook'
+          git add -- . ':!dist-storybook' ':!packages/docs/dist'
           git commit -m "Update gh-pages with latest Storybook build"
           git push origin gh-pages
