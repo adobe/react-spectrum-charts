@@ -24,6 +24,9 @@ Setting `gradient` to `true` renders a filled area beneath the line that fades f
 </Chart>
 ```
 
+![Line gradient light](/img/s2_line_gradient_light.png#gh-light-mode-only)
+![Line gradient dark](/img/s2_line_gradient_dark.png#gh-dark-mode-only)
+
 ---
 
 ## Line interpolation
@@ -37,6 +40,9 @@ The `interpolate` prop controls the curve algorithm used to draw the line betwee
   <Line color="series" interpolate="monotone" />
 </Chart>
 ```
+
+![Line interpolation light](/img/s2_line_interpolation_light.png#gh-light-mode-only)
+![Line interpolation dark](/img/s2_line_interpolation_dark.png#gh-dark-mode-only)
 
 Available interpolation methods:
 
@@ -66,6 +72,9 @@ In the S2 package, visible points on a line are styled automatically using Spect
 <Line color="series" staticPoint="highlight" />
 ```
 
+![Line static point light](/img/s2_line_staticPoint_light.png#gh-light-mode-only)
+![Line static point dark](/img/s2_line_staticPoint_dark.png#gh-dark-mode-only)
+
 S2 selection and hover states (stroke ring, opacity fading of other series) are handled automatically by the S2 spec builder and follow the Spectrum 2 visual spec.
 
 ---
@@ -84,6 +93,9 @@ The `LineDirectLabel` component is an S2-exclusive child of `Line`. It places an
 </Chart>
 ```
 
+![Line direct label light](/img/s2_line_directLabel_light.png#gh-light-mode-only)
+![Line direct label dark](/img/s2_line_directLabel_dark.png#gh-dark-mode-only)
+
 Labels are automatically positioned to avoid overlap. When two series end at similar values, the labels are offset vertically.
 
 ### Showing different values
@@ -101,6 +113,9 @@ Labels are automatically positioned to avoid overlap. When two series end at sim
 {/* Add a prefix and custom number format */}
 <LineDirectLabel prefix="Avg:" value="average" format=".1f" />
 ```
+
+![Line direct label average light](/img/s2_line_directLabel_average_light.png#gh-light-mode-only)
+![Line direct label average dark](/img/s2_line_directLabel_average_dark.png#gh-dark-mode-only)
 
 ### Excluding series
 
@@ -300,6 +315,9 @@ import { Chart, Axis, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line color="series" />
 </Chart>
 ```
+
+![Line reference line light](/img/s2_line_referenceLine_light.png#gh-light-mode-only)
+![Line reference line dark](/img/s2_line_referenceLine_dark.png#gh-dark-mode-only)
 
 The reference line is drawn on the axis it is nested inside. Use a bottom/top axis child for vertical reference lines (marking a point in time or a categorical value), and a left/right axis child for horizontal reference lines (marking a threshold value).
 
