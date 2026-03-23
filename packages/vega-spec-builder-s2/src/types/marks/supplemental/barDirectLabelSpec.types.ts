@@ -9,9 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ColorScheme } from '../../chartSpec.types';
+import { ColorFacet, Orientation } from '../../specUtil.types';
+import { DualFacet } from '../barSpec.types';
 
-export * from './barAnnotation.types';
-export * from './barDirectLabel.types';
-export * from './dountSummary.types';
-export * from './lineDirectLabel.types';
-export * from './segmentLabel.types';
+export interface BarDirectLabelOptions {
+  // intentionally minimal for v1 — additional options (format, prefix, etc.) will be added later
+}
+
+export interface BarDirectLabelSpecOptions extends BarDirectLabelOptions {
+  barName: string;
+  color: ColorFacet | DualFacet;
+  colorOverride?: string;
+  colorScheme: ColorScheme;
+  dimension: string;
+  index: number;
+  metric: string;
+  metricAxis?: string;
+  orientation: Orientation;
+}

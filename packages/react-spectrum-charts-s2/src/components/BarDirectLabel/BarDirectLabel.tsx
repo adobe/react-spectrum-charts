@@ -10,8 +10,15 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './barAnnotation.types';
-export * from './barDirectLabel.types';
-export * from './dountSummary.types';
-export * from './lineDirectLabel.types';
-export * from './segmentLabel.types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { BarDirectLabelProps } from '../../types';
+
+const BarDirectLabel: FC<BarDirectLabelProps> = (_props: BarDirectLabelProps) => {
+  return null;
+};
+
+BarDirectLabel.displayName = 'BarDirectLabel';
+
+export { BarDirectLabel };
