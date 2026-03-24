@@ -584,7 +584,6 @@ export const addAxesMarks = produce<
     if (chartTooltips.length > 0 && axisThumbnailMarks.length > 0) {
       setThumbnailHoverOpacityForMarks(options.name, scaleField, marks);
     }
-    //******** Maybe update bars with popover signal trigger here? */
   }
 });
 

@@ -62,7 +62,6 @@ export default function useAxisThumbnailPopover(children: ChartChildElement[]): 
     const barElement = barWithPopover.element as BarElement;
     const dimensionField = barElement.props.dimension ?? DEFAULT_CATEGORICAL_DIMENSION;
 
-    // Collect all thumbnail names on axes with hasPopover=true
     const thumbnailNames: string[] = [];
     let axisCount = -1;
 

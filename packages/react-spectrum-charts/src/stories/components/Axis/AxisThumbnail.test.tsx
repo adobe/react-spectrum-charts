@@ -18,6 +18,7 @@ import userEvent from '@testing-library/user-event';
 import { AxisThumbnail } from '../../../components';
 import {
   allElementsHaveAttributeValue,
+  clickNthElement,
   findAllMarksByGroupName,
   findChart,
   getPopoverTriggerButtons,
@@ -28,7 +29,15 @@ import {
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 // Mock Image so that Vega's image loading completes immediately in jsdom.
 import '../../../test-utils/__mocks__/image.mock.js';
-import { Basic, Popover, YAxis, YAxisWithTooltip, DodgedBarWithTooltips } from './AxisThumbnail.story';
+import {
+  Basic,
+  DodgedBarWithThumbnailPopover,
+  DodgedBarWithTooltips,
+  Popover,
+  WithThumbnailPopover,
+  YAxis,
+  YAxisWithTooltip,
+} from './AxisThumbnail.story';
 import { Resizable } from './AxisThumbnailResize.story';
 
 describe('AxisThumbnail', () => {
@@ -215,4 +224,62 @@ describe('AxisThumbnail', () => {
     expect(tooltipContent.getByText(/Browser:/)).toBeInTheDocument();
     expect(tooltipContent.getByText(/Users:/)).toBeInTheDocument();
   });
+
+  test('With Thumbnail Popover: clicking thumbnail opens popover with correct content', async () => {
+    render(<WithThumbnailPopover {...WithThumbnailPopover.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    expect(thumbnailMarks.length).toBeGreaterThan(0);
+
+    await clickNthElement(thumbnailMarks, 0);
+    
+    const popover = await screen.findByTestId('rsc-popover');
+    await waitFor(() => expect(popover).toBeInTheDocument());
+    expect(within(popover).getByText(/Browser:/)).toBeInTheDocument();
+    expect(within(popover).getByText(/Downloads:/)).toBeInTheDocument();
+  });
+
+  test('With Thumbnail Popover: clicking thumbnail highlights the corresponding bar', async () => {
+    render(<WithThumbnailPopover {...WithThumbnailPopover.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    await clickNthElement(thumbnailMarks, 0);
+    
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars[0]).toHaveAttribute('opacity', '1');
+    expect(bars[1]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+  });
+
+  test('Dodged Bar with Thumbnail Popover: clicking thumbnail opens popover', async () => {
+    render(<DodgedBarWithThumbnailPopover {...DodgedBarWithThumbnailPopover.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    expect(thumbnailMarks.length).toBeGreaterThan(0);
+
+    await clickNthElement(thumbnailMarks, 0);
+    
+    const popover = await screen.findByTestId('rsc-popover');
+    await waitFor(() => expect(popover).toBeInTheDocument());
+    expect(within(popover).getByText(/Browser:/)).toBeInTheDocument();
+  });
+
+  test('Dodged Bar with Thumbnail Popover: clicking thumbnail highlights the corresponding bar', async () => {
+    render(<DodgedBarWithThumbnailPopover {...DodgedBarWithThumbnailPopover.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const thumbnailMarks = await findAllMarksByGroupName(chart, 'axis0AxisThumbnail0', 'image');
+    await clickNthElement(thumbnailMarks, 0);
+    
+    const bars = await findAllMarksByGroupName(chart, 'bar0');
+    expect(bars[0]).toHaveAttribute('opacity', '1');
+    expect(bars[1]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+  });
+
 });

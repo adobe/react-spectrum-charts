@@ -99,8 +99,6 @@ export const addAxisThumbnailSignals = (
   if (hasTooltip) {
     addAxisThumbnailHoveredGroupSignal(signals, axisName, axisThumbnailName, dimensionField);
   }
-
-  //******** Maybe add popover signal here? Probably not */
 };
 
 /**

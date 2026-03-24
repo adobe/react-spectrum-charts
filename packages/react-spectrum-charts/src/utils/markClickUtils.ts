@@ -64,7 +64,7 @@ export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEv
     if (isThumbnailItem(item)) {
       handleAxisThumbnailClick(item, args);
       return;
-    } 
+    }
     if (args.markHasPopover) {
       handleMarkClick(item, args);
     }
@@ -243,7 +243,7 @@ export const isLegendItem = (item: Item): boolean => {
  * @param setHiddenSeries
  * @returns
  */
-export const  handleLegendItemClick = (
+export const handleLegendItemClick = (
   item: NonNullable<ActionItem>,
   {
     chartView,
@@ -432,6 +432,7 @@ const searchSceneNode = (
 ): (Item & SceneItem) | undefined => {
   if (!node || typeof node !== 'object') return undefined;
 
+  //finds first bar with matching mark name and dimension value
   if (isItemSceneItem(node)) {
     const markName = (node.mark as unknown as { name?: string }).name;
     if (markName === markNamePrefix && (node.datum as Record<string, unknown>)[dimensionField] === dimensionValue) {
@@ -439,6 +440,7 @@ const searchSceneNode = (
     }
   }
 
+  //recursively searches through all items in the scenegraph
   if ('items' in node && Array.isArray((node as { items: unknown[] }).items)) {
     for (const child of (node as { items: unknown[] }).items) {
       const found = searchSceneNode(child, markNamePrefix, dimensionField, dimensionValue);
@@ -468,9 +470,7 @@ const handleAxisThumbnailClick = (
   const config = configs.find((c) => c.thumbnailNames.includes(itemName ?? ''));
   if (!config) return;
 
-  console.log('ITMEEM: ', item);
-
-  const dimensionValue = (item as Item & SceneItem).datum?.[config.dimensionField];
+  const dimensionValue = (item as Item).datum?.[config.dimensionField];
   if (dimensionValue === undefined) return;
 
   const barItem = findSceneItemByDimension(chartView.current, config.barMarkName, config.dimensionField, dimensionValue);
