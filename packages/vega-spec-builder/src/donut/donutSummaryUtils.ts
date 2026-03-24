@@ -52,10 +52,11 @@ const getDonutSummary = (options: DonutSpecOptions): DonutSummarySpecOptions | u
  * @returns
  */
 const applyDonutSummaryPropDefaults = (
-  { numberFormat = 'shortNumber', ...options }: DonutSummaryOptions,
+  { numberFormat = 'shortNumber', hideValue = false, ...options }: DonutSummaryOptions,
   donutOptions: DonutSpecOptions
 ): DonutSummarySpecOptions => ({
   donutOptions,
+  hideValue,
   numberFormat,
   ...options,
 });
@@ -152,19 +153,20 @@ export const getDonutSummaryMarks = (options: DonutSpecOptions): GroupMark[] => 
  * @returns GorupMark
  */
 export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): GroupMark => {
-  const { donutOptions, label } = options;
+  const { donutOptions, hideValue, label } = options;
   const groupMark: Mark = {
     type: 'group',
     name: `${donutOptions.name}_summaryGroup`,
-    marks: [
-      {
-        type: 'text',
-        name: `${donutOptions.name}_summaryValue`,
-        from: { data: `${donutOptions.name}_summaryData` },
-        encode: getSummaryValueEncode(options),
-      },
-    ],
+    marks: [],
   };
+  if (!hideValue) {
+    groupMark.marks?.push({
+      type: 'text',
+      name: `${donutOptions.name}_summaryValue`,
+      from: { data: `${donutOptions.name}_summaryData` },
+      encode: getSummaryValueEncode(options),
+    });
+  }
   if (label) {
     groupMark.marks?.push({
       type: 'text',
@@ -182,19 +184,20 @@ export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): Grou
  * @returns GroupMark
  */
 export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions): GroupMark => {
-  const { donutOptions, label } = options;
+  const { donutOptions, hideValue, label } = options;
   const groupMark: Mark = {
     type: 'group',
     name: `${donutOptions.name}_percentText`,
-    marks: [
-      {
-        type: 'text',
-        name: `${donutOptions.name}_booleanSummaryValue`,
-        from: { data: `${donutOptions.name}_booleanData` },
-        encode: getSummaryValueEncode(options),
-      },
-    ],
+    marks: [],
   };
+  if (!hideValue) {
+    groupMark.marks?.push({
+      type: 'text',
+      name: `${donutOptions.name}_booleanSummaryValue`,
+      from: { data: `${donutOptions.name}_booleanData` },
+      encode: getSummaryValueEncode(options),
+    });
+  }
   if (label) {
     groupMark.marks?.push({
       type: 'text',
@@ -286,13 +289,16 @@ export const getSummaryValueLimit = ({ donutOptions, label }: DonutSummarySpecOp
  */
 export const getSummaryLabelEncode = ({
   donutOptions,
+  hideValue,
   label,
 }: DonutSummarySpecOptions & { label: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+  const fontSizeMultiplier = hideValue ? 0.25 : 0.75;
+  const limitSignal = `2 * sqrt(pow(${DONUT_RADIUS} * ${donutOptions.holeRatio}, 2) - pow(${donutOptions.name}_summaryFontSize * ${fontSizeMultiplier}, 2))`;
   return {
     update: {
       x: { signal: 'width / 2' },
       y: { signal: 'height / 2' },
-      dy: { signal: `ceil(${donutOptions.name}_summaryFontSize * 0.25)` },
+      ...(!hideValue && { dy: { signal: `ceil(${donutOptions.name}_summaryFontSize * 0.25)` } }),
       text: { value: label },
       fontSize: [
         { test: `${DONUT_RADIUS} * ${donutOptions.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
@@ -300,9 +306,9 @@ export const getSummaryLabelEncode = ({
       ],
       ...(donutOptions.s2 && { fontWeight: { value: 700 } }),
       align: { value: 'center' },
-      baseline: { value: 'top' },
+      baseline: { value: hideValue ? 'middle' : 'top' },
       limit: {
-        signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${donutOptions.holeRatio}, 2) - pow(${donutOptions.name}_summaryFontSize * 0.75, 2))`,
+        signal: limitSignal,
       },
     },
   };

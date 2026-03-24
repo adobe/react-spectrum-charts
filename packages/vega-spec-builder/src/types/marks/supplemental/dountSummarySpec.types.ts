@@ -21,9 +21,11 @@ export interface DonutSummaryOptions {
   numberFormat?: NumberFormat;
   /** Label for the metric summary */
   label?: string;
+  /** Hides the value portion of the donut summary, only showing the label */
+  hideValue?: boolean;
 }
 
-type DonutSummaryOptionsWithDefaults = 'numberFormat';
+type DonutSummaryOptionsWithDefaults = 'numberFormat' | 'hideValue';
 
 export interface DonutSummarySpecOptions
   extends PartiallyRequired<DonutSummaryOptions, DonutSummaryOptionsWithDefaults> {

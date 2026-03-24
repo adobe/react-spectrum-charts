@@ -84,9 +84,15 @@ NumberFormat.args = {
   label: 'Visitors',
 };
 
+const HideValue = bindWithProps(DonutStory);
+HideValue.args = {
+  label: 'Visitors',
+  hideValue: true,
+};
+
 const Responsive = bindWithProps(ResponsiveStory);
 Responsive.args = {
   label: 'Visitors',
 };
 
-export { Basic, NoLabel, NumberFormat, Responsive };
+export { Basic, NoLabel, NumberFormat, HideValue, Responsive };
