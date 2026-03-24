@@ -11,8 +11,7 @@
  */
 import { Mark, TextMark } from 'vega';
 
-import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
 
 import { getOrientationProperties } from '../bar/barUtils';
 import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
@@ -36,7 +35,6 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
   const { metricScaleKey, dimensionScaleKey } = getOrientationProperties(orientation, metricAxis);
   const isVertical = orientation === 'vertical';
 
-  const resolvedBg = getS2ColorValue('gray-25', colorScheme);
   const fillEncoding = colorOverride
     ? { signal: `datum[${JSON.stringify(colorOverride)}]` }
     : getColorProductionRule(color, colorScheme);
@@ -98,7 +96,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
     encode: {
       enter: {
         ...baseEnter,
-        stroke: { value: resolvedBg },
+        stroke: { signal: BACKGROUND_COLOR },
         strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
         fill: { value: 'transparent' },
       },

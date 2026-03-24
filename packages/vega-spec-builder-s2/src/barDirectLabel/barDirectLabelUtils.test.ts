@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
 import { TextMark } from 'vega';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
@@ -43,7 +43,7 @@ describe('getBarDirectLabelMarks()', () => {
     const [bg] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
     const enter = (bg as TextMark).encode?.enter;
     expect(enter?.fill).toHaveProperty('value', 'transparent');
-    expect(enter?.stroke).toHaveProperty('value');
+    expect(enter?.stroke).toHaveProperty('signal', BACKGROUND_COLOR);
     expect(enter?.strokeWidth).toHaveProperty('value', DIRECT_LABEL_BACKGROUND_STROKE_WIDTH);
   });
 
