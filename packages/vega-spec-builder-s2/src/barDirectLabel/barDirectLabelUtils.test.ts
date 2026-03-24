@@ -42,24 +42,24 @@ describe('getBarDirectLabelMarks()', () => {
   it('background mark has stroke halo with transparent fill', () => {
     const [bg] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
     const enter = (bg as TextMark).encode?.enter;
-    expect(enter?.fill?.value).toBe('transparent');
-    expect(enter?.stroke?.value).toBeDefined();
-    expect(enter?.strokeWidth?.value).toBe(DIRECT_LABEL_BACKGROUND_STROKE_WIDTH);
+    expect(enter?.fill).toHaveProperty('value', 'transparent');
+    expect(enter?.stroke).toHaveProperty('value');
+    expect(enter?.strokeWidth).toHaveProperty('value', DIRECT_LABEL_BACKGROUND_STROKE_WIDTH);
   });
 
   it('main mark has colored fill and correct font weight', () => {
     const [, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
     const enter = (main as TextMark).encode?.enter;
     expect(enter?.fill).toBeDefined();
-    expect(enter?.fontWeight?.value).toBe(DIRECT_LABEL_FONT_WEIGHT);
+    expect(enter?.fontWeight).toHaveProperty('value', DIRECT_LABEL_FONT_WEIGHT);
   });
 
   it('vertical bar: x uses xBand centered on dimension, y is a production rule', () => {
     const [, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
     const enter = (main as TextMark).encode?.enter;
-    expect(enter?.x?.scale).toBe('xBand');
-    expect(enter?.x?.band).toBe(0.5);
-    expect(enter?.align?.value).toBe('center');
+    expect(enter?.x).toHaveProperty('scale', 'xBand');
+    expect(enter?.x).toHaveProperty('band', 0.5);
+    expect(enter?.align).toHaveProperty('value', 'center');
     expect(Array.isArray(enter?.y)).toBe(true);
     expect(Array.isArray(enter?.baseline)).toBe(true);
   });
@@ -69,9 +69,9 @@ describe('getBarDirectLabelMarks()', () => {
     const hOptions = getBarDirectLabelSpecOptions({}, 0, hBarOptions);
     const [, main] = getBarDirectLabelMarks(hOptions, hBarOptions);
     const enter = (main as TextMark).encode?.enter;
-    expect(enter?.y?.scale).toBe('yBand');
-    expect(enter?.y?.band).toBe(0.5);
-    expect(enter?.baseline?.value).toBe('middle');
+    expect(enter?.y).toHaveProperty('scale', 'yBand');
+    expect(enter?.y).toHaveProperty('band', 0.5);
+    expect(enter?.baseline).toHaveProperty('value', 'middle');
     expect(Array.isArray(enter?.x)).toBe(true);
     expect(Array.isArray(enter?.align)).toBe(true);
   });
