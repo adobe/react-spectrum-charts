@@ -138,6 +138,12 @@ The `DonutSummary` component can be used to provide a total of the displayed met
     </thead>
     <tbody>
         <tr>
+            <td>hideValue</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Hides the value portion of the donut summary, only showing the label.</td>
+        </tr>
+        <tr>
             <td>label</td>
             <td>string</td>
             <td>–</td>
