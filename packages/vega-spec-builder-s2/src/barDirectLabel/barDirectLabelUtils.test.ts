@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { TextMark } from 'vega';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
 import { BarDirectLabelSpecOptions } from '../types';
@@ -40,7 +41,7 @@ describe('getBarDirectLabelMarks()', () => {
 
   it('background mark has stroke halo with transparent fill', () => {
     const [bg] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    const enter = (bg as any).encode?.enter;
+    const enter = (bg as TextMark).encode?.enter;
     expect(enter?.fill?.value).toBe('transparent');
     expect(enter?.stroke?.value).toBeDefined();
     expect(enter?.strokeWidth?.value).toBe(DIRECT_LABEL_BACKGROUND_STROKE_WIDTH);
@@ -48,14 +49,14 @@ describe('getBarDirectLabelMarks()', () => {
 
   it('main mark has colored fill and correct font weight', () => {
     const [, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    const enter = (main as any).encode?.enter;
+    const enter = (main as TextMark).encode?.enter;
     expect(enter?.fill).toBeDefined();
     expect(enter?.fontWeight?.value).toBe(DIRECT_LABEL_FONT_WEIGHT);
   });
 
   it('vertical bar: x uses xBand centered on dimension, y is a production rule', () => {
     const [, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    const enter = (main as any).encode?.enter;
+    const enter = (main as TextMark).encode?.enter;
     expect(enter?.x?.scale).toBe('xBand');
     expect(enter?.x?.band).toBe(0.5);
     expect(enter?.align?.value).toBe('center');
@@ -67,7 +68,7 @@ describe('getBarDirectLabelMarks()', () => {
     const hBarOptions = { ...defaultBarOptions, orientation: 'horizontal' as const };
     const hOptions = getBarDirectLabelSpecOptions({}, 0, hBarOptions);
     const [, main] = getBarDirectLabelMarks(hOptions, hBarOptions);
-    const enter = (main as any).encode?.enter;
+    const enter = (main as TextMark).encode?.enter;
     expect(enter?.y?.scale).toBe('yBand');
     expect(enter?.y?.band).toBe(0.5);
     expect(enter?.baseline?.value).toBe('middle');
@@ -83,13 +84,13 @@ describe('getBarDirectLabelMarks()', () => {
 
   it('main mark has update.opacity; background mark does not', () => {
     const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    expect((main as any).encode?.update?.opacity).toBeDefined();
-    expect((bg as any).encode?.update).toBeUndefined();
+    expect((main as TextMark).encode?.update?.opacity).toBeDefined();
+    expect((bg as TextMark).encode?.update).toBeUndefined();
   });
 
   it('marks source directly from FILTERED_TABLE', () => {
     const marks = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    expect((marks[0] as any).from?.data).toBe(FILTERED_TABLE);
-    expect((marks[1] as any).from?.data).toBe(FILTERED_TABLE);
+    expect((marks[0] as TextMark).from?.data).toBe(FILTERED_TABLE);
+    expect((marks[1] as TextMark).from?.data).toBe(FILTERED_TABLE);
   });
 });
