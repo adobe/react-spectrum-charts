@@ -26,6 +26,7 @@ import { defaultDonutOptions } from './donutTestUtils';
 
 const defaultDonutSummaryOptions: DonutSummarySpecOptions = {
   donutOptions: defaultDonutOptions,
+  hideValue: false,
   label: 'Visitors',
   numberFormat: 'shortNumber',
 };
@@ -90,6 +91,17 @@ describe('getDonutSummaryGroupMark()', () => {
     expect(groupMark.marks).toHaveLength(2);
     expect(groupMark.marks?.[1].name).toEqual('testName_summaryLabel');
   });
+
+  test('should not include value mark if hideValue is true', () => {
+    const groupMark = getDonutSummaryGroupMark({ ...defaultDonutSummaryOptions, hideValue: true });
+    expect(groupMark.marks).toHaveLength(1);
+    expect(groupMark.marks?.[0].name).toEqual('testName_summaryLabel');
+  });
+
+  test('should return no marks if hideValue is true and label is undefined', () => {
+    const groupMark = getDonutSummaryGroupMark({ ...defaultDonutSummaryOptions, hideValue: true, label: undefined });
+    expect(groupMark.marks).toHaveLength(0);
+  });
 });
 
 describe('getBooleanDonutSummaryGroupMark()', () => {
@@ -103,6 +115,21 @@ describe('getBooleanDonutSummaryGroupMark()', () => {
     const groupMark = getBooleanDonutSummaryGroupMark(defaultDonutSummaryOptions);
     expect(groupMark.marks).toHaveLength(2);
     expect(groupMark.marks?.[1].name).toEqual('testName_booleanSummaryLabel');
+  });
+
+  test('should not include value mark if hideValue is true', () => {
+    const groupMark = getBooleanDonutSummaryGroupMark({ ...defaultDonutSummaryOptions, hideValue: true });
+    expect(groupMark.marks).toHaveLength(1);
+    expect(groupMark.marks?.[0].name).toEqual('testName_booleanSummaryLabel');
+  });
+
+  test('should return no marks if hideValue is true and label is undefined', () => {
+    const groupMark = getBooleanDonutSummaryGroupMark({
+      ...defaultDonutSummaryOptions,
+      hideValue: true,
+      label: undefined,
+    });
+    expect(groupMark.marks).toHaveLength(0);
   });
 });
 
@@ -150,6 +177,28 @@ describe('getSummaryValueLimit()', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' })).toEqual({
       signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryFontSize * 0.5, 2))',
     });
+  });
+});
+
+describe('getSummaryLabelEncode() with hideValue', () => {
+  test('should center label vertically when hideValue is true', () => {
+    const encode = getSummaryLabelEncode({
+      ...defaultDonutSummaryOptions,
+      hideValue: true,
+      label: 'Visitors',
+    });
+    expect(encode.update?.baseline).toEqual({ value: 'middle' });
+    expect(encode.update?.dy).toBeUndefined();
+  });
+
+  test('should position label below value when hideValue is false', () => {
+    const encode = getSummaryLabelEncode({
+      ...defaultDonutSummaryOptions,
+      hideValue: false,
+      label: 'Visitors',
+    });
+    expect(encode.update?.baseline).toEqual({ value: 'top' });
+    expect(encode.update?.dy).toBeDefined();
   });
 });
 
