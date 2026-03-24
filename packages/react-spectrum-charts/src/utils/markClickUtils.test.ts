@@ -219,7 +219,6 @@ describe('getOnMarkClickCallback()', () => {
       },
     } as unknown as Item;
 
-    // handleMarkClick is not called when there is not a popover on the mark 
     test('should not set selectedData when markHasPopover is false', () => {
       const selectedData = { current: null as unknown };
       const callback = getOnMarkClickCallback({

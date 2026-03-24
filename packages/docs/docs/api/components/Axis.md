@@ -61,6 +61,12 @@ The `Axis` component is used to display the axis, axis labels and grid marks. An
             <td>Displays gridlines at each tick location.</td>
         </tr>
         <tr>
+            <td>hasPopover</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>When <code>true</code>, enables linking axis thumbnails to the chart’s bar popover. Clicking an <code>AxisThumbnail</code> on this axis opens the same <code>ChartPopover</code> that is defined on a <code>Bar</code> mark, anchored to the matching bar. This flow applies only to <code>Bar</code> charts, and requires <code>Bar</code> to have a <code>ChartPopover</code> child.</td>
+        </tr>
+        <tr>
             <td>hideDefaultLabels</td>
             <td>boolean</td>
             <td>false</td>
