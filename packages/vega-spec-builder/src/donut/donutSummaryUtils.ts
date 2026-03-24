@@ -292,6 +292,8 @@ export const getSummaryLabelEncode = ({
   hideValue,
   label,
 }: DonutSummarySpecOptions & { label: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+  const fontSizeMultiplier = hideValue ? 0.25 : 0.75;
+  const limitSignal = `2 * sqrt(pow(${DONUT_RADIUS} * ${donutOptions.holeRatio}, 2) - pow(${donutOptions.name}_summaryFontSize * ${fontSizeMultiplier}, 2))`;
   return {
     update: {
       x: { signal: 'width / 2' },
@@ -306,7 +308,7 @@ export const getSummaryLabelEncode = ({
       align: { value: 'center' },
       baseline: { value: hideValue ? 'middle' : 'top' },
       limit: {
-        signal: `2 * sqrt(pow(${DONUT_RADIUS} * ${donutOptions.holeRatio}, 2) - pow(${hideValue ? `${donutOptions.name}_summaryFontSize * 0.25` : `${donutOptions.name}_summaryFontSize * 0.75`}, 2))`,
+        signal: limitSignal,
       },
     },
   };

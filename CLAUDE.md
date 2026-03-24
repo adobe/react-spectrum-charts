@@ -208,6 +208,21 @@ WithMyFeature.args = {
 
 ---
 
+## Code Style
+
+- **No nested template literals.** When a template literal would contain an inner `${}` expression that is itself a template literal or ternary producing a string, extract the inner expression into a named `const` first, then reference it in the outer template. This keeps Vega signal strings readable and avoids linter/code-smell warnings.
+
+```ts
+// Bad
+`outer ${condition ? `inner_a` : `inner_b`} rest`
+
+// Good
+const inner = condition ? 'inner_a' : 'inner_b';
+`outer ${inner} rest`
+```
+
+---
+
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
