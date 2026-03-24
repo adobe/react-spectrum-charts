@@ -72,9 +72,10 @@ export const getAxisTooltips = (axisOptions: AxisSpecOptions): ChartTooltipOptio
 };
 
 /**
- * Adds thumbnail size calculation signals to the signals array.
+ * Adds thumbnail signals to the signals array
  * Creates a signal that calculates the appropriate thumbnail size based on the scale bandwidth
  * and maximum thumbnail size constraints.
+ * Also adds a hoveredGroup signal if highlighting is enabled for the thumbnail.
  *
  * @param signals - The array of Vega signals to append the thumbnail size signal to
  * @param axisThumbnailName - The name of the thumbnail for signal generation
@@ -98,6 +99,8 @@ export const addAxisThumbnailSignals = (
   if (hasTooltip) {
     addAxisThumbnailHoveredGroupSignal(signals, axisName, axisThumbnailName, dimensionField);
   }
+
+  //******** Maybe add popover signal here? Probably not */
 };
 
 /**

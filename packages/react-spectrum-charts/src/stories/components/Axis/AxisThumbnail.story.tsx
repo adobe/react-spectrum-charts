@@ -130,6 +130,49 @@ const Popover = bindWithProps(ChartPopoverSvgStory);
 Popover.args = { children: dialogContent, width: 'auto' };
 Popover.storyName = 'Popover';
 
+const singleBarDialogContent = (datum: Datum) => (
+  <Content>
+    <div>Browser: {datum.browser as string}</div>
+    <div>Downloads: {(datum.downloads as number)?.toLocaleString()}</div>
+  </Content>
+);
+
+const WithPopoverStory: StoryFn<typeof AxisThumbnail> = (): ReactElement => {
+  const chartProps = useChartProps({ data, renderer: 'svg', width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Bar dimension="browser" metric="downloads">
+        <ChartPopover width="auto">{singleBarDialogContent}</ChartPopover>
+      </Bar>
+      <Axis position="bottom" baseline hasPopover>
+        <AxisThumbnail urlKey="thumbnail" />
+      </Axis>
+    </Chart>
+  );
+};
+
+const WithPopover = bindWithProps(WithPopoverStory);
+WithPopover.args = {};
+WithPopover.storyName = 'With Popover';
+
+const DodgedBarWithPopoverStory: StoryFn<typeof AxisThumbnail> = (): ReactElement => {
+  const chartProps = useChartProps({ data: chartPopoverDataWithThumbnails, renderer: 'svg', width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series" type="dodged">
+        <ChartPopover width="auto">{dialogContent}</ChartPopover>
+      </Bar>
+      <Axis position="bottom" baseline hasPopover>
+        <AxisThumbnail urlKey="thumbnail" />
+      </Axis>
+    </Chart>
+  );
+};
+
+const DodgedBarWithPopover = bindWithProps(DodgedBarWithPopoverStory);
+DodgedBarWithPopover.args = {};
+DodgedBarWithPopover.storyName = 'Dodged Bar With Popover';
+
 const DodgedBarWithTooltipsStory: StoryFn<typeof ChartTooltip> = (): ReactElement => {
   const chartProps = useChartProps({ data: chartPopoverDataWithThumbnails, renderer: 'svg', width: 600 });
   return (
@@ -234,4 +277,4 @@ YAxisWithTooltip.args = {
 };
 YAxisWithTooltip.storyName = 'YAxis with Tooltip';
 
-export { Basic, YAxis, Popover, DodgedBarWithTooltips, YAxisWithTooltip };
+export { Basic, YAxis, Popover, WithPopover, DodgedBarWithPopover, DodgedBarWithTooltips, YAxisWithTooltip };

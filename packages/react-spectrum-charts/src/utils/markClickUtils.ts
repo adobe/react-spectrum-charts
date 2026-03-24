@@ -16,6 +16,7 @@ import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega'
 import { COMPONENT_NAME, SERIES_ID } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
+import { ThumbnailPopoverConfig } from '../hooks/useAxisThumbnailPopover';
 import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
 import { toggleStringArrayValue } from '../utils';
@@ -36,6 +37,7 @@ export interface GetOnMarkClickCallbackArgs {
   onLegendClick?: (seriesName: string) => void;
   trigger: 'click' | 'contextmenu';
   markHasPopover?: boolean;
+  thumbnailPopoverConfigs?: ThumbnailPopoverConfig[];
 }
 
 /**
@@ -59,6 +61,10 @@ export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEv
       handleLegendItemClick(item, args);
       return;
     }
+    if (isThumbnailItem(item)) {
+      handleAxisThumbnailClick(item, args);
+      return;
+    } 
     if (args.markHasPopover) {
       handleMarkClick(item, args);
     }
@@ -83,7 +89,7 @@ const handleMarkClick = (
   triggerPopover(chartId, itemName, trigger);
 };
 
-const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
+export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
   if (!itemName) return;
   (
     document.querySelector(
@@ -237,7 +243,7 @@ export const isLegendItem = (item: Item): boolean => {
  * @param setHiddenSeries
  * @returns
  */
-export const handleLegendItemClick = (
+export const  handleLegendItemClick = (
   item: NonNullable<ActionItem>,
   {
     chartView,
@@ -387,6 +393,93 @@ export const getGroupOffset = (item: ActionItem): { x: number; y: number } => {
     };
   }
   return { x: 0, y: 0 };
+};
+
+/**
+ * Returns true if the item is an axis thumbnail mark (image mark whose name includes AxisThumbnail).
+ * @param item
+ * @returns
+ */
+export const isThumbnailItem = (item: ActionItem): boolean =>
+  isItemSceneItem(item) &&
+  item.mark.marktype === 'image' &&
+  Boolean(getItemName(item)?.includes('AxisThumbnail'));
+
+/**
+ * Traverses the Vega scenegraph to find the first item whose mark name starts with `${markNamePrefix}_`
+ * and whose datum contains the given dimension value.
+ * @param view
+ * @param markNamePrefix - e.g. 'bar0'
+ * @param dimensionField - e.g. 'category'
+ * @param dimensionValue - the value to match
+ * @returns the matching Item & SceneItem, or undefined if not found
+ */
+export const findSceneItemByDimension = (
+  view: View,
+  markNamePrefix: string,
+  dimensionField: string,
+  dimensionValue: unknown
+): (Item & SceneItem) | undefined => {
+  const root = (view as unknown as { scenegraph: () => { root: unknown } }).scenegraph().root;
+  return searchSceneNode(root, markNamePrefix, dimensionField, dimensionValue);
+};
+
+const searchSceneNode = (
+  node: unknown,
+  markNamePrefix: string,
+  dimensionField: string,
+  dimensionValue: unknown
+): (Item & SceneItem) | undefined => {
+  if (!node || typeof node !== 'object') return undefined;
+
+  if (isItemSceneItem(node)) {
+    const markName = (node.mark as unknown as { name?: string }).name;
+    if (markName === markNamePrefix && (node.datum as Record<string, unknown>)[dimensionField] === dimensionValue) {
+      return node;
+    }
+  }
+
+  if ('items' in node && Array.isArray((node as { items: unknown[] }).items)) {
+    for (const child of (node as { items: unknown[] }).items) {
+      const found = searchSceneNode(child, markNamePrefix, dimensionField, dimensionValue);
+      if (found) return found;
+    }
+  }
+
+  return undefined;
+};
+
+const handleAxisThumbnailClick = (
+  item: NonNullable<ActionItem>,
+  {
+    chartView,
+    chartId,
+    selectedData,
+    selectedDataBounds,
+    selectedDataName,
+    thumbnailPopoverConfigs,
+    trigger,
+  }: GetOnMarkClickCallbackArgs
+): void => {
+  const configs = thumbnailPopoverConfigs;
+  if (!configs?.length || !chartView.current) return;
+
+  const itemName = getItemName(item);
+  const config = configs.find((c) => c.thumbnailNames.includes(itemName ?? ''));
+  if (!config) return;
+
+  console.log('ITMEEM: ', item);
+
+  const dimensionValue = (item as Item & SceneItem).datum?.[config.dimensionField];
+  if (dimensionValue === undefined) return;
+
+  const barItem = findSceneItemByDimension(chartView.current, config.barMarkName, config.dimensionField, dimensionValue);
+  if (!barItem) return;
+
+  selectedData.current = { [COMPONENT_NAME]: config.barMarkName, ...barItem.datum };
+  selectedDataBounds.current = getItemBounds(barItem);
+  selectedDataName.current = config.barMarkName;
+  triggerPopover(chartId, config.barMarkName, trigger);
 };
 
 /* TYPE GUARDS */
