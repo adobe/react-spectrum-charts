@@ -236,6 +236,12 @@ If a new `for...of options.<collection>.entries()` loop was added to a spec buil
 ### 4. Vega type assertions
 When asserting properties on Vega `encode` objects, use `toHaveProperty('key', value)` rather than `obj?.key?.value`. Direct property access fails TypeScript because Vega uses `ProductionRule<T>` union types.
 
+### 5. Encoding consistency
+When adding a new mark, verify its encodings follow the same conventions as comparable existing marks before finalizing. Key rules:
+- Background/halo colors must use `{ signal: BACKGROUND_COLOR }`, not a hardcoded `getS2ColorValue(...)` call — the signal respects the chart's `backgroundColor` prop
+- Opacity must use `getMarkOpacity()` rather than a hardcoded value
+- Cross-check against one or two similar existing marks (e.g. `barAnnotationUtils.ts`, `linePointUtils.ts`) to catch any other conventions
+
 ---
 
 ## S2 Variant

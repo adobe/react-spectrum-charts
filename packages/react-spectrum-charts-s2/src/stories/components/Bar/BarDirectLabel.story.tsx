@@ -18,7 +18,7 @@ import { Axis, Bar, BarDirectLabel } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barData } from './data';
+import { barData, mixedBarData } from './data';
 
 export default {
   title: 'RSC/Bar/BarDirectLabel',
@@ -27,6 +27,19 @@ export default {
 
 const BarDirectLabelStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args}>
+        <BarDirectLabel />
+      </Bar>
+    </Chart>
+  );
+};
+
+const NegativeBarDirectLabelStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: mixedBarData, width: 600, height: 400 });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -54,4 +67,15 @@ Horizontal.args = {
   orientation: 'horizontal',
 };
 
-export { Default, Horizontal };
+const MixedValues = bindWithProps(NegativeBarDirectLabelStory);
+MixedValues.args = {
+  ...defaultProps,
+};
+
+const MixedValuesHorizontal = bindWithProps(NegativeBarDirectLabelStory);
+MixedValuesHorizontal.args = {
+  ...defaultProps,
+  orientation: 'horizontal',
+};
+
+export { Default, Horizontal, MixedValues, MixedValuesHorizontal };

@@ -18,7 +18,8 @@ import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
 import { BarDirectLabelOptions, BarDirectLabelSpecOptions, BarSpecOptions } from '../types';
 
 // Pixel gap between the bar tip and the label
-const LABEL_OFFSET = 4;
+const VERTICAL_LABEL_OFFSET = 6;
+const HORIZONTAL_LABEL_OFFSET = 8;
 const DEFAULT_NUMBER_FORMAT = ',.2~f';
 
 /**
@@ -49,15 +50,15 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
   const metricOutsideTip = isVertical
     ? [
         // negative bar → label below (offset downward = positive y offset)
-        { test: `datum["${metric}"] < 0`, scale: metricScaleKey, field: metric, offset: LABEL_OFFSET },
+        { test: `datum["${metric}"] < 0`, scale: metricScaleKey, field: metric, offset: VERTICAL_LABEL_OFFSET },
         // positive bar → label above (offset upward = negative y offset)
-        { scale: metricScaleKey, field: metric, offset: -LABEL_OFFSET },
+        { scale: metricScaleKey, field: metric, offset: -VERTICAL_LABEL_OFFSET },
       ]
     : [
         // negative bar → label to the left (offset leftward = negative x offset)
-        { test: `datum["${metric}"] < 0`, scale: metricScaleKey, field: metric, offset: -LABEL_OFFSET },
+        { test: `datum["${metric}"] < 0`, scale: metricScaleKey, field: metric, offset: -HORIZONTAL_LABEL_OFFSET },
         // positive bar → label to the right (offset rightward = positive x offset)
-        { scale: metricScaleKey, field: metric, offset: LABEL_OFFSET },
+        { scale: metricScaleKey, field: metric, offset: HORIZONTAL_LABEL_OFFSET },
       ];
 
   // Text baseline/align rules to keep labels outside the bar for both positive and negative values
