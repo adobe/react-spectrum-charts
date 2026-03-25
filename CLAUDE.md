@@ -244,6 +244,16 @@ When adding a new mark, verify its encodings follow the same conventions as comp
 
 ---
 
+## S2 Docs Pages
+
+When adding a new page under `packages/docs/docs/spectrum2/`:
+
+1. **Register it in the sidebar** — add the page to `packages/docs/sidebars.ts` under the `'Spectrum 2 (Alpha)'` category. The page will not appear in the docs site otherwise.
+
+2. **Accurately document supported props** — before writing a props table, cross-reference the S2 types (`vega-spec-builder-s2/src/types/marks/`) against the s1 equivalent (`vega-spec-builder/src/types/marks/`) to identify anything not yet supported. Add a `:::note` callout listing unsupported props or child components, following the pattern in `line.md`.
+
+---
+
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
