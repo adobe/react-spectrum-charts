@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/bar",
+  "title": "Bar (S2)",
+  "description": "The Bar component in the S2 package supports nearly all props from the base Bar component plus S2-exclusive features: inline direct labels and Spectrum 2 styled visuals.",
+  "source": "@site/docs/spectrum2/bar.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/bar",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/bar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/bar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Line (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/line"
+  },
+  "next": {
+    "title": "Developer Docs",
+    "permalink": "/react-spectrum-charts/docs/docs/developers/DeveloperDocs"
+  }
+}
