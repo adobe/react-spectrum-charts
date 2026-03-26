@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, render, screen } from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, WithThreeSeries } from './DualMetricAxis.story';
+import { findChart, render, screen } from '../../../../test-utils';
+import '../../../../test-utils/__mocks__/matchMedia.mock.js';
+import { DualMetricAxisBasic as Basic, DualMetricAxisWithThreeSeries as WithThreeSeries } from './LineDualMetricAxis.story';
 
 describe('Dual metric axis line axis styling', () => {
   describe('Two series', () => {
