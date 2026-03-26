@@ -203,6 +203,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
         marks: [
           {
             barAnnotations: [],
+            barDirectLabels: [],
             chartPopovers: [],
             chartTooltips: [],
             dimension: 'browser',

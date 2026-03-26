@@ -15,10 +15,11 @@ import { BarProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getBarOptions = ({ children, onClick, ...barProps }: BarProps): BarOptions => {
-  const { barAnnotations, chartPopovers, chartTooltips } = childrenToOptions(children);
+  const { barAnnotations, barDirectLabels, chartPopovers, chartTooltips } = childrenToOptions(children);
   return {
     ...barProps,
     barAnnotations,
+    barDirectLabels,
     chartPopovers,
     chartTooltips,
     hasOnClick: Boolean(onClick),

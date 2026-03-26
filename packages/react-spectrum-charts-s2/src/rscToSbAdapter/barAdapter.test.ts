@@ -13,6 +13,7 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
+import { BarDirectLabel } from '../components/BarDirectLabel';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartTooltip } from '../components/ChartTooltip';
 import { getBarOptions } from './barAdapter';
@@ -32,6 +33,10 @@ describe('getBarOptions()', () => {
   it('should convert tooltip children to chartTooltips array', () => {
     const options = getBarOptions({ children: [createElement(ChartTooltip)] });
     expect(options.chartTooltips).toHaveLength(1);
+  });
+  it('should convert BarDirectLabel children to barDirectLabels array', () => {
+    const options = getBarOptions({ children: [createElement(BarDirectLabel)] });
+    expect(options.barDirectLabels).toHaveLength(1);
   });
   test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
     expect(getBarOptions({ onClick: () => {} }).hasOnClick).toBe(true);

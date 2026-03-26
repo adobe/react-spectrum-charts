@@ -92,6 +92,14 @@ export const stackedBarDataWithUTC = [
   },
 ];
 
+export const mixedBarData = [
+  { browser: 'Chrome', downloads: 27000 },
+  { browser: 'Firefox', downloads: 8000 },
+  { browser: 'Safari', downloads: -7750 },
+  { browser: 'Edge', downloads: -7600 },
+  { browser: 'Explorer', downloads: -500 },
+];
+
 export const barDataTwoSeries = [
   { browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
   { browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },

@@ -11,6 +11,7 @@
  */
 
 export * from './barAnnotationSpec.types';
+export * from './barDirectLabelSpec.types';
 export * from './dountSummarySpec.types';
 export * from './metricRangeSpec.types';
 export * from './scatterAnnotationSpec.types';

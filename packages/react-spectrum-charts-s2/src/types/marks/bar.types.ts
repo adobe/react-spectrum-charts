@@ -15,14 +15,14 @@ import { BarOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
-import { BarAnnotationElement } from './supplemental';
+import { BarAnnotationElement, BarDirectLabelElement } from './supplemental';
 
 export interface BarProps
   extends Omit<
     BarOptions,
-    'barAnnotations' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType'
+    'barAnnotations' | 'barDirectLabels' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType'
   > {
-  children?: Children<BarAnnotationElement | ChartPopoverElement | ChartTooltipElement>;
+  children?: Children<BarAnnotationElement | BarDirectLabelElement | ChartPopoverElement | ChartTooltipElement>;
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
   /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */

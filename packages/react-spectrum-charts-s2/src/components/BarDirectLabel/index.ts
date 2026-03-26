@@ -10,8 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './barAnnotation.types';
-export * from './barDirectLabel.types';
-export * from './dountSummary.types';
-export * from './lineDirectLabel.types';
-export * from './segmentLabel.types';
+export { BarDirectLabel } from './BarDirectLabel';

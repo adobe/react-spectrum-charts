@@ -30,6 +30,7 @@ import { BarSpecOptions } from '../types';
 
 export const defaultBarOptions: BarSpecOptions = {
   barAnnotations: [],
+  barDirectLabels: [],
   chartPopovers: [],
   chartTooltips: [],
   color: DEFAULT_COLOR,

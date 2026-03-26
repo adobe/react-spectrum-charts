@@ -13,6 +13,7 @@ import {
   AxisOptions,
   AxisThumbnailOptions,
   BarAnnotationOptions,
+  BarDirectLabelOptions,
   ChartPopoverOptions,
   ChartTooltipOptions,
   DonutSummaryOptions,
@@ -28,6 +29,7 @@ import {
 import { Axis } from '../components/Axis';
 import { AxisThumbnail } from '../components/AxisThumbnail';
 import { Bar } from '../components/Bar';
+import { BarDirectLabel } from '../components/BarDirectLabel';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartTooltip } from '../components/ChartTooltip';
 import { Legend } from '../components/Legend';
@@ -39,6 +41,7 @@ import { Donut, DonutSummary, SegmentLabel } from '../rc';
 import {
   AxisProps,
   AxisThumbnailProps,
+  BarDirectLabelProps,
   BarProps,
   ChartPopoverProps,
   ChartTooltipProps,
@@ -66,6 +69,7 @@ export const childrenToOptions = (
   axes: AxisOptions[];
   axisThumbnails: AxisThumbnailOptions[];
   barAnnotations: BarAnnotationOptions[];
+  barDirectLabels: BarDirectLabelOptions[];
   chartPopovers: ChartPopoverOptions[];
   chartTooltips: ChartTooltipOptions[];
   donutSummaries: DonutSummaryOptions[];
@@ -80,6 +84,7 @@ export const childrenToOptions = (
   const axes: AxisOptions[] = [];
   const axisThumbnails: AxisThumbnailOptions[] = [];
   const barAnnotations: BarAnnotationOptions[] = [];
+  const barDirectLabels: BarDirectLabelOptions[] = [];
   const chartPopovers: ChartPopoverOptions[] = [];
   const chartTooltips: ChartTooltipOptions[] = [];
   const donutSummaries: DonutSummaryOptions[] = [];
@@ -107,6 +112,10 @@ export const childrenToOptions = (
 
       case Bar.displayName:
         marks.push(getBarOptions(child.props as BarProps));
+        break;
+
+      case BarDirectLabel.displayName:
+        barDirectLabels.push(child.props as BarDirectLabelProps);
         break;
 
       case ChartPopover.displayName:
@@ -159,6 +168,7 @@ export const childrenToOptions = (
     axes,
     axisThumbnails,
     barAnnotations,
+    barDirectLabels,
     chartPopovers,
     chartTooltips,
     donutSummaries,

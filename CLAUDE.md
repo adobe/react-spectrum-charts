@@ -220,6 +220,37 @@ WithMyFeature.args = {
 const inner = condition ? 'inner_a' : 'inner_b';
 `outer ${inner} rest`
 ```
+## Test Completeness Checklist
+
+After any feature implementation, verify all of the following before considering the work done:
+
+### 1. Snapshot / fixture tests
+If a new field was added to a `*Options` or `*SpecOptions` type, find all `toStrictEqual` snapshot tests that assert the full options shape (e.g. `chartAdapter.test.ts`). The new field must appear in every expected object, set to its default value.
+
+### 2. childrenAdapter / displayName coverage
+If a new `case X.displayName:` was added to `childrenAdapter.ts`, the corresponding adapter test (e.g. `barAdapter.test.ts`) must have a test that passes `createElement(X)` as a child and asserts the resulting collection has length 1. Follow the pattern of existing popover/tooltip/annotation child tests.
+
+### 3. Spec builder loop coverage
+If a new `for...of options.<collection>.entries()` loop was added to a spec builder, the corresponding `addMarks()` test block must have a test passing `[{}]` for that collection and asserting the correct number and names of added marks. Use the `with annotations` describe block as a model.
+
+### 4. Vega type assertions
+When asserting properties on Vega `encode` objects, use `toHaveProperty('key', value)` rather than `obj?.key?.value`. Direct property access fails TypeScript because Vega uses `ProductionRule<T>` union types.
+
+### 5. Encoding consistency
+When adding a new mark, verify its encodings follow the same conventions as comparable existing marks before finalizing. Key rules:
+- Background/halo colors must use `{ signal: BACKGROUND_COLOR }`, not a hardcoded `getS2ColorValue(...)` call — the signal respects the chart's `backgroundColor` prop
+- Opacity must use `getMarkOpacity()` rather than a hardcoded value
+- Cross-check against one or two similar existing marks (e.g. `barAnnotationUtils.ts`, `linePointUtils.ts`) to catch any other conventions
+
+---
+
+## S2 Docs Pages
+
+When adding a new page under `packages/docs/docs/spectrum2/`:
+
+1. **Register it in the sidebar** — add the page to `packages/docs/sidebars.ts` under the `'Spectrum 2 (Alpha)'` category. The page will not appear in the docs site otherwise.
+
+2. **Accurately document supported props** — before writing a props table, cross-reference the S2 types (`vega-spec-builder-s2/src/types/marks/`) against the s1 equivalent (`vega-spec-builder/src/types/marks/`) to identify anything not yet supported. Add a `:::note` callout listing unsupported props or child components, following the pattern in `line.md`.
 
 ---
 

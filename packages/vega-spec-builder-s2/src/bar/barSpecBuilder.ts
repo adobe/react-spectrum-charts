@@ -55,6 +55,7 @@ import {
   getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
 import {
@@ -86,6 +87,7 @@ export const addBar = produce<
     spec,
     {
       barAnnotations = [],
+      barDirectLabels = [],
       chartPopovers = [],
       chartTooltips = [],
       color = { value: 'categorical-100' },
@@ -114,6 +116,7 @@ export const addBar = produce<
     // put options back together now that all defaults are set
     const barOptions: BarSpecOptions = {
       barAnnotations,
+      barDirectLabels,
       chartPopovers,
       chartTooltips,
       dimensionScaleType: 'band',
@@ -409,6 +412,10 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
   }
 
   marks.push(...getTrendlineMarks(options));
+
+  for (const [i, label] of options.barDirectLabels.entries()) {
+    marks.push(...getBarDirectLabelMarks(getBarDirectLabelSpecOptions(label, i, options), options));
+  }
 });
 
 export const getRepeatedScale = (options: BarSpecOptions): Scale => {

@@ -9,9 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './barAnnotation.types';
-export * from './barDirectLabel.types';
-export * from './dountSummary.types';
-export * from './lineDirectLabel.types';
-export * from './segmentLabel.types';
+export interface BarDirectLabelProps {
+  // intentionally minimal for v1
+}
+
+export type BarDirectLabelElement = ReactElement<
+  BarDirectLabelProps,
+  JSXElementConstructor<BarDirectLabelProps>
+>;

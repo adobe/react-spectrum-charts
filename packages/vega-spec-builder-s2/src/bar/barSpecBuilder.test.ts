@@ -767,6 +767,20 @@ describe('barSpecBuilder', () => {
       });
     });
 
+    describe('with direct labels', () => {
+      test('should add direct label marks for each barDirectLabels entry', () => {
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          barDirectLabels: [{}],
+        });
+
+        // getBarDirectLabelMarks returns 2 marks (halo + label text) per entry
+        expect(marks).toHaveLength(defaultStackedBarMarks.length + 2);
+        expect(marks[marks.length - 2].name).toEqual('bar0DirectLabel0_bg');
+        expect(marks[marks.length - 1].name).toEqual('bar0DirectLabel0');
+      });
+    });
+
     test('stacked and dodged with annotations', () => {
       const addedMarks = addMarks([], {
         ...defaultBarOptions,

@@ -14,6 +14,7 @@ import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
 import { ColorFacet, LineTypeFacet, LineWidth, OpacityFacet, Orientation, PartiallyRequired } from '../specUtil.types';
 import { BarAnnotationOptions } from './supplemental/barAnnotationSpec.types';
+import { BarDirectLabelOptions } from './supplemental/barDirectLabelSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
 export type DualFacet = [string, string]; // two keys used for a secondary facet on Bar charts
@@ -73,6 +74,7 @@ export interface BarOptions {
 
   // children
   barAnnotations?: BarAnnotationOptions[];
+  barDirectLabels?: BarDirectLabelOptions[];
   chartPopovers?: ChartPopoverOptions[];
   chartTooltips?: ChartTooltipOptions[];
   trendlines?: TrendlineOptions[];
@@ -80,6 +82,7 @@ export interface BarOptions {
 
 type BarOptionsWithDefaults =
   | 'barAnnotations'
+  | 'barDirectLabels'
   | 'color'
   | 'chartPopovers'
   | 'chartTooltips'
