@@ -52,6 +52,9 @@ jobs:
           # Restore directories starting with "PR-"
           find . -mindepth 1 -maxdepth 1 -type d -name 'PR-*' -exec git reset {} +
 
+          # Restore S2 storybook subdirectory
+          find . -mindepth 1 -maxdepth 1 -type d -name 's2' -exec git reset {} +
+
           # Explicitly remove the node_modules directory
           rm -rf node_modules
 

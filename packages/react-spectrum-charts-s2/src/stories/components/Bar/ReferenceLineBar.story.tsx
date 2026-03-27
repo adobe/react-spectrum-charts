@@ -24,6 +24,7 @@ export default {
   component: ReferenceLine,
 };
 
+// S2 reference lines are horizontal-only (left/right axes only).
 const data = [
   { x: 1, y: 1, series: 0 },
   { x: 2, y: 2, series: 0 },
@@ -33,19 +34,6 @@ const data = [
 ];
 
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
-  const chartProps = useChartProps({ data, width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" baseline ticks>
-        <ReferenceLine {...args} />
-      </Axis>
-      <Axis position="left" baseline ticks />
-      <Bar dimension="y" metric="x" />
-    </Chart>
-  );
-};
-
-const ReferenceLineHorizontalStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
   const chartProps = useChartProps({ data, width: 600 });
   return (
     <Chart {...chartProps}>
@@ -61,27 +49,12 @@ const ReferenceLineHorizontalStory: StoryFn<typeof ReferenceLine> = (args): Reac
 const Basic = bindWithProps(ReferenceLineStory);
 Basic.args = {
   value: 3,
-  position: 'center',
 };
 
 const Label = bindWithProps(ReferenceLineStory);
 Label.args = {
   value: 3,
-  label: 'Jul 4',
-  position: 'center',
+  label: 'Target',
 };
 
-const Horizontal = bindWithProps(ReferenceLineHorizontalStory);
-Horizontal.args = {
-  value: 3,
-  position: 'center',
-};
-
-const HorizontalLabel = bindWithProps(ReferenceLineHorizontalStory);
-HorizontalLabel.args = {
-  value: 3,
-  label: 'Jul 4',
-  position: 'center',
-};
-
-export { Basic, Label, Horizontal, HorizontalLabel };
+export { Basic, Label };
