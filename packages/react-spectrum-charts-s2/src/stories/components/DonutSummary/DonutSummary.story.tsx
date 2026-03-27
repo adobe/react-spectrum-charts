@@ -23,7 +23,7 @@ import { ChartProps, DonutSummaryProps } from '../../../types';
 import { basicDonutData } from '../Donut/data';
 
 export default {
-  title: 'RSC/Donut/DonutSummary',
+  title: 'React Spectrum Charts 2/Donut/Features/Donut Summary',
   component: DonutSummary,
 };
 

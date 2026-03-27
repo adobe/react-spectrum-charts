@@ -25,7 +25,7 @@ import { DimensionAreaStory } from './SharedBarStories';
 import { barSeriesData, barSubSeriesData } from './data';
 
 export default {
-  title: 'RSC/Bar/Dodged Bar',
+  title: 'React Spectrum Charts 2/Bar/Features/Dodged Bar',
   component: Bar,
 };
 

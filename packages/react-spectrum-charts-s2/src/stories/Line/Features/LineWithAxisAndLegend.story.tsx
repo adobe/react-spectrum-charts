@@ -9,52 +9,43 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Line, ReferenceLine } from '../../../components';
+import { Axis, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Axis/Features/Reference Line',
-  component: ReferenceLine,
+  title: 'React Spectrum Charts 2/Line/Features',
+  component: Line,
 };
 
-const defaultChartProps: ChartProps = {
-  data: workspaceTrendsData,
-  minWidth: 400,
-  maxWidth: 800,
-  height: 400,
-  backgroundColor: 'gray-50',
-};
+const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+const LineStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid title="Users">
-        <ReferenceLine {...args} />
-      </Axis>
+      <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time" />
+      <Line {...args} />
+      <Legend highlight />
     </Chart>
   );
 };
 
-const Basic = bindWithProps(ReferenceLineStory);
-Basic.args = {
-  value: 5000,
+const LineWithAxisAndLegend = bindWithProps(LineStory);
+LineWithAxisAndLegend.args = {
+  color: 'series',
+  name: 'line0',
+  dimension: 'datetime',
+  metric: 'users',
+  scaleType: 'time',
 };
 
-const Label = bindWithProps(ReferenceLineStory);
-Label.args = {
-  label: 'Target',
-  value: 5000,
-};
-
-export { Basic, Label };
+export { LineWithAxisAndLegend };

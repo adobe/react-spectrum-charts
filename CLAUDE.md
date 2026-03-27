@@ -206,6 +206,16 @@ WithMyFeature.args = {
 
 `useChartProps` handles responsive sizing. `bindWithProps` wires up Storybook controls.
 
+## S2 Storybook Directory Structure
+
+S2 stories live in `packages/react-spectrum-charts-s2/src/stories/<ComponentName>/`:
+
+- `<ComponentName>Examples.story.tsx` — Figma design equivalents only. These match specific Figma frames and use `title: 'React Spectrum Charts 2/<ComponentName>/Examples'`.
+- `Features/` — Granular per-prop and test-case stories. Title prefix: `'React Spectrum Charts 2/<ComponentName>/Features'`.
+  - **Single-story files** (one named export): Storybook hoists them flat into the sidebar — no folder node is created. Use for simple prop showcases (e.g. `LineType.story.tsx`).
+  - **Multi-story groups** (two or more related stories): Place in a named subdirectory with a matching title segment. Example: `Features/Tooltip/LineTooltip.story.tsx` with `title: 'React Spectrum Charts 2/Line/Features/Tooltip'`. This creates a `Tooltip` folder node in the sidebar.
+  - Never put two files with the same `title` and overlapping export names — Storybook will throw a duplicate story ID error.
+
 ---
 
 ## Code Style

@@ -9,58 +9,41 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend, Title } from '../../../components';
+import { Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { workspaceTrendsData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
-import { browserData as data } from '../../data/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Title/Features',
-  component: Title,
+  title: 'React Spectrum Charts 2/Line/Features',
+  component: Line,
 };
 
-const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
+const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const TitleBarStory: StoryFn<typeof Title> = (args): ReactElement => {
+const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Title {...args} />
-      <Bar color="series" />
-      <Legend />
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid />
+      <Line {...args} />
+      <Legend lineWidth={{ value: 0 }} />
     </Chart>
   );
 };
 
-const Basic = bindWithProps(TitleBarStory);
+const Basic = bindWithProps(BasicLineStory);
 Basic.args = {
-  text: 'Bar Chart',
+  color: 'series',
+  name: 'line0',
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time',
 };
 
-const Orient = bindWithProps(TitleBarStory);
-Orient.args = {
-  text: 'Bar Chart',
-  orient: 'bottom',
-};
-
-const Position = bindWithProps(TitleBarStory);
-Position.args = {
-  text: 'Bar Chart',
-  position: 'start',
-};
-
-const FontWeight = bindWithProps(TitleBarStory);
-FontWeight.args = {
-  text: 'Bar Chart',
-  fontWeight: 'lighter',
-};
-
-export { Basic, Orient, Position, FontWeight };
+export { Basic };

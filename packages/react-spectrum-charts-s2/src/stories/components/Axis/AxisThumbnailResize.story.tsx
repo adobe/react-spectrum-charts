@@ -23,7 +23,7 @@ import { AxisThumbnailProps } from '../../../types';
 import { barData } from '../Bar/data';
 
 export default {
-	title: 'RSC/Axis/AxisThumbnail',
+	title: 'React Spectrum Charts 2/Axis/Features/Thumbnail',
 	component: AxisThumbnail,
 };
 

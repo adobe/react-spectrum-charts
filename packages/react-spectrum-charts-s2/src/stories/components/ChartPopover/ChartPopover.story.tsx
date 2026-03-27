@@ -26,7 +26,7 @@ import { browserData as data } from '../../data/data';
 import { basicDonutData } from '../Donut/data';
 
 export default {
-  title: 'RSC/ChartPopover',
+  title: 'React Spectrum Charts 2/Chart Popover/Features',
   component: ChartPopover,
   argTypes: {
     children: {

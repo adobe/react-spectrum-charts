@@ -15,19 +15,17 @@ import { StoryFn } from '@storybook/react';
 
 import { Content } from '@adobe/react-spectrum';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartPopover, ChartTooltip, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { LineProps } from '../../../types';
+import { Chart } from '../../../../Chart';
+import { Axis, ChartPopover, ChartTooltip, Legend, Line } from '../../../../components';
+import useChartProps from '../../../../hooks/useChartProps';
+import { bindWithProps } from '../../../../test-utils';
+import { LineProps } from '../../../../types';
 
 export default {
-  title: 'RSC/Line/Dual Metric Axis',
+  title: 'React Spectrum Charts 2/Line/Features/Dual Metric Axis',
   component: Line,
 };
 
-// Sample data with two series: Downloads and Conversion Rate
-// Downloads will be on the left axis (primary), Conversion Rate on the right axis (secondary)
 const lineDualAxisData = [
   { datetime: 1667890800000, value: 4500, series: 'Downloads', order: 0 },
   { datetime: 1667977200000, value: 5200, series: 'Downloads', order: 0 },
@@ -45,7 +43,6 @@ const lineDualAxisData = [
   { datetime: 1668409200000, value: 3.8, series: 'Conversion Rate (%)', order: 1 },
 ];
 
-// Sample data with three series
 const lineThreeSeriesData = [
   { datetime: 1667890800000, value: 4500, series: 'Downloads', order: 0 },
   { datetime: 1667977200000, value: 5200, series: 'Downloads', order: 0 },
@@ -118,24 +115,13 @@ const defaultProps: LineProps = {
   onClick: undefined,
 };
 
-const Basic = bindWithProps(BasicStory);
-Basic.args = {
-  ...defaultProps,
-  color: 'series',
-};
+const DualMetricAxisBasic = bindWithProps(BasicStory);
+DualMetricAxisBasic.args = { ...defaultProps, color: 'series' };
 
-const WithThreeSeries = bindWithProps(WithThreeSeriesStory);
-WithThreeSeries.args = {
-  ...defaultProps,
-  color: 'series',
-};
+const DualMetricAxisWithThreeSeries = bindWithProps(WithThreeSeriesStory);
+DualMetricAxisWithThreeSeries.args = { ...defaultProps, color: 'series' };
 
-const ItemTooltip = bindWithProps(BasicStory);
-ItemTooltip.args = {
-  ...defaultProps,
-  color: 'series',
-  interactionMode: 'item',
-};
+const DualMetricAxisItemTooltip = bindWithProps(BasicStory);
+DualMetricAxisItemTooltip.args = { ...defaultProps, color: 'series', interactionMode: 'item' };
 
-export { Basic, WithThreeSeries, ItemTooltip };
-
+export { DualMetricAxisBasic, DualMetricAxisWithThreeSeries, DualMetricAxisItemTooltip };

@@ -14,33 +14,23 @@ import { ReactElement } from 'react';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartPopover, ChartTooltip, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../stories/data/data';
-import { formatTimestamp } from '../../../stories/storyUtils';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
+import { Chart } from '../../../../Chart';
+import { Axis, ChartPopover, ChartTooltip, Legend, Line } from '../../../../components';
+import useChartProps from '../../../../hooks/useChartProps';
+import { workspaceTrendsData } from '../../../../stories/data/data';
+import { formatTimestamp } from '../../../../stories/storyUtils';
+import { bindWithProps } from '../../../../test-utils';
+import { ChartProps } from '../../../../types';
 
 export default {
-  title: 'RSC/Line/Gradient',
+  title: 'React Spectrum Charts 2/Line/Features/Gradient',
   component: Line,
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const defaultArgs = {
-  color: 'series',
-  name: 'line0',
-  onClick: undefined,
-};
-
 const generateCallback = (variant: 'popover' | 'tooltip') => {
-  const actionName = {
-    popover: 'ChartPopover',
-    tooltip: 'ChartTooltip',
-  };
-
+  const actionName = { popover: 'ChartPopover', tooltip: 'ChartTooltip' };
   const callback = (datum) => {
     action(`${actionName[variant]}:callback`)(datum);
     return (
@@ -66,15 +56,6 @@ const MultiSeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   );
 };
 
-const MultiSeries = bindWithProps(MultiSeriesStory);
-MultiSeries.args = {
-  ...defaultArgs,
-  dimension: 'datetime',
-  metric: 'users',
-  scaleType: 'time',
-  gradient: true,
-};
-
 const SingleSeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({
     ...defaultChartProps,
@@ -89,8 +70,18 @@ const SingleSeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   );
 };
 
-const SingleSeries = bindWithProps(SingleSeriesStory);
-SingleSeries.args = {
+const GradientMultiSeries = bindWithProps(MultiSeriesStory);
+GradientMultiSeries.args = {
+  color: 'series',
+  name: 'line0',
+  dimension: 'datetime',
+  metric: 'users',
+  scaleType: 'time',
+  gradient: true,
+};
+
+const GradientSingleSeries = bindWithProps(SingleSeriesStory);
+GradientSingleSeries.args = {
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
@@ -98,8 +89,8 @@ SingleSeries.args = {
   gradient: true,
 };
 
-const WithDialogs = bindWithProps(SingleSeriesStory);
-WithDialogs.args = {
+const GradientWithDialogs = bindWithProps(SingleSeriesStory);
+GradientWithDialogs.args = {
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
@@ -107,14 +98,12 @@ WithDialogs.args = {
   gradient: true,
   children: [
     <ChartTooltip key={0}>{generateCallback('tooltip')}</ChartTooltip>,
-    <ChartPopover key={1}>
-      {generateCallback('popover')}
-    </ChartPopover>,
+    <ChartPopover key={1}>{generateCallback('popover')}</ChartPopover>,
   ],
 };
 
-const StaticOpacity = bindWithProps(SingleSeriesStory);
-StaticOpacity.args = {
+const GradientStaticOpacity = bindWithProps(SingleSeriesStory);
+GradientStaticOpacity.args = {
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
@@ -123,8 +112,8 @@ StaticOpacity.args = {
   opacity: { value: 0.6 },
 };
 
-const MultiLineType = bindWithProps(MultiSeriesStory);
-MultiLineType.args = {
+const GradientMultiLineType = bindWithProps(MultiSeriesStory);
+GradientMultiLineType.args = {
   name: 'line0',
   dimension: 'datetime',
   metric: 'users',
@@ -134,8 +123,8 @@ MultiLineType.args = {
   gradient: true,
 };
 
-const WithInterpolate = bindWithProps(SingleSeriesStory);
-WithInterpolate.args = {
+const GradientWithInterpolate = bindWithProps(SingleSeriesStory);
+GradientWithInterpolate.args = {
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
@@ -144,4 +133,4 @@ WithInterpolate.args = {
   interpolate: 'step-after',
 };
 
-export { MultiSeries, SingleSeries, WithDialogs, StaticOpacity, MultiLineType, WithInterpolate };
+export { GradientMultiSeries, GradientSingleSeries, GradientWithDialogs, GradientStaticOpacity, GradientMultiLineType, GradientWithInterpolate };

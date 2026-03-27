@@ -13,7 +13,7 @@ import { ChartPopover, Legend } from '../../../components';
 import { LegendBarStory, LegendDisconnectedStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-  title: 'RSC/Legend',
+  title: 'React Spectrum Charts 2/Legend/Features',
   component: Legend,
 };
 
