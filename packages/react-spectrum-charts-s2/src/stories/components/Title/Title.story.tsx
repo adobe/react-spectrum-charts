@@ -21,7 +21,7 @@ import { ChartProps } from '../../../types';
 import { browserData as data } from '../../data/data';
 
 export default {
-  title: 'RSC/Title',
+  title: 'React Spectrum Charts 2/Title/Features',
   component: Title,
 };
 

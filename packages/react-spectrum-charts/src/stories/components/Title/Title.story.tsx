@@ -42,7 +42,7 @@ const TitleBarStory: StoryFn<typeof Title> = (args): ReactElement => {
 
 const Basic = bindWithProps(TitleBarStory);
 Basic.args = {
-  text: 'Bar Chart',
+  text: 'Bar Chart Bar ChartBar ChartBar ChartBar ChartBar ChartBar ChartBar Chart',
 };
 
 const Orient = bindWithProps(TitleBarStory);

@@ -25,7 +25,7 @@ import { formatTimestamp } from '../../../stories/storyUtils';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-  title: 'RSC/ChartTooltip',
+  title: 'React Spectrum Charts 2/Chart Tooltip/Features',
   component: ChartTooltip,
   argTypes: {
     children: {

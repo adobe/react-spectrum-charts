@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../Chart';
-import { Axis, Legend, Line, Title } from '../../components';
+import { Axis, Legend, Line, LineDirectLabel, ReferenceLine, Title } from '../../components';
 import useChartProps from '../../hooks/useChartProps';
 import { bindWithProps } from '../../test-utils';
 import { ChartProps } from '../../types';
@@ -125,4 +125,52 @@ UserRetentionCohort.args = {
   metric: 'retentionRate',
   scaleType: 'linear',
   interpolate: 'monotone',
+};
+
+// Total visits vs. target — single line showing % change from target over Jul–Dec 2024.
+// Values are derived from Figma bezier endpoint y-coordinates mapped to the ±30% scale.
+// Reference line at 0 marks the "Target" baseline; direct label shows the series name.
+const totalVisitsData = [
+  { datetime: 1719792000000, percentChange: -0.133, series: 'Total visits' },
+  { datetime: 1721001600000, percentChange: -0.199, series: 'Total visits' },
+  { datetime: 1722470400000, percentChange: -0.132, series: 'Total visits' },
+  { datetime: 1723680000000, percentChange: -0.090, series: 'Total visits' },
+  { datetime: 1725148800000, percentChange: -0.162, series: 'Total visits' },
+  { datetime: 1726358400000, percentChange: -0.051, series: 'Total visits' },
+  { datetime: 1727740800000, percentChange:  0.027, series: 'Total visits' },
+  { datetime: 1728950400000, percentChange:  0.138, series: 'Total visits' },
+  { datetime: 1730419200000, percentChange:  0.099, series: 'Total visits' },
+  { datetime: 1731628800000, percentChange:  0.028, series: 'Total visits' },
+  { datetime: 1733011200000, percentChange:  0.138, series: 'Total visits' },
+  { datetime: 1734220800000, percentChange:  0.170, series: 'Total visits' },
+];
+
+const totalVisitsChartProps: ChartProps = {
+  data: totalVisitsData,
+  width: 900,
+  height: 336,
+};
+
+const TotalVisitsLStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const props = useChartProps(totalVisitsChartProps);
+  return (
+    <Chart {...props} debug>
+      <Title text="Total visits reached 18.9M in Dec 2024" />
+      <Axis position="right" grid labelFormat="percentage" range={[-0.3, 0.3]} tickMinStep={0.3}>
+        <ReferenceLine value={0} label="Target" />
+      </Axis>
+      <Axis position="bottom" labelFormat="time" granularity="month" baseline ticks />
+      <Line {...args}>
+        <LineDirectLabel value="series" />
+      </Line>
+    </Chart>
+  );
+};
+
+export const TotalVisitsL = bindWithProps(TotalVisitsLStory);
+TotalVisitsL.args = {
+  color: 'series',
+  dimension: 'datetime',
+  metric: 'percentChange',
+  scaleType: 'time',
 };

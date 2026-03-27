@@ -22,7 +22,7 @@ import { browserData as data } from '../../data/data';
 import { defaultProps } from './LegendStoryUtils';
 
 export default {
-  title: 'RSC/Legend/Symbols',
+  title: 'React Spectrum Charts 2/Legend/Features/Symbol',
   component: Legend,
 };
 

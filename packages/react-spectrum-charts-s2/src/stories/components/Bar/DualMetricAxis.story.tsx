@@ -23,7 +23,7 @@ import { BarProps } from '../../../types';
 import { barDataTwoSeries, barSeriesData } from './data';
 
 export default {
-  title: 'RSC/Bar/Dual Metric Axis',
+  title: 'React Spectrum Charts 2/Bar/Features/Dual Metric Axis',
   component: Bar,
 };
 

@@ -20,7 +20,7 @@ import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-  title: 'RSC/Bar/ReferenceLine',
+  title: 'React Spectrum Charts 2/Bar/Features/Reference Line',
   component: ReferenceLine,
 };
 
@@ -36,6 +36,19 @@ const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement =
   const chartProps = useChartProps({ data, width: 600 });
   return (
     <Chart {...chartProps}>
+      <Axis position="bottom" baseline ticks>
+        <ReferenceLine {...args} />
+      </Axis>
+      <Axis position="left" baseline ticks />
+      <Bar dimension="y" metric="x" />
+    </Chart>
+  );
+};
+
+const ReferenceLineHorizontalStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+  const chartProps = useChartProps({ data, width: 600 });
+  return (
+    <Chart {...chartProps}>
       <Axis position="left" baseline ticks>
         <ReferenceLine {...args} />
       </Axis>
@@ -48,12 +61,27 @@ const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement =
 const Basic = bindWithProps(ReferenceLineStory);
 Basic.args = {
   value: 3,
+  position: 'center',
 };
 
 const Label = bindWithProps(ReferenceLineStory);
 Label.args = {
   value: 3,
-  label: 'Target',
+  label: 'Jul 4',
+  position: 'center',
 };
 
-export { Basic, Label };
+const Horizontal = bindWithProps(ReferenceLineHorizontalStory);
+Horizontal.args = {
+  value: 3,
+  position: 'center',
+};
+
+const HorizontalLabel = bindWithProps(ReferenceLineHorizontalStory);
+HorizontalLabel.args = {
+  value: 3,
+  label: 'Jul 4',
+  position: 'center',
+};
+
+export { Basic, Label, Horizontal, HorizontalLabel };

@@ -24,7 +24,7 @@ import { BarProps } from '../../../types';
 import { barData, barDataWithUTC } from './data';
 
 export default {
-  title: 'RSC/Bar',
+  title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
 };
 
