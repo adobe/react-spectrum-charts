@@ -299,6 +299,34 @@ describe('axisThumbnailUtils', () => {
       expect(result[1]).toHaveProperty('type', 'image');
       expect(result[1]).toHaveProperty('name', 'testAxisAxisThumbnail1');
     });
+
+    test('should set pointer cursor when hasPopover is true', () => {
+      const axisOptions: AxisSpecOptions = {
+        ...defaultAxisOptions,
+        name: 'testAxis',
+        position: 'bottom',
+        hasPopover: true,
+        axisThumbnails: [{}],
+      };
+
+      const result = getAxisThumbnailMarks(axisOptions, 'xScale', 'category');
+
+      expect(result[0].encode?.update).toHaveProperty('cursor', { value: 'pointer' });
+    });
+
+    test('should not set cursor when hasPopover is false', () => {
+      const axisOptions: AxisSpecOptions = {
+        ...defaultAxisOptions,
+        name: 'testAxis',
+        position: 'bottom',
+        hasPopover: false,
+        axisThumbnails: [{}],
+      };
+
+      const result = getAxisThumbnailMarks(axisOptions, 'xScale', 'category');
+
+      expect(result[0].encode?.update?.cursor).toBeUndefined();
+    });
   });
 
   describe('getAxisThumbnailPosition', () => {
