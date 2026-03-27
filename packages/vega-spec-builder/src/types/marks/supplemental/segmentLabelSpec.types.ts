@@ -17,6 +17,13 @@ export interface SegmentLabelOptions {
   labelKey?: string;
   /** Shows the donut segment percentage */
   percent?: boolean;
+  /** d3 format specifier for the percentage value displayed when `percent` is true.
+   *
+   * @default '.0%'
+   *
+   * see {@link https://d3js.org/d3-format#locale_format}
+   */
+  percentFormat?: string;
   /** Shows the donut segment metric value */
   value?: boolean;
   /** d3 number format specifier.
@@ -29,7 +36,7 @@ export interface SegmentLabelOptions {
   valueFormat?: string;
 }
 
-type SegmentLabelOptionsWithDefaults = 'percent' | 'value' | 'valueFormat';
+type SegmentLabelOptionsWithDefaults = 'percent' | 'percentFormat' | 'value' | 'valueFormat';
 
 export interface SegmentLabelSpecOptions
   extends PartiallyRequired<SegmentLabelOptions, SegmentLabelOptionsWithDefaults> {

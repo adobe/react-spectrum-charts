@@ -26,6 +26,7 @@ const defaultDonutOptionsWithSegmentLabel: DonutSpecOptions = {
 const defaultSegmentLabelOptions: SegmentLabelSpecOptions = {
   donutOptions: defaultDonutOptionsWithSegmentLabel,
   percent: false,
+  percentFormat: '.0%',
   value: false,
   valueFormat: 'standardNumber',
 };
@@ -85,6 +86,22 @@ describe('getSegmentLabelValueText()', () => {
       'signal',
       `format(datum['testName_arcPercent'], '.0%')`
     );
+  });
+  test('should use custom percentFormat when provided', () => {
+    expect(
+      getSegmentLabelValueText({ ...defaultSegmentLabelOptions, percent: true, percentFormat: '.1%' })
+    ).toHaveProperty('signal', `format(datum['testName_arcPercent'], '.1%')`);
+  });
+  test('should use custom percentFormat in combined percent + value mode', () => {
+    const rules = getSegmentLabelValueText({
+      ...defaultSegmentLabelOptions,
+      value: true,
+      percent: true,
+      percentFormat: '.1%',
+    });
+    expect(rules).toHaveLength(1);
+    expect(rules?.[0].signal).toContain("'.1%'");
+    expect(rules?.[0].signal).toContain('testMetric');
   });
   test('should return an array of rules if value is true', () => {
     const rules = getSegmentLabelValueText({ ...defaultSegmentLabelOptions, value: true });
