@@ -26,6 +26,7 @@ import {
   getOnMouseInputCallback,
   setSelectedSignals,
 } from '../utils';
+import useAxisThumbnailPopover from './useAxisThumbnailPopover';
 import useLegend from './useLegend';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails';
 import useMarkOnClickDetails from './useMarkOnClickDetails';
@@ -48,6 +49,7 @@ const useNewChartView = (
   } = useLegend(sanitizedChildren); // gets props from the legend if it exists
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
+  const thumbnailPopoverConfig = useAxisThumbnailPopover(sanitizedChildren);
 
   const legendHasPopover = useMemo(
     () => popovers.some((p) => p.parent === Legend.displayName && !p.chartPopoverProps.rightClick),
@@ -107,7 +109,8 @@ const useNewChartView = (
             legendHasPopover,
             onLegendClick,
             trigger: 'click',
-            markHasPopover: markHasPopover
+            markHasPopover: markHasPopover,
+            thumbnailPopoverConfig,
           })
         );
         if (popovers.some((p) => p.chartPopoverProps.rightClick)) {
@@ -130,6 +133,7 @@ const useNewChartView = (
               onLegendClick,
               trigger: 'contextmenu',
               markHasPopover: markHasPopover,
+              thumbnailPopoverConfig,
             })
           );
         }
@@ -164,6 +168,7 @@ const useNewChartView = (
       selectedDataBounds,
       selectedDataName,
       setLegendHiddenSeries,
+      thumbnailPopoverConfig,
       tooltipOptions,
     ]
   );

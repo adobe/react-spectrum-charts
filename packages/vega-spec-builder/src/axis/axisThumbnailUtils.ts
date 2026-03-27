@@ -13,7 +13,7 @@ import { ImageMark, ScaleType, Signal, TextEncodeEntry } from 'vega';
 
 import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/constants';
 
-import { getTooltip } from '../marks/markUtils';
+import { getCursor, getTooltip } from '../marks/markUtils';
 import { addAxisThumbnailHoveredGroupSignal, getGenericUpdateSignal } from '../signal/signalSpecBuilder';
 import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, ChartTooltipOptions, Position } from '../types';
 
@@ -72,9 +72,10 @@ export const getAxisTooltips = (axisOptions: AxisSpecOptions): ChartTooltipOptio
 };
 
 /**
- * Adds thumbnail size calculation signals to the signals array.
+ * Adds thumbnail signals to the signals array
  * Creates a signal that calculates the appropriate thumbnail size based on the scale bandwidth
  * and maximum thumbnail size constraints.
+ * Also adds a hoveredGroup signal if highlighting is enabled for the thumbnail.
  *
  * @param signals - The array of Vega signals to append the thumbnail size signal to
  * @param axisThumbnailName - The name of the thumbnail for signal generation
@@ -115,7 +116,7 @@ export const getAxisThumbnailMarks = (
   scaleName: string,
   scaleField: string
 ): ImageMark[] => {
-  const { position, name: axisName } = axisOptions;
+  const { position, name: axisName, hasPopover } = axisOptions;
   const chartTooltips = getAxisTooltips(axisOptions);
   const thumbnails: ImageMark[] = [];
   const axisThumbnails = getAxisThumbnails(axisOptions);
@@ -132,6 +133,7 @@ export const getAxisThumbnailMarks = (
         },
         update: {
           ...getAxisThumbnailPosition(scaleName, scaleField, position, thumbnailName),
+          cursor: getCursor([], hasPopover),
           width: { signal: `${thumbnailName}ThumbnailSize` },
           height: { signal: `${thumbnailName}ThumbnailSize` },
           opacity: [

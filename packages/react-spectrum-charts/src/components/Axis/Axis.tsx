@@ -43,6 +43,7 @@ const Axis: FC<AxisProps> = ({
   tickCountMinimum = undefined,
   tickMinStep = undefined,
   title = undefined,
+  hasPopover = false,
 }) => {
   return null;
 };

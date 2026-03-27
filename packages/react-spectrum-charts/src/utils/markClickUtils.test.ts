@@ -16,6 +16,7 @@ import { COMPONENT_NAME } from '@spectrum-charts/constants';
 import {
   ActionItem,
   GetOnMarkClickCallbackArgs,
+  findSceneItemByDimension,
   getItemBounds,
   getItemName,
   getLegendItemValue,
@@ -23,6 +24,7 @@ import {
   getOnMarkClickCallback,
   handleLegendItemClick,
   handleLegendItemMouseInput,
+  isThumbnailItem,
 } from './markClickUtils';
 
 const defaultMarkClickArgs: GetOnMarkClickCallbackArgs = {
@@ -201,45 +203,125 @@ describe('handleLegendItemMouseInput()', () => {
   });
 });
 
-describe('getOnMarkClickCallback() mark click with markHasPopover', () => {
-  const markItem = {
-    datum: { foo: 1 },
-    bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
-    mark: {
-      role: 'mark',
-      name: 'bar0_rect',
-      marktype: 'rect',
-      group: { x: 0, y: 0 },
-      items: [],
-    },
-  } as unknown as Item;
-
+describe('getOnMarkClickCallback()', () => {
   const fakeClickEvent = { type: 'click' } as Parameters<ReturnType<typeof getOnMarkClickCallback>>[0];
-  // handleMarkClick is not called when there is not a popover on the mark 
-  test('should not set selectedData when markHasPopover is false', () => {
-    const selectedData = { current: null as unknown };
-    const callback = getOnMarkClickCallback({
-      ...defaultMarkClickArgs,
-      markHasPopover: false,
-      selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+
+  describe('mark click with markHasPopover', () => {
+    const markItem = {
+      datum: { foo: 1 },
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      mark: {
+        role: 'mark',
+        name: 'bar0_rect',
+        marktype: 'rect',
+        group: { x: 0, y: 0 },
+        items: [],
+      },
+    } as unknown as Item;
+
+    test('should not set selectedData when markHasPopover is false', () => {
+      const selectedData = { current: null as unknown };
+      const callback = getOnMarkClickCallback({
+        ...defaultMarkClickArgs,
+        markHasPopover: false,
+        selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+      });
+      callback(fakeClickEvent, markItem);
+      expect(selectedData.current).toBeNull();
     });
-    callback(fakeClickEvent, markItem);
-    expect(selectedData.current).toBeNull();
+
+    test('should set selectedData when markHasPopover is true', () => {
+      const selectedData = { current: null as unknown };
+      const callback = getOnMarkClickCallback({
+        ...defaultMarkClickArgs,
+        markHasPopover: true,
+        selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+      });
+      callback(fakeClickEvent, markItem);
+      expect(selectedData.current).toStrictEqual({
+        [COMPONENT_NAME]: 'bar0',
+        foo: 1,
+      });
+    });
   });
 
-  test('should set selectedData when markHasPopover is true', () => {
-    const selectedData = { current: null as unknown };
-    const callback = getOnMarkClickCallback({
-      ...defaultMarkClickArgs,
-      markHasPopover: true,
-      selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+  describe('with thumbnail item', () => {
+    const barItemDatum = { browser: 'Chrome', downloads: 27000 };
+    const barSceneItem = {
+      bounds: { x1: 10, x2: 50, y1: 100, y2: 200 },
+      datum: barItemDatum,
+      mark: { name: 'bar0', marktype: 'rect', role: 'mark', group: { x: 0, y: 0 }, items: [] },
+    };
+  
+    const thumbnailItem = {
+      bounds: { x1: 10, x2: 50, y1: 200, y2: 250 },
+      datum: { browser: 'Chrome', thumbnail: '/chrome.png' },
+      mark: {
+        name: 'axis0AxisThumbnail0',
+        marktype: 'image',
+        role: 'mark',
+        group: { x: 0, y: 0 },
+        items: [],
+      },
+    } as unknown as Item;
+  
+    const thumbnailPopoverConfig = {
+      thumbnailNames: ['axis0AxisThumbnail0'],
+      dimensionField: 'browser',
+      barMarkName: 'bar0',
+    };
+
+    test('should set selectedData when thumbnail item is clicked and matching bar item found', () => {
+      const selectedData = { current: null as unknown };
+      const selectedDataBounds = { current: undefined as unknown };
+      const selectedDataName = { current: undefined as unknown };
+      const mockView = {
+        scenegraph: () => ({ root: { items: [barSceneItem] } }),
+      } as unknown as View;
+  
+      const callback = getOnMarkClickCallback({
+        ...defaultMarkClickArgs,
+        chartView: { current: mockView },
+        selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+        selectedDataBounds: selectedDataBounds as GetOnMarkClickCallbackArgs['selectedDataBounds'],
+        selectedDataName: selectedDataName as GetOnMarkClickCallbackArgs['selectedDataName'],
+        thumbnailPopoverConfig,
+      });
+      callback(fakeClickEvent, thumbnailItem);
+      expect(selectedData.current).toStrictEqual({ [COMPONENT_NAME]: 'bar0', ...barItemDatum });
+      expect(selectedDataName.current).toBe('bar0');
     });
-    callback(fakeClickEvent, markItem);
-    expect(selectedData.current).toStrictEqual({
-      [COMPONENT_NAME]: 'bar0',
-      foo: 1,
+
+    test('should not set selectedData when thumbnailPopoverConfig is omitted', () => {
+      const selectedData = { current: null as unknown };
+      const callback = getOnMarkClickCallback({
+        ...defaultMarkClickArgs,
+        selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+      });
+      callback(fakeClickEvent, thumbnailItem);
+      expect(selectedData.current).toBeNull();
+    });
+  
+    test('should not set selectedData when thumbnail name is not in config thumbnailNames', () => {
+      const selectedData = { current: null as unknown };
+      const mockView = {
+        scenegraph: () => ({ root: { items: [barSceneItem] } }),
+      } as unknown as View;
+      const callback = getOnMarkClickCallback({
+        ...defaultMarkClickArgs,
+        chartView: { current: mockView },
+        selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
+        thumbnailPopoverConfig: {
+          thumbnailNames: ['axis1AxisThumbnail0'],
+          dimensionField: 'browser',
+          barMarkName: 'bar0',
+        },
+      });
+      callback(fakeClickEvent, thumbnailItem);
+      expect(selectedData.current).toBeNull();
     });
   });
+
 });
 
 describe('getOnChartMarkContextMenuCallback()', () => {
@@ -344,5 +426,81 @@ describe('getOnChartMarkContextMenuCallback()', () => {
       expect.objectContaining({ clientX: 100, clientY: 200 }),
       { date: 1000, value: 42 }
     );
+  });
+});
+
+describe('isThumbnailItem()', () => {
+  test('should return true for an image mark whose name includes AxisThumbnail', () => {
+    const item = {
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      datum: {},
+      mark: { marktype: 'image', name: 'axis0AxisThumbnail0', role: 'mark', group: { x: 0, y: 0 }, items: [] },
+    } as ActionItem;
+    expect(isThumbnailItem(item)).toBe(true);
+  });
+
+  test('should return false for a non-image mark', () => {
+    const item = {
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      datum: {},
+      mark: { marktype: 'rect', name: 'axis0AxisThumbnail0', role: 'mark', group: { x: 0, y: 0 }, items: [] },
+    } as ActionItem;
+    expect(isThumbnailItem(item)).toBe(false);
+  });
+
+  test('should return false for an image mark whose name does not include AxisThumbnail', () => {
+    const item = {
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      datum: {},
+      mark: { marktype: 'image', name: 'someOtherImage', role: 'mark', group: { x: 0, y: 0 }, items: [] },
+    } as ActionItem;
+    expect(isThumbnailItem(item)).toBe(false);
+  });
+});
+
+describe('findSceneItemByDimension()', () => {
+  const barItem = {
+    bounds: { x1: 10, x2: 50, y1: 100, y2: 200 },
+    datum: { browser: 'Chrome', downloads: 27000 },
+    mark: { name: 'bar0', marktype: 'rect', role: 'mark', group: { x: 0, y: 0 }, items: [] },
+  };
+
+  const buildView = (root: unknown) =>
+    ({ scenegraph: () => ({ root }) } as unknown as View);
+
+  test('should return a matching item found at the root level', () => {
+    const view = buildView({ items: [barItem] });
+    const result = findSceneItemByDimension(view, 'bar0', 'browser', 'Chrome');
+    expect(result).toBe(barItem);
+  });
+
+  test('should return matching item after traversing non-matching siblings in a nested structure', () => {
+    const nonMatchingBarSibling = {
+      bounds: { x1: 1, x2: 2, y1: 3, y2: 4 },
+      datum: { browser: 'Firefox', downloads: 100 },
+      mark: { name: 'bar0', marktype: 'rect', role: 'mark', group: { x: 0, y: 0 }, items: [] },
+    };
+    const group = { items: [{ items: [nonMatchingBarSibling, barItem] }] };
+    const view = buildView(group);
+    const result = findSceneItemByDimension(view, 'bar0', 'browser', 'Chrome');
+    expect(result).toBe(barItem);
+  });
+
+  test('should return undefined when dimension value does not match', () => {
+    const view = buildView({ items: [barItem] });
+    const result = findSceneItemByDimension(view, 'bar0', 'browser', 'Firefox');
+    expect(result).toBeUndefined();
+  });
+
+  test('should return undefined when mark name does not match', () => {
+    const view = buildView({ items: [barItem] });
+    const result = findSceneItemByDimension(view, 'bar1', 'browser', 'Chrome');
+    expect(result).toBeUndefined();
+  });
+
+  test('should return undefined when scenegraph is empty', () => {
+    const view = buildView({ items: [] });
+    const result = findSceneItemByDimension(view, 'bar0', 'browser', 'Chrome');
+    expect(result).toBeUndefined();
   });
 });

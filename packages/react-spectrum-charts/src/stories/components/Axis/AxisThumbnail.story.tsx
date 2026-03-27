@@ -128,25 +128,64 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
 
 const Popover = bindWithProps(ChartPopoverSvgStory);
 Popover.args = { children: dialogContent, width: 'auto' };
-Popover.storyName = 'Popover';
+
+const singleBarDialogContent = (datum: Datum) => (
+  <Content>
+    <div>Browser: {datum.browser as string}</div>
+    <div>Downloads: {(datum.downloads as number)?.toLocaleString()}</div>
+  </Content>
+);
+
+const WithThumbnailPopoverStory: StoryFn<typeof AxisThumbnail> = (): ReactElement => {
+  const chartProps = useChartProps({ data, renderer: 'svg', width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Bar dimension="browser" metric="downloads">
+        <ChartPopover width="auto">{singleBarDialogContent}</ChartPopover>
+      </Bar>
+      <Axis position="bottom" baseline hasPopover>
+        <AxisThumbnail urlKey="thumbnail" />
+      </Axis>
+    </Chart>
+  );
+};
+
+const WithThumbnailPopover = bindWithProps(WithThumbnailPopoverStory);
+WithThumbnailPopover.args = {};
+
+const DodgedBarWithThumbnailPopoverStory: StoryFn<typeof AxisThumbnail> = (): ReactElement => {
+  const chartProps = useChartProps({ data: chartPopoverDataWithThumbnails, renderer: 'svg', width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Bar color="series" type="dodged">
+        <ChartPopover width="auto">{dialogContent}</ChartPopover>
+      </Bar>
+      <Axis position="bottom" baseline hasPopover>
+        <AxisThumbnail urlKey="thumbnail" />
+      </Axis>
+    </Chart>
+  );
+};
+
+const simpleDialogContent = (datum: Datum) => {
+  const d = datum[GROUP_DATA]?.[0] ?? datum;
+  return(
+    <Content>
+      <div>Browser: {d.browser as string}</div>
+      <div>Downloads: {(d.downloads as number)?.toLocaleString()}</div>
+    </Content>
+  )
+};
+
+const DodgedBarWithThumbnailPopover = bindWithProps(DodgedBarWithThumbnailPopoverStory);
+DodgedBarWithThumbnailPopover.args = {};
 
 const DodgedBarWithTooltipsStory: StoryFn<typeof ChartTooltip> = (): ReactElement => {
   const chartProps = useChartProps({ data: chartPopoverDataWithThumbnails, renderer: 'svg', width: 600 });
   return (
     <Chart {...chartProps}>
       <Bar color="series" type="dodged">
-        <ChartTooltip>
-          {(datum) => {
-            console.log('DODGED TOOLTIP datum:', datum);
-            return (
-              <div>
-                <div>Operating system: {datum.series}</div>
-                <div>Browser: {datum.category}</div>
-                <div>Users: {datum.value?.toLocaleString()}</div>
-              </div>
-            );
-          }}
-        </ChartTooltip>
+        <ChartTooltip>{dialogContent}</ChartTooltip>
       </Bar>
       <Axis position="bottom" baseline>
         <AxisThumbnail urlKey="thumbnail" />
@@ -169,7 +208,6 @@ const DodgedBarWithTooltipsStory: StoryFn<typeof ChartTooltip> = (): ReactElemen
 
 const DodgedBarWithTooltips = bindWithProps(DodgedBarWithTooltipsStory);
 DodgedBarWithTooltips.args = {};
-DodgedBarWithTooltips.storyName = 'Dodged Bar with Tooltips';
 
 const AxisThumbnailTooltipStory: StoryFn<StoryArgs> = (args): ReactElement => {
   const { orientation, width, ...axisThumbnailProps } = args;
@@ -194,33 +232,11 @@ const AxisThumbnailTooltipStory: StoryFn<StoryArgs> = (args): ReactElement => {
     >
       <Chart {...chartProps}>
         <Bar orientation={orientation} dimension="browser" metric="downloads">
-          <ChartTooltip targets={['item', 'dimensionArea']}>
-            {(datum) => {
-              const d = datum[GROUP_DATA]?.[0] ?? datum;
-              console.log('TOOLTIP datum:', d);
-              return (
-                <div>
-                  <div>Browser: {d.browser}</div>
-                  <div>Downloads: {d.downloads?.toLocaleString()}</div>
-                </div>
-              );
-            }}
-          </ChartTooltip>
+          <ChartTooltip targets={['item', 'dimensionArea']}>{simpleDialogContent}</ChartTooltip>
         </Bar>
         <Axis position={orientation === 'horizontal' ? 'left' : 'bottom'} baseline>
           <AxisThumbnail {...axisThumbnailProps} />
-          <ChartTooltip>
-            {(datum) => {
-              const d = datum[GROUP_DATA]?.[0] ?? datum;
-              
-              return (
-                <div>
-                  <div>Browser: {d.browser}</div>
-                  <div>Downloads: {d.downloads?.toLocaleString()}</div>
-                </div>
-              );
-            }}
-          </ChartTooltip>
+          <ChartTooltip>{simpleDialogContent}</ChartTooltip>
         </Axis>
       </Chart>
     </View>
@@ -232,6 +248,13 @@ YAxisWithTooltip.args = {
   urlKey: 'thumbnail',
   orientation: 'horizontal',
 };
-YAxisWithTooltip.storyName = 'YAxis with Tooltip';
 
-export { Basic, YAxis, Popover, DodgedBarWithTooltips, YAxisWithTooltip };
+export {
+  Basic,
+  YAxis,
+  Popover,
+  WithThumbnailPopover,
+  DodgedBarWithThumbnailPopover,
+  DodgedBarWithTooltips,
+  YAxisWithTooltip,
+};

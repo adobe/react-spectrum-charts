@@ -78,8 +78,8 @@ import {
  * @param hasOnClick
  * @returns cursor encoding
  */
-export const getCursor = (chartPopovers: ChartPopoverOptions[], hasOnClick?: boolean): EncodeEntry['cursor'] => {
-  if (hasOnClick || chartPopovers.length) {
+export const getCursor = (chartPopovers: ChartPopoverOptions[], isClickable?: boolean): EncodeEntry['cursor'] => {
+  if (isClickable || chartPopovers.length) {
     return { value: 'pointer' };
   }
 };
