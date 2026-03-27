@@ -37,7 +37,7 @@ export interface GetOnMarkClickCallbackArgs {
   onLegendClick?: (seriesName: string) => void;
   trigger: 'click' | 'contextmenu';
   markHasPopover?: boolean;
-  thumbnailPopoverConfigs?: ThumbnailPopoverConfig[];
+  thumbnailPopoverConfig?: ThumbnailPopoverConfig;
 }
 
 /**
@@ -459,27 +459,30 @@ const handleAxisThumbnailClick = (
     selectedData,
     selectedDataBounds,
     selectedDataName,
-    thumbnailPopoverConfigs,
+    thumbnailPopoverConfig,
     trigger,
   }: GetOnMarkClickCallbackArgs
 ): void => {
-  const configs = thumbnailPopoverConfigs;
-  if (!configs?.length || !chartView.current) return;
+  if (!thumbnailPopoverConfig || !chartView.current) return;
 
   const itemName = getItemName(item);
-  const config = configs.find((c) => c.thumbnailNames.includes(itemName ?? ''));
-  if (!config) return;
+  if (!thumbnailPopoverConfig.thumbnailNames.includes(itemName ?? '')) return;
 
-  const dimensionValue = (item as Item).datum?.[config.dimensionField];
+  const dimensionValue = (item as Item).datum?.[thumbnailPopoverConfig.dimensionField];
   if (dimensionValue === undefined) return;
 
-  const barItem = findSceneItemByDimension(chartView.current, config.barMarkName, config.dimensionField, dimensionValue);
+  const barItem = findSceneItemByDimension(
+    chartView.current,
+    thumbnailPopoverConfig.barMarkName,
+    thumbnailPopoverConfig.dimensionField,
+    dimensionValue
+  );
   if (!barItem) return;
 
-  selectedData.current = { [COMPONENT_NAME]: config.barMarkName, ...barItem.datum };
+  selectedData.current = { [COMPONENT_NAME]: thumbnailPopoverConfig.barMarkName, ...barItem.datum };
   selectedDataBounds.current = getItemBounds(barItem);
-  selectedDataName.current = config.barMarkName;
-  triggerPopover(chartId, config.barMarkName, trigger);
+  selectedDataName.current = thumbnailPopoverConfig.barMarkName;
+  triggerPopover(chartId, thumbnailPopoverConfig.barMarkName, trigger);
 };
 
 /* TYPE GUARDS */

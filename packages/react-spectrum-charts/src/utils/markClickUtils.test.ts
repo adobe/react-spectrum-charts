@@ -265,14 +265,12 @@ describe('getOnMarkClickCallback()', () => {
       },
     } as unknown as Item;
   
-    const thumbnailPopoverConfigs = [
-      {
-        thumbnailNames: ['axis0AxisThumbnail0'],
-        dimensionField: 'browser',
-        barMarkName: 'bar0',
-      },
-    ];
-  
+    const thumbnailPopoverConfig = {
+      thumbnailNames: ['axis0AxisThumbnail0'],
+      dimensionField: 'browser',
+      barMarkName: 'bar0',
+    };
+
     test('should set selectedData when thumbnail item is clicked and matching bar item found', () => {
       const selectedData = { current: null as unknown };
       const selectedDataBounds = { current: undefined as unknown };
@@ -287,25 +285,24 @@ describe('getOnMarkClickCallback()', () => {
         selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
         selectedDataBounds: selectedDataBounds as GetOnMarkClickCallbackArgs['selectedDataBounds'],
         selectedDataName: selectedDataName as GetOnMarkClickCallbackArgs['selectedDataName'],
-        thumbnailPopoverConfigs,
+        thumbnailPopoverConfig,
       });
       callback(fakeClickEvent, thumbnailItem);
       expect(selectedData.current).toStrictEqual({ [COMPONENT_NAME]: 'bar0', ...barItemDatum });
       expect(selectedDataName.current).toBe('bar0');
     });
-  
-    test('should not set selectedData when thumbnailPopoverConfigs is empty', () => {
+
+    test('should not set selectedData when thumbnailPopoverConfig is omitted', () => {
       const selectedData = { current: null as unknown };
       const callback = getOnMarkClickCallback({
         ...defaultMarkClickArgs,
         selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
-        thumbnailPopoverConfigs: [],
       });
       callback(fakeClickEvent, thumbnailItem);
       expect(selectedData.current).toBeNull();
     });
   
-    test('should not set selectedData when thumbnail name is not in any config', () => {
+    test('should not set selectedData when thumbnail name is not in config thumbnailNames', () => {
       const selectedData = { current: null as unknown };
       const mockView = {
         scenegraph: () => ({ root: { items: [barSceneItem] } }),
@@ -314,9 +311,11 @@ describe('getOnMarkClickCallback()', () => {
         ...defaultMarkClickArgs,
         chartView: { current: mockView },
         selectedData: selectedData as GetOnMarkClickCallbackArgs['selectedData'],
-        thumbnailPopoverConfigs: [
-          { thumbnailNames: ['axis1AxisThumbnail0'], dimensionField: 'browser', barMarkName: 'bar0' },
-        ],
+        thumbnailPopoverConfig: {
+          thumbnailNames: ['axis1AxisThumbnail0'],
+          dimensionField: 'browser',
+          barMarkName: 'bar0',
+        },
       });
       callback(fakeClickEvent, thumbnailItem);
       expect(selectedData.current).toBeNull();

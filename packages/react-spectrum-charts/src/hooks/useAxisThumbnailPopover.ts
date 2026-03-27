@@ -52,11 +52,11 @@ function findFirstBarWithChartPopover(children: ChartChildElement[]) {
  * Finds the first bar mark with a ChartPopover child and collects all AxisThumbnail
  * names on axes with hasPopover=true, returning a config that links them together.
  */
-export default function useAxisThumbnailPopover(children: ChartChildElement[]): ThumbnailPopoverConfig[] {
+export default function useAxisThumbnailPopover(children: ChartChildElement[]): ThumbnailPopoverConfig | undefined {
   return useMemo(() => {
     const barWithPopover = findFirstBarWithChartPopover(children);
 
-    if (!barWithPopover) return [];
+    if (!barWithPopover) return undefined;
 
     const barMarkName = barWithPopover.name;
     const barElement = barWithPopover.element as BarElement;
@@ -82,8 +82,8 @@ export default function useAxisThumbnailPopover(children: ChartChildElement[]): 
       }
     }
 
-    if (thumbnailNames.length === 0) return [];
+    if (thumbnailNames.length === 0) return undefined;
 
-    return [{ thumbnailNames, dimensionField, barMarkName }];
+    return { thumbnailNames, dimensionField, barMarkName };
   }, [children]);
 }
