@@ -19,6 +19,7 @@ import { SegmentLabelProps } from '../../../types';
 const SegmentLabel: FC<SegmentLabelProps> = ({
   labelKey,
   percent = false,
+  percentFormat = '.0%',
   value = false,
   valueFormat = 'standardNumber',
 }) => {
