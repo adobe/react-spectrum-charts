@@ -13,7 +13,7 @@ import { Legend } from '../../../components';
 import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-  title: 'RSC/Legend/Highlight',
+  title: 'React Spectrum Charts 2/Legend/Features/Highlight',
   component: Legend,
 };
 

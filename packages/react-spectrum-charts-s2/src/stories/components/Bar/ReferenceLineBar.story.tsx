@@ -20,10 +20,11 @@ import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-  title: 'RSC/Bar/ReferenceLine',
+  title: 'React Spectrum Charts 2/Bar/Features/Reference Line',
   component: ReferenceLine,
 };
 
+// S2 reference lines are horizontal-only (left/right axes only).
 const data = [
   { x: 1, y: 1, series: 0 },
   { x: 2, y: 2, series: 0 },

@@ -25,7 +25,7 @@ import { barData } from '../Bar/data';
 import { browserData as chartPopoverData } from '../../data/data';
 
 export default {
-  title: 'RSC/Axis/AxisThumbnail',
+  title: 'React Spectrum Charts 2/Axis/Features/Thumbnail',
   component: AxisThumbnail,
   parameters: {
     controls: {

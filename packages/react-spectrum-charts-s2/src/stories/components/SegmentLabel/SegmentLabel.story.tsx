@@ -21,7 +21,7 @@ import { ChartProps } from '../../../types';
 import { basicDonutData, sliveredDonutData } from '../Donut/data';
 
 export default {
-  title: 'RSC/Donut/SegmentLabel',
+  title: 'React Spectrum Charts 2/Donut/Features/Segment Label',
   component: SegmentLabel,
 };
 

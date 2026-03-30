@@ -23,7 +23,7 @@ import { browserData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-  title: 'RSC/ChartTooltip/HighlightBy',
+  title: 'React Spectrum Charts 2/Chart Tooltip/Features/Highlight By',
   component: ChartTooltip,
   argTypes: {
     children: {
