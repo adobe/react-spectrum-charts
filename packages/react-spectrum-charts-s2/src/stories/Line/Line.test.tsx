@@ -225,20 +225,19 @@ describe('Line', () => {
     const points = await findAllMarksByGroupName(chart, 'line0_staticPoints');
     expect(points.length).toEqual(6);
 
-    // staticPoint: true → solid (series fill, white stroke)
-    expect(points[0].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
-    expect(points[1].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
-    expect(points[2].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
-    expect(points[3].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
-    expect(points[4].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
-    expect(points[5].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
+    expect(points[0].getAttribute('fill')).toEqual('white');
+    expect(points[1].getAttribute('fill')).toEqual('white');
+    expect(points[2].getAttribute('fill')).toEqual('white');
+    expect(points[3].getAttribute('fill')).toEqual('white');
+    expect(points[4].getAttribute('fill')).toEqual('white');
+    expect(points[5].getAttribute('fill')).toEqual('white');
 
-    expect(points[0].getAttribute('stroke')).toEqual('white');
-    expect(points[1].getAttribute('stroke')).toEqual('white');
-    expect(points[2].getAttribute('stroke')).toEqual('white');
-    expect(points[3].getAttribute('stroke')).toEqual('white');
-    expect(points[4].getAttribute('stroke')).toEqual('white');
-    expect(points[5].getAttribute('stroke')).toEqual('white');
+    expect(points[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
+    expect(points[1].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
+    expect(points[2].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
+    expect(points[3].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
+    expect(points[4].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
+    expect(points[5].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
 
     expect(points[0].getAttribute('stroke-opacity')).toBeNull();
     expect(points[1].getAttribute('stroke-opacity')).toBeNull();
@@ -283,20 +282,19 @@ describe('Line', () => {
       const points = await findAllMarksByGroupName(chart, 'line0_staticPoints');
       expect(points.length).toEqual(6);
 
-      // staticPoint: true → solid (series fill, white stroke)
-      expect(points[0].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
-      expect(points[1].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
-      expect(points[2].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
-      expect(points[3].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
-      expect(points[4].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
-      expect(points[5].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
+      expect(points[0].getAttribute('fill')).toEqual('white');
+      expect(points[1].getAttribute('fill')).toEqual('white');
+      expect(points[2].getAttribute('fill')).toEqual('white');
+      expect(points[3].getAttribute('fill')).toEqual('white');
+      expect(points[4].getAttribute('fill')).toEqual('white');
+      expect(points[5].getAttribute('fill')).toEqual('white');
 
-      expect(points[0].getAttribute('stroke')).toEqual('white');
-      expect(points[1].getAttribute('stroke')).toEqual('white');
-      expect(points[2].getAttribute('stroke')).toEqual('white');
-      expect(points[3].getAttribute('stroke')).toEqual('white');
-      expect(points[4].getAttribute('stroke')).toEqual('white');
-      expect(points[5].getAttribute('stroke')).toEqual('white');
+      expect(points[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
+      expect(points[1].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
+      expect(points[2].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
+      expect(points[3].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
+      expect(points[4].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
+      expect(points[5].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
 
       expect(points[0].getAttribute('stroke-opacity')).toBeNull();
       expect(points[1].getAttribute('stroke-opacity')).toBeNull();
