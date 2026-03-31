@@ -27,11 +27,12 @@ import {
   getHighlightPointStroke,
   getHighlightPointStrokeOpacity,
   getHighlightPointStrokeWidth,
+  getLineStaticPoint,
   getSecondaryHighlightPoint,
   getSelectionPoint,
   getSelectRingPoint,
 } from './linePointUtils';
-import { defaultLineMarkOptions } from './lineTestUtils';
+import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils';
 
 describe('getHighlightPointFill()', () => {
   test('should return simple background rule with default optionsdefaultLineMarkOptions', () => {
@@ -285,5 +286,47 @@ describe('getSelectRingPoint()', () => {
     expect(mark.name).toBe('customLine_pointSelectRing');
     expect(mark.description).toBe('customLine_pointSelectRing');
     expect(mark.from).toEqual({ data: 'customLine_selectedData' });
+  });
+});
+
+describe('getLineStaticPoint()', () => {
+  const solidFill = { field: DEFAULT_COLOR, scale: COLOR_SCALE };
+  const solidStroke = { signal: BACKGROUND_COLOR };
+
+  test('sparkline uses background fill and series stroke (getStaticPointFillEncode / Stroke sparkline branches)', () => {
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      isSparkline: true,
+      staticPoint: 'sp',
+    });
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
+    expect(mark.encode?.enter?.stroke).toEqual(solidFill);
+  });
+
+  test('non-sparkline with staticPoint uses hollow test + solid fill/stroke rules', () => {
+    const field = 'staticPointField';
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      isSparkline: false,
+      staticPoint: field,
+    });
+    expect(mark.encode?.enter?.fill).toEqual([
+      { test: `datum.${field} === 'hollow'`, signal: BACKGROUND_COLOR },
+      solidFill,
+    ]);
+    expect(mark.encode?.enter?.stroke).toEqual([
+      { test: `datum.${field} === 'hollow'`, ...solidFill },
+      solidStroke,
+    ]);
+  });
+
+  test('without sparkline or staticPoint uses solid fill and background stroke only', () => {
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      isSparkline: undefined,
+      staticPoint: undefined,
+    });
+    expect(mark.encode?.enter?.fill).toEqual(solidFill);
+    expect(mark.encode?.enter?.stroke).toEqual(solidStroke);
   });
 });

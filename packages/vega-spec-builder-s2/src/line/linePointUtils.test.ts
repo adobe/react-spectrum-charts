@@ -17,10 +17,11 @@ import {
 
 import {
   getHighlightPoint,
+  getLineStaticPoint,
   getSecondaryHighlightPoint,
   getSelectionPoint,
 } from './linePointUtils';
-import { defaultLineMarkOptions } from './lineTestUtils';
+import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils';
 
 describe('getHighlightPoint()', () => {
   test('should return symbol mark with correct name and description', () => {
@@ -143,5 +144,47 @@ describe('getSecondaryHighlightPoint()', () => {
     const highlightMark = getHighlightPoint(defaultLineMarkOptions);
     expect(mark.from).toEqual(highlightMark.from);
     expect(mark.from).toEqual({ data: 'line0_highlightedData' });
+  });
+});
+
+describe('getLineStaticPoint()', () => {
+  const solidFill = { field: DEFAULT_COLOR, scale: COLOR_SCALE };
+  const solidStroke = { signal: BACKGROUND_COLOR };
+
+  test('sparkline uses background fill and series stroke (getStaticPointFillEncode / Stroke sparkline branches)', () => {
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      isSparkline: true,
+      staticPoint: 'sp',
+    });
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
+    expect(mark.encode?.enter?.stroke).toEqual(solidFill);
+  });
+
+  test('non-sparkline with staticPoint uses hollow test + solid fill/stroke rules', () => {
+    const field = 'staticPointField';
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      isSparkline: false,
+      staticPoint: field,
+    });
+    expect(mark.encode?.enter?.fill).toEqual([
+      { test: `datum.${field} === 'hollow'`, signal: BACKGROUND_COLOR },
+      solidFill,
+    ]);
+    expect(mark.encode?.enter?.stroke).toEqual([
+      { test: `datum.${field} === 'hollow'`, ...solidFill },
+      solidStroke,
+    ]);
+  });
+
+  test('without sparkline or staticPoint uses solid fill and background stroke only', () => {
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      isSparkline: undefined,
+      staticPoint: undefined,
+    });
+    expect(mark.encode?.enter?.fill).toEqual(solidFill);
+    expect(mark.encode?.enter?.stroke).toEqual(solidStroke);
   });
 });
