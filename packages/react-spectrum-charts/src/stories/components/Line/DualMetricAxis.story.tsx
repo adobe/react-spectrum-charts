@@ -40,7 +40,7 @@ const lineDualAxisData = [
   { datetime: 1667977200000, value: 2.8, series: 'Conversion Rate (%)', order: 1 },
   { datetime: 1668063600000, value: 2.5, series: 'Conversion Rate (%)', order: 1 },
   { datetime: 1668150000000, value: 3.2, series: 'Conversion Rate (%)', order: 1 },
-  { datetime: 1668236400000, value: 3.0, series: 'Conversion Rate (%)', order: 1 },
+  { datetime: 1668236400000, value: 3, series: 'Conversion Rate (%)', order: 1 },
   { datetime: 1668322800000, value: 3.5, series: 'Conversion Rate (%)', order: 1 },
   { datetime: 1668409200000, value: 3.8, series: 'Conversion Rate (%)', order: 1 },
 ];
@@ -65,7 +65,7 @@ const lineThreeSeriesData = [
   { datetime: 1667977200000, value: 2.8, series: 'Conversion Rate (%)', order: 2 },
   { datetime: 1668063600000, value: 2.5, series: 'Conversion Rate (%)', order: 2 },
   { datetime: 1668150000000, value: 3.2, series: 'Conversion Rate (%)', order: 2 },
-  { datetime: 1668236400000, value: 3.0, series: 'Conversion Rate (%)', order: 2 },
+  { datetime: 1668236400000, value: 3, series: 'Conversion Rate (%)', order: 2 },
   { datetime: 1668322800000, value: 3.5, series: 'Conversion Rate (%)', order: 2 },
   { datetime: 1668409200000, value: 3.8, series: 'Conversion Rate (%)', order: 2 },
 ];

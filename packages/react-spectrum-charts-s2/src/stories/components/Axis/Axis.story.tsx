@@ -23,7 +23,7 @@ import { barData, barDataLongLabels } from '../Bar/data';
 import timeData from './timeData.json';
 
 export default {
-  title: 'RSC/Axis',
+  title: 'React Spectrum Charts 2/Axis/Features',
   component: Axis,
   argTypes: {
     lineType: {

@@ -35,6 +35,30 @@ const decorators: Decorator[] = [
 ];
 
 const parameters: Parameters = {
+  options: {
+    storySort: (a, b) => {
+      const aParts = a.title.split('/');
+      const bParts = b.title.split('/');
+      const minLen = Math.min(aParts.length, bParts.length);
+
+      for (let i = 0; i < minLen; i++) {
+        if (aParts[i] !== bParts[i]) {
+          return aParts[i].localeCompare(bParts[i]);
+        }
+      }
+
+      // Deeper title = folder, sort before flat/hoisted stories
+      if (aParts.length !== bParts.length) {
+        return bParts.length - aParts.length;
+      }
+
+      // Docs page always first within its group
+      if (a.name === 'Docs') return -1;
+      if (b.name === 'Docs') return 1;
+
+      return a.name.localeCompare(b.name);
+    },
+  },
   controls: {
     expanded: true,
     // data is huge so we don't want to show it in the controls

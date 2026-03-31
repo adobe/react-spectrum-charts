@@ -25,7 +25,7 @@ import { ChartProps, DonutProps } from '../../../types';
 import { basicDonutData, booleanDonutData } from './data';
 
 export default {
-  title: 'RSC/Donut',
+  title: 'React Spectrum Charts 2/Donut/Features',
   component: Donut,
 };
 

@@ -21,7 +21,7 @@ import { Chart } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-  title: 'RSC/Axis/Labels',
+  title: 'React Spectrum Charts 2/Axis/Features/Labels',
   component: Axis,
   argTypes: {
     hasTooltip: { control: 'boolean' },

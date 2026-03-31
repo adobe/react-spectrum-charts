@@ -13,7 +13,7 @@ import { Legend } from '../../../components';
 import { LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-  title: 'RSC/Legend/Hover',
+  title: 'React Spectrum Charts 2/Legend/Features/Hover',
   component: Legend,
 };
 

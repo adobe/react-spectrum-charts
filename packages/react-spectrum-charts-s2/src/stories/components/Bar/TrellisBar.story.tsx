@@ -25,7 +25,7 @@ import { BarProps } from '../../../types';
 import { generateMockDataForTrellis } from './data';
 
 export default {
-  title: 'RSC/Bar/Trellis',
+  title: 'React Spectrum Charts 2/Bar/Features/Trellis',
   component: Bar,
 };
 

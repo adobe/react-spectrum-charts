@@ -14,7 +14,7 @@ import { ChartPopover, Legend } from '../../../components';
 import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
-  title: 'RSC/Legend/Hide Show',
+  title: 'React Spectrum Charts 2/Legend/Features/Hide Show',
   component: Legend,
 };
 

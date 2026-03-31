@@ -11,8 +11,8 @@
  */
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
-import { Line } from '../../../components';
-import { workspaceTrendsData } from '../../../stories/data/data';
+import { Line } from '../../components';
+import { workspaceTrendsData } from '../../stories/data/data';
 import {
   allElementsHaveAttributeValue,
   clickNthElement,
@@ -27,23 +27,17 @@ import {
   screen,
   unhoverNthElement,
   within,
-} from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock';
-import {
-  Basic,
-  HistoricalCompare,
-  ItemTooltip,
-  LineType,
-  LineWithAxisAndLegend,
-  LineWithUTCDatetimeFormat,
-  LinearTrendScale,
-  OnClick as OnClickStory,
-  Opacity,
-  Tooltip,
-  TrendScale,
-  WithStaticPoints,
-  WithStaticPointsAndDialogs,
-} from './Line.story';
+} from '../../test-utils';
+import '../../test-utils/__mocks__/matchMedia.mock';
+import { Basic } from './Features/LineBasic.story';
+import { LineWithAxisAndLegend } from './Features/LineWithAxisAndLegend.story';
+import { LineWithUTCDatetimeFormat } from './Features/LineWithUTCDatetimeFormat.story';
+import { HistoricalCompare } from './Features/LineHistoricalCompare.story';
+import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story';
+import { LineType } from './Features/LineType.story';
+import { Opacity } from './Features/LineOpacity.story';
+import { ItemTooltip, Tooltip } from './Features/Tooltip/LineTooltip.story';
+import { TrendScale, LinearTrendScale } from './Features/TrendScale/LineTrendScale.story';
 
 describe('Line', () => {
   // Line is not a real React component. This is test just provides test coverage for sonarqube

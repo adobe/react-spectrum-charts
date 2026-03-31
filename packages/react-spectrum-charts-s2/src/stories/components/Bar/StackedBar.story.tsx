@@ -24,7 +24,7 @@ import { DimensionAreaStory } from './SharedBarStories';
 import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data';
 
 export default {
-  title: 'RSC/Bar/Stacked Bar',
+  title: 'React Spectrum Charts 2/Bar/Features/Stacked Bar',
   component: Bar,
 };
 
