@@ -267,3 +267,9 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
+
+---
+
+## API Documentation
+
+When looking up S2 component API and props, read `packages/docs/docs/` — particularly `docs/api/` and `docs/spectrum2/`

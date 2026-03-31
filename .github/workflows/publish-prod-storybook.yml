@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 permissions:
   pages: write
   id-token: write
