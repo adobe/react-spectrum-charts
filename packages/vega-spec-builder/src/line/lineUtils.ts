@@ -44,6 +44,14 @@ export const isDualMetricAxis = (options: { dualMetricAxis?: boolean }): boolean
   return Boolean(options.dualMetricAxis);
 };
 
+/**
+ * Vega expression: the field is present and its value is `true` (legacy), `'hollow'`, or `'solid'`.
+ * Matches the legacy `datum.field && datum.field === true` pattern, extended for hollow/solid.
+ * Shared by static-point data filters and highlight mark `test` rules.
+ */
+export const staticPointTestExpr = (fieldName: string): string =>
+  `datum.${fieldName} && (datum.${fieldName} === true || datum.${fieldName} === 'hollow' || datum.${fieldName} === 'solid')`;
+
 export interface LineMarkOptions {
   barAnnotations?: BarAnnotationOptions[];
   chartPopovers?: ChartPopoverOptions[];

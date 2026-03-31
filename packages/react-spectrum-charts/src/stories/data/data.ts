@@ -769,6 +769,24 @@ export const workspaceTrendsDataWithVisiblePoints = [
   { datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table', staticPoint: true },
 ];
 
+/** Same shape as `workspaceTrendsDataWithVisiblePoints`, but `hasPoint` is `'solid'` (filled) or `'hollow'` (outlined) for visual regression of static point styles. */
+export const workspaceTrendsDataWithHasPointStyles = [
+  { datetime: 1667890800000, point: 1, value: 3738, users: 477, series: 'Add Fallout' },
+  { datetime: 1667977200000, point: 2, value: 2704, users: 481, series: 'Add Fallout', hasPoint: 'solid' },
+  { datetime: 1668063600000, point: 3, value: 1730, users: 483, series: 'Add Fallout' },
+  { datetime: 1668150000000, point: 4, value: 465, users: 310, series: 'Add Fallout', hasPoint: 'hollow' },
+  { datetime: 1668236400000, point: 5, value: 31, users: 18, series: 'Add Fallout' },
+  { datetime: 1668322800000, point: 8, value: 108, users: 70, series: 'Add Fallout', hasPoint: 'solid' },
+  { datetime: 1668409200000, point: 12, value: 648, users: 438, series: 'Add Fallout' },
+  { datetime: 1667890800000, point: 4, value: 12208, users: 5253, series: 'Add Freeform table', hasPoint: 'hollow' },
+  { datetime: 1667977200000, point: 5, value: 11309, users: 5103, series: 'Add Freeform table', hasPoint: 'solid' },
+  { datetime: 1668063600000, point: 17, value: 11099, users: 5047, series: 'Add Freeform table' },
+  { datetime: 1668150000000, point: 20, value: 7243, users: 3386, series: 'Add Freeform table' },
+  { datetime: 1668236400000, point: 21, value: 395, users: 205, series: 'Add Freeform table' },
+  { datetime: 1668322800000, point: 22, value: 1606, users: 790, series: 'Add Freeform table' },
+  { datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table', hasPoint: 'hollow' },
+];
+
 export const workspaceTrendsDataWithGaps = [
   { datetime: 1667890800000, point: 4, value: 1200, users: 2253, series: 'Add Line viz' },
   { datetime: 1667977200000, point: 5, value: 1309, users: 1103, series: 'Add Line viz' },
