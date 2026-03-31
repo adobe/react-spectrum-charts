@@ -77,10 +77,11 @@ export const getLineStaticPointData = (
   isSparkline: boolean | undefined,
   isMethodLast: boolean | undefined
 ): SourceData => {
+  const staticPointExpr = staticPoint ? staticPointTestExpr(staticPoint) : 'false';
   const expr =
     isSparkline && isMethodLast
       ? "datum === data('table')[data('table').length - 1]"
-      : staticPointTestExpr(staticPoint!);
+      : staticPointExpr;
   return {
     name: `${name}_staticPointData`,
     source,
