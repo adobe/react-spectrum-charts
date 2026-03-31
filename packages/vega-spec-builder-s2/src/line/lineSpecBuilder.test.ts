@@ -277,13 +277,14 @@ const metricRangeWithDisplayPointMarks = [
         size: {
           value: 64,
         },
-        fill: {
-          signal: BACKGROUND_COLOR,
-        },
-        stroke: {
-          scale: COLOR_SCALE,
-          field: 'series',
-        },
+        fill: [
+          { test: "datum.staticPoint === 'hollow'", signal: BACKGROUND_COLOR },
+          { scale: COLOR_SCALE, field: 'series' },
+        ],
+        stroke: [
+          { test: "datum.staticPoint === 'hollow'", scale: COLOR_SCALE, field: 'series' },
+          { signal: BACKGROUND_COLOR },
+        ],
       },
       update: {
         x: {
@@ -317,13 +318,14 @@ const displayPointMarks = [
         size: {
           value: 64,
         },
-        fill: {
-          signal: BACKGROUND_COLOR,
-        },
-        stroke: {
-          scale: COLOR_SCALE,
-          field: 'series',
-        },
+        fill: [
+          { test: "datum.staticPoint === 'hollow'", signal: BACKGROUND_COLOR },
+          { scale: COLOR_SCALE, field: 'series' },
+        ],
+        stroke: [
+          { test: "datum.staticPoint === 'hollow'", scale: COLOR_SCALE, field: 'series' },
+          { signal: BACKGROUND_COLOR },
+        ],
       },
       update: {
         x: {
@@ -414,7 +416,12 @@ describe('lineSpecBuilder', () => {
       expect(resultData.find((data) => data.name === 'line0_staticPointData')).toStrictEqual({
         name: 'line0_staticPointData',
         source: FILTERED_TABLE,
-        transform: [{ expr: 'datum.staticPoint === true', type: 'filter' }],
+        transform: [
+          {
+            expr: "datum.staticPoint && (datum.staticPoint === true || datum.staticPoint === 'hollow' || datum.staticPoint === 'solid')",
+            type: 'filter',
+          },
+        ],
       });
     });
   });

@@ -29,9 +29,8 @@ import {
 } from '../marks/markUtils';
 import { LineSpecOptions, ProductionRuleTests } from '../types';
 import { getLineYEncoding } from './lineMarkUtils';
-import { LineMarkOptions } from './lineUtils';
+import { staticPointTestExpr, LineMarkOptions } from './lineUtils';
 
-const staticPointTest = (staticPoint: string) => `datum.${staticPoint} && datum.${staticPoint} === true`;
 const getSelectedTest = (name: string, idKey: string) =>
   `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`;
 
@@ -40,6 +39,37 @@ const getSelectedTest = (name: string, idKey: string) =>
  * @param lineMarkOptions
  * @returns SymbolMark
  */
+const staticPointHollowTest = (staticPoint: string) => `datum.${staticPoint} === 'hollow'`;
+
+function getStaticPointFillEncode(
+  lineOptions: Pick<LineSpecOptions, 'color' | 'colorScheme' | 'isSparkline' | 'staticPoint'>
+) {
+  const { color, colorScheme, isSparkline, staticPoint } = lineOptions;
+  const solidFill = getColorProductionRule(color, colorScheme);
+  // Sparkline static points use the same outline look as datum[field] === 'hollow'
+  if (isSparkline) {
+    return { signal: BACKGROUND_COLOR };
+  }
+  if (staticPoint) {
+    return [{ test: staticPointHollowTest(staticPoint), signal: BACKGROUND_COLOR }, solidFill];
+  }
+  return solidFill;
+}
+
+function getStaticPointStrokeEncode(
+  lineOptions: Pick<LineSpecOptions, 'color' | 'colorScheme' | 'isSparkline' | 'staticPoint'>
+) {
+  const { color, colorScheme, isSparkline, staticPoint } = lineOptions;
+  const solidStroke = { signal: BACKGROUND_COLOR };
+  if (isSparkline) {
+    return getColorProductionRule(color, colorScheme);
+  }
+  if (staticPoint) {
+    return [{ test: staticPointHollowTest(staticPoint), ...getColorProductionRule(color, colorScheme) }, solidStroke];
+  }
+  return solidStroke;
+}
+
 export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => {
   const {
     name,
@@ -49,8 +79,13 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     scaleType,
     dimension,
     isSparkline,
+    staticPoint,
     pointSize = 125,
   } = lineOptions;
+
+  const fillEncode = getStaticPointFillEncode({ color, colorScheme, isSparkline, staticPoint });
+  const strokeEncode = getStaticPointStrokeEncode({ color, colorScheme, isSparkline, staticPoint });
+
   return {
     name: `${name}_staticPoints`,
     description: `${name}_staticPoints`,
@@ -60,8 +95,8 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     encode: {
       enter: {
         size: { value: pointSize },
-        fill: isSparkline ? { signal: BACKGROUND_COLOR } : getColorProductionRule(color, colorScheme),
-        stroke: isSparkline ? getColorProductionRule(color, colorScheme) : { signal: BACKGROUND_COLOR },
+        fill: fillEncode,
+        stroke: strokeEncode,
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {
@@ -183,7 +218,7 @@ export const getHighlightPointFill = (markOptions: LineMarkOptions): ProductionR
   const selectedTest = getSelectedTest(name, idKey);
 
   if (staticPoint) {
-    fillRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
+    fillRules.push({ test: staticPointTestExpr(staticPoint), ...getColorProductionRule(color, colorScheme) });
   }
   if (hasPopover(markOptions)) {
     fillRules.push({ test: selectedTest, ...getColorProductionRule(color, colorScheme) });
@@ -202,7 +237,7 @@ export const getHighlightPointStroke = (markOptions: LineMarkOptions): Productio
   const selectedTest = getSelectedTest(name, idKey);
 
   if (staticPoint) {
-    strokeRules.push({ test: staticPointTest(staticPoint), ...getColorProductionRule(color, colorScheme) });
+    strokeRules.push({ test: staticPointTestExpr(staticPoint), ...getColorProductionRule(color, colorScheme) });
   }
   if (hasPopover(markOptions)) {
     strokeRules.push({ test: selectedTest, signal: BACKGROUND_COLOR });
@@ -224,7 +259,7 @@ export const getHighlightPointStrokeOpacity = ({
   const strokeOpacityRules: ProductionRuleTests<NumericValueRef> = [];
   if (staticPoint) {
     strokeOpacityRules.push({
-      test: staticPointTest(staticPoint),
+      test: staticPointTestExpr(staticPoint),
       ...getHighlightOpacityValue(baseOpacityRule),
     });
   }
@@ -241,7 +276,7 @@ export const getHighlightPointSize = ({ staticPoint }: LineMarkOptions): Product
   if (staticPoint) {
     sizeRules.push({
       // if this is a static point, reduce the size since we are increasing the stroke width
-      test: staticPointTest(staticPoint),
+      test: staticPointTestExpr(staticPoint),
       value: 64,
     });
   }
@@ -260,7 +295,7 @@ export const getHighlightPointStrokeWidth = ({
   if (staticPoint) {
     strokeWidthRules.push({
       // if the point is static, increase the stroke width
-      test: staticPointTest(staticPoint),
+      test: staticPointTestExpr(staticPoint),
       value: 6,
     });
   }

@@ -28,6 +28,37 @@ import { LineMarkOptions } from './lineUtils';
  * @param lineMarkOptions
  * @returns SymbolMark
  */
+const staticPointHollowTest = (staticPoint: string) => `datum.${staticPoint} === 'hollow'`;
+
+function getStaticPointFillEncode(
+  lineOptions: Pick<LineSpecOptions, 'color' | 'colorScheme' | 'isSparkline' | 'staticPoint'>
+) {
+  const { color, colorScheme, isSparkline, staticPoint } = lineOptions;
+  const solidFill = getColorProductionRule(color, colorScheme);
+  // Sparkline static points use the same outline look as datum[field] === 'hollow'
+  if (isSparkline) {
+    return { signal: BACKGROUND_COLOR };
+  }
+  if (staticPoint) {
+    return [{ test: staticPointHollowTest(staticPoint), signal: BACKGROUND_COLOR }, solidFill];
+  }
+  return solidFill;
+}
+
+function getStaticPointStrokeEncode(
+  lineOptions: Pick<LineSpecOptions, 'color' | 'colorScheme' | 'isSparkline' | 'staticPoint'>
+) {
+  const { color, colorScheme, isSparkline, staticPoint } = lineOptions;
+  const solidStroke = { signal: BACKGROUND_COLOR };
+  if (isSparkline) {
+    return getColorProductionRule(color, colorScheme);
+  }
+  if (staticPoint) {
+    return [{ test: staticPointHollowTest(staticPoint), ...getColorProductionRule(color, colorScheme) }, solidStroke];
+  }
+  return solidStroke;
+}
+
 export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => {
   const {
     name,
@@ -36,8 +67,14 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     colorScheme,
     scaleType,
     dimension,
+    isSparkline,
+    staticPoint,
     pointSize = 64,
   } = lineOptions;
+
+  const fillEncode = getStaticPointFillEncode({ color, colorScheme, isSparkline, staticPoint });
+  const strokeEncode = getStaticPointStrokeEncode({ color, colorScheme, isSparkline, staticPoint });
+
   return {
     name: `${name}_staticPoints`,
     description: `${name}_staticPoints`,
@@ -47,8 +84,8 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     encode: {
       enter: {
         size: { value: pointSize },
-        fill: { signal: BACKGROUND_COLOR },
-        stroke: getColorProductionRule(color, colorScheme),
+        fill: fillEncode,
+        stroke: strokeEncode,
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {

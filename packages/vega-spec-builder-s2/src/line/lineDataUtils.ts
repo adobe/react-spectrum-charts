@@ -23,6 +23,8 @@ import { isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
 import { LineSpecOptions } from '../types';
 
+import { staticPointTestExpr } from './lineUtils';
+
 /**
  * gets the data used for highlighting hovered data points
  * @param name
@@ -76,7 +78,9 @@ export const getLineStaticPointData = (
   isMethodLast: boolean | undefined
 ): SourceData => {
   const expr =
-    isSparkline && isMethodLast ? "datum === data('table')[data('table').length - 1]" : `datum.${staticPoint} === true`;
+    isSparkline && isMethodLast
+      ? "datum === data('table')[data('table').length - 1]"
+      : staticPointTestExpr(staticPoint!);
   return {
     name: `${name}_staticPointData`,
     source,

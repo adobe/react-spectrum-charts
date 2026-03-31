@@ -44,7 +44,10 @@ describe('getHighlightPointFill()', () => {
     const staticPoint = 'test';
     const rules = getHighlightPointFill({ ...defaultLineMarkOptions, staticPoint });
     expect(rules).toHaveLength(2);
-    expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
+    expect(rules[0]).toHaveProperty(
+      `test`,
+      `datum.${staticPoint} && (datum.${staticPoint} === true || datum.${staticPoint} === 'hollow' || datum.${staticPoint} === 'solid')`
+    );
   });
 
   test('should include selection rule if hasPopover', () => {
@@ -68,7 +71,10 @@ describe('getHighlightPointStroke()', () => {
     const staticPoint = 'test';
     const rules = getHighlightPointStroke({ ...defaultLineMarkOptions, staticPoint });
     expect(rules).toHaveLength(2);
-    expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
+    expect(rules[0]).toHaveProperty(
+      `test`,
+      `datum.${staticPoint} && (datum.${staticPoint} === true || datum.${staticPoint} === 'hollow' || datum.${staticPoint} === 'solid')`
+    );
   });
 
   test('should include selection rule if hasPopover', () => {
@@ -92,7 +98,10 @@ describe('getHighlightPointStrokeOpacity()', () => {
     const staticPoint = 'test';
     const rules = getHighlightPointStrokeOpacity({ ...defaultLineMarkOptions, staticPoint });
     expect(rules).toHaveLength(2);
-    expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
+    expect(rules[0]).toHaveProperty(
+      `test`,
+      `datum.${staticPoint} && (datum.${staticPoint} === true || datum.${staticPoint} === 'hollow' || datum.${staticPoint} === 'solid')`
+    );
   });
 });
 
@@ -107,7 +116,10 @@ describe('getHighlightPointSize()', () => {
     const staticPoint = 'test';
     const rules = getHighlightPointSize({ ...defaultLineMarkOptions, staticPoint });
     expect(rules).toHaveLength(2);
-    expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
+    expect(rules[0]).toHaveProperty(
+      `test`,
+      `datum.${staticPoint} && (datum.${staticPoint} === true || datum.${staticPoint} === 'hollow' || datum.${staticPoint} === 'solid')`
+    );
   });
 });
 
@@ -122,7 +134,10 @@ describe('getHighlightPointStrokeWidth()', () => {
     const staticPoint = 'test';
     const rules = getHighlightPointStrokeWidth({ ...defaultLineMarkOptions, staticPoint });
     expect(rules).toHaveLength(2);
-    expect(rules[0]).toHaveProperty(`test`, `datum.${staticPoint} && datum.${staticPoint} === true`);
+    expect(rules[0]).toHaveProperty(
+      `test`,
+      `datum.${staticPoint} && (datum.${staticPoint} === true || datum.${staticPoint} === 'hollow' || datum.${staticPoint} === 'solid')`
+    );
   });
 });
 

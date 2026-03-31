@@ -23,6 +23,7 @@ import {
   simpleSparklineData,
   workspaceTrendsData,
   workspaceTrendsDataWithGaps,
+  workspaceTrendsDataWithHasPointStyles,
   workspaceTrendsDataWithVisiblePoints,
 } from '../../../stories/data/data';
 import { formatTimestamp } from '../../../stories/storyUtils';
@@ -148,6 +149,18 @@ const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement =>
   );
 };
 
+const LineWithHasPointStylesStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithHasPointStyles });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args} />
+      <Legend highlight />
+    </Chart>
+  );
+};
+
 const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(sparklineChartProps);
   return (
@@ -263,6 +276,15 @@ WithStaticPoints.args = {
   dimension: 'datetime',
   metric: 'value',
   staticPoint: 'staticPoint',
+};
+
+const WithSolidAndHollowStaticPoints = bindWithProps(LineWithHasPointStylesStory);
+WithSolidAndHollowStaticPoints.args = {
+  ...defaultArgs,
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time',
+  staticPoint: 'hasPoint',
 };
 
 /** Generates identical return callbacks but each has a custom Storybook Action Name for a better dev experience. */
@@ -415,6 +437,7 @@ export {
   ItemTooltip,
   TrendScale,
   WithStaticPoints,
+  WithSolidAndHollowStaticPoints,
   WithStaticPointsAndDialogs,
   BasicSparkline,
   SparklineWithStaticPoint,

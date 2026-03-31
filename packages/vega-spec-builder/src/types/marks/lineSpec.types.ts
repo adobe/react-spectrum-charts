@@ -57,7 +57,8 @@ export interface LineOptions {
   isMethodLast?: boolean;
   /** Sets the type of scale that should be used for the trend */
   scaleType?: ScaleType;
-  /** Key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line. */
+  /** Key in the data that if it exists and the value resolves to true, hollow, or solid for each data object, a point will be drawn for that data point on the line. 
+   * `'hollow'` is outlined (background fill, series stroke); `'solid'` and `true` are filled (series fill, background stroke). */
   staticPoint?: string;
   /** Sets the interaction mode for the line */
   interactionMode?: InteractionMode;
