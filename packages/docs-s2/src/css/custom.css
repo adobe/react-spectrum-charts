@@ -1,0 +1,55 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #5424db;
+  --ifm-color-primary-dark: #4513bf;
+  --ifm-color-primary-darker: #3706a0;
+  --ifm-color-primary-darkest: #2a0081;
+  --ifm-color-primary-light: #6338ee;
+  --ifm-color-primary-lighter: #7155fa;
+  --ifm-color-primary-lightest: #7a6afd;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #99a1ff;
+  --ifm-color-primary-dark: #8b8dfe;
+  --ifm-color-primary-darker: #8077fe;
+  --ifm-color-primary-darkest: #745bfc;
+  --ifm-color-primary-light: #b0baff;
+  --ifm-color-primary-lighter: #c7d0ff;
+  --ifm-color-primary-lightest: #dfe4ff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='light'] img[src$='#gh-dark-mode-only'] {
+  display: none; /* Hide the dark mode image in light mode */
+}
+
+[data-theme='dark'] img[src$='#gh-light-mode-only'] {
+  display: none; /* Hide the light mode image in dark mode */
+}
+
+/* Custom footer font size */
+.footer__copyright {
+  font-size: 0.75em;
+}

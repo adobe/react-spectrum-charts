@@ -1,4 +1,4 @@
-name: Publish S2 Storybook to GitHub Pages
+name: Publish S2 Storybook and Docs to GitHub Pages
 # This action runs when a branch has been merged to main.
 
 on:
@@ -35,6 +35,9 @@ jobs:
       - name: Build S2 Storybook
         run: yarn build:storybook:s2
 
+      - name: Build S2 Docs
+        run: yarn build:docs:s2
+
       - name: Checkout 'gh-pages' branch and update s2/ subdirectory
         run: |
           git config user.name "marshallpete"
@@ -54,8 +57,13 @@ jobs:
           mkdir -p s2
           cp -r dist-storybook-s2/* s2/
 
+      - name: Copy S2 docs to 's2/docs/' on 'gh-pages' branch
+        run: |
+          mkdir -p s2/docs
+          cp -r packages/docs-s2/dist/* s2/docs/
+
       - name: Commit and push changes to 'gh-pages' branch
         run: |
           git add -- s2/
-          git commit -m "Update gh-pages with latest S2 Storybook build"
+          git commit -m "Update gh-pages with latest S2 Storybook and Docs build"
           git push origin gh-pages
