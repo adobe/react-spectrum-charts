@@ -36,11 +36,12 @@ const getSegmentLabel = (options: DonutSpecOptions): SegmentLabelSpecOptions | u
  * @returns SegmentLabelSpecOptions
  */
 const applySegmentLabelPropDefaults = (
-  { percent = false, value = false, valueFormat = 'standardNumber', ...options }: SegmentLabelOptions,
+  { percent = false, percentFormat = '.0%', value = false, valueFormat = 'standardNumber', ...options }: SegmentLabelOptions,
   donutOptions: DonutSpecOptions
 ): SegmentLabelSpecOptions => ({
   donutOptions,
   percent,
+  percentFormat,
   value,
   valueFormat,
   ...options,
@@ -172,10 +173,11 @@ const positionEncodings: TextEncodeEntry = {
 export const getSegmentLabelValueText = ({
   donutOptions,
   percent,
+  percentFormat,
   value,
   valueFormat,
 }: SegmentLabelSpecOptions): ProductionRule<TextValueRef> | undefined => {
-  const percentSignal = `format(datum['${donutOptions.name}_arcPercent'], '.0%')`;
+  const percentSignal = `format(datum['${donutOptions.name}_arcPercent'], '${percentFormat}')`;
   if (value) {
     // to support `shortNumber` and `shortCurrency` we need to use the consistent logic
     const rules = getTextNumberFormat(valueFormat, donutOptions.metric) as { test?: string; signal: string }[];
