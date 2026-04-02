@@ -11,8 +11,18 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
+export type BarDirectLabelPosition = 'start' | 'middle' | 'end' | 'end-outside';
+
 export interface BarDirectLabelProps {
-  // intentionally minimal for v1
+  /**
+   * Where to place the label relative to the bar.
+   * - 'end-outside': outside the bar tip (default)
+   * - 'end': inside the bar, 8px from the tip
+   * - 'middle': centered within the bar
+   * - 'start': inside the bar, 8px from the baseline edge
+   * @default 'end-outside'
+   */
+  position?: BarDirectLabelPosition;
 }
 
 export type BarDirectLabelElement = ReactElement<

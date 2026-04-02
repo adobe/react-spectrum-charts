@@ -14,7 +14,7 @@ import { TextMark } from 'vega';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
 import { BarDirectLabelSpecOptions } from '../types';
-import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from './barDirectLabelUtils';
+import { getBarDirectLabelMarks, getBarDirectLabelPositionEncodings, getBarDirectLabelSpecOptions } from './barDirectLabelUtils';
 
 const defaultSpecOptions: BarDirectLabelSpecOptions = getBarDirectLabelSpecOptions({}, 0, defaultBarOptions);
 
@@ -28,15 +28,126 @@ describe('getBarDirectLabelSpecOptions()', () => {
     expect(defaultSpecOptions.orientation).toBe(defaultBarOptions.orientation);
     expect(defaultSpecOptions.index).toBe(0);
   });
+
+  it('defaults position to end-outside when not provided', () => {
+    expect(defaultSpecOptions.position).toBe('end-outside');
+  });
+
+  it('respects a provided position', () => {
+    const options = getBarDirectLabelSpecOptions({ position: 'middle' }, 0, defaultBarOptions);
+    expect(options.position).toBe('middle');
+  });
 });
 
 
+const mockSeriesFill = { scale: 'color', field: 'series' };
+
+describe('getBarDirectLabelPositionEncodings()', () => {
+  describe('end-outside', () => {
+    it('vertical: offsets label away from bar tip, fill uses series color', () => {
+      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end-outside', true, 'value', 'y', mockSeriesFill);
+      expect(Array.isArray(metricAxisEncoding)).toBe(true);
+      const [neg, pos] = metricAxisEncoding as { offset: number }[];
+      expect(neg.offset).toBeGreaterThan(0); // negative bar: label below
+      expect(pos.offset).toBeLessThan(0);    // positive bar: label above
+      expect(seriesFill).toBe(mockSeriesFill);
+    });
+
+    it('horizontal: offsets label away from bar tip, fill uses series color', () => {
+      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end-outside', false, 'value', 'x', mockSeriesFill);
+      expect(Array.isArray(metricAxisEncoding)).toBe(true);
+      const [neg, pos] = metricAxisEncoding as { offset: number }[];
+      expect(neg.offset).toBeLessThan(0); // negative bar: label to the left
+      expect(pos.offset).toBeGreaterThan(0); // positive bar: label to the right
+      expect(seriesFill).toBe(mockSeriesFill);
+    });
+
+    it('baseline points away from bar (top for negative, bottom for positive)', () => {
+      const { verticalBaseline } = getBarDirectLabelPositionEncodings('end-outside', true, 'value', 'y', mockSeriesFill);
+      expect(Array.isArray(verticalBaseline)).toBe(true);
+      const [neg, pos] = verticalBaseline as { value: string }[];
+      expect(neg.value).toBe('top');
+      expect(pos.value).toBe('bottom');
+    });
+  });
+
+  describe('end', () => {
+    it('vertical: offsets label inward from bar tip, fill uses background color', () => {
+      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill);
+      expect(Array.isArray(metricAxisEncoding)).toBe(true);
+      const [neg, pos] = metricAxisEncoding as { offset: number }[];
+      expect(neg.offset).toBeLessThan(0); // negative bar: label offset upward (inward)
+      expect(pos.offset).toBeGreaterThan(0); // positive bar: label offset downward (inward)
+      expect(seriesFill).toHaveProperty('signal', BACKGROUND_COLOR);
+    });
+
+    it('baseline points toward bar interior (bottom for negative, top for positive)', () => {
+      const { verticalBaseline } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill);
+      const [neg, pos] = verticalBaseline as { value: string }[];
+      expect(neg.value).toBe('bottom');
+      expect(pos.value).toBe('top');
+    });
+
+    it('anchors to the bar tip (field: metric)', () => {
+      const { metricAxisEncoding } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill);
+      const [, pos] = metricAxisEncoding as { field?: string }[];
+      expect(pos.field).toBe('value');
+    });
+  });
+
+  describe('start', () => {
+    it('anchors to the bar baseline (value: 0), fill uses background color', () => {
+      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('start', true, 'value', 'y', mockSeriesFill);
+      expect(Array.isArray(metricAxisEncoding)).toBe(true);
+      const [, pos] = metricAxisEncoding as { value?: number; field?: string }[];
+      expect(pos.value).toBe(0);
+      expect(pos.field).toBeUndefined();
+      expect(seriesFill).toHaveProperty('signal', BACKGROUND_COLOR);
+    });
+
+    it('baseline points away from baseline edge (same as end-outside)', () => {
+      const { verticalBaseline } = getBarDirectLabelPositionEncodings('start', true, 'value', 'y', mockSeriesFill);
+      const [neg, pos] = verticalBaseline as { value: string }[];
+      expect(neg.value).toBe('top');
+      expect(pos.value).toBe('bottom');
+    });
+  });
+
+  describe('middle', () => {
+    it('returns a signal expression for the midpoint, fill uses background color', () => {
+      const { metricAxisEncoding, seriesFill, verticalBaseline, horizontalAlign } = getBarDirectLabelPositionEncodings('middle', true, 'value', 'y', mockSeriesFill);
+      expect(metricAxisEncoding).toHaveProperty('signal');
+      expect((metricAxisEncoding as { signal: string }).signal).toContain("scale('y', 0)");
+      expect((metricAxisEncoding as { signal: string }).signal).toContain("datum['value']");
+      expect(seriesFill).toHaveProperty('signal', BACKGROUND_COLOR);
+      expect(verticalBaseline).toHaveProperty('value', 'middle');
+      expect(horizontalAlign).toHaveProperty('value', 'center');
+    });
+  });
+});
+
 describe('getBarDirectLabelMarks()', () => {
-  it('returns two marks: background halo and main text', () => {
+  it('end-outside returns two marks: background halo and main text', () => {
     const marks = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
     expect(marks).toHaveLength(2);
     expect(marks[0].type).toBe('text');
     expect(marks[1].type).toBe('text');
+  });
+
+  it('inside positions return one mark (no background halo)', () => {
+    for (const position of ['end', 'middle', 'start'] as const) {
+      const options = getBarDirectLabelSpecOptions({ position }, 0, defaultBarOptions);
+      const marks = getBarDirectLabelMarks(options, defaultBarOptions);
+      expect(marks).toHaveLength(1);
+    }
+  });
+
+  it('inside positions use background color for fill', () => {
+    for (const position of ['end', 'middle', 'start'] as const) {
+      const options = getBarDirectLabelSpecOptions({ position }, 0, defaultBarOptions);
+      const [main] = getBarDirectLabelMarks(options, defaultBarOptions);
+      expect((main as TextMark).encode?.enter?.fill).toHaveProperty('signal', BACKGROUND_COLOR);
+    }
   });
 
   it('background mark has stroke halo with transparent fill', () => {
@@ -90,7 +201,6 @@ describe('getBarDirectLabelMarks()', () => {
 
   it('marks source directly from FILTERED_TABLE', () => {
     const marks = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    expect((marks[0] as TextMark).from?.data).toBe(FILTERED_TABLE);
-    expect((marks[1] as TextMark).from?.data).toBe(FILTERED_TABLE);
+    marks.forEach(mark => expect((mark as TextMark).from?.data).toBe(FILTERED_TABLE));
   });
 });
