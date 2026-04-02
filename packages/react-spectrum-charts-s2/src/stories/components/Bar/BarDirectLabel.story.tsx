@@ -17,7 +17,7 @@ import { Chart } from '../../../Chart';
 import { Axis, Bar, BarDirectLabel } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { BarDirectLabelProps, BarProps } from '../../../types';
+import { BarDirectLabelProps } from '../../../types';
 import { barData, mixedBarData } from './data';
 
 export default {
