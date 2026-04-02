@@ -29,9 +29,9 @@ const BarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement =
   const chartProps = useChartProps({ data: barData, width: 600, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={defaultBarProps.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={defaultBarProps.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...defaultBarProps}>
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads">
         <BarDirectLabel {...args} />
       </Bar>
     </Chart>
@@ -55,9 +55,9 @@ const NegativeBarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactE
   const chartProps = useChartProps({ data: mixedBarData, width: 600, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={defaultBarProps.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={defaultBarProps.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...defaultBarProps}>
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads">
         <BarDirectLabel {...args} />
       </Bar>
     </Chart>
@@ -75,24 +75,6 @@ const HorizontalNegativeBarDirectLabelStory: StoryFn<BarDirectLabelProps> = (arg
     </Bar>
     </Chart>
   );
-};
-
-const PositionStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barData, width: 600, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" baseline title="Browser" />
-      <Axis position="left" grid title="Downloads" />
-      <Bar dimension="browser" metric="downloads">
-        <BarDirectLabel {...args} />
-      </Bar>
-    </Chart>
-  );
-};
-
-const defaultBarProps: BarProps = {
-  dimension: 'browser',
-  metric: 'downloads',
 };
 
 const defaultProps: BarDirectLabelProps = {
@@ -119,7 +101,7 @@ MixedValuesHorizontal.args = {
   ...defaultProps,
 };
 
-const Position = bindWithProps(PositionStory);
+const Position = bindWithProps(BarDirectLabelStory);
 Position.args = { ...defaultProps, position: 'middle' };
 
 const PositionHorizontal = bindWithProps(HorizontalBarDirectLabelStory);

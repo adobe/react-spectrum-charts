@@ -30,14 +30,14 @@ const DEFAULT_NUMBER_FORMAT = ',.2~f';
  * @param isVertical - whether the bar is vertically oriented
  * @param metric - the metric field name
  * @param metricScaleKey - the Vega scale name for the metric axis
- * @param seriesFill - the series color encoding used for end-outside labels
+ * @param fillEncoding - the series color encoding used for end-outside labels
  */
 export const getBarDirectLabelPositionEncodings = (
   position: BarDirectLabelPositionType,
   isVertical: boolean,
   metric: string,
   metricScaleKey: string,
-  seriesFill: ColorValueRef
+  fillEncoding: ColorValueRef
 ) => {
   if (position === 'middle') {
     const midSignal = `(scale('${metricScaleKey}', 0) + scale('${metricScaleKey}', datum['${metric}'])) / 2`;
@@ -86,7 +86,7 @@ export const getBarDirectLabelPositionEncodings = (
       { test: `datum["${metric}"] < 0`, value: negAlign },
       { value: posAlign },
     ],
-    seriesFill: isEndOutside ? seriesFill : { signal: BACKGROUND_COLOR },
+    seriesFill: isEndOutside ? fillEncoding : { signal: BACKGROUND_COLOR },
   };
 };
 
