@@ -9,18 +9,86 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Mark, TextMark } from 'vega';
+import { ColorValueRef, Mark, TextMark } from 'vega';
 
 import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
 
 import { getOrientationProperties } from '../bar/barUtils';
 import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
-import { BarDirectLabelOptions, BarDirectLabelSpecOptions, BarSpecOptions } from '../types';
+import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types';
 
-// Pixel gap between the bar tip and the label
+// Pixel gap between the bar tip and the label (end-outside)
 const VERTICAL_LABEL_OFFSET = 6;
 const HORIZONTAL_LABEL_OFFSET = 8;
+// Pixel gap between the label and the bar edge for inside positions (start, end, middle)
+const INSIDE_LABEL_OFFSET = 8;
 const DEFAULT_NUMBER_FORMAT = ',.2~f';
+
+/**
+ * Returns position-specific Vega encoding values for a bar direct label.
+ * @param position - where to place the label relative to the bar
+ * @param isVertical - whether the bar is vertically oriented
+ * @param metric - the metric field name
+ * @param metricScaleKey - the Vega scale name for the metric axis
+ * @param fillEncoding - the series color encoding used for end-outside labels
+ */
+export const getBarDirectLabelPositionEncodings = (
+  position: BarDirectLabelPositionType,
+  isVertical: boolean,
+  metric: string,
+  metricScaleKey: string,
+  fillEncoding: ColorValueRef
+) => {
+  if (position === 'middle') {
+    const midSignal = `(scale('${metricScaleKey}', 0) + scale('${metricScaleKey}', datum['${metric}'])) / 2`;
+    return {
+      metricAxisEncoding: { signal: midSignal },
+      verticalBaseline: { value: 'middle' as const },
+      horizontalAlign: { value: 'center' as const },
+      seriesFill: { signal: BACKGROUND_COLOR },
+    };
+  }
+
+  // 'end' reverses offset direction and baseline/align relative to 'end-outside' and 'start'
+  const isEndInside = position === 'end';
+  const isEndOutside = position === 'end-outside';
+  const directionMultiplier = isEndInside ? -1 : 1;
+
+  const verticalOffset = isEndOutside ? VERTICAL_LABEL_OFFSET : INSIDE_LABEL_OFFSET;
+  const horizontalOffset = isEndOutside ? HORIZONTAL_LABEL_OFFSET : INSIDE_LABEL_OFFSET;
+
+  // 'start' anchors to the bar baseline (0), the others anchor to the bar tip (metric)
+  const anchor = position === 'start' ? { value: 0 } : { field: metric };
+
+  const [negBaseline, posBaseline] = isEndInside
+    ? ['bottom' as const, 'top' as const]
+    : ['top' as const, 'bottom' as const];
+
+  const [negAlign, posAlign] = isEndInside
+    ? ['left' as const, 'right' as const]
+    : ['right' as const, 'left' as const];
+
+  return {
+    metricAxisEncoding: isVertical
+      ? [
+          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: directionMultiplier * verticalOffset },
+          { scale: metricScaleKey, ...anchor, offset: -directionMultiplier * verticalOffset },
+        ]
+      : [
+          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: -directionMultiplier * horizontalOffset },
+          { scale: metricScaleKey, ...anchor, offset: directionMultiplier * horizontalOffset },
+        ],
+    verticalBaseline: [
+      { test: `datum["${metric}"] < 0`, value: negBaseline },
+      { value: posBaseline },
+    ],
+    horizontalAlign: [
+      { test: `datum["${metric}"] < 0`, value: negAlign },
+      { value: posAlign },
+    ],
+    seriesFill: isEndOutside ? fillEncoding : { signal: BACKGROUND_COLOR },
+  };
+};
 
 /**
  * Text marks: background stroke halo + foreground fill, placed outside the tip of each bar.
@@ -30,7 +98,7 @@ const DEFAULT_NUMBER_FORMAT = ',.2~f';
  * No separate data source is needed — each row in FILTERED_TABLE is already one bar.
  */
 export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, barOptions: BarSpecOptions): Mark[] => {
-  const { barName, color, colorOverride, colorScheme, dimension, index, metric, metricAxis, orientation } =
+  const { barName, color, colorOverride, colorScheme, dimension, index, metric, metricAxis, orientation, position } =
     labelOptions;
 
   const { metricScaleKey, dimensionScaleKey } = getOrientationProperties(orientation, metricAxis);
@@ -46,35 +114,18 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
   // Dimension axis: center of the bar's band
   const dimensionBandCenter = { scale: dimensionScaleKey, field: dimension, band: 0.5 };
 
-  // Metric axis: at the bar tip, offset outside. Direction reverses for negative values.
-  const metricOutsideTip = isVertical
-    ? [
-        // negative bar → label below (offset downward = positive y offset)
-        { test: `datum["${metric}"] < 0`, scale: metricScaleKey, field: metric, offset: VERTICAL_LABEL_OFFSET },
-        // positive bar → label above (offset upward = negative y offset)
-        { scale: metricScaleKey, field: metric, offset: -VERTICAL_LABEL_OFFSET },
-      ]
-    : [
-        // negative bar → label to the left (offset leftward = negative x offset)
-        { test: `datum["${metric}"] < 0`, scale: metricScaleKey, field: metric, offset: -HORIZONTAL_LABEL_OFFSET },
-        // positive bar → label to the right (offset rightward = positive x offset)
-        { scale: metricScaleKey, field: metric, offset: HORIZONTAL_LABEL_OFFSET },
-      ];
-
-  // Text baseline/align rules to keep labels outside the bar for both positive and negative values
-  const verticalBaseline = [
-    { test: `datum["${metric}"] < 0`, value: 'top' as const },
-    { value: 'bottom' as const },
-  ];
-  const horizontalAlign = [
-    { test: `datum["${metric}"] < 0`, value: 'right' as const },
-    { value: 'left' as const },
-  ];
+  const { metricAxisEncoding, verticalBaseline, horizontalAlign, seriesFill } = getBarDirectLabelPositionEncodings(
+    position,
+    isVertical,
+    metric,
+    metricScaleKey,
+    fillEncoding
+  );
 
   const baseEnter = isVertical
     ? {
         x: dimensionBandCenter,
-        y: metricOutsideTip,
+        y: metricAxisEncoding,
         align: { value: 'center' as const },
         baseline: verticalBaseline,
         text: { signal: textSignal },
@@ -82,7 +133,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
       }
     : {
         y: dimensionBandCenter,
-        x: metricOutsideTip,
+        x: metricAxisEncoding,
         baseline: { value: 'middle' as const },
         align: horizontalAlign,
         text: { signal: textSignal },
@@ -112,7 +163,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
     encode: {
       enter: {
         ...baseEnter,
-        fill: fillEncoding,
+        fill: seriesFill,
       },
       update: {
         opacity: getMarkOpacity(barOptions),
@@ -120,14 +171,14 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
     },
   };
 
-  return [backgroundMark, mainMark];
+  return position === 'end-outside' ? [backgroundMark, mainMark] : [mainMark];
 };
 
 /**
  * Applies defaults and inherits context from the parent bar, producing BarDirectLabelSpecOptions.
  */
 export const getBarDirectLabelSpecOptions = (
-  _labelOptions: BarDirectLabelOptions,
+  labelOptions: BarDirectLabelOptions,
   index: number,
   barOptions: BarSpecOptions
 ): BarDirectLabelSpecOptions => ({
@@ -140,4 +191,5 @@ export const getBarDirectLabelSpecOptions = (
   metric: barOptions.metric,
   metricAxis: barOptions.metricAxis,
   orientation: barOptions.orientation,
+  position: labelOptions.position ?? 'end-outside',
 });

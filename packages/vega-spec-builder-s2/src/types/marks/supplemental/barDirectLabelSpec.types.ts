@@ -13,8 +13,10 @@ import { ColorScheme } from '../../chartSpec.types';
 import { ColorFacet, Orientation } from '../../specUtil.types';
 import { DualFacet } from '../barSpec.types';
 
+export type BarDirectLabelPositionType = 'start' | 'middle' | 'end' | 'end-outside';
+
 export interface BarDirectLabelOptions {
-  // intentionally minimal for v1 — additional options (format, prefix, etc.) will be added later
+  position?: BarDirectLabelPositionType;
 }
 
 export interface BarDirectLabelSpecOptions extends BarDirectLabelOptions {
@@ -27,4 +29,5 @@ export interface BarDirectLabelSpecOptions extends BarDirectLabelOptions {
   metric: string;
   metricAxis?: string;
   orientation: Orientation;
+  position: BarDirectLabelPositionType;
 }
