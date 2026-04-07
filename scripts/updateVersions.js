@@ -59,16 +59,42 @@ packageJsonPaths.forEach((filePath) => {
     const packageJson = JSON.parse(packageJsonContent);
     const packageName = packageJson.name;
 
-    // Skip S2 packages - they are independently versioned
+    // Detect the original indentation
+    const originalIndentation = detectIndentation(packageJsonContent);
+
+    // S2 packages are independently versioned — skip their own version bump,
+    // but still update their s1 @spectrum-charts/* dependencies so yarn.lock
+    // stays clean after a version bump PR.
     if (EXCLUDED_PACKAGES.includes(packageName)) {
-      console.log(`Skipping: ${path.relative(rootDir, filePath)} (independently versioned)`);
+      console.log(`Updating s1 deps in: ${path.relative(rootDir, filePath)} (skipping own version)`);
+
+      let changed = false;
+      ['dependencies', 'devDependencies', 'peerDependencies'].forEach((depType) => {
+        if (packageJson[depType]) {
+          Object.keys(packageJson[depType]).forEach((depName) => {
+            if (
+              (TARGET_DEPENDENCIES.includes(depName) || depName.startsWith(TARGET_PREFIX)) &&
+              !EXCLUDED_PACKAGES.some((excluded) => excluded === depName) &&
+              !depName.includes('-s2')
+            ) {
+              const currentVersionString = packageJson[depType][depName];
+              const versionPrefix = currentVersionString.match(/^[\^~]/)?.[0] || '';
+              packageJson[depType][depName] = `${versionPrefix}${newVersion}`;
+              changed = true;
+            }
+          });
+        }
+      });
+
+      if (changed) {
+        const indentSize = originalIndentation.length;
+        const indent = ' '.repeat(indentSize);
+        fs.writeFileSync(filePath, JSON.stringify(packageJson, null, indent) + '\n', 'utf8');
+      }
       return;
     }
 
     console.log(`Processing: ${path.relative(rootDir, filePath)}`);
-
-    // Detect the original indentation
-    const originalIndentation = detectIndentation(packageJsonContent);
 
     // Update the main version
     if (packageJson.version) {
