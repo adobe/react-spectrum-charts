@@ -60,6 +60,12 @@ export interface TrendlineOptions {
   lineWidth?: LineWidth;
   /** The type of statistical transform that will be calculated. */
   method?: TrendlineMethod;
+  /**
+   * If true, the initial data points of the trendline that were calculated from fewer data points than the
+   * full window size will be hidden. Only applies to `movingAverage-${number}` methods.
+   * @default false
+   */
+  hidePartialWindows?: boolean;
   /** The opacity of the trendlines */
   opacity?: number;
   /** Orientation of the trendline. Only supported on scatter plots. */
@@ -78,6 +84,7 @@ type TrendlineOptionsWithDefaults =
   | 'highlightRawPoint'
   | 'lineType'
   | 'lineWidth'
+  | 'hidePartialWindows'
   | 'method'
   | 'opacity'
   | 'orientation'
