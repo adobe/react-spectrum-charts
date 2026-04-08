@@ -101,6 +101,8 @@ const getSecondaryTimeAxis = (
     labelAlign,
     labelOrientation,
     position,
+    tickCountLimit,
+    tickCountMinimum,
     ticks,
     title,
     vegaLabelAlign,
@@ -108,13 +110,17 @@ const getSecondaryTimeAxis = (
   }: AxisSpecOptions
 ): Axis => {
   const { tickCount } = getTimeLabelFormats(granularity);
+  const resolvedTickCount =
+    tickCountLimit !== undefined || tickCountMinimum !== undefined
+      ? getTickCount(position, tickCountMinimum, tickCountLimit, grid)
+      : tickCount;
 
   return {
     scale: scaleName,
     orient: position,
     grid,
     ticks,
-    tickCount: scaleName.includes('Time') ? tickCount : undefined,
+    tickCount: scaleName.includes('Time') ? resolvedTickCount : undefined,
     title,
     formatType: 'time',
     labelAngle: getLabelAngle(labelOrientation),
@@ -162,6 +168,8 @@ const getPrimaryTimeAxis = (
     labelOrientation,
     labelFontWeight,
     position,
+    tickCountLimit,
+    tickCountMinimum,
     ticks,
     vegaLabelAlign,
     vegaLabelBaseline,
@@ -171,12 +179,16 @@ const getPrimaryTimeAxis = (
     return [];
   }
   const { primaryLabelFormat, tickCount } = getTimeLabelFormats(granularity);
+  const resolvedTickCount =
+    tickCountLimit !== undefined || tickCountMinimum !== undefined
+      ? getTickCount(position, tickCountMinimum, tickCountLimit)
+      : tickCount;
   return [
     {
       scale: scaleName,
       orient: position,
       format: primaryLabelFormat,
-      tickCount: scaleName.includes('Time') ? tickCount : undefined,
+      tickCount: scaleName.includes('Time') ? resolvedTickCount : undefined,
       formatType: 'time',
       labelOverlap: 'greedy',
       labelFontWeight,
