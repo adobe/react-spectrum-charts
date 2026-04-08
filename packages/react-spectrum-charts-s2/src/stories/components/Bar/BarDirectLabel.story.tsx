@@ -17,43 +17,68 @@ import { Chart } from '../../../Chart';
 import { Axis, Bar, BarDirectLabel } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
+import { BarDirectLabelProps } from '../../../types';
 import { barData, mixedBarData } from './data';
 
 export default {
   title: 'RSC/Bar/BarDirectLabel',
-  component: Bar,
+  component: BarDirectLabel,
 };
 
-const BarDirectLabelStory: StoryFn<typeof Bar> = (args): ReactElement => {
+const BarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args}>
-        <BarDirectLabel />
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads">
+        <BarDirectLabel {...args} />
       </Bar>
     </Chart>
   );
 };
 
-const NegativeBarDirectLabelStory: StoryFn<typeof Bar> = (args): ReactElement => {
+const HorizontalBarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barData, width: 600, height: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" baseline title="Browser" />
+      <Axis position="bottom" grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads" orientation="horizontal">
+        <BarDirectLabel {...args} />
+      </Bar>
+    </Chart>
+  );
+};
+
+const NegativeBarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
   const chartProps = useChartProps({ data: mixedBarData, width: 600, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args}>
-        <BarDirectLabel />
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads">
+        <BarDirectLabel {...args} />
       </Bar>
     </Chart>
   );
 };
 
-const defaultProps: BarProps = {
-  dimension: 'browser',
-  metric: 'downloads',
+const HorizontalNegativeBarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: mixedBarData, width: 600, height: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" baseline title="Browser" />
+      <Axis position="bottom" grid title="Downloads" />
+    <Bar dimension="browser" metric="downloads" orientation="horizontal">
+      <BarDirectLabel {...args} />
+    </Bar>
+    </Chart>
+  );
+};
+
+const defaultProps: BarDirectLabelProps = {
+  position: 'end-outside',
 };
 
 const Default = bindWithProps(BarDirectLabelStory);
@@ -61,10 +86,9 @@ Default.args = {
   ...defaultProps,
 };
 
-const Horizontal = bindWithProps(BarDirectLabelStory);
+const Horizontal = bindWithProps(HorizontalBarDirectLabelStory);
 Horizontal.args = {
   ...defaultProps,
-  orientation: 'horizontal',
 };
 
 const MixedValues = bindWithProps(NegativeBarDirectLabelStory);
@@ -72,10 +96,15 @@ MixedValues.args = {
   ...defaultProps,
 };
 
-const MixedValuesHorizontal = bindWithProps(NegativeBarDirectLabelStory);
+const MixedValuesHorizontal = bindWithProps(HorizontalNegativeBarDirectLabelStory);
 MixedValuesHorizontal.args = {
   ...defaultProps,
-  orientation: 'horizontal',
 };
 
-export { Default, Horizontal, MixedValues, MixedValuesHorizontal };
+const Position = bindWithProps(BarDirectLabelStory);
+Position.args = { ...defaultProps, position: 'middle' };
+
+const PositionHorizontal = bindWithProps(HorizontalBarDirectLabelStory);
+PositionHorizontal.args = { ...defaultProps, position: 'start' };
+
+export { Default, Horizontal, MixedValues, MixedValuesHorizontal, Position, PositionHorizontal };
