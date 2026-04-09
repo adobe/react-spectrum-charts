@@ -286,6 +286,18 @@ describe('getTrendlineStatisticalTransforms()', () => {
     expect(aggregateTransforms[0]).toHaveProperty('type', 'collect');
     expect(aggregateTransforms[1]).toHaveProperty('type', 'window');
   });
+  test('should append partial window filter transforms when hidePartialWindows is true', () => {
+    const aggregateTransforms = getTrendlineStatisticalTransforms(
+      defaultLineOptions,
+      { ...defaultTrendlineOptions, method: 'movingAverage-7', hidePartialWindows: true },
+      true
+    );
+    expect(aggregateTransforms).toHaveLength(4);
+    expect(aggregateTransforms[2]).toHaveProperty('type', 'window');
+    expect(aggregateTransforms[2]).toHaveProperty('ops', ['row_number']);
+    expect(aggregateTransforms[3]).toHaveProperty('type', 'filter');
+    expect(aggregateTransforms[3]).toHaveProperty('expr', 'datum._maRowNumber > 6');
+  });
 });
 
 describe('addTableDataTransforms()', () => {

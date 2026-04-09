@@ -29,6 +29,7 @@ import { TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
   getAggregateTransform,
   getNormalizedDimensionTransform,
+  getPartialWindowFilterTransforms,
   getRegressionExtentTransform,
   getRegressionTransform,
   getSortTransform,
@@ -259,7 +260,12 @@ export const getTrendlineStatisticalTransforms = (
     return [getRegressionTransform(markOptions, trendlineOptions, isHighResolutionData)];
   }
   if (isWindowMethod(method)) {
-    return [getSortTransform(trendlineDimension), getWindowTransform(markOptions, trendlineOptions)];
+    const frameWidth = Number.parseInt(method.split('-')[1]);
+    const transforms: Transforms[] = [getSortTransform(trendlineDimension), getWindowTransform(markOptions, trendlineOptions)];
+    if (trendlineOptions.hidePartialWindows) {
+      transforms.push(...getPartialWindowFilterTransforms(markOptions, frameWidth));
+    }
+    return transforms;
   }
 
   return [];

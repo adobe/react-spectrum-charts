@@ -54,6 +54,12 @@ export interface TrendlineOptions {
   excludeDataKeys?: string[];
   /** If there is a tooltip on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
   highlightRawPoint?: boolean;
+  /**
+   * If true, the initial data points of the trendline that were calculated from fewer data points than the
+   * full window size will be hidden. Only applies to `movingAverage-${number}` methods.
+   * @default false
+   */
+  hidePartialWindows?: boolean;
   /** The line type of the trend line. */
   lineType?: LineType;
   /** The line width of the trend line. */
@@ -75,6 +81,7 @@ type TrendlineOptionsWithDefaults =
   | 'dimensionExtent'
   | 'dimensionRange'
   | 'displayOnHover'
+  | 'hidePartialWindows'
   | 'highlightRawPoint'
   | 'lineType'
   | 'lineWidth'

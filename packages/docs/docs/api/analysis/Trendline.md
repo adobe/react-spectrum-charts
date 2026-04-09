@@ -124,6 +124,12 @@ For this example, the granularity of the data would be in days.
             <td>If there is a tooltip on this trendline, then this will highlight the raw point in addition to the hovered trendline point.</td>
         </tr>
         <tr>
+            <td>hidePartialWindows</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>If true, the initial data points of the trendline that were calculated from fewer data points than the full window size will be hidden. Only applies to <code>movingAverage-{"{number}"}</code> methods.</td>
+        </tr>
+        <tr>
             <td>lineType</td>
             <td>'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' | 'longDash' | 'twoDash' | number[]</td>
             <td>'solid'</td>

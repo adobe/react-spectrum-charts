@@ -214,6 +214,15 @@ Basic.args = {
   lineWidth: 'S',
 };
 
+const HidePartialWindows = bindWithProps(TrendlineStory);
+HidePartialWindows.args = {
+  method: 'movingAverage-7',
+  hidePartialWindows: true,
+  color: 'gray-500',
+  lineType: 'solid',
+  lineWidth: 'S',
+};
+
 const DimensionExtent = bindWithProps(TrendlineWithDialogsStory);
 DimensionExtent.args = {
   method: 'linear',
@@ -284,6 +293,7 @@ export {
   DimensionRange,
   DisplayOnHover,
   ExcludeSeriesFromTrendline,
+  HidePartialWindows,
   Orientation,
   TooltipAndPopover,
   TooltipAndPopoverOnParentLine,

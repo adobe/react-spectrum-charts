@@ -180,6 +180,33 @@ export const getRegressionExtentTransform = (dimension: string, name: string): E
 });
 
 /**
+ * Gets the transforms that tag each row with a per-series row number and filter out partial window rows.
+ * A partial window row is one where fewer data points than the full window size were available for the calculation.
+ * @param markOptions
+ * @param frameWidth window size parsed from the movingAverage method
+ * @returns [WindowTransform, FilterTransform]
+ */
+export const getPartialWindowFilterTransforms = (
+  markOptions: TrendlineParentOptions,
+  frameWidth: number
+): [WindowTransform, FilterTransform] => {
+  const { color, lineType } = markOptions;
+  const { facets } = getFacetsFromOptions({ color, lineType });
+  return [
+    {
+      type: 'window',
+      groupby: facets,
+      ops: ['row_number'],
+      as: ['_maRowNumber'],
+    },
+    {
+      type: 'filter',
+      expr: `datum._maRowNumber > ${frameWidth - 1}`,
+    },
+  ];
+};
+
+/**
  * Gets the sort transform for the provided dimension.
  * This is used to sort window methods so they are calculated and drawn in the correct order
  * @param dimension
