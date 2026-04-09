@@ -375,6 +375,36 @@ TickCountLimit.args = {
   title: 'Y-Axis with Limited Ticks',
 };
 
+const WideTimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: timeData[args.granularity ?? DEFAULT_GRANULARITY], width: 1200 });
+  return (
+    <Chart {...chartProps}>
+      <Axis {...args} />
+      <Line>
+        <ChartTooltip>
+          {(item) => (
+            <>
+              <div>{new Date(item.datetime as number).toLocaleDateString()}</div>
+              <div>{item.value}</div>
+            </>
+          )}
+        </ChartTooltip>
+      </Line>
+    </Chart>
+  );
+};
+
+const TimeAxisTickCountLimit = bindWithProps(WideTimeAxisStory);
+TimeAxisTickCountLimit.args = {
+  granularity: 'day',
+  position: 'bottom',
+  baseline: true,
+  labelFormat: 'time',
+  ticks: true,
+  grid: true,
+  tickCountLimit: 5,
+};
+
 const VerticalSecondGranularity = bindWithProps(VerticalTimeAxisStory);
 VerticalSecondGranularity.args = {
   granularity: 'second',
@@ -407,4 +437,5 @@ export {
   CurrencyFormatSpecifier,
   TickCountLimit,
   TickCountMinimum,
+  TimeAxisTickCountLimit,
 };
