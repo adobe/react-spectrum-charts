@@ -106,18 +106,24 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
   };
 };
 
+const getHighlightedDataSource = (name: string, metricRanges: LineMarkOptions['metricRanges']): string => {
+  const hasMetricRangeHoverPoints = metricRanges?.some((mr) => mr.hoverPoint);
+  return hasMetricRangeHoverPoints ? `${name}_filteredHighlightedData` : `${name}_highlightedData`;
+};
+
 /**
  * Gets a background to points to prevent opacity from displaying elements behind the point.
  * @param lineMarkOptions
  * @returns SymbolMark
  */
 export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-  const { dimension, metric, name, scaleType } = lineOptions;
+  const { dimension, metric, metricRanges, name, scaleType } = lineOptions;
+  const dataSource = getHighlightedDataSource(name, metricRanges);
   return {
     name: `${name}_pointBackground`,
     description: `${name}_pointBackground`,
     type: 'symbol',
-    from: { data: `${name}_highlightedData` },
+    from: { data: dataSource },
     interactive: false,
     encode: {
       enter: {
@@ -135,12 +141,13 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
 };
 
 const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlightedData = true): SymbolMark => {
-  const { color, colorScheme, dimension, metric, name, scaleType } = lineOptions;
+  const { color, colorScheme, dimension, metric, metricRanges, name, scaleType } = lineOptions;
+  const dataSource = useHighlightedData ? getHighlightedDataSource(name, metricRanges) : `${name}_selectedData`;
   return {
     name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
     description: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
     type: 'symbol',
-    from: { data: `${name}${useHighlightedData ? '_highlightedData' : '_selectedData'}` },
+    from: { data: dataSource },
     interactive: false,
     encode: {
       enter: {

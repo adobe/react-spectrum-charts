@@ -21,7 +21,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
+import { getLineHoverMarks, getLineMark, getLineOpacity, getVoronoiYEncoding } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -109,6 +109,33 @@ describe('getLineHoverMarks()', () => {
       'line0_facet'
     );
     expect(marks[0].encode?.update?.opacity).toEqual({ signal: "length(data('line0_selectedData')) > 0 ? 0 : 1" });
+  });
+});
+
+describe('getVoronoiYEncoding()', () => {
+  test('returns standard line y encoding when no MetricRange hover points', () => {
+    const encoding = getVoronoiYEncoding({ ...defaultLineMarkOptions, metricRanges: [] }, 'value');
+    expect(encoding).toEqual([{ scale: 'yLinear', field: 'value' }]);
+  });
+
+  test('returns conditional y encoding with MetricRange fallback when hoverPoint is true', () => {
+    const encoding = getVoronoiYEncoding(
+      { ...defaultLineMarkOptions, metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'metric', hoverPoint: true }] },
+      'value'
+    );
+    expect(encoding).toEqual([
+      { test: 'isValid(datum["value"])', scale: 'yLinear', field: 'value' },
+      { test: 'isValid(datum["metric"])', scale: 'yLinear', field: 'metric' },
+      { scale: 'yLinear', field: 'value' },
+    ]);
+  });
+
+  test('excludes MetricRange metrics where hoverPoint is false', () => {
+    const encoding = getVoronoiYEncoding(
+      { ...defaultLineMarkOptions, metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'metric', hoverPoint: false }] },
+      'value'
+    );
+    expect(encoding).toEqual([{ scale: 'yLinear', field: 'value' }]);
   });
 });
 

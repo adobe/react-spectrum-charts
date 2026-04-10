@@ -30,14 +30,14 @@ import { addPopoverData } from '../chartPopover/chartPopoverUtils';
 import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
-import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
+import { getMetricRangeAllHoverPoints, getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, Granularity, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
-import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
+import { getFilteredIsValidData, getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { getLineStaticPoint } from './linePointUtils';
@@ -146,7 +146,17 @@ export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Gra
     }
     if (isInteractive(options) || highlightedItem !== undefined) {
       const validNumericKeys = scaleType === 'linear' ? [dimension, metric] : [metric];
-      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys));
+      // Only include MetricRange metrics that are explicitly set for the voronoi OR clause.
+      // metric defaults to 'value' after applyMetricRangeOptionDefaults but may be absent in raw options.
+      const hasHoverableMetricRanges = options.metricRanges.some((mr) => mr.hoverPoint);
+      const metricRangeHoverableMetrics = options.metricRanges
+        .filter((mr) => mr.hoverPoint && mr.metric)
+        .map((mr) => mr.metric as string);
+      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys, metricRangeHoverableMetrics));
+      if (hasHoverableMetricRanges) {
+        const filteredHighlightData = getFilteredIsValidData(`${name}_filteredHighlightedData`, `${name}_highlightedData`, metric);
+        data.push(filteredHighlightData);
+      }
     }
     if (staticPoint || isSparkline)
       data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
@@ -255,6 +265,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForTooltip`));
   }
   marks.push(...getTrendlineMarks(options));
+  marks.push(...getMetricRangeAllHoverPoints(options));
 });
 
 const getMetricKeys = (lineOptions: LineSpecOptions) => {

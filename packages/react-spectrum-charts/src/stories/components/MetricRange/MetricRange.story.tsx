@@ -20,7 +20,7 @@ import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange } from '../
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
-import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange, workspaceTrendsDataWithNullsInMetricRange } from '../../data/data';
+import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange, workspaceTrendsDataWithForecast, workspaceTrendsDataWithNullsInMetricRange } from '../../data/data';
 
 export default {
   title: 'RSC/MetricRange',
@@ -72,6 +72,21 @@ const MetricRangeWithPopoverStory: StoryFn<typeof MetricRange> = (args): ReactEl
         <MetricRange {...args} />
         <ChartTooltip>{dialogContent}</ChartTooltip>
         <ChartPopover width={200}>{dialogContent}</ChartPopover>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
+const MetricRangeWithHoverPointsStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithForecast });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+        <ChartTooltip>{dialogContent}</ChartTooltip>
       </Line>
       <Legend lineWidth={{ value: 0 }} highlight />
     </Chart>
@@ -224,6 +239,17 @@ WithBreaks.args = {
   metric: 'metric',
 };
 
+const WithHoverPoints = bindWithProps(MetricRangeWithHoverPointsStory);
+WithHoverPoints.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  hoverPoint: true,
+};
+
 export {
   Basic,
   DisplayOnHover,
@@ -233,4 +259,5 @@ export {
   LineOpacity,
   LineOpacityByKey,
   WithBreaks,
+  WithHoverPoints,
 };
