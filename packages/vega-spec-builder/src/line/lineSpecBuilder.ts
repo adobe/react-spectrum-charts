@@ -264,8 +264,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   if (isInteractive(options) || highlightedItem !== undefined) {
     marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForTooltip`));
   }
-  marks.push(...getTrendlineMarks(options));
-  marks.push(...getMetricRangeAllHoverPoints(options));
+  marks.push(...getTrendlineMarks(options), ...getMetricRangeAllHoverPoints(options));
 });
 
 const getMetricKeys = (lineOptions: LineSpecOptions) => {
