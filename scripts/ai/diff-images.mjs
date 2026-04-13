@@ -67,7 +67,11 @@ function parseCrop(value) {
   return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
 }
 
-const positional = process.argv.slice(2).filter(a => !a.startsWith('--') && !process.argv[process.argv.indexOf(a) - 1]?.startsWith('--'));
+const positional = [];
+for (let _i = 2; _i < process.argv.length; _i++) {
+  if (process.argv[_i].startsWith('--')) { _i++; continue; } // skip flag + its value
+  positional.push(process.argv[_i]);
+}
 const [imageAArg, imageBArg] = positional;
 
 if (!imageAArg || !imageBArg) {

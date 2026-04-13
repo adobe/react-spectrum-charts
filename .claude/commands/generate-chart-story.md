@@ -65,7 +65,14 @@ Write `./tmp/ai/implementation-hypothesis.json`:
   "chartOptions": {
     "metric": "value",
     "dimension": "datetime",
-    "color": "series"
+    "color": "seriesField",
+    "scaleType": "linear",
+    "title": "My Chart",
+    "legend": { "position": "top" },
+    "axes": [
+      { "position": "left", "labelFormat": "percentage", "tickCount": 5 },
+      { "position": "bottom", "ticks": true, "baseline": true }
+    ]
   },
   "capturedElements": [
     "2 series lines",
@@ -79,7 +86,7 @@ Write `./tmp/ai/implementation-hypothesis.json`:
     "tick values inferred — Y axis labels unreadable at reference image resolution",
     "curve interpolation assumed monotone — type unclear from image"
   ],
-  "rscPropsUsed": ["color", "dimension", "metric"],
+  "rscPropsUsed": ["color", "dimension", "metric", "scaleType", "Title", "Legend", "Axis (left)", "Axis (bottom)"],
   "explicitlyNotCaptured": [
     "custom font family — not available in RSC"
   ]

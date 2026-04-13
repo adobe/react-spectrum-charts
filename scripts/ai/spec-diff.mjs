@@ -82,25 +82,49 @@ function countMarks(spec, depth = 0) {
   return n;
 }
 
-/** Minimal unified diff of two strings (line-level). */
+/** LCS-based unified diff (produces minimal targeted hunks for large spec changes). */
 function unifiedDiff(a, b, nameA = 'a', nameB = 'b') {
   const aLines = a.split('\n');
   const bLines = b.split('\n');
+  const m = aLines.length, n = bLines.length;
+
+  // Build LCS DP table
+  const dp = Array.from({ length: m + 1 }, () => new Int32Array(n + 1));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = aLines[i - 1] === bLines[j - 1]
+        ? dp[i - 1][j - 1] + 1
+        : Math.max(dp[i - 1][j], dp[i][j - 1]);
+
+  // Backtrack to collect matching line index pairs (0-indexed)
+  const matches = [];
+  let i = m, j = n;
+  while (i > 0 && j > 0) {
+    if (aLines[i - 1] === bLines[j - 1]) { matches.unshift([i - 1, j - 1]); i--; j--; }
+    else if (dp[i - 1][j] >= dp[i][j - 1]) i--;
+    else j--;
+  }
+
+  // Emit hunks between matched anchor pairs
   const out = [`--- ${nameA}`, `+++ ${nameB}`];
-  let i = 0, j = 0;
-  while (i < aLines.length || j < bLines.length) {
-    if (i < aLines.length && j < bLines.length && aLines[i] === bLines[j]) {
-      i++; j++;
-    } else {
-      const chunkA = [], chunkB = [];
-      while (i < aLines.length && (j >= bLines.length || aLines[i] !== bLines[j])) chunkA.push(aLines[i++]);
-      while (j < bLines.length && (i >= aLines.length || aLines[i] !== bLines[j])) chunkB.push(bLines[j++]);
-      if (chunkA.length || chunkB.length) {
-        out.push(`@@ -${i - chunkA.length + 1},${chunkA.length} +${j - chunkB.length + 1},${chunkB.length} @@`);
-        chunkA.forEach(l => out.push(`-${l}`));
-        chunkB.forEach(l => out.push(`+${l}`));
-      }
+  let ai = 0, bi = 0;
+
+  function emitHunk(endA, endB) {
+    const del = aLines.slice(ai, endA);
+    const add = bLines.slice(bi, endB);
+    if (del.length || add.length) {
+      out.push(`@@ -${ai + 1},${del.length} +${bi + 1},${add.length} @@`);
+      del.forEach(l => out.push(`-${l}`));
+      add.forEach(l => out.push(`+${l}`));
     }
   }
+
+  for (const [mi, mj] of matches) {
+    emitHunk(mi, mj);
+    ai = mi + 1;
+    bi = mj + 1;
+  }
+  emitHunk(m, n); // flush any trailing diffs after the last match
+
   return out.join('\n');
 }

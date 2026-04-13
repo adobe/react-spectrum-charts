@@ -54,8 +54,10 @@ function extractStructure(svgText) {
     const cmdCounts = cmds.reduce((a, c) => ({ ...a, [c]: (a[c] ?? 0) + 1 }), {});
     const isClosed   = cmds.includes('Z');
     const hasCurves  = cmds.some(c => 'CQS'.includes(c));
-    const isHLine    = /^M[\d.\s-]+L[\d.\s-]+$/.test(d.trim()) && isHorizontal(d);
-    const isVLine    = /^M[\d.\s-]+L[\d.\s-]+$/.test(d.trim()) && isVertical(d);
+    const isHLine    = (cmds.length === 2 && cmds[0] === 'M' && cmds[1] === 'H') ||
+                       (/^M[\d.\s-]+L[\d.\s-]+$/.test(d.trim()) && isHorizontal(d));
+    const isVLine    = (cmds.length === 2 && cmds[0] === 'M' && cmds[1] === 'V') ||
+                       (/^M[\d.\s-]+L[\d.\s-]+$/.test(d.trim()) && isVertical(d));
 
     return {
       d: d.length > 100 ? d.slice(0, 100) + '…' : d,
