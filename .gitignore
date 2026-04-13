@@ -26,10 +26,11 @@ test-report.xml
 # AI
 cursor
 .cursor
-.claude
+.claude/commands/private
+.claude/settings.local.json
 
 # docusaurus
 .docusaurus
 
-# imgCompare runtime output
+# catch all for temporary outputs
 tmp/

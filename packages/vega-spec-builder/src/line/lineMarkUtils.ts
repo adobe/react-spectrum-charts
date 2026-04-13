@@ -269,6 +269,38 @@ const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark
 };
 
 /**
+ * Gets the Y encoding for voronoi points, extending the standard line Y encoding with
+ * conditional fallbacks for MetricRange hover point metrics. This allows voronoi cells
+ * to be generated for rows where the line metric is null but a MetricRange metric is valid
+ * (e.g. forecast rows).
+ * @param lineOptions - Line options
+ * @param metric - The line metric field name
+ * @returns Y encoding for voronoi points
+ */
+export const getVoronoiYEncoding = (lineOptions: LineMarkOptions, metric: string): ProductionRule<NumericValueRef> => {
+  const { metricAxis, metricRanges = [] } = lineOptions;
+
+  if (isDualMetricAxis(lineOptions)) {
+    return getLineYEncoding(lineOptions, metric);
+  }
+
+  const hoverPointMetrics = metricRanges
+    .filter(mr => mr.hoverPoint && mr.metric)
+    .map(mr => mr.metric as string);
+
+  if (hoverPointMetrics.length === 0) {
+    return getLineYEncoding(lineOptions, metric);
+  }
+
+  const yScale = metricAxis || 'yLinear';
+  return [
+    { test: `isValid(datum["${metric}"])`, scale: yScale, field: metric },
+    ...hoverPointMetrics.map(mrMetric => ({ test: `isValid(datum["${mrMetric}"])`, scale: yScale, field: mrMetric })),
+    { scale: yScale, field: metric },
+  ];
+};
+
+/**
  * Gets the points used for the voronoi calculation for line charts with dual metric axis support
  * @param lineOptions - Line options including dual metric axis settings
  * @param dataSource - the name of the data source that will be used in the voronoi calculation
@@ -276,7 +308,7 @@ const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark
  */
 const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: string): Mark => {
   const { dimension, metric, name, scaleType } = lineOptions;
-  
+
   return {
     name: `${name}_pointsForVoronoi`,
     description: `${name}_pointsForVoronoi`,
@@ -285,7 +317,7 @@ const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: strin
     interactive: false,
     encode: {
       enter: {
-        y: getLineYEncoding(lineOptions, metric),
+        y: getVoronoiYEncoding(lineOptions, metric),
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
       },

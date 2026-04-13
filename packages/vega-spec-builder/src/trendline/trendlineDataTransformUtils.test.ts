@@ -13,6 +13,7 @@ import { DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@spectrum-charts/consta
 
 import {
   getAggregateTransform,
+  getPartialWindowFilterTransforms,
   getRegressionTransform,
   getTrendlineDimensionRangeTransforms,
   getTrendlineParamFormulaTransforms,
@@ -114,6 +115,24 @@ describe('getWindowTransform()', () => {
     expect(() =>
       getWindowTransform(defaultLineOptions, { ...defaultTrendlineOptions, method: 'movingAverage-0' })
     ).toThrow('Invalid moving average frame width: 0, frame width must be an integer greater than 0');
+  });
+});
+
+describe('getPartialWindowFilterTransforms()', () => {
+  test('should return a row_number window transform grouped by series facets', () => {
+    const [rowNumberTransform] = getPartialWindowFilterTransforms(defaultLineOptions, 7);
+    expect(rowNumberTransform).toHaveProperty('type', 'window');
+    expect(rowNumberTransform).toHaveProperty('ops', ['row_number']);
+    expect(rowNumberTransform).toHaveProperty('as', ['_maRowNumber']);
+  });
+  test('should return a filter that removes the first frameWidth - 1 rows', () => {
+    const [, filterTransform] = getPartialWindowFilterTransforms(defaultLineOptions, 7);
+    expect(filterTransform).toHaveProperty('type', 'filter');
+    expect(filterTransform).toHaveProperty('expr', 'datum._maRowNumber > 6');
+  });
+  test('should adjust the filter threshold based on frameWidth', () => {
+    const [, filterTransform] = getPartialWindowFilterTransforms(defaultLineOptions, 4);
+    expect(filterTransform).toHaveProperty('expr', 'datum._maRowNumber > 3');
   });
 });
 

@@ -45,6 +45,12 @@ The `MetricRange` component is used to add a custom area mark onto visualization
             <td>Whether the metric range should only be visible when hovering over the parent line.</td>
         </tr>
         <tr>
+            <td>hoverPoint</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Whether to show a hover point on the metric line when the parent line is interactive.</td>
+        </tr>
+        <tr>
             <td>lineType</td>
             <td>'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' | 'longDash' | 'twoDash' | number[]</td>
             <td>'dashed'</td>

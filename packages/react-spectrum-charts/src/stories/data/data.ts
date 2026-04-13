@@ -970,6 +970,29 @@ export const workspaceTrendsDataWithAnomalies = [
   },
 ];
 
+export const workspaceTrendsDataWithForecast = [
+  // Historical data — solid line visible, no metric range fields
+  { datetime: 1667890800000, value: 3738, series: 'Add Fallout' },
+  { datetime: 1667977200000, value: 2704, series: 'Add Fallout' },
+  { datetime: 1668063600000, value: 1730, series: 'Add Fallout' },
+  { datetime: 1668150000000, value: 465, series: 'Add Fallout' },
+  { datetime: 1668236400000, value: 200, series: 'Add Fallout', staticPoint: true },
+  // Forecast data — solid line absent (value null), metric range visible
+  { datetime: 1668322800000, value: null, metric: 350, metricStart: 150, metricEnd: 550, series: 'Add Fallout' },
+  { datetime: 1668409200000, value: null, metric: 550, metricStart: 250, metricEnd: 850, series: 'Add Fallout' },
+  { datetime: 1668495600000, value: null, metric: 800, metricStart: 400, metricEnd: 1200, series: 'Add Fallout' },
+  // Historical data — solid line visible, no metric range fields
+  { datetime: 1667890800000, value: 12208, series: 'Add Freeform table' },
+  { datetime: 1667977200000, value: 11309, series: 'Add Freeform table' },
+  { datetime: 1668063600000, value: 11099, series: 'Add Freeform table' },
+  { datetime: 1668150000000, value: 7243, series: 'Add Freeform table' },
+  { datetime: 1668236400000, value: 5000, series: 'Add Freeform table', staticPoint: true },
+  // Forecast data — solid line absent (value null), metric range visible
+  { datetime: 1668322800000, value: null, metric: 6000, metricStart: 4500, metricEnd: 7500, series: 'Add Freeform table' },
+  { datetime: 1668409200000, value: null, metric: 7500, metricStart: 5500, metricEnd: 9500, series: 'Add Freeform table' },
+  { datetime: 1668495600000, value: null, metric: 9500, metricStart: 7000, metricEnd: 12000, series: 'Add Freeform table' },
+];
+
 export const workspaceTrendsDataWithExtremeMetricRange = [
   {
     datetime: 1667890800000,

@@ -198,6 +198,12 @@ The `SegmentLabel` component can be used to add labels to each segment of the do
             <td>Displays the percent of the total donut that the segment represents.</td>
         </tr>
         <tr>
+            <td>percentFormat</td>
+            <td>string</td>
+            <td>'.0%'</td>
+            <td>Sets the format for the segment percentage label shown when <code>percent</code> is true. This format must be a <a href="https://d3js.org/d3-format#locale_format" target="_blank">d3-format specifier</a> that uses the <code>%</code> type (multiplies by 100 and appends "%"). Examples: '.0%' = 45%, '.1%' = 45.3%, '.2%' = 45.32%.</td>
+        </tr>
+        <tr>
             <td>value</td>
             <td>boolean</td>
             <td>false</td>

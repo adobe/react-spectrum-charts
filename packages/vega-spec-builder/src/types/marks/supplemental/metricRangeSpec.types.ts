@@ -32,6 +32,8 @@ export interface MetricRangeOptions {
   metric?: string;
   /** Whether the metric range should only be visible when hovering over the parent line */
   displayOnHover?: boolean;
+  /** Whether to show a hover point on the metric range line when the parent line is interactive */
+  hoverPoint?: boolean;
   /** Boolean indicating whether or not the y-axis should expand to include the entire metric range (if necessary). */
   scaleAxisToFit?: boolean;
 
@@ -41,6 +43,7 @@ export interface MetricRangeOptions {
 
 type MetricRangeOptionsWithDefaults =
   | 'chartTooltips'
+  | 'hoverPoint'
   | 'lineType'
   | 'lineWidth'
   | 'metric'

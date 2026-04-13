@@ -72,6 +72,18 @@ describe('addData()', () => {
         { type: 'filter', expr: 'isValid(datum["value"]) && isFinite(datum["value"])' },
       ]);
     });
+    test('ORs metricRangeHoverMetrics into each validNumericKeys filter', () => {
+      const result = getFilteredTooltipData([{}], ['value'], ['metric']);
+      expect(result.transform).toStrictEqual([
+        { type: 'filter', expr: '(isValid(datum["value"]) && isFinite(datum["value"])) || isValid(datum["metric"])' },
+      ]);
+    });
+    test('supports multiple metricRangeHoverMetrics joined with OR', () => {
+      const result = getFilteredTooltipData([{}], ['value'], ['metricA', 'metricB']);
+      expect(result.transform).toStrictEqual([
+        { type: 'filter', expr: '(isValid(datum["value"]) && isFinite(datum["value"])) || isValid(datum["metricA"]) || isValid(datum["metricB"])' },
+      ]);
+    });
     test('adds validNumericKeys filters then excludeDataKeys filter', () => {
       const data = addData(initializeSpec().data ?? [], {
         ...defaultScatterOptions,

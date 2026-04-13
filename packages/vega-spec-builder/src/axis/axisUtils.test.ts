@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SubLabel } from '../types';
+import { AxisSpecOptions, SubLabel } from '../types';
 import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
-import { getBaselineRule, getDefaultAxis, getIsMetricAxis, getSubLabelAxis, getTickCount } from './axisUtils';
+import { getBaselineRule, getDefaultAxis, getIsMetricAxis, getSubLabelAxis, getTickCount, getTimeAxes } from './axisUtils';
 
 describe('getBaselineRule', () => {
   describe('initial state', () => {
@@ -234,6 +234,46 @@ describe('getTickCount()', () => {
   test('when neither maxTicks nor grid is provided, it should return undefined', () => {
     expect(getTickCount('left')).toBeUndefined();
     expect(getTickCount('bottom')).toBeUndefined();
+  });
+});
+
+describe('getTimeAxes()', () => {
+  const baseTimeAxisOptions: AxisSpecOptions = {
+    ...defaultAxisOptions,
+    granularity: 'day',
+    position: 'bottom',
+  };
+
+  test('uses granularity tickCount by default when no limits are set', () => {
+    const [secondaryAxis] = getTimeAxes('xTime', baseTimeAxisOptions);
+    expect(secondaryAxis).toHaveProperty('tickCount', 'day');
+  });
+
+  test('uses width-based signal when tickCountLimit is set', () => {
+    const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', { ...baseTimeAxisOptions, tickCountLimit: 5 });
+    expect(secondaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 2, 5)' });
+    expect(primaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 2, 5)' });
+  });
+
+  test('uses width-based signal when tickCountMinimum is set', () => {
+    const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', { ...baseTimeAxisOptions, tickCountMinimum: 3 });
+    expect(secondaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 3, 10)' });
+    expect(primaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 3, 10)' });
+  });
+
+  test('uses width-based signal with both min and max when both limits are set', () => {
+    const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', {
+      ...baseTimeAxisOptions,
+      tickCountMinimum: 3,
+      tickCountLimit: 8,
+    });
+    expect(secondaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 3, 8)' });
+    expect(primaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 3, 8)' });
+  });
+
+  test('falls back to granularity tickCount for non-time scale names', () => {
+    const [secondaryAxis] = getTimeAxes('xLinear', { ...baseTimeAxisOptions, tickCountLimit: 5 });
+    expect(secondaryAxis).toHaveProperty('tickCount', undefined);
   });
 });
 
