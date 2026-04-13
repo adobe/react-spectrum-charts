@@ -26,7 +26,6 @@ import {
 } from '@spectrum-charts/constants';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
-import { getTooltip } from '../marks/markUtils';
 import {
   getColorProductionRule,
   getItemHoverArea,
@@ -36,6 +35,7 @@ import {
   getVoronoiPath,
   getXProductionRule,
   hasPopover,
+  getTooltip,
 } from '../marks/markUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { ScaleType } from '../types';
@@ -379,7 +379,7 @@ const getXAxisVoronoiPoints = (name: string, dimensionField: string, scaleType: 
  * Used for dimension-level hover detection.
  */
 const getXAxisVoronoiPath = (lineOptions: LineMarkOptions, dataSource: string, dimensionField: string): Mark => {
-  const { chartPopovers, chartTooltips, name: markName } = lineOptions;
+  const { chartTooltips, name: markName } = lineOptions;
   const dimensionHoverAreaName = `${markName}_${DIMENSION_HOVER_AREA}`;
 
   return {
