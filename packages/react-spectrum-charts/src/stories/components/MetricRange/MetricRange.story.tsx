@@ -148,8 +148,8 @@ const MetricRangeWithBreaksStory: StoryFn<typeof MetricRange> = (args): ReactEle
 const dialogContent = (datum) => (
   <Content>
     <div>Operating system: {datum.series}</div>
-    <div>Browser: {datum.category}</div>
-    <div>Users: {datum.value}</div>
+    {datum.category && <div>Browser: {datum.category}</div>}
+    <div>Users: {datum.value ?? datum.metric}</div>
   </Content>
 );
 
