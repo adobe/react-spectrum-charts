@@ -135,6 +135,12 @@ Always implement in this order:
 
 ---
 
+## Package Management
+
+Always use `yarn` for all package management and script execution — never `npm install`, `npm run`, or `npx`. This is a yarn workspaces monorepo. To install a package at the workspace root, use `yarn add -DW <package> --ignore-engines`.
+
+---
+
 ## Common Commands
 
 ```bash
@@ -267,6 +273,12 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
+
+---
+
+## AI Workflow Skills
+
+The `figma-example-story` pipeline and its sub-skills (`analyze-chart-design`, `generate-chart-story`, `verify-chart-story`) live in `.claude/commands/`. When a new rule or refinement is discovered for this workflow, update the relevant skill file directly. Do not save workflow rules to session memory — the skill files are the transferable source of truth.
 
 ---
 
