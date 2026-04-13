@@ -62,6 +62,19 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
 };
 
 /**
+ * Gets a data source filtered to rows where the given metric is valid.
+ * Used to prevent hover marks from being created at NaN y positions when a metric is null.
+ * @param outputName - name of the output data source
+ * @param sourceName - name of the upstream data source to filter
+ * @param metric - data field to validate
+ */
+export const getFilteredIsValidData = (outputName: string, sourceName: string, metric: string): SourceData => ({
+  name: outputName,
+  source: sourceName,
+  transform: [{ type: 'filter', expr: `isValid(datum["${metric}"])` }],
+});
+
+/**
  * gets the data used for displaying points
  * @param name
  * @param staticPoint

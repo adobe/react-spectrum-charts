@@ -119,19 +119,31 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform[] => {
  * @param validNumericKeys Optional list of keys that must be valid finite numbers in the data.
  *                         Rows where any of these are NaN, null, or undefined are excluded
  *                         so voronoi path marks do not receive invalid path parameters.
+ * @param metricRangeHoverableMetrics Optional list of metric fields from MetricRange children with
+ *                                hoverPoint enabled. When provided, rows are also included if any
+ *                                of these metrics is valid — allowing forecast rows (where the line
+ *                                metric is null) to receive voronoi cells.
  * @returns spec data that filters out items where the `excludeDataKey` is true and invalid numeric values
  */
 export const getFilteredTooltipData = (
   chartTooltips: ChartTooltipOptions[],
-  validNumericKeys?: string[]
+  validNumericKeys?: string[],
+  metricRangeHoverableMetrics?: string[]
 ): { name: string; source: string; transform?: { type: 'filter'; expr: string }[] } => {
   const transforms: { type: 'filter'; expr: string }[] = [];
 
   if (validNumericKeys?.length) {
+    // looping through metricRangeHoverableMetrics because there could be multiple metric ranges within a Line chart
+    let metricValidExprs: string[] = [];
+    if (metricRangeHoverableMetrics && metricRangeHoverableMetrics.length > 0) { 
+      metricValidExprs = metricRangeHoverableMetrics.map((m) => `isValid(datum["${m}"])`);
+    }
+    const orClause = metricValidExprs.length ? ` || ${metricValidExprs.join(' || ')}` : '';
     validNumericKeys.forEach((key) => {
+      const baseExpr = `isValid(datum["${key}"]) && isFinite(datum["${key}"])`;
       transforms.push({
         type: 'filter',
-        expr: `isValid(datum["${key}"]) && isFinite(datum["${key}"])`,
+        expr: orClause ? `(${baseExpr})${orClause}` : baseExpr,
       });
     });
   }
