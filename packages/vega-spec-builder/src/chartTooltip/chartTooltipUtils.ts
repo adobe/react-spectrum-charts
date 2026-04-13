@@ -162,6 +162,16 @@ export const addTooltipSignals = (signals: Signal[], markOptions: TooltipParentO
     let markName = markOptions.name;
     let update = `datum.${markName}_${GROUP_ID}`;
 
+    // Dimension mode: add events for both item hover marks and x-axis voronoi
+    if ('interactionMode' in markOptions && markOptions.interactionMode === INTERACTION_MODE.DIMENSION) {
+      for (const name of getHoverMarkNames(markName)) {
+        addMouseEvents(highlightedGroupSignal, name, update);
+      }
+      const voronoiUpdate = `datum.${update}`;
+      addMouseEvents(highlightedGroupSignal, `${markName}_xAxisVoronoi`, voronoiUpdate);
+      return;
+    }
+
     if ('interactionMode' in markOptions && markOptions.interactionMode === INTERACTION_MODE.ITEM) {
       for (const name of getHoverMarkNames(markName)) {
         addMouseEvents(highlightedGroupSignal, name, update);

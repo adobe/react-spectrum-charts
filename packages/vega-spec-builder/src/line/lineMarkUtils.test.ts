@@ -15,6 +15,7 @@ import {
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   HOVERED_ITEM,
   SELECTED_SERIES,
@@ -90,6 +91,16 @@ describe('getLineHoverMarks()', () => {
         'line0_facet'
       )
     ).toHaveLength(4);
+  });
+  test('should return 6 marks if interactionMode is dimension', () => {
+    const marks = getLineHoverMarks(
+      { ...defaultLineMarkOptions, isHighlightedByDimension: true, interactionMode: 'dimension' },
+      'line0_facet'
+    );
+    expect(marks).toHaveLength(6);
+    expect(marks[3].name).toBe('line0_xAxisVoronoiPoints');
+    expect(marks[4].name).toBe('line0_xAxisVoronoi');
+    expect(marks[5].name).toBe('line0_hoverGroup');
   });
   test('should return 7 marks if a popover is present', () => {
     expect(
@@ -184,5 +195,23 @@ describe('getLineOpacity()', () => {
     });
     expect(opacityRule).toHaveLength(4);
     expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+  });
+
+  test('should include dimension hover area and point hover rules when interactionMode is dimension', () => {
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+      chartTooltips: [{}],
+    });
+    expect(opacityRule[0]).toEqual({
+      test: `isValid(line0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`,
+      value: 1,
+    });
+    expect(opacityRule[1]).toEqual({
+      test: `isValid(line0_${HOVERED_ITEM})`,
+      signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    });
+    expect(opacityRule).toHaveLength(5);
   });
 });

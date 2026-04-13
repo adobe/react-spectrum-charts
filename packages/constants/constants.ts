@@ -165,6 +165,7 @@ export const TIME = 'time';
 export enum INTERACTION_MODE {
   NEAREST = 'nearest',
   ITEM = 'item',
+  DIMENSION = 'dimension',
 }
 export const HOVER_SIZE = 3000;
 export const HOVER_SHAPE_COUNT = 3;

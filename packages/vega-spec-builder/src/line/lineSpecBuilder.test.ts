@@ -19,8 +19,10 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   HOVERED_ITEM,
+  INTERACTION_MODE,
   LINEAR_PADDING,
   MARK_ID,
   SERIES_ID,
@@ -409,6 +411,20 @@ describe('lineSpecBuilder', () => {
         ],
       });
     });
+
+    test('adds unique dimension aggregate data when interactionMode is dimension and line is interactive', () => {
+      const resultData = addData(baseData, {
+        ...defaultLineOptions,
+        chartTooltips: [{}],
+        interactionMode: INTERACTION_MODE.DIMENSION,
+      }, undefined);
+
+      expect(resultData.find((d) => d.name === 'line0_uniqueXValues')).toStrictEqual({
+        name: 'line0_uniqueXValues',
+        source: FILTERED_TABLE,
+        transform: [{ type: 'aggregate', groupby: [DEFAULT_TRANSFORMED_TIME_DIMENSION] }],
+      });
+    });
   });
 
   describe('setScales()', () => {
@@ -583,6 +599,26 @@ describe('lineSpecBuilder', () => {
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(8);
+    });
+
+    test('hover signals with interactionMode dimension', () => {
+      const signals = addSignals(defaultSignals, {
+        ...defaultLineOptions,
+        interactionMode: 'dimension',
+        interactiveMarkName: 'line0',
+        chartTooltips: [{}],
+      });
+      const dimensionHoverSignal = signals.find(
+        (s) => s.name === `${defaultLineOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
+      );
+      expect(dimensionHoverSignal).toBeDefined();
+      expect(dimensionHoverSignal?.on).toHaveLength(2);
+
+      const pointHoverSignal = signals.find(
+        (s) => s.name === `${defaultLineOptions.name}_${HOVERED_ITEM}`
+      );
+      expect(pointHoverSignal).toBeDefined();
+      expect(pointHoverSignal?.on).toHaveLength(6);
     });
   });
 });

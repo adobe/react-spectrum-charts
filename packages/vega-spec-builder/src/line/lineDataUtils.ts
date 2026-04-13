@@ -13,17 +13,31 @@ import { SourceData } from 'vega';
 
 import {
   CONTROLLED_HIGHLIGHTED_ITEM,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
+  INTERACTION_MODE,
   SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 
 import { isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
-import { LineSpecOptions } from '../types';
+import { LineSpecOptions, ScaleType } from '../types';
 
 import { staticPointTestExpr } from './lineUtils';
+
+/**
+ * Gets the dimension field name used for x encoding based on scale type
+ * @param scaleType
+ * @param dimension
+ * @returns the field name to use for dimension grouping
+ */
+export const getDimensionField = (scaleType: ScaleType, dimension: string): string => {
+  if (scaleType === 'time') return DEFAULT_TRANSFORMED_TIME_DIMENSION;
+  return dimension;
+};
 
 /**
  * gets the data used for highlighting hovered data points
@@ -39,7 +53,15 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
   if (isInteractive(options)) {
     const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;
     const groupKey = `${lineName}_${GROUP_ID}`;
-    if (isHighlightedByGroup(options)) {
+
+    if (options.interactionMode === INTERACTION_MODE.DIMENSION) {
+      // For dimension mode, highlight on both point hover and time-based dimension hover
+      const dimensionHoverSignal = `${lineName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
+      const dimensionField = getDimensionField(options.scaleType, options.dimension);
+
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
+      expr += ` || isValid(${dimensionHoverSignal}) && +${dimensionHoverSignal}.${dimensionField} === +datum.${dimensionField}`;
+    } else if (isHighlightedByGroup(options)) {
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`;
     } else {
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
@@ -56,6 +78,27 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
       {
         type: 'filter',
         expr,
+      },
+    ],
+  };
+};
+
+/**
+ * Gets a dataset of unique dimension values for the x-axis voronoi in dimension interaction mode
+ * @param lineName - the name of the line mark
+ * @param scaleType - the scale type (time, linear, point)
+ * @param dimension - the dimension field name
+ * @returns SourceData with aggregate transform grouping by the dimension field
+ */
+export const getUniqueDimensionData = (lineName: string, scaleType: ScaleType, dimension: string): SourceData => {
+  const dimensionField = getDimensionField(scaleType, dimension);
+  return {
+    name: `${lineName}_uniqueXValues`,
+    source: FILTERED_TABLE,
+    transform: [
+      {
+        type: 'aggregate',
+        groupby: [dimensionField],
       },
     ],
   };

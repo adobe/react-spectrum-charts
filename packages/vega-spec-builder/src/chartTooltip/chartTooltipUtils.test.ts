@@ -166,6 +166,30 @@ describe('addTooltipSignals()', () => {
     } as LineSpecOptions);
     expect(highlightedGroupSignal.on).toHaveLength(8);
   });
+
+  test('should wire HIGHLIGHTED_GROUP to item hover marks and xAxisVoronoi for line dimension interactionMode', () => {
+    addTooltipSignals(signals, {
+      name: 'line0',
+      markType: 'line',
+      interactionMode: 'dimension',
+      chartTooltips: [{ highlightBy: 'dimension' }],
+    } as LineSpecOptions);
+
+    const on = highlightedGroupSignal.on ?? [];
+    expect(on).toHaveLength(8);
+
+    const eventsJoined = on.map((h) => String(h.events)).join(' ');
+    expect(eventsJoined).toContain('line0_hover0');
+    expect(eventsJoined).toContain('line0_hover1');
+    expect(eventsJoined).toContain('line0_hover2');
+    expect(eventsJoined).toContain('line0_xAxisVoronoi');
+    expect(eventsJoined).not.toContain('line0_voronoi');
+
+    const xAxisMouseOver = on.find(
+      (h) => String(h.events).includes('xAxisVoronoi') && String(h.events).includes('mouseover')
+    );
+    expect(xAxisMouseOver).toHaveProperty('update', `datum.datum.line0_${GROUP_ID}`);
+  });
 });
 
 describe('addHoveredItemOpacityRules()', () => {
