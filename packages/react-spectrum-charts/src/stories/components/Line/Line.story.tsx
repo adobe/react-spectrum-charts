@@ -14,7 +14,7 @@ import { ReactElement, useState } from 'react';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
-import { GROUP_DATA } from '@spectrum-charts/constants';
+import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
 
 import { Chart } from '../../../Chart';
@@ -271,19 +271,7 @@ ItemTooltip.args = {
   interactionMode: 'item',
 };
 
-const DimensionTooltipStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line {...args} />
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-const DimensionTooltip = bindWithProps(DimensionTooltipStory);
+const DimensionTooltip = bindWithProps(LineStory);
 DimensionTooltip.args = {
   ...defaultArgs,
   dimension: 'datetime',
@@ -295,28 +283,27 @@ DimensionTooltip.args = {
   children: (
     <ChartTooltip>
       {(datum, hoverType) => {
-          if (hoverType === 'dimension') {
-            const groupData = datum[GROUP_DATA] as Datum[] | undefined;
-            return (
-              <div className="bar-tooltip">
-                <div>{formatTimestamp(+(datum.datetime0 ?? datum.datetime) as number)}</div>
-                {groupData?.map((d, i) => (
-                  <div key={i}>
-                    {d.series}: {Number(d.value).toLocaleString()}
-                  </div>
-                ))}
-              </div>
-            );
-          }
+        if (hoverType === 'dimension') {
+          const groupData = datum[GROUP_DATA];
           return (
             <div className="bar-tooltip">
-              <div>{formatTimestamp(datum.datetime as number)}</div>
-              <div>Event: {datum.series}</div>
-              <div>Users: {Number(datum.value).toLocaleString()}</div>
+              <div>{formatTimestamp(+(datum.datetime0 ?? datum.datetime))}</div>
+              {groupData?.map((d) => (
+                <div key={d[MARK_ID]}>
+                  {d.series}: {Number(d.value).toLocaleString()}
+                </div>
+              ))}
             </div>
           );
         }
-      }
+        return (
+          <div className="bar-tooltip">
+            <div>{formatTimestamp(datum.datetime)}</div>
+            <div>Event: {datum.series}</div>
+            <div>Users: {Number(datum.value).toLocaleString()}</div>
+          </div>
+        );
+      }}
     </ChartTooltip>
   ),
 };

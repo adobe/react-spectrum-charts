@@ -142,14 +142,16 @@ export const getLineOpacity = ({
   if (interactiveMarkName) {
     if (interactionMode === INTERACTION_MODE.DIMENSION) {
       const dimensionHoverSignal = `${interactiveMarkName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
-      strokeOpacityRules.push({
-        test: `isValid(${dimensionHoverSignal})`,
-        value: 1,
-      });
-      strokeOpacityRules.push({
-        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      });
+      strokeOpacityRules.push(
+        {
+          test: `isValid(${dimensionHoverSignal})`,
+          value: 1,
+        },
+        {
+          test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+          signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        }
+      );
     } else if (isHighlightedByGroup) {
       strokeOpacityRules.push({
         test: `length(data('${interactiveMarkName}_highlightedData'))`,
