@@ -11,9 +11,17 @@
  */
 import { FilterTransform } from 'vega';
 
-import { GROUP_ID, SELECTED_ITEM } from '@spectrum-charts/constants';
+import {
+  DEFAULT_TIME_DIMENSION,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  DIMENSION_HOVER_AREA,
+  FILTERED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
+  SELECTED_ITEM,
+} from '@spectrum-charts/constants';
 
-import { getLineHighlightedData } from './lineDataUtils';
+import { getDimensionField, getLineHighlightedData, getUniqueDimensionData } from './lineDataUtils';
 import { defaultLineOptions } from './lineTestUtils';
 
 describe('getLineHighlightedData()', () => {
@@ -36,5 +44,42 @@ describe('getLineHighlightedData()', () => {
       }).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
+  });
+  test('should include both point and dimension hover signals when interactionMode is dimension', () => {
+    const expr = (
+      getLineHighlightedData({
+        ...defaultLineOptions,
+        interactionMode: 'dimension',
+        interactiveMarkName: 'line0',
+        chartTooltips: [{}],
+      }).transform?.[0] as FilterTransform
+    ).expr;
+    // Should include point-level hover
+    expect(expr).toContain(`line0_${HOVERED_ITEM}`);
+    // Should include dimension-level hover
+    expect(expr).toContain(`line0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`);
+    // Should reference the transformed time dimension for matching
+    expect(expr).toContain(DEFAULT_TRANSFORMED_TIME_DIMENSION);
+  });
+});
+
+describe('getDimensionField()', () => {
+  test('should return transformed time dimension for time scale', () => {
+    expect(getDimensionField('time', DEFAULT_TIME_DIMENSION)).toBe(DEFAULT_TRANSFORMED_TIME_DIMENSION);
+  });
+
+  test('should return dimension directly for non-time based scale', () => {
+    expect(getDimensionField('linear', 'x')).toBe('x');
+  });
+});
+
+describe('getUniqueDimensionData()', () => {
+  test('should create aggregate dataset grouped by transformed time dimension', () => {
+    const data = getUniqueDimensionData('line0', 'time', DEFAULT_TIME_DIMENSION);
+    expect(data).toEqual({
+      name: 'line0_uniqueXValues',
+      source: FILTERED_TABLE,
+      transform: [{ type: 'aggregate', groupby: [DEFAULT_TRANSFORMED_TIME_DIMENSION] }],
+    });
   });
 });

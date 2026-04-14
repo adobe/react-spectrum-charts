@@ -168,7 +168,6 @@ const userDidNotClickOnLegend = (item: unknown): item is Item & SceneItem => {
 
 /**
  * Handles mark mouse input events (mouseover/mouseout)
- * Only supports bar marks.
  * @param event
  * @param item
  * @param markMouseInputDetails

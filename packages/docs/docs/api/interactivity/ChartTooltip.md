@@ -64,6 +64,38 @@ const data = [
 
 In this example, two separate tooltips are defined: one for hovering over the actual bar marks (`item`) that shows individual segment data, and another for hovering anywhere within the dimension area (`dimensionArea`) that shows aggregated data across the dimension. The datum shape differs between these targets, so they require separate tooltip implementations.
 
+### Callback: `hoverType` {#chart-tooltip-hover-type}
+
+For tooltips on marks such as `Line`, the `children` function may be called as `(datum, hoverType)` where `hoverType` is:
+
+- **`'point'`** — The hovered data point (one row). Use `datum` fields for that point.
+- **`'dimension'`** — A dimension-level hover: the library attaches combined rows for that dimension on `datum` (for example `datum.rscGroupData`). Used for **Line** with `interactionMode="dimension"` when hovering the x-slice, and for **Bar** tooltips tied to the dimension hover area.
+
+Axis thumbnail tooltips call `children` with **only** `datum` (no second argument).
+
+```jsx
+<Line interactionMode="dimension" dimension="datetime" metric="value" scaleType="time" color="series">
+  <ChartTooltip>
+    {(datum, hoverType) =>
+      hoverType === 'dimension' ? (
+        <div>
+          <div>All series at this time</div>
+          {datum.rscGroupData?.map((row, i) => (
+            <div key={i}>
+              {row.series}: {row.value}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div>
+          <div>Series: {datum.series}</div>
+          <div>Value: {datum.value}</div>
+        </div>
+      )}
+  </ChartTooltip>
+</Line>
+```
+
 ### Tooltip on axis thumbnails (Bar only)
 
 `ChartTooltip` can be used as a child of `Axis` to display tooltips when hovering over axis thumbnails. This requires `AxisThumbnail` to be present as a child of `Axis`, and only works with bar charts. When hovering a thumbnail, bars with matching dimension values are automatically highlighted. The `highlightBy` and `targets` props are ignored for axis tooltips.
@@ -108,9 +140,9 @@ const data = [
   <tbody>
     <tr>
       <td>children*</td>
-      <td>(datum: Datum) => ReactElement</td>
+      <td>(datum: Datum, hoverType?: 'point' | 'dimension') =&gt; ReactNode</td>
       <td>–</td>
-      <td>Sets what is displayed by the tooltip. Supplies the datum for the value(s) that is currently hovered and expects a ReactElement to be returned.</td>
+      <td>Renders tooltip content for the hovered context. Receives the hovered <code>datum</code> and, for most mark tooltips, an optional <code>hoverType</code>.</td>
     </tr>
     <tr>
       <td>excludeDataKey</td>

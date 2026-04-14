@@ -17,6 +17,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
+  DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -37,7 +38,7 @@ import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSign
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, Granularity, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
-import { getFilteredIsValidData, getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
+import { getFilteredIsValidData, getLineHighlightedData, getLineStaticPointData, getUniqueDimensionData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { getLineStaticPoint } from './linePointUtils';
@@ -146,6 +147,11 @@ export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Gra
     }
     if (isInteractive(options) || highlightedItem !== undefined) {
       const validNumericKeys = scaleType === 'linear' ? [dimension, metric] : [metric];
+      
+      if (options.interactionMode === INTERACTION_MODE.DIMENSION) {
+        data.push(getUniqueDimensionData(name, scaleType, dimension));
+      }
+
       // Only include MetricRange metrics that are explicitly set for the voronoi OR clause.
       // metric defaults to 'value' after applyMetricRangeOptionDefaults but may be absent in raw options.
       const hasHoverableMetricRanges = options.metricRanges.some((mr) => mr.hoverPoint);
@@ -204,8 +210,13 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
   }
 
   if (!isInteractive(options)) return;
-  // we don't need to include the excludeDataKeys here because they will be excluded from the points for voronoi
-  addHoveredItemSignal(signals, name, `${name}_voronoi`, 2);
+
+  if (options.interactionMode === INTERACTION_MODE.DIMENSION) {
+    addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`, `${name}_xAxisVoronoi`, 2);
+  } else {
+    // we don't need to include the excludeDataKeys here because they will be excluded from the points for voronoi
+    addHoveredItemSignal(signals, name, `${name}_voronoi`, 2);
+  }
   addHoverSignals(signals, options);
   addTooltipSignals(signals, options);
 });
@@ -281,7 +292,8 @@ const getMetricKeys = (lineOptions: LineSpecOptions) => {
 
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
   const { interactionMode, name: lineName } = options;
-  if (interactionMode !== INTERACTION_MODE.ITEM) return;
+  
+  if (interactionMode !== INTERACTION_MODE.ITEM && interactionMode !== INTERACTION_MODE.DIMENSION) return;
   for (const hoverMarkName of getHoverMarkNames(lineName)) {
     addHoveredItemSignal(signals, lineName, hoverMarkName);
   }

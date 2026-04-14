@@ -29,7 +29,7 @@ export default {
   component: ChartTooltip,
   argTypes: {
     children: {
-      description: '`(datum) => React.ReactElement`',
+      description: '`(datum, hoverType?) => React.ReactElement`',
       control: {
         type: null,
       },

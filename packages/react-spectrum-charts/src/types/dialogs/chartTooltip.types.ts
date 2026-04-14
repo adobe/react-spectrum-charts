@@ -11,11 +11,11 @@
  */
 import { JSXElementConstructor, ReactElement, ReactNode } from 'react';
 
-import { ChartTooltipOptions, Datum } from '@spectrum-charts/vega-spec-builder';
+import { ChartTooltipOptions, Datum, HoverType } from '@spectrum-charts/vega-spec-builder';
 
 export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
 
-export type TooltipHandler = (datum: Datum) => ReactNode;
+export type TooltipHandler = (datum: Datum, hoverType?: HoverType) => ReactNode;
 
 export interface ChartTooltipProps extends ChartTooltipOptions {
   /** Callback that displays the tooltip content */

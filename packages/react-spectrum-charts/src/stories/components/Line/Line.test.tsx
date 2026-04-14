@@ -31,6 +31,7 @@ import {
 import '../../../test-utils/__mocks__/matchMedia.mock';
 import {
   Basic,
+  DimensionTooltip,
   HistoricalCompare,
   ItemTooltip,
   LineType,
@@ -221,6 +222,61 @@ describe('Line', () => {
     const tooltip = await screen.findByTestId('rsc-tooltip');
     expect(tooltip).toBeInTheDocument();
     expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+  });
+
+  describe('Dimension tooltip', () => {
+    test('renders with dimension interaction mode', async () => {
+      render(<DimensionTooltip {...DimensionTooltip.args} />);
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+    });
+
+    test('shows point tooltip on item hover', async () => {
+      render(<DimensionTooltip {...DimensionTooltip.args} />);
+      const chart = await findChart();
+
+      // item hover marks exist for point-level hover
+      const hoverGroup = await findAllMarksByGroupName(chart, 'line0_hover0');
+      expect(hoverGroup.length).toBeGreaterThan(0);
+
+      await hoverNthElement(hoverGroup, 0);
+      const tooltip = await screen.findByTestId('rsc-tooltip');
+      expect(tooltip).toBeInTheDocument();
+      // point tooltip shows single event
+      expect(within(tooltip).getByText(/Event:/)).toBeInTheDocument();
+    });
+
+    test('shows dimension tooltip on voronoi hover', async () => {
+      render(<DimensionTooltip {...DimensionTooltip.args} />);
+      const chart = await findChart();
+
+      // x-axis voronoi marks exist for dimension-level hover
+      const voronoiPaths = await findAllMarksByGroupName(chart, 'line0_xAxisVoronoi');
+      expect(voronoiPaths.length).toBeGreaterThan(0);
+
+      await hoverNthElement(voronoiPaths, 0);
+      const tooltip = await screen.findByTestId('rsc-tooltip');
+      expect(tooltip).toBeInTheDocument();
+      // dimension tooltip shows multiple series
+      expect(within(tooltip).getByText(/Add Fallout:/)).toBeInTheDocument();
+      expect(within(tooltip).getByText(/Add Freeform table:/)).toBeInTheDocument();
+      expect(within(tooltip).getByText(/Add Line viz:/)).toBeInTheDocument();
+      expect(within(tooltip).getByText(/Add Bar viz:/)).toBeInTheDocument();
+    });
+
+    test('should not fade lines on dimension hover', async () => {
+      render(<DimensionTooltip {...DimensionTooltip.args} />);
+      const chart = await findChart();
+
+      const lines = await findAllMarksByGroupName(chart, 'line0');
+      expect(lines).toHaveLength(4);
+
+      const voronoiPaths = await findAllMarksByGroupName(chart, 'line0_xAxisVoronoi');
+      await hoverNthElement(voronoiPaths, 0);
+
+      // all lines should stay at full opacity on dimension hover
+      expect(allElementsHaveAttributeValue(lines, 'opacity', 1)).toBeTruthy();
+    });
   });
 
   test('Static points render', async () => {

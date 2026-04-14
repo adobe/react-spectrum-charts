@@ -52,6 +52,12 @@ const getLegendTooltipMarkup = (
   }
 };
 
+const toComparableValue = (val: unknown): string | number => {
+  if (val instanceof Date) return val.getTime();
+  if (typeof val === 'number') return val;
+  return val as string; // leave strings alone
+};
+
 const getDimensionAreaTooltipMarkup = (
   value: Datum,
   tooltips: TooltipDetail[],
@@ -63,17 +69,18 @@ const getDimensionAreaTooltipMarkup = (
   }
 
   const tooltipName = componentName.replace(`_${DIMENSION_HOVER_AREA}`, '');
-  const tooltip = tooltips.find((t) => t.name === tooltipName && t.targets?.includes('dimensionArea'));
+  const tooltip = tooltips.find((t) => t.name === tooltipName && t.targets?.includes('dimensionArea'))
+    || tooltips.find((t) => t.name === tooltipName);
   if (!tooltip) return '';
 
   const dimension = value.dimension;
-
   const tableData = chartView?.current?.data(FILTERED_TABLE);
-  value[GROUP_DATA] = tableData?.filter((d) => d[dimension] === value[dimension]);
+  const dimensionValue = toComparableValue(value[dimension]);
+  value[GROUP_DATA] = tableData?.filter((d) => toComparableValue(d[dimension]) === dimensionValue);
 
   return renderToStaticMarkup(
     <div className="rsc-tooltip" data-testid="rsc-tooltip">
-      {tooltip.callback(value)}
+      {tooltip.callback(value, 'dimension')}
     </div>
   );
 };
@@ -144,7 +151,7 @@ const getDataTooltipMarkup = (
 
   return renderToStaticMarkup(
     <div className="rsc-tooltip" data-testid="rsc-tooltip">
-      {tooltip.callback(value)}
+      {tooltip.callback(value, 'point')}
     </div>
   );
 };

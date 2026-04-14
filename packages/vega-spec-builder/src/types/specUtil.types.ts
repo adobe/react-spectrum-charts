@@ -69,6 +69,7 @@ export type Datum = object & {
   [key: string]: any;
 };
 
+export type HoverType = 'point' | 'dimension';
 export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | string;
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';

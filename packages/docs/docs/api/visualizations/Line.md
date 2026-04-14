@@ -119,6 +119,12 @@ const [menu, setMenu] = useState({ x: 0, y: 0, datum: null, open: false });
             <td>The key in the data that the metric is trended against. This is the x-axis for a standard line chart.</td>
         </tr>
         <tr>
+            <td>interactionMode</td>
+            <td>'nearest' | 'item' | 'dimension'</td>
+            <td>'nearest'</td>
+            <td>Controls which point is highlighted when the user hovers over the chart area.</td>
+        </tr>
+        <tr>
             <td>lineType</td>
             <td>string | \{value: LineType | number[]}</td>
             <td>–</td>

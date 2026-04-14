@@ -9,15 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, SymbolMark } from 'vega';
 
 import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
+  DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   HOVERED_ITEM,
+  INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
   SELECTED_SERIES,
   SERIES_ID,
@@ -33,9 +35,11 @@ import {
   getVoronoiPath,
   getXProductionRule,
   hasPopover,
+  getTooltip,
 } from '../marks/markUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { ScaleType } from '../types';
+import { getDimensionField } from './lineDataUtils';
 import {
   getHighlightBackgroundPoint,
   getHighlightPoint,
@@ -127,6 +131,7 @@ export const getLineOpacity = ({
   displayOnHover,
   comboSiblingNames,
   interactiveMarkName,
+  interactionMode,
   popoverMarkName,
   isHighlightedByGroup,
   highlightedItem,
@@ -135,7 +140,19 @@ export const getLineOpacity = ({
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
-    if (isHighlightedByGroup) {
+    if (interactionMode === INTERACTION_MODE.DIMENSION) {
+      const dimensionHoverSignal = `${interactiveMarkName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
+      strokeOpacityRules.push(
+        {
+          test: `isValid(${dimensionHoverSignal})`,
+          value: 1,
+        },
+        {
+          test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+          signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        }
+      );
+    } else if (isHighlightedByGroup) {
       strokeOpacityRules.push({
         test: `length(data('${interactiveMarkName}_highlightedData'))`,
         signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
@@ -236,6 +253,7 @@ const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): 
   const tooltipMarks = {
     nearest: getVoronoiMarks,
     item: getItemHoverMarks,
+    dimension: getDimensionInteractionMarks,
   };
 
   return tooltipMarks[interactionMode](lineOptions, dataSource);
@@ -319,5 +337,75 @@ const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Ma
     // area around item that triggers hover
     getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
   ];
+};
+
+const getDimensionInteractionMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
+  const { chartTooltips = [], dimension, metric, name, scaleType } = lineOptions;
+  const dimensionField = getDimensionField(scaleType, dimension);
+
+  return [
+    // invisible points at fixed y for dimension-level voronoi
+    getXAxisVoronoiPoints(name, dimensionField, scaleType),
+    getXAxisVoronoiPath(lineOptions, `${name}_xAxisVoronoiPoints`, dimensionField),
+    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
+  ];
+};
+
+/**
+ * Creates invisible symbol marks at a fixed y position for each unique dimension value.
+ * These are used as input for the x-axis voronoi transform to create vertical hover strips.
+ */
+const getXAxisVoronoiPoints = (name: string, dimensionField: string, scaleType: ScaleType): SymbolMark => {
+  return {
+    name: `${name}_xAxisVoronoiPoints`,
+    description: `Hidden points at fixed y for x-axis voronoi`,
+    type: 'symbol',
+    from: { data: `${name}_uniqueXValues` },
+    interactive: false,
+    encode: {
+      enter: {
+        y: { signal: '0' },
+        fill: { value: 'transparent' },
+        stroke: { value: 'transparent' },
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimensionField),
+      },
+    },
+  };
+};
+
+/**
+ * Creates a voronoi path mark from the x-axis voronoi points.
+ * The resulting paths are vertical strips that cover the chart area, one per dimension value.
+ * Used for dimension-level hover detection.
+ */
+const getXAxisVoronoiPath = (lineOptions: LineMarkOptions, dataSource: string, dimensionField: string): Mark => {
+  const { chartTooltips, name: markName } = lineOptions;
+  const dimensionHoverAreaName = `${markName}_${DIMENSION_HOVER_AREA}`;
+
+  return {
+    name: `${markName}_xAxisVoronoi`,
+    description: `Voronoi on hidden flat line for x-axis tracking`,
+    type: 'path',
+    from: { data: dataSource },
+    encode: {
+      enter: {
+        fill: { value: 'transparent' },
+        stroke: { value: 'transparent' },
+        isVoronoi: { value: true },
+        tooltip: getTooltip(chartTooltips ?? [], dimensionHoverAreaName, true, { dimension: dimensionField }),
+      },
+      update: {},
+    },
+    transform: [
+      {
+        type: 'voronoi',
+        x: 'datum.x',
+        y: 'datum.y',
+        size: [{ signal: 'max(width, 1)' }, { signal: 'max(height, 1)' }],
+      },
+    ],
+  };
 };
 
