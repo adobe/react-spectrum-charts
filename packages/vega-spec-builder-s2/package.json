@@ -28,7 +28,7 @@
     "@spectrum-charts/locales": "1.40.0",
     "@spectrum-charts/themes": "1.40.0",
     "@spectrum-charts/utils": "1.40.0",
-    "immer": "^10.1.1",
+    "immer": "^11.1.4",
     "vega": "^6.2.0",
     "venn-helper": "^2.3.6"
   },
