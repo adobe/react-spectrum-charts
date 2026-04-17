@@ -59,7 +59,7 @@ export default function useSpec({
         description,
         title,
       });
-      return JSON.parse(JSON.stringify(vegaSpecWithDefaults)) as Spec;
+      return structuredClone(vegaSpecWithDefaults) as Spec;
     }
 
     const chartOptions = rscPropsToSpecBuilderOptions({
