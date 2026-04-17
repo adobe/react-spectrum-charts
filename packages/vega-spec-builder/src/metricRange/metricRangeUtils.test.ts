@@ -185,6 +185,34 @@ describe('getMetricRangeMark', () => {
     });
     expect(lineMark.encode?.enter?.strokeOpacity).toEqual({ value: 0.2 });
   });
+  describe('displayOnHover translation', () => {
+    const interactiveLineOptions = { ...defaultLineOptions, interactiveMarkName: 'line0' };
+
+    test('when displayOnHover is "metric", area is always visible and line gets "metric" opacity rules', () => {
+      const [lineMark, areaMark] = getMetricRangeMark(
+        interactiveLineOptions,
+        { ...defaultMetricRangeSpecOptions, displayOnHover: 'metric' }
+      );
+      // line: hide-when-not-hovered (metric case)
+      expect(lineMark.encode?.update?.opacity).toHaveLength(5);
+      expect(lineMark.encode?.update?.opacity?.[4]).toEqual({ value: 0 });
+      // area: always visible
+      expect(areaMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
+    });
+
+    test('when displayOnHover is "range", line is always visible and area gets "range" opacity rules', () => {
+      const [lineMark, areaMark] = getMetricRangeMark(
+        interactiveLineOptions,
+        { ...defaultMetricRangeSpecOptions, displayOnHover: 'range' }
+      );
+      // line: always visible — fallback rule is { value: 1 }, not hidden
+      expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
+      // area: hide-when-not-hovered (range case)
+      expect(areaMark.encode?.update?.opacity).toHaveLength(5);
+      expect(areaMark.encode?.update?.opacity?.[4]).toEqual({ value: 0 });
+    });
+  });
+
   describe('defined encoding (creates gaps when metric values are null/undefined)', () => {
     test('line and area mark have defined set in enter so null metric values creates a break', () => {
       const [lineMark, areaMark] = getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions);
@@ -214,6 +242,22 @@ describe('getMetricRangeGroupMarks', () => {
         marks: basicMetricRangeMarks,
       },
     ]);
+  });
+
+  test('uses FILTERED_TABLE as data source when displayOnHover is "metric"', () => {
+    const marks = getMetricRangeGroupMarks({
+      ...defaultLineOptions,
+      metricRanges: [{ ...defaultMetricRangeOptions, displayOnHover: 'metric' }],
+    });
+    expect(marks[0]).toHaveProperty('from.facet.data', FILTERED_TABLE);
+  });
+
+  test('uses FILTERED_TABLE as data source when displayOnHover is "range"', () => {
+    const marks = getMetricRangeGroupMarks({
+      ...defaultLineOptions,
+      metricRanges: [{ ...defaultMetricRangeOptions, displayOnHover: 'range' }],
+    });
+    expect(marks[0]).toHaveProperty('from.facet.data', FILTERED_TABLE);
   });
 
   test('always returns only group marks (hover points are added separately via getMetricRangeAllHoverPoints)', () => {
@@ -308,6 +352,24 @@ describe('getMetricRangeData', () => {
     });
     expect(data).toHaveLength(1);
     expect(data[0]).toHaveProperty('name', 'line0MetricRange0_highlightedData');
+  });
+
+  test('does not create _highlightedData when displayOnHover is "metric"', () => {
+    const data = getMetricRangeData({
+      ...defaultLineOptions,
+      metricRanges: [{ ...defaultMetricRangeOptions, displayOnHover: 'metric' }],
+    });
+    expect(data).toHaveLength(0);
+    expect(data.find(d => d.name?.includes('highlightedData'))).toBeUndefined();
+  });
+
+  test('does not create _highlightedData when displayOnHover is "range"', () => {
+    const data = getMetricRangeData({
+      ...defaultLineOptions,
+      metricRanges: [{ ...defaultMetricRangeOptions, displayOnHover: 'range' }],
+    });
+    expect(data).toHaveLength(0);
+    expect(data.find(d => d.name?.includes('highlightedData'))).toBeUndefined();
   });
 
   test('adds filtered hoverPointData source when hoverPoint is true and line is interactive', () => {

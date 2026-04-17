@@ -136,10 +136,27 @@ export const getLineOpacity = ({
   isHighlightedByGroup,
   highlightedItem,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
+  if ((!interactiveMarkName || displayOnHover === true) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
+    if (displayOnHover === 'metric') {
+      const hoveredSeriesTest = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+      const selectedSeriesTest = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
+      const controlledHighlightedTableTest = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
+      const controlledHighlightedSeriesTest = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
+      
+      strokeOpacityRules.push(
+        { test: hoveredSeriesTest, value: 1 },
+        { test: selectedSeriesTest, value: 1 },
+        { test: controlledHighlightedTableTest, value: 1 },
+        { test: controlledHighlightedSeriesTest, value: 1 },
+        { value: 0 },
+      );
+
+      return strokeOpacityRules;
+    }
+    
     if (interactionMode === INTERACTION_MODE.DIMENSION) {
       const dimensionHoverSignal = `${interactiveMarkName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
       strokeOpacityRules.push(
