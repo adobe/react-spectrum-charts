@@ -40,9 +40,9 @@ The `MetricRange` component is used to add a custom area mark onto visualization
         </tr>
         <tr>
             <td>displayOnHover</td>
-            <td>boolean</td>
+            <td>boolean | 'metric' | 'range'</td>
             <td>false</td>
-            <td>Whether the metric range should only be visible when hovering over the parent line.</td>
+            <td>Controls which parts of the metric range are visible only on hover. <code>true</code>: both the metric line and range area are hidden until hover. <code>'metric'</code>: only the metric line is hidden until hover; the range area is always visible. <code>'range'</code>: only the range area is hidden until hover; the metric line is always visible. <code>false</code>: both are always visible.</td>
         </tr>
         <tr>
             <td>hoverPoint</td>

@@ -79,7 +79,7 @@ export const getMetricRangeGroupMarks = (lineMarkOptions: LineSpecOptions): Grou
   for (const metricRangeOptions of metricRanges) {
     const { displayOnHover, name } = metricRangeOptions;
     // if displayOnHover is true, use the highlightedData source, otherwise use the filtered table
-    const data = displayOnHover ? `${name}_highlightedData` : FILTERED_TABLE;
+    const data = displayOnHover === true ? `${name}_highlightedData` : FILTERED_TABLE;
     marks.push({
       name: `${name}_group`,
       type: 'group',
@@ -202,18 +202,22 @@ export const getMetricRangeMark = (
     dimension: lineMarkOptions.dimension,
     isMetricRange: true,
     parentName: lineMarkOptions.name,
-    displayOnHover: metricRangeOptions.displayOnHover,
+    // 'metric' means only the line is hidden on hover — area is always visible
+    displayOnHover: metricRangeOptions.displayOnHover === 'metric' ? false : metricRangeOptions.displayOnHover,
     interactiveMarkName: lineMarkOptions.interactiveMarkName,
   };
+  const { interactiveMarkName, ...baseLineMarkOptions } = lineMarkOptions;
   const lineOptions: LineMarkOptions = {
-    ...lineMarkOptions,
+    ...baseLineMarkOptions,
     name: `${metricRangeOptions.name}_line`,
     color: metricRangeOptions.color ? { value: metricRangeOptions.color } : lineMarkOptions.color,
     metric: metricRangeOptions.metric,
     lineType: { value: metricRangeOptions.lineType },
     lineWidth: { value: metricRangeOptions.lineWidth },
-    displayOnHover: metricRangeOptions.displayOnHover,
+    // 'range' means only the area is hidden on hover — line is always visible and should not fade on hover
+    displayOnHover: metricRangeOptions.displayOnHover === 'range' ? false : metricRangeOptions.displayOnHover,
     opacity: metricRangeOptions.lineOpacity ? metricRangeOptions.lineOpacity : { value: 1 },
+    ...(metricRangeOptions.displayOnHover !== 'range' && { interactiveMarkName }),
   };
 
   const dataSource = `${metricRangeOptions.name}_facet`;
@@ -240,7 +244,7 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
       data.push(getFilteredIsValidData(`${name}_hoverPointData`, `${markOptions.name}_highlightedData`, metric));
     }
     // if displayOnHover is true, add a data source for the highlighted data
-    if (displayOnHover) {
+    if (displayOnHover === true) {
       const hoveredItem = `isValid(${markOptions.interactiveMarkName}_${HOVERED_ITEM}) && ${markOptions.interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
       const selectedSeries = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
       const controlledHighlightedItem = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;

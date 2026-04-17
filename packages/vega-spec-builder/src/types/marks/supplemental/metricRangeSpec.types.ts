@@ -30,8 +30,14 @@ export interface MetricRangeOptions {
   metricStart: string;
   /** The key for the metric value in the data */
   metric?: string;
-  /** Whether the metric range should only be visible when hovering over the parent line */
-  displayOnHover?: boolean;
+  /**
+   * Controls which parts of the metric range are visible only on hover.
+   * - `true`: both the metric line and range area are hidden until the series is hovered
+   * - `'metric'`: only the metric line is hidden until hovered; the range area is always visible
+   * - `'range'`: only the range area is hidden until hovered; the metric line is always visible
+   * - `false` (default): both are always visible
+   */
+  displayOnHover?: boolean | 'metric' | 'range';
   /** Whether to show a hover point on the metric range line when the parent line is interactive */
   hoverPoint?: boolean;
   /** Boolean indicating whether or not the y-axis should expand to include the entire metric range (if necessary). */
