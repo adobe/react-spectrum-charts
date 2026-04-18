@@ -56,8 +56,6 @@ export default function useSpec({
 
     const chartOptions = rscPropsToSpecBuilderOptions({
       backgroundColor,
-      chartHeight,
-      chartWidth,
       children,
       colors,
       colorScheme,
