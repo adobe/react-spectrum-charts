@@ -26,6 +26,12 @@ The two packages touched for most feature work:
 
 ---
 
+## Architecture Reference
+
+For deep architecture context — the VegaChart rendering cycle, signal system, data sources, scale system, interactive mark wiring, COMPONENT_NAME, sanitize gate, encoding conventions, and S2 parity rules — read `.claude/commands/architecture.md` (available as the `/architecture` skill).
+
+---
+
 ## The Three-Layer Pipeline
 
 ```
@@ -278,6 +284,20 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
 
 When fixing a bug or refactoring behavior in an s1 package file, always check whether the corresponding s2 file needs the same change. The packages mirror each other structurally but s2 has no Venn support, no `s2` prop, and uses s2-specific imports (`vega-spec-builder-s2`, `react-spectrum-charts-s2`). A fix in one without the other leaves the packages inconsistent.
+
+---
+
+## Before Implementing Any Feature or Bug Fix
+
+Before writing any code, always:
+
+1. Read `.claude/commands/architecture.md` for system context
+2. Classify the change type and read the corresponding skill file:
+   - Unexpected or broken behavior → `.claude/commands/implement-bug-fix.md`
+   - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
+   - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
+   - New prop on an existing component → `.claude/commands/implement-new-prop.md`
+3. Follow the steps in the matched skill file
 
 ---
 
