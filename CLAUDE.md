@@ -26,6 +26,12 @@ The two packages touched for most feature work:
 
 ---
 
+## Architecture Reference
+
+For deep architecture context — the VegaChart rendering cycle, signal system, data sources, scale system, interactive mark wiring, COMPONENT_NAME, sanitize gate, encoding conventions, and S2 parity rules — read `.claude/architecture.md`.
+
+---
+
 ## The Three-Layer Pipeline
 
 ```
@@ -273,6 +279,20 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
+
+---
+
+## Before Implementing Any Feature or Bug Fix
+
+Before writing any code, always:
+
+1. Read `.claude/architecture.md` for system context
+2. Classify the change type and read the corresponding skill file:
+   - Unexpected or broken behavior → `.claude/commands/implement-bug-fix.md`
+   - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
+   - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
+   - New prop on an existing component → `.claude/commands/implement-new-prop.md`
+3. Follow the steps in the matched skill file
 
 ---
 
