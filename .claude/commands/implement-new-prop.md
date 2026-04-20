@@ -2,7 +2,7 @@
 
 Use this skill when adding a new prop to an existing chart mark or component (e.g., `blend` on Scatter, `labelLimit` on Axis, `onMouseOver` on Bar).
 
-Read `/architecture` for the three-type system (Options / SpecOptions / Props), OptionsWithDefaults, what the adapter does and when it needs to change, and encoding conventions.
+Read `.claude/architecture.md` for the three-type system (Options / SpecOptions / Props), OptionsWithDefaults, what the adapter does and when it needs to change, and encoding conventions.
 
 ---
 

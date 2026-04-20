@@ -2,7 +2,7 @@
 
 Use this skill when adding a new child component — a React element that carries props into the Vega spec pipeline but renders nothing itself. Examples: `ChartTooltip`, `MetricRange`, `Trendline`, `AxisThumbnail`, `LinePointAnnotation`, `BarAnnotation`.
 
-Read `/architecture` for the dispatch pipeline, the sanitize gate (all 6 sanitize functions), and the three dispatch patterns (direct cast, adapter call, recursive).
+Read `.claude/architecture.md` for the dispatch pipeline, the sanitize gate (all 6 sanitize functions), and the three dispatch patterns (direct cast, adapter call, recursive).
 
 ---
 
@@ -199,4 +199,4 @@ S2-exclusive components (like `BarDirectLabel`, `LineDirectLabel`) only exist in
 
 **`displayName` on the wrong object** — Set `displayName` on the component function itself, not on the import. It must be set before the component is used in the `sanitizeChildren` set or the switch case.
 
-**Copyright header missing** — Every new `.ts`/`.tsx` source file requires the Apache 2.0 copyright block at the top. ESLint enforces this as a hard error. See `architecture.md` for the exact header text. Story files (`.story.tsx`) are exempt.
+**Copyright header missing** — Every new `.ts`/`.tsx` source file requires the Apache 2.0 copyright block at the top. ESLint enforces this as a hard error. See `.claude/architecture.md` for the exact header text. Story files (`.story.tsx`) are exempt.

@@ -1,6 +1,6 @@
 # react-spectrum-charts: Bug Fix
 
-Use this skill when fixing a bug. Read `/architecture` first — diagnosing any bug requires understanding the render cycle, signal system, data sources, COMPONENT_NAME, and encoding conventions.
+Use this skill when fixing a bug. Read `.claude/architecture.md` first — diagnosing any bug requires understanding the render cycle, signal system, data sources, COMPONENT_NAME, and encoding conventions.
 
 ---
 

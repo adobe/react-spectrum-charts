@@ -2,7 +2,7 @@
 
 Use this skill when adding a new top-level chart mark (a new mark type like Scatter, Combo, or a hypothetical Heatmap) or a new supplemental visualization type. This is the most involved type of change in the library.
 
-Read `/architecture` first — this is the most involved type of change and requires understanding the full pipeline, all four spec builder functions, the scale system, data sources, interactive mark system, encoding conventions, and alpha vs stable paths.
+Read `.claude/architecture.md` first — this is the most involved type of change and requires understanding the full pipeline, all four spec builder functions, the scale system, data sources, interactive mark system, encoding conventions, and alpha vs stable paths.
 
 ---
 
@@ -287,4 +287,4 @@ S2 differences: uses `getS2ColorValue` instead of `getColorValue`, no `s2` boole
 
 **Cognitive complexity** — SonarQube flags functions whose cognitive complexity exceeds the threshold. Spec builder functions with many conditionals are the most common trigger. When a function grows complex, extract inline conditional chains or loops into named helper functions rather than inlining them. The `addData` and `addMarks` functions are the most likely candidates.
 
-**Copyright header missing** — Every new `.ts`/`.tsx` source file requires the Apache 2.0 copyright block at the top. ESLint enforces this as a hard error. See `architecture.md` for the exact header text. Story files (`.story.tsx`) are exempt.
+**Copyright header missing** — Every new `.ts`/`.tsx` source file requires the Apache 2.0 copyright block at the top. ESLint enforces this as a hard error. See `.claude/architecture.md` for the exact header text. Story files (`.story.tsx`) are exempt.

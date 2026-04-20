@@ -28,7 +28,7 @@ The two packages touched for most feature work:
 
 ## Architecture Reference
 
-For deep architecture context — the VegaChart rendering cycle, signal system, data sources, scale system, interactive mark wiring, COMPONENT_NAME, sanitize gate, encoding conventions, and S2 parity rules — read `.claude/commands/architecture.md` (available as the `/architecture` skill).
+For deep architecture context — the VegaChart rendering cycle, signal system, data sources, scale system, interactive mark wiring, COMPONENT_NAME, sanitize gate, encoding conventions, and S2 parity rules — read `.claude/architecture.md`.
 
 ---
 
@@ -286,7 +286,7 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 
 Before writing any code, always:
 
-1. Read `.claude/commands/architecture.md` for system context
+1. Read `.claude/architecture.md` for system context
 2. Classify the change type and read the corresponding skill file:
    - Unexpected or broken behavior → `.claude/commands/implement-bug-fix.md`
    - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
