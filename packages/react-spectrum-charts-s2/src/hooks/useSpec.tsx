@@ -21,8 +21,6 @@ import { SanitizedSpecProps } from '../types';
 
 export default function useSpec({
   backgroundColor,
-  chartHeight,
-  chartWidth,
   children,
   colors,
   colorScheme,
@@ -40,8 +38,6 @@ export default function useSpec({
   title,
   UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-  // AN-445759: chartWidth/chartHeight intentionally excluded — VegaChart's resize-only effect
-  // handles size changes without re-embedding. Prop changes always trigger a rebuild here.
   return useMemo(() => {
     if (UNSAFE_vegaSpec) {
       const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
