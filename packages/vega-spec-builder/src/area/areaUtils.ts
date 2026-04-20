@@ -42,7 +42,7 @@ export interface AreaMarkOptions {
   color: ColorFacet;
   colorScheme: ColorScheme;
   dimension: string;
-  displayOnHover?: boolean;
+  displayOnHover?: boolean | 'metric' | 'range';
   highlightedItem?: HighlightedItem;
   interactiveMarkName?: string;
   isHighlightedByGroup?: boolean;
@@ -113,8 +113,22 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     highlightedItem,
     name,
   } = areaOptions;
+  // if the range area is hidden until hover, use opacity to show/hide it based on series highlight state
+  if (isMetricRange && displayOnHover === 'range') {
+    const hoveredSeriesTest = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+    const selectedSeriesTest = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
+    const controlledHighlightedTableTest = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
+    const controlledHighlightedSeriesTest = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
+    return [
+      { test: hoveredSeriesTest, value: 1 },
+      { test: selectedSeriesTest, value: 1 },
+      { test: controlledHighlightedTableTest, value: 1 },
+      { test: controlledHighlightedSeriesTest, value: 1 },
+      { value: 0 },
+    ];
+  }
   // if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
-  if (isMetricRange && displayOnHover) {
+  if (isMetricRange && displayOnHover === true) {
     const rules: ProductionRule<NumericValueRef> = [
       {
         test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,

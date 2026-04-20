@@ -12,13 +12,18 @@
 import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  HOVERED_ITEM,
+  SELECTED_SERIES,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getAreaMark } from './areaUtils';
+import { AreaMarkOptions, getAreaMark, getAreaOpacity } from './areaUtils';
 
 describe('getAreaMark', () => {
   test('basic options', () => {
@@ -242,5 +247,37 @@ describe('getAreaMark', () => {
         },
       },
     });
+  });
+});
+
+describe('getAreaOpacity', () => {
+  const baseMetricRangeOptions: AreaMarkOptions = {
+    name: 'line0MetricRange0_area',
+    color: DEFAULT_COLOR,
+    colorScheme: DEFAULT_COLOR_SCHEME,
+    metricStart: 'metricStart',
+    metricEnd: 'metricEnd',
+    isStacked: false,
+    dimension: 'dimension',
+    scaleType: 'linear',
+    opacity: 0.2,
+    isMetricRange: true,
+    interactiveMarkName: 'line0',
+  };
+
+  test('returns opacity rules to hide the area when displayOnHover is "range"', () => {
+    const opacity = getAreaOpacity({ ...baseMetricRangeOptions, displayOnHover: 'range' });
+    expect(opacity).toStrictEqual([
+      { test: `isValid(line0_${HOVERED_ITEM}) && line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`, value: 1 },
+      { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+      { test: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`, value: 1 },
+      { test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+      { value: 0 },
+    ]);
+  });
+
+  test('returns default opacity rule when displayOnHover is false for a metric range', () => {
+    const opacity = getAreaOpacity({ ...baseMetricRangeOptions, displayOnHover: false });
+    expect(opacity).toEqual([DEFAULT_OPACITY_RULE]);
   });
 });

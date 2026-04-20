@@ -213,6 +213,22 @@ describe('getLineOpacity()', () => {
     expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
   });
 
+  test('returns opacity rules when displayOnHover is "metric" to show the line on hover', () => {
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: 'metric',
+    });
+    expect(opacityRule).toEqual([
+      { test: `isValid(line0_${HOVERED_ITEM}) && line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`, value: 1 },
+      { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+      { test: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`, value: 1 },
+      { test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
+      { value: 0 },
+    ]);
+  });
+
+
   test('should add highlightedData rule for multiple series if isHighlightedByGroup is true', () => {
     const opacityRule = getLineOpacity({
       ...defaultLineMarkOptions,

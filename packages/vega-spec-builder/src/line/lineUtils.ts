@@ -60,7 +60,7 @@ export interface LineMarkOptions {
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];
   dimension: string;
-  displayOnHover?: boolean;
+  displayOnHover?: boolean | 'metric' | 'range';
   donutSummaries?: DonutSummaryOptions[];
   dualMetricAxis?: boolean;
   hasOnClick?: boolean;
