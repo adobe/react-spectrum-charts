@@ -29,6 +29,9 @@ cursor
 .claude/commands/private
 .claude/settings.local.json
 
+# Per-developer environment config (port assignments, etc.)
+.env
+
 # docusaurus
 .docusaurus
 

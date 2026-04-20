@@ -64,8 +64,9 @@ Extract:
   Record the chosen dimensions as `chartWidth` and `chartHeight` in the observation. Do not
   subtract padding to derive inner content dimensions — that produces the wrong target size.
 
-- **Title text node** → find the TEXT node for the chart title; fetch its text style:
-  `fontSize`, `fontWeight`, `fontFamily`.
+- **Title text node** → find the TEXT node for the chart title; record its `fontSize`,
+  `fontWeight`, and `fontFamily`. This is required — `generate-chart-story` uses `titleFontSize`
+  to set the correct `fontSize` prop on the `Title` component.
 
 #### Derive plot area bounds from the SVG structure
 
@@ -80,6 +81,29 @@ plotH = y-coordinate of bottommost line-horizontal gridline - plotY
 ```
 
 Coordinates are in the `reference.png` frame's coordinate space (scale=1, so 1:1 with SVG).
+
+#### Derive data values from the SVG line path
+
+If `reference.structure.json` contains a `line-open` path (the data line), convert its
+path-point y-coordinates to data values using the axis gridline positions as a ruler:
+
+```
+For each path point y-coordinate:
+  dataValue = axisMin + (axisMaxY - pointY) / (axisMaxY - axisMinY) * (axisMax - axisMin)
+```
+
+Where:
+- `axisMinY` = y-coordinate of the bottom gridline (baseline, value = 0 or axis minimum)
+- `axisMaxY` = y-coordinate of the top gridline (value = axis maximum)
+- `axisMin` / `axisMax` = the corresponding data values from axis tick labels
+
+Map each path x-coordinate to a date/category using the x-axis tick positions.
+Record the resulting data series in `dataPoints` in `design-observation.json`. This replaces
+the qualitative `dataShapeHypothesis` for charts where SVG path data is available.
+
+**Important:** If the axis gridline pixel-spacing does not correspond to the value-spacing
+(i.e. the scale is non-linear in the Figma design), note this explicitly and use the
+closest linear interpolation. Do not silently invent data — flag non-linear scale as an ambiguity.
 
 ### If input is a local file path
 

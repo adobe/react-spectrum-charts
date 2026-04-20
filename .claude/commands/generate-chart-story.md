@@ -49,6 +49,23 @@ For each feature, record one of:
 `explicitlyNotCaptured` in the hypothesis instead of attempting them and letting
 `verify-chart-story` discover the gap.
 
+**Decompose compound problems before classifying.** A design feature that cannot be matched
+exactly may still have sub-properties that are independently controllable. Always assess each
+dimension separately:
+
+- **Tick count vs tick values**: if the design shows N gridlines and the tick values cannot
+  match (e.g. non-linear scale), that does not mean the count cannot match. Always check
+  `tickCountLimit` on `Axis` as a first-class option. Set `tickCountLimit={N-1}` (excluding
+  the baseline) to approximate the visual density even when exact values differ. Classify
+  "tick count" and "tick values" as separate feasibility items.
+
+- **Axis position vs axis formatting**: the side an axis appears on is independent of its
+  label format. Assess each separately.
+
+- **Title text vs title style**: title text is always supported; font size (`fontSize` prop on
+  `Title`) may differ from the design default. Always read `titleFontSize` from
+  `design-observation.json` and apply it explicitly — do not rely on the RSC default.
+
 ---
 
 ## Step 3 — Write `implementation-hypothesis.json`
