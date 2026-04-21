@@ -1,23 +1,51 @@
 ---
-description: Port a feature from react-spectrum-charts (v1) to S2 using a GitHub PR URL. Checks if the feature already exists in S2, and if not, migrates the implementation, creates stories, and runs tests.
-argument-hint: "[github-pr-url]"
+description: Port a feature from react-spectrum-charts (v1) to S2 using a GitHub PR URL or PR number. Checks if the feature already exists in S2, and if not, migrates the implementation, creates stories, and runs tests.
+argument-hint: "[github-pr-url-or-number]"
 ---
 
 You are helping port a feature from `react-spectrum-charts` (v1) into `react-spectrum-charts-s2` (Spectrum 2).
 
-The GitHub PR URL to migrate is: **$ARGUMENTS**
+The PR to migrate is: **$ARGUMENTS**
 
-If `$ARGUMENTS` is empty, look for a GitHub PR URL in the current conversation. If none is found, ask the user to provide one before proceeding.
+`$ARGUMENTS` may be either a full GitHub PR URL (e.g. `https://github.com/adobe/react-spectrum-charts/pull/123`) or a bare PR number (e.g. `123`). If `$ARGUMENTS` is empty, look for either form in the current conversation. If none is found, ask the user to provide one before proceeding.
 
-Once you have the URL, follow these phases in order:
+Once you have the input, follow these phases in order:
 
 ---
 
-### Phase 1 — Parse & Fetch the PR
+### Phase 1 — Fetch the PR
 
-Parse `owner`, `repo`, and `pull_number` from the URL. Then in parallel:
-- Call GitHub MCP `get_pull_request` with those values to get the PR title, description, and base branch
+Choose a source based on what was provided and what's available:
+
+**Preferred path — GitHub MCP (only when both conditions hold):**
+- A full GitHub PR URL was given (not just a number)
+- The GitHub MCP is configured and responsive
+
+Parse `owner`, `repo`, and `pull_number` from the URL, then in parallel:
+- Call GitHub MCP `get_pull_request` to get the PR title, description, and base branch
 - Call GitHub MCP `get_pull_request_files` to get every changed file and its patch/diff
+
+If either MCP call errors or the MCP is not configured, fall back to the local git path below.
+
+**Fallback path — local git commands:**
+
+Use this path whenever any of the following is true:
+- Only a PR number was provided (no URL)
+- The GitHub MCP is not configured in this environment
+- An MCP call failed or returned an error
+
+Derive the PR number from the input (strip non-digits from a URL if needed), then run:
+
+```bash
+git fetch origin pull/<num>/head:pr-<num>
+git log main..pr-<num> --oneline         # commits on the PR
+git diff --name-only main...pr-<num>     # changed file list (note the three dots)
+git diff main...pr-<num>                 # full diff
+```
+
+The three-dot `...` in the diff is important — it diffs against the merge base so you see only what the PR adds.
+
+**Caveat:** git alone cannot retrieve the PR title or description (those live on GitHub's servers, not in the repo). Derive the PR's intent from the commit messages and the diff.
 
 Summarize the PR: what feature or change does it introduce?
 
