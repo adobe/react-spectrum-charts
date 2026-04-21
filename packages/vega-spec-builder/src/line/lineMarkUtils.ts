@@ -352,7 +352,7 @@ const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Ma
 
   return [
     // area around item that triggers hover
-    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
+    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getVoronoiYEncoding(lineOptions, metric)),
   ];
 };
 
@@ -364,7 +364,7 @@ const getDimensionInteractionMarks = (lineOptions: LineMarkOptions, dataSource: 
     // invisible points at fixed y for dimension-level voronoi
     getXAxisVoronoiPoints(name, dimensionField, scaleType),
     getXAxisVoronoiPath(lineOptions, `${name}_xAxisVoronoiPoints`, dimensionField),
-    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
+    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getVoronoiYEncoding(lineOptions, metric)),
   ];
 };
 
