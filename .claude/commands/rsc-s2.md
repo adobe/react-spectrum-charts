@@ -18,7 +18,6 @@ Once you have the input, follow these phases in order:
 Choose a source based on what was provided and what's available:
 
 **Preferred path — GitHub MCP (only when both conditions hold):**
-- A full GitHub PR URL was given (not just a number)
 - The GitHub MCP is configured and responsive
 
 Parse `owner`, `repo`, and `pull_number` from the URL, then in parallel:
@@ -27,10 +26,9 @@ Parse `owner`, `repo`, and `pull_number` from the URL, then in parallel:
 
 If either MCP call errors or the MCP is not configured, fall back to the local git path below.
 
-**Fallback path — local git commands:**
+**Fallback path — local git commands + WebFetch for PR metadata:**
 
 Use this path whenever any of the following is true:
-- Only a PR number was provided (no URL)
 - The GitHub MCP is not configured in this environment
 - An MCP call failed or returned an error
 
@@ -38,14 +36,33 @@ Derive the PR number from the input (strip non-digits from a URL if needed), the
 
 ```bash
 git fetch origin pull/<num>/head:pr-<num>
-git log main..pr-<num> --oneline         # commits on the PR
-git diff --name-only main...pr-<num>     # changed file list (note the three dots)
-git diff main...pr-<num>                 # full diff
+git log origin/main..pr-<num> --oneline         # commits on the PR
+git diff --name-only origin/main...pr-<num>     # changed file list (note the three dots)
+git diff origin/main...pr-<num>                 # full diff
 ```
+
+Use `origin/main` rather than `main` — it always resolves after `git fetch`, even when no local `main` branch is checked out.
 
 The three-dot `...` in the diff is important — it diffs against the merge base so you see only what the PR adds.
 
-**Caveat:** git alone cannot retrieve the PR title or description (those live on GitHub's servers, not in the repo). Derive the PR's intent from the commit messages and the diff.
+**If the PR is already merged into main**, the commands above return zero commits and an empty diff (the merge base has caught up to the PR head). In that case, find the merge commit and diff the PR's commit range directly:
+
+```bash
+git log --all --oneline --grep="#<num>"       # find the merge commit, e.g. "Merge pull request #<num>"
+# From the PR branch, identify its oldest commit belonging to this PR as <first>:
+git log pr-<num> --oneline | head -20
+git log <first>^..pr-<num> --oneline          # PR-only commits
+git diff --name-only <first>^...pr-<num>      # changed file list
+git diff <first>^...pr-<num>                  # full diff
+```
+
+**Also attempt WebFetch on the constructed PR URL** to pull the title, description, and any details that git alone cannot see that may be helpful:
+
+- Construct the URL as `https://github.com/adobe/react-spectrum-charts/pull/<num>` (use the URL directly if one was provided).
+- Call `WebFetch` on that URL with a prompt like: "Extract the PR title and description/body"
+- If WebFetch is unavailable or returns an error, proceed with git-only info and derive intent from the commit messages and diff.
+
+Combine the WebFetch PR metadata (title, description, linked issues) with the git commit messages and diff to form a complete picture of the change.
 
 Summarize the PR: what feature or change does it introduce?
 
