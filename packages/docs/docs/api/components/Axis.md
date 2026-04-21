@@ -112,7 +112,7 @@ The `Axis` component is used to display the axis, axis labels and grid marks. An
             <td>tickCountLimit</td>
             <td>number</td>
             <td>–</td>
-            <td>Sets the upper limit on the number of axis ticks. Base tick, typically 0, is not included in the count. e.g. 0, 1, 2, 3 is considered 3 ticks. Note: The final tick count may vary based on Vega's automatic calculations to create visually pleasing values.</td>
+            <td>Sets the upper limit on the number of axis ticks. Base tick, typically 0, is not included in the count. e.g. 0, 1, 2, 3 is considered 3 ticks. Note: The final tick count may vary based on Vega's automatic calculations to create visually pleasing values. Warning: On time-based axes (labelFormat="time"), this prop overrides the automatic granularity-based tick interval. Vega will select a tick interval based on the requested count rather than the axis granularity, which can produce duplicate labels (e.g. "Q1 Q1 Q1 Q2 Q2 Q2" for quarterly data). If used on a time axis, you are responsible for ensuring the tick count aligns with the data granularity.</td>
         </tr>
         <tr>
             <td>tickCountMinimum</td>
