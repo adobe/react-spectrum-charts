@@ -10,9 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './gauge.types';
-export * from './line.types';
+export const basicGaugeData = [{ value: 65 }];
 
-export * from './supplemental';
+export const gaugeWithTargetData = [{ value: 65, target: 80, targetLabel: 'Goal' }];

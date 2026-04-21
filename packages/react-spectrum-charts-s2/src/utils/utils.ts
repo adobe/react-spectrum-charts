@@ -38,7 +38,7 @@ import {
   ReferenceLine,
   Title,
 } from '../components';
-import { Donut, DonutSummary, SegmentLabel } from '../rc';
+import { Donut, DonutSummary, Gauge, SegmentLabel } from '../rc';
 import {
   AxisChildElement,
   AxisElement,
@@ -51,6 +51,7 @@ import {
   ChildElement,
   DonutElement,
   DonutSummaryElement,
+  GaugeElement,
   LegendElement,
   LineDirectLabelElement,
   LineElement,
@@ -70,6 +71,7 @@ type RscElement =
   | AxisElement
   | BarElement
   | DonutElement
+  | GaugeElement
   | LegendElement
   | LineElement
   | TitleElement;
@@ -114,6 +116,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     ChartTooltip.displayName,
     Donut.displayName,
     DonutSummary.displayName,
+    Gauge.displayName,
     Legend.displayName,
     Line.displayName,
     LineDirectLabel.displayName,
@@ -134,6 +137,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
     Axis.displayName,
     Bar.displayName,
     Donut.displayName,
+    Gauge.displayName,
     Legend.displayName,
     Line.displayName,
     Title.displayName,
