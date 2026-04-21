@@ -22,7 +22,9 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getLineHoverMarks, getLineMark, getLineOpacity, getVoronoiYEncoding } from './lineMarkUtils';
+import type { Mark } from 'vega';
+
+import { getLineHoverMarks, getLineMark, getLineOpacity, getLineYEncoding, getVoronoiYEncoding } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -120,6 +122,62 @@ describe('getLineHoverMarks()', () => {
       'line0_facet'
     );
     expect(marks[0].encode?.update?.opacity).toEqual({ signal: "length(data('line0_selectedData')) > 0 ? 0 : 1" });
+  });
+});
+
+describe('getLineHoverMarks() hover hit-area y encoding', () => {
+  const dataSource = 'line0_facet';
+
+  const getHoverGroup = (marks: Mark[], lineName: string) =>
+    marks.find((m) => m.type === 'group' && m.name === `${lineName}_hoverGroup`);
+
+  test('item mode: hover symbol y includes metric range hover points', () => {
+    const lineOptions = {
+      ...defaultLineMarkOptions,
+      isHighlightedByDimension: true,
+      interactionMode: 'item' as const,
+      metricRanges: [
+        { metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'forecastedExpectedValue', hoverPoint: true },
+      ],
+    };
+    const marks = getLineHoverMarks(lineOptions, dataSource);
+    const hoverGroup = getHoverGroup(marks, lineOptions.name);
+    expect(hoverGroup).toBeDefined();
+    const nested = (hoverGroup as { marks?: Mark[] })?.marks ?? [];
+    expect(nested.length).toBeGreaterThan(0);
+    const expectedY = getVoronoiYEncoding(lineOptions, lineOptions.metric);
+    nested.forEach((m) => {
+      expect(m.encode?.enter?.y).toEqual(expectedY);
+    });
+  });
+
+  test('item mode: when no MetricRange hover points, hover y matches getLineYEncoding (same result if interactionMode is dimension)', () => {
+    const lineOptions = {
+      ...defaultLineMarkOptions,
+      isHighlightedByDimension: true,
+      interactionMode: 'item' as const,
+      metricRanges: [],
+    };
+    const marks = getLineHoverMarks(lineOptions, dataSource);
+    const hoverGroup = getHoverGroup(marks, lineOptions.name);
+    const nested = (hoverGroup as { marks?: Mark[] })?.marks ?? [];
+    expect(nested[0]?.encode?.enter?.y).toEqual(getLineYEncoding(lineOptions, lineOptions.metric));
+  });
+
+  test('dimension mode: hover symbol y includes metric range hover points', () => {
+    const lineOptions = {
+      ...defaultLineMarkOptions,
+      isHighlightedByDimension: true,
+      interactionMode: 'dimension' as const,
+      metricRanges: [
+        { metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'forecastedExpectedValue', hoverPoint: true },
+      ],
+    };
+    const marks = getLineHoverMarks(lineOptions, dataSource);
+    const hoverGroup = getHoverGroup(marks, lineOptions.name);
+    expect(hoverGroup).toBeDefined();
+    const nested = (hoverGroup as { marks?: Mark[] })?.marks ?? [];
+    expect(nested[0]?.encode?.enter?.y).toEqual(getVoronoiYEncoding(lineOptions, lineOptions.metric));
   });
 });
 
