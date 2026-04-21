@@ -112,7 +112,35 @@ const interactiveChildren = [
   </ChartPopover>,
 ];
 
+const ResizableVennStory: StoryFn<VennProps> = (args) => {
+  return (
+    <View
+      backgroundColor="gray-50"
+      overflow="hidden"
+      width={650}
+      minWidth={200}
+      maxWidth={900}
+      height={650}
+      minHeight={200}
+      maxHeight={900}
+      borderColor="gray-400"
+      borderWidth="thick"
+      padding={16}
+      UNSAFE_style={{ resize: 'both' }}
+    >
+      <Chart data={radioData} width="auto" height="100%" config={{ autosize: { type: 'pad' } }}>
+        <Venn {...args} />
+      </Chart>
+    </View>
+  );
+};
+
 const Basic = bindWithProps(BasicVennStory);
+
+const Resizable = bindWithProps(ResizableVennStory);
+Resizable.args = {
+  children: interactiveChildren,
+};
 
 const WithLegend = bindWithProps(VennStoryWithLegend);
 
@@ -131,4 +159,4 @@ WithPopover.args = {
   children: interactiveChildren,
 };
 
-export { Basic, WithLegend, WithToolTip, WithPopover, Supreme };
+export { Basic, Resizable, WithLegend, WithToolTip, WithPopover, Supreme };

@@ -264,6 +264,9 @@ When adding a new mark, verify its encodings follow the same conventions as comp
 - Opacity must use `getMarkOpacity()` rather than a hardcoded value
 - Cross-check against one or two similar existing marks (e.g. `barAnnotationUtils.ts`, `linePointUtils.ts`) to catch any other conventions
 
+### 6. TypeScript
+After writing or modifying test files, run `yarn tsc --noEmit` and confirm no errors before reporting the work done. `yarn test` passing does not imply the files are type-correct.
+
 ---
 
 ## S2 Docs Pages
@@ -279,6 +282,8 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
+
+When fixing a bug or refactoring behavior in an s1 package file, always check whether the corresponding s2 file needs the same change. The packages mirror each other structurally but s2 has no Venn support, no `s2` prop, and uses s2-specific imports (`vega-spec-builder-s2`, `react-spectrum-charts-s2`). A fix in one without the other leaves the packages inconsistent.
 
 ---
 

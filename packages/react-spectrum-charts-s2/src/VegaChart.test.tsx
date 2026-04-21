@@ -9,9 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { View } from 'vega';
+import { render, waitFor } from '@testing-library/react';
+import { Spec, View } from 'vega';
+import embed from 'vega-embed';
 
-import { resizeView } from './VegaChart';
+import { VegaChart, VegaChartProps, resizeView } from './VegaChart';
+
+jest.mock('vega-embed');
+
+const mockEmbed = jest.mocked(embed);
 
 const mockRunAsync = jest.fn().mockResolvedValue(undefined);
 const mockResize = jest.fn().mockReturnThis();
@@ -24,7 +30,24 @@ const createMockView = (): View =>
 		resize: mockResize,
 		height: mockHeight,
 		width: mockWidth,
+		finalize: jest.fn(),
 	}) as unknown as View;
+
+const defaultSpec: Spec = {};
+
+const defaultProps: VegaChartProps = {
+	config: {},
+	data: [],
+	debug: false,
+	height: 600,
+	locale: undefined,
+	onNewView: jest.fn(),
+	padding: 0,
+	renderer: 'svg',
+	spec: defaultSpec,
+	tooltip: {},
+	width: 800,
+};
 
 describe('resizeView', () => {
 	beforeEach(() => {
@@ -65,5 +88,34 @@ describe('resizeView', () => {
 		resizeView(mockView, 800, 0);
 
 		expect(mockWidth).not.toHaveBeenCalled();
+	});
+});
+
+// AN-445759: regression tests for the init render cycle fix
+describe('VegaChart init render cycle', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockEmbed.mockResolvedValue({ view: createMockView() } as unknown as Awaited<ReturnType<typeof embed>>);
+	});
+
+	test('calls embed on initial mount with valid dimensions', async () => {
+		render(<VegaChart {...defaultProps} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+	});
+
+	test('does not call embed on initial mount with zero dimensions', () => {
+		render(<VegaChart {...defaultProps} width={0} height={0} />);
+
+		expect(mockEmbed).not.toHaveBeenCalled();
+	});
+
+	test('calls embed when dimensions become valid after starting at zero', async () => {
+		const { rerender } = render(<VegaChart {...defaultProps} width={0} height={0} />);
+		expect(mockEmbed).not.toHaveBeenCalled();
+
+		rerender(<VegaChart {...defaultProps} width={800} height={600} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
 	});
 });

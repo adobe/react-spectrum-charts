@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, useEffect, useMemo, useRef } from 'react';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Config, Padding, Renderers, Spec, View } from 'vega';
 import embed from 'vega-embed';
@@ -66,6 +66,10 @@ export const VegaChart: FC<VegaChartProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartView = useRef<View>();
+  const hasMounted = useRef(false);
+  // AN-445759: flipped to true when dimensions become valid post-mount with no existing view,
+  // forcing the embed effect to run even though width/height are not in its deps.
+  const [needsInitEmbed, setNeedsInitEmbed] = useState(false);
 
   const { number: numberLocale, time: timeLocale } = useMemo(() => getLocale(locale), [locale]);
 
@@ -84,9 +88,19 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   useDebugSpec(debug, spec, chartData, width, height, config);
 
-  // Handle resize without recreating the view (prevents axis image flickering)
+  // Handle resize without recreating the view (prevents axis image flickering).
+  // AN-445759: skip on initial mount — the embed effect handles that render. After mount, if
+  // dimensions become valid with no existing view (started at 0), trigger the embed via needsInitEmbed.
   useEffect(() => {
-    resizeView(chartView.current, width, height);
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+    if (width && height && !chartView.current) {
+      setNeedsInitEmbed(true);
+    } else {
+      resizeView(chartView.current, width, height);
+    }
   }, [width, height]);
 
   useEffect(() => {
@@ -136,6 +150,7 @@ export const VegaChart: FC<VegaChartProps> = ({
     chartData.table,
     config,
     data,
+    needsInitEmbed,
     numberLocale,
     timeLocale,
     onNewView,

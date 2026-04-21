@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import { Data, Spec, ValuesData } from 'vega';
 
@@ -21,8 +21,6 @@ import { SanitizedSpecProps } from '../types';
 
 export default function useSpec({
   backgroundColor,
-  chartHeight,
-  chartWidth,
   children,
   colors,
   colorScheme,
@@ -40,33 +38,7 @@ export default function useSpec({
   title,
   UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-  const prevSpec = useRef<Spec | null>(null);
-
-  // invalidate cache if changes to props other than width, height change
-  useEffect(() => {
-    prevSpec.current = null;
-  }, [
-    UNSAFE_vegaSpec,
-    backgroundColor,
-    children,
-    colors,
-    colorScheme,
-    description,
-    hiddenSeries,
-    highlightedItem,
-    highlightedSeries,
-    idKey,
-    lineTypes,
-    lineWidths,
-    opacities,
-    symbolShapes,
-    symbolSizes,
-    title,
-    data,
-  ]);
-
   return useMemo(() => {
-    // They already supplied a spec, fill it in with defaults
     if (UNSAFE_vegaSpec) {
       const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
         backgroundColor,
@@ -75,18 +47,11 @@ export default function useSpec({
         description,
         title,
       });
-
-      // copy the spec so we don't mutate the original
-      const spec = JSON.parse(JSON.stringify(vegaSpecWithDefaults));
-      prevSpec.current = spec;
-      return spec;
+      return structuredClone(vegaSpecWithDefaults) as Spec;
     }
 
-    // or we need to build their spec
     const chartOptions = rscPropsToSpecBuilderOptions({
       backgroundColor,
-      chartHeight,
-      chartWidth,
       children,
       colors,
       colorScheme,
@@ -104,17 +69,14 @@ export default function useSpec({
       title,
     });
 
-    // stringify-parse so that all immer stuff gets cleared out
-    const spec = buildSpec(chartOptions);
-    prevSpec.current = spec;
-
-    return spec;
+    return buildSpec(chartOptions);
   }, [
     UNSAFE_vegaSpec,
     backgroundColor,
     children,
     colors,
     colorScheme,
+    data,
     description,
     hiddenSeries,
     highlightedItem,
@@ -126,9 +88,6 @@ export default function useSpec({
     symbolShapes,
     symbolSizes,
     title,
-    data,
-    chartHeight,
-    chartWidth,
   ]);
 }
 

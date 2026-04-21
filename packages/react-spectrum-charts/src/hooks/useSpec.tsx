@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import { Data, Spec, ValuesData } from 'vega';
 
@@ -43,12 +43,46 @@ export default function useSpec({
   title,
   UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-  const prevSpec = useRef<Spec | null>(null);
   const hasVenn = useMemo(() => chartHasChild({ children, displayName: Venn.displayName as string }), [children]);
 
-  // invalidate cache if changes to props other than width, height change
-  useEffect(() => {
-    prevSpec.current = null;
+  // AN-445759: regular charts don't include chartWidth/chartHeight in deps — VegaChart's resize-only
+  // effect handles size changes without re-embedding. Keeping size out of deps means prop changes
+  // always trigger a rebuild without the async-effect timing bug from the previous cache approach.
+  const regularSpec = useMemo(() => {
+    if (hasVenn) return null;
+
+    if (UNSAFE_vegaSpec) {
+      const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
+        backgroundColor,
+        colorScheme,
+        data,
+        description,
+        title,
+      });
+      return structuredClone(vegaSpecWithDefaults) as Spec;
+    }
+
+    const chartOptions = rscPropsToSpecBuilderOptions({
+      backgroundColor,
+      children,
+      colors,
+      colorScheme,
+      data,
+      description,
+      hiddenSeries,
+      highlightedItem,
+      highlightedSeries,
+      idKey,
+      lineTypes,
+      lineWidths,
+      opacities,
+      s2,
+      symbolShapes,
+      symbolSizes,
+      title,
+    });
+
+    return buildSpec(chartOptions);
   }, [
     UNSAFE_vegaSpec,
     backgroundColor,
@@ -68,31 +102,14 @@ export default function useSpec({
     symbolSizes,
     title,
     data,
+    hasVenn,
   ]);
 
-  return useMemo(() => {
-    // returned cached spec if there is a cached spec and if venn is not a child element
-    if (!hasVenn && prevSpec.current !== null) {
-      return prevSpec.current;
-    }
+  // AN-445759: Venn layout is computed from chart dimensions (circle positions baked into the spec),
+  // so it must rebuild when size changes — chartWidth/chartHeight are intentionally in these deps.
+  const vennSpec = useMemo(() => {
+    if (!hasVenn) return null;
 
-    // They already supplied a spec, fill it in with defaults
-    if (UNSAFE_vegaSpec) {
-      const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
-        backgroundColor,
-        colorScheme,
-        data,
-        description,
-        title,
-      });
-
-      // copy the spec so we don't mutate the original
-      const spec = JSON.parse(JSON.stringify(vegaSpecWithDefaults));
-      prevSpec.current = spec;
-      return spec;
-    }
-
-    // or we need to build their spec
     const chartOptions = rscPropsToSpecBuilderOptions({
       backgroundColor,
       chartHeight,
@@ -115,17 +132,15 @@ export default function useSpec({
       title,
     });
 
-    // stringify-parse so that all immer stuff gets cleared out
-    const spec = buildSpec(chartOptions);
-    prevSpec.current = spec;
-
-    return spec;
+    return buildSpec(chartOptions);
   }, [
-    UNSAFE_vegaSpec,
     backgroundColor,
+    chartHeight,
+    chartWidth,
     children,
     colors,
     colorScheme,
+    data,
     description,
     hiddenSeries,
     highlightedItem,
@@ -138,11 +153,10 @@ export default function useSpec({
     symbolShapes,
     symbolSizes,
     title,
-    data,
-    chartHeight,
-    chartWidth,
     hasVenn,
   ]);
+
+  return (hasVenn ? vennSpec : regularSpec) as Spec;
 }
 
 const initializeSpec = (
