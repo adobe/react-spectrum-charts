@@ -18,14 +18,14 @@ import useChartProps from '../../../hooks/useChartProps';
 import { Gauge } from '../../../rc';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, GaugeProps } from '../../../types';
-import { gaugeWithTargetData } from './data';
+import { gaugeMultiRowData, gaugeWithTargetData } from './data';
 
 export default {
 	title: 'React Spectrum Charts 2/Gauge/Features',
 	component: Gauge,
 };
 
-const SIZE = 300;
+const SIZE = 275;
 
 const defaultChartProps: ChartProps = {
 	data: [],
@@ -36,6 +36,16 @@ const defaultChartProps: ChartProps = {
 const GaugeStory: StoryFn<GaugeProps & { width?: number; height?: number; value?: number }> = (args): ReactElement => {
 	const { width, height, value = 65, ...gaugeProps } = args;
 	const chartProps = useChartProps({ ...defaultChartProps, data: [{ value }], width: width ?? SIZE, height: height ?? SIZE });
+	return (
+		<Chart {...chartProps}>
+			<Gauge {...gaugeProps} />
+		</Chart>
+	);
+};
+
+const GaugeAggregationStory: StoryFn<GaugeProps & { width?: number; height?: number }> = (args): ReactElement => {
+	const { width, height, ...gaugeProps } = args;
+	const chartProps = useChartProps({ ...defaultChartProps, data: gaugeMultiRowData, width: width ?? SIZE, height: height ?? SIZE });
 	return (
 		<Chart {...chartProps}>
 			<Gauge {...gaugeProps} />
@@ -108,6 +118,66 @@ WithThresholds.args = {
 	],
 };
 
+// Size variants
+const WithSizeS = bindWithProps(GaugeStory);
+WithSizeS.args = { value: 65, label: 'Completion Rate', metric: 'value', size: 'S', width: 100, height: 100, ticks: 'normal' };
+
+const WithSizeM = bindWithProps(GaugeStory);
+WithSizeM.args = { value: 65, label: 'Completion Rate', metric: 'value', size: 'M', width: 200, height: 200, ticks: 'normal' };
+
+const WithSizeL = bindWithProps(GaugeStory);
+WithSizeL.args = { value: 65, label: 'Completion Rate', metric: 'value', size: 'L', width: 275, height: 275, ticks: 'normal' };
+
+const WithSizeXL = bindWithProps(GaugeStory);
+WithSizeXL.args = { value: 65, label: 'Completion Rate', metric: 'value', size: 'XL', width: 350, height: 350, ticks: 'normal' };
+
+// Tick marks — minimal (6-10 evenly spaced major ticks)
+const WithTicksMinimal = bindWithProps(GaugeStory);
+WithTicksMinimal.args = {
+	value: 65,
+	label: 'Completion Rate',
+	metric: 'value',
+	minScaleValue: 0,
+	maxScaleValue: 100,
+	showNeedle: true,
+	ticks: 'minimal',
+};
+
+// Tick marks — normal (alternating tall/short)
+const WithTicksNormal = bindWithProps(GaugeStory);
+WithTicksNormal.args = {
+	value: 65,
+	label: 'Completion Rate',
+	metric: 'value',
+	minScaleValue: 0,
+	maxScaleValue: 100,
+	showNeedle: true,
+	ticks: 'normal',
+};
+
+// Tick marks — dense (major ticks with 3 minor ticks between each)
+const WithTicksDense = bindWithProps(GaugeStory);
+WithTicksDense.args = {
+	value: 65,
+	label: 'Completion Rate',
+	metric: 'value',
+	minScaleValue: 0,
+	maxScaleValue: 100,
+	showNeedle: true,
+	ticks: 'dense',
+};
+
+// Aggregation method — avg of [40, 60, 80] = 60
+const WithAggregation = bindWithProps(GaugeAggregationStory);
+WithAggregation.args = {
+	label: 'Avg Completion',
+	metric: 'value',
+	method: 'avg',
+	minScaleValue: 0,
+	maxScaleValue: 100,
+	showNeedle: true,
+};
+
 // Range labels
 const WithRangeLabels = bindWithProps(GaugeStory);
 WithRangeLabels.args = {
@@ -120,4 +190,4 @@ WithRangeLabels.args = {
 	showRangeLabels: true,
 };
 
-export { Basic, FillMode, WithRangeLabels, WithTarget, WithThresholds };
+export { Basic, FillMode, WithAggregation, WithRangeLabels, WithSizeL, WithSizeM, WithSizeS, WithSizeXL, WithTarget, WithThresholds, WithTicksDense, WithTicksMinimal, WithTicksNormal };

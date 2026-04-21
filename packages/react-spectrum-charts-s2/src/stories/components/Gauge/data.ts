@@ -13,3 +13,5 @@
 export const basicGaugeData = [{ value: 65 }];
 
 export const gaugeWithTargetData = [{ value: 65, target: 80, targetLabel: 'Goal' }];
+
+export const gaugeMultiRowData = [{ value: 40 }, { value: 60 }, { value: 80 }];

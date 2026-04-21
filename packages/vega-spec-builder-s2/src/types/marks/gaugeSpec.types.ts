@@ -45,7 +45,7 @@ export interface GaugeOptions {
   color?: string;
   /** Fraction of a full circle the arc spans. Clamped to 0.2–0.85. Default 0.667. */
   arcSize?: number;
-  /** Inner radius as a fraction of outer radius (controls track thickness). Clamped to 0.4–0.9. */
+  /** Inner radius as a fraction of outer radius (controls track thickness). Clamped to 0.65–0.9. Default 0.8. */
   holeRatio?: number;
   /** Sequential performance zone breakpoints. */
   thresholds?: GaugeThreshold[];
@@ -57,7 +57,7 @@ export interface GaugeOptions {
   ticks?: 'minimal' | 'normal' | 'dense';
   /** Show minScaleValue and maxScaleValue labels at the arc endpoints. */
   showRangeLabels?: boolean;
-  /** Overall size of the gauge. Named: XL=350px, L=225px, M=150px, S=110px. */
+  /** Overall size of the gauge. Controls typography. Pair with matching container dimensions: S=100px, M=200px, L=300px, XL=350px. */
   size?: 'XL' | 'L' | 'M' | 'S' | number;
 
   // children
@@ -83,4 +83,21 @@ export interface GaugeSpecOptions extends PartiallyRequired<GaugeOptions, GaugeO
   colorScheme: ColorScheme;
   index: number;
   markType: 'gauge';
+  // Resolved typography and needle dimensions from the size prop
+  valueFontSize: number;
+  metricFontSize: number;
+  metricWrapChars: number;
+  metricLineHeight: number;
+  pivotDiameter: number;
+  pivotStrokeWidth: number;
+  needleBaseHalfWidth: number;
+  needleTipHalfWidth: number;
+  needleTipDiameter: number;
+  needleTipGap: number;
+  tickMajorLength: number;
+  tickMinorLength: number;
+  tickStrokeWidth: number;
+  tickMinimalTarget: number;
+  tickDenseMajorTarget: number;
+  tickDenseMinorCount: number;
 }

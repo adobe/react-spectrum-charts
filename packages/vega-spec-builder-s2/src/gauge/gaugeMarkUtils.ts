@@ -13,7 +13,7 @@ import { ArcMark, ColorValueRef, Mark, PathMark, RuleMark, SymbolMark, TextMark 
 
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
-import { ColorScheme } from '../types';
+import { ColorScheme, GaugeSpecOptions, GaugeThreshold } from '../types';
 
 const wrapLabel = (text: string | undefined, maxChars: number): string => {
   if (!text) return '';
@@ -42,16 +42,19 @@ const getGaugeFillColorValue = (color: string, colorScheme: ColorScheme): ColorV
   return { value: getS2ColorValue(color, colorScheme) };
 };
 
-import { GaugeSpecOptions, GaugeThreshold } from '../types';
 
 export const getGaugeMarks = (options: GaugeSpecOptions): Mark[] => {
-  const { showNeedle, target, showRangeLabels, thresholds } = options;
+  const { showNeedle, target, showRangeLabels, ticks, thresholds } = options;
   const marks: Mark[] = [getTrackArcMark(options)];
 
   if (thresholds && thresholds.length > 0) {
     marks.push(...getThresholdArcMarks(options));
   } else if (!showNeedle) {
     marks.push(getValueFillMark(options), getValueFillStartCapMark(options));
+  }
+
+  if (ticks) {
+    marks.push(getTicksMark(options));
   }
 
   if (showNeedle) {
@@ -70,6 +73,22 @@ export const getGaugeMarks = (options: GaugeSpecOptions): Mark[] => {
 
   return marks;
 };
+
+const getTicksMark = ({ name, colorScheme, tickStrokeWidth }: GaugeSpecOptions): RuleMark => ({
+  type: 'rule',
+  from: { data: `${name}_ticks` },
+  encode: {
+    enter: {
+      x: { signal: `${name}_cx + (${name}_innerRadius - 6) * sin(datum.angle)` },
+      y: { signal: `${name}_cy - (${name}_innerRadius - 6) * cos(datum.angle)` },
+      x2: { signal: `${name}_cx + (${name}_innerRadius - 6 - datum.length) * sin(datum.angle)` },
+      y2: { signal: `${name}_cy - (${name}_innerRadius - 6 - datum.length) * cos(datum.angle)` },
+      stroke: { value: getS2ColorValue('gray-300', colorScheme) },
+      strokeWidth: { value: tickStrokeWidth },
+      strokeCap: { value: 'round' },
+    },
+  },
+});
 
 const getTrackArcMark = ({ name, colorScheme }: GaugeSpecOptions): ArcMark => ({
   type: 'arc',
@@ -170,22 +189,22 @@ const buildCapPath = (name: string, capAngle: string, sweep: 0 | 1): string => {
   ].join(' ');
 };
 
-const getThresholdStartCapMark = ({ name, thresholds, colorScheme }: GaugeSpecOptions): PathMark => ({
+const getThresholdStartCapMark = ({ name, thresholds = [], colorScheme }: GaugeSpecOptions): PathMark => ({
   type: 'path',
   encode: {
     enter: {
       path: { signal: buildCapPath(name, `(${name}_startAngle + ${name}_capAngleOffset)`, 0) },
-      fill: { value: getS2ColorValue(thresholds![0].color, colorScheme) },
+      fill: { value: getS2ColorValue(thresholds[0].color, colorScheme) },
     },
   },
 });
 
-const getThresholdEndCapMark = ({ name, thresholds, colorScheme }: GaugeSpecOptions): PathMark => ({
+const getThresholdEndCapMark = ({ name, thresholds = [], colorScheme }: GaugeSpecOptions): PathMark => ({
   type: 'path',
   encode: {
     enter: {
       path: { signal: buildCapPath(name, `(${name}_endAngle - ${name}_capAngleOffset)`, 1) },
-      fill: { value: getS2ColorValue(thresholds![thresholds!.length - 1].color, colorScheme) },
+      fill: { value: getS2ColorValue(thresholds[thresholds.length - 1].color, colorScheme) },
     },
   },
 });
@@ -202,27 +221,23 @@ const getValueFillStartCapMark = ({ name, color, colorScheme }: GaugeSpecOptions
   },
 });
 
-const getNeedleMark = ({ name, colorScheme }: GaugeSpecOptions): PathMark => {
+const getNeedleMark = ({ name, colorScheme, needleBaseHalfWidth, needleTipHalfWidth, needleTipGap }: GaugeSpecOptions): PathMark => {
   const cx = `${name}_cx`;
   const cy = `${name}_cy`;
   const innerR = `${name}_innerRadius`;
   const angle = `datum.${name}_valueAngle`;
-  // Tip shoulders end 12px before the inner track edge
-  const tipR = `(${innerR} - 12)`;
+  const tipR = `(${innerR} - ${needleTipGap})`;
 
-  // Base: ±10.5px perpendicular (21px total width at pivot end)
-  const bLx = `(${cx} - 10.5*cos(${angle}))`;
-  const bLy = `(${cy} - 10.5*sin(${angle}))`;
-  const bRx = `(${cx} + 10.5*cos(${angle}))`;
-  const bRy = `(${cy} + 10.5*sin(${angle}))`;
+  const bLx = `(${cx} - ${needleBaseHalfWidth}*cos(${angle}))`;
+  const bLy = `(${cy} - ${needleBaseHalfWidth}*sin(${angle}))`;
+  const bRx = `(${cx} + ${needleBaseHalfWidth}*cos(${angle}))`;
+  const bRy = `(${cy} + ${needleBaseHalfWidth}*sin(${angle}))`;
 
-  // Tip shoulders: ±4px wide
-  const tLx = `(${cx} + ${tipR}*sin(${angle}) - 4*cos(${angle}))`;
-  const tLy = `(${cy} - ${tipR}*cos(${angle}) - 4*sin(${angle}))`;
-  const tRx = `(${cx} + ${tipR}*sin(${angle}) + 4*cos(${angle}))`;
-  const tRy = `(${cy} - ${tipR}*cos(${angle}) + 4*sin(${angle}))`;
+  const tLx = `(${cx} + ${tipR}*sin(${angle}) - ${needleTipHalfWidth}*cos(${angle}))`;
+  const tLy = `(${cy} - ${tipR}*cos(${angle}) - ${needleTipHalfWidth}*sin(${angle}))`;
+  const tRx = `(${cx} + ${tipR}*sin(${angle}) + ${needleTipHalfWidth}*cos(${angle}))`;
+  const tRy = `(${cy} - ${tipR}*cos(${angle}) + ${needleTipHalfWidth}*sin(${angle}))`;
 
-  // Straight taper — rounding is handled by a separate tip circle mark
   const pathSignal = [
     `'M ' + ${bLx} + ',' + ${bLy}`,
     `+ ' L ' + ${tLx} + ',' + ${tLy}`,
@@ -244,12 +259,12 @@ const getNeedleMark = ({ name, colorScheme }: GaugeSpecOptions): PathMark => {
 };
 
 // Separate circle mark at the tip — guarantees a geometrically perfect round cap
-const getNeedleTipMark = ({ name, colorScheme }: GaugeSpecOptions): SymbolMark => {
+const getNeedleTipMark = ({ name, colorScheme, needleTipDiameter, needleTipGap }: GaugeSpecOptions): SymbolMark => {
   const cx = `${name}_cx`;
   const cy = `${name}_cy`;
   const innerR = `${name}_innerRadius`;
   const angle = `datum.${name}_valueAngle`;
-  const tipR = `(${innerR} - 12)`;
+  const tipR = `(${innerR} - ${needleTipGap})`;
   return {
     type: 'symbol',
     from: { data: name },
@@ -257,7 +272,7 @@ const getNeedleTipMark = ({ name, colorScheme }: GaugeSpecOptions): SymbolMark =
       enter: {
         x: { signal: `${cx} + ${tipR} * sin(${angle})` },
         y: { signal: `${cy} - ${tipR} * cos(${angle})` },
-        size: { value: 64 },
+        size: { value: needleTipDiameter * needleTipDiameter },
         shape: { value: 'circle' },
         fill: { value: getS2ColorValue('gray-800', colorScheme) },
       },
@@ -265,7 +280,7 @@ const getNeedleTipMark = ({ name, colorScheme }: GaugeSpecOptions): SymbolMark =
   };
 };
 
-const getPivotMark = ({ name, colorScheme }: GaugeSpecOptions): SymbolMark => ({
+const getPivotMark = ({ name, colorScheme, pivotDiameter, pivotStrokeWidth }: GaugeSpecOptions): SymbolMark => ({
   type: 'symbol',
   from: { data: name },
   zindex: 1,
@@ -273,16 +288,16 @@ const getPivotMark = ({ name, colorScheme }: GaugeSpecOptions): SymbolMark => ({
     enter: {
       x: { signal: `${name}_cx` },
       y: { signal: `${name}_cy` },
-      size: { value: 324 },
+      size: { value: pivotDiameter * pivotDiameter },
       fill: { value: '#ffffff' },
       stroke: { value: getS2ColorValue('gray-800', colorScheme) },
-      strokeWidth: { value: 3 },
+      strokeWidth: { value: pivotStrokeWidth },
       shape: { value: 'circle' },
     },
   },
 });
 
-const getTargetTickMark = ({ name, target, colorScheme }: GaugeSpecOptions): RuleMark => ({
+const getTargetTickMark = ({ name }: GaugeSpecOptions): RuleMark => ({
   type: 'rule',
   from: { data: name },
   encode: {
@@ -298,42 +313,48 @@ const getTargetTickMark = ({ name, target, colorScheme }: GaugeSpecOptions): Rul
   },
 });
 
-const getValueLabelMark = ({ name, metric, showNeedle }: GaugeSpecOptions): TextMark => ({
-  type: 'text',
-  from: { data: name },
-  encode: {
-    enter: {
-      x: { signal: `${name}_cx` },
-      y: { signal: `${name}_cy + ${name}_radius * 0.18${showNeedle ? ' + 36' : ' - 40'}` },
-      text: { field: metric },
-      align: { value: 'center' },
-      baseline: { value: 'middle' },
-      fontSize: { value: showNeedle ? 40 : 56 },
-      fontWeight: { value: 800 },
-      fontFamily: { value: 'adobe-clean' },
-      fill: { value: '#292929' },
+const getValueLabelMark = ({ name, metric, showNeedle, valueFontSize }: GaugeSpecOptions): TextMark => {
+  const yMultiplier = showNeedle ? '0.43' : '-0.094';
+  return {
+    type: 'text',
+    from: { data: name },
+    encode: {
+      enter: {
+        x: { signal: `${name}_cx` },
+        y: { signal: `${name}_cy + ${name}_radius * ${yMultiplier}` },
+        text: { field: metric },
+        align: { value: 'center' },
+        baseline: { value: 'middle' },
+        fontSize: { value: valueFontSize },
+        fontWeight: { value: 800 },
+        fontFamily: { value: 'adobe-clean' },
+        fill: { value: '#292929' },
+      },
     },
-  },
-});
+  };
+};
 
-const getMetricLabelMark = ({ name, label, showNeedle }: GaugeSpecOptions): TextMark => ({
-  type: 'text',
-  encode: {
-    enter: {
-      x: { signal: `${name}_cx` },
-      y: { signal: `${name}_cy + ${name}_radius * 0.4 + 8${showNeedle ? ' + 36' : ' - 40'}` },
-      text: { value: wrapLabel(label, showNeedle ? 26 : 14) },
-      align: { value: 'center' },
-      baseline: { value: 'middle' },
-      fontSize: { value: showNeedle ? 26 : 32 },
-      fontWeight: { value: 700 },
-      fontFamily: { value: 'adobe-clean' },
-      fill: { value: '#505050' },
-      lineBreak: { value: '\n' },
-      lineHeight: { value: showNeedle ? 24 : 32 },
+const getMetricLabelMark = ({ name, label, showNeedle, metricFontSize, metricWrapChars, metricLineHeight }: GaugeSpecOptions): TextMark => {
+  const yMultiplier = showNeedle ? '0.701' : '0.181';
+  return {
+    type: 'text',
+    encode: {
+      enter: {
+        x: { signal: `${name}_cx` },
+        y: { signal: `${name}_cy + ${name}_radius * ${yMultiplier}` },
+        text: { value: wrapLabel(label, metricWrapChars) },
+        align: { value: 'center' },
+        baseline: { value: 'middle' },
+        fontSize: { value: metricFontSize },
+        fontWeight: { value: 700 },
+        fontFamily: { value: 'adobe-clean' },
+        fill: { value: '#505050' },
+        lineBreak: { value: '\n' },
+        lineHeight: { value: metricLineHeight },
+      },
     },
-  },
-});
+  };
+};
 
 const getRangeLabelMarks = ({ name, minScaleValue, maxScaleValue, colorScheme }: GaugeSpecOptions): TextMark[] => [
   {
@@ -349,8 +370,10 @@ const getRangeLabelMarks = ({ name, minScaleValue, maxScaleValue, colorScheme }:
         text: { value: String(minScaleValue) },
         align: { value: 'center' },
         baseline: { value: 'middle' },
-        fontSize: { value: 11 },
-        fill: { value: getS2ColorValue('gray-600', colorScheme) },
+        fontSize: { value: 18 },
+        fontWeight: { value: 400 },
+        fontFamily: { value: 'adobe-clean' },
+        fill: { value: getS2ColorValue('gray-700', colorScheme) },
       },
     },
   },
@@ -367,8 +390,10 @@ const getRangeLabelMarks = ({ name, minScaleValue, maxScaleValue, colorScheme }:
         text: { value: String(maxScaleValue) },
         align: { value: 'center' },
         baseline: { value: 'middle' },
-        fontSize: { value: 11 },
-        fill: { value: getS2ColorValue('gray-600', colorScheme) },
+        fontSize: { value: 18 },
+        fontWeight: { value: 400 },
+        fontFamily: { value: 'adobe-clean' },
+        fill: { value: getS2ColorValue('gray-700', colorScheme) },
       },
     },
   },
