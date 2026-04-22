@@ -38,6 +38,7 @@ import {
   getCursor,
   getHighlightOpacityValue,
   getInteractiveMarkName,
+  getItemHoverArea,
   getLineWidthProductionRule,
   getMarkOpacity,
   getOpacityProductionRule,
@@ -313,5 +314,14 @@ describe('getInteractiveMarkName()', () => {
   });
   test('should return the aggregated trendline name if the line has a trendline with any interactive children', () => {
     expect(getInteractiveMarkName({ trendlines: [{ chartTooltips: [{}] }] }, 'line0')).toEqual('line0Trendline');
+  });
+});
+
+describe('getItemHoverArea()', () => {
+  // Without clipping, the symbols' bounding boxes overflow the plot area when points
+  // are near the top/bottom, and `autosize: fit` will shrink the plot height to compensate.
+  test('hoverGroup has clip: true so oversized hover symbols do not affect plot autosize', () => {
+    const hoverGroup = getItemHoverArea([{}], 'line0_facet', 'datetime', 'value', 'line0', 'time');
+    expect(hoverGroup).toHaveProperty('clip', true);
   });
 });
