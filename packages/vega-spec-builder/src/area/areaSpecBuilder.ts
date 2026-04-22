@@ -13,6 +13,8 @@ import { produce } from 'immer';
 import { Data, Mark, Scale, Signal, SourceData } from 'vega';
 
 import {
+  AREA_HOVER_POINT,
+  AREA_HOVER_RULE,
   BACKGROUND_COLOR,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_ITEM,
@@ -22,6 +24,7 @@ import {
   DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
   GROUP_ID,
+  SELECT_BORDER,
   SELECTED_ITEM,
   SELECTED_SERIES,
 } from '@spectrum-charts/constants';
@@ -332,7 +335,7 @@ const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
   if (!isInteractive(areaOptions) && highlightedItem === undefined) return [];
   const highlightMarks: Mark[] = [
     {
-      name: `${name}_point`,
+      name: `${name}${AREA_HOVER_POINT}`,
       type: 'symbol',
       from: { data: `${name}_highlightedData` },
       interactive: false,
@@ -350,7 +353,7 @@ const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
   ];
   if (isHighlightedByDimension(areaOptions) || highlightedItem) {
     highlightMarks.unshift({
-      name: `${name}_rule`,
+      name: `${name}${AREA_HOVER_RULE}`,
       type: 'rule',
       from: { data: `${name}_highlightedData` },
       interactive: false,
@@ -392,7 +395,7 @@ const getSelectedAreaMarks = ({
   if (!chartPopovers.length) return [];
   return [
     {
-      name: `${name}_selectBorder`,
+      name: `${name}${SELECT_BORDER}`,
       type: 'area',
       from: { data: `${name}_selectedDataSeries` },
       interactive: false,

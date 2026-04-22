@@ -22,6 +22,7 @@ import { spectrumColors } from '@spectrum-charts/themes';
 
 import { AxisSpecOptions, ReferenceLineSpecOptions } from '../types';
 import {
+  getFrontInsertionIndex,
   getPositionEncoding,
   getReferenceLineLabelsEncoding,
   getReferenceLineMarks,
@@ -134,6 +135,80 @@ describe('getPositionEncoding()', () => {
         'xBand'
       )
     ).toStrictEqual({ signal: "scale('xBand', 10) + bandwidth('xBand') / 2" });
+  });
+});
+
+describe('getFrontInsertionIndex()', () => {
+  const dataMark = (name: string) => ({ name, type: 'group' as const });
+  const hoverMark = (name: string) => ({ name, type: 'rule' as const });
+
+  test('returns marks.length when there are no hover marks', () => {
+    const marks = [dataMark('line0_group'), dataMark('line0_staticPoints')];
+    expect(getFrontInsertionIndex(marks)).toBe(2);
+  });
+
+  test('returns 0 for an empty marks array', () => {
+    expect(getFrontInsertionIndex([])).toBe(0);
+  });
+
+  // Line: [group, hoverRule, ...]
+  test('inserts before _hoverRule for a line chart', () => {
+    const marks = [dataMark('line0_group'), hoverMark('line0_hoverRule'), hoverMark('line0_hoverPoint')];
+    expect(getFrontInsertionIndex(marks)).toBe(1);
+  });
+
+  // Area with popover: [group, selectBorder, rule, point]
+  test('inserts before _selectBorder for an area chart with popover', () => {
+    const marks = [
+      dataMark('area0_group'),
+      hoverMark('area0_selectBorder'),
+      hoverMark('area0_rule'),
+      hoverMark('area0_point'),
+    ];
+    expect(getFrontInsertionIndex(marks)).toBe(1);
+  });
+
+  // Area with dimension interaction, no popover: [group, rule, point]
+  test('inserts before _rule for an area chart with dimension interaction', () => {
+    const marks = [dataMark('area0_group'), hoverMark('area0_rule'), hoverMark('area0_point')];
+    expect(getFrontInsertionIndex(marks)).toBe(1);
+  });
+
+  // Area with basic interaction, no popover, no dimension: [group, point]
+  test('inserts before _point for an area chart with basic interaction', () => {
+    const marks = [dataMark('area0_group'), hoverMark('area0_point')];
+    expect(getFrontInsertionIndex(marks)).toBe(1);
+  });
+
+  // Bar: _dimensionHoverArea is excluded from suffixes; fallback to end
+  test('returns marks.length for a bar chart (dimensionHoverArea excluded from suffixes)', () => {
+    const marks = [
+      { name: 'bar0_dimensionHoverArea', type: 'rect' as const },
+      dataMark('bar0_group'),
+    ];
+    expect(getFrontInsertionIndex(marks)).toBe(2);
+  });
+
+  // Multi-mark: inserts before the first builder's hover marks (known limitation)
+  test('inserts before the first hover mark across multiple marks', () => {
+    const marks = [
+      dataMark('line0_group'),
+      hoverMark('line0_hoverRule'),
+      dataMark('line1_group'),
+      hoverMark('line1_hoverRule'),
+    ];
+    // Inserts before line0_hoverRule; line1_group (data) ends up above the ref line — known limitation
+    expect(getFrontInsertionIndex(marks)).toBe(1);
+  });
+
+  // Back reference lines already unshifted should not affect the result
+  test('ignores back reference line marks when finding insertion point', () => {
+    const marks = [
+      { name: 'axis0ReferenceLine0', type: 'rule' as const },
+      dataMark('line0_group'),
+      hoverMark('line0_hoverRule'),
+    ];
+    expect(getFrontInsertionIndex(marks)).toBe(2);
   });
 });
 

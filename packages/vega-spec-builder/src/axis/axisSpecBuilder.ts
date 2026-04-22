@@ -40,7 +40,7 @@ import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
-import { getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
+import { getFrontInsertionIndex, getReferenceLineMarks, getReferenceLines, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import {
   addAxisThumbnailSignals,
   getAxisThumbnailLabelOffset,
@@ -558,7 +558,7 @@ export const addAxesMarks = produce<
   if (scaleTypeSupportsReferenceLines(scaleType)) {
     const { back, front } = getReferenceLineMarks(options, scaleName);
     marks.unshift(...back);
-    marks.push(...front);
+    marks.splice(getFrontInsertionIndex(marks), 0, ...front);
   }
 
   const trellisGroupMark = marks.find((mark) => mark.name?.includes('Trellis')) as GroupMark;

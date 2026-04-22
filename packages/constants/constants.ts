@@ -174,6 +174,17 @@ export const HOVER_SHAPE = 'diamond';
 // tooltip constants
 export const DIMENSION_HOVER_AREA = 'dimensionHoverArea';
 
+// Hover mark name suffixes — used both to construct mark names in builders and to identify
+// the first top-level hover mark when inserting 'front' reference lines.
+// Notes:
+//   - Bar: _dimensionHoverArea excluded — pushed BEFORE bar rect marks, so inserting before
+//     it would place the reference line behind all bars.
+//   - Scatter: hover marks are nested inside the group mark, not top-level, so no suffix needed.
+export const HOVER_RULE = '_hoverRule';         // line hover rule mark
+export const SELECT_BORDER = '_selectBorder';   // area selection border mark (with popover)
+export const AREA_HOVER_RULE = '_rule';         // area hover rule mark (dimension interaction)
+export const AREA_HOVER_POINT = '_point';       // area hover point mark
+
 //SVG Paths
 export const ROUNDED_SQUARE_PATH =
   'M -0.55 -1 h 1.1 a 0.45 0.45 0 0 1 0.45 0.45 v 1.1 a 0.45 0.45 0 0 1 -0.45 0.45 h -1.1 a 0.45 0.45 0 0 1 -0.45 -0.45 v -1.1 a 0.45 0.45 0 0 1 0.45 -0.45 z';

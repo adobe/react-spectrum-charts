@@ -150,6 +150,52 @@ const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement =>
   );
 };
 
+// datetime 1667977200000 coincides with the "Add Fallout" static point.
+// Hover over that point to verify hover marks render above (front) or below (back) the reference line.
+const ReferenceLineLayerFrontStory: StoryFn<typeof Line> = (): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Value" />
+      <Axis position="bottom" labelFormat="time" baseline ticks>
+        <ReferenceLine value={1667977200000} layer="front" color="gray-500" />
+      </Axis>
+      <Line color="series" dimension="datetime" metric="value" scaleType="time" staticPoint="staticPoint">
+        <ChartTooltip>
+          {(datum) => (
+            <div>
+              <div>{formatTimestamp(datum.datetime as number)}</div>
+              <div>{datum.series}: {Number(datum.value).toLocaleString()}</div>
+            </div>
+          )}
+        </ChartTooltip>
+      </Line>
+    </Chart>
+  );
+};
+
+const ReferenceLineLayerBackStory: StoryFn<typeof Line> = (): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Value" />
+      <Axis position="bottom" labelFormat="time" baseline ticks>
+        <ReferenceLine value={1667977200000} layer="back" color="gray-500" />
+      </Axis>
+      <Line color="series" dimension="datetime" metric="value" scaleType="time" staticPoint="staticPoint">
+        <ChartTooltip>
+          {(datum) => (
+            <div>
+              <div>{formatTimestamp(datum.datetime as number)}</div>
+              <div>{datum.series}: {Number(datum.value).toLocaleString()}</div>
+            </div>
+          )}
+        </ChartTooltip>
+      </Line>
+    </Chart>
+  );
+};
+
 const LineWithHasPointStylesStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithHasPointStyles });
   return (
@@ -360,6 +406,12 @@ WithStaticPointsAndDialogs.args = {
   ],
 };
 
+const ReferenceLineLayerFront = bindWithProps(ReferenceLineLayerFrontStory);
+ReferenceLineLayerFront.args = {};
+
+const ReferenceLineLayerBack = bindWithProps(ReferenceLineLayerBackStory);
+ReferenceLineLayerBack.args = {};
+
 const BasicSparkline = bindWithProps(PlainLineStory);
 BasicSparkline.args = {
   ...defaultArgs,
@@ -478,6 +530,8 @@ export {
   WithStaticPoints,
   WithSolidAndHollowStaticPoints,
   WithStaticPointsAndDialogs,
+  ReferenceLineLayerFront,
+  ReferenceLineLayerBack,
   BasicSparkline,
   SparklineWithStaticPoint,
   OnClick,
