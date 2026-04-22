@@ -23,7 +23,7 @@ import {
   TextMark,
 } from 'vega';
 
-import { DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
+import { AREA_HOVER_POINT, AREA_HOVER_RULE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT, HOVER_RULE, SELECT_BORDER } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getPathFromIcon, getStrokeDashFromLineType } from '../specUtils';
@@ -55,6 +55,17 @@ const applyReferenceLineOptionDefaults = (
 export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined): boolean => {
   const supportedScaleTypes: ScaleType[] = ['band', 'linear', 'point', 'time', 'utc'];
   return Boolean(scaleType && supportedScaleTypes.includes(scaleType));
+};
+
+/**
+ * Returns the index at which 'front' reference line marks should be spliced in —
+ * just before the first hover/interactive mark, or at the end if none exist.
+ */
+export const getFrontInsertionIndex = (marks: Mark[]): number => {
+  const index = marks.findIndex(mark =>
+    [HOVER_RULE, SELECT_BORDER, AREA_HOVER_RULE, AREA_HOVER_POINT].some(suffix => mark.name?.endsWith(suffix))
+  );
+  return index === -1 ? marks.length : index;
 };
 
 export const getReferenceLineMarks = (

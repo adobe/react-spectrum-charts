@@ -18,6 +18,7 @@ import {
   DEFAULT_OPACITY_RULE,
   DIMENSION_HOVER_AREA,
   FADE_FACTOR,
+  HOVER_RULE,
   HOVERED_ITEM,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -245,8 +246,8 @@ export const getLineHoverMarks = (
 
 const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): RuleMark => {
   return {
-    name: `${name}_hoverRule`,
-    description: `${name}_hoverRule`,
+    name: `${name}${HOVER_RULE}`,
+    description: `${name}${HOVER_RULE}`,
     type: 'rule',
     from: { data: `${name}_highlightedData` },
     interactive: false,
