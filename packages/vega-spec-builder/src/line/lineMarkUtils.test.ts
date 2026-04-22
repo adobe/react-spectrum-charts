@@ -104,6 +104,16 @@ describe('getLineHoverMarks()', () => {
     expect(marks[4].name).toBe('line0_xAxisVoronoi');
     expect(marks[5].name).toBe('line0_hoverGroup');
   });
+  // xAxisVoronoiPoints are invisible anchors at y: 0.
+  // Without size: 0, their default symbol boundingbox overflows the top of the plot and `autosize: fit` will shrink the plot height.
+  test('xAxisVoronoiPoints has size: 0 so invisible anchors do not affect plot autosize', () => {
+    const marks = getLineHoverMarks(
+      { ...defaultLineMarkOptions, isHighlightedByDimension: true, interactionMode: 'dimension' },
+      'line0_facet'
+    );
+    const xAxisVoronoiPoints = marks.find((m) => m.name === 'line0_xAxisVoronoiPoints');
+    expect(xAxisVoronoiPoints?.encode?.enter?.size).toEqual({ value: 0 });
+  });
   test('should return 7 marks if a popover is present', () => {
     expect(
       getLineHoverMarks(

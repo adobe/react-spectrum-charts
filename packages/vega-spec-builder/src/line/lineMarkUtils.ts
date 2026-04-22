@@ -383,6 +383,7 @@ const getXAxisVoronoiPoints = (name: string, dimensionField: string, scaleType: 
     encode: {
       enter: {
         y: { signal: '0' },
+        size: { value: 0 },
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
       },
