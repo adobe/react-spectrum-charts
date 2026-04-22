@@ -96,6 +96,7 @@ title font-size differs, confirm it visually here.
 | **Grid lines** | Count and orientation match? Use structural count from Step 2 |
 | **Series count** | Same number of lines/bars/etc.? |
 | **Curve shapes** | Do peaks and valleys align at the same x-axis ticks? Use per-tick structural comparison from Step 2. **If the shape still doesn't match after the first retryable fix attempt, classify as a library/interpolation gap rather than continuing to tweak data.** |
+| **Curve smoothness** | Is there a visible S-curve bump or inflection near the start of a diminishing-returns curve? This is a monotone interpolation artifact caused by a sharp slope change at the first data point. Check if the first point should be anchored to `(0, 0)` — Category 1 if so. If the bump is at an interior point, classify as Category 3. |
 | **Colors** | Accepted gap — S2 defaults vs design brand colors always differ. |
 | **Chart dimensions** | Overall aspect ratio match? |
 

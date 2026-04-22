@@ -117,7 +117,12 @@ Wait for it to complete and confirm that:
 
 3. Read `./tmp/ai/gap-classification.json`. Apply the stop conditions below.
 
-4. If continuing: apply all Category 1 (retryable) fixes directly to the story, then loop.
+4. If continuing: apply all Category 1 (retryable) fixes directly to the story. Then:
+   - **Story/data changes only** (props, data values, axis config): Storybook HMR picks these
+     up automatically. Wait ~3 seconds before screenshotting.
+   - **Spec builder changes** (any edit to `vega-spec-builder-s2/` or `vega-spec-builder/`):
+     Run `yarn build:s2` before screenshotting — HMR does not rebuild library code.
+   Then loop.
 
 ### Stop conditions (check in order — stop on first match)
 

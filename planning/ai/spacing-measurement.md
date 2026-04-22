@@ -16,6 +16,23 @@ In practice this means gaps like the following are never classified or surfaced:
 These are real library gaps between RSC's default padding and the S2 design spec, and they
 belong in the gap classification report.
 
+### Observed measurements (4615-28409, Line chart at 508×360)
+
+| Margin | Figma | RSC at 508×360 | Delta |
+|---|---|---|---|
+| Top (title-to-plot) | 66px | 35px | −31px |
+| Left (axis labels to plot) | 0px (Y-axis is in card padding) | 85px | +85px |
+| Right | 2px (within content group) | 24px | +22px |
+| Bottom (plot to x-axis bottom) | 49px | 60px | +11px |
+
+The title-to-plot gap (−31px) is the most visible issue: RSC's Vega title takes ~35px while
+the Figma title box allocates 66px. This cannot be fixed by resizing alone — it would require
+a `titlePadding` or `titleOffset` prop on the RSC `Title` component to match the S2 spec.
+
+The left-axis margin discrepancy (+85px) is the root of the "chart width too narrow" problem:
+the Y-axis area is in the Figma card padding but inside RSC's `width` budget. See
+`chart-sizing-from-figma.md` for the corrected `chartWidth` heuristic.
+
 ---
 
 ## Proposed solution
