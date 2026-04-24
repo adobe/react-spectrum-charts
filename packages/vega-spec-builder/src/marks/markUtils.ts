@@ -390,6 +390,7 @@ export const getItemHoverArea = (
   return {
     name: `${name}_hoverGroup`,
     type: 'group',
+    clip: true,
     marks: getHoverSizes().map((size, i) => ({
       name: getHoverMarkName(name, i),
       type: 'symbol',
