@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { Legend } from '../../../components';
+import { bindWithProps } from '../../../test-utils';
 import { LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
@@ -23,7 +24,7 @@ const onMouseOver = (seriesName: string) => {
 const onMouseOut = (seriesName: string) => {
   console.log('onMouseOut', seriesName);
 };
-const ControlledHover = LegendBarStory.bind({});
+const ControlledHover = bindWithProps(LegendBarStory);
 ControlledHover.args = {
   onMouseOver: onMouseOver,
   onMouseOut: onMouseOut,

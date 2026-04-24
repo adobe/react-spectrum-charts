@@ -11,16 +11,17 @@
  */
 import { Legend } from '../../../components';
 import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
   title: 'RSC/Legend/Highlight',
   component: Legend,
 };
 
-const Basic = LegendBarStory.bind({});
+const Basic = bindWithProps(LegendBarStory);
 Basic.args = { highlight: true, ...defaultProps };
 
-const Controlled = LegendBarHighlightedSeriesStory.bind({});
+const Controlled = bindWithProps(LegendBarHighlightedSeriesStory);
 Controlled.args = { ...defaultProps };
 
 export { Basic, Controlled };

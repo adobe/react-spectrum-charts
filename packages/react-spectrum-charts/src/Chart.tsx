@@ -64,7 +64,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>((props, forwardedRef) =
   // uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
   const chartId = useRef<string>(`rsc-${uuid()}`);
   // The view returned by vega. This is above RscChart so it can be used for downloading and copying to clipboard.
-  const chartView = useRef<View>();
+  const chartView = useRef<View | undefined>(undefined);
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
 

@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartPopover, Legend } from '../../../components';
+import { bindWithProps } from '../../../test-utils';
 import { LegendBarStory, LegendDisconnectedStory, defaultProps } from './LegendStoryUtils';
 
 export default {
@@ -17,7 +18,7 @@ export default {
   component: Legend,
 };
 
-const Basic = LegendBarStory.bind({});
+const Basic = bindWithProps(LegendBarStory);
 Basic.args = { ...defaultProps };
 
 const descriptions = [
@@ -29,10 +30,10 @@ const descriptions = [
   { seriesName: 'Other', description: 'Linux accounts for the majority of "other" operating systems' },
 ];
 
-const Descriptions = LegendBarStory.bind({});
+const Descriptions = bindWithProps(LegendBarStory);
 Descriptions.args = { descriptions, ...defaultProps };
 
-const Disconnected = LegendDisconnectedStory.bind({});
+const Disconnected = bindWithProps(LegendDisconnectedStory);
 Disconnected.args = { ...defaultProps, color: 'series' };
 
 const legendLabels = [
@@ -47,35 +48,35 @@ const truncatedLegendLabels = [
   { seriesName: 'Other', label: 'Very long Other label that will be truncated without a custom labelLimit' },
 ];
 
-const Labels = LegendBarStory.bind({});
+const Labels = bindWithProps(LegendBarStory);
 Labels.args = { legendLabels, highlight: true, ...defaultProps };
 
-const LabelLimit = LegendBarStory.bind({});
+const LabelLimit = bindWithProps(LegendBarStory);
 LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
 
-const TitleLimit = LegendBarStory.bind({});
+const TitleLimit = bindWithProps(LegendBarStory);
 TitleLimit.args = {
   title: 'Very long legend title that should be truncated',
   titleLimit: 250,
   ...defaultProps,
 };
 
-const OnClick = LegendBarStory.bind({});
+const OnClick = bindWithProps(LegendBarStory);
 OnClick.args = {};
 
-const Popover = LegendBarStory.bind({});
+const Popover = bindWithProps(LegendBarStory);
 Popover.args = {
   children: <ChartPopover width="auto">{(datum) => <div>{datum.value}</div>}</ChartPopover>,
   ...defaultProps,
 };
 
-const Position = LegendBarStory.bind({});
+const Position = bindWithProps(LegendBarStory);
 Position.args = { position: 'right', ...defaultProps };
 
-const Title = LegendBarStory.bind({});
+const Title = bindWithProps(LegendBarStory);
 Title.args = { title: 'Operating system', ...defaultProps };
 
-const Supreme = LegendBarStory.bind({});
+const Supreme = bindWithProps(LegendBarStory);
 Supreme.args = {
   descriptions,
   highlight: true,

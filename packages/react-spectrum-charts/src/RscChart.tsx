@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { RefObject, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
 import { View as VegaView } from 'vega';
@@ -28,7 +28,7 @@ import { RscChartProps } from './types';
 import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals } from './utils';
 
 interface ChartDialogProps {
-  targetElement: MutableRefObject<HTMLElement | null>;
+  targetElement: RefObject<HTMLElement | null>;
   setIsPopoverOpen: (isOpen: boolean) => void;
   popover: PopoverDetail;
   idKey: string;
@@ -166,7 +166,7 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
     <DialogTrigger
       type="popover"
       mobileType="tray"
-      targetRef={targetElement}
+      targetRef={targetElement as RefObject<HTMLElement>}
       onOpenChange={(isOpen) => {
         onOpenChange?.(isOpen);
         setIsPopoverOpen(isOpen);

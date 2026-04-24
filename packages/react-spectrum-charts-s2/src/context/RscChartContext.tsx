@@ -44,8 +44,8 @@ interface ChartProviderProps {
 }
 
 export const ChartProvider = ({ children, chartId, chartView }: ChartProviderProps) => {
-  const controlledHoveredIdSignal = useRef<Signal | undefined>();
-  const controlledHoveredGroupSignal = useRef<Signal | undefined>();
+  const controlledHoveredIdSignal = useRef<Signal | undefined>(undefined);
+  const controlledHoveredGroupSignal = useRef<Signal | undefined>(undefined);
   const popoverAnchorRef = useRef<HTMLDivElement | null>(null);
   const selectedData = useRef<Datum | null>(null);
   const selectedDataName = useRef<string>('');

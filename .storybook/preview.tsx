@@ -53,7 +53,10 @@ const parameters: Parameters = {
       return <DocsContainer {...props} />;
     },
   },
-  actions: { argTypesRegex: '^on[A-Z].*' },
+  // Exclude onNewView and onVegaViewReady — they pass Vega View objects which contain
+  // circular references (vega-lite patches Set.prototype.toJSON) that break Storybook's
+  // JSON serialization in the Actions panel.
+  actions: { argTypesRegex: '^on(?!(NewView|VegaViewReady))[A-Z].*' },
 };
 
 const preview: Preview = {

@@ -20,7 +20,7 @@ interface ChartImperativeHandleProps {
   title?: string;
 }
 
-export default function useChartImperativeHandle(forwardedRef: Ref<ChartHandle>, props: ChartImperativeHandleProps) {
+export default function useChartImperativeHandle(forwardedRef: Ref<ChartHandle> | undefined, props: ChartImperativeHandleProps) {
   return useImperativeHandle(forwardedRef, () => ({
     copy: () => copy(props),
     download: (customFileName?: string) => download(props, customFileName),
