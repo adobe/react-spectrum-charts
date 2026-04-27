@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject, ReactNode, createContext, useContext, useMemo, useRef, useState } from 'react';
+import { RefObject, ReactNode, createContext, useContext, useMemo, useRef, useState } from 'react';
 
 import { Signal, View } from 'vega';
 
@@ -17,22 +17,22 @@ import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
 interface ChartContextValue {
   // Chart view state
-  chartView: MutableRefObject<View | undefined>;
+  chartView: RefObject<View | undefined>;
   chartId: string;
 
   // Selection state
-  selectedData: MutableRefObject<Datum | null>;
-  selectedDataName: MutableRefObject<string>;
-  selectedDataBounds: MutableRefObject<MarkBounds>;
+  selectedData: RefObject<Datum | null>;
+  selectedDataName: RefObject<string>;
+  selectedDataBounds: RefObject<MarkBounds>;
 
   // Popover state
   isPopoverOpen: boolean;
   setIsPopoverOpen: (isOpen: boolean) => void;
-  popoverAnchorRef: MutableRefObject<HTMLDivElement | null>;
+  popoverAnchorRef: RefObject<HTMLDivElement | null>;
 
   // Spec state
-  controlledHoveredIdSignal: MutableRefObject<Signal | undefined>;
-  controlledHoveredGroupSignal: MutableRefObject<Signal | undefined>;
+  controlledHoveredIdSignal: RefObject<Signal | undefined>;
+  controlledHoveredGroupSignal: RefObject<Signal | undefined>;
 }
 
 const ChartContext = createContext<ChartContextValue | null>(null);
@@ -40,7 +40,7 @@ const ChartContext = createContext<ChartContextValue | null>(null);
 interface ChartProviderProps {
   children: ReactNode;
   chartId: string;
-  chartView: MutableRefObject<View | undefined>;
+  chartView: RefObject<View | undefined>;
 }
 
 export const ChartProvider = ({ children, chartId, chartView }: ChartProviderProps) => {

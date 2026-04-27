@@ -9,14 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject, Ref, useImperativeHandle } from 'react';
+import { RefObject, Ref, useImperativeHandle } from 'react';
 
 import { View } from 'vega';
 
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 interface ChartImperativeHandleProps {
-  chartView: MutableRefObject<View | undefined>;
+  chartView: RefObject<View | undefined>;
   title?: string;
 }
 
