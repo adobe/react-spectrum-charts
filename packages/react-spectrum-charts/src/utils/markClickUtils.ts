@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject } from 'react';
+import { RefObject } from 'react';
 
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
@@ -25,12 +25,12 @@ export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
 
 export interface GetOnMarkClickCallbackArgs {
-  chartView: MutableRefObject<View | undefined>;
+  chartView: RefObject<View | undefined>;
   hiddenSeries: string[];
   chartId: string;
-  selectedData: MutableRefObject<Datum | null>;
-  selectedDataBounds: MutableRefObject<MarkBounds | undefined>;
-  selectedDataName: MutableRefObject<string | undefined>;
+  selectedData: RefObject<Datum | null>;
+  selectedDataBounds: RefObject<MarkBounds | undefined>;
+  selectedDataName: RefObject<string | undefined>;
   setHiddenSeries: (hiddenSeries: string[]) => void;
   legendIsToggleable?: boolean;
   legendHasPopover?: boolean;
@@ -105,7 +105,7 @@ export const triggerPopover = (chartId: string, itemName: string | undefined, tr
  * @returns The callback to be used for the `onClick` prop on a mark.
  */
 export const getOnChartMarkClickCallback = (
-  chartView: MutableRefObject<View | undefined>,
+  chartView: RefObject<View | undefined>,
   onClickMarkDetails?: MarkOnClickDetail[]
 ): ViewEventCallback => {
   return (_event, item) => {
@@ -128,7 +128,7 @@ export const getOnChartMarkClickCallback = (
  * @returns The callback for contextmenu events.
  */
 export const getOnChartMarkContextMenuCallback = (
-  chartView: MutableRefObject<View | undefined>,
+  chartView: RefObject<View | undefined>,
   markClickDetails?: MarkOnClickDetail[]
 ): ViewEventCallback => {
   return (event, item) => {

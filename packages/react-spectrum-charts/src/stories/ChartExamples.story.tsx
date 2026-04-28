@@ -26,6 +26,7 @@ import {
   ChartData,
   Colors,
   Datum,
+  HoverType,
   LegendDescription,
   LegendLabel,
   SpectrumColor,
@@ -167,7 +168,8 @@ const generateCallback = (variant: 'popover' | 'tooltip') => {
     tooltip: 'ChartTooltip',
   };
 
-  const callback = (datum: Datum, close?: () => void) => {
+  const callback = (datum: Datum, closeOrHoverType?: (() => void) | HoverType) => {
+    const close = typeof closeOrHoverType === 'function' ? closeOrHoverType : undefined;
     action(`${actionName[variant]}:callback`)(datum);
     return (
       <Content UNSAFE_className="userGrowth-dialog">

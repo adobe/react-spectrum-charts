@@ -18,6 +18,7 @@ import { Orientation } from '@spectrum-charts/vega-spec-builder';
 import { Annotation } from '../../../components/Annotation/Annotation';
 import useChartProps from '../../../hooks/useChartProps';
 import { Bar, BarAnnotationProps, BarProps, Chart } from '../../../index';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
   title: 'RSC/Bar/Annotation',
@@ -60,35 +61,35 @@ const BarAnnotationStory: StoryFn<
   );
 };
 
-const HorizontalBarChart = BarAnnotationStory.bind({});
+const HorizontalBarChart = bindWithProps(BarAnnotationStory);
 HorizontalBarChart.args = {
   textKey: 'percentLabel',
   // color: 'operatingSystem',
   barOrientation: 'horizontal',
 };
 
-const VerticalBarChart = BarAnnotationStory.bind({});
+const VerticalBarChart = bindWithProps(BarAnnotationStory);
 VerticalBarChart.args = {
   textKey: 'percentLabel',
   // color: 'operatingSystem',
   barOrientation: 'vertical',
 };
 
-const FixedWidthBar = BarAnnotationStory.bind({});
+const FixedWidthBar = bindWithProps(BarAnnotationStory);
 FixedWidthBar.args = {
   textKey: 'percentLabel',
   style: { width: 48 },
   // color: 'operatingSystem',
 };
 
-const ReducedPadding = BarAnnotationStory.bind({});
+const ReducedPadding = bindWithProps(BarAnnotationStory);
 ReducedPadding.args = {
   textKey: 'percentLabel',
   padding: 2,
   barOrientation: 'horizontal',
 };
 
-const NoPadding = BarAnnotationStory.bind({});
+const NoPadding = bindWithProps(BarAnnotationStory);
 NoPadding.args = {
   textKey: 'percentLabel',
   padding: 0,

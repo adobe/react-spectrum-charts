@@ -11,13 +11,14 @@
  */
 import { ChartPopover, Legend } from '../../../components';
 import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
   title: 'RSC/Legend/Hide Show',
   component: Legend,
 };
 
-const DefaultHiddenSeries = LegendBarStory.bind({});
+const DefaultHiddenSeries = bindWithProps(LegendBarStory);
 DefaultHiddenSeries.args = {
   defaultHiddenSeries: ['Other'],
   isToggleable: true,
@@ -31,11 +32,11 @@ DefaultHiddenSeries.args = {
 };
 DefaultHiddenSeries.storyName = 'Default Hidden Series (uncontrolled)';
 
-const HiddenSeries = LegendBarHiddenSeriesStory.bind({});
+const HiddenSeries = bindWithProps(LegendBarHiddenSeriesStory);
 HiddenSeries.args = { highlight: true, ...defaultProps };
 HiddenSeries.storyName = 'Hidden Series (controlled)';
 
-const IsToggleable = LegendBarStory.bind({});
+const IsToggleable = bindWithProps(LegendBarStory);
 IsToggleable.args = { isToggleable: true, highlight: true, ...defaultProps };
 IsToggleable.storyName = 'Is Toggleable (uncontrolled)';
 

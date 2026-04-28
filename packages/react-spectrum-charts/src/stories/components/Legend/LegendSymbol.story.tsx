@@ -20,6 +20,7 @@ import { Bar, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { browserData as data } from '../../data/data';
 import { defaultProps } from './LegendStoryUtils';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
   title: 'RSC/Legend/Symbols',
@@ -45,22 +46,22 @@ const LegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
   );
 };
 
-const Color = LegendLineStory.bind({});
+const Color = bindWithProps(LegendLineStory);
 Color.args = { color: { value: 'gray-700' }, opacity: { value: 0.25 }, ...defaultProps };
 
-const LineType = LegendLineStory.bind({});
+const LineType = bindWithProps(LegendLineStory);
 LineType.args = { lineType: { value: 'dashed' }, opacity: { value: 0.25 }, ...defaultProps };
 
-const LineWidth = LegendBarStory.bind({});
+const LineWidth = bindWithProps(LegendBarStory);
 LineWidth.args = { lineWidth: { value: 'XS' }, opacity: { value: 0.25 }, ...defaultProps };
 
-const Opacity = LegendBarStory.bind({});
+const Opacity = bindWithProps(LegendBarStory);
 Opacity.args = { opacity: 'series', lineWidth: { value: 0 }, highlight: true, ...defaultProps };
 
-const Symbols = LegendBarStory.bind({});
+const Symbols = bindWithProps(LegendBarStory);
 Symbols.args = { symbolShape: 'series', opacity: { value: 0.25 }, ...defaultProps };
 
-const Supreme = LegendBarStory.bind({});
+const Supreme = bindWithProps(LegendBarStory);
 Supreme.args = {
   color: 'series',
   lineType: 'series',
