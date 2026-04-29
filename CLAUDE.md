@@ -301,6 +301,19 @@ Before writing any code, always:
 
 ---
 
+## Issue Tracking
+
+Known bugs that are not being acted on immediately go in `planning/issues/` as markdown files. Each doc should include:
+- **Status** — Open / In Progress
+- **Symptom** — 1-2 sentence description of the observable behavior
+- **Root cause** — Technical explanation with `file:line` references
+- **Relevant files** — Table of files and their role
+- **Proposed fix** — Direction, not full implementation
+
+When the user describes a bug or observation and says they want to note it for later, create a doc there without being asked for the format.
+
+---
+
 ## AI Workflow Skills
 
 The `figma-example-story` pipeline and its sub-skills (`analyze-chart-design`, `generate-chart-story`, `verify-chart-story`) live in `.claude/commands/`. When a new rule or refinement is discovered for this workflow, update the relevant skill file directly. Do not save workflow rules to session memory — the skill files are the transferable source of truth.
