@@ -220,6 +220,18 @@ export const getSortTransform = (dimension: string): CollectTransform => ({
 });
 
 /**
+ * Gets the filter transform that excludes rows where the trendline metric is null or NaN.
+ * Without this, all-null series produce a null TRENDLINE_VALUE which Vega maps to pixel 0
+ * (top of chart), causing the trendline to appear at the top when it should not be visible.
+ * @param trendlineMetric field name of the metric used by the trendline
+ * @returns FilterTransform
+ */
+export const getMetricFilterTransform = (trendlineMetric: string): FilterTransform => ({
+  type: 'filter',
+  expr: `isValid(datum["${trendlineMetric}"])`,
+});
+
+/**
  * gets the filter transforms that will restrict the data to the dimension range
  * @param dimension
  * @param dimensionRange
