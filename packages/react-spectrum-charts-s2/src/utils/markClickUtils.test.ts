@@ -11,7 +11,7 @@
  */
 import { Item, View } from 'vega';
 
-import { COMPONENT_NAME, FILTERED_TABLE, GROUP_DATA, DIMENSION_FIELD } from '@spectrum-charts/constants';
+import { COMPONENT_NAME } from '@spectrum-charts/constants';
 
 import {
   ActionItem,
