@@ -13,6 +13,7 @@ import { Item, View } from 'vega';
 
 import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA } from '@spectrum-charts/constants';
 
+import { ContextMenuMode } from '../types/marks/line.types';
 import {
   ActionItem,
   GetOnMarkClickCallbackArgs,
@@ -527,6 +528,75 @@ describe('getOnChartMarkContextMenuCallback()', () => {
       ]);
       callback(fakeContextMenuEvent, itemWithDimensionField);
       expect(onContextMenu).toHaveBeenCalledTimes(1);
+      const [, datum] = onContextMenu.mock.calls[0];
+      expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
+    });
+
+    test('handles Date dimension values in GROUP_DATA enrichment', () => {
+      const date1 = new Date(1000);
+      const date2 = new Date(2000);
+      const row1 = { date: date1, value: 10, series: 'a' };
+      const row2 = { date: date1, value: 20, series: 'b' };
+      const row3 = { date: date2, value: 30, series: 'a' };
+      const mockChartView = {
+        current: {
+          data: (name: string) => (name === FILTERED_TABLE ? [row1, row2, row3] : []),
+        } as unknown as View,
+      };
+      const itemWithDate = {
+        datum: { date: date1, value: 42, [DIMENSION_FIELD]: 'date' },
+        bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+        mark: {
+          role: 'mark',
+          name: 'line0_xAxisVoronoi',
+          marktype: 'path',
+          group: { x: 0, y: 0 },
+          items: [],
+        },
+      } as unknown as ActionItem;
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(mockChartView, [
+        { markName: 'line0', onContextMenu },
+      ]);
+      callback(fakeContextMenuEvent, itemWithDate);
+      const [, datum] = onContextMenu.mock.calls[0];
+      expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
+    });
+
+    test("unknown contextMenuMode falls back to allowing the mark", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'unknown' as ContextMenuMode },
+      ]);
+      callback(fakeContextMenuEvent, lineMarkItem);
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
+    });
+
+    test('handles string dimension values in GROUP_DATA enrichment', () => {
+      const row1 = { category: 'A', value: 10, series: 'a' };
+      const row2 = { category: 'A', value: 20, series: 'b' };
+      const row3 = { category: 'B', value: 30, series: 'a' };
+      const mockChartView = {
+        current: {
+          data: (name: string) => (name === FILTERED_TABLE ? [row1, row2, row3] : []),
+        } as unknown as View,
+      };
+      const itemWithString = {
+        datum: { category: 'A', value: 42, [DIMENSION_FIELD]: 'category' },
+        bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+        mark: {
+          role: 'mark',
+          name: 'line0_xAxisVoronoi',
+          marktype: 'path',
+          group: { x: 0, y: 0 },
+          items: [],
+        },
+      } as unknown as ActionItem;
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(mockChartView, [
+        { markName: 'line0', onContextMenu },
+      ]);
+      callback(fakeContextMenuEvent, itemWithString);
       const [, datum] = onContextMenu.mock.calls[0];
       expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
     });
