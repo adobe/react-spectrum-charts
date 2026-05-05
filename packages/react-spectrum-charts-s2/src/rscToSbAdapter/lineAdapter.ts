@@ -14,13 +14,14 @@ import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 import { LineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
-export const getLineOptions = ({ children, onClick, ...lineProps }: LineProps): LineOptions => {
+export const getLineOptions = ({ children, onClick, onContextMenu, contextMenuMode, ...lineProps }: LineProps): LineOptions => {
   const { chartPopovers, chartTooltips, lineDirectLabels } = childrenToOptions(children);
   return {
     ...lineProps,
     chartPopovers,
     chartTooltips,
     hasOnClick: Boolean(onClick),
+    hasOnContextMenu: Boolean(onContextMenu),
     lineDirectLabels,
     markType: 'line',
   };

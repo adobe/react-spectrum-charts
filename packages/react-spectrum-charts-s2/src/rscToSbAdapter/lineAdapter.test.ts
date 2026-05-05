@@ -37,6 +37,10 @@ describe('getLineOptions()', () => {
     expect(getLineOptions({ onClick: () => {} }).hasOnClick).toBe(true);
     expect(getLineOptions({ onClick: undefined }).hasOnClick).toBe(false);
   });
+  test('should set hasOnContextMenu to true if onContextMenu prop exists and is not undefined', () => {
+    expect(getLineOptions({ onContextMenu: () => {} }).hasOnContextMenu).toBe(true);
+    expect(getLineOptions({ onContextMenu: undefined }).hasOnContextMenu).toBe(false);
+  });
   it('should pass through included props', () => {
     const options = getLineOptions({ color: DEFAULT_COLOR });
     expect(options).toHaveProperty('color', DEFAULT_COLOR);

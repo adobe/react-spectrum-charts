@@ -11,7 +11,7 @@
  */
 import { Item, View } from 'vega';
 
-import { COMPONENT_NAME } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, FILTERED_TABLE, GROUP_DATA, DIMENSION_FIELD } from '@spectrum-charts/constants';
 
 import {
   ActionItem,
@@ -344,5 +344,47 @@ describe('getOnChartMarkContextMenuCallback()', () => {
       expect.objectContaining({ clientX: 100, clientY: 200 }),
       { date: 1000, value: 42 }
     );
+  });
+
+  describe('contextMenuMode filtering', () => {
+    const hoverItem = {
+      datum: { date: 1000, value: 42 },
+      bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+      mark: {
+        role: 'mark',
+        name: 'line0_hover0',
+        marktype: 'symbol',
+        group: { x: 0, y: 0 },
+        items: [],
+      },
+    } as unknown as ActionItem;
+
+    test("'interaction' allows all mark types", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'interaction' },
+      ]);
+      callback(fakeContextMenuEvent, lineMarkItem);
+      callback(fakeContextMenuEvent, hoverItem);
+      expect(onContextMenu).toHaveBeenCalledTimes(2);
+    });
+
+    test("'item' allows hover marks", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'item' },
+      ]);
+      callback(fakeContextMenuEvent, hoverItem);
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
+    });
+
+    test("'item' blocks _voronoi marks", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'item' },
+      ]);
+      callback(fakeContextMenuEvent, lineMarkItem);
+      expect(onContextMenu).not.toHaveBeenCalled();
+    });
   });
 });

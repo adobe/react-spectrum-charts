@@ -273,9 +273,9 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
         </tr>
         <tr>
             <td>contextMenuMode</td>
-            <td>'interaction' | 'dimension' | 'item'</td>
+            <td>'interaction' | 'item'</td>
             <td>'interaction'</td>
-            <td>Controls which interactions can trigger <code>onContextMenu</code>. <code>'interaction'</code> fires for any hover interaction (default). <code>'dimension'</code> fires when a dimension value is right-clicked; the callback receives all series data for that dimension. <code>'item'</code> fires only when an individual data point is right-clicked.</td>
+            <td>Controls which interactions can trigger <code>onContextMenu</code>. <code>'interaction'</code> fires for any hover interaction (default). <code>'item'</code> fires only when an individual data point is right-clicked.</td>
         </tr>
         <tr>
             <td>opacity</td>
