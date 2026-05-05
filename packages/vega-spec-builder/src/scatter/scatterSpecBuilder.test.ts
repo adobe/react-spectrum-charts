@@ -110,8 +110,10 @@ describe('addData()', () => {
       trendlines: [{}],
     });
     expect(data).toHaveLength(3);
-    expect(data[2].transform).toHaveLength(1);
-    expect(data[2].transform?.[0].type).toBe('regression');
+    expect(data[2].transform).toHaveLength(3);
+    expect(data[2].transform?.[0].type).toBe('filter');
+    expect(data[2].transform?.[1].type).toBe('regression');
+    expect(data[2].transform?.[2].type).toBe('filter');
   });
 });
 
