@@ -14,14 +14,15 @@ import { LineOptions } from '@spectrum-charts/vega-spec-builder';
 import { LineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
-export const getLineOptions = ({ children, onClick, onMouseOver, onMouseOut, ...lineProps }: LineProps): LineOptions => {
+export const getLineOptions = ({ children, contextMenuMode, onClick, onContextMenu, onMouseOver, onMouseOut, ...lineProps }: LineProps): LineOptions => {
   const { chartPopovers, chartTooltips, linePointAnnotations, metricRanges, trendlines } = childrenToOptions(children);
-  
+
   return {
     ...lineProps,
     chartPopovers,
     chartTooltips,
     hasOnClick: Boolean(onClick),
+    hasOnContextMenu: Boolean(onContextMenu),
     hasMouseInteraction: Boolean(onMouseOut || onMouseOver),
     linePointAnnotations,
     markType: 'line',

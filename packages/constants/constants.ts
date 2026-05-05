@@ -64,6 +64,7 @@ export const FILTERED_TABLE = 'filteredTable';
 export const CONTROLLED_HIGHLIGHTED_TABLE = 'controlledHighlightedTable';
 
 // vega data field names
+export const DIMENSION_FIELD = 'rscDimensionField';
 export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
 export const GROUP_ID = 'rscGroupId';

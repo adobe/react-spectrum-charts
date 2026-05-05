@@ -14,6 +14,7 @@ import { SourceData } from 'vega';
 import {
   CONTROLLED_HIGHLIGHTED_ITEM,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  DIMENSION_FIELD,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   GROUP_ID,
@@ -99,6 +100,11 @@ export const getUniqueDimensionData = (lineName: string, scaleType: ScaleType, d
       {
         type: 'aggregate',
         groupby: [dimensionField],
+      },
+      {
+        type: 'formula',
+        expr: `"${dimensionField}"`,
+        as: DIMENSION_FIELD,
       },
     ],
   };

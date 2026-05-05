@@ -12,6 +12,7 @@
 import { createElement, useMemo } from 'react';
 
 import { Bar, BarElement, Chart, ChartChildElement, Line, LineElement, MarkCallback } from '../index';
+import { ContextMenuMode } from '../types/marks/line.types';
 import { ContextMenuCallback } from '../types/util.types';
 import { getAllMarkElements } from '../utils';
 
@@ -21,6 +22,7 @@ export type MarkOnClickDetail = {
   markName?: string;
   onClick?: MarkCallback;
   onContextMenu?: ContextMenuCallback;
+  contextMenuMode?: ContextMenuMode;
 };
 
 export default function useMarkOnClickDetails(children: ChartChildElement[]): MarkOnClickDetail[] {
@@ -39,6 +41,7 @@ export default function useMarkOnClickDetails(children: ChartChildElement[]): Ma
           markName: mark.name,
           onClick: mark.element.props.onClick,
           onContextMenu: mark.element.props.onContextMenu,
+          contextMenuMode: 'contextMenuMode' in mark.element.props ? mark.element.props.contextMenuMode : undefined,
         })) as MarkOnClickDetail[],
     [markElements]
   );
