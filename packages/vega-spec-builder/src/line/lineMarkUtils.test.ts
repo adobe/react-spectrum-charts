@@ -187,16 +187,25 @@ describe('getVoronoiYEncoding()', () => {
     expect(encoding).toEqual([{ scale: 'yLinear', field: 'value' }]);
   });
 
-  test('returns conditional y encoding with MetricRange fallback when hoverPoint is true', () => {
+  test('returns conditional y encoding with clamped MetricRange fallback when hoverPoint is true', () => {
     const encoding = getVoronoiYEncoding(
       { ...defaultLineMarkOptions, metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'metric', hoverPoint: true }] },
       'value'
     );
     expect(encoding).toEqual([
       { test: 'isValid(datum["value"])', scale: 'yLinear', field: 'value' },
-      { test: 'isValid(datum["metric"])', scale: 'yLinear', field: 'metric' },
+      { test: 'isValid(datum["metric"])', signal: `clamp(scale('yLinear', datum['metric']), 0, height)` },
       { scale: 'yLinear', field: 'value' },
     ]);
+  });
+
+  test('clamps metric range y to [0, height - 1] so out-of-domain values do not create oversized voronoi cells', () => {
+    const encoding = getVoronoiYEncoding(
+      { ...defaultLineMarkOptions, metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'forecastMetric', hoverPoint: true }] },
+      'value'
+    );
+    const metricRuleEntry = (encoding as Array<{ test?: string; signal?: string }>).find(e => e.test?.includes('forecastMetric'));
+    expect(metricRuleEntry).toHaveProperty('signal', `clamp(scale('yLinear', datum['forecastMetric']), 0, height)`);
   });
 
   test('excludes MetricRange metrics where hoverPoint is false', () => {

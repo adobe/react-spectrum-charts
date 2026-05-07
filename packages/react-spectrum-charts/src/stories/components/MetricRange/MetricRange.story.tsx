@@ -20,7 +20,7 @@ import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange } from '../
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
-import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithExtremeMetricRange, workspaceTrendsDataWithForecast, workspaceTrendsDataWithNullsInMetricRange } from '../../data/data';
+import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithBoundaryMetricRange, workspaceTrendsDataWithExtremeMetricRange, workspaceTrendsDataWithForecast, workspaceTrendsDataWithNullsInMetricRange, workspaceTrendsDataWithOutOfDomainMetricRange } from '../../data/data';
 
 export default {
   title: 'RSC/MetricRange',
@@ -124,6 +124,36 @@ const LineOpacityByKeyStory: StoryFn<typeof MetricRange> = (args): ReactElement 
         <MetricRange {...args} />
       </Line>
       <Legend lineWidth={{ value: 0 }} highlight opacity="series" />
+    </Chart>
+  );
+};
+
+const MetricRangeWithHoverPointsOutsideDomainStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithOutOfDomainMetricRange });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
+const MetricRangeWithHoverPointsAtDomainBoundaryStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithBoundaryMetricRange });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
     </Chart>
   );
 };
@@ -250,6 +280,36 @@ WithHoverPoints.args = {
   hoverPoint: true,
 };
 
+// Forecast metric at the first forecast row (3738) equals exactly the max historical value,
+// placing the hover point at the very top boundary of the y domain. Verifies that clip: true
+// does not clip points sitting exactly on the domain edge — they should be fully visible.
+const WithHoverPointsAtDomainBoundary = bindWithProps(MetricRangeWithHoverPointsAtDomainBoundaryStory);
+WithHoverPointsAtDomainBoundary.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  hoverPoint: true,
+  scaleAxisToFit: false,
+};
+
+// Hover points on forecast rows whose metric values (5000–9500) exceed the y domain (~200–3738).
+// Toggle scaleAxisToFit to expand the y domain to include metric range values.
+// Without clip:true on the hover point marks, points render above the chart and cause flickering.
+const WithHoverPointsOutsideDomain = bindWithProps(MetricRangeWithHoverPointsOutsideDomainStory);
+WithHoverPointsOutsideDomain.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  hoverPoint: true,
+  scaleAxisToFit: false,
+};
+
 export {
   Basic,
   DisplayOnHover,
@@ -260,4 +320,6 @@ export {
   LineOpacityByKey,
   WithBreaks,
   WithHoverPoints,
+  WithHoverPointsAtDomainBoundary,
+  WithHoverPointsOutsideDomain,
 };
