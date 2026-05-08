@@ -64,8 +64,8 @@ jobs:
 
       - name: Build S2 Packages
         run: |
-          yarn workspace @spectrum-charts/vega-spec-builder-s2 build
-          yarn workspace @spectrum-charts/react-spectrum-charts-s2 build
+          yarn workspace @spectrum-charts/vega-spec-builder-s2 build:s2
+          yarn workspace @spectrum-charts/react-spectrum-charts-s2 build:s2
 
       - name: Configure Yarn Registry
         run: yarn config set registry https://registry.npmjs.org/
