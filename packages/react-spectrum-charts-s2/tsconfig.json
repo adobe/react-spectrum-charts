@@ -2,13 +2,16 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "declarationDir": "./dist/@types/"
   },
   "include": [
     "src/**/*",
     "index.ts"
   ],
   "exclude": [
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/stories/**/*"
   ]
 }
