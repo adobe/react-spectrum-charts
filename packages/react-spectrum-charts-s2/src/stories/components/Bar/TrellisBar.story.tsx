@@ -13,7 +13,6 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content, Text, View } from '@adobe/react-spectrum';
 import { MARK_ID } from '@spectrum-charts/constants';
 import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -56,11 +55,9 @@ const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
 
   const dialog = (item: Datum) => {
     return (
-      <Content>
-        <View>
-          <Text>{item[MARK_ID]}</Text>
-        </View>
-      </Content>
+      <div>
+        <span>{item[MARK_ID]}</span>
+      </div>
     );
   };
 

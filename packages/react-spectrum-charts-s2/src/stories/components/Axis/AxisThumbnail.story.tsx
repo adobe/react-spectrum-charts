@@ -13,7 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content, View } from '@adobe/react-spectrum';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
@@ -51,29 +50,14 @@ const AxisThumbnailStory: StoryFn<StoryArgs> = (args): ReactElement => {
   const chartProps = useChartProps({ data, width: width || 'auto', height: '100%', padding: 2 });
 
   return (
-    <View
-      backgroundColor="gray-50"
-      overflow="hidden"
-      width={800}
-      minWidth={150}
-      maxWidth={1200}
-      height={400}
-      minHeight={150}
-      maxHeight={800}
-      borderColor="gray-200"
-      borderWidth="thin"
-      padding={16}
-      UNSAFE_style={{
-        resize: 'both',
-      }}
-    >
+    <div style={{ overflow: 'hidden', width: 800, minWidth: 150, maxWidth: 1200, height: 400, minHeight: 150, maxHeight: 800, border: '1px solid var(--spectrum-gray-200)', padding: 16, resize: 'both' }}>
       <Chart {...chartProps}>
         <Bar orientation={orientation} dimension="browser" metric="downloads" />
         <Axis position={orientation === 'horizontal' ? 'left' : 'bottom'} baseline>
           <AxisThumbnail {...axisThumbnailProps} />
         </Axis>
       </Chart>
-    </View>
+    </div>
   );
 };
 
@@ -90,11 +74,11 @@ YAxis.args = {
 };
 
 const dialogContent = (datum: Datum) => (
-  <Content>
+  <div>
     <div>Operating system: {datum.series}</div>
     <div>Browser: {datum.category}</div>
     <div>Users: {datum.value}</div>
-  </Content>
+  </div>
 );
 
 const chartPopoverCategoryThumbnails: Record<string, string> = {

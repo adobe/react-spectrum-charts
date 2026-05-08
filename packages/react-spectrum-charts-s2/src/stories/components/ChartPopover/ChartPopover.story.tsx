@@ -13,7 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
@@ -39,11 +38,20 @@ export default {
 };
 
 const dialogContent = (datum: Datum) => (
-  <Content>
+  <div>
     <div>Operating system: {datum.series}</div>
     <div>Browser: {datum.category}</div>
     <div>Users: {datum.value}</div>
-  </Content>
+  </div>
+);
+
+const dialogContentWithClose = (datum: Datum, close?: () => void) => (
+  <div>
+    <div>Operating system: {datum.series}</div>
+    <div>Browser: {datum.category}</div>
+    <div>Users: {datum.value}</div>
+    {close && <button data-testid="popover-close-button" onClick={close}>Close</button>}
+  </div>
 );
 
 const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
@@ -102,10 +110,10 @@ const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 // content for tooltip and popover
 const donutDialogContent = (datum: Datum) => {
   return (
-    <Content>
+    <div>
       <div>Browser: {datum.browser}</div>
       <div>Visitors: {datum.count}</div>
-    </Content>
+    </div>
   );
 };
 
@@ -155,6 +163,9 @@ Svg.args = { children: dialogContent, width: 'auto' };
 const ContentMargin = bindWithProps(ChartPopoverSvgStory);
 ContentMargin.args = { children: dialogContent, width: 'auto', contentMargin: 24 };
 
+const WithCloseCallback = bindWithProps(ChartPopoverSvgStory);
+WithCloseCallback.args = { children: dialogContentWithClose, width: 'auto' };
+
 export {
   Canvas,
   ContentMargin,
@@ -167,4 +178,5 @@ export {
   Size,
   StackedBarChart,
   Svg,
+  WithCloseCallback,
 };

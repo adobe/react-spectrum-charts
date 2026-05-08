@@ -13,8 +13,6 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { View } from '@adobe/react-spectrum';
-
 import { Chart } from '../Chart';
 import { Axis, Bar } from '../components';
 import useChartProps from '../hooks/useChartProps';
@@ -22,24 +20,13 @@ import useChartProps from '../hooks/useChartProps';
 export const ChartDynamicHeightBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
   const props = useChartProps(args);
   return (
-    <View
-      backgroundColor="gray-50"
-      overflow="auto"
-      minHeight={100}
-      maxHeight={1200}
-      height={600}
-      borderColor="gray-200"
-      borderWidth="thin"
-      UNSAFE_style={{
-        resize: 'vertical',
-      }}
-    >
+    <div style={{ overflow: 'auto', minHeight: 100, maxHeight: 1200, height: 600, border: '1px solid var(--spectrum-gray-200)', resize: 'vertical' }}>
       <Chart {...props}>
         <Axis position="bottom" baseline />
         <Axis position="left" grid />
         <Bar dimension="x" metric="y" color="series" />
       </Chart>
-    </View>
+    </div>
   );
 };
 

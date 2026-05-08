@@ -13,8 +13,6 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
-
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
@@ -28,11 +26,11 @@ export default {
 };
 
 const dialogContent = (datum) => (
-  <Content>
-  <div>Operating system: {datum.operatingSystem}</div>
+  <div>
+    <div>Operating system: {datum.operatingSystem}</div>
     <div>Browser: {datum.browser}</div>
     <div>Users: {datum.value}</div>
-  </Content>
+  </div>
 );
 
 const BasicStory: StoryFn<typeof Bar> = (args): ReactElement => {

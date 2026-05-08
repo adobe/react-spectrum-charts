@@ -5,7 +5,7 @@ import { Decorator, Parameters, Preview } from '@storybook/react';
 import { themes } from '@storybook/theming';
 import { useDarkMode } from 'storybook-dark-mode';
 
-import { Provider, View, defaultTheme } from '@adobe/react-spectrum';
+import { Provider } from '@react-spectrum/s2';
 
 import './storybook.css';
 
@@ -25,10 +25,10 @@ const decorators: Decorator[] = [
     }, [darkMode]);
 
     return (
-      <Provider theme={defaultTheme} colorScheme={darkMode ? 'dark' : 'light'} locale="en-US">
-        <View padding={24} backgroundColor="gray-50">
+      <Provider colorScheme={darkMode ? 'dark' : 'light'} locale="en-US">
+        <div style={{ padding: 24 }}>
           <Story />
-        </View>
+        </div>
       </Provider>
     );
   },

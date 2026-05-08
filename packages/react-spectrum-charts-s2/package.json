@@ -89,7 +89,7 @@
     "vega-tooltip": ">= 1.1.0"
   },
   "peerDependencies": {
-    "@adobe/react-spectrum": ">=3.23.0",
+    "@react-spectrum/s2": ">=1.0.0",
     "react": ">= 17.0.2",
     "react-dom": ">= 17.0.2",
     "vega": "^6.2.0",

@@ -13,7 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
 import { s2Categorical6 } from '@spectrum-charts/themes';
 
 import { Chart } from '../../../Chart';
@@ -51,11 +50,11 @@ const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const dialogContent = (datum) => (
-  <Content>
+  <div>
     <div>Operating system: {datum.operatingSystem}</div>
     <div>Browser: {datum.browser}</div>
     <div>Users: {datum.value}</div>
-  </Content>
+  </div>
 );
 
 const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {

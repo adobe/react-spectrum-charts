@@ -11,17 +11,17 @@
  */
 import React, { FC } from 'react';
 
-import { Flex, ProgressCircle } from '@adobe/react-spectrum';
+import { ProgressCircle } from '@react-spectrum/s2';
 
 interface LoadingStateProps {
   height?: number;
 }
 
-const LoadingState: FC<LoadingStateProps> = (props) => {
+const LoadingState: FC<LoadingStateProps> = ({ height }) => {
   return (
-    <Flex direction="column" justifyContent="center" alignItems="center" {...props}>
-      <ProgressCircle isIndeterminate size="L" />
-    </Flex>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height }}>
+      <ProgressCircle isIndeterminate size="L" aria-label="Loading" />
+    </div>
   );
 };
 
