@@ -76,10 +76,10 @@
     "publish-package": "npm publish --access public --tag alpha --registry https://registry.npmjs.org"
   },
   "dependencies": {
-    "@spectrum-charts/constants": "1.42.0",
-    "@spectrum-charts/locales": "1.42.0",
-    "@spectrum-charts/themes": "1.42.0",
-    "@spectrum-charts/utils": "1.42.0",
+    "@spectrum-charts/constants": "1.43.0",
+    "@spectrum-charts/locales": "1.43.0",
+    "@spectrum-charts/themes": "1.43.0",
+    "@spectrum-charts/utils": "1.43.0",
     "@spectrum-charts/vega-spec-builder-s2": "0.2.0",
     "d3-format": "^3.1.0",
     "deepmerge": ">= 4.0.0",
@@ -90,14 +90,12 @@
   },
   "peerDependencies": {
     "@react-spectrum/s2": ">=1.0.0",
-    "react": ">= 17.0.2",
-    "react-dom": ">= 17.0.2",
+    "react": ">= 19.0.0",
+    "react-dom": ">= 19.0.0",
     "vega": "^6.2.0",
     "vega-lite": "^6.4.2"
   },
   "resolutions": {
-    "@types/react": "18.3.12",
-    "@types/react-dom": "18.3.1",
     "jackspeak": "2.1.1"
   },
   "bugs": {

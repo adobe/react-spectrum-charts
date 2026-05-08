@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, Ref, useEffect, useMemo, useRef, useState } from 'react';
 
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
@@ -37,7 +37,7 @@ interface PlaceholderContentProps {
   emptyStateText: string;
 }
 
-export const Chart = forwardRef<ChartHandle, ChartProps>((props, forwardedRef) => {
+export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }) => {
   const {
     backgroundColor,
     colorScheme,
@@ -60,11 +60,11 @@ export const Chart = forwardRef<ChartHandle, ChartProps>((props, forwardedRef) =
   // uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
   const chartId = useRef<string>(`rsc-${uuid()}`);
   // The view returned by vega. This is above RscChart so it can be used for downloading and copying to clipboard.
-  const chartView = useRef<View>();
+  const chartView = useRef<View | undefined>(undefined);
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
 
-  useChartImperativeHandle(forwardedRef, { chartView, title });
+  useChartImperativeHandle(ref, { chartView, title });
 
   const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
     if (typeof width !== 'number') {
@@ -130,7 +130,7 @@ export const Chart = forwardRef<ChartHandle, ChartProps>((props, forwardedRef) =
       </div>
     </Provider>
   );
-});
+};
 Chart.displayName = 'Chart';
 
 const PlaceholderContent: FC<PlaceholderContentProps> = ({ data, emptyStateText, loading, ...layoutProps }) => {

@@ -197,9 +197,10 @@ export function getElement(
   if (element.type === type) return element as ChartElement | RscElement;
 
   // if there aren't any more children to search, stop looking
-  if (!('children' in element.props)) return undefined;
+  const props = element.props as { children?: ReactNode };
+  if (!('children' in props)) return undefined;
 
-  for (const child of toArray(element.props.children)) {
+  for (const child of toArray(props.children)) {
     const desiredElement = getElement(child, type);
     // if an element was found, return it
     if (desiredElement) return desiredElement;

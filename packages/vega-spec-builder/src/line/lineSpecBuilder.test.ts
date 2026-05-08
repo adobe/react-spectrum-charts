@@ -375,6 +375,7 @@ describe('lineSpecBuilder', () => {
           trendlines: [{ method: 'average' }],
         }, undefined)[2].transform
       ).toStrictEqual([
+        { type: 'filter', expr: `isValid(datum["${DEFAULT_METRIC}"])` },
         {
           as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
           fields: [DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],
@@ -422,7 +423,10 @@ describe('lineSpecBuilder', () => {
       expect(resultData.find((d) => d.name === 'line0_uniqueXValues')).toStrictEqual({
         name: 'line0_uniqueXValues',
         source: FILTERED_TABLE,
-        transform: [{ type: 'aggregate', groupby: [DEFAULT_TRANSFORMED_TIME_DIMENSION] }],
+        transform: [
+          { type: 'aggregate', groupby: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
+          { type: 'formula', expr: `"${DEFAULT_TRANSFORMED_TIME_DIMENSION}"`, as: 'rscDimensionField' },
+        ],
       });
     });
   });

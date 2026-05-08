@@ -367,6 +367,7 @@ describe('lineSpecBuilder', () => {
           trendlines: [{ method: 'average' }],
         })[2].transform
       ).toStrictEqual([
+        { type: 'filter', expr: `isValid(datum["${DEFAULT_METRIC}"])` },
         {
           as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
           fields: [DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],

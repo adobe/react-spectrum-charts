@@ -114,7 +114,7 @@ interface LineData extends Datum {
   category?: string;
 }
 
-const StackedBarChart = StackedBarTooltipStory.bind({});
+const StackedBarChart = bindWithProps(StackedBarTooltipStory);
 StackedBarChart.args = {
   children: (datum: LineData) => (
     <div className="bar-tooltip">
@@ -125,7 +125,7 @@ StackedBarChart.args = {
   ),
 };
 
-const DodgedBarChart = DodgedBarTooltipStory.bind({});
+const DodgedBarChart = bindWithProps(DodgedBarTooltipStory);
 DodgedBarChart.args = {
   children: (datum: LineData) => (
     <div className="bar-tooltip">

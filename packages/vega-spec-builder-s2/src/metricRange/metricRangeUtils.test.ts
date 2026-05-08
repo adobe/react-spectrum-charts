@@ -57,6 +57,7 @@ const defaultLineOptions: LineSpecOptions = {
   dimension: DEFAULT_TIME_DIMENSION,
   gradient: false,
   hasOnClick: false,
+  hasOnContextMenu: false,
   idKey: MARK_ID,
   index: 0,
   interactiveMarkName: undefined,

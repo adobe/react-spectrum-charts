@@ -11,6 +11,7 @@
  */
 import { Legend } from '../../../components';
 import { LegendBarStory, defaultProps } from './LegendStoryUtils';
+import { bindWithProps } from '../../../test-utils';
 
 export default {
   title: 'RSC/Legend/Hover',
@@ -23,7 +24,7 @@ const onMouseOver = (seriesName: string) => {
 const onMouseOut = (seriesName: string) => {
   console.log('onMouseOut', seriesName);
 };
-const ControlledHover = LegendBarStory.bind({});
+const ControlledHover = bindWithProps(LegendBarStory);
 ControlledHover.args = {
   onMouseOver: onMouseOver,
   onMouseOut: onMouseOut,

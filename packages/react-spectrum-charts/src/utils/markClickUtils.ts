@@ -9,11 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MutableRefObject } from 'react';
+import { RefObject } from 'react';
 
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-import { COMPONENT_NAME, SERIES_ID } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID } from '@spectrum-charts/constants';
+import { ContextMenuMode } from '../types/marks/line.types';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder';
 
 import { ThumbnailPopoverConfig } from '../hooks/useAxisThumbnailPopover';
@@ -25,12 +26,12 @@ export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
 
 export interface GetOnMarkClickCallbackArgs {
-  chartView: MutableRefObject<View | undefined>;
+  chartView: RefObject<View | undefined>;
   hiddenSeries: string[];
   chartId: string;
-  selectedData: MutableRefObject<Datum | null>;
-  selectedDataBounds: MutableRefObject<MarkBounds | undefined>;
-  selectedDataName: MutableRefObject<string | undefined>;
+  selectedData: RefObject<Datum | null>;
+  selectedDataBounds: RefObject<MarkBounds | undefined>;
+  selectedDataName: RefObject<string | undefined>;
   setHiddenSeries: (hiddenSeries: string[]) => void;
   legendIsToggleable?: boolean;
   legendHasPopover?: boolean;
@@ -105,7 +106,7 @@ export const triggerPopover = (chartId: string, itemName: string | undefined, tr
  * @returns The callback to be used for the `onClick` prop on a mark.
  */
 export const getOnChartMarkClickCallback = (
-  chartView: MutableRefObject<View | undefined>,
+  chartView: RefObject<View | undefined>,
   onClickMarkDetails?: MarkOnClickDetail[]
 ): ViewEventCallback => {
   return (_event, item) => {
@@ -128,23 +129,48 @@ export const getOnChartMarkClickCallback = (
  * @returns The callback for contextmenu events.
  */
 export const getOnChartMarkContextMenuCallback = (
-  chartView: MutableRefObject<View | undefined>,
+  chartView: RefObject<View | undefined>,
   markClickDetails?: MarkOnClickDetail[]
 ): ViewEventCallback => {
   return (event, item) => {
     if (!item || !markClickDetails?.length || isLegendItem(item) || !chartView.current) return;
     if (event.type !== 'contextmenu') return;
 
+    // Capture the mark name before getGroupOrAreaMarkItemFromItem may unwrap the item
+    const fullMarkName = isItemSceneItem(item) ? (item.mark as unknown as { name: string }).name : '';
+
     item = getGroupOrAreaMarkItemFromItem(item);
     if (!userDidNotClickOnLegend(item)) return;
 
     const itemName = getItemName(item);
     const detail = markClickDetails.find((d) => d.markName === itemName);
-    if (detail?.onContextMenu) {
+    if (detail?.onContextMenu && contextMenuModeAllowsMark(detail.contextMenuMode, fullMarkName)) {
       const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
-      detail.onContextMenu(nativeEvent, item.datum);
+      let datum = item.datum;
+      if (fullMarkName.endsWith('_xAxisVoronoi')) {
+        const dimensionField = datum[DIMENSION_FIELD] as string;
+        if (dimensionField) {
+          const dimensionValue = toComparableValue(datum[dimensionField]);
+          const tableData = chartView.current.data(FILTERED_TABLE);
+          datum = { ...datum, [GROUP_DATA]: tableData.filter((d) => toComparableValue(d[dimensionField]) === dimensionValue) };
+        }
+      }
+      detail.onContextMenu(nativeEvent, datum);
     }
   };
+};
+
+const toComparableValue = (val: unknown): string | number => {
+  if (val instanceof Date) return val.getTime();
+  if (typeof val === 'number') return val;
+  return val as string;
+};
+
+const contextMenuModeAllowsMark = (contextMenuMode: ContextMenuMode | undefined, fullMarkName: string): boolean => {
+  if (!contextMenuMode || contextMenuMode === 'interaction') return true;
+  if (contextMenuMode === 'dimension') return fullMarkName.endsWith('_xAxisVoronoi');
+  if (contextMenuMode === 'item') return /_hover\d/.test(fullMarkName);
+  return true;
 };
 
 const getGroupOrAreaMarkItemFromItem = (item: NonNullable<ActionItem>) => {

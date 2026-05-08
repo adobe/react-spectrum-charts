@@ -449,6 +449,57 @@ OnClickWithTooltip.args = {
   ...OnClick.args,
 };
 
+const DimensionContextMenuStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const [contextMenuInfo, setContextMenuInfo] = useState<{ datetime: string; series: string[] } | null>(null);
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <div>
+      <div style={{ width: '800px', minHeight: '60px', padding: '8px', border: '1px solid #ccc', marginBottom: '8px' }}>
+        {contextMenuInfo ? (
+          <div data-testid="context-menu-data">
+            <div><strong>Right-clicked dimension:</strong> {contextMenuInfo.datetime}</div>
+            <div><strong>Series in group:</strong> {contextMenuInfo.series.join(', ')}</div>
+          </div>
+        ) : (
+          <div data-testid="no-context-menu">Right-click anywhere on the chart to see dimension context menu data</div>
+        )}
+      </div>
+      <Chart {...chartProps}>
+        <Axis position="left" grid title="Users" />
+        <Axis position="bottom" labelFormat="time" baseline ticks />
+        <Line
+          {...args}
+          onContextMenu={(_e, datum) => {
+            action('onContextMenu')(datum);
+            const groupData = datum[GROUP_DATA] as Datum[];
+            setContextMenuInfo({
+              datetime: formatTimestamp(+(datum.datetime0 ?? datum.datetime)),
+              series: groupData?.map((d) => String(d.series)) ?? [],
+            });
+          }}
+        />
+        <Legend highlight />
+      </Chart>
+    </div>
+  );
+};
+
+const DimensionContextMenu = bindWithProps(DimensionContextMenuStory);
+DimensionContextMenu.args = {
+  ...defaultArgs,
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time',
+  interactionMode: 'dimension',
+  contextMenuMode: 'dimension',
+};
+DimensionContextMenu.argTypes = {
+  contextMenuMode: {
+    control: { type: 'radio' },
+    options: ['interaction', 'dimension', 'item'],
+  },
+};
+
 const WithGapsInData = bindWithProps(WithGapsInDataStory);
 WithGapsInData.args = {
   ...defaultArgs,
@@ -536,6 +587,7 @@ export {
   SparklineWithStaticPoint,
   OnClick,
   OnClickWithTooltip,
+  DimensionContextMenu,
   OnMouseInputs,
   WithGapsInData,
 };

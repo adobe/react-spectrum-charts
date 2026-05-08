@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { Legend } from '../../../components';
+import { bindWithProps } from '../../../test-utils';
 import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
 
 export default {
@@ -17,10 +18,10 @@ export default {
   component: Legend,
 };
 
-const Basic = LegendBarStory.bind({});
+const Basic = bindWithProps(LegendBarStory);
 Basic.args = { highlight: true, ...defaultProps };
 
-const Controlled = LegendBarHighlightedSeriesStory.bind({});
+const Controlled = bindWithProps(LegendBarHighlightedSeriesStory);
 Controlled.args = { ...defaultProps };
 
 export { Basic, Controlled };

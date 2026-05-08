@@ -9,10 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, useMemo } from 'react';
+import { FC, useMemo, type ReactElement } from 'react';
 
-import { renderToStaticMarkup } from 'react-dom/server';
+import { flushSync } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Position, Options as TooltipOptions } from 'vega-tooltip';
+
+function renderToHtml(element: ReactElement): string {
+  const container = document.createElement('div');
+  const root = createRoot(container);
+  flushSync(() => {
+    root.render(element);
+  });
+  const html = container.innerHTML;
+  root.unmount();
+  return html;
+}
 
 import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
 import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
@@ -42,7 +54,7 @@ const getLegendTooltipMarkup = (
       title: 'Legend descriptions',
       contents: legendDescriptions,
     });
-    return renderToStaticMarkup(
+    return renderToHtml(
       <LegendTooltip
         value={{ index }}
         descriptions={legendDescriptions}
@@ -71,7 +83,7 @@ const getDimensionAreaTooltipMarkup = (
   const tableData = chartView?.current?.data(FILTERED_TABLE);
   value[GROUP_DATA] = tableData?.filter((d) => d[dimension] === value[dimension]);
 
-  return renderToStaticMarkup(
+  return renderToHtml(
     <div className="rsc-tooltip" data-testid="rsc-tooltip">
       {tooltip.callback(value)}
     </div>
@@ -114,7 +126,7 @@ const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartC
           const groupId = `${tooltip.name}_${GROUP_ID}`;
           value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
         }
-        return renderToStaticMarkup(
+        return renderToHtml(
           <div className="rsc-tooltip" data-testid="rsc-tooltip">
             {tooltip.callback(value)}
           </div>

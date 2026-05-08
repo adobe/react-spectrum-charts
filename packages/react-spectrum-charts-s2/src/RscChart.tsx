@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { CSSProperties, MutableRefObject, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { CSSProperties, RefObject, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Popover } from '@react-spectrum/s2';
 import { View as VegaView } from 'vega';
@@ -28,14 +28,14 @@ import { RscChartProps } from './types';
 import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals } from './utils';
 
 interface ChartDialogProps {
-  targetElement: MutableRefObject<HTMLElement | null>;
+  targetElement: RefObject<HTMLElement | null>;
   setIsPopoverOpen: (isOpen: boolean) => void;
   popover: PopoverDetail;
   idKey: string;
   specSignalNames: ReadonlySet<string>;
 }
 
-export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwardedRef) => {
+export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHandle> }) => {
   const {
     backgroundColor,
     data,
@@ -104,7 +104,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
     }
   }, [isPopoverOpen]);
 
-  useChartImperativeHandle(forwardedRef, { chartView, title });
+  useChartImperativeHandle(ref, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
 
   const handleNewView = useCallback(
@@ -149,7 +149,7 @@ export const RscChart = forwardRef<ChartHandle, RscChartProps>((props, forwarded
       ))}
     </>
   );
-});
+};
 RscChart.displayName = 'RscChart';
 
 const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSignalNames }: ChartDialogProps) => {

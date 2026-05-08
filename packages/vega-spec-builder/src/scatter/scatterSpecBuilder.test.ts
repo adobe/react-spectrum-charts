@@ -72,16 +72,22 @@ describe('addData()', () => {
         { type: 'filter', expr: 'isValid(datum["value"]) && isFinite(datum["value"])' },
       ]);
     });
-    test('ORs metricRangeHoverMetrics into each validNumericKeys filter', () => {
+    test('ORs metricRangeHoverMetrics into each validNumericKeys filter, excluding out-of-domain rows', () => {
       const result = getFilteredTooltipData([{}], ['value'], ['metric']);
       expect(result.transform).toStrictEqual([
-        { type: 'filter', expr: '(isValid(datum["value"]) && isFinite(datum["value"])) || isValid(datum["metric"])' },
+        { type: 'filter', expr: `(isValid(datum["value"]) && isFinite(datum["value"])) || isValid(datum["metric"]) && scale('yLinear', datum['metric']) >= 0 && scale('yLinear', datum['metric']) <= height` },
       ]);
     });
     test('supports multiple metricRangeHoverMetrics joined with OR', () => {
       const result = getFilteredTooltipData([{}], ['value'], ['metricA', 'metricB']);
       expect(result.transform).toStrictEqual([
-        { type: 'filter', expr: '(isValid(datum["value"]) && isFinite(datum["value"])) || isValid(datum["metricA"]) || isValid(datum["metricB"])' },
+        { type: 'filter', expr: `(isValid(datum["value"]) && isFinite(datum["value"])) || isValid(datum["metricA"]) && scale('yLinear', datum['metricA']) >= 0 && scale('yLinear', datum['metricA']) <= height || isValid(datum["metricB"]) && scale('yLinear', datum['metricB']) >= 0 && scale('yLinear', datum['metricB']) <= height` },
+      ]);
+    });
+    test('uses provided scale name in domain check', () => {
+      const result = getFilteredTooltipData([{}], ['value'], ['metric'], 'yCustom');
+      expect(result.transform).toStrictEqual([
+        { type: 'filter', expr: `(isValid(datum["value"]) && isFinite(datum["value"])) || isValid(datum["metric"]) && scale('yCustom', datum['metric']) >= 0 && scale('yCustom', datum['metric']) <= height` },
       ]);
     });
     test('adds validNumericKeys filters then excludeDataKeys filter', () => {
@@ -110,8 +116,10 @@ describe('addData()', () => {
       trendlines: [{}],
     });
     expect(data).toHaveLength(3);
-    expect(data[2].transform).toHaveLength(1);
-    expect(data[2].transform?.[0].type).toBe('regression');
+    expect(data[2].transform).toHaveLength(3);
+    expect(data[2].transform?.[0].type).toBe('filter');
+    expect(data[2].transform?.[1].type).toBe('regression');
+    expect(data[2].transform?.[2].type).toBe('filter');
   });
 });
 

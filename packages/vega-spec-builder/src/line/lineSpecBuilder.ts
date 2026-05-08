@@ -66,6 +66,7 @@ export const addLine = produce<
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
       hasOnClick = false,
+      hasOnContextMenu = false,
       hasMouseInteraction = false,
       index = 0,
       linePointAnnotations = [],
@@ -90,6 +91,7 @@ export const addLine = produce<
       dimension,
       dualMetricAxis,
       hasOnClick,
+      hasOnContextMenu,
       index,
       hasMouseInteraction,
       interactiveMarkName: getInteractiveMarkName(
@@ -97,6 +99,7 @@ export const addLine = produce<
           chartPopovers,
           chartTooltips,
           hasOnClick,
+          hasOnContextMenu,
           hasMouseInteraction,
           highlightedItem: options.highlightedItem,
           metricRanges,
@@ -158,7 +161,8 @@ export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Gra
       const metricRangeHoverableMetrics = options.metricRanges
         .filter((mr) => mr.hoverPoint && mr.metric)
         .map((mr) => mr.metric as string);
-      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys, metricRangeHoverableMetrics));
+      const metricRangeScaleName = options.metricAxis ?? 'yLinear';
+      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys, metricRangeHoverableMetrics, metricRangeScaleName));
       if (hasHoverableMetricRanges) {
         const filteredHighlightData = getFilteredIsValidData(`${name}_filteredHighlightedData`, `${name}_highlightedData`, metric);
         data.push(filteredHighlightData);

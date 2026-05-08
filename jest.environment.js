@@ -21,5 +21,6 @@ module.exports = class CustomTestEnvironment extends Environment {
     this.global.Response = Response;
     this.global.Request = Request;
     this.global.structuredClone = structuredClone;
+    this.global.MessageChannel = MessageChannel;
   }
 };

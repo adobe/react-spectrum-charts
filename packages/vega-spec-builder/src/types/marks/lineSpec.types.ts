@@ -42,6 +42,8 @@ export interface LineOptions {
   dimension?: string;
   /** `true` if LineProps has an onClick callback. */
   hasOnClick?: boolean;
+  /** `true` if LineProps has an onContextMenu callback. */
+  hasOnContextMenu?: boolean;
   /** `true` if LineProps has interaction callbacks (onMouseOver, onMouseOut).*/
   hasMouseInteraction?: boolean;
   /** Line type or key in the data that is used as the line type facet */
@@ -81,6 +83,7 @@ type LineOptionsWithDefaults =
   | 'color'
   | 'dimension'
   | 'hasOnClick'
+  | 'hasOnContextMenu'
   | 'linePointAnnotations'
   | 'lineType'
   | 'metric'

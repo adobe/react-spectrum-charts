@@ -135,15 +135,18 @@ export const isInteractive = (options: {
   chartPopovers?: ChartPopoverOptions[];
   chartTooltips?: ChartTooltipOptions[];
   hasOnClick?: boolean;
+  hasOnContextMenu?: boolean;
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
 }): boolean => {
   const hasOnClick = 'hasOnClick' in options && options.hasOnClick;
+  const hasOnContextMenu = 'hasOnContextMenu' in options && options.hasOnContextMenu;
   const metricRanges = ('metricRanges' in options && options.metricRanges) || [];
   const trendlines = ('trendlines' in options && options.trendlines) || [];
 
   return (
     hasOnClick ||
+    hasOnContextMenu ||
     hasPopover(options) ||
     hasTooltip(options) ||
     trendlines.some((trendline) => trendline.displayOnHover) ||
@@ -460,6 +463,7 @@ export const getInteractiveMarkName = (
     chartPopovers?: ChartPopoverOptions[];
     chartTooltips?: ChartTooltipOptions[];
     hasOnClick?: boolean;
+    hasOnContextMenu?: boolean;
     highlightedItem?: HighlightedItem;
     metricRanges?: MetricRangeOptions[];
     trendlines?: TrendlineOptions[];

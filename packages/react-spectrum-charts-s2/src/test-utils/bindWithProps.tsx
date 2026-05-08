@@ -9,12 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { type FC } from 'react';
+
 import { ArgsStoryFn } from '@storybook/csf';
 import { ReactRenderer, StoryFn } from '@storybook/react';
 
 type StoryArgsTypes<T> = T extends ArgsStoryFn<ReactRenderer, infer Return> ? Return : T;
 
-type RequiredProps<T> = StoryFn<T> & { args: T };
+// FC<T> satisfies React 19's stricter JSX type check; StoryFn<T>'s 2-arg signature does not
+type RequiredProps<T> = FC<T> & { args: T; storyName?: string };
 
 /**
  * Will make the props in a story required (by default Storybook makes all props optional).

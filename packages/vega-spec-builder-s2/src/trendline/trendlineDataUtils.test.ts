@@ -69,6 +69,10 @@ describe('addTrendlineData()', () => {
       source: FILTERED_TABLE,
       transform: [
         {
+          type: 'filter',
+          expr: 'isValid(datum["value"])',
+        },
+        {
           as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
           fields: ['value', DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],
           groupby: ['series'],
@@ -126,10 +130,11 @@ describe('addTrendlineData()', () => {
     });
     expect(trendlineData).toHaveLength(3);
     expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
-    expect(trendlineData[2].transform).toHaveLength(3);
+    expect(trendlineData[2].transform).toHaveLength(4);
     expect(trendlineData[2].transform?.[0]).toHaveProperty('type', 'collect');
     expect(trendlineData[2].transform?.[1]).toHaveProperty('type', 'window');
     expect(trendlineData[2].transform?.[2]).toHaveProperty('type', 'filter');
+    expect(trendlineData[2].transform?.[3]).toHaveProperty('type', 'filter');
   });
 
   test('should add filter transforms for regression method if trendline has excludeDataKey', () => {
@@ -140,7 +145,7 @@ describe('addTrendlineData()', () => {
       trendlines: [{ method: 'linear', excludeDataKeys: ['exclude1', 'exclude2'] }],
     });
     expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
-    expect(trendlineData[2].transform).toHaveLength(4);
+    expect(trendlineData[2].transform).toHaveLength(6);
     expect(trendlineData[2].transform?.[0]).toStrictEqual({
       type: 'filter',
       expr: '!datum.exclude1',
@@ -151,7 +156,7 @@ describe('addTrendlineData()', () => {
     });
   });
 
-  test('should not add filter transform for regression method if trendline does not have excludeDataKey', () => {
+  test('should always include metric validity filter for regression method', () => {
     const trendlineData = getDefaultData();
 
     addTrendlineData(trendlineData, {
@@ -159,8 +164,26 @@ describe('addTrendlineData()', () => {
       trendlines: [{ method: 'linear' }],
     });
     expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
-    expect(trendlineData[2].transform).toHaveLength(2);
-    expect(trendlineData[2].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
+    expect(trendlineData[2].transform).toHaveLength(4);
+    expect(trendlineData[2].transform?.[0]).toStrictEqual({
+      type: 'filter',
+      expr: 'isValid(datum["value"])',
+    });
+  });
+
+  test('should filter regression output to prevent NaN trendline values from rendering', () => {
+    const trendlineData = getDefaultData();
+
+    addTrendlineData(trendlineData, {
+      ...defaultLineOptions,
+      trendlines: [{ method: 'linear' }],
+    });
+    // transforms for _highResolutionData: inputFilter[0], regression[1], outputFilter[2], seriesId[3]
+    expect(trendlineData[2].transform?.[1]).toHaveProperty('type', 'regression');
+    expect(trendlineData[2].transform?.[2]).toStrictEqual({
+      type: 'filter',
+      expr: `isValid(datum["${TRENDLINE_VALUE}"])`,
+    });
   });
 
   test('should add filter transforms for aggregate method if trendline has excludeDataKey', () => {
@@ -171,7 +194,7 @@ describe('addTrendlineData()', () => {
       trendlines: [{ method: 'median', excludeDataKeys: ['exclude1', 'exclude2'] }],
     });
     expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
-    expect(trendlineData[2].transform).toHaveLength(4);
+    expect(trendlineData[2].transform).toHaveLength(5);
     expect(trendlineData[2].transform?.[0]).toStrictEqual({
       type: 'filter',
       expr: '!datum.exclude1',
@@ -182,7 +205,7 @@ describe('addTrendlineData()', () => {
     });
   });
 
-  test('should not add filter transform for aggregate method if trendline does not have excludeDataKey', () => {
+  test('should always include metric validity filter for aggregate method', () => {
     const trendlineData = getDefaultData();
 
     addTrendlineData(trendlineData, {
@@ -190,8 +213,11 @@ describe('addTrendlineData()', () => {
       trendlines: [{ method: 'median' }],
     });
     expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
-    expect(trendlineData[2].transform).toHaveLength(2);
-    expect(trendlineData[2].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
+    expect(trendlineData[2].transform).toHaveLength(3);
+    expect(trendlineData[2].transform?.[0]).toStrictEqual({
+      type: 'filter',
+      expr: 'isValid(datum["value"])',
+    });
   });
 
   test('should add filter transform for window method if trendline has excludeDataKey', () => {
@@ -202,7 +228,7 @@ describe('addTrendlineData()', () => {
       trendlines: [{ method: 'movingAverage-2', excludeDataKeys: ['exclude1', 'exclude2'] }],
     });
     expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
-    expect(trendlineData[2].transform).toHaveLength(4);
+    expect(trendlineData[2].transform).toHaveLength(5);
     expect(trendlineData[2].transform?.[0]).toStrictEqual({
       type: 'filter',
       expr: '!datum.exclude1',
@@ -213,7 +239,7 @@ describe('addTrendlineData()', () => {
     });
   });
 
-  test('should not add filter transform for window method if trendline does not have excludeDataKey', () => {
+  test('should always include trendline value validity filter for window method', () => {
     const trendlineData = getDefaultData();
 
     addTrendlineData(trendlineData, {
@@ -221,8 +247,37 @@ describe('addTrendlineData()', () => {
       trendlines: [{ method: 'movingAverage-2' }],
     });
     expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_data');
-    expect(trendlineData[2].transform).toHaveLength(2);
-    expect(trendlineData[2].transform).not.toContain(expect.objectContaining({ type: 'filter' }));
+    expect(trendlineData[2].transform).toHaveLength(3);
+    expect(trendlineData[2].transform?.[2]).toStrictEqual({
+      type: 'filter',
+      expr: `isValid(datum["${TRENDLINE_VALUE}"])`,
+    });
+  });
+
+  test('should add data sources for exponential or power trendlines on time scales', () => {
+    const expData = getDefaultData();
+    addTrendlineData(expData, { ...defaultLineOptions, trendlines: [{ method: 'exponential' }] });
+    expect(expData).toHaveLength(3);
+    expect(expData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+
+    const powData = getDefaultData();
+    addTrendlineData(powData, { ...defaultLineOptions, trendlines: [{ method: 'power' }] });
+    expect(powData).toHaveLength(3);
+    expect(powData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
+  });
+
+  test('should use isValid metric filter for all regression methods', () => {
+    const linearData = getDefaultData();
+    addTrendlineData(linearData, { ...defaultLineOptions, trendlines: [{ method: 'linear' }] });
+    expect(linearData[2].transform?.[0]).toStrictEqual({ type: 'filter', expr: 'isValid(datum["value"])' });
+
+    const expData = getDefaultData();
+    addTrendlineData(expData, { ...defaultLineOptions, trendlines: [{ method: 'exponential' }] });
+    expect(expData[2].transform?.[0]).toStrictEqual({ type: 'filter', expr: 'isValid(datum["value"])' });
+
+    const powData = getDefaultData();
+    addTrendlineData(powData, { ...defaultLineOptions, trendlines: [{ method: 'power' }] });
+    expect(powData[2].transform?.[0]).toStrictEqual({ type: 'filter', expr: 'isValid(datum["value"])' });
   });
 });
 

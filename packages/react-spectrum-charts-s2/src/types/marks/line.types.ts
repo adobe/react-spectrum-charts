@@ -17,17 +17,34 @@ import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
 
+/**
+ * Controls which interaction marks can trigger `onContextMenu`.
+ * Acts as a filter on top of whatever marks `interactionMode` generates.
+ * - `'interaction'` (default) — fires on all marks the current `interactionMode` generates
+ * - `'dimension'` — only fires from dimension strips; not applicable in S2 (no dimension interaction mode)
+ * - `'item'` — only fires from individual hover points
+ */
+export type ContextMenuMode = 'interaction' | 'dimension' | 'item';
+
 type LineChildElement = ChartPopoverElement | ChartTooltipElement | LineDirectLabelElement;
 export interface LineProps
   extends Omit<
     LineOptions,
-    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'lineDirectLabels' | 'markType'
+    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'hasOnContextMenu' | 'lineDirectLabels' | 'markType'
   > {
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
-  /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
+  /**
+   * Callback that will be run when a point/section is right-clicked. Use to show a custom context menu.
+   * Use `contextMenuMode` to control which marks can trigger it.
+   */
   onContextMenu?: ContextMenuCallback;
+  /**
+   * Controls which marks can trigger `onContextMenu`.
+   * @default 'interaction'
+   */
+  contextMenuMode?: ContextMenuMode;
 }
 
 export type LineElement = ReactElement<LineProps, JSXElementConstructor<LineProps>>;

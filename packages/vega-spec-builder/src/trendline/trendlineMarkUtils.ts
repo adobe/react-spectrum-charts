@@ -43,6 +43,7 @@ export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMa
   const trendlines = getTrendlines(markOptions);
   for (const trendlineOptions of trendlines) {
     const { displayOnHover, method, name } = trendlineOptions;
+
     if (isAggregateMethod(method)) {
       marks.push(getTrendlineRuleMark(markOptions, trendlineOptions));
     } else {
