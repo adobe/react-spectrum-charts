@@ -187,11 +187,11 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
 
   const popoverStyle: CSSProperties = {
     minWidth: toPx(sizingProps.minWidth ?? 0),
-    ...(sizingProps.maxWidth != null ? { maxWidth: toPx(sizingProps.maxWidth) } : {}),
-    ...(sizingProps.width != null ? { width: toPx(sizingProps.width) } : {}),
-    ...(sizingProps.height != null ? { height: toPx(sizingProps.height) } : {}),
-    ...(sizingProps.minHeight != null ? { minHeight: toPx(sizingProps.minHeight) } : {}),
-    ...(sizingProps.maxHeight != null ? { maxHeight: toPx(sizingProps.maxHeight) } : {}),
+    ...(sizingProps.maxWidth != null && { maxWidth: toPx(sizingProps.maxWidth) }),
+    ...(sizingProps.width != null && { width: toPx(sizingProps.width) }),
+    ...(sizingProps.height != null && { height: toPx(sizingProps.height) }),
+    ...(sizingProps.minHeight != null && { minHeight: toPx(sizingProps.minHeight) }),
+    ...(sizingProps.maxHeight != null && { maxHeight: toPx(sizingProps.maxHeight) }),
   };
 
   return (
