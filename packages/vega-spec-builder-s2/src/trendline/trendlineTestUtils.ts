@@ -24,6 +24,7 @@ export const defaultLineOptions: LineSpecOptions = {
   chartTooltips: [],
   gradient: false,
   hasOnClick: false,
+  hasOnContextMenu: false,
   metricRanges: [],
   trendlines: [{ method: 'average' }],
   color: DEFAULT_COLOR,
