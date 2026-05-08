@@ -66,6 +66,7 @@ export const addLine = produce<
       dualMetricAxis = false,
       gradient = false,
       hasOnClick = false,
+      hasOnContextMenu = false,
       index = 0,
       lineDirectLabels = [],
       lineType = { value: 'solid' },
@@ -91,6 +92,7 @@ export const addLine = produce<
       dualMetricAxis,
       gradient,
       hasOnClick,
+      hasOnContextMenu,
       index,
       lineDirectLabels,
       interactiveMarkName: getInteractiveMarkName(
@@ -98,6 +100,7 @@ export const addLine = produce<
           chartPopovers,
           chartTooltips,
           hasOnClick,
+          hasOnContextMenu,
           highlightedItem: options.highlightedItem,
           metricRanges,
           trendlines,

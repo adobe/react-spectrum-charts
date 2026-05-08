@@ -43,6 +43,8 @@ export interface LineOptions {
   dimension?: string;
   /** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */
   hasOnClick?: boolean;
+  /** `true` if LineProps has an onContextMenu callback. Ensures interactive marks are generated even without tooltip/click. */
+  hasOnContextMenu?: boolean;
   /** Line type or key in the data that is used as the line type facet */
   lineType?: LineTypeFacet;
   /** Opacity or key in the data that is used as the opacity facet */
@@ -84,6 +86,7 @@ type LineOptionsWithDefaults =
   | 'dimension'
   | 'gradient'
   | 'hasOnClick'
+  | 'hasOnContextMenu'
   | 'lineDirectLabels'
   | 'lineType'
   | 'metric'

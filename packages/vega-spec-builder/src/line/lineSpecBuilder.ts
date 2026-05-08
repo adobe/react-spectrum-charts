@@ -66,6 +66,7 @@ export const addLine = produce<
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
       hasOnClick = false,
+      hasOnContextMenu = false,
       hasMouseInteraction = false,
       index = 0,
       linePointAnnotations = [],
@@ -90,6 +91,7 @@ export const addLine = produce<
       dimension,
       dualMetricAxis,
       hasOnClick,
+      hasOnContextMenu,
       index,
       hasMouseInteraction,
       interactiveMarkName: getInteractiveMarkName(
@@ -97,6 +99,7 @@ export const addLine = produce<
           chartPopovers,
           chartTooltips,
           hasOnClick,
+          hasOnContextMenu,
           hasMouseInteraction,
           highlightedItem: options.highlightedItem,
           metricRanges,

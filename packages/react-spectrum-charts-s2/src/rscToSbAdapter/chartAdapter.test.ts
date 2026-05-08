@@ -256,6 +256,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
             color: 'series',
             dimension: 'datetime',
             hasOnClick: false,
+            hasOnContextMenu: false,
             lineDirectLabels: [],
             markType: 'line',
             metric: 'value',

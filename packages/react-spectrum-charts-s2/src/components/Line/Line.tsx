@@ -30,6 +30,7 @@ const Line: FC<LineProps> = ({
   padding,
   interactionMode = DEFAULT_INTERACTION_MODE,
   interpolate,
+  contextMenuMode = 'interaction',
 }: LineProps) => {
   return null;
 };
