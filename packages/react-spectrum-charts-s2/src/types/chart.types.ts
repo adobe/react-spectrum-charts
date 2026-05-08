@@ -28,11 +28,11 @@ import {
 import { AxisElement } from './axis';
 import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
 import { LegendElement } from './legend.types';
-import { BarAnnotationElement, BarElement, DonutElement, DonutSummaryElement, LineElement } from './marks';
+import { BarAnnotationElement, BarElement, DonutElement, DonutSummaryElement, GaugeElement, LineElement } from './marks';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
 
-export type ChartChildElement = AxisElement | BarElement | DonutElement | LegendElement | LineElement | TitleElement;
+export type ChartChildElement = AxisElement | BarElement | DonutElement | GaugeElement | LegendElement | LineElement | TitleElement;
 export type MarkChildElement = BarAnnotationElement | ChartPopoverElement | ChartTooltipElement | DonutSummaryElement;
 
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {

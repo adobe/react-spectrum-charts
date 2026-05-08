@@ -37,7 +37,7 @@ import { Line } from '../components/Line';
 import { LineDirectLabel } from '../components/LineDirectLabel';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
-import { Donut, DonutSummary, SegmentLabel } from '../rc';
+import { Donut, DonutSummary, Gauge, SegmentLabel } from '../rc';
 import {
   AxisProps,
   AxisThumbnailProps,
@@ -47,6 +47,7 @@ import {
   ChartTooltipProps,
   DonutProps,
   DonutSummaryProps,
+  GaugeProps,
   LegendProps,
   LineDirectLabelProps,
   LineProps,
@@ -60,6 +61,7 @@ import { getBarOptions } from './barAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
 import { getChartTooltipOptions } from './chartTooltipAdapter';
 import { getDonutOptions } from './donutAdapter';
+import { getGaugeOptions } from './gaugeAdapter';
 import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
 
@@ -128,6 +130,10 @@ export const childrenToOptions = (
 
       case Donut.displayName:
         marks.push(getDonutOptions(child.props as DonutProps));
+        break;
+
+      case Gauge.displayName:
+        marks.push(getGaugeOptions(child.props as GaugeProps));
         break;
 
       case DonutSummary.displayName:

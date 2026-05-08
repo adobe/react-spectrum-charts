@@ -12,4 +12,5 @@
 
 export * from './Donut';
 export * from './DonutSummary';
+export * from './Gauge';
 export * from './SegmentLabel';
