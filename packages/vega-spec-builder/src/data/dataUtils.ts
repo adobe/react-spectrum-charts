@@ -128,15 +128,21 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform[] => {
 export const getFilteredTooltipData = (
   chartTooltips: ChartTooltipOptions[],
   validNumericKeys?: string[],
-  metricRangeHoverableMetrics?: string[]
+  metricRangeHoverableMetrics?: string[],
+  metricRangeScaleName?: string
 ): { name: string; source: string; transform?: { type: 'filter'; expr: string }[] } => {
   const transforms: { type: 'filter'; expr: string }[] = [];
 
   if (validNumericKeys?.length) {
     // looping through metricRangeHoverableMetrics because there could be multiple metric ranges within a Line chart
     let metricValidExprs: string[] = [];
-    if (metricRangeHoverableMetrics && metricRangeHoverableMetrics.length > 0) { 
-      metricValidExprs = metricRangeHoverableMetrics.map((m) => `isValid(datum["${m}"])`);
+    if (metricRangeHoverableMetrics && metricRangeHoverableMetrics.length > 0) {
+      const scaleName = metricRangeScaleName ?? 'yLinear';
+      // Exclude rows where the metric maps outside [0, height] — those rows have no visible
+      // representation in the chart and should not receive voronoi cells, tooltips, or popovers.
+      metricValidExprs = metricRangeHoverableMetrics.map(
+        (m) => `isValid(datum["${m}"]) && scale('${scaleName}', datum['${m}']) >= 0 && scale('${scaleName}', datum['${m}']) <= height`
+      );
     }
     const orClause = metricValidExprs.length ? ` || ${metricValidExprs.join(' || ')}` : '';
     validNumericKeys.forEach((key) => {

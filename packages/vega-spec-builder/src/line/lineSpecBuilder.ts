@@ -158,7 +158,8 @@ export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Gra
       const metricRangeHoverableMetrics = options.metricRanges
         .filter((mr) => mr.hoverPoint && mr.metric)
         .map((mr) => mr.metric as string);
-      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys, metricRangeHoverableMetrics));
+      const metricRangeScaleName = options.metricAxis ?? 'yLinear';
+      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys, metricRangeHoverableMetrics, metricRangeScaleName));
       if (hasHoverableMetricRanges) {
         const filteredHighlightData = getFilteredIsValidData(`${name}_filteredHighlightedData`, `${name}_highlightedData`, metric);
         data.push(filteredHighlightData);

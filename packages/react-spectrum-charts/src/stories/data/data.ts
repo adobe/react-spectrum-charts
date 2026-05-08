@@ -1301,3 +1301,30 @@ export const peopleTotalComboData = [
   { datetime: 1668322800000, people: 30, total: 120 },
   { datetime: 1668409200000, people: 2, total: 122 },
 ];
+
+// Historical line values top out at ~3738. Forecast metric values (5000–9500) are well above
+// that ceiling, placing hoverPoint marks outside the y domain when scaleAxisToFit is false.
+// Forecast metric (4000) equals the top of the y domain (Vega extends 3738 to a nice 4000),
+// placing the hover point precisely at the top boundary. Used to verify that clip: true
+// does not clip points that sit exactly on the domain edge.
+export const workspaceTrendsDataWithBoundaryMetricRange = [
+  { datetime: 1667890800000, value: 3738, series: 'Add Fallout' },
+  { datetime: 1667977200000, value: 2704, series: 'Add Fallout' },
+  { datetime: 1668063600000, value: 1730, series: 'Add Fallout' },
+  { datetime: 1668150000000, value: 465, series: 'Add Fallout' },
+  { datetime: 1668236400000, value: 200, series: 'Add Fallout' },
+  { datetime: 1668322800000, value: null, metric: 4000, metricStart: 2500, metricEnd: 5500, series: 'Add Fallout' },
+  { datetime: 1668409200000, value: null, metric: 3000, metricStart: 2000, metricEnd: 4000, series: 'Add Fallout' },
+  { datetime: 1668495600000, value: null, metric: 2500, metricStart: 1500, metricEnd: 3500, series: 'Add Fallout' },
+];
+
+export const workspaceTrendsDataWithOutOfDomainMetricRange = [
+  { datetime: 1667890800000, value: 3738, series: 'Add Fallout' },
+  { datetime: 1667977200000, value: 2704, series: 'Add Fallout' },
+  { datetime: 1668063600000, value: 1730, series: 'Add Fallout' },
+  { datetime: 1668150000000, value: 465, series: 'Add Fallout' },
+  { datetime: 1668236400000, value: 200, series: 'Add Fallout' },
+  { datetime: 1668322800000, value: null, metric: 5000, metricStart: 3500, metricEnd: 6500, series: 'Add Fallout' },
+  { datetime: 1668409200000, value: null, metric: 7000, metricStart: 5500, metricEnd: 8500, series: 'Add Fallout' },
+  { datetime: 1668495600000, value: null, metric: 9500, metricStart: 7500, metricEnd: 11500, series: 'Add Fallout' },
+];

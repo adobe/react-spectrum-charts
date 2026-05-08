@@ -315,7 +315,13 @@ export const getVoronoiYEncoding = (lineOptions: LineMarkOptions, metric: string
   const yScale = metricAxis || 'yLinear';
   return [
     { test: `isValid(datum["${metric}"])`, scale: yScale, field: metric },
-    ...hoverPointMetrics.map(mrMetric => ({ test: `isValid(datum["${mrMetric}"])`, scale: yScale, field: mrMetric })),
+    // Clamp metric range y positions to [0, height] so out-of-domain values don't produce
+    // negative y-coordinates. An unclamped out-of-domain point creates an abnormally large
+    // voronoi cell that dominates the visible chart area and causes hover flicker.
+    ...hoverPointMetrics.map(mrMetric => ({
+      test: `isValid(datum["${mrMetric}"])`,
+      signal: `clamp(scale('${yScale}', datum['${mrMetric}']), 0, height)`,
+    })),
     { scale: yScale, field: metric },
   ];
 };
