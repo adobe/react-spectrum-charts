@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
-import { ActionButton, ActionGroup, Content, Divider, Flex, Item, Text } from '@adobe/react-spectrum';
+import { ActionButton, Divider } from '@react-spectrum/s2';
 import Close from '@spectrum-icons/workflow/Close';
 import Download from '@spectrum-icons/workflow/Download';
 import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
@@ -129,9 +129,9 @@ const generateCallback = (variant: 'popover' | 'tooltip') => {
   const callback = (datum: Datum, close?: () => void) => {
     action(`${actionName[variant]}:callback`)(datum);
     return (
-      <Content UNSAFE_className="userGrowth-dialog">
-        <Flex direction="column">
-          <Flex direction="row" justifyContent="space-between">
+      <div className="userGrowth-dialog">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
             <div>
               <div>{datum.x}</div>
               <div>{datum.series}</div>
@@ -142,32 +142,32 @@ const generateCallback = (variant: 'popover' | 'tooltip') => {
                 <Close />
               </ActionButton>
             )}
-          </Flex>
+          </div>
           {close !== undefined && (
             <>
               <Divider />
-              <ActionGroup isQuiet onAction={close} orientation="vertical" UNSAFE_className="dialog-actions">
-                <Item key="create-segment">
+              <div className="dialog-actions" style={{ display: 'flex', flexDirection: 'column' }}>
+                <ActionButton isQuiet onPress={close}>
                   <UsersAdd />
-                  <Text>Create segment</Text>
-                </Item>
-                <Item key="user-paths">
+                  Create segment
+                </ActionButton>
+                <ActionButton isQuiet onPress={close}>
                   <GraphPathing />
-                  <Text>Show user paths</Text>
-                </Item>
-                <Item key="view-users">
+                  Show user paths
+                </ActionButton>
+                <ActionButton isQuiet onPress={close}>
                   <ViewDetail />
-                  <Text>View users</Text>
-                </Item>
-                <Item key="download-users">
+                  View users
+                </ActionButton>
+                <ActionButton isQuiet onPress={close}>
                   <Download />
-                  <Text>Download users</Text>
-                </Item>
-              </ActionGroup>
+                  Download users
+                </ActionButton>
+              </div>
             </>
           )}
-        </Flex>
-      </Content>
+        </div>
+      </div>
     );
   };
   return callback;

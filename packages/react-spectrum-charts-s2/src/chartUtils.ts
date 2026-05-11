@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { defaultTheme } from '@adobe/react-spectrum';
 import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -42,7 +41,6 @@ type ChartPropsWithDefaults =
   | 'maxWidth'
   | 'padding'
   | 'renderer'
-  | 'theme'
   | 'tooltipAnchor'
   | 'tooltipPlacement'
   | 'width';
@@ -66,7 +64,6 @@ const baseDefaults: Required<Pick<ChartProps, ChartPropsWithDefaults>> = {
   maxWidth: Infinity,
   padding: 0,
   renderer: 'svg' as const,
-  theme: defaultTheme,
   tooltipAnchor: 'cursor' as const,
   tooltipPlacement: 'top' as const,
   width: 'auto' as const,

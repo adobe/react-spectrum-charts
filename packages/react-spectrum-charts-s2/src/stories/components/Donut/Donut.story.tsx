@@ -13,7 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
@@ -86,10 +85,10 @@ const BooleanStory: StoryFn<typeof Donut> = (args): ReactElement => {
 // content for tooltip and popover
 const dialogContent = (datum: Datum) => {
   return (
-    <Content>
+    <div>
       <div>Browser: {datum.browser}</div>
       <div>Visitors: {datum.count}</div>
-    </Content>
+    </div>
   );
 };
 

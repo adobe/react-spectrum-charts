@@ -13,7 +13,6 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { Config, Locale, NumberLocale, Padding, TimeLocale, View } from 'vega';
 
-import { Theme } from '@react-types/provider';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '@spectrum-charts/locales';
 import {
   ChartData,
@@ -115,8 +114,6 @@ export interface ChartProps extends SharedChartProps {
   maxHeight?: number;
   /** Minimum height of the chart */
   minHeight?: number;
-  /** react-spectrum theme. This sets the react-spectrum theming on tooltips and popovers. */
-  theme?: Theme;
   /** Chart width */
   width?: Width;
 }

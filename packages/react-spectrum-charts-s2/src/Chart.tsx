@@ -14,8 +14,7 @@ import { FC, Ref, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 
-import { Provider, defaultTheme } from '@adobe/react-spectrum';
-import { Theme } from '@react-types/provider';
+import { Provider } from '@react-spectrum/s2';
 import { getColorValue } from '@spectrum-charts/themes';
 import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -52,7 +51,6 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
     minHeight,
     minWidth,
     onVegaViewReady,
-    theme,
     title,
     UNSAFE_vegaSpec,
     width,
@@ -117,9 +115,7 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
   return (
     <Provider
       colorScheme={colorScheme}
-      theme={isValidTheme(theme) ? theme : defaultTheme}
-      UNSAFE_style={{ backgroundColor: 'transparent' }}
-      height="100%"
+      UNSAFE_style={{ backgroundColor: 'transparent', height: '100%' }}
     >
       <div ref={containerRef} id={chartId.current} data-testid={dataTestId} className="rsc-container">
         <div style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}>
@@ -148,6 +144,3 @@ const PlaceholderContent: FC<PlaceholderContentProps> = ({ data, emptyStateText,
   return <></>;
 };
 
-const isValidTheme = (theme: unknown): theme is Theme => {
-  return typeof theme === 'object' && theme !== null && 'light' in theme && 'dark' in theme;
-};

@@ -13,8 +13,6 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
-
 import { Chart } from '../../../../Chart';
 import { Axis, ChartPopover, ChartTooltip, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
@@ -68,11 +66,11 @@ const lineThreeSeriesData = [
 ];
 
 const dialogContent = (datum) => (
-  <Content>
+  <div>
     <div>Date: {new Date(datum.datetime).toLocaleDateString()}</div>
     <div>Series: {datum.series}</div>
     <div>Value: {datum.value}</div>
-  </Content>
+  </div>
 );
 
 const BasicStory: StoryFn<typeof Line> = (args): ReactElement => {

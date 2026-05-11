@@ -41,6 +41,7 @@ import {
   Size,
   StackedBarChart,
   Svg,
+  WithCloseCallback,
 } from './ChartPopover.story';
 
 describe('ChartPopover', () => {
@@ -191,6 +192,34 @@ describe('ChartPopover', () => {
       marginBottom: '12px',
       marginLeft: '12px',
     });
+  });
+
+  test('close callback passed to children closes the popover', async () => {
+    render(<WithCloseCallback {...WithCloseCallback.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+    const bars = getAllMarksByGroupName(chart, 'bar0');
+
+    await clickNthElement(bars, 0);
+    const popover = await screen.findByTestId('rsc-popover');
+    await waitFor(() => expect(popover).toBeInTheDocument());
+
+    await userEvent.click(screen.getByTestId('popover-close-button'));
+    await waitFor(() => expect(popover).not.toBeInTheDocument());
+  });
+
+  test('popover content div has rsc-popover-content class', async () => {
+    render(<StackedBarChart {...StackedBarChart.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+    const bars = getAllMarksByGroupName(chart, 'bar0');
+
+    await clickNthElement(bars, 0);
+    await screen.findByTestId('rsc-popover');
+
+    expect(screen.getByTestId('rsc-popover-content')).toHaveClass('rsc-popover-content');
   });
 
   test('Popover opens on right click, not left click', async () => {
