@@ -81,6 +81,42 @@ this removes transitions in the vega tooltip
   font-weight: 400;
   line-height: 1.5;
 }
+/* Collapse the S2 Dialog's default min-height so the action bar fits its content tightly.
+   S2 component styles are in @layer, so un-layered rules here take precedence without !important. */
+.rsc-action-bar {
+  min-block-size: 0;
+  max-inline-size: 800px;
+}
+.rsc-action-bar-drag-handle {
+  width: 4px;
+  align-self: stretch;
+  min-block-size: 20px;
+  background-color: var(--spectrum-gray-500, #b3b3b3);
+  border-radius: 2px;
+  cursor: grab;
+  flex-shrink: 0;
+  touch-action: none;
+}
+.rsc-action-bar-drag-handle:active {
+  cursor: grabbing;
+}
+.rsc-action-bar--emphasized {
+  background-color: var(--spectrum-accent-background-color-default, #0d66d0);
+  border-color: transparent;
+}
+.rsc-action-bar--emphasized .rsc-action-bar-drag-handle {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.rsc-action-bar-overflow {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  white-space: nowrap;
+  z-index: 1;
+}
 .rsc-container {
   position: relative;
   width: auto;

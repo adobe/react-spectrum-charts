@@ -58,6 +58,7 @@ export const addLine = produce<
   (
     spec,
     {
+      chartActionBars = [],
       chartPopovers = [],
       chartTooltips = [],
       color = { value: 'categorical-100' },
@@ -83,6 +84,7 @@ export const addLine = produce<
     const lineName = toCamelCase(name || `line${index}`);
     // put options back together now that all defaults are set
     const lineOptions: LineSpecOptions = {
+      chartActionBars,
       chartPopovers,
       chartTooltips,
       color,
@@ -95,6 +97,7 @@ export const addLine = produce<
       lineDirectLabels,
       interactiveMarkName: getInteractiveMarkName(
         {
+          chartActionBars,
           chartPopovers,
           chartTooltips,
           hasOnClick,
@@ -110,7 +113,7 @@ export const addLine = produce<
       metricRanges,
       name: lineName,
       opacity,
-      popoverMarkName: getPopoverMarkName(chartPopovers, lineName),
+      popoverMarkName: getPopoverMarkName(chartPopovers, lineName, chartActionBars),
       scaleType,
       trendlines,
       interpolate,

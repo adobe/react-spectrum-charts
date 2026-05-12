@@ -9,20 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { LineProps } from '../types';
-import { childrenToOptions } from './childrenAdapter';
+import { FC } from 'react';
 
-export const getLineOptions = ({ children, onClick, ...lineProps }: LineProps): LineOptions => {
-  const { chartActionBars, chartPopovers, chartTooltips, lineDirectLabels } = childrenToOptions(children);
-  return {
-    ...lineProps,
-    chartActionBars,
-    chartPopovers,
-    chartTooltips,
-    hasOnClick: Boolean(onClick),
-    lineDirectLabels,
-    markType: 'line',
-  };
-};
+import { ChartActionBarProps } from '../../types';
+
+const ChartActionBar: FC<ChartActionBarProps> = ({
+  children: _children,
+  isEmphasized: _isEmphasized = false,
+  maxActions: _maxActions = 4,
+  onClearSelection: _onClearSelection,
+}) => null;
+ChartActionBar.displayName = 'ChartActionBar';
+
+export { ChartActionBar };

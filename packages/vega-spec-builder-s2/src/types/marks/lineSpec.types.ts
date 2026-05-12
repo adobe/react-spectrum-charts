@@ -12,6 +12,7 @@
 import { INTERACTION_MODE } from '@spectrum-charts/constants';
 
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
+import { ChartActionBarOptions } from '../dialogs/chartActionBarSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
 import {
@@ -70,6 +71,7 @@ export interface LineOptions {
   interpolate?: InterpolationType;
 
   // children
+  chartActionBars?: ChartActionBarOptions[];
   chartPopovers?: ChartPopoverOptions[];
   chartTooltips?: ChartTooltipOptions[];
   lineDirectLabels?: LineDirectLabelOptions[];
@@ -78,6 +80,7 @@ export interface LineOptions {
 }
 
 type LineOptionsWithDefaults =
+  | 'chartActionBars'
   | 'chartPopovers'
   | 'chartTooltips'
   | 'color'

@@ -14,6 +14,7 @@ export * from './Axis';
 export * from './AxisThumbnail';
 export * from './Bar';
 export * from './BarDirectLabel';
+export * from './ChartActionBar';
 export * from './ChartPopover';
 export * from './ChartTooltip';
 export * from './EmptyState';

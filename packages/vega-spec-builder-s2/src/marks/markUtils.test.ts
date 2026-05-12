@@ -240,6 +240,10 @@ describe('isInteractive()', () => {
   test('should return true if hasOnClick', () => {
     expect(isInteractive({ hasOnClick: true })).toEqual(true);
   });
+
+  test('should return true if chartActionBars is non-empty', () => {
+    expect(isInteractive({ chartActionBars: [{}] })).toEqual(true);
+  });
 });
 
 describe('getCursor()', () => {
@@ -253,6 +257,10 @@ describe('getCursor()', () => {
 
   test('should return falsy value if there are not any popovers and hasOnClick is not false', () => {
     expect(getCursor([])).toBeFalsy();
+  });
+
+  test('should return pointer object if chartActionBars is non-empty', () => {
+    expect(getCursor([], undefined, [{}])).toEqual({ value: 'pointer' });
   });
 });
 

@@ -104,6 +104,18 @@ describe('getLineHoverMarks()', () => {
       )
     ).toHaveLength(6);
   });
+  test('should return 6 marks if an action bar is present', () => {
+    expect(
+      getLineHoverMarks(
+        {
+          ...defaultLineMarkOptions,
+          isHighlightedByDimension: true,
+          chartActionBars: [{}],
+        },
+        'line0_facet'
+      )
+    ).toHaveLength(6);
+  });
   test('should have opacity of 0 if a selected item exists', () => {
     const marks = getLineHoverMarks(
       { ...defaultLineMarkOptions, isHighlightedByDimension: true, chartPopovers: [{}] },

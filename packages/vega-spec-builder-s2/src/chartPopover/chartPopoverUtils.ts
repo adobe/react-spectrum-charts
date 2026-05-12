@@ -80,6 +80,17 @@ export const addPopoverData = (data: Data[], markOptions: PopoverParentOptions, 
       data.push(getMarkSelectedData(markName));
     }
   }
+
+  // ChartActionBar needs the same _selectedData dataset as a popover (item-level selection)
+  // but doesn't use chartPopovers — add it when action bars are present and popovers are absent.
+  const chartActionBars = 'chartActionBars' in markOptions ? markOptions.chartActionBars : undefined;
+  if (chartActionBars?.length && !popovers.length && addHighlightedData) {
+    const { name: markName, idKey } = markOptions;
+    const filteredTable = getFilteredTableData(data);
+    if (!filteredTable.transform) filteredTable.transform = [];
+    filteredTable.transform.push(getGroupIdTransform([idKey], markName));
+    data.push(getMarkSelectedData(markName));
+  }
 };
 
 /**

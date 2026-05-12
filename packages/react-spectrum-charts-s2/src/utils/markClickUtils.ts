@@ -35,6 +35,7 @@ export interface GetOnMarkClickCallbackArgs {
   legendHasPopover?: boolean;
   onLegendClick?: (seriesName: string) => void;
   trigger: 'click' | 'contextmenu';
+  markHasActionBar?: boolean;
   markHasPopover?: boolean;
 }
 
@@ -59,7 +60,7 @@ export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEv
       handleLegendItemClick(item, args);
       return;
     }
-    if (args.markHasPopover) {
+    if (args.markHasPopover || args.markHasActionBar) {
       handleMarkClick(item, args);
     }
   };
@@ -81,6 +82,7 @@ const handleMarkClick = (
   selectedDataBounds.current = getItemBounds(item);
   selectedDataName.current = itemName;
   triggerPopover(chartId, itemName, trigger);
+  triggerActionBar(chartId, itemName, trigger);
 };
 
 const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
@@ -90,6 +92,11 @@ const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 
       `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
     ) as HTMLButtonElement
   )?.click();
+};
+
+const triggerActionBar = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
+  if (!itemName || trigger !== 'click') return;
+  (document.querySelector(`#${chartId} > div > #${itemName}-actionbar-button`) as HTMLButtonElement)?.click();
 };
 
 /**

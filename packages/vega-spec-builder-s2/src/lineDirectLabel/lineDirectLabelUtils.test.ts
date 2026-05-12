@@ -29,6 +29,7 @@ const asSourceData = (data: Data): SourceData => data as SourceData;
 const getTransforms = (data: Data) => asSourceData(data).transform ?? [];
 
 const defaultLineOptions: LineSpecOptions = {
+	chartActionBars: [],
 	chartPopovers: [],
 	chartTooltips: [],
 	color: DEFAULT_COLOR,

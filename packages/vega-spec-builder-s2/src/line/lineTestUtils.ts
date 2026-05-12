@@ -34,6 +34,7 @@ export const defaultLineMarkOptions: LineMarkOptions = {
 };
 
 export const defaultLineOptions: LineSpecOptions = {
+  chartActionBars: [],
   chartPopovers: [],
   chartTooltips: [],
   name: 'line0',

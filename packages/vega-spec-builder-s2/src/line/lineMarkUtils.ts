@@ -36,6 +36,7 @@ import {
   getStrokeDashProductionRule,
   getVoronoiPath,
   getXProductionRule,
+  hasActionBar,
   hasPopover,
 } from '../marks/markUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
@@ -252,8 +253,8 @@ export const getLineHoverMarks = (
     getHoverRule(dimension, name, scaleType),
     // point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
     getHighlightBackgroundPoint(lineOptions),
-    // if has popover, add selection point
-    ...(hasPopover(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
+    // if has popover or action bar, add selection point
+    ...(hasPopover(lineOptions) || hasActionBar(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
     // hover or select point
     getHighlightPoint(lineOptions),
     // additional point that gets highlighted like the trendline or raw line point

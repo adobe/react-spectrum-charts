@@ -20,6 +20,7 @@ import {
 import { LineSpecOptions, TrendlineSpecOptions } from '../types';
 
 export const defaultLineOptions: LineSpecOptions = {
+  chartActionBars: [],
   chartPopovers: [],
   chartTooltips: [],
   gradient: false,

@@ -10,5 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
+export * from './chartActionBarSpec.types';
 export * from './chartPopoverSpec.types';
 export * from './chartTooltipSpec.types';

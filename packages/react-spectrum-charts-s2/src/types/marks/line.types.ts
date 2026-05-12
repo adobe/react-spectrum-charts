@@ -13,15 +13,15 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
+import { ChartActionBarElement, ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
 
-type LineChildElement = ChartPopoverElement | ChartTooltipElement | LineDirectLabelElement;
+type LineChildElement = ChartActionBarElement | ChartPopoverElement | ChartTooltipElement | LineDirectLabelElement;
 export interface LineProps
   extends Omit<
     LineOptions,
-    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'lineDirectLabels' | 'markType'
+    'chartActionBars' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'lineDirectLabels' | 'markType'
   > {
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */

@@ -50,6 +50,7 @@ const defaultMetricRangeSpecOptions: MetricRangeSpecOptions = {
 };
 
 const defaultLineOptions: LineSpecOptions = {
+  chartActionBars: [],
   chartPopovers: [],
   chartTooltips: [],
   color: DEFAULT_COLOR,

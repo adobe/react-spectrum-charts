@@ -13,6 +13,7 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
+import { ChartActionBar } from '../components/ChartActionBar';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartTooltip } from '../components/ChartTooltip';
 import { getLineOptions } from './lineAdapter';
@@ -24,6 +25,10 @@ describe('getLineOptions()', () => {
     expect(options.hasOnClick).toBe(false);
     expect(options.chartPopovers).toHaveLength(0);
     expect(options.chartTooltips).toHaveLength(0);
+  });
+  it('should convert action bar children to chartActionBars array', () => {
+    const options = getLineOptions({ children: [createElement(ChartActionBar)] });
+    expect(options.chartActionBars).toHaveLength(1);
   });
   it('should convert popover children to chartPopovers array', () => {
     const options = getLineOptions({ children: [createElement(ChartPopover)] });

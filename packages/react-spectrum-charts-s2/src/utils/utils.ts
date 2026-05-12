@@ -30,6 +30,7 @@ import {
   AxisThumbnail,
   Bar,
   BarDirectLabel,
+  ChartActionBar,
   ChartPopover,
   ChartTooltip,
   Legend,
@@ -44,6 +45,7 @@ import {
   AxisElement,
   BarAnnotationElement,
   BarElement,
+  ChartActionBarElement,
   ChartChildElement,
   ChartElement,
   ChartPopoverElement,
@@ -60,6 +62,7 @@ import {
 
 type MarkChildElement =
   | BarAnnotationElement
+  | ChartActionBarElement
   | ChartPopoverElement
   | ChartTooltipElement
   | DonutSummaryElement
@@ -110,6 +113,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     AxisThumbnail.displayName,
     Bar.displayName,
     BarDirectLabel.displayName,
+    ChartActionBar.displayName,
     ChartPopover.displayName,
     ChartTooltip.displayName,
     Donut.displayName,
@@ -146,6 +150,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 
 export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
   const markChildDisplayNames = new Set([
+    ChartActionBar.displayName,
     ChartPopover.displayName,
     ChartTooltip.displayName,
     DonutSummary.displayName,
@@ -186,7 +191,7 @@ export const toggleStringArrayValue = (target: string[], value: string): string[
 // traverses the children to find the first element instance of the proivded type
 export function getElement(
   element: ReactNode | (() => void),
-  type: typeof Axis | typeof Bar | typeof ChartPopover | typeof ChartTooltip | typeof Legend | typeof Line
+  type: typeof Axis | typeof Bar | typeof ChartActionBar | typeof ChartPopover | typeof ChartTooltip | typeof Legend | typeof Line
 ): ChartElement | RscElement | undefined {
   // if the element is undefined or 'type' doesn't exist on the element, stop searching
   if (!element || typeof element !== 'object' || !('type' in element) || element.type === Fragment) {
@@ -264,7 +269,7 @@ export const getAllMarkElements = (
  */
 export const getAllElements = (
   target: unknown,
-  source: typeof Axis | typeof Bar | typeof ChartPopover | typeof ChartTooltip | typeof Legend | typeof Line,
+  source: typeof Axis | typeof Bar | typeof ChartActionBar | typeof ChartPopover | typeof ChartTooltip | typeof Legend | typeof Line,
   elements: MappedElement[] = [],
   name: string = '',
   parent?: string
