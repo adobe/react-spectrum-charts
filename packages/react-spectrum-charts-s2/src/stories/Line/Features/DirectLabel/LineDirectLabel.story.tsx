@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, ChartTooltip, Legend, Line, LineDirectLabel } from '../../../../components';
+import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../../stories/data/data';
 import { bindWithProps } from '../../../../test-utils';
@@ -55,7 +55,7 @@ const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactEleme
   );
 };
 
-const LineDirectLabelWithTooltipStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+const LineDirectLabelWithInspectStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps} debug>
@@ -63,7 +63,7 @@ const LineDirectLabelWithTooltipStory: StoryFn<typeof LineDirectLabel> = (args):
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time">
         <LineDirectLabel {...args} />
-        <ChartTooltip>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartTooltip>
+        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
       </Line>
       <Legend highlight />
     </Chart>
@@ -93,8 +93,8 @@ DirectLabelValueLast.args = { value: 'last' };
 const DirectLabelValueAverage = bindWithProps(LineDirectLabelStory);
 DirectLabelValueAverage.args = { value: 'average' };
 
-const DirectLabelWithTooltip = bindWithProps(LineDirectLabelWithTooltipStory);
-DirectLabelWithTooltip.args = { value: 'last' };
+const DirectLabelWithInspect = bindWithProps(LineDirectLabelWithInspectStory);
+DirectLabelWithInspect.args = { value: 'last' };
 
 const DirectLabelTwoSeries = bindWithProps(LineDirectLabelTwoSeriesStory);
 DirectLabelTwoSeries.args = { value: 'last' };
@@ -102,4 +102,4 @@ DirectLabelTwoSeries.args = { value: 'last' };
 const DirectLabelPositionStart = bindWithProps(LineDirectLabelStory);
 DirectLabelPositionStart.args = { value: 'series', position: 'start' };
 
-export { DirectLabelDefault, DirectLabelValueLast, DirectLabelValueAverage, DirectLabelWithTooltip, DirectLabelTwoSeries, DirectLabelPositionStart };
+export { DirectLabelDefault, DirectLabelValueLast, DirectLabelValueAverage, DirectLabelWithInspect, DirectLabelTwoSeries, DirectLabelPositionStart };

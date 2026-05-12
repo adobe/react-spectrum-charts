@@ -19,7 +19,7 @@ import {
   SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 
-import { isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
+import { isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
 import { LineSpecOptions } from '../types';
 

@@ -39,7 +39,7 @@ const defaultMetricRangeOptions: MetricRangeOptions = {
 };
 
 const defaultMetricRangeSpecOptions: MetricRangeSpecOptions = {
-  chartTooltips: [],
+  chartInspects: [],
   lineType: 'shortDash',
   lineWidth: 'S',
   rangeOpacity: 0.2,
@@ -51,7 +51,7 @@ const defaultMetricRangeSpecOptions: MetricRangeSpecOptions = {
 
 const defaultLineOptions: LineSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   color: DEFAULT_COLOR,
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimension: DEFAULT_TIME_DIMENSION,
@@ -128,7 +128,7 @@ const basicMetricRangeMarks = [
 describe('applyMetricRangePropDefaults', () => {
   test('applies defaults', () => {
     expect(applyMetricRangeOptionDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)).toEqual({
-      chartTooltips: [],
+      chartInspects: [],
       displayOnHover: false,
       lineType: 'dashed',
       lineWidth: 'S',
@@ -155,7 +155,7 @@ describe('applyMetricRangePropDefaults', () => {
         0
       )
     ).toEqual({
-      chartTooltips: [],
+      chartInspects: [],
       displayOnHover: true,
       lineType: 'solid',
       lineWidth: 'L',

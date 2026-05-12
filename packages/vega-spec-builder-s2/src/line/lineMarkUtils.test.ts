@@ -119,11 +119,11 @@ describe('getLineOpacity()', () => {
     expect(opacityRule).toEqual([{ value: 1 }]);
   });
 
-  test('should include hover rules if line has a tooltip', () => {
+  test('should include hover rules if line has an inspect', () => {
     const opacityRule = getLineOpacity({
       ...defaultLineMarkOptions,
       interactiveMarkName: 'line0',
-      chartTooltips: [{}],
+      chartInspects: [{}],
     });
     expect(opacityRule).toEqual([
       {
@@ -180,7 +180,7 @@ describe('getLineOpacity()', () => {
     const opacityRule = getLineOpacity({
       ...defaultLineMarkOptions,
       interactiveMarkName: 'line0',
-      chartTooltips: [{}],
+      chartInspects: [{}],
       isHighlightedByGroup: true,
     });
     expect(opacityRule).toHaveLength(4);
@@ -252,7 +252,7 @@ describe('getLineGradientMark()', () => {
 
   test('should include hover opacity rules when interactive', () => {
     const gradientMark = getLineGradientMark(
-      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartTooltips: [{}] },
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] },
       'line0_facet'
     );
     const opacity = gradientMark.encode?.update?.opacity as unknown[];

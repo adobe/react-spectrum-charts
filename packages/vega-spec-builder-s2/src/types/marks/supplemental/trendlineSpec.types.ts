@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ColorScheme } from '../../chartSpec.types';
-import { ChartTooltipOptions } from '../../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../../dialogs/chartInspectSpec.types';
 import { ColorFacet, LineType, LineWidth, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types';
 import { SpectrumColor } from '../../spectrumVizColor.types';
 import { TrendlineAnnotationOptions } from './trendlineAnnotationSpec.types';
@@ -52,7 +52,7 @@ export interface TrendlineOptions {
   displayOnHover?: boolean;
   /** Data points where these keys have truthy values will not be included in the trendline calculation */
   excludeDataKeys?: string[];
-  /** If there is a tooltip on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
+  /** If there is an inspect on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
   highlightRawPoint?: boolean;
   /**
    * If true, the initial data points of the trendline that were calculated from fewer data points than the
@@ -72,12 +72,12 @@ export interface TrendlineOptions {
   orientation?: Orientation;
 
   // children
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   trendlineAnnotations?: TrendlineAnnotationOptions[];
 }
 
 type TrendlineOptionsWithDefaults =
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'dimensionExtent'
   | 'dimensionRange'
   | 'displayOnHover'

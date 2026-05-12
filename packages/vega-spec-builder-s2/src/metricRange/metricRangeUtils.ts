@@ -37,7 +37,7 @@ export const getMetricRanges = (markOptions: MetricRangeParentOptions): MetricRa
 
 export const applyMetricRangeOptionDefaults = (
   {
-    chartTooltips = [],
+    chartInspects = [],
     lineType = 'dashed',
     lineWidth = 'S',
     rangeOpacity = 0.2,
@@ -48,7 +48,7 @@ export const applyMetricRangeOptionDefaults = (
   markName: string,
   index: number
 ): MetricRangeSpecOptions => ({
-  chartTooltips,
+  chartInspects,
   lineType,
   lineWidth,
   name: `${markName}MetricRange${index}`,

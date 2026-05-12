@@ -20,7 +20,7 @@ import {
   getLineWidthProductionRule,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
-  hasTooltip,
+  hasInspect,
 } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
@@ -65,7 +65,7 @@ export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMa
     marks.push(...getTrendlineAnnotationMarks(trendlineOptions, markOptions.name));
   }
 
-  if (trendlines.some((trendline) => hasTooltip(trendline))) {
+  if (trendlines.some((trendline) => hasInspect(trendline))) {
     marks.push(
       getTrendlineHoverMarks(
         markOptions,
@@ -312,7 +312,7 @@ const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRa
   const trendlines = getTrendlines(markOptions);
   const trendlineHoverOptions = getLineMarkOptions(markOptions, trendlines[0], {
     name: `${name}Trendline`,
-    chartTooltips: trendlines.flatMap((trendline) => trendline.chartTooltips),
+    chartInspects: trendlines.flatMap((trendline) => trendline.chartInspects),
     metric: TRENDLINE_VALUE,
   });
 

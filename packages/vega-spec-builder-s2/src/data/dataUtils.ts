@@ -20,7 +20,7 @@ import {
   TABLE,
 } from '@spectrum-charts/constants';
 
-import { ChartTooltipOptions } from '../types';
+import { ChartInspectOptions } from '../types';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
   if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
@@ -81,15 +81,15 @@ export const getSeriesIdTransform = (facets: string[]): FormulaTransform[] => {
  * @param children
  * @returns spec data that filters out items where the `excludeDataKey` is true
  */
-export const getFilteredTooltipData = (chartTooltips: ChartTooltipOptions[]) => {
-  const excludeDataKeys = chartTooltips[0]?.excludeDataKeys;
+export const getFilteredInspectData = (chartInspects: ChartInspectOptions[]) => {
+  const excludeDataKeys = chartInspects[0]?.excludeDataKeys;
   const transform: { type: 'filter'; expr: string }[] | undefined = excludeDataKeys?.map((excludeDataKey) => ({
     type: 'filter',
     expr: `!datum.${excludeDataKey}`,
   }));
 
   return {
-    name: `${FILTERED_TABLE}ForTooltip`,
+    name: `${FILTERED_TABLE}ForInspect`,
     source: FILTERED_TABLE,
     transform,
   };

@@ -205,7 +205,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
             barAnnotations: [],
             barDirectLabels: [],
             chartPopovers: [],
-            chartTooltips: [],
+            chartInspects: [],
             dimension: 'browser',
             hasOnClick: false,
             markType: 'bar',
@@ -252,7 +252,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
         marks: [
           {
             chartPopovers: [],
-            chartTooltips: [],
+            chartInspects: [],
             color: 'series',
             dimension: 'datetime',
             hasOnClick: false,

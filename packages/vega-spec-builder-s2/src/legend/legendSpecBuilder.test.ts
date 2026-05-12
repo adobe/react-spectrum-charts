@@ -63,7 +63,7 @@ const hiddenSeriesLabelUpdateEncoding = {
     },
   ],
 };
-const defaultTooltipLegendEncoding: LegendEncode = {
+const defaultDescriptionLegendEncoding: LegendEncode = {
   entries: {
     name: 'legend0_legendEntry',
     interactive: true,
@@ -143,7 +143,7 @@ describe('addLegend()', () => {
         ...defaultSpec,
         data: [defaultLegendAggregateData],
         scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-        legends: [{ ...defaultLegend, encode: defaultTooltipLegendEncoding }],
+        legends: [{ ...defaultLegend, encode: defaultDescriptionLegendEncoding }],
       });
     });
 
@@ -274,7 +274,7 @@ describe('addLegend()', () => {
         {
           ...defaultLegend,
           labelLimit: 300,
-          encode: defaultTooltipLegendEncoding,
+          encode: defaultDescriptionLegendEncoding,
           columns: { signal: 'max(1, floor(width / 336))' },
         },
       ]);

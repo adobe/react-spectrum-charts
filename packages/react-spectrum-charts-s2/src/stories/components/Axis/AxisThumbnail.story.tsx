@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, AxisThumbnail, Bar, ChartPopover, ChartTooltip } from '../../../components';
+import { Axis, AxisThumbnail, Bar, ChartPopover, ChartInspect } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { AxisThumbnailProps } from '../../../types';
@@ -99,7 +99,7 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
   return (
     <Chart {...chartProps}>
       <Bar color="series">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
       <Axis position="bottom" baseline>

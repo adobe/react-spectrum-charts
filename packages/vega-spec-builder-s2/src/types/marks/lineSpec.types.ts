@@ -13,7 +13,7 @@ import { INTERACTION_MODE } from '@spectrum-charts/constants';
 
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
   ColorFacet,
   FacetRef,
@@ -43,7 +43,7 @@ export interface LineOptions {
   dimension?: string;
   /** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */
   hasOnClick?: boolean;
-  /** `true` if LineProps has an onContextMenu callback. Ensures interactive marks are generated even without tooltip/click. */
+  /** `true` if LineProps has an onContextMenu callback. Ensures interactive marks are generated even without inspect/click. */
   hasOnContextMenu?: boolean;
   /** Line type or key in the data that is used as the line type facet */
   lineType?: LineTypeFacet;
@@ -73,7 +73,7 @@ export interface LineOptions {
 
   // children
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   lineDirectLabels?: LineDirectLabelOptions[];
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
@@ -81,7 +81,7 @@ export interface LineOptions {
 
 type LineOptionsWithDefaults =
   | 'chartPopovers'
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'color'
   | 'dimension'
   | 'gradient'

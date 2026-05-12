@@ -18,15 +18,15 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
 import { Bar, Line } from '../../../components';
-import { ChartTooltip } from '../../../components/ChartTooltip';
+import { ChartInspect } from '../../../components/ChartInspect';
 import useChartProps from '../../../hooks/useChartProps';
 import { browserData } from '../../../stories/data/data';
 import { formatTimestamp } from '../../../stories/storyUtils';
 import { bindWithProps } from '../../../test-utils';
 
 export default {
-  title: 'React Spectrum Charts 2/Chart Tooltip/Features',
-  component: ChartTooltip,
+  title: 'React Spectrum Charts 2/Chart Inspect/Features',
+  component: ChartInspect,
   argTypes: {
     children: {
       description: '`(datum) => React.ReactElement`',
@@ -38,25 +38,26 @@ export default {
 };
 
 const barData = browserData.map((datum) =>
-  datum.category === 'Chrome' ? { ...datum, excludeFromTooltip: true } : datum
+  datum.category === 'Chrome' ? { ...datum, excludeFromInspect: true } : datum
 );
 
-const StackedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+const StackedBarInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600 });
   return (
     <Chart {...chartProps}>
       <Bar color="series">
-        <ChartTooltip {...args} />
+        <ChartInspect {...args} />
       </Bar>
     </Chart>
   );
 };
-const DodgedBarTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+
+const DodgedBarInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600 });
   return (
     <Chart {...chartProps}>
       <Bar type="dodged" color="series">
-        <ChartTooltip {...args} />
+        <ChartInspect {...args} />
       </Bar>
     </Chart>
   );
@@ -80,26 +81,26 @@ const lineData = [
 ];
 
 const disabledLineData = lineData.map((datum) =>
-  datum.series === 'Add Fallout' ? { ...datum, excludeFromTooltip: true } : datum
+  datum.series === 'Add Fallout' ? { ...datum, excludeFromInspect: true } : datum
 );
 
-const LineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+const LineInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement => {
   const chartProps = useChartProps({ data: lineData, width: 600 });
   return (
     <Chart {...chartProps}>
       <Line color="series">
-        <ChartTooltip {...args} />
+        <ChartInspect {...args} />
       </Line>
     </Chart>
   );
 };
 
-const DisabledSeriesLineTooltipStory: StoryFn<typeof ChartTooltip> = (args): ReactElement => {
+const DisabledSeriesLineInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement => {
   const chartProps = useChartProps({ data: disabledLineData, width: 600, colors: ['gray-300', ...s2Categorical12] });
   return (
     <Chart {...chartProps}>
       <Line color="series">
-        <ChartTooltip {...args} />
+        <ChartInspect {...args} />
       </Line>
     </Chart>
   );
@@ -114,10 +115,10 @@ interface LineData extends Datum {
   category?: string;
 }
 
-const StackedBarChart = bindWithProps(StackedBarTooltipStory);
+const StackedBarChart = bindWithProps(StackedBarInspectStory);
 StackedBarChart.args = {
   children: (datum: LineData) => (
-    <div className="bar-tooltip">
+    <div className="bar-inspect">
       <div>Operating system: {datum.series}</div>
       <div>Browser: {datum.category}</div>
       <div>Users: {datum.value}</div>
@@ -125,10 +126,10 @@ StackedBarChart.args = {
   ),
 };
 
-const DodgedBarChart = bindWithProps(DodgedBarTooltipStory);
+const DodgedBarChart = bindWithProps(DodgedBarInspectStory);
 DodgedBarChart.args = {
   children: (datum: LineData) => (
-    <div className="bar-tooltip">
+    <div className="bar-inspect">
       <div>Operating system: {datum.series}</div>
       <div>Browser: {datum.category}</div>
       <div>Users: {datum.value}</div>
@@ -136,10 +137,10 @@ DodgedBarChart.args = {
   ),
 };
 
-const LineChart = bindWithProps(LineTooltipStory);
+const LineChart = bindWithProps(LineInspectStory);
 LineChart.args = {
   children: (datum: LineData) => (
-    <div className="bar-tooltip">
+    <div className="bar-inspect">
       <div>{formatTimestamp(datum.datetime as number)}</div>
       <div>Event: {datum.series}</div>
       <div>Count: {Number(datum.value).toLocaleString()}</div>
@@ -148,17 +149,17 @@ LineChart.args = {
   ),
 };
 
-const DisabledSeriesLineChart = bindWithProps(DisabledSeriesLineTooltipStory);
+const DisabledSeriesLineChart = bindWithProps(DisabledSeriesLineInspectStory);
 DisabledSeriesLineChart.args = {
   children: (datum: LineData) => (
-    <div className="bar-tooltip">
+    <div className="bar-inspect">
       <div>{formatTimestamp(datum.datetime as number)}</div>
       <div>Event: {datum.series}</div>
       <div>Count: {Number(datum.value).toLocaleString()}</div>
       <div>Users: {Number(datum.users).toLocaleString()}</div>
     </div>
   ),
-  excludeDataKeys: ['excludeFromTooltip'],
+  excludeDataKeys: ['excludeFromInspect'],
 };
 
 export { DisabledSeriesLineChart, DodgedBarChart, LineChart, StackedBarChart };

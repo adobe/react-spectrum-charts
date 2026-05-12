@@ -88,11 +88,11 @@ describe('addTrendlineData()', () => {
     });
   });
 
-  test('should add data sources for hover interactiontions if ChartTooltip exists', () => {
+  test('should add data sources for hover interactions if ChartInspect exists', () => {
     const trendlineData = getDefaultData();
     addTrendlineData(trendlineData, {
       ...defaultLineOptions,
-      trendlines: [{ chartTooltips: [{}] }],
+      trendlines: [{ chartInspects: [{}] }],
     });
     expect(trendlineData).toHaveLength(7);
     expect(trendlineData[5]).toHaveProperty('name', 'line0_allTrendlineData');
@@ -110,12 +110,12 @@ describe('addTrendlineData()', () => {
     expect(trendlineData[2]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
   });
 
-  test('should add _params and _data if doing a regression method and there is a tooltip on the trendline', () => {
+  test('should add _params and _data if doing a regression method and there is an inspect on the trendline', () => {
     const trendlineData = getDefaultData();
 
     addTrendlineData(trendlineData, {
       ...defaultLineOptions,
-      trendlines: [{ method: 'linear', chartTooltips: [{}] }],
+      trendlines: [{ method: 'linear', chartInspects: [{}] }],
     });
     expect(trendlineData).toHaveLength(7);
     expect(trendlineData[3]).toHaveProperty('name', 'line0Trendline0_params');
@@ -288,7 +288,7 @@ describe('getAggregateTrendlineData()', () => {
     expect(data[0]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
   });
   test('should return two data sources if there are interactive children', () => {
-    const data = getAggregateTrendlineData(defaultLineOptions, { ...defaultTrendlineOptions, chartTooltips: [{}] }, [
+    const data = getAggregateTrendlineData(defaultLineOptions, { ...defaultTrendlineOptions, chartInspects: [{}] }, [
       DEFAULT_COLOR,
     ]);
     expect(data).toHaveLength(2);
@@ -303,7 +303,7 @@ describe('getRegressionTrendlineData()', () => {
     expect(data[0]).toHaveProperty('name', 'line0Trendline0_highResolutionData');
   });
   test('should return three data sources if there are interactive children', () => {
-    const data = getRegressionTrendlineData(defaultLineOptions, { ...defaultTrendlineOptions, chartTooltips: [{}] }, [
+    const data = getRegressionTrendlineData(defaultLineOptions, { ...defaultTrendlineOptions, chartInspects: [{}] }, [
       DEFAULT_COLOR,
     ]);
     expect(data).toHaveLength(3);

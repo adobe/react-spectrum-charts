@@ -54,10 +54,10 @@ describe('addData', () => {
 });
 
 describe('addSignal', () => {
-  test('should add hover events when tooltip is present', () => {
+  test('should add hover events when inspect is present', () => {
     const signals = addSignals(defaultSignals, {
       ...customVennOptions,
-      chartTooltips: [{}],
+      chartInspects: [{}],
     });
 
     expect(signals).toHaveLength(defaultSignals.length + 1);

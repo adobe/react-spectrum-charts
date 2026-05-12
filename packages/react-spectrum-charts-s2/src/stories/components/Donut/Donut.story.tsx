@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { ChartPopover, ChartTooltip, Legend } from '../../../components';
+import { ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../rc';
 import { bindWithProps } from '../../../test-utils';
@@ -94,7 +94,7 @@ const dialogContent = (datum: Datum) => {
 
 // tooltip and popover
 const interactiveChildren = [
-  <ChartTooltip key={0}>{dialogContent}</ChartTooltip>,
+  <ChartInspect key={0}>{dialogContent}</ChartInspect>,
   <ChartPopover width="auto" key={1}>
     {dialogContent}
   </ChartPopover>,

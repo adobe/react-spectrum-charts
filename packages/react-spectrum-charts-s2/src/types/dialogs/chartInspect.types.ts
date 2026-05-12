@@ -11,13 +11,13 @@
  */
 import { JSXElementConstructor, ReactElement, ReactNode } from 'react';
 
-import { ChartTooltipOptions, Datum } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartInspectOptions, Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-export type ChartTooltipElement = ReactElement<ChartTooltipProps, JSXElementConstructor<ChartTooltipProps>>;
+export type ChartInspectElement = ReactElement<ChartInspectProps, JSXElementConstructor<ChartInspectProps>>;
 
-export type TooltipHandler = (datum: Datum) => ReactNode;
+export type InspectHandler = (datum: Datum) => ReactNode;
 
-export interface ChartTooltipProps extends ChartTooltipOptions {
-  /** Callback that displays the tooltip content */
-  children?: TooltipHandler;
+export interface ChartInspectProps extends ChartInspectOptions {
+  /** Callback that displays the inspect panel content */
+  children?: InspectHandler;
 }

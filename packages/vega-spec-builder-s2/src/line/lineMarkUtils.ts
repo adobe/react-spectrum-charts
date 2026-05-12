@@ -287,12 +287,12 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
 const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): Mark[] => {
   const { interactionMode = DEFAULT_INTERACTION_MODE } = lineOptions;
 
-  const tooltipMarks = {
+  const inspectMarks = {
     nearest: getVoronoiMarks,
     item: getItemHoverMarks,
   };
 
-  return tooltipMarks[interactionMode](lineOptions, dataSource);
+  return inspectMarks[interactionMode](lineOptions, dataSource);
 };
 
 const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
@@ -335,11 +335,11 @@ const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: strin
 };
 
 const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
-  const { chartTooltips = [], dimension, metric, name, scaleType } = lineOptions;
+  const { chartInspects = [], dimension, metric, name, scaleType } = lineOptions;
 
   return [
     // area around item that triggers hover
-    getItemHoverArea(chartTooltips, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
+    getItemHoverArea(chartInspects, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
   ];
 };
 

@@ -118,9 +118,9 @@ StackedBarWithUTCDatetimeFormat.args = {
   dimensionDataType: 'time',
 };
 
-const TooltipOnDimensionArea = bindWithProps(DimensionAreaStory);
-TooltipOnDimensionArea.args = {
+const InspectOnDimensionArea = bindWithProps(DimensionAreaStory);
+InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
-export { Basic, NegativeStack, OnClick, StackedBarWithUTCDatetimeFormat, TooltipOnDimensionArea, WithBarLabels };
+export { Basic, NegativeStack, OnClick, StackedBarWithUTCDatetimeFormat, InspectOnDimensionArea, WithBarLabels };

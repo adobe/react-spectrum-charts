@@ -11,7 +11,7 @@
  */
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
-import { ChartTooltip } from '../../../components';
+import { ChartInspect } from '../../../components';
 import {
   allElementsHaveAttributeValue,
   findAllMarksByGroupName,
@@ -25,12 +25,12 @@ import {
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { DodgedBarChart, LineChart, StackedBarChart } from './ChartTooltip.story';
+import { DodgedBarChart, LineChart, StackedBarChart } from './ChartInspect.story';
 
-describe('ChartTooltip', () => {
-  // ChartTooltip is not a real React component. This is test just provides test coverage for sonarqube
-  test('ChartTooltip pseudo element', () => {
-    render(<ChartTooltip />);
+describe('ChartInspect', () => {
+  // ChartInspect is not a real React component. This test provides coverage for sonarqube.
+  test('ChartInspect pseudo element', () => {
+    render(<ChartInspect />);
   });
 
   test('StackedBarChart renders properly', async () => {
@@ -38,65 +38,55 @@ describe('ChartTooltip', () => {
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
-    // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
 
-    // hover and validate all hover interactions
     await hoverNthElement(bars, 0);
-    const tooltip = await screen.findByTestId('rsc-tooltip');
-    expect(tooltip).toBeInTheDocument();
-    expect(within(tooltip).getByText('Operating system: Windows')).toBeInTheDocument();
+    const inspect = await screen.findByTestId('rsc-tooltip');
+    expect(inspect).toBeInTheDocument();
+    expect(within(inspect).getByText('Operating system: Windows')).toBeInTheDocument();
     expect(bars[1].getAttribute('opacity')).toEqual(`${FADE_FACTOR}`);
 
-    // unhover and validate the highlights go away
     await unhoverNthElement(bars, 0);
     expect(bars[1].getAttribute('opacity')).toEqual('1');
   });
 
   test('Line renders properly and hover works as expected', async () => {
     render(<LineChart {...LineChart.args} />);
-    // validate chart drew
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
-    // get voronoi paths
     const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
 
-    // hover and validate all hover components are visible
     await hoverNthElement(paths, 0);
-    const tooltip = await screen.findByTestId('rsc-tooltip');
-    expect(tooltip).toBeInTheDocument();
-    expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+    const inspect = await screen.findByTestId('rsc-tooltip');
+    expect(inspect).toBeInTheDocument();
+    expect(within(inspect).getByText('Nov 8')).toBeInTheDocument();
 
     const highlightRule = await findMarksByGroupName(chart, 'line0_hoverRule', 'line');
     expect(highlightRule).toBeInTheDocument();
     const highlightPoint = await findMarksByGroupName(chart, 'line0_point_highlight');
     expect(highlightPoint).toBeInTheDocument();
 
-    // unhover and validate the highlights go away
     await unhoverNthElement(paths, 0);
     expect(highlightRule).not.toBeInTheDocument();
     expect(highlightPoint).not.toBeInTheDocument();
   });
 
-  test('Dodged bar tooltip opens on hover and bar is highlighted correctly', async () => {
+  test('Dodged bar inspect opens on hover and bar is highlighted correctly', async () => {
     render(<DodgedBarChart {...DodgedBarChart.args} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
     const bars = getAllMarksByGroupName(chart, 'bar0');
 
-    // clicking the bar should open the popover
     await hoverNthElement(bars, 4);
-    const tooltip = await screen.findByTestId('rsc-tooltip');
-    expect(tooltip).toBeInTheDocument();
+    const inspect = await screen.findByTestId('rsc-tooltip');
+    expect(inspect).toBeInTheDocument();
 
-    // check the content of the popover
-    expect(within(tooltip).getByText('Operating system: Mac')).toBeInTheDocument();
-    expect(within(tooltip).getByText('Browser: Firefox')).toBeInTheDocument();
-    expect(within(tooltip).getByText('Users: 3')).toBeInTheDocument();
+    expect(within(inspect).getByText('Operating system: Mac')).toBeInTheDocument();
+    expect(within(inspect).getByText('Browser: Firefox')).toBeInTheDocument();
+    expect(within(inspect).getByText('Users: 3')).toBeInTheDocument();
 
-    // validate the highlight visuals are present
     expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     expect(bars[4]).toHaveAttribute('opacity', '1');
 

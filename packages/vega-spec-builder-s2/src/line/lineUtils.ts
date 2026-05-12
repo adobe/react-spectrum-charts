@@ -12,7 +12,7 @@
 import {
   BarAnnotationOptions,
   ChartPopoverOptions,
-  ChartTooltipOptions,
+  ChartInspectOptions,
   ColorFacet,
   ColorScheme,
   DonutSummaryOptions,
@@ -48,7 +48,7 @@ export const isDualMetricAxis = (options: { dualMetricAxis?: boolean }): boolean
 export interface LineMarkOptions {
   barAnnotations?: BarAnnotationOptions[];
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   color: ColorFacet;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];

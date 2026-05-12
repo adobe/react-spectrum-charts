@@ -13,7 +13,7 @@ import { FC, useMemo, type ReactElement } from 'react';
 
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
-import { Position, Options as TooltipOptions } from 'vega-tooltip';
+import { Position, Options as VegaTooltipOptions } from 'vega-tooltip';
 
 function renderToHtml(element: ReactElement): string {
   const container = document.createElement('div');
@@ -33,15 +33,15 @@ import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
 import { debugLog } from '../utils';
 import useLegend from './useLegend';
-import useTooltips, { type TooltipDetail } from './useTooltips';
+import useChartInspects, { type InspectDetail } from './useChartInspects';
 
-interface LegendTooltipProps {
+interface LegendInspectProps {
   value: { index: number };
   descriptions: LegendDescription[];
   domain: string[];
 }
 
-const getLegendTooltipMarkup = (
+const getLegendInspectMarkup = (
   value: Datum,
   legendDescriptions: LegendDescription[] | undefined,
   chartView: { current?: { scale: (name: string) => { domain: () => string[] } } } | null,
@@ -55,7 +55,7 @@ const getLegendTooltipMarkup = (
       contents: legendDescriptions,
     });
     return renderToHtml(
-      <LegendTooltip
+      <LegendInspect
         value={{ index }}
         descriptions={legendDescriptions}
         domain={chartView?.current?.scale('legend0Entries').domain() ?? []}
@@ -64,9 +64,9 @@ const getLegendTooltipMarkup = (
   }
 };
 
-const getDimensionAreaTooltipMarkup = (
+const getDimensionAreaInspectMarkup = (
   value: Datum,
-  tooltips: TooltipDetail[],
+  inspects: InspectDetail[],
   chartView: { current?: { data: (name: string) => Datum[] } } | null
 ): string | undefined => {
   const componentName = value[COMPONENT_NAME];
@@ -74,9 +74,9 @@ const getDimensionAreaTooltipMarkup = (
     return;
   }
 
-  const tooltipName = componentName.replace(`_${DIMENSION_HOVER_AREA}`, '');
-  const tooltip = tooltips.find((t) => t.name === tooltipName && t.targets?.includes('dimensionArea'));
-  if (!tooltip) return '';
+  const inspectName = componentName.replace(`_${DIMENSION_HOVER_AREA}`, '');
+  const inspect = inspects.find((t) => t.name === inspectName && t.targets?.includes('dimensionArea'));
+  if (!inspect) return '';
 
   const dimension = value.dimension;
 
@@ -85,70 +85,70 @@ const getDimensionAreaTooltipMarkup = (
 
   return renderToHtml(
     <div className="rsc-tooltip" data-testid="rsc-tooltip">
-      {tooltip.callback(value)}
+      {inspect.callback(value)}
     </div>
   );
 };
 
-const useTooltipsInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
+const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
   const { debug, colorScheme, idKey, tooltipAnchor, tooltipPlacement } = props;
-  const tooltips = useTooltips(sanitizedChildren);
+  const inspects = useChartInspects(sanitizedChildren);
   const { descriptions: legendDescriptions } = useLegend(sanitizedChildren);
 
-  const tooltipOptions = useMemo(() => {
-    const options = getTooltipOptions(colorScheme, tooltipAnchor, tooltipPlacement);
+  const inspectOptions = useMemo(() => {
+    const options = getInspectOptions(colorScheme, tooltipAnchor, tooltipPlacement);
 
-    if (tooltips.length || legendDescriptions) {
+    if (inspects.length || legendDescriptions) {
       options.formatTooltip = (value) => {
-      debugLog(debug, { title: 'Tooltip datum', contents: value });
+        debugLog(debug, { title: 'Inspect datum', contents: value });
 
-      const legendTooltip = getLegendTooltipMarkup(value, legendDescriptions, chartView, debug);
-      if (legendTooltip) return legendTooltip;
+        const legendInspect = getLegendInspectMarkup(value, legendDescriptions, chartView, debug);
+        if (legendInspect) return legendInspect;
 
-      const dimensionAreaTooltip = getDimensionAreaTooltipMarkup(value, tooltips, chartView);
-      if (dimensionAreaTooltip !== undefined) return dimensionAreaTooltip;
+        const dimensionAreaInspect = getDimensionAreaInspectMarkup(value, inspects, chartView);
+        if (dimensionAreaInspect !== undefined) return dimensionAreaInspect;
 
-      // get the correct tooltip to render based on the hovered item
-      const tooltip = tooltips.find((t) => t.name === value[COMPONENT_NAME]);
-      if (tooltip?.callback && !('index' in value)) {
-        if (controlledHoveredIdSignal.current) {
-          chartView.current?.signal(controlledHoveredIdSignal.current.name, value?.[idKey] ?? null);
-        }
-        if (controlledHoveredGroupSignal.current) {
-          const key = Object.keys(value).find((k) => k.endsWith(GROUP_ID));
-          if (key) {
-            chartView.current?.signal(controlledHoveredGroupSignal.current.name, value[key]);
+        // get the correct inspect to render based on the hovered item
+        const inspect = inspects.find((t) => t.name === value[COMPONENT_NAME]);
+        if (inspect?.callback && !('index' in value)) {
+          if (controlledHoveredIdSignal.current) {
+            chartView.current?.signal(controlledHoveredIdSignal.current.name, value?.[idKey] ?? null);
           }
+          if (controlledHoveredGroupSignal.current) {
+            const key = Object.keys(value).find((k) => k.endsWith(GROUP_ID));
+            if (key) {
+              chartView.current?.signal(controlledHoveredGroupSignal.current.name, value[key]);
+            }
+          }
+          if (inspect.highlightBy && inspect.highlightBy !== 'item') {
+            const tableData = chartView.current?.data(FILTERED_TABLE);
+            const groupId = `${inspect.name}_${GROUP_ID}`;
+            value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
+          }
+          return renderToHtml(
+            <div className="rsc-tooltip" data-testid="rsc-tooltip">
+              {inspect.callback(value)}
+            </div>
+          );
         }
-        if (tooltip.highlightBy && tooltip.highlightBy !== 'item') {
-          const tableData = chartView.current?.data(FILTERED_TABLE);
-          const groupId = `${tooltip.name}_${GROUP_ID}`;
-          value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
-        }
-        return renderToHtml(
-          <div className="rsc-tooltip" data-testid="rsc-tooltip">
-            {tooltip.callback(value)}
-          </div>
-        );
-      }
-      return '';
-    };
-  }
+        return '';
+      };
+    }
 
     return options;
-  }, [colorScheme, tooltipAnchor, tooltipPlacement, tooltips, legendDescriptions, debug, idKey, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
+  }, [colorScheme, tooltipAnchor, tooltipPlacement, inspects, legendDescriptions, debug, idKey, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
 
-  return { tooltipOptions };
+  return { inspectOptions };
 };
 
-export default useTooltipsInteractions;
+export default useChartInspectInteractions;
 
-const getTooltipOptions = (
+const getInspectOptions = (
   colorScheme: ColorScheme,
   tooltipAnchor: TooltipAnchor,
   tooltipPlacement: TooltipPlacement
-): TooltipOptions => {
+): VegaTooltipOptions => {
   const position: Record<'top' | 'bottom' | 'right' | 'left', Position[]> = {
     top: ['top', 'bottom', 'right', 'left', 'top-right', 'top-left', 'bottom-right', 'bottom-left'],
     bottom: ['bottom', 'top', 'right', 'left', 'bottom-right', 'bottom-left', 'top-right', 'top-left'],
@@ -167,7 +167,7 @@ const getTooltipOptions = (
   };
 };
 
-const LegendTooltip: FC<LegendTooltipProps> = ({ value, descriptions, domain }) => {
+const LegendInspect: FC<LegendInspectProps> = ({ value, descriptions, domain }) => {
   const series = domain[value.index];
   const description = descriptions.find((d) => d.seriesName === series);
   if (!description) {

@@ -35,7 +35,7 @@ export const defaultLineMarkOptions: LineMarkOptions = {
 
 export const defaultLineOptions: LineSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   name: 'line0',
   dimension: DEFAULT_TIME_DIMENSION,
   gradient: false,

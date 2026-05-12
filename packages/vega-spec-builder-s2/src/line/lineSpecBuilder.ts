@@ -27,8 +27,8 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
-import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
-import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
+import { addInspectData, addInspectSignals, isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
+import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
@@ -59,7 +59,7 @@ export const addLine = produce<
     spec,
     {
       chartPopovers = [],
-      chartTooltips = [],
+      chartInspects = [],
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_TIME_DIMENSION,
@@ -85,7 +85,7 @@ export const addLine = produce<
     // put options back together now that all defaults are set
     const lineOptions: LineSpecOptions = {
       chartPopovers,
-      chartTooltips,
+      chartInspects,
       color,
       colorScheme,
       dimension,
@@ -98,7 +98,7 @@ export const addLine = produce<
       interactiveMarkName: getInteractiveMarkName(
         {
           chartPopovers,
-          chartTooltips,
+          chartInspects,
           hasOnClick,
           hasOnContextMenu,
           highlightedItem: options.highlightedItem,
@@ -132,21 +132,21 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { chartTooltips, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
+  const { chartInspects, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
     options;
   if (scaleType === 'time') {
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
-    data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips));
+    data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
   }
   if (staticPoint || isSparkline) {
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
   }
   addDualMetricAxisData(data, options);
   addTrendlineData(data, options);
-  addTooltipData(data, options, false);
+  addInspectData(data, options, false);
   addPopoverData(data, options);
   data.push(...getMetricRangeData(options));
   for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
@@ -194,7 +194,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
   // we don't need to include the excludeDataKeys here because they will be excluded from the points for voronoi
   addHoveredItemSignal(signals, name, `${name}_voronoi`, 2);
   addHoverSignals(signals, options);
-  addTooltipSignals(signals, options);
+  addInspectSignals(signals, options);
 });
 
 export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) => {
@@ -249,7 +249,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
   marks.push(...getMetricRangeGroupMarks(options));
   if (isInteractive(options) || highlightedItem !== undefined) {
-    marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForTooltip`));
+    marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForInspect`));
   }
   marks.push(...getTrendlineMarks(options));
   for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {

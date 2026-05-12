@@ -11,7 +11,7 @@
  */
 import { ColorScheme } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import { PartiallyRequired } from '../specUtil.types';
 import { SpectrumColor } from '../spectrumVizColor.types';
 
@@ -39,12 +39,12 @@ export interface AxisAnnotationOptions {
 
   // children
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
 }
 
 type AxisAnnotationOptionsWithDefaults =
   | 'chartPopovers'
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'color'
   | 'dataKey'
   | 'format'

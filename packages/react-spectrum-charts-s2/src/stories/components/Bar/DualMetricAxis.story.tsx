@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -51,7 +51,7 @@ const BasicStory: StoryFn<typeof Bar> = (args): ReactElement => {
         title="Mac Downloads"
       />
       <Bar {...args}>
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover width={200}>{dialogContent}</ChartPopover>
       </Bar>
       <Legend title="Operating system" highlight />
@@ -87,7 +87,7 @@ const WithSublabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
         ]}
       />
       <Bar {...args}>
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover width={200}>{dialogContent}</ChartPopover>
       </Bar>
       <Legend title="Operating system" highlight />
@@ -108,7 +108,7 @@ const WithThreeSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
         title="Other Downloads"
       />
       <Bar {...args}>
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover width={200}>{dialogContent}</ChartPopover>
       </Bar>
       <Legend title="Operating system" highlight />

@@ -38,8 +38,8 @@ describe('addData', () => {
 });
 
 describe('addSignals()', () => {
-  test('should add hover events when tooltip is present', () => {
-    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, chartTooltips: [{}] });
+  test('should add hover events when inspect is present', () => {
+    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, chartInspects: [{}] });
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
@@ -48,10 +48,10 @@ describe('addSignals()', () => {
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
     expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
   });
-  test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+  test('should exclude data with key from update if inspect has excludeDataKey', () => {
     const signals = addSignals(defaultSignals, {
       ...defaultDonutOptions,
-      chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
+      chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
     });
     expect(signals).toHaveLength(defaultSignals.length + 1);
 

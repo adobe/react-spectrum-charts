@@ -29,13 +29,13 @@ import { spectrumColors } from '@spectrum-charts/themes';
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import {
-  addTooltipData,
-  addTooltipSignals,
+  addInspectData,
+  addInspectSignals,
   isHighlightedByDimension,
   isHighlightedByGroup,
-} from '../chartTooltip/chartTooltipUtils';
+} from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
-import { getInteractiveMarkName, hasPopover, hasTooltip, isInteractive } from '../marks/markUtils';
+import { getInteractiveMarkName, hasPopover, hasInspect, isInteractive } from '../marks/markUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import {
   addHoveredItemSignal,
@@ -62,7 +62,7 @@ export const addArea = produce<
     spec,
     {
       chartPopovers = [],
-      chartTooltips = [],
+      chartInspects = [],
       color = DEFAULT_COLOR,
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_TIME_DIMENSION,
@@ -80,13 +80,13 @@ export const addArea = produce<
     // put options back together now that all defaults are set
     const areaOptions: AreaSpecOptions = {
       chartPopovers,
-      chartTooltips,
+      chartInspects,
       color,
       colorScheme,
       dimension,
       index,
       interactiveMarkName: getInteractiveMarkName(
-        { chartPopovers, chartTooltips, highlightedItem: options.highlightedItem },
+        { chartPopovers, chartInspects, highlightedItem: options.highlightedItem },
         areaName
       ),
       metric,
@@ -144,9 +144,9 @@ export const addData = produce<Data[], [AreaSpecOptions]>((data, areaOptions) =>
 
   if (isInteractive(areaOptions) || highlightedItem !== undefined) {
     const areaHasPopover = hasPopover(areaOptions);
-    const areaHasTooltip = hasTooltip(areaOptions);
+    const areaHasInspect = hasInspect(areaOptions);
     data.push(
-      getAreaHighlightedData(name, areaOptions.idKey, areaHasTooltip, areaHasPopover, isHighlightedByGroup(areaOptions))
+      getAreaHighlightedData(name, areaOptions.idKey, areaHasInspect, areaHasPopover, isHighlightedByGroup(areaOptions))
     );
     if (areaHasPopover) {
       data.push({
@@ -161,13 +161,13 @@ export const addData = produce<Data[], [AreaSpecOptions]>((data, areaOptions) =>
       });
     }
   }
-  addTooltipData(data, areaOptions, false);
+  addInspectData(data, areaOptions, false);
 });
 
 export const getAreaHighlightedData = (
   name: string,
   idKey: string,
-  hasTooltip: boolean,
+  hasInspect: boolean,
   hasPopover: boolean,
   hasGroupId: boolean
 ): SourceData => {
@@ -176,7 +176,7 @@ export const getAreaHighlightedData = (
     expr += `${name}_controlledHoveredGroup === datum.${name}_${GROUP_ID}`;
   } else {
     expr += `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1  || ${CONTROLLED_HIGHLIGHTED_ITEM} === datum.${idKey}`;
-    if (hasTooltip) {
+    if (hasInspect) {
       expr = `${name}_controlledHoveredId === datum.${idKey} || ${expr}`;
     }
   }
@@ -196,9 +196,9 @@ export const getAreaHighlightedData = (
 };
 
 export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOptions) => {
-  const { chartTooltips, name } = areaOptions;
+  const { chartInspects, name } = areaOptions;
   if (!isInteractive(areaOptions)) return;
-  addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
+  addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
   if (areaOptions.highlightedItem) {
     addHighlightedItemEvents(signals, name);
   }
@@ -207,7 +207,7 @@ export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOpt
   } else {
     signals.push(getControlledHoveredIdSignal(name));
   }
-  addTooltipSignals(signals, areaOptions);
+  addInspectSignals(signals, areaOptions);
 });
 
 /**
@@ -245,7 +245,7 @@ export const setScales = produce<Scale[], [AreaSpecOptions]>(
 export const addAreaMarks = produce<Mark[], [AreaSpecOptions]>((marks, areaOptions) => {
   const {
     chartPopovers,
-    chartTooltips,
+    chartInspects,
     color,
     colorScheme,
     dimension,
@@ -276,7 +276,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecOptions]>((marks, areaOptio
       marks: [
         getAreaMark({
           chartPopovers,
-          chartTooltips,
+          chartInspects,
           color,
           colorScheme,
           dimension,

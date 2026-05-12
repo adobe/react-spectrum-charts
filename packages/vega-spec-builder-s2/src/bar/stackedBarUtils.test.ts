@@ -86,10 +86,10 @@ describe('stackedBarUtils', () => {
       expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
       expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
     });
-    test('should add dimension hover area marks if has tooltip with dimension area target', () => {
+    test('should add dimension hover area marks if has inspect with dimension area target', () => {
       const marks = getStackedBarMarks({
         ...defaultBarOptions,
-        chartTooltips: [{ targets: ['dimensionArea'] }],
+        chartInspects: [{ targets: ['dimensionArea'] }],
       });
       expect(marks).toHaveLength(3);
       expect(marks[0].name).toEqual('bar0_dimensionHoverArea');

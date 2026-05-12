@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { ChartTooltip, Legend, Line } from '../../../../components';
+import { ChartInspect, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../../stories/data/data';
 import { formatTimestamp } from '../../../../stories/storyUtils';
@@ -22,7 +22,7 @@ import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Features/Tooltip',
+  title: 'React Spectrum Charts 2/Line/Features/Inspect',
   component: Line,
 };
 
@@ -44,11 +44,11 @@ const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
   );
 };
 
-const Tooltip = bindWithProps(BasicLineStory);
-Tooltip.args = {
+const Inspect = bindWithProps(BasicLineStory);
+Inspect.args = {
   ...defaultArgs,
   children: (
-    <ChartTooltip>
+    <ChartInspect>
       {(datum) => (
         <div className="bar-tooltip">
           <div>{formatTimestamp(datum.datetime as number)}</div>
@@ -56,14 +56,14 @@ Tooltip.args = {
           <div>Users: {Number(datum.value).toLocaleString()}</div>
         </div>
       )}
-    </ChartTooltip>
+    </ChartInspect>
   ),
 };
 
-const ItemTooltip = bindWithProps(BasicLineStory);
-ItemTooltip.args = {
-  ...Tooltip.args,
+const ItemInspect = bindWithProps(BasicLineStory);
+ItemInspect.args = {
+  ...Inspect.args,
   interactionMode: 'item',
 };
 
-export { Tooltip, ItemTooltip };
+export { Inspect, ItemInspect };

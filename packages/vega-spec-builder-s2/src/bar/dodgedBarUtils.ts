@@ -13,7 +13,7 @@ import { GroupMark, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR } from '@spectrum-charts/constants';
 
-import { hasTooltipWithDimensionAreaTarget } from '../chartTooltip/chartTooltipUtils';
+import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
@@ -71,7 +71,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
     },
   ];
 
-  if (hasTooltipWithDimensionAreaTarget(options.chartTooltips)) {
+  if (hasInspectWithDimensionAreaTarget(options.chartInspects)) {
     marks.unshift(getBarDimensionHoverArea(options, 'dodged'));
   }
 

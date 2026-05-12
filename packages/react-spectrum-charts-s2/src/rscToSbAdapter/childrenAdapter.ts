@@ -14,8 +14,8 @@ import {
   AxisThumbnailOptions,
   BarAnnotationOptions,
   BarDirectLabelOptions,
+  ChartInspectOptions,
   ChartPopoverOptions,
-  ChartTooltipOptions,
   DonutSummaryOptions,
   LegendOptions,
   LineDirectLabelOptions,
@@ -30,8 +30,8 @@ import { Axis } from '../components/Axis';
 import { AxisThumbnail } from '../components/AxisThumbnail';
 import { Bar } from '../components/Bar';
 import { BarDirectLabel } from '../components/BarDirectLabel';
+import { ChartInspect } from '../components/ChartInspect';
 import { ChartPopover } from '../components/ChartPopover';
-import { ChartTooltip } from '../components/ChartTooltip';
 import { Legend } from '../components/Legend';
 import { Line } from '../components/Line';
 import { LineDirectLabel } from '../components/LineDirectLabel';
@@ -43,8 +43,8 @@ import {
   AxisThumbnailProps,
   BarDirectLabelProps,
   BarProps,
+  ChartInspectProps,
   ChartPopoverProps,
-  ChartTooltipProps,
   DonutProps,
   DonutSummaryProps,
   LegendProps,
@@ -58,7 +58,7 @@ import { sanitizeChildren } from '../utils';
 import { getAxisOptions } from './axisAdapter';
 import { getBarOptions } from './barAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
-import { getChartTooltipOptions } from './chartTooltipAdapter';
+import { getChartInspectOptions } from './chartInspectAdapter';
 import { getDonutOptions } from './donutAdapter';
 import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
@@ -70,8 +70,8 @@ export const childrenToOptions = (
   axisThumbnails: AxisThumbnailOptions[];
   barAnnotations: BarAnnotationOptions[];
   barDirectLabels: BarDirectLabelOptions[];
+  chartInspects: ChartInspectOptions[];
   chartPopovers: ChartPopoverOptions[];
-  chartTooltips: ChartTooltipOptions[];
   donutSummaries: DonutSummaryOptions[];
   legends: LegendOptions[];
   lineDirectLabels: LineDirectLabelOptions[];
@@ -85,8 +85,8 @@ export const childrenToOptions = (
   const axisThumbnails: AxisThumbnailOptions[] = [];
   const barAnnotations: BarAnnotationOptions[] = [];
   const barDirectLabels: BarDirectLabelOptions[] = [];
+  const chartInspects: ChartInspectOptions[] = [];
   const chartPopovers: ChartPopoverOptions[] = [];
-  const chartTooltips: ChartTooltipOptions[] = [];
   const donutSummaries: DonutSummaryOptions[] = [];
   const legends: LegendOptions[] = [];
   const lineDirectLabels: LineDirectLabelOptions[] = [];
@@ -122,8 +122,8 @@ export const childrenToOptions = (
         chartPopovers.push(getChartPopoverOptions(child.props as ChartPopoverProps));
         break;
 
-      case ChartTooltip.displayName:
-        chartTooltips.push(getChartTooltipOptions(child.props as ChartTooltipProps));
+      case ChartInspect.displayName:
+        chartInspects.push(getChartInspectOptions(child.props as ChartInspectProps));
         break;
 
       case Donut.displayName:
@@ -169,8 +169,8 @@ export const childrenToOptions = (
     axisThumbnails,
     barAnnotations,
     barDirectLabels,
+    chartInspects,
     chartPopovers,
-    chartTooltips,
     donutSummaries,
     legends,
     lineDirectLabels,

@@ -47,10 +47,10 @@ describe('getTrendlineMarks()', () => {
     expect(groupMark.marks).toHaveLength(1);
     expect(groupMark.marks?.[0]).toHaveProperty('type', 'line');
   });
-  test('should add hover marks if ChartTooltip exists on Trendline', () => {
+  test('should add hover marks if ChartInspect exists on Trendline', () => {
     const marks = getTrendlineMarks({
       ...defaultLineOptions,
-      trendlines: [{ chartTooltips: [{}] }],
+      trendlines: [{ chartInspects: [{}] }],
     });
     expect(marks).toHaveLength(2);
     expect(marks[1]).toHaveProperty('type', 'group');

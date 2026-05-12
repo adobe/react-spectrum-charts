@@ -11,7 +11,7 @@
  */
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import { ColorFacet, LineTypeFacet, LineWidth, OpacityFacet, Orientation, PartiallyRequired } from '../specUtil.types';
 import { BarAnnotationOptions } from './supplemental/barAnnotationSpec.types';
 import { BarDirectLabelOptions } from './supplemental/barDirectLabelSpec.types';
@@ -76,7 +76,7 @@ export interface BarOptions {
   barAnnotations?: BarAnnotationOptions[];
   barDirectLabels?: BarDirectLabelOptions[];
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   trendlines?: TrendlineOptions[];
 }
 
@@ -85,7 +85,7 @@ type BarOptionsWithDefaults =
   | 'barDirectLabels'
   | 'color'
   | 'chartPopovers'
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'dimension'
   | 'hasOnClick'
   | 'hasSquareCorners'

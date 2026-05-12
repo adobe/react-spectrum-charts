@@ -32,7 +32,7 @@ export const defaultBarOptions: BarSpecOptions = {
   barAnnotations: [],
   barDirectLabels: [],
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   color: DEFAULT_COLOR,
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimension: DEFAULT_CATEGORICAL_DIMENSION,

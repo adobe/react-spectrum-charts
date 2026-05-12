@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartInspect, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../rc';
 import { bindWithProps } from '../../../test-utils';
@@ -61,7 +61,7 @@ const ChartPopoverCanvasStory: StoryFn<typeof ChartPopover> = (args): ReactEleme
   return (
     <Chart {...chartProps}>
       <Bar color="series">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
     </Chart>
@@ -73,7 +73,7 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
   return (
     <Chart {...chartProps}>
       <Bar color="series">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
     </Chart>
@@ -85,7 +85,7 @@ const ChartPopoverDodgedBarStory: StoryFn<typeof ChartPopover> = (args): ReactEl
   return (
     <Chart {...chartProps}>
       <Bar color="series" type="dodged">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
     </Chart>
@@ -99,7 +99,7 @@ const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
       <Axis position="bottom" baseline />
       <Axis position="left" grid />
       <Line scaleType="point" dimension="category" color="series">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Line>
       <Legend />
@@ -123,7 +123,7 @@ const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Donut metric="count" color="browser">
         <DonutSummary label="Visitors" />
-        <ChartTooltip>{donutDialogContent}</ChartTooltip>
+        <ChartInspect>{donutDialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Donut>
     </Chart>

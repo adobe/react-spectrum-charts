@@ -151,7 +151,7 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
         name: `${name}_legendEntry`,
         interactive: true,
         enter: {
-          tooltip: getTooltip(descriptions, name), // only add tooltip if descriptions exist
+          tooltip: getLegendDescriptionEncoding(descriptions, name), // only add tooltip if descriptions exist
         },
         update: {
           fill: { value: 'transparent' }, // need something here to trigger the tooltip
@@ -183,7 +183,7 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
   return {};
 };
 
-const getTooltip = (descriptions: LegendDescription[] | undefined, name: string) => {
+const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefined, name: string) => {
   if (descriptions?.length) {
     return { signal: `merge(datum, {'${COMPONENT_NAME}': '${name}'})` };
   }

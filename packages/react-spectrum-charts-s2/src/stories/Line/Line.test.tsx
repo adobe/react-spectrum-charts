@@ -36,7 +36,7 @@ import { HistoricalCompare } from './Features/LineHistoricalCompare.story';
 import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story';
 import { LineType } from './Features/LineType.story';
 import { Opacity } from './Features/LineOpacity.story';
-import { ItemTooltip, Tooltip } from './Features/Tooltip/LineTooltip.story';
+import { ItemInspect, Inspect } from './Features/Inspect/LineInspect.story';
 import { TrendScale, LinearTrendScale } from './Features/TrendScale/LineTrendScale.story';
 
 describe('Line', () => {
@@ -166,9 +166,9 @@ describe('Line', () => {
     expect(await screen.findByText('14')).toBeInTheDocument();
   });
 
-  describe('Tooltip', () => {
-    test('Tooltip should show on hover', async () => {
-      render(<Tooltip {...Tooltip.args} />);
+  describe('Inspect', () => {
+    test('Inspect should show on hover', async () => {
+      render(<Inspect {...Inspect.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 
@@ -177,12 +177,12 @@ describe('Line', () => {
 
       // hover and validate all hover components are visible
       await hoverNthElement(paths, 0);
-      const tooltip = await screen.findByTestId('rsc-tooltip');
-      expect(tooltip).toBeInTheDocument();
-      expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+      const inspect = await screen.findByTestId('rsc-tooltip');
+      expect(inspect).toBeInTheDocument();
+      expect(within(inspect).getByText('Nov 8')).toBeInTheDocument();
     });
     test('should fade the opacity of non-hovered lines', async () => {
-      render(<Tooltip {...Tooltip.args} />);
+      render(<Inspect {...Inspect.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 
@@ -202,8 +202,8 @@ describe('Line', () => {
     });
   });
 
-  test('Item tooltip renders', async () => {
-    render(<ItemTooltip {...ItemTooltip.args} />);
+  test('Item inspect renders', async () => {
+    render(<ItemInspect {...ItemInspect.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -212,9 +212,9 @@ describe('Line', () => {
 
     // hover and validate all hover components are visible
     await hoverNthElement(hoverGroup, 0);
-    const tooltip = await screen.findByTestId('rsc-tooltip');
-    expect(tooltip).toBeInTheDocument();
-    expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+    const inspect = await screen.findByTestId('rsc-tooltip');
+    expect(inspect).toBeInTheDocument();
+    expect(within(inspect).getByText('Nov 8')).toBeInTheDocument();
   });
 
   test('Static points render', async () => {

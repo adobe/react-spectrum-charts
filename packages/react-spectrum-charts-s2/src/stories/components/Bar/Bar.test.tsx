@@ -31,8 +31,8 @@ import {
   OnMouseInputs,
   Opacity,
   PaddingRatio,
-  TooltipOnDimensionArea,
-  WithTooltip,
+  InspectOnDimensionArea,
+  WithInspect,
 } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
 import { Basic as StackedBasic } from './StackedBar.story';
@@ -220,9 +220,9 @@ describe('Bar', () => {
     expect(secondBarData.rscStackId).toBe('Firefox');
   });
 
-  describe('TooltipOnDimensionArea', () => {
+  describe('InspectOnDimensionArea', () => {
     test('hovering dimension area should apply highlight styling and show tooltip', async () => {
-      render(<TooltipOnDimensionArea {...TooltipOnDimensionArea.args} />);
+      render(<InspectOnDimensionArea {...InspectOnDimensionArea.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
       const dimensionAreas = await findAllMarksByGroupName(chart, `bar0_${DIMENSION_HOVER_AREA}`);
@@ -231,9 +231,9 @@ describe('Bar', () => {
 
       // hovering dimension area should apply highlight styling and show tooltip
       await hoverNthElement(dimensionAreas, 0);
-      let tooltip = await screen.findByTestId('rsc-tooltip');
-      expect(tooltip).toBeInTheDocument();
-      expect(within(tooltip).getByText('Chrome: 27000')).toBeInTheDocument();
+      let inspect = await screen.findByTestId('rsc-tooltip');
+      expect(inspect).toBeInTheDocument();
+      expect(within(inspect).getByText('Chrome: 27000')).toBeInTheDocument();
       expect(bars[0]).toHaveAttribute('opacity', `1`);
       expect(bars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
 
@@ -243,14 +243,14 @@ describe('Bar', () => {
       await hoverNthElement(bars, 4);
       expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
       expect(bars[4]).toHaveAttribute('opacity', `1`);
-      tooltip = await screen.findByTestId('rsc-tooltip');
-      expect(tooltip).toBeInTheDocument();
-      expect(within(tooltip).getByText('Explorer: 500')).toBeInTheDocument();
+      inspect = await screen.findByTestId('rsc-tooltip');
+      expect(inspect).toBeInTheDocument();
+      expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();
     });
   });
-  describe('WithTooltip', () => {
+  describe('WithInspect', () => {
     test('hovering bar should apply highlight styling and show tooltip', async () => {
-      render(<WithTooltip {...WithTooltip.args} />);
+      render(<WithInspect {...WithInspect.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
       const bars = await findAllMarksByGroupName(chart, 'bar0');
@@ -260,9 +260,9 @@ describe('Bar', () => {
       await hoverNthElement(bars, 4);
       expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
       expect(bars[4]).toHaveAttribute('opacity', `1`);
-      const tooltip = await screen.findByTestId('rsc-tooltip');
-      expect(tooltip).toBeInTheDocument();
-      expect(within(tooltip).getByText('Explorer: 500')).toBeInTheDocument();
+      const inspect = await screen.findByTestId('rsc-tooltip');
+      expect(inspect).toBeInTheDocument();
+      expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();
     });
   });
 });
