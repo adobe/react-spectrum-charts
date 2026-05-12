@@ -195,7 +195,7 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartTooltip | ChartPopover | LineDirectLabel</td>
+            <td>ChartInspect | ChartPopover | LineDirectLabel</td>
             <td>–</td>
             <td>Optional child components for tooltips, popovers, and inline direct labels.</td>
         </tr>

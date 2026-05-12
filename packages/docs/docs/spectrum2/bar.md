@@ -86,7 +86,7 @@ The same component works for horizontal bar charts. Labels appear to the right o
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartTooltip | ChartPopover | BarAnnotation | BarDirectLabel</td>
+            <td>ChartInspect | ChartPopover | BarAnnotation | BarDirectLabel</td>
             <td>–</td>
             <td>Optional child components for tooltips, popovers, annotations, and inline direct labels.</td>
         </tr>
