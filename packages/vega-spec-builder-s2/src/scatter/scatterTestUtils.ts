@@ -21,7 +21,7 @@ import { ScatterSpecOptions } from '../types';
 
 export const defaultScatterOptions: ScatterSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   color: { value: 'categorical-100' },
   colorScaleType: 'ordinal',
   colorScheme: DEFAULT_COLOR_SCHEME,

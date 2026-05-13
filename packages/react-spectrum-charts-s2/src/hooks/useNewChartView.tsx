@@ -34,7 +34,7 @@ import usePopovers from './usePopovers';
 const useNewChartView = (
   { idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  tooltipOptions: TooltipOptions
+  inspectOptions: TooltipOptions
 ) => {
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const popovers = usePopovers(sanitizedChildren);
@@ -66,21 +66,21 @@ const useNewChartView = (
     (view: View) => {
       chartView.current = view;
       // Add a delay before displaying legend tooltips on hover.
-      let tooltipTimeout: NodeJS.Timeout | undefined;
+      let inspectTimeout: NodeJS.Timeout | undefined;
       view.tooltip((viewRef, event, item, value) => {
-        const tooltipHandler = new Handler(tooltipOptions);
+        const inspectHandler = new Handler(inspectOptions);
         // Cancel delayed tooltips if the mouse moves before the delay is resolved.
-        if (tooltipTimeout) {
-          clearTimeout(tooltipTimeout);
-          tooltipTimeout = undefined;
+        if (inspectTimeout) {
+          clearTimeout(inspectTimeout);
+          inspectTimeout = undefined;
         }
         if (event?.type === 'pointermove' && (itemIsLegendItem(item) || itemIsAxisLabel(item)) && 'tooltip' in item) {
-          tooltipTimeout = setTimeout(() => {
-            tooltipHandler.call(viewRef, event, item, value);
-            tooltipTimeout = undefined;
+          inspectTimeout = setTimeout(() => {
+            inspectHandler.call(viewRef, event, item, value);
+            inspectTimeout = undefined;
           }, TOOLTIP_DELAY);
         } else {
-          tooltipHandler.call(viewRef, event, item, value);
+          inspectHandler.call(viewRef, event, item, value);
         }
       });
       if (popovers.length || legendIsToggleable || onLegendClick) {
@@ -163,7 +163,7 @@ const useNewChartView = (
       selectedDataBounds,
       selectedDataName,
       setLegendHiddenSeries,
-      tooltipOptions,
+      inspectOptions,
     ]
   );
 };

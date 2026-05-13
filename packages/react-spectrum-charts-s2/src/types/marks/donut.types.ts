@@ -13,13 +13,13 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { DonutOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
+import { ChartPopoverElement, ChartInspectElement } from '../dialogs';
 import { Children } from '../util.types';
 import { DonutSummaryElement, SegmentLabelElement } from './supplemental';
 
 export interface DonutProps
-  extends Omit<DonutOptions, 'chartPopovers' | 'chartTooltips' | 'donutSummaries' | 'markType' | 'segmentLabels'> {
-  children?: Children<ChartPopoverElement | ChartTooltipElement | DonutSummaryElement | SegmentLabelElement>;
+  extends Omit<DonutOptions, 'chartPopovers' | 'chartInspects' | 'donutSummaries' | 'markType' | 'segmentLabels'> {
+  children?: Children<ChartPopoverElement | ChartInspectElement | DonutSummaryElement | SegmentLabelElement>;
 }
 
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;

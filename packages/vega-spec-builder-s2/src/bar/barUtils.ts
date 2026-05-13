@@ -38,7 +38,7 @@ import {
   getMarkOpacity,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
-  getTooltip,
+  getInspectEncoding,
   hasPopover,
 } from '../marks/markUtils';
 import { getBandPadding } from '../scale/scaleSpecBuilder';
@@ -291,7 +291,7 @@ export const getBarFillEncoding = (options: BarSpecOptions): ColorValueRef => {
 export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
   fill: getBarFillEncoding(options),
   fillOpacity: getOpacityProductionRule(options.opacity),
-  tooltip: getTooltip(options.chartTooltips, options.name),
+  tooltip: getInspectEncoding(options.chartInspects, options.name),
 });
 
 export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
@@ -453,7 +453,7 @@ export const getBarDimensionHoverArea = (options: BarSpecOptions, type: 'stacked
     encode: {
       enter: {
         fill: { value: 'transparent' },
-        tooltip: getTooltip(options.chartTooltips ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension }),
+        tooltip: getInspectEncoding(options.chartInspects ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension }),
       },
       update: {
         ...getBarDimensionAreaPositionEncodings(options),

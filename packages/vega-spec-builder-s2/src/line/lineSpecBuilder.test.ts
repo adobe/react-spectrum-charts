@@ -668,7 +668,7 @@ describe('lineSpecBuilder', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultLineOptions,
         interactionMode: 'item',
-        chartTooltips: [{}],
+        chartInspects: [{}],
       });
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);

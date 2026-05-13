@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { s2Categorical6 } from '@spectrum-charts/themes';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -64,7 +64,7 @@ const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args}>
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover width={200}>{dialogContent}</ChartPopover>
       </Bar>
       <Legend title="Operating system" highlight />
@@ -145,10 +145,10 @@ OnClick.args = {
   },
 };
 
-const TooltipOnDimensionArea = bindWithProps(DimensionAreaStory);
-TooltipOnDimensionArea.args = {
+const InspectOnDimensionArea = bindWithProps(DimensionAreaStory);
+InspectOnDimensionArea.args = {
   ...defaultProps,
   color: 'operatingSystem',
 };
 
-export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, OnClick, Opacity, Popover, TooltipOnDimensionArea };
+export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, OnClick, Opacity, Popover, InspectOnDimensionArea };

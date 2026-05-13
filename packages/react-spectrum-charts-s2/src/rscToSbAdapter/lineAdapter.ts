@@ -15,11 +15,11 @@ import { LineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getLineOptions = ({ children, onClick, onContextMenu, contextMenuMode: _contextMenuMode, ...lineProps }: LineProps): LineOptions => {
-  const { chartPopovers, chartTooltips, lineDirectLabels } = childrenToOptions(children);
+  const { chartInspects, chartPopovers, lineDirectLabels } = childrenToOptions(children);
   return {
     ...lineProps,
+    chartInspects,
     chartPopovers,
-    chartTooltips,
     hasOnClick: Boolean(onClick),
     hasOnContextMenu: Boolean(onContextMenu),
     lineDirectLabels,

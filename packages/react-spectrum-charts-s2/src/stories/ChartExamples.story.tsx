@@ -23,7 +23,7 @@ import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
 
 import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '@spectrum-charts/vega-spec-builder-s2';
 import useChartProps from '../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line, s2Categorical16 } from '../index';
+import { Axis, Bar, Chart, ChartPopover, ChartInspect, Legend, Line, s2Categorical16 } from '../index';
 import { bindWithProps } from '../test-utils';
 import {
   funnelConversionData,
@@ -86,7 +86,7 @@ const UserGrowthBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
       <Axis position="bottom" baseline />
       <Axis position="left" grid title="Users" />
       <Bar dimension="x" metric="y" color="series" order="order">
-        <ChartTooltip>{generateCallback('tooltip')}</ChartTooltip>
+        <ChartInspect>{generateCallback('inspect')}</ChartInspect>
         <ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
       </Bar>
       <Legend highlight descriptions={userGrowthDescriptions} />
@@ -111,7 +111,7 @@ const UserGrowthBarTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactEle
         paddingRatio={0.3}
         groupedPadding={0.12}
       >
-        <ChartTooltip>{generateCallback('tooltip')}</ChartTooltip>
+        <ChartInspect>{generateCallback('inspect')}</ChartInspect>
         <ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
       </Bar>
       <Legend highlight descriptions={userGrowthDescriptions} />
@@ -120,10 +120,10 @@ const UserGrowthBarTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactEle
 };
 
 /** Generates identical return callbacks but each has a custom Storybook Action Name for a better dev experience. */
-const generateCallback = (variant: 'popover' | 'tooltip') => {
+const generateCallback = (variant: 'popover' | 'inspect') => {
   const actionName = {
     popover: 'ChartPopover',
-    tooltip: 'ChartTooltip',
+    inspect: 'ChartInspect',
   };
 
   const callback = (datum: Datum, close?: () => void) => {
@@ -200,7 +200,7 @@ const FunnelTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactElement =>
         lineType="period"
         lineWidth={1.5}
       >
-        <ChartTooltip />
+        <ChartInspect />
       </Bar>
       <Legend
         highlight

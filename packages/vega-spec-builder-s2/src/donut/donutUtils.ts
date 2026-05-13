@@ -14,11 +14,11 @@ import { ArcMark } from 'vega';
 import { DONUT_RADIUS, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
-import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
+import { getColorProductionRule, getCursor, getMarkOpacity, getInspectEncoding } from '../marks/markUtils';
 import { DonutSpecOptions } from '../types';
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { chartPopovers, chartTooltips, color, colorScheme, holeRatio, idKey, name } = options;
+  const { chartPopovers, chartInspects, color, colorScheme, holeRatio, idKey, name } = options;
   return {
     type: 'arc',
     name,
@@ -29,7 +29,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         fill: getColorProductionRule(color, colorScheme),
         x: { signal: 'width / 2' },
         y: { signal: 'height / 2' },
-        tooltip: getTooltip(chartTooltips, name),
+        tooltip: getInspectEncoding(chartInspects, name),
         stroke: { value: getS2ColorValue('static-blue', colorScheme) },
       },
       update: {

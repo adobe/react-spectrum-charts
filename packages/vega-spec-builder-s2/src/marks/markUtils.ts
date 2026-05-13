@@ -42,7 +42,7 @@ import {
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
-import { addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
@@ -53,7 +53,7 @@ import {
 import {
   BarSpecOptions,
   ChartPopoverOptions,
-  ChartTooltipOptions,
+  ChartInspectOptions,
   ColorFacet,
   ColorScheme,
   DonutSpecOptions,
@@ -84,32 +84,32 @@ export const getCursor = (chartPopovers: ChartPopoverOptions[], hasOnClick?: boo
 };
 
 /**
- * If a tooltip exists on the mark, then set tooltip to true.
+ * If an inspect exists on the mark, then set the inspect encoding.
  */
-export function getTooltip(
-  chartTooltips: ChartTooltipOptions[],
+export function getInspectEncoding(
+  chartInspects: ChartInspectOptions[],
   name: string,
   nestedDatum?: boolean,
-  tooltipMetaData?: Record<string, unknown>
+  metaData?: Record<string, unknown>
 ): ProductionRuleTests<SignalRef> | SignalRef | undefined {
   // skip annotations
-  if (chartTooltips.length) {
+  if (chartInspects.length) {
     const datumRef = nestedDatum ? 'datum.datum' : 'datum';
     const componentInfo = `{'${COMPONENT_NAME}': '${name}'}`;
-    const metaDataPart = tooltipMetaData ? `, ${JSON.stringify(tooltipMetaData)}` : '';
-    const defaultTooltip = {
+    const metaDataPart = metaData ? `, ${JSON.stringify(metaData)}` : '';
+    const defaultInspectSignal = {
       signal: `merge(${datumRef}, ${componentInfo}${metaDataPart})`,
     };
-    // if the tooltip has an excludeDataKey option, then disable the tooltip where that key is present
-    const excludeDataKeys = chartTooltips[0].excludeDataKeys;
+    // if the inspect has an excludeDataKey option, then disable the inspect where that key is present
+    const excludeDataKeys = chartInspects[0].excludeDataKeys;
     if (excludeDataKeys?.length) {
       return [
         ...excludeDataKeys.map((excludeDataKey) => ({ test: `datum.${excludeDataKey}`, signal: 'false' })),
-        defaultTooltip,
+        defaultInspectSignal,
       ];
     }
 
-    return defaultTooltip;
+    return defaultInspectSignal;
   }
 }
 
@@ -127,13 +127,13 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
 };
 
 /**
- * Checks if there are any tooltips or popovers on the mark
+ * Checks if there are any inspects or popovers on the mark
  * @param children
  * @returns
  */
 export const isInteractive = (options: {
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   hasOnClick?: boolean;
   hasOnContextMenu?: boolean;
   metricRanges?: MetricRangeOptions[];
@@ -148,7 +148,7 @@ export const isInteractive = (options: {
     hasOnClick ||
     hasOnContextMenu ||
     hasPopover(options) ||
-    hasTooltip(options) ||
+    hasInspect(options) ||
     trendlines.some((trendline) => trendline.displayOnHover) ||
     metricRanges.some((metricRange) => metricRange.displayOnHover)
   );
@@ -157,8 +157,8 @@ export const isInteractive = (options: {
 export const hasPopover = (options: { chartPopovers?: ChartPopoverOptions[] }): boolean =>
   Boolean('chartPopovers' in options && options.chartPopovers?.length);
 
-export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): boolean =>
-  Boolean('chartTooltips' in options && options.chartTooltips?.length);
+export const hasInspect = (options: { chartInspects?: ChartInspectOptions[] }): boolean =>
+  Boolean('chartInspects' in options && options.chartInspects?.length);
 
 /**
  * Gets the color encoding
@@ -330,13 +330,13 @@ export const getPointsForVoronoi = (
 };
 
 /**
- * Gets the voronoi path used for tooltips and popovers
+ * Gets the voronoi path used for inspects and popovers
  * @param markOptions
  * @param dataSource name of the point data source the voronoi is based on
  * @returns PathMark
  */
 export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions, dataSource: string): PathMark => {
-  const { chartPopovers, chartTooltips, name: markName } = markOptions;
+  const { chartPopovers, chartInspects, name: markName } = markOptions;
   const hasOnClick = 'hasOnClick' in markOptions && markOptions.hasOnClick;
   return {
     name: `${markName}_voronoi`,
@@ -348,7 +348,7 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
         isVoronoi: { value: true },
-        tooltip: getTooltip(chartTooltips ?? [], markName, true),
+        tooltip: getInspectEncoding(chartInspects ?? [], markName, true),
       },
       update: {
         cursor: getCursor(chartPopovers ?? [], hasOnClick),
@@ -368,7 +368,7 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
 
 /**
  * Gets the hover area for the mark
- * @param chartTooltips
+ * @param chartInspects
  * @param dataSource the name of the data source that will be used in the hover area calculation
  * @param dimension the dimension for the x encoding
  * @param metric the metric for the y encoding
@@ -378,7 +378,7 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
  * @returns GroupMark
  */
 export const getItemHoverArea = (
-  chartTooltips: ChartTooltipOptions[],
+  chartInspects: ChartInspectOptions[],
   dataSource: string,
   dimension: string,
   metric: string,
@@ -399,7 +399,7 @@ export const getItemHoverArea = (
           y: yEncoding,
           fill: { value: 'transparent' },
           stroke: { value: 'transparent' },
-          tooltip: getTooltip(chartTooltips, name, false),
+          tooltip: getInspectEncoding(chartInspects, name, false),
           size: getHoverSizeSignal(size),
         },
         update: {
@@ -423,7 +423,7 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
 
 /**
  * Gets the opacity for the mark (used to highlight marks).
- * This will take into account if there are any tooltips or popovers on the mark.
+ * This will take into account if there are any inspects or popovers on the mark.
  * @param options
  * @returns
  */
@@ -461,7 +461,7 @@ export const getMarkOpacity = (
 export const getInteractiveMarkName = (
   options: {
     chartPopovers?: ChartPopoverOptions[];
-    chartTooltips?: ChartTooltipOptions[];
+    chartInspects?: ChartInspectOptions[];
     hasOnClick?: boolean;
     hasOnContextMenu?: boolean;
     highlightedItem?: HighlightedItem;

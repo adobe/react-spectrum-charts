@@ -11,7 +11,7 @@
  */
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import { PartiallyRequired } from '../specUtil.types';
 import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types';
 import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types';
@@ -35,14 +35,14 @@ export interface DonutOptions {
 
   // children
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   donutSummaries?: DonutSummaryOptions[];
   segmentLabels?: SegmentLabelOptions[];
 }
 
 type DonutOptionsWithDefaults =
   | 'chartPopovers'
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'color'
   | 'donutSummaries'
   | 'holeRatio'

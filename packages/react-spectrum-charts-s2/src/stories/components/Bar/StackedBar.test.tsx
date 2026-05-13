@@ -20,11 +20,11 @@ import {
   unhoverNthElement,
   within,
 } from '../../../test-utils';
-import { TooltipOnDimensionArea } from './StackedBar.story';
+import { InspectOnDimensionArea } from './StackedBar.story';
 
-describe('TooltipOnDimensionArea', () => {
+describe('InspectOnDimensionArea', () => {
   test('hovering dimension area should apply highlight styling and show tooltip', async () => {
-    render(<TooltipOnDimensionArea {...TooltipOnDimensionArea.args} />);
+    render(<InspectOnDimensionArea {...InspectOnDimensionArea.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
     const dimensionAreas = await findAllMarksByGroupName(chart, `bar0_${DIMENSION_HOVER_AREA}`);
@@ -33,9 +33,9 @@ describe('TooltipOnDimensionArea', () => {
 
     // hovering dimension area should apply highlight styling and show tooltip
     await hoverNthElement(dimensionAreas, 0);
-    const tooltip = await screen.findByTestId('rsc-tooltip');
-    expect(tooltip).toBeInTheDocument();
-    expect(within(tooltip).getByText('Chrome Downloads')).toBeInTheDocument();
+    const inspect = await screen.findByTestId('rsc-tooltip');
+    expect(inspect).toBeInTheDocument();
+    expect(within(inspect).getByText('Chrome Downloads')).toBeInTheDocument();
     expect(bars[0]).toHaveAttribute('opacity', `1`);
     expect(bars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
 

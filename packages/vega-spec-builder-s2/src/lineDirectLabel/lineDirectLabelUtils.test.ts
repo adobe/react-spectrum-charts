@@ -30,7 +30,7 @@ const getTransforms = (data: Data) => asSourceData(data).transform ?? [];
 
 const defaultLineOptions: LineSpecOptions = {
 	chartPopovers: [],
-	chartTooltips: [],
+	chartInspects: [],
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,

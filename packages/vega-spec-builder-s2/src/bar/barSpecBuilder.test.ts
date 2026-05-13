@@ -276,16 +276,16 @@ describe('barSpecBuilder', () => {
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
     });
-    test('should add hover events if tooltip is present', () => {
-      const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartTooltips: [{}] });
+    test('should add hover events if inspect is present', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartInspects: [{}] });
       expect(signals.at(-1)).toHaveProperty('on');
       expect(signals.at(-1)?.on).toHaveLength(2);
       expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
     });
-    test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+    test('should exclude data with key from update if inspect has excludeDataKey', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultBarOptions,
-        chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
+        chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
       });
       expect(signals.at(-1)).toHaveProperty('on');
       expect(signals.at(-1)?.on).toHaveLength(2);
@@ -474,10 +474,10 @@ describe('barSpecBuilder', () => {
         expect(lastRscSeriesIdSignal).toBeUndefined();
       });
 
-      test('should add dimension hover area signal if has tooltip with dimension area target', () => {
+      test('should add dimension hover area signal if has inspect with dimension area target', () => {
         const signals = addSignals(defaultSignals, {
           ...defaultBarOptions,
-          chartTooltips: [{ targets: ['dimensionArea'] }],
+          chartInspects: [{ targets: ['dimensionArea'] }],
         });
         expect(
           signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)

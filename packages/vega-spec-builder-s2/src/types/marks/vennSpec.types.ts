@@ -12,7 +12,7 @@
 import {
   ChartData,
   ChartPopoverOptions,
-  ChartTooltipOptions,
+  ChartInspectOptions,
   ColorScheme,
   HighlightedItem,
   PartiallyRequired,
@@ -33,12 +33,12 @@ export interface VennOptions {
 
   // children
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
 }
 
 type VennOptionsWithDefaults =
   | 'chartPopovers'
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'color'
   | 'label'
   | 'metric'

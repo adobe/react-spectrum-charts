@@ -15,7 +15,7 @@ import { vennSolution } from 'venn-helper';
 import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SELECTED_ITEM } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
-import { getColorProductionRule, getCursor, getMarkOpacity, getTooltip } from '../marks/markUtils';
+import { getColorProductionRule, getCursor, getMarkOpacity, getInspectEncoding } from '../marks/markUtils';
 import { VennDegreeOptions, VennSpecOptions } from '../types';
 
 type VennHelperProps = {
@@ -79,7 +79,7 @@ export const mapDataForVennHelper = (options: VennSpecOptions): VennHelperProps[
 };
 
 export const getCircleMark = (options: VennSpecOptions): SymbolMark => {
-  const { name, colorScheme, chartTooltips, chartPopovers } = options;
+  const { name, colorScheme, chartInspects, chartPopovers } = options;
 
   return {
     type: 'symbol',
@@ -89,7 +89,7 @@ export const getCircleMark = (options: VennSpecOptions): SymbolMark => {
       enter: {
         x: { field: 'x' },
         y: { field: 'y' },
-        tooltip: getTooltip(chartTooltips, name),
+        tooltip: getInspectEncoding(chartInspects, name),
         size: { field: 'size' },
         shape: { value: 'circle' },
         fill: getColorProductionRule('set_id', colorScheme),
@@ -150,7 +150,7 @@ export const getIntersectionStrokeMark = (options: VennSpecOptions): PathMark =>
 };
 
 export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
-  const { name, chartTooltips, colorScheme, chartPopovers } = options;
+  const { name, chartInspects, colorScheme, chartPopovers } = options;
 
   return {
     type: 'path',
@@ -163,7 +163,7 @@ export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
         strokeWidth: { value: 2 },
         stroke: { signal: 'chartBackgroundColor' },
         strokeCap: { value: 'square' },
-        tooltip: getTooltip(chartTooltips, `${name}`),
+        tooltip: getInspectEncoding(chartInspects, `${name}`),
       },
 
       update: {

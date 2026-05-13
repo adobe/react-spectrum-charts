@@ -15,7 +15,7 @@ import { DonutSpecOptions } from '../types';
 
 export const defaultDonutOptions: DonutSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   color: 'testColor',
   colorScheme: 'light',
   donutSummaries: [],

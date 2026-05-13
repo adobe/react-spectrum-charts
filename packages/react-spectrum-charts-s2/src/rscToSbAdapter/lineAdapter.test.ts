@@ -14,7 +14,7 @@ import { createElement } from 'react';
 import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
 import { ChartPopover } from '../components/ChartPopover';
-import { ChartTooltip } from '../components/ChartTooltip';
+import { ChartInspect } from '../components/ChartInspect';
 import { getLineOptions } from './lineAdapter';
 
 describe('getLineOptions()', () => {
@@ -23,15 +23,15 @@ describe('getLineOptions()', () => {
     expect(options.markType).toBe('line');
     expect(options.hasOnClick).toBe(false);
     expect(options.chartPopovers).toHaveLength(0);
-    expect(options.chartTooltips).toHaveLength(0);
+    expect(options.chartInspects).toHaveLength(0);
   });
   it('should convert popover children to chartPopovers array', () => {
     const options = getLineOptions({ children: [createElement(ChartPopover)] });
     expect(options.chartPopovers).toHaveLength(1);
   });
-  it('should convert tooltip children to chartTooltips array', () => {
-    const options = getLineOptions({ children: [createElement(ChartTooltip)] });
-    expect(options.chartTooltips).toHaveLength(1);
+  it('should convert ChartInspect children to chartInspects array', () => {
+    const options = getLineOptions({ children: [createElement(ChartInspect)] });
+    expect(options.chartInspects).toHaveLength(1);
   });
   test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
     expect(getLineOptions({ onClick: () => {} }).hasOnClick).toBe(true);

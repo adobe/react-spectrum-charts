@@ -9,19 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getChartTooltipOptions } from './chartTooltipAdapter';
+import { getChartInspectOptions } from './chartInspectAdapter';
 
-describe('getChartTooltipOptions()', () => {
+describe('getChartInspectOptions()', () => {
   it('should strip out children', () => {
-    const options = getChartTooltipOptions({ children: () => null });
+    const options = getChartInspectOptions({ children: () => null });
     expect(options).not.toHaveProperty('children');
   });
   it('should pass through included props', () => {
-    const options = getChartTooltipOptions({ excludeDataKeys: ['foo'] });
+    const options = getChartInspectOptions({ excludeDataKeys: ['foo'] });
     expect(options).toHaveProperty('excludeDataKeys', ['foo']);
   });
   it('should not add props that are not provided', () => {
-    const options = getChartTooltipOptions({});
+    const options = getChartInspectOptions({});
     expect(options).not.toHaveProperty('excludeDataKeys');
   });
 });

@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, ChartPopover, ChartTooltip, Legend, Line } from '../../../../components';
+import { Axis, ChartPopover, ChartInspect, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { bindWithProps } from '../../../../test-utils';
 import { LineProps } from '../../../../types';
@@ -81,7 +81,7 @@ const BasicStory: StoryFn<typeof Line> = (args): ReactElement => {
       <Axis position="left" grid ticks title="Downloads" />
       <Axis position="right" ticks title="Conversion Rate (%)" />
       <Line {...args}>
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover width={200}>{dialogContent}</ChartPopover>
       </Line>
       <Legend title="Metrics" highlight />
@@ -97,7 +97,7 @@ const WithThreeSeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
       <Axis position="left" grid ticks title="Count" />
       <Axis position="right" ticks title="Conversion Rate (%)" />
       <Line {...args}>
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover width={200}>{dialogContent}</ChartPopover>
       </Line>
       <Legend title="Metrics" highlight />
@@ -119,7 +119,7 @@ DualMetricAxisBasic.args = { ...defaultProps, color: 'series' };
 const DualMetricAxisWithThreeSeries = bindWithProps(WithThreeSeriesStory);
 DualMetricAxisWithThreeSeries.args = { ...defaultProps, color: 'series' };
 
-const DualMetricAxisItemTooltip = bindWithProps(BasicStory);
-DualMetricAxisItemTooltip.args = { ...defaultProps, color: 'series', interactionMode: 'item' };
+const DualMetricAxisItemInspect = bindWithProps(BasicStory);
+DualMetricAxisItemInspect.args = { ...defaultProps, color: 'series', interactionMode: 'item' };
 
-export { DualMetricAxisBasic, DualMetricAxisWithThreeSeries, DualMetricAxisItemTooltip };
+export { DualMetricAxisBasic, DualMetricAxisWithThreeSeries, DualMetricAxisItemInspect };

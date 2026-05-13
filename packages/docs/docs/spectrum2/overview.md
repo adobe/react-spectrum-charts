@@ -87,22 +87,22 @@ Available S2 color scales: `s2Categorical6`, `s2Categorical12`, `s2Categorical16
 </Chart>
 ```
 
-### Tooltips
+### Inspect panels
 
-Tooltips in the S2 package are styled automatically to match the Spectrum 2 design specification — including the correct font (`adobe-clean`), text colors, border, and elevated box shadow. No additional configuration is required.
+Inspect panels in the S2 package are styled automatically to match the Spectrum 2 design specification — including the correct font (`adobe-clean`), text colors, border, and elevated box shadow. No additional configuration is required.
 
-Add a `ChartTooltip` as a child of a mark component to enable tooltips:
+Add a `ChartInspect` as a child of a mark component to enable inspect panels:
 
 ```jsx
 <Line color="series">
-  <ChartTooltip>
+  <ChartInspect>
     {(datum) => (
       <div>
         <div>Series: {datum.series}</div>
         <div>Value: {datum.value}</div>
       </div>
     )}
-  </ChartTooltip>
+  </ChartInspect>
 </Line>
 ```
 
@@ -124,7 +124,7 @@ Popovers are styled to match the Spectrum 2 elevated surface style (border, box 
 </Line>
 ```
 
-#### ChartTooltip props
+#### ChartInspect props
 
 <table>
     <thead>
@@ -140,25 +140,25 @@ Popovers are styled to match the Spectrum 2 elevated surface style (border, box 
             <td>children</td>
             <td>(datum: Datum) =&gt; ReactNode</td>
             <td>–</td>
-            <td>Callback that returns the content to render inside the tooltip.</td>
+            <td>Callback that returns the content to render inside the inspect panel.</td>
         </tr>
         <tr>
             <td>excludeDataKeys</td>
             <td>string[]</td>
             <td>–</td>
-            <td>Keys in the data that, if they have truthy values, will suppress the tooltip for that data point.</td>
+            <td>Keys in the data that, if they have truthy values, will suppress the inspect panel for that data point.</td>
         </tr>
         <tr>
             <td>highlightBy</td>
             <td>'series' | 'dimension' | 'item' | string[]</td>
             <td>'item'</td>
-            <td>Controls which marks are highlighted when a tooltip is visible.</td>
+            <td>Controls which marks are highlighted when an inspect panel is visible.</td>
         </tr>
         <tr>
             <td>targets</td>
             <td>('dimensionArea' | 'item')[]</td>
             <td>['item']</td>
-            <td>The hit targets that trigger the tooltip.</td>
+            <td>The hit targets that trigger the inspect panel.</td>
         </tr>
     </tbody>
 </table>

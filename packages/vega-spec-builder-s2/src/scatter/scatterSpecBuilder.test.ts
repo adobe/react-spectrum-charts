@@ -32,26 +32,26 @@ describe('addData()', () => {
     expect(data[0].transform).toHaveLength(3);
     expect(data[0].transform?.[2].type).toBe('timeunit');
   });
-  test('should add additional filteredData if tooltip exists', () => {
+  test('should add additional filteredData if inspect exists', () => {
     const data = addData(initializeSpec().data ?? [], {
       ...defaultScatterOptions,
-      chartTooltips: [{}],
+      chartInspects: [{}],
     });
     expect(data).toHaveLength(3);
-    expect(data[2].name).toBe('filteredTableForTooltip');
+    expect(data[2].name).toBe('filteredTableForInspect');
   });
-  test('tooltipFilteredData has undefined transform by default', () => {
+  test('inspectFilteredData has undefined transform by default', () => {
     const data = addData(initializeSpec().data ?? [], {
       ...defaultScatterOptions,
-      chartTooltips: [{}],
+      chartInspects: [{}],
     });
 
     expect(data[2].transform).toBeUndefined();
   });
-  test('tooltipFilteredData has undefined transform by default', () => {
+  test('inspectFilteredData has undefined transform by default', () => {
     const data = addData(initializeSpec().data ?? [], {
       ...defaultScatterOptions,
-      chartTooltips: [{ excludeDataKeys: ['exclude'] }],
+      chartInspects: [{ excludeDataKeys: ['exclude'] }],
     });
 
     expect(data[2].transform).toStrictEqual([
@@ -83,10 +83,10 @@ describe('addData()', () => {
 });
 
 describe('addSignals()', () => {
-  test('should add hoveredId signal events if tooltip exists', () => {
+  test('should add hoveredId signal events if inspect exists', () => {
     const signals = addSignals(defaultSignals, {
       ...defaultScatterOptions,
-      chartTooltips: [{}],
+      chartInspects: [{}],
     });
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));

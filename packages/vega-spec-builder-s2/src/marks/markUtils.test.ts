@@ -43,10 +43,10 @@ import {
   getOpacityProductionRule,
   getStrokeDashProductionRule,
   getSymbolSizeProductionRule,
-  getTooltip,
+  getInspectEncoding,
   getXProductionRule,
   getYProductionRule,
-  hasTooltip,
+  hasInspect,
   isInteractive,
 } from './markUtils';
 
@@ -138,29 +138,29 @@ describe('getSymbolSizeProductionRule()', () => {
   });
 });
 
-describe('hasTooltip()', () => {
-  test('should be true if ChartTooltip exists in children', () => {
-    expect(hasTooltip({ chartTooltips: [{}] })).toBeTruthy();
+describe('hasInspect()', () => {
+  test('should be true if ChartInspect exists in children', () => {
+    expect(hasInspect({ chartInspects: [{}] })).toBeTruthy();
   });
-  test('should be false if ChartTooltip does not exist in children', () => {
-    expect(hasTooltip({})).toBeFalsy();
+  test('should be false if ChartInspect does not exist in children', () => {
+    expect(hasInspect({})).toBeFalsy();
   });
 });
 
-describe('getTooltip()', () => {
+describe('getInspectEncoding()', () => {
   test('should return undefined if there are not any interactive children', () => {
-    expect(getTooltip([], 'line0')).toBeUndefined();
+    expect(getInspectEncoding([], 'line0')).toBeUndefined();
   });
   test('should return signal ref if there are interactive children', () => {
-    const rule = getTooltip([{}], 'line0');
+    const rule = getInspectEncoding([{}], 'line0');
     expect(rule).toHaveProperty('signal');
   });
   test('should reference a nested datum if nestedDatum is true', () => {
-    const rule = getTooltip([{}], 'line0', true) as SignalRef;
+    const rule = getInspectEncoding([{}], 'line0', true) as SignalRef;
     expect(rule.signal).toContain('datum.datum');
   });
   test('should add condition test when excludeDataKey is present', () => {
-    const rule = getTooltip(
+    const rule = getInspectEncoding(
       [{ excludeDataKeys: ['excludeFromTooltip'] }],
       'line0',
       false
@@ -169,8 +169,8 @@ describe('getTooltip()', () => {
     expect(rule[0].test).toBe('datum.excludeFromTooltip');
     expect(rule[0].signal).toBe('false');
   });
-  test('should have default tooltip as second item when excludeDataKey is present', () => {
-    const rule = getTooltip(
+  test('should have default inspect signal as second item when excludeDataKey is present', () => {
+    const rule = getInspectEncoding(
       [{ excludeDataKeys: ['excludeFromTooltip'] }],
       'line0',
       false
@@ -178,12 +178,12 @@ describe('getTooltip()', () => {
     expect(rule).toHaveLength(2);
     expect(rule[1]).toHaveProperty('signal');
   });
-  test('should add tooltipMetaData if provided', () => {
-    const rule = getTooltip([{ excludeDataKeys: ['excludeFromTooltip'] }], 'line0', false, {
-      tooltipMetaData: 'tooltipMetaData',
+  test('should add metaData if provided', () => {
+    const rule = getInspectEncoding([{ excludeDataKeys: ['excludeFromTooltip'] }], 'line0', false, {
+      metaData: 'metaData',
     }) as ProductionRuleTests<SignalRef>;
     expect(rule[1]).toHaveProperty('signal');
-    expect(rule[1].signal).toContain('tooltipMetaData');
+    expect(rule[1].signal).toContain('metaData');
   });
 });
 
@@ -232,9 +232,9 @@ describe('getYProductionRule()', () => {
 
 describe('isInteractive()', () => {
   test('should return true based on having interactive children', () => {
-    expect(isInteractive({ chartTooltips: [{}] })).toEqual(true);
+    expect(isInteractive({ chartInspects: [{}] })).toEqual(true);
     expect(isInteractive({})).toEqual(false);
-    expect(isInteractive({ chartPopovers: [{}], chartTooltips: [{}] })).toEqual(true);
+    expect(isInteractive({ chartPopovers: [{}], chartInspects: [{}] })).toEqual(true);
   });
 
   test('should return true if hasOnClick', () => {
@@ -279,8 +279,8 @@ describe('getMarkOpacity()', () => {
   test('no children, should use default opacity', () => {
     expect(getMarkOpacity(defaultBarOptions)).toStrictEqual([DEFAULT_OPACITY_RULE]);
   });
-  test('Tooltip child, should return tests for hover and default to opacity', () => {
-    const opacity = getMarkOpacity({ ...defaultBarOptions, chartTooltips: [{}] });
+  test('Inspect child, should return tests for hover and default to opacity', () => {
+    const opacity = getMarkOpacity({ ...defaultBarOptions, chartInspects: [{}] });
     expect(opacity).toHaveLength(3);
     expect(opacity[0].test).toContain(HOVERED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
@@ -301,8 +301,8 @@ describe('getInteractiveMarkName()', () => {
     expect(getInteractiveMarkName({}, 'line0')).toBeUndefined();
     expect(getInteractiveMarkName({ trendlines: [{}] }, 'line0')).toBeUndefined();
   });
-  test('should return the name provided if there is a tooltip or popover in the children', () => {
-    expect(getInteractiveMarkName({ chartTooltips: [{}] }, 'line0')).toEqual('line0');
+  test('should return the name provided if there is an inspect or popover in the children', () => {
+    expect(getInteractiveMarkName({ chartInspects: [{}] }, 'line0')).toEqual('line0');
     expect(getInteractiveMarkName({ chartPopovers: [{}] }, 'line0')).toEqual('line0');
   });
   test('should return the name provided if options.onClick is defined', () => {
@@ -312,6 +312,6 @@ describe('getInteractiveMarkName()', () => {
     expect(getInteractiveMarkName({ highlightedItem: 'someItem0' }, 'line0')).toEqual('line0');
   });
   test('should return the aggregated trendline name if the line has a trendline with any interactive children', () => {
-    expect(getInteractiveMarkName({ trendlines: [{ chartTooltips: [{}] }] }, 'line0')).toEqual('line0Trendline');
+    expect(getInteractiveMarkName({ trendlines: [{ chartInspects: [{}] }] }, 'line0')).toEqual('line0Trendline');
   });
 });

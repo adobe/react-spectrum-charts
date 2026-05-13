@@ -16,7 +16,7 @@ import { spectrum2Colors } from '@spectrum-charts/themes';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../Chart';
-import { Axis, Bar, ChartTooltip, Line } from '../components';
+import { Axis, Bar, ChartInspect, Line } from '../components';
 import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen, waitFor } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { getElement } from '../utils';
@@ -37,7 +37,7 @@ const PopoverTest = (
     <Axis position="left" />
     <Bar />
     <Bar>
-      <ChartTooltip />
+      <ChartInspect />
     </Bar>
   </Chart>
 );
@@ -330,8 +330,8 @@ describe('Chart', () => {
   });
 
   describe('getElement()', () => {
-    test('should find the first tooltip', () => {
-      expect(getElement(PopoverTest, ChartTooltip)).toStrictEqual(<ChartTooltip />);
+    test('should find the first inspect', () => {
+      expect(getElement(PopoverTest, ChartInspect)).toStrictEqual(<ChartInspect />);
     });
 
     test('should find the first bar', () => {
@@ -355,13 +355,13 @@ describe('Chart', () => {
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
       await hoverNthElement(bars, 0);
-      const tooltip = document.getElementById('vg-tooltip-element');
-      expect(tooltip).toBeInTheDocument();
-      if (!tooltip) return;
+      const inspectElement = document.getElementById('vg-tooltip-element');
+      expect(inspectElement).toBeInTheDocument();
+      if (!inspectElement) return;
 
       // will be at 10, 10 since the cursor is at 0, 0 and the offset is 10
-      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(10);
-      expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(10);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(10);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(10);
     });
 
     test('should render the tooltip relative to the mark if `tooltipAnchor` is set to `mark`', async () => {
@@ -372,12 +372,12 @@ describe('Chart', () => {
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
       await hoverNthElement(bars, 0);
-      const tooltip = document.getElementById('vg-tooltip-element');
-      expect(tooltip).toBeInTheDocument();
-      if (!tooltip) return;
+      const inspectElement = document.getElementById('vg-tooltip-element');
+      expect(inspectElement).toBeInTheDocument();
+      if (!inspectElement) return;
 
-      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(176);
-      expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(176);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
     });
 
     test('should render the tooltip to the right of the mark if placement is right', async () => {
@@ -387,12 +387,12 @@ describe('Chart', () => {
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
       await hoverNthElement(bars, 0);
-      const tooltip = document.getElementById('vg-tooltip-element');
-      expect(tooltip).toBeInTheDocument();
-      if (!tooltip) return;
+      const inspectElement = document.getElementById('vg-tooltip-element');
+      expect(inspectElement).toBeInTheDocument();
+      if (!inspectElement) return;
 
-      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(213);
-      expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(213);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
     });
   });
 

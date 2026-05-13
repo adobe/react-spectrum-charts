@@ -92,15 +92,15 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
+  const { signals, targetStyle, inspectOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
   const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
   const specSignalNames = useMemo(() => new Set(spec.signals?.map((s) => s.name) ?? []), [spec.signals]);
 
   useEffect(() => {
-    const tooltipElement = document.getElementById('vg-tooltip-element');
-    if (tooltipElement) {
-    // Hide tooltips on all charts when a popover is open
-    tooltipElement.hidden = isPopoverOpen;
+    const inspectElement = document.getElementById('vg-tooltip-element');
+    if (inspectElement) {
+    // Hide the vega inspect panel on all charts when a popover is open
+    inspectElement.hidden = isPopoverOpen;
     }
   }, [isPopoverOpen]);
 
@@ -134,7 +134,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         locale={locale}
         padding={padding}
         signals={signals}
-        tooltip={tooltipOptions} // legend show/hide relies on this
+        tooltip={inspectOptions} // legend show/hide relies on this
         onNewView={handleNewView}
       />
       {popovers.map((popover) => (

@@ -15,7 +15,7 @@ import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
-import { addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
@@ -157,7 +157,7 @@ export const getScatterHoverMarks = (scatterOptions: ScatterSpecOptions): Mark[]
   }
 
   return [
-    getPointsForVoronoi(`${FILTERED_TABLE}ForTooltip`, dimension, metric, name, dimensionScaleType),
+    getPointsForVoronoi(`${FILTERED_TABLE}ForInspect`, dimension, metric, name, dimensionScaleType),
     getVoronoiPath(scatterOptions, `${name}_pointsForVoronoi`),
   ];
 };

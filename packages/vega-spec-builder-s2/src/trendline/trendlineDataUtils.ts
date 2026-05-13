@@ -183,7 +183,7 @@ export const getRegressionTrendlineData = (
   });
   if (isInteractive(trendlineOptions)) {
     // params and data used for each of the trendline data points
-    // the high resolution data has too much detail and we don't want a tooltip at each high resolution point
+    // the high resolution data has too much detail and we don't want an inspect at each high resolution point
     data.push(
       {
         name: `${name}_params`,

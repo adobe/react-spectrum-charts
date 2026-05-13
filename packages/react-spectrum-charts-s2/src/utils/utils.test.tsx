@@ -12,7 +12,7 @@
 import { Fragment, createElement } from 'react';
 
 import { Chart } from '../Chart';
-import { Bar, ChartTooltip, Line } from '../components';
+import { Bar, ChartInspect, Line } from '../components';
 import { Donut } from '../rc';
 import {
   debugLog,
@@ -37,22 +37,22 @@ describe('utils', () => {
       const element = (
         <Chart data={[]}>
           <Bar>
-            <ChartTooltip />
+            <ChartInspect />
           </Bar>
           <Line name="myLine">
             <></>
-            <ChartTooltip />
+            <ChartInspect />
           </Line>
           <Line>
-            <ChartTooltip />
+            <ChartInspect />
           </Line>
           <Donut>
-            <ChartTooltip />
+            <ChartInspect />
           </Donut>
         </Chart>
       );
 
-      const matches = getAllElements(element, ChartTooltip);
+      const matches = getAllElements(element, ChartInspect);
 
       expect(matches).toHaveLength(4);
       expect(matches[0].name).toBe('bar0');

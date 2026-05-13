@@ -11,7 +11,7 @@
  */
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import { PartiallyRequired, ScaleType } from '../specUtil.types';
 
 export interface AreaOptions {
@@ -43,12 +43,12 @@ export interface AreaOptions {
   // children
   /** Popover that is shown when hovering over the area */
   chartPopovers?: ChartPopoverOptions[];
-  /** Tooltip that is shown when hovering over the area */
-  chartTooltips?: ChartTooltipOptions[];
+  /** Inspect shown when hovering over the area */
+  chartInspects?: ChartInspectOptions[];
 }
 
 type AreaOptionsWithDefaults =
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'chartPopovers'
   | 'color'
   | 'dimension'

@@ -9,11 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartTooltipOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import { PartiallyRequired } from '../specUtil.types';
 
-import { ChartTooltipProps } from '../types';
+export interface ChartInspectOptions {
+  /** The keys in the data that will disable the inspect if they have truthy values */
+  excludeDataKeys?: string[];
+  /** Sets which marks should be highlighted when an inspect is visible */
+  highlightBy?: 'series' | 'dimension' | 'item' | string[];
+  targets?: ('dimensionArea' | 'item')[];
+}
 
-export const getChartTooltipOptions = ({
-  children: _,
-  ...chartTooltipOptions
-}: ChartTooltipProps): ChartTooltipOptions => chartTooltipOptions;
+type ChartInspectOptionsWithDefaults = 'highlightBy' | 'targets';
+
+export interface ChartInspectSpecOptions
+  extends PartiallyRequired<ChartInspectOptions, ChartInspectOptionsWithDefaults> {
+  markName: string;
+}

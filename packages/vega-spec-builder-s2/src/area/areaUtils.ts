@@ -26,12 +26,12 @@ import {
   getBorderStrokeEncodings,
   getColorProductionRule,
   getCursor,
-  getTooltip,
+  getInspectEncoding,
   isInteractive,
 } from '../marks/markUtils';
 import {
   ChartPopoverOptions,
-  ChartTooltipOptions,
+  ChartInspectOptions,
   ColorFacet,
   ColorScheme,
   HighlightedItem,
@@ -56,7 +56,7 @@ export interface AreaMarkOptions {
   scaleType: ScaleType;
 
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
 }
 
 export const getAreaMark = (
@@ -66,7 +66,7 @@ export const getAreaMark = (
   const {
     name,
     chartPopovers,
-    chartTooltips,
+    chartInspects,
     color,
     colorScheme,
     metricStart,
@@ -87,7 +87,7 @@ export const getAreaMark = (
         y: { scale: 'yLinear', field: metricStart },
         y2: { scale: 'yLinear', field: metricEnd },
         fill: getColorProductionRule(color, colorScheme),
-        tooltip: getTooltip(chartTooltips ?? [], name),
+        tooltip: getInspectEncoding(chartInspects ?? [], name),
         ...getBorderStrokeEncodings(isStacked, true),
       },
       update: {

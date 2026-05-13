@@ -21,7 +21,7 @@ import { LineSpecOptions, TrendlineSpecOptions } from '../types';
 
 export const defaultLineOptions: LineSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   gradient: false,
   hasOnClick: false,
   hasOnContextMenu: false,
@@ -45,7 +45,7 @@ export const defaultLineOptions: LineSpecOptions = {
 };
 
 export const defaultTrendlineOptions: TrendlineSpecOptions = {
-  chartTooltips: [],
+  chartInspects: [],
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimensionExtent: [null, null],
   dimensionRange: [null, null],

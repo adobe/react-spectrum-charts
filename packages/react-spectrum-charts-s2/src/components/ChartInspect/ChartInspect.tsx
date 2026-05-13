@@ -13,9 +13,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { ChartTooltipProps } from '../../types';
+import { ChartInspectProps } from '../../types';
 
-const ChartTooltip: FC<ChartTooltipProps> = ({
+const ChartInspect: FC<ChartInspectProps> = ({
   children,
   excludeDataKeys,
   highlightBy = 'item',
@@ -25,6 +25,6 @@ const ChartTooltip: FC<ChartTooltipProps> = ({
 };
 
 // displayName is used to validate the component type in the spec builder
-ChartTooltip.displayName = 'ChartTooltip';
+ChartInspect.displayName = 'ChartInspect';
 
-export { ChartTooltip };
+export { ChartInspect };

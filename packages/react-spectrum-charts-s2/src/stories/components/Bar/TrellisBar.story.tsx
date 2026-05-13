@@ -17,7 +17,7 @@ import { MARK_ID } from '@spectrum-charts/constants';
 import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -66,7 +66,7 @@ const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} title="Users, Count" grid />
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} title="Platform" baseline />
       <Bar {...args}>
-        <ChartTooltip>{dialog}</ChartTooltip>
+        <ChartInspect>{dialog}</ChartInspect>
         <ChartPopover>{dialog}</ChartPopover>
       </Bar>
       <Legend />

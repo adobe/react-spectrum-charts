@@ -30,8 +30,8 @@ import {
   AxisThumbnail,
   Bar,
   BarDirectLabel,
+  ChartInspect,
   ChartPopover,
-  ChartTooltip,
   Legend,
   Line,
   LineDirectLabel,
@@ -46,8 +46,8 @@ import {
   BarElement,
   ChartChildElement,
   ChartElement,
+  ChartInspectElement,
   ChartPopoverElement,
-  ChartTooltipElement,
   ChildElement,
   DonutElement,
   DonutSummaryElement,
@@ -60,8 +60,8 @@ import {
 
 type MarkChildElement =
   | BarAnnotationElement
+  | ChartInspectElement
   | ChartPopoverElement
-  | ChartTooltipElement
   | DonutSummaryElement
   | LineDirectLabelElement
   | SegmentLabelElement;
@@ -110,8 +110,8 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     AxisThumbnail.displayName,
     Bar.displayName,
     BarDirectLabel.displayName,
+    ChartInspect.displayName,
     ChartPopover.displayName,
-    ChartTooltip.displayName,
     Donut.displayName,
     DonutSummary.displayName,
     Legend.displayName,
@@ -146,8 +146,8 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 
 export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
   const markChildDisplayNames = new Set([
+    ChartInspect.displayName,
     ChartPopover.displayName,
-    ChartTooltip.displayName,
     DonutSummary.displayName,
     LineDirectLabel.displayName,
     SegmentLabel.displayName,
@@ -186,7 +186,7 @@ export const toggleStringArrayValue = (target: string[], value: string): string[
 // traverses the children to find the first element instance of the proivded type
 export function getElement(
   element: ReactNode | (() => void),
-  type: typeof Axis | typeof Bar | typeof ChartPopover | typeof ChartTooltip | typeof Legend | typeof Line
+  type: typeof Axis | typeof Bar | typeof ChartInspect | typeof ChartPopover | typeof Legend | typeof Line
 ): ChartElement | RscElement | undefined {
   // if the element is undefined or 'type' doesn't exist on the element, stop searching
   if (!element || typeof element !== 'object' || !('type' in element) || element.type === Fragment) {
@@ -264,7 +264,7 @@ export const getAllMarkElements = (
  */
 export const getAllElements = (
   target: unknown,
-  source: typeof Axis | typeof Bar | typeof ChartPopover | typeof ChartTooltip | typeof Legend | typeof Line,
+  source: typeof Axis | typeof Bar | typeof ChartInspect | typeof ChartPopover | typeof Legend | typeof Line,
   elements: MappedElement[] = [],
   name: string = '',
   parent?: string

@@ -32,10 +32,10 @@ import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
 import {
-  addTooltipData,
-  addTooltipSignals,
-  hasTooltipWithDimensionAreaTarget,
-} from '../chartTooltip/chartTooltipUtils';
+  addInspectData,
+  addInspectSignals,
+  hasInspectWithDimensionAreaTarget,
+} from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
 import { getInteractiveMarkName } from '../marks/markUtils';
 import {
@@ -89,7 +89,7 @@ export const addBar = produce<
       barAnnotations = [],
       barDirectLabels = [],
       chartPopovers = [],
-      chartTooltips = [],
+      chartInspects = [],
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_CATEGORICAL_DIMENSION,
@@ -118,7 +118,7 @@ export const addBar = produce<
       barAnnotations,
       barDirectLabels,
       chartPopovers,
-      chartTooltips,
+      chartInspects,
       dimensionScaleType: 'band',
       dualMetricAxis,
       orientation,
@@ -129,7 +129,7 @@ export const addBar = produce<
       hasSquareCorners,
       index,
       interactiveMarkName: getInteractiveMarkName(
-        { chartPopovers, chartTooltips, hasOnClick, highlightedItem: options.highlightedItem, trendlines },
+        { chartPopovers, chartInspects, hasOnClick, highlightedItem: options.highlightedItem, trendlines },
         barName
       ),
       lineType,
@@ -163,7 +163,7 @@ export const addBar = produce<
 export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options) => {
   const {
     barAnnotations,
-    chartTooltips,
+    chartInspects,
     chartPopovers,
     hasOnClick,
     name,
@@ -179,14 +179,14 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
   }
 
-  if (!barAnnotations.length && !chartPopovers.length && !chartTooltips.length && !trendlines.length && !hasOnClick) {
+  if (!barAnnotations.length && !chartPopovers.length && !chartInspects.length && !trendlines.length && !hasOnClick) {
     return;
   }
-  addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
-  if (hasTooltipWithDimensionAreaTarget(chartTooltips)) {
+  addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
+  if (hasInspectWithDimensionAreaTarget(chartInspects)) {
     addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
   }
-  addTooltipSignals(signals, options);
+  addInspectSignals(signals, options);
   setTrendlineSignals(signals, options);
 });
 
@@ -218,7 +218,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
 
   addDualMetricAxisData(data, options);
   addTrendlineData(data, options);
-  addTooltipData(data, options);
+  addInspectData(data, options);
   addPopoverData(data, options);
 });
 

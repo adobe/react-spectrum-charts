@@ -28,15 +28,15 @@ import { getHoverMarkNames } from '../marks/markUtils';
 import {
   AreaSpecOptions,
   BarSpecOptions,
-  ChartTooltipOptions,
-  ChartTooltipSpecOptions,
+  ChartInspectOptions,
+  ChartInspectSpecOptions,
   DonutSpecOptions,
   LineSpecOptions,
   ScatterSpecOptions,
   VennSpecOptions,
 } from '../types';
 
-type TooltipParentOptions =
+type InspectParentOptions =
   | AreaSpecOptions
   | BarSpecOptions
   | DonutSpecOptions
@@ -45,23 +45,23 @@ type TooltipParentOptions =
   | VennSpecOptions;
 
 /**
- * gets all the tooltips
+ * gets all the inspects
  * @param markOptions
  * @returns
  */
-export const getTooltips = (markOptions: TooltipParentOptions): ChartTooltipSpecOptions[] => {
-  return markOptions.chartTooltips.map((chartTooltip) => applyTooltipPropDefaults(chartTooltip, markOptions.name));
+export const getInspects = (markOptions: InspectParentOptions): ChartInspectSpecOptions[] => {
+  return markOptions.chartInspects.map((chartInspect) => applyInspectPropDefaults(chartInspect, markOptions.name));
 };
 
 /**
- * Applies all defaults to ChartTooltipOptions
- * @param chartTooltipOptions
- * @returns ChartTooltipSpecOptions
+ * Applies all defaults to ChartInspectOptions
+ * @param chartInspectOptions
+ * @returns ChartInspectSpecOptions
  */
-export const applyTooltipPropDefaults = (
-  { highlightBy = 'item', targets = ['item'], ...options }: ChartTooltipOptions,
+export const applyInspectPropDefaults = (
+  { highlightBy = 'item', targets = ['item'], ...options }: ChartInspectOptions,
   markName: string
-): ChartTooltipSpecOptions => {
+): ChartInspectSpecOptions => {
   return {
     highlightBy,
     markName,
@@ -71,15 +71,15 @@ export const applyTooltipPropDefaults = (
 };
 
 /**
- * Sets all the data needed for tooltips
+ * Sets all the data needed for inspects
  *
  * NOTE: this function mutates the data object so it should only be called from a produce function
  * @param data
- * @param chartTooltipOptions
+ * @param markOptions
  */
-export const addTooltipData = (data: Data[], markOptions: TooltipParentOptions, addHighlightedData = true) => {
-  const tooltips = getTooltips(markOptions);
-  for (const { highlightBy, markName } of tooltips) {
+export const addInspectData = (data: Data[], markOptions: InspectParentOptions, addHighlightedData = true) => {
+  const inspects = getInspects(markOptions);
+  for (const { highlightBy, markName } of inspects) {
     if (highlightBy === 'item') return;
     const filteredTable = getFilteredTableData(data);
     if (!filteredTable.transform) {
@@ -129,31 +129,31 @@ const getMarkHighlightedData = (markName: string): SourceData => ({
   ],
 });
 
-export const isHighlightedByGroup = (markOptions: TooltipParentOptions) => {
-  const tooltips = getTooltips(markOptions);
-  return tooltips.some(({ highlightBy }) => highlightBy && highlightBy !== 'item');
+export const isHighlightedByGroup = (markOptions: InspectParentOptions) => {
+  const inspects = getInspects(markOptions);
+  return inspects.some(({ highlightBy }) => highlightBy && highlightBy !== 'item');
 };
 
 /**
- * Tooltip highlights by item or dimension
+ * Inspect highlights by item or dimension
  * @param markOptions
  * @returns
  */
-export const isHighlightedByDimension = (markOptions: TooltipParentOptions) => {
-  const tooltips = getTooltips(markOptions);
-  return tooltips.some(
+export const isHighlightedByDimension = (markOptions: InspectParentOptions) => {
+  const inspects = getInspects(markOptions);
+  return inspects.some(
     ({ highlightBy }) => typeof highlightBy === 'string' && ['dimension', 'item'].includes(highlightBy)
   );
 };
 
 /**
- * adds the appropriate signals for tooltips
+ * adds the appropriate signals for inspects
  *
  * NOTE: this function mutates the signals array so it should only be called from a produce function
  * @param signals
  * @param markOptions
  */
-export const addTooltipSignals = (signals: Signal[], markOptions: TooltipParentOptions) => {
+export const addInspectSignals = (signals: Signal[], markOptions: InspectParentOptions) => {
   if (isHighlightedByGroup(markOptions)) {
     const highlightedGroupSignal = signals.find((signal) => signal.name === HIGHLIGHTED_GROUP) as Signal;
 
@@ -190,7 +190,7 @@ const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update
 
 export const addHoveredItemOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
-  markOptions: TooltipParentOptions
+  markOptions: InspectParentOptions
 ) => {
   const { name: markName } = markOptions;
   // find the index of the first hover rule
@@ -229,9 +229,9 @@ export const addHoveredItemOpacityRules = (
 
 export const addHoverdDimenstionAreaOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
-  markOptions: TooltipParentOptions
+  markOptions: InspectParentOptions
 ) => {
-  if (!hasTooltipWithDimensionAreaTarget(markOptions.chartTooltips) || !('dimension' in markOptions)) return;
+  if (!hasInspectWithDimensionAreaTarget(markOptions.chartInspects) || !('dimension' in markOptions)) return;
   const { name, dimension } = markOptions;
   const hoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
   opacityRules.push({
@@ -240,6 +240,6 @@ export const addHoverdDimenstionAreaOpacityRules = (
   });
 };
 
-export const hasTooltipWithDimensionAreaTarget = (chartTooltips: ChartTooltipOptions[]) => {
-  return chartTooltips.some(({ targets }) => targets?.includes('dimensionArea'));
+export const hasInspectWithDimensionAreaTarget = (chartInspects: ChartInspectOptions[]) => {
+  return chartInspects.some(({ targets }) => targets?.includes('dimensionArea'));
 };

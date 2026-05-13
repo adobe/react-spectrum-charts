@@ -17,7 +17,7 @@ import { GROUP_DATA } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartTooltip } from '../../../components';
+import { Axis, Bar, ChartInspect } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -91,14 +91,14 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
-const BarWithTooltipStory: StoryFn<typeof Bar> = (args): ReactElement => {
+const BarWithInspectStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args}>
-        <ChartTooltip>
+        <ChartInspect>
           {(datum) => {
             return (
               <div>
@@ -106,7 +106,7 @@ const BarWithTooltipStory: StoryFn<typeof Bar> = (args): ReactElement => {
               </div>
             );
           }}
-        </ChartTooltip>
+        </ChartInspect>
       </Bar>
     </Chart>
   );
@@ -119,7 +119,7 @@ const BarDimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args}>
-        <ChartTooltip targets={['item', 'dimensionArea']}>
+        <ChartInspect targets={['item', 'dimensionArea']}>
           {(datum) => {
             const d = datum[GROUP_DATA]?.[0] ?? datum;
             return (
@@ -128,7 +128,7 @@ const BarDimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
               </div>
             );
           }}
-        </ChartTooltip>
+        </ChartInspect>
       </Bar>
     </Chart>
   );
@@ -201,13 +201,13 @@ BarWithUTCDatetimeFormat.args = {
   dimensionDataType: 'time',
 };
 
-const WithTooltip = bindWithProps(BarWithTooltipStory);
-WithTooltip.args = {
+const WithInspect = bindWithProps(BarWithInspectStory);
+WithInspect.args = {
   ...defaultProps,
 };
 
-const TooltipOnDimensionArea = bindWithProps(BarDimensionAreaStory);
-TooltipOnDimensionArea.args = {
+const InspectOnDimensionArea = bindWithProps(BarDimensionAreaStory);
+InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
@@ -221,6 +221,6 @@ export {
   OnMouseInputs,
   Opacity,
   PaddingRatio,
-  TooltipOnDimensionArea,
-  WithTooltip,
+  InspectOnDimensionArea,
+  WithInspect,
 };

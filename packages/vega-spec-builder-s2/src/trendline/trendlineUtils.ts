@@ -52,7 +52,7 @@ export const getTrendlines = (markOptions: TrendlineParentOptions): TrendlineSpe
 export const applyTrendlinePropDefaults = (
   markOptions: TrendlineParentOptions,
   {
-    chartTooltips = [],
+    chartInspects = [],
     color,
     dimensionExtent,
     dimensionRange = [null, null],
@@ -80,7 +80,7 @@ export const applyTrendlinePropDefaults = (
   );
   const trendlineColor = color ? { value: color } : getTrendlineColorFromMarkOptions(markOptions.color);
   return {
-    chartTooltips,
+    chartInspects,
     colorScheme: markOptions.colorScheme,
     displayOnHover,
     dimensionExtent: dimensionExtent ?? dimensionRange,

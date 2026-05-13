@@ -33,22 +33,17 @@ this removes transitions in the vega tooltip
 }
 /* double scope light-theme so that it has higher precedence */
 #vg-tooltip-element.vg-tooltip.light-theme.light-theme {
-  color-scheme: light;
-  border: 1px solid #e1e1e1;
   background-color: #fff;
   color: #292929;
-  /* S2 "drop shadow/elevated" token — inlined because the tooltip renders outside the Spectrum provider
-     DOM scope and cannot resolve CSS custom properties. filter: drop-shadow() is not used because it
-     only supports a single layer and cannot replicate this three-layer effect. */
+  border: 1px solid #e1e1e1;
   box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 6px 0 rgba(0, 0, 0, 0.04), 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 }
 /* double scope dark-theme so that it has higher precedence */
 #vg-tooltip-element.vg-tooltip.dark-theme.dark-theme {
-  color-scheme: dark;
-  border: 1px solid #323232;
   background-color: #111111;
   color: #dbdbdb;
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.12), 0 2px 6px 0 rgba(0, 0, 0, 0.04), 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  border: 1px solid #323232;
+  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.24), 0 2px 6px 0 rgba(0, 0, 0, 0.08), 0 4px 12px 0 rgba(0, 0, 0, 0.16);
 }
 #vg-tooltip-element.vg-tooltip .legend-tooltip {
   max-width: 150px;

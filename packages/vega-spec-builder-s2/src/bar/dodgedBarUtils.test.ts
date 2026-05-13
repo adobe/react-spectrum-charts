@@ -101,7 +101,7 @@ const defaultMark: Mark = {
   },
 };
 
-const defaultMarkWithTooltip: Mark = {
+const defaultMarkWithInspect: Mark = {
   name: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
@@ -219,11 +219,11 @@ describe('dodgedBarUtils', () => {
       expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
       expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
     });
-    test('should add tooltip keys if ChartTooltip exists as child', () => {
-      expect(getDodgedMarks({ ...defaultDodgedOptions, chartTooltips: [{}] })).toEqual([
+    test('should add inspect keys if ChartInspect exists as child', () => {
+      expect(getDodgedMarks({ ...defaultDodgedOptions, chartInspects: [{}] })).toEqual([
         {
           ...defaultDodgedMark,
-          marks: [defaultBackgroundMark, defaultMarkWithTooltip],
+          marks: [defaultBackgroundMark, defaultMarkWithInspect],
         },
       ]);
     });
@@ -235,10 +235,10 @@ describe('dodgedBarUtils', () => {
         },
       ]);
     });
-    test('should add dimension hover area marks if has tooltip with dimension area target', () => {
+    test('should add dimension hover area marks if has inspect with dimension area target', () => {
       const marks = getDodgedMarks({
         ...defaultDodgedOptions,
-        chartTooltips: [{ targets: ['dimensionArea'] }],
+        chartInspects: [{ targets: ['dimensionArea'] }],
       });
       expect(marks).toHaveLength(2);
       expect(marks[0].name).toEqual('bar0_dimensionHoverArea');

@@ -50,7 +50,7 @@ export const addDonut = produce<
     spec,
     {
       chartPopovers = [],
-      chartTooltips = [],
+      chartInspects = [],
       color = DEFAULT_COLOR,
       colorScheme = DEFAULT_COLOR_SCHEME,
       donutSummaries = [],
@@ -67,7 +67,7 @@ export const addDonut = produce<
     // put options back together now that all defaults are set
     const donutOptions: DonutSpecOptions = {
       chartPopovers,
-      chartTooltips,
+      chartInspects,
       color,
       colorScheme,
       donutSummaries,
@@ -156,8 +156,8 @@ export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => 
 });
 
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {
-  const { chartTooltips, name } = options;
+  const { chartInspects, name } = options;
   signals.push(...getDonutSummarySignals(options));
   if (!isInteractive(options)) return;
-  addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
+  addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
 });

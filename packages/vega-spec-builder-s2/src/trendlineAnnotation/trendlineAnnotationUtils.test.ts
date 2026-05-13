@@ -64,7 +64,7 @@ describe('getTrendlineAnnotations()', () => {
       getTrendlineAnnotations(
         {
           ...defaultTrendlineOptions,
-          chartTooltips: [{}],
+          chartInspects: [{}],
           trendlineAnnotations: [{}],
         },
         'line0'

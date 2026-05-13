@@ -13,16 +13,16 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { BarOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
+import { ChartPopoverElement, ChartInspectElement } from '../dialogs';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
 import { BarAnnotationElement, BarDirectLabelElement } from './supplemental';
 
 export interface BarProps
   extends Omit<
     BarOptions,
-    'barAnnotations' | 'barDirectLabels' | 'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'markType'
+    'barAnnotations' | 'barDirectLabels' | 'chartPopovers' | 'chartInspects' | 'hasOnClick' | 'markType'
   > {
-  children?: Children<BarAnnotationElement | BarDirectLabelElement | ChartPopoverElement | ChartTooltipElement>;
+  children?: Children<BarAnnotationElement | BarDirectLabelElement | ChartPopoverElement | ChartInspectElement>;
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
   /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
