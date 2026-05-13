@@ -1,0 +1,2132 @@
+RSC S2 Planning Pt. 2-20260511_135058-Meeting Transcript
+May 11, 2026, 7:50PM
+1h 36m 30s
+
+Connor Lamoureux started transcription
+
+Connor Lamoureux   0:49
+Connor, are you in?
+
+Tanu Garg   0:53
+Yes, I...
+I think so.
+
+Connor Lamoureux   0:57
+Yeah, okay. All right, so we're looking at behaviors and we're looking at chart interactions starting with hovering a single data point.
+
+Madeline Luke   1:00
+****.
+
+Connor Lamoureux   1:11
+
+So in RSC S1 now we have hover interaction controls for like data point, like point or item I think is what it's called, and dimension, and also nearest for like a nearby area. And so we'll have different behaviors for all those to keep in mind here.
+
+Madeline Luke   1:19
+Mhm.
+
+Connor Lamoureux   1:32
+Um...
+So, call outs here is there is a this top example shows a.
+hover direct label, which is like the value at that point instead of a tooltip.
+
+Madeline Luke   1:50
+Mhm.
+But then there, or...
+
+Connor Lamoureux   1:58
+So.
+Yeah.
+
+Madeline Luke   2:03
+Wait, but is the label showing on hover or is that just a label on a point and then it's showing the tooltip below?
+
+Connor Lamoureux   2:12
+It's showing on hover, so you can see here.
+
+Madeline Luke   2:15
+Oh.
+
+Connor Lamoureux   2:18
+The line thickens, a dot appears in the mark, and the value is shown.
+So this is the value that's being shown.
+
+Madeline Luke   2:23
+But.
+
+Connor Lamoureux   2:28
+Right here.
+
+Madeline Luke   2:29
+Yeah.
+
+Connor Lamoureux   2:32
+relevant part of the axis is also highlighted.
+
+Madeline Luke   2:34
+So then would you say default behavior is the label showing? And then if they want there to be more information, there will be a tooltip.
+
+Connor Lamoureux   2:46
+So the guideline they give is direct label works best in the value alone enough to convey understanding.
+
+Madeline Luke   2:53
+That's what it seems like it's saying.
+
+Connor Lamoureux   2:53
+Uh, data tools we can provide more, so...
+I think we would want to have...
+The value by default, yeah. And then if we find anyone ever wants to not have that, we can provide a way to not have that.
+
+Tanu Garg   3:05
+Yeah.
+
+Connor Lamoureux   3:12
+Um...
+
+Madeline Luke   3:13
+Okay.
+
+Connor Lamoureux   3:14
+And then tooltip, it could be, we probably would want to, if someone has a tooltip, then we're going to show a tooltip is what I think.
+
+Madeline Luke   3:22
+Yeah, so like if they just don't pass a tooltip, we're just going to show the data label.
+
+Connor Lamoureux   3:26
+Yeah.
+Mm-hmm.
+
+Madeline Luke   3:29
+Okay.
+
+Connor Lamoureux   3:30
+It might make sense for us to say.
+Um...
+The hover direct label.
+Doesn't have to, it should be default to the value, but maybe it should be able to be another item on the data entry.
+Like you can say it's a different key.
+
+Madeline Luke   3:52
+Yeah.
+
+Connor Lamoureux   3:53
+So you choose your key, but the default is metric or whatever, default is whatever the line one is.
+Um...
+and then maybe custom or prefix or like.
+Do we do we open up a callback option where you can modify whatever the result is? I think no, I think we can do that later, but...
+We don't need to do that on the first pass.
+And then if there's a tool tip, then we don't do the direct, we don't show the label. It is the same text. We have an existing text.
+label for the line annotation or line direct label, I mean. It's the same, everything is the same on that. It's just it's not a line direct label now, it's the point label.
+And so we'll want to make sure we reuse that code in both places so they always match. But implementation.
+
+Madeline Luke   4:48
+Mhm.
+
+Connor Lamoureux   4:51
+The way we put it on or where we put it is going to be different because it's on the it's tied to the point instead of the line.
+Um...
+And that probably has a position too, like we auto position. We have right now, it like does like top, bottom, left, right or something. That's how we're doing min, max and in web spa, but.
+We want to support that there as well.
+Yeah, and then with this, like always keep in mind, like managing, figuring out how to get the proper gap between the point and the label, especially with the background, because the background is like...
+It's text. It's also a text mark.
+And so your label ends up starting from the background.
+If that makes sense.
+And something else to call out, it's not related to this at all, but it's a feature that we wouldn't capture unless we call it out, which is that the ends of the lines in all these examples are rounded.
+
+Madeline Luke   5:57
+Mm.
+
+Connor Lamoureux   5:58
+So we want to make sure we have that captured in some work to look at. I believe ours are not rounded. And I haven't seen one that's not rounded, so they should be always rounded. Is that one? Yeah, they're all rounded.
+There's one that's square. Okay, so there's rounded and square, so we need to talk to design about what determines whether it's rounded or square. And then either way, we can just start with adding, making it so the lines are rounded and adding a prop to change it to square.
+If one wants to override that.
+And then...
+Um...
+hover state, the static point is, I think we have that static point, right? Or do we need to change it for us to?
+Or not static point, sorry, hover point style, just like circle it.
+
+Madeline Luke   6:51
+Yeah, so right now...
+Wall.
+We do. I think we have that done.
+
+Tanu Garg   6:59
+Looks the same as S1 to me.
+
+Connor Lamoureux   7:00
+Okay.
+
+Madeline Luke   7:02
+I'm.
+
+Connor Lamoureux   7:03
+I think it's different. It looks similar.
+
+Madeline Luke   7:04
+I'm trying to remember if I did.
+
+Tanu Garg   7:07
+Right.
+
+Madeline Luke   7:08
+build points because I did them for us too, but I think they might all be hollow.
+And then there were no hover states right now.
+
+Connor Lamoureux   7:14
+Okay.
+Yeah, and the rule, the hover rule line needs to be behind the point, but in front of the rest of the chart. So it's behind the line it's drawing 4, but it's in front of the lines that are faded back. And so if the center is transparent, we'll have to figure that out.
+
+Tanu Garg   7:17
+Thank you.
+
+Madeline Luke   7:18
+Let's look at...
+
+Tanu Garg   7:22
+Mhm.
+
+Madeline Luke   7:31
+Yeah, so I think...
+
+Connor Lamoureux   7:35
+ItoK.
+
+Madeline Luke   7:36
+Yeah, I think right now for all the points, they're all hollow.
+
+Connor Lamoureux   7:40
+Yeah, okay, so let's look at that.
+
+Madeline Luke   7:41
+So, and then there were no hover states in the Figma, so we just didn't.
+
+Connor Lamoureux   7:47
+Yeah.
+
+Madeline Luke   7:47
+Do that at.
+
+Connor Lamoureux   7:49
+That's fine. Let's look at that and then...
+
+Madeline Luke   7:50
+Okay.
+
+Connor Lamoureux   7:52
+Yeah, we'll double check and make sure the point styles in general look correct while we're doing that.
+And we'll cover it in a minute, but like focus and all that is going to look a little different. I think the interactions are different than what we do in S1. And then this one also has the call out of the axis highlight, which we won't do in this work.
+
+Madeline Luke   8:05
+Mhm.
+
+Connor Lamoureux   8:17
+but will be part of the access work and we'll need to wire into this properly once we do it.
+And that's where the the not the axis parts that are not the Y being hovered over are faded back with opacity.
+Also note that the hover, I think it works this way now, but the hover of a line like a series adds opacity to the legend.
+
+Tanu Garg   8:41
+Yeah.
+
+Madeline Luke   8:43
+Yeah.
+
+Connor Lamoureux   8:47
+So this next picture, the tooltip example, just the same, we're just not going to use direct label.
+So hovering an area, which is our dimension hover in S1.
+When a user hovers a point along the x-axis, the chart highlights all the data points.
+Um.
+Also saying that each line is thickening. Oh yeah, it said the line thickens here too on the first example. And so...
+Let's see if we can drill in on that a little.
+
+Madeline Luke   9:22
+Oh, the line thickens.
+
+Connor Lamoureux   9:24
+3.5 pixels and so I don't know if this would be classified as a
+
+Tanu Garg   9:25
+ItoK.
+
+Connor Lamoureux   9:30
+Let's see if this other one shows.
+Can't drill into that one.
+like a different type of...
+
+Madeline Luke   9:50
+Are you trying to see if they're different sizes?
+
+Connor Lamoureux   9:54
+Yeah, if it's 3.5, then I'm guessing we're looking at...
+This is a large chart.
+Yeah, 1.5 would be too much of A jump. So add 0.5, let's just do that, and then we'll make sure it looks good to design. I think they'll be fine with that.
+
+Madeline Luke   10:09
+Probably.
+
+Connor Lamoureux   10:18
+So when you hover a line, add 0.5.
+And then same goes for the ply area. You add 0.5 to all of the lines.
+When you hover by dimension.
+Um...
+And...
+And direct labels can show multiple times, so around each line and also the point.
+So, um...
+Also, they can overlap. And so this is going to be part of this ticket is figuring out, or this block of tickets is figuring out how we want to handle overlapping of the direct labels.
+on the points when you're hovering dimension.
+Um...
+Because these like text, the text in these are colliding a little bit, even though like the background text handles that collision cleanly so that you can still see each of them. But it's also an ideal example. So if the lines were tighter.
+
+Madeline Luke   11:19
+Okay.
+
+Connor Lamoureux   11:29
+then it wouldn't look it wouldn't work so well. All that being said, you could still see them all like.
+The last drawn line, which in this case is the purple one, IE 11, would be at the top and then it would like layer behind each other and you could see them like sort of. Whereas like today in S1, they just all collide and then you can't see anything.
+
+Madeline Luke   11:51
+Yeah.
+
+Connor Lamoureux   11:52
+But I could still see these getting close enough that they become difficult to read and...
+Um...
+Vega, like Vega is kind of all or nothing with hiding collision.
+So that's going to be a challenge for us to figure out. Also, I mentioned in the last one that the rule, the line drawn at this position, goes behind the hovered line and in front of the other lines that are faded back. But if it's a dimension, then it goes behind.
+the points for all those hover lines.
+not just the one that, you know, since they're all hovering instead of a single one.
+
+Tanu Garg   12:32
+I.
+
+Madeline Luke   12:35
+Mm.
+
+Connor Lamoureux   12:37
+So today in Vega with S1, we have like positions so we can go top, bottom, left, right.
+And every point, when you have multiple points hovered like this, would try to go to one, like top, and then if it can't, it would go bottom.
+And then if it can't, it would go left and right, right? And if that means that if you have two lines connected and one is on top, but the other one being on top would collide with that one, it goes on bottom. And so the order is not as clean.
+Naturally, but design kind of like this is a very intentional look with these all being on the right of the points.
+
+Madeline Luke   13:09
+Mhm.
+Yeah.
+
+Connor Lamoureux   13:16
+And so...
+I think we have it work that way. Whoever's working on this though should definitely test a more condensed.
+version of the chart so that the labels are overlapping and see what that looks like. And then you're going to need to provide that feedback to design and ask them how they would want to handle that scenario and see if they'd want to collapse it or hide them if they collide in that situation.
+Keeping in mind that, like, as far as we know, Vega collision detection is all or nothing, so you can't say, I want to hide it kind of if it looks like this, but not if it looks like this, right? If it collides, it gets hidden.
+
+Madeline Luke   13:57
+Yeah.
+
+Connor Lamoureux   13:59
+Um...
+Okay, any thoughts on this?
+
+Madeline Luke   14:12
+I don't think so.
+
+Connor Lamoureux   14:12
+My recommendation would be like if there's a certain amount, maybe we, I guess this would be challenging, but if there's a certain amount of density, like too many lines and too small of a spaces, we could just not show.
+direct labels or just show like...
+One of them, but we probably would tell them to use a tooltip instead if they were doing that.
+
+Madeline Luke   14:31
+Yeah, yeah, I feel like if there's just too many, when you hover, you'll see all the points, but then it'll just automatically use the tooltip rather than the labels. I'd feel like that would be.
+
+Connor Lamoureux   14:38
+Yeah.
+
+Madeline Luke   14:44
+Okay, default functionality, I don't know.
+
+Connor Lamoureux   14:47
+So if that's the case, then we would need to have a way for us to be able to support the tool tips.
+and a direct label at the same. And so you'd have to be able to like, either we control it internally or we allow the user to control that. Meaning you could have a tooltip, but sometimes you might show a direct label instead.
+
+Madeline Luke   14:56
+Yeah.
+Right. Right now, right now we just allow the user to control it, right? Like they can pass in.
+But, like, there's no default tooltip in React Spectrum charts.
+
+Connor Lamoureux   15:20
+You can put in a tooltip with nothing and it will give you a default, but no one would do that because it's not like a very good tooltip. But it is, there is something. But we don't have hover point labels like this really. Like I, we maybe we have on hover stuff, but it's this is not right now. Point labels are not used as like a.
+
+Madeline Luke   15:26
+Right, right.
+Mhm.
+
+Connor Lamoureux   15:39
+alternative to a tooltip component.
+So it's a bit of a new pattern. I think this...
+
+Madeline Luke   15:45
+Yeah, or maybe we just say like the label is the default, but then in the prop description, give like a warning or something that like if there's too many lines.
+that they'll collide really bad or hide and we suggest using the tooltip setting instead.
+
+Connor Lamoureux   16:06
+Yeah, I'm just picturing like our, our...
+
+Madeline Luke   16:07
+or something like that.
+Yeah.
+Yeah.
+
+Connor Lamoureux   16:33
+But you have a good point.
+I'm leaning towards us doing like a three-point research spike, maybe two points even, and just like get the labels in there, looking like the line direct labels, and then make these configurations, see how it looks, and then talk to design and figure out how they want to handle these edge cases.
+
+Madeline Luke   16:54
+Yeah, I just, I do worry a little bit how these hover labels are going to look.
+
+Connor Lamoureux   16:55
+Um...
+Yeah, me too.
+
+Madeline Luke   17:01
+just simply from like the min-max displaying on the charts in web spa and those colliding pretty badly naturally. And even in those lines, there's not like a ton of data.
+
+Connor Lamoureux   17:06
+Yeah.
+Right, so it happens fast.
+
+Madeline Luke   17:16
+So, I just...
+Yeah, and if there's a lot of points that are hoverable.
+
+Connor Lamoureux   17:20
+And these are bigger.
+Yeah.
+
+Madeline Luke   17:23
+I just worry it's going to look a little crazy, messy.
+
+Connor Lamoureux   17:26
+Yeah, well, especially because we have lots of cases where like the line points are in the same position or very, very close, right? They're not even, they're almost exactly the same. So that happens more with like really high scale data too, like high numbers. And so.
+
+Madeline Luke   17:31
+Yeah, mhm.
+
+Connor Lamoureux   17:44
+Like what does it look like if two of these are completely overlapped? What it would look like in this example is you would see 1.7 and you wouldn't see 2.4. Because it would be cleaner and since there's a background, you'll get to see something, whereas today it's just text and they overlap and you can't read it.
+
+Madeline Luke   17:53
+Yeah.
+Right.
+
+Connor Lamoureux   18:02
+Whereas this would be more like if you took images and overlaid them over top of each other, right?
+
+Madeline Luke   18:07
+Mhm.
+
+Connor Lamoureux   18:08
+So I would still be more readable than what we have today, but...
+But yeah, whoever gets that research spike will need to try some of those things and talk to design about it. I still think we write, we can make guesses about what the tickets are, so I think we should still write those tickets and then whoever takes that spike will have ownership of updating those. If there's anything that changes.
+
+Madeline Luke   18:28
+Mhm.
+
+Connor Lamoureux   18:33
+And then yeah, in this case, all the lines get that extra 0.5 thickness.
+Eden to them.
+Small multiples.
+Looks like just at a glance looking at this small multiples, the point is scaling with the size. So we want to make sure we capture that in.
+
+Madeline Luke   19:00
+Mhm.
+
+Connor Lamoureux   19:03
+our size scaling so it's not just like the
+The hover label, it's not just static points, it's also like hover points would also be changed based on the size scale for the chart.
+And in this case, we're just putting the labels above instead of, so that confirms we'll need to have.
+At a minimum, internal controls for the labels position.
+Um...
+Yeah, and we can just default small multiples. However, that we need to finish the research spike for that stuff before we know. But once that's done, we can say if there's hover points on there, we'll do that. And so that means that getting...
+The work done for...
+Oh, okay. I think the research for trellising in multiples is more complicated than the research for the labels and so...
+Whoever implements the work for multiples will need to go back and implement, will have an extra ticket for making the labels work in those cases as well.
+So labels have to be done before small multiples is what I'm saying, or trellising. Or, yeah, I think we go that direction. Labels first, then trellising. That's going to be in line with how people are going to use, what features are going to be used the most.
+Okay, any...
+Questions, thoughts?
+
+Madeline Luke   20:37
+Oh.
+
+Connor Lamoureux   20:40
+Okay, selection, Tanu is working on this action bar right now, a research spike for it.
+
+Madeline Luke   20:40
+No.
+
+Connor Lamoureux   20:49
+Um, so I guess we could start with that, like this is...
+On click, you get this action bar. Any thoughts or like questions about that work so far, Tanu, based on your research?
+
+Tanu Garg   21:05
+I think it's looking good. The leftmost is the drag position. So as Alan confirmed, then there are a couple of action buttons. The only thing is he gave a vague answer for it could be 4 to 5 action buttons. So we need to.
+you know, confirm the size based on how many action buttons we want to provide here. But other than that, action bar is pretty much sorted.
+
+Connor Lamoureux   21:30
+Okay.
+Okay, cool. So I'm not, let's not capture any extra work here then, but we want to have JIRA tickets as a result of that research spike for what the actual implementation will look like.
+
+Tanu Garg   21:40
+Yeah.
+
+Connor Lamoureux   21:50
+Um...
+Keyboard focus. This is going to require accessibility, so...
+It's moot right now.
+Um...
+Yeah, not worth.
+investing in too much.
+At the moment, null values.
+So, recommendation is to use gaps for null values. So, in our practical use, that means if the line is missing.
+Values.
+for whatever the value key is, then we're doing gaps. So we support that now, right? So the main change I see here is that.
+
+Madeline Luke   22:34
+Mhm.
+
+Connor Lamoureux   22:39
+The gap, the lines are rounded at the ends, including the gaps instead of squared, so we'll have to make a change for that to be the case, and then...
+
+Madeline Luke   22:44
+Yeah.
+
+Connor Lamoureux   22:52
+Um...
+I...
+Estimates, huh?
+
+Madeline Luke   23:03
+Yeah.
+
+Connor Lamoureux   23:04
+That's interesting.
+
+Madeline Luke   23:05
+The.
+
+Connor Lamoureux   23:08
+I don't know like if we would like that seems like very business logic specific.
+
+Madeline Luke   23:09
+I...
+
+Connor Lamoureux   23:16
+
+For the app of the consuming application.
+
+Madeline Luke   23:16
+So's.
+Is this saying that the data passed in by the user is going to have estimated data or is it saying that?
+
+Connor Lamoureux   23:19
+Yeah.
+
+Madeline Luke   23:26
+RSC is going to estimate values.
+
+Connor Lamoureux   23:29
+Right.
+
+Madeline Luke   23:31
+To complete the line.
+
+Connor Lamoureux   23:31
+We're not going to estimate values.
+
+Madeline Luke   23:33
+Okay.
+
+Connor Lamoureux   23:35
+Because it's too specific to like, we could do like fill, right? Like we could say if.1 or you know, if you have JD for January, you don't have data for February, you have data for March.
+We could.
+complete the line and just say, oh, because February doesn't have data, we're going to use a dotted line to indicate that we auto-completed this line.
+
+Madeline Luke   23:58
+Yeah.
+
+Connor Lamoureux   23:59
+Like we could do that, but it's, I don't know if it, I almost don't want to do it because it's going to encourage people to do it and it's not a good representation of what their application is trying to say.
+
+Madeline Luke   24:10
+Yeah.
+
+Connor Lamoureux   24:12
+So that might be like instead we could offer a way to have multiple lines in the same line with different keys.
+Which we kind of do already, right?
+
+Madeline Luke   24:26
+Mhm.
+
+Connor Lamoureux   24:27
+So you can have, I think you could have a line.
+We do have metric range now, right?
+
+Madeline Luke   24:34
+Yeah.
+
+Connor Lamoureux   24:35
+So we wouldn't want that. And I don't want someone to have to say line, like line component, line component, and just design them all differently.
+
+Madeline Luke   24:43
+Why don't we just have them? Couldn't there just be an estimated prop that would?
+I was going to say you could tie it to like a data key, but I guess if it's the same.
+Key, how would you know?
+
+Connor Lamoureux   24:57
+Hey, let's think API, so like API-wise, I...
+I.
+Really cool to have a whiteboard right here, huh?
+Is that pretty visible?
+
+
+Madeline Luke   25:11
+I can see the whiteboard, but maybe draw on it. I don't know.
+Yeah, I can see that.
+
+Connor Lamoureux   25:23
+OK, um, I'll keep that in mind, uh, the...
+Wow.
+And we wouldn't like call the key something like.
+I don't think we'd call it estimated.
+But we, they're like, I'm thinking some kind of like facet that lets us control line type on a single line.
+
+Madeline Luke   25:47
+Ohh.
+
+Connor Lamoureux   25:54
+Because like line right now, we have line.
+We have line. Is it still picking up my transcription?
+Yeah, we have line.
+
+Madeline Luke   26:07
+Yes.
+
+Connor Lamoureux   26:10
+And you can set up like types or whatever. I forget the name of the prop, but you can like set your line.
+Types, sorry, I wrote that small, and then you could say, like...
+Dashed.
+Solid. This is not the actual API, but that's roughly that's an approximation of it. Can you even read that?
+
+Madeline Luke   26:32
+Oh.
+
+Connor Lamoureux   26:33
+Not really. Okay, I'm just gonna...
+
+Madeline Luke   26:35
+Could read the line, but then you started writing smaller, like...
+
+Connor Lamoureux   26:39
+Yeah, that's okay. I'll just talk about it. So like you could...
+You could do.
+I guess I can just write it down, uh, in a...
+Um...
+Document here, let's do this.
+So...
+You could, you could do a line like this.
+with whatever the name of the prop is, I'm just going to call it types.
+And.
+And...
+That can be equals an array, and let's just call this solid.
+And dashed.
+
+Madeline Luke   27:38
+Mhm.
+
+Connor Lamoureux   27:39
+But that is the facet that changes per line. So if you're a line, if you have a series like Chrome and a series like Firefox, then your Chrome becomes solid, your Firefox becomes dashed.
+
+Madeline Luke   27:47
+Right.
+Mhm.
+
+Connor Lamoureux   27:54
+So we would want potentially could be something like.
+What would we even call it?
+It's like you'd want...
+You'd have to have like a...
+Interline, this is not the name we'd use, but interline types, and that could be dashed and solid, right?
+And then you'd have like interline.
+Key, and that could be.
+Yeah, I don't know if I like that.
+That could be your estimate, and then...
+But then it'd be like...
+
+Madeline Luke   28:41
+Yeah, I was kind of thinking like with the data passed in on each data point.
+There's a property that's called that says is estimate is true, right? And I'm kind of thinking in terms of web spot of the pattern we've seen.
+So then you.
+As in the prop.
+
+Connor Lamoureux   29:03
+Mmh.
+
+Madeline Luke   29:04
+you say the data key for the estimated point.
+And then we draw the dot or the dash rather than solid.
+Based on each point.
+
+Connor Lamoureux   29:18
+Like.
+
+Madeline Luke   29:20
+Yeah. Does that make sense?
+
+Connor Lamoureux   29:25
+Yeah.
+Like this.
+Um...
+And then you have another one that's like...
+This.
+
+Madeline Luke   29:52
+Mhm.
+Yeah.
+
+Connor Lamoureux   30:00
+And then yeah, I think that makes sense because I think it's like, I don't know if it'd be good to have a lot of different line types supported on one line.
+It does kind of lock us into just having dashed.
+
+Madeline Luke   30:13
+Well...
+
+Connor Lamoureux   30:14
+or one line, like we can add a prop that's like, well, what's the estimate line type, right?
+But what if you want three estimate line types?
+
+Madeline Luke   30:24
+Well...
+
+Tanu Garg   30:24
+That would be too much overkill.
+
+Connor Lamoureux   30:27
+Yeah.
+
+Madeline Luke   30:27
+Yeah, I feel like that's a lot of freedom to give them anyways. I feel like it's reasonable to say this is the estimated data key and then the options are dashed or dot.
+
+Tanu Garg   30:28
+Ohh.
+
+Madeline Luke   30:42
+or something.
+
+Tanu Garg   30:43
+Yeah, they could pass the prop, like what kind of line they want, you know, but not more than one optional should be allowed. They could pick for something.
+
+Connor Lamoureux   30:52
+Okay.
+Yeah, I agree.
+
+Tanu Garg   30:57
+Ohh, do we give colors too?
+
+Connor Lamoureux   31:00
+Um, no.
+
+Tanu Garg   31:02
+Now, same color.
+
+Connor Lamoureux   31:03
+No, no, because color is like always some indicator of like...
+More of a fundamental data change, in my opinion.
+I think, like, if you introduce color into that, then it's gonna look like something.
+I don't know, something, it's only like 2 lines that are overlapping each other is what it's gonna look like.
+
+Tanu Garg   31:24
+Sam.
+
+Connor Lamoureux   31:25
+Um...
+Okay, so we're decided then it's going to be, it may not be called estimate. Whoever writes this needs to think about what to name it, but because estimate is very specific and it might be better to have something more generic.
+Um...
+But we'll have a way to do a prop that's going to be.
+A string that someone is going to use for the key that.
+But at that point, the line is going to be the alternate line type.
+And then another prop that would allow you to set what line type you want to have.
+for that. So it's two props that are linked. That's fine, but I don't think it makes sense to make this a child, so.
+
+Madeline Luke   32:15
+So I have a question then.
+So right now with the line chart, we have the line type prop.
+
+Connor Lamoureux   32:18
+Yeah.
+
+Madeline Luke   32:23
+And that will define the style for just one line.
+
+Connor Lamoureux   32:31
+Does it? I think it takes an array.
+
+Madeline Luke   32:31
+Rhett.
+
+Connor Lamoureux   32:33
+Is it taking an array?
+
+Madeline Luke   32:33
+Okay, it's a facet.
+
+Connor Lamoureux   32:36
+Yeah, that means it can be a single one or it can be an array of types. And if it's an array, then it's going to go by series.
+
+Madeline Luke   32:44
+Okay, I was going to ask, does it do like, okay, it goes by series.
+
+Connor Lamoureux   32:48
+Yeah, it'll automatically handle that.
+
+Madeline Luke   32:49
+Okay, because I was thinking, I feel like you didn't want to add another.
+cement line type prop, we could somehow expand that one that they could pass.
+the line type they want for the line and then for the estimate, like expand the object. But then I don't know if that would get messy.
+
+Connor Lamoureux   33:12
+I think it would it would mix the.
+It would mix it too much, like mix our concerns for that prop.
+
+Madeline Luke   33:19
+Yeah.
+
+Connor Lamoureux   33:23
+At most, I would have like a duplicate prop that's first something different, right? But functions as a facet.
+
+Madeline Luke   33:29
+Okay.
+
+Connor Lamoureux   33:31
+But yeah, facet is what I meant by like, we could have multiple like an array of types, but I don't think we'll have a use case for multiple types. And if we do.
+We could make it a facet later.
+Potentially.
+
+Madeline Luke   33:45
+Yeah, yeah, if we're already going to add that second prop, it could be built on.
+
+Connor Lamoureux   33:52
+Yeah.
+Okay.
+
+Madeline Luke   33:54
+But I just feel like that's a lot of freedom to let them choose.
+
+Connor Lamoureux   33:58
+Yeah, yeah, so let's just stick with what we said then, so...
+
+Madeline Luke   33:59
+I don't know.
+
+Connor Lamoureux   34:05
+Um...
+They can use a key to control if something's going to be an alternate line type on a single line, and then another prop to define what that line type's going to be. And that's going to default to dotted.
+And then there's a hover case here where if you're hovering over like a dimension or the point and it's an estimated point, so it looks like hover works as well for the estimated line, but there's going to be a parentheses that says estimated.
+That's going to be the default behavior is after the value, the metric value, it's estimated.
+Um...
+And we can do that, but I also think we provide some kind of override.
+So someone can make that say what they wanted to say.
+Maybe, maybe we could.
+I don't want to make it like B what the key is because they're going to want to be able to localize that text. And that's the other, yeah, if we're not, usually with stuff like this, we make them put the label in so they can localize it. Like we're not going to localize the word estimated.
+Right, on internally.
+
+Madeline Luke   35:21
+Yeah.
+So right now with the way that the direct labels work,
+We let them, well, it's either the metric or they can choose something else. But then isn't there something that they can append to it if they want?
+With the colon.
+
+Connor Lamoureux   35:43
+We have something like that, yeah, append or something.
+
+Madeline Luke   35:46
+We could do something like that here, but instead of appending at the front, it would just be after the value.
+
+Connor Lamoureux   35:56
+Yeah.
+And they can, yeah, I'm just trying to think of if there's a way we can do default, but...
+Probably not without having to mess with localization stuff. So I think we just do an append like you're saying, Maddie, and then they can put whatever they want in there.
+Yeah, okay. Importantly though, there's an append only for the estimated one.
+And so we'd have to give them a way to control that because if you just say append on the point.
+
+Madeline Luke   36:32
+Oh yeah.
+
+Connor Lamoureux   36:33
+Then it's going to append it to everything.
+And so it would have to be some assuming that we call the prop estimate an estimate, then...
+we would call or his estimate or whatever, then we would need to have a prop that's like.
+Estimate append.
+Something like that.
+
+Madeline Luke   36:51
+Yeah.
+
+Connor Lamoureux   36:54
+Or it could be a prop that's like an append, but then there's also a prop that controls.
+what to append it based on and then you would map that to the same key that you're using for whether it's an estimate or not.
+
+Madeline Luke   37:08
+I like that better because I feel like...
+For these labels, they may want to append something.
+
+Connor Lamoureux   37:15
+Yeah.
+
+Madeline Luke   37:16
+If it's not an estimated value, you know, they might want to add something. So I think having that option would be nice.
+
+Connor Lamoureux   37:19
+In.
+Okay, let's do that.
+Noticeable here is that there is actually, when these labels are kind of closer together.
+The labels are in the corner, so top right, top bottom right.
+And then some are centered, like one of them is centered, the rest are corner offset to try and make more space for them.
+And so we could speculate on that, but we'll just make a note here to include that detail in the research spike work and ticket for.
+These direct label, these hover labels.
+Um...
+Okay.
+When all data in a series is missing, don't show a line. A flat line at 0 can mislead. Use another method to indicate the series can't be displayed. I don't see us doing that. I see that being something that is done externally.
+Like, this is like a pop-up. Like, I guess we maybe we could do a pop-up like that.
+I did like a toast.
+I, I think we don't.
+
+Madeline Luke   38:40
+I didn't realize that was part of the design. I had tried to click that on my screen because I thought that there was a pop-up. That's funny.
+
+Connor Lamoureux   38:44
+Really.
+Yeah.
+I think we probably don't do this. And I think if we like do, it feels like it's outside of our world, like this is business logic for the consuming application.
+
+Madeline Luke   38:55
+Mhm.
+
+Connor Lamoureux   39:00
+And we wouldn't, like, we'd have to provide control, I guess we could provide controls like when they click the X.
+Then they can do a callback to control how they want, and then they could pass in something to say, show the show the toast on.
+Um...
+No data or not.
+Um...
+I don't know. Let's make it a two-point research spike that we're going to address last.
+
+Tanu Garg   39:30
+Yeah.
+
+Connor Lamoureux   39:36
+And we shouldn't worry about that until we've done everything else. I think it's not going to be used a lot anyway.
+
+Tanu Garg   39:42
+Since it is on the chart, we might have to do it at some point. Either they move this pop for whatever it is outside the chart. Right now, they put it, the placement is on the axis.
+
+Connor Lamoureux   39:42
+Does that sound?
+Yeah.
+
+Tanu Garg   39:56
+So they won't have a lot of control unless we give them.
+
+Connor Lamoureux   40:00
+Yeah, that's a good point. We'll include that in the research spike that we need to figure out. Like, if we're, does it make sense for us to do this because we'd have to wire up?
+business logic and stuff.
+And then if it makes sense for us to do it, or if it doesn't, then we'd have to figure out what the designs actually look like.
+We might do it. I'm not saying we're not going to do it. It might make sense for us to do it. But if we do do it, it's the last thing I'm going to want to do.
+Like literally in the timeline just because it seems like a lot of high effort to low gain.
+
+Madeline Luke   40:38
+Mhm.
+
+Connor Lamoureux   40:38
+I would even say we probably do this after.
+other chart types and stuff like just do it as late as we can. Basically we won't do it until somebody asks us for it is what I'm thinking.
+Um...
+Okay, usage guidelines.
+So just for the sake of the transcript, call out some of the stuff here. So we're not doing multiple colors for a gradient on a single line. Not doing opacity gradient on a single line.
+Um...
+And...
+Yeah, I guess preferring a reference line over a...
+A secondary line? I don't know. These are more like implementation, I think. How far gradients should start? Gradient should start at the peak of the line and extend 8 pixels below the x-axis, typically positioned at 0.
+We did this already. We don't have to do anything with that.
+Color palettes. The only thing relevant here is that we use categorical color palettes for everything by default.
+Um...
+The sequential data is not a, like we do have sequential color palettes as well.
+I guess this is not too relevant for us, but in the legend, there's like these gradient legends, and so we'll have to figure that out, but that's going to be as part of our legend work that we plan.
+Um...
+Don't smooth lines, just to smooth lines.
+Um...
+Okay, point marks. There's a solid version of the point mark shown here with a slight background colored or white circle. It is different from...
+the one that we have in S1, so that will be some work to do.
+
+Madeline Luke   42:53
+And.
+
+Connor Lamoureux   42:56
+Um...
+And we can use the same implementation for actually showing the points.
+And so I guess like that static point, like we right now we have multiple types of static points. We don't necessarily have to remove those, but.
+There's like 1 main type that is what we end up using for most situations.
+Um...
+Point size, it is based on the chart size, and so static points as well with this new style. There's a small, medium, large version of those.
+And so we'll need to do some implementation of that once the small, medium, large tickets are complete.
+And then we have shapes.
+So...
+Use point mark shapes to improve accessibility.
+And.
+The shape should match the legend.
+And we're going to limit it at 4 shapes, it looks like. There's 3 shown here, so you've got circles and squares and triangles.
+Um...
+We can use a path and SVG path for shape. So these are all possible. We'd have to have the outline updated for those as well.
+I'm trying to think of hover state changes based on this or not.
+I.
+I don't think we worry about focus will change. I don't think we have to worry about...
+hover state for these shapes because the hover, well, hover is different. So whoever does this work needs to look at.
+Do.
+What happens if you hover a square point?
+Because right now, if you ever, if we assuming we added square points and then you hover it, it would be a circle and you hover it.
+
+Madeline Luke   45:38
+Mm.
+Yeah.
+
+Connor Lamoureux   45:40
+based on the code design. So is there a shaped version of that for the shape line? And then these are done by series, so there'd be a shapes facet.
+It'd be cool if we would allow people to do a custom shape. I don't think or know if that's possible, but if someone could pass in an SVG string, that'd be neat. Might be easy to do, worth checking out, but not a requirement.
+I believe last time we looked at doing that, we found that it wasn't possible, but, or easy to do, I should say.
+Uh...
+Yeah, and like don't put you can't have this different shapes on a single line is the.
+Is the other thing?
+Okay.
+Categorical labels.
+We have, so this is the equivalent of the line direct label that we have in S2 already, but there's some added.
+Design guidelines around how those should function.
+
+Tanu Garg   47:03
+I.
+
+Connor Lamoureux   47:12
+So place the labels near the starter end of the line, top left, bottom left, top right, or bottom right.
+A.
+Labels more often appear at the end.
+So we support.
+that today.
+Um...
+Refer one placement style.
+In a single chart.
+Avoid placing them on data points, overlapping the y-axis.
+Um...
+
+Madeline Luke   47:47
+and colliding with the line itself.
+But I don't know how we're going to avoid colliding with the line. Yeah.
+
+Connor Lamoureux   47:50
+which is impossible to avoid.
+Yeah, it's not possible to avoid. We can...
+Yeah, just because we like we can't control how much tech, how large the label is. That's it's kind of up to the user at a certain point to.
+design things so that it's going to work cleanly.
+Because there's always going to be an extreme enough line shape that we can't like.
+What you'd have to do is you'd have to have like some kind of collision detection for does anything on the line, on the line that this label is tied to collide with this label? And if so, put this label up above that.
+It's like hypothetically possible, but I don't think it's something we're going to try to figure out right now. I think we're going to go for good enough.
+Um...
+
+Madeline Luke   48:45
+Yeah, the last paragraph is kind of interesting as well.
+
+Connor Lamoureux   48:52
+Yeah.
+
+Madeline Luke   48:53
+Because it's saying stack them in order, but then it says label only the most important lines.
+I don't know. Right now, isn't it all or nothing? Or can you do it per line?
+
+Connor Lamoureux   49:06
+Uhh...
+I don't know. So we'll need to check and see if you can do per line. If we wanted to do per line, it would be pretty easy. We just provide a Boolean, provide a string prop that would point to a property in the data to say if the line is, if the label is displayed or not.
+
+Madeline Luke   49:12
+Okay.
+Ohh, I guess there's the exclude series prop.
+
+Connor Lamoureux   49:30
+OK, so yeah, we we support it then.
+
+Madeline Luke   49:31
+Yeah, okay.
+
+Connor Lamoureux   49:38
+Okay, so this stacking example on the bottom right is the most complicated one. And so it has two, there's two distinct behaviors that may or may not be tied together. And the first one is that we're saying we can...
+put the labels outside of the...
+chart into the y-axis.
+But we don't, we can't make those access labels because of...
+how they, like how our styles and stuff work. Like it's just, it'd have to be a mark still. And so we're looking at text marks that go into the y-axis.
+Um...
+
+Madeline Luke   50:26
+Is this even worth?
+trying to figure out though, because in the text description it says avoid overlapping the y-axis.
+
+Connor Lamoureux   50:39
+Yeah.
+
+Madeline Luke   50:40
+So then is it even worth trying to engineer it if they don't really even want you to do that?
+
+Connor Lamoureux   50:49
+Um...
+I agree with you.
+Uh...
+Let's cover the second thing really quick first before we decide. So the second one is that they're stacked, but not necessarily directly connected to the line they're on. So the color and style matches, the order matches.
+But the position of the label is not directly next to the line. It's just trying to make it trying to fit in a way that allows the label to be shown. The challenges with this are what's the actual order of the line? Is it where the line starts drawing?
+Is it where it ends the draw?
+Is it like the average compared to the other lines in the chart, right?
+
+Madeline Luke   51:39
+Mhm.
+
+Connor Lamoureux   51:39
+Like what if this purple line started here, but then drew up here and then went back down here? Is it still the first line?
+
+Madeline Luke   51:45
+Yeah.
+
+Connor Lamoureux   51:46
+Or, uh, it's probably where it ends is probably what it is, but...
+And.
+Yeah, I guess it'd be where it ends if it's end outside.
+This is super complicated to do, like how we would calculate. We'd have to calculate like the size of the axis and then we'd have to...
+do a lot of internal logic to decide how we're going to fit things and like manage collision and all that.
+
+Madeline Luke   52:14
+Mhm.
+
+Connor Lamoureux   52:16
+And like when are there too many labels so that we have to start hiding some and all that. So we'll keep that in mind, but to Maddie's point, let's call this one a two-point research spike, make it low priority, and it's the last thing we'll address. And that will start with talking with design about some of the implementation implications for actually doing that.
+Um...
+Okay, direct value labels, these are the hover point labels. The images call out that this is like, there's a point in some of these where they're like on the line, but they're still really tight to the line. So like, this is 2 different things. There's a point and then you can have a direct label on the same line.
+But it's not a...
+In that specific example, this was not would not be a point label.
+Um...
+I don't think, or we allow both.
+One of the where we could we could do that as well, 'cause I think that the point label is that it shows the value at the end of the line, but...
+Well, I guess you could have one point here, like the previous point, but then this would just go over here instead or like, yeah, so this is positioned.
+
+Madeline Luke   53:30
+Mhm.
+
+Connor Lamoureux   53:38
+OK, I don't think we need to overthink it, so...
+Um...
+Guideline is to position value labels to the left or right of the mark, the point mark.
+Depending on its position.
+Choose the side with more space.
+Don't cut it off using the edge of the chart if it's near the end.
+Vega will handle that for us automatically if we wanted to, if we're hiding overlap.
+Do not overlap the y-axis, cover the point, or let the label collide at the line if you can.
+Um...
+Showing the most important values.
+Okay, so we support static points, we support labels on static points, and so what's changing?
+Nothing really, right? Like...
+I think we just leave it as is.
+Uh...
+In this one here, it's like these are, it looks like bottom is the priority.
+But this one draws and so it goes to the top because there's not enough space in the bottom. So yeah, I think we can just do it as is.
+But the static point label, like the other labels, needs to use this shared text mark style with the text background. So that is work that will need to be done, and that would be a feature ticket.
+Okay, that's everything for that.
+Node.
+Let's run through some of these example compositions just to be sure that we are not missing anything.
+Okay, I feel, let's look at sizes. I want to see.
+So we have sparklines.
+So labels, points.
+Um...
+Looks like there is an extra small.
+So size ticket needs to be updated with an XS.
+which I assume is what we'd end up using for the Sparkline.
+Let's check that.
+
+Madeline Luke   56:38
+Mm-hmm.
+
+Connor Lamoureux   56:41
+This point is...
+3.7 by 2.78.
+Um...
+
+Madeline Luke   56:51
+It looks like it's three by three.
+
+Connor Lamoureux   56:55
+Oh, okay, maybe I just got the inner.
+Yeah, so extra small is what to use for Sparkline.
+So, update the size to add extra small support, and we might as well just expose extra small in the size props as well, even though most people won't use it, and then that will be used internally by us for Sparkline once we figure out how we're going to implement the Sparkline.
+And.
+That's her point in label. It looks like the lines themselves is on an extra small version.
+There is an extra small version for reference line.
+And reference line has this like...
+Um...
+There's an example of a reference line that's not a straight rule. It's like a line based on data. And so what that looks like is a reference line version of.
+
+Madeline Luke   57:42
+Yeah.
+
+Connor Lamoureux   57:48
+A trend line.
+And so the way that we need a ticket for that, and that's going to be...
+
+Madeline Luke   57:52
+Mm-hmm.
+
+Connor Lamoureux   57:56
+You would still use the reference line.
+API, like the reference line would still be the component, I think. Well, hmm.
+Is it a reference line or is it a trend line? I think it's a trend line and then you would just have some kind of...
+Some kind of component to make it look like a reference line, but still be based on the data.
+
+Madeline Luke   58:22
+Yeah.
+
+Connor Lamoureux   58:24
+I think it's unclear, but it's unclear based on the fact that designs are have like...
+
+Madeline Luke   58:24
+It seems.
+
+Connor Lamoureux   58:29
+Sam.
+Multiple ways to do the same thing.
+
+Madeline Luke   58:36
+Yeah, because I don't know why a reference line.
+
+Connor Lamoureux   58:37
+Like, what is the twin line?
+
+Madeline Luke   58:40
+Would look that way.
+It does seem more like a trend line, but it has the carrots.
+
+Connor Lamoureux   58:47
+So, let's do, let's do a one-point research spike for this reference line trend line mixture and call that a low priority.
+
+Madeline Luke   58:47
+Little triangles.
+
+Connor Lamoureux   58:58
+And let's also call out that there are...
+Actually, this would be separate. So this is an additional ticket we need to do for reference line, which is there are extra small, small, medium, large versions of the reference line and the secondary reference line.
+And so that's one ticket for each for primary reference line and secondary reference line. And for the primary, that includes shrinking down the triangle SVGs as well.
+
+Madeline Luke   59:33
+So it seems like the secondary reference line is a trend line.
+
+Connor Lamoureux   59:38
+Yes, but there's...
+
+Madeline Luke   59:39
+Is that what they're trying to say?
+
+Connor Lamoureux   59:42
+It done, we'll figure that out in the one-point research spike as well.
+
+Madeline Luke   59:45
+Okay.
+
+Connor Lamoureux   59:46
+But really, this is 2 things. There's reference lines and trend lines. In reality, right? If we set aside the designs for a second, they're functionally different. Because the reference line is marking a position on the X or Y axis, or a value on the X or Y axis, and the trend line is showing.
+
+Madeline Luke   59:52
+Mhm.
+Mhm.
+
+Connor Lamoureux   1:00:07
+Continuous information.
+across either axis, right?
+
+Madeline Luke   1:00:13
+Baird.
+
+Connor Lamoureux   1:00:13
+So by nature, like a trend line on the, that's going horizontally or along the x-axis is continuous data, and it's calling out multiple points of data, whereas a reference line is always calling out a single point of data.
+Um...
+They're both reference lines in the sense that they're like...
+referencing data, right, but
+
+Madeline Luke   1:00:38
+Yeah.
+
+Connor Lamoureux   1:00:41
+Kind of different uses.
+Because the reference line is acting as a marker for how you compare some other data sort data visualization to that line.
+Whereas the, and the trendline is doing that as well, but the trendline is also showing like information itself. It's showing an average or something.
+
+Madeline Luke   1:00:55
+Yeah.
+
+Connor Lamoureux   1:01:02
+So yeah, we'll figure that, split out a little more on the research spike, but for our purposes, those are the updates for reference line that we need to do.
+And trendline is still just the existing ticket we did, which is for the style.
+And then Sparkline, that's fine.
+I think that's it.
+
+Madeline Luke   1:01:28
+What about these opaque labels?
+
+Connor Lamoureux   1:01:29
+Um...
+These are just the these are used for the highlight opacity.
+which just matches what we do for highlight now. We just add opacity to the text mark. We're good. Call out though, because I don't think we have cases like this really. I think I might have done this, but if you have opacity added because of highlight for a label, a direct label or a static point label.
+
+Madeline Luke   1:01:45
+Ohh, OK.
+Mhm.
+
+Connor Lamoureux   1:01:58
+The background.
+The background text mark on those would not have opacity on it, because otherwise it's going to break the flow of how it's supposed to be viewed.
+Does that make sense? Because you've got a white background with colored text on it.
+
+Madeline Luke   1:02:16
+Mm-hmm.
+
+Connor Lamoureux   1:02:16
+If you add a capacity to both, then all of a sudden it behaves differently.
+
+Madeline Luke   1:02:20
+Yeah.
+
+Connor Lamoureux   1:02:21
+You only add opacity to the colored and then the white background stays full so that it's still serving its purpose.
+
+Madeline Luke   1:02:25
+Yeah, yeah.
+That makes sense.
+
+Connor Lamoureux   1:02:31
+Okay.
+I think we're good. Any other questions or thoughts?
+
+Madeline Luke   1:02:41
+I don't think so.
+
+Connor Lamoureux   1:02:43
+Cool.
+Probably, yeah, I'm not going to call out how many more tickets that is because it's going to be up for the agent to decide based on the work, but it doesn't look too bad.
+Lots of interesting research there.
+Do we want to get into...
+Probably let's do axis.
+Well...
+Legend is tough because there's a lot of complicated work in legend, but there's some stuff that'd be nice to get early. Let's do access because access is going to have fewer things.
+
+Madeline Luke   1:03:19
+Mhm.
+Okay.
+
+Connor Lamoureux   1:03:22
+For the transcription, we're just calling out that.
+The conversation going forward is about access work that would not be part of the line epic, but we still want to capture that in separate tickets.
+Um...
+Okay.
+So...
+Couple considerations for scaling. There's ordinal scaling called out here. I don't think we have, I don't remember if we have support for ordinal scaling. I don't think we do. We might not need to do it. We might be able to just use categorical or...
+Or whatever, but...
+It's like.
+They're not really like it is a scale, but it's not based on
+this linear like exact amount.
+
+Madeline Luke   1:04:42
+Yeah.
+
+Connor Lamoureux   1:04:43
+Values follow meaningful order, but the spacing between them isn't exact.
+Um...
+Interval scales, we technically support this. It's just not called that.
+Ratio skills. OK, let's get into behaviors.
+Oh.
+Okay, text and grid lines.
+I don't think that that's important for us.
+Okay, this is the first actual one. Interactive access. So...
+
+Madeline Luke   1:05:46
+What is this? Okay.
+
+Connor Lamoureux   1:05:51
+Um...
+Hovering an axis label can highlight it and add opacity to the other.
+axis pieces, including the other labels and the axis grid and the, really it's the, it looks like it's just the bottom, the baseline and the ticks and the labels.
+Notably, in all the examples I've seen, the Y-axis is also...
+also has opacity. I think that that's incorrect. So when we...
+When we do the work for adding highlight to axis labels, let's talk to design about do they actually want the y-axis labels to have opacity? I'm guessing they'll say no.
+Um...
+Maddie, you've been doing a bunch of research on this, right?
+
+Madeline Luke   1:06:49
+Yeah.
+
+Connor Lamoureux   1:06:50
+So what are your takeaways?
+
+Madeline Luke   1:06:55
+It's doable by adding erect mark.
+for the hover state. It doesn't show it right here, but that light gray box that we were seeing. And then I'm also able to, on click, I was able to have the black box as well.
+
+Connor Lamoureux   1:07:02
+Yeah.
+Yeah, it's another.
+Okay.
+
+Madeline Luke   1:07:15
+Using the same pattern.
+That being said.
+It does kind of worry me when access labels are going to get really close together.
+
+Connor Lamoureux   1:07:28
+Yeah.
+
+Madeline Luke   1:07:29
+I don't really, I'm still kind of, I was going to spend some time today figuring out like what that would look like or what we would do.
+
+Connor Lamoureux   1:07:37
+Okay.
+
+Madeline Luke   1:07:38
+Because...
+But like you were saying last week that it might be fine because if the labels are going to be opaque and be lighter, then it might not matter if the labels are so close together.
+
+Connor Lamoureux   1:07:58
+Yeah.
+
+Madeline Luke   1:07:58
+Because if they fall, kind of fall to the background.
+
+Connor Lamoureux   1:08:01
+Yeah.
+And then for selection, like I assume the backing rect would rectangle would.
+Allow us to put that in front of everything.
+
+Madeline Luke   1:08:15
+Yeah.
+
+Connor Lamoureux   1:08:15
+Um...
+Yeah, I think we...
+The initial work for this, I think we make it a 5 pointer.
+
+Madeline Luke   1:08:25
+Mhm.
+
+Connor Lamoureux   1:08:25
+Assuming it's going to require a little bit of extra research and we're going to like when we actually implement some things we're going to run into edge cases.
+
+Madeline Luke   1:08:32
+Yeah, it's definitely doable, but I feel like there's going to be a lot of edge cases. And then also what we talked about last week with the sub labels.
+
+Connor Lamoureux   1:08:42
+Yeah, yeah.
+
+Madeline Luke   1:08:43
+Like what are we going to do there? I was going to send a message out to Alan and I just didn't get to do it last week. But like would we include the sub label?
+
+Connor Lamoureux   1:08:50
+Okay.
+
+Madeline Luke   1:08:53
+in the box.
+
+Connor Lamoureux   1:08:56
+Rhett.
+
+Madeline Luke   1:08:56
+And it would just be like larger or do we only highlight the main label?
+
+Connor Lamoureux   1:09:02
+Tubb.
+Yeah, or do we do we hide the sub-label, right? Like, I'm not sure.
+
+Madeline Luke   1:09:05
+And then also it just...
+Yeah.
+But, and then there's also just some inconsistencies throughout the designs. Like sometimes there is that light gray box, but sometimes when you hover, it just looks like bolded.
+
+Connor Lamoureux   1:09:19
+Yeah.
+
+Madeline Luke   1:09:23
+And then there's other cases. Okay, that other ones, it does don't do that.
+But yeah, the two examples I've seen is you hover and there's the gray box.
+with a tooltip.
+And then the other example is when you hover, it looks like the text is just bolded right there.
+
+Connor Lamoureux   1:09:46
+Yeah.
+And that would be like, we would have to add tool, we have tool tips on the access, right? Or are we doing a workaround for that?
+
+Madeline Luke   1:09:54
+Right now, there's tooltips on the axis.
+
+Connor Lamoureux   1:09:57
+Okay.
+
+Madeline Luke   1:09:58
+that you can hover.
+
+Connor Lamoureux   1:09:59
+Okay.
+
+Madeline Luke   1:10:00
+But I think I think the concern was the little carrot showing if you scroll down.
+
+Connor Lamoureux   1:10:04
+Okay.
+
+Madeline Luke   1:10:06
+into the overflow example. Yeah. So there it seems like maybe there would only be the gray box if there's an access tooltip.
+But then generic hover is just bolding the label text maybe.
+
+Connor Lamoureux   1:10:21
+Yeah.
+Okay, let's, I think it'd be more valuable for you because you're close to the end of this research spike, right?
+
+Madeline Luke   1:10:33
+Yeah.
+
+Connor Lamoureux   1:10:34
+I think it'd be more valuable for you to, rather than like trying to figure out some of the edge cases, like the label overlap and stuff, I think it'd be more useful for if you could have.
+
+Madeline Luke   1:10:44
+Mhm.
+
+Connor Lamoureux   1:10:46
+A clear, like...
+bulleted list or outline of what clarification we need from design.
+
+Madeline Luke   1:10:56
+Okay.
+
+Connor Lamoureux   1:10:57
+Like, what happens on hover? Are there variations to what happens on hover? Is this expanded tooltip or is it like a special, because we have, we're going to have cases for like.
+in specs and tooltips. And so like, is this a thing that's just there?
+
+Madeline Luke   1:11:12
+Mhm.
+
+Connor Lamoureux   1:11:16
+That's not a data tool, like a tool tip implies right now in our current usage, like data.
+showing data information. This is like a helper, right? Like it's just showing what's going to happen when you click on something. And that's different.
+
+Madeline Luke   1:11:26
+Yeah.
+Yeah.
+
+Connor Lamoureux   1:11:32
+So yeah, like are there multiple hover states? Are there multiple?
+actionable states, like if it's a clickable item, what are the different things? So if you can get a list like that and then get work with Alan on that, because here it's like there's an action bar, right? So like, is it always an action bar? I think we're replacing popover with action bar, so.
+
+Madeline Luke   1:11:47
+Mhm.
+
+Connor Lamoureux   1:11:53
+Probably, I imagine it's going to be a smaller action bar than the one that Tanu has been researching.
+So like is that equivalent is this action bar the same as all of our other action bars and
+So on and so forth. I think that's the highest value.
+
+Madeline Luke   1:12:10
+Okay, I can make sure.
+Okay, this afternoon, I'll make sure to send him a message with those questions. So then for this spike, like we know that it's possible to do, and then I'll get those questions answered.
+
+Connor Lamoureux   1:12:18
+Yeah.
+Okay, and then based on the results of that, we can put that in the spike results and like make sure it's in the ticket and then.
+
+Madeline Luke   1:12:30
+Yeah.
+
+Connor Lamoureux   1:12:32
+Whatever our next ticket for this will be a lot of points so that we can deal with those edge cases.
+However, that ends up. I do think on this one that you were calling out, like, that's a good example of what they're saying not to do is not.
+
+Madeline Luke   1:12:39
+Okay.
+
+Connor Lamoureux   1:12:47
+related to the tooltip behavior. So like...
+
+Madeline Luke   1:12:50
+Oh, okay. Oh, yeah, it's the text.
+
+Connor Lamoureux   1:12:52
+They're saying don't.
+Uh...
+What are they saying?
+prefer wrapping over truncating.
+
+Madeline Luke   1:13:05
+Mm-hmm.
+
+Connor Lamoureux   1:13:05
+But what we're seeing secondarily is that they are showing a hover state.
+That doesn't have the.
+
+Madeline Luke   1:13:13
+The gray box.
+
+Connor Lamoureux   1:13:13
+the gray box. So my guess is that the gray box is what it does if there's an action when you click on it.
+
+Madeline Luke   1:13:16
+The.
+
+Connor Lamoureux   1:13:20
+And then there's a descriptor of the active in this tooltip.
+
+Madeline Luke   1:13:21
+Yeah.
+
+Connor Lamoureux   1:13:25
+Otherwise, there's an actual tool tip, but then like what if you have a tool tip and it's actionable, right? Then I guess we just show that, but is there a gray box?
+
+Madeline Luke   1:13:35
+Yeah, it seems like there's a gray box.
+When there's an onclick for the label, the hover state for the onclick is the gray box, and then the selection is the black box.
+
+Connor Lamoureux   1:13:48
+But there's not here.
+
+Madeline Luke   1:13:50
+because there's not, that's just hover and no on click.
+
+Connor Lamoureux   1:13:55
+But this is the onclick.
+It's the same chart.
+
+Madeline Luke   1:13:59
+That's true. They are grouped together. But I would, I would, the assumption I would make from the other example, but because it says expand.
+
+Connor Lamoureux   1:14:01
+No.
+Yeah.
+OK, that's what we need to clarify, and then that'll be a set of tickets we'll figure out in the future.
+
+Madeline Luke   1:14:10
+Yeah.
+Okay.
+
+Connor Lamoureux   1:14:17
+Okay, we're not supporting slanting, wrapper truncate.
+Wrapping text is what they want. So this is a ticket we would need to do, which is today we have sub labels.
+They're saying wrapping labels is better. The text is centered. So can we support text wrapping on?
+Access labels.
+I'm not sure. And then what happens if you have text wrapping and a sublabel?
+I think that's probably one point research spike we need to do. Does that sound fair?
+
+Madeline Luke   1:14:59
+Mhm.
+
+Connor Lamoureux   1:15:01
+Like a pretty clear, pretty clear of what we need to figure out.
+
+Madeline Luke   1:15:01
+Yeah.
+
+Connor Lamoureux   1:15:08
+We will continue to support truncating, but it's not recommended here for use.
+We support.
+We support horizontal labels on horizontal charts.
+support abbreviation.
+Is that it?
+We might get the legend today.
+Let's look at reference lines really quick.
+
+Madeline Luke   1:15:40
+I.
+
+Connor Lamoureux   1:15:49
+Okay, so.
+Something we need to figure out that we don't currently support as far as I know is...
+Um...
+The baseline of the, I don't know if these would be reference lines or baseline.
+I'm trying to think of...
+
+Madeline Luke   1:16:14
+It seems like the baseline.
+
+Connor Lamoureux   1:16:17
+Yeah.
+Is there, but this is like...
+Like this is the equivalent vertically and this would be a reference line.
+
+Madeline Luke   1:16:33
+Mm.
+Okay, yeah.
+
+Connor Lamoureux   1:16:41
+Okay, this is ambiguous enough. I want to say let's do a research spike for...
+If you have a chart where the zero is centered instead of at the bottom of the y-axis.
+And say, so you're going to have zero and you're going to in the center and you're going to draw up and draw down from that. Can we have the baseline or use a reference line in its place to make it look the same? Can we have that be where the zero is, even if it's in the center of the Y domain instead of the bottom?
+Or top, right?
+Does that make sense?
+
+Tanu Garg   1:17:21
+Yeah.
+
+Madeline Luke   1:17:23
+Mhm.
+
+Connor Lamoureux   1:17:23
+I think it'll make sense when there's bar when you see bar.
+And.
+
+Tanu Garg   1:17:27
+Yeah.
+
+Connor Lamoureux   1:17:30
+I think we go to Bar next, actually, because...
+There are some axis behaviors in the bar that I'm not seeing in the axis designs here.
+So, let's go to bar.
+So this will be another separate epic for bar.
+With the new set of designs, and this is what I'm talking about, is diverging access.
+So this is the best in click puppy pick CTR compared to overall click-through rate.
+It's got dog breeds or dog names or something. Is a Dobby a dog breed?
+Um...
+And so you can't see the axis lines, but...
+This would be an access control or a bar control, I guess, but you've got diverging where you've got bars going.
+
+Madeline Luke   1:18:23
+Mhm.
+
+Connor Lamoureux   1:18:28
+You got your axis label Goldie and your green bar going right, so it's a horizontal chart with the axis that's on the left side. But then your negative values...
+are going from, for your access labels flipped to the opposite side. So now the label cheat sheet is on the right of the axis.
+And the bar is going from right to left for a negative value.
+And so.
+For us, that means some way to have like a diverging access where the labels are flipping based on where the values are.
+And it's for sure a research spike ticket.
+
+Tanu Garg   1:19:14
+Do we have this behavior before where axes are hidden?
+
+Connor Lamoureux   1:19:21
+We don't have this. Oh, you mean like you can't see it?
+
+Tanu Garg   1:19:23
+Mm.
+Yeah, X, Y, axis, like, where it's without that, right? No grid lines, nothing.
+
+Connor Lamoureux   1:19:29
+Yeah, you can have, you just have no baseline and it would look like this. Yeah.
+
+Tanu Garg   1:19:32
+Oh, basically, OK.
+
+Connor Lamoureux   1:19:35
+Because these would be the labels. It doesn't seem like it because they're because of the way that they're diverging or flipping, but...
+
+Tanu Garg   1:19:36
+Rhett.
+
+Connor Lamoureux   1:19:42
+Um...
+And so...
+And.
+Like what it really is is you have, I don't know if we could do it with an axis.
+
+Because you've got like a chart that's like centered at 0.
+Like 0 on the x-axis.
+And then values go left and right of that, but then the labels are on that zero point instead of on the left or the right of the chart.
+Right.
+But now if we're not in Access, we can't use any of our Access functionality.
+That makes sense.
+
+Madeline Luke   1:20:27
+Yeah.
+
+Tanu Garg   1:20:28
+It's a big research ticket though.
+
+Connor Lamoureux   1:20:31
+Yeah.
+Um...
+Because we really don't want to have to, I mean, it's not viable for us to research or to rewrite.
+Access behavior without an access, and so we need to figure out a way to get an access to work this way.
+And we might have to do something hacky to do that. I don't know. We might have to have two visualizations.
+Bronwen.
+But then what happens if they're intermixed, right? Like I guess that wouldn't work if they're intermixed.
+
+Madeline Luke   1:20:59
+Yeah.
+Right.
+
+Connor Lamoureux   1:21:03
+Is this like a secret?
+bullet chart with seven bullets in it or something, right? And we just draw each one individually, but then how do you handle cross interaction?
+
+Madeline Luke   1:21:11
+Mm mhm.
+
+Connor Lamoureux   1:21:16
+So this is not an easy one. Or maybe it is. Maybe there's something in Vega that we don't know about that will make it super easy for us.
+Um...
+We can look really quick.
+That's not it.
+Diverging might be the wrong word.
+But.
+Gemini says we can offset the axis.
+
+Madeline Luke   1:22:21
+Mm.
+
+Connor Lamoureux   1:22:37
+Even if we can do that, like how do we...
+Do we calculate the X domain or get the X domain and then divide it by two or something? There might be a way built into Vega to get the center of the X domain. Wouldn't surprise me.
+In fact, I'd expect it to be something we can get access to.
+But I don't see any examples.
+
+Madeline Luke   1:22:58
+No, look at this.
+
+Connor Lamoureux   1:23:00
+You find something?
+
+Madeline Luke   1:23:01
+This is an exact, it's not exact, but, and I think it might be the values.
+Yeah, I don't think.
+I think that's just the labels that we have.
+
+Connor Lamoureux   1:23:13
+Oh yeah, it's the labels that we need to figure out in that case.
+Um...
+But I mean, if...
+Yeah, it doesn't look like that's the access either.
+
+Madeline Luke   1:23:27
+It almost feels like, where is it? Luke.
+
+Connor Lamoureux   1:23:28
+I think it's just a rule, Mark.
+
+Madeline Luke   1:23:30
+Yeah.
+Yeah, it almost seems like the access like doesn't even, like they they are access values.
+But...
+It doesn't even seem like the axis exists. It seems like they're just other labels for each bar.
+Like that might be easier to do than trying to get the access to.
+Split like that.
+
+Connor Lamoureux   1:24:05
+I think, yeah, I get what you're saying.
+
+Madeline Luke   1:24:05
+Like there's like a value label that does what we've already created and then the access is just another outside label that goes to either side based on positive or negative.
+
+Connor Lamoureux   1:24:18
+Yeah, I see what you're saying. Okay, we can consider that. I think that would require us to like build a whole new label type thing, which...
+Maybe we can do.
+
+Madeline Luke   1:24:28
+Yeah, like it's kind of hacky.
+Because we could call it an axis, but then in the code, we're treating it as another label.
+
+Connor Lamoureux   1:24:32
+Yeah.
+
+Madeline Luke   1:24:38
+But that might be an easier solution since there's no...
+
+Connor Lamoureux   1:24:39
+Yeah.
+
+Madeline Luke   1:24:43
+lines or access indicators in this example anyways. I don't know.
+
+Connor Lamoureux   1:24:48
+Rhett.
+It might be. If that's the way we have to go, then maybe we do that. But I think we should try and figure out if we can like offset the access and get it to work. Because if the thing is, is like...
+If we do something that's not an axis for this, then every time we want to support an axis feature with this type of chart, we have to figure out how to, we're stuck. Like we have to write it from scratch or figure out how to make this an axis then. For example, like what if you, what happens if you hover these labels?
+Does it behave like an axis, right? It probably should.
+
+Madeline Luke   1:25:18
+Yeah.
+
+Connor Lamoureux   1:25:22
+And if it's clickable, right, it's gonna, we want to be able to transfer that code without having to rewrite it.
+
+Madeline Luke   1:25:23
+Yeah.
+
+Connor Lamoureux   1:25:30
+Um...
+
+Madeline Luke   1:25:30
+Yeah, I was thinking it still would be. Well, actually, I don't know.
+I was thinking it still would be the axis, but based on a prop, it would perform like a label. But then you might have to have it tied to the bar and you couldn't have it. I don't know.
+
+Connor Lamoureux   1:25:36
+That's OK.
+Done.
+We'll just keep it in mind for it might be an option depending on what kind of...
+
+Madeline Luke   1:25:57
+Yeah.
+
+Connor Lamoureux   1:25:58
+things we run into, like whether we're capable of doing an access or not. So that would be research spike for.
+Um...
+I don't know if it's really diverging access. It's like we have.
+An access where the access labels can be on either side and the axis may also not be in.
+the left or the right, like it might be centered somewhere in the chart. And also like what is the logic being used to, the logic being used for spacing in this example is.
+If you take a 0 and you expand the X domain, or you calculate the X domain based on the maximum, the minimum or maximum negative value and the maximum positive value to fit that inside of the domain.
+
+Madeline Luke   1:26:47
+Mhm.
+
+Connor Lamoureux   1:26:50
+That's where you decide.
+You decide the axis position based on that.
+Right, because it's not centered. It's where do the two end up meeting with that domain?
+
+Madeline Luke   1:27:03
+Yeah.
+
+Connor Lamoureux   1:27:06
+Okay, I think that's the only one that looks like that.
+I do think that that research spike is an access epic research spike. It's very central to how access is functioning.
+So we'll include it. We'll categorize it that way. Here's another example. Perfect. This is better.
+Instagram improved, Facebook Reels did worse. It has the baseline.
+And.
+Yeah.
+
+Madeline Luke   1:27:37
+That even looks more like a label to me.
+
+Connor Lamoureux   1:27:42
+It's an access for sure. I mean, if it was, if this was all on the left, it would look normal, right?
+This is diverging bar.
+
+Madeline Luke   1:27:49
+Yeah.
+
+Connor Lamoureux   1:27:51
+Bridging bar access is what it is.
+Here's a, this doesn't make sense, but yeah, to me at least.
+
+Madeline Luke   1:28:03
+Mm.
+
+Connor Lamoureux   1:28:04
+So, diverging bars is not that complicated, but once you throw in the axis, then it gets pretty complicated.
+The access label, I mean.
+
+Madeline Luke   1:28:14
+Mhm.
+
+Connor Lamoureux   1:28:22
+Okay.
+We have more work to do on access and that is going to be...
+There are like different data types and like scale types and everything that determine like label positioning and like.
+form date formats that we, that are all things that are kind of a pain to go through and like granularly figure out what the features need to be to make them work, but like we should, it's not going to always match this, but like we should kind of try and match this like.
+Why is this bold, this 2024, October 2024? Probably because it's the first year or something. And then it's like...
+
+Madeline Luke   1:29:06
+Mhm.
+
+Connor Lamoureux   1:29:09
+Like we kind of do a lot of this stuff, but I don't know if it's exactly the same the way we handle it today. And so we would need to do a pass through on that.
+So for access work, let's just keep in mind that there's going to be...
+I guess that could be research ticket too. They'd probably be more productive than doing it in a group setting anyway. So like a three-point research spike on...
+Digging into, let's take it a two-point, two-point research spike on going over all the different chart types, line and bar.
+I guess those are the only two that are relevant. And looking at all the access labels and all the examples and putting together like a feature.
+Like an assessment of do our access labels calculate values this way and display this way and are there things we're missing in those feature sets?
+that we need to account for. Because I think there's probably some gaps, but there's just so many.
+Like, there's these ones that are like, okay, well, how do we have a JFMAM for months with 2025 below? Like, can we do that?
+
+Madeline Luke   1:30:14
+Yeah.
+
+Connor Lamoureux   1:30:23
+Probably, I think we can do that. I'm not sure.
+But you get the idea.
+
+Madeline Luke   1:30:32
+Yeah.
+
+Connor Lamoureux   1:30:33
+Cool, let's we don't need to.
+I think we're probably juiced out on thinking hard about this stuff for today.
+
+Madeline Luke   1:30:41
+This.
+
+Connor Lamoureux   1:30:42
+Uh.
+So we can do legend another day.
+But.
+
+Madeline Luke   1:30:50
+Okay.
+
+Connor Lamoureux   1:30:53
+Legend has some fun.
+Fun stuff.
+It'll be interesting to solve.
+
+Madeline Luke   1:31:02
+Yeah.
+
+Connor Lamoureux   1:31:08
+Yeah.
+All right, so.
+We're done talking about the ticket feature work, so anything else we talk about is not relevant to that for the AI's usage.
+I think I got that.
+Well, I just need to fix the animations, but...
+Oh, they kind of work. The timing's not right, but am I still sharing? No.
+
+Madeline Luke   1:31:42
+No.
+
+Connor Lamoureux   1:31:45
+I made a storybook.
+
+Madeline Luke   1:31:48
+Nice.
+
+Connor Lamoureux   1:31:49
+For D3.
+And so...
+There's the bar chart, but there's something.
+How that works?
+Opacity animation. It's by series right now.
+Single series.
+It's like kind of.
+And line chart.
+Tools that they're the same examples as before.
+
+Madeline Luke   1:32:25
+Nice.
+
+Connor Lamoureux   1:32:28
+Yeah, there's animation.
+Um, there's a bounce, that's funny.
+Yeah.
+That's not that useful.
+
+Madeline Luke   1:32:40
+So silly.
+
+Connor Lamoureux   1:32:44
+And then...
+Looks like the line drawn's not working. Oh, that one works. Oh, cool. And I was worried about that, but like even opacity hover still works during drawing. That's pretty awesome.
+
+Madeline Luke   1:32:56
+Pretty cool, yeah.
+
+Connor Lamoureux   1:32:58
+Um...
+
+Madeline Luke   1:33:01
+Explosive.
+
+Connor Lamoureux   1:33:04
+Cool.
+
+Madeline Luke   1:33:05
+That's pretty cool.
+You got the storybook working quick.
+
+Connor Lamoureux   1:33:08
+Yeah.
+Yeah, I mean, AI stuff, you know.
+
+Madeline Luke   1:33:15
+Yeah.
+
+Connor Lamoureux   1:33:16
+Just kind of does it and then you hope it's good.
+
+Madeline Luke   1:33:19
+Yeah.
+
+Connor Lamoureux   1:33:20
+I have a few more things I'm going to try and do. Oh, one I didn't mention this before, but this wire is based on, it wires based on.
+your browser settings too. So if you turn on your system settings, because if you turn off...
+Reduce, if you turn on reduce motion in your Mac OS and then go through, it goes to the browser.
+And then that should disable animations automatically for you.
+
+Madeline Luke   1:33:44
+Ohh.
+
+Connor Lamoureux   1:33:44
+Which is cool.
+
+Madeline Luke   1:33:46
+Yeah, that is cool.
+
+Connor Lamoureux   1:33:47
+I haven't tested that really, but it should work.
+Um...
+
+Madeline Luke   1:33:54
+I like the lines drawing. Like, that's fancy.
+
+Connor Lamoureux   1:33:54
+Sam.
+This is like, I've always wanted to have that work because it just looks nice to have a drawing like that.
+
+Madeline Luke   1:33:59
+Yeah, it does.
+
+Connor Lamoureux   1:34:02
+So, I'm excited if we can get that to...
+The work.
+Tanu for context.
+I was, I spent some time on Friday trying to get the trying to see what it would look like if we were to do a migration off of Vega into D3.
+so that we had a lot more direct control over features. And so this is the result of that. And like I started off from the get-go with like, how would we build it with animations and with accessibility, since like that's the easiest time to integrate that kind of architecture.
+And so, it's still kind of...
+Hacky, but it works.
+
+Tanu Garg   1:34:44
+Yeah, looks interesting.
+
+Connor Lamoureux   1:34:47
+Yeah.
+
+Tanu Garg   1:34:47
+ItoK.
+
+Connor Lamoureux   1:34:49
+We're going to try, and this is not an obligation by any means, and I would actually say probably don't do it, but when I do the feature tickets for this line epic, I'm going to try and have two Claude sessions and have one do it instead of D3 and one do it in our existing one, just to see what ends up being easier.
+To actually dev in.
+And then since we're still in alpha for S2, if we find that the D3 one is performing better for us, then we might, that's when we might decide, like, let's do a library swap and use D3.
+D3 is the library that Vega uses to build charts under, so it's just like going one little deeper, which gives us more control, but more responsibility to manage it.
+Cool. So I'll take...
+I don't mind.
+Doing that.
+Unless you're interested, I don't mind just taking the transcript and handling it and building out the tickets.
+
+Madeline Luke   1:36:04
+Fine.
+Okay, you just give it the text file.
+
+Connor Lamoureux   1:36:14
+Yeah, I mean, I can show you. I can show you really quick. I have to end this call though to get the transcript. So we can jump in a Slack huddle if you want.
+
+Madeline Luke   1:36:15
+Okay.
+
+Tanu Garg   1:36:17
+Yeah.
+
+Madeline Luke   1:36:23
+Okay.
+
+Tanu Garg   1:36:23
+Yeah, let's see it. Interesting.
+
+Connor Lamoureux   1:36:25
+Okay, yeah, I'll do that. See you in a sec.
+
+Madeline Luke   1:36:28
+Okay, bye.
+
+Connor Lamoureux stopped transcription
+

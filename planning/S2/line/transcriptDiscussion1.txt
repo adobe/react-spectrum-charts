@@ -1,0 +1,2405 @@
+RSC S2 Planning-20260511_104859-Meeting Transcript
+May 11, 2026, 4:49PM
+
+Connor Lamoureux started transcription
+
+Connor Lamoureux   0:40
+Okay, is it is it updating live captions?
+Yes, it's working. Okay.
+Transcription has started.
+
+Madeline Luke   1:11
+You.
+I didn't think that much.
+
+Connor Lamoureux   1:50
+Okay, let's start going through it.
+
+Madeline Luke   1:52
+Okay.
+
+Connor Lamoureux   1:53
+So.
+We have the top-level examples for line and...
+Um...
+I think we have support for these pretty much.
+Correct. We'll have to look at I implemented direct labels.
+
+Madeline Luke   2:17
+Yeah.
+Mhm.
+
+Connor Lamoureux   2:20
+already, but I did a pretty simple implementation of it. And so the big thing is positioning. We might have to figure out a way to make that more dynamic. Right now, I think it's just...
+
+Madeline Luke   2:28
+Yeah.
+
+Connor Lamoureux   2:33
+If there's two, the top one will be on the top, the bottom one will be on the bottom.
+
+Madeline Luke   2:39
+Okay.
+
+Connor Lamoureux   2:39
+Like this one shown here, the best-selling video games.
+
+Madeline Luke   2:43
+Yeah.
+
+Connor Lamoureux   2:45
+If there's three, they should all be top. I believe there's a prop that lets you set the position.
+This one here shows.
+
+Madeline Luke   2:54
+Whatever.
+
+Connor Lamoureux   2:56
+small multiples with unique users versus average, click-through rate versus average.
+I think we probably will do that has like a line gradient.
+
+Madeline Luke   3:10
+Mmh.
+
+Connor Lamoureux   3:12
+These are like linked, right? But they like the data is the same sort of.
+I guess it's not.
+It's if it's a positive or negative value against some kind of target line.
+
+Madeline Luke   3:27
+Mhm.
+
+Connor Lamoureux   3:28
+Then.
+Then it's changing the color.
+Now, the...
+
+Madeline Luke   3:34
+Yeah.
+
+Connor Lamoureux   3:37
+Consumers of the library can control the color like that. I think it'd be nice if we could have some way to say like color coordinate based on positive or negative value. But...
+
+Madeline Luke   3:47
+Yeah.
+
+Connor Lamoureux   3:49
+Yeah, so I'm not sure on requirements there yet. The big callout for this that I see is this.
+minus like the minus 2.6%, the plus 3.5% is color-coded. That appears like it's like part of the title or tertiary to the title.
+
+Madeline Luke   4:05
+Mhm.
+
+Connor Lamoureux   4:11
+which we don't have support for that. And whatever the reference line equivalent is on this.
+
+Madeline Luke   4:17
+Yeah.
+
+Connor Lamoureux   4:19
+Ours doesn't look like that. And then also the static point is scaling down, which I don't think that the S2 static point we have scales like that. So.
+
+Madeline Luke   4:28
+Yeah, not right now. We only did the medium size, I think.
+
+Connor Lamoureux   4:34
+Yeah, so the question for us is like, do we have a small multiples version of a line chart? And if so, like what's the API for that look like? I would like to move more in that direction and further away from like...
+
+Madeline Luke   4:42
+And.
+
+Connor Lamoureux   4:47
+having people have to like manually build all that stuff. Like I want you to be able to go into a design like this and see that and say like really quickly I can just go and re-extract from charts and add it.
+Um...
+The.
+Yeah, like could this be a variant of like a big number? Like we, it's kind of a sparkline, like we have sparklines. It's like a miniaturized version of the line chart, right? There's no access, there's no legend.
+
+Madeline Luke   5:14
+Yeah.
+
+Connor Lamoureux   5:15
+Um...
+So S1 line has a Sparkline variant. I don't.
+
+Madeline Luke   5:21
+Mhm.
+Okay.
+
+Connor Lamoureux   5:24
+I don't know if I'm crazy about that.
+And.
+The sparkline approach here would be like you have 3 sparkline charts, three line charts that are sparklines. True, right? For sparkline equals true. And then you're like passing the data into those and then giving them different props. And that's kind of a cumbersome API for the developer.
+
+Madeline Luke   5:30
+Yeah.
+Ahead.
+Yeah.
+
+Connor Lamoureux   5:52
+Um...
+That being said, if we start to talk about what, like, what would a small multiples API look like?
+That's not necessarily.
+Clean either.
+Like, what are you going to call it? Small multiple line, and then you have a bunch of different keys for...
+The different data for each one, or like...
+You could set a reference line to be like a target.
+I don't know if design's intention is that these are linked.
+
+Madeline Luke   6:23
+So you think that you're saying that you think this would be one line chart, like 1 component?
+
+Connor Lamoureux   6:29
+I don't know.
+I think that you would see a lot of these together frequently in a lot of dashboards and stuff, but...
+
+Madeline Luke   6:38
+Brady.
+
+Connor Lamoureux   6:41
+But I also don't know, I mean, it's one thing here, but I don't know if it was design's intention to say that this is a single visualization. I mean.
+They're not even using the same.
+The 200%, and one of them is not percent, so...
+
+Madeline Luke   6:53
+Yeah.
+
+Connor Lamoureux   6:59
+We could start with just like, let's get a Sparkline implementation and then we can decide later if we want to bind that together in a different kind of API.
+Right.
+
+Madeline Luke   7:08
+Yeah.
+
+Connor Lamoureux   7:09
+Like, let's just support the features, and the features in this case are the smaller version of the static point or scaling, right? And then...
+
+Madeline Luke   7:11
+Yeah.
+
+Connor Lamoureux   7:19
+the colored title text. Maybe it's not a title necessarily, but it's next to the title.
+That's undecided. And then the reference line. We decided that sizing, we're going to do breakpoint sizing. So we're not going to do like dynamic.
+
+Madeline Luke   7:34
+And.
+Okay.
+
+Connor Lamoureux   7:38
+And so this would just be the smallest version of the line if we were to go that way. And then if we stuck with what we had now, we could say like you can force it to be a sparkline if you want.
+
+Madeline Luke   7:39
+Ivan.
+
+Connor Lamoureux   7:51
+That way people can do spark lines of different sizes. Okay, any other thoughts on that?
+
+Madeline Luke   7:55
+Okay.
+No, I think that makes sense. I think having a multiple prop could be cool in the future.
+
+Connor Lamoureux   8:04
+Yeah.
+
+Madeline Luke   8:04
+If people do want to break out each line on one chart, I think that that would be a cool feature if needed, but...
+
+Connor Lamoureux   8:12
+Yeah, we do something.
+
+Madeline Luke   8:12
+I don't really think that's what they were portraying here, to be honest, but maybe.
+
+Connor Lamoureux   8:16
+I think you're right. We do do like a similar thing for Trellis bars.
+
+Madeline Luke   8:21
+Uh-huh.
+
+Connor Lamoureux   8:22
+But the data and values are linked together pretty clearly.
+
+Madeline Luke   8:27
+Yeah.
+
+Connor Lamoureux   8:29
+So, okay, next one told us it's reached 18.9 million in December.
+One call out is like title wrapping. We don't, I don't think we have title wrapping, so we'll need to support that. It's actually a pretty big bug that we have where if the title exceeds the chart size, then the chart resizes to accommodate the title, and that means it shrinks horizontally.
+
+Madeline Luke   8:43
+Hey.
+And.
+
+Connor Lamoureux   8:55
+becomes pretty unusual.
+
+Madeline Luke   8:55
+I see.
+
+Connor Lamoureux   8:58
+Um...
+This also has the smaller static point at the end of the line. We do have the reference line style here.
+And.
+
+Madeline Luke   9:09
+Yeah.
+
+Connor Lamoureux   9:11
+A change we need to make for reference line, I think. Well, we need to confirm with design, so that'll be a requirement on this, but...
+If the gap in the reference line.
+between the carrot, like the triangles and the center line, happens to be over something else, then you can see the thing behind it.
+
+Madeline Luke   9:28
+No.
+
+Connor Lamoureux   9:34
+I don't know if we want that or not. Like we could do a background line.
+
+Madeline Luke   9:34
+Yeah.
+
+Connor Lamoureux   9:40
+That's just the background color. So then I don't know if we want to do that or not. We just need to check with design.
+
+Madeline Luke   9:42
+Yeah.
+
+Connor Lamoureux   9:47
+Um...
+The direct label on this one is left of the point. I think we don't support that, but we'll have to check the code.
+Best-selling video games has...
+Um...
+It has the direct labels with one above, one below. We do support that.
+The biggest thing that I noticed for this one is the...
+Gray lines at the bottom.
+
+Madeline Luke   10:22
+Mhm.
+
+Connor Lamoureux   10:24
+And.
+And they're like another category, and so...
+
+Madeline Luke   10:28
+Yeah.
+
+Connor Lamoureux   10:30
+You could probably find a way to, like, just using some of the existing API, use like color overrides and...
+
+Madeline Luke   10:57
+Yeah.
+
+Connor Lamoureux   10:58
+To have this working cleanly, we probably need to have a...
+some kind of option for somebody to say, I want my first X number of series to show normally.
+And then the series after that get bucketed into an other category. We'd want the user to be able to define the name of that category so they could call it something else like.
+
+Madeline Luke   11:11
+Mhm.
+
+Connor Lamoureux   11:24
+other video games, whatever they'd want to call it. And then...
+
+Madeline Luke   11:26
+Yeah.
+
+Connor Lamoureux   11:31
+Then we also want to have some kind of way ideally to de-emphasize like the other stuff could by default use this gray coloring.
+the spectrum coloring. We'd also want to allow a custom color for that and we'd also want to
+
+Madeline Luke   11:42
+Mhm.
+
+Connor Lamoureux   11:48
+If we could, it'd be complicated, but de-emphasize those lines, meaning sometimes like the Minecraft label on a normal chart where the lines are not gray other lines.
+
+Madeline Luke   11:48
+Yeah.
+
+Connor Lamoureux   12:00
+would maybe hide the label to avoid overlapping with things.
+
+Madeline Luke   12:05
+Right.
+
+Connor Lamoureux   12:06
+But the other, like the gray other lines are not so important, so like...
+If there was some kind of clean way, we could de-emphasize those and say, actually, we don't really care if something overlaps these because they're smaller in importance.
+
+Madeline Luke   12:20
+Mhm.
+
+Connor Lamoureux   12:22
+That'd be good. If that's too complicated, it's fine for us to not do that on this first pass, especially.
+
+Madeline Luke   12:28
+If we lower the opacity on those other lines, would that help the collision or do you think it wouldn't matter?
+
+Connor Lamoureux   12:35
+Yeah.
+I don't think it's too big of a deal because all of the S2 labels have backgrounds. So they're never really going to fully collapse. But another example of like emphasizing is like if you have labels, direct labels on your line, but then you have these other categories or other series.
+
+Madeline Luke   12:42
+Right, okay.
+Yeah.
+Mhm.
+
+Connor Lamoureux   12:54
+You would want the labels on your primary ones, but not on the others. And so you wouldn't have like 5 or however many lines there are here, extra labels.
+
+Madeline Luke   13:02
+Yeah.
+
+Connor Lamoureux   13:05
+And so that's like that deprioritization stuff as well. And then maybe the same goes for highlighting. This is going to be a thing to check with design on is.
+
+Madeline Luke   13:08
+Okay.
+Yeah.
+
+Connor Lamoureux   13:16
+How does hover state work with this? Like can you still hover these other lines? Do they all hover at the same time?
+Like, do they stay solid while the other two lines become opaque and like...
+
+Madeline Luke   13:27
+Yeah.
+
+Connor Lamoureux   13:28
+What does a dimension hover look like in that case?
+We could have a feature where like, probably not. I was going to say you could like hover each line individually and maybe it adds a color on to that.
+But that would mean we'd have to update the legend as well, which I think we wouldn't want to go into. So probably not.
+
+Madeline Luke   13:43
+Yeah, no.
+
+Connor Lamoureux   13:48
+Okay, any other thoughts on that one?
+
+Madeline Luke   13:53
+I don't know. I just feel like with that other, with the legend, like, are they gonna ever want that to be expanded to be the individual lines? Or do you think it'll always, will always just say that other bucket?
+And it'll be unknown.
+
+Connor Lamoureux   14:08
+Yeah, good, good question. And then also, what does it look like if we...
+Show or hide by clicking on like Tetris.
+
+Madeline Luke   14:18
+Mm.
+
+Connor Lamoureux   14:19
+That would hide the line. There's a hide icon, so it wouldn't be gray. Like S1, it's gray on the icon for the legend. But in S2, it's supposed to be an icon that shows you that it's closed.
+
+Madeline Luke   14:20
+No.
+Yeah, mhm.
+Okay.
+
+Connor Lamoureux   14:31
+You gotta, it's like an eye, literally, like a closed eye.
+
+Madeline Luke   14:32
+Okay, yeah, I remember seeing that.
+
+Connor Lamoureux   14:35
+with a dash over it.
+But yeah, like it, it makes me wonder, like...
+We sort of have that expand collapse pattern we've used in the past, but mid to like if I hide Tetris, does something else become the visible line, right, from the other category and move automatically? Yeah.
+
+Madeline Luke   14:48
+Yeah.
+That's what I was thinking. Like, right now we have that show more functionality. So it seems like they're using other in this case because there are so many lines. But like, what if that show more button was there and you clicked on that? Would that expand other into the each individual series?
+
+Connor Lamoureux   15:06
+Right.
+Right.
+
+Madeline Luke   15:15
+Or yeah, if deselecting Tetris, would it?
+allow the other ones to show and not be in that other bucket.
+
+Connor Lamoureux   15:22
+Yeah.
+
+Madeline Luke   15:24
+Maybe that's over-engineering, like maybe it is just another bucket, but...
+
+Connor Lamoureux   15:24
+Yeah.
+I think at least for the first pass, like we can, I don't think we're going to get into any architectural holes if we don't do that ahead of time. So we can just do it as is probably, but let's mark that as a reach out to design for further review to see if we should do.
+
+Madeline Luke   15:37
+Yeah.
+Yeah.
+
+Connor Lamoureux   15:49
+More to account for that stuff.
+
+Madeline Luke   15:51
+Peg.
+
+Connor Lamoureux   15:55
+Okay, monthly active users, trend. This is the forecast line. Forecast is technically possible with current features as is, but it's the same kind of problem we talked about with if we did multi-line, right, like the multi-spark line where...
+
+Madeline Luke   16:01
+Mhm.
+Yeah.
+
+Connor Lamoureux   16:15
+We should really have a cleaner API so people can just say, I want this to be a forecast line on.
+whatever the X value they choose is, is what I think it should be. So you like, you put your line in, you put your data in, you say forecast and maybe, maybe forecast like the.
+
+Madeline Luke   16:23
+Yeah.
+Yeah.
+
+Connor Lamoureux   16:32
+Prop itself is a...
+And.
+Value.
+
+Madeline Luke   16:41
+I think you could just take the data key kind of like we're doing it now.
+
+Connor Lamoureux   16:46
+What do you mean though? Because like the data, there'd be data, oh, you mean like, you'd have to say like, is forecast position in the data, right? If you did that.
+
+Madeline Luke   16:53
+Yeah.
+
+Connor Lamoureux   16:56
+I'm thinking you could just say like, this is March. Let's assume this is March 1st.
+And you have that data in your...
+You would need a key and the value in that case to check it. So at that point you might as well.
+Well...
+
+Madeline Luke   17:11
+Yeah, well I guess, yeah, because people could set up their data differently, right? Like I'm thinking of it how it is in web spa now, and the forecasted data is using a separate key. And then, so it's like the value, then the forecasted value.
+
+Connor Lamoureux   17:23
+Right.
+
+Madeline Luke   17:26
+So then once that value isn't null or zero anymore, then you know it's going to be used as the forecast. But I guess other people could use data where like they're only using that value property.
+
+Connor Lamoureux   17:26
+Yeah.
+
+Madeline Luke   17:39
+And it would just be, I don't know, I guess it's always going to be, you would think that forecasting would always be the current date and forward.
+
+Connor Lamoureux   17:41
+Yeah.
+It's a good point.
+
+Madeline Luke   17:50
+So you could have a prop that's like has forecasted data and then the logic would automatically assume that any data point from today and in the future.
+would appear as a forecasted line.
+
+Connor Lamoureux   18:04
+Yeah.
+Yeah.
+
+Madeline Luke   18:07
+Because do people show forecast and data for?
+
+Connor Lamoureux   18:10
+That's a good topic though, because like...
+
+Madeline Luke   18:13
+Previous?
+
+Connor Lamoureux   18:13
+This says forecast, but is it?
+We want to account for this pattern not in a forecast, right? Like...
+
+Madeline Luke   18:21
+Yeah, like do people want to show forecasted data that now technically in the past?
+
+Connor Lamoureux   18:26
+Or what I mean is like, I think probably not for that case.
+
+Madeline Luke   18:30
+Right.
+
+Connor Lamoureux   18:32
+But...
+Like, can we, is there a more generic pattern here that we could apply where it's like...
+What you have is you have a line and then a separator and then a de-emphasized continuation of that line after the separator with a label.
+
+Madeline Luke   18:46
+And.
+Mhm.
+
+Connor Lamoureux   18:53
+And so is there a situation where you could have a line that's like maybe it's just numeric data?
+And you want to say like numeric data after this point is de-emphasized. I'm not sure. I'm trying to think of a...
+
+Madeline Luke   19:03
+Yeah.
+I was just thinking that, too.
+
+Connor Lamoureux   19:07
+I'm trying to think of a practical example of that and nothing is really coming to mind.
+And.
+
+Madeline Luke   19:15
+Yeah, like you could just pass in the first data point of that forecasted range if you want it.
+
+Connor Lamoureux   19:16
+Yeah.
+Right, like assuming your metric is the date or your...
+
+Madeline Luke   19:30
+And.
+
+Connor Lamoureux   19:32
+whatever is setting your x-axis values is the date. You could just say...
+
+Madeline Luke   19:37
+And.
+
+Connor Lamoureux   19:40
+You know, in the line implementation in the code, we'll already know what that key is, and we'll say we could say if the value in the forecast prop or whatever we end up calling it.
+Is.
+matches that, then that's where the forecast begins.
+
+Madeline Luke   19:59
+Yeah.
+That makes sense too, but I think we have to account that if those values are under different keys.
+
+Connor Lamoureux   20:02
+Um...
+
+Madeline Luke   20:09
+Because that would be assuming that the forecasted data is using the same property as the regular data.
+
+Connor Lamoureux   20:19
+Right.
+
+Madeline Luke   20:21
+But you could pass. Yeah, because I don't know, because.
+
+Connor Lamoureux   20:21
+Yeah.
+You could do like an override key too if you wanted like forecast key.
+
+Madeline Luke   20:27
+Yeah.
+forecast key, forecast start or something like that.
+
+Connor Lamoureux   20:31
+Is by default is whatever the valid like the the X value key is.
+
+Madeline Luke   20:37
+Mhm.
+
+Connor Lamoureux   20:38
+But if you override it, then we'll look for a different one.
+
+Madeline Luke   20:41
+Yeah.
+
+Connor Lamoureux   20:42
+That puts us in a spot where we have two props on a line for a single feature, which is not ideal.
+
+Madeline Luke   20:50
+Yeah.
+
+Connor Lamoureux   20:51
+And I...
+architecture talk for a second or API talk. I...
+
+Madeline Luke   20:58
+Mm.
+Yeah.
+
+Connor Lamoureux   21:09
+Makes sense of the child of line, really.
+I guess I could.
+Like you have line and then forecast nested inside of that.
+And then on that you'd have the key and then you'd have the...
+
+Madeline Luke   21:22
+Yeah.
+
+Connor Lamoureux   21:27
+the value, the target value, or just the key, right? And then if it's like, if it has the value, then it.
+Well, no, because you need to decide where the rule is, the reference rule, the vertical gray line before the forecast.
+
+Madeline Luke   21:44
+Yeah.
+
+Connor Lamoureux   21:46
+Um...
+
+Madeline Luke   21:49
+I think it feels more intuitive to have it as part of the line component.
+If we can make it possible.
+
+Connor Lamoureux   22:00
+Yeah.
+
+Madeline Luke   22:02
+I just like that makes more sense, but yeah, there's a few things to think about.
+
+Connor Lamoureux   22:02
+Um...
+Yeah, I think child is not like the most straightforward. It feels like like sticking to the rule book for without having a good reason to do so.
+
+Madeline Luke   22:12
+Yeah.
+Mhm.
+
+Connor Lamoureux   22:16
+The other question I'm thinking about is like, do we start breaking that rule more about, you know,
+Why not make forecast an object that goes on the React, the line React component, right, as a property?
+
+Madeline Luke   22:31
+Yeah.
+
+Connor Lamoureux   22:32
+It makes it less clean, but also if you can be written with AI more, then it's not as important.
+And then you can have forecast, and then inside of the forecast property, you have an object that is...
+Your metric and your...
+forecast target or whatever.
+
+Madeline Luke   22:50
+Yeah, I don't think that's a horrible option, but it definitely goes against the pattern.
+That you guys have built, so...
+
+Connor Lamoureux   22:57
+Yeah.
+My main concern with just doing like a forecast data prop is and then doing all this automatically is like if the user sets up their data wrong so that there's forecast points on line points.
+
+Madeline Luke   23:11
+Mhm.
+
+Connor Lamoureux   23:12
+right, like you have a line value for January, but then they put forecast points in January, we would have to then like after the fact say like, oh, this doesn't make sense, so we're just going to decide to do this thing. Whereas if we explicitly force them to tell us where is the start of the forecast.
+
+Madeline Luke   23:27
+Yeah.
+
+Connor Lamoureux   23:31
+Then it is on them to manage.
+
+Madeline Luke   23:35
+True, but if we also based it off of today's date, making the assumption that people want forecasted data for the future, they could have forecasted data.
+in January, but then the logic wouldn't show it as forecasted data until May.
+That makes sense.
+
+Connor Lamoureux   23:59
+Yeah, I just worry that that will.
+Like, one thing we run into a few times is like we make the specific thing that works like a specific way like bespoke. Okay, you just say we're doing forecast now and that's how it works and it's for forecasted data on a linear time axis.
+
+Madeline Luke   24:11
+Yeah.
+Yeah.
+
+Connor Lamoureux   24:18
+on a linear x-axis, then later somebody's like, hey, I really need this thing. And now it doesn't make sense in your API, so we have to add a new prop and a new way of doing the same thing twice, right? And then it's just harder to know what to do.
+
+Madeline Luke   24:29
+Right.
+Yeah, I think going that route, we could do it initially with just one prop.
+
+Connor Lamoureux   24:39
+Yeah.
+
+Madeline Luke   24:39
+But then you're right. If it doesn't line up with what someone wants, then we have to add to. So then at that point, should we just explore passing in an object or having a child component?
+
+Connor Lamoureux   24:57
+So our three options are object, child, component. We know for sure we need at least two props.
+
+Madeline Luke   25:03
+Yeah.
+Realistically, yeah.
+
+Connor Lamoureux   25:05
+I think.
+Object, child, or multiple.
+forecast props.
+On the line.
+Some of which will require each other. Now, multiple forecast props is the closest to the current pattern we follow.
+
+Madeline Luke   25:25
+Yeah.
+
+Connor Lamoureux   25:26
+And then you'd have forecast.
+forecast metric, whatever, forecast value, whatever.
+Maybe you end up having like forecast line type, right? Because this is dotted.
+
+Madeline Luke   25:40
+Yeah.
+
+Connor Lamoureux   25:40
+You might be meshed. Forecast opacity strength could be a thing because we might have more opacity emphasis. I don't think we'd support a different color, but hypothetically you could do that.
+
+Madeline Luke   25:52
+Yeah.
+
+Connor Lamoureux   25:56
+You might want to change. We might find ourselves in a spot where there's like different hover behavior between the forecast and the non-forecast.
+
+Madeline Luke   26:05
+Mm.
+
+Connor Lamoureux   26:07
+So that's enough that it makes me think we might do.
+A child.
+
+Madeline Luke   26:13
+Yeah, as you're saying it, I'm like, well, that's a lot of information. So.
+
+Connor Lamoureux   26:15
+Yeah.
+Yeah, and a child means we can just like manage that. We can manage its own.
+Um...
+its own state pretty cleanly. We don't have to worry too much about changing things on it if we decide we want to.
+
+Madeline Luke   26:29
+Yeah.
+Okay.
+Yeah. That would still be an improvement from what it is now, I think.
+
+Connor Lamoureux   26:37
+Yeah.
+Okay.
+Yeah, we'll do, let's do a child then for forecasting. And so I think for first in an implementation.
+
+Madeline Luke   26:42
+ItoK.
+
+Connor Lamoureux   26:47
+that would just need to have a similar to the line that would need a key to say what's the forecast data key.
+
+Madeline Luke   26:53
+Mm-hmm.
+
+Connor Lamoureux   26:54
+And then...
+We really don't even necessarily need to start with having a start date, like a start target on it.
+
+Madeline Luke   27:07
+Yeah, if we're passing the key, well.
+
+Connor Lamoureux   27:09
+And.
+
+Madeline Luke   27:14
+If you're passing the key.
+and it's a different key from what the regular line data is, then you probably don't really need a start. But if the data's using the same key.
+
+Connor Lamoureux   27:22
+Right, and if someone messes that up, we can just tell them.
+Yeah.
+
+Madeline Luke   27:28
+there needs to be an indication, unless we just like assume it's today, but people might want to change that.
+
+Connor Lamoureux   27:36
+Good point, you might want to have the same key. Yeah, okay, we'll do a target. We'll do a target.
+Some kind of start day.
+And then as far as the label goes, the chart height is going to have to increase to accommodate the label a little bit. Because if the calculation on the y-axis is such that like this 10 million is closer to the line, forecast would end up colliding with that. We don't want it going.
+Well, this is like a grid line, this 10 million. So the reference line for forecast is going up to that 10 million. A lot of these S2 charts, they box the chart with those grid lines in a way that we don't because of the way Vega works.
+
+Madeline Luke   28:12
+Yeah.
+Yeah, I saw that.
+
+Connor Lamoureux   28:25
+That's something that I would like to solve for.
+
+Madeline Luke   28:28
+Okay.
+
+Connor Lamoureux   28:30
+Because of stuff like this, because today with Vega.
+The reference lines just can go to the top of the chart no matter what. The grid lines are going to be somewhere between the top of the line and the top of the chart, but not necessarily at the top of the chart. And then the label is going to be, really the label is going to end up being just right of the top of the chart, next to the reference line, right?
+And so.
+
+Madeline Luke   28:55
+Mmh.
+
+Connor Lamoureux   28:57
+It's not going to look as clean in practice with the way Vega works right now. And I think that during this implementation, we should try and figure out, either during this or in a separate ticket, figure out how we can make that cleaner.
+
+Madeline Luke   29:11
+Okay, so you're thinking that the label is tied to the reference line.
+And not.
+
+Connor Lamoureux   29:17
+Yeah.
+
+Madeline Luke   29:19
+the forecast line as like a direct label.
+
+Connor Lamoureux   29:21
+Yeah.
+Yeah, the label is always going to be next to the reference line.
+And it needs to be over the data in the like it can't it can't reposition left of the reference line. I don't think because then it's going to be over the non-forecasted data and become confusing.
+
+Madeline Luke   29:40
+So I just have a question then, because right now the way that we're doing it in web spot is we have the line and then we have the magic range and those are pretty much drawing as two separate lines.
+
+Connor Lamoureux   29:43
+Yeah.
+That's our implementation where we're doing things manually, right? The content.
+
+Madeline Luke   29:58
+Right, but in this one, are we assuming it's all going to be drawn as one line?
+
+Connor Lamoureux   30:03
+So Vega, we would have two line marks.
+in order to have, because we'll have to do that if we want to have a solid into a dashed. So it looks like one line, but it's going to be two marks.
+
+Madeline Luke   30:06
+Okay.
+So could you not just set a direct label on the forecasted line and set the position to be?
+The top at the end.
+
+Connor Lamoureux   30:24
+It would be a text mark. We wouldn't reuse the direct label logic. Just because it's like the style is different and the goal is different. I'm basing it on the reference line because the positioning in this spec.
+
+Madeline Luke   30:33
+Okay.
+
+Connor Lamoureux   30:38
+like has it very clearly offset from the reference line.
+
+Madeline Luke   30:41
+Right.
+
+Connor Lamoureux   30:42
+Like to me, it looks pretty clear that this position is based on the reference line and not the line itself.
+
+Madeline Luke   30:47
+Okay.
+
+Connor Lamoureux   30:48
+And I think if the line was lower.
+
+Madeline Luke   30:49
+So they literally just want a label that says forecast. Okay.
+
+Connor Lamoureux   30:52
+Yeah.
+No, that's the one more question is like, is this always forecasting? We should probably check with design with Alan on that and see.
+
+Madeline Luke   30:55
+Or other.
+Yeah.
+
+Connor Lamoureux   31:03
+Could we think of a reason why this would be called something else?
+
+Madeline Luke   31:07
+Yeah, but they want to be able to change the name.
+
+Connor Lamoureux   31:08
+And then in that case, we'd want a custom label. And we would want them to change the label anyway, because they're going to want to have localization override.
+And we don't manage language locales like that.
+
+Madeline Luke   31:20
+Mm.
+
+Connor Lamoureux   31:21
+So, no matter what, we're going to...
+
+Madeline Luke   31:22
+There's a better example down below. There's the same chart, but lower.
+And it shows what you're explaining better because there's more space.
+
+Connor Lamoureux   31:31
+Okay, yeah, yeah, yeah, okay.
+Yeah, the second example shows that more clearly, so yeah, so.
+
+Madeline Luke   31:37
+Yeah.
+Yeah, because that other one I was like, it could, like it does look like it's tied to reference line, but it also kind of looked like it could be tied to just the end and grow that way. But this one makes more sense. Okay.
+
+Connor Lamoureux   31:44
+Yeah.
+Yeah, so it's pinned to the reference line. So the unknowns for that are, do we let us have an override for the forecast value? Is this child component actually called forecast or is it called something else?
+And it can just be used as forecast, and then...
+Um...
+It's got the default line type, it looks like dotted.
+We might as well allow for, actually, let's, we want to keep it ambiguous so like we can add that later, but we'll make it done by default.
+And...
+We wouldn't reposition the forecast label, so if the if the vertical or the horizontal width is too small inside of the forecast section.
+
+Madeline Luke   32:37
+Mm.
+
+Connor Lamoureux   32:37
+I think we just hide the label. Now, we'll check with design on that with Alan, but...
+I don't.
+Like repositioning seems wrong to me, concatenating, maybe we like truncate it.
+
+Madeline Luke   32:50
+Yeah.
+
+Connor Lamoureux   32:51
+But I'm mostly leaning towards, let's just, we just hide it and then that's it. That's easy to change later if we change our mind, so.
+
+Madeline Luke   32:56
+Yeah.
+I agree with that.
+
+Connor Lamoureux   33:03
+Okay.
+
+Madeline Luke   33:06
+Part of it makes me think though if it's tied to the reference line, you almost...
+Like you kind of think you'd want to add a prop to the reference line component that you could add a label.
+instead of tying it to forecast.
+I don't know.
+
+Connor Lamoureux   33:22
+I get what you're saying, but reference line is, it's we're not going to use reference line for this. Yeah.
+
+Madeline Luke   33:26
+Okay, it just is a reference line, but we're not going to use that component.
+
+Connor Lamoureux   33:30
+Yeah, and I know reference line might become something else during this work. I don't know. We'll dig into that when we do our access research, I think. But yeah, I mean, it's a rule mark is what it is in Vega, and it's like a pretty common mark to use, and so we can use it in different contexts in our API.
+
+Madeline Luke   33:31
+Okay.
+Yeah.
+Hey.
+Okay.
+Okay.
+
+Connor Lamoureux   33:49
+Uh, okay.
+So steady growth in Chrome visits in the options section now.
+This is just a guideline on when to use a single series.
+And.
+Label.
+In the chart title.
+Um...
+Yeah, okay. And there's some, there's multiple examples of this. So there's like, what's the word for it? Is it interpolation? We have this curve.
+
+Madeline Luke   34:35
+Mhm.
+
+Connor Lamoureux   34:36
+So interpolation options, we support that today in S1, should be in S2 as well.
+Um...
+So annotations is the big one for this. We don't really have, like we have some annotation related things. We don't really have anything like this where, so for this monthly active users trend recovered in Q4.
+
+Madeline Luke   34:56
+But.
+Yeah.
+But.
+
+Connor Lamoureux   35:07
+We've got these two static points that are black, it looks like.
+
+Madeline Luke   35:11
+Yeah, different color.
+
+Connor Lamoureux   35:13
+The Holo Holo Center.
+And there's arrows drawn on the chart and just like freeform labels basically. This is for sure a research spike ticket. Like we can kind of speculate here, but we're going to need a research spike ticket and someone's going to have to get in there and figure out what this actually looks like. There's a lot of.
+Questions that this creates, right? Like it looks it looks simple, but there's a lot of questions like, obviously there's text limits, but like how are line breaks being handled? Like in this, in the top example, the arrow goes into what we what we would consider.
+
+Madeline Luke   35:39
+Yeah.
+Yeah.
+
+Connor Lamoureux   35:54
+to be like the text block, right, if we're engineering this.
+
+Madeline Luke   35:56
+Yeah.
+
+Connor Lamoureux   35:59
+Um...
+And the arrows are like, what's defining the distance? It looks like the distance, the arrows are the size of the arrows and the distance of the text from them.
+Point.
+is based on the X domain in this case.
+Right, so the text starts at the Y position of the point that it's targeting.
+
+Madeline Luke   36:21
+And.
+Mhm.
+
+Connor Lamoureux   36:28
+And then the it's left aligned for the first one.
+On.
+Um...
+the left side of the chart and right align for the second one.
+Um...
+But really not. I mean, we would probably do this right aligned in practice, but like the bottom example here, it's actually left aligned, but it's positioned such that the end of the text is at the.
+
+Madeline Luke   36:53
+Yeah.
+
+Connor Lamoureux   36:54
+So I don't, my instinct is that like we probably if someone's to do this.
+We would need a set of default behaviors and then we just let them do like text things. Like if they want to do a line break, they can do a slash N or whatever, like.
+figure out a way to allow rich text, because it's like a rich text box.
+
+Madeline Luke   37:16
+Yeah.
+
+Connor Lamoureux   37:17
+And then we can manage the line, like the arrow mark here, whatever that ends up being.
+And say, like, if you...
+If you put a...
+Annotation like this on a point.
+Will.
+Will automatically align the end of your text to whichever side.
+The...
+But like, why is the bottom one on the right side and not the left? Like, there, what's the decision?
+Tree here for the code.
+
+Madeline Luke   37:57
+Yeah, they.
+
+Connor Lamoureux   37:59
+And like, why?
+
+Madeline Luke   38:00
+And.
+
+Connor Lamoureux   38:03
+What happens if it's like a point in the center of the line?
+Like what if this point in the center is...
+Annotated, where do these go?
+
+Madeline Luke   38:12
+Yeah, I feel like it would.
+
+Connor Lamoureux   38:14
+Does it have like an arrow that goes here and like comes around?
+
+Madeline Luke   38:18
+Yeah.
+
+Connor Lamoureux   38:19
+Like, what's the...
+So...
+Annotation, custom annotation on the chart. Last thing we're going to write, no matter what, for line support.
+
+Madeline Luke   38:32
+Yeah.
+
+Connor Lamoureux   38:33
+And we're going to have to have a meeting with design to talk through all the different scenarios we can think of and see what they think.
+
+Madeline Luke   38:34
+Yeah.
+
+Connor Lamoureux   38:40
+and how they're actually envisioning this being done.
+I'm almost tempted to say it's not even React Spectrum charts and it's like...
+Or not even like our renderer Vega stuff, and it's just like some kind of overlay we code on top of our like Vega embed that goes to the SVG and just like, that's what I'm tempted to say. And then you can just do whatever you want, and it's the separate part of the code base.
+
+Madeline Luke   39:00
+Yeah.
+That's exactly what I was thinking. I was like, I don't really know how you would build this into React Spectrum charts unless we...
+
+Connor Lamoureux   39:05
+Bam.
+
+Madeline Luke   39:12
+let it be some kind of like custom label that you can set on points and then we kind of fit it where we can. But it feels more like how commenting is and that you can interact with the chart, you can add a comment, and then we're placing the badge.
+
+Connor Lamoureux   39:16
+Yeah.
+Yeah.
+I...
+Commenting being the custom feature that's outside of our library, right?
+
+Madeline Luke   39:34
+Right.
+So I feel like this would almost work similarly, but it just looks different. It wouldn't be those commenting badges. It would just be able to add an overlay of text.
+
+Connor Lamoureux   39:39
+Yeah.
+Yeah.
+Yeah, we want to...
+
+Madeline Luke   39:46
+because I feel like people wouldn't want to hard code, like they wouldn't want to hard code this information while they're building the component. It seems more like a chart interaction that could change.
+
+Connor Lamoureux   39:57
+Yeah, we, we, I agree. We want to, if the, if the design exists, like we want to be able to provide something.
+
+Madeline Luke   39:58
+Pretty frequently.
+Yeah.
+
+Connor Lamoureux   40:05
+Because people are still going to look at the design and they're going to say, oh, let me go to React certain charts. Do you have an answer for this? Otherwise, I have to like build a bespoke annotation system on top of whatever, like your architecture, right? And that also is going to send it straight to like, I'm just going to go by a code of chart instead that does exactly what I want. And so we've had a few cases like that. And so this, I think if we went that route, ends up being like.
+
+Madeline Luke   40:14
+Mm.
+
+Connor Lamoureux   40:30
+What if we build a set of...
+utility libraries or like...
+helper libraries that's like this is a library that consumes React Spectrum charts. It gives pass through to all the like you can use React Spectrum charts from within it, but it also has like a parent component that it's like your annotation manager or whatever. And that way we since we'll know the API as well, we can make something that works very well for that specific use case, but it would not be in the same.
+
+Madeline Luke   40:45
+Mm.
+OK, yeah.
+
+Connor Lamoureux   40:57
+It would be either a separate package in the monorepo or a separate repository altogether.
+
+Madeline Luke   41:03
+Yeah.
+
+Connor Lamoureux   41:04
+Probably a separate package so we can keep it open source. Okay, so that's the last thing we're going to worry about because I also think it's not going to be used very much compared to these other features.
+
+Madeline Luke   41:08
+Yeah.
+Yeah.
+
+Connor Lamoureux   41:15
+The.
+Okay, we already covered this trend one.
+Multiple series, so...
+Um...
+
+Madeline Luke   41:38
+Oh, yours looks normal. Mine's all messed up. That's weird.
+
+Connor Lamoureux   41:42
+Ohh.
+
+Madeline Luke   41:49
+I.
+
+Connor Lamoureux   41:51
+So this first example, the Chrome users show better performance. We've got.
+The lines are differentiated by line type, which we do support line type differences.
+Colors.
+We can support override. We don't have like any default colors that fit into this, but.
+Yeah, I guess I don't have any major callouts for this one.
+
+Madeline Luke   42:18
+Yeah.
+
+Connor Lamoureux   42:19
+Other than the fact that it's an example of like the direct labels not.
+like they kind of overlap the line, which is sort of what we do. So I don't think we have anything to act on for this at the moment. We should produce a story for it to make sure we can match that, but that's it.
+
+Madeline Luke   42:37
+I just noticed this. Is it normal to have the legend, like the Y-axis on the left or the right and not the left?
+Is that an option?
+
+Connor Lamoureux   42:50
+I don't think it matters. We support both already. Yeah, we can do left or right. That's the access position prop.
+
+Madeline Luke   42:54
+Okay.
+I just noticed that I was like...
+Okay, okay.
+
+Connor Lamoureux   43:01
+I think they're doing it in charts by default where there's like direct labels in the designs because your eyes are already over here. So you don't have to look over here and over here. It makes sense to me. Like it's good design, but.
+
+Madeline Luke   43:08
+Ohh.
+Okay.
+
+Connor Lamoureux   43:15
+Yeah, we support that pretty easily, so.
+Chrome leads monthly browser traffic. We support this pretty well.
+only call out is maybe better support for choosing how your direct labels position on the line. Like the intent here is that most of this is automatic though.
+
+Madeline Luke   43:31
+Yeah.
+
+Connor Lamoureux   43:35
+So I don't know if we need to have overrides for it. So I'm good there. We already talked about this example where...
+
+Madeline Luke   43:38
+Yeah.
+
+Connor Lamoureux   43:43
+We have the gray other legend items.
+
+Madeline Luke   43:46
+But the legend is towards the left.
+
+Connor Lamoureux   43:50
+Yeah, that'll be a legend ticket. Let's go ahead and capture it here because it's the most obvious one. But yeah, we'll need a ticket for legend work that is fixing or adding an ability to align the legend.
+
+Madeline Luke   43:52
+Okay.
+
+Connor Lamoureux   44:04
+left, center, right, or if it's a vertical legend, top, center, bottom.
+
+Madeline Luke   44:09
+Yeah.
+
+Connor Lamoureux   44:10
+Um...
+We maybe ends up being maybe at start, middle, end.
+We'll just have to check what the existing convention is for stuff like that and whatever like the CSS normal labeling is for stuff like that. Our CSS properties are for that.
+
+Madeline Luke   44:16
+No.
+
+Connor Lamoureux   44:30
+So yeah, that's a thing we need to do for sure.
+Okay, Sparkline.
+Um, these are like...
+Some of these are grouped together.
+Like, you can imagine a line, this one of like blue spark lines, you can imagine a line chart where you have...
+
+Madeline Luke   44:58
+You just compare patterns.
+
+Connor Lamoureux   45:06
+Um.
+Different series, and each of these is a series.
+
+Madeline Luke   45:12
+Yeah.
+
+Connor Lamoureux   45:13
+Right.
+
+Madeline Luke   45:13
+Mhm.
+And they're just split up.
+
+Connor Lamoureux   45:16
+Um...
+Yeah. Now it's more complicated than this other one that's similar to the one we looked at before where it's like different series, but also we're looking for like some kind of target value.
+But the...
+I would say this starts with like a...
+Three-point research spike on what it would mean to make a trellis to line chart.
+
+Madeline Luke   45:40
+Okay.
+
+Connor Lamoureux   45:41
+And we can work with design on that. We have Trellis Bar in S1. I don't think we have Trellis Bar in S2, but we might.
+And so yeah, Trellis line chart research spike for these spark lines.
+Small multiples is a different thing.
+Oh no, this is the trellis. Okay.
+
+Madeline Luke   46:05
+Oh, okay.
+
+Connor Lamoureux   46:06
+Scratch that, we have sparklines that we need to figure out.
+And then there's small multiples, which is more like a trellis.
+
+Madeline Luke   46:16
+So then going back to the sparkline, that second example has them in these little cards.
+
+Connor Lamoureux   46:22
+Yeah.
+
+Madeline Luke   46:23
+Is that something that React Spectrum Charts considers or is that just someone else is putting them?
+
+Connor Lamoureux   46:26
+We're not going to do that then. Yeah.
+
+Madeline Luke   46:29
+in those cards.
+
+Connor Lamoureux   46:31
+Someone else would do that. As far as how we're currently approaching things, so.
+
+Madeline Luke   46:33
+Yeah.
+
+Connor Lamoureux   46:38
+In this case, I think we have, so Sparkline, we have an ability to have an individual line via Sparkline. This blue example with multiple ones, I think that that is a different kind of the trellis.
+
+Madeline Luke   46:42
+Yeah.
+The.
+
+Connor Lamoureux   46:49
+We can talk to design about that, but let's review that when we're doing the Trellis work and...
+
+Madeline Luke   46:49
+Yeah, I guess, yeah.
+Okay.
+
+Connor Lamoureux   46:55
+Small multiples or trellis is comparing across related categories.
+And so we can see like Chrome, Safari, Edge, Firefox, these would all be January through December for the same.
+Y-axis value, monthly visits. These are the same color. No, there's an example with different colors.
+
+Madeline Luke   47:13
+Mhm.
+Oh, there's a button.
+
+Connor Lamoureux   47:25
+Yeah, that would be external from us, I think, but we can look at that.
+Okay, and then I don't know what decides where the axis labels are because in this first example it's on the left most series and on the second example is on the right most series.
+
+Madeline Luke   47:40
+Oh.
+Seems related to the access position.
+
+Connor Lamoureux   47:46
+Um...
+Yeah, this is complicated enough that like we could spend a lot of time on it. And so I'm going to say probably a five point research spike for Trellis small multiple line charts. One of us will go do some more digging and prototype some stuff and then we'll come back and make some decisions about that.
+
+Madeline Luke   48:00
+And.
+Okay.
+
+Connor Lamoureux   48:07
+Um...
+Line wait, I believe this is new for us too.
+and the line weight changes for sizes. And so this work's gonna have to include like, and it's probably one of the earlier tickets, we need to have a.
+small, medium, large version of the line charts. So someone can choose, I want this to be a small chart, I want this to be a large chart, I want this to be a medium chart. And we're going to automatically change things like the line weight based on that.
+
+Madeline Luke   48:36
+Yeah.
+Mhm.
+
+Connor Lamoureux   48:48
+We will also provide some overrides.
+
+Madeline Luke   48:48
+Yeah, that makes sense.
+
+Connor Lamoureux   48:53
+But for the start, we don't need to do that.
+
+Madeline Luke   48:56
+Okay.
+
+Connor Lamoureux   49:01
+So yeah, we'll automatically handle line weight, but we'll code it such that we could later easily add a prop for.
+For line weight, we might call this line thickness.
+But probably line weight is fine. We'll have to look at what the S1.
+I don't think S1 has this, but we'll double check that and see.
+
+Madeline Luke   49:22
+K.
+
+Connor Lamoureux   49:27
+And it looks like...
+Small multiples. It's not written out in text here, but to me it looks like we're saying small multiples. We want to account for that when it comes to line weight.
+So we might have like a large chart with a three pixel line weight. But if that chart becomes a small multiple chart, because those lines get smaller, that becomes a medium or maybe even potentially a small, but probably a medium.
+
+Madeline Luke   49:44
+Mhm.
+Okay.
+
+Connor Lamoureux   49:55
+Um...
+So that begs the question of for the feature work for small, medium, large, and this will be the pattern we follow for all chart types, I think.
+We need to figure out, is that something that's controlled by...
+And.
+It's external, I guess, like the person is defining if it's large or even small.
+
+Madeline Luke   50:17
+Yeah.
+
+Connor Lamoureux   50:18
+We're not going to use our own breakpoints for it. I don't think. Let's make a note to double check when we implement chart size, the chart size prop.
+For line to double check and see if what design thinks on, do we have automatic breakpoints or do we make it so the user always has to say they want the chart to be small, medium, or large?
+I could see us doing both. Like we each choose our own automatic and then let them override.
+
+Madeline Luke   50:47
+Yeah.
+makes sense. Because these are two separate charts, even though they're showing them side by side.
+
+Connor Lamoureux   50:53
+Yeah.
+
+Madeline Luke   50:54
+Because they would be choosing for it to be a Trellis chart and then they could choose for it to be smaller. So.
+
+Connor Lamoureux   50:57
+This would be 3 lines, yeah. And this would be a three-line chart if there was, if it was the same, it's not even the same configuration necessarily, it just looks similar.
+
+Madeline Luke   51:02
+Yeah.
+Yeah.
+
+Connor Lamoureux   51:11
+Um...
+Line style, we support solid, dashed, dotted. We need to add a secondary reference line. They're saying this is for trend line and average, but I think we...
+What we do is we could have support for a primary reference line, which we currently support, and then we have a secondary reference line. It's probably the same component. We just say it's.
+Secondary is the prop, that's a Boolean.
+
+Madeline Luke   51:40
+Mm.
+Kym.
+
+Connor Lamoureux   51:42
+So people can manually define that, but we'll reuse that mark building code for other things like maybe trend lines or whatever in some way.
+Um...
+reference lines. We've already implemented reference line. We need to take...
+Um...
+I think reference line is good for now.
+It would be nice to do a visual comparison just to make sure we have what we need, but I think we're good. They're showing this secondary reference line as a trend line. We're going to have separate support for a trend line.
+
+Madeline Luke   52:29
+The.
+
+Connor Lamoureux   52:33
+But we should note that in this case, like our trend lines in S1 follow the same kind of style as the line they're connected to.
+
+Madeline Luke   52:41
+Yeah.
+
+Connor Lamoureux   52:42
+So like a purple line would have a purple trend line potentially with its like dashed or something.
+
+Madeline Luke   52:48
+Mhm.
+
+Connor Lamoureux   52:48
+In this case, the trend line is just a black secondary reference line.
+Um, and so we would, we would probably say...
+There's some mechanism for making it that maybe that's the default or like there's some kind of prop for match style for the line. So that'll be different from how S1 handles things. We'll have to decide that, but should be easy enough.
+
+Madeline Luke   53:12
+Okay.
+
+Connor Lamoureux   53:19
+Um...
+So here's an example. Chrome users outperform Safari users in 2023 and 2024.
+They're using, these are all four of these lines are actually different.
+Like...
+
+Madeline Luke   53:35
+Yeah.
+
+Connor Lamoureux   53:37
+You got you got your series of Chrome and Safari.
+But the legend is actually based on the year.
+
+Madeline Luke   53:45
+Mhm.
+
+Connor Lamoureux   53:47
+Which this axis doesn't make sense for that, but we can ignore that.
+So in reality, this would be like January through whatever month, and then...
+The like we have multiple ways of splitting the data now and then we don't support that in S1 as far as I can remember. And so the tricky question is like, how do you have?
+
+Madeline Luke   54:07
+Yeah.
+
+Connor Lamoureux   54:12
+four lines where two are for one for one browser, right, series, two are for another browser, and then two, one of each of those are for a certain year and two are for another year. We need to automatically find a way to split that in a way that's a clean API.
+
+Madeline Luke   54:28
+Yeah.
+
+Connor Lamoureux   54:29
+Um...
+I think that that is probably going to be pretty doable.
+but will require a more ambiguous ticket. I think we'll have to have somebody take a three-pointer or something and just like figure out how to do this. And then whatever API makes sense based on what you figure out is what we're going to do.
+
+Madeline Luke   54:46
+Yeah.
+
+Connor Lamoureux   54:48
+And it looks like we can do that for small multiples as well.
+Um...
+Bear in mind that for all these tickets, like we kind of, we're going to want the default behavior to match whatever these specs are. So by default, we probably want to say.
+
+Madeline Luke   55:00
+Okay.
+Kym.
+
+Connor Lamoureux   55:04
+The.
+This line ends up being...
+This grayer color, unless someone overrides that.
+
+Madeline Luke   55:11
+Mm.
+Game.
+
+Connor Lamoureux   55:17
+Direct labels, we've done some work on. The biggest thing was that we decided that.
+Even though the direct labels mostly have a point where the direct labels actually align based.
+mark and not a point-based mark because it tends to be more connected to the blind than the point in these examples.
+
+Madeline Luke   55:33
+Yeah.
+
+Connor Lamoureux   55:41
+Um...
+Label, font size, scale. This is new work we will have to do because we didn't do it before. But once we have chart types, so it's requiring the chart size prop to be in place, the small, medium, large. That's what's going to also control the direct label font size.
+Potentially the font weight, yeah, label font size, label font weight.
+and also the point size, the static point size at the end, which direct label and static point are two different components, but they'll both be affected by that.
+
+Madeline Luke   56:13
+Yeah.
+
+Connor Lamoureux   56:20
+Um...
+
+Madeline Luke   56:22
+Yeah.
+
+Connor Lamoureux   56:24
+Okay.
+Hovering data.
+I think maybe we stop here.
+Because I think the rest of what we're going to look at is...
+Okay, yeah, we have a lot to talk about for interactions here and then
+
+Madeline Luke   56:42
+Yeah.
+
+Connor Lamoureux   56:43
+The rest is like mostly guidelines.
+
+Madeline Luke   56:47
+Okay.
+
+Connor Lamoureux   56:48
+But there's probably going to be some things we need to, like, I know we have shapes and stuff we'll have to add support for based on the guidelines, but...
+
+Madeline Luke   56:54
+Open.
+
+Connor Lamoureux   56:56
+Yeah, let's stop there and then we'll try and cover the rest of this in the afternoon.
+
+Madeline Luke   57:00
+No.
+Okay.
+
+Connor Lamoureux   57:03
+Um...
+Okay.
+Let me, the transcription should keep going until we end the meeting. That's fine.
+
+Madeline Luke   57:13
+Yeah.
+
+Connor Lamoureux   57:13
+But, uh...
+verbal marker here that everything we discuss after this is not relevant to the align feature work that we're going to be doing.
+Um...
+Okay, we'll see how that goes.
+Our generation gave us.
+point annotations. This is cool. Look, here's the features it calls out. I don't think this is enough tickets, but I think we'll get more tickets based on this discussion.
+
+Madeline Luke   57:45
+Yeah.
+
+Connor Lamoureux   57:46
+Trellis.
+point annotations, direct labels, supported. It's saying most of this is supported. And so that's why I like my plan was we're going to get this and we're going to I have it saving the artifact it made.
+
+Madeline Luke   58:02
+Yeah, okay.
+
+Connor Lamoureux   58:02
+And then all of, in our conversation, we're going to see all these very granular, like, here's what we need to do with this, here's what we need to do with this. And then I'm hoping once we combine that, then this is going to produce a lot more tickets, but it will already have the information it needs to do that.
+
+Madeline Luke   58:08
+Yeah.
+Yeah.
+Okay.
+Yeah, yeah, because it's not wrong, you know, like we can do a forecast pattern right now, so...
+
+Connor Lamoureux   58:19
+No.
+It's just thinking too high level and it's not being prescriptive about, which is fine.
+
+Madeline Luke   58:23
+Things, yeah.
+
+Connor Lamoureux   58:28
+Um...
+
+Madeline Luke   58:29
+Zero investigation needed. Okay.
+
+Connor Lamoureux   58:32
+Where's that?
+
+Madeline Luke   58:33
+It says totals under the chart. Two new one person. Yeah.
+
+Connor Lamoureux   58:34
+No.
+Yeah, that's a huge miss. There's a lot of investigation needed, so maybe I can train this based on what our conversation has here as well.
+
+Madeline Luke   58:40
+Ohh.
+Yeah, I'm curious to see what it comes up with after listening to the transcription.
+
+Connor Lamoureux   58:46
+Um...
+Yeah, it might not be useful. Like we might, I think if we have the transcription converted to tickets.
+It might be good enough.
+
+Madeline Luke   58:58
+Yeah, yeah.
+
+Connor Lamoureux   59:00
+So, but my hope is that we can take the transcription and also have this agent.
+look at the actual code and like make a proposed solution for some of this stuff that we can start with.
+
+Madeline Luke   59:08
+Hello.
+
+Connor Lamoureux   59:15
+We'll see. Really quick, something I was cooking up on Friday that you might think is cool.
+
+Madeline Luke   59:15
+Yeah.
+
+Connor Lamoureux   59:27
+I can find it.
+We had a CSO.
+
+Madeline Luke   59:30
+Wow, you have so many tabs open.
+
+Connor Lamoureux   59:32
+We had a CSO on Saturday.
+
+Madeline Luke   59:35
+I know I saw.
+
+Connor Lamoureux   59:36
+And so this is all like me trying to...
+
+Madeline Luke   59:38
+Craziness.
+Panic.
+
+Connor Lamoureux   59:41
+to solve that.
+Where is the?
+Okay.
+This is React Spectrum Charts.
+
+Madeline Luke   59:52
+Okay.
+
+Connor Lamoureux   59:55
+Oh, is it not running anymore?
+See if I can find it.
+Now, maybe it's broken.
+
+Madeline Luke   1:00:50
+I saw it for a second.
+
+Connor Lamoureux   1:00:56
+Well, so this is.
+This is just a D3 chart.
+
+Madeline Luke   1:01:02
+Okay.
+
+Connor Lamoureux   1:01:03
+To give an example like this, this is actually interesting to see probably. So to give an example, I had an agent make this D3 chart in about 5 minutes.
+
+Madeline Luke   1:01:06
+Yeah.
+Perfect.
+
+Connor Lamoureux   1:01:14
+and it's like fully animated. It looks like kind of close to, it has animated.
+And.
+
+Madeline Luke   1:01:26
+Wow.
+Okay.
+
+Connor Lamoureux   1:01:31
+The point there being, like, I opened an agent session and said, make a D3 chart that looks like this, and that's what it gave me. So that tells you, like, why we're having these conversations.
+
+Madeline Luke   1:01:36
+Okay.
+Yeah.
+Right.
+
+Connor Lamoureux   1:01:41
+Um...
+Okay, looks like this is fixed. These are D3 charts, but they are using react spectrum charts.
+
+Madeline Luke   1:01:49
+Okay.
+
+Connor Lamoureux   1:01:50
+So it's going through the library and the API to actually construct the chart is our API.
+
+Madeline Luke   1:01:56
+Okay.
+
+Connor Lamoureux   1:01:56
+Right, and so here's like a hover state.
+There's like a, it's not instant, there's a slight fade, right?
+
+Madeline Luke   1:02:05
+Mhm.
+
+Connor Lamoureux   1:02:08
+There's animations.
+
+Madeline Luke   1:02:10
+Wow.
+
+Connor Lamoureux   1:02:14
+There's drawing, I can make those a lot longer so it's clear.
+Doesn't work.
+Well, that's broken, but...
+
+Madeline Luke   1:02:28
+Mm.
+
+Connor Lamoureux   1:02:29
+You get the idea, the loop is a reversed.
+
+Madeline Luke   1:02:30
+Yeah.
+
+Connor Lamoureux   1:02:35
+No, it's just not working.
+But yeah, so like I threw this together Friday afternoon.
+And I haven't looked at the implementation code, but it's all D3.
+And it has animations.
+
+Madeline Luke   1:02:48
+Okay.
+
+Connor Lamoureux   1:02:53
+I can like get it to do whatever I want in terms of like the flexibility. The downside of it is we don't get as much free stuff, right? Like we have to figure out access scaling and stuff.
+
+Madeline Luke   1:03:06
+Mhm.
+
+Connor Lamoureux   1:03:07
+But.
+I'm planning on like, I have this structure kind of built and there's some things I want to add to it.
+
+Madeline Luke   1:03:14
+Okay.
+
+Connor Lamoureux   1:03:15
+But I'm planning on...
+
+Madeline Luke   1:03:16
+Yeah.
+
+Connor Lamoureux   1:03:18
+Once we have these featured tickets.
+I'm going to have parallel sessions. I'm not saying you should do this. I'm mostly doing it for my own testing, but I'm going to have parallel sessions. I'm going to have one on this D3 branch and one on the.
+
+Madeline Luke   1:03:27
+Yeah, yeah.
+The.
+
+Connor Lamoureux   1:03:33
+regular branch and see like can you implement to here? Can you put to here? Because what I kind of want to see too is...
+
+Madeline Luke   1:03:34
+K.
+
+Connor Lamoureux   1:03:40
+Which one is it more successful at implementing it in?
+
+Madeline Luke   1:03:44
+Yeah.
+
+Connor Lamoureux   1:03:45
+You know what I mean?
+
+Madeline Luke   1:03:46
+Yeah, and which limitations come from which ones, I guess. Like, what can Vega not do and what can D3 not do?
+
+Connor Lamoureux   1:03:50
+Yeah.
+Yeah.
+
+Madeline Luke   1:03:54
+Okay, how does, I don't, so I don't know much about D3. I'll have to look into it, but like a Vega spec is just like a JSON object. Is D3 similar?
+
+Connor Lamoureux   1:03:54
+So...
+So Vega uses D3 under the hood.
+
+Madeline Luke   1:04:11
+Okay.
+
+Connor Lamoureux   1:04:13
+Yeah.
+And.
+So it's just more flexible basically, but here like you actually have to manually define.
+Like, everything.
+
+Madeline Luke   1:04:27
+Okay.
+
+Connor Lamoureux   1:04:29
+Right.
+
+Madeline Luke   1:04:31
+Mm.
+
+Connor Lamoureux   1:04:31
+And so Vega manually defines things for us and it also makes decisions about how to manually define those things based on the data and stuff, right?
+
+Madeline Luke   1:04:39
+Okay.
+
+Connor Lamoureux   1:04:39
+And so that's the thing where it's like we have to we'd have to decide how to do that.
+But the amount of flexibility and control it would give us would be pretty.
+big. Like I bet you we could, looking back at those examples, I bet we could do.
+
+Madeline Luke   1:04:49
+Yeah.
+
+Connor Lamoureux   1:04:56
+You know, I did a light implementation of the legend position stuff.
+
+Madeline Luke   1:05:00
+Mhm.
+
+Connor Lamoureux   1:05:01
+and had trouble with it where we're left aligning it because of what seems to be like a Vega bug.
+
+Madeline Luke   1:05:06
+Yeah.
+
+Connor Lamoureux   1:05:07
+This would probably work immediately with the D3 with D3 coding if we were using D3 instead of Vega. Just because it's like we don't have to rely on anything. We can do that. We can we can even probably name the SVG structure how we want in a more useful way for us.
+
+Madeline Luke   1:05:10
+Sorry.
+Yeah.
+Yeah.
+And you were saying Vega is open source?
+
+Connor Lamoureux   1:05:24
+Um...
+Yeah, Vega is open source.
+
+Madeline Luke   1:05:28
+So we could literally see.
+
+Connor Lamoureux   1:05:31
+Yeah.
+
+Madeline Luke   1:05:32
+what decisions they're making and how they're making them. And we could just do it differently.
+
+Connor Lamoureux   1:05:33
+Yeah, and copy them.
+Or, or do differently. Yeah, that's that's the thing that that's the one thing or one of the one things that has me thinking about.
+
+Madeline Luke   1:05:38
+Yeah. Okay.
+
+Connor Lamoureux   1:05:43
+going this route. I'm not convinced yet because a re-architecture like this is pretty, it's a pretty big decision to make.
+
+Madeline Luke   1:05:44
+Yeah.
+Mhm.
+
+Connor Lamoureux   1:05:50
+But if we ever did get caught in a spot where we're like, oh shoot, this thing doesn't work, but it works in Vega, we could just clone Vega and have an agent like, hey, go look how Vega is doing and do it here. It's like where risk is lower because of the AI stuff.
+
+Madeline Luke   1:06:01
+Yeah.
+Yeah.
+Yeah, AI definitely allows us to go in there and just see what they're doing and strip it pretty easily.
+
+Connor Lamoureux   1:06:07
+Even though we...
+Yeah.
+Yeah, I mean, we run the risk of like the AI saying, hey, I copied it, but actually not copying it properly, right? Like there's decisions made in the code base that we wouldn't have that context for.
+
+Madeline Luke   1:06:21
+Brady.
+And...
+
+Connor Lamoureux   1:06:28
+So I don't think it's a perfect answer. And then also the other concern I have is...
+The only way we pull off a D3 rearchitecture is if it's heavily AI coded.
+And I don't want to lose our ability to go in and make changes manually.
+
+Madeline Luke   1:06:40
+Yeah.
+Yeah.
+
+Connor Lamoureux   1:06:44
+Um...
+So I'm trying to steer it that way.
+and say, like, this needs to be structured so that it works for, like, we can go in and make targeted changes easily, and it's better for an AI to make targeted changes.
+
+Madeline Luke   1:07:03
+Yeah.
+
+Connor Lamoureux   1:07:04
+Which is another benefit, maybe, is I'm having the, I'm directing the agent to like structure the API or the code such that it's very easy for an AI to go and make changes to it.
+
+Madeline Luke   1:07:15
+Yeah.
+
+Connor Lamoureux   1:07:17
+whether or not that is successful, you know, yet to be determined, but it looks like...
+We can get a quick example.
+Like this is what the bar ends up looking like.
+So it's like immediately less human readable compared to our code, right? Our biggest spec builder. We could abstract some of this stuff so it's more, but like anyone's gonna be, if you work in this, you'd have to be forced to learn how D3 is doing things, which.
+
+Madeline Luke   1:07:43
+Email.
+Yeah.
+Right.
+And isn't that like partially the whole point of Vega? And so you're just creating a Vega spec, which is a JSON object, rather than using D3 directly. If that's what they're using under the hood, they're trying to make it more readable and usable.
+
+Connor Lamoureux   1:08:10
+Yeah, yeah.
+Yeah, but I mean for us, that's not the same like equation, right? Like the point of Vega for a lot of teams like pre-react spectrum charts is.
+I don't want to have to use D3. I'm going to go in and use Vega for my, whatever my project is, because my, I'm not a chart guy. I just need to have a chart in my project.
+
+Madeline Luke   1:08:29
+Mhm.
+Yeah.
+
+Connor Lamoureux   1:08:34
+Right. And then we said like, well, even Vega is kind of the pain to manage. So we'll manage Vega for you. And now you can just be a React guy.
+
+Madeline Luke   1:08:42
+Yeah.
+
+Connor Lamoureux   1:08:43
+Right. But now in our current position, like we are in this layer where it's like, we could also be the same, we could be doing what Vega is doing for our teams and say like, instead of saying like, we'll do Vega for you, so you don't have to learn Vega, we can say we'll do D3 for you soon. Like, it would make sense for us to learn how to do that.
+
+Madeline Luke   1:08:53
+Yeah.
+Yeah, I agree.
+
+Connor Lamoureux   1:09:04
+And.
+So like we're appending, I mean, it kind of makes sense if you understand Vega, like.
+A.
+We're joining SVG elements.
+On this element, we're appending a rect. OK, so it's a rect mark.
+
+Madeline Luke   1:09:23
+Yeah.
+
+Connor Lamoureux   1:09:24
+We're adding a class.
+We're adding a data series, I guess. We're adding an X value, we're setting a scale.
+
+Madeline Luke   1:09:29
+Yeah.
+
+Connor Lamoureux   1:09:34
+We're setting a bandwidth, like the more you know about, we're setting like corner radiuses on RX, RY, fill, chart height. Like if you understand how to read a Vega spec well, then this kind of makes sense.
+
+Madeline Luke   1:09:35
+Yeah.
+Yeah.
+
+Connor Lamoureux   1:09:51
+Um...
+
+Madeline Luke   1:09:52
+It's not like the most confusing thing I've ever looked at. You know what I mean? Like you can tell what it's doing.
+
+Connor Lamoureux   1:09:55
+No.
+I have to admit after being like in this chart world for so long, the idea of being able to just like reach in and do exactly what I want is really appealing. Like I'm looking at this and I'm like, oh, I can actually just do exactly what I want. Instead of having to go look at Vega and say like, oh, do they support this? Do they support that? Here, it's like I have the attribute, I can just.
+
+Madeline Luke   1:10:11
+Yeah.
+Yeah.
+Yeah.
+
+Connor Lamoureux   1:10:21
+Do what I want.
+
+Madeline Luke   1:10:21
+You can just add the attribute you want or set the exact value that you need it to be. Vega only gives you a few options.
+
+Connor Lamoureux   1:10:27
+Yeah.
+And I'm at a point where like half my gut feeling is like half of our customer requests.
+
+Madeline Luke   1:10:32
+Yeah, Agui.
+
+Connor Lamoureux   1:10:40
+Or user requests are things where I'm saying, oh, we can't really do that because of Vega. Maybe even like half of all the design requests we've had or like, oh, we can't do that because it's Vega. And Vega doesn't support that. But if we were doing D3, we could just do it.
+
+Madeline Luke   1:10:46
+Right.
+Yeah.
+Yeah, maybe with some of these charts, we could just.
+Add a D3 option, I don't.
+
+Connor Lamoureux   1:11:03
+I would, I would do a wholesaler replacement.
+
+Madeline Luke   1:11:06
+Or just silently switch them over.
+
+Connor Lamoureux   1:11:07
+Yeah, well, that's like, that's why I'm doing this now is because we're in alpha. So if we start these line features, then we can get most of them to work in both versions, this D3 version and the non-D3 version.
+
+Madeline Luke   1:11:11
+Yeah.
+Yeah.
+
+Connor Lamoureux   1:11:19
+which I would test on my own after we like we'd implement if you're working on a ticket.
+
+Madeline Luke   1:11:24
+Yeah.
+
+Connor Lamoureux   1:11:24
+I'll push these up, so if you ever want to mess with it, you can once I have it like where I want it, but...
+
+Madeline Luke   1:11:40
+Mhm.
+
+Connor Lamoureux   1:11:41
+and see how that works. And then if we have like pretty close feature parity, then I would at some point make a decision about.
+Maybe we get close enough and it's working well enough that we say like, oh, now you're working on chart interactions. Why don't you just do that in the D3 version and we're just going to swap to that.
+
+Madeline Luke   1:11:55
+Yeah, yeah.
+
+Connor Lamoureux   1:11:56
+before we do anything for lunch.
+
+Madeline Luke   1:11:58
+I mean, if this is a direction that you're wanting to explore, like, I don't mind doing it in both.
+if you just show me how you set everything up so we can do more comparisons going forward.
+
+Connor Lamoureux   1:12:10
+Let me see if I can get a storybook. I just don't want it to be like a friction thing. So like if it's adding 50% onto your ticket time, then it's not worth it.
+
+Madeline Luke   1:12:20
+Yeah, I think it definitely would be like a, okay, I'm going to implement it in React Spectrum charts in Vega as is. And then if the feature took me half a day when we predicted it would take three points, maybe I'll go in there, do the D3 version, because there's a little extra time there anyways. You know, something like that maybe.
+
+Connor Lamoureux   1:12:24
+Yeah.
+Yeah.
+Yeah, yeah, yeah, yeah.
+OK.
+That's fine.
+
+Madeline Luke   1:12:41
+We don't have to blow our story point numbers, but I feel like that's happened in the past, so there could be some flexibility.
+
+Connor Lamoureux   1:12:42
+Um...
+No.
+Yeah, yeah, okay. I need to get a storybook working for it, and then I need to get like some stuff.
+some more stuff working, so before we play in a place where we can act like it doesn't have access or legend yet. And I also want to bake in, I'm trying to bake in.
+
+Madeline Luke   1:12:59
+Yeah, so then...
+Yeah.
+
+Connor Lamoureux   1:13:09
+Data Navigator.
+or an alternative for accessibility.
+
+Madeline Luke   1:13:15
+So you created a new D3 branch or you're using a word tree. And then did you rewrite?
+
+Connor Lamoureux   1:13:15
+from the beginning.
+Yeah.
+
+Madeline Luke   1:13:24
+Most of React Spectrum charts.
+
+Connor Lamoureux   1:13:27
+I had an AI do it, yeah.
+
+Madeline Luke   1:13:28
+Well, yeah, but most of it, right? It was...
+
+Connor Lamoureux   1:13:30
+for only S2, just S2.
+
+Madeline Luke   1:13:32
+Okay, so it seems like it'd be a pretty big sweep of changes.
+
+Connor Lamoureux   1:13:33
+I actually made a new package. I said, take.
+I said take the S2 package, but we're going to make a new package, and we're just going to support these things in the new package.
+
+Madeline Luke   1:13:43
+Okay.
+
+Connor Lamoureux   1:13:44
+It's called Charts Core right now, and it's like the it's like the equivalent of the Vega spec builder.
+
+Madeline Luke   1:13:46
+Okay.
+Okay.
+
+Connor Lamoureux   1:13:51
+And then I just started doing feature by feature. So like most of the features are not in this. It's like a new finished project based on the old one.
+
+Madeline Luke   1:13:59
+Right.
+Okay, so are you still doing like util files?
+
+
+Connor Lamoureux   1:14:08
+Um...
+There's probably some utils in here.
+
+Madeline Luke   1:14:13
+Like, okay, you have the mark files.
+
+Connor Lamoureux   1:14:15
+Is a highlight you tell.
+
+Madeline Luke   1:14:16
+Thanks.
+Okay.
+
+Connor Lamoureux   1:14:20
+Um...
+
+Madeline Luke   1:14:20
+So just instead of returning the JSON object, which is the Vega spec, you're building out these.
+They're calling functions. I don't know. I need to do a little of my own search, but it's like function calls.
+
+Connor Lamoureux   1:14:32
+Yeah, it's like, it's like function calls and the reason I did that is to make it like really composable. So I directed the AI to do like.
+call a function, create chart, and then we can pass in like themes and configs and like hypothetically anything that would let us branch off and do more stuff. And so I'm trying to like, the main thing I'm trying to bake in is theming, top level theming, and then like animations.
+
+Madeline Luke   1:14:49
+Yeah.
+Okay, yeah.
+Mmh.
+
+Connor Lamoureux   1:15:00
+and then navigation, keyboard navigation.
+And if those can be baked in, then we can like make them requirements. And then if you make a new chart, then we can like you bake in the animations and the navigation from the beginning instead of having to write it from scratch. And so.
+
+Madeline Luke   1:15:16
+In.
+
+Connor Lamoureux   1:15:18
+Let me so I can get a really quick example of the...
+So.
+It was kind of a messy view of it, but...
+
+Madeline Luke   1:15:40
+Once I create chart.
+
+Connor Lamoureux   1:15:42
+Ohh, it's skipping over a bunch of lines, so this diff is like not the best example, so let me see if I can.
+
+Madeline Luke   1:15:42
+Something.
+
+Connor Lamoureux   1:15:52
+Just go into one of the files.
+Um, which one would it be?
+
+Madeline Luke   1:16:01
+And D3 already supports accessibility.
+
+Connor Lamoureux   1:16:07
+No.
+
+Madeline Luke   1:16:09
+OK.
+
+Connor Lamoureux   1:16:09
+But because we'd have control over the SVG, we might be able to do it in there, but either way, data navigator would let us do it. And so it's just a question of how we want to do it.
+
+Madeline Luke   1:16:20
+Okay.
+
+Connor Lamoureux   1:16:20
+But there's like most chart libraries are built on D3 and there are some proprietary libraries using D3 that do have accessibility.
+
+Madeline Luke   1:16:27
+Yeah, I was looking at D3 plus, a library built on D3 that automatically includes ARIA attributes, roles, and labels, but...
+
+Connor Lamoureux   1:16:28
+So it's possible.
+Yeah, we could end up doing that.
+Um...
+
+Madeline Luke   1:16:44
+Sure.
+
+Connor Lamoureux   1:16:45
+I don't think this is the only one, actually.
+
+Madeline Luke   1:16:46
+Yeah.
+These guys were turned into.
+
+Connor Lamoureux   1:16:52
+Um...
+
+Madeline Luke   1:16:53
+Yeah, to me it just seems like it's like their little function calls that are adding these properties rather than just building a JSON object.
+
+Connor Lamoureux   1:17:02
+Yeah.
+
+Madeline Luke   1:17:03
+Yeah.
+
+Connor Lamoureux   1:17:05
+So, here, here's the here's a call of the function, so create chart, the target element, or the container, and then the data color scheme.
+
+Madeline Luke   1:17:08
+Okay.
+Mhm.
+
+Connor Lamoureux   1:17:16
+Marks.
+So, we got the line.
+
+Madeline Luke   1:17:19
+Okay.
+
+Connor Lamoureux   1:17:21
+Month value, all the properties.
+Tooltip popover. So these would probably change, right? Like this becomes something.
+an actual element or something.
+
+Madeline Luke   1:17:32
+Mmh.
+
+Connor Lamoureux   1:17:35
+Bar chart's the same.
+Uhh...
+And then...
+So, here's calling that function.
+
+Madeline Luke   1:17:49
+Okay.
+
+Connor Lamoureux   1:17:49
+And.
+And...
+Exporting those or adding them onto the window in this case.
+
+Madeline Luke   1:18:02
+Okay.
+
+Connor Lamoureux   1:18:05
+So it's like this, this would be...
+would end up getting mapped over to the React layer.
+Right.
+
+Madeline Luke   1:18:12
+Yeah.
+
+Connor Lamoureux   1:18:14
+So I haven't figured out like how embedding is going to work exactly. I'll figure that out with storybook, but to give a general sense for how I'm thinking the structure would work is like, hey, you just call, create chart, you pass in everything.
+And...
+Inside of that, we just...
+take it out and do what we need to do with it.
+
+Madeline Luke   1:18:33
+Okay.
+I mean, yeah.
+
+Connor Lamoureux   1:18:35
+But this might change. It might change. Like, I'm still messing with it. I'm pretty early on, but...
+
+Madeline Luke   1:18:40
+With my little knowledge, it like makes sense.
+
+Connor Lamoureux   1:18:44
+Makes sense to me, I mean.
+
+Madeline Luke   1:18:45
+Yeah, it doesn't seem like overly complicated, to be honest.
+
+Connor Lamoureux   1:18:47
+Yes.
+No, if anything, I feel like the Vega embed stuff is like complicated to understand, but that being said, it handles render cycling for us. And so that's another thing we're going to lose is like performance optimizations.
+
+Madeline Luke   1:18:59
+Yeah.
+Yeah.
+
+Connor Lamoureux   1:19:03
+Um...
+So...
+What I might do is point this at Vega and say like, hey, how are they doing rendering?
+
+Madeline Luke   1:19:12
+Yeah.
+
+Connor Lamoureux   1:19:13
+With Vega embed and like are there any big things we're missing? And then just go with it. But I'm also of a mind that like if we can do some tests for performance and they work okay, then I'm not that worried about it because.
+I don't think performance is our big selling point. Like, it's nice to have, and we have had one person ask for a chart with 20,000 points or whatever, so we might expect that to make sure it works, but like...
+
+Madeline Luke   1:19:34
+Yeah.
+
+Connor Lamoureux   1:19:38
+I think that people would rather have more chart flexibility and more available chart features than they would rather have really performing charts right now.
+
+Madeline Luke   1:19:45
+Yeah.
+Mhm.
+
+Connor Lamoureux   1:19:49
+So, and we can always make optimizations later. It's not like it's or ultimately you're just like creating an element and rendering it to a DOM, so...
+
+Madeline Luke   1:19:50
+No.
+Right, if people start calling it out.
+Yeah.
+
+Connor Lamoureux   1:20:00
+Cool. All right. Yeah, we're going to continue then at.
+
+Madeline Luke   1:20:01
+Sit.
+
+Connor Lamoureux   1:20:06
+What, 131?
+
+Madeline Luke   1:20:07
+30, yeah.
+
+Connor Lamoureux   1:20:09
+Yeah, that 1:30.
+
+Madeline Luke   1:20:10
+Okay.
+
+Connor Lamoureux   1:20:11
+Cool. Thank you.
+
+Madeline Luke   1:20:13
+Yeah, I'll talk to you soon.
+
+Connor Lamoureux   1:20:14
+Yep, see you later.
+
+Madeline Luke   1:20:15
+Bye.
+
+Connor Lamoureux stopped transcription
+
