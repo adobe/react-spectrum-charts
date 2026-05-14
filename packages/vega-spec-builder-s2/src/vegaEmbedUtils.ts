@@ -39,7 +39,7 @@ const deepMerge = (base: Record<string, unknown>, patch: Record<string, unknown>
     const patchIsPlainObject =
       patchVal !== null && typeof patchVal === 'object' && !Array.isArray(patchVal) && !('signal' in patchVal);
     const baseIsPlainObject =
-      baseVal !== null && typeof baseVal === 'object' && !Array.isArray(baseVal) && !('signal' in (baseVal as object));
+      baseVal !== null && typeof baseVal === 'object' && !Array.isArray(baseVal) && !('signal' in baseVal);
     if (patchIsPlainObject && baseIsPlainObject) {
       result[key] = deepMerge(baseVal as Record<string, unknown>, patchVal as Record<string, unknown>);
     } else {
