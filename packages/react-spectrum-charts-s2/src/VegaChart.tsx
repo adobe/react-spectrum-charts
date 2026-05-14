@@ -11,7 +11,7 @@
  */
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Config, Padding, Renderers, Spec, View } from 'vega';
+import { Config, Padding, Renderers, Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
@@ -22,6 +22,17 @@ import { ChartData, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-build
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
 import { ChartProps } from './types';
+
+// Register a custom expression function that returns the full container width (including axis space).
+// `view._viewWidth` is the container width minus spec-level padding; adding padding back gives the
+// true container width. Passing `width` as an argument creates a reactive dependency so the signal
+// re-evaluates on every resize.
+expressionFunction('rscContainerWidth', function (this: { context: { dataflow: View } }) {
+  const view = this.context.dataflow;
+  const p = view.padding() as { left?: number; right?: number };
+  const viewWidth = (view as unknown as { _viewWidth?: number })._viewWidth ?? 0;
+  return viewWidth + (p.left ?? 0) + (p.right ?? 0);
+});
 
 /**
  * Resizes an existing Vega view without recreating it.

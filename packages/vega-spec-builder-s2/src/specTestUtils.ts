@@ -12,6 +12,8 @@
 import { Signal } from 'vega';
 
 import {
+  CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_STROKE_WIDTH,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   HIGHLIGHTED_GROUP,
@@ -29,6 +31,11 @@ export const defaultSelectedItemSignal = getGenericValueSignal(SELECTED_ITEM);
 export const defaultSelectedSeriesSignal = getGenericValueSignal(SELECTED_SERIES);
 export const defaultSelectedGroupSignal = getGenericValueSignal(SELECTED_GROUP);
 
+export const defaultChartSizeStrokeWidthSignal = {
+  name: CHART_SIZE_STROKE_WIDTH,
+  update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1.5 : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? 2 : 3`,
+};
+
 export const defaultSignals: Signal[] = [
   defaultHighlightedItemSignal,
   defaultHighlightedGroupSignal,
@@ -36,4 +43,5 @@ export const defaultSignals: Signal[] = [
   defaultSelectedItemSignal,
   defaultSelectedSeriesSignal,
   defaultSelectedGroupSignal,
+  defaultChartSizeStrokeWidthSignal,
 ];

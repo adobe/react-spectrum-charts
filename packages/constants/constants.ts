@@ -31,7 +31,27 @@ export const DEFAULT_LABEL_FONT_WEIGHT = 'normal';
 export const DEFAULT_LABEL_ORIENTATION = 'horizontal';
 export const DEFAULT_LABEL_POSITION = 'top';
 export const DEFAULT_LINE_TYPES = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
-export const DEFAULT_LINE_WIDTHS = ['M'];
+export const DEFAULT_LINE_WIDTHS = ['L'];
+
+export type ChartSize = 'XS' | 'S' | 'M' | 'L';
+
+/** Vega signal name that carries the chart-size-derived line stroke width (updated imperatively on resize). */
+export const CHART_SIZE_STROKE_WIDTH = 'rscChartSizeStrokeWidth';
+
+/** Minimum rendered widths (px) at which each size tier activates. Easy to adjust. */
+export const CHART_SIZE_BREAKPOINTS = {
+  S: 250,
+  M: 400,
+  L: 800,
+} as const;
+
+/** Maps each ChartSize to the default line-width token for that tier. */
+export const CHART_SIZE_LINE_WIDTHS: Record<ChartSize, string> = {
+  XS: 'XS',
+  S: 'S',
+  M: 'M',
+  L: 'L',
+};
 export const DEFAULT_LINEAR_DIMENSION = 'x';
 export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';

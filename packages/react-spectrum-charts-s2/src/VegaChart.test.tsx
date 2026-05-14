@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { render, waitFor } from '@testing-library/react';
-import { Spec, View } from 'vega';
+import { Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 
 import { VegaChart, VegaChartProps, resizeView } from './VegaChart';
@@ -88,6 +88,27 @@ describe('resizeView', () => {
 		resizeView(mockView, 800, 0);
 
 		expect(mockWidth).not.toHaveBeenCalled();
+	});
+});
+
+describe('rscContainerWidth expression function', () => {
+	// The function is registered at module load time when VegaChart.tsx is imported above.
+	const fn = expressionFunction('rscContainerWidth') as (this: unknown) => number;
+
+	const makeCtx = (viewWidth: number | undefined, padding: unknown) => ({
+		context: { dataflow: { padding: () => padding, _viewWidth: viewWidth } },
+	});
+
+	test('returns _viewWidth plus left and right padding', () => {
+		expect(fn.call(makeCtx(380, { left: 10, right: 10, top: 5, bottom: 5 }))).toBe(400);
+	});
+
+	test('returns _viewWidth when padding has no left or right keys', () => {
+		expect(fn.call(makeCtx(400, { top: 5, bottom: 5 }))).toBe(400);
+	});
+
+	test('returns padding sum when _viewWidth is undefined', () => {
+		expect(fn.call(makeCtx(undefined, { left: 20, right: 20 }))).toBe(40);
 	});
 });
 

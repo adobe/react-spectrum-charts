@@ -21,6 +21,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   HOVERED_ITEM,
+  CHART_SIZE_STROKE_WIDTH,
   LINEAR_PADDING,
   MARK_ID,
   SERIES_ID,
@@ -74,7 +75,7 @@ const defaultSpec = initializeSpec({
               stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
               strokeDash: { value: [] },
               strokeOpacity: DEFAULT_OPACITY_RULE,
-              strokeWidth: undefined,
+              strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
               y: [{ field: 'value', scale: 'yLinear' }],
             },
             update: {
@@ -156,7 +157,7 @@ const line0_groupMark = {
           stroke: { scale: COLOR_SCALE, field: 'series' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-          strokeWidth: undefined,
+          strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
         },
         update: {
           x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
@@ -204,7 +205,7 @@ const metricRangeGroupMark = {
           },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           strokeWidth: {
-            value: 1.5,
+            signal: CHART_SIZE_STROKE_WIDTH,
           },
         },
         update: {
@@ -477,7 +478,7 @@ describe('lineSpecBuilder', () => {
                   stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
                   strokeOpacity: DEFAULT_OPACITY_RULE,
                   strokeDash: { value: [8, 8] },
-                  strokeWidth: undefined,
+                  strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
               y: [{ field: 'value', scale: 'yLinear' }],
             },
                 update: {

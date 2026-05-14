@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -89,7 +90,7 @@ const basicMetricRangeMarks = [
         stroke: { scale: COLOR_SCALE, field: 'series' },
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
-        strokeWidth: { value: 1.5 },
+        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
         x: {

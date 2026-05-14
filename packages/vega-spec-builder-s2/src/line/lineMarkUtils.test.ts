@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
@@ -40,7 +41,7 @@ describe('getLineMark()', () => {
           stroke: { field: 'series', scale: COLOR_SCALE },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-          strokeWidth: { value: 1 },
+          strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
           y: [{ field: 'value', scale: 'yLinear' }],
         },
         update: {
@@ -59,9 +60,9 @@ describe('getLineMark()', () => {
     expect(lineMark.encode?.update?.opacity).toBeUndefined();
   });
 
-  test('should have undefined strokeWidth if lineWidth if undefined', () => {
+  test('always uses the chart size signal for strokeWidth regardless of lineWidth', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, lineWidth: undefined }, 'line0_facet');
-    expect(lineMark.encode?.enter?.strokeWidth).toBeUndefined();
+    expect(lineMark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_STROKE_WIDTH });
   });
 
   test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
