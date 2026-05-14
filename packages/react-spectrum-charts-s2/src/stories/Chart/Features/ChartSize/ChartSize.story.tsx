@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useRef, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
@@ -37,26 +37,39 @@ const THRESHOLDS = [
 
 const AutoDetectStory = (): ReactElement => {
   const [width, setWidth] = useState(600);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const startWidth = useRef(0);
 
   let currentSize = 'L';
   if (width < CHART_SIZE_BREAKPOINTS.M) currentSize = 'S';
   else if (width < CHART_SIZE_BREAKPOINTS.L) currentSize = 'M';
 
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      setWidth(Math.max(100, startWidth.current + (e.clientX - startX.current)));
+    };
+    const onMouseUp = () => { isDragging.current = false; };
+    globalThis.addEventListener('mousemove', onMouseMove);
+    globalThis.addEventListener('mouseup', onMouseUp);
+    return () => {
+      globalThis.removeEventListener('mousemove', onMouseMove);
+      globalThis.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
+
+  const onHandleMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    startX.current = e.clientX;
+    startWidth.current = width;
+    e.preventDefault();
+  };
+
   return (
     <div style={{ padding: '16px 0' }}>
       <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>
         Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong>
-      </div>
-      <div style={{ marginBottom: 12 }}>
-        <input
-          type="range"
-          aria-label="Chart width"
-          min={100}
-          max={MAX_WIDTH}
-          value={Math.round(width)}
-          onChange={(e) => setWidth(Number(e.target.value))}
-          style={{ width: MAX_WIDTH }}
-        />
       </div>
       {/* Outer container holds threshold lines at fixed positions regardless of chart width */}
       <div style={{ position: 'relative', minWidth: MAX_WIDTH }}>
@@ -89,11 +102,43 @@ const AutoDetectStory = (): ReactElement => {
             </span>
           </div>
         ))}
-        <Chart data={workspaceTrendsData} width={width} height={300}>
-          <Axis position="bottom" baseline ticks labelFormat="time" />
-          <Axis position="left" grid />
-          <Line dimension="datetime" metric="value" color="series" scaleType="time" />
-        </Chart>
+
+        {/* Resizable chart */}
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <Chart data={workspaceTrendsData} width={width} height={300}>
+            <Axis position="bottom" baseline ticks labelFormat="time" />
+            <Axis position="left" grid />
+            <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+          </Chart>
+
+          {/* Drag handle — mouse drag updates width; the native range input inside handles keyboard/AT */}
+          <div
+            onMouseDown={onHandleMouseDown}
+            style={{
+              position: 'absolute',
+              right: -8,
+              top: 0,
+              bottom: 0,
+              width: 16,
+              cursor: 'ew-resize',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 20,
+            }}
+          >
+            <input
+              type="range"
+              aria-label="Chart width"
+              min={100}
+              max={MAX_WIDTH}
+              value={Math.round(width)}
+              onChange={(e) => setWidth(Number(e.target.value))}
+              style={{ position: 'absolute', inset: 0, opacity: 0, pointerEvents: 'none' }}
+            />
+            <div style={{ width: 4, height: 32, borderRadius: 2, background: '#999' }} />
+          </div>
+        </div>
       </div>
     </div>
   );
