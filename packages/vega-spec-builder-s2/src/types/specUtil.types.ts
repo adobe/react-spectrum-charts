@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Spec, SymbolShape } from 'vega';
+import { Config, Spec, SymbolShape } from 'vega';
 
 import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@spectrum-charts/constants';
 
@@ -41,6 +41,7 @@ export type UserMeta = {
   interactiveMarks?: string[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;
+  patches?: Partial<Config>[];
 };
 
 export interface MarkBounds {
