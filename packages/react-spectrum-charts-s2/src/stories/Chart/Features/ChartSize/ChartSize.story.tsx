@@ -39,7 +39,9 @@ const AutoDetectStory = (): ReactElement => {
   const startX = useRef(0);
   const startWidth = useRef(0);
 
-  const currentSize = width < CHART_SIZE_BREAKPOINTS.M ? 'S' : width < CHART_SIZE_BREAKPOINTS.L ? 'M' : 'L';
+  let currentSize = 'L';
+  if (width < CHART_SIZE_BREAKPOINTS.M) currentSize = 'S';
+  else if (width < CHART_SIZE_BREAKPOINTS.L) currentSize = 'M';
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -48,11 +50,11 @@ const AutoDetectStory = (): ReactElement => {
       setWidth(Math.max(100, startWidth.current + delta));
     };
     const onMouseUp = () => { isDragging.current = false; };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    globalThis.addEventListener('mousemove', onMouseMove);
+    globalThis.addEventListener('mouseup', onMouseUp);
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+      globalThis.removeEventListener('mousemove', onMouseMove);
+      globalThis.removeEventListener('mouseup', onMouseUp);
     };
   }, []);
 
@@ -61,6 +63,11 @@ const AutoDetectStory = (): ReactElement => {
     startX.current = e.clientX;
     startWidth.current = width;
     e.preventDefault();
+  };
+
+  const onHandleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') setWidth((w) => Math.max(100, w + 10));
+    else if (e.key === 'ArrowLeft') setWidth((w) => Math.max(100, w - 10));
   };
 
   return (
@@ -110,7 +117,13 @@ const AutoDetectStory = (): ReactElement => {
 
           {/* Drag handle */}
           <div
+            role="slider"
+            aria-label="Chart width"
+            aria-valuenow={Math.round(width)}
+            aria-valuemin={100}
+            tabIndex={0}
             onMouseDown={onHandleMouseDown}
+            onKeyDown={onHandleKeyDown}
             style={{
               position: 'absolute',
               right: -8,
