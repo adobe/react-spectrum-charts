@@ -9,12 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Config } from 'vega';
+
 import { numberLocales } from '@spectrum-charts/locales';
 
 import { applyUserMetaConfigPatches, getVegaEmbedOptions } from './vegaEmbedUtils';
 
 describe('applyUserMetaConfigPatches()', () => {
-  const base = {
+  const base: Config = {
     legend: {
       layout: {
         bottom: { anchor: 'middle', direction: 'horizontal', center: true, offset: 24 },
@@ -98,9 +100,9 @@ describe('applyUserMetaConfigPatches()', () => {
   });
 
   test('does not mutate the original config', () => {
-    const original = { legend: { layout: { bottom: { anchor: 'middle' } } } };
+    const original: Config = { legend: { layout: { bottom: { anchor: 'middle' } } } };
     applyUserMetaConfigPatches([{ legend: { layout: { bottom: { anchor: 'start' } } } }], original);
-    expect(original.legend.layout.bottom.anchor).toBe('middle');
+    expect(original.legend?.layout?.bottom?.anchor).toBe('middle');
   });
 });
 
