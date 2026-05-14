@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, useEffect, useRef, useState } from 'react';
+import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
@@ -28,46 +28,68 @@ export default {
 
 const defaultArgs: ChartProps = { data: workspaceTrendsData, width: 600, height: 300 };
 
+const CHART_HEIGHT = 300;
 const MAX_WIDTH = CHART_SIZE_BREAKPOINTS.L + 200;
+const THUMB_HEIGHT = 32;
 
 const THRESHOLDS = [
   { px: CHART_SIZE_BREAKPOINTS.M, label: 'M' },
   { px: CHART_SIZE_BREAKPOINTS.L, label: 'L' },
 ];
 
+// The range input is overlaid on the chart area. min=0 so the thumb position (in px) equals
+// the value, placing it at the right edge of the chart as the user drags.
+const HANDLE_STYLES = `
+  .rsc-chart-size-handle {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
+    outline: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: ${CHART_HEIGHT}px;
+    pointer-events: none;
+    z-index: 20;
+  }
+  .rsc-chart-size-handle::-webkit-slider-runnable-track {
+    background: transparent;
+    height: ${CHART_HEIGHT}px;
+  }
+  .rsc-chart-size-handle::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 8px;
+    height: ${THUMB_HEIGHT}px;
+    border-radius: 4px;
+    background: #999;
+    cursor: ew-resize;
+    pointer-events: all;
+    margin-top: ${(CHART_HEIGHT - THUMB_HEIGHT) / 2}px;
+  }
+  .rsc-chart-size-handle::-moz-range-track {
+    background: transparent;
+  }
+  .rsc-chart-size-handle::-moz-range-thumb {
+    width: 8px;
+    height: ${THUMB_HEIGHT}px;
+    border-radius: 4px;
+    background: #999;
+    border: none;
+    cursor: ew-resize;
+  }
+`;
+
 const AutoDetectStory = (): ReactElement => {
   const [width, setWidth] = useState(600);
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const startWidth = useRef(0);
 
   let currentSize = 'L';
   if (width < CHART_SIZE_BREAKPOINTS.M) currentSize = 'S';
   else if (width < CHART_SIZE_BREAKPOINTS.L) currentSize = 'M';
 
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      setWidth(Math.max(100, startWidth.current + (e.clientX - startX.current)));
-    };
-    const onMouseUp = () => { isDragging.current = false; };
-    globalThis.addEventListener('mousemove', onMouseMove);
-    globalThis.addEventListener('mouseup', onMouseUp);
-    return () => {
-      globalThis.removeEventListener('mousemove', onMouseMove);
-      globalThis.removeEventListener('mouseup', onMouseUp);
-    };
-  }, []);
-
-  const onHandleMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    startX.current = e.clientX;
-    startWidth.current = width;
-    e.preventDefault();
-  };
-
   return (
     <div style={{ padding: '16px 0' }}>
+      <style>{HANDLE_STYLES}</style>
       <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>
         Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong>
       </div>
@@ -103,41 +125,23 @@ const AutoDetectStory = (): ReactElement => {
           </div>
         ))}
 
-        {/* Resizable chart */}
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          <Chart data={workspaceTrendsData} width={width} height={300}>
+          <Chart data={workspaceTrendsData} width={width} height={CHART_HEIGHT}>
             <Axis position="bottom" baseline ticks labelFormat="time" />
             <Axis position="left" grid />
             <Line dimension="datetime" metric="value" color="series" scaleType="time" />
           </Chart>
 
-          {/* Drag handle — mouse drag updates width; the native range input inside handles keyboard/AT */}
-          <div
-            onMouseDown={onHandleMouseDown}
-            style={{
-              position: 'absolute',
-              right: -8,
-              top: 0,
-              bottom: 0,
-              width: 16,
-              cursor: 'ew-resize',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 20,
-            }}
-          >
-            <input
-              type="range"
-              aria-label="Chart width"
-              min={100}
-              max={MAX_WIDTH}
-              value={Math.round(width)}
-              onChange={(e) => setWidth(Number(e.target.value))}
-              style={{ position: 'absolute', inset: 0, opacity: 0, pointerEvents: 'none' }}
-            />
-            <div style={{ width: 4, height: 32, borderRadius: 2, background: '#999' }} />
-          </div>
+          <input
+            type="range"
+            className="rsc-chart-size-handle"
+            aria-label="Chart width"
+            min={0}
+            max={MAX_WIDTH}
+            value={Math.round(width)}
+            onChange={(e) => setWidth(Math.max(100, Number(e.target.value)))}
+            style={{ width: MAX_WIDTH }}
+          />
         </div>
       </div>
     </div>
