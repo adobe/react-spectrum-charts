@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write # gh release upload requires releases write
+
 jobs:
   attach-artifacts:
     runs-on: ubuntu-latest
