@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, useEffect, useRef, useState } from 'react';
+import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
@@ -28,6 +28,8 @@ export default {
 
 const defaultArgs: ChartProps = { data: workspaceTrendsData, width: 600, height: 300 };
 
+const MAX_WIDTH = CHART_SIZE_BREAKPOINTS.L + 200;
+
 const THRESHOLDS = [
   { px: CHART_SIZE_BREAKPOINTS.M, label: 'M' },
   { px: CHART_SIZE_BREAKPOINTS.L, label: 'L' },
@@ -35,48 +37,29 @@ const THRESHOLDS = [
 
 const AutoDetectStory = (): ReactElement => {
   const [width, setWidth] = useState(600);
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const startWidth = useRef(0);
 
   let currentSize = 'L';
   if (width < CHART_SIZE_BREAKPOINTS.M) currentSize = 'S';
   else if (width < CHART_SIZE_BREAKPOINTS.L) currentSize = 'M';
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      const delta = e.clientX - startX.current;
-      setWidth(Math.max(100, startWidth.current + delta));
-    };
-    const onMouseUp = () => { isDragging.current = false; };
-    globalThis.addEventListener('mousemove', onMouseMove);
-    globalThis.addEventListener('mouseup', onMouseUp);
-    return () => {
-      globalThis.removeEventListener('mousemove', onMouseMove);
-      globalThis.removeEventListener('mouseup', onMouseUp);
-    };
-  }, []);
-
-  const onHandleMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    startX.current = e.clientX;
-    startWidth.current = width;
-    e.preventDefault();
-  };
-
-  const onHandleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowRight') setWidth((w) => Math.max(100, w + 10));
-    else if (e.key === 'ArrowLeft') setWidth((w) => Math.max(100, w - 10));
-  };
 
   return (
     <div style={{ padding: '16px 0' }}>
       <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>
         Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong>
       </div>
+      <div style={{ marginBottom: 12 }}>
+        <input
+          type="range"
+          aria-label="Chart width"
+          min={100}
+          max={MAX_WIDTH}
+          value={Math.round(width)}
+          onChange={(e) => setWidth(Number(e.target.value))}
+          style={{ width: MAX_WIDTH }}
+        />
+      </div>
       {/* Outer container holds threshold lines at fixed positions regardless of chart width */}
-      <div style={{ position: 'relative', minWidth: CHART_SIZE_BREAKPOINTS.L + 100 }}>
+      <div style={{ position: 'relative', minWidth: MAX_WIDTH }}>
         {THRESHOLDS.map(({ px, label }) => (
           <div
             key={label}
@@ -106,40 +89,11 @@ const AutoDetectStory = (): ReactElement => {
             </span>
           </div>
         ))}
-
-        {/* Resizable chart */}
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <Chart data={workspaceTrendsData} width={width} height={300}>
-            <Axis position="bottom" baseline ticks labelFormat="time" />
-            <Axis position="left" grid />
-            <Line dimension="datetime" metric="value" color="series" scaleType="time" />
-          </Chart>
-
-          {/* Drag handle */}
-          <div
-            role="slider"
-            aria-label="Chart width"
-            aria-valuenow={Math.round(width)}
-            aria-valuemin={100}
-            tabIndex={0}
-            onMouseDown={onHandleMouseDown}
-            onKeyDown={onHandleKeyDown}
-            style={{
-              position: 'absolute',
-              right: -8,
-              top: 0,
-              bottom: 0,
-              width: 16,
-              cursor: 'ew-resize',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 20,
-            }}
-          >
-            <div style={{ width: 4, height: 32, borderRadius: 2, background: '#999' }} />
-          </div>
-        </div>
+        <Chart data={workspaceTrendsData} width={width} height={300}>
+          <Axis position="bottom" baseline ticks labelFormat="time" />
+          <Axis position="left" grid />
+          <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+        </Chart>
       </div>
     </div>
   );
