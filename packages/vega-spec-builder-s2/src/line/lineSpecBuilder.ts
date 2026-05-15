@@ -246,7 +246,9 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
       getLineMark(options, `${name}_facet`),
     ],
   });
-  if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
+  if (staticPoint || isSparkline) {
+    marks.push(getLineStaticPoint(options));
+  }
   marks.push(...getMetricRangeGroupMarks(options));
   if (isInteractive(options) || highlightedItem !== undefined) {
     marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForInspect`));

@@ -256,83 +256,54 @@ const metricRangeGroupMark = {
 
 const metricRangeMarks = [line0_groupMark, metricRangeGroupMark];
 
-const metricRangeWithDisplayPointMarks = [
-  line0_groupMark,
-  {
-    name: 'line0_staticPoints',
-    description: 'line0_staticPoints',
-    type: 'symbol',
-    from: {
-      data: 'line0_staticPointData',
-    },
-    interactive: false,
-    encode: {
-      enter: {
-        y: [
-          {
-            scale: 'yLinear',
-            field: 'value',
-          },
-        ],
-        size: {
-          value: 64,
+const staticPointMark = {
+  name: 'line0_staticPoints',
+  description: 'line0_staticPoints',
+  type: 'symbol',
+  from: {
+    data: 'line0_staticPointData',
+  },
+  interactive: false,
+  encode: {
+    enter: {
+      y: [
+        {
+          scale: 'yLinear',
+          field: 'value',
         },
-        fill: {
-          signal: BACKGROUND_COLOR,
-        },
-        stroke: {
-          scale: COLOR_SCALE,
-          field: 'series',
-        },
+      ],
+      size: {
+        value: 64,
       },
-      update: {
-        x: {
-          scale: 'xTime',
-          field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-        },
+      fill: {
+        scale: COLOR_SCALE,
+        field: 'series',
+      },
+      stroke: {
+        signal: BACKGROUND_COLOR,
+      },
+      strokeWidth: {
+        value: 1,
+      },
+    },
+    update: {
+      x: {
+        scale: 'xTime',
+        field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
       },
     },
   },
+};
+
+const metricRangeWithDisplayPointMarks = [
+  line0_groupMark,
+  staticPointMark,
   metricRangeGroupMark,
 ];
 
 const displayPointMarks = [
   line0_groupMark,
-  {
-    name: 'line0_staticPoints',
-    description: 'line0_staticPoints',
-    type: 'symbol',
-    from: {
-      data: 'line0_staticPointData',
-    },
-    interactive: false,
-    encode: {
-      enter: {
-        y: [
-          {
-            scale: 'yLinear',
-            field: 'value',
-          },
-        ],
-        size: {
-          value: 64,
-        },
-        fill: {
-          signal: BACKGROUND_COLOR,
-        },
-        stroke: {
-          scale: COLOR_SCALE,
-          field: 'series',
-        },
-      },
-      update: {
-        x: {
-          scale: 'xTime',
-          field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-        },
-      },
-    },
-  },
+  staticPointMark,
 ];
 
 describe('lineSpecBuilder', () => {

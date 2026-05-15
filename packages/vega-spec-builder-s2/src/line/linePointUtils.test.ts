@@ -17,10 +17,11 @@ import {
 
 import {
   getHighlightPoint,
+  getLineStaticPoint,
   getSecondaryHighlightPoint,
   getSelectionPoint,
 } from './linePointUtils';
-import { defaultLineMarkOptions } from './lineTestUtils';
+import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils';
 
 describe('getHighlightPoint()', () => {
   test('should return symbol mark with correct name and description', () => {
@@ -43,6 +44,7 @@ describe('getHighlightPoint()', () => {
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+    expect(mark.encode?.enter?.strokeWidth).toEqual({ value: 3 });
   });
 
   test('should use custom name in mark name and description', () => {
@@ -75,6 +77,7 @@ describe('getSelectionPoint()', () => {
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+    expect(mark.encode?.enter?.strokeWidth).toEqual({ value: 3 });
   });
 
   test('should use custom name in mark name and description', () => {
@@ -145,3 +148,37 @@ describe('getSecondaryHighlightPoint()', () => {
     expect(mark.from).toEqual({ data: 'line0_highlightedData' });
   });
 });
+
+describe('getLineStaticPoint()', () => {
+  test('should return symbol mark with correct name and description', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.name).toBe('line0_staticPoints');
+    expect(mark.description).toBe('line0_staticPoints');
+  });
+
+  test('should use staticPointData as data source', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.from).toEqual({ data: 'line0_staticPointData' });
+  });
+
+  test('should use solid fill with series color (not BACKGROUND_COLOR)', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.encode?.enter?.fill).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+  });
+
+  test('should have background-color stroke for visual separation from the line', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.encode?.enter?.stroke).toEqual({ signal: BACKGROUND_COLOR });
+  });
+
+  test('should have strokeWidth of 1 for the background-color stroke', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.encode?.enter?.strokeWidth).toEqual({ value: 1 });
+  });
+
+  test('should not be interactive', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.interactive).toBe(false);
+  });
+});
+

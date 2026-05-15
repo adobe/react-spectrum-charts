@@ -41,7 +41,6 @@ import {
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { ScaleType } from '../types';
 import {
-  getHighlightBackgroundPoint,
   getHighlightPoint,
   getSecondaryHighlightPoint,
   getSelectionPoint,
@@ -250,8 +249,6 @@ export const getLineHoverMarks = (
   return [
     // vertical rule shown for the hovered or selected point
     getHoverRule(dimension, name, scaleType),
-    // point behind the hovered or selected point used to prevent bacgorund elements from being visible through low opacity point
-    getHighlightBackgroundPoint(lineOptions),
     // if has popover, add selection point
     ...(hasPopover(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
     // hover or select point

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SymbolMark } from 'vega';
+import { Mark, SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -24,8 +24,11 @@ import { getLineYEncoding } from './lineMarkUtils';
 import { LineMarkOptions } from './lineUtils';
 
 /**
- * Gets the point mark for static points on a line chart.
- * @param lineMarkOptions
+ * Gets the filled dot mark for static points on a line chart.
+ * Uses solid fill with series color and a background-colored stroke (S2 design spec).
+ * The stroke creates visual separation between the dot and the line underneath it —
+ * this is a single mark, not two layered marks.
+ * @param lineOptions
  * @returns SymbolMark
  */
 export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => {
@@ -47,8 +50,9 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     encode: {
       enter: {
         size: { value: pointSize },
-        fill: { signal: BACKGROUND_COLOR },
-        stroke: getColorProductionRule(color, colorScheme),
+        fill: getColorProductionRule(color, colorScheme),
+        stroke: { signal: BACKGROUND_COLOR },
+        strokeWidth: { value: 1 },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {
@@ -98,6 +102,7 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
         size: { value: pointSize },
         fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
+        strokeWidth: { value: 3 },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {
