@@ -167,7 +167,9 @@ export const getLineDirectLabelMarks = (
 				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
 				fill: { value: 'transparent' },
 			},
-			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
+			// Background rect must remain fully opaque at all times so it continues to mask content
+			// behind the label. Only the colored text mark should dim during hover/highlight.
+			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: { value: 1 } },
 		},
 	};
 

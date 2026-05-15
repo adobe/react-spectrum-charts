@@ -346,10 +346,24 @@ describe('getLineDirectLabelMarks', () => {
 		expect(y.scale).toBe('yLinear');
 	});
 
-	test('both marks have opacity in update encoding', () => {
+	test('foreground mark has opacity in update encoding', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
-		expect(marks[0].encode?.update).toHaveProperty('opacity');
 		expect(marks[1].encode?.update).toHaveProperty('opacity');
+	});
+
+	test('background mark opacity is always hardcoded to 1 regardless of hover/highlight state', () => {
+		// The background halo must stay fully opaque so it continues to mask chart content behind
+		// the label text. Only the foreground text mark should dim during hover/highlight dimming.
+		const lineOptionsWithInteractivity: LineSpecOptions = {
+			...defaultLineOptions,
+			interactiveMarkName: 'line0_voronoi',
+		};
+		const marksDefault = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+		const marksInteractive = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, lineOptionsWithInteractivity, 'gray-50', 'light');
+
+		// Background mark (marks[0]) must always be { value: 1 }, not conditional opacity rules
+		expect(marksDefault[0].encode?.update).toHaveProperty('opacity', { value: 1 });
+		expect(marksInteractive[0].encode?.update).toHaveProperty('opacity', { value: 1 });
 	});
 
 	test('both marks have fontWeight 700 in update encoding', () => {
