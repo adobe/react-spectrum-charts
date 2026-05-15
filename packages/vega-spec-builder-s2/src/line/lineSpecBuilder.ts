@@ -40,7 +40,7 @@ import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSi
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
 import { getLineGradientMark, getLineHoverMarks, getLineMark } from './lineMarkUtils';
-import { getLineStaticPoint } from './linePointUtils';
+import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
 
 export const addLine = produce<
@@ -247,6 +247,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     ],
   });
   if (staticPoint || isSparkline) {
+    marks.push(getLineStaticPointBackground(options));
     marks.push(getLineStaticPoint(options));
   }
   marks.push(...getMetricRangeGroupMarks(options));

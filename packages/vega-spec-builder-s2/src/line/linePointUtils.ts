@@ -13,6 +13,10 @@ import { SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
+  DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
+  HOVERED_ITEM,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import {
@@ -40,7 +44,26 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     scaleType,
     dimension,
     pointSize = 64,
+    interactiveMarkName,
+    isHighlightedByGroup,
   } = lineOptions;
+
+  const opacityRules: ({ test?: string; value?: number; signal?: string })[] = [];
+  if (interactiveMarkName) {
+    if (isHighlightedByGroup) {
+      opacityRules.push({
+        test: `length(data('${interactiveMarkName}_highlightedData'))`,
+        signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
+      });
+    } else {
+      opacityRules.push({
+        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      });
+    }
+  }
+  opacityRules.push(DEFAULT_OPACITY_RULE);
+
   return {
     name: `${name}_staticPoints`,
     description: `${name}_staticPoints`,
@@ -53,6 +76,35 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
         fill: getColorProductionRule(color, colorScheme),
         stroke: { signal: BACKGROUND_COLOR },
         strokeWidth: { value: 1 },
+        y: getLineYEncoding(lineOptions, metric),
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimension),
+        opacity: opacityRules,
+      },
+    },
+  };
+};
+
+/**
+ * Gets a background mark for static points to prevent opacity from revealing the line behind the point.
+ * This mark stays fully opaque (no opacity rules) so it always covers the line underneath.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): SymbolMark => {
+  const { name, metric, scaleType, dimension, pointSize = 64 } = lineOptions;
+  return {
+    name: `${name}_staticPointBackground`,
+    description: `${name}_staticPointBackground`,
+    type: 'symbol',
+    from: { data: `${name}_staticPointData` },
+    interactive: false,
+    encode: {
+      enter: {
+        size: { value: pointSize },
+        fill: { signal: BACKGROUND_COLOR },
+        stroke: { signal: BACKGROUND_COLOR },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {

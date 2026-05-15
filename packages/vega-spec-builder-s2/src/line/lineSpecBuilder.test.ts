@@ -291,18 +291,40 @@ const staticPointMark = {
         scale: 'xTime',
         field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
       },
+      opacity: [{ value: 1 }],
+    },
+  },
+};
+
+const staticPointBackgroundMark = {
+  name: 'line0_staticPointBackground',
+  description: 'line0_staticPointBackground',
+  type: 'symbol',
+  from: { data: 'line0_staticPointData' },
+  interactive: false,
+  encode: {
+    enter: {
+      y: [{ scale: 'yLinear', field: 'value' }],
+      size: { value: 64 },
+      fill: { signal: BACKGROUND_COLOR },
+      stroke: { signal: BACKGROUND_COLOR },
+    },
+    update: {
+      x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
     },
   },
 };
 
 const metricRangeWithDisplayPointMarks = [
   line0_groupMark,
+  staticPointBackgroundMark,
   staticPointMark,
   metricRangeGroupMark,
 ];
 
 const displayPointMarks = [
   line0_groupMark,
+  staticPointBackgroundMark,
   staticPointMark,
 ];
 
