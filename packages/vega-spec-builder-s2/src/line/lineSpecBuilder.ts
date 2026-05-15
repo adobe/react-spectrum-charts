@@ -247,8 +247,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     ],
   });
   if (staticPoint || isSparkline) {
-    marks.push(getLineStaticPointBackground(options));
-    marks.push(getLineStaticPoint(options));
+    marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
   }
   marks.push(...getMetricRangeGroupMarks(options));
   if (isInteractive(options) || highlightedItem !== undefined) {
