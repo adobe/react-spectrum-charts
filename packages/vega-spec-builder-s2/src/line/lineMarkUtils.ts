@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+import { ArrayValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -38,6 +38,7 @@ import {
   getXProductionRule,
   hasPopover,
 } from '../marks/markUtils';
+import { getStrokeDashFromLineType } from '../specUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { ScaleType } from '../types';
 import {
@@ -128,6 +129,25 @@ const getGradientOpacity = (opacity: LineMarkOptions['opacity']): { value: numbe
 };
 
 /**
+ * Returns the strokeDash encoding for a line mark that has alternateSegmentKey set.
+ * When lineType is a static value, returns a signal expression that switches between
+ * the base dash and the alternate dash based on the per-datum alternateFlag field.
+ * Falls back to the standard scale/field lookup for data-driven lineType facets.
+ */
+export const getAlternateSegmentStrokeDash = (
+  name: string,
+  lineType: LineMarkOptions['lineType'],
+  alternateSegmentLineType: LineMarkOptions['alternateSegmentLineType']
+): ArrayValueRef => {
+  if (typeof lineType !== 'string' && !Array.isArray(lineType)) {
+    const baseDash = JSON.stringify(getStrokeDashFromLineType(lineType.value));
+    const altDash = JSON.stringify(getStrokeDashFromLineType(alternateSegmentLineType ?? 'dotted'));
+    return { signal: `datum.${name}_alternateFlag ? ${altDash} : ${baseDash}` };
+  }
+  return getStrokeDashProductionRule(lineType);
+};
+
+/**
  * generates a line mark
  * @param lineOptions
  * @param dataSource
@@ -135,6 +155,8 @@ const getGradientOpacity = (opacity: LineMarkOptions['opacity']): { value: numbe
  */
 export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string): LineMark => {
   const {
+    alternateSegmentKey,
+    alternateSegmentLineType,
     chartPopovers,
     color,
     colorScheme,
@@ -162,7 +184,9 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
         stroke: getColorProductionRule(color, colorScheme),
-        strokeDash: getStrokeDashProductionRule(lineType),
+        strokeDash: alternateSegmentKey
+          ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
+          : getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
         strokeWidth: getLineWidthProductionRule(lineWidth),
       },

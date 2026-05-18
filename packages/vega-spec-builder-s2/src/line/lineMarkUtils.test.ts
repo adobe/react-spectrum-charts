@@ -23,7 +23,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getLineGradientMark, getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
+import { getAlternateSegmentStrokeDash, getLineGradientMark, getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -272,5 +272,34 @@ describe('getLineGradientMark()', () => {
     const y = gradientMark.encode?.enter?.y;
     expect(Array.isArray(y)).toBe(true);
     expect((y as unknown[]).length).toBe(2);
+  });
+});
+
+describe('getAlternateSegmentStrokeDash()', () => {
+  test('returns a signal for static lineType value', () => {
+    const result = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, undefined);
+    expect(result).toHaveProperty('signal');
+  });
+
+  test('signal switches between base and alt dash based on alternateFlag', () => {
+    const result = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    expect(result.signal).toContain('line0_alternateFlag');
+  });
+
+  test('defaults alternateSegmentLineType to dotted when undefined', () => {
+    const withUndefined = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, undefined) as { signal: string };
+    const withDotted = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    expect(withUndefined.signal).toBe(withDotted.signal);
+  });
+
+  test('uses specified alternateSegmentLineType when provided', () => {
+    const dotted = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    const dashed = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dashed') as { signal: string };
+    expect(dotted.signal).not.toBe(dashed.signal);
+  });
+
+  test('falls back to scale lookup for data-driven lineType (string field)', () => {
+    const result = getAlternateSegmentStrokeDash('line0', 'lineType', undefined);
+    expect(result).toHaveProperty('field', 'lineType');
   });
 });

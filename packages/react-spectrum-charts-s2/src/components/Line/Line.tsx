@@ -30,6 +30,9 @@ const Line: FC<LineProps> = ({
   padding,
   interactionMode = DEFAULT_INTERACTION_MODE,
   interpolate,
+  alternateSegmentKey,
+  alternateSegmentLineType,
+  alternateSegmentLabel,
   contextMenuMode = 'interaction',
 }: LineProps) => {
   return null;
