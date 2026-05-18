@@ -81,6 +81,6 @@ export interface LineMarkOptions {
   trendlines?: TrendlineOptions[];
   interpolate?: InterpolationType;
   alternateSegmentKey?: string;
-  alternateSegmentLineType?: LineType;
+  alternateSegmentLineType: LineTypeFacet;
   alternateSegmentLabel?: string;
 }

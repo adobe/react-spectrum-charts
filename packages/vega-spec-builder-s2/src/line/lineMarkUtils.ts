@@ -134,17 +134,21 @@ const getGradientOpacity = (opacity: LineMarkOptions['opacity']): { value: numbe
  * the base dash and the alternate dash based on the per-datum alternateFlag field.
  * Falls back to the standard scale/field lookup for data-driven lineType facets.
  */
+const getLineTypeDashSignal = (lineTypeFacet: LineMarkOptions['lineType']): string => {
+  if (typeof lineTypeFacet === 'string') {
+    return `scale('${LINE_TYPE_SCALE}', datum['${lineTypeFacet}'])`;
+  }
+  return JSON.stringify(getStrokeDashFromLineType(lineTypeFacet.value));
+};
+
 export const getAlternateSegmentStrokeDash = (
   name: string,
   lineType: LineMarkOptions['lineType'],
   alternateSegmentLineType: LineMarkOptions['alternateSegmentLineType']
 ): ArrayValueRef => {
-  if (typeof lineType !== 'string' && !Array.isArray(lineType)) {
-    const baseDash = JSON.stringify(getStrokeDashFromLineType(lineType.value));
-    const altDash = JSON.stringify(getStrokeDashFromLineType(alternateSegmentLineType ?? 'dotted'));
-    return { signal: `datum.${name}_alternateFlag ? ${altDash} : ${baseDash}` };
-  }
-  return getStrokeDashProductionRule(lineType);
+  const altDash = getLineTypeDashSignal(alternateSegmentLineType);
+  const baseDash = getLineTypeDashSignal(lineType);
+  return { signal: `datum.${name}_alternateFlag ? ${altDash} : ${baseDash}` };
 };
 
 /**

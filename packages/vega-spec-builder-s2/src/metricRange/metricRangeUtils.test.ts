@@ -72,6 +72,7 @@ const defaultLineOptions: LineSpecOptions = {
   scaleType: 'time',
   trendlines: [],
   interpolate: undefined,
+  alternateSegmentLineType: { value: 'dotted' },
 };
 
 const basicMetricRangeMarks = [

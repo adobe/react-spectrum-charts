@@ -633,13 +633,13 @@ describe('lineSpecBuilder', () => {
     });
 
     test('with alternateSegmentKey uses line0_with_bridges as facet data', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated' });
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: { value: 'dotted' } });
       const groupMark = marks[0] as { from: { facet: { data: string; groupby: string[] } } };
       expect(groupMark.from.facet.data).toBe('line0_with_bridges');
     });
 
     test('with alternateSegmentKey extends facet groupby with segmentId', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated' });
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: { value: 'dotted' } });
       const groupMark = marks[0] as { from: { facet: { groupby: string[] } } };
       expect(groupMark.from.facet.groupby).toContain('line0_segmentId');
     });
@@ -651,7 +651,7 @@ describe('lineSpecBuilder', () => {
     });
 
     test('with alternateSegmentKey, line mark strokeDash uses a signal', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated' });
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: { value: 'dotted' } });
       const groupMark = marks[0] as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
       const strokeDash = groupMark.marks[0].encode.enter.strokeDash;
       expect(strokeDash).toHaveProperty('signal');

@@ -334,6 +334,7 @@ const getLineMarkOptions = (
   const staticPoint = 'staticPoint' in markOptions ? markOptions.staticPoint : undefined;
   return {
     ...markOptions,
+    alternateSegmentLineType: { value: 'dotted' },
     color: getTrendlineColorFromMarkOptions(color),
     displayOnHover,
     lineType: getTrendlineLineTypeFromMarkOptions(lineType),

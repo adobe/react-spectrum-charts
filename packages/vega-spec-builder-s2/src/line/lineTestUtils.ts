@@ -21,6 +21,7 @@ import { LineSpecOptions } from '../types';
 import { LineMarkOptions } from './lineUtils';
 
 export const defaultLineMarkOptions: LineMarkOptions = {
+  alternateSegmentLineType: { value: 'dotted' },
   color: DEFAULT_COLOR,
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimension: DEFAULT_TIME_DIMENSION,
@@ -56,4 +57,5 @@ export const defaultLineOptions: LineSpecOptions = {
   popoverMarkName: undefined,
   trendlines: [],
   interpolate: undefined,
+  alternateSegmentLineType: { value: 'dotted' },
 };
