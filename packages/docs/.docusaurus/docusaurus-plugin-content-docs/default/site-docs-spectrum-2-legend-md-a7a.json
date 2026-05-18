@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/legend",
+  "title": "Legend (S2)",
+  "description": "The Legend component in the S2 package supports all props from the base Legend component plus the S2-exclusive align prop for controlling legend alignment along its edge.",
+  "source": "@site/docs/spectrum2/legend.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/legend",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/legend",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/legend.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Bar (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/bar"
+  },
+  "next": {
+    "title": "Chart Sizing (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/chart-sizing"
+  }
+}
