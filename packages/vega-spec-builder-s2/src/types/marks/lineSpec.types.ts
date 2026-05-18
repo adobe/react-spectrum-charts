@@ -17,6 +17,7 @@ import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
   ColorFacet,
   FacetRef,
+  LineType,
   LineTypeFacet,
   LineWidth,
   OpacityFacet,
@@ -79,7 +80,7 @@ export interface LineOptions {
    * Line type used for alternate segments identified by `alternateSegmentKey`.
    * @default 'dotted'
    */
-  alternateSegmentLineType?: LineTypeFacet;
+  alternateSegmentLineType?: LineType;
   /**
    * Text appended to the hover value label for alternate-segment points (e.g. `'(Estimated)'`).
    * No default — omitting means no append.
@@ -109,8 +110,7 @@ type LineOptionsWithDefaults =
   | 'name'
   | 'opacity'
   | 'scaleType'
-  | 'trendlines'
-  | 'alternateSegmentLineType';
+  | 'trendlines';
 
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
   backgroundColor?: string;

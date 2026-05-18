@@ -79,7 +79,7 @@ export const addLine = produce<
       trendlines = [],
       interpolate,
       alternateSegmentKey,
-      alternateSegmentLineType = { value: 'dotted' },
+      alternateSegmentLineType = 'dotted',
       alternateSegmentLabel,
       ...options
     }

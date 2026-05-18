@@ -276,34 +276,22 @@ describe('getLineGradientMark()', () => {
 });
 
 describe('getAlternateSegmentStrokeDash()', () => {
-  test('static lineType + static alternateSegmentLineType: returns signal with both as dash arrays', () => {
-    const result = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, { value: 'dotted' }) as { signal: string };
+  test('static lineType + static alternateSegmentLineType: returns signal without scale lookup', () => {
+    const result = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
     expect(result.signal).toContain('line0_alternateFlag');
     expect(result.signal).not.toContain(`scale('${LINE_TYPE_SCALE}'`);
   });
 
-  test('static lineType + data-driven alternateSegmentLineType: alt uses scale lookup', () => {
-    const result = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'altField') as { signal: string };
-    expect(result.signal).toContain(`scale('${LINE_TYPE_SCALE}', datum['altField'])`);
-    expect(result.signal).toContain('line0_alternateFlag');
-  });
-
-  test('data-driven lineType + static alternateSegmentLineType: base uses scale lookup', () => {
-    const result = getAlternateSegmentStrokeDash('line0', 'lineTypeField', { value: 'dotted' }) as { signal: string };
+  test('data-driven lineType + static alternateSegmentLineType: base uses scale lookup, alt does not', () => {
+    const result = getAlternateSegmentStrokeDash('line0', 'lineTypeField', 'dotted') as { signal: string };
     expect(result.signal).toContain(`scale('${LINE_TYPE_SCALE}', datum['lineTypeField'])`);
+    expect(result.signal).not.toContain(`scale('${LINE_TYPE_SCALE}', datum['dotted'])`);
     expect(result.signal).toContain('line0_alternateFlag');
   });
 
-  test('data-driven lineType + data-driven alternateSegmentLineType: both use scale lookup', () => {
-    const result = getAlternateSegmentStrokeDash('line0', 'lineTypeField', 'altField') as { signal: string };
-    expect(result.signal).toContain(`scale('${LINE_TYPE_SCALE}', datum['lineTypeField'])`);
-    expect(result.signal).toContain(`scale('${LINE_TYPE_SCALE}', datum['altField'])`);
-    expect(result.signal).toContain('line0_alternateFlag');
-  });
-
-  test('different static alternateSegmentLineTypes produce different signals', () => {
-    const dotted = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, { value: 'dotted' }) as { signal: string };
-    const dashed = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, { value: 'dashed' }) as { signal: string };
+  test('different alternateSegmentLineTypes produce different signals', () => {
+    const dotted = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    const dashed = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dashed') as { signal: string };
     expect(dotted.signal).not.toBe(dashed.signal);
   });
 });

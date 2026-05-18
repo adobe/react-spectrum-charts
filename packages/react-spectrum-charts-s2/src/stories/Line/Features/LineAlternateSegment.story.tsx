@@ -60,7 +60,7 @@ AlternateSegment.args = {
   color: 'series',
   name: 'line0',
   alternateSegmentKey: 'isEstimated',
-  alternateSegmentLineType: { value: 'dotted' },
+  alternateSegmentLineType: 'dotted',
 };
 
 export { AlternateSegment };

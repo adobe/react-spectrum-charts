@@ -144,9 +144,10 @@ const getLineTypeDashSignal = (lineTypeFacet: LineMarkOptions['lineType']): stri
 export const getAlternateSegmentStrokeDash = (
   name: string,
   lineType: LineMarkOptions['lineType'],
-  alternateSegmentLineType: LineMarkOptions['alternateSegmentLineType']
-): ArrayValueRef => {
-  const altDash = getLineTypeDashSignal(alternateSegmentLineType);
+  alternateSegmentLineType: LineMarkOptions['alternateSegmentLineType'] 
+): ArrayValueRef | undefined => {
+  if (!alternateSegmentLineType) return;
+  const altDash = JSON.stringify(getStrokeDashFromLineType(alternateSegmentLineType));
   const baseDash = getLineTypeDashSignal(lineType);
   return { signal: `datum.${name}_alternateFlag ? ${altDash} : ${baseDash}` };
 };
