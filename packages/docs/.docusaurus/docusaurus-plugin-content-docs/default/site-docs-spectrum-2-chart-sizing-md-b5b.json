@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/chart-sizing",
+  "title": "Chart Sizing (S2)",
+  "description": "Spectrum 2 Charts automatically adapts visual density to the chart's rendered width. Line weights and other visual properties scale to the appropriate size tier — no configuration required.",
+  "source": "@site/docs/spectrum2/chart-sizing.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/chart-sizing",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/chart-sizing",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/chart-sizing.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Bar (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/bar"
+  },
+  "next": {
+    "title": "Developer Docs",
+    "permalink": "/react-spectrum-charts/docs/docs/developers/DeveloperDocs"
+  }
+}
