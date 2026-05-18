@@ -32,6 +32,16 @@ export const DEFAULT_LABEL_ORIENTATION = 'horizontal';
 export const DEFAULT_LABEL_POSITION = 'top';
 export const DEFAULT_LINE_TYPES = ['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'];
 export const DEFAULT_LINE_WIDTHS = ['M'];
+
+/** Vega signal name for the chart-size-derived stroke width, driven by a reactive expression. */
+export const CHART_SIZE_STROKE_WIDTH = 'rscChartSizeStrokeWidth';
+
+/** Pixel thresholds at which the size tier transitions from S → M and M → L. */
+export const CHART_SIZE_BREAKPOINTS = {
+  M: 400,
+  L: 800,
+} as const;
+
 export const DEFAULT_LINEAR_DIMENSION = 'x';
 export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';

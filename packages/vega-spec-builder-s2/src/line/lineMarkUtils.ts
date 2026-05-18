@@ -12,6 +12,7 @@
 import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import {
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
@@ -31,7 +32,6 @@ import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
   getItemHoverArea,
-  getLineWidthProductionRule,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
   getVoronoiPath,
@@ -140,7 +140,6 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     colorScheme,
     dimension,
     lineType,
-    lineWidth,
     metric,
     name,
     opacity,
@@ -164,7 +163,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
         stroke: getColorProductionRule(color, colorScheme),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
-        strokeWidth: getLineWidthProductionRule(lineWidth),
+        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
         // this has to be in update because when you resize the window that doesn't rebuild the spec

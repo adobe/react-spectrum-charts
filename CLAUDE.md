@@ -150,6 +150,10 @@ Always use `yarn` for all package management and script execution — never `npm
 ## Common Commands
 
 ```bash
+# Before running tests in a fresh worktree or after cloning, verify node_modules are installed.
+# If `cross-env: command not found` appears, run `yarn install` first, then retry.
+yarn install
+
 # Run all tests
 yarn test
 
@@ -292,12 +296,30 @@ When fixing a bug or refactoring behavior in an s1 package file, always check wh
 Before writing any code, always:
 
 1. Read `.claude/architecture.md` for system context
-2. Classify the change type and read the corresponding skill file:
+2. If a Jira ticket is associated with the work, check it for explicit spec values (line widths, pixel dimensions, thresholds, token names) **before** fetching Figma images or doing web research. Ticket descriptions for this project routinely contain the exact implementation values needed.
+3. Classify the change type and read the corresponding skill file:
    - Unexpected or broken behavior → `.claude/commands/implement-bug-fix.md`
    - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
    - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
    - New prop on an existing component → `.claude/commands/implement-new-prop.md`
-3. Follow the steps in the matched skill file
+4. Follow the steps in the matched skill file
+
+---
+
+## Adding a Chart-Level Prop
+
+Chart-level props (on `<Chart>` itself, not a mark) follow a different file path than mark props:
+
+1. **`packages/constants/constants.ts`** — add the type and any associated runtime constants (breakpoints, lookup maps)
+2. **`vega-spec-builder/src/types/chartSpec.types.ts`** and **`vega-spec-builder-s2/src/types/chartSpec.types.ts`** — add to `ChartOptions` (import the type from `@spectrum-charts/constants`)
+3. **`react-spectrum-charts-s2/src/chartUtils.ts`** — add helper functions and update `applyChartPropsDefaults` if there's a default
+4. **`react-spectrum-charts-s2/src/Chart.tsx`** — compute the effective value (explicit prop vs. auto-derived), override in `rscChartProps`
+5. **`react-spectrum-charts-s2/src/RscChart.tsx`** — destructure and pass to `useSpec`
+6. **`react-spectrum-charts-s2/src/hooks/useSpec.tsx`** — accept the param, pass to `rscPropsToSpecBuilderOptions`, add to the dep array
+
+`SanitizedSpecProps` and `RscChartProps` pick up optional `ChartOptions` fields automatically via `Omit<ChartOptions, ...>` — no explicit change needed unless making the field required.
+
+`rscPropsToSpecBuilderOptions` spreads `...specProps`, so any field in `ChartOptions` flows through to the spec builder without touching the adapter.
 
 ---
 
