@@ -18,7 +18,6 @@ import {
   DonutSummaryOptions,
   HighlightedItem,
   InteractionMode,
-  LineType,
   LineTypeFacet,
   LineWidthFacet,
   MetricRangeOptions,
