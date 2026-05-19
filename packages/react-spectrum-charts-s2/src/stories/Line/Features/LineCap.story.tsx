@@ -14,12 +14,12 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Line } from '../../../components';
+import { Axis, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import {
   workspaceTrendsData,
   workspaceTrendsDataWithGaps,
-  workspaceTrendsDataWithNullsInMetricRange,
+  workspaceTrendsDataWithGapsAndMetricRange,
 } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
@@ -71,6 +71,7 @@ const LineBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Legend highlight />
       <Line {...args} />
     </Chart>
   );
@@ -78,19 +79,19 @@ const LineBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
 
 const WithLineBreaks = bindWithProps(LineBreaksStory);
 WithLineBreaks.args = {
+  color: 'series',
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
-  color: { value: 'categorical-100' },
-  lineCap: 'round',
 };
 
 const MetricRangeBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithNullsInMetricRange });
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithGapsAndMetricRange });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Legend highlight />
       <Line {...args} />
     </Chart>
   );
@@ -98,11 +99,10 @@ const MetricRangeBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
 
 const WithMetricRangeLineBreaks = bindWithProps(MetricRangeBreaksStory);
 WithMetricRangeLineBreaks.args = {
+  color: 'series',
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
-  color: { value: 'categorical-100' },
-  lineCap: 'round',
   metricRanges: [
     {
       metricEnd: 'metricEnd',
