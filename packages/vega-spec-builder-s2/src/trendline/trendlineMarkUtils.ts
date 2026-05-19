@@ -336,6 +336,7 @@ const getLineMarkOptions = (
     ...markOptions,
     color: getTrendlineColorFromMarkOptions(color),
     displayOnHover,
+    lineCap: 'lineCap' in markOptions ? (markOptions.lineCap ?? 'round') : 'round',
     lineType: getTrendlineLineTypeFromMarkOptions(lineType),
     lineWidth: { value: lineWidth },
     metric,
