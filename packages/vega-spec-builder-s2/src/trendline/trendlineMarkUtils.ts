@@ -336,7 +336,6 @@ const getLineMarkOptions = (
     ...markOptions,
     color: getTrendlineColorFromMarkOptions(color),
     displayOnHover,
-    ...('lineCap' in markOptions && markOptions.lineCap !== undefined && { lineCap: markOptions.lineCap }),
     lineType: getTrendlineLineTypeFromMarkOptions(lineType),
     lineWidth: { value: lineWidth },
     metric,
