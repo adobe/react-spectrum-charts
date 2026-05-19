@@ -68,6 +68,7 @@ export const addLine = produce<
       hasOnClick = false,
       hasOnContextMenu = false,
       index = 0,
+      lineCap = 'round',
       lineDirectLabels = [],
       lineType = { value: 'solid' },
       metric = DEFAULT_METRIC,
@@ -94,6 +95,7 @@ export const addLine = produce<
       hasOnClick,
       hasOnContextMenu,
       index,
+      lineCap,
       lineDirectLabels,
       interactiveMarkName: getInteractiveMarkName(
         {

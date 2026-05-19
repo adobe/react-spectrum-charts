@@ -139,6 +139,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     color,
     colorScheme,
     dimension,
+    lineCap,
     lineType,
     metric,
     name,
@@ -161,6 +162,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
         stroke: getColorProductionRule(color, colorScheme),
+        ...(lineCap !== undefined && { strokeCap: { value: lineCap } }),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
         strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },

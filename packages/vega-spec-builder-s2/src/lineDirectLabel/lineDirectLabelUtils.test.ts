@@ -50,6 +50,7 @@ const defaultLineOptions: LineSpecOptions = {
 	popoverMarkName: undefined,
 	scaleType: 'time',
 	trendlines: [],
+	lineCap: 'round',
 	interpolate: undefined,
 };
 

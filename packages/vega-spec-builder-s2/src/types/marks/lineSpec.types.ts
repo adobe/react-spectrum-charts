@@ -70,6 +70,11 @@ export interface LineOptions {
   gradient?: boolean;
   /** Sets the interpolation method for the line */
   interpolate?: InterpolationType;
+  /**
+   * Sets the stroke line cap style for the line ends and gap boundaries.
+   * @default 'round'
+   */
+  lineCap?: 'round' | 'square';
 
   // children
   chartPopovers?: ChartPopoverOptions[];
@@ -87,6 +92,7 @@ type LineOptionsWithDefaults =
   | 'gradient'
   | 'hasOnClick'
   | 'hasOnContextMenu'
+  | 'lineCap'
   | 'lineDirectLabels'
   | 'lineType'
   | 'metric'

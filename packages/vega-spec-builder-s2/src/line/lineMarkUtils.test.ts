@@ -39,6 +39,7 @@ describe('getLineMark()', () => {
       encode: {
         enter: {
           stroke: { field: 'series', scale: COLOR_SCALE },
+          strokeCap: { value: 'round' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
@@ -76,6 +77,16 @@ describe('getLineMark()', () => {
   test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, displayOnHover: false }, 'line0_facet');
     expect(lineMark.encode?.update?.opacity).toEqual([{ value: 1 }]);
+  });
+
+  test('uses round strokeCap by default', () => {
+    const lineMark = getLineMark(defaultLineMarkOptions, 'line0_facet');
+    expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
+  });
+
+  test('uses square strokeCap when lineCap is square', () => {
+    const lineMark = getLineMark({ ...defaultLineMarkOptions, lineCap: 'square' }, 'line0_facet');
+    expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'square' });
   });
 });
 
