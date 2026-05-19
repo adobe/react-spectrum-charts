@@ -16,7 +16,11 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../stories/data/data';
+import {
+  workspaceTrendsData,
+  workspaceTrendsDataWithGaps,
+  workspaceTrendsDataWithNullsInMetricRange,
+} from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
@@ -61,22 +65,8 @@ WithSquareLineCap.args = {
   lineCap: 'square',
 };
 
-// Inline time-series with null values at points 4–5 to show segment breaks with rounded caps
-const lineBreaksData = [
-  { datetime: 1667890800000, value: 3738, series: 'Add Freeform table' },
-  { datetime: 1667977200000, value: 2704, series: 'Add Freeform table' },
-  { datetime: 1668063600000, value: 1730, series: 'Add Freeform table' },
-  { datetime: 1668150000000, value: null, series: 'Add Freeform table' }, // null — first break
-  { datetime: 1668236400000, value: null, series: 'Add Freeform table' }, // null — second break
-  { datetime: 1668322800000, value: 1606, series: 'Add Freeform table' },
-  { datetime: 1668409200000, value: 10932, series: 'Add Freeform table' },
-  { datetime: 1668495600000, value: 8420, series: 'Add Freeform table' },
-  { datetime: 1668582000000, value: 9100, series: 'Add Freeform table' },
-  { datetime: 1668668400000, value: 7243, series: 'Add Freeform table' },
-];
-
 const LineBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: lineBreaksData });
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithGaps });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -88,7 +78,6 @@ const LineBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
 
 const WithLineBreaks = bindWithProps(LineBreaksStory);
 WithLineBreaks.args = {
-  name: 'line0',
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
@@ -96,22 +85,8 @@ WithLineBreaks.args = {
   lineCap: 'round',
 };
 
-// Inline data with null metric range bounds at point 4 to show band breaks with rounded caps
-const metricRangeBreaksData = [
-  { datetime: 1667890800000, value: 3738, series: 'Add Freeform table', metricEnd: 4200, metricStart: 3200, metric: 3700 },
-  { datetime: 1667977200000, value: 2704, series: 'Add Freeform table', metricEnd: 3100, metricStart: 2100, metric: 2600 },
-  { datetime: 1668063600000, value: 1730, series: 'Add Freeform table', metricEnd: 2200, metricStart: 1200, metric: 1700 },
-  { datetime: 1668150000000, value: 465, series: 'Add Freeform table', metricEnd: null, metricStart: null, metric: null }, // null — band breaks here
-  { datetime: 1668236400000, value: 600, series: 'Add Freeform table', metricEnd: 900, metricStart: 300, metric: 600 },
-  { datetime: 1668322800000, value: 1606, series: 'Add Freeform table', metricEnd: 2000, metricStart: 1100, metric: 1550 },
-  { datetime: 1668409200000, value: 10932, series: 'Add Freeform table', metricEnd: 11500, metricStart: 10300, metric: 10900 },
-  { datetime: 1668495600000, value: 8420, series: 'Add Freeform table', metricEnd: 9000, metricStart: 7800, metric: 8400 },
-  { datetime: 1668582000000, value: 9100, series: 'Add Freeform table', metricEnd: 9700, metricStart: 8500, metric: 9100 },
-  { datetime: 1668668400000, value: 7243, series: 'Add Freeform table', metricEnd: 7800, metricStart: 6600, metric: 7200 },
-];
-
 const MetricRangeBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: metricRangeBreaksData });
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithNullsInMetricRange });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -123,7 +98,6 @@ const MetricRangeBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
 
 const WithMetricRangeLineBreaks = bindWithProps(MetricRangeBreaksStory);
 WithMetricRangeLineBreaks.args = {
-  name: 'line0',
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
