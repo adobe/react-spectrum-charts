@@ -15,7 +15,7 @@ The chart library does not perform date normalization. The **consumer is respons
 1. Aligning the two periods' datetimes to the same x values
 2. Adding a `period` field to each row to identify which period it belongs to
 
-Once the data is shaped correctly, RSC encodes the period dimension using `lineType` and optionally `opacity`.
+Once the data is shaped correctly, RSC encodes the period dimension using `lineType`.
 
 This is the standard approach used by D3, Vega-Lite, ggplot2, and pandas — normalization belongs in the data layer, not the chart layer.
 
@@ -45,13 +45,12 @@ The same datetime value appears twice — once per period. The consumer shifts t
 
 ## Chart Configuration
 
-Pass `lineTypes` and `opacities` to `<Chart>` to control how each period renders. The order of values in these arrays corresponds to the order periods appear in the `lineType` scale domain (alphabetical by default, or as they appear in the data).
+Pass `lineTypes` to `<Chart>` to control how each period renders. The order of values in these arrays corresponds to the order periods appear in the `lineType` scale domain (alphabetical by default, or as they appear in the data).
 
 ```tsx
 <Chart
   data={data}
   lineTypes={['dotted', 'solid']}   // index 0 = first period in domain, index 1 = second
-  opacities={[0.5, 1]}              // same ordering
   width={600}
   height={400}
 >
@@ -73,7 +72,6 @@ Pass `lineTypes` and `opacities` to `<Chart>` to control how each period renders
 | Prop | Where | Purpose |
 |---|---|---|
 | `lineTypes` | `<Chart>` | Dash patterns for each period. `'solid'`, `'dashed'`, `'dotted'`, `'shortDash'`, `'longDash'`, `'twoDash'` |
-| `opacities` | `<Chart>` | Opacity levels for each period. Typically `[0.5, 1]` to de-emphasize the comparison period |
 | `lineType="period"` | `<Line>` | Encodes the `period` field as the stroke dash dimension |
 | `color="series"` | `<Line>` | Encodes the primary series dimension (e.g. event name, browser) as color |
 | `opacity="period"` | `<Legend>` | Facets legend opacity by period so legend items reflect the correct opacity |
