@@ -90,6 +90,37 @@ To ensure a specific period is always solid (index 1) and the comparison is alwa
 
 ---
 
+## Variant: Gray Secondary Line (Single Series Only)
+
+When the chart has only one series (no separate primary dimension like `series` or `browser`), it is possible to render the comparison period as gray using the existing `colors` prop on `<Chart>`.
+
+Set `color="period"` on `<Line>` so that color encodes the period field. Then pass a manual `colors` array to `<Chart>` — the secondary (comparison) period is drawn first in the color scale domain, so gray goes at index 0 and the actual line color goes at index 1.
+
+```tsx
+<Chart
+  data={data}
+  colors={['#6E6E6E', '#5424DB']}   // index 0 = comparison period (gray), index 1 = current period
+  lineTypes={['dotted', 'solid']}
+  width={600}
+  height={400}
+>
+  <Axis position="left" grid title="Users" />
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Line
+    dimension="datetime"
+    metric="users"
+    color="period"
+    lineType="period"
+    scaleType="time"
+  />
+  <Legend highlight />
+</Chart>
+```
+
+**Constraint**: This only works with a single series. `color` can only map to one field — using it for `period` means there is no remaining color channel to differentiate multiple series (e.g. browser, event name).
+
+---
+
 ## What the Consumer Must Do
 
 The chart has no knowledge of calendar dates — it only sees the `datetime` values in the data. The consumer must:
@@ -108,5 +139,4 @@ This is intentional. Normalization logic belongs in SQL, pandas, or whatever dat
 ## What to Avoid
 
 - Do not try to pass two separate datasets. `<Chart>` takes a single flat `data` array.
-- Do not use `color` for the period dimension if you also want color to encode a primary series — `color` can only map to one field. Use `lineType` + `opacity` for period, and `color` for the primary series.
-- Do not add a `color` prop for period if you want secondary lines to appear gray — the current API does not support a "gray for comparison period" default. That would require a new feature (see research notes).
+- If you need gray secondary lines AND multiple series, that is not currently supported.
