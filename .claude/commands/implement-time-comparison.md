@@ -45,7 +45,7 @@ The same datetime value appears twice — once per period. The consumer shifts t
 
 ## Chart Configuration
 
-Pass `lineTypes` and `opacities` to `<Chart>` to control how each period renders. The order of values in these arrays corresponds to the order periods appear in the `lineType` scale domain (alphabetical by default, or as they appear in the data).
+Pass `lineTypes` to `<Chart>` to control how each period renders. The order of values in these arrays corresponds to the order periods appear in the `lineType` scale domain (alphabetical by default, or as they appear in the data).
 
 ```tsx
 <Chart
