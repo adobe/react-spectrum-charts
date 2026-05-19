@@ -507,8 +507,12 @@ that are NOT in the pre-existing list. Set `TSC_PASSED: true` if all errors are 
 <paste content of planning/<epic-key>/tsc_baseline.txt here — or write "none" if file is empty>
 
 Pattern-filtered test runs (`epic-test.sh <worktree> <pattern>`) are only for development
-iteration — the final gate before committing must be the full suite with no filter. If any step
-fails, fix the errors before completing.
+iteration — the final gate must be the full suite with no filter. If any step fails, fix the
+errors before completing.
+
+**Never run git add, git commit, git push, or any other git write command.** Leave all file
+changes as working-tree modifications. The orchestrator owns the entire git lifecycle and will
+commit all changes after the user approves the final state of the worktree.
 
 These scripts are pre-approved in `.claude/settings.json`. Always use them instead of calling
 `yarn` directly — direct yarn calls may require manual approval.
@@ -610,9 +614,17 @@ output. Instead, surface the build failure to the user in the check-in and ask w
 Wait ~15 seconds for Storybook to start, then include the direct story URL in the check-in:
 `http://localhost:<storybookPort>/?path=/story/<story-id>`
 
-The story ID is derived from the story's `title` and export name (e.g.
-`title: 'React Spectrum Charts 2/Line/Features/StaticPoint'` + export `WithStaticPoint` →
-`react-spectrum-charts-2-line-features-staticpoint--with-static-point`).
+**To get the correct story ID, read the actual story file** — do NOT infer the title from the file
+path. Open each file listed in `STORIES_ADDED` and extract the exact `title` string from the
+default export (e.g. `export default { title: '...', ... }`). Then construct the ID as:
+
+  `<title-as-kebab-case>--<export-name-as-kebab-case>`
+
+Example: `title: 'React Spectrum Charts 2/Line/Features'` + export `WithRoundLineCap` →
+`react-spectrum-charts-2-line-features--with-round-line-cap`
+
+The file name (e.g. `LineCap.story.tsx`) does NOT appear in the ID unless the story's `title`
+explicitly includes that segment. Always derive the ID from the `title` field, not the path.
 
 This lets the user visually verify the implementation before approving.
 
@@ -624,25 +636,44 @@ Wait for the user's response before proceeding. The valid responses are:
   branch with the original task prompt plus the user's specific instructions; the orchestrator
   does NOT implement the change itself
 
-**On approve**, the orchestrator (not the subagent) handles commit, push, and PR:
+**On approve**, the orchestrator (not the subagent) handles commit, push, and PR.
+
+**Nothing is committed or pushed until the user says approve.** Subagents write code only — they
+never run git add, git commit, or git push.
+
+### Commit strategy
+
+First, inspect the full working-tree diff to understand what changed:
 
 ```bash
-# Commit
-cd /tmp/epic-<epic-key>/<task-id>
-git add <files from FILES_CHANGED list — explicit, no git add -A>
-git commit -m "$(cat <<'EOF'
-feat(s2): <task-id> <concise description>
+git -C /tmp/epic-<epic-key>/<task-id> diff --stat
+git -C /tmp/epic-<epic-key>/<task-id> status --short
+```
+
+Most tasks produce a single commit. Use multiple commits only when the changes are large enough
+that a single message would be misleading — for example, a substantial refactor alongside a new
+feature, or two independently meaningful pieces of work. Do not split by file type (tests,
+stories, docs all belong with the feature they support).
+
+Stage files explicitly — never use `git add -A` for a whole worktree:
+
+```bash
+git -C /tmp/epic-<epic-key>/<task-id> add <file1> <file2> ...
+git -C /tmp/epic-<epic-key>/<task-id> commit -m "$(cat <<'EOF'
+feat(s2): <concise description>
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
-
-# Push
-git push -u origin <worktreeBranch>
 ```
 
-Then open the PR (see PR template below). **Nothing is committed or pushed until the user says
-approve.** Subagents write and verify code only — they never commit.
+After all commits, push:
+
+```bash
+git -C /tmp/epic-<epic-key>/<task-id> push -u origin <worktreeBranch>
+```
+
+Then open the PR (see PR template below).
 
 **Surface spikes one at a time.** Even when multiple spikes complete simultaneously, present
 them sequentially — finish all decisions for one spike before surfacing the next. Spike decisions
