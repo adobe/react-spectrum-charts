@@ -106,5 +106,5 @@ This is intentional. Normalization logic belongs in SQL, pandas, or whatever dat
 ## What to Avoid
 
 - Do not try to pass two separate datasets. `<Chart>` takes a single flat `data` array.
-- Do not use `color` for the period dimension if you also want color to encode a primary series — `color` can only map to one field. Use `lineType` + `opacity` for period, and `color` for the primary series.
+- Do not use `color` for the period dimension if you also want color to encode a primary series — `color` can only map to one field. Use `lineType` for period, and `color` for the primary series.
 - Do not add a `color` prop for period if you want secondary lines to appear gray — the current API does not support a "gray for comparison period" default. That would require a new feature (see research notes).
