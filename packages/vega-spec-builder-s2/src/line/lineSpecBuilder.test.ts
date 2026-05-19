@@ -33,7 +33,7 @@ import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { ScSpec } from '../types';
-import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
+import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder';
 import { defaultLineOptions } from './lineTestUtils';
 
 const startingSpec: ScSpec = initializeSpec({
@@ -419,6 +419,27 @@ describe('lineSpecBuilder', () => {
         transform: [{ expr: 'datum.staticPoint === true', type: 'filter' }],
       });
     });
+
+    test('with alternateSegmentKey adds formula to table and 3 segment data sources', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')).toBe(true);
+
+      const expectedSegmentData = getAlternateSegmentData('line0', `${DEFAULT_TIME_DIMENSION}0`);
+      expect(resultData.find((d) => d.name === 'line0_segmented')).toStrictEqual(expectedSegmentData[0]);
+      expect(resultData.find((d) => d.name === 'line0_bridge')).toStrictEqual(expectedSegmentData[1]);
+      expect(resultData.find((d) => d.name === 'line0_with_bridges')).toStrictEqual(expectedSegmentData[2]);
+    });
+
+    test('without alternateSegmentKey does not add segment data sources', () => {
+      const resultData = addData(baseData ?? [], defaultLineOptions);
+      expect(resultData.find((d) => d.name === 'line0_segmented')).toBeUndefined();
+      expect(resultData.find((d) => d.name === 'line0_bridge')).toBeUndefined();
+      expect(resultData.find((d) => d.name === 'line0_with_bridges')).toBeUndefined();
+    });
   });
 
   describe('setScales()', () => {
@@ -610,6 +631,31 @@ describe('lineSpecBuilder', () => {
       expect(innerMarks).toHaveLength(1);
       expect(innerMarks[0].type).toBe('line');
       expect(innerMarks[0].encode?.update?.interpolate).toBeUndefined();
+    });
+
+    test('with alternateSegmentKey uses line0_with_bridges as facet data', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const groupMark = marks[0] as { from: { facet: { data: string; groupby: string[] } } };
+      expect(groupMark.from.facet.data).toBe('line0_with_bridges');
+    });
+
+    test('with alternateSegmentKey extends facet groupby with segmentId', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const groupMark = marks[0] as { from: { facet: { groupby: string[] } } };
+      expect(groupMark.from.facet.groupby).toContain('line0_segmentId');
+    });
+
+    test('without alternateSegmentKey uses filteredTable as facet data', () => {
+      const marks = addLineMarks([], defaultLineOptions);
+      const groupMark = marks[0] as { from: { facet: { data: string } } };
+      expect(groupMark.from.facet.data).toBe(FILTERED_TABLE);
+    });
+
+    test('with alternateSegmentKey, line mark strokeDash uses a signal', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const groupMark = marks[0] as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
+      const strokeDash = groupMark.marks[0].encode.enter.strokeDash;
+      expect(strokeDash).toHaveProperty('signal');
     });
   });
 

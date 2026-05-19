@@ -177,6 +177,21 @@ Use `excludeSeries` to prevent labels from appearing on specific series:
 
 ---
 
+## Alternate segments
+
+The `alternateSegmentKey` prop lets you visually distinguish specific data points — such as estimated or projected values — by rendering their line segments with a different stroke style while keeping the same series color.
+
+Set `alternateSegmentKey` to a field in your data whose truthy value marks a point as part of an alternate segment. Those segments will be drawn using `alternateSegmentLineType` (defaults to `'dotted'`).
+
+```jsx
+// data: [{ datetime: ..., value: 10, isEstimated: false }, { datetime: ..., value: 12, isEstimated: true }, ...]
+<Line color="series" alternateSegmentKey="isEstimated" alternateSegmentLineType="dotted" />
+```
+
+The transition between segments is seamless — the line connects solid and dotted runs without gaps. Any series without the field (or with all-falsy values) renders as a plain solid line.
+
+---
+
 ## Line props (S2)
 
 :::note Not all base Line props are supported
@@ -300,6 +315,24 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
             <td>string</td>
             <td>–</td>
             <td>Key in the data whose truthy value causes a visible point to be drawn at that data item.</td>
+        </tr>
+        <tr>
+            <td>alternateSegmentKey</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Key in the data whose truthy value marks a point as part of an alternate segment. Alternate segments are rendered with a different line type (see <code>alternateSegmentLineType</code>) while keeping the same series color.</td>
+        </tr>
+        <tr>
+            <td>alternateSegmentLineType</td>
+            <td>'solid' | 'dashed' | 'dotted' | 'dotDash' | 'longDash' | 'twoDash'</td>
+            <td>'dotted'</td>
+            <td>The line type used for alternate segments identified by <code>alternateSegmentKey</code>.</td>
+        </tr>
+        <tr>
+            <td>alternateSegmentLabel</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Text appended to the hover value label for alternate-segment points (e.g. <code>'(Estimated)'</code>).</td>
         </tr>
     </tbody>
 </table>

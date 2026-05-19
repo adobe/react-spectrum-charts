@@ -42,6 +42,7 @@ export const defaultLineOptions: LineSpecOptions = {
   lineDirectLabels: [],
   popoverMarkName: undefined,
   interpolate: undefined,
+  alternateSegmentLineType: 'dotted',
 };
 
 export const defaultTrendlineOptions: TrendlineSpecOptions = {

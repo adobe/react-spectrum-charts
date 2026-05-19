@@ -78,6 +78,9 @@ export const addLine = produce<
       scaleType = 'time',
       trendlines = [],
       interpolate,
+      alternateSegmentKey,
+      alternateSegmentLineType = 'dotted',
+      alternateSegmentLabel,
       ...options
     }
   ) => {
@@ -117,6 +120,9 @@ export const addLine = produce<
       scaleType,
       trendlines,
       interpolate,
+      alternateSegmentKey,
+      alternateSegmentLineType,
+      alternateSegmentLabel,
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
@@ -132,11 +138,18 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { chartInspects, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
+  const { alternateSegmentKey, chartInspects, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
     options;
+  const tableData = getTableData(data);
   if (scaleType === 'time') {
-    const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+  }
+  if (alternateSegmentKey) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
+    // time data was transformed above, so we need to use the transformed dimension
+    const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+    data.push(...getAlternateSegmentData(name, dimSortField));
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
@@ -227,9 +240,12 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { color, gradient, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
+  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
 
   const { facets } = getFacetsFromOptions({ color, lineType, opacity });
+  // when alternateSegmentKey is set, facet by segmentId so each contiguous run gets its own path with its own strokeDash
+  const facetData = alternateSegmentKey ? `${name}_with_bridges` : FILTERED_TABLE;
+  const facetGroupby = alternateSegmentKey ? [...facets, `${name}_segmentId`] : facets;
 
   marks.push({
     name: `${name}_group`,
@@ -237,8 +253,8 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     from: {
       facet: {
         name: `${name}_facet`,
-        data: FILTERED_TABLE,
-        groupby: facets,
+        data: facetData,
+        groupby: facetGroupby,
       },
     },
     marks: [
@@ -269,6 +285,53 @@ const getMetricKeys = (lineOptions: LineSpecOptions) => {
 
   return metricKeys;
 };
+
+export const getAlternateSegmentData = (name: string, dimSortField: string): Data[] => [
+  {
+    name: `${name}_segmented`,
+    source: FILTERED_TABLE,
+    transform: [
+      {
+        type: 'window',
+        groupby: [SERIES_ID],
+        sort: { field: dimSortField, order: 'ascending' },
+        ops: ['lag'],
+        fields: [`${name}_alternateFlag`],
+        params: [1],
+        as: [`${name}_prevAlternateFlag`],
+      },
+      {
+        type: 'formula',
+        as: `${name}_isSegmentBreak`,
+        expr: `datum.${name}_prevAlternateFlag !== null && datum.${name}_alternateFlag !== datum.${name}_prevAlternateFlag ? 1 : 0`,
+      },
+      {
+        type: 'window',
+        groupby: [SERIES_ID],
+        sort: { field: dimSortField, order: 'ascending' },
+        ops: ['sum'],
+        fields: [`${name}_isSegmentBreak`],
+        frame: [null, 0],
+        as: [`${name}_segmentId`],
+      },
+    ],
+  },
+  {
+    name: `${name}_bridge`,
+    source: `${name}_segmented`,
+    transform: [
+      { type: 'filter', expr: `datum.${name}_isSegmentBreak === 1` },
+      { type: 'formula', as: `${name}_segmentId`, expr: `datum.${name}_segmentId - 1` },
+      { type: 'formula', as: `${name}_alternateFlag`, expr: `!datum.${name}_alternateFlag` },
+    ],
+  },
+  {
+    // merges segmented data with bridge points and re-sorts so each segment path connects seamlessly to the next
+    name: `${name}_with_bridges`,
+    source: [`${name}_segmented`, `${name}_bridge`],
+    transform: [{ type: 'collect', sort: { field: dimSortField, order: 'ascending' } }],
+  },
+];
 
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
   const { interactionMode, name: lineName } = options;
