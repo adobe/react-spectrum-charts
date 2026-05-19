@@ -51,7 +51,6 @@ Pass `lineTypes` to `<Chart>` to control how each period renders. The order of v
 <Chart
   data={data}
   lineTypes={['dotted', 'solid']}   // index 0 = first period in domain, index 1 = second
-  opacities={[0.5, 1]}              // same ordering
   width={600}
   height={400}
 >
