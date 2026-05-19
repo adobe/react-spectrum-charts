@@ -64,7 +64,7 @@ export interface LineMarkOptions {
   interactionMode?: InteractionMode;
   isHighlightedByDimension?: boolean;
   isHighlightedByGroup?: boolean;
-  lineCap: 'round' | 'square';
+  lineCap?: 'round' | 'square';
   lineType: LineTypeFacet;
   lineWidth?: LineWidthFacet;
   metric: string;
