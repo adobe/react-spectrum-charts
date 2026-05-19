@@ -1,6 +1,6 @@
-# react-spectrum-charts: Adding a New Child Component
+# react-spectrum-charts: Adding a New Child Component (S2)
 
-Use this skill when adding a new child component — a React element that carries props into the Vega spec pipeline but renders nothing itself. Examples: `ChartTooltip`, `MetricRange`, `Trendline`, `AxisThumbnail`, `LinePointAnnotation`, `BarAnnotation`.
+Use this skill when adding a new child component to the S2 package — a React element that carries props into the Vega spec pipeline but renders nothing itself. Examples: `ChartTooltip`, `MetricRange`, `Trendline`, `AxisThumbnail`, `LinePointAnnotation`, `BarAnnotation`.
 
 Read `.claude/architecture.md` for the dispatch pipeline, the sanitize gate (all 6 sanitize functions), and the three dispatch patterns (direct cast, adapter call, recursive).
 
@@ -8,9 +8,9 @@ Read `.claude/architecture.md` for the dispatch pipeline, the sanitize gate (all
 
 ## Implementation Steps
 
-### Step 1: Define types in `vega-spec-builder`
+### Step 1: Define types in `vega-spec-builder-s2`
 
-Create `packages/vega-spec-builder/src/types/marks/supplemental/<name>Spec.types.ts`:
+Create `packages/vega-spec-builder-s2/src/types/marks/supplemental/<name>Spec.types.ts`:
 
 ```ts
 export interface <Name>Options {
@@ -33,7 +33,7 @@ export interface <Name>SpecOptions
 
 Export from `supplemental/index.ts`.
 
-Also update the parent mark's types (`lineSpec.types.ts`) to add the new collection:
+Also update the parent mark's types (`lineSpec.types.ts` in `vega-spec-builder-s2`) to add the new collection:
 ```ts
 // In LineOptions:
 <names>?: <Name>Options[];
@@ -42,20 +42,20 @@ Also update the parent mark's types (`lineSpec.types.ts`) to add the new collect
 | '<names>'
 ```
 
-### Step 2: Implement the mark logic in `vega-spec-builder`
+### Step 2: Implement the mark logic in `vega-spec-builder-s2`
 
-Create `packages/vega-spec-builder/src/line/<name>/<name>Utils.ts` with the functions that produce Vega marks from `<Name>SpecOptions`.
+Create `packages/vega-spec-builder-s2/src/<mark>/<name>/<name>Utils.ts` with the functions that produce Vega marks from `<Name>SpecOptions`.
 
-Update the parent spec builder (`lineSpecBuilder.ts`) to call the new utils when the collection is non-empty.
+Update the parent spec builder (`<mark>SpecBuilder.ts`) to call the new utils when the collection is non-empty.
 
-Update `lineTestUtils.ts` — add `<names>: []` to every existing fixture object.
+Update `<mark>TestUtils.ts` — add `<names>: []` to every existing fixture object.
 
 ### Step 3: Define React types
 
-Create `packages/react-spectrum-charts/src/types/marks/supplemental/<name>.types.ts`:
+Create `packages/react-spectrum-charts-s2/src/types/marks/supplemental/<name>.types.ts`:
 
 ```ts
-import { <Name>Options } from '@spectrum-charts/vega-spec-builder';
+import { <Name>Options } from '@spectrum-charts/vega-spec-builder-s2';
 
 // Simple case: props == options (most supplemental marks)
 export interface <Name>Props extends <Name>Options {}
@@ -69,11 +69,11 @@ export interface <Name>Props extends Omit<<Name>Options, 'chartTooltips'> {
 
 Export from `supplemental/index.ts`.
 
-Update the parent mark's types (`line.types.ts`) to add `<Name>Element` to the child union type and add `'<names>'` to the `Omit` list in `LineProps`.
+Update the parent mark's types (`<mark>.types.ts` in `react-spectrum-charts-s2`) to add `<Name>Element` to the child union type and add `'<names>'` to the `Omit` list in `<Mark>Props`.
 
 ### Step 4: Create the component file
 
-`packages/react-spectrum-charts/src/components/<Name>/<Name>.tsx`:
+`packages/react-spectrum-charts-s2/src/components/<Name>/<Name>.tsx`:
 
 ```tsx
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -96,7 +96,7 @@ Create the barrel `index.ts` and add to `components/index.ts`.
 
 ### Step 5: Register in the correct sanitize function(s)
 
-In `packages/react-spectrum-charts/src/utils/utils.ts`:
+In `packages/react-spectrum-charts-s2/src/utils/utils.ts`:
 1. Import the component
 2. Identify the correct sanitize function(s) for the component's valid nesting location(s): `sanitizeRscChartChildren`, `sanitizeMarkChildren`, `sanitizeAxisChildren`, `sanitizeAxisAnnotationChildren`, `sanitizeTrendlineChildren`, or `sanitizeBigNumberChildren`
 3. Add `<Name>.displayName` to each applicable function's allowlist
@@ -105,20 +105,20 @@ A component may need to appear in more than one function if it is valid in multi
 
 ### Step 6: Register in childrenAdapter
 
-In `packages/react-spectrum-charts/src/rscToSbAdapter/childrenAdapter.ts`:
+In `packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts`:
 1. Import the component and types
 2. Add the collection array: `const <names>: <Name>Options[] = [];`
 3. Add the dispatch case (Pattern A, B, or C based on the component's nature)
 4. Add `<names>` to the return object
 
-Update the parent mark's adapter (`lineAdapter.ts`) to destructure `<names>` from `childrenToOptions` and pass it through.
+Update the parent mark's adapter (`<mark>Adapter.ts`) to destructure `<names>` from `childrenToOptions` and pass it through.
 
 ### Step 7: Write tests
 
-**Adapter test** (`lineAdapter.test.ts`):
+**Adapter test** (`<mark>Adapter.test.ts`):
 ```ts
 it('should convert <Name> children to <names> array', () => {
-  const options = getLineOptions({ children: [createElement(<Name>)] });
+  const options = get<Mark>Options({ children: [createElement(<Name>)] });
   expect(options.<names>).toHaveLength(1);
 });
 ```
@@ -136,10 +136,10 @@ test('<Name> pseudo element', () => { render(<<Name> />); });
 
 ### Step 8: Storybook story
 
-Story goes in `stories/components/<Name>/`. The `component:` in the story meta should reference the child component, and `{...args}` should be spread onto the child — not the parent mark:
+Story goes in `packages/react-spectrum-charts-s2/src/stories/<ParentMark>/Features/`. Use title prefix `'React Spectrum Charts 2/<ParentMark>/Features'`. The `component:` in the story meta should reference the child component, and `{...args}` should be spread onto the child — not the parent mark:
 
 ```tsx
-export default { title: 'RSC/<ParentMark>/<Name>', component: <Name> };
+export default { title: 'React Spectrum Charts 2/<ParentMark>/<Name>', component: <Name> };
 
 const Story: StoryFn<typeof <Name>> = (args) => (
   <Chart {...chartProps}>
@@ -151,38 +151,30 @@ const Story: StoryFn<typeof <Name>> = (args) => (
 );
 ```
 
-### Step 9: S2 parity
-
-If the parent mark exists in S2, mirror the changes in:
-- `packages/vega-spec-builder-s2/src/types/marks/supplemental/` — same type file
-- `packages/react-spectrum-charts-s2/src/components/<Name>/` — same component file
-- `packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts` — same dispatch case
-- `packages/react-spectrum-charts-s2/src/utils/utils.ts` — same sanitize registrations
-
-S2-exclusive components (like `BarDirectLabel`, `LineDirectLabel`) only exist in S2 — they have no S1 equivalent.
+Run `yarn storybook:s2` (port 6010) to verify.
 
 ---
 
 ## Checklist
 
-- [ ] `vega-spec-builder/src/types/marks/supplemental/<name>Spec.types.ts` — created
-- [ ] `vega-spec-builder/src/types/marks/supplemental/index.ts` — export added
+- [ ] `vega-spec-builder-s2/src/types/marks/supplemental/<name>Spec.types.ts` — created
+- [ ] `vega-spec-builder-s2/src/types/marks/supplemental/index.ts` — export added
 - [ ] Parent `<mark>Spec.types.ts` — collection field added to `Options` and `OptionsWithDefaults`
-- [ ] `vega-spec-builder/src/<mark>/<name>/<name>Utils.ts` — mark logic implemented
+- [ ] `vega-spec-builder-s2/src/<mark>/<name>/<name>Utils.ts` — mark logic implemented
 - [ ] Parent `<mark>TestUtils.ts` — new collection added to all fixtures as `[]`
-- [ ] `react-spectrum-charts/src/types/marks/supplemental/<name>.types.ts` — created
-- [ ] `react-spectrum-charts/src/types/marks/supplemental/index.ts` — export added
+- [ ] `react-spectrum-charts-s2/src/types/marks/supplemental/<name>.types.ts` — created
+- [ ] `react-spectrum-charts-s2/src/types/marks/supplemental/index.ts` — export added
 - [ ] Parent `<mark>.types.ts` — child union updated, Omit list updated
 - [ ] `components/<Name>/<Name>.tsx` — created with displayName and return null
 - [ ] `components/<Name>/index.ts` — barrel created
 - [ ] `components/index.ts` — export added
-- [ ] `utils/utils.ts` — added to `sanitizeChildren` AND appropriate scoped set
+- [ ] `utils/utils.ts` — added to correct `sanitize*Children` function(s)
 - [ ] `childrenAdapter.ts` — case added, collection in return
 - [ ] Parent `<mark>Adapter.ts` — destructures and passes new collection
 - [ ] `<mark>Adapter.test.ts` — createElement test added
 - [ ] `chartAdapter.test.ts` — snapshots updated with `<names>: []`
-- [ ] Story and integration test created
-- [ ] S2 parity applied where parent mark exists in S2
+- [ ] Story and integration test created (`stories/<ParentMark>/Features/`)
+- [ ] `yarn build:s2` succeeds
 - [ ] `yarn tsc --noEmit` passes
 
 ---

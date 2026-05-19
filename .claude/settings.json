@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./scripts/epic-*.sh*)",
+      "Bash(git worktree*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git status*)",
+      "Bash(git add*)",
+      "Bash(ls*)",
+      "Bash(find*)",
+      "Bash(cat*)",
+      "Bash(grep*)",
+      "Bash(mkdir*)",
+      "Bash(cp*)",
+      "Bash(chmod*)",
+      "Bash(cd*)",
+      "Bash(yarn test*)",
+      "Bash(yarn tsc*)",
+      "mcp__figma__get_figma_document_tree",
+      "mcp__figma__get_figma_node",
+      "mcp__figma__get_figma_node_structure",
+      "mcp__figma__get_figma_image",
+      "mcp__corp-jira__search_jira_issues",
+      "mcp__wiki__get_wiki_content",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Agent(*)"
+    ]
+  }
+}
