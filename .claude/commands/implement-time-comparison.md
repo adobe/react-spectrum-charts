@@ -72,7 +72,6 @@ Pass `lineTypes` to `<Chart>` to control how each period renders. The order of v
 | Prop | Where | Purpose |
 |---|---|---|
 | `lineTypes` | `<Chart>` | Dash patterns for each period. `'solid'`, `'dashed'`, `'dotted'`, `'shortDash'`, `'longDash'`, `'twoDash'` |
-| `opacities` | `<Chart>` | Opacity levels for each period. Typically `[0.5, 1]` to de-emphasize the comparison period |
 | `lineType="period"` | `<Line>` | Encodes the `period` field as the stroke dash dimension |
 | `color="series"` | `<Line>` | Encodes the primary series dimension (e.g. event name, browser) as color |
 | `opacity="period"` | `<Legend>` | Facets legend opacity by period so legend items reflect the correct opacity |
