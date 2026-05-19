@@ -79,6 +79,7 @@ const LineBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
 
 const WithLineBreaks = bindWithProps(LineBreaksStory);
 WithLineBreaks.args = {
+  name: 'line0',
   color: 'series',
   dimension: 'datetime',
   metric: 'value',
@@ -99,6 +100,7 @@ const MetricRangeBreaksStory: StoryFn<typeof Line> = (args): ReactElement => {
 
 const WithMetricRangeLineBreaks = bindWithProps(MetricRangeBreaksStory);
 WithMetricRangeLineBreaks.args = {
+  name: 'line0',
   color: 'series',
   dimension: 'datetime',
   metric: 'value',
