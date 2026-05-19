@@ -15,7 +15,7 @@ The chart library does not perform date normalization. The **consumer is respons
 1. Aligning the two periods' datetimes to the same x values
 2. Adding a `period` field to each row to identify which period it belongs to
 
-Once the data is shaped correctly, RSC encodes the period dimension using `lineType` and optionally `opacity`.
+Once the data is shaped correctly, RSC encodes the period dimension using `lineType`.
 
 This is the standard approach used by D3, Vega-Lite, ggplot2, and pandas — normalization belongs in the data layer, not the chart layer.
 
