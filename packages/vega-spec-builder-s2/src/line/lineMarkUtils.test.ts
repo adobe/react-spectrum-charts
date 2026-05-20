@@ -84,6 +84,11 @@ describe('getLineMark()', () => {
     expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
   });
 
+  test('uses round strokeCap when lineCap is undefined', () => {
+    const lineMark = getLineMark({ ...defaultLineMarkOptions, lineCap: undefined }, 'line0_facet');
+    expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
+  });
+
   test('uses square strokeCap when lineCap is square', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, lineCap: 'square' }, 'line0_facet');
     expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'square' });
