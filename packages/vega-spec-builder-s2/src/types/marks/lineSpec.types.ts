@@ -29,6 +29,7 @@ import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
 export type InteractionMode = `${INTERACTION_MODE}`;
 export type InterpolationType = 'basis' | 'cardinal' | 'catmull-rom' | 'linear' | 'monotone' | 'natural' | 'step' | 'step-after' | 'step-before';
+export type LineCap = 'round' | 'square';
 
 export interface LineOptions {
   markType: 'line';
@@ -74,7 +75,7 @@ export interface LineOptions {
    * Sets the stroke line cap style for the line ends and gap boundaries.
    * @default 'round'
    */
-  lineCap?: 'round' | 'square';
+  lineCap?: LineCap;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
