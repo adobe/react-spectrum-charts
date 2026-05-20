@@ -24,7 +24,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getLineGradientMark, getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
+import { getAlternateSegmentStrokeDash, getLineGradientMark, getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -284,5 +284,26 @@ describe('getLineGradientMark()', () => {
     const y = gradientMark.encode?.enter?.y;
     expect(Array.isArray(y)).toBe(true);
     expect((y as unknown[]).length).toBe(2);
+  });
+});
+
+describe('getAlternateSegmentStrokeDash()', () => {
+  test('static lineType + static alternateSegmentLineType: returns signal without scale lookup', () => {
+    const result = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    expect(result.signal).toContain('line0_alternateFlag');
+    expect(result.signal).not.toContain(`scale('${LINE_TYPE_SCALE}'`);
+  });
+
+  test('data-driven lineType + static alternateSegmentLineType: base uses scale lookup, alt does not', () => {
+    const result = getAlternateSegmentStrokeDash('line0', 'lineTypeField', 'dotted') as { signal: string };
+    expect(result.signal).toContain(`scale('${LINE_TYPE_SCALE}', datum['lineTypeField'])`);
+    expect(result.signal).not.toContain(`scale('${LINE_TYPE_SCALE}', datum['dotted'])`);
+    expect(result.signal).toContain('line0_alternateFlag');
+  });
+
+  test('different alternateSegmentLineTypes produce different signals', () => {
+    const dotted = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    const dashed = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dashed') as { signal: string };
+    expect(dotted.signal).not.toBe(dashed.signal);
   });
 });

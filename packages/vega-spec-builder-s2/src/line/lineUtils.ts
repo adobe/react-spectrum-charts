@@ -18,6 +18,7 @@ import {
   DonutSummaryOptions,
   HighlightedItem,
   InteractionMode,
+  LineType,
   LineTypeFacet,
   LineWidthFacet,
   MetricRangeOptions,
@@ -81,4 +82,7 @@ export interface LineMarkOptions {
   staticPoint?: string;
   trendlines?: TrendlineOptions[];
   interpolate?: InterpolationType;
+  alternateSegmentKey?: string;
+  alternateSegmentLineType?: LineType;
+  alternateSegmentLabel?: string;
 }

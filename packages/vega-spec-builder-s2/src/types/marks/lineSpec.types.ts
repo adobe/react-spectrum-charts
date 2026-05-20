@@ -17,6 +17,7 @@ import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
   ColorFacet,
   FacetRef,
+  LineType,
   LineTypeFacet,
   LineWidth,
   OpacityFacet,
@@ -76,6 +77,21 @@ export interface LineOptions {
    * @default 'round'
    */
   lineCap?: LineCap;
+  /**
+   * Data field key whose truthy value marks a point as part of an alternate segment.
+   * Alternate segments render with a different line type (see `alternateSegmentLineType`).
+   */
+  alternateSegmentKey?: string;
+  /**
+   * Line type used for alternate segments identified by `alternateSegmentKey`.
+   * @default 'dotted'
+   */
+  alternateSegmentLineType?: LineType;
+  /**
+   * Text appended to the hover value label for alternate-segment points (e.g. `'(Estimated)'`).
+   * No default — omitting means no append.
+   */
+  alternateSegmentLabel?: string;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
