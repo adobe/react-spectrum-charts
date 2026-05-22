@@ -10,15 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-/**
- * Hover-context resolver.
- *
- * Single source of truth for "given a LineSpecOptions, which hover-signal prefixes are active
- * and what expression should each consumer use?"
- *
- * See planning/issues/displayOnHover-hover-namespace-audit.md for the full matrix and design.
- */
-
 import {
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
@@ -37,13 +28,6 @@ import { getDimensionField } from '../line/lineDataUtils';
 import { LineSpecOptions } from '../types';
 import { hasPopover, hasTooltip, isInteractive } from './markUtils';
 
-/**
- * Describes which hover signals are active for a given mark configuration, and any
- * supporting metadata needed to produce correct filter / opacity expressions.
- *
- * Build via `getHoverContext(markOptions)`. Pass to `getSeriesHoverPredicate` or
- * `getItemHoverPredicate` to obtain a Vega expression string.
- */
 export interface HoverContext {
   /** Mark namespaces that have an active `<prefix>_hoveredItem` signal (point-level hover). */
   itemPrefixes: string[];
@@ -61,16 +45,6 @@ export interface HoverContext {
   hasSelection: boolean;
 }
 
-/**
- * Derives a `HoverContext` from `LineSpecOptions`.
- *
- * Rules:
- * - Parent prefix (`line0`) added to `itemPrefixes` when `isInteractive(markOptions)` is true.
- * - Parent prefix added to `dimensionPrefixes` when also in dimension interaction mode.
- * - Trendline prefix (`line0Trendline`) added to `itemPrefixes` when any trendline has a tooltip.
- * - Trendline prefix added to `dimensionPrefixes` when the trendline owns interactivity and
- *   the parent declares `interactionMode === 'dimension'`.
- */
 export const getHoverContext = (markOptions: LineSpecOptions): HoverContext => {
   const { name, interactionMode, trendlines } = markOptions;
 
@@ -111,17 +85,6 @@ export const getHoverContext = (markOptions: LineSpecOptions): HoverContext => {
 
 const isTrendlinePrefix = (prefix: string): boolean => prefix.endsWith('Trendline');
 
-/**
- * Produces a Vega expression matching when the current datum's *series* is hovered or highlighted.
- * Used by displayOnHover data filters and by opacity rules that want a series-level "is this hovered" boolean.
- *
- * Clauses included (joined with ` || `):
- * - One clause per `itemPrefixes` entry: `isValid(<prefix>_hoveredItem) && <prefix>_hoveredItem.<seriesOrGroupId> === datum.<seriesOrGroupId>`
- * - One clause per `dimensionPrefixes` entry: `isValid(<prefix>_dimensionHoverArea_hoveredItem)` (whole strip highlighted — no datum match)
- * - Selected series (when present): `isValid(selectedSeries) && selectedSeries === datum.rscSeriesId`
- * - Controlled table: `indexof(pluck(data('controlledHighlightedTable'), 'rscSeriesId'), datum.rscSeriesId) > -1`
- * - Controlled series: `isValid(controlledHighlightedSeries) && controlledHighlightedSeries === datum.rscSeriesId`
- */
 export const getSeriesHoverPredicate = (ctx: HoverContext): string => {
   const clauses: string[] = [];
 
@@ -151,18 +114,6 @@ export const getSeriesHoverPredicate = (ctx: HoverContext): string => {
   return clauses.join(' || ');
 };
 
-/**
- * Produces a Vega expression matching when the current datum is the hovered *item* (id-level).
- * Used by `<mark>_highlightedData` filters to drive hover rules and hover points.
- *
- * Clauses included (joined with ` || `):
- * - Controlled item: `isArray(controlledHighlightedItem) && indexof(controlledHighlightedItem, datum.<idKey>) > -1`
- * - One clause per `itemPrefixes` entry matching by `idKey` (or group key when highlightBy is active)
- * - One clause per `dimensionPrefixes` entry matching by `dimensionField` (x-strip hover)
- *
- * When `ctx.hasPopoverInteractivity` is true, the whole expression is gated behind the selection
- * check: `selectedItem && selectedItem === datum.<idKey> || !selectedItem && (<expr>)`.
- */
 export const getItemHoverPredicate = (ctx: HoverContext, idKey: string): string => {
   const clauses: string[] = [
     `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`,
