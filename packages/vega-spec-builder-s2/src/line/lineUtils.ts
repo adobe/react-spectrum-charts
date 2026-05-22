@@ -28,6 +28,7 @@ import {
   SegmentLabelOptions,
   TrendlineOptions,
   InterpolationType,
+  LineCap,
 } from '../types';
 
 export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineName: string): string | undefined => {
@@ -65,6 +66,7 @@ export interface LineMarkOptions {
   interactionMode?: InteractionMode;
   isHighlightedByDimension?: boolean;
   isHighlightedByGroup?: boolean;
+  lineCap?: LineCap;
   lineType: LineTypeFacet;
   lineWidth?: LineWidthFacet;
   metric: string;

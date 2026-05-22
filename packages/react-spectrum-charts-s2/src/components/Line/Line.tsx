@@ -27,6 +27,7 @@ const Line: FC<LineProps> = ({
   color = { value: 'categorical-100' },
   scaleType = 'time',
   lineType = { value: 'solid' },
+  lineCap = 'round',
   padding,
   interactionMode = DEFAULT_INTERACTION_MODE,
   interpolate,

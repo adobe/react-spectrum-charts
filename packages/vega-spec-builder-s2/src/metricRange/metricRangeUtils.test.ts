@@ -72,6 +72,7 @@ const defaultLineOptions: LineSpecOptions = {
   popoverMarkName: undefined,
   scaleType: 'time',
   trendlines: [],
+  lineCap: 'round',
   interpolate: undefined,
 };
 
@@ -88,6 +89,7 @@ const basicMetricRangeMarks = [
       enter: {
         y: [{ scale: 'yLinear', field: 'metric' }],
         stroke: { scale: COLOR_SCALE, field: 'series' },
+        strokeCap: { value: 'round' },
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
         strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },

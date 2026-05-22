@@ -73,6 +73,7 @@ const defaultSpec = initializeSpec({
           encode: {
             enter: {
               stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+              strokeCap: { value: 'round' },
               strokeDash: { value: [] },
               strokeOpacity: DEFAULT_OPACITY_RULE,
               strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
@@ -155,6 +156,7 @@ const line0_groupMark = {
         enter: {
           y: [{ scale: 'yLinear', field: 'value' }],
           stroke: { scale: COLOR_SCALE, field: 'series' },
+          strokeCap: { value: 'round' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
@@ -200,6 +202,7 @@ const metricRangeGroupMark = {
             scale: COLOR_SCALE,
             field: 'series',
           },
+          strokeCap: { value: 'round' },
           strokeDash: {
             value: [7, 4],
           },
@@ -497,6 +500,7 @@ describe('lineSpecBuilder', () => {
               encode: {
                 enter: {
                   stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+                  strokeCap: { value: 'round' },
                   strokeOpacity: DEFAULT_OPACITY_RULE,
                   strokeDash: { value: [8, 8] },
                   strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },

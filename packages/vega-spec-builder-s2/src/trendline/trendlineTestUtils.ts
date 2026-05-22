@@ -41,6 +41,7 @@ export const defaultLineOptions: LineSpecOptions = {
   interactiveMarkName: undefined,
   lineDirectLabels: [],
   popoverMarkName: undefined,
+  lineCap: 'round',
   interpolate: undefined,
   alternateSegmentLineType: 'dotted',
 };

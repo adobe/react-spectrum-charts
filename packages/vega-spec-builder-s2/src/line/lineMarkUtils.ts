@@ -166,6 +166,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     color,
     colorScheme,
     dimension,
+    lineCap = 'round',
     lineType,
     metric,
     name,
@@ -188,6 +189,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
         stroke: getColorProductionRule(color, colorScheme),
+        strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
           ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
           : getStrokeDashProductionRule(lineType),

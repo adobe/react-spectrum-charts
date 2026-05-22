@@ -30,6 +30,7 @@ import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
 export type InteractionMode = `${INTERACTION_MODE}`;
 export type InterpolationType = 'basis' | 'cardinal' | 'catmull-rom' | 'linear' | 'monotone' | 'natural' | 'step' | 'step-after' | 'step-before';
+export type LineCap = 'round' | 'square';
 
 export interface LineOptions {
   markType: 'line';
@@ -72,6 +73,11 @@ export interface LineOptions {
   /** Sets the interpolation method for the line */
   interpolate?: InterpolationType;
   /**
+   * Sets the stroke line cap style for the line ends and gap boundaries.
+   * @default 'round'
+   */
+  lineCap?: LineCap;
+  /**
    * Data field key whose truthy value marks a point as part of an alternate segment.
    * Alternate segments render with a different line type (see `alternateSegmentLineType`).
    */
@@ -103,6 +109,7 @@ type LineOptionsWithDefaults =
   | 'gradient'
   | 'hasOnClick'
   | 'hasOnContextMenu'
+  | 'lineCap'
   | 'lineDirectLabels'
   | 'lineType'
   | 'metric'
