@@ -163,4 +163,26 @@ WithForecastEarly.args = {
   scaleType: 'time',
 };
 
-export { WithForecast, WithForecastAndGradient, WithForecastNearEnd, WithForecastEarly };
+const ForecastCustomLabelStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid />
+      <Axis position="bottom" labelFormat="time" />
+      <Line {...args}>
+        <LineForecast metric="forecastValue" start={1725148800000} label="Projected" />
+      </Line>
+    </Chart>
+  );
+};
+
+const WithForecastCustomLabel = bindWithProps(ForecastCustomLabelStory);
+WithForecastCustomLabel.args = {
+  color: 'series',
+  name: 'line0',
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time',
+};
+
+export { WithForecast, WithForecastAndGradient, WithForecastNearEnd, WithForecastEarly, WithForecastCustomLabel };
