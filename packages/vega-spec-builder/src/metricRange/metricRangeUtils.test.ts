@@ -19,6 +19,7 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
+  HOVERED_ITEM,
   MARK_ID,
 } from '@spectrum-charts/constants';
 
@@ -187,30 +188,75 @@ describe('getMetricRangeMark', () => {
     expect(lineMark.encode?.enter?.strokeOpacity).toEqual({ value: 0.2 });
   });
   describe('displayOnHover translation', () => {
-    const interactiveLineOptions = { ...defaultLineOptions, interactiveMarkName: 'line0' };
+    // Include chartTooltips so getHoverContext sees the parent as interactive.
+    const interactiveLineOptions = { ...defaultLineOptions, chartTooltips: [{}] as [{}], interactiveMarkName: 'line0' };
 
-    test('when displayOnHover is "metric", area is always visible and line gets "metric" opacity rules', () => {
+    test('when displayOnHover is "metric", area fades and line uses show-mode opacity rules', () => {
       const [lineMark, areaMark] = getMetricRangeMark(
         interactiveLineOptions,
         { ...defaultMetricRangeSpecOptions, displayOnHover: 'metric' }
       );
-      // line: hide-when-not-hovered (metric case)
-      expect(lineMark.encode?.update?.opacity).toHaveLength(5);
-      expect(lineMark.encode?.update?.opacity?.[4]).toEqual({ value: 0 });
-      // area: always visible
-      expect(areaMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
+      // line: show mode → 2 rules [{ test: combined, value: 1 }, { value: 0 }]
+      expect(lineMark.encode?.update?.opacity).toHaveLength(2);
+      expect(lineMark.encode?.update?.opacity?.[1]).toEqual({ value: 0 });
+      // area: always visible but fades on hover — fade mode → 4 rules (item hover, controlled table, selection, default)
+      expect(areaMark.encode?.update?.opacity).toHaveLength(4);
+      expect(areaMark.encode?.update?.opacity?.[3]).toEqual({ value: 1 });
     });
 
-    test('when displayOnHover is "range", line is always visible and area gets "range" opacity rules', () => {
+    test('when displayOnHover is "range", line fades and area uses show-mode opacity rules', () => {
       const [lineMark, areaMark] = getMetricRangeMark(
         interactiveLineOptions,
         { ...defaultMetricRangeSpecOptions, displayOnHover: 'range' }
       );
-      // line: always visible — fallback rule is { value: 1 }, not hidden
-      expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
-      // area: hide-when-not-hovered (range case)
-      expect(areaMark.encode?.update?.opacity).toHaveLength(5);
-      expect(areaMark.encode?.update?.opacity?.[4]).toEqual({ value: 0 });
+      // line: always visible but fades on hover — fade mode → 3 rules (item hover, controlled table, default)
+      expect(lineMark.encode?.update?.opacity).toHaveLength(3);
+      expect(lineMark.encode?.update?.opacity?.[2]).toEqual({ value: 1 });
+      // area: show mode → 2 rules
+      expect(areaMark.encode?.update?.opacity).toHaveLength(2);
+      expect(areaMark.encode?.update?.opacity?.[1]).toEqual({ value: 0 });
+    });
+
+    test('when displayOnHover is "range" with dimension interaction, area combined test includes dimension hover', () => {
+      const [, areaMark] = getMetricRangeMark(
+        { ...interactiveLineOptions, interactionMode: 'dimension' },
+        { ...defaultMetricRangeSpecOptions, displayOnHover: 'range' }
+      );
+      // show mode with dimension: 2 rules, combined test includes dimension hover
+      expect(areaMark.encode?.update?.opacity).toHaveLength(2);
+      expect(JSON.stringify(areaMark.encode?.update?.opacity?.[0])).toContain(
+        `dimensionHoverArea_${HOVERED_ITEM}`
+      );
+      expect(areaMark.encode?.update?.opacity?.[1]).toEqual({ value: 0 });
+    });
+
+    test('when displayOnHover is "metric" with dimension interaction, line combined test includes dimension hover', () => {
+      const [lineMark] = getMetricRangeMark(
+        { ...interactiveLineOptions, interactionMode: 'dimension' },
+        { ...defaultMetricRangeSpecOptions, displayOnHover: 'metric' }
+      );
+      // show mode with dimension: 2 rules, combined test includes dimension hover
+      expect(lineMark.encode?.update?.opacity).toHaveLength(2);
+      expect(JSON.stringify(lineMark.encode?.update?.opacity?.[0])).toContain(
+        `dimensionHoverArea_${HOVERED_ITEM}`
+      );
+      expect(lineMark.encode?.update?.opacity?.[1]).toEqual({ value: 0 });
+    });
+
+    test('when displayOnHover is true with dimension interaction, line and area include dimension hover signals', () => {
+      const [lineMark, areaMark] = getMetricRangeMark(
+        { ...interactiveLineOptions, interactionMode: 'dimension' },
+        { ...defaultMetricRangeSpecOptions, displayOnHover: true }
+      );
+      // line: show mode → combined includes dimension
+      expect(JSON.stringify(lineMark.encode?.update?.opacity?.[0])).toContain(
+        `dimensionHoverArea_${HOVERED_ITEM}`
+      );
+      // area: fade mode → dimension is first rule with value: 1
+      expect(areaMark.encode?.update?.opacity?.[0]).toHaveProperty(
+        'test',
+        `isValid(line0_dimensionHoverArea_${HOVERED_ITEM})`
+      );
     });
   });
 

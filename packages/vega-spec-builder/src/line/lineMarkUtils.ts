@@ -31,6 +31,7 @@ import {
   getColorProductionRule,
   getItemHoverArea,
   getLineWidthProductionRule,
+  getMetricRangeHoverVisibilityOpacityRules,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
   getVoronoiPath,
@@ -131,33 +132,32 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
 export const getLineOpacity = ({
   displayOnHover,
   comboSiblingNames,
+  hoverContext,
   interactiveMarkName,
   interactionMode,
+  isMetricRange,
   popoverMarkName,
   isHighlightedByGroup,
   highlightedItem,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  if ((!interactiveMarkName || displayOnHover === true) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
+  if (!interactiveMarkName && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
+
+  if (
+    isMetricRange &&
+    (displayOnHover === 'metric' || displayOnHover === true) &&
+    hoverContext &&
+    highlightedItem === undefined
+  ) {
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show');
+  }
+
+  if ((!interactiveMarkName || displayOnHover === true) && highlightedItem === undefined) {
+    return [DEFAULT_OPACITY_RULE];
+  }
+
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
-    if (displayOnHover === 'metric') {
-      const hoveredSeriesTest = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
-      const selectedSeriesTest = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
-      const controlledHighlightedTableTest = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
-      const controlledHighlightedSeriesTest = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
-      
-      strokeOpacityRules.push(
-        { test: hoveredSeriesTest, value: 1 },
-        { test: selectedSeriesTest, value: 1 },
-        { test: controlledHighlightedTableTest, value: 1 },
-        { test: controlledHighlightedSeriesTest, value: 1 },
-        { value: 0 },
-      );
-
-      return strokeOpacityRules;
-    }
-    
     if (interactionMode === INTERACTION_MODE.DIMENSION) {
       const dimensionHoverSignal = `${interactiveMarkName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
       strokeOpacityRules.push(
@@ -176,23 +176,20 @@ export const getLineOpacity = ({
         signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
       });
     } else {
+      const isHoveredSeries = `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+      const isControlledTableSeries = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
+      const isControlledSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
       strokeOpacityRules.push({
         test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        signal: `${isHoveredSeries} || ${isControlledTableSeries} || ${isControlledSeries} ? 1 : ${FADE_FACTOR}`,
       });
     }
   }
 
-  strokeOpacityRules.push(
-    {
-      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-      signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-    },
-    {
-      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-      signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-    }
-  );
+  strokeOpacityRules.push({
+    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+  });
 
   if (popoverMarkName) {
     strokeOpacityRules.push({

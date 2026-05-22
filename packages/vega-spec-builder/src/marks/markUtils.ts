@@ -27,23 +27,30 @@ import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
   COMPONENT_NAME,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   HOVER_SHAPE,
   HOVER_SHAPE_COUNT,
   HOVER_SIZE,
+  HOVERED_ITEM,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
+  SELECTED_SERIES,
+  SERIES_ID,
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import { HoverContext, getSeriesHoverPredicate } from './hoverContext';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
@@ -125,6 +132,56 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
       strokeJoin: { value: 'round' },
     };
   return {};
+};
+
+export type MetricRangeHoverVisibility = 'show' | 'fade';
+
+/**
+ * Opacity rules for metric range marks that are hidden or faded until hover.
+ * Uses HoverContext so every active signal namespace (parent item, parent dimension,
+ * trendline item, trendline dimension) is covered without per-consumer prefix logic.
+ *
+ * show: mark is invisible by default; appears at opacity 1 when any hover/selection matches.
+ * fade: mark is visible by default; fades non-hovered series to FADE_FACTOR when any signal fires.
+ */
+export const getMetricRangeHoverVisibilityOpacityRules = (
+  ctx: HoverContext,
+  visibility: MetricRangeHoverVisibility
+): ProductionRule<NumericValueRef> => {
+  const rules: Array<{ test?: string; signal?: string; value?: number }> = [];
+
+  if (visibility === 'show') {
+    const showTest = getSeriesHoverPredicate(ctx);
+    rules.push({ test: showTest, value: 1 }, { value: 0 });
+    return rules as ProductionRule<NumericValueRef>;
+  }
+
+  // fade mode: per-rule so each signal branch can produce a ternary signal expression
+  for (const prefix of ctx.dimensionPrefixes) {
+    rules.push({ test: `isValid(${prefix}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`, value: 1 });
+  }
+  for (const prefix of ctx.itemPrefixes) {
+    const isHoveredSeries = `${prefix}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+    const isControlledTableSeries = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
+    const isControlledSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
+    rules.push({
+      test: `isValid(${prefix}_${HOVERED_ITEM})`,
+      signal: `${isHoveredSeries} || ${isControlledTableSeries} || ${isControlledSeries} ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+  rules.push({
+    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+  });
+  if (ctx.hasSelection) {
+    rules.push({
+      test: `isValid(${SELECTED_SERIES})`,
+      signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+  rules.push({ value: 1 });
+
+  return rules as ProductionRule<NumericValueRef>;
 };
 
 /**

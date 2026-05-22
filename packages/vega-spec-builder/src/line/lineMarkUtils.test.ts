@@ -24,8 +24,9 @@ import {
 
 import type { Mark } from 'vega';
 
+import { getHoverContext } from '../marks/hoverContext';
 import { getLineHoverMarks, getLineMark, getLineOpacity, getLineYEncoding, getVoronoiYEncoding } from './lineMarkUtils';
-import { defaultLineMarkOptions } from './lineTestUtils';
+import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
   test('should return line mark', () => {
@@ -67,11 +68,20 @@ describe('getLineMark()', () => {
   });
 
   test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
+    const ctx = getHoverContext({ ...defaultLineOptions, chartTooltips: [{}] as [{}], interactiveMarkName: 'line0' });
     const lineMark = getLineMark(
-      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true },
+      {
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        displayOnHover: true,
+        isMetricRange: true,
+        hoverContext: ctx,
+      },
       'line0_facet'
     );
-    expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
+    // show mode: 2 rules [{ test: combined, value: 1 }, { value: 0 }]
+    expect(lineMark.encode?.update?.opacity).toHaveLength(2);
+    expect(lineMark.encode?.update?.opacity?.[1]).toEqual({ value: 0 });
   });
 
   test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
@@ -232,15 +242,11 @@ describe('getLineOpacity()', () => {
     expect(opacityRule).toEqual([
       {
         test: `isValid(line0_${HOVERED_ITEM})`,
-        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} || indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 || isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       {
         test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
         signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       { value: 1 },
     ]);
@@ -256,43 +262,89 @@ describe('getLineOpacity()', () => {
     expect(opacityRule).toEqual([
       {
         test: 'isValid(line0_hoveredItem)',
-        signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} || indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 || isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       {
         test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
         signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       { test: `isValid(${SELECTED_SERIES})`, signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}` },
       { value: 1 },
     ]);
   });
 
-  test('should include displayOnHover rules if displayOnHover is true', () => {
+  test('should return default opacity when displayOnHover is true without isMetricRange (e.g. trendlines)', () => {
     const opacityRule = getLineOpacity({
       ...defaultLineMarkOptions,
       interactiveMarkName: 'line0',
       displayOnHover: true,
     });
-    expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
+    expect(opacityRule).toEqual([{ value: 1 }]);
   });
 
-  test('returns opacity rules when displayOnHover is "metric" to show the line on hover', () => {
+  test('includes dimension hover rule when displayOnHover is "metric" and interactionMode is dimension', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}] as [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+    });
     const opacityRule = getLineOpacity({
       ...defaultLineMarkOptions,
       interactiveMarkName: 'line0',
       displayOnHover: 'metric',
+      interactionMode: 'dimension',
+      isMetricRange: true,
+      hoverContext: ctx,
     });
-    expect(opacityRule).toEqual([
-      { test: `isValid(line0_${HOVERED_ITEM}) && line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`, value: 1 },
-      { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-      { test: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`, value: 1 },
-      { test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-      { value: 0 },
-    ]);
+    // show mode: combined predicate includes dimension hover, 2 rules total
+    expect(opacityRule).toHaveLength(2);
+    expect(JSON.stringify(opacityRule[0])).toContain(`line0_dimensionHoverArea_${HOVERED_ITEM}`);
+    expect(opacityRule[1]).toEqual({ value: 0 });
+  });
+
+  test('includes dimension hover rule when displayOnHover is true and interactionMode is dimension', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}] as [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+    });
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: true,
+      interactionMode: 'dimension',
+      isMetricRange: true,
+      hoverContext: ctx,
+    });
+    // show mode: combined predicate includes dimension hover, 2 rules total
+    expect(opacityRule).toHaveLength(2);
+    expect(JSON.stringify(opacityRule[0])).toContain(`line0_dimensionHoverArea_${HOVERED_ITEM}`);
+    expect(opacityRule[1]).toEqual({ value: 0 });
+  });
+
+  test('returns opacity rules when displayOnHover is "metric" to show the line on hover', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}] as [{}],
+      interactiveMarkName: 'line0',
+    });
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: 'metric',
+      isMetricRange: true,
+      hoverContext: ctx,
+    });
+    // show mode: combined predicate in one test rule + { value: 0 }
+    expect(opacityRule).toHaveLength(2);
+    expect(opacityRule[0]).toHaveProperty('value', 1);
+    expect(JSON.stringify(opacityRule[0])).toContain(`line0_${HOVERED_ITEM}`);
+    expect(JSON.stringify(opacityRule[0])).toContain(SELECTED_SERIES);
+    expect(JSON.stringify(opacityRule[0])).toContain(CONTROLLED_HIGHLIGHTED_TABLE);
+    expect(JSON.stringify(opacityRule[0])).toContain(CONTROLLED_HIGHLIGHTED_SERIES);
+    expect(opacityRule[1]).toEqual({ value: 0 });
   });
 
 
@@ -303,7 +355,7 @@ describe('getLineOpacity()', () => {
       chartTooltips: [{}],
       isHighlightedByGroup: true,
     });
-    expect(opacityRule).toHaveLength(4);
+    expect(opacityRule).toHaveLength(3);
     expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
   });
 
@@ -322,6 +374,6 @@ describe('getLineOpacity()', () => {
       test: `isValid(line0_${HOVERED_ITEM})`,
       signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     });
-    expect(opacityRule).toHaveLength(5);
+    expect(opacityRule).toHaveLength(4);
   });
 });

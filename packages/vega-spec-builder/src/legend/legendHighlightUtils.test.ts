@@ -12,6 +12,7 @@
 import { Mark } from 'vega';
 
 import {
+  CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   HIGHLIGHTED_GROUP,
@@ -31,7 +32,7 @@ const defaultOpacityEncoding = {
   opacity: [
     {
       test: `isValid(legend0_${HOVERED_SERIES})`,
-      signal: `legend0_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      signal: `legend0_${HOVERED_SERIES} === datum.${SERIES_ID} || isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     },
   ],
 };
