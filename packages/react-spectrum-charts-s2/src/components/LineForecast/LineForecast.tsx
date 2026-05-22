@@ -10,14 +10,15 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './barAnnotationSpec.types';
-export * from './barDirectLabelSpec.types';
-export * from './dountSummarySpec.types';
-export * from './metricRangeSpec.types';
-export * from './scatterAnnotationSpec.types';
-export * from './scatterPathSpec.types';
-export * from './segmentLabelSpec.types';
-export * from './lineDirectLabelSpec.types';
-export * from './trendlineSpec.types';
-export * from './trendlineAnnotationSpec.types';
-export * from './lineForecastSpec.types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { LineForecastProps } from '../../types';
+
+const LineForecast: FC<LineForecastProps> = ({ metric, start, label }: LineForecastProps) => {
+  return null;
+};
+
+LineForecast.displayName = 'LineForecast';
+
+export { LineForecast };

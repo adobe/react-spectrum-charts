@@ -18,6 +18,7 @@ import {
   ChartPopoverOptions,
   DonutSummaryOptions,
   LegendOptions,
+  LineForecastOptions,
   LineDirectLabelOptions,
   LineOptions,
   MarkOptions,
@@ -35,6 +36,7 @@ import { ChartPopover } from '../components/ChartPopover';
 import { Legend } from '../components/Legend';
 import { Line } from '../components/Line';
 import { LineDirectLabel } from '../components/LineDirectLabel';
+import { LineForecast } from '../components/LineForecast';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
 import { Donut, DonutSummary, SegmentLabel } from '../rc';
@@ -48,6 +50,7 @@ import {
   DonutProps,
   DonutSummaryProps,
   LegendProps,
+  LineForecastProps,
   LineDirectLabelProps,
   LineProps,
   ReferenceLineProps,
@@ -73,6 +76,7 @@ export const childrenToOptions = (
   chartInspects: ChartInspectOptions[];
   chartPopovers: ChartPopoverOptions[];
   donutSummaries: DonutSummaryOptions[];
+  forecasts: LineForecastOptions[];
   legends: LegendOptions[];
   lineDirectLabels: LineDirectLabelOptions[];
   lines: LineOptions[];
@@ -88,6 +92,7 @@ export const childrenToOptions = (
   const chartInspects: ChartInspectOptions[] = [];
   const chartPopovers: ChartPopoverOptions[] = [];
   const donutSummaries: DonutSummaryOptions[] = [];
+  const forecasts: LineForecastOptions[] = [];
   const legends: LegendOptions[] = [];
   const lineDirectLabels: LineDirectLabelOptions[] = [];
   const lines: LineOptions[] = [];
@@ -138,6 +143,10 @@ export const childrenToOptions = (
         legends.push(getLegendOptions(child.props as LegendProps));
         break;
 
+      case LineForecast.displayName:
+        forecasts.push(child.props as LineForecastProps);
+        break;
+
       case LineDirectLabel.displayName:
         lineDirectLabels.push(child.props as LineDirectLabelProps);
         break;
@@ -172,6 +181,7 @@ export const childrenToOptions = (
     chartInspects,
     chartPopovers,
     donutSummaries,
+    forecasts,
     legends,
     lineDirectLabels,
     lines,

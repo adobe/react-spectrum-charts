@@ -255,6 +255,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
             chartInspects: [],
             color: 'series',
             dimension: 'datetime',
+            forecasts: [],
             hasOnClick: false,
             hasOnContextMenu: false,
             lineDirectLabels: [],

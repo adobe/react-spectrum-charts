@@ -39,6 +39,7 @@ export const defaultLineOptions: LineSpecOptions = {
   chartInspects: [],
   name: 'line0',
   dimension: DEFAULT_TIME_DIMENSION,
+  forecasts: [],
   gradient: false,
   hasOnClick: false,
   hasOnContextMenu: false,

@@ -20,6 +20,7 @@ export * from './EmptyState';
 export * from './Legend';
 export * from './Line';
 export * from './LineDirectLabel';
+export * from './LineForecast';
 export * from './LoadingState';
 export * from './ReferenceLine';
 export * from './Title';

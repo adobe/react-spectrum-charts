@@ -15,6 +15,7 @@ import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';
+import { LineForecast } from '../components/LineForecast';
 import { getLineOptions } from './lineAdapter';
 
 describe('getLineOptions()', () => {
@@ -40,6 +41,18 @@ describe('getLineOptions()', () => {
   test('should set hasOnContextMenu to true if onContextMenu prop exists and is not undefined', () => {
     expect(getLineOptions({ onContextMenu: () => {} }).hasOnContextMenu).toBe(true);
     expect(getLineOptions({ onContextMenu: undefined }).hasOnContextMenu).toBe(false);
+  });
+  it('should convert LineForecast children to forecasts array', () => {
+    const options = getLineOptions({
+      children: [createElement(LineForecast, { metric: 'forecastValue', start: 1725148800000 })],
+    });
+    expect(options.forecasts).toHaveLength(1);
+    expect(options.forecasts?.[0]).toHaveProperty('metric', 'forecastValue');
+    expect(options.forecasts?.[0]).toHaveProperty('start', 1725148800000);
+  });
+  it('should return empty forecasts array when no LineForecast children', () => {
+    const options = getLineOptions({});
+    expect(options.forecasts).toHaveLength(0);
   });
   it('should pass through included props', () => {
     const options = getLineOptions({ color: DEFAULT_COLOR });

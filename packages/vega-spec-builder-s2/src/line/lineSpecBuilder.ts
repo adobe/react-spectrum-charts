@@ -36,6 +36,7 @@ import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
+import { getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, getLineForecastBoundaryMark, getLineForecastLabelMarks, getLineForecastSpecOptions } from '../lineForecast';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -64,6 +65,7 @@ export const addLine = produce<
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
+      forecasts = [],
       gradient = false,
       hasOnClick = false,
       hasOnContextMenu = false,
@@ -93,6 +95,7 @@ export const addLine = produce<
       colorScheme,
       dimension,
       dualMetricAxis,
+      forecasts,
       gradient,
       hasOnClick,
       hasOnContextMenu,
@@ -138,7 +141,7 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { alternateSegmentKey, chartInspects, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
+  const { alternateSegmentKey, chartInspects, dimension, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, staticPoint } =
     options;
   const tableData = getTableData(data);
   if (scaleType === 'time') {
@@ -149,6 +152,15 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
     // time data was transformed above, so we need to use the transformed dimension
     const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+    data.push(...getAlternateSegmentData(name, dimSortField));
+  }
+  if (!alternateSegmentKey && forecasts.length > 0) {
+    tableData.transform = tableData.transform ?? [];
+    const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+    tableData.transform.push(
+      getForecastAlternateFlagTransform(name, dimension, forecasts[0].start),
+      getForecastEffectiveValueTransform(name, metric, forecasts)
+    );
     data.push(...getAlternateSegmentData(name, dimSortField));
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
@@ -241,11 +253,30 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
   const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
+  const forecasts = options.forecasts ?? [];
+  const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
   const { facets } = getFacetsFromOptions({ color, lineType, opacity });
-  // when alternateSegmentKey is set, facet by segmentId so each contiguous run gets its own path with its own strokeDash
-  const facetData = alternateSegmentKey ? `${name}_with_bridges` : FILTERED_TABLE;
-  const facetGroupby = alternateSegmentKey ? [...facets, `${name}_segmentId`] : facets;
+  // when alternateSegmentKey or forecasts are active, facet by segmentId so each contiguous run
+  // gets its own path with its own strokeDash
+  const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
+  const facetData = usesAlternateSegments ? `${name}_with_bridges` : FILTERED_TABLE;
+  const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
+
+  // when forecasts are present, override metric to effectiveValue and set alternateSegmentKey
+  // to trigger getAlternateSegmentStrokeDash in getLineMark
+  const markOptions = hasForecast
+    ? {
+        ...options,
+        metric: `${name}_effectiveValue`,
+        alternateSegmentKey: `${name}_alternateFlag`,
+        }
+    : options;
+
+  // boundary rules are drawn behind the main line group
+  for (const [i, forecast] of forecasts.entries()) {
+    marks.push(getLineForecastBoundaryMark(getLineForecastSpecOptions(forecast, i, options)));
+  }
 
   marks.push({
     name: `${name}_group`,
@@ -258,24 +289,31 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
       },
     },
     marks: [
-      ...(gradient ? [getLineGradientMark(options, `${name}_facet`)] : []),
-      getLineMark(options, `${name}_facet`),
+      ...(gradient ? [getLineGradientMark(markOptions, `${name}_facet`)] : []),
+      getLineMark(markOptions, `${name}_facet`),
     ],
   });
   if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
   marks.push(...getMetricRangeGroupMarks(options));
   if (isInteractive(options) || highlightedItem !== undefined) {
-    marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForInspect`));
+    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
   }
   marks.push(...getTrendlineMarks(options));
   for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
     const specOpts = getLineDirectLabelSpecOptions(label, i, options);
     marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));
   }
+  // forecast labels are drawn last so they appear on top of other marks
+  for (const [i, forecast] of forecasts.entries()) {
+    marks.push(...getLineForecastLabelMarks(getLineForecastSpecOptions(forecast, i, options)));
+  }
 });
 
 const getMetricKeys = (lineOptions: LineSpecOptions) => {
-  const metricKeys = [lineOptions.metric];
+  const hasForecast = (lineOptions.forecasts ?? []).length > 0 && !lineOptions.alternateSegmentKey;
+  // when forecasts are present, use effectiveValue for the y-scale domain since it covers both
+  // the historical metric and forecast metric(s) in a single unified field
+  const metricKeys = hasForecast ? [`${lineOptions.name}_effectiveValue`] : [lineOptions.metric];
 
   // metric range fields should be added if metric-axis will be scaled to fit
   const metricRanges = getMetricRanges(lineOptions);

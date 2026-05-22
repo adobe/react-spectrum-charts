@@ -440,6 +440,46 @@ describe('lineSpecBuilder', () => {
       expect(resultData.find((d) => d.name === 'line0_bridge')).toBeUndefined();
       expect(resultData.find((d) => d.name === 'line0_with_bridges')).toBeUndefined();
     });
+
+    test('with forecasts adds alternateFlag and effectiveValue transforms to table and 3 segment data sources', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')).toBe(true);
+      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(true);
+
+      const expectedSegmentData = getAlternateSegmentData('line0', `${DEFAULT_TIME_DIMENSION}0`);
+      expect(resultData.find((d) => d.name === 'line0_segmented')).toStrictEqual(expectedSegmentData[0]);
+      expect(resultData.find((d) => d.name === 'line0_bridge')).toStrictEqual(expectedSegmentData[1]);
+      expect(resultData.find((d) => d.name === 'line0_with_bridges')).toStrictEqual(expectedSegmentData[2]);
+    });
+
+    test('with forecasts effectiveValue uses isValid to choose between main metric and forecast metric', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      const effectiveValueTransform = tableData?.transform?.find(
+        (t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue'
+      );
+      expect(effectiveValueTransform).toHaveProperty(
+        'expr',
+        "isValid(datum['value']) ? datum['value'] : datum['forecastValue']"
+      );
+    });
+
+    test('with forecasts and alternateSegmentKey set, forecasts are skipped', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(false);
+    });
   });
 
   describe('setScales()', () => {
@@ -480,6 +520,19 @@ describe('lineSpecBuilder', () => {
           metricRanges: [{ scaleAxisToFit: true, metricEnd, metricStart }],
         })
       ).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
+    });
+
+    test('with forecasts uses effectiveValue field for the y-scale domain', () => {
+      const scales = setScales(startingSpec.scales ?? [], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const yScale = scales.find((s) => s.name === 'yLinear');
+      expect(yScale).toBeDefined();
+      expect(yScale?.domain).toHaveProperty('fields');
+      const fields = (yScale?.domain as { fields: string[] }).fields;
+      expect(fields).toContain('line0_effectiveValue');
+      expect(fields).not.toContain('value');
     });
   });
 
@@ -656,6 +709,66 @@ describe('lineSpecBuilder', () => {
       const groupMark = marks[0] as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
       const strokeDash = groupMark.marks[0].encode.enter.strokeDash;
       expect(strokeDash).toHaveProperty('signal');
+    });
+
+    test('with forecasts uses line0_with_bridges as facet data', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const groupMark = marks.find((m) => m.name === 'line0_group') as { from: { facet: { data: string } } };
+      expect(groupMark?.from?.facet?.data).toBe('line0_with_bridges');
+    });
+
+    test('with forecasts extends facet groupby with segmentId', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const groupMark = marks.find((m) => m.name === 'line0_group') as { from: { facet: { groupby: string[] } } };
+      expect(groupMark?.from?.facet?.groupby).toContain('line0_segmentId');
+    });
+
+    test('with forecasts pushes boundary rule before the line group', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const boundaryIndex = marks.findIndex((m) => m.name === 'line0_forecast0_boundary');
+      const groupIndex = marks.findIndex((m) => m.name === 'line0_group');
+      expect(boundaryIndex).toBeGreaterThanOrEqual(0);
+      expect(boundaryIndex).toBeLessThan(groupIndex);
+    });
+
+    test('with forecasts pushes label after the line group', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const labelIndex = marks.findIndex((m) => m.name === 'line0_forecast0_label');
+      const groupIndex = marks.findIndex((m) => m.name === 'line0_group');
+      expect(labelIndex).toBeGreaterThan(groupIndex);
+    });
+
+    test('with forecasts line mark strokeDash uses a signal (dotted for forecast)', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const groupMark = marks.find((m) => m.name === 'line0_group') as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
+      expect(groupMark?.marks?.[0]?.encode?.enter?.strokeDash).toHaveProperty('signal');
+    });
+
+    test('with forecasts line mark y-encoding uses effectiveValue field', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const groupMark = marks.find((m) => m.name === 'line0_group') as { marks: { encode: { enter: { y: { field: string }[] } } }[] };
+      const yEncoding = groupMark?.marks?.[0]?.encode?.enter?.y;
+      expect(yEncoding).toBeDefined();
+      expect(Array.isArray(yEncoding)).toBe(true);
+      expect(yEncoding?.[0]).toHaveProperty('field', 'line0_effectiveValue');
     });
   });
 
