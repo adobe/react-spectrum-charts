@@ -118,16 +118,10 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     highlightedItem,
     name,
   } = areaOptions;
-  // if the range area is hidden until hover, use opacity to show/hide it based on hover state
   if (isMetricRange && displayOnHover === 'range' && hoverContext) {
     return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show');
   }
-  // if metric ranges only display when hovering, fade until the series is highlighted
-  if (isMetricRange && displayOnHover === true && hoverContext) {
-    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'fade');
-  }
-  // 'metric' means only the line is shown on hover — area is always visible but should fade on hover
-  if (isMetricRange && displayOnHover === 'metric' && hoverContext) {
+  if (isMetricRange && (displayOnHover === true || displayOnHover === 'metric') && hoverContext) {
     return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'fade');
   }
 

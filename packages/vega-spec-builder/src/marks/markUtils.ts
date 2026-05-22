@@ -136,14 +136,6 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
 
 export type MetricRangeHoverVisibility = 'show' | 'fade';
 
-/**
- * Opacity rules for metric range marks that are hidden or faded until hover.
- * Uses HoverContext so every active signal namespace (parent item, parent dimension,
- * trendline item, trendline dimension) is covered without per-consumer prefix logic.
- *
- * show: mark is invisible by default; appears at opacity 1 when any hover/selection matches.
- * fade: mark is visible by default; fades non-hovered series to FADE_FACTOR when any signal fires.
- */
 export const getMetricRangeHoverVisibilityOpacityRules = (
   ctx: HoverContext,
   visibility: MetricRangeHoverVisibility
@@ -156,7 +148,6 @@ export const getMetricRangeHoverVisibilityOpacityRules = (
     return rules as ProductionRule<NumericValueRef>;
   }
 
-  // fade mode: per-rule so each signal branch can produce a ternary signal expression
   for (const prefix of ctx.dimensionPrefixes) {
     rules.push({ test: `isValid(${prefix}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`, value: 1 });
   }

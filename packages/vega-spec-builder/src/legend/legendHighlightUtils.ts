@@ -46,24 +46,19 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
       }
       const rules = update.opacity as Array<Record<string, unknown>>;
       const lastRule = rules[rules.length - 1];
-      // Show-mode marks end with an unconditional { value: 0 } fallback. Inserting a fade rule
-      // before it would cause non-hovered series to appear at FADE_FACTOR instead of staying hidden.
-      // Instead, extend the show predicate to include the relevant hover signal.
+      // Show-mode marks end with { value: 0 }; inserting a fade rule before it shows non-hovered
+      // series at FADE_FACTOR instead of keeping them hidden. Extend the show predicate instead.
       const isShowMode = lastRule !== undefined && lastRule.value === 0 && !('test' in lastRule);
       if (isShowMode) {
         if (!controlled && !keys?.length) {
-          // Extend the show predicate with the legend hover signal so hovering series A in the
-          // legend reveals series A's metric range while keeping other series hidden.
           const showRule = rules[0];
           if (showRule && 'test' in showRule) {
             showRule.test = `${showRule.test} || isValid(${legendName}_${HOVERED_SERIES}) && ${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID}`;
           }
         }
-        // Controlled pass: the show predicate already includes controlledHighlightedSeries.
         return;
       }
 
-      // Fade mode: insert the highlight rule second-to-last.
       const highlightOpacityRule = getHighlightOpacityRule(legendName, controlled, keys);
       const opacityRuleInsertIndex = Math.max(update.opacity.length - 1, 0);
       update.opacity.splice(opacityRuleInsertIndex, 0, highlightOpacityRule);
