@@ -522,6 +522,15 @@ describe('lineSpecBuilder', () => {
       ).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
     });
 
+    test('with metricAxis adds a named metric scale', () => {
+      const scales = setScales(startingSpec.scales ?? [], {
+        ...defaultLineOptions,
+        metricAxis: 'myAxis',
+      });
+      const namedScale = scales.find((s) => s.name === 'myAxis');
+      expect(namedScale).toBeDefined();
+    });
+
     test('with forecasts uses effectiveValue field for the y-scale domain', () => {
       const scales = setScales(startingSpec.scales ?? [], {
         ...defaultLineOptions,

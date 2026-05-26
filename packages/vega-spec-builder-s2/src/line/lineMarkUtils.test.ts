@@ -251,6 +251,28 @@ describe('getLineGradientMark()', () => {
     expect(fillOpacity).toEqual({ signal: `scale('${OPACITY_SCALE}', datum.weight) * 0.2` });
   });
 
+  test('should use signal-based fillOpacity for alternate segments with static opacity', () => {
+    const gradientMark = getLineGradientMark(
+      { ...defaultLineMarkOptions, alternateSegmentKey: 'line0_alternateFlag' },
+      'line0_facet'
+    );
+    const fillOpacity = gradientMark.encode?.enter?.fillOpacity as { signal: string };
+    expect(fillOpacity.signal).toContain('line0_alternateFlag');
+    expect(fillOpacity.signal).toContain('0.08');
+    expect(fillOpacity.signal).toContain('0.2');
+  });
+
+  test('should use signal-based fillOpacity for alternate segments with dynamic opacity facet', () => {
+    const gradientMark = getLineGradientMark(
+      { ...defaultLineMarkOptions, alternateSegmentKey: 'line0_alternateFlag', opacity: 'weight' },
+      'line0_facet'
+    );
+    const fillOpacity = gradientMark.encode?.enter?.fillOpacity as { signal: string };
+    expect(fillOpacity.signal).toContain('line0_alternateFlag');
+    expect(fillOpacity.signal).toContain(`scale('${OPACITY_SCALE}', datum.weight) * 0.08`);
+    expect(fillOpacity.signal).toContain(`scale('${OPACITY_SCALE}', datum.weight) * 0.2`);
+  });
+
   test('should include hover opacity rules when interactive', () => {
     const gradientMark = getLineGradientMark(
       { ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] },

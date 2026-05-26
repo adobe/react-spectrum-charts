@@ -22,14 +22,11 @@ export const getForecastAlternateFlagTransform = (name: string, dimension: strin
   expr: `datum['${dimension}'] >= ${JSON.stringify(start)}`,
 });
 
-export const getForecastEffectiveValueTransform = (name: string, metric: string, forecasts: LineForecastOptions[]): FormulaTransform => {
-  let expr = `datum['${forecasts[forecasts.length - 1].metric}']`;
-  for (let i = forecasts.length - 2; i >= 0; i--) {
-    expr = `isValid(datum['${forecasts[i].metric}']) ? datum['${forecasts[i].metric}'] : ${expr}`;
-  }
-  expr = `isValid(datum['${metric}']) ? datum['${metric}'] : ${expr}`;
-  return { type: 'formula', as: `${name}_effectiveValue`, expr };
-};
+export const getForecastEffectiveValueTransform = (name: string, metric: string, forecastMetric: string): FormulaTransform => ({
+  type: 'formula',
+  as: `${name}_effectiveValue`,
+  expr: `isValid(datum['${metric}']) ? datum['${metric}'] : datum['${forecastMetric}']`,
+});
 
 export const getLineForecastSpecOptions = (
   forecast: LineForecastOptions,

@@ -159,7 +159,7 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
     tableData.transform.push(
       getForecastAlternateFlagTransform(name, dimension, forecasts[0].start),
-      getForecastEffectiveValueTransform(name, metric, forecasts)
+      getForecastEffectiveValueTransform(name, metric, forecasts[0].metric)
     );
     data.push(...getAlternateSegmentData(name, dimSortField));
   }
