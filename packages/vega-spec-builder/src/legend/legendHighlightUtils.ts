@@ -28,42 +28,33 @@ import { flattenMarks } from '../marks/markUtils';
 export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?: string[], controlled = false) => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
-  const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
-  seriesMarks.forEach((mark) => {
-    // need to drill down to the prop we need to set and add missing properties if needed
-    if (!mark.encode) {
-      mark.encode = { update: {} };
-    }
-    if (!mark.encode.update) {
-      mark.encode.update = {};
-    }
-    const { update } = mark.encode;
-    const { opacity } = update;
+  flatMarks.filter(markUsesSeriesColorScale).forEach((mark) => applyLegendOpacityToMark(mark, legendName, keys, controlled));
+};
 
-    if (opacity !== undefined) {
-      if (!Array.isArray(update.opacity)) {
-        update.opacity = [];
-      }
-      const rules = update.opacity as Array<Record<string, unknown>>;
-      const lastRule = rules[rules.length - 1];
-      // Show-mode marks end with { value: 0 }; inserting a fade rule before it shows non-hovered
-      // series at FADE_FACTOR instead of keeping them hidden. Extend the show predicate instead.
-      const isShowMode = lastRule !== undefined && lastRule.value === 0 && !('test' in lastRule);
-      if (isShowMode) {
-        if (!controlled && !keys?.length) {
-          const showRule = rules[0];
-          if (showRule && 'test' in showRule) {
-            showRule.test = `${showRule.test} || isValid(${legendName}_${HOVERED_SERIES}) && ${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID}`;
-          }
-        }
-        return;
-      }
+const applyLegendOpacityToMark = (mark: Mark, legendName: string, keys?: string[], controlled = false) => {
+  if (!mark.encode) mark.encode = { update: {} };
+  if (!mark.encode.update) mark.encode.update = {};
+  const { update } = mark.encode;
+  if (update.opacity === undefined) return;
+  if (!Array.isArray(update.opacity)) update.opacity = [];
 
-      const highlightOpacityRule = getHighlightOpacityRule(legendName, controlled, keys);
-      const opacityRuleInsertIndex = Math.max(update.opacity.length - 1, 0);
-      update.opacity.splice(opacityRuleInsertIndex, 0, highlightOpacityRule);
+  const rules = update.opacity as Array<Record<string, unknown>>;
+  const lastRule = rules.at(-1);
+  // Show-mode marks end with { value: 0 }; inserting a fade rule before it shows non-hovered
+  // series at FADE_FACTOR instead of keeping them hidden. Extend the show predicate instead.
+  const isShowMode = lastRule?.value === 0 && !('test' in lastRule);
+  if (isShowMode) {
+    if (!controlled && !keys?.length) {
+      const showRule = rules[0];
+      if (showRule && 'test' in showRule) {
+        showRule.test = `${showRule.test} || isValid(${legendName}_${HOVERED_SERIES}) && ${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID}`;
+      }
     }
-  });
+    return;
+  }
+
+  const highlightOpacityRule = getHighlightOpacityRule(legendName, controlled, keys);
+  update.opacity.splice(Math.max(update.opacity.length - 1, 0), 0, highlightOpacityRule);
 };
 
 export const getHighlightOpacityRule = (

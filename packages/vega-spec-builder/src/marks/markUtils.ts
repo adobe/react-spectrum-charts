@@ -145,7 +145,7 @@ export const getMetricRangeHoverVisibilityOpacityRules = (
   if (visibility === 'show') {
     const showTest = getSeriesHoverPredicate(ctx);
     rules.push({ test: showTest, value: 1 }, { value: 0 });
-    return rules as ProductionRule<NumericValueRef>;
+    return rules;
   }
 
   for (const prefix of ctx.dimensionPrefixes) {
@@ -172,7 +172,7 @@ export const getMetricRangeHoverVisibilityOpacityRules = (
   }
   rules.push({ value: 1 });
 
-  return rules as ProductionRule<NumericValueRef>;
+  return rules;
 };
 
 /**
