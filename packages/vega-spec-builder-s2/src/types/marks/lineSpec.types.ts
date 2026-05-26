@@ -24,6 +24,7 @@ import {
   PartiallyRequired,
   ScaleType,
 } from '../specUtil.types';
+import { LineForecastOptions } from './supplemental/lineForecastSpec.types';
 import { LineDirectLabelOptions } from './supplemental/lineDirectLabelSpec.types';
 import { MetricRangeOptions } from './supplemental/metricRangeSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
@@ -96,6 +97,7 @@ export interface LineOptions {
   // children
   chartPopovers?: ChartPopoverOptions[];
   chartInspects?: ChartInspectOptions[];
+  forecasts?: LineForecastOptions[];
   lineDirectLabels?: LineDirectLabelOptions[];
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
@@ -106,6 +108,7 @@ type LineOptionsWithDefaults =
   | 'chartInspects'
   | 'color'
   | 'dimension'
+  | 'forecasts'
   | 'gradient'
   | 'hasOnClick'
   | 'hasOnContextMenu'

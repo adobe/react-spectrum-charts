@@ -34,6 +34,7 @@ const defaultLineOptions: LineSpecOptions = {
 	color: DEFAULT_COLOR,
 	colorScheme: DEFAULT_COLOR_SCHEME,
 	dimension: DEFAULT_TIME_DIMENSION,
+	forecasts: [],
 	gradient: false,
 	hasOnClick: false,
 	hasOnContextMenu: false,

@@ -10,14 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './barAnnotationSpec.types';
-export * from './barDirectLabelSpec.types';
-export * from './dountSummarySpec.types';
-export * from './metricRangeSpec.types';
-export * from './scatterAnnotationSpec.types';
-export * from './scatterPathSpec.types';
-export * from './segmentLabelSpec.types';
-export * from './lineDirectLabelSpec.types';
-export * from './trendlineSpec.types';
-export * from './trendlineAnnotationSpec.types';
-export * from './lineForecastSpec.types';
+import { getForecastEffectiveValueTransform } from './lineForecastUtils';
+
+describe('getForecastEffectiveValueTransform', () => {
+  test('builds a formula that uses the historical metric when valid, falling back to forecast', () => {
+    const transform = getForecastEffectiveValueTransform('line0', 'value', 'forecastValue');
+    expect(transform.as).toBe('line0_effectiveValue');
+    expect(transform.expr).toBe("isValid(datum['value']) ? datum['value'] : datum['forecastValue']");
+  });
+});

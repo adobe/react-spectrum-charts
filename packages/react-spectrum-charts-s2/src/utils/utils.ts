@@ -35,6 +35,7 @@ import {
   Legend,
   Line,
   LineDirectLabel,
+  LineForecast,
   ReferenceLine,
   Title,
 } from '../components';
@@ -52,6 +53,7 @@ import {
   DonutElement,
   DonutSummaryElement,
   LegendElement,
+  LineForecastElement,
   LineDirectLabelElement,
   LineElement,
   SegmentLabelElement,
@@ -63,6 +65,7 @@ type MarkChildElement =
   | ChartInspectElement
   | ChartPopoverElement
   | DonutSummaryElement
+  | LineForecastElement
   | LineDirectLabelElement
   | SegmentLabelElement;
 type RscElement =
@@ -117,6 +120,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     Legend.displayName,
     Line.displayName,
     LineDirectLabel.displayName,
+    LineForecast.displayName,
     ReferenceLine.displayName,
     SegmentLabel.displayName,
     Title.displayName,
@@ -149,6 +153,7 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
     ChartInspect.displayName,
     ChartPopover.displayName,
     DonutSummary.displayName,
+    LineForecast.displayName,
     LineDirectLabel.displayName,
     SegmentLabel.displayName,
   ]);
