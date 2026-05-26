@@ -626,3 +626,58 @@ describe('lineSpecBuilder', () => {
     });
   });
 });
+
+/**
+ * Cell D integration: both parent tooltip + trendline tooltip, dimension mode, MetricRange displayOnHover.
+ * Verifies that addLine produces a self-consistent spec — every data source referenced by a mark
+ * exists in spec.data, and every signal referenced in mark encodings exists in spec.signals.
+ * This exercises the full pipeline: addData → addSignals → setScales → addLineMarks.
+ */
+describe('Cell D integration: MetricRange + Trendline both interactive, dimension mode', () => {
+  const cellDOptions = {
+    ...defaultLineOptions,
+    chartTooltips: [{}],
+    interactionMode: 'dimension' as const,
+    interactiveMarkName: 'line0',
+    metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'metric', displayOnHover: true as const }],
+    trendlines: [{ method: 'linear' as const, chartTooltips: [{}] }],
+  };
+
+  test('addData includes metric range highlightedData and trendline data sources', () => {
+    // addData requires TABLE to already exist; use startingSpec.data as the base.
+    const data = addData(startingSpec.data ?? [], cellDOptions, {});
+    const dataNames = data.map((d) => d.name);
+    expect(dataNames).toContain('line0MetricRange0_highlightedData');
+    expect(dataNames).toContain('line0Trendline_highlightedData');
+  });
+
+  test('addSignals includes all four hover signals for Cell D', () => {
+    const signals = addSignals(defaultSignals, cellDOptions);
+    const signalNames = signals.map((s) => s.name);
+    expect(signalNames).toContain(`line0_${HOVERED_ITEM}`);
+    expect(signalNames).toContain(`line0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`);
+    expect(signalNames).toContain(`line0Trendline_${HOVERED_ITEM}`);
+    expect(signalNames).toContain(`line0Trendline_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`);
+  });
+
+  test('addLine does not throw', () => {
+    expect(() => addLine(startingSpec, cellDOptions)).not.toThrow();
+  });
+
+  test('produced spec contains all expected top-level data sources', () => {
+    const spec = addLine(startingSpec, cellDOptions);
+    const dataNames = (spec.data ?? []).map((d: Data) => d.name);
+
+    // MetricRange displayOnHover=true → highlightedData must exist
+    expect(dataNames).toContain('line0MetricRange0_highlightedData');
+    // Trendline with tooltip → highlightedData for hover marks
+    expect(dataNames).toContain('line0Trendline_highlightedData');
+    // Trendline linear regression
+    expect(dataNames).toContain('line0Trendline0_highResolutionData');
+    // Dimension mode → uniqueXValues for xAxisVoronoi
+    expect(dataNames).toContain('line0_uniqueXValues');
+    expect(dataNames).toContain('line0Trendline_uniqueXValues');
+    // Parent highlight data
+    expect(dataNames).toContain('line0_highlightedData');
+  });
+});

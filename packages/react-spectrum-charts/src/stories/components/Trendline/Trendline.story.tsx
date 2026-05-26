@@ -141,6 +141,60 @@ const TrendlineWithDialogsOnParentStory: StoryFn<typeof Trendline> = (args): Rea
   );
 };
 
+// Matrix cell E: trendline owns tooltip (no parent tooltip), item mode.
+// Trendline has displayOnHover=true — it should appear when hovering over a trendline point.
+// Previously the filter expr used the wrong namespace, so the trendline never appeared.
+const TrendlineOnlyTooltipWithDisplayOnHoverStory: StoryFn<typeof Trendline> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <Trendline {...args}>
+          <ChartTooltip>
+            {(item: Datum) => (
+              <>
+                <div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+                <div>Line value: {item.value}</div>
+              </>
+            )}
+          </ChartTooltip>
+        </Trendline>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
+// Matrix cell B: both parent and trendline own tooltip, item mode.
+// Trendline has displayOnHover=true — it appears on either parent or trendline hover.
+const BothTooltipsWithDisplayOnHoverStory: StoryFn<typeof Trendline> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <ChartTooltip>
+          {(item: Datum) => <div>Line value: {item.value}</div>}
+        </ChartTooltip>
+        <Trendline {...args}>
+          <ChartTooltip>
+            {(item: Datum) => (
+              <>
+                <div>Trendline value: {item[TRENDLINE_VALUE]}</div>
+                <div>Line value: {item.value}</div>
+              </>
+            )}
+          </ChartTooltip>
+        </Trendline>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
 const ScatterStory: StoryFn<typeof Trendline> = (args): ReactElement => {
   const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
@@ -250,6 +304,28 @@ DisplayOnHover.args = {
   color: 'gray-600',
 };
 
+// Matrix cell E — hover over any trendline point: the trendline appears (trendline-only tooltip).
+const DisplayOnHoverTrendlineOnly = bindWithProps(TrendlineOnlyTooltipWithDisplayOnHoverStory);
+DisplayOnHoverTrendlineOnly.args = {
+  displayOnHover: true,
+  method: 'linear',
+  lineType: 'solid',
+  lineWidth: 'S',
+  color: 'gray-600',
+  highlightRawPoint: true,
+};
+
+// Matrix cell B — trendline appears on either parent or trendline hover (both own tooltip, item mode).
+const DisplayOnHoverBothTooltips = bindWithProps(BothTooltipsWithDisplayOnHoverStory);
+DisplayOnHoverBothTooltips.args = {
+  displayOnHover: true,
+  method: 'linear',
+  lineType: 'solid',
+  lineWidth: 'S',
+  color: 'gray-600',
+  highlightRawPoint: true,
+};
+
 const Orientation = bindWithProps(ScatterStory);
 Orientation.args = {
   orientation: 'vertical',
@@ -292,6 +368,8 @@ export {
   DimensionExtent,
   DimensionRange,
   DisplayOnHover,
+  DisplayOnHoverBothTooltips,
+  DisplayOnHoverTrendlineOnly,
   ExcludeSeriesFromTrendline,
   HidePartialWindows,
   Orientation,

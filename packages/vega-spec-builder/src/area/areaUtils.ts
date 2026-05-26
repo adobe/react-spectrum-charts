@@ -13,7 +13,6 @@ import { AreaMark, NumericValueRef, ProductionRule } from 'vega';
 
 import {
   CONTROLLED_HIGHLIGHTED_SERIES,
-  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
@@ -26,15 +25,18 @@ import {
   getBorderStrokeEncodings,
   getColorProductionRule,
   getCursor,
+  getMetricRangeHoverVisibilityOpacityRules,
   getTooltip,
   isInteractive,
 } from '../marks/markUtils';
+import type { HoverContext } from '../marks/hoverContext';
 import {
   ChartPopoverOptions,
   ChartTooltipOptions,
   ColorFacet,
   ColorScheme,
   HighlightedItem,
+  InteractionMode,
   ScaleType,
 } from '../types';
 
@@ -44,7 +46,10 @@ export interface AreaMarkOptions {
   dimension: string;
   displayOnHover?: boolean | 'metric' | 'range';
   highlightedItem?: HighlightedItem;
+  /** Resolved hover context — required when isMetricRange && displayOnHover is set. */
+  hoverContext?: HoverContext;
   interactiveMarkName?: string;
+  interactionMode?: InteractionMode;
   isHighlightedByGroup?: boolean;
   isMetricRange?: boolean;
   isStacked: boolean;
@@ -107,47 +112,17 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
   const {
     chartPopovers,
     displayOnHover,
-    interactiveMarkName,
+    hoverContext,
     isHighlightedByGroup,
     isMetricRange,
     highlightedItem,
     name,
   } = areaOptions;
-  // if the range area is hidden until hover, use opacity to show/hide it based on series highlight state
-  if (isMetricRange && displayOnHover === 'range') {
-    const hoveredSeriesTest = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
-    const selectedSeriesTest = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
-    const controlledHighlightedTableTest = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
-    const controlledHighlightedSeriesTest = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
-    return [
-      { test: hoveredSeriesTest, value: 1 },
-      { test: selectedSeriesTest, value: 1 },
-      { test: controlledHighlightedTableTest, value: 1 },
-      { test: controlledHighlightedSeriesTest, value: 1 },
-      { value: 0 },
-    ];
+  if (isMetricRange && displayOnHover === 'range' && hoverContext) {
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show');
   }
-  // if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
-  if (isMetricRange && displayOnHover === true) {
-    const rules: ProductionRule<NumericValueRef> = [
-      {
-        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-      },
-      { test: `isValid(${SELECTED_SERIES})`, signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}` },
-      { value: 1 },
-    ];
-    if (interactiveMarkName) {
-      rules.unshift({
-        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      });
-    }
-    return rules;
+  if (isMetricRange && (displayOnHover === true || displayOnHover === 'metric') && hoverContext) {
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'fade');
   }
 
   if (!isInteractive(areaOptions) && !highlightedItem) {

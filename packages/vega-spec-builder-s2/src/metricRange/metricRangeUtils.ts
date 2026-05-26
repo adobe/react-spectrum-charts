@@ -108,7 +108,7 @@ export const getMetricRangeMark = (
     metricStart: metricRangeOptions.metricStart,
     metricEnd: metricRangeOptions.metricEnd,
     isStacked: false,
-    scaleType: 'time',
+    scaleType: lineMarkOptions.scaleType,
     dimension: lineMarkOptions.dimension,
     isMetricRange: true,
     parentName: lineMarkOptions.name,

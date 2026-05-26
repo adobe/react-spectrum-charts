@@ -314,6 +314,7 @@ const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRa
     name: `${name}Trendline`,
     chartTooltips: trendlines.flatMap((trendline) => trendline.chartTooltips),
     metric: TRENDLINE_VALUE,
+    metricRanges: [],
   });
 
   return {

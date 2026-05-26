@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Content } from '@adobe/react-spectrum';
 
 import { Chart } from '../../../Chart';
-import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange } from '../../../components';
+import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange, Trendline } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
@@ -183,6 +183,71 @@ const dialogContent = (datum) => (
   </Content>
 );
 
+const MetricRangeWithTooltipDimensionStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series" interactionMode="dimension">
+        <MetricRange {...args} />
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
+const MetricRangeWithControlledHighlightStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Fallout' });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <MetricRange {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
+const MetricRangeWithTrendlineAndDimensionStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series" interactionMode="dimension">
+        <MetricRange {...args} />
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <Trendline method="linear" lineType="dashed" lineWidth="S">
+          <ChartTooltip>{dialogContent}</ChartTooltip>
+        </Trendline>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
+const MetricRangeLinearScaleWithTrendlineStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="linear" baseline ticks />
+      <Line color="series" scaleType="linear" dimension="point">
+        <MetricRange {...args} />
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <Trendline method="linear" lineType="dashed" lineWidth="S">
+          <ChartTooltip>{dialogContent}</ChartTooltip>
+        </Trendline>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
 const Basic = bindWithProps(MetricRangeStory);
 Basic.args = {
   lineType: 'shortDash',
@@ -195,6 +260,39 @@ Basic.args = {
 
 const DisplayOnHover = bindWithProps(MetricRangeStory);
 DisplayOnHover.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
+};
+
+const DisplayOnHoverDimension = bindWithProps(MetricRangeWithTooltipDimensionStory);
+DisplayOnHoverDimension.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
+};
+
+const DisplayOnHoverTrendlineDimension = bindWithProps(MetricRangeWithTrendlineAndDimensionStory);
+DisplayOnHoverTrendlineDimension.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
+};
+
+const DisplayOnHoverControlled = bindWithProps(MetricRangeWithControlledHighlightStory);
+DisplayOnHoverControlled.args = {
   lineType: 'shortDash',
   lineWidth: 'S',
   rangeOpacity: 0.2,
@@ -269,6 +367,18 @@ WithBreaks.args = {
   metric: 'metric',
 };
 
+const DisplayOnHoverLinearWithTrendline = bindWithProps(MetricRangeLinearScaleWithTrendlineStory);
+DisplayOnHoverLinearWithTrendline.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
+  hoverPoint: true,
+};
+
 const WithHoverPoints = bindWithProps(MetricRangeWithHoverPointsStory);
 WithHoverPoints.args = {
   lineType: 'shortDash',
@@ -313,6 +423,10 @@ WithHoverPointsOutsideDomain.args = {
 export {
   Basic,
   DisplayOnHover,
+  DisplayOnHoverDimension,
+  DisplayOnHoverTrendlineDimension,
+  DisplayOnHoverLinearWithTrendline,
+  DisplayOnHoverControlled,
   WithStaticPoints,
   WithPopover,
   ScaleAxisToFit,

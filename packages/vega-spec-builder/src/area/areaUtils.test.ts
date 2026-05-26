@@ -12,17 +12,16 @@
 import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
-  CONTROLLED_HIGHLIGHTED_SERIES,
-  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   HOVERED_ITEM,
-  SELECTED_SERIES,
-  SERIES_ID,
+
 } from '@spectrum-charts/constants';
 
+import { getHoverContext } from '../marks/hoverContext';
+import { defaultLineOptions } from '../line/lineTestUtils';
 import { AreaMarkOptions, getAreaMark, getAreaOpacity } from './areaUtils';
 
 describe('getAreaMark', () => {
@@ -251,6 +250,9 @@ describe('getAreaMark', () => {
 });
 
 describe('getAreaOpacity', () => {
+  const interactiveLineOpts = { ...defaultLineOptions, chartTooltips: [{}], interactiveMarkName: 'line0' };
+  const interactiveDimLineOpts = { ...interactiveLineOpts, interactionMode: 'dimension' as const };
+
   const baseMetricRangeOptions: AreaMarkOptions = {
     name: 'line0MetricRange0_area',
     color: DEFAULT_COLOR,
@@ -263,17 +265,44 @@ describe('getAreaOpacity', () => {
     opacity: 0.2,
     isMetricRange: true,
     interactiveMarkName: 'line0',
+    hoverContext: getHoverContext(interactiveLineOpts),
   };
 
   test('returns opacity rules to hide the area when displayOnHover is "range"', () => {
     const opacity = getAreaOpacity({ ...baseMetricRangeOptions, displayOnHover: 'range' });
-    expect(opacity).toStrictEqual([
-      { test: `isValid(line0_${HOVERED_ITEM}) && line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`, value: 1 },
-      { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-      { test: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`, value: 1 },
-      { test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-      { value: 0 },
-    ]);
+    // show mode: combined predicate in a single test rule + { value: 0 }
+    expect(opacity).toHaveLength(2);
+    expect(JSON.stringify(opacity?.[0])).toContain(`line0_${HOVERED_ITEM}`);
+    expect(opacity?.[1]).toEqual({ value: 0 });
+  });
+
+  test('shows the range area on dimension hover when displayOnHover is "range"', () => {
+    const opacity = getAreaOpacity({
+      ...baseMetricRangeOptions,
+      displayOnHover: 'range',
+      interactionMode: 'dimension',
+      hoverContext: getHoverContext(interactiveDimLineOpts),
+    });
+    // show mode with dimension: combined predicate includes dimension signal, 2 rules total
+    expect(opacity).toHaveLength(2);
+    expect(JSON.stringify(opacity?.[0])).toContain(`line0_dimensionHoverArea_${HOVERED_ITEM}`);
+    expect(opacity?.[1]).toEqual({ value: 0 });
+  });
+
+  test('shows the range area on dimension hover when displayOnHover is true', () => {
+    const opacity = getAreaOpacity({
+      ...baseMetricRangeOptions,
+      displayOnHover: true,
+      interactionMode: 'dimension',
+      hoverContext: getHoverContext(interactiveDimLineOpts),
+    });
+    // fade mode with dimension: dimension rule first (value: 1), then item/controlled/selected, then default
+    expect(opacity?.[0]).toEqual({
+      test: `isValid(line0_dimensionHoverArea_${HOVERED_ITEM})`,
+      value: 1,
+    });
+    // fade produces: dim + item + ctrl_table + selected_series + default = 5 rules
+    expect(opacity).toHaveLength(5);
   });
 
   test('returns default opacity rule when displayOnHover is false for a metric range', () => {
