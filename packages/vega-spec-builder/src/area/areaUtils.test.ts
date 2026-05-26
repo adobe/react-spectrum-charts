@@ -17,7 +17,7 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   HOVERED_ITEM,
-  SERIES_ID,
+
 } from '@spectrum-charts/constants';
 
 import { getHoverContext } from '../marks/hoverContext';
@@ -250,7 +250,7 @@ describe('getAreaMark', () => {
 });
 
 describe('getAreaOpacity', () => {
-  const interactiveLineOpts = { ...defaultLineOptions, chartTooltips: [{}] as [{}], interactiveMarkName: 'line0' };
+  const interactiveLineOpts = { ...defaultLineOptions, chartTooltips: [{}], interactiveMarkName: 'line0' };
   const interactiveDimLineOpts = { ...interactiveLineOpts, interactionMode: 'dimension' as const };
 
   const baseMetricRangeOptions: AreaMarkOptions = {

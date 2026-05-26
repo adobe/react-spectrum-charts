@@ -68,7 +68,7 @@ describe('getLineMark()', () => {
   });
 
   test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
-    const ctx = getHoverContext({ ...defaultLineOptions, chartTooltips: [{}] as [{}], interactiveMarkName: 'line0' });
+    const ctx = getHoverContext({ ...defaultLineOptions, chartTooltips: [{}], interactiveMarkName: 'line0' });
     const lineMark = getLineMark(
       {
         ...defaultLineMarkOptions,
@@ -285,7 +285,7 @@ describe('getLineOpacity()', () => {
   test('includes dimension hover rule when displayOnHover is "metric" and interactionMode is dimension', () => {
     const ctx = getHoverContext({
       ...defaultLineOptions,
-      chartTooltips: [{}] as [{}],
+      chartTooltips: [{}],
       interactiveMarkName: 'line0',
       interactionMode: 'dimension',
     });
@@ -306,7 +306,7 @@ describe('getLineOpacity()', () => {
   test('includes dimension hover rule when displayOnHover is true and interactionMode is dimension', () => {
     const ctx = getHoverContext({
       ...defaultLineOptions,
-      chartTooltips: [{}] as [{}],
+      chartTooltips: [{}],
       interactiveMarkName: 'line0',
       interactionMode: 'dimension',
     });
@@ -327,7 +327,7 @@ describe('getLineOpacity()', () => {
   test('returns opacity rules when displayOnHover is "metric" to show the line on hover', () => {
     const ctx = getHoverContext({
       ...defaultLineOptions,
-      chartTooltips: [{}] as [{}],
+      chartTooltips: [{}],
       interactiveMarkName: 'line0',
     });
     const opacityRule = getLineOpacity({

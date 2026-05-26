@@ -230,6 +230,24 @@ const MetricRangeWithTrendlineAndDimensionStory: StoryFn<typeof MetricRange> = (
   );
 };
 
+const MetricRangeLinearScaleWithTrendlineStory: StoryFn<typeof MetricRange> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="linear" baseline ticks />
+      <Line color="series" scaleType="linear" dimension="point">
+        <MetricRange {...args} />
+        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <Trendline method="linear" lineType="dashed" lineWidth="S">
+          <ChartTooltip>{dialogContent}</ChartTooltip>
+        </Trendline>
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
 const Basic = bindWithProps(MetricRangeStory);
 Basic.args = {
   lineType: 'shortDash',
@@ -349,6 +367,18 @@ WithBreaks.args = {
   metric: 'metric',
 };
 
+const DisplayOnHoverLinearWithTrendline = bindWithProps(MetricRangeLinearScaleWithTrendlineStory);
+DisplayOnHoverLinearWithTrendline.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
+  hoverPoint: true,
+};
+
 const WithHoverPoints = bindWithProps(MetricRangeWithHoverPointsStory);
 WithHoverPoints.args = {
   lineType: 'shortDash',
@@ -395,6 +425,7 @@ export {
   DisplayOnHover,
   DisplayOnHoverDimension,
   DisplayOnHoverTrendlineDimension,
+  DisplayOnHoverLinearWithTrendline,
   DisplayOnHoverControlled,
   WithStaticPoints,
   WithPopover,

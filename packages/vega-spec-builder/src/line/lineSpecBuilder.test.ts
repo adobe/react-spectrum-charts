@@ -636,11 +636,11 @@ describe('lineSpecBuilder', () => {
 describe('Cell D integration: MetricRange + Trendline both interactive, dimension mode', () => {
   const cellDOptions = {
     ...defaultLineOptions,
-    chartTooltips: [{}] as [{}],
+    chartTooltips: [{}],
     interactionMode: 'dimension' as const,
     interactiveMarkName: 'line0',
     metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'metric', displayOnHover: true as const }],
-    trendlines: [{ method: 'linear' as const, chartTooltips: [{}] as [{}] }],
+    trendlines: [{ method: 'linear' as const, chartTooltips: [{}] }],
   };
 
   test('addData includes metric range highlightedData and trendline data sources', () => {

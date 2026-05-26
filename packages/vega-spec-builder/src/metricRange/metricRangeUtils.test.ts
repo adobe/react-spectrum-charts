@@ -189,7 +189,7 @@ describe('getMetricRangeMark', () => {
   });
   describe('displayOnHover translation', () => {
     // Include chartTooltips so getHoverContext sees the parent as interactive.
-    const interactiveLineOptions = { ...defaultLineOptions, chartTooltips: [{}] as [{}], interactiveMarkName: 'line0' };
+    const interactiveLineOptions = { ...defaultLineOptions, chartTooltips: [{}], interactiveMarkName: 'line0' };
 
     test('when displayOnHover is "metric", area fades and line uses show-mode opacity rules', () => {
       const [lineMark, areaMark] = getMetricRangeMark(
