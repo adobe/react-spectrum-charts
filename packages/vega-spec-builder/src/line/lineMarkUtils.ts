@@ -186,10 +186,16 @@ export const getLineOpacity = ({
     }
   }
 
-  strokeOpacityRules.push({
-    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-  });
+  strokeOpacityRules.push(
+    {
+      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+      signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+    },
+    {
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+      signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    }
+  );
 
   if (popoverMarkName) {
     strokeOpacityRules.push({
@@ -206,7 +212,6 @@ export const getLineOpacity = ({
     });
   }
 
-  // This allows us to only show the metric range when hovering over the parent line component.
   strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 
   return strokeOpacityRules;

@@ -209,9 +209,9 @@ describe('getMetricRangeMark', () => {
         interactiveLineOptions,
         { ...defaultMetricRangeSpecOptions, displayOnHover: 'range' }
       );
-      // line: always visible but fades on hover — fade mode → 3 rules (item hover, controlled table, default)
-      expect(lineMark.encode?.update?.opacity).toHaveLength(3);
-      expect(lineMark.encode?.update?.opacity?.[2]).toEqual({ value: 1 });
+      // line: always visible but fades on hover — fade mode → 4 rules (item hover, controlled table, controlled series, default)
+      expect(lineMark.encode?.update?.opacity).toHaveLength(4);
+      expect(lineMark.encode?.update?.opacity?.[3]).toEqual({ value: 1 });
       // area: show mode → 2 rules
       expect(areaMark.encode?.update?.opacity).toHaveLength(2);
       expect(areaMark.encode?.update?.opacity?.[1]).toEqual({ value: 0 });

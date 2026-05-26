@@ -248,6 +248,10 @@ describe('getLineOpacity()', () => {
         test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
         signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
       },
+      {
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      },
       { value: 1 },
     ]);
   });
@@ -267,6 +271,10 @@ describe('getLineOpacity()', () => {
       {
         test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
         signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+      },
+      {
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       { test: `isValid(${SELECTED_SERIES})`, signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}` },
       { value: 1 },
@@ -355,7 +363,7 @@ describe('getLineOpacity()', () => {
       chartTooltips: [{}],
       isHighlightedByGroup: true,
     });
-    expect(opacityRule).toHaveLength(3);
+    expect(opacityRule).toHaveLength(4);
     expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
   });
 
@@ -374,6 +382,6 @@ describe('getLineOpacity()', () => {
       test: `isValid(line0_${HOVERED_ITEM})`,
       signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
     });
-    expect(opacityRule).toHaveLength(4);
+    expect(opacityRule).toHaveLength(5);
   });
 });
