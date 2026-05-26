@@ -270,6 +270,13 @@ describe('getMetricRangeMark', () => {
       expect(areaMark.encode?.enter?.defined).toEqual({ signal: definedAreaSignal });
     });
   });
+
+  test('area mark inherits scaleType from parent line (linear scale uses xLinear not xTime)', () => {
+    const linearLineOptions = { ...defaultLineOptions, scaleType: 'linear' as const, dimension: 'point' };
+    const [, areaMark] = getMetricRangeMark(linearLineOptions, defaultMetricRangeSpecOptions);
+    expect(areaMark.encode?.update?.x).toHaveProperty('scale', 'xLinear');
+    expect(areaMark.encode?.update?.x).toHaveProperty('field', 'point');
+  });
 });
 
 describe('getMetricRangeGroupMarks', () => {

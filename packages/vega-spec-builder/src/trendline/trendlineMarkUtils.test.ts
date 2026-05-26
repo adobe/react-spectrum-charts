@@ -89,6 +89,18 @@ describe('getTrendlineMarks()', () => {
       ).facet.data
     ).toEqual('line0Trendline0_highResolutionData');
   });
+  test('hover marks use _highlightedData when parent line has MetricRange hoverPoints', () => {
+    const marks = getTrendlineMarks({
+      ...defaultLineOptions,
+      metricRanges: [{ metricStart: 'metricStart', metricEnd: 'metricEnd', hoverPoint: true }],
+      interactiveMarkName: 'line0',
+      chartTooltips: [{}],
+      trendlines: [{ chartTooltips: [{}] }],
+    });
+    const hoverGroup = marks.find((m) => m.name === 'line0Trendline_hoverGroup') as GroupMark;
+    const backgroundPoint = hoverGroup?.marks?.find((m) => m.name === 'line0Trendline_pointBackground');
+    expect(backgroundPoint).toHaveProperty('from.data', 'line0Trendline_highlightedData');
+  });
 });
 
 describe('getTrendlineRuleMark()', () => {
