@@ -21,10 +21,12 @@ import { LineSpecOptions } from '../types';
 import { LineMarkOptions } from './lineUtils';
 
 export const defaultLineMarkOptions: LineMarkOptions = {
+  alternateSegmentLineType: 'dotted',
   color: DEFAULT_COLOR,
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimension: DEFAULT_TIME_DIMENSION,
   idKey: MARK_ID,
+  lineCap: 'round',
   lineType: { value: 'solid' },
   lineWidth: { value: 1 },
   name: 'line0',
@@ -38,11 +40,13 @@ export const defaultLineOptions: LineSpecOptions = {
   chartInspects: [],
   name: 'line0',
   dimension: DEFAULT_TIME_DIMENSION,
+  forecasts: [],
   gradient: false,
   hasOnClick: false,
   hasOnContextMenu: false,
   idKey: MARK_ID,
   index: 0,
+  lineCap: 'round',
   markType: 'line',
   metric: DEFAULT_METRIC,
   metricRanges: [],
@@ -56,4 +60,5 @@ export const defaultLineOptions: LineSpecOptions = {
   popoverMarkName: undefined,
   trendlines: [],
   interpolate: undefined,
+  alternateSegmentLineType: 'dotted',
 };

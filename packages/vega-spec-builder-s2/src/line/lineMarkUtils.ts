@@ -9,9 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+import { ArrayValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import {
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
@@ -31,13 +32,13 @@ import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
   getItemHoverArea,
-  getLineWidthProductionRule,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
   getVoronoiPath,
   getXProductionRule,
   hasPopover,
 } from '../marks/markUtils';
+import { getStrokeDashFromLineType } from '../specUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { ScaleType } from '../types';
 import {
@@ -77,6 +78,7 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
 };
 
 const GRADIENT_BASE_OPACITY = 0.2;
+const FORECAST_GRADIENT_RATIO = 0.4;
 
 /**
  * Generates an area mark with a gradient fill beneath the line, fading from the line's color to transparent.
@@ -109,14 +111,34 @@ export const getLineGradientMark = (lineMarkOptions: LineMarkOptions, dataSource
   };
 };
 
-const getGradientFillEncoding = ({ color, colorScheme, opacity }: LineMarkOptions) => {
+const getGradientFillEncoding = ({ color, colorScheme, name, opacity, alternateSegmentKey }: LineMarkOptions) => {
   const colorSignal = getColorProductionRuleSignalString(color, colorScheme);
   return {
     fill: {
       signal: `{gradient: 'linear', stops: [{offset: 0, color: ${colorSignal}}, {offset: 1, color: 'transparent'}], x1: 0, y1: 0, x2: 0, y2: 1}`,
     },
-    fillOpacity: getGradientOpacity(opacity),
+    fillOpacity: getGradientFillOpacity(name, opacity, alternateSegmentKey),
   };
+};
+
+const getGradientFillOpacity = (
+  name: string,
+  opacity: LineMarkOptions['opacity'],
+  alternateSegmentKey: LineMarkOptions['alternateSegmentKey']
+): { value: number } | { signal: string } => {
+  if (!alternateSegmentKey) {
+    return getGradientOpacity(opacity);
+  }
+  const forecastGradientOpacity = GRADIENT_BASE_OPACITY * FORECAST_GRADIENT_RATIO;
+  const normalOpacitySignal =
+    typeof opacity === 'string'
+      ? `scale('${OPACITY_SCALE}', datum.${opacity}) * ${GRADIENT_BASE_OPACITY}`
+      : String(opacity.value * GRADIENT_BASE_OPACITY);
+  const altOpacitySignal =
+    typeof opacity === 'string'
+      ? `scale('${OPACITY_SCALE}', datum.${opacity}) * ${forecastGradientOpacity}`
+      : String(opacity.value * forecastGradientOpacity);
+  return { signal: `datum.${name}_alternateFlag ? ${altOpacitySignal} : ${normalOpacitySignal}` };
 };
 
 const getGradientOpacity = (opacity: LineMarkOptions['opacity']): { value: number } | { signal: string } => {
@@ -127,6 +149,30 @@ const getGradientOpacity = (opacity: LineMarkOptions['opacity']): { value: numbe
 };
 
 /**
+ * Returns the strokeDash encoding for a line mark that has alternateSegmentKey set.
+ * When lineType is a static value, returns a signal expression that switches between
+ * the base dash and the alternate dash based on the per-datum alternateFlag field.
+ * Falls back to the standard scale/field lookup for data-driven lineType facets.
+ */
+const getLineTypeDashSignal = (lineTypeFacet: LineMarkOptions['lineType']): string => {
+  if (typeof lineTypeFacet === 'string') {
+    return `scale('${LINE_TYPE_SCALE}', datum['${lineTypeFacet}'])`;
+  }
+  return JSON.stringify(getStrokeDashFromLineType(lineTypeFacet.value));
+};
+
+export const getAlternateSegmentStrokeDash = (
+  name: string,
+  lineType: LineMarkOptions['lineType'],
+  alternateSegmentLineType: LineMarkOptions['alternateSegmentLineType'] 
+): ArrayValueRef | undefined => {
+  if (!alternateSegmentLineType) return;
+  const altDash = JSON.stringify(getStrokeDashFromLineType(alternateSegmentLineType));
+  const baseDash = getLineTypeDashSignal(lineType);
+  return { signal: `datum.${name}_alternateFlag ? ${altDash} : ${baseDash}` };
+};
+
+/**
  * generates a line mark
  * @param lineOptions
  * @param dataSource
@@ -134,12 +180,14 @@ const getGradientOpacity = (opacity: LineMarkOptions['opacity']): { value: numbe
  */
 export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string): LineMark => {
   const {
+    alternateSegmentKey,
+    alternateSegmentLineType,
     chartPopovers,
     color,
     colorScheme,
     dimension,
+    lineCap = 'round',
     lineType,
-    lineWidth,
     metric,
     name,
     opacity,
@@ -161,9 +209,12 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
         stroke: getColorProductionRule(color, colorScheme),
-        strokeDash: getStrokeDashProductionRule(lineType),
+        strokeCap: { value: lineCap },
+        strokeDash: alternateSegmentKey
+          ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
+          : getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
-        strokeWidth: getLineWidthProductionRule(lineWidth),
+        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
         // this has to be in update because when you resize the window that doesn't rebuild the spec

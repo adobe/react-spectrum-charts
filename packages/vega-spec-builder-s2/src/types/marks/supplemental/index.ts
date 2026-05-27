@@ -20,3 +20,4 @@ export * from './segmentLabelSpec.types';
 export * from './lineDirectLabelSpec.types';
 export * from './trendlineSpec.types';
 export * from './trendlineAnnotationSpec.types';
+export * from './lineForecastSpec.types';

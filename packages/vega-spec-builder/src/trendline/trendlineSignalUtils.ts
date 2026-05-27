@@ -11,6 +11,8 @@
  */
 import { Signal } from 'vega';
 
+import { DIMENSION_HOVER_AREA, INTERACTION_MODE } from '@spectrum-charts/constants';
+
 import { hasTooltip } from '../marks/markUtils';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { TrendlineParentOptions, getTrendlines } from './trendlineUtils';
@@ -21,5 +23,16 @@ export const setTrendlineSignals = (signals: Signal[], markOptions: TrendlinePar
 
   if (trendlines.some((trendline) => hasTooltip(trendline))) {
     addHoveredItemSignal(signals, `${markName}Trendline`, `${markName}Trendline_voronoi`, 2);
+
+    // Trendline hover marks create their own x-axis voronoi in dimension mode.
+    const isDimensionMode = 'interactionMode' in markOptions && markOptions.interactionMode === INTERACTION_MODE.DIMENSION;
+    if (isDimensionMode) {
+      addHoveredItemSignal(
+        signals,
+        `${markName}Trendline_${DIMENSION_HOVER_AREA}`,
+        `${markName}Trendline_xAxisVoronoi`,
+        2
+      );
+    }
   }
 };

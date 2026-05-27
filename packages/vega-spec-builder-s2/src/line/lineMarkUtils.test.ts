@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
@@ -23,7 +24,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getLineGradientMark, getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
+import { getAlternateSegmentStrokeDash, getLineGradientMark, getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -38,9 +39,10 @@ describe('getLineMark()', () => {
       encode: {
         enter: {
           stroke: { field: 'series', scale: COLOR_SCALE },
+          strokeCap: { value: 'round' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-          strokeWidth: { value: 1 },
+          strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
           y: [{ field: 'value', scale: 'yLinear' }],
         },
         update: {
@@ -59,9 +61,9 @@ describe('getLineMark()', () => {
     expect(lineMark.encode?.update?.opacity).toBeUndefined();
   });
 
-  test('should have undefined strokeWidth if lineWidth if undefined', () => {
+  test('always uses the chart size signal for strokeWidth regardless of lineWidth', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, lineWidth: undefined }, 'line0_facet');
-    expect(lineMark.encode?.enter?.strokeWidth).toBeUndefined();
+    expect(lineMark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_STROKE_WIDTH });
   });
 
   test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
@@ -75,6 +77,21 @@ describe('getLineMark()', () => {
   test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, displayOnHover: false }, 'line0_facet');
     expect(lineMark.encode?.update?.opacity).toEqual([{ value: 1 }]);
+  });
+
+  test('uses round strokeCap by default', () => {
+    const lineMark = getLineMark(defaultLineMarkOptions, 'line0_facet');
+    expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
+  });
+
+  test('uses round strokeCap when lineCap is undefined', () => {
+    const lineMark = getLineMark({ ...defaultLineMarkOptions, lineCap: undefined }, 'line0_facet');
+    expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
+  });
+
+  test('uses square strokeCap when lineCap is square', () => {
+    const lineMark = getLineMark({ ...defaultLineMarkOptions, lineCap: 'square' }, 'line0_facet');
+    expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'square' });
   });
 });
 
@@ -250,6 +267,28 @@ describe('getLineGradientMark()', () => {
     expect(fillOpacity).toEqual({ signal: `scale('${OPACITY_SCALE}', datum.weight) * 0.2` });
   });
 
+  test('should use signal-based fillOpacity for alternate segments with static opacity', () => {
+    const gradientMark = getLineGradientMark(
+      { ...defaultLineMarkOptions, alternateSegmentKey: 'line0_alternateFlag' },
+      'line0_facet'
+    );
+    const fillOpacity = gradientMark.encode?.enter?.fillOpacity as { signal: string };
+    expect(fillOpacity.signal).toContain('line0_alternateFlag');
+    expect(fillOpacity.signal).toContain('0.08');
+    expect(fillOpacity.signal).toContain('0.2');
+  });
+
+  test('should use signal-based fillOpacity for alternate segments with dynamic opacity facet', () => {
+    const gradientMark = getLineGradientMark(
+      { ...defaultLineMarkOptions, alternateSegmentKey: 'line0_alternateFlag', opacity: 'weight' },
+      'line0_facet'
+    );
+    const fillOpacity = gradientMark.encode?.enter?.fillOpacity as { signal: string };
+    expect(fillOpacity.signal).toContain('line0_alternateFlag');
+    expect(fillOpacity.signal).toContain(`scale('${OPACITY_SCALE}', datum.weight) * 0.08`);
+    expect(fillOpacity.signal).toContain(`scale('${OPACITY_SCALE}', datum.weight) * 0.2`);
+  });
+
   test('should include hover opacity rules when interactive', () => {
     const gradientMark = getLineGradientMark(
       { ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] },
@@ -272,5 +311,26 @@ describe('getLineGradientMark()', () => {
     const y = gradientMark.encode?.enter?.y;
     expect(Array.isArray(y)).toBe(true);
     expect((y as unknown[]).length).toBe(2);
+  });
+});
+
+describe('getAlternateSegmentStrokeDash()', () => {
+  test('static lineType + static alternateSegmentLineType: returns signal without scale lookup', () => {
+    const result = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    expect(result.signal).toContain('line0_alternateFlag');
+    expect(result.signal).not.toContain(`scale('${LINE_TYPE_SCALE}'`);
+  });
+
+  test('data-driven lineType + static alternateSegmentLineType: base uses scale lookup, alt does not', () => {
+    const result = getAlternateSegmentStrokeDash('line0', 'lineTypeField', 'dotted') as { signal: string };
+    expect(result.signal).toContain(`scale('${LINE_TYPE_SCALE}', datum['lineTypeField'])`);
+    expect(result.signal).not.toContain(`scale('${LINE_TYPE_SCALE}', datum['dotted'])`);
+    expect(result.signal).toContain('line0_alternateFlag');
+  });
+
+  test('different alternateSegmentLineTypes produce different signals', () => {
+    const dotted = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    const dashed = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dashed') as { signal: string };
+    expect(dotted.signal).not.toBe(dashed.signal);
   });
 });

@@ -17,18 +17,21 @@ import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
   ColorFacet,
   FacetRef,
+  LineType,
   LineTypeFacet,
   LineWidth,
   OpacityFacet,
   PartiallyRequired,
   ScaleType,
 } from '../specUtil.types';
+import { LineForecastOptions } from './supplemental/lineForecastSpec.types';
 import { LineDirectLabelOptions } from './supplemental/lineDirectLabelSpec.types';
 import { MetricRangeOptions } from './supplemental/metricRangeSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
 export type InteractionMode = `${INTERACTION_MODE}`;
 export type InterpolationType = 'basis' | 'cardinal' | 'catmull-rom' | 'linear' | 'monotone' | 'natural' | 'step' | 'step-after' | 'step-before';
+export type LineCap = 'round' | 'square';
 
 export interface LineOptions {
   markType: 'line';
@@ -70,10 +73,31 @@ export interface LineOptions {
   gradient?: boolean;
   /** Sets the interpolation method for the line */
   interpolate?: InterpolationType;
+  /**
+   * Sets the stroke line cap style for the line ends and gap boundaries.
+   * @default 'round'
+   */
+  lineCap?: LineCap;
+  /**
+   * Data field key whose truthy value marks a point as part of an alternate segment.
+   * Alternate segments render with a different line type (see `alternateSegmentLineType`).
+   */
+  alternateSegmentKey?: string;
+  /**
+   * Line type used for alternate segments identified by `alternateSegmentKey`.
+   * @default 'dotted'
+   */
+  alternateSegmentLineType?: LineType;
+  /**
+   * Text appended to the hover value label for alternate-segment points (e.g. `'(Estimated)'`).
+   * No default — omitting means no append.
+   */
+  alternateSegmentLabel?: string;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
   chartInspects?: ChartInspectOptions[];
+  forecasts?: LineForecastOptions[];
   lineDirectLabels?: LineDirectLabelOptions[];
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
@@ -84,9 +108,11 @@ type LineOptionsWithDefaults =
   | 'chartInspects'
   | 'color'
   | 'dimension'
+  | 'forecasts'
   | 'gradient'
   | 'hasOnClick'
   | 'hasOnContextMenu'
+  | 'lineCap'
   | 'lineDirectLabels'
   | 'lineType'
   | 'metric'

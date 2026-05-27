@@ -21,6 +21,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   HOVERED_ITEM,
+  CHART_SIZE_STROKE_WIDTH,
   LINEAR_PADDING,
   MARK_ID,
   SERIES_ID,
@@ -32,7 +33,7 @@ import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { ScSpec } from '../types';
-import { addData, addLine, addLineMarks, addSignals, setScales } from './lineSpecBuilder';
+import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder';
 import { defaultLineOptions } from './lineTestUtils';
 
 const startingSpec: ScSpec = initializeSpec({
@@ -72,9 +73,10 @@ const defaultSpec = initializeSpec({
           encode: {
             enter: {
               stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+              strokeCap: { value: 'round' },
               strokeDash: { value: [] },
               strokeOpacity: DEFAULT_OPACITY_RULE,
-              strokeWidth: undefined,
+              strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
               y: [{ field: 'value', scale: 'yLinear' }],
             },
             update: {
@@ -154,9 +156,10 @@ const line0_groupMark = {
         enter: {
           y: [{ scale: 'yLinear', field: 'value' }],
           stroke: { scale: COLOR_SCALE, field: 'series' },
+          strokeCap: { value: 'round' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-          strokeWidth: undefined,
+          strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
         },
         update: {
           x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
@@ -199,12 +202,13 @@ const metricRangeGroupMark = {
             scale: COLOR_SCALE,
             field: 'series',
           },
+          strokeCap: { value: 'round' },
           strokeDash: {
             value: [7, 4],
           },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           strokeWidth: {
-            value: 1.5,
+            signal: CHART_SIZE_STROKE_WIDTH,
           },
         },
         update: {
@@ -411,6 +415,67 @@ describe('lineSpecBuilder', () => {
         transform: [{ expr: 'datum.staticPoint === true', type: 'filter' }],
       });
     });
+
+    test('with alternateSegmentKey adds formula to table and 3 segment data sources', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')).toBe(true);
+
+      const expectedSegmentData = getAlternateSegmentData('line0', `${DEFAULT_TIME_DIMENSION}0`);
+      expect(resultData.find((d) => d.name === 'line0_segmented')).toStrictEqual(expectedSegmentData[0]);
+      expect(resultData.find((d) => d.name === 'line0_bridge')).toStrictEqual(expectedSegmentData[1]);
+      expect(resultData.find((d) => d.name === 'line0_with_bridges')).toStrictEqual(expectedSegmentData[2]);
+    });
+
+    test('without alternateSegmentKey does not add segment data sources', () => {
+      const resultData = addData(baseData ?? [], defaultLineOptions);
+      expect(resultData.find((d) => d.name === 'line0_segmented')).toBeUndefined();
+      expect(resultData.find((d) => d.name === 'line0_bridge')).toBeUndefined();
+      expect(resultData.find((d) => d.name === 'line0_with_bridges')).toBeUndefined();
+    });
+
+    test('with forecasts adds alternateFlag and effectiveValue transforms to table and 3 segment data sources', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')).toBe(true);
+      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(true);
+
+      const expectedSegmentData = getAlternateSegmentData('line0', `${DEFAULT_TIME_DIMENSION}0`);
+      expect(resultData.find((d) => d.name === 'line0_segmented')).toStrictEqual(expectedSegmentData[0]);
+      expect(resultData.find((d) => d.name === 'line0_bridge')).toStrictEqual(expectedSegmentData[1]);
+      expect(resultData.find((d) => d.name === 'line0_with_bridges')).toStrictEqual(expectedSegmentData[2]);
+    });
+
+    test('with forecasts effectiveValue uses isValid to choose between main metric and forecast metric', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      const effectiveValueTransform = tableData?.transform?.find(
+        (t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue'
+      );
+      expect(effectiveValueTransform).toHaveProperty(
+        'expr',
+        "isValid(datum['value']) ? datum['value'] : datum['forecastValue']"
+      );
+    });
+
+    test('with forecasts and alternateSegmentKey set, forecasts are skipped', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(false);
+    });
   });
 
   describe('setScales()', () => {
@@ -452,6 +517,28 @@ describe('lineSpecBuilder', () => {
         })
       ).toStrictEqual([defaultSpec.scales?.[0], defaultSpec.scales?.[1], metricRangeMetricScale]);
     });
+
+    test('with metricAxis adds a named metric scale', () => {
+      const scales = setScales(startingSpec.scales ?? [], {
+        ...defaultLineOptions,
+        metricAxis: 'myAxis',
+      });
+      const namedScale = scales.find((s) => s.name === 'myAxis');
+      expect(namedScale).toBeDefined();
+    });
+
+    test('with forecasts uses effectiveValue field for the y-scale domain', () => {
+      const scales = setScales(startingSpec.scales ?? [], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const yScale = scales.find((s) => s.name === 'yLinear');
+      expect(yScale).toBeDefined();
+      expect(yScale?.domain).toHaveProperty('fields');
+      const fields = (yScale?.domain as { fields: string[] }).fields;
+      expect(fields).toContain('line0_effectiveValue');
+      expect(fields).not.toContain('value');
+    });
   });
 
   describe('addLineMarks()', () => {
@@ -468,9 +555,10 @@ describe('lineSpecBuilder', () => {
               encode: {
                 enter: {
                   stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+                  strokeCap: { value: 'round' },
                   strokeOpacity: DEFAULT_OPACITY_RULE,
                   strokeDash: { value: [8, 8] },
-                  strokeWidth: undefined,
+                  strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
               y: [{ field: 'value', scale: 'yLinear' }],
             },
                 update: {
@@ -602,6 +690,91 @@ describe('lineSpecBuilder', () => {
       expect(innerMarks).toHaveLength(1);
       expect(innerMarks[0].type).toBe('line');
       expect(innerMarks[0].encode?.update?.interpolate).toBeUndefined();
+    });
+
+    test('with alternateSegmentKey uses line0_with_bridges as facet data', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const groupMark = marks[0] as { from: { facet: { data: string; groupby: string[] } } };
+      expect(groupMark.from.facet.data).toBe('line0_with_bridges');
+    });
+
+    test('with alternateSegmentKey extends facet groupby with segmentId', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const groupMark = marks[0] as { from: { facet: { groupby: string[] } } };
+      expect(groupMark.from.facet.groupby).toContain('line0_segmentId');
+    });
+
+    test('without alternateSegmentKey uses filteredTable as facet data', () => {
+      const marks = addLineMarks([], defaultLineOptions);
+      const groupMark = marks[0] as { from: { facet: { data: string } } };
+      expect(groupMark.from.facet.data).toBe(FILTERED_TABLE);
+    });
+
+    test('with alternateSegmentKey, line mark strokeDash uses a signal', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const groupMark = marks[0] as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
+      const strokeDash = groupMark.marks[0].encode.enter.strokeDash;
+      expect(strokeDash).toHaveProperty('signal');
+    });
+
+    test('with forecasts uses line0_with_bridges as facet data', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const groupMark = marks.find((m) => m.name === 'line0_group') as { from: { facet: { data: string } } };
+      expect(groupMark?.from?.facet?.data).toBe('line0_with_bridges');
+    });
+
+    test('with forecasts extends facet groupby with segmentId', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const groupMark = marks.find((m) => m.name === 'line0_group') as { from: { facet: { groupby: string[] } } };
+      expect(groupMark?.from?.facet?.groupby).toContain('line0_segmentId');
+    });
+
+    test('with forecasts pushes boundary rule before the line group', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const boundaryIndex = marks.findIndex((m) => m.name === 'line0_forecast0_boundary');
+      const groupIndex = marks.findIndex((m) => m.name === 'line0_group');
+      expect(boundaryIndex).toBeGreaterThanOrEqual(0);
+      expect(boundaryIndex).toBeLessThan(groupIndex);
+    });
+
+    test('with forecasts pushes label after the line group', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const labelIndex = marks.findIndex((m) => m.name === 'line0_forecast0_label');
+      const groupIndex = marks.findIndex((m) => m.name === 'line0_group');
+      expect(labelIndex).toBeGreaterThan(groupIndex);
+    });
+
+    test('with forecasts line mark strokeDash uses a signal (dotted for forecast)', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const groupMark = marks.find((m) => m.name === 'line0_group') as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
+      expect(groupMark?.marks?.[0]?.encode?.enter?.strokeDash).toHaveProperty('signal');
+    });
+
+    test('with forecasts line mark y-encoding uses effectiveValue field', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      const groupMark = marks.find((m) => m.name === 'line0_group') as { marks: { encode: { enter: { y: { field: string }[] } } }[] };
+      const yEncoding = groupMark?.marks?.[0]?.encode?.enter?.y;
+      expect(yEncoding).toBeDefined();
+      expect(Array.isArray(yEncoding)).toBe(true);
+      expect(yEncoding?.[0]).toHaveProperty('field', 'line0_effectiveValue');
     });
   });
 

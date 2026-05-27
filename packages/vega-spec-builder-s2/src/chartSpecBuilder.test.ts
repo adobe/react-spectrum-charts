@@ -15,6 +15,8 @@ import { colorSchemes, spectrum2Colors } from '@spectrum-charts/themes';
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
@@ -470,6 +472,15 @@ describe('Chart spec builder', () => {
         { name: 'hiddenSeries', value: hiddenSeries },
         ...endSignals,
       ]);
+    });
+
+    test('CHART_SIZE_STROKE_WIDTH signal uses rscContainerWidth expression with correct breakpoints and stroke widths', () => {
+      const signals = getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] });
+      const strokeWidthSignal = signals.find((s) => s.name === CHART_SIZE_STROKE_WIDTH);
+      expect(strokeWidthSignal).toHaveProperty(
+        'update',
+        `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1.5 : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? 2 : 3`
+      );
     });
   });
 });

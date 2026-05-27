@@ -22,6 +22,7 @@ import { LineSpecOptions, TrendlineSpecOptions } from '../types';
 export const defaultLineOptions: LineSpecOptions = {
   chartPopovers: [],
   chartInspects: [],
+  forecasts: [],
   gradient: false,
   hasOnClick: false,
   hasOnContextMenu: false,
@@ -41,7 +42,9 @@ export const defaultLineOptions: LineSpecOptions = {
   interactiveMarkName: undefined,
   lineDirectLabels: [],
   popoverMarkName: undefined,
+  lineCap: 'round',
   interpolate: undefined,
+  alternateSegmentLineType: 'dotted',
 };
 
 export const defaultTrendlineOptions: TrendlineSpecOptions = {

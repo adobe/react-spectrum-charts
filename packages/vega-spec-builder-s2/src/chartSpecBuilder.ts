@@ -14,6 +14,8 @@ import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_STROKE_WIDTH,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
@@ -246,6 +248,15 @@ export const getDefaultSignals = ({
   // highlightedItem should be undefined or an array
   const formattedHighlightedItem =
     highlightedItem === undefined || Array.isArray(highlightedItem) ? highlightedItem : [highlightedItem];
+
+  // XS (1px) is reserved for sparklines only; auto-detection starts at S.
+  // Derive stroke width from Vega's `width` signal via rscContainerWidth so it reacts
+  // to resize without any React re-embed.
+  const chartSizeStrokeWidthSignal: Signal = {
+    name: CHART_SIZE_STROKE_WIDTH,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1.5 : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? 2 : 3`,
+  };
+
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getS2ColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal(REFERENCE_LINE_LABEL_BACKGROUND_STROKE, referenceLineLabelStroke),
@@ -259,6 +270,7 @@ export const getDefaultSignals = ({
     getGenericValueSignal(SELECTED_ITEM),
     getGenericValueSignal(SELECTED_SERIES),
     getGenericValueSignal(SELECTED_GROUP),
+    chartSizeStrokeWidthSignal,
   ];
 };
 

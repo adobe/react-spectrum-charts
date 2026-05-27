@@ -177,6 +177,76 @@ Use `excludeSeries` to prevent labels from appearing on specific series:
 
 ---
 
+## Alternate segments
+
+The `alternateSegmentKey` prop lets you visually distinguish specific data points — such as estimated or projected values — by rendering their line segments with a different stroke style while keeping the same series color.
+
+Set `alternateSegmentKey` to a field in your data whose truthy value marks a point as part of an alternate segment. Those segments will be drawn using `alternateSegmentLineType` (defaults to `'dotted'`).
+
+```jsx
+// data: [{ datetime: ..., value: 10, isEstimated: false }, { datetime: ..., value: 12, isEstimated: true }, ...]
+<Line color="series" alternateSegmentKey="isEstimated" alternateSegmentLineType="dotted" />
+```
+
+The transition between segments is seamless — the line connects solid and dotted runs without gaps. Any series without the field (or with all-falsy values) renders as a plain solid line.
+
+---
+
+## Forecast (LineForecast)
+
+The `LineForecast` component is an S2-exclusive child of `Line`. It visually distinguishes a forecast region from historical data: the line transitions from solid to dotted at the forecast boundary, a vertical rule marks the start of the forecast, and an optional label appears above the rule.
+
+```jsx
+<Chart data={data}>
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid />
+  <Line color="series" metric="value" dimension="datetime" scaleType="time">
+    <LineForecast metric="forecastValue" start={1725148800000} label="Forecast" />
+  </Line>
+</Chart>
+```
+
+The `start` value must be a dimension value that exists in the data (for time axes, epoch milliseconds). Rows at or after `start` are rendered as the forecast segment. Rows before `start` use the `metric` field on `Line`; rows in the forecast region use the `metric` field on `LineForecast`.
+
+When `gradient` is set on the parent `Line`, the gradient is also rendered in the forecast region at a reduced opacity (40% of the historical gradient) to reinforce the uncertainty of the forecast.
+
+### LineForecast props
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>default</th>
+            <th>description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>metric *</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Key in the data containing the forecast values.</td>
+        </tr>
+        <tr>
+            <td>start *</td>
+            <td>number | string</td>
+            <td>–</td>
+            <td>Dimension value at which the forecast begins. For time axes, provide epoch milliseconds. Rows at or after this value are rendered as the forecast segment.</td>
+        </tr>
+        <tr>
+            <td>label</td>
+            <td>string</td>
+            <td>'Forecast'</td>
+            <td>Text shown above the boundary rule. Hidden automatically when fewer than 80px remain between the boundary and the right edge of the chart.</td>
+        </tr>
+    </tbody>
+</table>
+
+_* required_
+
+---
+
 ## Line props (S2)
 
 :::note Not all base Line props are supported
@@ -195,9 +265,9 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartInspect | ChartPopover | LineDirectLabel</td>
+            <td>ChartInspect | ChartPopover | LineDirectLabel | LineForecast</td>
             <td>–</td>
-            <td>Optional child components for tooltips, popovers, and inline direct labels.</td>
+            <td>Optional child components for tooltips, popovers, inline direct labels, and forecast regions.</td>
         </tr>
         <tr>
             <td>color</td>
@@ -300,6 +370,24 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
             <td>string</td>
             <td>–</td>
             <td>Key in the data whose truthy value causes a visible point to be drawn at that data item.</td>
+        </tr>
+        <tr>
+            <td>alternateSegmentKey</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Key in the data whose truthy value marks a point as part of an alternate segment. Alternate segments are rendered with a different line type (see <code>alternateSegmentLineType</code>) while keeping the same series color.</td>
+        </tr>
+        <tr>
+            <td>alternateSegmentLineType</td>
+            <td>'solid' | 'dashed' | 'dotted' | 'dotDash' | 'longDash' | 'twoDash'</td>
+            <td>'dotted'</td>
+            <td>The line type used for alternate segments identified by <code>alternateSegmentKey</code>.</td>
+        </tr>
+        <tr>
+            <td>alternateSegmentLabel</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Text appended to the hover value label for alternate-segment points (e.g. <code>'(Estimated)'</code>).</td>
         </tr>
     </tbody>
 </table>

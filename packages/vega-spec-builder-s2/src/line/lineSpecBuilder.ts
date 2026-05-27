@@ -36,6 +36,7 @@ import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
+import { getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, getLineForecastBoundaryMark, getLineForecastLabelMarks, getLineForecastSpecOptions } from '../lineForecast';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -64,10 +65,12 @@ export const addLine = produce<
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
+      forecasts = [],
       gradient = false,
       hasOnClick = false,
       hasOnContextMenu = false,
       index = 0,
+      lineCap = 'round',
       lineDirectLabels = [],
       lineType = { value: 'solid' },
       metric = DEFAULT_METRIC,
@@ -78,6 +81,9 @@ export const addLine = produce<
       scaleType = 'time',
       trendlines = [],
       interpolate,
+      alternateSegmentKey,
+      alternateSegmentLineType = 'dotted',
+      alternateSegmentLabel,
       ...options
     }
   ) => {
@@ -90,10 +96,12 @@ export const addLine = produce<
       colorScheme,
       dimension,
       dualMetricAxis,
+      forecasts,
       gradient,
       hasOnClick,
       hasOnContextMenu,
       index,
+      lineCap,
       lineDirectLabels,
       interactiveMarkName: getInteractiveMarkName(
         {
@@ -117,6 +125,9 @@ export const addLine = produce<
       scaleType,
       trendlines,
       interpolate,
+      alternateSegmentKey,
+      alternateSegmentLineType,
+      alternateSegmentLabel,
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
@@ -132,11 +143,27 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { chartInspects, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
+  const { alternateSegmentKey, chartInspects, dimension, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, staticPoint } =
     options;
+  const tableData = getTableData(data);
   if (scaleType === 'time') {
-    const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+  }
+  if (alternateSegmentKey) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
+    // time data was transformed above, so we need to use the transformed dimension
+    const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+    data.push(...getAlternateSegmentData(name, dimSortField));
+  }
+  if (!alternateSegmentKey && forecasts.length > 0) {
+    tableData.transform = tableData.transform ?? [];
+    const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+    tableData.transform.push(
+      getForecastAlternateFlagTransform(name, dimension, forecasts[0].start),
+      getForecastEffectiveValueTransform(name, metric, forecasts[0].metric)
+    );
+    data.push(...getAlternateSegmentData(name, dimSortField));
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
@@ -227,9 +254,31 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { color, gradient, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
+  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
+  const forecasts = options.forecasts ?? [];
+  const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
   const { facets } = getFacetsFromOptions({ color, lineType, opacity });
+  // when alternateSegmentKey or forecasts are active, facet by segmentId so each contiguous run
+  // gets its own path with its own strokeDash
+  const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
+  const facetData = usesAlternateSegments ? `${name}_with_bridges` : FILTERED_TABLE;
+  const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
+
+  // when forecasts are present, override metric to effectiveValue and set alternateSegmentKey
+  // to trigger getAlternateSegmentStrokeDash in getLineMark
+  const markOptions = hasForecast
+    ? {
+        ...options,
+        metric: `${name}_effectiveValue`,
+        alternateSegmentKey: `${name}_alternateFlag`,
+        }
+    : options;
+
+  // boundary rules are drawn behind the main line group
+  for (const [i, forecast] of forecasts.entries()) {
+    marks.push(getLineForecastBoundaryMark(getLineForecastSpecOptions(forecast, i, options)));
+  }
 
   marks.push({
     name: `${name}_group`,
@@ -237,13 +286,13 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     from: {
       facet: {
         name: `${name}_facet`,
-        data: FILTERED_TABLE,
-        groupby: facets,
+        data: facetData,
+        groupby: facetGroupby,
       },
     },
     marks: [
-      ...(gradient ? [getLineGradientMark(options, `${name}_facet`)] : []),
-      getLineMark(options, `${name}_facet`),
+      ...(gradient ? [getLineGradientMark(markOptions, `${name}_facet`)] : []),
+      getLineMark(markOptions, `${name}_facet`),
     ],
   });
   if (staticPoint || isSparkline) {
@@ -251,17 +300,24 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   }
   marks.push(...getMetricRangeGroupMarks(options));
   if (isInteractive(options) || highlightedItem !== undefined) {
-    marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForInspect`));
+    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
   }
   marks.push(...getTrendlineMarks(options));
   for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
     const specOpts = getLineDirectLabelSpecOptions(label, i, options);
     marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));
   }
+  // forecast labels are drawn last so they appear on top of other marks
+  for (const [i, forecast] of forecasts.entries()) {
+    marks.push(...getLineForecastLabelMarks(getLineForecastSpecOptions(forecast, i, options)));
+  }
 });
 
 const getMetricKeys = (lineOptions: LineSpecOptions) => {
-  const metricKeys = [lineOptions.metric];
+  const hasForecast = (lineOptions.forecasts ?? []).length > 0 && !lineOptions.alternateSegmentKey;
+  // when forecasts are present, use effectiveValue for the y-scale domain since it covers both
+  // the historical metric and forecast metric(s) in a single unified field
+  const metricKeys = hasForecast ? [`${lineOptions.name}_effectiveValue`] : [lineOptions.metric];
 
   // metric range fields should be added if metric-axis will be scaled to fit
   const metricRanges = getMetricRanges(lineOptions);
@@ -271,6 +327,53 @@ const getMetricKeys = (lineOptions: LineSpecOptions) => {
 
   return metricKeys;
 };
+
+export const getAlternateSegmentData = (name: string, dimSortField: string): Data[] => [
+  {
+    name: `${name}_segmented`,
+    source: FILTERED_TABLE,
+    transform: [
+      {
+        type: 'window',
+        groupby: [SERIES_ID],
+        sort: { field: dimSortField, order: 'ascending' },
+        ops: ['lag'],
+        fields: [`${name}_alternateFlag`],
+        params: [1],
+        as: [`${name}_prevAlternateFlag`],
+      },
+      {
+        type: 'formula',
+        as: `${name}_isSegmentBreak`,
+        expr: `datum.${name}_prevAlternateFlag !== null && datum.${name}_alternateFlag !== datum.${name}_prevAlternateFlag ? 1 : 0`,
+      },
+      {
+        type: 'window',
+        groupby: [SERIES_ID],
+        sort: { field: dimSortField, order: 'ascending' },
+        ops: ['sum'],
+        fields: [`${name}_isSegmentBreak`],
+        frame: [null, 0],
+        as: [`${name}_segmentId`],
+      },
+    ],
+  },
+  {
+    name: `${name}_bridge`,
+    source: `${name}_segmented`,
+    transform: [
+      { type: 'filter', expr: `datum.${name}_isSegmentBreak === 1` },
+      { type: 'formula', as: `${name}_segmentId`, expr: `datum.${name}_segmentId - 1` },
+      { type: 'formula', as: `${name}_alternateFlag`, expr: `!datum.${name}_alternateFlag` },
+    ],
+  },
+  {
+    // merges segmented data with bridge points and re-sorts so each segment path connects seamlessly to the next
+    name: `${name}_with_bridges`,
+    source: [`${name}_segmented`, `${name}_bridge`],
+    transform: [{ type: 'collect', sort: { field: dimSortField, order: 'ascending' } }],
+  },
+];
 
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
   const { interactionMode, name: lineName } = options;

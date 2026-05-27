@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -55,6 +56,7 @@ const defaultLineOptions: LineSpecOptions = {
   color: DEFAULT_COLOR,
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimension: DEFAULT_TIME_DIMENSION,
+  forecasts: [],
   gradient: false,
   hasOnClick: false,
   hasOnContextMenu: false,
@@ -71,6 +73,7 @@ const defaultLineOptions: LineSpecOptions = {
   popoverMarkName: undefined,
   scaleType: 'time',
   trendlines: [],
+  lineCap: 'round',
   interpolate: undefined,
 };
 
@@ -87,9 +90,10 @@ const basicMetricRangeMarks = [
       enter: {
         y: [{ scale: 'yLinear', field: 'metric' }],
         stroke: { scale: COLOR_SCALE, field: 'series' },
+        strokeCap: { value: 'round' },
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
-        strokeWidth: { value: 1.5 },
+        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
         x: {

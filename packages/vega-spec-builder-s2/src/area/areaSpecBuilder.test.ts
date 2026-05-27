@@ -218,9 +218,9 @@ describe('areaSpecBuilder', () => {
       expect(signals[3]).toHaveProperty('name', SELECTED_ITEM);
       expect(signals[4]).toHaveProperty('name', SELECTED_SERIES);
       expect(signals[5]).toHaveProperty('name', SELECTED_GROUP);
-      expect(signals[6]).toHaveProperty('name', `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
-      expect(signals[6].on).toHaveLength(2);
-      expect(signals[7]).toHaveProperty('name', `${defaultAreaOptions.name}_controlledHoveredId`);
+      expect(signals[7]).toHaveProperty('name', `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
+      expect(signals[7].on).toHaveLength(2);
+      expect(signals[8]).toHaveProperty('name', `${defaultAreaOptions.name}_controlledHoveredId`);
     });
 
     test('should exclude data with key from update if inspect has excludeDataKey', () => {
