@@ -64,6 +64,7 @@ const defaultLineOptions: LineSpecOptions = {
   index: 0,
   interactiveMarkName: undefined,
   lineDirectLabels: [],
+  linePointAnnotations: [],
   lineType: { value: 'solid' },
   markType: 'line',
   metric: DEFAULT_METRIC,

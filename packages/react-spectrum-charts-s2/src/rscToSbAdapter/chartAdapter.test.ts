@@ -259,6 +259,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
             hasOnClick: false,
             hasOnContextMenu: false,
             lineDirectLabels: [],
+            linePointAnnotations: [],
             markType: 'line',
             metric: 'value',
             name: 'line0',
