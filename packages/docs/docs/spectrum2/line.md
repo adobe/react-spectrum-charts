@@ -79,6 +79,87 @@ S2 selection and hover states (stroke ring, opacity fading of other series) are 
 
 ---
 
+## Point annotations (LinePointAnnotation)
+
+The `LinePointAnnotation` component places a text label adjacent to each static point on the line. It requires `staticPoint` to be set on the parent `Line` — the annotation appears for every data point that has a visible static point.
+
+```jsx
+// data: [{ datetime: ..., value: 10, highlight: true, label: '10K' }, ...]
+<Chart data={data}>
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid />
+  <Line color="series" staticPoint="highlight">
+    <LinePointAnnotation textKey="label" />
+  </Line>
+</Chart>
+```
+
+![Line point annotation light](/img/s2_line_pointAnnotation_light.png#gh-light-mode-only)
+![Line point annotation dark](/img/s2_line_pointAnnotation_dark.png#gh-dark-mode-only)
+
+Labels are rendered in the series color with a background halo for legibility. The placement algorithm tries each position in the `anchor` array in order and uses the first one that fits within the chart bounds without overlapping other labels or points.
+
+### Controlling label placement
+
+By default, the algorithm tries `right`, `top`, `bottom`, then `left`. Pass a single string to fix the position, or an array to control the fallback order:
+
+```jsx
+{/* Always place the label to the left of the point */}
+<LinePointAnnotation textKey="label" anchor="left" />
+
+{/* Try top first, then fall back to bottom */}
+<LinePointAnnotation textKey="label" anchor={['top', 'bottom']} />
+```
+
+### Displaying different data fields
+
+The `textKey` prop sets which field in the data is used as the label text. It defaults to the `metric` field on the parent `Line`:
+
+```jsx
+{/* Use a pre-formatted string from the data */}
+<LinePointAnnotation textKey="formattedValue" />
+
+{/* Use the default metric field */}
+<LinePointAnnotation />
+```
+
+### LinePointAnnotation props
+
+<table>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>default</th>
+            <th>description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>textKey</td>
+            <td>string</td>
+            <td>(metric field)</td>
+            <td>Key in the data whose value is displayed as the label text. Defaults to the <code>metric</code> prop of the parent <code>Line</code>.</td>
+        </tr>
+        <tr>
+            <td>anchor</td>
+            <td>'top' | 'bottom' | 'left' | 'right' | (string | string[])</td>
+            <td>['right', 'top', 'bottom', 'left']</td>
+            <td>
+                The preferred placement direction relative to the data point. When an array is provided, each position is tried in order until one fits without overlapping other labels or points. If no position fits, the label is not shown.
+            </td>
+        </tr>
+        <tr>
+            <td>matchLineColor</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>When true, the label text color matches the series color. In S2, labels always use the series color regardless of this setting.</td>
+        </tr>
+    </tbody>
+</table>
+
+---
+
 ## Line direct labels (LineDirectLabel)
 
 The `LineDirectLabel` component is an S2-exclusive child of `Line`. It places an inline text label at the end of each line series by default, making multi-series charts readable without requiring a separate legend. Use the `position` prop to move labels to the start instead.
@@ -250,7 +331,7 @@ _* required_
 ## Line props (S2)
 
 :::note Not all base Line props are supported
-The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `MetricRange`, `Trendline`, or `LinePointAnnotation`. `LinePointAnnotation` is replaced by [`LineDirectLabel`](#line-direct-labels-linedirectlabel).
+The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `MetricRange`, or `Trendline`.
 :::
 
 <table>
@@ -265,9 +346,9 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartInspect | ChartPopover | LineDirectLabel | LineForecast</td>
+            <td>ChartInspect | ChartPopover | LineDirectLabel | LineForecast | LinePointAnnotation</td>
             <td>–</td>
-            <td>Optional child components for tooltips, popovers, inline direct labels, and forecast regions.</td>
+            <td>Optional child components for tooltips, popovers, inline direct labels, forecast regions, and point annotations.</td>
         </tr>
         <tr>
             <td>color</td>
