@@ -36,10 +36,37 @@ export const DEFAULT_LINE_WIDTHS = ['M'];
 /** Vega signal name for the chart-size-derived stroke width, driven by a reactive expression. */
 export const CHART_SIZE_STROKE_WIDTH = 'rscChartSizeStrokeWidth';
 
+/** Vega signal name for the chart-size-derived point size (area in px²), driven by a reactive expression. */
+export const CHART_SIZE_POINT_SIZE = 'rscChartSizePointSize';
+
+/** Vega signal name for the chart-size-derived point halo stroke width, driven by a reactive expression. */
+export const CHART_SIZE_POINT_HALO_WIDTH = 'rscChartSizePointHaloWidth';
+
 /** Pixel thresholds at which the size tier transitions from S → M and M → L. */
 export const CHART_SIZE_BREAKPOINTS = {
   M: 400,
   L: 800,
+} as const;
+
+/** Line stroke widths (px) per chart size tier. */
+export const CHART_SIZE_STROKE_WIDTHS = {
+  S: 1.5,
+  M: 2,
+  L: 3
+} as const;
+
+/** Symbol point sizes (Vega area = diameter²) per chart size tier. S=4px, M=6px, L=8px diameter. */
+export const CHART_SIZE_POINT_SIZES = { 
+  S: 16,
+  M: 36,
+  L: 64
+} as const; 
+
+/** Point halo stroke widths (px) per chart size tier. */
+export const CHART_SIZE_POINT_HALO_WIDTHS = { 
+  S: 0.5,
+  M: 0.75,
+  L: 1
 } as const;
 
 export const DEFAULT_LINEAR_DIMENSION = 'x';

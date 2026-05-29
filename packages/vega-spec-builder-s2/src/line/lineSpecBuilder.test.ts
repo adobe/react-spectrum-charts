@@ -21,6 +21,8 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   HOVERED_ITEM,
+  CHART_SIZE_POINT_HALO_WIDTH,
+  CHART_SIZE_POINT_SIZE,
   CHART_SIZE_STROKE_WIDTH,
   LINEAR_PADDING,
   MARK_ID,
@@ -277,7 +279,7 @@ const staticPointMark = {
         },
       ],
       size: {
-        value: 64,
+        signal: CHART_SIZE_POINT_SIZE,
       },
       fill: {
         scale: COLOR_SCALE,
@@ -287,7 +289,7 @@ const staticPointMark = {
         signal: BACKGROUND_COLOR,
       },
       strokeWidth: {
-        value: 1,
+        signal: CHART_SIZE_POINT_HALO_WIDTH,
       },
     },
     update: {
@@ -309,7 +311,7 @@ const staticPointBackgroundMark = {
   encode: {
     enter: {
       y: [{ scale: 'yLinear', field: 'value' }],
-      size: { value: 64 },
+      size: { signal: CHART_SIZE_POINT_SIZE },
       fill: { signal: BACKGROUND_COLOR },
       stroke: { signal: BACKGROUND_COLOR },
     },

@@ -13,6 +13,9 @@ import { SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_POINT_HALO_WIDTH,
+  CHART_SIZE_POINT_SIZE,
+  CHART_SIZE_STROKE_WIDTH,
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   HOVERED_ITEM,
@@ -43,7 +46,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     colorScheme,
     scaleType,
     dimension,
-    pointSize = 64,
+    pointSize,
     interactiveMarkName,
     isHighlightedByGroup,
   } = lineOptions;
@@ -72,10 +75,10 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     interactive: false,
     encode: {
       enter: {
-        size: { value: pointSize },
+        size: pointSize !== undefined ? { value: pointSize } : { signal: CHART_SIZE_POINT_SIZE },
         fill: getColorProductionRule(color, colorScheme),
         stroke: { signal: BACKGROUND_COLOR },
-        strokeWidth: { value: 1 },
+        strokeWidth: { signal: CHART_SIZE_POINT_HALO_WIDTH },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {
@@ -93,7 +96,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
  * @returns SymbolMark
  */
 export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): SymbolMark => {
-  const { name, metric, scaleType, dimension, pointSize = 64 } = lineOptions;
+  const { name, metric, scaleType, dimension, pointSize } = lineOptions;
   return {
     name: `${name}_staticPointBackground`,
     description: `${name}_staticPointBackground`,
@@ -102,7 +105,7 @@ export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): Symb
     interactive: false,
     encode: {
       enter: {
-        size: { value: pointSize },
+        size: pointSize !== undefined ? { value: pointSize } : { signal: CHART_SIZE_POINT_SIZE },
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
         y: getLineYEncoding(lineOptions, metric),
@@ -120,7 +123,7 @@ export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): Symb
  * @returns SymbolMark
  */
 export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-  const { dimension, metric, name, pointSize = 64, scaleType } = lineOptions;
+  const { dimension, metric, name, pointSize, scaleType } = lineOptions;
   return {
     name: `${name}_pointBackground`,
     description: `${name}_pointBackground`,
@@ -129,7 +132,7 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
     interactive: false,
     encode: {
       enter: {
-        size: { value: pointSize },
+        size: pointSize !== undefined ? { value: pointSize } : { signal: CHART_SIZE_POINT_SIZE },
         y: getLineYEncoding(lineOptions, metric),
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
@@ -142,7 +145,7 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
 };
 
 const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlightedData = true): SymbolMark => {
-  const { color, colorScheme, dimension, metric, name, pointSize = 64, scaleType } = lineOptions;
+  const { color, colorScheme, dimension, metric, name, pointSize, scaleType } = lineOptions;
   return {
     name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
     description: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
@@ -151,10 +154,10 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
     interactive: false,
     encode: {
       enter: {
-        size: { value: pointSize },
+        size: pointSize !== undefined ? { value: pointSize } : { signal: CHART_SIZE_POINT_SIZE },
         fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
-        strokeWidth: { value: 3 },
+        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {
