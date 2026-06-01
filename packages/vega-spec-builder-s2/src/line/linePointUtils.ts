@@ -30,6 +30,9 @@ import { LineSpecOptions } from '../types';
 import { getLineYEncoding } from './lineMarkUtils';
 import { LineMarkOptions } from './lineUtils';
 
+const getPointSizeEncoding = (pointSize: number | undefined) =>
+  pointSize === undefined ? { signal: CHART_SIZE_POINT_SIZE } : { value: pointSize };
+
 /**
  * Gets the filled dot mark for static points on a line chart.
  * Uses solid fill with series color and a background-colored stroke (S2 design spec).
@@ -75,7 +78,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     interactive: false,
     encode: {
       enter: {
-        size: pointSize !== undefined ? { value: pointSize } : { signal: CHART_SIZE_POINT_SIZE },
+        size: getPointSizeEncoding(pointSize),
         fill: getColorProductionRule(color, colorScheme),
         stroke: { signal: BACKGROUND_COLOR },
         strokeWidth: { signal: CHART_SIZE_POINT_HALO_WIDTH },
@@ -105,7 +108,7 @@ export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): Symb
     interactive: false,
     encode: {
       enter: {
-        size: pointSize !== undefined ? { value: pointSize } : { signal: CHART_SIZE_POINT_SIZE },
+        size: getPointSizeEncoding(pointSize),
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
         y: getLineYEncoding(lineOptions, metric),
@@ -132,7 +135,7 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
     interactive: false,
     encode: {
       enter: {
-        size: pointSize !== undefined ? { value: pointSize } : { signal: CHART_SIZE_POINT_SIZE },
+        size: getPointSizeEncoding(pointSize),
         y: getLineYEncoding(lineOptions, metric),
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
@@ -154,7 +157,7 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
     interactive: false,
     encode: {
       enter: {
-        size: pointSize !== undefined ? { value: pointSize } : { signal: CHART_SIZE_POINT_SIZE },
+        size: getPointSizeEncoding(pointSize),
         fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
         strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
