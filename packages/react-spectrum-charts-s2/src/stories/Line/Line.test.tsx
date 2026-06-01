@@ -261,7 +261,7 @@ describe('Line', () => {
       expect(hoverPoints.length).toBe(1);
       expect(hoverPoints[0].getAttribute('fill')).toEqual('white');
       expect(hoverPoints[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(hoverPoints[0]).toHaveAttribute('stroke-width', '3');
+      expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
       expect(hoverPoints[0].getAttribute('stroke-opacity')).toBeNull();
       expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
     });
@@ -303,7 +303,7 @@ describe('Line', () => {
       expect(hoverPoints.length).toBe(1);
       expect(hoverPoints[0].getAttribute('fill')).toEqual('white');
       expect(hoverPoints[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(hoverPoints[0]).toHaveAttribute('stroke-width', '3');
+      expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
       expect(hoverPoints[0].getAttribute('stroke-opacity')).toBeNull();
       expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
     });
@@ -323,7 +323,7 @@ describe('Line', () => {
       expect(point).toBeInTheDocument();
 
       expect(point.getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(point.getAttribute('stroke-width')).toEqual('3');
+      expect(point.getAttribute('stroke-width')).toEqual('2');
     });
 
     test('standard points should have series color border and background color fill when selected', async () => {
@@ -340,7 +340,7 @@ describe('Line', () => {
       expect(point.getAttribute('fill')).toEqual('white');
       expect(point.getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
       expect(point.getAttribute('stroke-opacity')).toBeNull();
-      expect(point.getAttribute('stroke-width')).toEqual('3');
+      expect(point.getAttribute('stroke-width')).toEqual('2');
     });
 
 
