@@ -20,6 +20,11 @@ import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
 
+// Each datum gets _lag1.._lagN fields (metric of the series N ranks above),
+// enabling the offset signal to compute the full cascading push without cross-datum state.
+const MAX_LABEL_OFFSET_SERIES = 20;
+const LABEL_LINE_HEIGHT = 16;
+
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.
  */
@@ -84,6 +89,14 @@ export const getLineDirectLabelData = (
 			ops: ['rank' as const],
 			as: ['_metricRank'],
 		},
+		{
+			type: 'window' as const,
+			sort: { field: ['_metricRank'], order: ['ascending' as const] },
+			ops: Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, () => 'lag' as const),
+			fields: Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, () => metric),
+			params: Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, (_, i) => i + 1),
+			as: Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, (_, i) => `_lag${i + 1}`),
+		},
 	];
 
 	return {
@@ -139,6 +152,17 @@ export const getLineDirectLabelMarks = (
 
 	const opacityRules = getLineOpacity(lineOptions);
 
+	// For each preceding rank k, compute the minimum offset needed so this label sits at
+	// least LABEL_LINE_HEIGHT px below label k's effective position (which itself was pushed
+	// by the same rule from rank 1 onward). Taking the max across all k gives the exact
+	// cascaded push without requiring cross-datum state in the signal.
+	const lagTerms = Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, (_, i) => {
+		const k = i + 1;
+		const baseShift = k * LABEL_LINE_HEIGHT - 12;
+		return `isValid(datum._lag${k}) ? ${baseShift} + scale('${yScaleName}', datum._lag${k}) - scale('${yScaleName}', datum["${metric}"]) : -1e9`;
+	});
+	const offsetSignal = `max(-12, ${lagTerms.join(', ')})`;
+
 	const baseEnter = {
 		text: { signal: textExpr },
 		align: { value: isStart ? ('left' as const) : ('right' as const) },
@@ -151,7 +175,7 @@ export const getLineDirectLabelMarks = (
 		y: {
 			scale: yScaleName,
 			field: metric,
-			offset: { signal: 'datum._seriesCount === 2 && datum._metricRank === 2 ? 22 : -12' },
+			offset: { signal: offsetSignal },
 		},
 	};
 
