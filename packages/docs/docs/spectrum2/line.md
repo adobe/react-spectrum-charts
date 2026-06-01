@@ -94,9 +94,6 @@ The `LinePointAnnotation` component places a text label adjacent to each static 
 </Chart>
 ```
 
-![Line point annotation light](/img/s2_line_pointAnnotation_light.png#gh-light-mode-only)
-![Line point annotation dark](/img/s2_line_pointAnnotation_dark.png#gh-dark-mode-only)
-
 Labels are rendered in the series color with a background halo for legibility. The placement algorithm tries each position in the `anchor` array in order and uses the first one that fits within the chart bounds without overlapping other labels or points.
 
 ### Controlling label placement
