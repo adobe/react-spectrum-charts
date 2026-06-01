@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
+import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { defaultLineOptions } from '../lineTestUtils';
 import {
@@ -186,8 +187,18 @@ describe('getLinePointAnnotationMarks', () => {
 			expect(getForegroundMark().from).toEqual({ data: 'line0Annotation0_bg' });
 		});
 
-		test('fill uses series color from static point stroke (datum.stroke)', () => {
-			expect(getForegroundMark().encode?.enter).toHaveProperty('fill', { field: 'datum.stroke' });
+		test('fill defaults to black (gray-900) when matchLineColor is false', () => {
+			expect(getForegroundMark().encode?.enter).toHaveProperty('fill', {
+				value: getS2ColorValue('gray-900', defaultLineOptions.colorScheme),
+			});
+		});
+
+		test('fill uses series color from static point stroke when matchLineColor is true', () => {
+			const marks = getLinePointAnnotationMarks({
+				...lineOptionsWithAnnotations,
+				linePointAnnotations: [{ matchLineColor: true }],
+			});
+			expect(marks[1].encode?.enter).toHaveProperty('fill', { field: 'datum.stroke' });
 		});
 
 		test('has no label transform', () => {

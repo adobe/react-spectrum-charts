@@ -12,6 +12,7 @@
 import { TextMark } from 'vega';
 
 import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
+import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { LinePointAnnotationOptions, LinePointAnnotationSpecOptions, LineSpecOptions } from '../../types';
 
@@ -37,18 +38,15 @@ export const getLinePointAnnotations = (lineOptions: LineSpecOptions): LinePoint
 };
 
 export const getLinePointAnnotationMarks = (lineOptions: LineSpecOptions): TextMark[] => {
-	const annotations = getLinePointAnnotations(lineOptions);
-	const marks: TextMark[] = [];
-
-	for (const annotation of annotations) {
-		const { anchor, name: linePointAnnotationName, textKey } = annotation;
+	return getLinePointAnnotations(lineOptions).flatMap((annotation) => {
+		const { anchor, matchLineColor, name: linePointAnnotationName, textKey } = annotation;
 		const bgMarkName = `${linePointAnnotationName}_bg`;
 
 		// Background mark: runs the label transform for collision-avoiding placement.
 		// Uses transparent fill + background-color stroke for the halo.
 		// Vega's canvas renderer draws fill then stroke, so using a single mark with both
 		// would have the stroke cover the fill. Two marks avoids this.
-		marks.push({
+		const backgroundMark: TextMark = {
 			name: bgMarkName,
 			type: 'text',
 			interactive: false,
@@ -71,19 +69,22 @@ export const getLinePointAnnotationMarks = (lineOptions: LineSpecOptions): TextM
 					anchor: Array.isArray(anchor) ? anchor : [anchor],
 				},
 			],
-		});
+		};
 
 		// Foreground mark: reads from the background mark to inherit its label-transform-computed
-		// positions (x, y, align, baseline, opacity). In S2, static points have fill=background
-		// and stroke=series color, so datum.datum.stroke gives the correct series color for the text.
-		marks.push({
+		// positions (x, y, align, baseline, opacity). 
+		// When matchLineColor is true, the fill uses the series color from the static point stroke (datum.stroke); otherwise defaults to black.
+		const labelFill = matchLineColor
+			? { field: 'datum.stroke' }
+			: { value: getS2ColorValue('gray-900', lineOptions.colorScheme) };
+		const foregroundMark: TextMark = {
 			name: linePointAnnotationName,
 			type: 'text',
 			interactive: false,
 			from: { data: bgMarkName },
 			encode: {
 				enter: {
-					fill: { field: 'datum.stroke' },
+					fill: labelFill,
 				},
 				update: {
 					text: { field: 'text' },
@@ -95,8 +96,8 @@ export const getLinePointAnnotationMarks = (lineOptions: LineSpecOptions): TextM
 					fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
 				},
 			},
-		});
-	}
+		};
 
-	return marks;
+		return [backgroundMark, foregroundMark];
+	});
 };
