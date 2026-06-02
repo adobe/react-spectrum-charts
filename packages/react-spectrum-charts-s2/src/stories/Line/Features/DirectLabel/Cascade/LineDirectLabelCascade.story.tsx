@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../../Chart';
-import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../../components';
+import { Axis, Legend, Line, LineDirectLabel } from '../../../../../components';
 import useChartProps from '../../../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../../../stories/data/data';
 import { bindWithProps } from '../../../../../test-utils';
