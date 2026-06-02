@@ -102,4 +102,24 @@ DirectLabelTwoSeries.args = { value: 'last' };
 const DirectLabelPositionStart = bindWithProps(LineDirectLabelStory);
 DirectLabelPositionStart.args = { value: 'series', position: 'start' };
 
-export { DirectLabelDefault, DirectLabelValueLast, DirectLabelValueAverage, DirectLabelWithInspect, DirectLabelTwoSeries, DirectLabelPositionStart };
+// Story demonstrating that the background halo remains fully opaque when hovering a series.
+// Hover over a series in the legend to dim other series — the background rect behind the label
+// must stay at full opacity so chart content does not bleed through the label text.
+const LineDirectLabelHoverOpaqueBackgroundStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const DirectLabelOpaqueBackground = bindWithProps(LineDirectLabelHoverOpaqueBackgroundStory);
+DirectLabelOpaqueBackground.args = { value: 'last' };
+
+export { DirectLabelDefault, DirectLabelValueLast, DirectLabelValueAverage, DirectLabelWithInspect, DirectLabelTwoSeries, DirectLabelPositionStart, DirectLabelOpaqueBackground };
