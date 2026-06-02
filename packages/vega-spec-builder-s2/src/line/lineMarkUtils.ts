@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ArrayValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+import { ArrayValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, TextMark } from 'vega';
 
 import {
   CHART_SIZE_STROKE_WIDTH,
@@ -18,6 +18,7 @@ import {
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
@@ -40,7 +41,9 @@ import {
 } from '../marks/markUtils';
 import { getStrokeDashFromLineType } from '../specUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { getScaleName } from '../scale/scaleSpecBuilder';
 import { ScaleType } from '../types';
+import { getDirectLabelTextMarks } from './directLabelUtils';
 import {
   getHighlightBackgroundPoint,
   getHighlightPoint,
@@ -215,12 +218,11 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
           ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
           : getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
-        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
-        // this has to be in update because when you resize the window that doesn't rebuild the spec
-        // but it may change the x position if it causes the chart to resize
+        // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
         x: getXProductionRule(scaleType, dimension),
+        strokeWidth: getLineStrokeWidth(lineMarkOptions),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
       },
@@ -285,6 +287,34 @@ export const getLineOpacity = ({
   return strokeOpacityRules;
 };
 
+export const getLineStrokeWidth = ({
+  interactiveMarkName,
+  isHighlightedByGroup,
+}: LineMarkOptions): ProductionRule<NumericValueRef> => {
+  if (!interactiveMarkName) return [{ signal: CHART_SIZE_STROKE_WIDTH }];
+
+  const normal = CHART_SIZE_STROKE_WIDTH;
+  const thickened = `${CHART_SIZE_STROKE_WIDTH} + 0.5`;
+
+  if (isHighlightedByGroup) {
+    return [
+      {
+        test: `length(data('${interactiveMarkName}_highlightedData'))`,
+        signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? ${thickened} : ${normal}`,
+      },
+      { signal: normal },
+    ];
+  }
+
+  return [
+    {
+      test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+      signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${thickened} : ${normal}`,
+    },
+    { signal: normal },
+  ];
+};
+
 /**
  * All the marks that get displayed when hovering or selecting a point on a line
  * @param lineMarkOptions
@@ -297,7 +327,7 @@ export const getLineHoverMarks = (
   dataSource: string,
   secondaryHighlightedMetric?: string
 ): Mark[] => {
-  const { dimension, name, scaleType } = lineOptions;
+  const { dimension, name, scaleType, showHoverLabel = true } = lineOptions;
   return [
     // vertical rule shown for the hovered or selected point
     getHoverRule(dimension, name, scaleType),
@@ -309,9 +339,43 @@ export const getLineHoverMarks = (
     getHighlightPoint(lineOptions),
     // additional point that gets highlighted like the trendline or raw line point
     ...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
+    // hover value label: background halo + foreground text — omitted when showHoverLabel is false
+    ...(showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
     // get interactive marks for the line
     ...getInteractiveMarks(dataSource, lineOptions),
   ];
+};
+
+/**
+ * Two text marks (background halo + foreground) showing the metric value adjacent to the hovered point.
+ * Uses the same visual style as LinePointAnnotation so both always match.
+ * Both marks read directly from ${name}_highlightedData — no label transform needed since position
+ * is computed directly from the data rather than via Vega's label layout algorithm.
+ */
+const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
+  const { colorScheme, dimension, hoverLabelKey, metric, name, scaleType } = lineOptions;
+  const labelField = hoverLabelKey ?? metric;
+
+  const scaleName = getScaleName('x', scaleType);
+  const xField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
+  // Flip label to the left side when the hovered point is in the right 20% of the chart,
+  // preventing the text from overflowing the chart boundary and causing flicker.
+  const nearRightEdge = `scale('${scaleName}', datum['${xField}']) > width * 0.8`;
+
+  return getDirectLabelTextMarks(
+    `${name}_hoverLabelBg`,
+    `${name}_hoverLabel`,
+    `${name}_highlightedData`,
+    `datum["${labelField}"]`,
+    getXProductionRule(scaleType, dimension),
+    getLineYEncoding(lineOptions, metric),
+    colorScheme,
+    {
+      dx: { signal: `${nearRightEdge} ? -8 : 8` },
+      align: { signal: `${nearRightEdge} ? 'right' : 'left'` },
+      baseline: { value: 'middle' },
+    }
+  );
 };
 
 const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): RuleMark => {

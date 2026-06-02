@@ -94,6 +94,23 @@ export interface LineOptions {
    * No default — omitting means no append.
    */
   alternateSegmentLabel?: string;
+  /**
+   * If `true`, all series at the hovered x-dimension highlight simultaneously instead of
+   * only the nearest series. Hover value labels show for every series at that dimension.
+   * @default false
+   */
+  dimensionHover?: boolean;
+  /**
+   * If `true`, shows the metric value as a label adjacent to the hovered data point.
+   * Suppressed when a `<ChartInspect>` child is present.
+   * @default true
+   */
+  showHoverLabel?: boolean;
+  /**
+   * Data field key to display in the hover value label. Defaults to the `metric` field.
+   * Use this to show a pre-formatted or alternate field (e.g. `'displayValue'`) instead of the raw metric.
+   */
+  hoverLabelKey?: string;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
@@ -110,6 +127,7 @@ type LineOptionsWithDefaults =
   | 'chartInspects'
   | 'color'
   | 'dimension'
+  | 'dimensionHover'
   | 'forecasts'
   | 'gradient'
   | 'hasOnClick'
@@ -123,6 +141,7 @@ type LineOptionsWithDefaults =
   | 'name'
   | 'opacity'
   | 'scaleType'
+  | 'showHoverLabel'
   | 'trendlines';
 
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
