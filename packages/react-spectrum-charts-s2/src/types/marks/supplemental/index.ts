@@ -15,4 +15,5 @@ export * from './barDirectLabel.types';
 export * from './dountSummary.types';
 export * from './lineForecast.types';
 export * from './lineDirectLabel.types';
+export * from './linePointAnnotation.types';
 export * from './segmentLabel.types';

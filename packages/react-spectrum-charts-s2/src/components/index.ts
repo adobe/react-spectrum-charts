@@ -21,6 +21,7 @@ export * from './Legend';
 export * from './Line';
 export * from './LineDirectLabel';
 export * from './LineForecast';
+export * from './LinePointAnnotation';
 export * from './LoadingState';
 export * from './ReferenceLine';
 export * from './Title';
