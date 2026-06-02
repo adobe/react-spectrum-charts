@@ -159,9 +159,12 @@ export const getLineDirectLabelMarks = (
 	const lagTerms = Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, (_, i) => {
 		const k = i + 1;
 		const baseShift = k * LABEL_LINE_HEIGHT - 12;
+		// k * 16 - 12 + yi - y
 		return `isValid(datum._lag${k}) ? ${baseShift} + scale('${yScaleName}', datum._lag${k}) - scale('${yScaleName}', datum["${metric}"]) : -1e9`;
 	});
 	const offsetSignal = `max(-12, ${lagTerms.join(', ')})`;
+	// Combines offset logic for handling 1, 2, and 3+ series
+	const finalOffsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (${offsetSignal})`;
 
 	const baseEnter = {
 		text: { signal: textExpr },
@@ -175,7 +178,7 @@ export const getLineDirectLabelMarks = (
 		y: {
 			scale: yScaleName,
 			field: metric,
-			offset: { signal: offsetSignal },
+			offset: { signal: finalOffsetSignal },
 		},
 	};
 

@@ -37,6 +37,8 @@ export default {
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400, backgroundColor: 'gray-50' };
 
+// DATA 
+
 const twoSeriesData = workspaceTrendsData
   .filter((d) => d.series === 'Add Freeform table' || d.series === 'Add Fallout')
   .map((d) => (d.series === 'Add Fallout' ? { ...d, users: d.users + 4000 } : d));
@@ -68,80 +70,32 @@ const threeSeriesConvergingData = [
   { datetime: 1668409200000, users: 2000, series: 'Series C' },
 ];
 
-const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
+// Three series that diverge near  the end to expose label overlap behavior
+const threeSeriesDivergingData = [
+  { datetime: 1667890800000, users: 1000, series: 'Series A' },
+  { datetime: 1667977200000, users: 1400, series: 'Series A' },
+  { datetime: 1668063600000, users: 1900, series: 'Series A' },
+  { datetime: 1668150000000, users: 2500, series: 'Series A' },
+  { datetime: 1668236400000, users: 3200, series: 'Series A' },
+  { datetime: 1668322800000, users: 4000, series: 'Series A' },
+  { datetime: 1668409200000, users: 5000, series: 'Series A' },
 
-const LineDirectLabelWithInspectStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
+  { datetime: 1667890800000, users: 2500, series: 'Series B' },
+  { datetime: 1667977200000, users: 2600, series: 'Series B' },
+  { datetime: 1668063600000, users: 2500, series: 'Series B' },
+  { datetime: 1668150000000, users: 2600, series: 'Series B' },
+  { datetime: 1668236400000, users: 2500, series: 'Series B' },
+  { datetime: 1668322800000, users: 2600, series: 'Series B' },
+  { datetime: 1668409200000, users: 2500, series: 'Series B' },
 
-const LineDirectLabelTwoSeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: twoSeriesData });
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-const DirectLabelDefault = bindWithProps(LineDirectLabelStory);
-DirectLabelDefault.args = { value: 'series' };
-
-const DirectLabelValueLast = bindWithProps(LineDirectLabelStory);
-DirectLabelValueLast.args = { value: 'last' };
-
-const DirectLabelValueAverage = bindWithProps(LineDirectLabelStory);
-DirectLabelValueAverage.args = { value: 'average' };
-
-const DirectLabelWithInspect = bindWithProps(LineDirectLabelWithInspectStory);
-DirectLabelWithInspect.args = { value: 'last' };
-
-const DirectLabelTwoSeries = bindWithProps(LineDirectLabelTwoSeriesStory);
-DirectLabelTwoSeries.args = { value: 'last' };
-
-const LineDirectLabelThreeSeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: threeSeriesConvergingData });
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-const DirectLabelThreePlusSeries = bindWithProps(LineDirectLabelThreeSeriesStory);
-DirectLabelThreePlusSeries.args = { value: 'last' };
+  { datetime: 1667890800000, users: 5000, series: 'Series C' },
+  { datetime: 1667977200000, users: 4200, series: 'Series C' },
+  { datetime: 1668063600000, users: 3500, series: 'Series C' },
+  { datetime: 1668150000000, users: 2900, series: 'Series C' },
+  { datetime: 1668236400000, users: 1800, series: 'Series C' },
+  { datetime: 1668322800000, users: 1000, series: 'Series C' },
+  { datetime: 1668409200000, users: 400, series: 'Series C' },
+];
 
 // Six series: A/B/C cluster near ~3000 at the end, D/E cluster near ~1400, F isolated at ~300
 const sixSeriesData = [
@@ -194,6 +148,111 @@ const sixSeriesData = [
   { datetime: 1668409200000, users: 300, series: 'Series F' },
 ];
 
+// 20 series data to demonstrate what happens when labels cannot all fit on screen
+const manySeriesData = (
+	[
+		['Series A',  9800, 9500],
+		['Series B',  9000, 8700],
+		['Series C',  8200, 7900],
+		['Series D',  7500, 7200],
+		['Series E',  6800, 6500],
+		['Series F',  6100, 5800],
+		['Series G',  5400, 5200],
+		['Series H',  4800, 4600],
+		['Series I',  4200, 4000],
+		['Series J',  3600, 3400],
+		['Series K',  3100, 2900],
+		['Series L',  2600, 2400],
+		['Series M',  2100, 1900],
+		['Series N',  1700, 1500],
+		['Series O',  1300, 1100],
+		['Series P',  1000,  800],
+		['Series Q',   700,  550],
+		['Series R',   450,  350],
+		['Series S',   250,  180],
+		['Series T',   120,   60],
+	] as [string, number, number][]
+).flatMap(([series, start, end]) =>
+	Array.from({ length: 7 }, (_, i) => ({
+		datetime: 1667890800000 + i * 86400000,
+		users: Math.round(start + (end - start) * (i / 6)),
+		series,
+	}))
+);
+
+// TEMPLATES
+
+const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const LineDirectLabelWithInspectStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const LineDirectLabelTwoSeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: twoSeriesData });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const LineDirectLabelThreeSeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: threeSeriesConvergingData });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const LineDirectLabelThreeSeriesDivergeStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: threeSeriesDivergingData });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
 const LineDirectLabelSixSeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: sixSeriesData });
   return (
@@ -208,10 +267,61 @@ const LineDirectLabelSixSeriesStory: StoryFn<typeof LineDirectLabel> = (args): R
   );
 };
 
+const LineDirectLabelManySeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: manySeriesData });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+// BINDINGS
+
+const DirectLabelDefault = bindWithProps(LineDirectLabelStory);
+DirectLabelDefault.args = { value: 'series' };
+
+const DirectLabelValueLast = bindWithProps(LineDirectLabelStory);
+DirectLabelValueLast.args = { value: 'last' };
+
+const DirectLabelValueAverage = bindWithProps(LineDirectLabelStory);
+DirectLabelValueAverage.args = { value: 'average' };
+
+const DirectLabelWithInspect = bindWithProps(LineDirectLabelWithInspectStory);
+DirectLabelWithInspect.args = { value: 'last' };
+
+const DirectLabelTwoSeries = bindWithProps(LineDirectLabelTwoSeriesStory);
+DirectLabelTwoSeries.args = { value: 'last' };
+
+const DirectLabelThreePlusSeries = bindWithProps(LineDirectLabelThreeSeriesStory);
+DirectLabelThreePlusSeries.args = { value: 'last' };
+
+const DirectLabelThreeSeriesDiverge = bindWithProps(LineDirectLabelThreeSeriesDivergeStory);
+DirectLabelThreeSeriesDiverge.args = { value: 'last' };
+
 const DirectLabelSixSeries = bindWithProps(LineDirectLabelSixSeriesStory);
 DirectLabelSixSeries.args = { value: 'last' };
+
+const DirectLabelManySeries = bindWithProps(LineDirectLabelManySeriesStory);
+DirectLabelManySeries.args = { value: 'last' };
 
 const DirectLabelPositionStart = bindWithProps(LineDirectLabelStory);
 DirectLabelPositionStart.args = { value: 'series', position: 'start' };
 
-export { DirectLabelDefault, DirectLabelValueLast, DirectLabelValueAverage, DirectLabelWithInspect, DirectLabelTwoSeries, DirectLabelThreePlusSeries, DirectLabelSixSeries, DirectLabelPositionStart };
+export {
+  DirectLabelDefault,
+  DirectLabelValueLast,
+  DirectLabelValueAverage,
+  DirectLabelPositionStart,
+  DirectLabelTwoSeries,
+  DirectLabelThreePlusSeries,
+  DirectLabelThreeSeriesDiverge,
+  DirectLabelSixSeries,
+  DirectLabelManySeries,
+  DirectLabelWithInspect,
+};
