@@ -55,12 +55,12 @@ export const CHART_SIZE_STROKE_WIDTHS = {
   L: 3
 } as const;
 
-/** Symbol point sizes (Vega area = diameter²) per chart size tier. S=4px, M=6px, L=8px diameter. */
-export const CHART_SIZE_POINT_SIZES = { 
-  S: 16,
-  M: 36,
-  L: 64
-} as const; 
+/** Symbol point sizes (Vega area = diameter²) per chart size tier. S=6px, M=8px, L=10px diameter. */
+export const CHART_SIZE_POINT_SIZES = {
+  S: 36,
+  M: 64,
+  L: 100
+} as const;
 
 /** Point halo stroke widths (px) per chart size tier. */
 export const CHART_SIZE_POINT_HALO_WIDTHS = { 

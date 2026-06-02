@@ -13,7 +13,7 @@ import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/constants';
+import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_POINT_SIZES } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../../Chart';
 import { Axis, ChartInspect, Legend, Line } from '../../../../components';
@@ -71,7 +71,11 @@ const POINT_SIZE_THRESHOLDS = [
   { px: CHART_SIZE_BREAKPOINTS.L, label: 'L' },
 ];
 
-const POINT_DIAMETERS: Record<string, string> = { S: '4px', M: '6px', L: '8px' };
+const POINT_DIAMETERS: Record<string, string> = {
+  S: `${Math.sqrt(CHART_SIZE_POINT_SIZES.S)}px`,
+  M: `${Math.sqrt(CHART_SIZE_POINT_SIZES.M)}px`,
+  L: `${Math.sqrt(CHART_SIZE_POINT_SIZES.L)}px`,
+};
 
 const HANDLE_STYLES = `
   .rsc-static-point-size-handle {
