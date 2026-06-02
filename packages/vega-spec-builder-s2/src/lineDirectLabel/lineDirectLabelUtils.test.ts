@@ -329,10 +329,50 @@ describe('getLineDirectLabelMarks', () => {
 		expect(marks[0].encode?.enter?.align).toEqual({ value: 'right' });
 	});
 
-	test('y offset switches based on series count and rank', () => {
-		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
-		const y = marks[0].encode?.enter?.y as { scale: string; field: string; offset: { signal: string } };
-		expect(y.offset).toEqual({ signal: 'datum._seriesCount === 2 && datum._metricRank === 2 ? 22 : -12' });
+	describe('y offset signal evaluation', () => {
+		const evalOffsetSignal = (
+			datum: Record<string, unknown>,
+			scaleImpl = (_name: string, v: number) => v
+		): number => {
+			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+			const signal = (marks[0].encode?.enter?.y as { offset: { signal: string } }).offset.signal;
+			const isValid = (v: unknown) => v !== null && v !== undefined && !Number.isNaN(v as number);
+			return new Function('datum', 'scale', 'isValid', 'max', `return ${signal}`)(datum, scaleImpl, isValid, Math.max);
+		};
+
+		test('2-series rank 1: label placed 12px above the line', () => {
+			expect(evalOffsetSignal({ _seriesCount: 2, _metricRank: 1 })).toBe(-12);
+		});
+
+		test('2-series rank 2: label placed 22px below the line', () => {
+			expect(evalOffsetSignal({ _seriesCount: 2, _metricRank: 2 })).toBe(22);
+		});
+
+		test('3+ series rank 1: no valid lags, defaults to 12px above the line', () => {
+			expect(evalOffsetSignal({ _seriesCount: 3, _metricRank: 1, _lag1: null })).toBe(-12);
+		});
+
+		test('3+ series rank 2: pushed up enough to clear label above it', () => {
+			// lag1 at y=200, current series at y=100 → 4 + 200 - 100 = 104px offset
+			expect(evalOffsetSignal({ _seriesCount: 3, _metricRank: 2, [DEFAULT_METRIC]: 100, _lag1: 200 })).toBe(104);
+		});
+
+		test('3+ series rank 3: cascades off both preceding labels', () => {
+			// lag1 at y=300, lag2 at y=200, current at y=100
+			// lag1 term: 4 + 300 - 100 = 204, lag2 term: 20 + 200 - 100 = 120 → max(-12, 204, 120) = 204
+			expect(evalOffsetSignal({ _seriesCount: 3, _metricRank: 3, [DEFAULT_METRIC]: 100, _lag1: 300, _lag2: 200 })).toBe(204);
+		});
+
+		test('3+ series: null lag does not contribute to max', () => {
+			// lag2 is null, only lag1 contributes: 4 + 150 - 100 = 54
+			expect(evalOffsetSignal({ _seriesCount: 4, _metricRank: 3, [DEFAULT_METRIC]: 100, _lag1: 150, _lag2: null })).toBe(54);
+		});
+
+		test('y field is the metric', () => {
+			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+			const y = marks[0].encode?.enter?.y as { field: string };
+			expect(y.field).toBe(DEFAULT_METRIC);
+		});
 	});
 
 	test('uses metricAxis for y scale when provided', () => {
