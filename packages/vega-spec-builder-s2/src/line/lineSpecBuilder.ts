@@ -158,7 +158,8 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   if (scaleType === 'time') {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
-  if (dimensionHover) {
+  const inspectAlreadyGroupsByDimension = chartInspects.some(({ highlightBy }) => highlightBy === 'dimension');
+  if (dimensionHover && !inspectAlreadyGroupsByDimension) {
     tableData.transform = tableData.transform ?? [];
     tableData.transform.push(getGroupIdTransform([dimension], name));
   }

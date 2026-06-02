@@ -36,3 +36,4 @@ cursor
 tmp/
 
 .agents/
+.scout/

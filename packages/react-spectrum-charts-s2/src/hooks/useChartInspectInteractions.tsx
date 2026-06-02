@@ -126,11 +126,9 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
             const groupId = `${inspect.name}_${GROUP_ID}`;
             value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
           }
-          const content = inspect.callback(value);
-          if (!content) return '';
           return renderToHtml(
             <div className="rsc-tooltip" data-testid="rsc-tooltip">
-              {content}
+              {inspect.callback(value)}
             </div>
           );
         }
