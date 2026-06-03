@@ -15,8 +15,8 @@ import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega
 import {
   BACKGROUND_COLOR,
   CHART_SIZE_BREAKPOINTS,
-  CHART_SIZE_POINT_HALO_WIDTH,
-  CHART_SIZE_POINT_HALO_WIDTHS,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_HOVER_STROKE_WIDTHS,
   CHART_SIZE_POINT_SIZE,
   CHART_SIZE_POINT_SIZES,
   CHART_SIZE_STROKE_WIDTH,
@@ -262,14 +262,14 @@ export const getDefaultSignals = ({
     update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_STROKE_WIDTHS.M} : ${CHART_SIZE_STROKE_WIDTHS.L}`,
   };
 
+  const chartSizeHoverStrokeWidthSignal: Signal = {
+    name: CHART_SIZE_HOVER_STROKE_WIDTH,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.M} : ${CHART_SIZE_HOVER_STROKE_WIDTHS.L}`,
+  };
+
   const chartSizePointSizeSignal: Signal = {
     name: CHART_SIZE_POINT_SIZE,
     update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_POINT_SIZES.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_POINT_SIZES.M} : ${CHART_SIZE_POINT_SIZES.L}`,
-  };
-
-  const chartSizePointHaloWidthSignal: Signal = {
-    name: CHART_SIZE_POINT_HALO_WIDTH,
-    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_POINT_HALO_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_POINT_HALO_WIDTHS.M} : ${CHART_SIZE_POINT_HALO_WIDTHS.L}`,
   };
 
   return [
@@ -286,8 +286,8 @@ export const getDefaultSignals = ({
     getGenericValueSignal(SELECTED_SERIES),
     getGenericValueSignal(SELECTED_GROUP),
     chartSizeStrokeWidthSignal,
+    chartSizeHoverStrokeWidthSignal,
     chartSizePointSizeSignal,
-    chartSizePointHaloWidthSignal,
   ];
 };
 

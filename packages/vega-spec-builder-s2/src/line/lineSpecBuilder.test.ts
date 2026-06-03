@@ -21,7 +21,6 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   HOVERED_ITEM,
-  CHART_SIZE_POINT_HALO_WIDTH,
   CHART_SIZE_POINT_SIZE,
   CHART_SIZE_STROKE_WIDTH,
   LINEAR_PADDING,
@@ -284,12 +283,6 @@ const staticPointMark = {
       fill: {
         scale: COLOR_SCALE,
         field: 'series',
-      },
-      stroke: {
-        signal: BACKGROUND_COLOR,
-      },
-      strokeWidth: {
-        signal: CHART_SIZE_POINT_HALO_WIDTH,
       },
     },
     update: {

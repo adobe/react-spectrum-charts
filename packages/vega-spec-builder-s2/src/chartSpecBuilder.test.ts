@@ -16,10 +16,10 @@ import { colorSchemes, spectrum2Colors } from '@spectrum-charts/themes';
 import {
   BACKGROUND_COLOR,
   CHART_SIZE_BREAKPOINTS,
-  CHART_SIZE_POINT_HALO_WIDTH,
-  CHART_SIZE_POINT_HALO_WIDTHS,
   CHART_SIZE_POINT_SIZE,
   CHART_SIZE_POINT_SIZES,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_HOVER_STROKE_WIDTHS,
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTHS,
   COLOR_SCALE,
@@ -488,6 +488,15 @@ describe('Chart spec builder', () => {
       );
     });
 
+    test('CHART_SIZE_HOVER_STROKE_WIDTH signal uses rscContainerWidth expression with correct breakpoints and hover stroke widths', () => {
+      const signals = getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] });
+      const hoverStrokeWidthSignal = signals.find((s) => s.name === CHART_SIZE_HOVER_STROKE_WIDTH);
+      expect(hoverStrokeWidthSignal).toHaveProperty(
+        'update',
+        `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.M} : ${CHART_SIZE_HOVER_STROKE_WIDTHS.L}`
+      );
+    });
+
     test('CHART_SIZE_POINT_SIZE signal uses rscContainerWidth expression with correct breakpoints and point sizes', () => {
       const signals = getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] });
       const pointSizeSignal = signals.find((s) => s.name === CHART_SIZE_POINT_SIZE);
@@ -497,13 +506,5 @@ describe('Chart spec builder', () => {
       );
     });
 
-    test('CHART_SIZE_POINT_HALO_WIDTH signal reduces by 0.25 per breakpoint step down', () => {
-      const signals = getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] });
-      const haloWidthSignal = signals.find((s) => s.name === CHART_SIZE_POINT_HALO_WIDTH);
-      expect(haloWidthSignal).toHaveProperty(
-        'update',
-        `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_POINT_HALO_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_POINT_HALO_WIDTHS.M} : ${CHART_SIZE_POINT_HALO_WIDTHS.L}`
-      );
-    });
   });
 });

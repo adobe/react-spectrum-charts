@@ -13,9 +13,8 @@ import { SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
-  CHART_SIZE_POINT_HALO_WIDTH,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_POINT_SIZE,
-  CHART_SIZE_STROKE_WIDTH,
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   HOVERED_ITEM,
@@ -35,9 +34,6 @@ const getPointSizeEncoding = (pointSize: number | undefined) =>
 
 /**
  * Gets the filled dot mark for static points on a line chart.
- * Uses solid fill with series color and a background-colored stroke (S2 design spec).
- * The stroke creates visual separation between the dot and the line underneath it —
- * this is a single mark, not two layered marks.
  * @param lineOptions
  * @returns SymbolMark
  */
@@ -80,8 +76,6 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
       enter: {
         size: getPointSizeEncoding(pointSize),
         fill: getColorProductionRule(color, colorScheme),
-        stroke: { signal: BACKGROUND_COLOR },
-        strokeWidth: { signal: CHART_SIZE_POINT_HALO_WIDTH },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {
@@ -160,7 +154,7 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
         size: getPointSizeEncoding(pointSize),
         fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
-        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
+        strokeWidth: { signal: CHART_SIZE_HOVER_STROKE_WIDTH },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {

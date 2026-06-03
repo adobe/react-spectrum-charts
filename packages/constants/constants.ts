@@ -36,11 +36,11 @@ export const DEFAULT_LINE_WIDTHS = ['M'];
 /** Vega signal name for the chart-size-derived stroke width, driven by a reactive expression. */
 export const CHART_SIZE_STROKE_WIDTH = 'rscChartSizeStrokeWidth';
 
+/** Vega signal name for the chart-size-derived hover point stroke width, driven by a reactive expression. */
+export const CHART_SIZE_HOVER_STROKE_WIDTH = 'rscChartSizeHoverStrokeWidth';
+
 /** Vega signal name for the chart-size-derived point size (area in px²), driven by a reactive expression. */
 export const CHART_SIZE_POINT_SIZE = 'rscChartSizePointSize';
-
-/** Vega signal name for the chart-size-derived point halo stroke width, driven by a reactive expression. */
-export const CHART_SIZE_POINT_HALO_WIDTH = 'rscChartSizePointHaloWidth';
 
 /** Pixel thresholds at which the size tier transitions from S → M and M → L. */
 export const CHART_SIZE_BREAKPOINTS = {
@@ -48,25 +48,31 @@ export const CHART_SIZE_BREAKPOINTS = {
   L: 800,
 } as const;
 
-/** Line stroke widths (px) per chart size tier. */
+/** Scale ratios applied to all size-tier properties (S, M, L). M=1 is the base. */
+const CHART_SIZE_SCALE_RATIOS = { S: 0.75, M: 1, L: 1.25 } as const;
+
+/** Line stroke widths (px) per chart size tier. Base M = 2px. */
+const BASE_STROKE_WIDTH = 2;
 export const CHART_SIZE_STROKE_WIDTHS = {
-  S: 1.5,
-  M: 2,
-  L: 3
+  S: BASE_STROKE_WIDTH * CHART_SIZE_SCALE_RATIOS.S,
+  M: BASE_STROKE_WIDTH * CHART_SIZE_SCALE_RATIOS.M,
+  L: BASE_STROKE_WIDTH * CHART_SIZE_SCALE_RATIOS.L,
 } as const;
 
-/** Symbol point sizes (Vega area = diameter²) per chart size tier. S=6px, M=8px, L=10px diameter. */
+/** Hover point stroke widths (px) per chart size tier. Stroke width + 0.5px offset. */
+const HOVER_STROKE_OFFSET = 0.5;
+export const CHART_SIZE_HOVER_STROKE_WIDTHS = {
+  S: CHART_SIZE_STROKE_WIDTHS.S + HOVER_STROKE_OFFSET,
+  M: CHART_SIZE_STROKE_WIDTHS.M + HOVER_STROKE_OFFSET,
+  L: CHART_SIZE_STROKE_WIDTHS.L + HOVER_STROKE_OFFSET,
+} as const;
+
+/** Symbol point sizes (Vega area = diameter²) per chart size tier. Base M = 8px diameter. */
+const BASE_POINT_DIAMETER = 8;
 export const CHART_SIZE_POINT_SIZES = {
-  S: 36,
-  M: 64,
-  L: 100
-} as const;
-
-/** Point halo stroke widths (px) per chart size tier. */
-export const CHART_SIZE_POINT_HALO_WIDTHS = { 
-  S: 0.5,
-  M: 0.75,
-  L: 1
+  S: (BASE_POINT_DIAMETER * CHART_SIZE_SCALE_RATIOS.S) ** 2,
+  M: (BASE_POINT_DIAMETER * CHART_SIZE_SCALE_RATIOS.M) ** 2,
+  L: (BASE_POINT_DIAMETER * CHART_SIZE_SCALE_RATIOS.L) ** 2,
 } as const;
 
 export const DEFAULT_LINEAR_DIMENSION = 'x';

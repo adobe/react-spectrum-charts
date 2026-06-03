@@ -11,9 +11,8 @@
  */
 import {
   BACKGROUND_COLOR,
-  CHART_SIZE_POINT_HALO_WIDTH,
   CHART_SIZE_POINT_SIZE,
-  CHART_SIZE_STROKE_WIDTH,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   COLOR_SCALE,
   DEFAULT_COLOR,
   FADE_FACTOR,
@@ -52,7 +51,7 @@ describe('getHighlightPoint()', () => {
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
-    expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_STROKE_WIDTH });
+    expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_HOVER_STROKE_WIDTH });
   });
 
   test('should use CHART_SIZE_POINT_SIZE signal when pointSize is not provided', () => {
@@ -95,7 +94,7 @@ describe('getSelectionPoint()', () => {
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
-    expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_STROKE_WIDTH });
+    expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_HOVER_STROKE_WIDTH });
   });
 
   test('should use CHART_SIZE_POINT_SIZE signal when pointSize is not provided', () => {
@@ -192,16 +191,6 @@ describe('getLineStaticPoint()', () => {
   test('should use solid fill with series color (not BACKGROUND_COLOR)', () => {
     const mark = getLineStaticPoint(defaultLineOptions);
     expect(mark.encode?.enter?.fill).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
-  });
-
-  test('should have background-color stroke for visual separation from the line', () => {
-    const mark = getLineStaticPoint(defaultLineOptions);
-    expect(mark.encode?.enter?.stroke).toEqual({ signal: BACKGROUND_COLOR });
-  });
-
-  test('should use CHART_SIZE_POINT_HALO_WIDTH signal for the background-color stroke', () => {
-    const mark = getLineStaticPoint(defaultLineOptions);
-    expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_POINT_HALO_WIDTH });
   });
 
   test('should not be interactive', () => {

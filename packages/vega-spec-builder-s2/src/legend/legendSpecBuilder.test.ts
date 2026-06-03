@@ -24,7 +24,7 @@ import {
 } from '@spectrum-charts/constants';
 
 import {
-  defaultChartSizePointHaloWidthSignal,
+  defaultChartSizeHoverStrokeWidthSignal,
   defaultChartSizePointSizeSignal,
   defaultChartSizeStrokeWidthSignal,
   defaultHighlightedGroupSignal,
@@ -163,8 +163,8 @@ describe('addLegend()', () => {
           defaultSelectedSeriesSignal,
           defaultSelectedGroupSignal,
           defaultChartSizeStrokeWidthSignal,
+          defaultChartSizeHoverStrokeWidthSignal,
           defaultChartSizePointSizeSignal,
-          defaultChartSizePointHaloWidthSignal,
           {
             name: `legend0_${HOVERED_SERIES}`,
             value: null,
