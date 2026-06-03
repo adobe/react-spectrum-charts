@@ -20,9 +20,6 @@ import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
 
-// Each datum gets _lag1.._lagN fields (metric of the series N ranks above),
-// enabling the offset signal to compute the full cascading push without cross-datum state.
-const MAX_LABEL_OFFSET_SERIES = 20;
 const LABEL_LINE_HEIGHT = 16;
 
 /**
@@ -36,6 +33,7 @@ export const getLineDirectLabelData = (
 	const { color, dimension, excludeSeries, metric, position, scaleType, value } = labelOptions;
 	const dimField = getDimensionField(dimension, scaleType);
 	const isStart = position === 'start';
+	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const { facets } = getFacetsFromOptions({
 		color: lineOptions.color,
@@ -78,24 +76,20 @@ export const getLineDirectLabelData = (
 				]
 			: []),
 		{
-			type: 'joinaggregate' as const,
-			fields: [metric],
-			ops: ['count' as const],
-			as: ['_seriesCount'],
-		},
-		{
 			type: 'window' as const,
 			sort: { field: [metric], order: ['descending' as const] },
 			ops: ['rank' as const],
 			as: ['_metricRank'],
 		},
+		{ type: 'formula' as const, as: '_scaledY', expr: `scale('${yScaleName}', datum["${metric}"])` },
+		{ type: 'formula' as const, as: '_adjustedY', expr: `datum._scaledY - datum._metricRank * ${LABEL_LINE_HEIGHT}` },
 		{
 			type: 'window' as const,
 			sort: { field: ['_metricRank'], order: ['ascending' as const] },
-			ops: Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, () => 'lag' as const),
-			fields: Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, () => metric),
-			params: Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, (_, i) => i + 1),
-			as: Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, (_, i) => `_lag${i + 1}`),
+			frame: [null, 0] as [null, number],
+			ops: ['max' as const],
+			fields: ['_adjustedY'],
+			as: ['_cumMaxAdjusted'],
 		},
 	];
 
@@ -152,17 +146,7 @@ export const getLineDirectLabelMarks = (
 
 	const opacityRules = getLineOpacity(lineOptions);
 
-	// For each preceding rank k, compute the minimum offset needed so this label sits at
-	// least LABEL_LINE_HEIGHT px below label k's effective position (which itself was pushed
-	// by the same rule from rank 1 onward). Taking the max across all k gives the exact
-	// cascaded push without requiring cross-datum state in the signal.
-	const lagTerms = Array.from({ length: MAX_LABEL_OFFSET_SERIES - 1 }, (_, i) => {
-		const k = i + 1;
-		const baseShift = k * LABEL_LINE_HEIGHT - 12;
-		return `isValid(datum._lag${k}) ? ${baseShift} + scale('${yScaleName}', datum._lag${k}) - scale('${yScaleName}', datum["${metric}"]) : -1e9`;
-	});
-	// Combines offset logic for handling 1, 2, and 3+ series
-	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : max(-12, ${lagTerms.join(', ')})`;
+	const offsetSignal = `datum._cumMaxAdjusted + datum._metricRank * ${LABEL_LINE_HEIGHT} - 12 - datum._scaledY`;
 
 	const baseEnter = {
 		text: { signal: textExpr },
