@@ -181,17 +181,40 @@ describe('getLineDirectLabelData', () => {
 		expect(excludeFilter).toBeUndefined();
 	});
 
-	test('includes series count and rank transforms', () => {
+	test('includes rank window transform', () => {
 		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
 		const transforms = getTransforms(data);
-		const countAgg = transforms.find(
-			(t) => t.type === 'joinaggregate' && 'as' in t && asArray(t.as).includes('_seriesCount')
-		);
 		const rankWindow = transforms.find(
 			(t) => t.type === 'window' && 'as' in t && asArray(t.as).includes('_metricRank')
 		);
-		expect(countAgg).toBeDefined();
 		expect(rankWindow).toBeDefined();
+	});
+
+	test('includes _scaledY formula transform', () => {
+		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === '_scaledY');
+		expect(formula).toBeDefined();
+		expect((formula as { expr: string }).expr).toContain(`scale('yLinear', datum["${DEFAULT_METRIC}"])`);
+	});
+
+	test('includes _adjustedY formula transform', () => {
+		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === '_adjustedY');
+		expect(formula).toBeDefined();
+		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * 16');
+	});
+
+	test('includes _cumMaxAdjusted cumulative window transform', () => {
+		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const window = transforms.find(
+			(t) => t.type === 'window' && 'as' in t && asArray(t.as).includes('_cumMaxAdjusted')
+		);
+		expect(window).toBeDefined();
+		expect(window).toHaveProperty('ops', ['max']);
+		expect(window).toHaveProperty('fields', ['_adjustedY']);
 	});
 
 	test('uses line name and index in data name', () => {
@@ -330,42 +353,34 @@ describe('getLineDirectLabelMarks', () => {
 	});
 
 	describe('y offset signal evaluation', () => {
-		const evalOffsetSignal = (
-			datum: Record<string, unknown>,
-			scaleImpl = (_name: string, v: number) => v
-		): number => {
+		const evalOffsetSignal = (datum: Record<string, number>): number => {
 			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 			const signal = (marks[0].encode?.enter?.y as { offset: { signal: string } }).offset.signal;
-			const isValid = (v: unknown) => v !== null && v !== undefined && !Number.isNaN(v as number);
-			return new Function('datum', 'scale', 'isValid', 'max', `return ${signal}`)(datum, scaleImpl, isValid, Math.max);
+			return new Function('datum', `return ${signal}`)(datum);
 		};
 
-		test('2-series rank 1: label placed 12px above the line', () => {
-			expect(evalOffsetSignal({ _seriesCount: 2, _metricRank: 1 })).toBe(-12);
+		test('rank 1 always places label 12px above the line terminus', () => {
+			// cumMaxAdjusted = _scaledY - 1*16 for rank 1
+			// offset = (100 - 16) + 1*16 - 12 - 100 = -12
+			expect(evalOffsetSignal({ _metricRank: 1, _scaledY: 100, _cumMaxAdjusted: 84 })).toBe(-12);
 		});
 
-		test('2-series rank 2: label placed 22px below the line', () => {
-			expect(evalOffsetSignal({ _seriesCount: 2, _metricRank: 2 })).toBe(22);
+		test('rank 2 well-separated from rank 1: also placed 12px above', () => {
+			// rank2 adjustedY (200 - 32 = 168) > rank1 adjustedY, so cumMaxAdjusted = 168
+			// offset = 168 + 2*16 - 12 - 200 = -12
+			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 200, _cumMaxAdjusted: 168 })).toBe(-12);
 		});
 
-		test('3+ series rank 1: no valid lags, defaults to 12px above the line', () => {
-			expect(evalOffsetSignal({ _seriesCount: 3, _metricRank: 1, _lag1: null })).toBe(-12);
+		test('rank 2 close to rank 1: pushed above natural position to avoid overlap', () => {
+			// rank1 adjustedY (100 - 16 = 84) > rank2 adjustedY (108 - 32 = 76), so cumMaxAdjusted = 84
+			// offset = 84 + 2*16 - 12 - 108 = -4 (less negative than -12, meaning pushed further up)
+			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 108, _cumMaxAdjusted: 84 })).toBe(-4);
 		});
 
-		test('3+ series rank 2: pushed up enough to clear label above it', () => {
-			// lag1 at y=200, current series at y=100 → 4 + 200 - 100 = 104px offset
-			expect(evalOffsetSignal({ _seriesCount: 3, _metricRank: 2, [DEFAULT_METRIC]: 100, _lag1: 200 })).toBe(104);
-		});
-
-		test('3+ series rank 3: cascades off both preceding labels', () => {
-			// lag1 at y=300, lag2 at y=200, current at y=100
-			// lag1 term: 4 + 300 - 100 = 204, lag2 term: 20 + 200 - 100 = 120 → max(-12, 204, 120) = 204
-			expect(evalOffsetSignal({ _seriesCount: 3, _metricRank: 3, [DEFAULT_METRIC]: 100, _lag1: 300, _lag2: 200 })).toBe(204);
-		});
-
-		test('3+ series: null lag does not contribute to max', () => {
-			// lag2 is null, only lag1 contributes: 4 + 150 - 100 = 54
-			expect(evalOffsetSignal({ _seriesCount: 4, _metricRank: 3, [DEFAULT_METRIC]: 100, _lag1: 150, _lag2: null })).toBe(54);
+		test('rank 3 very close to preceding labels: label placed below line terminus', () => {
+			// cumMaxAdjusted still 84 (all three close together)
+			// offset = 84 + 3*16 - 12 - 112 = 8 (positive = below line)
+			expect(evalOffsetSignal({ _metricRank: 3, _scaledY: 112, _cumMaxAdjusted: 84 })).toBe(8);
 		});
 
 		test('y field is the metric', () => {
