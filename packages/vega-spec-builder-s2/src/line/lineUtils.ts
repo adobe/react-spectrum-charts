@@ -80,6 +80,7 @@ export interface LineMarkOptions {
   scatterPaths?: ScatterPathOptions[];
   segmentLabels?: SegmentLabelOptions[];
   staticPoint?: string;
+  staticPointShape?: string;
   trendlines?: TrendlineOptions[];
   interpolate?: InterpolationType;
   alternateSegmentKey?: string;
