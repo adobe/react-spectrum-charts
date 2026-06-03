@@ -584,6 +584,64 @@ describe('lineSpecBuilder', () => {
       expect(addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual(displayPointMarks);
     });
 
+    describe('with annotations', () => {
+      test('adds background and foreground annotation marks when staticPoint is set', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          staticPoint: 'staticPoint',
+          linePointAnnotations: [{}],
+        });
+        // line0_group + line0_staticPoints + line0Annotation0_bg + line0Annotation0
+        expect(marks).toHaveLength(4);
+        expect(marks[2]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0');
+      });
+
+      test('adds background and foreground annotation marks when isSparkline is set', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          isSparkline: true,
+          linePointAnnotations: [{}],
+        });
+        // line0_group + line0_staticPoints + line0Annotation0_bg + line0Annotation0
+        expect(marks).toHaveLength(4);
+        expect(marks[2]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0');
+      });
+
+      test('does not add annotation marks when neither staticPoint nor isSparkline is set', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          linePointAnnotations: [{}],
+        });
+        expect(marks).toHaveLength(1); // line0_group only
+        expect(marks.find((m) => m.name?.includes('Annotation'))).toBeUndefined();
+      });
+
+      test('does not add annotation marks when linePointAnnotations is empty', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          staticPoint: 'staticPoint',
+          linePointAnnotations: [],
+        });
+        expect(marks).toStrictEqual(displayPointMarks);
+      });
+
+      test('adds two pairs of marks for two annotations', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          staticPoint: 'staticPoint',
+          linePointAnnotations: [{}, {}],
+        });
+        // line0_group + line0_staticPoints + 2×(bg + fg)
+        expect(marks).toHaveLength(6);
+        expect(marks[2]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0');
+        expect(marks[4]).toHaveProperty('name', 'line0Annotation1_bg');
+        expect(marks[5]).toHaveProperty('name', 'line0Annotation1');
+      });
+    });
+
     test('with displayPointMark and metric range', () => {
       expect(
         addLineMarks([], {

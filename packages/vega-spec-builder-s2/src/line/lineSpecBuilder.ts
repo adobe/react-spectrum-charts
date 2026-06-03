@@ -37,6 +37,7 @@ import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSign
 import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
 import { getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, getLineForecastBoundaryMark, getLineForecastLabelMarks, getLineForecastSpecOptions } from '../lineForecast';
+import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
@@ -72,6 +73,7 @@ export const addLine = produce<
       index = 0,
       lineCap = 'round',
       lineDirectLabels = [],
+      linePointAnnotations = [],
       lineType = { value: 'solid' },
       metric = DEFAULT_METRIC,
       metricAxis,
@@ -103,6 +105,7 @@ export const addLine = produce<
       index,
       lineCap,
       lineDirectLabels,
+      linePointAnnotations,
       interactiveMarkName: getInteractiveMarkName(
         {
           chartPopovers,
@@ -254,7 +257,7 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
+  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, linePointAnnotations, lineType, name, opacity, staticPoint } = options;
   const forecasts = options.forecasts ?? [];
   const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
@@ -297,6 +300,9 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   });
   if (staticPoint || isSparkline) {
     marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
+  }
+  if ((staticPoint || isSparkline) && linePointAnnotations.length > 0) {
+    marks.push(...getLinePointAnnotationMarks(options));
   }
   marks.push(...getMetricRangeGroupMarks(options));
   if (isInteractive(options) || highlightedItem !== undefined) {

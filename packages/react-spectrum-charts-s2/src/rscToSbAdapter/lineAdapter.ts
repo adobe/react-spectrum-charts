@@ -15,7 +15,7 @@ import { LineProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getLineOptions = ({ children, onClick, onContextMenu, contextMenuMode: _contextMenuMode, ...lineProps }: LineProps): LineOptions => {
-  const { chartInspects, chartPopovers, forecasts, lineDirectLabels } = childrenToOptions(children);
+  const { chartInspects, chartPopovers, forecasts, lineDirectLabels, linePointAnnotations } = childrenToOptions(children);
   return {
     ...lineProps,
     chartInspects,
@@ -24,6 +24,7 @@ export const getLineOptions = ({ children, onClick, onContextMenu, contextMenuMo
     hasOnClick: Boolean(onClick),
     hasOnContextMenu: Boolean(onContextMenu),
     lineDirectLabels,
+    linePointAnnotations,
     markType: 'line',
   };
 };

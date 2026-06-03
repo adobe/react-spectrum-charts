@@ -11,7 +11,7 @@
  */
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
-import { Line } from '../../components';
+import { Line, LinePointAnnotation } from '../../components';
 import { workspaceTrendsData } from '../../stories/data/data';
 import {
   allElementsHaveAttributeValue,
@@ -38,6 +38,13 @@ import { LineType } from './Features/LineType.story';
 import { Opacity } from './Features/LineOpacity.story';
 import { ItemInspect, Inspect } from './Features/Inspect/LineInspect.story';
 import { TrendScale, LinearTrendScale } from './Features/TrendScale/LineTrendScale.story';
+
+describe('LinePointAnnotation', () => {
+  // LinePointAnnotation is not a real React component. This test provides coverage for sonarqube
+  test('LinePointAnnotation pseudo element', () => {
+    render(<LinePointAnnotation />);
+  });
+});
 
 describe('Line', () => {
   // Line is not a real React component. This is test just provides test coverage for sonarqube

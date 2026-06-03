@@ -16,6 +16,7 @@ import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 import { ChartPopoverElement, ChartInspectElement } from '../dialogs';
 import { LineForecastElement } from './supplemental/lineForecast.types';
 import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types';
+import { LinePointAnnotationElement } from './supplemental/linePointAnnotation.types';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
 
 /**
@@ -27,11 +28,11 @@ import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
  */
 export type ContextMenuMode = 'interaction' | 'dimension' | 'item';
 
-type LineChildElement = ChartPopoverElement | ChartInspectElement | LineForecastElement | LineDirectLabelElement;
+type LineChildElement = ChartPopoverElement | ChartInspectElement | LineForecastElement | LineDirectLabelElement | LinePointAnnotationElement;
 export interface LineProps
   extends Omit<
     LineOptions,
-    'chartPopovers' | 'chartInspects' | 'forecasts' | 'hasOnClick' | 'hasOnContextMenu' | 'lineDirectLabels' | 'markType'
+    'chartPopovers' | 'chartInspects' | 'forecasts' | 'hasOnClick' | 'hasOnContextMenu' | 'lineDirectLabels' | 'linePointAnnotations' | 'markType'
   > {
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */
