@@ -348,9 +348,13 @@ describe('getLineDirectLabelMarks', () => {
 		expect(y.scale).toBe('yLinear');
 	});
 
-	test('both marks have opacity in update encoding', () => {
+	test('background mark opacity is always 1 (never dimmed during hover)', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
-		expect(marks[0].encode?.update).toHaveProperty('opacity');
+		expect(marks[0].encode?.update).toHaveProperty('opacity', { value: 1 });
+	});
+
+	test('foreground mark has opacity rules for hover dimming', () => {
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 		expect(marks[1].encode?.update).toHaveProperty('opacity');
 	});
 

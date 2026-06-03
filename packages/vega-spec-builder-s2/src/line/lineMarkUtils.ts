@@ -394,3 +394,62 @@ const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Ma
   ];
 };
 
+/**
+ * A duplicate line group rendered after direct labels so the highlighted series always appears
+ * in the foreground. Only the hovered/highlighted series is visible (others have opacity 0).
+ */
+export const getLineHighlightOverlayGroup = (
+  markOptions: LineMarkOptions,
+  facetData: string,
+  facetGroupby: string[]
+): Mark => {
+  const { name, interactiveMarkName, isHighlightedByGroup } = markOptions;
+
+  const tests: string[] = [];
+  if (interactiveMarkName) {
+    tests.push(
+      isHighlightedByGroup
+        ? `length(data('${interactiveMarkName}_highlightedData')) && indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`
+        : `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`
+    );
+  }
+  tests.push(
+    `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`,
+    `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) && indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`
+  );
+  const highlightedTest = tests.join(' || ');
+
+  const baseLineMark = getLineMark(
+    { ...markOptions, name: `${name}_highlightOverlayLine` },
+    `${name}_highlightOverlay_facet`
+  );
+
+  const overlayLineMark: LineMark = {
+    ...baseLineMark,
+    encode: {
+      ...baseLineMark.encode,
+      update: {
+        ...baseLineMark.encode?.update,
+        opacity: [
+          { test: highlightedTest, value: 1 },
+          { value: 0 },
+        ],
+      },
+    },
+  };
+
+  return {
+    name: `${name}_highlightOverlay_group`,
+    type: 'group',
+    interactive: false,
+    from: {
+      facet: {
+        name: `${name}_highlightOverlay_facet`,
+        data: facetData,
+        groupby: facetGroupby,
+      },
+    },
+    marks: [overlayLineMark],
+  };
+};
+

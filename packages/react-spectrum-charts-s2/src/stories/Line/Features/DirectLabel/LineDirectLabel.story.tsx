@@ -20,6 +20,13 @@ import { workspaceTrendsData } from '../../../../stories/data/data';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
+// Same as workspaceTrendsData but with "Add Line viz" adjusted to end at the same
+// y position as "Add Bar viz" (users ~3500 vs 3493), so its line terminates behind
+// the "Add Bar viz" label — a targeted test for highlight foreground behavior.
+const labelCollisionData = workspaceTrendsData.map((d) =>
+  d.series === 'Add Line viz' && d.datetime === 1668409200000 ? { ...d, users: 3500 } : d
+);
+
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Direct Label',
   component: LineDirectLabel,
@@ -84,6 +91,21 @@ const LineDirectLabelTwoSeriesStory: StoryFn<typeof LineDirectLabel> = (args): R
   );
 };
 
+const LineDirectLabelLabelCollisionStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: labelCollisionData });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
 const DirectLabelDefault = bindWithProps(LineDirectLabelStory);
 DirectLabelDefault.args = { value: 'series' };
 
@@ -102,4 +124,7 @@ DirectLabelTwoSeries.args = { value: 'last' };
 const DirectLabelPositionStart = bindWithProps(LineDirectLabelStory);
 DirectLabelPositionStart.args = { value: 'series', position: 'start' };
 
-export { DirectLabelDefault, DirectLabelValueLast, DirectLabelValueAverage, DirectLabelWithInspect, DirectLabelTwoSeries, DirectLabelPositionStart };
+const DirectLabelLabelCollision = bindWithProps(LineDirectLabelLabelCollisionStory);
+DirectLabelLabelCollision.args = { value: 'series', excludeSeries: ['Add Line viz'] };
+
+export { DirectLabelDefault, DirectLabelValueLast, DirectLabelValueAverage, DirectLabelWithInspect, DirectLabelTwoSeries, DirectLabelPositionStart, DirectLabelLabelCollision };
