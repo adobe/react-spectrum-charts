@@ -35,6 +35,10 @@ export const DEFAULT_LINE_WIDTHS = ['M'];
 
 /** Vega signal name for the chart-size-derived stroke width, driven by a reactive expression. */
 export const CHART_SIZE_STROKE_WIDTH = 'rscChartSizeStrokeWidth';
+/** Vega signal name for the chart-size-derived font size, driven by a reactive expression. */
+export const CHART_SIZE_FONT_SIZE = 'rscChartSizeFontSize';
+/** Vega signal name for the chart-size-derived font weight, driven by a reactive expression. */
+export const CHART_SIZE_FONT_WEIGHT = 'rscChartSizeFontWeight';
 
 /** Vega signal name for the chart-size-derived hover point stroke width, driven by a reactive expression. */
 export const CHART_SIZE_HOVER_STROKE_WIDTH = 'rscChartSizeHoverStrokeWidth';
@@ -189,6 +193,15 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 // S2 direct label shared style constants (used by LineDirectLabel and ReferenceLine)
 export const DIRECT_LABEL_FONT_WEIGHT = 700 as const;
 export const DIRECT_LABEL_BACKGROUND_STROKE_WIDTH = 4;
+
+/** Direct label font size consants */
+export const DIRECT_LABEL_FONT_SIZE_S = 14;
+export const DIRECT_LABEL_FONT_SIZE_M = 16;
+export const DIRECT_LABEL_FONT_SIZE_L = 18;
+/** Direct label font weight consants */
+export const DIRECT_LABEL_FONT_WEIGHT_S = 700 as const;
+export const DIRECT_LABEL_FONT_WEIGHT_M = 700 as const;
+export const DIRECT_LABEL_FONT_WEIGHT_L = 700 as const;
 
 // S2 reference line label constants — alias the shared direct label values
 export const REFERENCE_LINE_LABEL_FONT_WEIGHT = DIRECT_LABEL_FONT_WEIGHT;

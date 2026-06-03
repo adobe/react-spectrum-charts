@@ -36,6 +36,14 @@ export interface LineDirectLabelProps {
   prefix?: string;
   /** Series values to exclude from labeling. */
   excludeSeries?: string[];
+  /**
+   * Override font size in pixels. When omitted, font size scales automatically with chart size.
+   */
+  fontSize?: number;
+  /**
+   * Override font weight. When omitted, font weight scales automatically with chart size.
+   */
+  fontWeight?: number;
 }
 
 export type LineDirectLabelElement = ReactElement<
