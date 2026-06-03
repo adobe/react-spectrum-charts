@@ -591,10 +591,10 @@ describe('lineSpecBuilder', () => {
           staticPoint: 'staticPoint',
           linePointAnnotations: [{}],
         });
-        // line0_group + line0_staticPoints + line0Annotation0_bg + line0Annotation0
-        expect(marks).toHaveLength(4);
-        expect(marks[2]).toHaveProperty('name', 'line0Annotation0_bg');
-        expect(marks[3]).toHaveProperty('name', 'line0Annotation0');
+        // line0_group + line0_staticPointBackground + line0_staticPoints + line0Annotation0_bg + line0Annotation0
+        expect(marks).toHaveLength(5);
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
       });
 
       test('adds background and foreground annotation marks when isSparkline is set', () => {
@@ -603,10 +603,10 @@ describe('lineSpecBuilder', () => {
           isSparkline: true,
           linePointAnnotations: [{}],
         });
-        // line0_group + line0_staticPoints + line0Annotation0_bg + line0Annotation0
-        expect(marks).toHaveLength(4);
-        expect(marks[2]).toHaveProperty('name', 'line0Annotation0_bg');
-        expect(marks[3]).toHaveProperty('name', 'line0Annotation0');
+        // line0_group + line0_staticPointBackground + line0_staticPoints + line0Annotation0_bg + line0Annotation0
+        expect(marks).toHaveLength(5);
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
       });
 
       test('does not add annotation marks when neither staticPoint nor isSparkline is set', () => {
@@ -633,12 +633,12 @@ describe('lineSpecBuilder', () => {
           staticPoint: 'staticPoint',
           linePointAnnotations: [{}, {}],
         });
-        // line0_group + line0_staticPoints + 2×(bg + fg)
-        expect(marks).toHaveLength(6);
-        expect(marks[2]).toHaveProperty('name', 'line0Annotation0_bg');
-        expect(marks[3]).toHaveProperty('name', 'line0Annotation0');
-        expect(marks[4]).toHaveProperty('name', 'line0Annotation1_bg');
-        expect(marks[5]).toHaveProperty('name', 'line0Annotation1');
+        // line0_group + line0_staticPointBackground + line0_staticPoints + 2×(bg + fg)
+        expect(marks).toHaveLength(7);
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
+        expect(marks[5]).toHaveProperty('name', 'line0Annotation1_bg');
+        expect(marks[6]).toHaveProperty('name', 'line0Annotation1');
       });
     });
 
