@@ -76,6 +76,12 @@ export const getLineDirectLabelData = (
 				]
 			: []),
 		{
+			type: 'joinaggregate' as const,
+			fields: [metric],
+			ops: ['count' as const],
+			as: ['_seriesCount'],
+		},
+		{
 			type: 'window' as const,
 			sort: { field: [metric], order: ['descending' as const] },
 			ops: ['rank' as const],
@@ -146,7 +152,8 @@ export const getLineDirectLabelMarks = (
 
 	const opacityRules = getLineOpacity(lineOptions);
 
-	const offsetSignal = `datum._cumMaxAdjusted + datum._metricRank * ${LABEL_LINE_HEIGHT} - 12 - datum._scaledY`;
+	// Combined logic for direct label offset given 1, 2, or 3+ series
+	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${LABEL_LINE_HEIGHT} - 12 - datum._scaledY)`
 
 	const baseEnter = {
 		text: { signal: textExpr },
