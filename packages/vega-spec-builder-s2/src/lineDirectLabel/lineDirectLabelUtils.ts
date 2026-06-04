@@ -20,6 +20,8 @@ import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
 
+const LABEL_LINE_HEIGHT = 16;
+
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.
  */
@@ -31,6 +33,7 @@ export const getLineDirectLabelData = (
 	const { color, dimension, excludeSeries, metric, position, scaleType, value } = labelOptions;
 	const dimField = getDimensionField(dimension, scaleType);
 	const isStart = position === 'start';
+	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const { facets } = getFacetsFromOptions({
 		color: lineOptions.color,
@@ -83,6 +86,16 @@ export const getLineDirectLabelData = (
 			sort: { field: [metric], order: ['descending' as const] },
 			ops: ['rank' as const],
 			as: ['_metricRank'],
+		},
+		{ type: 'formula' as const, as: '_scaledY', expr: `scale('${yScaleName}', datum["${metric}"])` },
+		{ type: 'formula' as const, as: '_adjustedY', expr: `datum._scaledY - datum._metricRank * ${LABEL_LINE_HEIGHT}` },
+		{
+			type: 'window' as const,
+			sort: { field: ['_metricRank'], order: ['ascending' as const] },
+			frame: [null, 0] as [null, number],
+			ops: ['max' as const],
+			fields: ['_adjustedY'],
+			as: ['_cumMaxAdjusted'],
 		},
 	];
 
@@ -139,6 +152,9 @@ export const getLineDirectLabelMarks = (
 
 	const opacityRules = getLineOpacity(lineOptions);
 
+	// Combined logic for direct label offset given 1, 2, or 3+ series
+	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${LABEL_LINE_HEIGHT} - 12 - datum._scaledY)`
+
 	const baseEnter = {
 		text: { signal: textExpr },
 		align: { value: isStart ? ('left' as const) : ('right' as const) },
@@ -151,7 +167,7 @@ export const getLineDirectLabelMarks = (
 		y: {
 			scale: yScaleName,
 			field: metric,
-			offset: { signal: 'datum._seriesCount === 2 && datum._metricRank === 2 ? 22 : -12' },
+			offset: { signal: offsetSignal },
 		},
 	};
 
