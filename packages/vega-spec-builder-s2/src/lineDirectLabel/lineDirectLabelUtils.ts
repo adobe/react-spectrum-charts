@@ -11,7 +11,7 @@
  */
 import { Data, FontWeight, Mark, TextMark, Transforms } from 'vega';
 
-import { CHART_SIZE_FONT_SIZE, CHART_SIZE_FONT_WEIGHT, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
+import { CHART_SIZE_FONT_SIZE, CHART_SIZE_FONT_WEIGHT, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getLineOpacity } from '../line/lineMarkUtils';
@@ -183,7 +183,6 @@ export const getLineDirectLabelMarks = (
 				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
 				fill: { value: 'transparent' },
 			},
-			// update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
 			update: {
 				fontWeight: labelOptions.fontWeight != null ? { value: labelOptions.fontWeight as FontWeight } : { signal: CHART_SIZE_FONT_WEIGHT },
 				fontSize: labelOptions.fontSize != null ? { value: labelOptions.fontSize } : { signal: CHART_SIZE_FONT_SIZE },
@@ -202,7 +201,6 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
 			},
-			// update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
 			update: {
 				fontWeight: labelOptions.fontWeight != null ? { value: labelOptions.fontWeight as FontWeight } : { signal: CHART_SIZE_FONT_WEIGHT },
 				fontSize: labelOptions.fontSize != null ? { value: labelOptions.fontSize } : { signal: CHART_SIZE_FONT_SIZE },

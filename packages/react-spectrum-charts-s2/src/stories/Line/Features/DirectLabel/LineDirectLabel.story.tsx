@@ -194,7 +194,7 @@ const DirectLabelSizeScalingStory: StoryFn<typeof LineDirectLabel> = (args): Rea
     </div>
   );
 };
-//data={workspaceTrendsData} width={width} height={CHART_HEIGHT} backgroundColor="gray-50"
+
 export const DirectLabelSizeScaling = DirectLabelSizeScalingStory;
 
 const DirectLabelDefault = bindWithProps(LineDirectLabelStory);

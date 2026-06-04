@@ -194,11 +194,11 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 export const DIRECT_LABEL_FONT_WEIGHT = 700 as const;
 export const DIRECT_LABEL_BACKGROUND_STROKE_WIDTH = 4;
 
-/** Direct label font size consants */
+/** Direct label font size constants */
 export const DIRECT_LABEL_FONT_SIZE_S = 14;
 export const DIRECT_LABEL_FONT_SIZE_M = 16;
 export const DIRECT_LABEL_FONT_SIZE_L = 18;
-/** Direct label font weight consants */
+/** Direct label font weight constants */
 export const DIRECT_LABEL_FONT_WEIGHT_S = 700 as const;
 export const DIRECT_LABEL_FONT_WEIGHT_M = 700 as const;
 export const DIRECT_LABEL_FONT_WEIGHT_L = 700 as const;
