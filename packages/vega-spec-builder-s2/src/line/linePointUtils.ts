@@ -37,6 +37,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     scaleType,
     dimension,
     pointSize = 64,
+    staticPointShape,
   } = lineOptions;
   return {
     name: `${name}_staticPoints`,
@@ -50,6 +51,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
         fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
         y: getLineYEncoding(lineOptions, metric),
+        ...(staticPointShape ? { shape: { value: staticPointShape } } : {}),
       },
       update: {
         x: getXProductionRule(scaleType, dimension),

@@ -64,6 +64,8 @@ export interface LineOptions {
   scaleType?: ScaleType;
   /** Key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line. */
   staticPoint?: string;
+  /** Shape of the static point. Accepts Vega named shapes ('circle', 'square', 'triangle-up', etc.) or a custom SVG path string. @default 'circle' */
+  staticPointShape?: string;
   /** Sets the interaction mode for the line */
   interactionMode?: InteractionMode;
   /** Axis that the metric is trended against (y-axis) */
