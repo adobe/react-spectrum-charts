@@ -20,7 +20,7 @@ import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
 
-const LABEL_LINE_HEIGHT = 16;
+const LABEL_LINE_HEIGHT = 12;
 
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.
