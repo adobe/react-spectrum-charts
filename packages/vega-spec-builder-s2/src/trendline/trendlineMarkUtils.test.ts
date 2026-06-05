@@ -56,12 +56,11 @@ describe('getTrendlineMarks()', () => {
     expect(marks[1]).toHaveProperty('type', 'group');
     const trendlineMarks = (marks[1] as GroupMark).marks as Mark[];
     // line mark
-    expect(trendlineMarks).toHaveLength(5);
+    expect(trendlineMarks).toHaveLength(4);
     expect(trendlineMarks[0]).toHaveProperty('type', 'rule');
-    expect(trendlineMarks[1]).toHaveProperty('type', 'symbol');
-    expect(trendlineMarks[2]).toHaveProperty('type', 'symbol');
-    expect(trendlineMarks[3]).toHaveProperty('type', 'symbol'); // highlight point background
-    expect(trendlineMarks[4]).toHaveProperty('type', 'path');
+    expect(trendlineMarks[1]).toHaveProperty('type', 'symbol'); // highlight point
+    expect(trendlineMarks[2]).toHaveProperty('type', 'symbol'); // voronoi points
+    expect(trendlineMarks[3]).toHaveProperty('type', 'path'); // voronoi path
   });
   test('should reference _data for window method', () => {
     const marks = getTrendlineMarks({

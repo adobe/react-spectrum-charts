@@ -13,6 +13,12 @@ import { SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_POINT_SIZE,
+  DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
+  HOVERED_ITEM,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import {
@@ -23,9 +29,12 @@ import { LineSpecOptions } from '../types';
 import { getLineYEncoding } from './lineMarkUtils';
 import { LineMarkOptions } from './lineUtils';
 
+const getPointSizeEncoding = (pointSize: number | undefined) =>
+  pointSize === undefined ? { signal: CHART_SIZE_POINT_SIZE } : { value: pointSize };
+
 /**
- * Gets the point mark for static points on a line chart.
- * @param lineMarkOptions
+ * Gets the filled dot mark for static points on a line chart.
+ * @param lineOptions
  * @returns SymbolMark
  */
 export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => {
@@ -36,8 +45,27 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     colorScheme,
     scaleType,
     dimension,
-    pointSize = 64,
+    pointSize,
+    interactiveMarkName,
+    isHighlightedByGroup,
   } = lineOptions;
+
+  const opacityRules: ({ test?: string; value?: number; signal?: string })[] = [];
+  if (interactiveMarkName) {
+    if (isHighlightedByGroup) {
+      opacityRules.push({
+        test: `length(data('${interactiveMarkName}_highlightedData'))`,
+        signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
+      });
+    } else {
+      opacityRules.push({
+        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      });
+    }
+  }
+  opacityRules.push(DEFAULT_OPACITY_RULE);
+
   return {
     name: `${name}_staticPoints`,
     description: `${name}_staticPoints`,
@@ -46,9 +74,37 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     interactive: false,
     encode: {
       enter: {
-        size: { value: pointSize },
+        size: getPointSizeEncoding(pointSize),
+        fill: getColorProductionRule(color, colorScheme),
+        y: getLineYEncoding(lineOptions, metric),
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimension),
+        opacity: opacityRules,
+      },
+    },
+  };
+};
+
+/**
+ * Gets a background mark for static points to prevent opacity from revealing the line behind the point.
+ * This mark stays fully opaque (no opacity rules) so it always covers the line underneath.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): SymbolMark => {
+  const { name, metric, scaleType, dimension, pointSize } = lineOptions;
+  return {
+    name: `${name}_staticPointBackground`,
+    description: `${name}_staticPointBackground`,
+    type: 'symbol',
+    from: { data: `${name}_staticPointData` },
+    interactive: false,
+    encode: {
+      enter: {
+        size: getPointSizeEncoding(pointSize),
         fill: { signal: BACKGROUND_COLOR },
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: { signal: BACKGROUND_COLOR },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {
@@ -64,7 +120,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
  * @returns SymbolMark
  */
 export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-  const { dimension, metric, name, pointSize = 64, scaleType } = lineOptions;
+  const { dimension, metric, name, pointSize, scaleType } = lineOptions;
   return {
     name: `${name}_pointBackground`,
     description: `${name}_pointBackground`,
@@ -73,7 +129,7 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
     interactive: false,
     encode: {
       enter: {
-        size: { value: pointSize },
+        size: getPointSizeEncoding(pointSize),
         y: getLineYEncoding(lineOptions, metric),
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
@@ -86,7 +142,7 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
 };
 
 const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlightedData = true): SymbolMark => {
-  const { color, colorScheme, dimension, metric, name, pointSize = 64, scaleType } = lineOptions;
+  const { color, colorScheme, dimension, metric, name, pointSize, scaleType } = lineOptions;
   return {
     name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
     description: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
@@ -95,9 +151,10 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
     interactive: false,
     encode: {
       enter: {
-        size: { value: pointSize },
+        size: getPointSizeEncoding(pointSize),
         fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
+        strokeWidth: { signal: CHART_SIZE_HOVER_STROKE_WIDTH },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {

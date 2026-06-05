@@ -11,16 +11,24 @@
  */
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_POINT_SIZE,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   COLOR_SCALE,
   DEFAULT_COLOR,
+  FADE_FACTOR,
+  HOVERED_ITEM,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import {
+  getHighlightBackgroundPoint,
   getHighlightPoint,
+  getLineStaticPoint,
+  getLineStaticPointBackground,
   getSecondaryHighlightPoint,
   getSelectionPoint,
 } from './linePointUtils';
-import { defaultLineMarkOptions } from './lineTestUtils';
+import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils';
 
 describe('getHighlightPoint()', () => {
   test('should return symbol mark with correct name and description', () => {
@@ -43,6 +51,17 @@ describe('getHighlightPoint()', () => {
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+    expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_HOVER_STROKE_WIDTH });
+  });
+
+  test('should use CHART_SIZE_POINT_SIZE signal when pointSize is not provided', () => {
+    const mark = getHighlightPoint(defaultLineMarkOptions);
+    expect(mark.encode?.enter?.size).toEqual({ signal: CHART_SIZE_POINT_SIZE });
+  });
+
+  test('should use explicit pointSize value when provided', () => {
+    const mark = getHighlightPoint({ ...defaultLineMarkOptions, pointSize: 100 });
+    expect(mark.encode?.enter?.size).toEqual({ value: 100 });
   });
 
   test('should use custom name in mark name and description', () => {
@@ -75,6 +94,17 @@ describe('getSelectionPoint()', () => {
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+    expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_HOVER_STROKE_WIDTH });
+  });
+
+  test('should use CHART_SIZE_POINT_SIZE signal when pointSize is not provided', () => {
+    const mark = getSelectionPoint(defaultLineMarkOptions);
+    expect(mark.encode?.enter?.size).toEqual({ signal: CHART_SIZE_POINT_SIZE });
+  });
+
+  test('should use explicit pointSize value when provided', () => {
+    const mark = getSelectionPoint({ ...defaultLineMarkOptions, pointSize: 100 });
+    expect(mark.encode?.enter?.size).toEqual({ value: 100 });
   });
 
   test('should use custom name in mark name and description', () => {
@@ -143,5 +173,132 @@ describe('getSecondaryHighlightPoint()', () => {
     const highlightMark = getHighlightPoint(defaultLineMarkOptions);
     expect(mark.from).toEqual(highlightMark.from);
     expect(mark.from).toEqual({ data: 'line0_highlightedData' });
+  });
+});
+
+describe('getLineStaticPoint()', () => {
+  test('should return symbol mark with correct name and description', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.name).toBe('line0_staticPoints');
+    expect(mark.description).toBe('line0_staticPoints');
+  });
+
+  test('should use staticPointData as data source', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.from).toEqual({ data: 'line0_staticPointData' });
+  });
+
+  test('should use solid fill with series color (not BACKGROUND_COLOR)', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.encode?.enter?.fill).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
+  });
+
+  test('should not be interactive', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.interactive).toBe(false);
+  });
+
+  test('should use CHART_SIZE_POINT_SIZE signal when pointSize is not provided', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.encode?.enter?.size).toEqual({ signal: CHART_SIZE_POINT_SIZE });
+  });
+
+  test('should use explicit pointSize value when provided', () => {
+    const mark = getLineStaticPoint({ ...defaultLineOptions, pointSize: 100 });
+    expect(mark.encode?.enter?.size).toEqual({ value: 100 });
+  });
+
+  test('should add hover opacity rule when interactiveMarkName is set', () => {
+    const mark = getLineStaticPoint({ ...defaultLineOptions, interactiveMarkName: 'line0' });
+    expect(mark.encode?.update?.opacity).toEqual([
+      {
+        test: `isValid(line0_${HOVERED_ITEM})`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      },
+      { value: 1 },
+    ]);
+  });
+
+  test('should add group opacity rule when interactiveMarkName and isHighlightedByGroup are set', () => {
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      interactiveMarkName: 'line0',
+      isHighlightedByGroup: true,
+    });
+    expect(mark.encode?.update?.opacity).toEqual([
+      {
+        test: `length(data('line0_highlightedData'))`,
+        signal: `indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
+      },
+      { value: 1 },
+    ]);
+  });
+});
+
+describe('getHighlightBackgroundPoint()', () => {
+  test('should return symbol mark with correct name and description', () => {
+    const mark = getHighlightBackgroundPoint(defaultLineMarkOptions);
+    expect(mark.name).toBe('line0_pointBackground');
+    expect(mark.description).toBe('line0_pointBackground');
+  });
+
+  test('should use highlightedData as data source', () => {
+    const mark = getHighlightBackgroundPoint(defaultLineMarkOptions);
+    expect(mark.from).toEqual({ data: 'line0_highlightedData' });
+  });
+
+  test('should not be interactive', () => {
+    const mark = getHighlightBackgroundPoint(defaultLineMarkOptions);
+    expect(mark.interactive).toBe(false);
+  });
+
+  test('should use BACKGROUND_COLOR for fill and stroke', () => {
+    const mark = getHighlightBackgroundPoint(defaultLineMarkOptions);
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
+    expect(mark.encode?.enter?.stroke).toEqual({ signal: BACKGROUND_COLOR });
+  });
+
+  test('should use CHART_SIZE_POINT_SIZE signal when pointSize is not provided', () => {
+    const mark = getHighlightBackgroundPoint(defaultLineMarkOptions);
+    expect(mark.encode?.enter?.size).toEqual({ signal: CHART_SIZE_POINT_SIZE });
+  });
+
+  test('should use explicit pointSize value when provided', () => {
+    const mark = getHighlightBackgroundPoint({ ...defaultLineMarkOptions, pointSize: 100 });
+    expect(mark.encode?.enter?.size).toEqual({ value: 100 });
+  });
+});
+
+describe('getLineStaticPointBackground()', () => {
+  test('should return symbol mark with correct name and description', () => {
+    const mark = getLineStaticPointBackground(defaultLineOptions);
+    expect(mark.name).toBe('line0_staticPointBackground');
+    expect(mark.description).toBe('line0_staticPointBackground');
+  });
+
+  test('should use staticPointData as data source', () => {
+    const mark = getLineStaticPointBackground(defaultLineOptions);
+    expect(mark.from).toEqual({ data: 'line0_staticPointData' });
+  });
+
+  test('should not be interactive', () => {
+    const mark = getLineStaticPointBackground(defaultLineOptions);
+    expect(mark.interactive).toBe(false);
+  });
+
+  test('should use BACKGROUND_COLOR for fill and stroke', () => {
+    const mark = getLineStaticPointBackground(defaultLineOptions);
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
+    expect(mark.encode?.enter?.stroke).toEqual({ signal: BACKGROUND_COLOR });
+  });
+
+  test('should use CHART_SIZE_POINT_SIZE signal when pointSize is not provided', () => {
+    const mark = getLineStaticPointBackground(defaultLineOptions);
+    expect(mark.encode?.enter?.size).toEqual({ signal: CHART_SIZE_POINT_SIZE });
+  });
+
+  test('should use explicit pointSize value when provided', () => {
+    const mark = getLineStaticPointBackground({ ...defaultLineOptions, pointSize: 100 });
+    expect(mark.encode?.enter?.size).toEqual({ value: 100 });
   });
 });

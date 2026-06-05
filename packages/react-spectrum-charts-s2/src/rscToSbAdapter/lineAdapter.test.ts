@@ -16,6 +16,7 @@ import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';
 import { LineForecast } from '../components/LineForecast';
+import { LinePointAnnotation } from '../components/LinePointAnnotation';
 import { getLineOptions } from './lineAdapter';
 
 describe('getLineOptions()', () => {
@@ -53,6 +54,17 @@ describe('getLineOptions()', () => {
   it('should return empty forecasts array when no LineForecast children', () => {
     const options = getLineOptions({});
     expect(options.forecasts).toHaveLength(0);
+  });
+  it('should convert LinePointAnnotation children to linePointAnnotations array', () => {
+    const options = getLineOptions({
+      children: [createElement(LinePointAnnotation, { textKey: 'label', anchor: 'left' })],
+    });
+    expect(options.linePointAnnotations).toHaveLength(1);
+    expect(options.linePointAnnotations?.[0]).toEqual({ textKey: 'label', anchor: 'left' });
+  });
+  it('should return empty linePointAnnotations array when no LinePointAnnotation children', () => {
+    const options = getLineOptions({});
+    expect(options.linePointAnnotations).toHaveLength(0);
   });
   it('should pass through included props', () => {
     const options = getLineOptions({ color: DEFAULT_COLOR });

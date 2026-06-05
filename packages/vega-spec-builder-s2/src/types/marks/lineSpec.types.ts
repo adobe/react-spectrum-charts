@@ -26,6 +26,7 @@ import {
 } from '../specUtil.types';
 import { LineForecastOptions } from './supplemental/lineForecastSpec.types';
 import { LineDirectLabelOptions } from './supplemental/lineDirectLabelSpec.types';
+import { LinePointAnnotationOptions } from './supplemental/linePointAnnotationSpec.types';
 import { MetricRangeOptions } from './supplemental/metricRangeSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
@@ -99,6 +100,7 @@ export interface LineOptions {
   chartInspects?: ChartInspectOptions[];
   forecasts?: LineForecastOptions[];
   lineDirectLabels?: LineDirectLabelOptions[];
+  linePointAnnotations?: LinePointAnnotationOptions[];
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
 }
@@ -114,6 +116,7 @@ type LineOptionsWithDefaults =
   | 'hasOnContextMenu'
   | 'lineCap'
   | 'lineDirectLabels'
+  | 'linePointAnnotations'
   | 'lineType'
   | 'metric'
   | 'metricRanges'

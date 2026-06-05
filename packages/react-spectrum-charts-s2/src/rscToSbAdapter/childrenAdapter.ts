@@ -21,6 +21,7 @@ import {
   LineForecastOptions,
   LineDirectLabelOptions,
   LineOptions,
+  LinePointAnnotationOptions,
   MarkOptions,
   ReferenceLineOptions,
   SegmentLabelOptions,
@@ -37,6 +38,7 @@ import { Legend } from '../components/Legend';
 import { Line } from '../components/Line';
 import { LineDirectLabel } from '../components/LineDirectLabel';
 import { LineForecast } from '../components/LineForecast';
+import { LinePointAnnotation } from '../components/LinePointAnnotation';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
 import { Donut, DonutSummary, SegmentLabel } from '../rc';
@@ -52,6 +54,7 @@ import {
   LegendProps,
   LineForecastProps,
   LineDirectLabelProps,
+  LinePointAnnotationProps,
   LineProps,
   ReferenceLineProps,
   SegmentLabelProps,
@@ -79,6 +82,7 @@ export const childrenToOptions = (
   forecasts: LineForecastOptions[];
   legends: LegendOptions[];
   lineDirectLabels: LineDirectLabelOptions[];
+  linePointAnnotations: LinePointAnnotationOptions[];
   lines: LineOptions[];
   marks: MarkOptions[];
   referenceLines: ReferenceLineOptions[];
@@ -95,6 +99,7 @@ export const childrenToOptions = (
   const forecasts: LineForecastOptions[] = [];
   const legends: LegendOptions[] = [];
   const lineDirectLabels: LineDirectLabelOptions[] = [];
+  const linePointAnnotations: LinePointAnnotationOptions[] = [];
   const lines: LineOptions[] = [];
   const marks: MarkOptions[] = [];
   const referenceLines: ReferenceLineOptions[] = [];
@@ -151,6 +156,10 @@ export const childrenToOptions = (
         lineDirectLabels.push(child.props as LineDirectLabelProps);
         break;
 
+      case LinePointAnnotation.displayName:
+        linePointAnnotations.push(child.props as LinePointAnnotationProps);
+        break;
+
       case Line.displayName:
         marks.push(getLineOptions(child.props as LineProps));
         lines.push(getLineOptions(child.props as LineProps));
@@ -184,6 +193,7 @@ export const childrenToOptions = (
     forecasts,
     legends,
     lineDirectLabels,
+    linePointAnnotations,
     lines,
     marks,
     referenceLines,

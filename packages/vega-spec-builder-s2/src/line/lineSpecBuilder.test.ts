@@ -21,6 +21,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   HOVERED_ITEM,
+  CHART_SIZE_POINT_SIZE,
   CHART_SIZE_STROKE_WIDTH,
   LINEAR_PADDING,
   MARK_ID,
@@ -260,83 +261,70 @@ const metricRangeGroupMark = {
 
 const metricRangeMarks = [line0_groupMark, metricRangeGroupMark];
 
-const metricRangeWithDisplayPointMarks = [
-  line0_groupMark,
-  {
-    name: 'line0_staticPoints',
-    description: 'line0_staticPoints',
-    type: 'symbol',
-    from: {
-      data: 'line0_staticPointData',
+const staticPointMark = {
+  name: 'line0_staticPoints',
+  description: 'line0_staticPoints',
+  type: 'symbol',
+  from: {
+    data: 'line0_staticPointData',
+  },
+  interactive: false,
+  encode: {
+    enter: {
+      y: [
+        {
+          scale: 'yLinear',
+          field: 'value',
+        },
+      ],
+      size: {
+        signal: CHART_SIZE_POINT_SIZE,
+      },
+      fill: {
+        scale: COLOR_SCALE,
+        field: 'series',
+      },
     },
-    interactive: false,
-    encode: {
-      enter: {
-        y: [
-          {
-            scale: 'yLinear',
-            field: 'value',
-          },
-        ],
-        size: {
-          value: 64,
-        },
-        fill: {
-          signal: BACKGROUND_COLOR,
-        },
-        stroke: {
-          scale: COLOR_SCALE,
-          field: 'series',
-        },
+    update: {
+      x: {
+        scale: 'xTime',
+        field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
       },
-      update: {
-        x: {
-          scale: 'xTime',
-          field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-        },
-      },
+      opacity: [{ value: 1 }],
     },
   },
+};
+
+const staticPointBackgroundMark = {
+  name: 'line0_staticPointBackground',
+  description: 'line0_staticPointBackground',
+  type: 'symbol',
+  from: { data: 'line0_staticPointData' },
+  interactive: false,
+  encode: {
+    enter: {
+      y: [{ scale: 'yLinear', field: 'value' }],
+      size: { signal: CHART_SIZE_POINT_SIZE },
+      fill: { signal: BACKGROUND_COLOR },
+      stroke: { signal: BACKGROUND_COLOR },
+    },
+    update: {
+      x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+    },
+  },
+};
+
+const metricRangeWithDisplayPointMarks = [
+  line0_groupMark,
+  staticPointBackgroundMark,
+  staticPointMark,
   metricRangeGroupMark,
 ];
 
 const displayPointMarks = [
   line0_groupMark,
-  {
-    name: 'line0_staticPoints',
-    description: 'line0_staticPoints',
-    type: 'symbol',
-    from: {
-      data: 'line0_staticPointData',
-    },
-    interactive: false,
-    encode: {
-      enter: {
-        y: [
-          {
-            scale: 'yLinear',
-            field: 'value',
-          },
-        ],
-        size: {
-          value: 64,
-        },
-        fill: {
-          signal: BACKGROUND_COLOR,
-        },
-        stroke: {
-          scale: COLOR_SCALE,
-          field: 'series',
-        },
-      },
-      update: {
-        x: {
-          scale: 'xTime',
-          field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
-        },
-      },
-    },
-  },
+  staticPointBackgroundMark,
+  staticPointMark,
 ];
 
 describe('lineSpecBuilder', () => {
@@ -594,6 +582,64 @@ describe('lineSpecBuilder', () => {
 
     test('with displayPointMark', () => {
       expect(addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual(displayPointMarks);
+    });
+
+    describe('with annotations', () => {
+      test('adds background and foreground annotation marks when staticPoint is set', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          staticPoint: 'staticPoint',
+          linePointAnnotations: [{}],
+        });
+        // line0_group + line0_staticPointBackground + line0_staticPoints + line0Annotation0_bg + line0Annotation0
+        expect(marks).toHaveLength(5);
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
+      });
+
+      test('adds background and foreground annotation marks when isSparkline is set', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          isSparkline: true,
+          linePointAnnotations: [{}],
+        });
+        // line0_group + line0_staticPointBackground + line0_staticPoints + line0Annotation0_bg + line0Annotation0
+        expect(marks).toHaveLength(5);
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
+      });
+
+      test('does not add annotation marks when neither staticPoint nor isSparkline is set', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          linePointAnnotations: [{}],
+        });
+        expect(marks).toHaveLength(1); // line0_group only
+        expect(marks.find((m) => m.name?.includes('Annotation'))).toBeUndefined();
+      });
+
+      test('does not add annotation marks when linePointAnnotations is empty', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          staticPoint: 'staticPoint',
+          linePointAnnotations: [],
+        });
+        expect(marks).toStrictEqual(displayPointMarks);
+      });
+
+      test('adds two pairs of marks for two annotations', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          staticPoint: 'staticPoint',
+          linePointAnnotations: [{}, {}],
+        });
+        // line0_group + line0_staticPointBackground + line0_staticPoints + 2×(bg + fg)
+        expect(marks).toHaveLength(7);
+        expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
+        expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
+        expect(marks[5]).toHaveProperty('name', 'line0Annotation1_bg');
+        expect(marks[6]).toHaveProperty('name', 'line0Annotation1');
+      });
     });
 
     test('with displayPointMark and metric range', () => {
