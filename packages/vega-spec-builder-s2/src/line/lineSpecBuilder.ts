@@ -277,7 +277,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
 
   const hasHighlightState = isInteractive(options) || highlightedItem !== undefined;
 
-  // boundary rules are drawn behind the main line group
+  // boundary rules are drawn behind everything
   for (const [i, forecast] of forecasts.entries()) {
     marks.push(getLineForecastBoundaryMark(getLineForecastSpecOptions(forecast, i, options)));
   }
@@ -304,7 +304,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     const specOpts = getLineDirectLabelSpecOptions(label, i, options);
     marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));
   }
-  // overlay renders highlighted series on top of direct labels so it stays in the foreground
+  // overlay renders the highlighted series on top of labels so the line stays in the foreground on hover
   if (hasHighlightState && options.lineDirectLabels?.length) {
     marks.push(getLineHighlightOverlayGroup(markOptions, facetData, facetGroupby));
   }

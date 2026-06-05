@@ -452,4 +452,3 @@ export const getLineHighlightOverlayGroup = (
     marks: [overlayLineMark],
   };
 };
-
