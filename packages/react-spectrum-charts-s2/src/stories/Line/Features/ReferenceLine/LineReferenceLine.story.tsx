@@ -27,17 +27,17 @@ export default {
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-// Midpoint in the workspaceTrendsData datetime range (Nov 2022)
-const referenceValue = 1668150000000;
+// A Y value (users count) that falls within the workspaceTrendsData range
+const referenceValue = 5000;
 
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks>
+      <Axis position="left" grid title="Users">
         <ReferenceLine {...args} />
       </Axis>
+      <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time" />
       <Legend highlight />
     </Chart>
@@ -55,4 +55,11 @@ Label.args = {
   value: referenceValue,
 };
 
-export { Basic, Label };
+const WithSize = bindWithProps(ReferenceLineStory);
+WithSize.args = {
+  label: 'Target',
+  value: referenceValue,
+  size: 'L',
+};
+
+export { Basic, Label, WithSize };

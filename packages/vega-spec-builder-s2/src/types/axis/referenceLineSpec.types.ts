@@ -20,6 +20,8 @@ export interface ReferenceLineOptions {
   position?: 'before' | 'after' | 'center';
   /** Axis text label. */
   label?: string;
+  /** Size variant controlling stroke weight and caret triangle dimensions. When omitted, stroke width reacts to chart size automatically. */
+  size?: 'XS' | 'S' | 'M' | 'L';
 }
 
 export interface ReferenceLineSpecOptions extends ReferenceLineOptions {
