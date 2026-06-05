@@ -14,6 +14,7 @@ import { Data, SourceData } from 'vega';
 import {
 	CHART_SIZE_FONT_SIZE,
 	DEFAULT_COLOR,
+	DIRECT_LABEL_FONT_WEIGHT,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
@@ -421,6 +422,12 @@ describe('getLineDirectLabelMarks', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 		expect(marks[0].encode?.update).toHaveProperty('opacity');
 		expect(marks[1].encode?.update).toHaveProperty('opacity');
+	});
+
+	test('both marks have fixed fontWeight from DIRECT_LABEL_FONT_WEIGHT', () => {
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+		expect(marks[0].encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
+		expect(marks[1].encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
 	});
 
 	test('both marks use fontSize signal when fontSize is not set', () => {
