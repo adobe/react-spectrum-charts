@@ -395,6 +395,42 @@ const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Ma
 };
 
 /**
+ * Returns show/hide opacity rules for marks that should be visible only when `datum` belongs
+ * to the currently hovered or externally highlighted series. Follows the same production-rule
+ * array pattern as `getLineOpacity`, but uses `value: 1` (show) per matching condition and
+ * `value: 0` (hide) as the fallback — in contrast to the fade pattern used for regular marks.
+ */
+export const getHighlightedSeriesOpacityRules = (
+  markOptions: { interactiveMarkName?: string; isHighlightedByGroup?: boolean }
+): ProductionRule<NumericValueRef> => {
+  const { interactiveMarkName, isHighlightedByGroup } = markOptions;
+  return [
+    ...(interactiveMarkName
+      ? [
+          isHighlightedByGroup
+            ? {
+                test: `length(data('${interactiveMarkName}_highlightedData')) && indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`,
+                value: 1,
+              }
+            : {
+                test: `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`,
+                value: 1,
+              },
+        ]
+      : []),
+    {
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`,
+      value: 1,
+    },
+    {
+      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) && indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`,
+      value: 1,
+    },
+    { value: 0 },
+  ];
+};
+
+/**
  * A duplicate line group rendered after direct labels so the highlighted series always appears
  * in the foreground. Only the hovered/highlighted series is visible (others have opacity 0).
  */
@@ -403,21 +439,8 @@ export const getLineHighlightOverlayGroup = (
   facetData: string,
   facetGroupby: string[]
 ): Mark => {
-  const { name, interactiveMarkName, isHighlightedByGroup } = markOptions;
-
-  const tests: string[] = [];
-  if (interactiveMarkName) {
-    tests.push(
-      isHighlightedByGroup
-        ? `length(data('${interactiveMarkName}_highlightedData')) && indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1`
-        : `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`
-    );
-  }
-  tests.push(
-    `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`,
-    `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) && indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`
-  );
-  const highlightedTest = tests.join(' || ');
+  const { name } = markOptions;
+  const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
 
   const baseLineMark = getLineMark(
     { ...markOptions, name: `${name}_highlightOverlayLine` },
@@ -430,10 +453,7 @@ export const getLineHighlightOverlayGroup = (
       ...baseLineMark.encode,
       update: {
         ...baseLineMark.encode?.update,
-        opacity: [
-          { test: highlightedTest, value: 1 },
-          { value: 0 },
-        ],
+        opacity: opacityRules,
       },
     },
   };
@@ -450,5 +470,5 @@ export const getLineHighlightOverlayGroup = (
       },
     },
     marks: [overlayLineMark],
-  };
+  } as Mark;
 };

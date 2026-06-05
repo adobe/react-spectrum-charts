@@ -24,7 +24,15 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getAlternateSegmentStrokeDash, getLineGradientMark, getLineHoverMarks, getLineMark, getLineOpacity } from './lineMarkUtils';
+import {
+  getAlternateSegmentStrokeDash,
+  getHighlightedSeriesOpacityRules,
+  getLineGradientMark,
+  getLineHighlightOverlayGroup,
+  getLineHoverMarks,
+  getLineMark,
+  getLineOpacity,
+} from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -332,5 +340,62 @@ describe('getAlternateSegmentStrokeDash()', () => {
     const dotted = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
     const dashed = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dashed') as { signal: string };
     expect(dotted.signal).not.toBe(dashed.signal);
+  });
+});
+
+describe('getHighlightedSeriesOpacityRules()', () => {
+  test('without interactiveMarkName returns 3 rules: 2 show conditions + hide fallback', () => {
+    const rules = getHighlightedSeriesOpacityRules({}) as { test?: string; value: number }[];
+    expect(rules).toHaveLength(3);
+    expect(rules.at(-1)).toEqual({ value: 0 });
+    expect(rules[0].test).toContain(CONTROLLED_HIGHLIGHTED_SERIES);
+    expect(rules[1].test).toContain(CONTROLLED_HIGHLIGHTED_TABLE);
+  });
+
+  test('with interactiveMarkName adds hover rule as first condition', () => {
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
+    expect(rules).toHaveLength(4);
+    expect(rules[0].test).toContain(`line0_${HOVERED_ITEM}`);
+    expect(rules[0].test).toContain(SERIES_ID);
+  });
+
+  test('with isHighlightedByGroup uses highlightedData condition instead of hover item', () => {
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0', isHighlightedByGroup: true }) as { test?: string; value: number }[];
+    expect(rules[0].test).toContain(`line0_highlightedData`);
+    expect(rules[0].test).not.toContain(HOVERED_ITEM);
+  });
+
+  test('all show rules have value 1 and fallback has value 0', () => {
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
+    rules.slice(0, -1).forEach(rule => expect(rule.value).toBe(1));
+    expect(rules.at(-1)?.value).toBe(0);
+  });
+});
+
+
+describe('getLineHighlightOverlayGroup()', () => {
+  test('returns a group mark named <name>_highlightOverlay_group', () => {
+    const group = getLineHighlightOverlayGroup(defaultLineMarkOptions, 'filteredTable', [SERIES_ID]);
+    expect(group.name).toBe('line0_highlightOverlay_group');
+    expect(group.type).toBe('group');
+  });
+
+  test('marks array contains only the overlay line', () => {
+    const group = getLineHighlightOverlayGroup(defaultLineMarkOptions, 'filteredTable', [SERIES_ID]);
+    const marks = (group as { marks: { name: string }[] }).marks;
+    expect(marks).toHaveLength(1);
+    expect(marks[0].name).toBe('line0_highlightOverlayLine');
+  });
+
+  test('overlay line opacity uses highlighted test as show condition', () => {
+    const group = getLineHighlightOverlayGroup(
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0' },
+      'filteredTable',
+      [SERIES_ID]
+    );
+    const marks = (group as { marks: { encode: { update: { opacity: unknown[] } } }[] }).marks;
+    const opacity = marks[0].encode.update.opacity;
+    expect(Array.isArray(opacity)).toBe(true);
+    expect((opacity as { value: number }[]).at(-1)).toEqual({ value: 0 });
   });
 });

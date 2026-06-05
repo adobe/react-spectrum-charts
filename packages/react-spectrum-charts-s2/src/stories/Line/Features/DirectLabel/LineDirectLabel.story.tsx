@@ -79,6 +79,21 @@ const LineDirectLabelWithInspectStory: StoryFn<typeof LineDirectLabel> = (args):
   );
 };
 
+const LineDirectLabelControlledHighlightStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Freeform table' });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
 // BINDINGS
 
 const LineDirectLabelLabelCollisionStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
@@ -108,6 +123,9 @@ DirectLabelValueAverage.args = { value: 'average' };
 const DirectLabelWithInspect = bindWithProps(LineDirectLabelWithInspectStory);
 DirectLabelWithInspect.args = { value: 'last' };
 
+const DirectLabelControlledHighlight = bindWithProps(LineDirectLabelControlledHighlightStory);
+DirectLabelControlledHighlight.args = { value: 'last' };
+
 const DirectLabelPositionStart = bindWithProps(LineDirectLabelStory);
 DirectLabelPositionStart.args = { value: 'series', position: 'start' };
 
@@ -120,5 +138,6 @@ export {
   DirectLabelValueAverage,
   DirectLabelPositionStart,
   DirectLabelWithInspect,
+  DirectLabelControlledHighlight,
   DirectLabelLabelCollision,
 };

@@ -315,12 +315,13 @@ describe('getLineDirectLabelMarks', () => {
 		expect(marks[1].type).toBe('text');
 	});
 
-	test('background mark has stroke and transparent fill', () => {
+	test('background mark has stroke and background-color fill', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 		const bgMark = marks[0];
+		const stroke = bgMark.encode?.enter?.stroke as { value: string };
 		expect(bgMark.encode?.enter).toHaveProperty('strokeWidth', { value: 4 });
-		expect(bgMark.encode?.enter).toHaveProperty('fill', { value: 'transparent' });
-		expect(bgMark.encode?.enter).toHaveProperty('stroke');
+		expect(bgMark.encode?.enter?.fill).toEqual(bgMark.encode?.enter?.stroke);
+		expect(stroke?.value).toBeTruthy();
 	});
 
 	test('foreground mark has color fill', () => {

@@ -41,7 +41,7 @@ import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
-import { getLineGradientMark, getLineHighlightOverlayGroup, getLineHoverMarks, getLineMark } from './lineMarkUtils';
+import { getHighlightedSeriesOpacityRules, getLineGradientMark, getLineHighlightOverlayGroup, getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
 
@@ -306,13 +306,19 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   }
   marks.push(...getMetricRangeGroupMarks(options));
   marks.push(...getTrendlineMarks(options));
-  for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
-    const specOpts = getLineDirectLabelSpecOptions(label, i, options);
+  const labelSpecOpts = (options.lineDirectLabels ?? []).map((label, i) => getLineDirectLabelSpecOptions(label, i, options));
+  for (const specOpts of labelSpecOpts) {
     marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));
   }
   // overlay renders the highlighted series on top of labels so the line stays in the foreground on hover
-  if (hasHighlightState && options.lineDirectLabels?.length) {
+  if (hasHighlightState && labelSpecOpts.length) {
+    const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
     marks.push(getLineHighlightOverlayGroup(markOptions, facetData, facetGroupby));
+    // fg labels are pushed separately (after the overlay group) so they always render above all overlay lines,
+    // regardless of facet sub-group ordering
+    for (const specOpts of labelSpecOpts) {
+      marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme, opacityRules));
+    }
   }
   // hover marks are last so hollow points and interaction marks always render above everything
   if (hasHighlightState) {
