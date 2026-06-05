@@ -14,7 +14,6 @@ import { Signal } from 'vega';
 import {
   CHART_SIZE_BREAKPOINTS,
   CHART_SIZE_FONT_SIZE,
-  CHART_SIZE_FONT_WEIGHT,
   CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_HOVER_STROKE_WIDTHS,
   CHART_SIZE_POINT_SIZE,
@@ -26,9 +25,6 @@ import {
   DIRECT_LABEL_FONT_SIZE_L,
   DIRECT_LABEL_FONT_SIZE_M,
   DIRECT_LABEL_FONT_SIZE_S,
-  DIRECT_LABEL_FONT_WEIGHT_L,
-  DIRECT_LABEL_FONT_WEIGHT_M,
-  DIRECT_LABEL_FONT_WEIGHT_S,
   HIGHLIGHTED_GROUP,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -64,11 +60,6 @@ export const defaultChartSizeFontSizeSignal = {
   update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`,
 };
 
-export const defaultChartSizeFontWeightSignal = {
-  name: CHART_SIZE_FONT_WEIGHT,
-  update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_WEIGHT_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_WEIGHT_M} : ${DIRECT_LABEL_FONT_WEIGHT_L}`,
-};
-
 export const defaultSignals: Signal[] = [
   defaultHighlightedItemSignal,
   defaultHighlightedGroupSignal,
@@ -80,5 +71,4 @@ export const defaultSignals: Signal[] = [
   defaultChartSizeHoverStrokeWidthSignal,
   defaultChartSizePointSizeSignal,
   defaultChartSizeFontSizeSignal,
-  defaultChartSizeFontWeightSignal,
 ];

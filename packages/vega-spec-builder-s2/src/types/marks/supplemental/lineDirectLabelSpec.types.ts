@@ -39,8 +39,6 @@ export interface LineDirectLabelOptions {
   excludeSeries?: string[];
   /** Label font size override */
   fontSize?: number;
-  /** Label font weight override */
-  fontWeight?: number;
 }
 
 type LineDirectLabelOptionsWithDefaults = 'value' | 'position' | 'excludeSeries';

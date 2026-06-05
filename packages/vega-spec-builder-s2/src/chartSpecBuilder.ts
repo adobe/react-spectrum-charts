@@ -22,7 +22,6 @@ import {
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTHS,
   CHART_SIZE_FONT_SIZE,
-  CHART_SIZE_FONT_WEIGHT,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
@@ -48,9 +47,6 @@ import {
   DIRECT_LABEL_FONT_SIZE_S,
   DIRECT_LABEL_FONT_SIZE_M,
   DIRECT_LABEL_FONT_SIZE_L,
-  DIRECT_LABEL_FONT_WEIGHT_S,
-  DIRECT_LABEL_FONT_WEIGHT_M,
-  DIRECT_LABEL_FONT_WEIGHT_L
 } from '@spectrum-charts/constants';
 import { colorSchemes, getS2ColorValue } from '@spectrum-charts/themes';
 
@@ -285,11 +281,6 @@ export const getDefaultSignals = ({
     update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`
   }
 
-  const chartSizeFontWeightSignal: Signal = {
-    name: CHART_SIZE_FONT_WEIGHT,
-    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_WEIGHT_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_WEIGHT_M} : ${DIRECT_LABEL_FONT_WEIGHT_L}`
-  }
-
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getS2ColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal(REFERENCE_LINE_LABEL_BACKGROUND_STROKE, referenceLineLabelStroke),
@@ -307,7 +298,6 @@ export const getDefaultSignals = ({
     chartSizeHoverStrokeWidthSignal,
     chartSizePointSizeSignal,
     chartSizeFontSizeSignal,
-    chartSizeFontWeightSignal,
   ];
 };
 

@@ -35,7 +35,6 @@ export default {
       options: ['start', 'end'],
     },
     fontSize: { control: { type: 'number' } },
-    fontWeight: { control: { type: 'number' } },
   },
 };
 

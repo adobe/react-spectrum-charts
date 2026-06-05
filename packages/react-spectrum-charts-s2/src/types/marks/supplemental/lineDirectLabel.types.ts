@@ -40,10 +40,6 @@ export interface LineDirectLabelProps {
    * Override font size in pixels. When omitted, font size scales automatically with chart size.
    */
   fontSize?: number;
-  /**
-   * Override font weight. When omitted, font weight scales automatically with chart size.
-   */
-  fontWeight?: number;
 }
 
 export type LineDirectLabelElement = ReactElement<

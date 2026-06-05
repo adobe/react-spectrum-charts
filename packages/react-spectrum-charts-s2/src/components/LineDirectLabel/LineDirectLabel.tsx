@@ -22,7 +22,6 @@ const LineDirectLabel: FC<LineDirectLabelProps> = ({
   prefix,
   excludeSeries,
   fontSize,
-  fontWeight,
 }: LineDirectLabelProps) => {
   return null;
 };

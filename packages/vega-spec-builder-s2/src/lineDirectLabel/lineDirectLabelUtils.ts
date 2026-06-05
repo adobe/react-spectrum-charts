@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, FontWeight, Mark, TextMark, Transforms } from 'vega';
+import { Data, Mark, TextMark, Transforms } from 'vega';
 
-import { CHART_SIZE_FONT_SIZE, CHART_SIZE_FONT_WEIGHT, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
+import { CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getLineOpacity } from '../line/lineMarkUtils';
@@ -151,7 +151,6 @@ export const getLineDirectLabelMarks = (
 	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const opacityRules = getLineOpacity(lineOptions);
-	const fontWeightEncoding = labelOptions.fontWeight == null ? { signal: CHART_SIZE_FONT_WEIGHT } : { value: labelOptions.fontWeight as FontWeight };
   	const fontSizeEncoding = labelOptions.fontSize == null ? { signal: CHART_SIZE_FONT_SIZE } : { value: labelOptions.fontSize };
 
 	// Combined logic for direct label offset given 1, 2, or 3+ series
@@ -186,7 +185,6 @@ export const getLineDirectLabelMarks = (
 				fill: { value: 'transparent' },
 			},
 			update: {
-				fontWeight: fontWeightEncoding,
 				fontSize: fontSizeEncoding,
 				opacity: opacityRules,
 			},
@@ -204,7 +202,6 @@ export const getLineDirectLabelMarks = (
 				fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
 			},
 			update: {
-				fontWeight: fontWeightEncoding,
 				fontSize: fontSizeEncoding,
 				opacity: opacityRules,
 			},
@@ -235,5 +232,4 @@ export const getLineDirectLabelSpecOptions = (
 	scaleType: lineOptions.scaleType,
 	value: labelOptions.value ?? 'last',
 	fontSize: labelOptions.fontSize,
-	fontWeight: labelOptions.fontWeight,
 });
