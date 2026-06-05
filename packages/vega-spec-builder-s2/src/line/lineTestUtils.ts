@@ -57,6 +57,7 @@ export const defaultLineOptions: LineSpecOptions = {
   colorScheme: DEFAULT_COLOR_SCHEME,
   interactiveMarkName: undefined,
   lineDirectLabels: [],
+  linePointAnnotations: [],
   popoverMarkName: undefined,
   trendlines: [],
   interpolate: undefined,

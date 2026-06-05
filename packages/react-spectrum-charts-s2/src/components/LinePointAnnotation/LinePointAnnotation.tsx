@@ -10,15 +10,20 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './barAnnotationSpec.types';
-export * from './barDirectLabelSpec.types';
-export * from './dountSummarySpec.types';
-export * from './metricRangeSpec.types';
-export * from './scatterAnnotationSpec.types';
-export * from './scatterPathSpec.types';
-export * from './segmentLabelSpec.types';
-export * from './lineDirectLabelSpec.types';
-export * from './trendlineSpec.types';
-export * from './trendlineAnnotationSpec.types';
-export * from './linePointAnnotationSpec.types';
-export * from './lineForecastSpec.types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { LinePointAnnotationProps } from '../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const LinePointAnnotation: FC<LinePointAnnotationProps> = ({
+  anchor = ['right', 'top', 'bottom', 'left'],
+  matchLineColor = false,
+  textKey = 'annotation',
+}) => {
+  return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+LinePointAnnotation.displayName = 'LinePointAnnotation';
+export { LinePointAnnotation };

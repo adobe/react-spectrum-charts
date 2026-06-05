@@ -44,9 +44,11 @@ export default {
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400, backgroundColor: 'gray-50' };
 
-const twoSeriesData = workspaceTrendsData
-  .filter((d) => d.series === 'Add Freeform table' || d.series === 'Add Fallout')
-  .map((d) => (d.series === 'Add Fallout' ? { ...d, users: d.users + 4000 } : d));
+// DATA 
+
+
+
+// TEMPLATES
 
 const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
@@ -77,19 +79,7 @@ const LineDirectLabelWithInspectStory: StoryFn<typeof LineDirectLabel> = (args):
   );
 };
 
-const LineDirectLabelTwoSeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: twoSeriesData });
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
+// BINDINGS
 
 const LineDirectLabelLabelCollisionStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: labelCollisionData });
@@ -118,13 +108,17 @@ DirectLabelValueAverage.args = { value: 'average' };
 const DirectLabelWithInspect = bindWithProps(LineDirectLabelWithInspectStory);
 DirectLabelWithInspect.args = { value: 'last' };
 
-const DirectLabelTwoSeries = bindWithProps(LineDirectLabelTwoSeriesStory);
-DirectLabelTwoSeries.args = { value: 'last' };
-
 const DirectLabelPositionStart = bindWithProps(LineDirectLabelStory);
 DirectLabelPositionStart.args = { value: 'series', position: 'start' };
 
 const DirectLabelLabelCollision = bindWithProps(LineDirectLabelLabelCollisionStory);
 DirectLabelLabelCollision.args = { value: 'series', excludeSeries: ['Add Line viz'] };
 
-export { DirectLabelDefault, DirectLabelValueLast, DirectLabelValueAverage, DirectLabelWithInspect, DirectLabelTwoSeries, DirectLabelPositionStart, DirectLabelLabelCollision };
+export {
+  DirectLabelDefault,
+  DirectLabelValueLast,
+  DirectLabelValueAverage,
+  DirectLabelPositionStart,
+  DirectLabelWithInspect,
+  DirectLabelLabelCollision,
+};

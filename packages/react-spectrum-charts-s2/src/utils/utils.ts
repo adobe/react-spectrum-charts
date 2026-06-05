@@ -36,6 +36,7 @@ import {
   Line,
   LineDirectLabel,
   LineForecast,
+  LinePointAnnotation,
   ReferenceLine,
   Title,
 } from '../components';
@@ -121,6 +122,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     Line.displayName,
     LineDirectLabel.displayName,
     LineForecast.displayName,
+    LinePointAnnotation.displayName,
     ReferenceLine.displayName,
     SegmentLabel.displayName,
     Title.displayName,

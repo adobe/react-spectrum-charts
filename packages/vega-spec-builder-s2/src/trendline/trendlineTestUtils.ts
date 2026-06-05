@@ -41,6 +41,7 @@ export const defaultLineOptions: LineSpecOptions = {
   scaleType: 'time',
   interactiveMarkName: undefined,
   lineDirectLabels: [],
+  linePointAnnotations: [],
   popoverMarkName: undefined,
   lineCap: 'round',
   interpolate: undefined,
