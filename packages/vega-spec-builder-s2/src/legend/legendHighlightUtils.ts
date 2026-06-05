@@ -41,11 +41,8 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
     if (opacity !== undefined) {
       // skip marks that explicitly manage their own visibility — their final fallback is opacity 0
       // (e.g. overlay lines and fg label marks that should only appear for the highlighted series)
-      const opacityRules = Array.isArray(opacity) ? opacity : [opacity];
-      const lastRule = opacityRules.at(-1);
-      if (typeof lastRule === 'object' && 'value' in lastRule && (lastRule as { value: number }).value === 0) {
-        return;
-      }
+      const lastRule = Array.isArray(opacity) ? opacity.at(-1) : opacity;
+      if ((lastRule as { value?: number })?.value === 0) return;
 
       // the new production rule for highlighting
       const highlightOpacityRule = getHighlightOpacityRule(legendName, controlled, keys);
