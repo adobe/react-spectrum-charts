@@ -300,14 +300,15 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
       getLineMark(markOptions, `${name}_facet`),
     ],
   });
+  
   if (staticPoint || isSparkline) {
     marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
+    if (linePointAnnotations.length > 0) {
+      marks.push(...getLinePointAnnotationMarks(options));
+    }
   }
-  if ((staticPoint || isSparkline) && linePointAnnotations.length > 0) {
-    marks.push(...getLinePointAnnotationMarks(options));
-  }
-  marks.push(...getMetricRangeGroupMarks(options));
-  marks.push(...getTrendlineMarks(options));
+  marks.push(...getMetricRangeGroupMarks(options), ...getTrendlineMarks(options));
+  // direct labels
   const labelSpecOpts = (options.lineDirectLabels ?? []).map((label, i) => getLineDirectLabelSpecOptions(label, i, options));
   for (const specOpts of labelSpecOpts) {
     marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));

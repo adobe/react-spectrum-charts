@@ -467,5 +467,5 @@ export const getLineHighlightOverlayGroup = (
       },
     },
     marks: [overlayLineMark],
-  } as Mark;
+  };
 };
