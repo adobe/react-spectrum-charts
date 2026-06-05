@@ -168,8 +168,10 @@ export const REFERENCE_LINE_START_CAP_PATH =
 export const REFERENCE_LINE_END_CAP_PATH =
   'M0.360029 -0.623544C-0.119971 -0.346416 -0.119970 0.346404 0.360030 0.623532L5.400036 3.533388C5.880024 3.810516 6.480024 3.464100 6.480024 2.909844L6.480024 -2.909844C6.480024 -3.464100 5.880024 -3.810516 5.400024 -3.533388L0.360029 -0.623544Z';
 
-// Stroke widths per size tier for S2 reference lines (design confirmed: S=1.5, M=2, L=2.5; XS pending)
-export const REFERENCE_LINE_SIZE_STROKE_WIDTHS: Record<'XS' | 'S' | 'M' | 'L', number> = {
+export type ReferenceLineSize = 'XS' | 'S' | 'M' | 'L';
+
+// Stroke widths per size tier for S2 reference lines (design confirmed: S=1.5, M=2, L=2.5; XS=1)
+export const REFERENCE_LINE_SIZE_STROKE_WIDTHS: Record<ReferenceLineSize, number> = {
   XS: 1,
   S: 1.5,
   M: 2,
@@ -177,7 +179,7 @@ export const REFERENCE_LINE_SIZE_STROKE_WIDTHS: Record<'XS' | 'S' | 'M' | 'L', n
 };
 
 // Max x-coordinate of the start cap path in its local coordinate space (proportionally scaled from M=3.3).
-const REFERENCE_LINE_CAP_RIGHT_TIP: Record<'XS' | 'S' | 'M' | 'L', number> = {
+const REFERENCE_LINE_CAP_RIGHT_TIP: Record<ReferenceLineSize, number> = {
   XS: 3.3 * 0.5,
   S: 3.3 * 0.75,
   M: 3.3,
@@ -188,7 +190,7 @@ const REFERENCE_LINE_CAP_ORIGIN = 5;
 const REFERENCE_LINE_CAP_RULE_GAP = 2;
 
 // Auto mode (no explicit size) uses S/M/L tiers via a reactive Vega signal expression.
-export const REFERENCE_LINE_RULE_X_START: Record<'XS' | 'S' | 'M' | 'L', number> = {
+export const REFERENCE_LINE_RULE_X_START: Record<ReferenceLineSize, number> = {
   XS: Math.round(REFERENCE_LINE_CAP_ORIGIN + REFERENCE_LINE_CAP_RIGHT_TIP.XS + REFERENCE_LINE_CAP_RULE_GAP),
   S: Math.round(REFERENCE_LINE_CAP_ORIGIN + REFERENCE_LINE_CAP_RIGHT_TIP.S + REFERENCE_LINE_CAP_RULE_GAP),
   M: Math.round(REFERENCE_LINE_CAP_ORIGIN + REFERENCE_LINE_CAP_RIGHT_TIP.M + REFERENCE_LINE_CAP_RULE_GAP),
@@ -196,15 +198,14 @@ export const REFERENCE_LINE_RULE_X_START: Record<'XS' | 'S' | 'M' | 'L', number>
 };
 
 // Caret SVG paths per size tier — M reuses existing constants; XS/S/L are proportionally scaled
-// TODO: replace XS/S/L strings with design-confirmed values from Figma (Figma node 2125-109427)
-export const REFERENCE_LINE_START_CAP_PATHS: Record<'XS' | 'S' | 'M' | 'L', string> = {
+export const REFERENCE_LINE_START_CAP_PATHS: Record<ReferenceLineSize, string> = {
   XS: 'M1.41 -0.296245 C1.65 -0.15768 1.65 0.18873 1.41 0.327295 L-1.11 1.78222 C-1.35 1.920785 -1.65 1.74758 -1.65 1.47045 L-1.65 -1.439395 C-1.65 -1.71652 -1.35 -1.88973 -1.11 -1.751165 L1.41 -0.296245Z',
   S: 'M2.115 -0.444368 C2.475 -0.23652 2.475 0.283095 2.115 0.490943 L-1.665 2.67333 C-2.025 2.881178 -2.475 2.62137 -2.475 2.205675 L-2.475 -2.159093 C-2.475 -2.57478 -2.025 -2.83460 -1.665 -2.626748 L2.115 -0.444368Z',
   M: REFERENCE_LINE_START_CAP_PATH,
   L: 'M4.23 -0.888735 C4.95 -0.47304 4.95 0.56619 4.23 0.981885 L-3.33 5.34666 C-4.05 5.762355 -4.95 5.24274 -4.95 4.41135 L-4.95 -4.318185 C-4.95 -5.14956 -4.05 -5.66919 -3.33 -5.253495 L4.23 -0.888735Z',
 };
 
-export const REFERENCE_LINE_END_CAP_PATHS: Record<'XS' | 'S' | 'M' | 'L', string> = {
+export const REFERENCE_LINE_END_CAP_PATHS: Record<ReferenceLineSize, string> = {
   XS: 'M0.180015 -0.311772C-0.059986 -0.173208 -0.059985 0.173202 0.180015 0.311766L2.700018 1.766694C2.940012 1.905258 3.240012 1.73205 3.240012 1.454922L3.240012 -1.454922C3.240012 -1.73205 2.940012 -1.905258 2.700012 -1.766694L0.180015 -0.311772Z',
   S: 'M0.270022 -0.467658C-0.089978 -0.259812 -0.089978 0.259803 0.270023 0.467649L4.050027 2.650041C4.410018 2.857887 4.860018 2.598075 4.860018 2.181633L4.860018 -2.181633C4.860018 -2.598075 4.410018 -2.857887 4.050018 -2.650041L0.270022 -0.467658Z',
   M: REFERENCE_LINE_END_CAP_PATH,

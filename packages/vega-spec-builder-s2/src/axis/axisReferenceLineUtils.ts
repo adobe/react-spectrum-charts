@@ -92,6 +92,15 @@ export const getPositionEncoding = (
   return { scale: scaleName, value };
 };
 
+const getRuleXStartSignal = (): string =>
+  `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_RULE_X_START.M} : ${REFERENCE_LINE_RULE_X_START.L}`;
+
+const getCapTierOpacitySignal = (tier: 'S' | 'M' | 'L'): string => {
+  if (tier === 'S') return `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1 : 0`;
+  if (tier === 'L') return `rscContainerWidth(width) >= ${CHART_SIZE_BREAKPOINTS.L} ? 1 : 0`;
+  return `rscContainerWidth(width) >= ${CHART_SIZE_BREAKPOINTS.M} && rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? 1 : 0`;
+};
+
 /**
  * Horizontal rule line — spans from caret tip to the right cap, with x-start adapting to caret size.
  * In auto mode (no explicit size) both stroke width and x-start react to chart width via signals.
@@ -102,9 +111,9 @@ export const getReferenceLineRuleMark = (
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): RuleMark => {
   const strokeWidth =
-    size !== undefined ? { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] } : { signal: CHART_SIZE_STROKE_WIDTH };
+    size === undefined ? { signal: CHART_SIZE_STROKE_WIDTH } : { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] };
   const xStart =
-    size !== undefined ? { value: REFERENCE_LINE_RULE_X_START[size] } : { signal: getRuleXStartSignal() };
+    size === undefined ? { signal: getRuleXStartSignal() } : { value: REFERENCE_LINE_RULE_X_START[size] };
   return {
     name,
     type: 'rule',
@@ -138,30 +147,30 @@ export const getReferenceLineStartCapMark = (
   const fill = { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
   const sharedUpdate = { x: { value: 5 }, y: positionEncoding as NumericValueRef };
 
-  if (size !== undefined) {
-    return [{
-      name: `${name}_startCap`,
-      type: 'path',
+  if (size === undefined) {
+    return (['S', 'M', 'L'] as const).map((tier) => ({
+      name: `${name}_startCap_${tier}`,
+      type: 'path' as const,
       interactive: false,
       encode: {
-        enter: { path: { value: REFERENCE_LINE_START_CAP_PATHS[size] }, fill },
-        update: sharedUpdate,
+        enter: { path: { value: REFERENCE_LINE_START_CAP_PATHS[tier] }, fill },
+        update: {
+          ...sharedUpdate,
+          opacity: { signal: getCapTierOpacitySignal(tier) },
+        },
       },
-    }];
+    }));
   }
 
-  return (['S', 'M', 'L'] as const).map((tier) => ({
-    name: `${name}_startCap_${tier}`,
-    type: 'path' as const,
+  return [{
+    name: `${name}_startCap`,
+    type: 'path',
     interactive: false,
     encode: {
-      enter: { path: { value: REFERENCE_LINE_START_CAP_PATHS[tier] }, fill },
-      update: {
-        ...sharedUpdate,
-        opacity: { signal: getCapTierOpacitySignal(tier) },
-      },
+      enter: { path: { value: REFERENCE_LINE_START_CAP_PATHS[size] }, fill },
+      update: sharedUpdate,
     },
-  }));
+  }];
 };
 
 /**
@@ -176,39 +185,30 @@ export const getReferenceLineEndCapMark = (
   const fill = { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
   const sharedUpdate = { x: { signal: 'width - 5' }, y: positionEncoding as NumericValueRef };
 
-  if (size !== undefined) {
-    return [{
-      name: `${name}_endCap`,
-      type: 'path',
+  if (size === undefined) {
+    return (['S', 'M', 'L'] as const).map((tier) => ({
+      name: `${name}_endCap_${tier}`,
+      type: 'path' as const,
       interactive: false,
       encode: {
-        enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[size] }, fill },
-        update: sharedUpdate,
+        enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[tier] }, fill },
+        update: {
+          ...sharedUpdate,
+          opacity: { signal: getCapTierOpacitySignal(tier) },
+        },
       },
-    }];
+    }));
   }
 
-  return (['S', 'M', 'L'] as const).map((tier) => ({
-    name: `${name}_endCap_${tier}`,
-    type: 'path' as const,
+  return [{
+    name: `${name}_endCap`,
+    type: 'path',
     interactive: false,
     encode: {
-      enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[tier] }, fill },
-      update: {
-        ...sharedUpdate,
-        opacity: { signal: getCapTierOpacitySignal(tier) },
-      },
+      enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[size] }, fill },
+      update: sharedUpdate,
     },
-  }));
-};
-
-const getRuleXStartSignal = (): string =>
-  `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_RULE_X_START.M} : ${REFERENCE_LINE_RULE_X_START.L}`;
-
-const getCapTierOpacitySignal = (tier: 'S' | 'M' | 'L'): string => {
-  if (tier === 'S') return `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1 : 0`;
-  if (tier === 'L') return `rscContainerWidth(width) >= ${CHART_SIZE_BREAKPOINTS.L} ? 1 : 0`;
-  return `rscContainerWidth(width) >= ${CHART_SIZE_BREAKPOINTS.M} && rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? 1 : 0`;
+  }];
 };
 
 /**
