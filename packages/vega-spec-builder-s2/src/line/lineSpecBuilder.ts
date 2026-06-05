@@ -314,14 +314,13 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));
   }
   // overlay renders the highlighted series on top of labels so the line stays in the foreground on hover
+  // fg labels are pushed in the same call (after the overlay group) so they always render above all overlay lines
   if (hasHighlightState && labelSpecOpts.length) {
     const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
-    marks.push(getLineHighlightOverlayGroup(markOptions, facetData, facetGroupby));
-    // fg labels are pushed separately (after the overlay group) so they always render above all overlay lines,
-    // regardless of facet sub-group ordering
-    for (const specOpts of labelSpecOpts) {
-      marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme, opacityRules));
-    }
+    marks.push(
+      getLineHighlightOverlayGroup(markOptions, facetData, facetGroupby),
+      ...labelSpecOpts.flatMap(specOpts => getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme, opacityRules))
+    );
   }
   // hover marks are last so hollow points and interaction marks always render above everything
   if (hasHighlightState) {
