@@ -16,7 +16,12 @@ import { colorSchemes, spectrum2Colors } from '@spectrum-charts/themes';
 import {
   BACKGROUND_COLOR,
   CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_POINT_SIZE,
+  CHART_SIZE_POINT_SIZES,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_HOVER_STROKE_WIDTHS,
   CHART_SIZE_STROKE_WIDTH,
+  CHART_SIZE_STROKE_WIDTHS,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
@@ -479,8 +484,27 @@ describe('Chart spec builder', () => {
       const strokeWidthSignal = signals.find((s) => s.name === CHART_SIZE_STROKE_WIDTH);
       expect(strokeWidthSignal).toHaveProperty(
         'update',
-        `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1.5 : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? 2 : 3`
+        `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_STROKE_WIDTHS.M} : ${CHART_SIZE_STROKE_WIDTHS.L}`
       );
     });
+
+    test('CHART_SIZE_HOVER_STROKE_WIDTH signal uses rscContainerWidth expression with correct breakpoints and hover stroke widths', () => {
+      const signals = getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] });
+      const hoverStrokeWidthSignal = signals.find((s) => s.name === CHART_SIZE_HOVER_STROKE_WIDTH);
+      expect(hoverStrokeWidthSignal).toHaveProperty(
+        'update',
+        `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.M} : ${CHART_SIZE_HOVER_STROKE_WIDTHS.L}`
+      );
+    });
+
+    test('CHART_SIZE_POINT_SIZE signal uses rscContainerWidth expression with correct breakpoints and point sizes', () => {
+      const signals = getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] });
+      const pointSizeSignal = signals.find((s) => s.name === CHART_SIZE_POINT_SIZE);
+      expect(pointSizeSignal).toHaveProperty(
+        'update',
+        `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_POINT_SIZES.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_POINT_SIZES.M} : ${CHART_SIZE_POINT_SIZES.L}`
+      );
+    });
+
   });
 });
