@@ -57,7 +57,7 @@ import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
-import { getLegendHighlightSignals, setHoverOpacityForMarks } from './legend/legendHighlightUtils';
+import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
@@ -211,6 +211,7 @@ export function buildSpec({
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {
     setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
+    setHoverStrokeWidthForMarks('', spec.marks ?? [], true);
   }
 
   // clear out all scales that don't have any fields on the domain

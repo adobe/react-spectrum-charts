@@ -91,6 +91,7 @@ jest.mock('./legend/legendHighlightUtils', () => {
   return {
     getLegendHighlightSignals: jest.fn().mockReturnValue([]),
     setHoverOpacityForMarks: jest.fn(),
+    setHoverStrokeWidthForMarks: jest.fn(),
   };
 });
 

@@ -12,6 +12,8 @@
 import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 import {
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_STROKE_WIDTH,
   CONTROLLED_HIGHLIGHTED_SERIES,
   FADE_FACTOR,
   GROUP_ID,
@@ -63,6 +65,44 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
       update.opacity.splice(opacityRuleInsertIndex, 0, highlightOpacityRule);
     }
   });
+};
+
+/**
+ * Injects a strokeWidth rule into marks that use the color scale so legend hover thickens the hovered series.
+ */
+export const setHoverStrokeWidthForMarks = (legendName: string, marks: Mark[], controlled = false) => {
+  if (!marks.length) return;
+  const flatMarks = flattenMarks(marks);
+  const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
+  seriesMarks.forEach((mark) => {
+    if (!mark.encode?.update) return;
+    const { update } = mark.encode;
+    if (update.strokeWidth === undefined) return;
+
+    const highlightStrokeWidthRule = getHighlightStrokeWidthRule(legendName, controlled);
+
+    if (!Array.isArray(update.strokeWidth)) {
+      update.strokeWidth = [];
+    }
+    const insertIndex = Math.max(update.strokeWidth.length - 1, 0);
+    update.strokeWidth.splice(insertIndex, 0, highlightStrokeWidthRule);
+  });
+};
+
+export const getHighlightStrokeWidthRule = (
+  legendName: string,
+  controlled: boolean
+): { test?: string } & NumericValueRef => {
+  if (controlled) {
+    return {
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+      signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    };
+  }
+  return {
+    test: `isValid(${legendName}_${HOVERED_SERIES})`,
+    signal: `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+  };
 };
 
 export const getHighlightOpacityRule = (
