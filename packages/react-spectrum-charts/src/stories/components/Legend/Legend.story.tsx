@@ -69,8 +69,8 @@ const legendColumns20SeriesData = twentySeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 500 + si * 250 + di * 80, series }))
 );
 
-const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<typeof Legend> =>
-  (args): ReactElement => {
+const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<typeof Legend> => {
+  const ResizableLegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
     const chartProps = useChartProps({ data, width: 'auto', height: '100%', padding: 2 });
     return (
       <View
@@ -95,6 +95,8 @@ const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<
       </View>
     );
   };
+  return ResizableLegendLineStory;
+};
 
 export default {
   title: 'RSC/Legend',
