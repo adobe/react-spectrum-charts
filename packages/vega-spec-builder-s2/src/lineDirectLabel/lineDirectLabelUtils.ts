@@ -11,7 +11,7 @@
  */
 import { Data, Mark, TextMark, Transforms } from 'vega';
 
-import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
+import { CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getLineOpacity } from '../line/lineMarkUtils';
@@ -19,6 +19,8 @@ import { getColorProductionRule } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
+
+const LABEL_LINE_HEIGHT = 16;
 
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.
@@ -31,6 +33,7 @@ export const getLineDirectLabelData = (
 	const { color, dimension, excludeSeries, metric, position, scaleType, value } = labelOptions;
 	const dimField = getDimensionField(dimension, scaleType);
 	const isStart = position === 'start';
+	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const { facets } = getFacetsFromOptions({
 		color: lineOptions.color,
@@ -83,6 +86,16 @@ export const getLineDirectLabelData = (
 			sort: { field: [metric], order: ['descending' as const] },
 			ops: ['rank' as const],
 			as: ['_metricRank'],
+		},
+		{ type: 'formula' as const, as: '_scaledY', expr: `scale('${yScaleName}', datum["${metric}"])` },
+		{ type: 'formula' as const, as: '_adjustedY', expr: `datum._scaledY - datum._metricRank * ${LABEL_LINE_HEIGHT}` },
+		{
+			type: 'window' as const,
+			sort: { field: ['_metricRank'], order: ['ascending' as const] },
+			frame: [null, 0] as [null, number],
+			ops: ['max' as const],
+			fields: ['_adjustedY'],
+			as: ['_cumMaxAdjusted'],
 		},
 	];
 
@@ -138,6 +151,10 @@ export const getLineDirectLabelMarks = (
 	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const opacityRules = getLineOpacity(lineOptions);
+  	const fontSizeEncoding = labelOptions.fontSize == null ? { signal: CHART_SIZE_FONT_SIZE } : { value: labelOptions.fontSize };
+
+	// Combined logic for direct label offset given 1, 2, or 3+ series
+	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${LABEL_LINE_HEIGHT} - 12 - datum._scaledY)`
 
 	const baseEnter = {
 		text: { signal: textExpr },
@@ -151,7 +168,7 @@ export const getLineDirectLabelMarks = (
 		y: {
 			scale: yScaleName,
 			field: metric,
-			offset: { signal: 'datum._seriesCount === 2 && datum._metricRank === 2 ? 22 : -12' },
+			offset: { signal: offsetSignal },
 		},
 	};
 
@@ -167,7 +184,11 @@ export const getLineDirectLabelMarks = (
 				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
 				fill: { value: 'transparent' },
 			},
-			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
+			update: {
+				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+				fontSize: fontSizeEncoding,
+				opacity: opacityRules,
+			},
 		},
 	};
 
@@ -181,7 +202,11 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
 			},
-			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
+			update: {
+				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+				fontSize: fontSizeEncoding,
+				opacity: opacityRules,
+			},
 		},
 	};
 
@@ -208,4 +233,5 @@ export const getLineDirectLabelSpecOptions = (
 	prefix: labelOptions.prefix ?? '',
 	scaleType: lineOptions.scaleType,
 	value: labelOptions.value ?? 'last',
+	fontSize: labelOptions.fontSize,
 });
