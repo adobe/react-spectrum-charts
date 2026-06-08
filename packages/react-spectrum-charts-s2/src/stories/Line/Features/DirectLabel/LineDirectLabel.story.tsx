@@ -22,6 +22,13 @@ import { workspaceTrendsData } from '../../../../stories/data/data';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
+// Same as workspaceTrendsData but with "Add Line viz" adjusted to end at the same
+// y position as "Add Bar viz" (users ~3500 vs 3493), so its line terminates behind
+// the "Add Bar viz" label — a targeted test for highlight foreground behavior.
+const labelCollisionData = workspaceTrendsData.map((d) =>
+  d.series === 'Add Line viz' && d.datetime === 1668409200000 ? { ...d, users: 3500 } : d
+);
+
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Direct Label',
   component: LineDirectLabel,
@@ -39,43 +46,6 @@ export default {
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 100, maxWidth: 1000, height: 400, backgroundColor: 'gray-50' };
-
-// DATA 
-
-
-
-// TEMPLATES
-
-const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-const LineDirectLabelWithInspectStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-// BINDINGS
 
 const CHART_HEIGHT = 400;
 const MAX_WIDTH = CHART_SIZE_BREAKPOINTS.L + 200;
@@ -124,6 +94,67 @@ const THRESHOLDS = [
   { px: CHART_SIZE_BREAKPOINTS.M, label: 'M' },
   { px: CHART_SIZE_BREAKPOINTS.L, label: 'L' },
 ];
+
+// TEMPLATES
+
+const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const LineDirectLabelWithInspectStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const LineDirectLabelControlledHighlightStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Freeform table' });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const LineDirectLabelLabelCollisionStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: labelCollisionData });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+        <LineDirectLabel {...args} />
+        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
 
 const DirectLabelSizeScalingStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
@@ -194,7 +225,7 @@ const DirectLabelSizeScalingStory: StoryFn<typeof LineDirectLabel> = (args): Rea
   );
 };
 
-export const DirectLabelSizeScaling = DirectLabelSizeScalingStory;
+const DirectLabelSizeScaling = DirectLabelSizeScalingStory;
 
 const DirectLabelDefault = bindWithProps(LineDirectLabelStory);
 DirectLabelDefault.args = { value: 'series' };
@@ -208,8 +239,14 @@ DirectLabelValueAverage.args = { value: 'average' };
 const DirectLabelWithInspect = bindWithProps(LineDirectLabelWithInspectStory);
 DirectLabelWithInspect.args = { value: 'last' };
 
+const DirectLabelControlledHighlight = bindWithProps(LineDirectLabelControlledHighlightStory);
+DirectLabelControlledHighlight.args = { value: 'last' };
+
 const DirectLabelPositionStart = bindWithProps(LineDirectLabelStory);
 DirectLabelPositionStart.args = { value: 'series', position: 'start' };
+
+const DirectLabelLabelCollision = bindWithProps(LineDirectLabelLabelCollisionStory);
+DirectLabelLabelCollision.args = { value: 'series', excludeSeries: ['Add Line viz'] };
 
 export {
   DirectLabelDefault,
@@ -217,4 +254,7 @@ export {
   DirectLabelValueAverage,
   DirectLabelPositionStart,
   DirectLabelWithInspect,
+  DirectLabelControlledHighlight,
+  DirectLabelLabelCollision,
+  DirectLabelSizeScaling,
 };

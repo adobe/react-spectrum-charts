@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Mark, TextMark, Transforms } from 'vega';
+import { Data, Mark, NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
 import { CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
@@ -133,7 +133,8 @@ export const getLineDirectLabelMarks = (
 	labelOptions: LineDirectLabelSpecOptions,
 	lineOptions: LineSpecOptions,
 	backgroundColor: string | undefined,
-	colorScheme: 'light' | 'dark'
+	colorScheme: 'light' | 'dark',
+	fgOpacityRules?: ProductionRule<NumericValueRef>
 ): Mark[] => {
 	const resolvedBg = getS2ColorValue(
 		backgroundColor === 'transparent' || !backgroundColor ? 'gray-25' : backgroundColor,
@@ -182,12 +183,12 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				stroke: { value: resolvedBg },
 				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
-				fill: { value: 'transparent' },
+				fill: { value: resolvedBg },
 			},
 			update: {
 				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
 				fontSize: fontSizeEncoding,
-				opacity: opacityRules,
+				opacity: { value: 1 }
 			},
 		},
 	};
@@ -210,7 +211,20 @@ export const getLineDirectLabelMarks = (
 		},
 	};
 
-	return [backgroundTextMark, mainTextMark];
+	const marks: Mark[] = [backgroundTextMark, mainTextMark];
+
+	if (!fgOpacityRules) {
+		return marks;
+	}
+	
+	// this is only returned when the line has a highlight state, so the labels always render on top of the overlay lines
+	const fgMarks = marks.map(mark => ({
+		...mark,
+		name: `${mark.name}_fg`,
+		encode: { ...mark.encode, update: { ...mark.encode?.update, opacity: fgOpacityRules } }
+	} as unknown as Mark));
+
+	return fgMarks;
 };
 
 /**
