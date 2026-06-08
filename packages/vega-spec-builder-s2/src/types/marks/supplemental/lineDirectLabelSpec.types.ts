@@ -37,6 +37,8 @@ export interface LineDirectLabelOptions {
   prefix?: string;
   /** Series values to exclude from labeling. */
   excludeSeries?: string[];
+  /** Label font size override */
+  fontSize?: number;
 }
 
 type LineDirectLabelOptionsWithDefaults = 'value' | 'position' | 'excludeSeries';

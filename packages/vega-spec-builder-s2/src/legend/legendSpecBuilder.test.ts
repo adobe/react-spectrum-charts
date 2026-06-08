@@ -24,6 +24,7 @@ import {
 } from '@spectrum-charts/constants';
 
 import {
+  defaultChartSizeFontSizeSignal,
   defaultChartSizeHoverStrokeWidthSignal,
   defaultChartSizePointSizeSignal,
   defaultChartSizeStrokeWidthSignal,
@@ -165,6 +166,7 @@ describe('addLegend()', () => {
           defaultChartSizeStrokeWidthSignal,
           defaultChartSizeHoverStrokeWidthSignal,
           defaultChartSizePointSizeSignal,
+          defaultChartSizeFontSizeSignal,
           {
             name: `legend0_${HOVERED_SERIES}`,
             value: null,

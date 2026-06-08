@@ -11,7 +11,7 @@
  */
 import { Data, Mark, NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
-import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
+import { CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getLineOpacity } from '../line/lineMarkUtils';
@@ -152,6 +152,7 @@ export const getLineDirectLabelMarks = (
 	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const opacityRules = getLineOpacity(lineOptions);
+  	const fontSizeEncoding = labelOptions.fontSize == null ? { signal: CHART_SIZE_FONT_SIZE } : { value: labelOptions.fontSize };
 
 	// Combined logic for direct label offset given 1, 2, or 3+ series
 	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${LABEL_LINE_HEIGHT} - 12 - datum._scaledY)`
@@ -184,7 +185,11 @@ export const getLineDirectLabelMarks = (
 				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
 				fill: { value: resolvedBg },
 			},
-			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: { value: 1 } },
+			update: {
+				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+				fontSize: fontSizeEncoding,
+				opacity: { value: 1 }
+			},
 		},
 	};
 
@@ -198,7 +203,11 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
 			},
-			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
+			update: {
+				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+				fontSize: fontSizeEncoding,
+				opacity: opacityRules,
+			},
 		},
 	};
 
@@ -238,4 +247,5 @@ export const getLineDirectLabelSpecOptions = (
 	prefix: labelOptions.prefix ?? '',
 	scaleType: lineOptions.scaleType,
 	value: labelOptions.value ?? 'last',
+	fontSize: labelOptions.fontSize,
 });

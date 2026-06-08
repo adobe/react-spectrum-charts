@@ -12,7 +12,9 @@
 import { Data, SourceData } from 'vega';
 
 import {
+	CHART_SIZE_FONT_SIZE,
 	DEFAULT_COLOR,
+	DIRECT_LABEL_FONT_WEIGHT,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
@@ -69,6 +71,7 @@ const defaultLabelSpecOptions: LineDirectLabelSpecOptions = {
 	prefix: '',
 	scaleType: 'time',
 	value: 'last',
+	fontSize: undefined,
 };
 
 describe('getLineDirectLabelSpecOptions', () => {
@@ -121,6 +124,17 @@ describe('getLineDirectLabelSpecOptions', () => {
 		const result = getLineDirectLabelSpecOptions({ position: 'start' }, 0, defaultLineOptions);
 		expect(result.position).toBe('start');
 	});
+
+	test('defaults fontSize to undefined', () => {
+		const result = getLineDirectLabelSpecOptions({}, 0, defaultLineOptions);
+		expect(result.fontSize).toBeUndefined();
+	});
+
+	test('passes through explicit fontSize', () => {
+		const result = getLineDirectLabelSpecOptions({ fontSize: 18 }, 0, defaultLineOptions);
+		expect(result.fontSize).toBe(18);
+	});
+
 });
 
 describe('getLineDirectLabelData', () => {
@@ -415,10 +429,23 @@ describe('getLineDirectLabelMarks', () => {
 		expect(marks[1].encode?.update).toHaveProperty('opacity');
 	});
 
-	test('both marks have fontWeight 700 in update encoding', () => {
+	test('both marks have fixed fontWeight from DIRECT_LABEL_FONT_WEIGHT', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
-		expect(marks[0].encode?.update).toHaveProperty('fontWeight', { value: 700 });
-		expect(marks[1].encode?.update).toHaveProperty('fontWeight', { value: 700 });
+		expect(marks[0].encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
+		expect(marks[1].encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
+	});
+
+	test('both marks use fontSize signal when fontSize is not set', () => {
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+		expect(marks[0].encode?.update).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
+		expect(marks[1].encode?.update).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
+	});
+
+	test('explicit fontSize overrides the signal', () => {
+		const opts = { ...defaultLabelSpecOptions, fontSize: 20 };
+		const marks = getLineDirectLabelMarks('line0', opts, defaultLineOptions, 'gray-50', 'light');
+		expect(marks[0].encode?.update).toHaveProperty('fontSize', { value: 20 });
+		expect(marks[1].encode?.update).toHaveProperty('fontSize', { value: 20 });
 	});
 
 	test('adds prefix to text expression', () => {
