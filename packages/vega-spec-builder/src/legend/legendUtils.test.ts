@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_LABEL_LIMIT, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
 import { defaultLegendOptions } from './legendTestUtils';
@@ -130,54 +130,43 @@ describe('getHiddenSeriesColorRule()', () => {
   });
 });
 
+const getExpectedColumnsSignal = (name: string, effectiveLabelLimit: number) => {
+  const symbolAndSpacingWidth = DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
+  const maxWidthExpr = `length(data('${name}_maxLabelWidth')) > 0 ? data('${name}_maxLabelWidth')[0].maxLabelWidth : ${effectiveLabelLimit}`;
+  return { signal: `max(1, floor(width / (min(${maxWidthExpr}, ${effectiveLabelLimit}) + ${symbolAndSpacingWidth})))` };
+};
+
 describe('getColumns()', () => {
   test('should return undefined for left position', () => {
-    expect(getColumns('left')).toBeUndefined();
+    expect(getColumns('left', 'legend0')).toBeUndefined();
   });
 
   test('should return undefined for right position', () => {
-    expect(getColumns('right')).toBeUndefined();
+    expect(getColumns('right', 'legend0')).toBeUndefined();
   });
 
-  test('should return default signal for top position without labelLimit', () => {
-    expect(getColumns('top')).toEqual({ signal: 'floor(width / 220)' });
+  test('should use DEFAULT_LEGEND_LABEL_LIMIT when no labelLimit provided for top position', () => {
+    expect(getColumns('top', 'legend0')).toEqual(getExpectedColumnsSignal('legend0', DEFAULT_LEGEND_LABEL_LIMIT));
   });
 
-  test('should return default signal for bottom position without labelLimit', () => {
-    expect(getColumns('bottom')).toEqual({ signal: 'floor(width / 220)' });
+  test('should use DEFAULT_LEGEND_LABEL_LIMIT when no labelLimit provided for bottom position', () => {
+    expect(getColumns('bottom', 'legend0')).toEqual(getExpectedColumnsSignal('legend0', DEFAULT_LEGEND_LABEL_LIMIT));
   });
 
-  test('should return default signal when labelLimit is undefined', () => {
-    expect(getColumns('top', undefined)).toEqual({ signal: 'floor(width / 220)' });
+  test('should use DEFAULT_LEGEND_LABEL_LIMIT when labelLimit is undefined', () => {
+    expect(getColumns('top', 'legend0', undefined)).toEqual(getExpectedColumnsSignal('legend0', DEFAULT_LEGEND_LABEL_LIMIT));
   });
 
-  test('should return default signal when labelLimit is 0', () => {
-    expect(getColumns('bottom', 0)).toEqual({ signal: 'floor(width / 220)' });
+  test('should use measured label widths capped at labelLimit when labelLimit is provided', () => {
+    expect(getColumns('top', 'legend0', 100)).toEqual(getExpectedColumnsSignal('legend0', 100));
   });
 
-  test('should return default signal when labelLimit is negative', () => {
-    expect(getColumns('top', -10)).toEqual({ signal: 'floor(width / 220)' });
+  test('should use measured label widths capped at labelLimit for various labelLimit values', () => {
+    expect(getColumns('bottom', 'legend0', 50)).toEqual(getExpectedColumnsSignal('legend0', 50));
+    expect(getColumns('top', 'legend0', 200)).toEqual(getExpectedColumnsSignal('legend0', 200));
   });
 
-  test('should calculate columns based on labelLimit when provided', () => {
-    const labelLimit = 100;
-    const expectedItemWidth = labelLimit + DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
-    const expectedSignal = `max(1, floor(width / ${expectedItemWidth}))`;
-
-    expect(getColumns('top', labelLimit)).toEqual({ signal: expectedSignal });
-  });
-
-  test('should calculate columns with different labelLimit values', () => {
-    const labelLimit50 = 50;
-    const expectedItemWidth50 = 50 + DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
-    expect(getColumns('bottom', labelLimit50)).toEqual({
-      signal: `max(1, floor(width / ${expectedItemWidth50}))`,
-    });
-
-    const labelLimit200 = 200;
-    const expectedItemWidth200 = 200 + DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING; // 200 + 16 + 20 = 236
-    expect(getColumns('top', labelLimit200)).toEqual({
-      signal: `max(1, floor(width / ${expectedItemWidth200}))`,
-    });
+  test('should use legend name in the data reference', () => {
+    expect(getColumns('top', 'myLegend', 100)).toEqual(getExpectedColumnsSignal('myLegend', 100));
   });
 });
