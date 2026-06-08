@@ -34,6 +34,3 @@ cursor
 
 # catch all for temporary outputs
 tmp/
-
-# scout
-.scout/
