@@ -204,7 +204,7 @@ describe('getLineDirectLabelData', () => {
 		const transforms = getTransforms(data);
 		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === '_adjustedY');
 		expect(formula).toBeDefined();
-		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * 16');
+		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * 12');
 	});
 
 	test('includes _cumMaxAdjusted cumulative window transform', () => {
@@ -361,27 +361,27 @@ describe('getLineDirectLabelMarks', () => {
 		};
 
 		test('rank 1 always places label 12px above the line terminus', () => {
-			// cumMaxAdjusted = _scaledY - 1*16 for rank 1
-			// offset = (100 - 16) + 1*16 - 12 - 100 = -12
-			expect(evalOffsetSignal({ _metricRank: 1, _scaledY: 100, _cumMaxAdjusted: 84 })).toBe(-12);
+			// cumMaxAdjusted = _scaledY - 1*12 for rank 1
+			// offset = (100 - 12) + 1*12 - 12 - 100 = -12
+			expect(evalOffsetSignal({ _metricRank: 1, _scaledY: 100, _cumMaxAdjusted: 88 })).toBe(-12);
 		});
 
 		test('rank 2 well-separated from rank 1: also placed 12px above', () => {
-			// rank2 adjustedY (200 - 32 = 168) > rank1 adjustedY, so cumMaxAdjusted = 168
-			// offset = 168 + 2*16 - 12 - 200 = -12
-			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 200, _cumMaxAdjusted: 168 })).toBe(-12);
+			// rank2 adjustedY (200 - 24 = 176) > rank1 adjustedY, so cumMaxAdjusted = 176
+			// offset = 176 + 2*12 - 12 - 200 = -12
+			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 200, _cumMaxAdjusted: 176 })).toBe(-12);
 		});
 
 		test('rank 2 close to rank 1: pushed above natural position to avoid overlap', () => {
-			// rank1 adjustedY (100 - 16 = 84) > rank2 adjustedY (108 - 32 = 76), so cumMaxAdjusted = 84
-			// offset = 84 + 2*16 - 12 - 108 = -4 (less negative than -12, meaning pushed further up)
-			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 108, _cumMaxAdjusted: 84 })).toBe(-4);
+			// rank1 adjustedY (100 - 12 = 88) > rank2 adjustedY (108 - 24 = 84), so cumMaxAdjusted = 88
+			// offset = 88 + 2*12 - 12 - 108 = -8 (less negative than -12, meaning pushed further up)
+			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 108, _cumMaxAdjusted: 88 })).toBe(-8);
 		});
 
-		test('rank 3 very close to preceding labels: label placed below line terminus', () => {
-			// cumMaxAdjusted still 84 (all three close together)
-			// offset = 84 + 3*16 - 12 - 112 = 8 (positive = below line)
-			expect(evalOffsetSignal({ _metricRank: 3, _scaledY: 112, _cumMaxAdjusted: 84 })).toBe(8);
+		test('rank 3 very close to preceding labels: stacked exactly MIN_LABEL_GAP below rank 2', () => {
+			// rank1 adjustedY (100 - 12 = 88) dominates cumMaxAdjusted for all three
+			// offset = 88 + 3*12 - 12 - 112 = 0 (at line terminus, pushed down from natural -12)
+			expect(evalOffsetSignal({ _metricRank: 3, _scaledY: 112, _cumMaxAdjusted: 88 })).toBe(0);
 		});
 
 		test('y field is the metric', () => {
