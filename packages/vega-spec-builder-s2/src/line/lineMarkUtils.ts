@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ArrayValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+import { ArrayValueRef, ColorValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
 import {
   CHART_SIZE_STROKE_WIDTH,
@@ -26,6 +26,7 @@ import {
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
+import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
 import {
@@ -79,6 +80,29 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
 
 const GRADIENT_BASE_OPACITY = 0.2;
 const FORECAST_GRADIENT_RATIO = 0.4;
+
+/** Builds the `stroke` encoding for a line mark, inserting a gray color rule for series beyond `seriesLimit`. */
+const getStrokeEncoding = (
+  seriesLimit: number | undefined,
+  hiddenSeriesColor: string | undefined,
+  color: LineMarkOptions['color'],
+  colorScheme: LineMarkOptions['colorScheme']
+): ColorValueRef | ProductionRule<ColorValueRef> => {
+
+  const normalColor = getColorProductionRule(color, colorScheme);
+  if (seriesLimit === undefined) {
+    return normalColor;
+  }
+  
+  const grayColor = getS2ColorValue(hiddenSeriesColor || 'gray-400', colorScheme);
+  return [
+    {
+      test: `indexof(slice(domain('color'), 0, ${seriesLimit}), datum.${SERIES_ID}) === -1`,
+      value: grayColor,
+    },
+    normalColor,
+  ];
+};
 
 /**
  * Generates an area mark with a gradient fill beneath the line, fading from the line's color to transparent.
@@ -186,12 +210,14 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     color,
     colorScheme,
     dimension,
+    hiddenSeriesColor,
     lineCap = 'round',
     lineType,
     metric,
     name,
     opacity,
     scaleType,
+    seriesLimit,
     interpolate
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
@@ -208,7 +234,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     encode: {
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getStrokeEncoding(seriesLimit, hiddenSeriesColor, color, colorScheme),
         strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
           ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)

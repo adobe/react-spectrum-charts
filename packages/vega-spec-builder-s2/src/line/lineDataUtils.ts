@@ -17,6 +17,7 @@ import {
   GROUP_ID,
   HOVERED_ITEM,
   SELECTED_ITEM,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
@@ -58,6 +59,23 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
     ],
   };
 };
+
+/**
+ * Gets a derived data source sorted so "other" series (beyond seriesLimit) appear first,
+ * causing Vega to draw them first (behind the primary series).
+ */
+export const getSeriesLimitFacetData = (name: string, seriesLimit: number): SourceData => ({
+  name: `${name}_seriesLimitFacetData`,
+  source: FILTERED_TABLE,
+  transform: [
+    {
+      type: 'formula',
+      as: `${name}_isOther`,
+      expr: `indexof(slice(domain('color'), 0, ${seriesLimit}), datum.${SERIES_ID}) < 0 ? 1 : 0`,
+    },
+    { type: 'collect', sort: { field: `${name}_isOther`, order: 'descending' } },
+  ],
+});
 
 /**
  * gets the data used for displaying points

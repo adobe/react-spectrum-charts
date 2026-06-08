@@ -94,6 +94,16 @@ export interface LineOptions {
    * No default — omitting means no append.
    */
   alternateSegmentLabel?: string;
+  /**
+   * Limits the number of series that render with full color. The first N series (by color scale order)
+   * render normally; remaining series render in a de-emphasized gray color with direct labels suppressed.
+   */
+  seriesLimit?: number;
+  /**
+   * Overrides the default gray color used for series beyond the `seriesLimit`.
+   * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
+   */
+  hiddenSeriesColor?: string;
 
   // children
   chartPopovers?: ChartPopoverOptions[];

@@ -75,6 +75,14 @@ export const getLineDirectLabelData = (
 					},
 				]
 			: []),
+		...(lineOptions.seriesLimit
+			? [
+					{
+						type: 'filter' as const,
+						expr: `indexof(slice(domain('color'), 0, ${lineOptions.seriesLimit}), datum.${SERIES_ID}) >= 0`,
+					},
+				]
+			: []),
 		{
 			type: 'joinaggregate' as const,
 			fields: [metric],
