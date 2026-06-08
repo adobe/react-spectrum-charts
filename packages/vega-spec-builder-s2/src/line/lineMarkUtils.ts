@@ -398,9 +398,9 @@ const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Ma
  * `value: 0` (hide) as the fallback — in contrast to the fade pattern used for regular marks.
  */
 export const getHighlightedSeriesOpacityRules = (
-  markOptions: { interactiveMarkName?: string; isHighlightedByGroup?: boolean }
+  markOptions: { interactiveMarkName?: string; isHighlightedByGroup?: boolean; legendHighlightSignals?: string[] }
 ): ProductionRule<NumericValueRef> => {
-  const { interactiveMarkName, isHighlightedByGroup } = markOptions;
+  const { interactiveMarkName, isHighlightedByGroup, legendHighlightSignals } = markOptions;
   return [
     ...(interactiveMarkName
       ? [
@@ -423,6 +423,10 @@ export const getHighlightedSeriesOpacityRules = (
       test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) && indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`,
       value: 1,
     },
+    ...(legendHighlightSignals ?? []).map((signal) => ({
+      test: `isValid(${signal}) && ${signal} === datum.${SERIES_ID}`,
+      value: 1,
+    })),
     { value: 0 },
   ];
 };

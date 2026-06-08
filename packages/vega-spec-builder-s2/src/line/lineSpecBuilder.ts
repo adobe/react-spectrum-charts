@@ -257,7 +257,7 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, linePointAnnotations, lineType, name, opacity, staticPoint } = options;
+  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, legendHighlightSignals, linePointAnnotations, lineType, name, opacity, staticPoint } = options;
   const forecasts = options.forecasts ?? [];
   const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
@@ -278,7 +278,8 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
         }
     : options;
 
-  const hasHighlightState = isInteractive(options) || highlightedItem !== undefined;
+  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
+  const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
 
   // boundary rules are drawn behind everything
   for (const [i, forecast] of forecasts.entries()) {
@@ -323,7 +324,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     );
   }
   // hover marks are last so hollow points and interaction marks always render above everything
-  if (hasHighlightState) {
+  if (hasInteractiveHighlight) {
     marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
   }
   // forecast labels are drawn last so they appear on top of other marks

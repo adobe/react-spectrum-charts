@@ -53,7 +53,7 @@ import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
-import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
+import { getLegendHighlightSignals, setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
@@ -139,7 +139,8 @@ export function buildSpec({
 
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
-  const specOptions = { backgroundColor, colorScheme, idKey, highlightedItem };
+  const legendHighlightSignals = getLegendHighlightSignals(legends);
+  const specOptions = { backgroundColor, colorScheme, idKey, highlightedItem, legendHighlightSignals };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':

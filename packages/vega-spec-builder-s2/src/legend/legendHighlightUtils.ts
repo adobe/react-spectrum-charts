@@ -20,6 +20,14 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { LegendOptions } from '../types';
+
+export const getLegendHighlightSignals = (legends: LegendOptions[]): string[] =>
+  legends
+    .map((legend, index) => ({ ...legend, name: legend.name ?? `legend${index}` }))
+    .filter((legend) => legend.highlight)
+    .map((legend) => `${legend.name}_${HOVERED_SERIES}`);
+
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
  */
