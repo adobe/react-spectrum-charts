@@ -197,6 +197,9 @@ export const DIRECT_LABEL_FONT_SIZE_S = 14;
 export const DIRECT_LABEL_FONT_SIZE_M = 16;
 export const DIRECT_LABEL_FONT_SIZE_L = 18;
 
+// Offset from anchor mark edge to label boundary.
+export const LINE_POINT_ANNOTATION_OFFSET = 3;
+
 // S2 reference line label constants — alias the shared direct label values
 export const REFERENCE_LINE_LABEL_FONT_WEIGHT = DIRECT_LABEL_FONT_WEIGHT;
 export const REFERENCE_LINE_LABEL_BACKGROUND_STROKE = 'referenceLineLabelBackgroundStroke';
