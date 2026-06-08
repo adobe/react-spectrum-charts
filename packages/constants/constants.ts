@@ -142,6 +142,8 @@ export const SYMBOL_PATH_WIDTH_SCALE = 'symbolPathWidth';
 
 // encode rules
 export const DEFAULT_OPACITY_RULE = { value: 1 };
+/** Default rule for stroke width when not hovered */
+export const DEFAULT_STROKE_WIDTH_RULE = { signal: CHART_SIZE_STROKE_WIDTH };
 
 // corner radius
 export const CORNER_RADIUS = 6;
