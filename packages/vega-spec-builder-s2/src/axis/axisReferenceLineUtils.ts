@@ -15,6 +15,7 @@ import {
   CHART_SIZE_BREAKPOINTS,
   CHART_SIZE_STROKE_WIDTH,
   DEFAULT_FONT_COLOR,
+  REFERENCE_LINE_AUTO_RULE_X_START,
   REFERENCE_LINE_END_CAP_PATHS,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
@@ -93,7 +94,7 @@ export const getPositionEncoding = (
 };
 
 const getRuleXStartSignal = (): string =>
-  `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_RULE_X_START.M} : ${REFERENCE_LINE_RULE_X_START.L}`;
+  `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_AUTO_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_AUTO_RULE_X_START.M} : ${REFERENCE_LINE_AUTO_RULE_X_START.L}`;
 
 const getCapTierOpacitySignal = (tier: 'S' | 'M' | 'L'): string => {
   if (tier === 'S') return `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1 : 0`;

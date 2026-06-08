@@ -23,6 +23,7 @@ import {
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
   REFERENCE_LINE_LABEL_FONT_WEIGHT,
   REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
+  REFERENCE_LINE_AUTO_RULE_X_START,
   REFERENCE_LINE_RULE_X_START,
   REFERENCE_LINE_SIZE_STROKE_WIDTHS,
   REFERENCE_LINE_START_CAP_PATHS,
@@ -210,7 +211,7 @@ describe('getReferenceLineRuleMark()', () => {
 
   test('auto mode (no size): x uses reactive signal across S/M/L breakpoints', () => {
     const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
-    const expectedSignal = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_RULE_X_START.M} : ${REFERENCE_LINE_RULE_X_START.L}`;
+    const expectedSignal = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_AUTO_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_AUTO_RULE_X_START.M} : ${REFERENCE_LINE_AUTO_RULE_X_START.L}`;
     expect(rule.encode?.update?.x).toStrictEqual({ signal: expectedSignal });
     expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width - 7' });
   });
