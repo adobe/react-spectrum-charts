@@ -189,6 +189,8 @@ export const BACKGROUND_COLOR = 'chartBackgroundColor';
 // S2 direct label shared style constants (used by LineDirectLabel and ReferenceLine)
 export const DIRECT_LABEL_FONT_WEIGHT = 700 as const;
 export const DIRECT_LABEL_BACKGROUND_STROKE_WIDTH = 4;
+// Offset from anchor mark edge to label boundary. Must be > DIRECT_LABEL_BACKGROUND_STROKE_WIDTH / 2 to prevent the background halo from touching the point fill.
+export const LINE_POINT_ANNOTATION_OFFSET = 3;
 
 // S2 reference line label constants — alias the shared direct label values
 export const REFERENCE_LINE_LABEL_FONT_WEIGHT = DIRECT_LABEL_FONT_WEIGHT;
