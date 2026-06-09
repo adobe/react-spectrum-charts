@@ -37,3 +37,6 @@ tmp/
 
 .agents/
 .scout/
+
+# local data-navigator reference clone (not part of the package)
+data-navigator/
