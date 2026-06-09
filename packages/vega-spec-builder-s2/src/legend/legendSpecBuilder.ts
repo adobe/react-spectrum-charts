@@ -275,7 +275,7 @@ const addScales = produce<Scale[], [LegendSpecOptions]>((scales, { color, lineTy
 const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys, name }) => {
   if (highlight) {
     setHoverOpacityForMarks(name, marks, keys);
-    setHoverStrokeWidthForMarks(name, marks);
+    setHoverStrokeWidthForMarks(name, marks, keys);
   }
 });
 

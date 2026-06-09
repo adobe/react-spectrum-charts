@@ -76,7 +76,14 @@ const getSizeTier = (width: number): 'S' | 'M' | 'L' => {
   return 'L';
 };
 
-export const StrokeWidthOnHover = (): ReactElement => {
+const groupedData = [
+  ...workspaceTrendsData.slice(0, 7).map((d) => ({ ...d, category: 'Analyze' })),
+  ...workspaceTrendsData.slice(7, 14).map((d) => ({ ...d, category: 'Analyze' })),
+  ...workspaceTrendsData.slice(14, 21).map((d) => ({ ...d, category: 'Visualize' })),
+  ...workspaceTrendsData.slice(21).map((d) => ({ ...d, category: 'Visualize' })),
+];
+
+const ResizableChart = ({ children }: { children: (width: number) => ReactElement }): ReactElement => {
   const [width, setWidth] = useState(600);
   const tier = getSizeTier(width);
 
@@ -111,21 +118,7 @@ export const StrokeWidthOnHover = (): ReactElement => {
           </div>
         ))}
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          <Chart data={workspaceTrendsData} width={width} height={CHART_HEIGHT}>
-            <Axis position="bottom" baseline ticks labelFormat="time" />
-            <Axis position="left" grid />
-            <Line dimension="datetime" metric="value" color="series" scaleType="time">
-              <ChartInspect>
-                {(datum) => (
-                  <div>
-                    <div>{datum.series}</div>
-                    <div>{Number(datum.value).toLocaleString()}</div>
-                  </div>
-                )}
-              </ChartInspect>
-            </Line>
-            <Legend highlight />
-          </Chart>
+          {children(width)}
           <input
             type="range"
             className="rsc-stroke-width-handle"
@@ -141,3 +134,47 @@ export const StrokeWidthOnHover = (): ReactElement => {
     </div>
   );
 };
+
+export const StrokeWidthOnHover = (): ReactElement => (
+  <ResizableChart>
+    {(width) => (
+      <Chart data={workspaceTrendsData} width={width} height={CHART_HEIGHT}>
+        <Axis position="bottom" baseline ticks labelFormat="time" />
+        <Axis position="left" grid />
+        <Line dimension="datetime" metric="value" color="series" scaleType="time">
+          <ChartInspect>
+            {(datum) => (
+              <div>
+                <div>{datum.series}</div>
+                <div>{Number(datum.value).toLocaleString()}</div>
+              </div>
+            )}
+          </ChartInspect>
+        </Line>
+        <Legend highlight />
+      </Chart>
+    )}
+  </ResizableChart>
+);
+
+export const StrokeWidthOnHoverGroupLegend = (): ReactElement => (
+  <ResizableChart>
+    {(width) => (
+      <Chart data={groupedData} width={width} height={CHART_HEIGHT}>
+        <Axis position="bottom" baseline ticks labelFormat="time" />
+        <Axis position="left" grid />
+        <Line dimension="datetime" metric="value" color="series" lineType="category" scaleType="time">
+          <ChartInspect>
+            {(datum) => (
+              <div>
+                <div>{datum.series}</div>
+                <div>{Number(datum.value).toLocaleString()}</div>
+              </div>
+            )}
+          </ChartInspect>
+        </Line>
+        <Legend keys={['category']} highlight />
+      </Chart>
+    )}
+  </ResizableChart>
+);

@@ -12,14 +12,23 @@
 import { Mark } from 'vega';
 
 import {
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_STROKE_WIDTH,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
   FADE_FACTOR,
-  HIGHLIGHTED_GROUP,
   HOVERED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { encodingUsesScale, getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
+import {
+  encodingUsesScale,
+  getHighlightOpacityRule,
+  getHighlightStrokeWidthRule,
+  setHoverOpacityForMarks,
+  setHoverStrokeWidthForMarks,
+} from './legendHighlightUtils';
 import { defaultMark } from './legendTestUtils';
 
 const defaultGroupMark: Mark = {
@@ -43,7 +52,7 @@ describe('getHighlightOpacityRule()', () => {
   });
   test('should use keys in test if there are keys', () => {
     const opacityRule = getHighlightOpacityRule('legend0', false, ['key1']);
-    expect(opacityRule).toHaveProperty('test', `isValid(${HIGHLIGHTED_GROUP})`);
+    expect(opacityRule).toHaveProperty('test', `isValid(legend0_${HOVERED_SERIES})`);
   });
 });
 
@@ -98,6 +107,58 @@ describe('setHoverOpacityForMarks()', () => {
         },
       ]);
     });
+  });
+});
+
+describe('getHighlightStrokeWidthRule()', () => {
+  test('should use hoveredSeries signal when no keys and not controlled', () => {
+    const rule = getHighlightStrokeWidthRule('legend0', false);
+    expect(rule).toHaveProperty('test', `isValid(legend0_${HOVERED_SERIES})`);
+    expect(rule).toHaveProperty(
+      'signal',
+      `legend0_${HOVERED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`
+    );
+  });
+  test('should use hoveredSeries signal when keys are provided', () => {
+    const rule = getHighlightStrokeWidthRule('legend0', false, ['category']);
+    expect(rule).toHaveProperty('test', `isValid(legend0_${HOVERED_SERIES})`);
+  });
+  test('should use CONTROLLED_HIGHLIGHTED_SERIES signal when controlled', () => {
+    const rule = getHighlightStrokeWidthRule('legend0', true);
+    expect(rule).toHaveProperty('test', `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`);
+  });
+});
+
+describe('setHoverStrokeWidthForMarks()', () => {
+  const markWithStrokeWidth = {
+    ...defaultMark,
+    encode: {
+      ...defaultMark.encode,
+      update: { strokeWidth: [DEFAULT_STROKE_WIDTH_RULE] },
+    },
+  };
+
+  test('should not modify marks when marks array is empty', () => {
+    const marks = [];
+    setHoverStrokeWidthForMarks('legend0', marks);
+    expect(marks).toEqual([]);
+  });
+  test('should not modify a mark that has no strokeWidth in update', () => {
+    const marks = JSON.parse(JSON.stringify([defaultMark]));
+    setHoverStrokeWidthForMarks('legend0', marks);
+    expect(marks[0].encode.update).not.toHaveProperty('strokeWidth');
+  });
+  test('should inject highlight rule before the fallback strokeWidth rule', () => {
+    const marks = JSON.parse(JSON.stringify([markWithStrokeWidth]));
+    setHoverStrokeWidthForMarks('legend0', marks);
+    expect(marks[0].encode.update.strokeWidth).toHaveLength(2);
+    expect(marks[0].encode.update.strokeWidth[0]).toHaveProperty('test', `isValid(legend0_${HOVERED_SERIES})`);
+    expect(marks[0].encode.update.strokeWidth[1]).toEqual(DEFAULT_STROKE_WIDTH_RULE);
+  });
+  test('should inject group rule when keys are provided', () => {
+    const marks = JSON.parse(JSON.stringify([markWithStrokeWidth]));
+    setHoverStrokeWidthForMarks('legend0', marks, ['category']);
+    expect(marks[0].encode.update.strokeWidth[0]).toHaveProperty('test', `isValid(legend0_${HOVERED_SERIES})`);
   });
 });
 

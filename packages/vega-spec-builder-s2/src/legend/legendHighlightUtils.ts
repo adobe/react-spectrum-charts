@@ -17,7 +17,6 @@ import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   FADE_FACTOR,
   GROUP_ID,
-  HIGHLIGHTED_GROUP,
   HOVERED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -70,7 +69,7 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
 /**
  * Injects a strokeWidth rule into marks that use the color scale so legend hover thickens the hovered series.
  */
-export const setHoverStrokeWidthForMarks = (legendName: string, marks: Mark[], controlled = false) => {
+export const setHoverStrokeWidthForMarks = (legendName: string, marks: Mark[], keys?: string[], controlled = false) => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
   const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
@@ -79,7 +78,7 @@ export const setHoverStrokeWidthForMarks = (legendName: string, marks: Mark[], c
     const { update } = mark.encode;
     if (update.strokeWidth === undefined) return;
 
-    const highlightStrokeWidthRule = getHighlightStrokeWidthRule(legendName, controlled);
+    const highlightStrokeWidthRule = getHighlightStrokeWidthRule(legendName, controlled, keys);
 
     if (!Array.isArray(update.strokeWidth)) {
       update.strokeWidth = [];
@@ -91,7 +90,8 @@ export const setHoverStrokeWidthForMarks = (legendName: string, marks: Mark[], c
 
 export const getHighlightStrokeWidthRule = (
   legendName: string,
-  controlled: boolean
+  controlled: boolean,
+  keys?: string[]
 ): { test?: string } & NumericValueRef => {
   if (controlled) {
     return {
@@ -99,6 +99,13 @@ export const getHighlightStrokeWidthRule = (
       signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
     };
   }
+  if (keys?.length) {
+    return {
+      test: `isValid(${legendName}_${HOVERED_SERIES})`,
+      signal: `${legendName}_${HOVERED_SERIES} === datum.${legendName}_${GROUP_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    };
+  }
+  // Default hover
   return {
     test: `isValid(${legendName}_${HOVERED_SERIES})`,
     signal: `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
@@ -118,8 +125,8 @@ export const getHighlightOpacityRule = (
   }
   if (keys?.length) {
     return {
-      test: `isValid(${HIGHLIGHTED_GROUP})`,
-      signal: `${HIGHLIGHTED_GROUP} === datum.${legendName}_${GROUP_ID} ? 1 : ${FADE_FACTOR}`,
+      test: `isValid(${legendName}_${HOVERED_SERIES})`,
+      signal: `${legendName}_${HOVERED_SERIES} === datum.${legendName}_${GROUP_ID} ? 1 : ${FADE_FACTOR}`,
     };
   }
   return {
