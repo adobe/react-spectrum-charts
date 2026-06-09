@@ -255,6 +255,30 @@ Use `excludeSeries` to prevent labels from appearing on specific series:
 
 ---
 
+## Primary series
+
+The `primarySeries` prop designates which series render with full color. All other series are rendered in a de-emphasized gray, making it easy to highlight one or a few key series against a backdrop of contextual data.
+
+Pass a number to promote the first N series (by color scale order), or a string array to name specific series explicitly:
+
+```jsx
+{/* Highlight the first 2 series by color scale order */}
+<Line color="series" primarySeries={2} />
+
+{/* Highlight specific named series */}
+<Line color="series" primarySeries={['Revenue', 'Target']} />
+```
+
+Use `otherSeriesColor` to override the default gray used for de-emphasized series:
+
+```jsx
+<Line color="series" primarySeries={2} otherSeriesColor="gray-100" />
+```
+
+When `primarySeries` is combined with `LineDirectLabel`, direct labels are only shown on the primary series.
+
+---
+
 ## Alternate segments
 
 The `alternateSegmentKey` prop lets you visually distinguish specific data points — such as estimated or projected values — by rendering their line segments with a different stroke style while keeping the same series color.
@@ -448,6 +472,18 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
             <td>string</td>
             <td>–</td>
             <td>Key in the data whose truthy value causes a visible point to be drawn at that data item.</td>
+        </tr>
+        <tr>
+            <td>primarySeries</td>
+            <td>number | string[]</td>
+            <td>–</td>
+            <td><strong>S2 only.</strong> Designates which series render with full color. A number promotes the first N series by color scale order; a string array names specific series explicitly. All other series are rendered in a de-emphasized gray. When used with <code>LineDirectLabel</code>, labels are suppressed on non-primary series.</td>
+        </tr>
+        <tr>
+            <td>otherSeriesColor</td>
+            <td>string</td>
+            <td>'gray-400'</td>
+            <td><strong>S2 only.</strong> Overrides the default gray used for de-emphasized series when <code>primarySeries</code> is set. Accepts any Spectrum 2 color token (e.g. <code>'gray-200'</code>) or CSS color value.</td>
         </tr>
         <tr>
             <td>alternateSegmentKey</td>
