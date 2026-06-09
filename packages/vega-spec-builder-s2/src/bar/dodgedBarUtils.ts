@@ -16,6 +16,7 @@ import { BACKGROUND_COLOR } from '@spectrum-charts/constants';
 import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
+import { getBarFocusRing } from './barFocusRingUtils';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
   getBarDimensionHoverArea,
@@ -67,6 +68,8 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
           },
         },
         ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
+        // focus ring for keyboard navigation (experimental); inside the group so it can read the bar mark bounds
+        ...(options.accessibleNavigation ? [getBarFocusRing(options)] : []),
       ],
     },
   ];

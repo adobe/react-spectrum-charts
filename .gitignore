@@ -34,3 +34,6 @@ cursor
 
 # catch all for temporary outputs
 tmp/
+
+# local data-navigator reference clone (not part of the package)
+data-navigator/

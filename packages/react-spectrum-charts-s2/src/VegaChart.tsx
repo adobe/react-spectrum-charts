@@ -166,5 +166,7 @@ export const VegaChart: FC<VegaChartProps> = ({
     locale,
   ]);
 
-  return <div ref={containerRef} className="rsc"></div>;
+  // aria-hidden: Vega renders to a non-semantic canvas/SVG; assistive tech navigates the chart
+  // via the data-navigator structure instead (see Navigator).
+  return <div ref={containerRef} className="rsc" aria-hidden="true"></div>;
 };

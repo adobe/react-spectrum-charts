@@ -76,6 +76,18 @@ const NegativeBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
+const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600, accessibleNavigation: true });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args} />
+      <Legend title="Operating system" />
+    </Chart>
+  );
+};
+
 const defaultProps: BarProps = {
   dimension: 'browser',
   order: 'order',
@@ -123,4 +135,17 @@ InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
-export { Basic, NegativeStack, OnClick, StackedBarWithUTCDatetimeFormat, InspectOnDimensionArea, WithBarLabels };
+const AccessibleNavigation = bindWithProps(AccessibleNavigationStory);
+AccessibleNavigation.args = {
+  ...defaultProps,
+};
+
+export {
+  AccessibleNavigation,
+  Basic,
+  NegativeStack,
+  OnClick,
+  StackedBarWithUTCDatetimeFormat,
+  InspectOnDimensionArea,
+  WithBarLabels,
+};

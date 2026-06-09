@@ -102,6 +102,8 @@ type BarOptionsWithDefaults =
   | 'type';
 
 export interface BarSpecOptions extends PartiallyRequired<BarOptions, BarOptionsWithDefaults> {
+  /** Experimental: keyboard navigation focus rings/signals are emitted when true. @see ChartOptions.accessibleNavigation */
+  accessibleNavigation?: boolean;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];
   dimensionScaleType: 'band';
