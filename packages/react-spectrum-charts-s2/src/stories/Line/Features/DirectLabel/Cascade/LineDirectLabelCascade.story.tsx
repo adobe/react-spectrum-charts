@@ -228,19 +228,19 @@ const LineDirectLabelManySeriesLegendStory: StoryFn<typeof LineDirectLabel> = (a
 // BINDINGS
 
 const DirectLabelTwoSeries = bindWithProps(LineDirectLabelTwoSeriesStory);
-DirectLabelTwoSeries.args = { value: 'last' };
+DirectLabelTwoSeries.args = { value: 'series' };
 
 const DirectLabelThreeSeriesDiverge = bindWithProps(LineDirectLabelThreeSeriesDivergeStory);
-DirectLabelThreeSeriesDiverge.args = { value: 'last' };
+DirectLabelThreeSeriesDiverge.args = { value: 'series' };
 
 const DirectLabelSixSeries = bindWithProps(LineDirectLabelSixSeriesStory);
-DirectLabelSixSeries.args = { value: 'last' };
+DirectLabelSixSeries.args = { value: 'series' };
 
 const DirectLabelManySeries = bindWithProps(LineDirectLabelManySeriesStory);
-DirectLabelManySeries.args = { value: 'last' };
+DirectLabelManySeries.args = { value: 'series' };
 
 const DirectLabelManySeriesLegend = bindWithProps(LineDirectLabelManySeriesLegendStory);
-DirectLabelManySeriesLegend.args = { value: 'last' };
+DirectLabelManySeriesLegend.args = { value: 'series' };
 
 export {
   DirectLabelTwoSeries,

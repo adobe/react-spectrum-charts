@@ -237,7 +237,7 @@ const DirectLabelValueAverage = bindWithProps(LineDirectLabelStory);
 DirectLabelValueAverage.args = { value: 'average' };
 
 const DirectLabelWithInspect = bindWithProps(LineDirectLabelWithInspectStory);
-DirectLabelWithInspect.args = { value: 'last' };
+DirectLabelWithInspect.args = { value: 'series' };
 
 const DirectLabelControlledHighlight = bindWithProps(LineDirectLabelControlledHighlightStory);
 DirectLabelControlledHighlight.args = { value: 'last' };

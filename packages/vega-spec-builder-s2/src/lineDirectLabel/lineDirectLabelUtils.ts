@@ -20,7 +20,7 @@ import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
 
-const LABEL_LINE_HEIGHT = 16;
+const MIN_LABEL_GAP = 12;
 
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.
@@ -88,7 +88,7 @@ export const getLineDirectLabelData = (
 			as: ['_metricRank'],
 		},
 		{ type: 'formula' as const, as: '_scaledY', expr: `scale('${yScaleName}', datum["${metric}"])` },
-		{ type: 'formula' as const, as: '_adjustedY', expr: `datum._scaledY - datum._metricRank * ${LABEL_LINE_HEIGHT}` },
+		{ type: 'formula' as const, as: '_adjustedY', expr: `datum._scaledY - datum._metricRank * ${MIN_LABEL_GAP}` },
 		{
 			type: 'window' as const,
 			sort: { field: ['_metricRank'], order: ['ascending' as const] },
@@ -155,7 +155,7 @@ export const getLineDirectLabelMarks = (
   	const fontSizeEncoding = labelOptions.fontSize == null ? { signal: CHART_SIZE_FONT_SIZE } : { value: labelOptions.fontSize };
 
 	// Combined logic for direct label offset given 1, 2, or 3+ series
-	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${LABEL_LINE_HEIGHT} - 12 - datum._scaledY)`
+	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${MIN_LABEL_GAP} - 12 - datum._scaledY)`
 
 	const baseEnter = {
 		text: { signal: textExpr },
