@@ -228,8 +228,9 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
   }
 
   if (!isInteractive(options)) return;
-  // we don't need to include the excludeDataKeys here because they will be excluded from the points for voronoi
-  addHoveredItemSignal(signals, name, `${name}_voronoi`, 2);
+  const { seriesLimit } = options;
+  // datum.datum because the voronoi mark uses datumOrder=2
+  addHoveredItemSignal(signals, name, `${name}_voronoi`, 2, undefined, getSeriesLimitExcludeCondition(seriesLimit, 'datum.datum'));
   addHoverSignals(signals, options);
   addInspectSignals(signals, options);
 });
@@ -391,9 +392,13 @@ export const getAlternateSegmentData = (name: string, dimSortField: string): Dat
 ];
 
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
-  const { interactionMode, name: lineName } = options;
+  const { interactionMode, name: lineName, seriesLimit } = options;
   if (interactionMode !== INTERACTION_MODE.ITEM) return;
+  const itemExcludeCondition = getSeriesLimitExcludeCondition(seriesLimit, 'datum');
   for (const hoverMarkName of getHoverMarkNames(lineName)) {
-    addHoveredItemSignal(signals, lineName, hoverMarkName);
+    addHoveredItemSignal(signals, lineName, hoverMarkName, 1, undefined, itemExcludeCondition);
   }
 };
+
+const getSeriesLimitExcludeCondition = (seriesLimit: number | undefined, datumPath: string): string | undefined =>
+  seriesLimit ? `indexof(slice(domain('color'), 0, ${seriesLimit}), ${datumPath}.${SERIES_ID}) < 0` : undefined;
