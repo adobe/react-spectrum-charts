@@ -28,7 +28,9 @@ import { ChartProps } from './types';
  */
 export const resizeView = (view: View | undefined, width: number, height: number): void => {
   if (view && width && height) {
-    view.width(width).height(height).resize().runAsync();
+    // Two passes: first updates width/height signals; second lets Vega re-settle layout
+    // after dependent changes (e.g. legend column count → legend height → plot area height).
+    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
   }
 };
 

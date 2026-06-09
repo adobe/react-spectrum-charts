@@ -29,6 +29,7 @@ import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_LEGEND_COLUMN_PADDING,
+  DEFAULT_LEGEND_LABEL_LIMIT,
   DEFAULT_LEGEND_SYMBOL_WIDTH,
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
@@ -67,23 +68,17 @@ export interface Facet {
 }
 
 /**
- * Get the number of columns for the legend
- * @param position
- * @param labelLimit
- * @returns
+ * Get the number of columns for the legend.
+ * Uses actual measured label widths (via the ${name}_maxLabelWidth data source) capped at labelLimit
+ * so columns are based on real content rather than a fixed estimate.
  */
-export const getColumns = (position: Position, labelLimit?: number): SignalRef | undefined => {
+export const getColumns = (position: Position, name: string, labelLimit?: number): SignalRef | undefined => {
   if (['left', 'right'].includes(position)) return;
 
-  if (labelLimit !== undefined && labelLimit > 0) {
-    const symbolAndSpacingWidth = DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
-
-    const itemWidth = labelLimit + symbolAndSpacingWidth;
-    return { signal: `max(1, floor(width / ${itemWidth}))` };
-  }
-
-  // Keeping hardcoded 220 for so we don't break existing behavior.
-  return { signal: 'floor(width / 220)' };
+  const symbolAndSpacingWidth = DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
+  const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
+  const maxWidthExpr = `length(data('${name}_maxLabelWidth')) > 0 ? data('${name}_maxLabelWidth')[0].maxLabelWidth : ${effectiveLabelLimit}`;
+  return { signal: `max(1, floor(width / (min(${maxWidthExpr}, ${effectiveLabelLimit}) + ${symbolAndSpacingWidth})))` };
 };
 
 /**
