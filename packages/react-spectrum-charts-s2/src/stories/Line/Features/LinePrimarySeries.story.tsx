@@ -66,7 +66,7 @@ PrimarySeriesWithCustomColor.args = {
   metric: 'value',
   scaleType: 'time',
   primarySeries: 2,
-  hiddenSeriesColor: 'gray-100',
+  otherSeriesColor: 'gray-100',
 };
 
 const PrimarySeriesWithDirectLabels = bindWithProps(PrimarySeriesWithDirectLabelsStory);

@@ -87,7 +87,7 @@ export const addLine = produce<
       alternateSegmentLineType = 'dotted',
       alternateSegmentLabel,
       primarySeries,
-      hiddenSeriesColor,
+      otherSeriesColor,
       ...options
     }
   ) => {
@@ -134,7 +134,7 @@ export const addLine = produce<
       alternateSegmentLineType,
       alternateSegmentLabel,
       primarySeries,
-      hiddenSeriesColor,
+      otherSeriesColor,
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);

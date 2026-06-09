@@ -105,7 +105,7 @@ export interface LineOptions {
    * Overrides the default gray color used for series beyond the `primarySeries`.
    * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
    */
-  hiddenSeriesColor?: string;
+  otherSeriesColor?: string;
 
   // children
   chartPopovers?: ChartPopoverOptions[];

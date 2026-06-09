@@ -85,7 +85,7 @@ const FORECAST_GRADIENT_RATIO = 0.4;
 /** Builds the `stroke` encoding for a line mark, inserting a gray color rule for non-primary series. */
 const getStrokeEncoding = (
   primarySeries: number | string[] | undefined,
-  hiddenSeriesColor: string | undefined,
+  otherSeriesColor: string | undefined,
   color: LineMarkOptions['color'],
   colorScheme: LineMarkOptions['colorScheme']
 ): ColorValueRef | ProductionRule<ColorValueRef> => {
@@ -95,7 +95,7 @@ const getStrokeEncoding = (
     return normalColor;
   }
 
-  const grayColor = getS2ColorValue(hiddenSeriesColor || 'gray-400', colorScheme);
+  const grayColor = getS2ColorValue(otherSeriesColor || 'gray-400', colorScheme);
   return [
     {
       test: getPrimarySeriesOtherExpr(primarySeries, 'datum'),
@@ -211,7 +211,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     color,
     colorScheme,
     dimension,
-    hiddenSeriesColor,
+    otherSeriesColor,
     lineCap = 'round',
     lineType,
     metric,
@@ -235,7 +235,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     encode: {
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getStrokeEncoding(primarySeries, hiddenSeriesColor, color, colorScheme),
+        stroke: getStrokeEncoding(primarySeries, otherSeriesColor, color, colorScheme),
         strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
           ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
