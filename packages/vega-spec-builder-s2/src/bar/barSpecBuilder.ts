@@ -181,9 +181,11 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
   if (options.accessibleNavigation) {
-    signals.push(getGenericValueSignal(FOCUSED_ITEM));
-    signals.push(getGenericValueSignal(FOCUSED_REGION));
-    signals.push(getGenericValueSignal(FOCUSED_DIMENSION));
+    signals.push(
+      getGenericValueSignal(FOCUSED_ITEM),
+      getGenericValueSignal(FOCUSED_REGION),
+      getGenericValueSignal(FOCUSED_DIMENSION)
+    );
   }
 
   if (isDualMetricAxis(options)) {

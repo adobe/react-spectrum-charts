@@ -78,7 +78,8 @@ const nodeFocusSignals = (node: NodeObject): FocusSignals => {
     return { item: null, region: 'chart', dimension: null };
   }
   const dimensionValue = node.derivedNode ? node.data?.[node.derivedNode] : undefined;
-  return { item: null, region: null, dimension: dimensionValue != null ? String(dimensionValue) : null };
+  const dimension = dimensionValue == null ? null : String(dimensionValue);
+  return { item: null, region: null, dimension };
 };
 
 const applyFocusSignals = (view: View | undefined, { item, region, dimension }: FocusSignals): void => {

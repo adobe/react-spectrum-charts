@@ -14,10 +14,6 @@ import { Bar } from '../components/Bar';
 import { NavigableChartType } from './buildChartStructure';
 
 export const getNavigableChartType = (displayName: unknown): NavigableChartType | undefined => {
-  switch (displayName) {
-    case Bar.displayName:
-      return 'bar';
-    default:
-      return undefined;
-  }
+  if (displayName === Bar.displayName) return 'bar';
+  return undefined;
 };
