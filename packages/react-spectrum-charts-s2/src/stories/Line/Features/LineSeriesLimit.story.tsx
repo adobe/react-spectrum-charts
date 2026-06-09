@@ -57,7 +57,7 @@ SeriesLimitWithCustomColor.args = {
   metric: 'value',
   scaleType: 'time',
   seriesLimit: 2,
-  hiddenSeriesColor: 'gray-400',
+  hiddenSeriesColor: 'gray-100',
 };
 
 const SeriesLimitWithDirectLabels = bindWithProps(SeriesLimitWithDirectLabelsStory);
