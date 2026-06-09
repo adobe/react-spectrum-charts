@@ -5,7 +5,7 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Legend, Line, LineDirectLabel } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../stories/data/data';
+import { workspaceTrendsData, workspaceTrendsSixSeriesData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
@@ -29,7 +29,7 @@ const SeriesLimitStory: StoryFn<typeof Line> = (args): ReactElement => {
 };
 
 const SeriesLimitWithDirectLabelsStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsSixSeriesData });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid />
