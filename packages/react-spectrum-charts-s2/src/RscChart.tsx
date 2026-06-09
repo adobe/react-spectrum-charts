@@ -119,20 +119,15 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     [onNewView, onVegaViewReady]
   );
 
-  // Experimental accessible keyboard navigation. Cheap to compute each render; no useMemo because
-  // sanitizedChildren is itself recomputed every render (its deps aren't referentially stable).
   const navContainerRef = useRef<HTMLDivElement>(null);
   const navChild = sanitizedChildren.find(
     (child) => 'displayName' in child.type && getNavigableChartType(child.type.displayName)
   );
   const navChartType =
     navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
-  // Found by displayName, so .find() can't narrow the props union; read the common nav fields.
   const navFields = navChild?.props as { dimension?: string; metric?: string; color?: unknown } | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
 
-  // chartView is a stable ref (from context), so this useCallback genuinely keeps getView stable —
-  // which matters: it's a dependency of the Navigator's effect, so a fresh identity would re-attach.
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
 
   return (

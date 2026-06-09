@@ -53,11 +53,6 @@ export const buildBarStructure = ({
   color,
   title,
 }: BuildBarStructureOptions): BarStructure => {
-  // A `color` series field means the bar is multi-series (stacked or dodged): each column holds
-  // several segments, so leaves need a unique `dimension + series` composite and the column divisions
-  // are kept (not compressed). This structure is shared by stacked and dodged — the visual difference
-  // is the spec's concern (routed by the bar's `type`); the navigation graph is the same. No series
-  // field → a basic single-series bar (compressed, keyed by the dimension value).
   const isMultiSeries = color !== undefined;
   const idKey = isMultiSeries ? SEGMENT_ID_KEY : dimension;
   const structureData = color
@@ -73,8 +68,6 @@ export const buildBarStructure = ({
         {
           dimensionKey: dimension,
           type: 'categorical',
-          // Multi-series: 'bridgedCousins' chains segments continuously across columns at the leaf
-          // level (and Escape drills out to the current column). Basic: circular within the single level.
           behavior: isMultiSeries ? { extents: 'bridgedCousins' } : { extents: 'circular' },
           operations: { compressSparseDivisions: !isMultiSeries },
           navigationRules: {
