@@ -41,7 +41,7 @@ import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
 import { getLineHighlightedData, getLineStaticPointData, getPrimarySeriesFacetData, getPrimarySeriesOtherExpr } from './lineDataUtils';
-import { getLineGradientMark, getLineHoverMarks, getLineMark } from './lineMarkUtils';
+import { getHighlightedSeriesOpacityRules, getLineGradientMark, getLineHighlightOverlayGroup, getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
 
@@ -87,7 +87,7 @@ export const addLine = produce<
       alternateSegmentLineType = 'dotted',
       alternateSegmentLabel,
       primarySeries,
-      otherSeriesColor,
+      otherSeriesColor, 
       ...options
     }
   ) => {
@@ -265,7 +265,20 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, linePointAnnotations, lineType, name, opacity, primarySeries, staticPoint } = options;
+  const {
+    alternateSegmentKey,
+    color,
+    gradient,
+    highlightedItem,
+    isSparkline,
+    legendHighlightSignals,
+    linePointAnnotations,
+    lineType,
+    name,
+    opacity,
+    primarySeries,
+    staticPoint
+  } = options;
   const forecasts = options.forecasts ?? [];
   const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
@@ -288,7 +301,10 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
         }
     : options;
 
-  // boundary rules are drawn behind the main line group
+  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
+  const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
+
+  // boundary rules are drawn behind everything
   for (const [i, forecast] of forecasts.entries()) {
     marks.push(getLineForecastBoundaryMark(getLineForecastSpecOptions(forecast, i, options)));
   }
@@ -308,20 +324,31 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
       getLineMark(markOptions, `${name}_facet`),
     ],
   });
+  
   if (staticPoint || isSparkline) {
     marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
+    if (linePointAnnotations.length > 0) {
+      marks.push(...getLinePointAnnotationMarks(options));
+    }
   }
-  if ((staticPoint || isSparkline) && linePointAnnotations.length > 0) {
-    marks.push(...getLinePointAnnotationMarks(options));
-  }
-  marks.push(...getMetricRangeGroupMarks(options));
-  if (isInteractive(options) || highlightedItem !== undefined) {
-    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
-  }
-  marks.push(...getTrendlineMarks(options));
-  for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
-    const specOpts = getLineDirectLabelSpecOptions(label, i, options);
+  marks.push(...getMetricRangeGroupMarks(options), ...getTrendlineMarks(options));
+  // direct labels
+  const labelSpecOpts = (options.lineDirectLabels ?? []).map((label, i) => getLineDirectLabelSpecOptions(label, i, options));
+  for (const specOpts of labelSpecOpts) {
     marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));
+  }
+  // overlay renders the highlighted series on top of labels so the line stays in the foreground on hover
+  // fg labels are pushed in the same call (after the overlay group) so they always render above all overlay lines
+  if (hasHighlightState && labelSpecOpts.length) {
+    const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
+    marks.push(
+      getLineHighlightOverlayGroup(markOptions, facetData, facetGroupby),
+      ...labelSpecOpts.flatMap(specOpts => getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme, opacityRules))
+    );
+  }
+  // hover marks are last so hollow points and interaction marks always render above everything
+  if (hasInteractiveHighlight) {
+    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
   }
   // forecast labels are drawn last so they appear on top of other marks
   for (const [i, forecast] of forecasts.entries()) {

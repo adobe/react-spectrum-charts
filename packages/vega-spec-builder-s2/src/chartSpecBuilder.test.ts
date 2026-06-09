@@ -89,6 +89,7 @@ const defaultBarOptions: BarOptions = { markType: 'bar', dimension: 'browser', m
 
 jest.mock('./legend/legendHighlightUtils', () => {
   return {
+    getLegendHighlightSignals: jest.fn().mockReturnValue([]),
     setHoverOpacityForMarks: jest.fn(),
   };
 });

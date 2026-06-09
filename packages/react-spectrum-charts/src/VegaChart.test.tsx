@@ -55,15 +55,16 @@ describe('resizeView', () => {
 		jest.clearAllMocks();
 	});
 
-	test('calls width, height, resize, and runAsync when view exists and dimensions are valid', () => {
+	test('calls width, height, resize, and runAsync twice when view exists and dimensions are valid', async () => {
 		const mockView = createMockView();
 
 		resizeView(mockView, 800, 600);
+		await Promise.resolve();
 
 		expect(mockWidth).toHaveBeenCalledWith(800);
 		expect(mockHeight).toHaveBeenCalledWith(600);
 		expect(mockResize).toHaveBeenCalled();
-		expect(mockRunAsync).toHaveBeenCalled();
+		expect(mockRunAsync).toHaveBeenCalledTimes(2);
 	});
 
 	test('does not call view methods when view is undefined', () => {

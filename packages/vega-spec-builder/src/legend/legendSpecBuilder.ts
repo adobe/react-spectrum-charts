@@ -211,7 +211,7 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
     orient: position,
     title,
     encode: getEncodings(facets, options, userMeta),
-    columns: getColumns(position, labelLimit),
+    columns: getColumns(position, name, labelLimit),
     labelLimit,
   };
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
@@ -296,6 +296,31 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
       ],
     });
 
+    // Measure the actual max display label width so getColumns can compute an accurate column count.
+    const labelLookupExpr = `indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries)].label : datum.${name}Entries`;
+    data.push({
+      name: `${name}_maxLabelWidth`,
+      source: `${name}Aggregate`,
+      transform: [
+        {
+          type: 'formula',
+          as: 'displayLabel',
+          expr: labelLookupExpr,
+        },
+        {
+          type: 'formula',
+          as: 'labelWidth',
+          expr: "getLabelWidth(datum.displayLabel, 'normal', 14)",
+        },
+        {
+          type: 'aggregate',
+          fields: ['labelWidth'],
+          ops: ['max'],
+          as: ['maxLabelWidth'],
+        },
+      ],
+    });
+
     if (keys?.length) {
       const tableData = getTableData(data);
       if (!tableData.transform) {
@@ -324,8 +349,8 @@ export const addSignals = produce<Signal[], [LegendSpecOptions]>(
       addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
     }
 
-    if (legendLabels) {
-      signals.push(getGenericValueSignal(`${name}_labels`, legendLabels));
-    }
+    // Always emit _labels so the _maxLabelWidth data transform can safely reference it.
+    // Defaults to [] when no legendLabels prop is set; the lookup falls through to datum.${name}Entries.
+    signals.push(getGenericValueSignal(`${name}_labels`, legendLabels ?? []));
   }
 );
