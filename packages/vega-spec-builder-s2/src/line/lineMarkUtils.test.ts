@@ -101,6 +101,15 @@ describe('getLineMark()', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, lineCap: 'square' }, 'line0_facet');
     expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'square' });
   });
+
+  test('uses array stroke encoding with exact other-series expression when primarySeries is set', () => {
+    const lineMark = getLineMark({ ...defaultLineMarkOptions, primarySeries: 2 }, 'line0_facet');
+    const stroke = lineMark.encode?.enter?.stroke as { test: string; value: string }[];
+    expect(Array.isArray(stroke)).toBe(true);
+    expect(stroke).toHaveLength(2);
+    expect(stroke[0].test).toBe(`indexof(slice(domain('color'), 0, 2), datum.${SERIES_ID}) < 0`);
+    expect(stroke[1]).toEqual({ field: 'series', scale: COLOR_SCALE });
+  });
 });
 
 describe('getLineHoverMarks()', () => {
@@ -210,6 +219,18 @@ describe('getLineOpacity()', () => {
     });
     expect(opacityRule).toHaveLength(4);
     expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+  });
+
+  test('should include comboSiblingNames fade rule when comboSiblingNames is set', () => {
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      comboSiblingNames: ['bar0', 'bar1'],
+    }) as { test?: string; value: number }[];
+    const comboRule = opacityRule.find((r) => r.test?.includes('bar0') && r.test?.includes('bar1'));
+    expect(comboRule).toBeDefined();
+    expect(comboRule?.value).toBe(FADE_FACTOR);
+    expect(comboRule?.test).toBe(`isValid(bar0_${HOVERED_ITEM}) || isValid(bar1_${HOVERED_ITEM})`);
   });
 });
 
@@ -369,6 +390,24 @@ describe('getHighlightedSeriesOpacityRules()', () => {
     const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
     rules.slice(0, -1).forEach(rule => expect(rule.value).toBe(1));
     expect(rules.at(-1)?.value).toBe(0);
+  });
+
+  test('with legendHighlightSignals adds signal-based show conditions before the fallback', () => {
+    const rules = getHighlightedSeriesOpacityRules({
+      legendHighlightSignals: ['legend_hoveredSeries'],
+    }) as { test?: string; value: number }[];
+    const legendRule = rules.find((r) => r.test?.includes('legend_hoveredSeries'));
+    expect(legendRule).toBeDefined();
+    expect(legendRule?.value).toBe(1);
+    expect(legendRule?.test).toBe(`isValid(legend_hoveredSeries) && legend_hoveredSeries === datum.${SERIES_ID}`);
+    expect(rules.at(-1)).toEqual({ value: 0 });
+  });
+
+  test('with multiple legendHighlightSignals adds one rule per signal', () => {
+    const rules = getHighlightedSeriesOpacityRules({
+      legendHighlightSignals: ['sig1', 'sig2'],
+    }) as { test?: string; value: number }[];
+    expect(rules.filter((r) => r.test?.includes('isValid(sig'))).toHaveLength(2);
   });
 });
 

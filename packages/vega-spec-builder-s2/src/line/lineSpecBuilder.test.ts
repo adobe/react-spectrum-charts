@@ -471,6 +471,34 @@ describe('lineSpecBuilder', () => {
       const tableData = resultData.find((d) => d.name === TABLE);
       expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(false);
     });
+
+    test('with primarySeries adds primarySeriesFacetData when no alternateSegmentKey or forecasts', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        primarySeries: 3,
+      });
+      const facetData = resultData.find((d) => d.name === 'line0_primarySeriesFacetData');
+      expect(facetData).toBeDefined();
+      expect(facetData).toHaveProperty('source', FILTERED_TABLE);
+    });
+
+    test('does not add primarySeriesFacetData when alternateSegmentKey is set', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        primarySeries: 3,
+        alternateSegmentKey: 'isEstimated',
+      });
+      expect(resultData.find((d) => d.name === 'line0_primarySeriesFacetData')).toBeUndefined();
+    });
+
+    test('does not add primarySeriesFacetData when forecasts are set', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        primarySeries: 3,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      expect(resultData.find((d) => d.name === 'line0_primarySeriesFacetData')).toBeUndefined();
+    });
   });
 
   describe('setScales()', () => {

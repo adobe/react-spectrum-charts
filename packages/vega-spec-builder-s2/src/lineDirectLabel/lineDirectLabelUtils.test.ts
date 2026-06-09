@@ -319,6 +319,26 @@ describe('getLineDirectLabelData', () => {
 		);
 		expect(joinagg).toHaveProperty('ops', ['max']);
 	});
+
+	test('adds primarySeries filter when lineOptions.primarySeries is set', () => {
+		const lineOptsWithPrimary: LineSpecOptions = { ...defaultLineOptions, primarySeries: ['series1', 'series2'] };
+		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, lineOptsWithPrimary);
+		const transforms = getTransforms(data);
+		const primaryFilter = transforms.find(
+			(t) => t.type === 'filter' && 'expr' in t && (t as { expr: string }).expr.startsWith('!(')
+		);
+		expect(primaryFilter).toBeDefined();
+		expect((primaryFilter as { expr: string }).expr).toContain('["series1","series2"]');
+	});
+
+	test('omits primarySeries filter when lineOptions.primarySeries is not set', () => {
+		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const primaryFilter = transforms.find(
+			(t) => t.type === 'filter' && 'expr' in t && (t as { expr: string }).expr.startsWith('!(')
+		);
+		expect(primaryFilter).toBeUndefined();
+	});
 });
 
 describe('getLineDirectLabelMarks', () => {
@@ -482,8 +502,15 @@ describe('getLineDirectLabelMarks', () => {
 		expect(bgStroke.value).toBeTruthy();
 	});
 
-	test('text expression has no prefix when prefix is empty', () => {
+	test('text expression has no prefix when prefix is empty string', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+		const textSignal = (marks[0].encode?.enter?.text as { signal: string }).signal;
+		expect(textSignal).toBe('datum.directLabel_text');
+	});
+
+	test('text expression has no prefix when prefix is undefined (uses default)', () => {
+		const opts = { ...defaultLabelSpecOptions, prefix: undefined };
+		const marks = getLineDirectLabelMarks('line0', opts, defaultLineOptions, 'gray-50', 'light');
 		const textSignal = (marks[0].encode?.enter?.text as { signal: string }).signal;
 		expect(textSignal).toBe('datum.directLabel_text');
 	});
@@ -500,6 +527,30 @@ describe('getLineDirectLabelMarks', () => {
 		const marks = getLineDirectLabelMarks('line0', opts, defaultLineOptions, 'gray-50', 'light');
 		expect(marks[0].from).toEqual({ data: 'line0DirectLabel1_data' });
 		expect(marks[1].from).toEqual({ data: 'line0DirectLabel1_data' });
+	});
+
+	describe('with fgOpacityRules', () => {
+		const fgRules = [{ value: 1 as number }, { value: 0 as number }];
+
+		test('returns two marks with _fg suffix when fgOpacityRules is provided', () => {
+			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light', fgRules);
+			expect(marks).toHaveLength(2);
+			expect(marks[0].name).toBe('line0DirectLabel0_bg_fg');
+			expect(marks[1].name).toBe('line0DirectLabel0_fg');
+		});
+
+		test('fg marks use the provided fgOpacityRules for opacity', () => {
+			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light', fgRules);
+			const fgMark = marks[1] as { encode: { update: { opacity: unknown } } };
+			expect(fgMark.encode.update.opacity).toEqual(fgRules);
+		});
+
+		test('fg marks preserve other encoding from base marks', () => {
+			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light', fgRules);
+			expect(marks[0].type).toBe('text');
+			expect(marks[1].type).toBe('text');
+			expect(marks[0].interactive).toBe(false);
+		});
 	});
 
 	test('both marks have matching encoding for position=start', () => {
