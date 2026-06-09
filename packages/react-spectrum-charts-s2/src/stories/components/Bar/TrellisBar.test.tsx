@@ -45,9 +45,9 @@ describe('TrellisBar', () => {
     const popoverAnchor = await screen.findByTestId('rsc-popover-anchor');
     expect(popoverAnchor).toHaveStyle('position: absolute');
     expect(popoverAnchor).toHaveStyle('width: 85.60000000000002px');
-    expect(popoverAnchor).toHaveStyle('height: 8.215714285714284px');
+    expect(popoverAnchor).toHaveStyle('height: 8.575714285714298px');
     expect(popoverAnchor).toHaveStyle('left: 316.5px');
-    expect(popoverAnchor).toHaveStyle('top: 344.2385714285714px');
+    expect(popoverAnchor).toHaveStyle('top: 358.35857142857145px');
   });
 
   test('HorizontalBarHorizontalTrellis renders correctly', async () => {
@@ -111,8 +111,8 @@ describe('TrellisBar', () => {
       // Y Trellis Group should have Y Translate. X Translate should be 0.
       // First chart should not have been tra.
       expect(trellisCharts[0]).toHaveAttribute('transform', 'translate(0,0)');
-      expect(trellisCharts[1]).toHaveAttribute('transform', 'translate(0,238.95131086142322)');
-      expect(trellisCharts[2]).toHaveAttribute('transform', 'translate(0,477.90262172284645)');
+      expect(trellisCharts[1]).toHaveAttribute('transform', 'translate(0,249.43820224719101)');
+      expect(trellisCharts[2]).toHaveAttribute('transform', 'translate(0,498.87640449438203)');
     });
 
     test('WithCustomTrellisPadding has correct padding for horizontal trellis', async () => {

@@ -146,6 +146,7 @@ export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOpti
   index: number;
   interactiveMarkName: string | undefined;
   isHighlightedByGroup?: boolean;
+  legendHighlightSignals?: string[];
   lineWidth?: FacetRef<LineWidth>;
   popoverMarkName: string | undefined;
   interactionMode?: InteractionMode;

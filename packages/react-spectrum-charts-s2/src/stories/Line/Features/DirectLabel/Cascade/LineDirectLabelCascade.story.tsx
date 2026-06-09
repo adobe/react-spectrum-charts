@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../../Chart';
-import { Axis, Legend, Line, LineDirectLabel } from '../../../../../components';
+import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../../components';
 import useChartProps from '../../../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../../../stories/data/data';
 import { bindWithProps } from '../../../../../test-utils';
@@ -205,6 +205,7 @@ const LineDirectLabelManySeriesStory: StoryFn<typeof LineDirectLabel> = (args): 
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time">
         <LineDirectLabel {...args} />
+        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
       </Line>
     </Chart>
   );
@@ -227,19 +228,19 @@ const LineDirectLabelManySeriesLegendStory: StoryFn<typeof LineDirectLabel> = (a
 // BINDINGS
 
 const DirectLabelTwoSeries = bindWithProps(LineDirectLabelTwoSeriesStory);
-DirectLabelTwoSeries.args = { value: 'last' };
+DirectLabelTwoSeries.args = { value: 'series' };
 
 const DirectLabelThreeSeriesDiverge = bindWithProps(LineDirectLabelThreeSeriesDivergeStory);
-DirectLabelThreeSeriesDiverge.args = { value: 'last' };
+DirectLabelThreeSeriesDiverge.args = { value: 'series' };
 
 const DirectLabelSixSeries = bindWithProps(LineDirectLabelSixSeriesStory);
-DirectLabelSixSeries.args = { value: 'last' };
+DirectLabelSixSeries.args = { value: 'series' };
 
 const DirectLabelManySeries = bindWithProps(LineDirectLabelManySeriesStory);
-DirectLabelManySeries.args = { value: 'last' };
+DirectLabelManySeries.args = { value: 'series' };
 
 const DirectLabelManySeriesLegend = bindWithProps(LineDirectLabelManySeriesLegendStory);
-DirectLabelManySeriesLegend.args = { value: 'last' };
+DirectLabelManySeriesLegend.args = { value: 'series' };
 
 export {
   DirectLabelTwoSeries,

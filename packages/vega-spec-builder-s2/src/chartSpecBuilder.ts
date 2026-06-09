@@ -21,6 +21,7 @@ import {
   CHART_SIZE_POINT_SIZES,
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTHS,
+  CHART_SIZE_FONT_SIZE,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
@@ -43,6 +44,9 @@ import {
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
   TABLE,
+  DIRECT_LABEL_FONT_SIZE_S,
+  DIRECT_LABEL_FONT_SIZE_M,
+  DIRECT_LABEL_FONT_SIZE_L,
 } from '@spectrum-charts/constants';
 import { colorSchemes, getS2ColorValue } from '@spectrum-charts/themes';
 
@@ -53,7 +57,7 @@ import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
-import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
+import { getLegendHighlightSignals, setHoverOpacityForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
@@ -139,7 +143,8 @@ export function buildSpec({
 
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
-  const specOptions = { backgroundColor, colorScheme, idKey, highlightedItem };
+  const legendHighlightSignals = getLegendHighlightSignals(legends);
+  const specOptions = { backgroundColor, colorScheme, idKey, highlightedItem, legendHighlightSignals };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':
@@ -272,6 +277,11 @@ export const getDefaultSignals = ({
     update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_POINT_SIZES.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_POINT_SIZES.M} : ${CHART_SIZE_POINT_SIZES.L}`,
   };
 
+  const chartSizeFontSizeSignal: Signal = {
+    name: CHART_SIZE_FONT_SIZE,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`
+  }
+
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getS2ColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal(REFERENCE_LINE_LABEL_BACKGROUND_STROKE, referenceLineLabelStroke),
@@ -288,6 +298,7 @@ export const getDefaultSignals = ({
     chartSizeStrokeWidthSignal,
     chartSizeHoverStrokeWidthSignal,
     chartSizePointSizeSignal,
+    chartSizeFontSizeSignal,
   ];
 };
 

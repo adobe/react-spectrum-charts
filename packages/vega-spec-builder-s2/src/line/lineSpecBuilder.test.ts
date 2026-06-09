@@ -710,6 +710,68 @@ describe('lineSpecBuilder', () => {
       expect(allMarks.find((m) => m.name === 'line0DirectLabel1')).toBeDefined();
     });
 
+    test('adds highlight overlay group when hasHighlightState and lineDirectLabels provided', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        lineDirectLabels: [{ value: 'last' }],
+      });
+      const overlayGroup = marks.find((m) => m.name === 'line0_highlightOverlay_group');
+      expect(overlayGroup).toBeDefined();
+      expect(overlayGroup?.type).toBe('group');
+    });
+
+    test('does not add highlight overlay group when no highlight state', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        lineDirectLabels: [{ value: 'last' }],
+      });
+      const overlayGroup = marks.find((m) => m.name === 'line0_highlightOverlay_group');
+      expect(overlayGroup).toBeUndefined();
+    });
+
+    test('does not add highlight overlay group when no lineDirectLabels', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        lineDirectLabels: [],
+      });
+      const overlayGroup = marks.find((m) => m.name === 'line0_highlightOverlay_group');
+      expect(overlayGroup).toBeUndefined();
+    });
+
+    test('fg label marks are added as top-level marks after the overlay group', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        lineDirectLabels: [{ value: 'last' }],
+      });
+      const overlayGroupIndex = marks.findIndex((m) => m.name === 'line0_highlightOverlay_group');
+      const bgFgIndex = marks.findIndex((m) => m.name === 'line0DirectLabel0_bg_fg');
+      const fgIndex = marks.findIndex((m) => m.name === 'line0DirectLabel0_fg');
+      expect(bgFgIndex).toBeGreaterThan(overlayGroupIndex);
+      expect(fgIndex).toBeGreaterThan(overlayGroupIndex);
+    });
+
+    test('fg label marks have highlighted test opacity', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        lineDirectLabels: [{ value: 'last' }],
+      });
+      const fgLabelMark = marks.find((m) => m.name === 'line0DirectLabel0_fg') as {
+        encode: { update: { opacity: { value: number }[] } };
+      };
+      expect(fgLabelMark).toBeDefined();
+      const opacity = fgLabelMark.encode.update.opacity;
+      expect(Array.isArray(opacity)).toBe(true);
+      expect(opacity.at(-1)).toEqual({ value: 0 });
+    });
+
     test('with gradient and multi-series color should still add gradient mark', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, gradient: true, color: 'series' });
       const innerMarks = (marks[0] as { marks: { name: string; type: string }[] }).marks;
