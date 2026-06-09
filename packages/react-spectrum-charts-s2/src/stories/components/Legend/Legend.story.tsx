@@ -9,74 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
-
-import { View } from '@adobe/react-spectrum';
-import { StoryFn } from '@storybook/react';
-
-import { Chart } from '../../../Chart';
-import { Axis, ChartPopover, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
+import { ChartPopover, Legend } from '../../../components';
 import { bindWithProps } from '../../../test-utils';
-import { LegendBarStory, LegendDisconnectedStory, LegendLineStory, defaultProps } from './LegendStoryUtils';
-
-const WEEK_DATETIMES = [
-  1780293600000, 1780380000000, 1780466400000, 1780552800000,
-  1780639200000, 1780725600000, 1780812000000,
-];
-
-const fiveSeriesNames = ['CJA Users', 'Accounts', 'Events', 'Page Views', 'Sessions'];
-const legendColumns5SeriesData = fiveSeriesNames.flatMap((series, si) =>
-  WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 180, series }))
-);
-
-const longLabelSeriesNames = [
-  'Users',
-  'Events',
-  'Conversion Rate From All Marketing Channel Sources',
-];
-const legendColumnsLongLabelData = longLabelSeriesNames.flatMap((series, si) =>
-  WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 1200 + di * 150, series }))
-);
-
-const twentySeriesNames = [
-  'DAU', 'MAU', 'CTR', 'CVR', 'Sessions',
-  'Accounts', 'Visitors', 'Pageviews', 'New Users', 'Returning',
-  'Unique Visitors', 'Time on Page', 'Bounce Rate', 'Revenue', 'Avg Session',
-  'Cart Abandonment', 'Email Open Rate', 'Customer LTV', 'Revenue Per Visit', 'Mobile Sessions',
-];
-const legendColumns20SeriesData = twentySeriesNames.flatMap((series, si) =>
-  WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 500 + si * 250 + di * 80, series }))
-);
-
-const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<typeof Legend> => {
-  const ResizableLegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
-    const chartProps = useChartProps({ data, width: 'auto', height: '100%', padding: 2 });
-    return (
-      <View
-        backgroundColor="gray-50"
-        overflow="auto"
-        width={700}
-        minWidth={200}
-        maxWidth={1400}
-        height={350}
-        minHeight={200}
-        maxHeight={600}
-        borderColor="gray-400"
-        borderWidth="thick"
-        UNSAFE_style={{ resize: 'both' }}
-      >
-        <Chart {...chartProps}>
-          <Axis position="left" grid />
-          <Axis position="bottom" labelFormat="time" baseline ticks />
-          <Line color="series" dimension="datetime" metric="value" scaleType="time" />
-          <Legend {...args} />
-        </Chart>
-      </View>
-    );
-  };
-  return ResizableLegendLineStory;
-};
+import { LegendBarStory, LegendDisconnectedStory, defaultProps } from './LegendStoryUtils';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Features',
@@ -150,33 +85,6 @@ Supreme.args = {
   title: 'Operating system',
 };
 
-const LegendColumns = bindWithProps(LegendLineStory);
-LegendColumns.args = {
-  labelLimit: 200,
-  highlight: true,
-};
-
-const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesData);
-const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
-LegendColumnsExtended.args = {
-  labelLimit: 200,
-  highlight: true,
-};
-
-const ResizableWithLongLabel = makeResizableLegendLineStory(legendColumnsLongLabelData);
-const LegendColumnsLongLabel = bindWithProps(ResizableWithLongLabel);
-LegendColumnsLongLabel.args = {
-  labelLimit: 500,
-  highlight: true,
-};
-
-const ResizableWith20Series = makeResizableLegendLineStory(legendColumns20SeriesData);
-const LegendColumns20Series = bindWithProps(ResizableWith20Series);
-LegendColumns20Series.args = {
-  labelLimit: 200,
-  highlight: true,
-};
-
 export {
   Basic,
   Descriptions,
@@ -189,8 +97,4 @@ export {
   Position,
   Title,
   Supreme,
-  LegendColumns,
-  LegendColumnsExtended,
-  LegendColumnsLongLabel,
-  LegendColumns20Series,
 };

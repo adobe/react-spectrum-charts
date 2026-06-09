@@ -24,7 +24,6 @@ import {
 } from '@spectrum-charts/constants';
 
 import {
-  defaultChartSizeFontSizeSignal,
   defaultChartSizeHoverStrokeWidthSignal,
   defaultChartSizePointSizeSignal,
   defaultChartSizeStrokeWidthSignal,
@@ -106,7 +105,7 @@ const defaultLegend: Legend = {
   labelLimit: undefined,
   orient: 'bottom',
   title: undefined,
-  columns: { signal: "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 184, 184) + 36)))" },
+  columns: { signal: 'floor(width / 220)' },
 };
 
 const defaultLegendAggregateData: Data = {
@@ -125,24 +124,6 @@ const defaultLegendAggregateData: Data = {
   ],
 };
 
-const defaultLegendMaxLabelWidthData: Data = {
-  name: 'legend0_maxLabelWidth',
-  source: 'legend0Aggregate',
-  transform: [
-    {
-      type: 'formula',
-      as: 'displayLabel',
-      expr: "indexof(pluck(legend0_labels, 'seriesName'), datum.legend0Entries) > -1 ? legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.legend0Entries)].label : datum.legend0Entries",
-    },
-    { type: 'formula', as: 'labelWidth', expr: "getLabelWidth(datum.displayLabel, 'normal', 14)" },
-    { type: 'aggregate', fields: ['labelWidth'], ops: ['max'], as: ['maxLabelWidth'] },
-  ],
-};
-
-const defaultLegendLabelsSignal = { name: 'legend0_labels', value: [] };
-
-const defaultLegendData = [defaultLegendAggregateData, defaultLegendMaxLabelWidthData];
-
 const defaultLegendEntriesScale: Scale = {
   name: 'legend0Entries',
   type: 'ordinal',
@@ -154,9 +135,8 @@ describe('addLegend()', () => {
     test('no options, should setup default legend', () => {
       expect(addLegend(defaultSpec, {})).toStrictEqual({
         ...defaultSpec,
-        data: defaultLegendData,
+        data: [defaultLegendAggregateData],
         scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-        signals: [...defaultSignals, defaultLegendLabelsSignal],
         legends: [defaultLegend],
       });
     });
@@ -164,9 +144,8 @@ describe('addLegend()', () => {
     test('descriptions, should add encoding', () => {
       expect(addLegend(defaultSpec, { descriptions: [{ seriesName: 'test', description: 'test' }] })).toStrictEqual({
         ...defaultSpec,
-        data: defaultLegendData,
+        data: [defaultLegendAggregateData],
         scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-        signals: [...defaultSignals, defaultLegendLabelsSignal],
         legends: [{ ...defaultLegend, encode: defaultDescriptionLegendEncoding }],
       });
     });
@@ -174,7 +153,7 @@ describe('addLegend()', () => {
     test('highlight, should add encoding', () => {
       expect(addLegend(defaultSpec, { highlight: true })).toStrictEqual({
         ...defaultSpec,
-        data: defaultLegendData,
+        data: [defaultLegendAggregateData],
         scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
         signals: [
           defaultHighlightedItemSignal,
@@ -186,7 +165,6 @@ describe('addLegend()', () => {
           defaultChartSizeStrokeWidthSignal,
           defaultChartSizeHoverStrokeWidthSignal,
           defaultChartSizePointSizeSignal,
-          defaultChartSizeFontSizeSignal,
           {
             name: `legend0_${HOVERED_SERIES}`,
             value: null,
@@ -198,7 +176,6 @@ describe('addLegend()', () => {
               { events: '@legend0_legendEntry:mouseout', update: 'null' },
             ],
           },
-          defaultLegendLabelsSignal,
         ],
         legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
       });
@@ -299,8 +276,15 @@ describe('addLegend()', () => {
       });
       const legend = legendSpec.legends?.[0];
       expect(legend?.labelLimit).toBe(300);
-      expect(legend?.columns).toEqual({ signal: "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 300, 300) + 36)))" });
-      expect(legendSpec.data).toHaveLength(2);
+      expect(legendSpec.legends).toEqual([
+        {
+          ...defaultLegend,
+          labelLimit: 300,
+          encode: defaultDescriptionLegendEncoding,
+          columns: { signal: 'max(1, floor(width / 336))' },
+        },
+      ]);
+      expect(legendSpec.data).toEqual([defaultLegendAggregateData]);
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });
 
@@ -383,7 +367,9 @@ describe('addLegend()', () => {
 
 describe('addData()', () => {
   test('should add legend0Aggregate data', () => {
-    expect(addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR] })).toStrictEqual(defaultLegendData);
+    expect(addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR] })).toStrictEqual([
+      defaultLegendAggregateData,
+    ]);
   });
   test('should join multiple facets', () => {
     expect(addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toStrictEqual([
@@ -399,7 +385,6 @@ describe('addData()', () => {
           },
         ],
       },
-      defaultLegendMaxLabelWidthData,
     ]);
   });
   test('should add legend group Id if keys has length', () => {

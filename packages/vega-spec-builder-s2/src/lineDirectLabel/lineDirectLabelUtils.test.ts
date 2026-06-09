@@ -12,9 +12,7 @@
 import { Data, SourceData } from 'vega';
 
 import {
-	CHART_SIZE_FONT_SIZE,
 	DEFAULT_COLOR,
-	DIRECT_LABEL_FONT_WEIGHT,
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
@@ -71,7 +69,6 @@ const defaultLabelSpecOptions: LineDirectLabelSpecOptions = {
 	prefix: '',
 	scaleType: 'time',
 	value: 'last',
-	fontSize: undefined,
 };
 
 describe('getLineDirectLabelSpecOptions', () => {
@@ -124,17 +121,6 @@ describe('getLineDirectLabelSpecOptions', () => {
 		const result = getLineDirectLabelSpecOptions({ position: 'start' }, 0, defaultLineOptions);
 		expect(result.position).toBe('start');
 	});
-
-	test('defaults fontSize to undefined', () => {
-		const result = getLineDirectLabelSpecOptions({}, 0, defaultLineOptions);
-		expect(result.fontSize).toBeUndefined();
-	});
-
-	test('passes through explicit fontSize', () => {
-		const result = getLineDirectLabelSpecOptions({ fontSize: 18 }, 0, defaultLineOptions);
-		expect(result.fontSize).toBe(18);
-	});
-
 });
 
 describe('getLineDirectLabelData', () => {
@@ -218,7 +204,7 @@ describe('getLineDirectLabelData', () => {
 		const transforms = getTransforms(data);
 		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === '_adjustedY');
 		expect(formula).toBeDefined();
-		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * 12');
+		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * 16');
 	});
 
 	test('includes _cumMaxAdjusted cumulative window transform', () => {
@@ -329,13 +315,12 @@ describe('getLineDirectLabelMarks', () => {
 		expect(marks[1].type).toBe('text');
 	});
 
-	test('background mark has stroke and background-color fill', () => {
+	test('background mark has stroke and transparent fill', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 		const bgMark = marks[0];
-		const stroke = bgMark.encode?.enter?.stroke as { value: string };
 		expect(bgMark.encode?.enter).toHaveProperty('strokeWidth', { value: 4 });
-		expect(bgMark.encode?.enter?.fill).toEqual(bgMark.encode?.enter?.stroke);
-		expect(stroke?.value).toBeTruthy();
+		expect(bgMark.encode?.enter).toHaveProperty('fill', { value: 'transparent' });
+		expect(bgMark.encode?.enter).toHaveProperty('stroke');
 	});
 
 	test('foreground mark has color fill', () => {
@@ -376,27 +361,27 @@ describe('getLineDirectLabelMarks', () => {
 		};
 
 		test('rank 1 always places label 12px above the line terminus', () => {
-			// cumMaxAdjusted = _scaledY - 1*12 for rank 1
-			// offset = (100 - 12) + 1*12 - 12 - 100 = -12
-			expect(evalOffsetSignal({ _metricRank: 1, _scaledY: 100, _cumMaxAdjusted: 88 })).toBe(-12);
+			// cumMaxAdjusted = _scaledY - 1*16 for rank 1
+			// offset = (100 - 16) + 1*16 - 12 - 100 = -12
+			expect(evalOffsetSignal({ _metricRank: 1, _scaledY: 100, _cumMaxAdjusted: 84 })).toBe(-12);
 		});
 
 		test('rank 2 well-separated from rank 1: also placed 12px above', () => {
-			// rank2 adjustedY (200 - 24 = 176) > rank1 adjustedY, so cumMaxAdjusted = 176
-			// offset = 176 + 2*12 - 12 - 200 = -12
-			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 200, _cumMaxAdjusted: 176 })).toBe(-12);
+			// rank2 adjustedY (200 - 32 = 168) > rank1 adjustedY, so cumMaxAdjusted = 168
+			// offset = 168 + 2*16 - 12 - 200 = -12
+			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 200, _cumMaxAdjusted: 168 })).toBe(-12);
 		});
 
 		test('rank 2 close to rank 1: pushed above natural position to avoid overlap', () => {
-			// rank1 adjustedY (100 - 12 = 88) > rank2 adjustedY (108 - 24 = 84), so cumMaxAdjusted = 88
-			// offset = 88 + 2*12 - 12 - 108 = -8 (less negative than -12, meaning pushed further up)
-			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 108, _cumMaxAdjusted: 88 })).toBe(-8);
+			// rank1 adjustedY (100 - 16 = 84) > rank2 adjustedY (108 - 32 = 76), so cumMaxAdjusted = 84
+			// offset = 84 + 2*16 - 12 - 108 = -4 (less negative than -12, meaning pushed further up)
+			expect(evalOffsetSignal({ _metricRank: 2, _scaledY: 108, _cumMaxAdjusted: 84 })).toBe(-4);
 		});
 
-		test('rank 3 very close to preceding labels: stacked exactly MIN_LABEL_GAP below rank 2', () => {
-			// rank1 adjustedY (100 - 12 = 88) dominates cumMaxAdjusted for all three
-			// offset = 88 + 3*12 - 12 - 112 = 0 (at line terminus, pushed down from natural -12)
-			expect(evalOffsetSignal({ _metricRank: 3, _scaledY: 112, _cumMaxAdjusted: 88 })).toBe(0);
+		test('rank 3 very close to preceding labels: label placed below line terminus', () => {
+			// cumMaxAdjusted still 84 (all three close together)
+			// offset = 84 + 3*16 - 12 - 112 = 8 (positive = below line)
+			expect(evalOffsetSignal({ _metricRank: 3, _scaledY: 112, _cumMaxAdjusted: 84 })).toBe(8);
 		});
 
 		test('y field is the metric', () => {
@@ -419,33 +404,16 @@ describe('getLineDirectLabelMarks', () => {
 		expect(y.scale).toBe('yLinear');
 	});
 
-	test('background mark opacity is always 1 (never dimmed during hover)', () => {
+	test('both marks have opacity in update encoding', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
-		expect(marks[0].encode?.update).toHaveProperty('opacity', { value: 1 });
-	});
-
-	test('foreground mark has opacity rules for hover dimming', () => {
-		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+		expect(marks[0].encode?.update).toHaveProperty('opacity');
 		expect(marks[1].encode?.update).toHaveProperty('opacity');
 	});
 
-	test('both marks have fixed fontWeight from DIRECT_LABEL_FONT_WEIGHT', () => {
+	test('both marks have fontWeight 700 in update encoding', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
-		expect(marks[0].encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
-		expect(marks[1].encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
-	});
-
-	test('both marks use fontSize signal when fontSize is not set', () => {
-		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
-		expect(marks[0].encode?.update).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
-		expect(marks[1].encode?.update).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
-	});
-
-	test('explicit fontSize overrides the signal', () => {
-		const opts = { ...defaultLabelSpecOptions, fontSize: 20 };
-		const marks = getLineDirectLabelMarks('line0', opts, defaultLineOptions, 'gray-50', 'light');
-		expect(marks[0].encode?.update).toHaveProperty('fontSize', { value: 20 });
-		expect(marks[1].encode?.update).toHaveProperty('fontSize', { value: 20 });
+		expect(marks[0].encode?.update).toHaveProperty('fontWeight', { value: 700 });
+		expect(marks[1].encode?.update).toHaveProperty('fontWeight', { value: 700 });
 	});
 
 	test('adds prefix to text expression', () => {

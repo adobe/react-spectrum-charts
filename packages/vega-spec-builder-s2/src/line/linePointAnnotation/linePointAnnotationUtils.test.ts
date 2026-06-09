@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, LINE_POINT_ANNOTATION_OFFSET } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { defaultLineOptions } from '../lineTestUtils';
@@ -166,11 +166,6 @@ describe('getLinePointAnnotationMarks', () => {
 			const transform = getBackgroundMark().transform?.[0] as { anchor: unknown };
 			expect(transform.anchor).toEqual(['right', 'top', 'bottom', 'left']);
 		});
-
-		test('label transform uses LINE_POINT_ANNOTATION_OFFSET to prevent background halo touching point fill', () => {
-			const transform = getBackgroundMark().transform?.[0] as { offset: unknown };
-			expect(transform.offset).toEqual([LINE_POINT_ANNOTATION_OFFSET]);
-		});
 	});
 
 	describe('foreground mark', () => {
@@ -198,12 +193,12 @@ describe('getLinePointAnnotationMarks', () => {
 			});
 		});
 
-		test('fill uses series color from static point fill when matchLineColor is true', () => {
+		test('fill uses series color from static point stroke when matchLineColor is true', () => {
 			const marks = getLinePointAnnotationMarks({
 				...lineOptionsWithAnnotations,
 				linePointAnnotations: [{ matchLineColor: true }],
 			});
-			expect(marks[1].encode?.enter).toHaveProperty('fill', { field: 'datum.fill' });
+			expect(marks[1].encode?.enter).toHaveProperty('fill', { field: 'datum.stroke' });
 		});
 
 		test('has no label transform', () => {

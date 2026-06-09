@@ -20,14 +20,6 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { LegendOptions } from '../types';
-
-export const getLegendHighlightSignals = (legends: LegendOptions[]): string[] =>
-  legends
-    .map((legend, index) => ({ ...legend, name: legend.name ?? `legend${index}` }))
-    .filter((legend) => legend.highlight)
-    .map((legend) => `${legend.name}_${HOVERED_SERIES}`);
-
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
  */
@@ -47,11 +39,6 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
     const { opacity } = update;
 
     if (opacity !== undefined) {
-      // skip marks that explicitly manage their own visibility — their final fallback is opacity 0
-      // (e.g. overlay lines and fg label marks that should only appear for the highlighted series)
-      const lastRule = Array.isArray(opacity) ? opacity.at(-1) : opacity;
-      if ((lastRule as { value?: number })?.value === 0) return;
-
       // the new production rule for highlighting
       const highlightOpacityRule = getHighlightOpacityRule(legendName, controlled, keys);
 

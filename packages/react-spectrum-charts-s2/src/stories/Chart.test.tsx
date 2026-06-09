@@ -376,7 +376,7 @@ describe('Chart', () => {
       expect(inspectElement).toBeInTheDocument();
       if (!inspectElement) return;
 
-      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(187);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(162);
       expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
     });
 
@@ -391,7 +391,7 @@ describe('Chart', () => {
       expect(inspectElement).toBeInTheDocument();
       if (!inspectElement) return;
 
-      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(225);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(197);
       expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
     });
   });

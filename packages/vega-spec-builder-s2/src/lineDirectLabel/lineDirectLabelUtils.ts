@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Mark, NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
+import { Data, Mark, TextMark, Transforms } from 'vega';
 
-import { CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
+import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils';
@@ -21,7 +21,7 @@ import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
 
-const MIN_LABEL_GAP = 12;
+const LABEL_LINE_HEIGHT = 16;
 
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.
@@ -97,7 +97,7 @@ export const getLineDirectLabelData = (
 			as: ['_metricRank'],
 		},
 		{ type: 'formula' as const, as: '_scaledY', expr: `scale('${yScaleName}', datum["${metric}"])` },
-		{ type: 'formula' as const, as: '_adjustedY', expr: `datum._scaledY - datum._metricRank * ${MIN_LABEL_GAP}` },
+		{ type: 'formula' as const, as: '_adjustedY', expr: `datum._scaledY - datum._metricRank * ${LABEL_LINE_HEIGHT}` },
 		{
 			type: 'window' as const,
 			sort: { field: ['_metricRank'], order: ['ascending' as const] },
@@ -142,8 +142,7 @@ export const getLineDirectLabelMarks = (
 	labelOptions: LineDirectLabelSpecOptions,
 	lineOptions: LineSpecOptions,
 	backgroundColor: string | undefined,
-	colorScheme: 'light' | 'dark',
-	fgOpacityRules?: ProductionRule<NumericValueRef>
+	colorScheme: 'light' | 'dark'
 ): Mark[] => {
 	const resolvedBg = getS2ColorValue(
 		backgroundColor === 'transparent' || !backgroundColor ? 'gray-25' : backgroundColor,
@@ -161,10 +160,9 @@ export const getLineDirectLabelMarks = (
 	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const opacityRules = getLineOpacity(lineOptions);
-  	const fontSizeEncoding = labelOptions.fontSize == null ? { signal: CHART_SIZE_FONT_SIZE } : { value: labelOptions.fontSize };
 
 	// Combined logic for direct label offset given 1, 2, or 3+ series
-	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${MIN_LABEL_GAP} - 12 - datum._scaledY)`
+	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${LABEL_LINE_HEIGHT} - 12 - datum._scaledY)`
 
 	const baseEnter = {
 		text: { signal: textExpr },
@@ -192,13 +190,9 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				stroke: { value: resolvedBg },
 				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
-				fill: { value: resolvedBg },
+				fill: { value: 'transparent' },
 			},
-			update: {
-				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
-				fontSize: fontSizeEncoding,
-				opacity: { value: 1 }
-			},
+			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
 		},
 	};
 
@@ -212,28 +206,11 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
 			},
-			update: {
-				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
-				fontSize: fontSizeEncoding,
-				opacity: opacityRules,
-			},
+			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
 		},
 	};
 
-	const marks: Mark[] = [backgroundTextMark, mainTextMark];
-
-	if (!fgOpacityRules) {
-		return marks;
-	}
-	
-	// this is only returned when the line has a highlight state, so the labels always render on top of the overlay lines
-	const fgMarks = marks.map(mark => ({
-		...mark,
-		name: `${mark.name}_fg`,
-		encode: { ...mark.encode, update: { ...mark.encode?.update, opacity: fgOpacityRules } }
-	} as unknown as Mark));
-
-	return fgMarks;
+	return [backgroundTextMark, mainTextMark];
 };
 
 /**
@@ -256,5 +233,4 @@ export const getLineDirectLabelSpecOptions = (
 	prefix: labelOptions.prefix ?? '',
 	scaleType: lineOptions.scaleType,
 	value: labelOptions.value ?? 'last',
-	fontSize: labelOptions.fontSize,
 });

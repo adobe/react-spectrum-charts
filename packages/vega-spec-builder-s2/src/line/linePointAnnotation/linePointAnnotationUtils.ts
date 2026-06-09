@@ -11,7 +11,7 @@
  */
 import { TextMark } from 'vega';
 
-import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, LINE_POINT_ANNOTATION_OFFSET } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { LinePointAnnotationOptions, LinePointAnnotationSpecOptions, LineSpecOptions } from '../../types';
@@ -67,16 +67,15 @@ export const getLinePointAnnotationMarks = (lineOptions: LineSpecOptions): TextM
 					type: 'label',
 					size: { signal: '[width, height]' },
 					anchor: Array.isArray(anchor) ? anchor : [anchor],
-					offset: [LINE_POINT_ANNOTATION_OFFSET],
 				},
 			],
 		};
 
 		// Foreground mark: reads from the background mark to inherit its label-transform-computed
-		// positions (x, y, align, baseline, opacity).
-		// datum.fill navigates: foreground.datum → bgMark item → bgMark.datum → staticPoint item → fill = series color
+		// positions (x, y, align, baseline, opacity). 
+		// When matchLineColor is true, the fill uses the series color from the static point stroke (datum.stroke); otherwise defaults to black.
 		const labelFill = matchLineColor
-			? { field: 'datum.fill' }
+			? { field: 'datum.stroke' }
 			: { value: getS2ColorValue('gray-900', lineOptions.colorScheme) };
 		const foregroundMark: TextMark = {
 			name: linePointAnnotationName,

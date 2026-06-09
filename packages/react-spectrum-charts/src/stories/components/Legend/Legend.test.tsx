@@ -30,8 +30,6 @@ import {
   Basic,
   Descriptions,
   LabelLimit,
-  LegendColumns,
-  LegendColumnsExtended,
   OnClick,
   Popover,
   Position,
@@ -303,18 +301,6 @@ describe('Legend', () => {
     // Check that the legend title is present. Note that JSDOM causes this to not match the UI rendered storybook.
     // We're just testing that the chart renders with the titleLimit prop.
     expect(screen.getByText('Very long legend title that should be truncated')).toBeInTheDocument();
-  });
-
-  test('LegendColumns renders properly', async () => {
-    render(<LegendColumns {...LegendColumns.args} />);
-    const view = await screen.findByRole('graphics-document');
-    expect(view).toBeInTheDocument();
-  });
-
-  test('LegendColumnsExtended renders properly', async () => {
-    render(<LegendColumnsExtended {...LegendColumnsExtended.args} />);
-    const view = await screen.findByRole('graphics-document');
-    expect(view).toBeInTheDocument();
   });
 
   // Legend is not a real React component. This is test just provides test coverage for sonarqube
