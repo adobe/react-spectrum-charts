@@ -113,12 +113,12 @@ export const buildNodeLabel = (node: NodeObject): string => {
   if (!data) return String(node.id);
 
   if (typeof data.dimensionKey === 'string' && data.divisions != null) {
-    const divisionCount = Object.keys(data.divisions as object).length;
+    const divisionCount = Object.keys(data.divisions).length;
     return `${data.dimensionKey} dimension. Contains ${divisionCount} division${divisionCount === 1 ? '' : 's'}.`;
   }
 
   if (data.values != null && typeof data.values === 'object' && !Array.isArray(data.values)) {
-    const childCount = Object.keys(data.values as object).length;
+    const childCount = Object.keys(data.values).length;
     return `${String(node.id)}. Contains ${childCount} bar${childCount === 1 ? '' : 's'}.`;
   }
 
@@ -131,7 +131,7 @@ export const buildNodeLabel = (node: NodeObject): string => {
 export const prepareNodeSemantics = (structure: Structure): void => {
   for (const node of Object.values(structure.nodes)) {
     if (!node.semantics?.label) {
-      node.semantics = { ...(node.semantics ?? {}), label: buildNodeLabel(node) };
+      node.semantics = { ...node.semantics, label: buildNodeLabel(node) };
     }
   }
 };
