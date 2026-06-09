@@ -39,6 +39,7 @@ import {
   getXProductionRule,
   hasPopover,
 } from '../marks/markUtils';
+import { getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { getStrokeDashFromLineType } from '../specUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { ScaleType } from '../types';
@@ -81,23 +82,23 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
 const GRADIENT_BASE_OPACITY = 0.2;
 const FORECAST_GRADIENT_RATIO = 0.4;
 
-/** Builds the `stroke` encoding for a line mark, inserting a gray color rule for series beyond `seriesLimit`. */
+/** Builds the `stroke` encoding for a line mark, inserting a gray color rule for non-primary series. */
 const getStrokeEncoding = (
-  seriesLimit: number | undefined,
+  primarySeries: number | string[] | undefined,
   hiddenSeriesColor: string | undefined,
   color: LineMarkOptions['color'],
   colorScheme: LineMarkOptions['colorScheme']
 ): ColorValueRef | ProductionRule<ColorValueRef> => {
 
   const normalColor = getColorProductionRule(color, colorScheme);
-  if (seriesLimit === undefined) {
+  if (!primarySeries) {
     return normalColor;
   }
-  
+
   const grayColor = getS2ColorValue(hiddenSeriesColor || 'gray-400', colorScheme);
   return [
     {
-      test: `indexof(slice(domain('color'), 0, ${seriesLimit}), datum.${SERIES_ID}) === -1`,
+      test: getPrimarySeriesOtherExpr(primarySeries, 'datum'),
       value: grayColor,
     },
     normalColor,
@@ -217,7 +218,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     name,
     opacity,
     scaleType,
-    seriesLimit,
+    primarySeries,
     interpolate
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
@@ -234,7 +235,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     encode: {
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getStrokeEncoding(seriesLimit, hiddenSeriesColor, color, colorScheme),
+        stroke: getStrokeEncoding(primarySeries, hiddenSeriesColor, color, colorScheme),
         strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
           ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)

@@ -95,12 +95,14 @@ export interface LineOptions {
    */
   alternateSegmentLabel?: string;
   /**
-   * Limits the number of series that render with full color. The first N series (by color scale order)
-   * render normally; remaining series render in a de-emphasized gray color with direct labels suppressed.
+   * Designates which series render with full color. Remaining series render in a de-emphasized gray
+   * color with direct labels suppressed.
+   * - `number`: the first N series by color scale order are primary.
+   * - `string[]`: the named series are primary, regardless of color scale order.
    */
-  seriesLimit?: number;
+  primarySeries?: number | string[];
   /**
-   * Overrides the default gray color used for series beyond the `seriesLimit`.
+   * Overrides the default gray color used for series beyond the `primarySeries`.
    * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
    */
   hiddenSeriesColor?: string;

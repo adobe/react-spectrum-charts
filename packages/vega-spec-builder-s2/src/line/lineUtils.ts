@@ -85,6 +85,6 @@ export interface LineMarkOptions {
   alternateSegmentKey?: string;
   alternateSegmentLineType?: LineType;
   alternateSegmentLabel?: string;
-  seriesLimit?: number;
+  primarySeries?: number | string[];
   hiddenSeriesColor?: string;
 }

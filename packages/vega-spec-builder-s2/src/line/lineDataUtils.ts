@@ -61,17 +61,29 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
 };
 
 /**
- * Gets a derived data source sorted so "other" series (beyond seriesLimit) appear first,
+ * Builds a Vega expression that evaluates to true for series NOT in the primary set.
+ * - number: first N series by color scale order
+ * - string[]: explicitly named series
+ */
+export const getPrimarySeriesOtherExpr = (primarySeries: number | string[], datumPath: string): string => {
+  const seriesRef = Array.isArray(primarySeries)
+    ? JSON.stringify(primarySeries)
+    : `slice(domain('color'), 0, ${primarySeries})`;
+  return `indexof(${seriesRef}, ${datumPath}.${SERIES_ID}) < 0`;
+};
+
+/**
+ * Gets a derived data source sorted so "other" series appear first,
  * causing Vega to draw them first (behind the primary series).
  */
-export const getSeriesLimitFacetData = (name: string, seriesLimit: number): SourceData => ({
-  name: `${name}_seriesLimitFacetData`,
+export const getPrimarySeriesFacetData = (name: string, primarySeries: number | string[]): SourceData => ({
+  name: `${name}_primarySeriesFacetData`,
   source: FILTERED_TABLE,
   transform: [
     {
       type: 'formula',
       as: `${name}_isOther`,
-      expr: `indexof(slice(domain('color'), 0, ${seriesLimit}), datum.${SERIES_ID}) < 0 ? 1 : 0`,
+      expr: `${getPrimarySeriesOtherExpr(primarySeries, 'datum')} ? 1 : 0`,
     },
     { type: 'collect', sort: { field: `${name}_isOther`, order: 'descending' } },
   ],

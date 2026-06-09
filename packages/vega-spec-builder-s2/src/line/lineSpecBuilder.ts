@@ -40,7 +40,7 @@ import { getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, 
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
-import { getLineHighlightedData, getLineStaticPointData, getSeriesLimitFacetData } from './lineDataUtils';
+import { getLineHighlightedData, getLineStaticPointData, getPrimarySeriesFacetData, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { getLineGradientMark, getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
@@ -86,7 +86,7 @@ export const addLine = produce<
       alternateSegmentKey,
       alternateSegmentLineType = 'dotted',
       alternateSegmentLabel,
-      seriesLimit,
+      primarySeries,
       hiddenSeriesColor,
       ...options
     }
@@ -133,7 +133,7 @@ export const addLine = produce<
       alternateSegmentKey,
       alternateSegmentLineType,
       alternateSegmentLabel,
-      seriesLimit,
+      primarySeries,
       hiddenSeriesColor,
       ...options,
     };
@@ -150,7 +150,7 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { alternateSegmentKey, chartInspects, dimension, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, seriesLimit, staticPoint } =
+  const { alternateSegmentKey, chartInspects, dimension, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, primarySeries, staticPoint } =
     options;
   const tableData = getTableData(data);
   if (scaleType === 'time') {
@@ -172,8 +172,8 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     );
     data.push(...getAlternateSegmentData(name, dimSortField));
   }
-  if (seriesLimit && !alternateSegmentKey && !forecasts.length) {
-    data.push(getSeriesLimitFacetData(name, seriesLimit));
+  if (primarySeries && !alternateSegmentKey && !forecasts.length) {
+    data.push(getPrimarySeriesFacetData(name, primarySeries));
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
@@ -228,9 +228,9 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
   }
 
   if (!isInteractive(options)) return;
-  const { seriesLimit } = options;
+  const { primarySeries } = options;
   // datum.datum because the voronoi mark uses datumOrder=2
-  addHoveredItemSignal(signals, name, `${name}_voronoi`, 2, undefined, getSeriesLimitExcludeCondition(seriesLimit, 'datum.datum'));
+  addHoveredItemSignal(signals, name, `${name}_voronoi`, 2, undefined, getPrimarySeriesExcludeCondition(primarySeries, 'datum.datum'));
   addHoverSignals(signals, options);
   addInspectSignals(signals, options);
 });
@@ -265,7 +265,7 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, linePointAnnotations, lineType, name, opacity, seriesLimit, staticPoint } = options;
+  const { alternateSegmentKey, color, gradient, highlightedItem, isSparkline, linePointAnnotations, lineType, name, opacity, primarySeries, staticPoint } = options;
   const forecasts = options.forecasts ?? [];
   const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
@@ -273,8 +273,8 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   // when alternateSegmentKey or forecasts are active, facet by segmentId so each contiguous run
   // gets its own path with its own strokeDash
   const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
-  // when seriesLimit is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
-  const defaultFacetData = seriesLimit ? `${name}_seriesLimitFacetData` : FILTERED_TABLE;
+  // when primarySeries is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
+  const defaultFacetData = primarySeries ? `${name}_primarySeriesFacetData` : FILTERED_TABLE;
   const facetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
   const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
 
@@ -392,13 +392,13 @@ export const getAlternateSegmentData = (name: string, dimSortField: string): Dat
 ];
 
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
-  const { interactionMode, name: lineName, seriesLimit } = options;
+  const { interactionMode, name: lineName, primarySeries } = options;
   if (interactionMode !== INTERACTION_MODE.ITEM) return;
-  const itemExcludeCondition = getSeriesLimitExcludeCondition(seriesLimit, 'datum');
+  const itemExcludeCondition = getPrimarySeriesExcludeCondition(primarySeries, 'datum');
   for (const hoverMarkName of getHoverMarkNames(lineName)) {
     addHoveredItemSignal(signals, lineName, hoverMarkName, 1, undefined, itemExcludeCondition);
   }
 };
 
-const getSeriesLimitExcludeCondition = (seriesLimit: number | undefined, datumPath: string): string | undefined =>
-  seriesLimit ? `indexof(slice(domain('color'), 0, ${seriesLimit}), ${datumPath}.${SERIES_ID}) < 0` : undefined;
+const getPrimarySeriesExcludeCondition = (primarySeries: number | string[] | undefined, datumPath: string): string | undefined =>
+  primarySeries ? getPrimarySeriesOtherExpr(primarySeries, datumPath) : undefined;

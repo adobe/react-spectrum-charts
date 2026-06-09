@@ -14,6 +14,7 @@ import { Data, Mark, TextMark, Transforms } from 'vega';
 import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
+import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils';
 import { getLineOpacity } from '../line/lineMarkUtils';
 import { getColorProductionRule } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
@@ -75,11 +76,11 @@ export const getLineDirectLabelData = (
 					},
 				]
 			: []),
-		...(lineOptions.seriesLimit
+		...(lineOptions.primarySeries
 			? [
 					{
 						type: 'filter' as const,
-						expr: `indexof(slice(domain('color'), 0, ${lineOptions.seriesLimit}), datum.${SERIES_ID}) >= 0`,
+						expr: `!(${getPrimarySeriesOtherExpr(lineOptions.primarySeries, 'datum')})`,
 					},
 				]
 			: []),

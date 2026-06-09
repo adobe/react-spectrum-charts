@@ -10,13 +10,13 @@ import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Features/SeriesLimit',
+  title: 'React Spectrum Charts 2/Line/Features/PrimarySeries',
   component: Line,
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const SeriesLimitStory: StoryFn<typeof Line> = (args): ReactElement => {
+const PrimarySeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
@@ -28,7 +28,7 @@ const SeriesLimitStory: StoryFn<typeof Line> = (args): ReactElement => {
   );
 };
 
-const SeriesLimitWithDirectLabelsStory: StoryFn<typeof Line> = (args): ReactElement => {
+const PrimarySeriesWithDirectLabelsStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsSixSeriesData });
   return (
     <Chart {...chartProps}>
@@ -41,32 +41,41 @@ const SeriesLimitWithDirectLabelsStory: StoryFn<typeof Line> = (args): ReactElem
   );
 };
 
-const SeriesLimit = bindWithProps(SeriesLimitStory);
-SeriesLimit.args = {
+const PrimarySeries = bindWithProps(PrimarySeriesStory);
+PrimarySeries.args = {
   color: 'series',
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
-  seriesLimit: 1,
+  primarySeries: 1,
 };
 
-const SeriesLimitWithCustomColor = bindWithProps(SeriesLimitStory);
-SeriesLimitWithCustomColor.args = {
+const PrimarySeriesCustomSeries = bindWithProps(PrimarySeriesStory);
+PrimarySeriesCustomSeries.args = {
   color: 'series',
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
-  seriesLimit: 2,
+  primarySeries: ['Add Fallout', 'Add Bar viz'],
+};
+
+const PrimarySeriesWithCustomColor = bindWithProps(PrimarySeriesStory);
+PrimarySeriesWithCustomColor.args = {
+  color: 'series',
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time',
+  primarySeries: 2,
   hiddenSeriesColor: 'gray-100',
 };
 
-const SeriesLimitWithDirectLabels = bindWithProps(SeriesLimitWithDirectLabelsStory);
-SeriesLimitWithDirectLabels.args = {
+const PrimarySeriesWithDirectLabels = bindWithProps(PrimarySeriesWithDirectLabelsStory);
+PrimarySeriesWithDirectLabels.args = {
   color: 'series',
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
-  seriesLimit: 2,
+  primarySeries: ['Add Freeform table', 'Add Line viz'],
 };
 
-export { SeriesLimit, SeriesLimitWithCustomColor, SeriesLimitWithDirectLabels };
+export { PrimarySeries, PrimarySeriesCustomSeries, PrimarySeriesWithCustomColor, PrimarySeriesWithDirectLabels };
