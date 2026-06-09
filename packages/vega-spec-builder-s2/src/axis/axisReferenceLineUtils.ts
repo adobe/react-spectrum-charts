@@ -15,12 +15,14 @@ import {
   CHART_SIZE_BREAKPOINTS,
   CHART_SIZE_STROKE_WIDTH,
   DEFAULT_FONT_COLOR,
+  REFERENCE_LINE_AUTO_RULE_X2_OFFSET,
   REFERENCE_LINE_AUTO_RULE_X_START,
   REFERENCE_LINE_END_CAP_PATHS,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
   REFERENCE_LINE_LABEL_FONT_WEIGHT,
   REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
+  REFERENCE_LINE_RULE_X2_OFFSET,
   REFERENCE_LINE_RULE_X_START,
   REFERENCE_LINE_SIZE_STROKE_WIDTHS,
   REFERENCE_LINE_START_CAP_PATHS,
@@ -96,6 +98,9 @@ export const getPositionEncoding = (
 const getRuleXStartSignal = (): string =>
   `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_AUTO_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_AUTO_RULE_X_START.M} : ${REFERENCE_LINE_AUTO_RULE_X_START.L}`;
 
+const getRuleX2Signal = (): string =>
+  `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.M} : width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.L}`;
+
 const getCapTierOpacitySignal = (tier: 'S' | 'M' | 'L'): string => {
   if (tier === 'S') return `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1 : 0`;
   if (tier === 'L') return `rscContainerWidth(width) >= ${CHART_SIZE_BREAKPOINTS.L} ? 1 : 0`;
@@ -128,7 +133,7 @@ export const getReferenceLineRuleMark = (
       },
       update: {
         x: xStart,
-        x2: { signal: 'width - 7' },
+        x2: size === undefined ? { signal: getRuleX2Signal() } : { signal: `width - ${REFERENCE_LINE_RULE_X2_OFFSET[size]}` },
         y: positionEncoding as NumericValueRef,
       },
     },

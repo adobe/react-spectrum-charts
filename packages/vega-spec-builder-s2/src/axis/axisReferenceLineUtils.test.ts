@@ -23,7 +23,9 @@ import {
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
   REFERENCE_LINE_LABEL_FONT_WEIGHT,
   REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
+  REFERENCE_LINE_AUTO_RULE_X2_OFFSET,
   REFERENCE_LINE_AUTO_RULE_X_START,
+  REFERENCE_LINE_RULE_X2_OFFSET,
   REFERENCE_LINE_RULE_X_START,
   REFERENCE_LINE_SIZE_STROKE_WIDTHS,
   REFERENCE_LINE_START_CAP_PATHS,
@@ -209,11 +211,12 @@ describe('getReferenceLineRuleMark()', () => {
     expect(rule.encode?.enter?.strokeWidth).toStrictEqual({ signal: CHART_SIZE_STROKE_WIDTH });
   });
 
-  test('auto mode (no size): x uses reactive signal across S/M/L breakpoints', () => {
+  test('auto mode (no size): x and x2 use reactive signals across S/M/L breakpoints', () => {
     const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
-    const expectedSignal = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_AUTO_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_AUTO_RULE_X_START.M} : ${REFERENCE_LINE_AUTO_RULE_X_START.L}`;
-    expect(rule.encode?.update?.x).toStrictEqual({ signal: expectedSignal });
-    expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width - 7' });
+    const expectedX = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_AUTO_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_AUTO_RULE_X_START.M} : ${REFERENCE_LINE_AUTO_RULE_X_START.L}`;
+    const expectedX2 = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.M} : width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.L}`;
+    expect(rule.encode?.update?.x).toStrictEqual({ signal: expectedX });
+    expect(rule.encode?.update?.x2).toStrictEqual({ signal: expectedX2 });
   });
 
   test('y is set to positionEncoding', () => {
@@ -221,13 +224,14 @@ describe('getReferenceLineRuleMark()', () => {
     expect(rule.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
   });
 
-  test('rule x-start signal is position-independent', () => {
+  test('rule x2 signal is position-independent', () => {
     const rule = getReferenceLineRuleMark(
       { ...defaultAxisOptions, ticks: true },
       defaultReferenceLineOptions,
       defaultYPositionEncoding
     );
-    expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width - 7' });
+    const expectedX2 = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.M} : width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.L}`;
+    expect(rule.encode?.update?.x2).toStrictEqual({ signal: expectedX2 });
   });
 });
 
@@ -412,6 +416,18 @@ describe('size prop — explicit size variants', () => {
         defaultYPositionEncoding
       );
       expect(rule.encode?.update?.x).toStrictEqual({ value: REFERENCE_LINE_RULE_X_START[size] });
+    }
+  );
+
+  test.each(['XS', 'S', 'M', 'L'] as const)(
+    'size %s: rule x2 uses REFERENCE_LINE_RULE_X2_OFFSET[size]',
+    (size) => {
+      const rule = getReferenceLineRuleMark(
+        defaultAxisOptions,
+        { ...defaultReferenceLineOptions, size },
+        defaultYPositionEncoding
+      );
+      expect(rule.encode?.update?.x2).toStrictEqual({ signal: `width - ${REFERENCE_LINE_RULE_X2_OFFSET[size]}` });
     }
   );
 

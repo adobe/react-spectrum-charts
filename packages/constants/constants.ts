@@ -207,6 +207,26 @@ export const REFERENCE_LINE_AUTO_RULE_X_START = {
   L: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.L + REFERENCE_LINE_CAP_RULE_GAP + 3 / 2,   // 14.33333
 };
 
+// End cap anchor is fixed at width - 5 for all sizes (left tip ≈ anchor, right face clips past width).
+// Rule x2 = end_cap_anchor - gap - strokeWidth/2 = width - (5 + 1 + strokeWidth/2).
+const REFERENCE_LINE_END_CAP_ANCHOR_OFFSET = 5;
+const REFERENCE_LINE_RULE_X2_BASE = REFERENCE_LINE_END_CAP_ANCHOR_OFFSET + REFERENCE_LINE_CAP_RULE_GAP; // 6
+
+// Rule x2 offset for explicit size — mirrors RULE_X_START logic on the right side.
+export const REFERENCE_LINE_RULE_X2_OFFSET: Record<ReferenceLineSize, number> = {
+  XS: REFERENCE_LINE_RULE_X2_BASE + REFERENCE_LINE_SIZE_STROKE_WIDTHS.XS / 2, // 6.5
+  S: REFERENCE_LINE_RULE_X2_BASE + REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2,   // 6.75
+  M: REFERENCE_LINE_RULE_X2_BASE + REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2,   // 6.75
+  L: REFERENCE_LINE_RULE_X2_BASE + REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2,   // 7.25
+};
+
+// Rule x2 offset for auto mode — uses CHART_SIZE_STROKE_WIDTH signal values (1.5/2/3px).
+export const REFERENCE_LINE_AUTO_RULE_X2_OFFSET = {
+  S: REFERENCE_LINE_RULE_X2_BASE + 0.75, // strokeWidth(1.5)/2, total 6.75
+  M: REFERENCE_LINE_RULE_X2_BASE + 1,    // strokeWidth(2)/2,   total 7
+  L: REFERENCE_LINE_RULE_X2_BASE + 1.5,  // strokeWidth(3)/2,   total 7.5
+};
+
 // Caret SVG paths per size tier, y-shifted to center on reference line.
 // S and M share the same path geometry.
 export const REFERENCE_LINE_START_CAP_PATHS: Record<ReferenceLineSize, string> = {
