@@ -35,7 +35,7 @@ const referenceValue = 5000;
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
-    <Chart {...chartProps}>
+    <Chart {...chartProps} debug>
       <Axis position="left" grid title="Users">
         <ReferenceLine {...args} />
       </Axis>

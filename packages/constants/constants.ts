@@ -215,32 +215,34 @@ const REFERENCE_LINE_END_CAP_RIGHT_FACE_X: Record<ReferenceLineSize, number> = {
   L: 6.7002,
 };
 
-// Desired clip past the right chart boundary (keeps right face at a constant visual position).
+// Desired clip past the right chart boundary for XS size.
 const REFERENCE_LINE_END_CAP_CLIP = 0.4;
 
-// x-anchor offset from `width` for the end cap — pins the right face to a consistent position.
-// Mirrors REFERENCE_LINE_START_CAP_ANCHOR on the left: cap grows inward, outer edge stays fixed.
-// No rounding — exact values keep the clip consistent across all sizes.
+// Fixed x-anchor offset from `width` for S/M/L end caps — mirrors REFERENCE_LINE_START_CAP_ANCHOR.
+// All three sizes share the same origin; larger caps grow further into the clip zone on the right.
+const REFERENCE_LINE_END_CAP_ANCHOR = REFERENCE_LINE_END_CAP_RIGHT_FACE_X.S - REFERENCE_LINE_END_CAP_CLIP; // 5.00039
+
 export const REFERENCE_LINE_END_CAP_ANCHOR_OFFSET: Record<ReferenceLineSize, number> = {
   XS: REFERENCE_LINE_END_CAP_RIGHT_FACE_X.XS - REFERENCE_LINE_END_CAP_CLIP, // 2.94961
-  S: REFERENCE_LINE_END_CAP_RIGHT_FACE_X.S - REFERENCE_LINE_END_CAP_CLIP,   // 5.00039
-  M: REFERENCE_LINE_END_CAP_RIGHT_FACE_X.M - REFERENCE_LINE_END_CAP_CLIP,   // 5.00039
-  L: REFERENCE_LINE_END_CAP_RIGHT_FACE_X.L - REFERENCE_LINE_END_CAP_CLIP,   // 6.3002
+  S: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
+  M: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
+  L: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
 };
 
 // Rule x2 offset for explicit size = end cap anchor + gap + strokeWidth/2.
+// S and M produce the same x2; L produces a shorter line (larger SW reduces x2 further left).
 export const REFERENCE_LINE_RULE_X2_OFFSET: Record<ReferenceLineSize, number> = {
-  XS: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.XS + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.XS / 2, // 4.5
-  S: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.S + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2,   // 6.75
-  M: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.M + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2,   // 6.75
-  L: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.L + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2,   // 8.25
+  XS: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.XS + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.XS / 2, // 4.44961
+  S: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2,   // 6.75039
+  M: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2,   // 6.75039
+  L: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2,   // 7.25039
 };
 
 // Rule x2 offset for auto mode — uses CHART_SIZE_STROKE_WIDTH signal values (1.5/2/3px).
 export const REFERENCE_LINE_AUTO_RULE_X2_OFFSET = {
-  S: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.S + REFERENCE_LINE_CAP_RULE_GAP + 0.75, // 6.75
-  M: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.M + REFERENCE_LINE_CAP_RULE_GAP + 1,    // 7
-  L: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.L + REFERENCE_LINE_CAP_RULE_GAP + 1.5,  // 8.5
+  S: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 0.75, // 6.75039
+  M: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 1,    // 7.00039
+  L: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 1.5,  // 7.50039
 };
 
 // Caret SVG paths per size tier, y-shifted to center on reference line.
