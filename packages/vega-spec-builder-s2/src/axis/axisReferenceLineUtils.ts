@@ -17,6 +17,7 @@ import {
   DEFAULT_FONT_COLOR,
   REFERENCE_LINE_AUTO_RULE_X2_OFFSET,
   REFERENCE_LINE_AUTO_RULE_X_START,
+  REFERENCE_LINE_END_CAP_ANCHOR_OFFSET,
   REFERENCE_LINE_END_CAP_PATHS,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
@@ -189,7 +190,6 @@ export const getReferenceLineEndCapMark = (
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): PathMark[] => {
   const fill = { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
-  const sharedUpdate = { x: { signal: 'width - 5' }, y: positionEncoding as NumericValueRef };
 
   if (size === undefined) {
     return (['S', 'M', 'L'] as const).map((tier) => ({
@@ -199,7 +199,8 @@ export const getReferenceLineEndCapMark = (
       encode: {
         enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[tier] }, fill },
         update: {
-          ...sharedUpdate,
+          x: { signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET[tier]}` },
+          y: positionEncoding as NumericValueRef,
           opacity: { signal: getCapTierOpacitySignal(tier) },
         },
       },
@@ -212,7 +213,10 @@ export const getReferenceLineEndCapMark = (
     interactive: false,
     encode: {
       enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[size] }, fill },
-      update: sharedUpdate,
+      update: {
+        x: { signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET[size]}` },
+        y: positionEncoding as NumericValueRef,
+      },
     },
   }];
 };

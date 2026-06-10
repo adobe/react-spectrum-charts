@@ -25,6 +25,7 @@ import {
   REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
   REFERENCE_LINE_AUTO_RULE_X2_OFFSET,
   REFERENCE_LINE_AUTO_RULE_X_START,
+  REFERENCE_LINE_END_CAP_ANCHOR_OFFSET,
   REFERENCE_LINE_RULE_X2_OFFSET,
   REFERENCE_LINE_RULE_X_START,
   REFERENCE_LINE_SIZE_STROKE_WIDTHS,
@@ -295,10 +296,12 @@ describe('getReferenceLineEndCapMark()', () => {
     expect(caps[2].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATHS['L'] });
   });
 
-  test('auto mode: all tiers share x: width - 5 and y: positionEncoding', () => {
+  test('auto mode: each tier uses its own REFERENCE_LINE_END_CAP_ANCHOR_OFFSET anchor', () => {
     const caps = getReferenceLineEndCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(caps[0].encode?.update?.x).toStrictEqual({ signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET['S']}` });
+    expect(caps[1].encode?.update?.x).toStrictEqual({ signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET['M']}` });
+    expect(caps[2].encode?.update?.x).toStrictEqual({ signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET['L']}` });
     for (const cap of caps) {
-      expect(cap.encode?.update?.x).toStrictEqual({ signal: 'width - 5' });
       expect(cap.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
     }
   });
