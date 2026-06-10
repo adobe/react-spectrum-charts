@@ -11,9 +11,9 @@
  */
 import { FilterTransform } from 'vega';
 
-import { GROUP_ID, SELECTED_ITEM } from '@spectrum-charts/constants';
+import { GROUP_ID, SELECTED_ITEM, SERIES_ID } from '@spectrum-charts/constants';
 
-import { getLineHighlightedData } from './lineDataUtils';
+import { getLineHighlightedData, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { defaultLineOptions } from './lineTestUtils';
 
 describe('getLineHighlightedData()', () => {
@@ -36,5 +36,22 @@ describe('getLineHighlightedData()', () => {
       }).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
+  });
+});
+
+describe('getPrimarySeriesOtherExpr()', () => {
+  test('with string array uses JSON.stringify for series reference', () => {
+    const expr = getPrimarySeriesOtherExpr(['series1', 'series2'], 'datum');
+    expect(expr).toBe(`indexof(["series1","series2"], datum.${SERIES_ID}) < 0`);
+  });
+
+  test('with number uses slice of color domain', () => {
+    const expr = getPrimarySeriesOtherExpr(3, 'datum');
+    expect(expr).toBe(`indexof(slice(domain('color'), 0, 3), datum.${SERIES_ID}) < 0`);
+  });
+
+  test('uses provided datumPath', () => {
+    const expr = getPrimarySeriesOtherExpr(['series1'], 'datum.datum');
+    expect(expr).toContain('datum.datum');
   });
 });

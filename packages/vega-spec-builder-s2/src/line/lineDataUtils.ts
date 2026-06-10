@@ -17,6 +17,7 @@ import {
   GROUP_ID,
   HOVERED_ITEM,
   SELECTED_ITEM,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
@@ -58,6 +59,35 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
     ],
   };
 };
+
+/**
+ * Builds a Vega expression that evaluates to true for series NOT in the primary set.
+ * - number: first N series by color scale order
+ * - string[]: explicitly named series
+ */
+export const getPrimarySeriesOtherExpr = (primarySeries: number | string[], datumPath: string): string => {
+  const seriesRef = Array.isArray(primarySeries)
+    ? JSON.stringify(primarySeries)
+    : `slice(domain('color'), 0, ${primarySeries})`;
+  return `indexof(${seriesRef}, ${datumPath}.${SERIES_ID}) < 0`;
+};
+
+/**
+ * Gets a derived data source sorted so "other" series appear first,
+ * causing Vega to draw them first (behind the primary series).
+ */
+export const getPrimarySeriesFacetData = (name: string, primarySeries: number | string[]): SourceData => ({
+  name: `${name}_primarySeriesFacetData`,
+  source: FILTERED_TABLE,
+  transform: [
+    {
+      type: 'formula',
+      as: `${name}_isOther`,
+      expr: `${getPrimarySeriesOtherExpr(primarySeries, 'datum')} ? 1 : 0`,
+    },
+    { type: 'collect', sort: { field: `${name}_isOther`, order: 'descending' } },
+  ],
+});
 
 /**
  * gets the data used for displaying points

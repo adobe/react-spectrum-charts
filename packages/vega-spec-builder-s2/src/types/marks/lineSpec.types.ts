@@ -94,6 +94,18 @@ export interface LineOptions {
    * No default — omitting means no append.
    */
   alternateSegmentLabel?: string;
+  /**
+   * Designates which series render with full color. Remaining series render in a de-emphasized gray
+   * color with direct labels suppressed.
+   * - `number`: the first N series by color scale order are primary.
+   * - `string[]`: the named series are primary, regardless of color scale order.
+   */
+  primarySeries?: number | string[];
+  /**
+   * Overrides the default gray color used for series beyond the `primarySeries`.
+   * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
+   */
+  otherSeriesColor?: string;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
