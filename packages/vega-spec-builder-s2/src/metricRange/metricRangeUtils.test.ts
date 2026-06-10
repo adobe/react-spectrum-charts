@@ -10,12 +10,12 @@
  * governing permissions and limitations under the License.
  */
 import {
-  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
@@ -94,7 +94,6 @@ const basicMetricRangeMarks = [
         strokeCap: { value: 'round' },
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
-        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
         x: {
@@ -102,6 +101,7 @@ const basicMetricRangeMarks = [
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
         opacity: [DEFAULT_OPACITY_RULE],
+        strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
       },
     },
   },

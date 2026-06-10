@@ -13,11 +13,13 @@ import { ArrayValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMar
 
 import {
   CHART_SIZE_STROKE_WIDTH,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
   FADE_FACTOR,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
@@ -214,7 +216,6 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
           ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
           : getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
-        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
         // this has to be in update because when you resize the window that doesn't rebuild the spec
@@ -222,6 +223,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
         x: getXProductionRule(scaleType, dimension),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
+        strokeWidth: getLineStrokeWidth(lineMarkOptions),
       },
     },
   };
@@ -282,6 +284,66 @@ export const getLineOpacity = ({
   strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 
   return strokeOpacityRules;
+};
+
+/**
+ * Gets the production rules for strokeWidth
+ */
+export const getLineStrokeWidth = ({
+  displayOnHover,
+  comboSiblingNames,
+  interactiveMarkName,
+  popoverMarkName,
+  isHighlightedByGroup,
+  highlightedItem,
+}: LineMarkOptions): ProductionRule<NumericValueRef> => {
+  // No interactivity -> use default (no hover)
+  if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_STROKE_WIDTH_RULE];
+  const strokeWidthRules: ProductionRule<NumericValueRef> = [];
+
+  if (interactiveMarkName) {
+    if (isHighlightedByGroup) {
+      strokeWidthRules.push({
+        test: `length(data('${interactiveMarkName}_highlightedData'))`,
+        signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
+    } else {
+      strokeWidthRules.push({
+        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
+    }
+  }
+
+  strokeWidthRules.push(
+    {
+      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+      signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    },
+    {
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+      signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    }
+  );
+
+  if (popoverMarkName) {
+    strokeWidthRules.push({
+      test: `isValid(${SELECTED_SERIES})`,
+      signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    });
+  }
+
+  if (comboSiblingNames?.length) {
+    const test = comboSiblingNames.map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`).join(' || ');
+    strokeWidthRules.push({
+      test,
+      signal: CHART_SIZE_STROKE_WIDTH,
+    });
+  }
+  
+  strokeWidthRules.push(DEFAULT_STROKE_WIDTH_RULE);
+
+  return strokeWidthRules;
 };
 
 /**

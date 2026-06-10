@@ -10,11 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import {
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
   HOVERED_ITEM,
@@ -31,7 +33,7 @@ import {
   getLineHighlightOverlayGroup,
   getLineHoverMarks,
   getLineMark,
-  getLineOpacity,
+  getLineOpacity, getLineStrokeWidth,
 } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
@@ -50,12 +52,12 @@ describe('getLineMark()', () => {
           strokeCap: { value: 'round' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-          strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
           y: [{ field: 'value', scale: 'yLinear' }],
         },
         update: {
           x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
           opacity: [DEFAULT_OPACITY_RULE],
+          strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
         },
       },
     });
@@ -71,7 +73,7 @@ describe('getLineMark()', () => {
 
   test('always uses the chart size signal for strokeWidth regardless of lineWidth', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, lineWidth: undefined }, 'line0_facet');
-    expect(lineMark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_STROKE_WIDTH });
+    expect(lineMark.encode?.update?.strokeWidth).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
   });
 
   test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
@@ -210,6 +212,91 @@ describe('getLineOpacity()', () => {
     });
     expect(opacityRule).toHaveLength(4);
     expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+  });
+});
+
+describe('getLineStrokeWidth()', () => {
+  test('should return the default stroke width rule when no interactivity', () => {
+    expect(getLineStrokeWidth(defaultLineMarkOptions)).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+  });
+
+  test('should return the default stroke width rule when displayOnHover is true', () => {
+    expect(
+      getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true })
+    ).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+  });
+
+  test('should include hover rules if line has an inspect', () => {
+    const result = getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] });
+    expect(result).toEqual([
+      {
+        test: `isValid(line0_${HOVERED_ITEM})`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      DEFAULT_STROKE_WIDTH_RULE,
+    ]);
+  });
+
+  test('should include select rules if line has a popover', () => {
+    const result = getLineStrokeWidth({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      popoverMarkName: 'line0',
+      chartPopovers: [{}],
+    });
+    expect(result).toEqual([
+      {
+        test: `isValid(line0_${HOVERED_ITEM})`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `isValid(${SELECTED_SERIES})`,
+        signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      DEFAULT_STROKE_WIDTH_RULE,
+    ]);
+  });
+
+  test('should use highlightedData rule when isHighlightedByGroup is true', () => {
+    const result = getLineStrokeWidth({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      chartInspects: [{}],
+      isHighlightedByGroup: true,
+    });
+    expect(result).toHaveLength(4);
+    expect(result[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+    expect((result[0] as { signal: string }).signal).toContain(CHART_SIZE_HOVER_STROKE_WIDTH);
+    expect((result[0] as { signal: string }).signal).toContain(CHART_SIZE_STROKE_WIDTH);
+  });
+
+  test('should use base stroke width when a combo sibling is hovered', () => {
+    const result = getLineStrokeWidth({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      chartInspects: [{}],
+      comboSiblingNames: ['line1'],
+    });
+    expect(result).toContainEqual({
+      test: `isValid(line1_${HOVERED_ITEM})`,
+      signal: CHART_SIZE_STROKE_WIDTH,
+    });
   });
 });
 

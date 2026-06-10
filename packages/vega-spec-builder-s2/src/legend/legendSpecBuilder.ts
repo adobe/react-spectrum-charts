@@ -44,7 +44,7 @@ import {
   UserMeta,
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
-import { setHoverOpacityForMarks } from './legendHighlightUtils';
+import { setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
 
 export const addLegend = produce<
@@ -275,6 +275,7 @@ const addScales = produce<Scale[], [LegendSpecOptions]>((scales, { color, lineTy
 const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys, name }) => {
   if (highlight) {
     setHoverOpacityForMarks(name, marks, keys);
+    setHoverStrokeWidthForMarks(name, marks, keys);
   }
 });
 
