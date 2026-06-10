@@ -12,13 +12,21 @@
 import { Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, ScaleType, SignalRef, TextMark } from 'vega';
 
 import {
+  CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_STROKE_WIDTH,
   DEFAULT_FONT_COLOR,
+  REFERENCE_LINE_AUTO_RULE_X2_OFFSET,
+  REFERENCE_LINE_AUTO_RULE_X_START,
+  REFERENCE_LINE_END_CAP_ANCHOR_OFFSET,
+  REFERENCE_LINE_END_CAP_PATHS,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
-  REFERENCE_LINE_END_CAP_PATH,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
   REFERENCE_LINE_LABEL_FONT_WEIGHT,
   REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
-  REFERENCE_LINE_START_CAP_PATH,
+  REFERENCE_LINE_RULE_X2_OFFSET,
+  REFERENCE_LINE_RULE_X_START,
+  REFERENCE_LINE_SIZE_STROKE_WIDTHS,
+  REFERENCE_LINE_START_CAP_PATHS,
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
@@ -62,8 +70,8 @@ export const getReferenceLineMarks = (
     const positionEncoding = getPositionEncoding(axisOptions, referenceLine, scaleName);
     marks.push(
       getReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding),
-      getReferenceLineStartCapMark(axisOptions, referenceLine, positionEncoding),
-      getReferenceLineEndCapMark(axisOptions, referenceLine, positionEncoding),
+      ...getReferenceLineStartCapMark(axisOptions, referenceLine, positionEncoding),
+      ...getReferenceLineEndCapMark(axisOptions, referenceLine, positionEncoding),
       ...getReferenceLineTextMark(referenceLine, positionEncoding)
     );
   }
@@ -88,14 +96,31 @@ export const getPositionEncoding = (
   return { scale: scaleName, value };
 };
 
+const getRuleXStartSignal = (): string =>
+  `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_AUTO_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_AUTO_RULE_X_START.M} : ${REFERENCE_LINE_AUTO_RULE_X_START.L}`;
+
+const getRuleX2Signal = (): string =>
+  `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.M} : width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.L}`;
+
+const getCapTierOpacitySignal = (tier: 'S' | 'M' | 'L'): string => {
+  if (tier === 'S') return `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1 : 0`;
+  if (tier === 'L') return `rscContainerWidth(width) >= ${CHART_SIZE_BREAKPOINTS.L} ? 1 : 0`;
+  return `rscContainerWidth(width) >= ${CHART_SIZE_BREAKPOINTS.M} && rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? 1 : 0`;
+};
+
 /**
- * Horizontal rule line — spans from x: 5 to x2: width - 5 (aligned with caps).
+ * Horizontal rule line — spans from caret tip to the right cap, with x-start adapting to caret size.
+ * In auto mode (no explicit size) both stroke width and x-start react to chart width via signals.
  */
 export const getReferenceLineRuleMark = (
   { colorScheme }: AxisSpecOptions,
-  { name }: ReferenceLineSpecOptions,
+  { name, size }: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): RuleMark => {
+  const strokeWidth =
+    size === undefined ? { signal: CHART_SIZE_STROKE_WIDTH } : { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] };
+  const xStart =
+    size === undefined ? { signal: getRuleXStartSignal() } : { value: REFERENCE_LINE_RULE_X_START[size] };
   return {
     name,
     type: 'rule',
@@ -103,13 +128,13 @@ export const getReferenceLineRuleMark = (
     encode: {
       enter: {
         stroke: { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
-        strokeWidth: { value: 2 },
+        strokeWidth,
         strokeCap: { value: 'round' },
         strokeJoin: { value: 'round' },
       },
       update: {
-        x: { value: 10 },
-        x2: { signal: 'width - 7' },
+        x: xStart,
+        x2: size === undefined ? { signal: getRuleX2Signal() } : { signal: `width - ${REFERENCE_LINE_RULE_X2_OFFSET[size]}` },
         y: positionEncoding as NumericValueRef,
       },
     },
@@ -117,50 +142,84 @@ export const getReferenceLineRuleMark = (
 };
 
 /**
- * Left-pointing arrow cap at the left edge of the chart area.
+ * Left-pointing arrow caps at the left edge of the chart area.
+ * Explicit size: one mark with the size-specific path.
+ * Auto mode: three marks (S/M/L) with reactive opacity, so the caret tier matches the chart width.
  */
 export const getReferenceLineStartCapMark = (
   _axisOptions: AxisSpecOptions,
-  { colorScheme, name }: ReferenceLineSpecOptions,
+  { colorScheme, name, size }: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
-): PathMark => ({
+): PathMark[] => {
+  const fill = { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
+  const sharedUpdate = { x: { value: 5 }, y: positionEncoding as NumericValueRef };
+
+  if (size === undefined) {
+    return (['S', 'M', 'L'] as const).map((tier) => ({
+      name: `${name}_startCap_${tier}`,
+      type: 'path' as const,
+      interactive: false,
+      encode: {
+        enter: { path: { value: REFERENCE_LINE_START_CAP_PATHS[tier] }, fill },
+        update: {
+          ...sharedUpdate,
+          opacity: { signal: getCapTierOpacitySignal(tier) },
+        },
+      },
+    }));
+  }
+
+  return [{
     name: `${name}_startCap`,
     type: 'path',
     interactive: false,
     encode: {
-      enter: {
-        path: { value: REFERENCE_LINE_START_CAP_PATH },
-        fill: { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
-      },
-      update: {
-        x: { value: 5 },
-        y: positionEncoding as NumericValueRef,
-      },
+      enter: { path: { value: REFERENCE_LINE_START_CAP_PATHS[size] }, fill },
+      update: sharedUpdate,
     },
-  });
+  }];
+};
 
 /**
- * Right-pointing arrow cap at the right edge of the chart area.
+ * Right-pointing arrow caps at the right edge of the chart area.
+ * Explicit size: one mark. Auto mode: three marks (S/M/L) with reactive opacity.
  */
 export const getReferenceLineEndCapMark = (
   _axisOptions: AxisSpecOptions,
-  { colorScheme, name }: ReferenceLineSpecOptions,
+  { colorScheme, name, size }: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
-): PathMark => ({
+): PathMark[] => {
+  const fill = { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
+
+  if (size === undefined) {
+    return (['S', 'M', 'L'] as const).map((tier) => ({
+      name: `${name}_endCap_${tier}`,
+      type: 'path' as const,
+      interactive: false,
+      encode: {
+        enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[tier] }, fill },
+        update: {
+          x: { signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET[tier]}` },
+          y: positionEncoding as NumericValueRef,
+          opacity: { signal: getCapTierOpacitySignal(tier) },
+        },
+      },
+    }));
+  }
+
+  return [{
     name: `${name}_endCap`,
     type: 'path',
     interactive: false,
     encode: {
-      enter: {
-        path: { value: REFERENCE_LINE_END_CAP_PATH },
-        fill: { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
-      },
+      enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[size] }, fill },
       update: {
-        x: { signal: 'width - 5' },
+        x: { signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET[size]}` },
         y: positionEncoding as NumericValueRef,
       },
     },
-  });
+  }];
+};
 
 /**
  * Two text marks: background halo then foreground.

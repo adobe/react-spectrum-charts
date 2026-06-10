@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ReferenceLineSize } from '@spectrum-charts/constants';
+
 import { ColorScheme } from '../chartSpec.types';
 
 export type Icon = 'date' | 'sentimentNegative' | 'sentimentNeutral' | 'sentimentPositive';
@@ -20,6 +22,8 @@ export interface ReferenceLineOptions {
   position?: 'before' | 'after' | 'center';
   /** Axis text label. */
   label?: string;
+  /** Size variant controlling stroke weight and caret triangle dimensions. When omitted, stroke width reacts to chart size automatically. */
+  size?: ReferenceLineSize;
 }
 
 export interface ReferenceLineSpecOptions extends ReferenceLineOptions {

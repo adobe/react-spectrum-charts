@@ -10,18 +10,26 @@
  * governing permissions and limitations under the License.
  */
 import {
-  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
+  CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_STROKE_WIDTH,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_FONT_COLOR,
   DEFAULT_GRANULARITY,
   DEFAULT_LABEL_ALIGN,
   DEFAULT_LABEL_FONT_WEIGHT,
   DEFAULT_LABEL_ORIENTATION,
-  REFERENCE_LINE_END_CAP_PATH,
+  REFERENCE_LINE_END_CAP_PATHS,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH,
   REFERENCE_LINE_LABEL_FONT_WEIGHT,
   REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
-  REFERENCE_LINE_START_CAP_PATH,
+  REFERENCE_LINE_AUTO_RULE_X2_OFFSET,
+  REFERENCE_LINE_AUTO_RULE_X_START,
+  REFERENCE_LINE_END_CAP_ANCHOR_OFFSET,
+  REFERENCE_LINE_RULE_X2_OFFSET,
+  REFERENCE_LINE_RULE_X_START,
+  REFERENCE_LINE_SIZE_STROKE_WIDTHS,
+  REFERENCE_LINE_START_CAP_PATHS,
 } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
@@ -151,7 +159,7 @@ describe('getReferenceLineMarks() — S2 vertical-only', () => {
     expect(right.some((m) => m.type === 'rule')).toBe(true);
   });
 
-  test('includes start cap, end cap, rule, and text marks when label is present', () => {
+  test('auto mode: includes S/M/L tier caps, rule, and text marks when label is present', () => {
     const marks = getReferenceLineMarks(
       {
         ...defaultAxisOptions,
@@ -160,10 +168,27 @@ describe('getReferenceLineMarks() — S2 vertical-only', () => {
       'yLinear'
     );
     expect(marks.some((m) => m.name === 'axis0ReferenceLine0')).toBe(true);
-    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_startCap')).toBe(true);
-    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_endCap')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_startCap_S')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_startCap_M')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_startCap_L')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_endCap_S')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_endCap_M')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_endCap_L')).toBe(true);
     expect(marks.some((m) => m.name === 'axis0ReferenceLine0_labelBackground')).toBe(true);
     expect(marks.some((m) => m.name === 'axis0ReferenceLine0_label')).toBe(true);
+  });
+
+  test('explicit size: includes single start/end cap', () => {
+    const marks = getReferenceLineMarks(
+      {
+        ...defaultAxisOptions,
+        referenceLines: [{ ...defaultReferenceLineOptions, size: 'M' }],
+      },
+      'yLinear'
+    );
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_startCap')).toBe(true);
+    expect(marks.some((m) => m.name === 'axis0ReferenceLine0_endCap')).toBe(true);
+    expect(marks.some((m) => m.name?.includes('_startCap_'))).toBe(false);
   });
 
   test('does not include symbol/icon marks', () => {
@@ -178,15 +203,21 @@ describe('getReferenceLineRuleMark()', () => {
     expect(rule.type).toBe('rule');
     expect(rule.name).toBe('axis0ReferenceLine0');
     expect(rule.encode?.enter?.stroke).toStrictEqual({ value: spectrum2Colors.light[DEFAULT_FONT_COLOR] });
-    expect(rule.encode?.enter?.strokeWidth).toStrictEqual({ value: 2 });
     expect(rule.encode?.enter?.strokeCap).toStrictEqual({ value: 'round' });
     expect(rule.encode?.enter?.strokeJoin).toStrictEqual({ value: 'round' });
   });
 
-  test('rule spans from x: 10 to x2: width - 7', () => {
+  test('auto mode (no size): strokeWidth uses CHART_SIZE_STROKE_WIDTH signal', () => {
     const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
-    expect(rule.encode?.update?.x).toStrictEqual({ value: 10 });
-    expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width - 7' });
+    expect(rule.encode?.enter?.strokeWidth).toStrictEqual({ signal: CHART_SIZE_STROKE_WIDTH });
+  });
+
+  test('auto mode (no size): x and x2 use reactive signals across S/M/L breakpoints', () => {
+    const rule = getReferenceLineRuleMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    const expectedX = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${REFERENCE_LINE_AUTO_RULE_X_START.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${REFERENCE_LINE_AUTO_RULE_X_START.M} : ${REFERENCE_LINE_AUTO_RULE_X_START.L}`;
+    const expectedX2 = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.M} : width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.L}`;
+    expect(rule.encode?.update?.x).toStrictEqual({ signal: expectedX });
+    expect(rule.encode?.update?.x2).toStrictEqual({ signal: expectedX2 });
   });
 
   test('y is set to positionEncoding', () => {
@@ -194,56 +225,97 @@ describe('getReferenceLineRuleMark()', () => {
     expect(rule.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
   });
 
-  test('rule coordinates are position-independent (same for left/right, with/without ticks)', () => {
+  test('rule x2 signal is position-independent', () => {
     const rule = getReferenceLineRuleMark(
       { ...defaultAxisOptions, ticks: true },
       defaultReferenceLineOptions,
       defaultYPositionEncoding
     );
-    expect(rule.encode?.update?.x).toStrictEqual({ value: 10 });
-    expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width - 7' });
+    const expectedX2 = `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.M} : width - ${REFERENCE_LINE_AUTO_RULE_X2_OFFSET.L}`;
+    expect(rule.encode?.update?.x2).toStrictEqual({ signal: expectedX2 });
   });
 });
 
 describe('getReferenceLineStartCapMark()', () => {
-  test('start cap at x: 5', () => {
-    const cap = getReferenceLineStartCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
-    expect(cap.type).toBe('path');
-    expect(cap.name).toBe('axis0ReferenceLine0_startCap');
-    expect(cap.encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_START_CAP_PATH });
-    expect(cap.encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[DEFAULT_FONT_COLOR] });
-    expect(cap.encode?.update?.x).toStrictEqual({ value: 5 });
-    expect(cap.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
+  test('auto mode: returns 3 marks for S/M/L tiers', () => {
+    const caps = getReferenceLineStartCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(caps).toHaveLength(3);
+    expect(caps.map((c) => c.name)).toStrictEqual([
+      'axis0ReferenceLine0_startCap_S',
+      'axis0ReferenceLine0_startCap_M',
+      'axis0ReferenceLine0_startCap_L',
+    ]);
   });
 
-  test('right axis: start cap at x: 5', () => {
-    const cap = getReferenceLineStartCapMark(
-      { ...defaultAxisOptions, position: 'right' },
-      defaultReferenceLineOptions,
+  test('auto mode: each tier uses the correct path and opacity signal', () => {
+    const caps = getReferenceLineStartCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(caps[0].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_START_CAP_PATHS['S'] });
+    expect(caps[1].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_START_CAP_PATHS['M'] });
+    expect(caps[2].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_START_CAP_PATHS['L'] });
+    expect(caps[0].encode?.update?.opacity).toStrictEqual({ signal: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? 1 : 0` });
+    expect(caps[2].encode?.update?.opacity).toStrictEqual({ signal: `rscContainerWidth(width) >= ${CHART_SIZE_BREAKPOINTS.L} ? 1 : 0` });
+  });
+
+  test('auto mode: all tiers share x: 5 and y: positionEncoding', () => {
+    const caps = getReferenceLineStartCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    for (const cap of caps) {
+      expect(cap.encode?.update?.x).toStrictEqual({ value: 5 });
+      expect(cap.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
+      expect(cap.encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[DEFAULT_FONT_COLOR] });
+    }
+  });
+
+  test('explicit size: returns single mark named _startCap', () => {
+    const caps = getReferenceLineStartCapMark(
+      defaultAxisOptions,
+      { ...defaultReferenceLineOptions, size: 'M' },
       defaultYPositionEncoding
     );
-    expect(cap.encode?.update?.x).toStrictEqual({ value: 5 });
+    expect(caps).toHaveLength(1);
+    expect(caps[0].name).toBe('axis0ReferenceLine0_startCap');
+    expect(caps[0].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_START_CAP_PATHS['M'] });
+    expect(caps[0].encode?.update?.opacity).toBeUndefined();
   });
 });
 
 describe('getReferenceLineEndCapMark()', () => {
-  test('left axis: end cap at x: width - 5 (aligned with rule end)', () => {
-    const cap = getReferenceLineEndCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
-    expect(cap.type).toBe('path');
-    expect(cap.name).toBe('axis0ReferenceLine0_endCap');
-    expect(cap.encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATH });
-    expect(cap.encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[DEFAULT_FONT_COLOR] });
-    expect(cap.encode?.update?.x).toStrictEqual({ signal: 'width - 5' });
-    expect(cap.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
+  test('auto mode: returns 3 marks for S/M/L tiers', () => {
+    const caps = getReferenceLineEndCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(caps).toHaveLength(3);
+    expect(caps.map((c) => c.name)).toStrictEqual([
+      'axis0ReferenceLine0_endCap_S',
+      'axis0ReferenceLine0_endCap_M',
+      'axis0ReferenceLine0_endCap_L',
+    ]);
   });
 
-  test('end cap at x: width - 5 (position-independent)', () => {
-    const cap = getReferenceLineEndCapMark(
-      { ...defaultAxisOptions, position: 'right', ticks: true },
-      defaultReferenceLineOptions,
+  test('auto mode: each tier uses the correct path and opacity signal', () => {
+    const caps = getReferenceLineEndCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(caps[0].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATHS['S'] });
+    expect(caps[1].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATHS['M'] });
+    expect(caps[2].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATHS['L'] });
+  });
+
+  test('auto mode: each tier uses its own REFERENCE_LINE_END_CAP_ANCHOR_OFFSET anchor', () => {
+    const caps = getReferenceLineEndCapMark(defaultAxisOptions, defaultReferenceLineOptions, defaultYPositionEncoding);
+    expect(caps[0].encode?.update?.x).toStrictEqual({ signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET['S']}` });
+    expect(caps[1].encode?.update?.x).toStrictEqual({ signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET['M']}` });
+    expect(caps[2].encode?.update?.x).toStrictEqual({ signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET['L']}` });
+    for (const cap of caps) {
+      expect(cap.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
+    }
+  });
+
+  test('explicit size: returns single mark named _endCap', () => {
+    const caps = getReferenceLineEndCapMark(
+      defaultAxisOptions,
+      { ...defaultReferenceLineOptions, size: 'M' },
       defaultYPositionEncoding
     );
-    expect(cap.encode?.update?.x).toStrictEqual({ signal: 'width - 5' });
+    expect(caps).toHaveLength(1);
+    expect(caps[0].name).toBe('axis0ReferenceLine0_endCap');
+    expect(caps[0].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATHS['M'] });
+    expect(caps[0].encode?.update?.opacity).toBeUndefined();
   });
 });
 
@@ -323,4 +395,66 @@ describe('getReferenceLineTextMark() — S2 direct label pattern', () => {
       expect(mark.encode?.enter?.align).toStrictEqual({ value: 'right' });
     }
   });
+});
+
+describe('size prop — explicit size variants', () => {
+  test.each(['XS', 'S', 'M', 'L'] as const)(
+    'size %s: rule strokeWidth uses lookup table value',
+    (size) => {
+      const rule = getReferenceLineRuleMark(
+        defaultAxisOptions,
+        { ...defaultReferenceLineOptions, size },
+        defaultYPositionEncoding
+      );
+      expect(rule.encode?.enter?.strokeWidth).toStrictEqual({ value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] });
+    }
+  );
+
+  test.each(['XS', 'S', 'M', 'L'] as const)(
+    'size %s: rule x-start uses REFERENCE_LINE_RULE_X_START[size]',
+    (size) => {
+      const rule = getReferenceLineRuleMark(
+        defaultAxisOptions,
+        { ...defaultReferenceLineOptions, size },
+        defaultYPositionEncoding
+      );
+      expect(rule.encode?.update?.x).toStrictEqual({ value: REFERENCE_LINE_RULE_X_START[size] });
+    }
+  );
+
+  test.each(['XS', 'S', 'M', 'L'] as const)(
+    'size %s: rule x2 uses REFERENCE_LINE_RULE_X2_OFFSET[size]',
+    (size) => {
+      const rule = getReferenceLineRuleMark(
+        defaultAxisOptions,
+        { ...defaultReferenceLineOptions, size },
+        defaultYPositionEncoding
+      );
+      expect(rule.encode?.update?.x2).toStrictEqual({ signal: `width - ${REFERENCE_LINE_RULE_X2_OFFSET[size]}` });
+    }
+  );
+
+  test.each(['XS', 'S', 'M', 'L'] as const)(
+    'size %s: start cap uses REFERENCE_LINE_START_CAP_PATHS[size]',
+    (size) => {
+      const caps = getReferenceLineStartCapMark(
+        defaultAxisOptions,
+        { ...defaultReferenceLineOptions, size },
+        defaultYPositionEncoding
+      );
+      expect(caps[0].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_START_CAP_PATHS[size] });
+    }
+  );
+
+  test.each(['XS', 'S', 'M', 'L'] as const)(
+    'size %s: end cap uses REFERENCE_LINE_END_CAP_PATHS[size]',
+    (size) => {
+      const caps = getReferenceLineEndCapMark(
+        defaultAxisOptions,
+        { ...defaultReferenceLineOptions, size },
+        defaultYPositionEncoding
+      );
+      expect(caps[0].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATHS[size] });
+    }
+  );
 });

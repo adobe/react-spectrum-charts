@@ -513,13 +513,13 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
 The `ReferenceLine` component is a child of `Axis` that draws a vertical or horizontal reference line at a specified value. It is available in the S2 package and styled to the Spectrum 2 visual spec.
 
 ```jsx
-import { Chart, Axis, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Chart, Axis, Line, ReferenceLine } from '@spectrum-charts/react-spectrum-charts-s2';
 
 <Chart data={data}>
-  <Axis position="bottom" labelFormat="time" ticks baseline>
-    <ReferenceLine value={1706745600000} label="Launch" />
+  <Axis position="left" grid>
+    <ReferenceLine value={5000} label="Target" />
   </Axis>
-  <Axis position="left" grid />
+  <Axis position="bottom" labelFormat="time" ticks baseline />
   <Line color="series" />
 </Chart>
 ```
@@ -527,7 +527,7 @@ import { Chart, Axis, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 ![Line reference line light](/img/s2_line_referenceLine_light.png#gh-light-mode-only)
 ![Line reference line dark](/img/s2_line_referenceLine_dark.png#gh-dark-mode-only)
 
-The reference line is drawn on the axis it is nested inside. Use a bottom/top axis child for vertical reference lines (marking a point in time or a categorical value), and a left/right axis child for horizontal reference lines (marking a threshold value).
+In S2, reference lines are **horizontal only** — place `<ReferenceLine>` inside a left or right `<Axis>` and give it a numeric metric value (e.g. a threshold count). Bottom/top axes are not supported in S2.
 
 ### Reference line with label
 
@@ -576,6 +576,12 @@ On bar charts with categorical axes, the `position` prop controls whether the re
             <td>'before' | 'after' | 'center'</td>
             <td>'center'</td>
             <td>Controls where the line is drawn relative to the value. Only relevant for bar charts with categorical axes.</td>
+        </tr>
+        <tr>
+            <td>size</td>
+            <td>'XS' | 'S' | 'M' | 'L'</td>
+            <td>auto</td>
+            <td>Controls the stroke weight and caret triangle dimensions. When omitted, both react to the chart width automatically (S below 400px, M below 800px, L at 800px+). Use `'XS'` for Sparkline contexts.</td>
         </tr>
     </tbody>
 </table>

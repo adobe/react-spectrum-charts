@@ -9,9 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
+
+import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../../Chart';
 import { Axis, Legend, Line, ReferenceLine } from '../../../../components';
@@ -27,17 +29,17 @@ export default {
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-// Midpoint in the workspaceTrendsData datetime range (Nov 2022)
-const referenceValue = 1668150000000;
+// A Y value (users count) that falls within the workspaceTrendsData range
+const referenceValue = 5000;
 
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
-    <Chart {...chartProps}>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks>
+    <Chart {...chartProps} debug>
+      <Axis position="left" grid title="Users">
         <ReferenceLine {...args} />
       </Axis>
+      <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time" />
       <Legend highlight />
     </Chart>
@@ -55,4 +57,131 @@ Label.args = {
   value: referenceValue,
 };
 
-export { Basic, Label };
+const WithSize = bindWithProps(ReferenceLineStory);
+WithSize.args = {
+  label: 'Target',
+  value: referenceValue,
+  size: 'L',
+};
+
+const CHART_HEIGHT = 400;
+const MAX_WIDTH = CHART_SIZE_BREAKPOINTS.L + 200;
+const THUMB_HEIGHT = 32;
+
+const THRESHOLDS = [
+  { px: CHART_SIZE_BREAKPOINTS.M, label: 'M' },
+  { px: CHART_SIZE_BREAKPOINTS.L, label: 'L' },
+];
+
+const HANDLE_STYLES = `
+  .rsc-ref-size-handle {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
+    outline: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: ${CHART_HEIGHT}px;
+    pointer-events: none;
+    z-index: 20;
+  }
+  .rsc-ref-size-handle::-webkit-slider-runnable-track {
+    background: transparent;
+    height: ${CHART_HEIGHT}px;
+  }
+  .rsc-ref-size-handle::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 8px;
+    height: ${THUMB_HEIGHT}px;
+    border-radius: 4px;
+    background: #999;
+    cursor: ew-resize;
+    pointer-events: all;
+    margin-top: ${(CHART_HEIGHT - THUMB_HEIGHT) / 2}px;
+  }
+  .rsc-ref-size-handle::-moz-range-track { background: transparent; }
+  .rsc-ref-size-handle::-moz-range-thumb {
+    width: 8px;
+    height: ${THUMB_HEIGHT}px;
+    border-radius: 4px;
+    background: #999;
+    border: none;
+    cursor: ew-resize;
+  }
+`;
+
+const AutoDetectSizeStory = (): ReactElement => {
+  const [width, setWidth] = useState(600);
+
+  let currentSize = 'L';
+  if (width < CHART_SIZE_BREAKPOINTS.M) currentSize = 'S';
+  else if (width < CHART_SIZE_BREAKPOINTS.L) currentSize = 'M';
+
+  return (
+    <div style={{ padding: '16px 0' }}>
+      <style>{HANDLE_STYLES}</style>
+      <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>
+        Width: <strong>{Math.round(width)}px</strong> — Reference line size tier: <strong>{currentSize}</strong>
+      </div>
+      <div style={{ position: 'relative', minWidth: MAX_WIDTH }}>
+        {THRESHOLDS.map(({ px, label }) => (
+          <div
+            key={label}
+            style={{
+              position: 'absolute',
+              left: px,
+              top: 0,
+              bottom: 0,
+              width: 1,
+              background: 'rgba(220, 60, 60, 0.6)',
+              zIndex: 10,
+              pointerEvents: 'none',
+            }}
+          >
+            <span
+              style={{
+                position: 'absolute',
+                top: 2,
+                left: 3,
+                fontSize: 10,
+                color: 'rgba(220, 60, 60, 0.9)',
+                whiteSpace: 'nowrap',
+                lineHeight: 1,
+              }}
+            >
+              {label} ({px}px)
+            </span>
+          </div>
+        ))}
+
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <Chart data={workspaceTrendsData} width={width} height={CHART_HEIGHT}>
+            <Axis position="left" grid title="Users">
+              <ReferenceLine value={referenceValue} label="Target" />
+            </Axis>
+            <Axis position="bottom" labelFormat="time" baseline ticks />
+            <Line dimension="datetime" metric="users" color="series" scaleType="time" />
+            <Legend highlight />
+          </Chart>
+
+          <input
+            type="range"
+            className="rsc-ref-size-handle"
+            aria-label="Chart width"
+            min={0}
+            max={MAX_WIDTH}
+            value={Math.round(width)}
+            onChange={(e) => setWidth(Math.max(100, Number(e.target.value)))}
+            style={{ width: MAX_WIDTH }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const AutoDetectSize = AutoDetectSizeStory;
+
+export { Basic, Label, WithSize };
