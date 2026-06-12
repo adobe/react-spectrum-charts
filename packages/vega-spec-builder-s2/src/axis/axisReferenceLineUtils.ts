@@ -130,12 +130,12 @@ export const getReferenceLineRuleMark = (
     : { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
   const strokeWidth =
     size === undefined ? { signal: CHART_SIZE_STROKE_WIDTH } : { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] };
-  const xStart = secondary
-    ? { value: 0 }
-    : size === undefined ? { signal: getRuleXStartSignal() } : { value: REFERENCE_LINE_RULE_X_START[size] };
-  const x2 = secondary
-    ? { signal: 'width' }
-    : size === undefined ? { signal: getRuleX2Signal() } : { signal: `width - ${REFERENCE_LINE_RULE_X2_OFFSET[size]}` };
+  const primaryXStart =
+    size === undefined ? { signal: getRuleXStartSignal() } : { value: REFERENCE_LINE_RULE_X_START[size] };
+  const xStart = secondary ? { value: 0 } : primaryXStart;
+  const primaryX2 =
+    size === undefined ? { signal: getRuleX2Signal() } : { signal: `width - ${REFERENCE_LINE_RULE_X2_OFFSET[size]}` };
+  const x2 = secondary ? { signal: 'width' } : primaryX2;
   return {
     name,
     type: 'rule',
