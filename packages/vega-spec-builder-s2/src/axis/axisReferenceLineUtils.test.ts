@@ -28,6 +28,8 @@ import {
   REFERENCE_LINE_END_CAP_ANCHOR_OFFSET,
   REFERENCE_LINE_RULE_X2_OFFSET,
   REFERENCE_LINE_RULE_X_START,
+  REFERENCE_LINE_SECONDARY_COLORS,
+  REFERENCE_LINE_SECONDARY_LABEL_COLOR,
   REFERENCE_LINE_SIZE_STROKE_WIDTHS,
   REFERENCE_LINE_START_CAP_PATHS,
 } from '@spectrum-charts/constants';
@@ -457,4 +459,100 @@ describe('size prop — explicit size variants', () => {
       expect(caps[0].encode?.enter?.path).toStrictEqual({ value: REFERENCE_LINE_END_CAP_PATHS[size] });
     }
   );
+});
+
+describe('secondary prop', () => {
+  const secondaryOptions: ReferenceLineSpecOptions = { ...defaultReferenceLineOptions, secondary: true };
+
+  describe('getReferenceLineRuleMark() with secondary: true', () => {
+    test('auto mode: stroke uses REFERENCE_LINE_SECONDARY_COLORS[M] (gray-800 — same as primary in M tier)', () => {
+      const rule = getReferenceLineRuleMark(defaultAxisOptions, secondaryOptions, defaultYPositionEncoding);
+      expect(rule.encode?.enter?.stroke).toStrictEqual({ value: spectrum2Colors.light[REFERENCE_LINE_SECONDARY_COLORS['M']] });
+    });
+
+    test('size XS: stroke uses REFERENCE_LINE_SECONDARY_COLORS[XS] (gray-600)', () => {
+      const rule = getReferenceLineRuleMark(
+        defaultAxisOptions,
+        { ...secondaryOptions, size: 'XS' },
+        defaultYPositionEncoding
+      );
+      expect(rule.encode?.enter?.stroke).toStrictEqual({ value: spectrum2Colors.light[REFERENCE_LINE_SECONDARY_COLORS['XS']] });
+    });
+
+    test('x is fixed at 0 (no cap offset)', () => {
+      const rule = getReferenceLineRuleMark(defaultAxisOptions, secondaryOptions, defaultYPositionEncoding);
+      expect(rule.encode?.update?.x).toStrictEqual({ value: 0 });
+    });
+
+    test('x2 spans full width', () => {
+      const rule = getReferenceLineRuleMark(defaultAxisOptions, secondaryOptions, defaultYPositionEncoding);
+      expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width' });
+    });
+
+    test('explicit size: x and x2 still use secondary values (0 and width)', () => {
+      const rule = getReferenceLineRuleMark(
+        defaultAxisOptions,
+        { ...secondaryOptions, size: 'L' },
+        defaultYPositionEncoding
+      );
+      expect(rule.encode?.update?.x).toStrictEqual({ value: 0 });
+      expect(rule.encode?.update?.x2).toStrictEqual({ signal: 'width' });
+    });
+  });
+
+  describe('getReferenceLineStartCapMark() with secondary: true', () => {
+    test('returns empty array — no caret caps on secondary lines', () => {
+      expect(getReferenceLineStartCapMark(defaultAxisOptions, secondaryOptions, defaultYPositionEncoding)).toStrictEqual([]);
+    });
+
+    test('returns empty array even with explicit size', () => {
+      expect(
+        getReferenceLineStartCapMark(defaultAxisOptions, { ...secondaryOptions, size: 'L' }, defaultYPositionEncoding)
+      ).toStrictEqual([]);
+    });
+  });
+
+  describe('getReferenceLineEndCapMark() with secondary: true', () => {
+    test('returns empty array — no caret caps on secondary lines', () => {
+      expect(getReferenceLineEndCapMark(defaultAxisOptions, secondaryOptions, defaultYPositionEncoding)).toStrictEqual([]);
+    });
+
+    test('returns empty array even with explicit size', () => {
+      expect(
+        getReferenceLineEndCapMark(defaultAxisOptions, { ...secondaryOptions, size: 'M' }, defaultYPositionEncoding)
+      ).toStrictEqual([]);
+    });
+  });
+
+  describe('getReferenceLineTextMark() with secondary: true', () => {
+    test('label foreground fill uses REFERENCE_LINE_SECONDARY_LABEL_COLOR (gray-600)', () => {
+      const marks = getReferenceLineTextMark(
+        { ...secondaryOptions, label: 'Average' },
+        defaultYPositionEncoding
+      );
+      expect(marks[1].encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[REFERENCE_LINE_SECONDARY_LABEL_COLOR] });
+    });
+
+    test('background mark is unaffected — still transparent fill', () => {
+      const marks = getReferenceLineTextMark(
+        { ...secondaryOptions, label: 'Average' },
+        defaultYPositionEncoding
+      );
+      expect(marks[0].encode?.enter?.fill).toStrictEqual({ value: 'transparent' });
+    });
+  });
+
+  test('getReferenceLineMarks() with secondary: true returns rule and text marks but no cap marks', () => {
+    const marks = getReferenceLineMarks(
+      {
+        ...defaultAxisOptions,
+        referenceLines: [{ ...defaultReferenceLineOptions, secondary: true, label: 'Average' }],
+      },
+      'yLinear'
+    );
+    expect(marks.some((m) => m.type === 'rule')).toBe(true);
+    expect(marks.some((m) => m.name?.includes('_label'))).toBe(true);
+    expect(marks.some((m) => m.name?.includes('_startCap'))).toBe(false);
+    expect(marks.some((m) => m.name?.includes('_endCap'))).toBe(false);
+  });
 });

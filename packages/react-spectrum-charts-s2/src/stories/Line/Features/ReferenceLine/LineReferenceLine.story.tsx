@@ -35,7 +35,7 @@ const referenceValue = 5000;
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users">
         <ReferenceLine {...args} />
       </Axis>
@@ -63,6 +63,35 @@ WithSize.args = {
   value: referenceValue,
   size: 'L',
 };
+
+const SecondaryBasic = bindWithProps(ReferenceLineStory);
+SecondaryBasic.args = {
+  value: referenceValue,
+  secondary: true,
+};
+
+const WithSecondary = bindWithProps(ReferenceLineStory);
+WithSecondary.args = {
+  label: 'Average',
+  value: referenceValue,
+  secondary: true,
+};
+
+const PrimaryAndSecondaryStory: StoryFn<typeof ReferenceLine> = (): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users">
+        <ReferenceLine value={referenceValue} label="Target" />
+        <ReferenceLine value={Math.round(referenceValue * 0.7)} label="Average" secondary />
+      </Axis>
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time" />
+      <Legend highlight />
+    </Chart>
+  );
+};
+const PrimaryAndSecondary = PrimaryAndSecondaryStory;
 
 const CHART_HEIGHT = 400;
 const MAX_WIDTH = CHART_SIZE_BREAKPOINTS.L + 200;
@@ -184,4 +213,4 @@ const AutoDetectSizeStory = (): ReactElement => {
 
 export const AutoDetectSize = AutoDetectSizeStory;
 
-export { Basic, Label, WithSize };
+export { Basic, Label, PrimaryAndSecondary, SecondaryBasic, WithSecondary, WithSize };

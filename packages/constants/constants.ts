@@ -252,7 +252,7 @@ export const REFERENCE_LINE_AUTO_RULE_X_START = {
   L: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.L + REFERENCE_LINE_CAP_RULE_GAP + 3 / 2,   // 14.33333
 };
 
-// Right face x in path space for each end cap (from Figma-confirmed geometry). S and M share paths.
+// Right face x in path space for each end cap. S and M share paths.
 const REFERENCE_LINE_END_CAP_RIGHT_FACE_X: Record<ReferenceLineSize, number> = {
   XS: 3.34961,
   S: 5.40039,
@@ -305,6 +305,18 @@ export const REFERENCE_LINE_END_CAP_PATHS: Record<ReferenceLineSize, string> = {
   M: REFERENCE_LINE_END_CAP_PATH,
   L: 'M0.400196 -0.69283C-0.133137 -0.38491 -0.133138 0.38490 0.400195 0.69282L5.50019 3.63730C6.03353 3.94522 6.7002 3.56032 6.7002 2.94448L6.7002 -2.94449C6.7002 -3.56033 6.03353 -3.94523 5.5002 -3.63731L0.400196 -0.69283Z',
 };
+
+// Secondary reference line stroke color per size tier 
+// XS uses gray-600 for sparkline contexts; S/M/L match the primary gray-800.
+export const REFERENCE_LINE_SECONDARY_COLORS: Record<ReferenceLineSize, string> = {
+  XS: 'gray-600',
+  S: DEFAULT_FONT_COLOR,
+  M: DEFAULT_FONT_COLOR,
+  L: DEFAULT_FONT_COLOR,
+};
+
+// Secondary reference line label color — gray-600 for all sizes
+export const REFERENCE_LINE_SECONDARY_LABEL_COLOR = 'gray-600';
 
 // time constants
 export const MS_PER_DAY = 86400000;
