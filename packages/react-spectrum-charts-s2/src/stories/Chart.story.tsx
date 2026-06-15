@@ -37,6 +37,18 @@ const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
   );
 };
 
+const LongTitleStory: StoryFn<typeof Chart> = (args): ReactElement => {
+  const props = useChartProps(args);
+  return (
+    <Chart {...props}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid />
+      <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+      <Legend />
+    </Chart>
+  );
+};
+
 const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
   const props = useChartProps(args);
   return (
@@ -124,4 +136,10 @@ HighlightedItem.args = {
   data,
 };
 
-export { Basic, BackgroundColor, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };
+const LongTitle = bindWithProps(LongTitleStory);
+LongTitle.args = {
+  title: 'Daily Workspace Component Events by Panel Type for Add Fallout and Add Freeform Table Interactions',
+  data: workspaceTrendsData,
+};
+
+export { Basic, BackgroundColor, Config, Height, HighlightedItem, Locale, LongTitle, TooltipAnchor, Width };

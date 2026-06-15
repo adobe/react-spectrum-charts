@@ -37,6 +37,7 @@ import {
   getPathFromSymbolShape,
   getStrokeDashFromLineType,
   getVegaSymbolSizeFromRscSymbolSize,
+  wrapTitleText,
 } from './specUtils';
 
 const defaultColorScale: OrdinalScale = {
@@ -201,6 +202,40 @@ describe('getChartConfig()', () => {
     const mergedConfig = getChartConfig({ axis: { labelFontSize: 12 } }, 'light');
     expect(mergedConfig.axis).toHaveProperty('domainWidth', 1);
     expect(mergedConfig.axis).toHaveProperty('domainColor', s2colors['gray-800']);
+  });
+});
+
+describe('wrapTitleText()', () => {
+  test('returns text as single element when maxWidth is 0', () => {
+    expect(wrapTitleText('Page Views by Region', 0)).toStrictEqual(['Page Views by Region']);
+  });
+
+  test('returns text as single element when it fits on one line', () => {
+    // 440px → maxCharsPerLine=40; "Page Views by Region" = 20 chars
+    expect(wrapTitleText('Page Views by Region', 440)).toStrictEqual(['Page Views by Region']);
+  });
+
+  test('wraps a long title onto two lines at a word boundary', () => {
+    // 440px → maxCharsPerLine=40; "...by Product"(35) fits, adding "Category"(44) wraps
+    expect(wrapTitleText('Quarterly Revenue Growth by Product Category and Geographic Region', 440)).toStrictEqual([
+      'Quarterly Revenue Growth by Product',
+      'Category and Geographic Region',
+    ]);
+  });
+
+  test('wraps a very long title onto four lines', () => {
+    // 264px → maxCharsPerLine=24
+    expect(
+      wrapTitleText(
+        'Total Year over Year Revenue Growth Rate by Region for All Products in Q4 2024 Report',
+        264
+      )
+    ).toStrictEqual([
+      'Total Year over Year',
+      'Revenue Growth Rate by',
+      'Region for All Products',
+      'in Q4 2024 Report',
+    ]);
   });
 });
 

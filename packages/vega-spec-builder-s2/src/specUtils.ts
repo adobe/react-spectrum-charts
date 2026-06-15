@@ -12,39 +12,15 @@
 import { produce } from 'immer';
 import { Config, Data, Scale, ScaleType, Spec, mergeConfig } from 'vega';
 
-import {
-  COLOR_SCALE,
-  DATE_PATH,
-  DEFAULT_TRANSFORMED_TIME_DIMENSION,
-  FILTERED_TABLE,
-  LINE_TYPE_SCALE,
-  MARK_ID,
-  OPACITY_SCALE,
-  ROUNDED_SQUARE_PATH,
-  SENTIMENT_NEGATIVE_PATH,
-  SENTIMENT_NEUTRAL_PATH,
-  SENTIMENT_POSITIVE_PATH,
-  TABLE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
 
-import {
-  ChartSpecOptions,
-  ChartSymbolShape,
-  ColorFacet,
-  ColorScheme,
-  DualFacet,
-  Icon,
-  LineType,
-  LineTypeFacet,
-  LineWidth,
-  NumberFormat,
-  OpacityFacet,
-  ScSpec,
-  SymbolSize,
-  SymbolSizeFacet,
-  UserMeta,
-} from './types';
+
+import { COLOR_SCALE, DATE_PATH, DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, LINE_TYPE_SCALE, MARK_ID, OPACITY_SCALE, ROUNDED_SQUARE_PATH, SENTIMENT_NEGATIVE_PATH, SENTIMENT_NEUTRAL_PATH, SENTIMENT_POSITIVE_PATH, TABLE } from '@spectrum-charts/constants';
+import { S2_TITLE_FONT_SIZE, getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
+
+
+
+import { ChartSpecOptions, ChartSymbolShape, ColorFacet, ColorScheme, DualFacet, Icon, LineType, LineTypeFacet, LineWidth, NumberFormat, OpacityFacet, ScSpec, SymbolSize, SymbolSizeFacet, UserMeta } from './types';
+
 
 /**
  * gets all the keys that are used to facet by
@@ -245,6 +221,31 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
   };
 
   return { ...baseSpec, ...(spec || {}) };
+};
+
+// Average character width ratio for adobe-clean at the title font size
+const AVG_CHAR_WIDTH_RATIO = 0.5;
+
+/**
+ * Splits a title string into lines that fit within maxWidth pixels, breaking at word boundaries.
+ * Uses a font-metric approximation based on the S2 title font size.
+ */
+export const wrapTitleText = (text: string, maxWidth: number): string[] => {
+  const maxCharsPerLine = Math.floor(maxWidth / (S2_TITLE_FONT_SIZE * AVG_CHAR_WIDTH_RATIO));
+  if (maxCharsPerLine <= 0) return [text];
+
+  const lines = text.split(' ').reduce<string[]>((lines, word) => {
+    const last = lines.at(-1);
+    if (last !== undefined) {
+      const candidate = `${last} ${word}`;
+      if (candidate.length <= maxCharsPerLine) {
+        return [...lines.slice(0, -1), candidate];
+      }
+    }
+    return [...lines, word];
+  }, []);
+
+  return lines.length ? lines : [text];
 };
 
 /**

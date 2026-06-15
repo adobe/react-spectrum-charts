@@ -137,8 +137,11 @@ export function buildSpec({
     title,
     titles,
   };
-  let spec = initializeSpec(null, { backgroundColor, colorScheme, description, title });
+  let spec = initializeSpec(null, { backgroundColor, colorScheme, description });
   spec.signals = getDefaultSignals(options);
+  if (title) {
+    addTitleSignals(spec, title);
+  }
   spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
@@ -219,6 +222,16 @@ export function buildSpec({
 
   return safeClone(spec);
 }
+
+const addTitleSignals = (spec: ScSpec, title: string): void => {
+  spec.title = { text: { signal: 'rscWrappedTitleText' } };
+  spec.signals = [
+    ...(spec.signals ?? []),
+    { name: 'rscTitleText', value: title },
+    { name: 'rscTitleLimit', update: 'width' },
+    { name: 'rscWrappedTitleText', update: 'rscWrapTitle(rscTitleText, rscTitleLimit)' },
+  ];
+};
 
 export const removeUnusedScales = produce<ScSpec>((spec) => {
   spec.scales = spec.scales?.filter((scale) => {

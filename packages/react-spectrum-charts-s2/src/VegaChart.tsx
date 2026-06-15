@@ -17,7 +17,7 @@ import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
 import { getLocale } from '@spectrum-charts/locales';
-import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions, wrapTitleText } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
@@ -33,6 +33,10 @@ expressionFunction('rscContainerWidth', function (this: { context: { dataflow: V
   const viewWidth = (view as unknown as { _viewWidth?: number })._viewWidth ?? 0;
   return viewWidth + (p.left ?? 0) + (p.right ?? 0);
 });
+
+expressionFunction('rscWrapTitle', (text: string, maxWidth: number): string[] =>
+  wrapTitleText(text, maxWidth)
+);
 
 /**
  * Resizes an existing Vega view without recreating it.
