@@ -101,7 +101,8 @@ describe('rscWrapTitle expression function', () => {
 	});
 
 	test('wraps text onto multiple lines when it exceeds maxWidth', () => {
-		expect(fn('Quarterly Revenue Growth by Product Category and Geographic Region', 440)).toStrictEqual([
+		// jsdom measureText returns text.length px; maxWidth=40 fits "...by Product" (35) but not "...Category" (44)
+		expect(fn('Quarterly Revenue Growth by Product Category and Geographic Region', 40)).toStrictEqual([
 			'Quarterly Revenue Growth by Product',
 			'Category and Geographic Region',
 		]);

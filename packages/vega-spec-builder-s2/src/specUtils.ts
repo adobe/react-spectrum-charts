@@ -19,7 +19,24 @@ import { S2_TITLE_FONT_SIZE, getS2ColorValue, getSpectrum2VegaConfig } from '@sp
 
 
 
-import { ChartSpecOptions, ChartSymbolShape, ColorFacet, ColorScheme, DualFacet, Icon, LineType, LineTypeFacet, LineWidth, NumberFormat, OpacityFacet, ScSpec, SymbolSize, SymbolSizeFacet, UserMeta } from './types';
+import { expressionFunctions } from './expressionFunctions/expressionFunctions';
+import {
+  ChartSpecOptions,
+  ChartSymbolShape,
+  ColorFacet,
+  ColorScheme,
+  DualFacet,
+  Icon,
+  LineType,
+  LineTypeFacet,
+  LineWidth,
+  NumberFormat,
+  OpacityFacet,
+  ScSpec,
+  SymbolSize,
+  SymbolSizeFacet,
+  UserMeta,
+} from './types';
 
 
 /**
@@ -223,22 +240,19 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
   return { ...baseSpec, ...(spec || {}) };
 };
 
-// Average character width ratio for adobe-clean at the title font size
-const AVG_CHAR_WIDTH_RATIO = 0.5;
-
 /**
  * Splits a title string into lines that fit within maxWidth pixels, breaking at word boundaries.
- * Uses a font-metric approximation based on the S2 title font size.
+ * Uses canvas text measurement with the S2 title font for accurate line widths.
  */
 export const wrapTitleText = (text: string, maxWidth: number): string[] => {
-  const maxCharsPerLine = Math.floor(maxWidth / (S2_TITLE_FONT_SIZE * AVG_CHAR_WIDTH_RATIO));
-  if (maxCharsPerLine <= 0) return [text];
+  if (maxWidth <= 0) return [text];
 
   const lines = text.split(' ').reduce<string[]>((lines, word) => {
     const last = lines.at(-1);
     if (last !== undefined) {
       const candidate = `${last} ${word}`;
-      if (candidate.length <= maxCharsPerLine) {
+      const candidateWidth = expressionFunctions.getLabelWidth(candidate, 'bold', S2_TITLE_FONT_SIZE);
+      if (candidateWidth <= maxWidth) {
         return [...lines.slice(0, -1), candidate];
       }
     }
