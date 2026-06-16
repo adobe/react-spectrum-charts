@@ -548,14 +548,12 @@ Set `secondary` to `true` to render a lighter, lower-emphasis reference line. Se
 </Axis>
 ```
 
-Stroke color by size when `secondary` is set:
+Stroke weight is always 1px for secondary lines. Stroke and label color are size-dependent:
 
-| Size | Stroke color |
-|------|-------------|
+| Size | Stroke / label color |
+|------|---------------------|
 | `'XS'` | `gray-600` |
-| `'S'` / `'M'` / `'L'` / auto | `gray-800` (same as primary) |
-
-The label color is `gray-600` for all sizes when `secondary` is true.
+| `'S'` / `'M'` / `'L'` / auto | `gray-800` |
 
 ### Positioning on bar charts
 
@@ -607,7 +605,7 @@ On bar charts with categorical axes, the `position` prop controls whether the re
             <td>secondary</td>
             <td>boolean</td>
             <td>–</td>
-            <td>When true, renders a lighter secondary style: no caret caps, full-width rule (no cap offsets), and a lighter stroke color (<code>gray-600</code> at XS, <code>gray-800</code> for other sizes). Use for contextual reference values (baselines, prior-period comparisons) that should recede behind a primary target line. The label is rendered in <code>gray-600</code> for all sizes.</td>
+            <td>When true, renders a lighter secondary style: no caret caps, 1px stroke weight, full-width rule, and size-dependent color (<code>gray-600</code> at XS, <code>gray-800</code> for other sizes). Label color matches the stroke color. Use for contextual reference values (baselines, prior-period comparisons) that should recede behind a primary target line.</td>
         </tr>
     </tbody>
 </table>

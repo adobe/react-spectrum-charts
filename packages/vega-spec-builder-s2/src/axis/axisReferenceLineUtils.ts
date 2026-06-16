@@ -26,7 +26,7 @@ import {
   REFERENCE_LINE_RULE_X2_OFFSET,
   REFERENCE_LINE_RULE_X_START,
   REFERENCE_LINE_SECONDARY_COLORS,
-  REFERENCE_LINE_SECONDARY_LABEL_COLOR,
+  REFERENCE_LINE_SECONDARY_STROKE_WIDTH,
   REFERENCE_LINE_SIZE_STROKE_WIDTHS,
   REFERENCE_LINE_START_CAP_PATHS,
   ReferenceLineSize,
@@ -128,8 +128,9 @@ export const getReferenceLineRuleMark = (
   const stroke = secondary
     ? { value: getSecondaryStrokeColor(size, colorScheme) }
     : { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
-  const strokeWidth =
-    size === undefined ? { signal: CHART_SIZE_STROKE_WIDTH } : { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] };
+  const strokeWidth = secondary
+    ? { value: REFERENCE_LINE_SECONDARY_STROKE_WIDTH }
+    : size === undefined ? { signal: CHART_SIZE_STROKE_WIDTH } : { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] };
   const primaryXStart =
     size === undefined ? { signal: getRuleXStartSignal() } : { value: REFERENCE_LINE_RULE_X_START[size] };
   const xStart = secondary ? { value: 0 } : primaryXStart;
@@ -243,7 +244,7 @@ export const getReferenceLineEndCapMark = (
  * Label is below the line, right-aligned, with S2 typography.
  */
 export const getReferenceLineTextMark = (
-  { colorScheme, label, name, secondary }: ReferenceLineSpecOptions,
+  { colorScheme, label, name, secondary, size }: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): TextMark[] => {
   if (!label) return [];
@@ -283,7 +284,7 @@ export const getReferenceLineTextMark = (
       encode: {
         enter: {
           ...sharedEnter,
-          fill: { value: secondary ? getS2ColorValue(REFERENCE_LINE_SECONDARY_LABEL_COLOR, colorScheme) : getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
+          fill: { value: secondary ? getSecondaryStrokeColor(size, colorScheme) : getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
         },
         update: sharedUpdate,
       },

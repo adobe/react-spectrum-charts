@@ -306,8 +306,9 @@ export const REFERENCE_LINE_END_CAP_PATHS: Record<ReferenceLineSize, string> = {
   L: 'M0.400196 -0.69283C-0.133137 -0.38491 -0.133138 0.38490 0.400195 0.69282L5.50019 3.63730C6.03353 3.94522 6.7002 3.56032 6.7002 2.94448L6.7002 -2.94449C6.7002 -3.56033 6.03353 -3.94523 5.5002 -3.63731L0.400196 -0.69283Z',
 };
 
-// Secondary reference line stroke color per size tier 
+// Secondary reference line stroke color per size tier.
 // XS uses gray-600 for sparkline contexts; S/M/L match the primary gray-800.
+// Label color matches the stroke color for each tier.
 export const REFERENCE_LINE_SECONDARY_COLORS: Record<ReferenceLineSize, string> = {
   XS: 'gray-600',
   S: DEFAULT_FONT_COLOR,
@@ -315,8 +316,8 @@ export const REFERENCE_LINE_SECONDARY_COLORS: Record<ReferenceLineSize, string> 
   L: DEFAULT_FONT_COLOR,
 };
 
-// Secondary reference line label color — gray-600 for all sizes
-export const REFERENCE_LINE_SECONDARY_LABEL_COLOR = 'gray-600';
+// Secondary reference line stroke width — always 1px regardless of size.
+export const REFERENCE_LINE_SECONDARY_STROKE_WIDTH = 1;
 
 // time constants
 export const MS_PER_DAY = 86400000;

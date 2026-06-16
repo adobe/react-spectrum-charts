@@ -29,7 +29,7 @@ import {
   REFERENCE_LINE_RULE_X2_OFFSET,
   REFERENCE_LINE_RULE_X_START,
   REFERENCE_LINE_SECONDARY_COLORS,
-  REFERENCE_LINE_SECONDARY_LABEL_COLOR,
+  REFERENCE_LINE_SECONDARY_STROKE_WIDTH,
   REFERENCE_LINE_SIZE_STROKE_WIDTHS,
   REFERENCE_LINE_START_CAP_PATHS,
 } from '@spectrum-charts/constants';
@@ -479,6 +479,14 @@ describe('secondary prop', () => {
       expect(rule.encode?.enter?.stroke).toStrictEqual({ value: spectrum2Colors.light[REFERENCE_LINE_SECONDARY_COLORS['XS']] });
     });
 
+    test('strokeWidth is always REFERENCE_LINE_SECONDARY_STROKE_WIDTH (1px) regardless of size', () => {
+      const autoRule = getReferenceLineRuleMark(defaultAxisOptions, secondaryOptions, defaultYPositionEncoding);
+      expect(autoRule.encode?.enter?.strokeWidth).toStrictEqual({ value: REFERENCE_LINE_SECONDARY_STROKE_WIDTH });
+
+      const lRule = getReferenceLineRuleMark(defaultAxisOptions, { ...secondaryOptions, size: 'L' }, defaultYPositionEncoding);
+      expect(lRule.encode?.enter?.strokeWidth).toStrictEqual({ value: REFERENCE_LINE_SECONDARY_STROKE_WIDTH });
+    });
+
     test('x is fixed at 0 (no cap offset)', () => {
       const rule = getReferenceLineRuleMark(defaultAxisOptions, secondaryOptions, defaultYPositionEncoding);
       expect(rule.encode?.update?.x).toStrictEqual({ value: 0 });
@@ -525,17 +533,25 @@ describe('secondary prop', () => {
   });
 
   describe('getReferenceLineTextMark() with secondary: true', () => {
-    test('label foreground fill uses REFERENCE_LINE_SECONDARY_LABEL_COLOR (gray-600)', () => {
+    test('auto mode: label fill matches stroke color (gray-800)', () => {
       const marks = getReferenceLineTextMark(
-        { ...secondaryOptions, label: 'Average' },
+        { ...secondaryOptions, label: 'Last year' },
         defaultYPositionEncoding
       );
-      expect(marks[1].encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[REFERENCE_LINE_SECONDARY_LABEL_COLOR] });
+      expect(marks[1].encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[REFERENCE_LINE_SECONDARY_COLORS['M']] });
+    });
+
+    test('size XS: label fill matches stroke color (gray-600)', () => {
+      const marks = getReferenceLineTextMark(
+        { ...secondaryOptions, size: 'XS', label: 'Last year' },
+        defaultYPositionEncoding
+      );
+      expect(marks[1].encode?.enter?.fill).toStrictEqual({ value: spectrum2Colors.light[REFERENCE_LINE_SECONDARY_COLORS['XS']] });
     });
 
     test('background mark is unaffected — still transparent fill', () => {
       const marks = getReferenceLineTextMark(
-        { ...secondaryOptions, label: 'Average' },
+        { ...secondaryOptions, label: 'Last year' },
         defaultYPositionEncoding
       );
       expect(marks[0].encode?.enter?.fill).toStrictEqual({ value: 'transparent' });
