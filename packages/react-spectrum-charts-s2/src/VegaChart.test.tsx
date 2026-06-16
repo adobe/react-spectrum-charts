@@ -92,6 +92,22 @@ describe('resizeView', () => {
 	});
 });
 
+describe('rscWrapTitle expression function', () => {
+	// The function is registered at module load time when VegaChart.tsx is imported above.
+	const fn = expressionFunction('rscWrapTitle') as (text: string, maxWidth: number) => string[];
+
+	test('returns text as a single-element array when it fits on one line', () => {
+		expect(fn('Page Views by Region', 440)).toStrictEqual(['Page Views by Region']);
+	});
+
+	test('wraps text onto multiple lines when it exceeds maxWidth', () => {
+		expect(fn('Quarterly Revenue Growth by Product Category and Geographic Region', 440)).toStrictEqual([
+			'Quarterly Revenue Growth by Product',
+			'Category and Geographic Region',
+		]);
+	});
+});
+
 describe('rscContainerWidth expression function', () => {
 	// The function is registered at module load time when VegaChart.tsx is imported above.
 	const fn = expressionFunction('rscContainerWidth') as (this: unknown) => number;
