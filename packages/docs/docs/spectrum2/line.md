@@ -539,12 +539,12 @@ In S2, reference lines are **horizontal only** — place `<ReferenceLine>` insid
 
 ### Secondary style
 
-Set `secondary` to `true` to render a lighter, lower-emphasis reference line. Secondary lines have no caret caps and use a lighter stroke color, making them suitable for contextual values (averages, baselines) that should visually recede behind a primary target line.
+Set `secondary` to `true` to render a lighter, lower-emphasis reference line. Secondary lines have no caret caps and use a lighter stroke color, making them suitable for contextual reference values (baselines, prior-period comparisons) that should visually recede behind a primary target line.
 
 ```jsx
 <Axis position="left" grid>
   <ReferenceLine value={7500} label="Target" />
-  <ReferenceLine value={5000} label="Average" secondary />
+  <ReferenceLine value={5000} label="Last year" secondary />
 </Axis>
 ```
 
@@ -607,7 +607,7 @@ On bar charts with categorical axes, the `position` prop controls whether the re
             <td>secondary</td>
             <td>boolean</td>
             <td>–</td>
-            <td>When true, renders a lighter secondary style: no caret caps, full-width rule (no cap offsets), and a lighter stroke color (<code>gray-600</code> at XS, <code>gray-800</code> for other sizes). Use for contextual values (averages, baselines) that should recede behind a primary target line. The label is rendered in <code>gray-600</code> for all sizes.</td>
+            <td>When true, renders a lighter secondary style: no caret caps, full-width rule (no cap offsets), and a lighter stroke color (<code>gray-600</code> at XS, <code>gray-800</code> for other sizes). Use for contextual reference values (baselines, prior-period comparisons) that should recede behind a primary target line. The label is rendered in <code>gray-600</code> for all sizes.</td>
         </tr>
     </tbody>
 </table>
