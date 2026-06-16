@@ -66,9 +66,11 @@ test('Hidden series should have the correct legend styling', async () => {
   await clickNthElement(entries, 0);
 
   symbols = getAllLegendSymbols(chart);
-  expect(symbols[0]).toHaveAttribute('fill', colors['gray-300']);
-  expect(symbols[0]).toHaveAttribute('stroke', colors['gray-300']);
-  expect(screen.getByText('Windows')).toHaveAttribute('fill', colors['gray-500']);
+  // Hidden symbol fill/stroke shows chart background color so the swatch visually disappears
+  expect(symbols[0]).toHaveAttribute('fill', colors['gray-25']);
+  expect(symbols[0]).toHaveAttribute('stroke', colors['gray-25']);
+  // Hidden label stays at full opacity (gray-700), not grayed out
+  expect(screen.getByText('Windows')).toHaveAttribute('fill', colors['gray-700']);
 });
 
 test('HiddenSeries should not be drawn to bar chart', async () => {

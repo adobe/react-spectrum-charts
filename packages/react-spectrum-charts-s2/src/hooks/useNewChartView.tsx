@@ -26,7 +26,7 @@ import {
   getOnMouseInputCallback,
   setSelectedSignals,
 } from '../utils';
-import useLegend from './useLegend';
+import { UseLegendProps } from './useLegend';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails';
 import useMarkOnClickDetails from './useMarkOnClickDetails';
 import usePopovers from './usePopovers';
@@ -34,7 +34,8 @@ import usePopovers from './usePopovers';
 const useNewChartView = (
   { idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  inspectOptions: TooltipOptions
+  inspectOptions: TooltipOptions,
+  legendProps: UseLegendProps
 ) => {
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const popovers = usePopovers(sanitizedChildren);
@@ -45,7 +46,7 @@ const useNewChartView = (
     onClick: onLegendClick,
     onMouseOut: onLegendMouseOut,
     onMouseOver: onLegendMouseOver,
-  } = useLegend(sanitizedChildren); // gets props from the legend if it exists
+  } = legendProps;
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
@@ -128,7 +129,7 @@ const useNewChartView = (
               legendIsToggleable,
               onLegendClick,
               trigger: 'contextmenu',
-              markHasPopover: markHasPopover,
+              markHasPopover,
             })
           );
         }

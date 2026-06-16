@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_LABEL_LIMIT, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_LABEL_LIMIT, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE, GROUP_ID } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
 import { defaultLegendOptions } from './legendTestUtils';
@@ -17,23 +17,66 @@ import {
   getClickEncodings,
   getColumns,
   getHiddenSeriesColorRule,
+  getShowHideEncodings,
   getSymbolEncodings,
   getSymbolType,
   mergeLegendEncodings,
 } from './legendUtils';
 
 describe('getSymbolEncodings()', () => {
-  test('no factes and no custom values, should return all the defaults', () => {
+  test('no facets and no custom values, should return all the defaults', () => {
     expect(getSymbolEncodings([], defaultLegendOptions)).toStrictEqual({
       entries: { name: 'legend0_legendEntry' },
       symbols: {
         enter: {},
         update: {
-        fill: [{ value: spectrum2Colors.light['categorical-100'] }],
-        stroke: [{ value: spectrum2Colors.light['categorical-100'] }],
+          fill: [{ value: spectrum2Colors.light['categorical-100'] }],
+          stroke: [{ value: spectrum2Colors.light['categorical-100'] }],
         },
       },
     });
+  });
+
+  test('isToggleable: true should prepend background signal rule to fill and stroke', () => {
+    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, isToggleable: true });
+    const expectedHiddenRule = { test: 'indexof(hiddenSeries, datum.value) !== -1', signal: BACKGROUND_COLOR };
+    expect(encodings.symbols?.update).toHaveProperty('fill');
+    expect(encodings.symbols?.update?.fill?.[0]).toEqual(expectedHiddenRule);
+    expect(encodings.symbols?.update?.stroke?.[0]).toEqual(expectedHiddenRule);
+  });
+
+  test('hiddenSeries non-empty should prepend background signal rule', () => {
+    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, hiddenSeries: ['Windows'] });
+    const expectedHiddenRule = { test: 'indexof(hiddenSeries, datum.value) !== -1', signal: BACKGROUND_COLOR };
+    expect(encodings.symbols?.update?.fill?.[0]).toEqual(expectedHiddenRule);
+  });
+
+  test('isToggleable with keys should use filteredTable rule for background signal', () => {
+    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, isToggleable: true, keys: ['key1'] });
+    const hiddenRule = encodings.symbols?.update?.fill?.[0] as { test?: string; signal?: string };
+    expect(hiddenRule?.test).toContain(FILTERED_TABLE);
+    expect(hiddenRule?.test).toContain(GROUP_ID);
+    expect(hiddenRule?.signal).toBe(BACKGROUND_COLOR);
+  });
+});
+
+describe('getShowHideEncodings()', () => {
+  test('isToggleable should return gray-700 for all labels with no hidden rule', () => {
+    const encodings = getShowHideEncodings({ ...defaultLegendOptions, isToggleable: true });
+    expect(encodings.labels?.update?.fill).toStrictEqual([{ value: spectrum2Colors.light['gray-700'] }]);
+  });
+
+  test('controlled hiddenSeries (non-toggleable) should gray-out hidden labels to gray-500', () => {
+    const encodings = getShowHideEncodings({ ...defaultLegendOptions, hiddenSeries: ['Mac'] });
+    const fill = encodings.labels?.update?.fill as { test?: string; value?: string }[];
+    expect(fill[0]?.test).toContain('hiddenSeries');
+    expect(fill[0]?.value).toBe(spectrum2Colors.light['gray-500']);
+    expect(fill[1]).toStrictEqual({ value: spectrum2Colors.light['gray-700'] });
+  });
+
+  test('default (no toggle, no hiddenSeries) should return gray-700 with no conditional rule', () => {
+    const encodings = getShowHideEncodings(defaultLegendOptions);
+    expect(encodings.labels?.update?.fill).toStrictEqual([{ value: spectrum2Colors.light['gray-700'] }]);
   });
 });
 

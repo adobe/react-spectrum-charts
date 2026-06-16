@@ -24,7 +24,8 @@ import useChartInspectInteractions from './useChartInspectInteractions';
 export const useChartInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { selectedData } = useChartContext();
   const { inspectOptions } = useChartInspectInteractions(props, sanitizedChildren);
-  const { legendHiddenSeries, isToggleable: legendIsToggleable } = useLegend(sanitizedChildren);
+  const legendProps = useLegend(sanitizedChildren);
+  const { legendHiddenSeries, isToggleable: legendIsToggleable } = legendProps;
   const targetStyle = usePopoverAnchorStyle(props.padding);
 
   const signals = useMemo(() => {
@@ -40,7 +41,7 @@ export const useChartInteractions = (props: RscChartProps, sanitizedChildren: Ch
     return signals;
   }, [legendHiddenSeries, legendIsToggleable, props.colorScheme, props.idKey, selectedData]);
 
-  const onNewView = useNewChartView(props, sanitizedChildren, inspectOptions);
+  const onNewView = useNewChartView(props, sanitizedChildren, inspectOptions, legendProps);
 
-  return { signals, targetStyle, inspectOptions, onNewView };
+  return { signals, targetStyle, inspectOptions, onNewView, legendHiddenSeries };
 };

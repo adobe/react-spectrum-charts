@@ -24,6 +24,7 @@ import {
 } from 'vega';
 
 import {
+  BACKGROUND_COLOR,
   COLOR_SCALE,
   COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
@@ -237,7 +238,7 @@ export const getOpacityEncoding = (
 };
 
 export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions): LegendEncode => {
-  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = options;
+  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme, isToggleable, hiddenSeries, keys } = options;
   const enter: SymbolEncodeEntry = {
     fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
     shape: getSymbolFacetEncoding<string>({
@@ -260,19 +261,19 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
       name,
     }),
   };
+  const colorRef = getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
+    value: spectrum2Colors[colorScheme]['categorical-100'],
+  };
+  const bgSignalRef = { signal: BACKGROUND_COLOR };
+  const hiddenBgRules: ProductionRule<ColorValueRef> =
+    isToggleable || hiddenSeries.length
+      ? keys?.length
+        ? [{ test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_${GROUP_ID}'), datum.value) === -1`, ...bgSignalRef } as unknown as ColorValueRef]
+        : [{ test: 'indexof(hiddenSeries, datum.value) !== -1', ...bgSignalRef } as unknown as ColorValueRef]
+      : [];
   const update: SymbolEncodeEntry = {
-    fill: [
-      ...getHiddenSeriesColorRule(options, 'gray-300'),
-      getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-        value: spectrum2Colors[colorScheme]['categorical-100'],
-      },
-    ],
-    stroke: [
-      ...getHiddenSeriesColorRule(options, 'gray-300'),
-      getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-        value: spectrum2Colors[colorScheme]['categorical-100'],
-      },
-    ],
+    fill: [...hiddenBgRules, colorRef],
+    stroke: [...hiddenBgRules, colorRef],
   };
   // Remove undefined values
   const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
@@ -352,16 +353,19 @@ export const getHiddenSeriesColorRule = (
  * @returns
  */
 export const getShowHideEncodings = (options: LegendSpecOptions): LegendEncode => {
-  const { colorScheme } = options;
-  const hiddenSeriesEncode: LegendEncode = {
+  const { colorScheme, isToggleable } = options;
+  // Toggleable legends use the eye-icon overlay UX — labels always stay at full opacity (gray-700).
+  // Controlled hiddenSeries (non-toggleable) preserves the gray-500 gray-out on hidden labels.
+  const labelFillRules = isToggleable
+    ? [{ value: getS2ColorValue('gray-700', colorScheme) }]
+    : [...getHiddenSeriesColorRule(options, 'gray-500'), { value: getS2ColorValue('gray-700', colorScheme) }];
+  return {
     labels: {
       update: {
-        fill: [...getHiddenSeriesColorRule(options, 'gray-500'), { value: getS2ColorValue('gray-700', colorScheme) }],
+        fill: labelFillRules,
       },
     },
   };
-
-  return hiddenSeriesEncode;
 };
 
 /**
