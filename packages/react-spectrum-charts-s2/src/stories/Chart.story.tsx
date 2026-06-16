@@ -20,6 +20,7 @@ import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
 import { ChartDynamicHeightBarStory } from './ChartDynamicHeightBarStory';
 import { data, workspaceTrendsData } from './data/data';
+import { ResizableChart } from './storyUtils';
 
 export default {
   title: 'RSC/Chart',
@@ -37,17 +38,20 @@ const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
   );
 };
 
-const LongTitleStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  return (
-    <Chart {...props}>
-      <Axis position="bottom" baseline ticks labelFormat="time" />
-      <Axis position="left" grid />
-      <Line dimension="datetime" metric="value" color="series" scaleType="time" />
-      <Legend />
-    </Chart>
-  );
-};
+const LONG_TITLE = 'Daily Workspace Component Events by Panel Type for Add Fallout and Add Freeform Table Interactions';
+
+const LongTitleStory = (): ReactElement => (
+  <ResizableChart>
+    {(width) => (
+      <Chart data={workspaceTrendsData} width={width} height={300} title={LONG_TITLE}>
+        <Axis position="bottom" baseline ticks labelFormat="time" />
+        <Axis position="left" grid />
+        <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+        <Legend />
+      </Chart>
+    )}
+  </ResizableChart>
+);
 
 const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
   const props = useChartProps(args);
@@ -136,10 +140,6 @@ HighlightedItem.args = {
   data,
 };
 
-const LongTitle = bindWithProps(LongTitleStory);
-LongTitle.args = {
-  title: 'Daily Workspace Component Events by Panel Type for Add Fallout and Add Freeform Table Interactions',
-  data: workspaceTrendsData,
-};
+const LongTitle = LongTitleStory;
 
 export { Basic, BackgroundColor, Config, Height, HighlightedItem, Locale, LongTitle, TooltipAnchor, Width };
