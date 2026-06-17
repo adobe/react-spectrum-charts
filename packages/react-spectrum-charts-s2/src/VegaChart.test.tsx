@@ -131,6 +131,40 @@ describe('rscContainerWidth expression function', () => {
 	});
 });
 
+describe('title wrapping after font load', () => {
+	let mockView: View;
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockView = createMockView();
+		mockEmbed.mockResolvedValue({ view: mockView } as unknown as Awaited<ReturnType<typeof embed>>);
+	});
+
+	test('does not call view.signal when spec has no title signals', async () => {
+		render(<VegaChart {...defaultProps} />);
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		// flush all pending promises so the fonts.ready path would have had a chance to run
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(mockView.signal).not.toHaveBeenCalled();
+	});
+
+	test('sets rscWrappedTitleText after fonts load when spec has a title signal', async () => {
+		const titleSpec: Spec = {
+			signals: [{ name: 'rscTitleText', value: 'My Title' }],
+		};
+		(mockView.signal as jest.Mock)
+			.mockReturnValueOnce('My Title') // read rscTitleText
+			.mockReturnValueOnce(440) // read rscTitleLimit
+			.mockReturnValue(mockView); // write rscWrappedTitleText — return view for .runAsync() chaining
+
+		render(<VegaChart {...defaultProps} spec={titleSpec} />);
+
+		await waitFor(() =>
+			expect(mockView.signal).toHaveBeenCalledWith('rscWrappedTitleText', expect.any(Array))
+		);
+	});
+});
+
 // AN-445759: regression tests for the init render cycle fix
 describe('VegaChart init render cycle', () => {
 	beforeEach(() => {
