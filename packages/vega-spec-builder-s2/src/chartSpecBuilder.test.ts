@@ -217,7 +217,7 @@ describe('Chart spec builder', () => {
     });
 
     test('should convert line type names', () => {
-      expect(getTwoDimensionalLineTypes([['solid', 'dashed'], ['dotted']])).toStrictEqual([[[], [7, 4]], [[2, 3]]]);
+      expect(getTwoDimensionalLineTypes([['solid', 'dashed'], ['dotted']])).toStrictEqual([[[], [7, 4]], [[0, 4]]]);
     });
   });
 
