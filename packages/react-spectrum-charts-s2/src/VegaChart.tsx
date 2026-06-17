@@ -34,6 +34,7 @@ expressionFunction('rscContainerWidth', function (this: { context: { dataflow: V
   return viewWidth + (p.left ?? 0) + (p.right ?? 0);
 });
 
+// Handles making sure the title wraps correctly on resize
 expressionFunction('rscWrapTitle', (text: string, maxWidth: number): string[] =>
   wrapTitleText(text, maxWidth)
 );
@@ -144,6 +145,25 @@ export const VegaChart: FC<VegaChartProps> = ({
         view.runAsync();
         // One additional render to settle all resize calculations
         setTimeout(() => view.runAsync(), 0);
+
+        // getLabelWidth uses canvas measureText which depends on loaded fonts. Call it once after
+        // fonts are ready so the initial title wrapping uses accurate Adobe Clean metrics. Subsequent
+        // evaluations fire via the rscWrapTitle expression on resize, by which time the font is loaded.
+        // Only run when the spec has title signals (i.e. a title was set).
+        const hasTitleSignal = specCopy.signals?.some((s) => s.name === 'rscTitleText');
+        if (hasTitleSignal) {
+          (document.fonts?.ready ?? Promise.resolve()).then(() => {
+            if (view !== chartView.current) {
+              return;
+            }
+            const titleText = view.signal('rscTitleText') as string;
+            if (!titleText) {
+              return;
+            }
+            const limit = view.signal('rscTitleLimit') as number;
+            view.signal('rscWrappedTitleText', wrapTitleText(titleText, limit)).runAsync();
+          });
+        }
       });
     }
     return () => {

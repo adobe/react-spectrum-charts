@@ -30,6 +30,7 @@ const createMockView = (): View =>
 		resize: mockResize,
 		height: mockHeight,
 		width: mockWidth,
+		signal: jest.fn(),
 		finalize: jest.fn(),
 	}) as unknown as View;
 
