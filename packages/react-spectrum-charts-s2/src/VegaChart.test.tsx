@@ -30,6 +30,7 @@ const createMockView = (): View =>
 		resize: mockResize,
 		height: mockHeight,
 		width: mockWidth,
+		signal: jest.fn(),
 		finalize: jest.fn(),
 	}) as unknown as View;
 
@@ -92,6 +93,23 @@ describe('resizeView', () => {
 	});
 });
 
+describe('rscWrapTitle expression function', () => {
+	// The function is registered at module load time when VegaChart.tsx is imported above.
+	const fn = expressionFunction('rscWrapTitle') as (text: string, maxWidth: number) => string[];
+
+	test('returns text as a single-element array when it fits on one line', () => {
+		expect(fn('Page Views by Region', 440)).toStrictEqual(['Page Views by Region']);
+	});
+
+	test('wraps text onto multiple lines when it exceeds maxWidth', () => {
+		// jsdom measureText returns text.length px; maxWidth=40 fits "...by Product" (35) but not "...Category" (44)
+		expect(fn('Quarterly Revenue Growth by Product Category and Geographic Region', 40)).toStrictEqual([
+			'Quarterly Revenue Growth by Product',
+			'Category and Geographic Region',
+		]);
+	});
+});
+
 describe('rscContainerWidth expression function', () => {
 	// The function is registered at module load time when VegaChart.tsx is imported above.
 	const fn = expressionFunction('rscContainerWidth') as (this: unknown) => number;
@@ -110,6 +128,92 @@ describe('rscContainerWidth expression function', () => {
 
 	test('returns padding sum when _viewWidth is undefined', () => {
 		expect(fn.call(makeCtx(undefined, { left: 20, right: 20 }))).toBe(40);
+	});
+});
+
+describe('title wrapping after font load', () => {
+	let mockView: View;
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockView = createMockView();
+		mockEmbed.mockResolvedValue({ view: mockView } as unknown as Awaited<ReturnType<typeof embed>>);
+	});
+
+  afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
+	test('does not call view.signal when spec has no title signals', async () => {
+		render(<VegaChart {...defaultProps} />);
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		// flush all pending promises so the fonts.ready path would have had a chance to run
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(mockView.signal).not.toHaveBeenCalled();
+	});
+
+	test('sets rscWrappedTitleText after fonts load when spec has a title signal', async () => {
+		const titleSpec: Spec = {
+			signals: [{ name: 'rscTitleText', value: 'My Title' }],
+		};
+		(mockView.signal as jest.Mock)
+			.mockReturnValueOnce('My Title') // read rscTitleText
+			.mockReturnValueOnce(440) // read rscTitleLimit
+			.mockReturnValue(mockView); // write rscWrappedTitleText — return view for .runAsync() chaining
+
+		render(<VegaChart {...defaultProps} spec={titleSpec} />);
+
+		await waitFor(() =>
+			expect(mockView.signal).toHaveBeenCalledWith('rscWrappedTitleText', expect.any(Array))
+		);
+	});
+
+	test('skips signal update when title text is empty', async () => {
+		const titleSpec: Spec = {
+			signals: [{ name: 'rscTitleText', value: '' }],
+		};
+		(mockView.signal as jest.Mock).mockReturnValueOnce('');
+
+		render(<VegaChart {...defaultProps} spec={titleSpec} />);
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(mockView.signal).not.toHaveBeenCalledWith('rscWrappedTitleText', expect.any(Array));
+	});
+
+	test('skips signal update when view is stale at font load time', async () => {
+		let resolveFontsReady!: () => void;
+		const deferred = new Promise<void>((resolve) => {
+			resolveFontsReady = resolve;
+		});
+
+		// Override document.fonts with a deferred ready promise so we control when it fires.
+		// jest.spyOn can't reach it because it lives on the prototype, not the document instance.
+		const savedDescriptor = Object.getOwnPropertyDescriptor(document, 'fonts');
+		Object.defineProperty(document, 'fonts', { get: () => ({ ready: deferred }), configurable: true });
+
+		const titleSpec: Spec = {
+			signals: [{ name: 'rscTitleText', value: 'My Title' }],
+		};
+
+		const { unmount } = render(<VegaChart {...defaultProps} spec={titleSpec} />);
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+
+		// Unmount sets chartView.current = undefined via effect cleanup
+		unmount();
+
+		// Resolve fonts.ready after unmount — stale view guard should prevent signal update
+		resolveFontsReady();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(mockView.signal).not.toHaveBeenCalledWith('rscWrappedTitleText', expect.any(Array));
+
+		// Restore the original descriptor (delete the own-property override to re-expose the prototype getter)
+		if (savedDescriptor) {
+			Object.defineProperty(document, 'fonts', savedDescriptor);
+		} else {
+			delete (document as unknown as Record<string, unknown>).fonts;
+		}
 	});
 });
 

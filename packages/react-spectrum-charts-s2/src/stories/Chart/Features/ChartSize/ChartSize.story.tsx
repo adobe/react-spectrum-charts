@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, useState } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
@@ -18,6 +18,7 @@ import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/constants';
 import { Chart } from '../../../../Chart';
 import { Axis, Line } from '../../../../components';
 import { workspaceTrendsData } from '../../../../stories/data/data';
+import { CHART_SIZE_THRESHOLDS, ResizableChart } from '../../../../stories/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
@@ -28,125 +29,25 @@ export default {
 
 const defaultArgs: ChartProps = { data: workspaceTrendsData, width: 600, height: 300 };
 
-const CHART_HEIGHT = 300;
-const MAX_WIDTH = CHART_SIZE_BREAKPOINTS.L + 200;
-const THUMB_HEIGHT = 32;
-
-const THRESHOLDS = [
-  { px: CHART_SIZE_BREAKPOINTS.M, label: 'M' },
-  { px: CHART_SIZE_BREAKPOINTS.L, label: 'L' },
-];
-
-// The range input is overlaid on the chart area. min=0 so the thumb position (in px) equals
-// the value, placing it at the right edge of the chart as the user drags.
-const HANDLE_STYLES = `
-  .rsc-chart-size-handle {
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    border: none;
-    outline: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: ${CHART_HEIGHT}px;
-    pointer-events: none;
-    z-index: 20;
-  }
-  .rsc-chart-size-handle::-webkit-slider-runnable-track {
-    background: transparent;
-    height: ${CHART_HEIGHT}px;
-  }
-  .rsc-chart-size-handle::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 8px;
-    height: ${THUMB_HEIGHT}px;
-    border-radius: 4px;
-    background: #999;
-    cursor: ew-resize;
-    pointer-events: all;
-    margin-top: ${(CHART_HEIGHT - THUMB_HEIGHT) / 2}px;
-  }
-  .rsc-chart-size-handle::-moz-range-track {
-    background: transparent;
-  }
-  .rsc-chart-size-handle::-moz-range-thumb {
-    width: 8px;
-    height: ${THUMB_HEIGHT}px;
-    border-radius: 4px;
-    background: #999;
-    border: none;
-    cursor: ew-resize;
-  }
-`;
-
-const AutoDetectStory = (): ReactElement => {
-  const [width, setWidth] = useState(600);
-
-  let currentSize = 'L';
-  if (width < CHART_SIZE_BREAKPOINTS.M) currentSize = 'S';
-  else if (width < CHART_SIZE_BREAKPOINTS.L) currentSize = 'M';
-
-  return (
-    <div style={{ padding: '16px 0' }}>
-      <style>{HANDLE_STYLES}</style>
-      <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>
-        Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong>
-      </div>
-      {/* Outer container holds threshold lines at fixed positions regardless of chart width */}
-      <div style={{ position: 'relative', minWidth: MAX_WIDTH }}>
-        {THRESHOLDS.map(({ px, label }) => (
-          <div
-            key={label}
-            style={{
-              position: 'absolute',
-              left: px,
-              top: 0,
-              bottom: 0,
-              width: 1,
-              background: 'rgba(220, 60, 60, 0.6)',
-              zIndex: 10,
-              pointerEvents: 'none',
-            }}
-          >
-            <span
-              style={{
-                position: 'absolute',
-                top: 2,
-                left: 3,
-                fontSize: 10,
-                color: 'rgba(220, 60, 60, 0.9)',
-                whiteSpace: 'nowrap',
-                lineHeight: 1,
-              }}
-            >
-              {label} ({px}px)
-            </span>
-          </div>
-        ))}
-
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <Chart data={workspaceTrendsData} width={width} height={CHART_HEIGHT}>
-            <Axis position="bottom" baseline ticks labelFormat="time" />
-            <Axis position="left" grid />
-            <Line dimension="datetime" metric="value" color="series" scaleType="time" />
-          </Chart>
-
-          <input
-            type="range"
-            className="rsc-chart-size-handle"
-            aria-label="Chart width"
-            min={0}
-            max={MAX_WIDTH}
-            value={Math.round(width)}
-            onChange={(e) => setWidth(Math.max(100, Number(e.target.value)))}
-            style={{ width: MAX_WIDTH }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
+const AutoDetectStory = (): ReactElement => (
+  <ResizableChart
+    thresholds={CHART_SIZE_THRESHOLDS}
+    renderLabel={(width) => {
+      let currentSize = 'L';
+      if (width < CHART_SIZE_BREAKPOINTS.M) currentSize = 'S';
+      else if (width < CHART_SIZE_BREAKPOINTS.L) currentSize = 'M';
+      return <>Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong></>;
+    }}
+  >
+    {(width) => (
+      <Chart data={workspaceTrendsData} width={width} height={300}>
+        <Axis position="bottom" baseline ticks labelFormat="time" />
+        <Axis position="left" grid />
+        <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+      </Chart>
+    )}
+  </ResizableChart>
+);
 
 const FixedSizeStory: StoryFn<typeof Chart> = (args): ReactElement => (
   <Chart {...args}>

@@ -30,6 +30,8 @@ import { spectrum2Colors } from './spectrum2Colors';
 import { ADOBE_CLEAN_FONT } from './spectrumTheme';
 import { getS2ColorValue } from './utils';
 
+export const S2_TITLE_FONT_SIZE = 22;
+
 export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
   const FONT_COLOR = getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme);
   const {
@@ -152,7 +154,7 @@ export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
     title: {
       offset: 10,
       font: ADOBE_CLEAN_FONT,
-      fontSize: 22,
+      fontSize: S2_TITLE_FONT_SIZE,
       color: FONT_COLOR,
       anchor: 'start',
       frame: 'group',

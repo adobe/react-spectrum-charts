@@ -12,22 +12,14 @@
 import { produce } from 'immer';
 import { Config, Data, Scale, ScaleType, Spec, mergeConfig } from 'vega';
 
-import {
-  COLOR_SCALE,
-  DATE_PATH,
-  DEFAULT_TRANSFORMED_TIME_DIMENSION,
-  FILTERED_TABLE,
-  LINE_TYPE_SCALE,
-  MARK_ID,
-  OPACITY_SCALE,
-  ROUNDED_SQUARE_PATH,
-  SENTIMENT_NEGATIVE_PATH,
-  SENTIMENT_NEUTRAL_PATH,
-  SENTIMENT_POSITIVE_PATH,
-  TABLE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
 
+
+import { COLOR_SCALE, DATE_PATH, DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, LINE_TYPE_SCALE, MARK_ID, OPACITY_SCALE, ROUNDED_SQUARE_PATH, SENTIMENT_NEGATIVE_PATH, SENTIMENT_NEUTRAL_PATH, SENTIMENT_POSITIVE_PATH, TABLE } from '@spectrum-charts/constants';
+import { S2_TITLE_FONT_SIZE, getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
+
+
+
+import { expressionFunctions } from './expressionFunctions/expressionFunctions';
 import {
   ChartSpecOptions,
   ChartSymbolShape,
@@ -45,6 +37,7 @@ import {
   SymbolSizeFacet,
   UserMeta,
 } from './types';
+
 
 /**
  * gets all the keys that are used to facet by
@@ -245,6 +238,28 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
   };
 
   return { ...baseSpec, ...(spec || {}) };
+};
+
+/**
+ * Splits a title string into lines that fit within maxWidth pixels, breaking at word boundaries.
+ * Uses canvas text measurement with the S2 title font for accurate line widths.
+ */
+export const wrapTitleText = (text: string, maxWidth: number): string[] => {
+  if (maxWidth <= 0) return [text];
+
+  const lines = text.split(' ').reduce<string[]>((lines, word) => {
+    const last = lines.at(-1);
+    if (last !== undefined) {
+      const candidate = `${last} ${word}`;
+      const candidateWidth = expressionFunctions.getLabelWidth(candidate, 'bold', S2_TITLE_FONT_SIZE);
+      if (candidateWidth <= maxWidth) {
+        return [...lines.slice(0, -1), candidate];
+      }
+    }
+    return [...lines, word];
+  }, []);
+
+  return lines.length ? lines : [text];
 };
 
 /**

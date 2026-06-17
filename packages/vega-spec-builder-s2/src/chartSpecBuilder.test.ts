@@ -509,4 +509,34 @@ describe('Chart spec builder', () => {
     });
 
   });
+
+  describe('addTitleSignals()', () => {
+    test('sets spec.title to use rscWrappedTitleText signal when title is provided', () => {
+      const spec = buildSpec({ ...defaultSpecOptions, title: 'Page Views by Region' });
+      expect(spec.title).toEqual({ text: { signal: 'rscWrappedTitleText' } });
+    });
+
+    test('appends rscTitleText, rscTitleLimit, and rscWrappedTitleText signals when title is provided', () => {
+      const spec = buildSpec({ ...defaultSpecOptions, title: 'Page Views by Region' });
+      expect(spec.signals?.find((s) => s.name === 'rscTitleText')).toEqual({
+        name: 'rscTitleText',
+        value: 'Page Views by Region',
+      });
+      expect(spec.signals?.find((s) => s.name === 'rscTitleLimit')).toEqual({
+        name: 'rscTitleLimit',
+        update: 'width',
+      });
+      expect(spec.signals?.find((s) => s.name === 'rscWrappedTitleText')).toEqual({
+        name: 'rscWrappedTitleText',
+        update: 'rscWrapTitle(rscTitleText, rscTitleLimit)',
+      });
+    });
+
+    test('does not add title signals when title is empty', () => {
+      const spec = buildSpec({ ...defaultSpecOptions, title: '' });
+      expect(spec.signals?.find((s) => s.name === 'rscTitleText')).toBeUndefined();
+      expect(spec.signals?.find((s) => s.name === 'rscTitleLimit')).toBeUndefined();
+      expect(spec.signals?.find((s) => s.name === 'rscWrappedTitleText')).toBeUndefined();
+    });
+  });
 });
