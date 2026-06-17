@@ -56,6 +56,8 @@ const defaultLineOptions: LineSpecOptions = {
 	trendlines: [],
 	lineCap: 'round',
 	interpolate: undefined,
+	dimensionHover: false,
+	showHoverLabel: true,
 };
 
 const defaultLabelSpecOptions: LineDirectLabelSpecOptions = {

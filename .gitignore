@@ -35,4 +35,5 @@ cursor
 # catch all for temporary outputs
 tmp/
 
+.agents/
 .scout/

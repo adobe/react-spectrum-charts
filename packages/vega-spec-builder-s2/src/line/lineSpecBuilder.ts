@@ -27,7 +27,7 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
-import { addInspectData, addInspectSignals, isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
+import { addInspectData, addInspectSignals, getGroupIdTransform, isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
@@ -88,10 +88,14 @@ export const addLine = produce<
       alternateSegmentLabel,
       primarySeries,
       otherSeriesColor,
+      showHoverLabel = true,
+      dimensionHover = false,
       ...options
     }
   ) => {
     const lineName = toCamelCase(name || `line${index}`);
+    // ChartInspect owns the hover story when present — suppress the hover value label
+    const effectiveShowHoverLabel = chartInspects.length > 0 ? false : showHoverLabel;
     // put options back together now that all defaults are set
     const lineOptions: LineSpecOptions = {
       chartPopovers,
@@ -135,9 +139,11 @@ export const addLine = produce<
       alternateSegmentLabel,
       primarySeries,
       otherSeriesColor,
+      showHoverLabel: effectiveShowHoverLabel,
+      dimensionHover,
       ...options,
     };
-    lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
+    lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
 
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     spec.data = addData(spec.data ?? [], lineOptions);
@@ -150,11 +156,16 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { alternateSegmentKey, chartInspects, dimension, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, primarySeries, staticPoint } =
+  const { alternateSegmentKey, chartInspects, dimension, dimensionHover, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, primarySeries, staticPoint } =
     options;
   const tableData = getTableData(data);
   if (scaleType === 'time') {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+  }
+  const inspectAlreadyGroupsByDimension = chartInspects.some(({ highlightBy }) => highlightBy === 'dimension');
+  if (dimensionHover && !inspectAlreadyGroupsByDimension) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push(getGroupIdTransform([dimension], name));
   }
   if (alternateSegmentKey) {
     tableData.transform = tableData.transform ?? [];

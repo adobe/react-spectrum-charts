@@ -20,7 +20,6 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
 import { LineSpecOptions } from '../types';
 
@@ -38,7 +37,7 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
   if (isInteractive(options)) {
     const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;
     const groupKey = `${lineName}_${GROUP_ID}`;
-    if (isHighlightedByGroup(options)) {
+    if (options.isHighlightedByGroup) {
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`;
     } else {
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
