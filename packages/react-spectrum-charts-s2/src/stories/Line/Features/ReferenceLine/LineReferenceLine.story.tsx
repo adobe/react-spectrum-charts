@@ -72,7 +72,7 @@ SecondaryBasic.args = {
 
 const WithSecondary = bindWithProps(ReferenceLineStory);
 WithSecondary.args = {
-  label: 'Average',
+  label: 'Minimum',
   value: referenceValue,
   secondary: true,
 };
@@ -83,7 +83,7 @@ const PrimaryAndSecondaryStory: StoryFn<typeof ReferenceLine> = (): ReactElement
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users">
         <ReferenceLine value={referenceValue} label="Target" />
-        <ReferenceLine value={Math.round(referenceValue * 0.7)} label="Average" secondary />
+        <ReferenceLine value={Math.round(referenceValue * 0.7)} label="Minimum" secondary />
       </Axis>
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time" />
