@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import VisibilityOff from '@spectrum-icons/workflow/VisibilityOff';
+import VisibilityOff from '@react-spectrum/s2/icons/VisibilityOff';
 
 import { LegendIconPosition } from './useLegendIconPositions';
 
@@ -22,7 +22,7 @@ export function LegendIconOverlay({ positions }: LegendIconOverlayProps) {
     <>
       {positions.map(({ name, style }) => (
         <div key={name} style={style} aria-hidden="true">
-          <VisibilityOff size="XS" />
+          <VisibilityOff />
         </div>
       ))}
     </>
