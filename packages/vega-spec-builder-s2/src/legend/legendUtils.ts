@@ -265,12 +265,11 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
     value: spectrum2Colors[colorScheme]['categorical-100'],
   };
   const bgSignalRef = { signal: BACKGROUND_COLOR };
+  const hiddenSeriesRule = keys?.length
+    ? { test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_${GROUP_ID}'), datum.value) === -1`, ...bgSignalRef }
+    : { test: 'indexof(hiddenSeries, datum.value) !== -1', ...bgSignalRef };
   const hiddenBgRules: ProductionRule<ColorValueRef> =
-    isToggleable || hiddenSeries.length
-      ? keys?.length
-        ? [{ test: `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_${GROUP_ID}'), datum.value) === -1`, ...bgSignalRef } as unknown as ColorValueRef]
-        : [{ test: 'indexof(hiddenSeries, datum.value) !== -1', ...bgSignalRef } as unknown as ColorValueRef]
-      : [];
+    isToggleable || hiddenSeries.length ? [hiddenSeriesRule] : [];
   const update: SymbolEncodeEntry = {
     fill: [...hiddenBgRules, colorRef],
     stroke: [...hiddenBgRules, colorRef],

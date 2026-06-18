@@ -17,7 +17,7 @@ interface LegendIconOverlayProps {
   positions: LegendIconPosition[];
 }
 
-export function LegendIconOverlay({ positions }: LegendIconOverlayProps) {
+export function LegendIconOverlay({ positions }: Readonly<LegendIconOverlayProps>) {
   return (
     <>
       {positions.map(({ name, style }) => (
