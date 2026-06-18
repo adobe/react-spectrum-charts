@@ -91,7 +91,7 @@ describe('Line', () => {
     expect(lines.length).toEqual(4);
     expect(lines[0].getAttribute('stroke-dasharray')).toEqual('');
     expect(lines[1].getAttribute('stroke-dasharray')).toEqual('7,4');
-    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[3].getAttribute('stroke-dasharray')).toEqual('2,3,7,4');
   });
 
