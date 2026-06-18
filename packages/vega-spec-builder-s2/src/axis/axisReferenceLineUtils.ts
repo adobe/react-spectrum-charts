@@ -128,9 +128,9 @@ export const getReferenceLineRuleMark = (
   const stroke = secondary
     ? { value: getSecondaryStrokeColor(size, colorScheme) }
     : { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
-  const strokeWidth = secondary
-    ? { value: REFERENCE_LINE_SECONDARY_STROKE_WIDTH }
-    : size === undefined ? { signal: CHART_SIZE_STROKE_WIDTH } : { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] };
+  const primaryStrokeWidth =
+    size === undefined ? { signal: CHART_SIZE_STROKE_WIDTH } : { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] };
+  const strokeWidth = secondary ? { value: REFERENCE_LINE_SECONDARY_STROKE_WIDTH } : primaryStrokeWidth;
   const primaryXStart =
     size === undefined ? { signal: getRuleXStartSignal() } : { value: REFERENCE_LINE_RULE_X_START[size] };
   const xStart = secondary ? { value: 0 } : primaryXStart;
