@@ -24,6 +24,8 @@ export interface ReferenceLineOptions {
   label?: string;
   /** Size variant controlling stroke weight and caret triangle dimensions. When omitted, stroke width reacts to chart size automatically. */
   size?: ReferenceLineSize;
+  /** When true, renders a lighter secondary style: no caret caps, and a lighter stroke color for XS size. */
+  secondary?: boolean;
 }
 
 export interface ReferenceLineSpecOptions extends ReferenceLineOptions {
