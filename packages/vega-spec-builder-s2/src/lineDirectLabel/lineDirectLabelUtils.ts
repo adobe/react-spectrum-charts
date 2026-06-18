@@ -14,14 +14,14 @@ import { Data, Mark, NumericValueRef, ProductionRule, TextMark, Transforms } fro
 import { CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
+import { getCascadeTransforms, MIN_LABEL_GAP } from '../line/directLabelUtils';
+
 import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils';
 import { getLineOpacity } from '../line/lineMarkUtils';
 import { getColorProductionRule } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
-
-const MIN_LABEL_GAP = 12;
 
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.
@@ -84,28 +84,7 @@ export const getLineDirectLabelData = (
 					},
 				]
 			: []),
-		{
-			type: 'joinaggregate' as const,
-			fields: [metric],
-			ops: ['count' as const],
-			as: ['_seriesCount'],
-		},
-		{
-			type: 'window' as const,
-			sort: { field: [metric], order: ['descending' as const] },
-			ops: ['rank' as const],
-			as: ['_metricRank'],
-		},
-		{ type: 'formula' as const, as: '_scaledY', expr: `scale('${yScaleName}', datum["${metric}"])` },
-		{ type: 'formula' as const, as: '_adjustedY', expr: `datum._scaledY - datum._metricRank * ${MIN_LABEL_GAP}` },
-		{
-			type: 'window' as const,
-			sort: { field: ['_metricRank'], order: ['ascending' as const] },
-			frame: [null, 0] as [null, number],
-			ops: ['max' as const],
-			fields: ['_adjustedY'],
-			as: ['_cumMaxAdjusted'],
-		},
+		...getCascadeTransforms(yScaleName, metric, ''),
 	];
 
 	return {

@@ -11,13 +11,54 @@
  */
 import { NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
-import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, CHART_SIZE_LABEL_GAP, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { ColorScheme } from '../types';
 
 type PositionRef = NumericValueRef | ProductionRule<NumericValueRef>;
 type FillOverride = { field: string } | { value: string };
+
+export const MIN_LABEL_GAP = CHART_SIZE_LABEL_GAP;
+
+/**
+ * Builds the five Vega transforms that compute collision-aware vertical positions for a set of
+ * co-located labels. Shared by direct labels (namespace='') and hover labels (namespace='hover').
+ *
+ * With namespace='': produces fields _seriesCount, _metricRank, _scaledY, _adjustedY, _cumMaxAdjusted
+ * With namespace='hover': produces fields _hover_seriesCount, _hover_metricRank, etc.
+ */
+export const getCascadeTransforms = (yScaleName: string, metric: string, namespace: string): Transforms[] => {
+  const p = namespace ? `_${namespace}_` : '_';
+  const metricRank = `${p}metricRank`;
+  const scaledY = `${p}scaledY`;
+  const adjustedY = `${p}adjustedY`;
+
+  return [
+    {
+      type: 'joinaggregate' as const,
+      fields: [metric],
+      ops: ['count' as const],
+      as: [`${p}seriesCount`],
+    },
+    {
+      type: 'window' as const,
+      sort: { field: [metric], order: ['descending' as const] },
+      ops: ['rank' as const],
+      as: [metricRank],
+    },
+    { type: 'formula' as const, as: scaledY, expr: `scale('${yScaleName}', datum["${metric}"])` },
+    { type: 'formula' as const, as: adjustedY, expr: `datum.${scaledY} - datum.${metricRank} * ${MIN_LABEL_GAP}` },
+    {
+      type: 'window' as const,
+      sort: { field: [metricRank], order: ['ascending' as const] },
+      frame: [null, 0] as [null, number],
+      ops: ['max' as const],
+      fields: [adjustedY],
+      as: [`${p}cumMaxAdjusted`],
+    },
+  ];
+};
 
 // Shared style constants used by both mark variants.
 // Any visual change here automatically applies to hover labels AND static labels.

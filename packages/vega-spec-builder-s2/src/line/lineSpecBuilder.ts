@@ -40,7 +40,7 @@ import { getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, 
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
-import { getLineHighlightedData, getLineStaticPointData, getPrimarySeriesFacetData, getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { getHoverLabelData, getLineHighlightedData, getLineStaticPointData, getPrimarySeriesFacetData, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { getHighlightedSeriesOpacityRules, getLineGradientMark, getLineHighlightOverlayGroup, getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
@@ -188,6 +188,9 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
+    if (options.showHoverLabel) {
+      data.push(getHoverLabelData(options));
+    }
   }
   if (staticPoint || isSparkline) {
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));

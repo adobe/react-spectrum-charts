@@ -77,6 +77,17 @@ export const CHART_SIZE_POINT_SIZES = {
   L: (BASE_POINT_DIAMETER * CHART_SIZE_SCALE_RATIOS.L) ** 2,
 } as const;
 
+/** Vega signal name for the chart-size-derived label gap, driven by a reactive expression. */
+export const CHART_SIZE_LABEL_GAP = 'rscChartSizeLabelGap';
+
+/** Minimum vertical gap (px) between co-located labels per chart size tier. Base M = 12px. */
+const BASE_LABEL_GAP = 12;
+export const CHART_SIZE_LABEL_GAPS = {
+  S: BASE_LABEL_GAP * CHART_SIZE_SCALE_RATIOS.S,
+  M: BASE_LABEL_GAP * CHART_SIZE_SCALE_RATIOS.M,
+  L: BASE_LABEL_GAP * CHART_SIZE_SCALE_RATIOS.L,
+} as const;
+
 export const DEFAULT_LINEAR_DIMENSION = 'x';
 export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';

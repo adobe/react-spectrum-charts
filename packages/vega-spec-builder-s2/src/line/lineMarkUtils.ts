@@ -47,7 +47,7 @@ import { getStrokeDashFromLineType } from '../specUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import { ScaleType } from '../types';
-import { getDirectLabelTextMarks } from './directLabelUtils';
+import { getDirectLabelTextMarks, MIN_LABEL_GAP } from './directLabelUtils';
 import {
   getHighlightPoint,
   getSecondaryHighlightPoint,
@@ -250,7 +250,6 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
       update: {
         // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
         x: getXProductionRule(scaleType, dimension),
-        strokeWidth: getLineStrokeWidth(lineMarkOptions),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
         strokeWidth: getLineStrokeWidth(lineMarkOptions),
@@ -407,13 +406,14 @@ export const getLineHoverMarks = (
 
 /**
  * Two text marks (background halo + foreground) showing the metric value adjacent to the hovered point.
- * Uses the same visual style as LinePointAnnotation so both always match.
- * Both marks read directly from ${name}_highlightedData — no label transform needed since position
- * is computed directly from the data rather than via Vega's label layout algorithm.
+ * Reads from hoverLabelData which carries cascade transforms — when multiple series share the same
+ * hovered dimension (dimensionHover), labels are spread apart using the same cascading formula as
+ * direct labels rather than stacking on top of each other.
  */
 const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
-  const { colorScheme, dimension, hoverLabelKey, metric, name, scaleType } = lineOptions;
+  const { colorScheme, dimension, hoverLabelKey, metric, metricAxis, name, scaleType } = lineOptions;
   const labelField = hoverLabelKey ?? metric;
+  const yScaleName = metricAxis || 'yLinear';
 
   const scaleName = getScaleName('x', scaleType);
   const xField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
@@ -421,13 +421,17 @@ const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
   // preventing the text from overflowing the chart boundary and causing flicker.
   const nearRightEdge = `scale('${scaleName}', datum['${xField}']) > width * 0.8`;
 
+  // Cascade correction only — no fixed anchor offset. Labels default to the natural y of each
+  // hover point; the formula only pushes them apart when they would otherwise collide.
+  const cascadeOffset = `datum._hover_cumMaxAdjusted + datum._hover_metricRank * ${MIN_LABEL_GAP} - datum._hover_scaledY`;
+
   return getDirectLabelTextMarks(
     `${name}_hoverLabelBg`,
     `${name}_hoverLabel`,
-    `${name}_highlightedData`,
+    `${name}_hoverLabelData`,
     `datum["${labelField}"]`,
     getXProductionRule(scaleType, dimension),
-    getLineYEncoding(lineOptions, metric),
+    [{ scale: yScaleName, field: metric, offset: { signal: cascadeOffset } }],
     colorScheme,
     {
       dx: { signal: `${nearRightEdge} ? -8 : 8` },

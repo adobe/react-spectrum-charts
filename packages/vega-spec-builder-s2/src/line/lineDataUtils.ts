@@ -21,6 +21,7 @@ import {
 } from '@spectrum-charts/constants';
 
 import { hasPopover, isInteractive } from '../marks/markUtils';
+import { getCascadeTransforms } from './directLabelUtils';
 import { LineSpecOptions } from '../types';
 
 /**
@@ -87,6 +88,21 @@ export const getPrimarySeriesFacetData = (name: string, primarySeries: number | 
     { type: 'collect', sort: { field: `${name}_isOther`, order: 'descending' } },
   ],
 });
+
+/**
+ * Derives from highlightedData and adds cascade transforms so labels for multiple series
+ * at the same hovered dimension are spread apart rather than overlapping.
+ */
+export const getHoverLabelData = (options: LineSpecOptions): SourceData => {
+  const { metric, name, metricAxis } = options;
+  const yScaleName = metricAxis || 'yLinear';
+
+  return {
+    name: `${name}_hoverLabelData`,
+    source: `${name}_highlightedData`,
+    transform: getCascadeTransforms(yScaleName, metric, 'hover'),
+  };
+};
 
 /**
  * gets the data used for displaying points
