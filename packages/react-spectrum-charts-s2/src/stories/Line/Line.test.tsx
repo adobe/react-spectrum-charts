@@ -115,13 +115,13 @@ describe('Line', () => {
     const lines = await findAllMarksByGroupName(chart, 'line0');
     expect(lines.length).toEqual(4);
     // dotted teal line
-    expect(lines[0].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[0].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
     // solid teal line
     expect(lines[1].getAttribute('stroke-dasharray')).toEqual('');
     expect(lines[1].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
     // dotted purple line
-    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[3].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
     // solid purple line
     expect(lines[3].getAttribute('stroke-dasharray')).toEqual('');
