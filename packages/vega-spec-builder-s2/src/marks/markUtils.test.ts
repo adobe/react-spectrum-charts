@@ -110,7 +110,7 @@ describe('getStrokeDashProductionRule', () => {
   });
 
   test('should return static value and convert preset line type to dash array', () => {
-    expect(getStrokeDashProductionRule({ value: 'dotted' })).toStrictEqual({ value: [2, 3] });
+    expect(getStrokeDashProductionRule({ value: 'dotted' })).toStrictEqual({ value: [0, 4] });
   });
 
   test('should return static value of the dash array provided', () => {

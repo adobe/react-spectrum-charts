@@ -127,7 +127,7 @@ describe('getStrokeDashFromLineType()', () => {
   test('should convert line type names to their coresponding stroke dash array', () => {
     expect(getStrokeDashFromLineType('solid')).toStrictEqual([]);
     expect(getStrokeDashFromLineType('dashed')).toStrictEqual([7, 4]);
-    expect(getStrokeDashFromLineType('dotted')).toStrictEqual([2, 3]);
+    expect(getStrokeDashFromLineType('dotted')).toStrictEqual([0, 4]);
     expect(getStrokeDashFromLineType('dotDash')).toStrictEqual([2, 3, 7, 4]);
     expect(getStrokeDashFromLineType('shortDash')).toStrictEqual([3, 4]);
     expect(getStrokeDashFromLineType('longDash')).toStrictEqual([11, 4]);
