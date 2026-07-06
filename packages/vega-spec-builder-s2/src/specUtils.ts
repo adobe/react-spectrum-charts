@@ -117,7 +117,7 @@ export const getStrokeDashFromLineType = (lineType: LineType): number[] => {
     case 'dashed':
       return [7, 4];
     case 'dotted':
-      return [2, 3];
+      return [0, 4];
     case 'dotDash':
       return [2, 3, 7, 4];
     case 'shortDash':

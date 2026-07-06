@@ -537,6 +537,24 @@ In S2, reference lines are **horizontal only** — place `<ReferenceLine>` insid
 </Axis>
 ```
 
+### Secondary style
+
+Set `secondary` to `true` to render a lighter, lower-emphasis reference line. Secondary lines have no caret caps and use a lighter stroke color, making them suitable for contextual reference values (baselines, prior-period comparisons) that should visually recede behind a primary target line.
+
+```jsx
+<Axis position="left" grid>
+  <ReferenceLine value={7500} label="Target" />
+  <ReferenceLine value={5000} label="Last year" secondary />
+</Axis>
+```
+
+Stroke weight is always 1px for secondary lines. Stroke and label color are size-dependent:
+
+| Size | Stroke / label color |
+|------|---------------------|
+| `'XS'` | `gray-600` |
+| `'S'` / `'M'` / `'L'` / auto | `gray-800` |
+
 ### Positioning on bar charts
 
 On bar charts with categorical axes, the `position` prop controls whether the reference line is positioned before, centered on, or after the specified value:
@@ -581,7 +599,13 @@ On bar charts with categorical axes, the `position` prop controls whether the re
             <td>size</td>
             <td>'XS' | 'S' | 'M' | 'L'</td>
             <td>auto</td>
-            <td>Controls the stroke weight and caret triangle dimensions. When omitted, both react to the chart width automatically (S below 400px, M below 800px, L at 800px+). Use `'XS'` for Sparkline contexts.</td>
+            <td>Controls the stroke weight and caret triangle dimensions. When omitted, both react to the chart width automatically (S below 400px, M below 800px, L at 800px+). Use <code>'XS'</code> for sparkline contexts.</td>
+        </tr>
+        <tr>
+            <td>secondary</td>
+            <td>boolean</td>
+            <td>–</td>
+            <td>When true, renders a lighter secondary style: no caret caps, 1px stroke weight, full-width rule, and size-dependent color (<code>gray-600</code> at XS, <code>gray-800</code> for other sizes). Label color matches the stroke color. Use for contextual reference values (baselines, prior-period comparisons) that should recede behind a primary target line.</td>
         </tr>
     </tbody>
 </table>
