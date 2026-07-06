@@ -42,11 +42,11 @@ The `align` prop controls where the legend is anchored along its edge — start,
 
 S2 uses a different visual pattern for hidden series than S1.
 
-|                  | S1                   | S2                                                    |
-| ---------------- | -------------------- | ----------------------------------------------------- |
-| Color swatch     | Grayed to `gray-300` | Replaced by chart background (swatch disappears)      |
-| Label            | Grayed to `gray-500` | Stays at full opacity (`gray-700`)                    |
-| Visual indicator | Color change only    | `VisibilityOff` icon overlaid on the swatch position  |
+|                  | S1                   | S2                                                              |
+| ---------------- | -------------------- | --------------------------------------------------------------- |
+| Color swatch     | Grayed to `gray-300` | Unchanged color, but shape is swapped to a `VisibilityOff` icon |
+| Label            | Grayed to `gray-500` | Stays at full opacity (`gray-700`)                              |
+| Visual indicator | Color change only    | Swatch shape swap to the `VisibilityOff` icon path              |
 
 This applies when `isToggleable` is `true` (user-controlled) or when series are hidden via the controlled `hiddenSeries` prop on `<Chart>`.
 
@@ -58,4 +58,4 @@ This applies when `isToggleable` is `true` (user-controlled) or when series are 
 </Chart>
 ```
 
-The icon is rendered as a React overlay (not inside the Vega SVG) and repositions automatically on chart resize.
+The icon is rendered as a native Vega symbol shape (a conditional `shape` encoding on the legend's symbol mark), not a separate DOM overlay, so it repositions and scales with the chart automatically — no extra resize handling is needed.

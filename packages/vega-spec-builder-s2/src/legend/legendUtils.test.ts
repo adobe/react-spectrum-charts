@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_LABEL_LIMIT, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE, GROUP_ID } from '@spectrum-charts/constants';
+import { DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_LABEL_LIMIT, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE, GROUP_ID, ROUNDED_SQUARE_PATH, VISIBILITY_OFF_PATH } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
 import { defaultLegendOptions } from './legendTestUtils';
@@ -37,26 +37,47 @@ describe('getSymbolEncodings()', () => {
     });
   });
 
-  test('isToggleable: true should prepend background signal rule to fill and stroke', () => {
+  test('isToggleable: true should add a hidden-series shape rule, a gray-700 fill rule, and a transparent stroke rule', () => {
     const encodings = getSymbolEncodings([], { ...defaultLegendOptions, isToggleable: true });
-    const expectedHiddenRule = { test: 'indexof(hiddenSeries, datum.value) !== -1', signal: BACKGROUND_COLOR };
-    expect(encodings.symbols?.update).toHaveProperty('fill');
-    expect(encodings.symbols?.update?.fill?.[0]).toEqual(expectedHiddenRule);
-    expect(encodings.symbols?.update?.stroke?.[0]).toEqual(expectedHiddenRule);
+    const hiddenTest = 'indexof(hiddenSeries, datum.value) !== -1';
+    expect(encodings.symbols?.update?.fill).toStrictEqual([
+      { test: hiddenTest, value: spectrum2Colors.light['gray-700'] },
+      { value: spectrum2Colors.light['categorical-100'] },
+    ]);
+    // Stroke color (not width, which Vega's legend layout parser requires to stay a single
+    // value) is made transparent so the icon's fine linework isn't outlined/bolded.
+    expect(encodings.symbols?.update?.stroke).toStrictEqual([
+      { test: hiddenTest, value: 'transparent' },
+      { value: spectrum2Colors.light['categorical-100'] },
+    ]);
+    expect(encodings.symbols?.update?.shape).toStrictEqual([
+      { test: hiddenTest, value: VISIBILITY_OFF_PATH },
+      { value: ROUNDED_SQUARE_PATH },
+    ]);
   });
 
-  test('hiddenSeries non-empty should prepend background signal rule', () => {
+  test('hiddenSeries non-empty should add a hidden-series shape rule and a gray-500 icon color rule', () => {
     const encodings = getSymbolEncodings([], { ...defaultLegendOptions, hiddenSeries: ['Windows'] });
-    const expectedHiddenRule = { test: 'indexof(hiddenSeries, datum.value) !== -1', signal: BACKGROUND_COLOR };
-    expect(encodings.symbols?.update?.fill?.[0]).toEqual(expectedHiddenRule);
+    const hiddenTest = 'indexof(hiddenSeries, datum.value) !== -1';
+    expect(encodings.symbols?.update?.fill?.[0]).toEqual({ test: hiddenTest, value: spectrum2Colors.light['gray-500'] });
+    expect(encodings.symbols?.update?.stroke?.[0]).toEqual({ test: hiddenTest, value: 'transparent' });
+    expect(encodings.symbols?.update?.shape?.[0]).toEqual({ test: hiddenTest, value: VISIBILITY_OFF_PATH });
   });
 
-  test('isToggleable with keys should use filteredTable rule for background signal', () => {
+  test('isToggleable with keys should use filteredTable rule for the shape and color swap', () => {
     const encodings = getSymbolEncodings([], { ...defaultLegendOptions, isToggleable: true, keys: ['key1'] });
-    const hiddenRule = encodings.symbols?.update?.fill?.[0] as { test?: string; signal?: string };
-    expect(hiddenRule?.test).toContain(FILTERED_TABLE);
-    expect(hiddenRule?.test).toContain(GROUP_ID);
-    expect(hiddenRule?.signal).toBe(BACKGROUND_COLOR);
+    const hiddenShapeRule = encodings.symbols?.update?.shape?.[0] as { test?: string; value?: string };
+    expect(hiddenShapeRule?.test).toContain(FILTERED_TABLE);
+    expect(hiddenShapeRule?.test).toContain(GROUP_ID);
+    expect(hiddenShapeRule?.value).toBe(VISIBILITY_OFF_PATH);
+
+    const hiddenFillRule = encodings.symbols?.update?.fill?.[0] as { test?: string; value?: string };
+    expect(hiddenFillRule?.test).toContain(FILTERED_TABLE);
+    expect(hiddenFillRule?.value).toBe(spectrum2Colors.light['gray-700']);
+
+    const hiddenStrokeRule = encodings.symbols?.update?.stroke?.[0] as { test?: string; value?: string };
+    expect(hiddenStrokeRule?.test).toContain(FILTERED_TABLE);
+    expect(hiddenStrokeRule?.value).toBe('transparent');
   });
 });
 

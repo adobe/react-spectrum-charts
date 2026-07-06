@@ -20,8 +20,6 @@ import './Chart.css';
 import { VegaChart } from './VegaChart';
 import { useChartContext } from './context/RscChartContext';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
-import { LegendIconOverlay } from './components/Legend/LegendIconOverlay';
-import { useLegendIconPositions } from './components/Legend/useLegendIconPositions';
 import { useChartInteractions } from './hooks/useChartInteractions';
 import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
@@ -94,8 +92,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, inspectOptions, onNewView, legendHiddenSeries } = useChartInteractions(props, sanitizedChildren);
-  const { positions: legendIconPositions, onViewReady: onLegendViewReady } = useLegendIconPositions(chartView, legendHiddenSeries);
+  const { signals, targetStyle, inspectOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
   const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
   const specSignalNames = useMemo(() => new Set(spec.signals?.map((s) => s.name) ?? []), [spec.signals]);
 
@@ -113,10 +110,9 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const handleNewView = useCallback(
     (view: VegaView) => {
       onNewView(view);
-      onLegendViewReady();
       onVegaViewReady?.(view);
     },
-    [onNewView, onLegendViewReady, onVegaViewReady]
+    [onNewView, onVegaViewReady]
   );
 
   return (
@@ -141,7 +137,6 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         tooltip={inspectOptions} // legend show/hide relies on this
         onNewView={handleNewView}
       />
-      <LegendIconOverlay positions={legendIconPositions} />
       {popovers.map((popover) => (
         <ChartDialog
           key={popover.key}

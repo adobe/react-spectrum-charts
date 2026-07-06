@@ -40,8 +40,8 @@ const IsToggleable = bindWithProps(LegendBarStory);
 IsToggleable.args = { isToggleable: true, highlight: true, ...defaultProps };
 IsToggleable.storyName = 'Is Toggleable (uncontrolled)';
 
-// Demonstrates the S2 eye-icon overlay: clicking a legend entry shows a VisibilityOff
-// icon over the color swatch while keeping the label at full opacity.
+// Demonstrates the S2 eye icon: clicking a legend entry swaps the swatch's shape to a
+// VisibilityOff icon while keeping the swatch color and label at full opacity.
 const HiddenSeriesIcon = bindWithProps(LegendBarStory);
 HiddenSeriesIcon.args = { isToggleable: true, defaultHiddenSeries: ['Mac'], ...defaultProps };
 HiddenSeriesIcon.storyName = 'Hidden Series Icon (S2)';

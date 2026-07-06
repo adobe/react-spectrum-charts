@@ -25,6 +25,7 @@ import {
   SENTIMENT_NEUTRAL_PATH,
   SENTIMENT_POSITIVE_PATH,
   TABLE,
+  VISIBILITY_OFF_PATH,
 } from '@spectrum-charts/constants';
 import { getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
 
@@ -164,6 +165,7 @@ export const getLineWidthPixelsFromLineWidth = (lineWidth: LineWidth): number =>
  */
 export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string => {
   if (symbolShape === 'rounded-square') return ROUNDED_SQUARE_PATH;
+  if (symbolShape === 'visibility-off') return VISIBILITY_OFF_PATH;
   return symbolShape;
 };
 
