@@ -42,11 +42,11 @@ The `align` prop controls where the legend is anchored along its edge — start,
 
 S2 uses a different visual pattern for hidden series than S1.
 
-|                  | S1                   | S2                                                              |
-| ---------------- | -------------------- | --------------------------------------------------------------- |
-| Color swatch     | Grayed to `gray-300` | Unchanged color, but shape is swapped to a `VisibilityOff` icon |
-| Label            | Grayed to `gray-500` | Stays at full opacity (`gray-700`)                              |
-| Visual indicator | Color change only    | Swatch shape swap to the `VisibilityOff` icon path              |
+|                  | S1                   | S2                                                                |
+| ---------------- | -------------------- | ----------------------------------------------------------------- |
+| Color swatch     | Grayed to `gray-300` | Shape swapped to `VisibilityOff` icon, colored to match the label |
+| Label            | Grayed to `gray-500` | Stays at full opacity (`gray-700`)                                |
+| Visual indicator | Color change only    | Swatch shape swap to the `VisibilityOff` icon path                |
 
 This applies when `isToggleable` is `true` (user-controlled) or when series are hidden via the controlled `hiddenSeries` prop on `<Chart>`.
 
