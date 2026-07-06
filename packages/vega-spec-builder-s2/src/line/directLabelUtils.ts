@@ -11,7 +11,7 @@
  */
 import { NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
-import { BACKGROUND_COLOR, CHART_SIZE_LABEL_GAP, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, CHART_SIZE_LABEL_GAP, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { ColorScheme } from '../types';
@@ -67,6 +67,7 @@ const directLabelBackgroundStyle = {
   stroke: { signal: BACKGROUND_COLOR },
   strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
   fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+  fontSize: { signal: CHART_SIZE_FONT_SIZE },
 };
 
 const getDirectLabelForegroundFill = (colorScheme: ColorScheme, override?: FillOverride): FillOverride =>
@@ -108,6 +109,7 @@ export const getDirectLabelTextMarks = (
         text: { signal: textSignal },
         fill: getDirectLabelForegroundFill(colorScheme, foregroundFillOverride),
         fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+        fontSize: { signal: CHART_SIZE_FONT_SIZE },
       },
       update: { x: xEncoding, y: yEncoding, ...additionalUpdateEncode } as never,
     },

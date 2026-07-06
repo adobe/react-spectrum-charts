@@ -12,6 +12,7 @@
 import { ArrayValueRef, ColorValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, TextMark } from 'vega';
 
 import {
+  CHART_SIZE_FONT_SIZE,
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_HOVER_STROKE_WIDTH,
   COLOR_SCALE,
@@ -417,9 +418,10 @@ const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
 
   const scaleName = getScaleName('x', scaleType);
   const xField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
-  // Flip label to the left side when the hovered point is in the right 20% of the chart,
-  // preventing the text from overflowing the chart boundary and causing flicker.
-  const nearRightEdge = `scale('${scaleName}', datum['${xField}']) > width * 0.8`;
+  // Offset between the hover point center and the label.
+  const LABEL_POINT_GAP = 9;
+  // Flip label to the left side when the label would overflow the right edge of the chart.
+  const nearRightEdge = `scale('${scaleName}', datum['${xField}']) + getLabelWidth(datum["${labelField}"], 'bold', ${CHART_SIZE_FONT_SIZE}) + ${LABEL_POINT_GAP} > width`;
 
   // Cascade correction only — no fixed anchor offset. Labels default to the natural y of each
   // hover point; the formula only pushes them apart when they would otherwise collide.
@@ -434,7 +436,7 @@ const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
     [{ scale: yScaleName, field: metric, offset: { signal: cascadeOffset } }],
     colorScheme,
     {
-      dx: { signal: `${nearRightEdge} ? -8 : 8` },
+      dx: { signal: `${nearRightEdge} ? -${LABEL_POINT_GAP} : ${LABEL_POINT_GAP}` },
       align: { signal: `${nearRightEdge} ? 'right' : 'left'` },
       baseline: { value: 'middle' },
     },
