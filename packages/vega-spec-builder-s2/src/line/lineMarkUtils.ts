@@ -411,7 +411,7 @@ export const getLineHoverMarks = (
  * direct labels rather than stacking on top of each other.
  */
 const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
-  const { colorScheme, dimension, hoverLabelKey, metric, metricAxis, name, scaleType } = lineOptions;
+  const { color, colorScheme, dimension, hoverLabelKey, metric, metricAxis, name, scaleType } = lineOptions;
   const labelField = hoverLabelKey ?? metric;
   const yScaleName = metricAxis || 'yLinear';
 
@@ -437,7 +437,8 @@ const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
       dx: { signal: `${nearRightEdge} ? -8 : 8` },
       align: { signal: `${nearRightEdge} ? 'right' : 'left'` },
       baseline: { value: 'middle' },
-    }
+    },
+    { signal: getColorProductionRuleSignalString(color, colorScheme) }
   );
 };
 

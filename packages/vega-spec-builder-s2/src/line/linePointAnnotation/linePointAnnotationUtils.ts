@@ -11,6 +11,8 @@
  */
 import { TextMark } from 'vega';
 
+import { LINE_POINT_ANNOTATION_OFFSET } from '@spectrum-charts/constants';
+
 import { LinePointAnnotationOptions, LinePointAnnotationSpecOptions, LineSpecOptions } from '../../types';
 import { getLabelTransformTextMarks } from '../directLabelUtils';
 
@@ -38,7 +40,7 @@ export const getLinePointAnnotations = (lineOptions: LineSpecOptions): LinePoint
 export const getLinePointAnnotationMarks = (lineOptions: LineSpecOptions): TextMark[] => {
 	return getLinePointAnnotations(lineOptions).flatMap((annotation) => {
 		const { anchor, matchLineColor, name: linePointAnnotationName, textKey } = annotation;
-		const foregroundFill = matchLineColor ? { field: 'datum.stroke' } : undefined;
+		const foregroundFill = matchLineColor ? { field: 'datum.fill' } : undefined;
 
 		return getLabelTransformTextMarks(
 			`${linePointAnnotationName}_bg`,
@@ -50,6 +52,7 @@ export const getLinePointAnnotationMarks = (lineOptions: LineSpecOptions): TextM
 				type: 'label',
 				size: { signal: '[width, height]' },
 				anchor: Array.isArray(anchor) ? anchor : [anchor],
+				offset: [LINE_POINT_ANNOTATION_OFFSET],
 			},
 			foregroundFill
 		);

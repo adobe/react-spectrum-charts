@@ -115,20 +115,20 @@ describe('getLineMark()', () => {
 });
 
 describe('getLineHoverMarks()', () => {
-  test('should return 4 marks by default', () => {
+  test('should return 6 marks by default', () => {
     expect(
       getLineHoverMarks({ ...defaultLineMarkOptions, isHighlightedByDimension: true }, 'line0_facet')
-    ).toHaveLength(4);
+    ).toHaveLength(6);
   });
-  test('should return 3 marks if interactionMode is item', () => {
+  test('should return 5 marks if interactionMode is item', () => {
     expect(
       getLineHoverMarks(
         { ...defaultLineMarkOptions, isHighlightedByDimension: true, interactionMode: 'item' },
         'line0_facet'
       )
-    ).toHaveLength(3);
+    ).toHaveLength(5);
   });
-  test('should return 5 marks if a popover is present', () => {
+  test('should return 7 marks if a popover is present', () => {
     expect(
       getLineHoverMarks(
         {
@@ -138,7 +138,7 @@ describe('getLineHoverMarks()', () => {
         },
         'line0_facet'
       )
-    ).toHaveLength(5);
+    ).toHaveLength(7);
   });
   test('should have opacity of 0 if a selected item exists', () => {
     const marks = getLineHoverMarks(

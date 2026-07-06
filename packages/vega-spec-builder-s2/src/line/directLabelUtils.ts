@@ -17,7 +17,7 @@ import { getS2ColorValue } from '@spectrum-charts/themes';
 import { ColorScheme } from '../types';
 
 type PositionRef = NumericValueRef | ProductionRule<NumericValueRef>;
-type FillOverride = { field: string } | { value: string };
+type FillOverride = { field: string } | { value: string } | { signal: string };
 
 export const MIN_LABEL_GAP = CHART_SIZE_LABEL_GAP;
 
@@ -85,7 +85,8 @@ export const getDirectLabelTextMarks = (
   xEncoding: PositionRef,
   yEncoding: PositionRef,
   colorScheme: ColorScheme,
-  additionalUpdateEncode: Record<string, unknown> = {}
+  additionalUpdateEncode: Record<string, unknown> = {},
+  foregroundFillOverride?: FillOverride
 ): TextMark[] => [
   {
     name: backgroundMarkName,
@@ -105,7 +106,7 @@ export const getDirectLabelTextMarks = (
     encode: {
       enter: {
         text: { signal: textSignal },
-        fill: getDirectLabelForegroundFill(colorScheme),
+        fill: getDirectLabelForegroundFill(colorScheme, foregroundFillOverride),
         fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
       },
       update: { x: xEncoding, y: yEncoding, ...additionalUpdateEncode } as never,

@@ -33,6 +33,7 @@ describe('getLineHighlightedData()', () => {
         ...defaultLineOptions,
         chartPopovers: [{}],
         chartInspects: [{ highlightBy: 'dimension' }],
+        isHighlightedByGroup: true,
       }).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
