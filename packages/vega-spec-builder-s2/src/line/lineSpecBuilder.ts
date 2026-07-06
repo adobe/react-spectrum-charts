@@ -173,8 +173,7 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     // time data was transformed above, so we need to use the transformed dimension
     const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
     data.push(...getAlternateSegmentData(name, dimSortField));
-  }
-  if (!alternateSegmentKey && forecasts.length > 0) {
+  } else if (forecasts.length > 0) {
     tableData.transform = tableData.transform ?? [];
     const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
     tableData.transform.push(
@@ -182,8 +181,7 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
       getForecastEffectiveValueTransform(name, metric, forecasts[0].metric)
     );
     data.push(...getAlternateSegmentData(name, dimSortField));
-  }
-  if (primarySeries && !alternateSegmentKey && !forecasts.length) {
+  } else if (primarySeries) {
     data.push(getPrimarySeriesFacetData(name, primarySeries));
   }
   if (isInteractive(options) || highlightedItem !== undefined) {

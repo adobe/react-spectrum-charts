@@ -432,14 +432,16 @@ const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
     `${name}_hoverLabel`,
     `${name}_hoverLabelData`,
     `datum["${labelField}"]`,
-    getXProductionRule(scaleType, dimension),
-    [{ scale: yScaleName, field: metric, offset: { signal: cascadeOffset } }],
-    colorScheme,
     {
-      dx: { signal: `${nearRightEdge} ? -${LABEL_POINT_GAP} : ${LABEL_POINT_GAP}` },
-      align: { signal: `${nearRightEdge} ? 'right' : 'left'` },
-      baseline: { value: 'middle' },
+      x: getXProductionRule(scaleType, dimension),
+      y: [{ scale: yScaleName, field: metric, offset: { signal: cascadeOffset } }],
+      additional: {
+        dx: { signal: `${nearRightEdge} ? -${LABEL_POINT_GAP} : ${LABEL_POINT_GAP}` },
+        align: { signal: `${nearRightEdge} ? 'right' : 'left'` },
+        baseline: { value: 'middle' },
+      },
     },
+    colorScheme,
     { signal: getColorProductionRuleSignalString(color, colorScheme) }
   );
 };

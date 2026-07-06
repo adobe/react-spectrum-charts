@@ -19,6 +19,12 @@ import { ColorScheme } from '../types';
 type PositionRef = NumericValueRef | ProductionRule<NumericValueRef>;
 type FillOverride = { field: string } | { value: string } | { signal: string };
 
+export interface DirectLabelUpdateEncode {
+  x: PositionRef;
+  y: PositionRef;
+  additional?: Record<string, unknown>;
+}
+
 export const MIN_LABEL_GAP = CHART_SIZE_LABEL_GAP;
 
 /**
@@ -83,38 +89,39 @@ export const getDirectLabelTextMarks = (
   foregroundMarkName: string,
   dataSource: string,
   textSignal: string,
-  xEncoding: PositionRef,
-  yEncoding: PositionRef,
+  updateEncode: DirectLabelUpdateEncode,
   colorScheme: ColorScheme,
-  additionalUpdateEncode: Record<string, unknown> = {},
   foregroundFillOverride?: FillOverride
-): TextMark[] => [
-  {
-    name: backgroundMarkName,
-    type: 'text',
-    interactive: false,
-    from: { data: dataSource },
-    encode: {
-      enter: { text: { signal: textSignal }, ...directLabelBackgroundStyle },
-      update: { x: xEncoding, y: yEncoding, ...additionalUpdateEncode } as never,
-    },
-  },
-  {
-    name: foregroundMarkName,
-    type: 'text',
-    interactive: false,
-    from: { data: dataSource },
-    encode: {
-      enter: {
-        text: { signal: textSignal },
-        fill: getDirectLabelForegroundFill(colorScheme, foregroundFillOverride),
-        fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
-        fontSize: { signal: CHART_SIZE_FONT_SIZE },
+): TextMark[] => {
+  const { x, y, additional = {} } = updateEncode;
+  return [
+    {
+      name: backgroundMarkName,
+      type: 'text',
+      interactive: false,
+      from: { data: dataSource },
+      encode: {
+        enter: { text: { signal: textSignal }, ...directLabelBackgroundStyle },
+        update: { x, y, ...additional } as never,
       },
-      update: { x: xEncoding, y: yEncoding, ...additionalUpdateEncode } as never,
     },
-  },
-];
+    {
+      name: foregroundMarkName,
+      type: 'text',
+      interactive: false,
+      from: { data: dataSource },
+      encode: {
+        enter: {
+          text: { signal: textSignal },
+          fill: getDirectLabelForegroundFill(colorScheme, foregroundFillOverride),
+          fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+          fontSize: { signal: CHART_SIZE_FONT_SIZE },
+        },
+        update: { x, y, ...additional } as never,
+      },
+    },
+  ];
+};
 
 /**
  * Builds the two-mark (background halo + foreground text) pattern for annotation-style labels
