@@ -12,11 +12,22 @@
 import { produce } from 'immer';
 import { Config, Data, Scale, ScaleType, Spec, mergeConfig } from 'vega';
 
-
-
-import { COLOR_SCALE, DATE_PATH, DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, LINE_TYPE_SCALE, MARK_ID, OPACITY_SCALE, ROUNDED_SQUARE_PATH, SENTIMENT_NEGATIVE_PATH, SENTIMENT_NEUTRAL_PATH, SENTIMENT_POSITIVE_PATH, TABLE } from '@spectrum-charts/constants';
+import {
+  COLOR_SCALE,
+  DATE_PATH,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  FILTERED_TABLE,
+  LINE_TYPE_SCALE,
+  MARK_ID,
+  OPACITY_SCALE,
+  ROUNDED_SQUARE_PATH,
+  SENTIMENT_NEGATIVE_PATH,
+  SENTIMENT_NEUTRAL_PATH,
+  SENTIMENT_POSITIVE_PATH,
+  TABLE,
+  VISIBILITY_OFF_PATH,
+} from '@spectrum-charts/constants';
 import { S2_TITLE_FONT_SIZE, getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
-
 
 
 import { expressionFunctions } from './expressionFunctions/expressionFunctions';
@@ -37,7 +48,6 @@ import {
   SymbolSizeFacet,
   UserMeta,
 } from './types';
-
 
 /**
  * gets all the keys that are used to facet by
@@ -110,7 +120,7 @@ export const getStrokeDashFromLineType = (lineType: LineType): number[] => {
     case 'dashed':
       return [7, 4];
     case 'dotted':
-      return [2, 3];
+      return [0, 4];
     case 'dotDash':
       return [2, 3, 7, 4];
     case 'shortDash':
@@ -157,6 +167,7 @@ export const getLineWidthPixelsFromLineWidth = (lineWidth: LineWidth): number =>
  */
 export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string => {
   if (symbolShape === 'rounded-square') return ROUNDED_SQUARE_PATH;
+  if (symbolShape === 'visibility-off') return VISIBILITY_OFF_PATH;
   return symbolShape;
 };
 

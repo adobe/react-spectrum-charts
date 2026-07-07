@@ -237,15 +237,16 @@ export const getOpacityEncoding = (
 };
 
 export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions): LegendEncode => {
-  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = options;
+  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme, isToggleable, hiddenSeries, keys } = options;
+  const shapeFacetRef = getSymbolFacetEncoding<string>({
+    facets,
+    facetType: SYMBOL_SHAPE_SCALE,
+    customValue: symbolShape,
+    name,
+  });
   const enter: SymbolEncodeEntry = {
     fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
-    shape: getSymbolFacetEncoding<string>({
-      facets,
-      facetType: SYMBOL_SHAPE_SCALE,
-      customValue: symbolShape,
-      name,
-    }),
+    shape: shapeFacetRef,
     size: getSymbolFacetEncoding<number>({ facets, facetType: SYMBOL_SIZE_SCALE, name }),
     strokeDash: getSymbolFacetEncoding<number[]>({
       facets,
@@ -253,6 +254,7 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
       customValue: lineType,
       name,
     }),
+    // Must stay a single value/signal — Vega's legend-layout sizeExpression breaks on production-rule arrays here.
     strokeWidth: getSymbolFacetEncoding<number>({
       facets,
       facetType: LINE_WIDTH_SCALE,
@@ -260,19 +262,23 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
       name,
     }),
   };
+  const colorRef = getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
+    value: spectrum2Colors[colorScheme]['categorical-100'],
+  };
+  // Hidden entries swap shape to the "eye off" icon, colored to match the legend label text (not the series color).
+  const isHidden = isToggleable || hiddenSeries.length > 0;
+  const hiddenSeriesTest = keys?.length
+    ? `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_${GROUP_ID}'), datum.value) === -1`
+    : 'indexof(hiddenSeries, datum.value) !== -1';
+  const hiddenIconColor = getS2ColorValue(isToggleable ? 'gray-700' : 'gray-500', colorScheme);
+  const hiddenFillRule = { test: hiddenSeriesTest, value: hiddenIconColor };
+  // Transparent, not zero-width: strokeWidth can't be conditional (see note above), and Vega's default 1.5px outline would bold the icon's fine linework.
+  const hiddenStrokeRule = { test: hiddenSeriesTest, value: 'transparent' };
+  const hiddenShapeRule = { test: hiddenSeriesTest, value: getPathFromSymbolShape('visibility-off') };
   const update: SymbolEncodeEntry = {
-    fill: [
-      ...getHiddenSeriesColorRule(options, 'gray-300'),
-      getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-        value: spectrum2Colors[colorScheme]['categorical-100'],
-      },
-    ],
-    stroke: [
-      ...getHiddenSeriesColorRule(options, 'gray-300'),
-      getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-        value: spectrum2Colors[colorScheme]['categorical-100'],
-      },
-    ],
+    fill: isHidden ? [hiddenFillRule, colorRef] : [colorRef],
+    stroke: isHidden ? [hiddenStrokeRule, colorRef] : [colorRef],
+    shape: isHidden ? [hiddenShapeRule, shapeFacetRef ?? { value: getPathFromSymbolShape('rounded-square') }] : undefined,
   };
   // Remove undefined values
   const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
@@ -352,16 +358,19 @@ export const getHiddenSeriesColorRule = (
  * @returns
  */
 export const getShowHideEncodings = (options: LegendSpecOptions): LegendEncode => {
-  const { colorScheme } = options;
-  const hiddenSeriesEncode: LegendEncode = {
+  const { colorScheme, isToggleable } = options;
+  // Toggleable legends use the eye-icon overlay UX — labels always stay at full opacity (gray-700).
+  // Controlled hiddenSeries (non-toggleable) preserves the gray-500 gray-out on hidden labels.
+  const labelFillRules = isToggleable
+    ? [{ value: getS2ColorValue('gray-700', colorScheme) }]
+    : [...getHiddenSeriesColorRule(options, 'gray-500'), { value: getS2ColorValue('gray-700', colorScheme) }];
+  return {
     labels: {
       update: {
-        fill: [...getHiddenSeriesColorRule(options, 'gray-500'), { value: getS2ColorValue('gray-700', colorScheme) }],
+        fill: labelFillRules,
       },
     },
   };
-
-  return hiddenSeriesEncode;
 };
 
 /**

@@ -60,15 +60,20 @@ test('Hidden series should have the correct legend styling', async () => {
   expect(symbols[0]).toHaveAttribute('fill', colors['categorical-100']);
   expect(symbols[0]).toHaveAttribute('stroke', colors['categorical-100']);
   expect(screen.getByText('Windows')).toHaveAttribute('fill', colors['gray-700']);
+  const visibleShape = symbols[0].getAttribute('d');
 
   // clicking on the first series should hide it
   const entries = getAllLegendEntries(chart);
   await clickNthElement(entries, 0);
 
   symbols = getAllLegendSymbols(chart);
-  expect(symbols[0]).toHaveAttribute('fill', colors['gray-300']);
-  expect(symbols[0]).toHaveAttribute('stroke', colors['gray-300']);
-  expect(screen.getByText('Windows')).toHaveAttribute('fill', colors['gray-500']);
+  // Hidden symbol swaps to the eye icon, filled to match the (full-opacity) legend text rather
+  // than the series color; stroke is transparent so the icon's fine linework isn't outlined
+  expect(symbols[0]).toHaveAttribute('fill', colors['gray-700']);
+  expect(symbols[0]).toHaveAttribute('stroke', 'transparent');
+  expect(symbols[0].getAttribute('d')).not.toEqual(visibleShape);
+  // Hidden label stays at full opacity (gray-700), not grayed out
+  expect(screen.getByText('Windows')).toHaveAttribute('fill', colors['gray-700']);
 });
 
 test('HiddenSeries should not be drawn to bar chart', async () => {

@@ -20,6 +20,7 @@ import {
   LINE_TYPE_SCALE,
   ROUNDED_SQUARE_PATH,
   TABLE,
+  VISIBILITY_OFF_PATH,
 } from '@spectrum-charts/constants';
 import {
   getSpectrum2VegaConfig,
@@ -128,7 +129,7 @@ describe('getStrokeDashFromLineType()', () => {
   test('should convert line type names to their coresponding stroke dash array', () => {
     expect(getStrokeDashFromLineType('solid')).toStrictEqual([]);
     expect(getStrokeDashFromLineType('dashed')).toStrictEqual([7, 4]);
-    expect(getStrokeDashFromLineType('dotted')).toStrictEqual([2, 3]);
+    expect(getStrokeDashFromLineType('dotted')).toStrictEqual([0, 4]);
     expect(getStrokeDashFromLineType('dotDash')).toStrictEqual([2, 3, 7, 4]);
     expect(getStrokeDashFromLineType('shortDash')).toStrictEqual([3, 4]);
     expect(getStrokeDashFromLineType('longDash')).toStrictEqual([11, 4]);
@@ -153,6 +154,9 @@ describe('getLineWidthPixelsFromLineWidth', () => {
 describe('getPathFromSymbolShape()', () => {
   test('return rounded square path for rounded-square', () => {
     expect(getPathFromSymbolShape('rounded-square')).toBe(ROUNDED_SQUARE_PATH);
+  });
+  test('return visibility-off icon path for visibility-off', () => {
+    expect(getPathFromSymbolShape('visibility-off')).toBe(VISIBILITY_OFF_PATH);
   });
   test('return input unless input is rounded-square', () => {
     expect(getPathFromSymbolShape('circle')).toBe('circle');

@@ -36,7 +36,7 @@ const referenceValue = 5000;
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users">
         <ReferenceLine {...args} />
       </Axis>
@@ -89,6 +89,34 @@ const AutoDetectSizeStory = (): ReactElement => (
   </ResizableChart>
 );
 
-export const AutoDetectSize = AutoDetectSizeStory;
+const SecondaryBasic = bindWithProps(ReferenceLineStory);
+SecondaryBasic.args = {
+  value: referenceValue,
+  secondary: true,
+};
 
-export { Basic, Label, WithSize };
+const WithSecondary = bindWithProps(ReferenceLineStory);
+WithSecondary.args = {
+  label: 'Minimum',
+  value: referenceValue,
+  secondary: true,
+};
+
+const PrimaryAndSecondaryStory: StoryFn<typeof ReferenceLine> = (): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users">
+        <ReferenceLine value={referenceValue} label="Target" />
+        <ReferenceLine value={Math.round(referenceValue * 0.7)} label="Minimum" secondary />
+      </Axis>
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time" />
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const PrimaryAndSecondary = PrimaryAndSecondaryStory;
+
+export { Basic, Label, PrimaryAndSecondary, SecondaryBasic, WithSecondary, WithSize };
