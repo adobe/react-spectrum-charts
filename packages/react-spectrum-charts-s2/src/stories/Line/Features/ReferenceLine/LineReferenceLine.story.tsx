@@ -189,6 +189,7 @@ const AutoDetectSizeStory = (): ReactElement => {
           <Chart data={workspaceTrendsData} width={width} height={CHART_HEIGHT}>
             <Axis position="left" grid title="Users">
               <ReferenceLine value={referenceValue} label="Target" />
+              <ReferenceLine value={Math.round(referenceValue * 0.7)} label="Minimum" secondary />
             </Axis>
             <Axis position="bottom" labelFormat="time" baseline ticks />
             <Line dimension="datetime" metric="users" color="series" scaleType="time" />
