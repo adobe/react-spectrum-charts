@@ -15,7 +15,7 @@ import { Config, Data, Scale, ScaleType, Spec, mergeConfig } from 'vega';
 
 
 import { COLOR_SCALE, DATE_PATH, DEFAULT_TRANSFORMED_TIME_DIMENSION, FILTERED_TABLE, LINE_TYPE_SCALE, MARK_ID, OPACITY_SCALE, ROUNDED_SQUARE_PATH, SENTIMENT_NEGATIVE_PATH, SENTIMENT_NEUTRAL_PATH, SENTIMENT_POSITIVE_PATH, TABLE } from '@spectrum-charts/constants';
-import { S2_TITLE_FONT_SIZE, getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
+import { ADOBE_CLEAN_FONT, S2_TITLE_FONT_SIZE, getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
 
 
 
@@ -240,6 +240,14 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
   return { ...baseSpec, ...(spec || {}) };
 };
 
+const TITLE_FONT_WEIGHT = 'bold' as const;
+
+/**
+ * The font shorthand used to measure and wrap chart titles. Shared with the font-load gate in
+ * VegaChart so the font it waits on always matches the font wrapTitleText measures with.
+ */
+export const getTitleFontShorthand = (): string => `${TITLE_FONT_WEIGHT} ${S2_TITLE_FONT_SIZE}px ${ADOBE_CLEAN_FONT}`;
+
 /**
  * Splits a title string into lines that fit within maxWidth pixels, breaking at word boundaries.
  * Uses canvas text measurement with the S2 title font for accurate line widths.
@@ -251,7 +259,7 @@ export const wrapTitleText = (text: string, maxWidth: number): string[] => {
     const last = lines.at(-1);
     if (last !== undefined) {
       const candidate = `${last} ${word}`;
-      const candidateWidth = expressionFunctions.getLabelWidth(candidate, 'bold', S2_TITLE_FONT_SIZE);
+      const candidateWidth = expressionFunctions.getLabelWidth(candidate, TITLE_FONT_WEIGHT, S2_TITLE_FONT_SIZE);
       if (candidateWidth <= maxWidth) {
         return [...lines.slice(0, -1), candidate];
       }
