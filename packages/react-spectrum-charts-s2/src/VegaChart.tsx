@@ -17,7 +17,14 @@ import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
 import { getLocale } from '@spectrum-charts/locales';
-import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions, wrapTitleText } from '@spectrum-charts/vega-spec-builder-s2';
+import {
+  ChartData,
+  UserMeta,
+  applyUserMetaConfigPatches,
+  getTitleFontShorthand,
+  getVegaEmbedOptions,
+  wrapTitleText,
+} from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
@@ -48,6 +55,31 @@ export const resizeView = (view: View | undefined, width: number, height: number
     // after dependent changes (e.g. legend column count → legend height → plot area height).
     view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
   }
+};
+
+// Upper bound on how long the initial embed will wait for the title font. Font loads are
+// normally near-instant (cached or already triggered by other chart text), but a blocked or
+// slow font fetch must never delay the chart's first paint indefinitely.
+const TITLE_FONT_READY_TIMEOUT_MS = 250;
+
+/**
+ * Resolves once the title font is available for canvas measurement, or after
+ * TITLE_FONT_READY_TIMEOUT_MS, whichever comes first. Vega evaluates the rscWrapTitle expression
+ * synchronously while parsing the spec in embed(), so if the font isn't loaded yet, getLabelWidth
+ * silently measures with a fallback font and the title wraps incorrectly on the first paint.
+ * Awaiting this before the initial embed avoids that bad frame in the common case. Never rejects
+ * and never blocks longer than the timeout, so a stalled or failed font fetch can't block rendering.
+ */
+const ensureTitleFontReady = (): Promise<unknown> => {
+  if (typeof document === 'undefined' || !document.fonts) {
+    return Promise.resolve();
+  }
+  const fontReady =
+    typeof document.fonts.load === 'function'
+      ? document.fonts.load(getTitleFontShorthand()).catch(() => undefined)
+      : (document.fonts.ready ?? Promise.resolve());
+  const timeout = new Promise((resolve) => setTimeout(resolve, TITLE_FONT_READY_TIMEOUT_MS));
+  return Promise.race([fontReady, timeout]);
 };
 
 export interface VegaChartProps {
@@ -83,6 +115,12 @@ export const VegaChart: FC<VegaChartProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const chartView = useRef<View | undefined>(undefined);
   const hasMounted = useRef(false);
+  // Only the very first embed attempt (titled or not) may wait on font readiness — every later
+  // re-embed (triggered by prop identity changes, e.g. hover-driven state updates, or a title
+  // appearing after an initial untitled mount) must stay synchronous, since by then the font has
+  // virtually certainly already loaded and any added delay makes an otherwise-instant view
+  // destroy/recreate visibly flicker.
+  const hasAttemptedEmbed = useRef(false);
   // AN-445759: flipped to true when dimensions become valid post-mount with no existing view,
   // forcing the embed effect to run even though width/height are not in its deps.
   const [needsInitEmbed, setNeedsInitEmbed] = useState(false);
@@ -120,6 +158,7 @@ export const VegaChart: FC<VegaChartProps> = ({
   }, [width, height]);
 
   useEffect(() => {
+    let cancelled = false;
     if (width && height && containerRef.current) {
       const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
       const tableData = specCopy.data?.find((d) => d.name === TABLE);
@@ -134,39 +173,58 @@ export const VegaChart: FC<VegaChartProps> = ({
           return signal;
         });
       }
-      const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
-      const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
-      const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
 
-      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
-        chartView.current = view;
-        onNewView(view);
-        view.resize();
-        view.runAsync();
-        // One additional render to settle all resize calculations
-        setTimeout(() => view.runAsync(), 0);
+      const titleSignal = specCopy.signals?.find((s) => s.name === 'rscTitleText');
+      const titleValue = titleSignal && 'value' in titleSignal ? titleSignal.value : undefined;
+      const hasTitle = typeof titleValue === 'string' && titleValue.length > 0;
 
-        // getLabelWidth uses canvas measureText which depends on loaded fonts. Call it once after
-        // fonts are ready so the initial title wrapping uses accurate Adobe Clean metrics. Subsequent
-        // evaluations fire via the rscWrapTitle expression on resize, by which time the font is loaded.
-        // Only run when the spec has title signals (i.e. a title was set).
-        const hasTitleSignal = specCopy.signals?.some((s) => s.name === 'rscTitleText');
-        if (hasTitleSignal) {
-          (document.fonts?.ready ?? Promise.resolve()).then(() => {
-            if (view !== chartView.current) {
-              return;
-            }
-            const titleText = view.signal('rscTitleText') as string;
-            if (!titleText) {
-              return;
-            }
-            const limit = view.signal('rscTitleLimit') as number;
-            view.signal('rscWrappedTitleText', wrapTitleText(titleText, limit)).runAsync();
-          });
+      const runEmbed = () => {
+        if (cancelled || !containerRef.current) {
+          return;
         }
-      });
+        const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
+        const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
+        const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
+
+        embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
+          chartView.current = view;
+          onNewView(view);
+          view.resize();
+          view.runAsync();
+          // One additional render to settle all resize calculations
+          setTimeout(() => view.runAsync(), 0);
+
+          // The initial embed above is already gated on font readiness via ensureTitleFontReady
+          // when a title is present, so this re-evaluates the wrap as a safety net in case the
+          // font wasn't actually ready for canvas measurement by the time embed() parsed the spec.
+          // Subsequent evaluations fire via the rscWrapTitle expression on resize.
+          if (hasTitle) {
+            (document.fonts?.ready ?? Promise.resolve()).then(() => {
+              if (view !== chartView.current) {
+                return;
+              }
+              const titleText = view.signal('rscTitleText') as string;
+              if (!titleText) {
+                return;
+              }
+              const limit = view.signal('rscTitleLimit') as number;
+              view.signal('rscWrappedTitleText', wrapTitleText(titleText, limit)).runAsync();
+            });
+          }
+        });
+      };
+
+      const isInitialEmbedAttempt = !hasAttemptedEmbed.current;
+      hasAttemptedEmbed.current = true;
+
+      if (hasTitle && isInitialEmbedAttempt) {
+        ensureTitleFontReady().then(runEmbed);
+      } else {
+        runEmbed();
+      }
     }
     return () => {
+      cancelled = true;
       // destroy the chart on unmount
       if (chartView.current) {
         chartView.current.finalize();

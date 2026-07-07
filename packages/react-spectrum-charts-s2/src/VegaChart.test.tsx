@@ -13,6 +13,8 @@ import { render, waitFor } from '@testing-library/react';
 import { Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 
+import { getTitleFontShorthand } from '@spectrum-charts/vega-spec-builder-s2';
+
 import { VegaChart, VegaChartProps, resizeView } from './VegaChart';
 
 jest.mock('vega-embed');
@@ -48,6 +50,20 @@ const defaultProps: VegaChartProps = {
 	spec: defaultSpec,
 	tooltip: {},
 	width: 800,
+};
+
+// Overrides document.fonts (not implemented by jsdom) for the duration of a test. jest.spyOn
+// can't reach it because it lives on the prototype, not the document instance.
+const stubDocumentFonts = (fonts: unknown): (() => void) => {
+	const savedDescriptor = Object.getOwnPropertyDescriptor(document, 'fonts');
+	Object.defineProperty(document, 'fonts', { get: () => fonts, configurable: true });
+	return () => {
+		if (savedDescriptor) {
+			Object.defineProperty(document, 'fonts', savedDescriptor);
+		} else {
+			delete (document as unknown as Record<string, unknown>).fonts;
+		}
+	};
 };
 
 describe('resizeView', () => {
@@ -187,10 +203,9 @@ describe('title wrapping after font load', () => {
 			resolveFontsReady = resolve;
 		});
 
-		// Override document.fonts with a deferred ready promise so we control when it fires.
-		// jest.spyOn can't reach it because it lives on the prototype, not the document instance.
-		const savedDescriptor = Object.getOwnPropertyDescriptor(document, 'fonts');
-		Object.defineProperty(document, 'fonts', { get: () => ({ ready: deferred }), configurable: true });
+		// `load` resolves immediately so the pre-embed gate doesn't block this test's initial
+		// embed() call; `ready` stays pending so we control when the post-embed corrective path fires.
+		const restoreFonts = stubDocumentFonts({ load: jest.fn().mockResolvedValue([]), ready: deferred });
 
 		const titleSpec: Spec = {
 			signals: [{ name: 'rscTitleText', value: 'My Title' }],
@@ -208,12 +223,136 @@ describe('title wrapping after font load', () => {
 
 		expect(mockView.signal).not.toHaveBeenCalledWith('rscWrappedTitleText', expect.any(Array));
 
-		// Restore the original descriptor (delete the own-property override to re-expose the prototype getter)
-		if (savedDescriptor) {
-			Object.defineProperty(document, 'fonts', savedDescriptor);
-		} else {
-			delete (document as unknown as Record<string, unknown>).fonts;
-		}
+		restoreFonts();
+	});
+});
+
+describe('initial embed font readiness gate', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockEmbed.mockResolvedValue({ view: createMockView() } as unknown as Awaited<ReturnType<typeof embed>>);
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
+	});
+
+	const titleSpec: Spec = { signals: [{ name: 'rscTitleText', value: 'My Title' }] };
+
+	test('delays the initial embed until document.fonts.load resolves when a title is present', async () => {
+		let resolveLoad!: () => void;
+		const load = jest.fn().mockReturnValue(new Promise<void>((resolve) => (resolveLoad = resolve)));
+		const restoreFonts = stubDocumentFonts({ load });
+
+		render(<VegaChart {...defaultProps} spec={titleSpec} />);
+
+		expect(load).toHaveBeenCalledTimes(1);
+		expect(mockEmbed).not.toHaveBeenCalled();
+
+		resolveLoad();
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+
+		restoreFonts();
+	});
+
+	test('calls document.fonts.load with the same font shorthand wrapTitleText measures with', async () => {
+		const load = jest.fn().mockResolvedValue([]);
+		const restoreFonts = stubDocumentFonts({ load });
+
+		render(<VegaChart {...defaultProps} spec={titleSpec} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		expect(load).toHaveBeenCalledWith(getTitleFontShorthand());
+
+		restoreFonts();
+	});
+
+	test('does not call document.fonts.load and embeds immediately when there is no title', async () => {
+		const load = jest.fn().mockResolvedValue([]);
+		const restoreFonts = stubDocumentFonts({ load });
+
+		render(<VegaChart {...defaultProps} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		expect(load).not.toHaveBeenCalled();
+
+		restoreFonts();
+	});
+
+	test('does not call document.fonts.load and embeds immediately when the title is an empty string', async () => {
+		const load = jest.fn().mockResolvedValue([]);
+		const restoreFonts = stubDocumentFonts({ load });
+		const emptyTitleSpec: Spec = { signals: [{ name: 'rscTitleText', value: '' }] };
+
+		render(<VegaChart {...defaultProps} spec={emptyTitleSpec} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		expect(load).not.toHaveBeenCalled();
+
+		restoreFonts();
+	});
+
+	test('still embeds if document.fonts.load rejects', async () => {
+		const load = jest.fn().mockRejectedValue(new Error('font fetch failed'));
+		const restoreFonts = stubDocumentFonts({ load });
+
+		render(<VegaChart {...defaultProps} spec={titleSpec} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+
+		restoreFonts();
+	});
+
+	test('proceeds with the initial embed after the timeout even if document.fonts.load never resolves', async () => {
+		jest.useFakeTimers();
+		const load = jest.fn().mockReturnValue(new Promise(() => {}));
+		const restoreFonts = stubDocumentFonts({ load });
+
+		render(<VegaChart {...defaultProps} spec={titleSpec} />);
+		expect(mockEmbed).not.toHaveBeenCalled();
+
+		await jest.advanceTimersByTimeAsync(250);
+
+		expect(mockEmbed).toHaveBeenCalledTimes(1);
+
+		restoreFonts();
+	});
+
+	test('gates only the first embed — a later re-embed does not wait on document.fonts.load again', async () => {
+		const load = jest.fn().mockResolvedValue([]);
+		const restoreFonts = stubDocumentFonts({ load });
+
+		const { rerender } = render(<VegaChart {...defaultProps} spec={titleSpec} />);
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		expect(load).toHaveBeenCalledTimes(1);
+
+		// A new spec object reference (e.g. from a hover-driven prop update upstream) re-runs the
+		// embed effect; it must re-embed synchronously rather than waiting on the font again.
+		const secondTitleSpec: Spec = { signals: [{ name: 'rscTitleText', value: 'My Title' }] };
+		rerender(<VegaChart {...defaultProps} spec={secondTitleSpec} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(2));
+		expect(load).toHaveBeenCalledTimes(1);
+
+		restoreFonts();
+	});
+
+	test('does not gate a title that first appears after an untitled initial mount', async () => {
+		const load = jest.fn().mockResolvedValue([]);
+		const restoreFonts = stubDocumentFonts({ load });
+
+		const { rerender } = render(<VegaChart {...defaultProps} spec={defaultSpec} />);
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		expect(load).not.toHaveBeenCalled();
+
+		// Title arrives on a later render (e.g. computed from async data) — this must not be
+		// treated as the "initial" embed and delayed, since the chart is already visible.
+		rerender(<VegaChart {...defaultProps} spec={titleSpec} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(2));
+		expect(load).not.toHaveBeenCalled();
+
+		restoreFonts();
 	});
 });
 
