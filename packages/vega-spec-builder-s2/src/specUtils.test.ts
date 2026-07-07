@@ -20,6 +20,7 @@ import {
   LINE_TYPE_SCALE,
   ROUNDED_SQUARE_PATH,
   TABLE,
+  VISIBILITY_OFF_PATH,
 } from '@spectrum-charts/constants';
 import {
   getSpectrum2VegaConfig,
@@ -152,6 +153,9 @@ describe('getLineWidthPixelsFromLineWidth', () => {
 describe('getPathFromSymbolShape()', () => {
   test('return rounded square path for rounded-square', () => {
     expect(getPathFromSymbolShape('rounded-square')).toBe(ROUNDED_SQUARE_PATH);
+  });
+  test('return visibility-off icon path for visibility-off', () => {
+    expect(getPathFromSymbolShape('visibility-off')).toBe(VISIBILITY_OFF_PATH);
   });
   test('return input unless input is rounded-square', () => {
     expect(getPathFromSymbolShape('circle')).toBe('circle');
