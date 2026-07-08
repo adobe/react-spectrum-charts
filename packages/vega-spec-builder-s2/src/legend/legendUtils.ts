@@ -36,6 +36,7 @@ import {
   FILTERED_TABLE,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
+  HOVER_NEUTRAL_TARGET,
   HOVERED_ITEM,
   HOVERED_SERIES,
   LINE_TYPE_SCALE,
@@ -49,6 +50,7 @@ import {
 } from '@spectrum-charts/constants';
 import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/themes';
 
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
 import { getPathFromSymbolShape } from '../specUtils';
 import {
   ColorValueV6,
@@ -154,12 +156,12 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
       },
       labels: {
         update: {
-          opacity: getOpacityEncoding(options, userMeta),
+          opacity: getLegendOpacity(options, userMeta),
         },
       },
       symbols: {
         update: {
-          opacity: getOpacityEncoding(options, userMeta),
+          opacity: getLegendOpacity(options, userMeta),
         },
       },
     };
@@ -184,6 +186,32 @@ const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefi
   }
   return undefined;
 };
+
+export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> | undefined => {
+  const rules: ProductionRule<NumericValueRef> = [];
+
+  for (const markName of userMeta.animatedMarks || []) {
+    const isGrouped = !!options.keys?.length;
+    const fractionData = isGrouped ? `data('${markName}_hoverGroupFractionData')` : `data('${markName}_hoverFractionData')`;
+    const lookupField = isGrouped ? `${options.name}_${GROUP_ID}` : SERIES_ID;
+    const seriesLookup = `indexof(pluck(${fractionData}, '${lookupField}'), datum.value)`;
+    // default to the neutral emphasis level when a legend entry has no animation row
+    const fraction = `(${fractionData}[${seriesLookup}] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`;
+    // fade deemphasized entries to FADE_FACTOR; neutral and emphasized both stay fully opaque
+    const ramp = getDeemphasisRamp(fraction);
+    rules.push({
+      test: `length(${fractionData})`,
+      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+    });
+  }
+
+  if (rules.length) {
+    return [...rules, DEFAULT_OPACITY_RULE];
+  }
+
+  // Fall back to old rules if no animated marks are present (not using hover animation system)
+  return getOpacityEncoding(options, userMeta);
+}
 
 /**
  * simple opacity encoding for legend labels and the symbol stroke opacity

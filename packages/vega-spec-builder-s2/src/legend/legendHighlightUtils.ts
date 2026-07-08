@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
+import { Data, GroupMark, Mark, NumericValueRef, ProductionRule, AggregateTransform, FormulaTransform } from 'vega';
 
 import {
   CHART_SIZE_HOVER_STROKE_WIDTH,
@@ -28,6 +28,81 @@ export const getLegendHighlightSignals = (legends: LegendOptions[]): string[] =>
     .map((legend, index) => ({ ...legend, name: legend.name ?? `legend${index}` }))
     .filter((legend) => legend.highlight)
     .map((legend) => `${legend.name}_${HOVERED_SERIES}`);
+
+/**
+ * Injects a legend hover rule into the hover target data for the chart.
+ * @param legendName 
+ * @param data 
+ */
+export const injectLegendHoverIntoHoverData = (legendName: string, data: Data[], keys?: string[]): void => {
+  const groupIdField = `${legendName}_${GROUP_ID}`;
+  const matchExpr = keys?.length
+      ? `${legendName}_${HOVERED_SERIES} === datum.${legendName}_${GROUP_ID} ? 1 : 0`
+      : `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : 0`;
+  
+  for (const source of data) {
+    if (!Array.isArray(source.transform)) continue;
+
+    if (typeof source.name == 'string' && source.name.endsWith('_hoverTargetData')) {
+      if (keys?.length) {
+        const aggregateTransform = source.transform.find((t): t is AggregateTransform => t.type === 'aggregate');
+        if (aggregateTransform && Array.isArray(aggregateTransform.groupby)) {
+          aggregateTransform.groupby.push(groupIdField);
+        }
+      }
+
+      // Change the old target's name to conditions
+      const targetTransform = source.transform.find((t): t is FormulaTransform => t.type === 'formula' && t.as === 'target');
+      if (targetTransform) {
+        targetTransform.as = 'conditions';
+      }
+
+      // Add legend hover match formula
+      source.transform.push({
+        type: 'formula' as const,
+        as: `legendHoverMatch`,
+        expr: `(isValid(${legendName}_${HOVERED_SERIES})) ? ((${matchExpr}) ? 1 : 0) : null`,
+      });
+
+      // Make a new target that combines the old target and the new legend hover match
+      source.transform.push({
+        type: 'formula' as const,
+        as: `target`,
+        expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : isValid(datum.legendHoverMatch) ? datum.legendHoverMatch : datum.conditions`,
+      });
+    } 
+
+    if (typeof source.name == 'string' && source.name.endsWith('_hoverFractionData')) {
+      if (keys?.length) {
+        // bring groupIdField into hoverFractionData via lookup
+        const markName = source.name.replace('_hoverFractionData', '');
+        source.transform.push({
+          type: 'lookup' as const,
+          from: `${markName}_hoverTargetData`,
+          key: SERIES_ID,
+          fields: [SERIES_ID],
+          values: [groupIdField],
+          as: [groupIdField],
+        });
+
+        // Make new hoverGroupFractionData data source by aggregating hoverFractionData by group, taking max fraction
+        data.push({
+          name: `${markName}_hoverGroupFractionData`,
+          source: `${markName}_hoverFractionData`,
+          transform: [
+            {
+              type: 'aggregate' as const,
+              groupby: [groupIdField],
+              fields: ['fraction'],
+              ops: ['max'],
+              as: ['fraction'],
+            },
+          ],
+        });
+      }
+    }
+  }
+};
 
 /**
  * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
@@ -53,6 +128,10 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
       const lastRule = Array.isArray(opacity) ? opacity.at(-1) : opacity;
       if ((lastRule as { value?: number })?.value === 0) return;
 
+      // Guard for marks that have moved over to the new hover animation system. Once all marks 
+      // are migrated, this entire function won't be needed.
+      if (!Array.isArray(opacity)) return; 
+
       // the new production rule for highlighting
       const highlightOpacityRule = getHighlightOpacityRule(legendName, controlled, keys);
 
@@ -77,6 +156,10 @@ export const setHoverStrokeWidthForMarks = (legendName: string, marks: Mark[], k
     if (!mark.encode?.update) return;
     const { update } = mark.encode;
     if (update.strokeWidth === undefined) return;
+
+    // Guard for marks that have moved over to the new hover animation system. Once all marks 
+    // are migrated, this entire function won't be needed.
+    if (!Array.isArray(update.strokeWidth)) return; 
 
     const highlightStrokeWidthRule = getHighlightStrokeWidthRule(legendName, controlled, keys);
 

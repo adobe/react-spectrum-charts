@@ -44,7 +44,7 @@ import {
   UserMeta,
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
-import { setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils';
+import { injectLegendHoverIntoHoverData, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
 
 export const addLegend = produce<
@@ -285,7 +285,7 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-  (data, { facets, hiddenEntries, keys, name }) => {
+  (data, { facets, hiddenEntries, highlight, keys, name }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
     data.push({
@@ -348,6 +348,10 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
       if (data.transform?.[0] && 'expr' in data.transform[0]) {
         data.transform[0].expr += ` || datum.${SERIES_ID} === ${name}_${HOVERED_SERIES}`;
       }
+    }
+
+    if (highlight) {
+      injectLegendHoverIntoHoverData(name, data, keys);
     }
   }
 );
