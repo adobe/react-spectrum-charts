@@ -30,12 +30,14 @@ export const getLegendHighlightSignals = (legends: LegendOptions[]): string[] =>
     .map((legend) => `${legend.name}_${HOVERED_SERIES}`);
 
 /**
- * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
+ * Adds opacity tests for marks whose fill/stroke is driven by the color scale, and for marks
+ * that are already per-series (e.g. trendlines, which facet by series regardless of their own
+ * color encoding — a trendline with an overridden literal color still needs to fade on legend hover).
  */
 export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?: string[], controlled = false) => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
-  const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
+  const seriesMarks = flatMarks.filter(markIsSeriesAware);
   seriesMarks.forEach((mark) => {
     // need to drill down to the prop we need to set and add missing properties if needed
     if (!mark.encode) {
@@ -155,6 +157,27 @@ export const markUsesSeriesColorScale = (mark: Mark): boolean => {
   }
   return false;
 };
+
+/**
+ * Determines if the supplied mark is a trendline or metric range mark. These are always
+ * per-series (faceted by series regardless of their own color encoding), so a trendline or
+ * metric range with an overridden literal color still needs to fade on legend hover.
+ * Mirrors the name-based convention in `legendSpecBuilder.ts`'s `addData`, which patches
+ * the analogous `*(Trendline|MetricRange)*highlightedData` data sources for the same reason.
+ * @param mark
+ * @returns boolean
+ */
+const isTrendlineOrMetricRangeMark = (mark: Mark): boolean =>
+  Boolean(mark.name) && /(Trendline|MetricRange)/.test(mark.name as string);
+
+/**
+ * Determines if a mark should receive a legend-hover opacity rule — either because its own
+ * fill/stroke uses the color scale, or because it's a trendline/metric range mark.
+ * @param mark
+ * @returns boolean
+ */
+export const markIsSeriesAware = (mark: Mark): boolean =>
+  markUsesSeriesColorScale(mark) || isTrendlineOrMetricRangeMark(mark);
 
 /**
  * Determines if the supplied encoding uses a scale to set the value

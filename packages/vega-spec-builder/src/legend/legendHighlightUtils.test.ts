@@ -23,6 +23,23 @@ import {
 import { encodingUsesScale, getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
 import { defaultMark } from './legendTestUtils';
 
+// Mirrors a trendline mark whose color has been overridden with a literal value rather than a
+// color scale facet. It's still per-series (faceted by series regardless of its own color), so
+// it should still receive the legend-hover rule based on its name, not its color encoding.
+const trendlineWithOverriddenColorMark: Mark = {
+  name: 'line0Trendline0',
+  type: 'line',
+  from: { data: 'line0Trendline0_facet' },
+  encode: {
+    enter: {
+      stroke: { value: '#ABC123' },
+    },
+    update: {
+      opacity: [DEFAULT_OPACITY_RULE],
+    },
+  },
+};
+
 const defaultGroupMark: Mark = {
   type: 'group',
   marks: [defaultMark],
@@ -86,6 +103,13 @@ describe('setHoverOpacityForMarks()', () => {
           },
         },
       ]);
+    });
+  });
+  describe('trendline mark with an overridden (non-scale) color', () => {
+    test('still gets the legend-hover opacity rule spliced in, based on its name rather than its color encoding', () => {
+      const marks = JSON.parse(JSON.stringify([trendlineWithOverriddenColorMark]));
+      setHoverOpacityForMarks('legend0', marks);
+      expect(marks[0].encode.update.opacity[0]).toEqual(getHighlightOpacityRule('legend0', false));
     });
   });
   describe('group mark initial state', () => {

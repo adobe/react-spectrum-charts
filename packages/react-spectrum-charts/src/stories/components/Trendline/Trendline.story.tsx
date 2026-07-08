@@ -195,6 +195,24 @@ const BothTooltipsWithDisplayOnHoverStory: StoryFn<typeof Trendline> = (args): R
   );
 };
 
+// Trendlines are always displayed (no displayOnHover). Hovering a line point fades the
+// trendlines of the other series via `line0_hoveredItem`. Hovering the matching legend entry
+// is supposed to produce the same fade via `legend0_hoveredSeries`, but currently does not.
+const LegendHoverOpacityStory: StoryFn<typeof Trendline> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <ChartTooltip>{(item: Datum) => <div>Line value: {item.value}</div>}</ChartTooltip>
+        <Trendline {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
 const ScatterStory: StoryFn<typeof Trendline> = (args): ReactElement => {
   const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
@@ -326,6 +344,13 @@ DisplayOnHoverBothTooltips.args = {
   highlightRawPoint: true,
 };
 
+const LegendHoverOpacity = bindWithProps(LegendHoverOpacityStory);
+LegendHoverOpacity.args = {
+  method: 'linear',
+  lineType: 'dashed',
+  lineWidth: 'S',
+};
+
 const Orientation = bindWithProps(ScatterStory);
 Orientation.args = {
   orientation: 'vertical',
@@ -372,6 +397,7 @@ export {
   DisplayOnHoverTrendlineOnly,
   ExcludeSeriesFromTrendline,
   HidePartialWindows,
+  LegendHoverOpacity,
   Orientation,
   TooltipAndPopover,
   TooltipAndPopoverOnParentLine,
