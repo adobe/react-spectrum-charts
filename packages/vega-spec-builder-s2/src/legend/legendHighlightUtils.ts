@@ -29,77 +29,103 @@ export const getLegendHighlightSignals = (legends: LegendOptions[]): string[] =>
     .filter((legend) => legend.highlight)
     .map((legend) => `${legend.name}_${HOVERED_SERIES}`);
 
+type DataTransforms = NonNullable<Data['transform']>;
+
+/**
+ * Merges a legend's hover match into an existing `_hoverTargetData` source's `target` formula,
+ * and (for grouped legends) adds the legend's group field to the aggregate's groupby.
+ */
+const injectLegendHoverIntoTargetData = (
+  transform: DataTransforms,
+  legendName: string,
+  matchExpr: string,
+  groupIdField: string,
+  keys?: string[]
+): void => {
+  if (keys?.length) {
+    const aggregateTransform = transform.find((t): t is AggregateTransform => t.type === 'aggregate');
+    if (aggregateTransform && Array.isArray(aggregateTransform.groupby)) {
+      aggregateTransform.groupby.push(groupIdField);
+    }
+  }
+
+  // Change the old target's name to conditions
+  const targetTransform = transform.find((t): t is FormulaTransform => t.type === 'formula' && t.as === 'target');
+  if (targetTransform) {
+    targetTransform.as = 'conditions';
+  }
+
+  // Add the legend hover match formula, then combine it with the prior target into a new "target"
+  transform.push(
+    {
+      type: 'formula' as const,
+      as: `legendHoverMatch`,
+      expr: `(isValid(${legendName}_${HOVERED_SERIES})) ? ((${matchExpr}) ? 1 : 0) : null`,
+    },
+    {
+      type: 'formula' as const,
+      as: `target`,
+      expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : isValid(datum.legendHoverMatch) ? datum.legendHoverMatch : datum.conditions`,
+    }
+  );
+};
+
+/**
+ * For grouped legends, brings the group field into an existing `_hoverFractionData` source via
+ * lookup, then adds a `_hoverGroupFractionData` source that aggregates fractions by group (max).
+ */
+const addGroupedFractionData = (
+  fractionDataName: string,
+  transform: DataTransforms,
+  data: Data[],
+  groupIdField: string
+): void => {
+  const markName = fractionDataName.replace('_hoverFractionData', '');
+  transform.push({
+    type: 'lookup' as const,
+    from: `${markName}_hoverTargetData`,
+    key: SERIES_ID,
+    fields: [SERIES_ID],
+    values: [groupIdField],
+    as: [groupIdField],
+  });
+
+  data.push({
+    name: `${markName}_hoverGroupFractionData`,
+    source: `${markName}_hoverFractionData`,
+    transform: [
+      {
+        type: 'aggregate' as const,
+        groupby: [groupIdField],
+        fields: ['fraction'],
+        ops: ['max'],
+        as: ['fraction'],
+      },
+    ],
+  });
+};
+
 /**
  * Injects a legend hover rule into the hover target data for the chart.
- * @param legendName 
- * @param data 
+ * @param legendName
+ * @param data
  */
 export const injectLegendHoverIntoHoverData = (legendName: string, data: Data[], keys?: string[]): void => {
   const groupIdField = `${legendName}_${GROUP_ID}`;
   const matchExpr = keys?.length
       ? `${legendName}_${HOVERED_SERIES} === datum.${legendName}_${GROUP_ID} ? 1 : 0`
       : `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : 0`;
-  
+
   for (const source of data) {
-    if (!Array.isArray(source.transform)) continue;
+    const { name, transform } = source;
+    if (!Array.isArray(transform) || typeof name !== 'string') continue;
 
-    if (typeof source.name == 'string' && source.name.endsWith('_hoverTargetData')) {
-      if (keys?.length) {
-        const aggregateTransform = source.transform.find((t): t is AggregateTransform => t.type === 'aggregate');
-        if (aggregateTransform && Array.isArray(aggregateTransform.groupby)) {
-          aggregateTransform.groupby.push(groupIdField);
-        }
-      }
+    if (name.endsWith('_hoverTargetData')) {
+      injectLegendHoverIntoTargetData(transform, legendName, matchExpr, groupIdField, keys);
+    }
 
-      // Change the old target's name to conditions
-      const targetTransform = source.transform.find((t): t is FormulaTransform => t.type === 'formula' && t.as === 'target');
-      if (targetTransform) {
-        targetTransform.as = 'conditions';
-      }
-
-      // Add legend hover match formula
-      source.transform.push({
-        type: 'formula' as const,
-        as: `legendHoverMatch`,
-        expr: `(isValid(${legendName}_${HOVERED_SERIES})) ? ((${matchExpr}) ? 1 : 0) : null`,
-      });
-
-      // Make a new target that combines the old target and the new legend hover match
-      source.transform.push({
-        type: 'formula' as const,
-        as: `target`,
-        expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : isValid(datum.legendHoverMatch) ? datum.legendHoverMatch : datum.conditions`,
-      });
-    } 
-
-    if (typeof source.name == 'string' && source.name.endsWith('_hoverFractionData')) {
-      if (keys?.length) {
-        // bring groupIdField into hoverFractionData via lookup
-        const markName = source.name.replace('_hoverFractionData', '');
-        source.transform.push({
-          type: 'lookup' as const,
-          from: `${markName}_hoverTargetData`,
-          key: SERIES_ID,
-          fields: [SERIES_ID],
-          values: [groupIdField],
-          as: [groupIdField],
-        });
-
-        // Make new hoverGroupFractionData data source by aggregating hoverFractionData by group, taking max fraction
-        data.push({
-          name: `${markName}_hoverGroupFractionData`,
-          source: `${markName}_hoverFractionData`,
-          transform: [
-            {
-              type: 'aggregate' as const,
-              groupby: [groupIdField],
-              fields: ['fraction'],
-              ops: ['max'],
-              as: ['fraction'],
-            },
-          ],
-        });
-      }
+    if (name.endsWith('_hoverFractionData') && keys?.length) {
+      addGroupedFractionData(name, transform, data, groupIdField);
     }
   }
 };

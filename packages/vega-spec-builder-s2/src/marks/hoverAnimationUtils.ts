@@ -20,7 +20,7 @@ export interface HoverMatchRule {
     expr: string;
 }
 
-export interface hoverTargetDataOptions {
+export interface HoverTargetDataOptions {
     name: string;
     groupby: string[];
     rules: HoverMatchRule[];
@@ -35,7 +35,7 @@ export interface hoverTargetDataOptions {
  */
 export const getHoverTargetData = ({
     name, groupby, rules, source = FILTERED_TABLE,
-}: hoverTargetDataOptions): SourceData => {
+}: HoverTargetDataOptions): SourceData => {
     const transforms: (AggregateTransform | FormulaTransform)[] = [
         { type: 'aggregate', groupby: groupby },
         ...rules.map<FormulaTransform>((r) => ({ type: 'formula', as: r.as, expr: r.expr })),
