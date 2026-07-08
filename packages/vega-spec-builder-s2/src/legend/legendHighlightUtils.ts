@@ -159,16 +159,20 @@ export const markUsesSeriesColorScale = (mark: Mark): boolean => {
 };
 
 /**
- * Determines if the supplied mark is a trendline or metric range mark. These are always
- * per-series (faceted by series regardless of their own color encoding), so a trendline or
- * metric range with an overridden literal color still needs to fade on legend hover.
- * Mirrors the name-based convention in `legendSpecBuilder.ts`'s `addData`, which patches
- * the analogous `*(Trendline|MetricRange)*highlightedData` data sources for the same reason.
+ * Determines if the supplied mark is the trendline's own line/rule mark, or the metric range's
+ * own line mark. These are always per-series (faceted by series regardless of their own color
+ * encoding), so an overridden literal color still needs to fade on legend hover. Anchored to
+ * these two exact name shapes — `<parent>Trendline<index>` and `<parent>MetricRange<index>_line`
+ * — so it doesn't also match hover-support marks that share the same name prefix (e.g.
+ * `<parent>Trendline_hoverRule`, `_pointBackground`, `_point_highlight`, `_secondaryPoint`).
+ * Those marks are already scoped to a single active item via their (pre-filtered) data source,
+ * not via opacity, and some carry non-series opacity logic of their own that a broader match
+ * would clobber.
  * @param mark
  * @returns boolean
  */
-const isTrendlineOrMetricRangeMark = (mark: Mark): boolean =>
-  Boolean(mark.name) && /(Trendline|MetricRange)/.test(mark.name as string);
+const isTrendlineOrMetricRangeLineMark = (mark: Mark): boolean =>
+  Boolean(mark.name) && /(Trendline\d+|MetricRange\d+_line)$/.test(mark.name as string);
 
 /**
  * Determines if a mark should receive a legend-hover opacity rule — either because its own
@@ -177,7 +181,7 @@ const isTrendlineOrMetricRangeMark = (mark: Mark): boolean =>
  * @returns boolean
  */
 export const markIsSeriesAware = (mark: Mark): boolean =>
-  markUsesSeriesColorScale(mark) || isTrendlineOrMetricRangeMark(mark);
+  markUsesSeriesColorScale(mark) || isTrendlineOrMetricRangeLineMark(mark);
 
 /**
  * Determines if the supplied encoding uses a scale to set the value
