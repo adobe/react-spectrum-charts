@@ -94,6 +94,7 @@ import {
 import { addVenn } from './venn/vennSpecBuilder';
 
 export function buildSpec({
+  animations,
   axes = [],
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
   chartHeight,
@@ -146,7 +147,7 @@ export function buildSpec({
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const legendHighlightSignals = getLegendHighlightSignals(legends);
-  const specOptions = { backgroundColor, colorScheme, idKey, highlightedItem, legendHighlightSignals };
+  const specOptions = { animations, backgroundColor, colorScheme, idKey, highlightedItem, legendHighlightSignals };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':
@@ -166,7 +167,7 @@ export function buildSpec({
         return addDonut(acc, { ...mark, ...specOptions, index: donutCount });
       case 'line':
         lineCount++;
-        return addLine(acc, { ...mark, ...specOptions, index: lineCount });
+        return addLine(acc, { ...mark, ...specOptions, index: lineCount, data });
       case 'scatter':
         scatterCount++;
         return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
