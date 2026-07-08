@@ -9,9 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ArrayValueRef, ColorValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+import { ArrayValueRef, ColorValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark, TextMark } from 'vega';
 
 import {
+  CHART_SIZE_FONT_SIZE,
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_HOVER_STROKE_WIDTH,
   COLOR_SCALE,
@@ -20,6 +21,7 @@ import {
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
   DEFAULT_STROKE_WIDTH_RULE,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
@@ -44,7 +46,9 @@ import {
 import { getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { getStrokeDashFromLineType } from '../specUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { getScaleName } from '../scale/scaleSpecBuilder';
 import { ScaleType } from '../types';
+import { getDirectLabelTextMarks, MIN_LABEL_GAP } from './directLabelUtils';
 import {
   getHighlightPoint,
   getSecondaryHighlightPoint,
@@ -245,8 +249,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
         strokeOpacity: getOpacityProductionRule(opacity),
       },
       update: {
-        // this has to be in update because when you resize the window that doesn't rebuild the spec
-        // but it may change the x position if it causes the chart to resize
+        // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
         x: getXProductionRule(scaleType, dimension),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
@@ -385,7 +388,7 @@ export const getLineHoverMarks = (
   dataSource: string,
   secondaryHighlightedMetric?: string
 ): Mark[] => {
-  const { dimension, name, scaleType } = lineOptions;
+  const { dimension, name, scaleType, showHoverLabel = true } = lineOptions;
   return [
     // vertical rule shown for the hovered or selected point
     getHoverRule(dimension, name, scaleType),
@@ -395,9 +398,52 @@ export const getLineHoverMarks = (
     getHighlightPoint(lineOptions),
     // additional point that gets highlighted like the trendline or raw line point
     ...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
+    // hover value label: background halo + foreground text — omitted when showHoverLabel is false
+    ...(showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
     // get interactive marks for the line
     ...getInteractiveMarks(dataSource, lineOptions),
   ];
+};
+
+/**
+ * Two text marks (background halo + foreground) showing the metric value adjacent to the hovered point.
+ * Reads from hoverLabelData which carries cascade transforms — when multiple series share the same
+ * hovered dimension (dimensionHover), labels are spread apart using the same cascading formula as
+ * direct labels rather than stacking on top of each other.
+ */
+const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
+  const { color, colorScheme, dimension, hoverLabelKey, metric, metricAxis, name, scaleType } = lineOptions;
+  const labelField = hoverLabelKey ?? metric;
+  const yScaleName = metricAxis || 'yLinear';
+
+  const scaleName = getScaleName('x', scaleType);
+  const xField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
+  // Offset between the hover point center and the label.
+  const LABEL_POINT_GAP = 9;
+  // Flip label to the left side when the label would overflow the right edge of the chart.
+  const nearRightEdge = `scale('${scaleName}', datum['${xField}']) + getLabelWidth(datum["${labelField}"], 'bold', ${CHART_SIZE_FONT_SIZE}) + ${LABEL_POINT_GAP} > width`;
+
+  // Cascade correction only — no fixed anchor offset. Labels default to the natural y of each
+  // hover point; the formula only pushes them apart when they would otherwise collide.
+  const cascadeOffset = `datum._hover_cumMaxAdjusted + datum._hover_metricRank * ${MIN_LABEL_GAP} - datum._hover_scaledY`;
+
+  return getDirectLabelTextMarks(
+    `${name}_hoverLabelBg`,
+    `${name}_hoverLabel`,
+    `${name}_hoverLabelData`,
+    `datum["${labelField}"]`,
+    {
+      x: getXProductionRule(scaleType, dimension),
+      y: [{ scale: yScaleName, field: metric, offset: { signal: cascadeOffset } }],
+      additional: {
+        dx: { signal: `${nearRightEdge} ? -${LABEL_POINT_GAP} : ${LABEL_POINT_GAP}` },
+        align: { signal: `${nearRightEdge} ? 'right' : 'left'` },
+        baseline: { value: 'middle' },
+      },
+    },
+    colorScheme,
+    { signal: getColorProductionRuleSignalString(color, colorScheme) }
+  );
 };
 
 const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): RuleMark => {

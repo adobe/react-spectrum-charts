@@ -21,6 +21,7 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
+  GROUP_ID,
   HOVERED_ITEM,
   CHART_SIZE_POINT_SIZE,
   LINEAR_PADDING,
@@ -348,6 +349,26 @@ describe('lineSpecBuilder', () => {
     test('scaleTypes "point" and "linear" should return the original data', () => {
       expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual(baseData);
       expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual(baseData);
+    });
+
+    test('with dimensionHover adds groupId formula transform to table', () => {
+      const resultData = addData(baseData, { ...defaultLineOptions, dimensionHover: true });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform).toContainEqual({
+        type: 'formula',
+        as: `line0_${GROUP_ID}`,
+        expr: `datum.${DEFAULT_TIME_DIMENSION}`,
+      });
+    });
+
+    test('with dimensionHover and a chartInspect that groups by dimension does not add groupId transform', () => {
+      const resultData = addData(baseData, {
+        ...defaultLineOptions,
+        dimensionHover: true,
+        chartInspects: [{ highlightBy: 'dimension' }],
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform?.some((t) => 'as' in t && t.as === `line0_${GROUP_ID}`)).toBe(false);
     });
 
     test('should add trendline transform', () => {

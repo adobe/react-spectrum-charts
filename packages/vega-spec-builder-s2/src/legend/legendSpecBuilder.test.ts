@@ -26,6 +26,7 @@ import {
 import {
   defaultChartSizeFontSizeSignal,
   defaultChartSizeHoverStrokeWidthSignal,
+  defaultChartSizeLabelGapSignal,
   defaultChartSizePointSizeSignal,
   defaultChartSizeStrokeWidthSignal,
   defaultHighlightedGroupSignal,
@@ -187,6 +188,7 @@ describe('addLegend()', () => {
           defaultChartSizeHoverStrokeWidthSignal,
           defaultChartSizePointSizeSignal,
           defaultChartSizeFontSizeSignal,
+          defaultChartSizeLabelGapSignal,
           {
             name: `legend0_${HOVERED_SERIES}`,
             value: null,

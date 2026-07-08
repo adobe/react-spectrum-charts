@@ -27,7 +27,7 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
-import { addInspectData, addInspectSignals, isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
+import { addInspectData, addInspectSignals, getGroupIdTransform, isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
@@ -40,7 +40,7 @@ import { getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, 
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
-import { getLineHighlightedData, getLineStaticPointData, getPrimarySeriesFacetData, getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { getHoverLabelData, getLineHighlightedData, getLineStaticPointData, getPrimarySeriesFacetData, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { getHighlightedSeriesOpacityRules, getLineGradientMark, getLineHighlightOverlayGroup, getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
@@ -88,10 +88,14 @@ export const addLine = produce<
       alternateSegmentLabel,
       primarySeries,
       otherSeriesColor,
+      showHoverLabel = true,
+      dimensionHover = false,
       ...options
     }
   ) => {
     const lineName = toCamelCase(name || `line${index}`);
+    // ChartInspect owns the hover story when present — suppress the hover value label
+    const effectiveShowHoverLabel = chartInspects.length > 0 ? false : showHoverLabel;
     // put options back together now that all defaults are set
     const lineOptions: LineSpecOptions = {
       chartPopovers,
@@ -135,9 +139,11 @@ export const addLine = produce<
       alternateSegmentLabel,
       primarySeries,
       otherSeriesColor,
+      showHoverLabel: effectiveShowHoverLabel,
+      dimensionHover,
       ...options,
     };
-    lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
+    lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
 
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     spec.data = addData(spec.data ?? [], lineOptions);
@@ -150,11 +156,16 @@ export const addLine = produce<
 );
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { alternateSegmentKey, chartInspects, dimension, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, primarySeries, staticPoint } =
+  const { alternateSegmentKey, chartInspects, dimension, dimensionHover, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, primarySeries, staticPoint } =
     options;
   const tableData = getTableData(data);
   if (scaleType === 'time') {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+  }
+  const inspectAlreadyGroupsByDimension = chartInspects.some(({ highlightBy }) => highlightBy === 'dimension');
+  if (dimensionHover && !inspectAlreadyGroupsByDimension) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push(getGroupIdTransform([dimension], name));
   }
   if (alternateSegmentKey) {
     tableData.transform = tableData.transform ?? [];
@@ -162,8 +173,7 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     // time data was transformed above, so we need to use the transformed dimension
     const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
     data.push(...getAlternateSegmentData(name, dimSortField));
-  }
-  if (!alternateSegmentKey && forecasts.length > 0) {
+  } else if (forecasts.length > 0) {
     tableData.transform = tableData.transform ?? [];
     const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
     tableData.transform.push(
@@ -171,12 +181,14 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
       getForecastEffectiveValueTransform(name, metric, forecasts[0].metric)
     );
     data.push(...getAlternateSegmentData(name, dimSortField));
-  }
-  if (primarySeries && !alternateSegmentKey && !forecasts.length) {
+  } else if (primarySeries) {
     data.push(getPrimarySeriesFacetData(name, primarySeries));
   }
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
+    if (options.showHoverLabel) {
+      data.push(getHoverLabelData(options));
+    }
   }
   if (staticPoint || isSparkline) {
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));

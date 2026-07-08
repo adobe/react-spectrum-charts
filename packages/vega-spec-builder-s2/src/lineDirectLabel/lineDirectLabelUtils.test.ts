@@ -56,6 +56,8 @@ const defaultLineOptions: LineSpecOptions = {
 	trendlines: [],
 	lineCap: 'round',
 	interpolate: undefined,
+	dimensionHover: false,
+	showHoverLabel: true,
 };
 
 const defaultLabelSpecOptions: LineDirectLabelSpecOptions = {
@@ -218,7 +220,7 @@ describe('getLineDirectLabelData', () => {
 		const transforms = getTransforms(data);
 		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === '_adjustedY');
 		expect(formula).toBeDefined();
-		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * 12');
+		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * rscChartSizeLabelGap');
 	});
 
 	test('includes _cumMaxAdjusted cumulative window transform', () => {
@@ -392,7 +394,8 @@ describe('getLineDirectLabelMarks', () => {
 		const evalOffsetSignal = (datum: Record<string, number>): number => {
 			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 			const signal = (marks[0].encode?.enter?.y as { offset: { signal: string } }).offset.signal;
-			return new Function('datum', `return ${signal}`)(datum);
+			// rscChartSizeLabelGap is a Vega signal; inject its M-tier value (12) for unit evaluation
+			return new Function('datum', 'rscChartSizeLabelGap', `return ${signal}`)(datum, 12);
 		};
 
 		test('rank 1 always places label 12px above the line terminus', () => {

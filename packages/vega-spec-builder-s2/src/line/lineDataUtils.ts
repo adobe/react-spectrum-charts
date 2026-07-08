@@ -20,8 +20,8 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { isHighlightedByGroup } from '../chartInspect/chartInspectUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
+import { getCascadeTransforms } from './directLabelUtils';
 import { LineSpecOptions } from '../types';
 
 /**
@@ -38,7 +38,7 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
   if (isInteractive(options)) {
     const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;
     const groupKey = `${lineName}_${GROUP_ID}`;
-    if (isHighlightedByGroup(options)) {
+    if (options.isHighlightedByGroup) {
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`;
     } else {
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
@@ -88,6 +88,21 @@ export const getPrimarySeriesFacetData = (name: string, primarySeries: number | 
     { type: 'collect', sort: { field: `${name}_isOther`, order: 'descending' } },
   ],
 });
+
+/**
+ * Derives from highlightedData and adds cascade transforms so labels for multiple series
+ * at the same hovered dimension are spread apart rather than overlapping.
+ */
+export const getHoverLabelData = (options: LineSpecOptions): SourceData => {
+  const { metric, name, metricAxis } = options;
+  const yScaleName = metricAxis || 'yLinear';
+
+  return {
+    name: `${name}_hoverLabelData`,
+    source: `${name}_highlightedData`,
+    transform: getCascadeTransforms(yScaleName, metric, 'hover'),
+  };
+};
 
 /**
  * gets the data used for displaying points

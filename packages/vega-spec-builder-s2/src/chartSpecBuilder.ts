@@ -17,6 +17,8 @@ import {
   CHART_SIZE_BREAKPOINTS,
   CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_HOVER_STROKE_WIDTHS,
+  CHART_SIZE_LABEL_GAP,
+  CHART_SIZE_LABEL_GAPS,
   CHART_SIZE_POINT_SIZE,
   CHART_SIZE_POINT_SIZES,
   CHART_SIZE_STROKE_WIDTH,
@@ -283,6 +285,11 @@ export const getDefaultSignals = ({
     update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`
   }
 
+  const chartSizeLabelGapSignal: Signal = {
+    name: CHART_SIZE_LABEL_GAP,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_LABEL_GAPS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_LABEL_GAPS.M} : ${CHART_SIZE_LABEL_GAPS.L}`,
+  };
+
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getS2ColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal(REFERENCE_LINE_LABEL_BACKGROUND_STROKE, referenceLineLabelStroke),
@@ -300,6 +307,7 @@ export const getDefaultSignals = ({
     chartSizeHoverStrokeWidthSignal,
     chartSizePointSizeSignal,
     chartSizeFontSizeSignal,
+    chartSizeLabelGapSignal,
   ];
 };
 
