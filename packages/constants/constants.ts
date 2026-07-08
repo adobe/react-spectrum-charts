@@ -140,6 +140,8 @@ export const SELECTED_SERIES = 'selectedSeries'; // series
 export const SELECTED_GROUP = 'selectedGroup'; // data point
 export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
+export const HOVER_TIMER = 'hoverTimer';
+export const HOVER_TARGETS = 'hoverTargets';
 
 // scale names
 export const COLOR_SCALE = 'color';
@@ -164,6 +166,19 @@ export const DISCRETE_PADDING = 0.5;
 export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 0;
 export const TRELLIS_PADDING = 0.2;
+
+// animation constants
+export const ANIMATION_THROTTLE = 16;
+export const ANIMATION_HOVER_SPEED = 100; // ms
+/** The opacity value when a different item is hovered */
+export const HOVER_OPACITY_LOW = 0.2;
+/**
+ * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
+ * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
+ * Consumers map the lower half [0, neutral] for deemphasis (e.g. opacity) and the upper half [neutral, 1]
+ * for emphasis (e.g. stroke width).
+ */
+export const HOVER_NEUTRAL_TARGET = 0.5;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */

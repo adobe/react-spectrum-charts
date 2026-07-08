@@ -321,3 +321,10 @@ export const addUserMetaInteractiveMark = produce<UserMeta, [string?]>((usermeta
     ...(interactiveMarkName ? [interactiveMarkName] : []),
   ];
 });
+
+export const addUserMetaAnimatedMark = produce<UserMeta, [string?]>((usermeta, animatedMarkName) => {
+  usermeta.animatedMarks = [
+    ...(usermeta.animatedMarks ?? []),
+    ...(animatedMarkName ? [animatedMarkName] : []),
+  ];
+});
