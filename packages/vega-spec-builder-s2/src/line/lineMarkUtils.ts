@@ -24,6 +24,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
   HOVERED_ITEM,
+  HOVER_OPACITY_LOW,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -44,6 +45,7 @@ import {
   hasPopover,
 } from '../marks/markUtils';
 import { getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { getDeemphasisRamp, getEmphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import { getStrokeDashFromLineType } from '../specUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
@@ -134,6 +136,7 @@ export const getLineGradientMark = (lineMarkOptions: LineMarkOptions, dataSource
         x: getXProductionRule(scaleType, dimension),
         opacity: [
           { test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`, value: 0 },
+          // getLineOpacity may return a single ref (animated) or an array of rules (non-animated); flatten either
           ...[getLineOpacity(lineMarkOptions)].flat(),
         ],
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
@@ -259,15 +262,37 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
   };
 };
 
-export const getLineOpacity = ({
-  displayOnHover,
+/**
+ * Opacity encoding for a line mark. When the chart's hover animation is enabled (`isAnimate`), the
+ * emphasis fraction drives a smooth fade of deemphasized series (neutral and emphasized stay opaque).
+ * Otherwise it falls back to the original instant production-rule fade (`getLineOpacityRules`).
+ */
+export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule<NumericValueRef> => {
+  const { displayOnHover, isAnimate, name } = lineMarkOptions;
+  // displayOnHover overlay marks manage their own visibility via getHighlightedSeriesOpacityRules
+  if (displayOnHover) return DEFAULT_OPACITY_RULE;
+
+  if (isAnimate) {
+    // Fade deemphasized series; neutral and emphasized both stay fully opaque.
+    const ramp = getDeemphasisRamp(getHoverFractionSignal(name));
+    return {
+      signal: `${HOVER_OPACITY_LOW} + (1 - ${HOVER_OPACITY_LOW}) * ${ramp}`,
+    };
+  }
+
+  // Return the original opacity rules ProductionRule if we aren't using hover animations
+  return getLineOpacityRules(lineMarkOptions);
+};
+
+/** Original (non-animated) instant production-rule opacity fade. */
+const getLineOpacityRules = ({
   comboSiblingNames,
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
   highlightedItem,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
+  if (!interactiveMarkName && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
@@ -310,25 +335,40 @@ export const getLineOpacity = ({
     });
   }
 
-  // This allows us to only show the metric range when hovering over the parent line component.
   strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 
   return strokeOpacityRules;
 };
 
 /**
- * Gets the production rules for strokeWidth
+ * strokeWidth encoding for a line mark. When hover animation is enabled (`isAnimate`), the emphasis
+ * fraction grows the hovered series' stroke toward the hover width (neutral/deemphasized stay normal).
+ * Otherwise it falls back to the original instant production-rule stroke width (`getLineStrokeWidthRules`).
  */
-export const getLineStrokeWidth = ({
-  displayOnHover,
+export const getLineStrokeWidth = (lineMarkOptions: LineMarkOptions): ProductionRule<NumericValueRef> => {
+  const { displayOnHover, isAnimate, name } = lineMarkOptions;
+  // displayOnHover overlay marks manage their own visibility via getHighlightedSeriesOpacityRules
+  if (displayOnHover) return DEFAULT_STROKE_WIDTH_RULE;
+
+  if (isAnimate) {
+    const ramp = getEmphasisRamp(getHoverFractionSignal(name));
+    return {
+      signal: `${CHART_SIZE_STROKE_WIDTH} + (${CHART_SIZE_HOVER_STROKE_WIDTH} - ${CHART_SIZE_STROKE_WIDTH}) * ${ramp}`,
+    };
+  }
+
+  return getLineStrokeWidthRules(lineMarkOptions);
+};
+
+/** Original (non-animated) instant production-rule stroke width. */
+const getLineStrokeWidthRules = ({
   comboSiblingNames,
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
   highlightedItem,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  // No interactivity -> use default (no hover)
-  if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_STROKE_WIDTH_RULE];
+  if (!interactiveMarkName && highlightedItem === undefined) return [DEFAULT_STROKE_WIDTH_RULE];
   const strokeWidthRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
@@ -370,7 +410,7 @@ export const getLineStrokeWidth = ({
       signal: CHART_SIZE_STROKE_WIDTH,
     });
   }
-  
+
   strokeWidthRules.push(DEFAULT_STROKE_WIDTH_RULE);
 
   return strokeWidthRules;
@@ -527,13 +567,15 @@ const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Ma
 };
 
 /**
- * Returns show/hide opacity rules for marks that should be visible only when `datum` belongs
- * to the currently hovered or externally highlighted series. Follows the same production-rule
- * array pattern as `getLineOpacity`, but uses `value: 1` (show) per matching condition and
- * `value: 0` (hide) as the fallback — in contrast to the fade pattern used for regular marks.
+ * Returns show/hide opacity rules for the highlight-overlay marks, which redraw the emphasized
+ * series on top of direct labels purely for z-ordering. Uses `value: 1` (show) per matching
+ * condition and `value: 0` (hide) as the fallback, so at rest the overlay is fully hidden and
+ * never covers the direct labels. The fade animation for non-emphasized series is handled on the
+ * base line via `getLineOpacity`; the overlay itself does not need to animate because the
+ * emphasized series stays at full opacity in both layers.
  */
 export const getHighlightedSeriesOpacityRules = (
-  markOptions: { interactiveMarkName?: string; isHighlightedByGroup?: boolean; legendHighlightSignals?: string[] }
+  markOptions: { name?: string; interactiveMarkName?: string; isHighlightedByGroup?: boolean; legendHighlightSignals?: string[] }
 ): ProductionRule<NumericValueRef> => {
   const { interactiveMarkName, isHighlightedByGroup, legendHighlightSignals } = markOptions;
   return [
@@ -578,8 +620,11 @@ export const getLineHighlightOverlayGroup = (
   const { name } = markOptions;
   const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
 
+  // isAnimate: false — the overlay reuses the line mark under a different name (which has no
+  // `_hoverFractionData`), and it manages its own visibility via opacityRules below. Keeping it
+  // non-animated avoids referencing a data source that was only emitted for the base line's name.
   const baseLineMark = getLineMark(
-    { ...markOptions, name: `${name}_highlightOverlayLine` },
+    { ...markOptions, name: `${name}_highlightOverlayLine`, isAnimate: false },
     `${name}_highlightOverlay_facet`
   );
 

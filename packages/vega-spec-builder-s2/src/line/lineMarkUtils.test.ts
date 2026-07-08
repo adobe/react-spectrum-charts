@@ -19,6 +19,7 @@ import {
   DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  HOVER_OPACITY_LOW,
   HOVERED_ITEM,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -26,6 +27,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getDeemphasisRamp, getEmphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import {
   getAlternateSegmentStrokeDash,
   getHighlightedSeriesOpacityRules,
@@ -33,9 +35,23 @@ import {
   getLineHighlightOverlayGroup,
   getLineHoverMarks,
   getLineMark,
-  getLineOpacity, getLineStrokeWidth,
+  getLineOpacity,
+  getLineStrokeWidth,
 } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
+
+/** Expected update.opacity for a line that participates in the hover-animation fade (lower half). */
+const fadeOpacity = (name: string) => ({
+  signal: `${HOVER_OPACITY_LOW} + (1 - ${HOVER_OPACITY_LOW}) * ${getDeemphasisRamp(getHoverFractionSignal(name))}`,
+});
+
+/** Expected update.strokeWidth for an animated line (upper "emphasis" half). */
+const hoverStrokeWidth = (name: string) => ({
+  signal: `${CHART_SIZE_STROKE_WIDTH} + (${CHART_SIZE_HOVER_STROKE_WIDTH} - ${CHART_SIZE_STROKE_WIDTH}) * ${getEmphasisRamp(getHoverFractionSignal(name))}`,
+});
+
+/** defaultLineMarkOptions with the hover-animation flag resolved on (as addLine would set it). */
+const animatedOptions = { ...defaultLineMarkOptions, isAnimate: true };
 
 describe('getLineMark()', () => {
   test('should return line mark', () => {
@@ -81,12 +97,12 @@ describe('getLineMark()', () => {
       { ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true },
       'line0_facet'
     );
-    expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
+    expect(lineMark.encode?.update?.opacity).toEqual(DEFAULT_OPACITY_RULE);
   });
 
   test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, displayOnHover: false }, 'line0_facet');
-    expect(lineMark.encode?.update?.opacity).toEqual([{ value: 1 }]);
+    expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
   });
 
   test('uses round strokeCap by default', () => {
@@ -149,174 +165,147 @@ describe('getLineHoverMarks()', () => {
   });
 });
 
-describe('getLineOpacity()', () => {
-  test('should return a basic opacity rule when using default line options', () => {
-    const opacityRule = getLineOpacity(defaultLineMarkOptions);
-    expect(opacityRule).toEqual([{ value: 1 }]);
-  });
-
-  test('should include hover rules if line has an inspect', () => {
-    const opacityRule = getLineOpacity({
-      ...defaultLineMarkOptions,
-      interactiveMarkName: 'line0',
-      chartInspects: [{}],
+describe('getLineStrokeWidth()', () => {
+  describe('non-animated (production rules)', () => {
+    test('returns the default stroke width rule when no interactivity', () => {
+      expect(getLineStrokeWidth(defaultLineMarkOptions)).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
     });
-    expect(opacityRule).toEqual([
-      {
-        test: `isValid(line0_${HOVERED_ITEM})`,
-        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      },
-      { value: 1 },
-    ]);
-  });
 
-  test('should include select rules if line has a popover', () => {
-    const opacityRule = getLineOpacity({
-      ...defaultLineMarkOptions,
-      interactiveMarkName: 'line0',
-      popoverMarkName: 'line0',
-      chartPopovers: [{}],
+    test('returns the default stroke width rule when displayOnHover is true', () => {
+      expect(
+        getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true })
+      ).toEqual(DEFAULT_STROKE_WIDTH_RULE);
     });
-    expect(opacityRule).toEqual([
-      {
-        test: 'isValid(line0_hoveredItem)',
-        signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      },
-      { test: `isValid(${SELECTED_SERIES})`, signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}` },
-      { value: 1 },
-    ]);
-  });
 
-  test('should include displayOnHover rules if displayOnHover is true', () => {
-    const opacityRule = getLineOpacity({
-      ...defaultLineMarkOptions,
-      interactiveMarkName: 'line0',
-      displayOnHover: true,
+    test('includes hover rules when the line has an inspect', () => {
+      const result = getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] });
+      expect(result).toEqual([
+        {
+          test: `isValid(line0_${HOVERED_ITEM})`,
+          signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+        },
+        {
+          test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+          signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+        },
+        {
+          test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+          signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+        },
+        DEFAULT_STROKE_WIDTH_RULE,
+      ]);
     });
-    expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
-  });
 
-  test('should add highlightedData rule for multiple series if isHighlightedByGroup is true', () => {
-    const opacityRule = getLineOpacity({
-      ...defaultLineMarkOptions,
-      interactiveMarkName: 'line0',
-      chartInspects: [{}],
-      isHighlightedByGroup: true,
+    test('includes the select rule when the line has a popover', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        popoverMarkName: 'line0',
+        chartPopovers: [{}],
+      });
+      expect(result).toContainEqual({
+        test: `isValid(${SELECTED_SERIES})`,
+        signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
     });
-    expect(opacityRule).toHaveLength(4);
-    expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+
+    test('uses the highlightedData rule when isHighlightedByGroup is true', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        isHighlightedByGroup: true,
+      });
+      expect(result).toHaveLength(4);
+      expect(result[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+    });
+
+    test('uses base stroke width when a combo sibling is hovered', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        comboSiblingNames: ['line1'],
+      });
+      expect(result).toContainEqual({ test: `isValid(line1_${HOVERED_ITEM})`, signal: CHART_SIZE_STROKE_WIDTH });
+    });
   });
 
-  test('should include comboSiblingNames fade rule when comboSiblingNames is set', () => {
-    const opacityRule = getLineOpacity({
-      ...defaultLineMarkOptions,
-      interactiveMarkName: 'line0',
-      comboSiblingNames: ['bar0', 'bar1'],
-    }) as { test?: string; value: number }[];
-    const comboRule = opacityRule.find((r) => r.test?.includes('bar0') && r.test?.includes('bar1'));
-    expect(comboRule).toBeDefined();
-    expect(comboRule?.value).toBe(FADE_FACTOR);
-    expect(comboRule?.test).toBe(`isValid(bar0_${HOVERED_ITEM}) || isValid(bar1_${HOVERED_ITEM})`);
+  describe('animated', () => {
+    test('returns the default stroke width rule when displayOnHover is true', () => {
+      expect(getLineStrokeWidth({ ...animatedOptions, displayOnHover: true })).toEqual(DEFAULT_STROKE_WIDTH_RULE);
+    });
+
+    test('returns the emphasis-ramped hover signal', () => {
+      expect(getLineStrokeWidth(animatedOptions)).toEqual(hoverStrokeWidth('line0'));
+    });
+
+    test('grows from normal toward hover width only on emphasis (delta form)', () => {
+      const { signal } = getLineStrokeWidth(animatedOptions) as { signal: string };
+      expect(signal).toContain(`${CHART_SIZE_STROKE_WIDTH} + (${CHART_SIZE_HOVER_STROKE_WIDTH} - ${CHART_SIZE_STROKE_WIDTH})`);
+      expect(signal).toContain(getEmphasisRamp(getHoverFractionSignal('line0')));
+    });
   });
 });
 
-describe('getLineStrokeWidth()', () => {
-  test('should return the default stroke width rule when no interactivity', () => {
-    expect(getLineStrokeWidth(defaultLineMarkOptions)).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
-  });
-
-  test('should return the default stroke width rule when displayOnHover is true', () => {
-    expect(
-      getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true })
-    ).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
-  });
-
-  test('should include hover rules if line has an inspect', () => {
-    const result = getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] });
-    expect(result).toEqual([
-      {
-        test: `isValid(line0_${HOVERED_ITEM})`,
-        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      DEFAULT_STROKE_WIDTH_RULE,
-    ]);
-  });
-
-  test('should include select rules if line has a popover', () => {
-    const result = getLineStrokeWidth({
-      ...defaultLineMarkOptions,
-      interactiveMarkName: 'line0',
-      popoverMarkName: 'line0',
-      chartPopovers: [{}],
+describe('getLineOpacity()', () => {
+  describe('non-animated (production rules)', () => {
+    test('returns a single default opacity rule when there is no interactivity', () => {
+      expect(getLineOpacity(defaultLineMarkOptions)).toEqual([DEFAULT_OPACITY_RULE]);
     });
-    expect(result).toEqual([
-      {
-        test: `isValid(line0_${HOVERED_ITEM})`,
-        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      {
+
+    test('includes hover + controlled fade rules when the line has an inspect', () => {
+      const result = getLineOpacity({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] });
+      expect(result).toEqual([
+        {
+          test: `isValid(line0_${HOVERED_ITEM})`,
+          signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        },
+        {
+          test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+          signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+        },
+        {
+          test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+          signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        },
+        DEFAULT_OPACITY_RULE,
+      ]);
+    });
+
+    test('includes the select fade rule when the line has a popover', () => {
+      const result = getLineOpacity({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        popoverMarkName: 'line0',
+        chartPopovers: [{}],
+      });
+      expect(result).toContainEqual({
         test: `isValid(${SELECTED_SERIES})`,
-        signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      DEFAULT_STROKE_WIDTH_RULE,
-    ]);
+        signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      });
+    });
+
+    test('adds a comboSibling fade rule when comboSiblingNames is set', () => {
+      const result = getLineOpacity({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        comboSiblingNames: ['bar0', 'bar1'],
+      });
+      expect(result).toContainEqual({
+        test: `isValid(bar0_${HOVERED_ITEM}) || isValid(bar1_${HOVERED_ITEM})`,
+        value: FADE_FACTOR,
+      });
+    });
   });
 
-  test('should use highlightedData rule when isHighlightedByGroup is true', () => {
-    const result = getLineStrokeWidth({
-      ...defaultLineMarkOptions,
-      interactiveMarkName: 'line0',
-      chartInspects: [{}],
-      isHighlightedByGroup: true,
+  describe('animated', () => {
+    test('returns the default opacity rule when displayOnHover is true', () => {
+      expect(getLineOpacity({ ...animatedOptions, displayOnHover: true })).toEqual(DEFAULT_OPACITY_RULE);
     });
-    expect(result).toHaveLength(4);
-    expect(result[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
-    expect((result[0] as { signal: string }).signal).toContain(CHART_SIZE_HOVER_STROKE_WIDTH);
-    expect((result[0] as { signal: string }).signal).toContain(CHART_SIZE_STROKE_WIDTH);
-  });
 
-  test('should use base stroke width when a combo sibling is hovered', () => {
-    const result = getLineStrokeWidth({
-      ...defaultLineMarkOptions,
-      interactiveMarkName: 'line0',
-      chartInspects: [{}],
-      comboSiblingNames: ['line1'],
-    });
-    expect(result).toContainEqual({
-      test: `isValid(line1_${HOVERED_ITEM})`,
-      signal: CHART_SIZE_STROKE_WIDTH,
+    test('returns the deemphasis-ramped fade signal', () => {
+      expect(getLineOpacity(animatedOptions)).toEqual(fadeOpacity('line0'));
     });
   });
 });
@@ -407,7 +396,7 @@ describe('getLineGradientMark()', () => {
 
   test('should include hover opacity rules when interactive', () => {
     const gradientMark = getLineGradientMark(
-      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] },
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}], isAnimate: true },
       'line0_facet'
     );
     const opacity = gradientMark.encode?.update?.opacity as unknown[];
@@ -416,7 +405,9 @@ describe('getLineGradientMark()', () => {
       test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`,
       value: 0,
     });
-    expect(opacity.length).toBeGreaterThan(2);
+    // second rule is the shared hover-animation fade signal
+    expect(opacity).toHaveLength(2);
+    expect(opacity[1]).toEqual(fadeOpacity('line0'));
   });
 
   test('should support dual metric axis y encoding', () => {
@@ -453,7 +444,7 @@ describe('getAlternateSegmentStrokeDash()', () => {
 
 describe('getHighlightedSeriesOpacityRules()', () => {
   test('without interactiveMarkName returns 3 rules: 2 show conditions + hide fallback', () => {
-    const rules = getHighlightedSeriesOpacityRules({}) as { test?: string; value: number }[];
+    const rules = getHighlightedSeriesOpacityRules({ name: 'line0' }) as { test?: string; value: number }[];
     expect(rules).toHaveLength(3);
     expect(rules.at(-1)).toEqual({ value: 0 });
     expect(rules[0].test).toContain(CONTROLLED_HIGHLIGHTED_SERIES);
@@ -461,26 +452,27 @@ describe('getHighlightedSeriesOpacityRules()', () => {
   });
 
   test('with interactiveMarkName adds hover rule as first condition', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
+    const rules = getHighlightedSeriesOpacityRules({ name: 'line0', interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
     expect(rules).toHaveLength(4);
     expect(rules[0].test).toContain(`line0_${HOVERED_ITEM}`);
     expect(rules[0].test).toContain(SERIES_ID);
   });
 
   test('with isHighlightedByGroup uses highlightedData condition instead of hover item', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0', isHighlightedByGroup: true }) as { test?: string; value: number }[];
+    const rules = getHighlightedSeriesOpacityRules({ name: 'line0', interactiveMarkName: 'line0', isHighlightedByGroup: true }) as { test?: string; value: number }[];
     expect(rules[0].test).toContain(`line0_highlightedData`);
     expect(rules[0].test).not.toContain(HOVERED_ITEM);
   });
 
   test('all show rules have value 1 and fallback has value 0', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
+    const rules = getHighlightedSeriesOpacityRules({ name: 'line0', interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
     rules.slice(0, -1).forEach(rule => expect(rule.value).toBe(1));
     expect(rules.at(-1)?.value).toBe(0);
   });
 
   test('with legendHighlightSignals adds signal-based show conditions before the fallback', () => {
     const rules = getHighlightedSeriesOpacityRules({
+      name: 'line0',
       legendHighlightSignals: ['legend_hoveredSeries'],
     }) as { test?: string; value: number }[];
     const legendRule = rules.find((r) => r.test?.includes('legend_hoveredSeries'));
@@ -492,6 +484,7 @@ describe('getHighlightedSeriesOpacityRules()', () => {
 
   test('with multiple legendHighlightSignals adds one rule per signal', () => {
     const rules = getHighlightedSeriesOpacityRules({
+      name: 'line0',
       legendHighlightSignals: ['sig1', 'sig2'],
     }) as { test?: string; value: number }[];
     expect(rules.filter((r) => r.test?.includes('isValid(sig'))).toHaveLength(2);

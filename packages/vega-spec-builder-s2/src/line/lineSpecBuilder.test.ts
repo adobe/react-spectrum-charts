@@ -333,6 +333,44 @@ describe('lineSpecBuilder', () => {
         defaultSpec
       );
     });
+
+    test('does not register animatedMarks or create hover data for a non-interactive line', () => {
+      const spec = addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' });
+      expect((spec.usermeta as { animatedMarks?: string[] }).animatedMarks).toBeUndefined();
+      expect((spec.data ?? []).map((d) => d.name)).not.toContain('line0_hoverTargetData');
+    });
+
+    test('resolves isAnimate for an interactive line: registers animatedMarks and creates hover data + timer', () => {
+      const spec = addLine(startingSpec, {
+        idKey: MARK_ID,
+        color: DEFAULT_COLOR,
+        markType: 'line',
+        chartInspects: [{}],
+      });
+      expect((spec.usermeta as { animatedMarks?: string[] }).animatedMarks).toContain('line0');
+      expect((spec.data ?? []).map((d) => d.name)).toEqual(
+        expect.arrayContaining(['line0_hoverTargetData', 'line0_hoverAnimStateData', 'line0_hoverFractionData'])
+      );
+      expect((spec.signals ?? []).map((s) => s.name)).toEqual(expect.arrayContaining(['hoverTimer', 'line0_hoverTargets']));
+    });
+
+    test('animations: false forces the interactive line onto the production-rule system (no hover data/timer)', () => {
+      const spec = addLine(startingSpec, {
+        idKey: MARK_ID,
+        color: DEFAULT_COLOR,
+        markType: 'line',
+        chartInspects: [{}],
+        animations: false,
+      });
+      // not registered as animated and no hover-animation data/signals were created
+      expect((spec.usermeta as { animatedMarks?: string[] }).animatedMarks).toBeUndefined();
+      expect((spec.data ?? []).map((d) => d.name)).not.toContain('line0_hoverTargetData');
+      expect((spec.signals ?? []).map((s) => s.name)).not.toContain('hoverTimer');
+      // the line mark uses the original production-rule opacity (array), not the animated fraction signal
+      const group = (spec.marks ?? []).find((m) => m.name === 'line0_group') as { marks: { name: string; encode?: { update?: { opacity?: unknown } } }[] };
+      const lineMark = group.marks.find((m) => m.name === 'line0');
+      expect(Array.isArray(lineMark?.encode?.update?.opacity)).toBe(true);
+    });
   });
 
   describe('addData()', () => {
@@ -369,6 +407,18 @@ describe('lineSpecBuilder', () => {
       });
       const tableData = resultData.find((d) => d.name === TABLE);
       expect(tableData?.transform?.some((t) => 'as' in t && t.as === `line0_${GROUP_ID}`)).toBe(false);
+    });
+
+    test('creates the three hover data sources when isAnimate is set', () => {
+      const names = addData(baseData, { ...defaultLineOptions, isAnimate: true }).map((d) => d.name);
+      expect(names).toEqual(
+        expect.arrayContaining(['line0_hoverTargetData', 'line0_hoverAnimStateData', 'line0_hoverFractionData'])
+      );
+    });
+
+    test('does not create hover data sources when not animating', () => {
+      const names = addData(baseData, defaultLineOptions).map((d) => d.name);
+      expect(names).not.toContain('line0_hoverTargetData');
     });
 
     test('should add trendline transform', () => {
@@ -970,9 +1020,11 @@ describe('lineSpecBuilder', () => {
     test('hover signals with metric range', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultLineOptions,
+        isAnimate: true,
         metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
       });
-      expect(signals).toHaveLength(defaultSignals.length + 1);
+      // +2 hover-animation signals (hoverTimer + line0_hoverTargets) precede the hovered-item signal
+      expect(signals).toHaveLength(defaultSignals.length + 3);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(2);
     });
@@ -984,10 +1036,12 @@ describe('lineSpecBuilder', () => {
     test('adds hover signals with metric range when displayPointMark is not undefined', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultLineOptions,
+        isAnimate: true,
         staticPoint: 'staticPoint',
         metricRanges: [{ metricEnd: 'end', metricStart: 'start', displayOnHover: true }],
       });
-      expect(signals).toHaveLength(defaultSignals.length + 1);
+      // +2 hover-animation signals (hoverTimer + line0_hoverTargets) precede the hovered-item signal
+      expect(signals).toHaveLength(defaultSignals.length + 3);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(2);
     });
@@ -995,10 +1049,12 @@ describe('lineSpecBuilder', () => {
     test('hover signals with interactionMode item', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultLineOptions,
+        isAnimate: true,
         interactionMode: 'item',
         chartInspects: [{}],
       });
-      expect(signals).toHaveLength(defaultSignals.length + 1);
+      // +2 hover-animation signals (hoverTimer + line0_hoverTargets) precede the hovered-item signal
+      expect(signals).toHaveLength(defaultSignals.length + 3);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(8);
     });

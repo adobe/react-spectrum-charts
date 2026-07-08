@@ -11,9 +11,17 @@
  */
 import { FilterTransform } from 'vega';
 
-import { GROUP_ID, SELECTED_ITEM, SERIES_ID } from '@spectrum-charts/constants';
+import {
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
+  SELECTED_ITEM,
+  SELECTED_SERIES,
+  SERIES_ID,
+} from '@spectrum-charts/constants';
 
-import { getLineHighlightedData, getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { defaultLineOptions } from './lineTestUtils';
 
 describe('getLineHighlightedData()', () => {
@@ -54,5 +62,65 @@ describe('getPrimarySeriesOtherExpr()', () => {
   test('uses provided datumPath', () => {
     const expr = getPrimarySeriesOtherExpr(['series1'], 'datum.datum');
     expect(expr).toContain('datum.datum');
+  });
+});
+
+describe('getLineHoverRules()', () => {
+  const asNames = (options: Parameters<typeof getLineHoverRules>[0]) => getLineHoverRules(options).map((r) => r.as);
+
+  test('always includes the two controlled-highlight rules', () => {
+    const rules = getLineHoverRules(defaultLineOptions);
+    expect(asNames(defaultLineOptions)).toEqual(['controlledTableMatch', 'controlledSeriesMatch']);
+    expect(rules.find((r) => r.as === 'controlledTableMatch')?.expr).toBe(
+      `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) ? (indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : 0) : null`
+    );
+    expect(rules.find((r) => r.as === 'controlledSeriesMatch')?.expr).toBe(
+      `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`
+    );
+  });
+
+  test('adds hoveredMatch first when interactiveMarkName is set (item hover)', () => {
+    const options = { ...defaultLineOptions, interactiveMarkName: 'line0' };
+    expect(asNames(options)).toEqual(['hoveredMatch', 'controlledTableMatch', 'controlledSeriesMatch']);
+    expect(getLineHoverRules(options)[0].expr).toBe(
+      `isValid(line0_${HOVERED_ITEM}) ? (line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`
+    );
+  });
+
+  test('hoveredMatch uses the highlightedData set when isHighlightedByGroup is true', () => {
+    const options = { ...defaultLineOptions, interactiveMarkName: 'line0', isHighlightedByGroup: true };
+    expect(getLineHoverRules(options)[0].expr).toBe(
+      `length(data('line0_highlightedData')) ? (indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 0) : null`
+    );
+  });
+
+  test('adds popoverMatch (keyed on selected series) when popoverMarkName is set', () => {
+    const options = { ...defaultLineOptions, popoverMarkName: 'line0' };
+    expect(asNames(options)).toContain('popoverMatch');
+    expect(getLineHoverRules(options).find((r) => r.as === 'popoverMatch')?.expr).toBe(
+      `isValid(${SELECTED_SERIES}) ? (${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`
+    );
+  });
+
+  test('adds one comboSiblingMatch covering every sibling name', () => {
+    const options = { ...defaultLineOptions, comboSiblingNames: ['line1', 'line2'] };
+    const combo = getLineHoverRules(options).find((r) => r.as === 'comboSiblingMatch');
+    expect(combo?.expr).toBe(`(isValid(line1_${HOVERED_ITEM}) || isValid(line2_${HOVERED_ITEM})) ? 1 : 0`);
+  });
+
+  test('composes all rule types in a stable order', () => {
+    const options = {
+      ...defaultLineOptions,
+      interactiveMarkName: 'line0',
+      popoverMarkName: 'line0',
+      comboSiblingNames: ['line1'],
+    };
+    expect(asNames(options)).toEqual([
+      'hoveredMatch',
+      'controlledTableMatch',
+      'controlledSeriesMatch',
+      'popoverMatch',
+      'comboSiblingMatch',
+    ]);
   });
 });

@@ -160,7 +160,7 @@ export const StrokeWidthOnHover = (): ReactElement => (
 export const StrokeWidthOnHoverGroupLegend = (): ReactElement => (
   <ResizableChart>
     {(width) => (
-      <Chart data={groupedData} width={width} height={CHART_HEIGHT}>
+      <Chart data={groupedData} width={width} height={CHART_HEIGHT} debug={true}>
         <Axis position="bottom" baseline ticks labelFormat="time" />
         <Axis position="left" grid />
         <Line dimension="datetime" metric="value" color="series" lineType="category" scaleType="time">
