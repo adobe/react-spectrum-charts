@@ -100,7 +100,7 @@ const groupedData = workspaceTrendsData.map((d) => ({ ...d, category: seriesCate
 const createSeededRandom = (seed: number): (() => number) => {
   let state = seed;
   return () => {
-    state = (state + 0x6d2b79f5) | 0;
+    state = Math.trunc(state + 0x6d2b79f5);
     let t = state;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
