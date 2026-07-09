@@ -172,6 +172,13 @@ export const TRELLIS_PADDING = 0.2;
 export const ANIMATION_THROTTLE = 16;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
 export const ANIMATION_HOVER_SPEED = 100;
+/**
+ * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
+ * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
+ * Consumers map the lower half [0, neutral] for deemphasis (e.g. opacity) and the upper half [neutral, 1]
+ * for emphasis (e.g. stroke width).
+ */
+export const HOVER_NEUTRAL_TARGET = 0.5;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
