@@ -140,6 +140,8 @@ export const SELECTED_SERIES = 'selectedSeries'; // series
 export const SELECTED_GROUP = 'selectedGroup'; // data point
 export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
+export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
+export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 
 // scale names
 export const COLOR_SCALE = 'color';
@@ -164,6 +166,12 @@ export const DISCRETE_PADDING = 0.5;
 export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 0;
 export const TRELLIS_PADDING = 0.2;
+
+// hover animation constants
+/** Timer signal update interval in ms. Caps timer signal update at ~60fps. */
+export const ANIMATION_THROTTLE = 16;
+/** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
+export const ANIMATION_HOVER_SPEED = 100;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
