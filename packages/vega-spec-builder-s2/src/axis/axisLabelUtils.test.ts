@@ -162,6 +162,17 @@ describe('getLabelFormat()', () => {
     expect(labelEncodings).toHaveLength(2);
     expect(labelEncodings[1].signal).toContain('truncateText');
   });
+  test('should truncate to the band scale of the axis', () => {
+    expect(getLabelFormat({ ...defaultAxisOptions, truncateLabels: true }, 'xBand')[1].signal).toContain(
+      'bandwidth("xBand")'
+    );
+    expect(
+      getLabelFormat(
+        { ...defaultAxisOptions, truncateLabels: true, position: 'left', labelOrientation: 'vertical' },
+        'yBand'
+      )[1].signal
+    ).toContain('bandwidth("yBand")');
+  });
   test('should not include text truncation if the scale name does not include band', () => {
     expect(getLabelFormat({ ...defaultAxisOptions, truncateLabels: true }, 'xLinear')[1].signal).not.toContain(
       'truncateText'
