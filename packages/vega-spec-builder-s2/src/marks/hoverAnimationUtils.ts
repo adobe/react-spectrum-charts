@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
-import {AggregateTransform, FormulaTransform, OnTrigger, Signal, SourceData, ValuesData} from 'vega';
-import {ANIMATION_HOVER_SPEED, ANIMATION_THROTTLE, FILTERED_TABLE, HOVER_NEUTRAL_TARGET, HOVER_TARGETS, HOVER_TIMER, SERIES_ID} from '@spectrum-charts/constants';
+import { AggregateTransform, FormulaTransform, OnTrigger, Signal, SourceData, ValuesData } from 'vega';
+import { ANIMATION_HOVER_SPEED, ANIMATION_THROTTLE, FILTERED_TABLE, HOVER_NEUTRAL_TARGET, HOVER_TARGETS, HOVER_TIMER, SERIES_ID } from '@spectrum-charts/constants';
 import { hasSignalByName } from '../signal/signalSpecBuilder';
 
 /** One hover condition. expr must evaluate to 1 | 0 | null. */
@@ -30,8 +30,25 @@ export interface HoverTargetDataOptions {
 /**
  * Constructs the data source for checking the hover interaction rules, storing the hover state as target values for each hoverable item.
  * HoverMatchRules are defined per mark and injected into this data source.
- * @param param0 
- * @returns 
+ * 
+ * Example:  
+ *  Say we run this function with the following options:  
+ *  - name: 'line0'
+ *  - groupby: ['${SERIES_ID}']
+ *  - rules: [{ as: 'hoveredMatch', expr: `isValid(${HOVERED_ITEM}) ? (${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null` }]
+ *  - source: FILTERED_TABLE  
+ * 
+ *  This will generate the following data source:  
+ * ```typescript
+ *  { name: 'line0_hoverTargetData', source: FILTERED_TABLE, transform: [  
+ *      { type: 'aggregate', groupby: ['${SERIES_ID}'] },  
+ *      { type: 'formula', as: 'hoveredMatch', expr: `isValid(${HOVERED_ITEM}) ? (${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null` },  
+ *      { type: 'formula', as: 'target', expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : ${HOVER_NEUTRAL_TARGET}` }  
+ *  ]}
+ * ```
+ * 
+ * @param HoverTargetDataOptions - options for the hover target data
+ * @returns SourceData - the data source for the hover target data
  */
 export const getHoverTargetData = ({
     name, groupby, rules, source = FILTERED_TABLE,
@@ -55,8 +72,8 @@ export interface HoverAnimStateOptions {
 
 /**
  * Tracks the startTime, startValue, and target for each hoverable item.
- * @param param0 
- * @returns 
+ * @param HoverAnimStateOptions - options for the hover animation state data
+ * @returns ValuesData - the values data for the hover animation state data
  */
 export const getHoverAnimStateData = ({
     name, keys, keyField = SERIES_ID,
@@ -67,10 +84,12 @@ export const getHoverAnimStateData = ({
 });
 
 /**
- * Helper function to get the on trigger entry for each hoverable item.
- * @param name 
- * @param i 
- * @returns 
+ * Helper function to get the on-trigger entry for each hoverable item. Records the startTime, startValue, and 
+ * target for each hoverable item, triggered by the hover target signal. This is used by HoverFractionData to 
+ * calculate the linear interpolation between the startValue and target.
+ * @param name - the name of the mark
+ * @param i - the index of the hoverable item
+ * @returns OnTrigger - the on trigger entry for the hoverable item
  */
 const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
     const animRef = `data('${name}_hoverAnimStateData')[${i}]`;
@@ -87,8 +106,8 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
 
 /**
  * Calculates the fraction of the animation for each hoverable item.
- * @param name 
- * @returns 
+ * @param name - the name of the mark
+ * @returns SourceData - the source data for the hover fraction data
  */
 export const getHoverFractionData = (name: string): SourceData => ({
     name: `${name}_hoverFractionData`,
@@ -106,8 +125,9 @@ export const getHoverFractionData = (name: string): SourceData => ({
  * Returns a Vega expression string that evaluates to the current animation fraction (0..0.5..1)
  * for `datum`, looked up by `keyField`. Marks compose this into whatever visual property they
  * want to animate (opacity, strokeWidth, radius, ...). The engine only exposes the raw fraction.
- * @param name mark name
- * @param keyField identity field used to match the animation row (defaults to SERIES_ID)
+ * @param name - the name of the mark
+ * @param keyField - the identity field used to match the animation row (defaults to SERIES_ID)
+ * @returns string - the signal for the hover fraction
  */
 export const getHoverFractionSignal = (name: string, keyField: string = SERIES_ID): string => {
     const fractionData = `data('${name}_hoverFractionData')`;
@@ -116,34 +136,30 @@ export const getHoverFractionSignal = (name: string, keyField: string = SERIES_I
     return `(${fractionData}[${lookup}] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`;
 };
 
-// The two ramps below take an emphasis-level expression (from getHoverFractionSignal — 0 = deemphasized,
-// neutral in the middle, 1 = emphasized) and isolate one direction of change, so a property can react to
-// deemphasis OR emphasis without reacting to the other. They are complementary: at neutral one reads 0 and
-// the other reads 1. A consumer scales its own values by the ramp, e.g.
-//   opacity     = LOW    + (1 - LOW)      * getDeemphasisRamp(...)   // only non-hovered series fade
-//   strokeWidth = NORMAL + (HOVER - NORMAL) * getEmphasisRamp(...)   // only the hovered series grows
-
 /**
- * Reacts only while a series is being de-emphasized; ignores emphasis. Concretely:
+ * Reads emphasis level expression (0 = deemphasized, neutral in the middle, 1 = emphasized)
+ * and reacts only while a series is being de-emphasized; ignores emphasis. Concretely:
  *   deemphasized (0) -> 0   ·   neutral -> 1   ·   emphasized (1) -> 1
  * (Returns 0 as the series is pushed below neutral, and a flat 1 from neutral upward.)
  */
 export const getDeemphasisRamp = (fractionExpr: string): string =>
+    // Scales the fraction by 1/HOVER_NEUTRAL_TARGET. The whole expression is then clamped to 0..1.
     `clamp(${fractionExpr} / ${HOVER_NEUTRAL_TARGET}, 0, 1)`;
 
 /**
- * Reacts only while a series is being emphasized; ignores de-emphasis. Concretely:
+ * Reads emphasis level expression (0 = deemphasized, neutral in the middle, 1 = emphasized)
+ * and reacts only while a series is being emphasized; ignores de-emphasis. Concretely:
  *   deemphasized (0) -> 0   ·   neutral -> 0   ·   emphasized (1) -> 1
  * (Returns a flat 0 from neutral downward, and ramps to 1 as the series is pushed above neutral.)
  */
 export const getEmphasisRamp = (fractionExpr: string): string =>
+    // Scales the fraction by 1/HOVER_NEUTRAL_TARGET and shifts left by 1. The whole expression is then clamped to 0..1.
     `clamp((${fractionExpr} - ${HOVER_NEUTRAL_TARGET}) / (1 - ${HOVER_NEUTRAL_TARGET}), 0, 1)`;
 
 /**
  * Adds the hover animation signals to the signals array.
- * @param signals
- * @param name
- * @returns
+ * @param signals - the signals array to add the hover animation signals to
+ * @param name - the name of the mark
  */
 export const addHoverAnimationSignals = (signals: Signal[], name: string): void => {
     if (!hasSignalByName(signals, HOVER_TIMER)) {
