@@ -19,10 +19,10 @@ import { Datum } from '@spectrum-charts/vega-spec-builder';
 import { Chart } from '../../../Chart';
 import { ChartPopover, ChartTooltip, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary } from '../../../rc';
+import { Donut, DonutSummary, SegmentLabel } from '../../../rc';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutProps } from '../../../types';
-import { basicDonutData, booleanDonutData } from './data';
+import { basicDonutData, booleanDonutData, zeroDonutData } from './data';
 
 export default {
   title: 'RSC/Donut',
@@ -47,6 +47,16 @@ const DonutStory: StoryFn<DonutProps & { width?: number; height?: number }> = (a
 
 const DonutLegendStory: StoryFn<typeof Donut> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Donut {...args} />
+      <Legend title="Browsers" position={'right'} highlight isToggleable />
+    </Chart>
+  );
+};
+
+const EmptyStateStory: StoryFn<typeof Donut> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: zeroDonutData, width: 400 });
   return (
     <Chart {...chartProps}>
       <Donut {...args} />
@@ -127,6 +137,15 @@ BooleanDonut.args = {
   isBoolean: true,
 };
 
+// all metric values are 0, so the donut renders the empty state ring with 0 displayed in the center
+const EmptyState = bindWithProps(EmptyStateStory);
+EmptyState.args = {
+  metric: 'count',
+  color: 'browser',
+  holeRatio: 0.8,
+  children: [<DonutSummary label="Visitors" key={0} />, <SegmentLabel percent value key={1} />],
+};
+
 const Supreme = bindWithProps(DonutLegendStory);
 Supreme.args = {
   metric: 'count',
@@ -135,4 +154,4 @@ Supreme.args = {
   children: [...interactiveChildren, <DonutSummary label="Visitors" key={0} />],
 };
 
-export { Basic, BooleanDonut, Supreme, WithLegend, WithPopover };
+export { Basic, BooleanDonut, EmptyState, Supreme, WithLegend, WithPopover };

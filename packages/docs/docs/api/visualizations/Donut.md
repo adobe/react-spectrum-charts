@@ -23,6 +23,10 @@ It is also possible to label each series using a legend just like you would on a
 
 You should not use direct labels and a legend at the same time as the information is redundant.
 
+## Empty state
+
+If there isn't any data to display (there are no data points or all metric values are 0), the donut will render as a light gray (gray-200) ring and all direct labels will be dropped. If a `DonutSummary` is present, the metric total (0) will still be displayed in the center of the donut.
+
 ## Examples
 
 ### Donut

@@ -16,6 +16,7 @@ import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
+import { getDonutEmptyStateTest } from './donutUtils';
 
 /**
  * Gets the SegmentLabel component from the children if one exists
@@ -89,7 +90,8 @@ export const getSegmentLabelTextMark = ({
     encode: {
       enter: {
         ...getBaseSegmentLabelEnterEncode(name),
-        text: { field: labelKey ?? color },
+        // drop all labels when there isn't any data to display, the empty state ring is shown instead
+        text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         ...(!donutOptions.s2 && { fontWeight: { value: 'bold' } }),
         ...(donutOptions.s2 && {
           fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
@@ -115,6 +117,8 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
   if (!options.value && !options.percent) return [];
   const { donutOptions } = options;
   const baseFontSize = donutOptions.s2 ? 16 : 14;
+  const valueText = getSegmentLabelValueText(options) ?? [];
+  const valueTextRules = Array.isArray(valueText) ? valueText : [valueText];
 
   return [
     {
@@ -124,7 +128,8 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
       encode: {
         enter: {
           ...getBaseSegmentLabelEnterEncode(donutOptions.name, baseFontSize),
-          text: getSegmentLabelValueText(options),
+          // drop all labels when there isn't any data to display, the empty state ring is shown instead
+          text: [{ test: getDonutEmptyStateTest(donutOptions.name), value: '' }, ...valueTextRules],
           ...(donutOptions.s2 && {
             fontWeight: { value: 'bold' },
             fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
@@ -207,5 +212,10 @@ const getSegmentLabelFontSize = (name: string, baseFontSize: number = 14): Produ
   // need to use radians for this. 0.3 radians is about 17 degrees
   // if we used arc length, then showing a label could shrink the overall donut size which could make the arc to small
   // that would hide the label which would make the arc bigger which would show the label and so on
-  return [{ test: `datum['${name}_arcLength'] < ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`, value: 0 }, { value: baseFontSize }];
+  return [
+    // hide all labels when there isn't any data to display, the empty state ring is shown instead
+    { test: getDonutEmptyStateTest(name), value: 0 },
+    { test: `datum['${name}_arcLength'] < ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`, value: 0 },
+    { value: baseFontSize },
+  ];
 };
