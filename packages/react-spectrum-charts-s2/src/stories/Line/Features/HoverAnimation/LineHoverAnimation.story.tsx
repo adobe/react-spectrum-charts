@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics, not React propTypes */
 import { ComponentProps, ReactElement } from 'react';
 
@@ -81,7 +82,7 @@ const seriesCategory: Record<string, string> = {
 };
 const groupedData = workspaceTrendsData.map((d) => ({ ...d, category: seriesCategory[d.series] }));
 
-const largeData = generateLargeData(20, 5000); // 20 series × 5,000 points = 100,000 rows
+const largeData = generateLargeData(100, 10); // 100 series × 10 points = 1,000 rows
 
 /**
  * Point hover — hovering a data point emphasizes that point's series (the `hoveredMatch` rule).
@@ -169,7 +170,7 @@ const OnClickStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactE
 };
 
 /**
- * Performance stress test — 100,000 rows across 20 series. Hover a legend entry or a data point to
+ * Performance stress test — 1,000 rows across 100 series. Hover a legend entry or a data point to
  * watch the hover-animation system fade/emphasize at scale (toggle `animations` to compare).
  */
 const LargeDatasetStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactElement => {
@@ -181,7 +182,6 @@ const LargeDatasetStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): R
       <Line {...args}>
         <ChartInspect>{dialogContent}</ChartInspect>
       </Line>
-      <Legend highlight />
     </Chart>
   );
 };

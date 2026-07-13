@@ -9,65 +9,77 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { AggregateTransform, FormulaTransform, OnTrigger, Signal, SourceData, ValuesData } from 'vega';
-import { ANIMATION_HOVER_SPEED, ANIMATION_THROTTLE, FILTERED_TABLE, HOVER_NEUTRAL_TARGET, HOVER_TARGETS, HOVER_TIMER, SERIES_ID } from '@spectrum-charts/constants';
+
+import {
+  ANIMATION_HOVER_SPEED,
+  ANIMATION_THROTTLE,
+  FILTERED_TABLE,
+  HOVER_NEUTRAL_TARGET,
+  HOVER_TARGETS,
+  HOVER_TIMER,
+  SERIES_ID,
+} from '@spectrum-charts/constants';
+
 import { hasSignalByName } from '../signal/signalSpecBuilder';
 
 /** One hover condition. expr must evaluate to 1 | 0 | null. */
 export interface HoverMatchRule {
-    as: string;
-    expr: string;
+  as: string;
+  expr: string;
 }
 
 export interface HoverTargetDataOptions {
-    name: string;
-    groupby: string[];
-    rules: HoverMatchRule[];
-    source?: string; // defaults to FILTERED_TABLE
+  name: string;
+  groupby: string[];
+  rules: HoverMatchRule[];
+  source?: string; // defaults to FILTERED_TABLE
 }
 
 /**
  * Constructs the data source for checking the hover interaction rules, storing the hover state as target values for each hoverable item.
  * HoverMatchRules are defined per mark and injected into this data source.
- * 
- * Example:  
- *  Say we run this function with the following options:  
+ *
+ * Example:
+ *  Say we run this function with the following options:
  *  - name: 'line0'
  *  - groupby: ['${SERIES_ID}']
  *  - rules: [{ as: 'hoveredMatch', expr: `isValid(${HOVERED_ITEM}) ? (${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null` }]
- *  - source: FILTERED_TABLE  
- * 
- *  This will generate the following data source:  
+ *  - source: FILTERED_TABLE
+ *
+ *  This will generate the following data source:
  * ```typescript
- *  { name: 'line0_hoverTargetData', source: FILTERED_TABLE, transform: [  
- *      { type: 'aggregate', groupby: ['${SERIES_ID}'] },  
- *      { type: 'formula', as: 'hoveredMatch', expr: `isValid(${HOVERED_ITEM}) ? (${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null` },  
- *      { type: 'formula', as: 'target', expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : ${HOVER_NEUTRAL_TARGET}` }  
+ *  { name: 'line0_hoverTargetData', source: FILTERED_TABLE, transform: [
+ *      { type: 'aggregate', groupby: ['${SERIES_ID}'] },
+ *      { type: 'formula', as: 'hoveredMatch', expr: `isValid(${HOVERED_ITEM}) ? (${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null` },
+ *      { type: 'formula', as: 'target', expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : ${HOVER_NEUTRAL_TARGET}` }
  *  ]}
  * ```
- * 
+ *
  * @param HoverTargetDataOptions - options for the hover target data
  * @returns SourceData - the data source for the hover target data
  */
 export const getHoverTargetData = ({
-    name, groupby, rules, source = FILTERED_TABLE,
+  name,
+  groupby,
+  rules,
+  source = FILTERED_TABLE,
 }: HoverTargetDataOptions): SourceData => {
-    const transforms: (AggregateTransform | FormulaTransform)[] = [
-        { type: 'aggregate', groupby: groupby },
-        ...rules.map<FormulaTransform>((r) => ({ type: 'formula', as: r.as, expr: r.expr })),
-    ];
-    const targetExpr = rules.map((r) => `isValid(datum.${r.as}) ? datum.${r.as}`).join(' : ') + ` : ${HOVER_NEUTRAL_TARGET}`;
-    transforms.push({ type: 'formula', as: 'target', expr: targetExpr });
+  const transforms: (AggregateTransform | FormulaTransform)[] = [
+    { type: 'aggregate', groupby: groupby },
+    ...rules.map<FormulaTransform>((r) => ({ type: 'formula', as: r.as, expr: r.expr })),
+  ];
+  const targetExpr =
+    rules.map((r) => `isValid(datum.${r.as}) ? datum.${r.as}`).join(' : ') + ` : ${HOVER_NEUTRAL_TARGET}`;
+  transforms.push({ type: 'formula', as: 'target', expr: targetExpr });
 
-    return { name: `${name}_hoverTargetData`, source, transform: transforms };
+  return { name: `${name}_hoverTargetData`, source, transform: transforms };
 };
 
-
 export interface HoverAnimStateOptions {
-    name: string;
-    keys: string[];
-    keyField?: string;
+  name: string;
+  keys: string[];
+  keyField?: string;
 }
 
 /**
@@ -75,33 +87,31 @@ export interface HoverAnimStateOptions {
  * @param HoverAnimStateOptions - options for the hover animation state data
  * @returns ValuesData - the values data for the hover animation state data
  */
-export const getHoverAnimStateData = ({
-    name, keys, keyField = SERIES_ID,
-}: HoverAnimStateOptions): ValuesData => ({
-    name: `${name}_hoverAnimStateData`,
-    values: keys.map((id) => ({ [keyField]: id, startTime: 0, startValue: 1, target: 1 })),
-    on: keys.map((_, i) => getOnTriggerEntry(name, i)),
+export const getHoverAnimStateData = ({ name, keys, keyField = SERIES_ID }: HoverAnimStateOptions): ValuesData => ({
+  name: `${name}_hoverAnimStateData`,
+  values: keys.map((id) => ({ [keyField]: id, startTime: 0, startValue: 1, target: 1 })),
+  on: keys.map((_, i) => getOnTriggerEntry(name, i)),
 });
 
 /**
- * Helper function to get the on-trigger entry for each hoverable item. Records the startTime, startValue, and 
- * target for each hoverable item, triggered by the hover target signal. This is used by HoverFractionData to 
+ * Helper function to get the on-trigger entry for each hoverable item. Records the startTime, startValue, and
+ * target for each hoverable item, triggered by the hover target signal. This is used by HoverFractionData to
  * calculate the linear interpolation between the startValue and target.
  * @param name - the name of the mark
  * @param i - the index of the hoverable item
  * @returns OnTrigger - the on trigger entry for the hoverable item
  */
 const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
-    const animRef = `data('${name}_hoverAnimStateData')[${i}]`;
-    const targetSigRef = `${name}_${HOVER_TARGETS}[${i}]`;
-    const fracRef = `data('${name}_hoverFractionData')[${i}]`;
-    const hasChanged = `${targetSigRef} !== ${animRef}.target`;
-    const fracExpr = `(${fracRef} || {fraction: 1}).fraction`;
-    return {
-        trigger: `${name}_${HOVER_TARGETS}`,
-        modify: animRef,
-        values: `{startTime: ${hasChanged} ? now() : ${animRef}.startTime, startValue: ${hasChanged} ? ${fracExpr} : ${animRef}.startValue, target: ${targetSigRef}}`,
-    };  
+  const animRef = `data('${name}_hoverAnimStateData')[${i}]`;
+  const targetSigRef = `${name}_${HOVER_TARGETS}[${i}]`;
+  const fracRef = `data('${name}_hoverFractionData')[${i}]`;
+  const hasChanged = `${targetSigRef} !== ${animRef}.target`;
+  const fracExpr = `(${fracRef} || {fraction: 1}).fraction`;
+  return {
+    trigger: `${name}_${HOVER_TARGETS}`,
+    modify: animRef,
+    values: `{startTime: ${hasChanged} ? now() : ${animRef}.startTime, startValue: ${hasChanged} ? ${fracExpr} : ${animRef}.startValue, target: ${targetSigRef}}`,
+  };
 };
 
 /**
@@ -110,15 +120,15 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
  * @returns SourceData - the source data for the hover fraction data
  */
 export const getHoverFractionData = (name: string): SourceData => ({
-    name: `${name}_hoverFractionData`,
-    source: `${name}_hoverAnimStateData`,
-    transform: [
-        {
-        type: 'formula',
-        as: 'fraction',
-        expr: `lerp([datum.startValue, datum.target], clamp((${HOVER_TIMER} - datum.startTime) / ${ANIMATION_HOVER_SPEED}, 0, 1))`,
-        },
-    ],
+  name: `${name}_hoverFractionData`,
+  source: `${name}_hoverAnimStateData`,
+  transform: [
+    {
+      type: 'formula',
+      as: 'fraction',
+      expr: `lerp([datum.startValue, datum.target], clamp((${HOVER_TIMER} - datum.startTime) / ${ANIMATION_HOVER_SPEED}, 0, 1))`,
+    },
+  ],
 });
 
 /**
@@ -130,10 +140,10 @@ export const getHoverFractionData = (name: string): SourceData => ({
  * @returns string - the signal for the hover fraction
  */
 export const getHoverFractionSignal = (name: string, keyField: string = SERIES_ID): string => {
-    const fractionData = `data('${name}_hoverFractionData')`;
-    const lookup = `indexof(pluck(${fractionData}, '${keyField}'), datum.${keyField})`;
-    // default to the neutral emphasis level when this datum has no animation row
-    return `(${fractionData}[${lookup}] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`;
+  const fractionData = `data('${name}_hoverFractionData')`;
+  const lookup = `indexof(pluck(${fractionData}, '${keyField}'), datum.${keyField})`;
+  // default to the neutral emphasis level when this datum has no animation row
+  return `(${fractionData}[${lookup}] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`;
 };
 
 /**
@@ -143,8 +153,8 @@ export const getHoverFractionSignal = (name: string, keyField: string = SERIES_I
  * (Returns 0 as the series is pushed below neutral, and a flat 1 from neutral upward.)
  */
 export const getDeemphasisRamp = (fractionExpr: string): string =>
-    // Scales the fraction by 1/HOVER_NEUTRAL_TARGET. The whole expression is then clamped to 0..1.
-    `clamp(${fractionExpr} / ${HOVER_NEUTRAL_TARGET}, 0, 1)`;
+  // Scales the fraction by 1/HOVER_NEUTRAL_TARGET. The whole expression is then clamped to 0..1.
+  `clamp(${fractionExpr} / ${HOVER_NEUTRAL_TARGET}, 0, 1)`;
 
 /**
  * Reads emphasis level expression (0 = deemphasized, neutral in the middle, 1 = emphasized)
@@ -153,8 +163,8 @@ export const getDeemphasisRamp = (fractionExpr: string): string =>
  * (Returns a flat 0 from neutral downward, and ramps to 1 as the series is pushed above neutral.)
  */
 export const getEmphasisRamp = (fractionExpr: string): string =>
-    // Scales the fraction by 1/HOVER_NEUTRAL_TARGET and shifts left by 1. The whole expression is then clamped to 0..1.
-    `clamp((${fractionExpr} - ${HOVER_NEUTRAL_TARGET}) / (1 - ${HOVER_NEUTRAL_TARGET}), 0, 1)`;
+  // Scales the fraction by 1/HOVER_NEUTRAL_TARGET and shifts left by 1. The whole expression is then clamped to 0..1.
+  `clamp((${fractionExpr} - ${HOVER_NEUTRAL_TARGET}) / (1 - ${HOVER_NEUTRAL_TARGET}), 0, 1)`;
 
 /**
  * Adds the hover animation signals to the signals array.
@@ -162,15 +172,15 @@ export const getEmphasisRamp = (fractionExpr: string): string =>
  * @param name - the name of the mark
  */
 export const addHoverAnimationSignals = (signals: Signal[], name: string): void => {
-    if (!hasSignalByName(signals, HOVER_TIMER)) {
-        signals.push({
-        name: HOVER_TIMER,
-        value: 0,
-        on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
-        });
-    }
+  if (!hasSignalByName(signals, HOVER_TIMER)) {
     signals.push({
-        name: `${name}_${HOVER_TARGETS}`,
-        update: `pluck(data('${name}_hoverTargetData'), 'target')`,
+      name: HOVER_TIMER,
+      value: 0,
+      on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
     });
+  }
+  signals.push({
+    name: `${name}_${HOVER_TARGETS}`,
+    update: `pluck(data('${name}_hoverTargetData'), 'target')`,
+  });
 };

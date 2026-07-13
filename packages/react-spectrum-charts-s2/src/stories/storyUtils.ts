@@ -53,19 +53,21 @@ const createSeededRandom = (seed: number): (() => number) => {
  */
 export const generateLargeData = (
   seriesCount = 20,
-  pointsPerSeries = 5_000
+  pointsPerSeries = 10
 ): { datetime: number; value: number; series: string }[] => {
   const START = new Date('2023-01-01T00:00:00Z').getTime();
   const STEP_MS = 60 * 60 * 1000; // one point per hour
   const random = createSeededRandom(42);
   const data: { datetime: number; value: number; series: string }[] = [];
+  const sin_cycles = 4;
+  const sinPeriod = pointsPerSeries / sin_cycles;
   for (let s = 0; s < seriesCount; s++) {
     const series = `Series ${String(s + 1).padStart(2, '0')}`;
     const base = 1_000 + s * 250;
     for (let p = 0; p < pointsPerSeries; p++) {
       data.push({
         datetime: START + p * STEP_MS,
-        value: Math.max(0, base + Math.sin(p / 40 + s) * 400 + (random() - 0.5) * 200),
+        value: Math.max(0, base + Math.sin(p / sinPeriod + s) * 400 + (random() - 0.5) * 200),
         series,
       });
     }
