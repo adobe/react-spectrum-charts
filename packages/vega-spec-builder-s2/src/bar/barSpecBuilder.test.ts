@@ -32,6 +32,9 @@ import {
   DEFAULT_SECONDARY_COLOR,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
   HOVERED_ITEM,
   LINE_TYPE_SCALE,
   MARK_ID,
@@ -275,6 +278,17 @@ describe('barSpecBuilder', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
+    });
+    test('should add focus signals when accessibleNavigation is enabled', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
+      expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeDefined();
+      expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeDefined();
+      expect(signals.find((signal) => signal.name === FOCUSED_DIMENSION)).toBeDefined();
+    });
+    test('should not add focus signals by default', () => {
+      const signals = addSignals(defaultSignals, defaultBarOptions);
+      expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
+      expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
     });
     test('should add hover events if inspect is present', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartInspects: [{}] });
@@ -750,6 +764,33 @@ describe('barSpecBuilder', () => {
       });
       test('default options + type = "dodged", should add default dodged bar', () => {
         expect(addMarks([], { ...defaultBarOptions, type: 'dodged' })).toStrictEqual([defaultDodgedMark]);
+      });
+    });
+
+    describe('accessibleNavigation', () => {
+      test('should add chart and bar focus rings when enabled (stacked/basic bar)', () => {
+        const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true });
+        expect(marks.find((mark) => mark.name === 'chartFocusRing')).toBeDefined();
+        expect(marks.find((mark) => mark.name === 'bar0_focusRing')).toBeDefined();
+      });
+      test('should add the bar focus ring inside the dodge group when enabled (dodged bar)', () => {
+        const marks = addMarks([], { ...defaultBarOptions, type: 'dodged', accessibleNavigation: true });
+        const group = marks.find((mark) => mark.name === 'bar0_group') as GroupMark;
+        expect(group.marks?.find((mark) => mark.name === 'bar0_focusRing')).toBeDefined();
+      });
+      test('should not add focus rings by default', () => {
+        const marks = addMarks([], defaultBarOptions);
+        expect(marks.find((mark) => mark.name === 'chartFocusRing')).toBeUndefined();
+        expect(marks.find((mark) => mark.name === 'bar0_focusRing')).toBeUndefined();
+      });
+      test('should add the per-stack group focus ring when enabled on a stacked bar', () => {
+        const marks = addMarks([], { ...defaultBarOptions, type: 'stacked', accessibleNavigation: true, color: 'series' });
+        expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeDefined();
+      });
+      test('should not add the stack group focus ring on a basic (single-series) bar', () => {
+        // a static {value} color (no series field) → basic bar, so no per-stack group ring
+        const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
+        expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
       });
     });
 

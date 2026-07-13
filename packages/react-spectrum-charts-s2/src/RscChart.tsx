@@ -9,15 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { CSSProperties, RefObject, Ref, useCallback, useEffect, useMemo, useState } from 'react';
+import { CSSProperties, RefObject, Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Popover } from '@react-spectrum/s2';
 import { View as VegaView } from 'vega';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
-import { ChartHandle, Datum, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartHandle, Datum, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
+import { Navigator } from './dataNavigator/Navigator';
+import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import { useChartInteractions } from './hooks/useChartInteractions';
@@ -37,6 +39,7 @@ interface ChartDialogProps {
 
 export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHandle> }) => {
   const {
+    accessibleNavigation,
     backgroundColor,
     data,
     chartWidth,
@@ -69,6 +72,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   // THE MAGIC, builds our spec
   const spec = useSpec({
+    accessibleNavigation,
     backgroundColor,
     children: sanitizedChildren,
     colors,
@@ -115,6 +119,17 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     [onNewView, onVegaViewReady]
   );
 
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const navChild = sanitizedChildren.find(
+    (child) => 'displayName' in child.type && getNavigableChartType(child.type.displayName)
+  );
+  const navChartType =
+    navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
+  const navFields = navChild?.props as { dimension?: string; metric?: string; color?: unknown } | undefined;
+  const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
+
+  const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
+
   return (
     <>
       <div
@@ -123,20 +138,35 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         ref={popoverAnchorRef}
         style={targetStyle}
       />
-      <VegaChart
-        spec={spec}
-        config={chartConfig}
-        data={data}
-        debug={debug}
-        renderer={renderer}
-        width={chartWidth}
-        height={chartHeight}
-        locale={locale}
-        padding={padding}
-        signals={signals}
-        tooltip={inspectOptions} // legend show/hide relies on this
-        onNewView={handleNewView}
-      />
+      <div id={`${chartId}-dn-root`} ref={navContainerRef} style={{ position: 'relative' }}>
+        <VegaChart
+          spec={spec}
+          config={chartConfig}
+          data={data}
+          debug={debug}
+          renderer={renderer}
+          width={chartWidth}
+          height={chartHeight}
+          locale={locale}
+          padding={padding}
+          signals={signals}
+          tooltip={inspectOptions} // legend show/hide relies on this
+          onNewView={handleNewView}
+        />
+        {accessibleNavigation && navChartType && (
+          <Navigator
+            chartType={navChartType}
+            data={data as SimpleData[]}
+            dimension={navFields?.dimension}
+            color={navColor}
+            metric={navFields?.metric}
+            title={title}
+            containerRef={navContainerRef}
+            chartId={chartId}
+            getView={getView}
+          />
+        )}
+      </div>
       {popovers.map((popover) => (
         <ChartDialog
           key={popover.key}

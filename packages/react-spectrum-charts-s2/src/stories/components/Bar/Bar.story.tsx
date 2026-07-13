@@ -91,6 +91,17 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
+const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
+  return (
+    <Chart {...chartProps} debug>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} baseline grid title="Downloads" />
+      <Bar {...args} orientation='horizontal'/>
+    </Chart>
+  );
+};
+
 const BarWithInspectStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
   return (
@@ -211,7 +222,13 @@ InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
+const AccessibleNavigation = bindWithProps(AccessibleNavigationStory);
+AccessibleNavigation.args = {
+  ...defaultProps,
+};
+
 export {
+  AccessibleNavigation,
   BarWithUTCDatetimeFormat,
   Basic,
   HasSquareCorners,

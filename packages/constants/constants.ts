@@ -140,6 +140,11 @@ export const SELECTED_SERIES = 'selectedSeries'; // series
 export const SELECTED_GROUP = 'selectedGroup'; // data point
 export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
+export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
+export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
+export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
+/** Separator joining fields into a unique data-navigator node id (e.g. stacked segment = dimension + series). */
+export const NAVIGATION_ID_SEPARATOR = '__rsc__';
 
 // scale names
 export const COLOR_SCALE = 'color';

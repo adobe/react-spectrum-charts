@@ -17,6 +17,7 @@ import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectU
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
+import { getBarFocusRing, getStackFocusRing } from './barFocusRingUtils';
 import {
   getBarDimensionHoverArea,
   getBarEnterEncodings,
@@ -50,6 +51,15 @@ export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
       options.dimension
     )
   );
+
+  // focus rings for keyboard navigation (experimental): a per-segment ring always, plus a per-stack
+  // group ring when the bar is actually stacked (a series/color field is present).
+  if (options.accessibleNavigation) {
+    marks.push(getBarFocusRing(options));
+    if (typeof options.color === 'string') {
+      marks.push(getStackFocusRing(options));
+    }
+  }
 
   return marks;
 };
