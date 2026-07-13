@@ -118,6 +118,8 @@ export const DEFAULT_LEGEND_LABEL_LIMIT = 184;
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 export const CONTROLLED_HIGHLIGHTED_TABLE = 'controlledHighlightedTable';
+/** Single-row data source recording timestamp of the most recent hover target change */
+export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData'; 
 
 // vega data field names
 export const DIMENSION_FIELD = 'rscDimensionField';
@@ -142,6 +144,8 @@ export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual 
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
 export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
+export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
+export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
 
 // scale names
 export const COLOR_SCALE = 'color';
@@ -168,8 +172,8 @@ export const LINEAR_PADDING = 0;
 export const TRELLIS_PADDING = 0.2;
 
 // hover animation constants
-/** Timer signal update interval in ms. Caps timer signal update at ~60fps. */
-export const ANIMATION_THROTTLE = 16;
+/** Timer signal update interval in ms. Caps timer signal update at ~30fps. */
+export const ANIMATION_THROTTLE = 33;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
 export const ANIMATION_HOVER_SPEED = 100;
 /**

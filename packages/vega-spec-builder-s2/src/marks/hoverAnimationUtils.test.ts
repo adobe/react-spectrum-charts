@@ -9,12 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Signal } from 'vega';
+import { Data, Signal, ValuesData } from 'vega';
 
 import {
   ANIMATION_HOVER_SPEED,
   ANIMATION_THROTTLE,
   FILTERED_TABLE,
+  HOVER_ACTIVE_TIMER,
+  HOVER_ANIMATING,
+  HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_NEUTRAL_TARGET,
   HOVER_TARGETS,
   HOVER_TIMER,
@@ -23,6 +26,7 @@ import {
 } from '@spectrum-charts/constants';
 
 import {
+  addHoverAnimLastChangeData,
   addHoverAnimationSignals,
   getDeemphasisRamp,
   getEmphasisRamp,
@@ -116,12 +120,14 @@ describe('getHoverAnimStateData()', () => {
     expect(values).toContain('now()');
     expect(values).toContain(`target: line0_${HOVER_TARGETS}[0]`);
     // startValue is snapshotted from the live fraction so mid-animation reversals are smooth
-    expect(values).toContain(`(data('line0_hoverFractionData')[0] || {fraction: 1}).fraction`);
+    // the outer `|| []` guards against `data(...)` itself resolving before hoverFractionData's
+    // first computation, not just an out-of-range index
+    expect(values).toContain(`((data('line0_hoverFractionData') || [])[0] || {fraction: 1}).fraction`);
   });
 });
 
 describe('getHoverFractionData()', () => {
-  test('lerps startValue -> target over the animation duration, driven by the hover timer', () => {
+  test('lerps startValue -> target over the animation duration, driven by the gated active timer', () => {
     expect(getHoverFractionData('line0')).toStrictEqual({
       name: 'line0_hoverFractionData',
       source: 'line0_hoverAnimStateData',
@@ -129,7 +135,7 @@ describe('getHoverFractionData()', () => {
         {
           type: 'formula',
           as: 'fraction',
-          expr: `lerp([datum.startValue, datum.target], clamp((${HOVER_TIMER} - datum.startTime) / ${ANIMATION_HOVER_SPEED}, 0, 1))`,
+          expr: `lerp([datum.startValue, datum.target], clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / ${ANIMATION_HOVER_SPEED}, 0, 1))`,
         },
       ],
     });
@@ -183,7 +189,7 @@ describe('emphasis-level ramps', () => {
 });
 
 describe('addHoverAnimationSignals()', () => {
-  test('adds the shared timer and a per-mark targets signal', () => {
+  test('adds the shared timer, the idle gate signals, and a per-mark targets signal', () => {
     const signals: Signal[] = [];
     addHoverAnimationSignals(signals, 'line0');
     expect(signals).toStrictEqual([
@@ -193,18 +199,107 @@ describe('addHoverAnimationSignals()', () => {
         on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
       },
       {
+        name: HOVER_ANIMATING,
+        value: false,
+        update: `(${HOVER_TIMER} - data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0].lastChange) < ${
+          ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE
+        }`,
+      },
+      {
+        name: HOVER_ACTIVE_TIMER,
+        value: 0,
+        update: `${HOVER_ANIMATING} ? ${HOVER_TIMER} : ${HOVER_ACTIVE_TIMER}`,
+      },
+      {
         name: `line0_${HOVER_TARGETS}`,
         update: `pluck(data('line0_hoverTargetData'), 'target')`,
       },
     ]);
   });
 
-  test('does not add a second timer when one already exists', () => {
+  test('does not add a second timer or gate signal when one already exists', () => {
     const signals: Signal[] = [];
     addHoverAnimationSignals(signals, 'line0');
     addHoverAnimationSignals(signals, 'line1');
-    // one shared timer + one targets signal per mark
+    // one shared timer, one shared gate pair, one targets signal per mark
     expect(signals.filter((s) => s.name === HOVER_TIMER)).toHaveLength(1);
-    expect(signals.map((s) => s.name)).toEqual([HOVER_TIMER, `line0_${HOVER_TARGETS}`, `line1_${HOVER_TARGETS}`]);
+    expect(signals.filter((s) => s.name === HOVER_ANIMATING)).toHaveLength(1);
+    expect(signals.filter((s) => s.name === HOVER_ACTIVE_TIMER)).toHaveLength(1);
+    expect(signals.map((s) => s.name)).toEqual([
+      HOVER_TIMER,
+      HOVER_ANIMATING,
+      HOVER_ACTIVE_TIMER,
+      `line0_${HOVER_TARGETS}`,
+      `line1_${HOVER_TARGETS}`,
+    ]);
+  });
+
+  test('hoverAnimating goes false once elapsed time since the last change exceeds speed + throttle', () => {
+    const signals: Signal[] = [];
+    addHoverAnimationSignals(signals, 'line0');
+    const animating = signals.find((s) => s.name === HOVER_ANIMATING) as { update: string } | undefined;
+    const evalUpdate = (elapsed: number): boolean => {
+      const dataFn = () => [{ lastChange: 0 }];
+      // eslint-disable-next-line no-new-func
+      return new Function(HOVER_TIMER, 'data', `return ${animating?.update};`)(elapsed, dataFn);
+    };
+    expect(evalUpdate(0)).toBe(true);
+    expect(evalUpdate(ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE - 1)).toBe(true);
+    expect(evalUpdate(ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE)).toBe(false);
+  });
+
+  test('hoverActiveTimer tracks hoverTimer while animating and freezes otherwise', () => {
+    const signals: Signal[] = [];
+    addHoverAnimationSignals(signals, 'line0');
+    const activeTimer = signals.find((s) => s.name === HOVER_ACTIVE_TIMER) as { update: string } | undefined;
+    const evalUpdate = (animating: boolean, timer: number, previous: number): number => {
+      // eslint-disable-next-line no-new-func
+      return new Function(HOVER_ANIMATING, HOVER_TIMER, HOVER_ACTIVE_TIMER, `return ${activeTimer?.update};`)(
+        animating,
+        timer,
+        previous
+      );
+    };
+    expect(evalUpdate(true, 500, 300)).toBe(500);
+    expect(evalUpdate(false, 500, 300)).toBe(300);
+  });
+});
+
+describe('addHoverAnimLastChangeData()', () => {
+  test('creates the shared tracker data source, seeded at rest, with an on-trigger for the mark', () => {
+    const data: Data[] = [];
+    addHoverAnimLastChangeData(data, 'line0');
+    expect(data).toStrictEqual([
+      {
+        name: HOVER_ANIM_LAST_CHANGE_DATA,
+        values: [{ lastChange: 0 }],
+        on: [
+          {
+            trigger: `line0_${HOVER_TARGETS}`,
+            modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
+            values: '{lastChange: now()}',
+          },
+        ],
+      },
+    ]);
+  });
+
+  test('extends the existing tracker with another on-trigger instead of duplicating the data source', () => {
+    const data: Data[] = [];
+    addHoverAnimLastChangeData(data, 'line0');
+    addHoverAnimLastChangeData(data, 'line1');
+    expect(data.filter((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toHaveLength(1);
+    const [tracker] = data as ValuesData[];
+    expect(tracker.on).toHaveLength(2);
+    expect(tracker.on?.[0].trigger).toEqual(`line0_${HOVER_TARGETS}`);
+    expect(tracker.on?.[1].trigger).toEqual(`line1_${HOVER_TARGETS}`);
+  });
+
+  test('initializes `on` when an existing entry was constructed without one', () => {
+    const data: Data[] = [{ name: HOVER_ANIM_LAST_CHANGE_DATA, values: [{ lastChange: 0 }] }];
+    addHoverAnimLastChangeData(data, 'line0');
+    const [tracker] = data as ValuesData[];
+    expect(tracker.on).toHaveLength(1);
+    expect(tracker.on?.[0].trigger).toEqual(`line0_${HOVER_TARGETS}`);
   });
 });

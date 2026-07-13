@@ -57,9 +57,9 @@ timer drives re-evaluation.
 ### 3a. Global timer signal (one per chart, shared)
 ```json
 { "name": "hoverTimer", "value": 0,
-  "on": [{ "events": { "type": "timer", "throttle": 16 }, "update": "now()" }] }
+  "on": [{ "events": { "type": "timer", "throttle": 33 }, "update": "now()" }] }
 ```
-Ticks ~60fps. Every data source that depends on it re-computes each tick, which is what produces motion.
+Ticks ~30fps. Every data source that depends on it re-computes each tick, which is what produces motion.
 Guarded by name so multiple marks share one timer.
 
 ### 3b. Target data — `line0_hoverTargetData`
@@ -101,23 +101,97 @@ value it's currently at` (so mid-animation reversals are smooth), and stores the
 `on`-trigger entry per row, indexed positionally.
 
 ### 3e. Fraction data — `line0_hoverFractionData`
-The actual interpolation, recomputed every timer tick:
+The actual interpolation, recomputed every time its driving clock ticks:
 ```json
 { "name": "line0_hoverFractionData", "source": "line0_hoverAnimStateData",
   "transform": [{ "type": "formula", "as": "fraction",
-    "expr": "lerp([datum.startValue, datum.target], clamp((hoverTimer - datum.startTime) / 100, 0, 1))" }] }
+    "expr": "lerp([datum.startValue, datum.target], clamp((hoverActiveTimer - datum.startTime) / 100, 0, 1))" }] }
 ```
 `fraction` linearly interpolates `startValue → target` over `ANIMATION_HOVER_SPEED` (100ms). This is the
-animated emphasis level consumers read.
+animated emphasis level consumers read. Note it reads `hoverActiveTimer`, not `hoverTimer` directly — see
+§3f, the idle gate that freezes this recompute while nothing is transitioning.
+
+### 3f. Idle gating — freezing the clock while nothing animates
+
+`hoverTimer` (§3a) ticks at 30fps for as long as *any* animated mark exists on the chart (gated at the
+chart level by `isAnimate`, §6 — that gate decides *whether the timer exists at all*). But most of a
+chart's life is spent with nothing hovered and no transition in flight: once a fade/grow finishes, there's
+no reason to keep recomputing `hoverFractionData`'s `lerp(...)` for every row of every animated mark on
+every tick forever. Idle gating adds a second, narrower gate: **pause the *clock that drives the fraction
+recompute*, not the timer itself**, whenever nothing has changed recently.
+
+Three additional pieces, all shared/global (guarded the same way `hoverTimer` is — added once regardless
+of how many marks call in):
+
+- **`hoverAnimLastChangeData`** — a single-row shared data source (one row for the whole chart, *not*
+  per-mark) recording the timestamp of the most recent hover-target change from *any* animated mark:
+  ```json
+  { "name": "hoverAnimLastChangeData", "values": [{ "lastChange": 0 }],
+    "on": [
+      { "trigger": "line0_hoverTargets", "modify": "data('hoverAnimLastChangeData')[0]", "values": "{lastChange: now()}" },
+      { "trigger": "bar0_hoverTargets",  "modify": "data('hoverAnimLastChangeData')[0]", "values": "{lastChange: now()}" }
+    ] }
+  ```
+  Built by `addHoverAnimLastChangeData(data, name)`. Unlike `getHoverTargetData` / `getHoverAnimStateData` /
+  `getHoverFractionData` — which are per-mark-uniquely-named and always safe to construct-and-return a
+  fresh object — this data source is a **singleton shared across every animated mark**, so it needs
+  find-or-create + append semantics against the full spec `data` array (find the existing row, or create
+  it, then push one more `on`-trigger for this mark) rather than minting a new object each call. That's why
+  its signature is `(data: Data[], name: string): void` (mutates in place) instead of `(options): SourceData`
+  (returns a fresh object) — the same shape `addHoverAnimationSignals` already uses for the shared
+  `hoverTimer`.
+
+- **`hoverAnimating`** — a boolean signal, true while any change happened recently enough that a transition
+  could still be in flight:
+  ```json
+  { "name": "hoverAnimating", "value": false,
+    "update": "(hoverTimer - data('hoverAnimLastChangeData')[0].lastChange) < (ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE)" }
+  ```
+  The `+ ANIMATION_THROTTLE` headroom gives the timer one extra tick past the nominal animation duration so
+  a transition is guaranteed to reach its exact resting value before `hoverAnimating` flips false.
+
+- **`hoverActiveTimer`** — a gated clock that tracks `hoverTimer` while animating, and **holds its previous
+  value (self-reference) while idle**:
+  ```json
+  { "name": "hoverActiveTimer", "value": 0, "update": "hoverAnimating ? hoverTimer : hoverActiveTimer" }
+  ```
+  `hoverFractionData` (§3e) reads *this*, not `hoverTimer`. Once `hoverActiveTimer` stops changing value,
+  Vega's dataflow doesn't re-pulse anything downstream of it — so `hoverFractionData`'s `lerp(...)` formula
+  transform (the actual per-row cost, which scales with series/mark count) stops recomputing entirely while
+  idle. Any subsequent target change re-fires `hoverAnimLastChangeData`'s `on`-trigger for that mark, which
+  flips `hoverAnimating` true again and lets `hoverActiveTimer` resume tracking `hoverTimer`.
+
+**What this does and doesn't save:** `hoverTimer` itself still ticks at 30fps forever (via the browser
+timer) as long as any animated mark exists — this gate doesn't stop that, and `hoverAnimating` /
+`hoverActiveTimer` still get evaluated (cheap O(1) boolean/conditional) on every one of those ticks. That's
+an inherent floor for a polling-based idle detector: something has to run each tick to notice "has it been
+idle long enough to stop." What idle gating removes is the expensive part downstream — the per-row
+`lerp(...)` recompute across every series of every animated mark — which is where the real CPU cost scales
+with chart size. For a chart with many series/marks, that's the win; for a one-series chart it's a wash.
+
+**Coupling risk — read before wiring this in:** `hoverAnimating`'s `update` expression references
+`data('hoverAnimLastChangeData')[0]` by name. If `addHoverAnimationSignals` is called for a mark but
+`addHoverAnimLastChangeData` is never called for *any* mark on that chart, `hoverAnimLastChangeData` won't
+exist in the spec and Vega will throw "Unrecognized data set" at runtime. The two must always be wired
+together for every chart that uses this engine — whoever wires idle gating into `addLine`/`addData` should
+call both from the same place (or make one call the other) so they can't drift apart.
 
 ### Data-flow summary
 ```
-hoverTimer (60fps) ─┐
-                    ├─► hoverFractionData.fraction = lerp(startValue→target, elapsed/speed)
-hoverAnimStateData ─┘        ▲
-   ▲ (on target change: snapshot startTime/startValue)
-   │
 hoverTargets signal ◄── hoverTargetData.target (0 / 0.5 / 1 from match rules)
+   │
+   ├─► hoverAnimStateData (on target change: snapshot startTime/startValue)
+   │
+   └─► hoverAnimLastChangeData.lastChange = now()  (shared across every animated mark)
+                │
+                ▼
+hoverTimer (30fps) ──► hoverAnimating = (hoverTimer - lastChange) < speed + throttle
+                                │
+                                ▼
+                        hoverActiveTimer = hoverAnimating ? hoverTimer : hoverActiveTimer  (frozen while idle)
+                                │
+                                ▼
+                        hoverFractionData.fraction = lerp(startValue→target, elapsed/speed)
 ```
 
 ---
@@ -177,7 +251,7 @@ nothing active at all → falls through to the neutral fallback (`0.5`).
 
 ## 6. The gate — resolve once, thread down (`isAnimate`)
 
-Creating the timer + data sources on a static, non-interactive chart means a 60fps re-render forever, so
+Creating the timer + data sources on a static, non-interactive chart means a 30fps re-render forever, so
 whether a line animates is gated. The gate is **computed exactly once**, in `addLine`, where the full
 `LineSpecOptions` is in scope, and the resolved boolean is **threaded down** to everything else:
 
@@ -259,16 +333,21 @@ Ordering guarantee: the chart builder computes `legendHighlightSignals` and pass
 
 | Constant | Value | Meaning |
 |---|---|---|
-| `ANIMATION_THROTTLE` | `16` | timer throttle (ms) → ~60fps |
+| `ANIMATION_THROTTLE` | `33` | timer throttle (ms) → ~30fps |
 | `ANIMATION_HOVER_SPEED` | `100` | animation duration (ms) |
 | `HOVER_OPACITY_LOW` | `0.2` | opacity of a deemphasized line |
 | `FADE_FACTOR` | `0.2` | opacity of a deemphasized legend entry (same value, legend-scoped name) |
 | `HOVER_NEUTRAL_TARGET` | `0.5` | the neutral emphasis level (fallback target when nothing is hovered) |
 | `HOVER_TIMER` | `'hoverTimer'` | timer signal name |
 | `HOVER_TARGETS` | `'hoverTargets'` | per-mark targets-array signal suffix |
+| `HOVER_ANIM_LAST_CHANGE_DATA` | `'hoverAnimLastChangeData'` | shared single-row data source name (§3f idle gate) |
+| `HOVER_ANIMATING` | `'hoverAnimating'` | shared boolean signal name (§3f idle gate) |
+| `HOVER_ACTIVE_TIMER` | `'hoverActiveTimer'` | shared gated-clock signal name (§3f idle gate) |
 
 Data-source naming convention (relied on by legend injection): `{mark}_hoverTargetData`,
-`{mark}_hoverAnimStateData`, `{mark}_hoverFractionData`, `{mark}_hoverGroupFractionData`.
+`{mark}_hoverAnimStateData`, `{mark}_hoverFractionData`, `{mark}_hoverGroupFractionData`. The idle-gate
+data source (`hoverAnimLastChangeData`) breaks this convention deliberately — it is *not* mark-scoped, it's
+one shared row for the whole chart (§3f).
 
 ---
 
@@ -277,7 +356,7 @@ Data-source naming convention (relied on by legend injection): `{mark}_hoverTarg
 | File | Role |
 |---|---|
 | `packages/constants/constants.ts` | all the constants above |
-| `vega-spec-builder-s2/src/marks/hoverAnimationUtils.ts` | **the engine** — `getHoverTargetData`, `getHoverAnimStateData`, `getHoverFractionData`, `addHoverAnimationSignals`, `getHoverFractionSignal`, `getDeemphasisRamp`, `getEmphasisRamp`, `HoverMatchRule` type |
+| `vega-spec-builder-s2/src/marks/hoverAnimationUtils.ts` | **the engine** — `getHoverTargetData`, `getHoverAnimStateData`, `getHoverFractionData`, `addHoverAnimationSignals` (also adds the §3f idle-gate signals), `addHoverAnimLastChangeData` (§3f), `getHoverFractionSignal`, `getDeemphasisRamp`, `getEmphasisRamp`, `HoverMatchRule` type |
 | `vega-spec-builder-s2/src/line/lineDataUtils.ts` | `getLineHoverRules` (line-specific match rules) |
 | `vega-spec-builder-s2/src/line/lineMarkUtils.ts` | consumers: `getLineOpacity`, `getLineStrokeWidth`; plus `getHighlightedSeriesOpacityRules` (the overlay — see §10) |
 | `vega-spec-builder-s2/src/line/lineSpecBuilder.ts` | `usesHoverAnimation` gate; wires data/signals/registration in `addData`/`addSignals`/`addLine` |
@@ -320,6 +399,13 @@ mark could pass `rscMarkId` (bar) etc. — see §11.
 - **`hoveredMatch` is a naming contract** — legend injection rebuilds `target` prioritizing a field named
   exactly `hoveredMatch`. Any mark wanting legend animation must name its primary interactive rule that.
 - **Stroke-width delta**: `NORMAL + (HOVER - NORMAL) * ramp`, not `NORMAL + HOVER * ramp`.
+- **The idle gate (§3f) must be wired in as a pair.** `hoverAnimating`'s update expression references
+  `data('hoverAnimLastChangeData')[0]` by name, so if any mark calls into the signals that need it without
+  something also calling `addHoverAnimLastChangeData` for that chart, Vega throws "Unrecognized data set"
+  at runtime. Wire both from the same call site.
+- **`hoverFractionData` reads the gated clock, not the raw timer.** If you add a new fraction-consuming
+  data source, make sure its elapsed-time calc uses `hoverActiveTimer`, not `hoverTimer` directly — using
+  the raw timer would keep recomputing that data source every tick even while idle, defeating the gate.
 
 ---
 
@@ -329,7 +415,9 @@ mark could pass `rscMarkId` (bar) etc. — see §11.
 1. Add constants (throttle, speed, low, neutral, signal names).
 2. Build the engine module: `getHoverTargetData` (aggregate by identity + match rules → `target`,
    fallback neutral), `getHoverAnimStateData` (rows per identity + `on` triggers), `getHoverFractionData`
-   (lerp), `addHoverAnimationSignals` (timer + targets), `getHoverFractionSignal`, and the two ramp
+   (lerp, driven by the gated clock), `addHoverAnimationSignals` (timer + targets + the idle-gate signals),
+   `addHoverAnimLastChangeData` (the shared idle-gate data source, called alongside
+   `addHoverAnimationSignals` for every animated mark — §3f), `getHoverFractionSignal`, and the two ramp
    helpers. Keep it property-agnostic and parameterized by `keyField`.
 3. Write the mark's match rules (`getLineHoverRules` analog).
 4. Write consumers (opacity, stroke width, …) that map `getHoverFractionSignal` via the ramps.
@@ -357,6 +445,13 @@ Everything downstream of `target` is generic.
   the animated system and the restored original production-rule highlight (`getLineOpacityRules` /
   `getLineStrokeWidthRules`).
 - **`hoverAnimationUtils` unit tests (done)**: engine + ramps covered in `hoverAnimationUtils.test.ts`.
+- **Idle gating (§3f) — engine done, not yet wired into `addLine`/`addData`.** `addHoverAnimLastChangeData`,
+  `hoverAnimating`, and `hoverActiveTimer` exist in `hoverAnimationUtils.ts` with full unit test coverage,
+  but nothing in `lineSpecBuilder.ts` calls them yet — as of this writing `addHoverAnimationSignals` and
+  `addHoverAnimLastChangeData` have no caller outside their own tests. Wiring this in means: call
+  `addHoverAnimLastChangeData(data, name)` everywhere `addHoverAnimationSignals(signals, name)` is called
+  (they must be paired — see the §10 gotcha), gated the same way as the rest of the animated-mark data
+  (`if (isAnimate)`).
 - **`comboSiblingMatch`** semantics predate the 3-state target — review before relying on it.
 - **Metric-range line under an animated parent**: like the overlay, the metric-range boundary line reuses
   `getLineMark` under a `${name}_line` name with no `_hoverFractionData`; it should get `isAnimate: false`

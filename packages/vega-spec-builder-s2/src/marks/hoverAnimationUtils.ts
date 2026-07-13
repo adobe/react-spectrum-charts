@@ -9,12 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AggregateTransform, FormulaTransform, OnTrigger, Signal, SourceData, ValuesData } from 'vega';
+import { AggregateTransform, Data, FormulaTransform, OnTrigger, Signal, SourceData, ValuesData } from 'vega';
 
 import {
   ANIMATION_HOVER_SPEED,
   ANIMATION_THROTTLE,
   FILTERED_TABLE,
+  HOVER_ACTIVE_TIMER,
+  HOVER_ANIMATING,
+  HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_NEUTRAL_TARGET,
   HOVER_TARGETS,
   HOVER_TIMER,
@@ -104,7 +107,7 @@ export const getHoverAnimStateData = ({ name, keys, keyField = SERIES_ID }: Hove
 const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
   const animRef = `data('${name}_hoverAnimStateData')[${i}]`;
   const targetSigRef = `${name}_${HOVER_TARGETS}[${i}]`;
-  const fracRef = `data('${name}_hoverFractionData')[${i}]`;
+  const fracRef = `(data('${name}_hoverFractionData') || [])[${i}]`;
   const hasChanged = `${targetSigRef} !== ${animRef}.target`;
   const fracExpr = `(${fracRef} || {fraction: 1}).fraction`;
   return {
@@ -126,10 +129,35 @@ export const getHoverFractionData = (name: string): SourceData => ({
     {
       type: 'formula',
       as: 'fraction',
-      expr: `lerp([datum.startValue, datum.target], clamp((${HOVER_TIMER} - datum.startTime) / ${ANIMATION_HOVER_SPEED}, 0, 1))`,
+      expr: `lerp([datum.startValue, datum.target], clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / ${ANIMATION_HOVER_SPEED}, 0, 1))`,
     },
   ],
 });
+
+/**
+ * Adds/extends the shared `hoverAnimLastChangeData` tracker in the data array: a single-row data
+ * source recording the timestamp of the most recent hover target change across every animated
+ * mark on the chart. Uses the same `trigger`/`modify`/`values` data on-trigger pattern already
+ * used by `getHoverAnimStateData` so `hoverAnimating` can tell how recently anything changed
+ * without adding new signal-to-signal wiring.
+ * @param data - the data array to add the hover animation last change data to
+ * @param name - the name of the mark
+ */
+export const addHoverAnimLastChangeData = (data: Data[], name: string): void => {
+  let lastChangeData = data.find((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA) as ValuesData | undefined;
+  if (!lastChangeData) {
+    lastChangeData = { name: HOVER_ANIM_LAST_CHANGE_DATA, values: [{ lastChange: 0 }], on: [] };
+    data.push(lastChangeData);
+  }
+  if (lastChangeData.on === undefined) {
+    lastChangeData.on = [];
+  }
+  lastChangeData.on.push({
+    trigger: `${name}_${HOVER_TARGETS}`,
+    modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
+    values: '{lastChange: now()}',
+  });
+};
 
 /**
  * Returns a Vega expression string that evaluates to the current animation fraction (0..0.5..1)
@@ -179,6 +207,26 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
       on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
     });
   }
+  if (!hasSignalByName(signals, HOVER_ANIMATING)) {
+    signals.push({
+      name: HOVER_ANIMATING,
+      // + ANIMATION_THROTTLE gives the timer one extra tick of headroom past the nominal
+      // duration so a transition is guaranteed to reach its exact resting value before pausing.
+      value: false,
+      update: `(${HOVER_TIMER} - data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0].lastChange) < ${
+        ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE
+      }`,
+    });
+  }
+  if (!hasSignalByName(signals, HOVER_ACTIVE_TIMER)) {
+    signals.push({
+      name: HOVER_ACTIVE_TIMER,
+      value: 0,
+      // holds its previous value (self-reference) whenever hoverAnimating is false
+      update: `${HOVER_ANIMATING} ? ${HOVER_TIMER} : ${HOVER_ACTIVE_TIMER}`,
+    });
+  }
+
   signals.push({
     name: `${name}_${HOVER_TARGETS}`,
     update: `pluck(data('${name}_hoverTargetData'), 'target')`,
