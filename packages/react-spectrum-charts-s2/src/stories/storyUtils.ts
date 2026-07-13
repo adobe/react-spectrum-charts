@@ -29,6 +29,8 @@ export const formatTimestamp = (timestamp: number): string => {
   return `${month} ${day}`;
 };
 
+export type GeneratedTimeSeriesDatum = { datetime: number; value: number; series: string };
+
 /**
  * Deterministic PRNG (mulberry32) — used instead of Math.random() so stress-test data is
  * reproducible across story reloads and doesn't trip "insecure randomness" lint rules that
@@ -53,12 +55,13 @@ const createSeededRandom = (seed: number): (() => number) => {
  */
 export const generateLargeData = (
   seriesCount = 20,
-  pointsPerSeries = 10
-): { datetime: number; value: number; series: string }[] => {
+  pointsPerSeries = 10,
+  seed = 42
+): GeneratedTimeSeriesDatum[] => {
   const START = new Date('2023-01-01T00:00:00Z').getTime();
   const STEP_MS = 60 * 60 * 1000; // one point per hour
-  const random = createSeededRandom(42);
-  const data: { datetime: number; value: number; series: string }[] = [];
+  const random = createSeededRandom(seed);
+  const data: GeneratedTimeSeriesDatum[] = [];
   const sin_cycles = 4;
   const sinPeriod = pointsPerSeries / sin_cycles;
   for (let s = 0; s < seriesCount; s++) {

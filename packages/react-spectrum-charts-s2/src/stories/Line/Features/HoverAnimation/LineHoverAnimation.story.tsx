@@ -22,7 +22,7 @@ import { Chart } from '../../../../Chart';
 import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../../stories/data/data';
-import { formatTimestamp, generateLargeData } from '../../../../stories/storyUtils';
+import { formatTimestamp } from '../../../../stories/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
@@ -81,8 +81,6 @@ const seriesCategory: Record<string, string> = {
   'Add Bar viz': 'Visualize',
 };
 const groupedData = workspaceTrendsData.map((d) => ({ ...d, category: seriesCategory[d.series] }));
-
-const largeData = generateLargeData(100, 10); // 100 series × 10 points = 1,000 rows
 
 /**
  * Point hover — hovering a data point emphasizes that point's series (the `hoveredMatch` rule).
@@ -169,23 +167,6 @@ const OnClickStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactE
   );
 };
 
-/**
- * Performance stress test — 1,000 rows across 100 series. Hover a legend entry or a data point to
- * watch the hover-animation system fade/emphasize at scale (toggle `animations` to compare).
- */
-const LargeDatasetStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: largeData });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" grid title="Value" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line {...args}>
-        <ChartInspect>{dialogContent}</ChartInspect>
-      </Line>
-    </Chart>
-  );
-};
-
 export const PointHover = bindWithProps(PointHoverStory);
 PointHover.args = { ...defaultArgs };
 
@@ -203,6 +184,3 @@ ControlledHighlight.args = { ...defaultArgs };
 
 export const OnClick = bindWithProps(OnClickStory);
 OnClick.args = { ...defaultArgs };
-
-export const LargeDataset = bindWithProps(LargeDatasetStory);
-LargeDataset.args = { ...defaultArgs };
