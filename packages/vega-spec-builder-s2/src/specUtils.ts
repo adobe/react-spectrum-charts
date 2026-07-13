@@ -27,7 +27,7 @@ import {
   TABLE,
   VISIBILITY_OFF_PATH,
 } from '@spectrum-charts/constants';
-import { ADOBE_CLEAN_FONT, S2_TITLE_FONT_SIZE, getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
+import { S2_TITLE_FONT_SIZE, getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
 
 import { expressionFunctions } from './expressionFunctions/expressionFunctions';
 import {
@@ -250,12 +250,6 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
 };
 
 const TITLE_FONT_WEIGHT = 'bold' as const;
-
-/**
- * The font shorthand used to measure and wrap chart titles. Shared with the font-load gate in
- * VegaChart so the font it waits on always matches the font wrapTitleText measures with.
- */
-export const getTitleFontShorthand = (): string => `${TITLE_FONT_WEIGHT} ${S2_TITLE_FONT_SIZE}px ${ADOBE_CLEAN_FONT}`;
 
 /**
  * Splits a title string into lines that fit within maxWidth pixels, breaking at word boundaries.

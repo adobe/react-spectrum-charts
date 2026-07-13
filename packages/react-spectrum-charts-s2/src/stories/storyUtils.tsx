@@ -27,7 +27,11 @@ interface ResizableChartProps {
   thresholds?: Array<{ px: number; label: string }>;
   renderLabel?: (width: number) => ReactNode;
   initialWidth?: number;
-  children: (width: number) => ReactElement;
+  // Rendered once — pass a <Chart width="auto"> element. The slider resizes the wrapping div,
+  // and Chart's own ResizeObserver picks that up, exactly like a real container resize. This
+  // avoids recreating the chart's children on every drag tick (which forces a full re-embed
+  // instead of an in-place resize).
+  children: ReactElement;
 }
 
 export const ResizableChart = ({
@@ -106,7 +110,7 @@ export const ResizableChart = ({
           </div>
         ))}
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          {children(width)}
+          <div style={{ width }}>{children}</div>
           <input
             type="range"
             className="rsc-resize-handle"

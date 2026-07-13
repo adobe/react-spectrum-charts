@@ -78,7 +78,12 @@ export const getColumns = (position: Position, name: string, labelLimit?: number
   const symbolAndSpacingWidth = DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
   const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
   const maxWidthExpr = `length(data('${name}_maxLabelWidth')) > 0 ? data('${name}_maxLabelWidth')[0].maxLabelWidth : ${effectiveLabelLimit}`;
-  return { signal: `max(1, floor(width / (min(${maxWidthExpr}, ${effectiveLabelLimit}) + ${symbolAndSpacingWidth})))` };
+  // rscContainerWidth (not raw `width`) — `width` is autosize's live plot-area signal, and a
+  // horizontal legend's own rendered size (driven by its column count) is itself one of the
+  // inputs autosize uses to compute `width`. Binding columns to `width` creates a feedback loop
+  // that never settles: fewer columns -> taller/wider legend -> autosize shrinks width -> even
+  // fewer columns -> ... which runs away to 0 on any dataflow pulse (e.g. hover).
+  return { signal: `max(1, floor(rscContainerWidth(width) / (min(${maxWidthExpr}, ${effectiveLabelLimit}) + ${symbolAndSpacingWidth})))` };
 };
 
 /**

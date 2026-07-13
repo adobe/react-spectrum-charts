@@ -52,23 +52,21 @@ export const StrokeWidthOnHover = (): ReactElement => (
       );
     }}
   >
-    {(width) => (
-      <Chart data={workspaceTrendsData} width={width} height={300}>
-        <Axis position="bottom" baseline ticks labelFormat="time" />
-        <Axis position="left" grid />
-        <Line dimension="datetime" metric="value" color="series" scaleType="time">
-          <ChartInspect>
-            {(datum) => (
-              <div>
-                <div>{datum.series}</div>
-                <div>{Number(datum.value).toLocaleString()}</div>
-              </div>
-            )}
-          </ChartInspect>
-        </Line>
-        <Legend highlight />
-      </Chart>
-    )}
+    <Chart data={workspaceTrendsData} width="auto" height={300}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid />
+      <Line dimension="datetime" metric="value" color="series" scaleType="time">
+        <ChartInspect>
+          {(datum) => (
+            <div>
+              <div>{datum.series}</div>
+              <div>{Number(datum.value).toLocaleString()}</div>
+            </div>
+          )}
+        </ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
   </ResizableChart>
 );
 
@@ -88,22 +86,20 @@ export const StrokeWidthOnHoverGroupLegend = (): ReactElement => (
       );
     }}
   >
-    {(width) => (
-      <Chart data={groupedData} width={width} height={300}>
-        <Axis position="bottom" baseline ticks labelFormat="time" />
-        <Axis position="left" grid />
-        <Line dimension="datetime" metric="value" color="series" lineType="category" scaleType="time">
-          <ChartInspect>
-            {(datum) => (
-              <div>
-                <div>{datum.series}</div>
-                <div>{Number(datum.value).toLocaleString()}</div>
-              </div>
-            )}
-          </ChartInspect>
-        </Line>
-        <Legend keys={['category']} highlight />
-      </Chart>
-    )}
+    <Chart data={groupedData} width="auto" height={300}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid />
+      <Line dimension="datetime" metric="value" color="series" lineType="category" scaleType="time">
+        <ChartInspect>
+          {(datum) => (
+            <div>
+              <div>{datum.series}</div>
+              <div>{Number(datum.value).toLocaleString()}</div>
+            </div>
+          )}
+        </ChartInspect>
+      </Line>
+      <Legend keys={['category']} highlight />
+    </Chart>
   </ResizableChart>
 );

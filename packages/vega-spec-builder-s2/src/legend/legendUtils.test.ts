@@ -197,7 +197,7 @@ describe('getHiddenSeriesColorRule()', () => {
 const getExpectedColumnsSignal = (name: string, effectiveLabelLimit: number) => {
   const symbolAndSpacingWidth = DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
   const maxWidthExpr = `length(data('${name}_maxLabelWidth')) > 0 ? data('${name}_maxLabelWidth')[0].maxLabelWidth : ${effectiveLabelLimit}`;
-  return { signal: `max(1, floor(width / (min(${maxWidthExpr}, ${effectiveLabelLimit}) + ${symbolAndSpacingWidth})))` };
+  return { signal: `max(1, floor(rscContainerWidth(width) / (min(${maxWidthExpr}, ${effectiveLabelLimit}) + ${symbolAndSpacingWidth})))` };
 };
 
 describe('getColumns()', () => {

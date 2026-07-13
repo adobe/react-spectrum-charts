@@ -83,23 +83,21 @@ const StaticPointSizeAutoDetectStory = (): ReactElement => (
       );
     }}
   >
-    {(width) => (
-      <Chart data={workspaceTrendsDataWithVisiblePoints} width={width} height={300}>
-        <Axis position="bottom" baseline ticks labelFormat="time" />
-        <Axis position="left" grid />
-        <Line dimension="datetime" metric="value" color="series" scaleType="time" staticPoint="staticPoint">
-          <ChartInspect>
-            {(datum) => (
-              <div>
-                <div>{formatTimestamp(datum.datetime as number)}</div>
-                <div>Event: {datum.series as string}</div>
-                <div>Users: {Number(datum.value).toLocaleString()}</div>
-              </div>
-            )}
-          </ChartInspect>
-        </Line>
-      </Chart>
-    )}
+    <Chart data={workspaceTrendsDataWithVisiblePoints} width="auto" height={300}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid />
+      <Line dimension="datetime" metric="value" color="series" scaleType="time" staticPoint="staticPoint">
+        <ChartInspect>
+          {(datum) => (
+            <div>
+              <div>{formatTimestamp(datum.datetime as number)}</div>
+              <div>Event: {datum.series as string}</div>
+              <div>Users: {Number(datum.value).toLocaleString()}</div>
+            </div>
+          )}
+        </ChartInspect>
+      </Line>
+    </Chart>
   </ResizableChart>
 );
 

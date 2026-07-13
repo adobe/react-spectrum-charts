@@ -39,13 +39,11 @@ const AutoDetectStory = (): ReactElement => (
       return <>Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong></>;
     }}
   >
-    {(width) => (
-      <Chart data={workspaceTrendsData} width={width} height={300}>
-        <Axis position="bottom" baseline ticks labelFormat="time" />
-        <Axis position="left" grid />
-        <Line dimension="datetime" metric="value" color="series" scaleType="time" />
-      </Chart>
-    )}
+    <Chart data={workspaceTrendsData} width="auto" height={300}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid />
+      <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+    </Chart>
   </ResizableChart>
 );
 

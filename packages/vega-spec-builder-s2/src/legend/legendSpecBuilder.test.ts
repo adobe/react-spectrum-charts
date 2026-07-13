@@ -106,7 +106,7 @@ const defaultLegend: Legend = {
   labelLimit: undefined,
   orient: 'bottom',
   title: undefined,
-  columns: { signal: "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 184, 184) + 36)))" },
+  columns: { signal: "max(1, floor(rscContainerWidth(width) / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 184, 184) + 36)))" },
 };
 
 const defaultLegendAggregateData: Data = {
@@ -299,7 +299,7 @@ describe('addLegend()', () => {
       });
       const legend = legendSpec.legends?.[0];
       expect(legend?.labelLimit).toBe(300);
-      expect(legend?.columns).toEqual({ signal: "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 300, 300) + 36)))" });
+      expect(legend?.columns).toEqual({ signal: "max(1, floor(rscContainerWidth(width) / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 300, 300) + 36)))" });
       expect(legendSpec.data).toHaveLength(2);
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });

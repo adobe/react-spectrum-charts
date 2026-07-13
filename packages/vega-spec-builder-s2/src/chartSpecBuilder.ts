@@ -228,8 +228,14 @@ const addTitleSignals = (spec: ScSpec, title: string): void => {
   spec.signals = [
     ...(spec.signals ?? []),
     { name: 'rscTitleText', value: title },
-    { name: 'rscTitleLimit', update: 'width' },
-    { name: 'rscWrappedTitleText', update: 'rscWrapTitle(rscTitleText, rscTitleLimit)' },
+    // rscTitleLimit/rscWrappedTitleText are intentionally plain value signals, not a reactive
+    // `update` binding. Vega's own `width` signal is recomputed under `autosize: 'fit'` from this
+    // title's rendered bounding box, so binding the wrap limit reactively to `width` creates a
+    // feedback loop that never settles (width -> wrapped title -> title bbox -> autosize repads ->
+    // width...). VegaChart.tsx sets these values imperatively instead, once per real resize, after
+    // width has settled from axis/legend layout alone.
+    { name: 'rscTitleLimit', value: 0 },
+    { name: 'rscWrappedTitleText', value: [title] },
   ];
 };
 

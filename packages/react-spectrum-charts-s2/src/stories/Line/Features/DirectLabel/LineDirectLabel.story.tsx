@@ -122,16 +122,14 @@ const DirectLabelSizeScalingStory: StoryFn<typeof LineDirectLabel> = (args): Rea
         return <>Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong></>;
       }}
     >
-      {(width) => (
-        <Chart {...chartProps} data={workspaceTrendsData} width={width} height={400} debug>
-          <Axis position="left" grid title="Users" />
-          <Axis position="bottom" labelFormat="time" baseline ticks />
-          <Line dimension="datetime" metric="users" color="series" scaleType="time">
-            <LineDirectLabel value="series" {...args} />
-          </Line>
-          <Legend highlight />
-        </Chart>
-      )}
+      <Chart {...chartProps} data={workspaceTrendsData} width="auto" height={400} debug>
+        <Axis position="left" grid title="Users" />
+        <Axis position="bottom" labelFormat="time" baseline ticks />
+        <Line dimension="datetime" metric="users" color="series" scaleType="time">
+          <LineDirectLabel value="series" {...args} />
+        </Line>
+        <Legend highlight />
+      </Chart>
     </ResizableChart>
   );
 };

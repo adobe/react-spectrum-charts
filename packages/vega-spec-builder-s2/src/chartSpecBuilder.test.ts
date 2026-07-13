@@ -524,11 +524,11 @@ describe('Chart spec builder', () => {
       });
       expect(spec.signals?.find((s) => s.name === 'rscTitleLimit')).toEqual({
         name: 'rscTitleLimit',
-        update: 'width',
+        value: 0,
       });
       expect(spec.signals?.find((s) => s.name === 'rscWrappedTitleText')).toEqual({
         name: 'rscWrappedTitleText',
-        update: 'rscWrapTitle(rscTitleText, rscTitleLimit)',
+        value: ['Page Views by Region'],
       });
     });
 

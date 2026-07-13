@@ -42,14 +42,12 @@ const LONG_TITLE = 'Daily Workspace Component Events by Panel Type for Add Fallo
 
 const LongTitleStory = (): ReactElement => (
   <ResizableChart>
-    {(width) => (
-      <Chart data={workspaceTrendsData} width={width} height={300} title={LONG_TITLE}>
-        <Axis position="bottom" baseline ticks labelFormat="time" />
-        <Axis position="left" grid />
-        <Line dimension="datetime" metric="value" color="series" scaleType="time" />
-        <Legend />
-      </Chart>
-    )}
+    <Chart data={workspaceTrendsData} width="auto" height={300} title={LONG_TITLE}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid />
+      <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+      <Legend />
+    </Chart>
   </ResizableChart>
 );
 

@@ -76,16 +76,14 @@ const AutoDetectSizeStory = (): ReactElement => (
       return <>Width: <strong>{Math.round(width)}px</strong> — Reference line size tier: <strong>{currentSize}</strong></>;
     }}
   >
-    {(width) => (
-      <Chart data={workspaceTrendsData} width={width} height={400}>
-        <Axis position="left" grid title="Users">
-          <ReferenceLine value={referenceValue} label="Target" />
-        </Axis>
-        <Axis position="bottom" labelFormat="time" baseline ticks />
-        <Line dimension="datetime" metric="users" color="series" scaleType="time" />
-        <Legend highlight />
-      </Chart>
-    )}
+    <Chart data={workspaceTrendsData} width="auto" height={400}>
+      <Axis position="left" grid title="Users">
+        <ReferenceLine value={referenceValue} label="Target" />
+      </Axis>
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line dimension="datetime" metric="users" color="series" scaleType="time" />
+      <Legend highlight />
+    </Chart>
   </ResizableChart>
 );
 
