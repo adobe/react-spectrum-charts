@@ -66,6 +66,8 @@ export type MarkOptions =
 // Notice that things like data and width/height are not included here
 // This is intentional as we don't want to have to rebuild the entire spec anytime data updates or the width/height change
 export interface ChartOptions {
+  /** Whether interactive marks use the animated hover system */
+  animations?: boolean;
   /** Background color of the chart. */
   backgroundColor?: string;
   /** Color scale. Defaults to the `categorical16' color scale. */
