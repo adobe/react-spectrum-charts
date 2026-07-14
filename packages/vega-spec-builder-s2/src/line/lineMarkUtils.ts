@@ -270,7 +270,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
 export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule<NumericValueRef> => {
   const { displayOnHover, isAnimate, name } = lineMarkOptions;
   // displayOnHover overlay marks manage their own visibility via getHighlightedSeriesOpacityRules
-  if (displayOnHover) return DEFAULT_OPACITY_RULE;
+  if (displayOnHover) return [DEFAULT_OPACITY_RULE];
 
   if (isAnimate) {
     // Fade deemphasized series; neutral and emphasized both stay fully opaque.
