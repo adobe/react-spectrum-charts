@@ -26,8 +26,14 @@ const WEEK_DATETIMES = [
   1780639200000, 1780725600000, 1780812000000,
 ];
 
-// Story 1: 5 series, all short similar-sized labels
-const fiveSeriesNames = ['CJA Users', 'Accounts', 'Events', 'Page Views', 'Sessions'];
+// Story 1: 5 series, mix of short labels and long labels that wrap
+const fiveSeriesNames = [
+  'CJA Users',
+  'Accounts',
+  'Events About Total Website Page Views And Engagement',
+  'Page Views',
+  'Total Unique Session Duration And Conversion Rate',
+];
 const legendColumns5SeriesData = fiveSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 180, series }))
 );
@@ -139,6 +145,14 @@ Labels.args = { legendLabels, highlight: true, ...defaultProps };
 const LabelLimit = bindWithProps(LegendBarStory);
 LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
 
+const LabelWrapLimit = bindWithProps(LegendBarStory);
+LabelWrapLimit.args = {
+  legendLabels: truncatedLegendLabels,
+  labelLimit: 150,
+  _labelWrap: 2,
+  ...defaultProps,
+};
+
 const TitleLimit = bindWithProps(LegendBarStory);
 TitleLimit.args = {
   title: 'Very long legend title that should be truncated',
@@ -180,6 +194,7 @@ const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesDa
 const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
 LegendColumnsExtended.args = {
   labelLimit: 200,
+  _labelWrap: 2,
   highlight: true,
 };
 
@@ -203,6 +218,7 @@ export {
   Disconnected,
   Labels,
   LabelLimit,
+  LabelWrapLimit,
   TitleLimit,
   OnClick,
   Popover,

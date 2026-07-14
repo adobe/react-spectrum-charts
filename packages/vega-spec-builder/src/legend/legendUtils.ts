@@ -28,6 +28,7 @@ import {
   COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
+  DEFAULT_FONT_SIZE,
   DEFAULT_LEGEND_COLUMN_PADDING,
   DEFAULT_LEGEND_LABEL_LIMIT,
   DEFAULT_LEGEND_SYMBOL_WIDTH,
@@ -105,7 +106,12 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
 export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
   const symbolEncodings = getSymbolEncodings(facets, legendOptions);
   const hoverEncodings = getHoverEncodings(legendOptions, userMeta);
-  const legendLabelsEncodings = getLegendLabelsEncodings(legendOptions.name, legendOptions.legendLabels);
+  const legendLabelsEncodings = getLegendLabelsEncodings(
+    legendOptions.name,
+    legendOptions.legendLabels,
+    legendOptions.labelLimit,
+    legendOptions._labelWrap
+  );
   const showHideEncodings = getShowHideEncodings(legendOptions);
   const clickEncodings = getClickEncodings(legendOptions);
   // merge the encodings together
@@ -118,7 +124,31 @@ export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, 
   ]);
 };
 
-const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | undefined): LegendEncode => {
+const getLegendLabelsEncodings = (
+  name: string,
+  legendLabels: LegendLabel[] | undefined,
+  labelLimit: number | undefined,
+  _labelWrap: number | undefined
+): LegendEncode => {
+  if (_labelWrap && _labelWrap > 1) {
+    // resolves to the custom legendLabel for the seriesName if one exists, otherwise falls back to the raw value
+    const resolvedLabelExpr = legendLabels
+      ? `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label : datum.value`
+      : 'datum.value';
+    const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
+    const wrappedLinesExpr = `wrapLabelText(${resolvedLabelExpr}, ${effectiveLabelLimit}, ${_labelWrap}, 'normal', ${DEFAULT_FONT_SIZE})`;
+    return {
+      labels: {
+        update: {
+
+          text: { signal: wrappedLinesExpr },
+          // Vega stacks label lines downwards, so this offset shift the label up by half of the label height so that the legend symbol stays centered
+          dy: { signal: `-(length(${wrappedLinesExpr}) - 1) * ${DEFAULT_FONT_SIZE / 2}` },
+        },
+      },
+    };
+  }
+
   if (legendLabels) {
     return {
       labels: {

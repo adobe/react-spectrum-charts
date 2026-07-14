@@ -48,6 +48,12 @@ export interface LegendOptions {
   legendLabels?: LegendLabel[];
   /** max width in pixels before truncating a legend label. Influences legend column layout by calculating how many legend items can fit horizontally based on the label width. */
   labelLimit?: number;
+  /**
+   * Maximum number of lines a legend label can wrap onto before truncating.
+   * Each line wraps by word up to `labelLimit` pixels wide. If the label still doesn't fit after wrapping to this
+   * many lines, the final line is truncated with an ellipsis.
+   */
+  _labelWrap?: number;
   /** line type or key in the data that is used as the line type facet for the symbols */
   lineType?: LineTypeFacet;
   /** line type or key in the data that is used as the line type facet for the symbols */
