@@ -25,7 +25,13 @@ const WEEK_DATETIMES = [
   1780639200000, 1780725600000, 1780812000000,
 ];
 
-const fiveSeriesNames = ['CJA Users', 'Accounts', 'Events', 'Page Views', 'Sessions'];
+const fiveSeriesNames = [
+  'CJA Users',
+  'Accounts',
+  'Events About Total Website Page Views And Engagement and More Views',
+  'Page Views',
+  'Total Unique Session Duration And Conversion Rate And Time',
+];
 const legendColumns5SeriesData = fiveSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 180, series }))
 );
@@ -109,7 +115,7 @@ const legendLabels = [
 
 const truncatedLegendLabels = [
   { seriesName: 'Windows', label: 'Very long Windows label that will be truncated without a custom labelLimit' },
-  { seriesName: 'Mac', label: 'Very long Mac label that will be truncated without a custom labelLimit' },
+  { seriesName: 'Mac', label: 'Very long Mac label' },
   { seriesName: 'Other', label: 'Very long Other label that will be truncated without a custom labelLimit' },
 ];
 
@@ -168,12 +174,14 @@ const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesDa
 const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
 LegendColumnsExtended.args = {
   labelLimit: 200,
+  labelWrapLimit: 2,
   highlight: true,
 };
 
 const ResizableWithLongLabel = makeResizableLegendLineStory(legendColumnsLongLabelData);
 const LegendColumnsLongLabel = bindWithProps(ResizableWithLongLabel);
 LegendColumnsLongLabel.args = {
+  legendLabels: truncatedLegendLabels,
   labelLimit: 500,
   highlight: true,
 };

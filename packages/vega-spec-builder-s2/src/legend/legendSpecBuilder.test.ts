@@ -317,10 +317,23 @@ describe('addLegend()', () => {
             text: {
               signal: "wrapLabelText(datum.value, 184, 2, 'normal', 14)",
             },
+            dy: {
+              signal: "-(length(wrapLabelText(datum.value, 184, 2, 'normal', 14)) - 1) * 7",
+            },
           },
         },
         symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings } },
       });
+    });
+
+    test('should disable gridAlign when labelWrapLimit is provided', () => {
+      const legend = addLegend(defaultSpec, { labelWrapLimit: 2 }).legends?.[0];
+      expect(legend?.gridAlign).toBe('none');
+    });
+
+    test('should not set gridAlign when labelWrapLimit is not provided', () => {
+      const legend = addLegend(defaultSpec, {}).legends?.[0];
+      expect(legend?.gridAlign).toBeUndefined();
     });
 
     test('should resolve legendLabels before wrapping when both labelWrapLimit and legendLabels are provided', () => {

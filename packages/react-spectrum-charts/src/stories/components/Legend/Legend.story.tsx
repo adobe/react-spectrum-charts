@@ -26,8 +26,14 @@ const WEEK_DATETIMES = [
   1780639200000, 1780725600000, 1780812000000,
 ];
 
-// Story 1: 5 series, all short similar-sized labels
-const fiveSeriesNames = ['CJA Users', 'Accounts', 'Events', 'Page Views', 'Sessions'];
+// Story 1: 5 series, mix of short labels and long labels that wrap
+const fiveSeriesNames = [
+  'CJA Users',
+  'Accounts',
+  'Events About Total Website Page Views And Engagement',
+  'Page Views',
+  'Total Unique Session Duration And Conversion Rate',
+];
 const legendColumns5SeriesData = fiveSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 180, series }))
 );
@@ -188,6 +194,7 @@ const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesDa
 const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
 LegendColumnsExtended.args = {
   labelLimit: 200,
+  labelWrapLimit: 2,
   highlight: true,
 };
 
