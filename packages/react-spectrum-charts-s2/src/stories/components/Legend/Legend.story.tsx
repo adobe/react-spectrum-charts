@@ -129,7 +129,7 @@ const LabelWrapLimit = bindWithProps(LegendBarStory);
 LabelWrapLimit.args = {
   legendLabels: truncatedLegendLabels,
   labelLimit: 150,
-  labelWrapLimit: 2,
+  _labelWrap: 2,
   ...defaultProps,
 };
 
@@ -174,7 +174,7 @@ const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesDa
 const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
 LegendColumnsExtended.args = {
   labelLimit: 200,
-  labelWrapLimit: 2,
+  _labelWrap: 2,
   highlight: true,
 };
 

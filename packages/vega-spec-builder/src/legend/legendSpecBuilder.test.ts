@@ -296,8 +296,8 @@ describe('addLegend()', () => {
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });
 
-    test('should wrap labels using wrapLabelText when labelWrapLimit is provided', () => {
-      expect(addLegend(defaultSpec, { labelWrapLimit: 2 }).legends?.[0].encode).toStrictEqual({
+    test('should wrap labels using wrapLabelText when _labelWrap is provided', () => {
+      expect(addLegend(defaultSpec, { _labelWrap: 2 }).legends?.[0].encode).toStrictEqual({
         entries: {
           name: 'legend0_legendEntry',
         },
@@ -316,20 +316,20 @@ describe('addLegend()', () => {
       });
     });
 
-    test('should disable gridAlign when labelWrapLimit is provided', () => {
-      const legend = addLegend(defaultSpec, { labelWrapLimit: 2 }).legends?.[0];
+    test('should disable gridAlign when _labelWrap is provided', () => {
+      const legend = addLegend(defaultSpec, { _labelWrap: 2 }).legends?.[0];
       expect(legend?.gridAlign).toBe('none');
     });
 
-    test('should not set gridAlign when labelWrapLimit is not provided', () => {
+    test('should not set gridAlign when _labelWrap is not provided', () => {
       const legend = addLegend(defaultSpec, {}).legends?.[0];
       expect(legend?.gridAlign).toBeUndefined();
     });
 
-    test('should resolve legendLabels before wrapping when both labelWrapLimit and legendLabels are provided', () => {
+    test('should resolve legendLabels before wrapping when both _labelWrap and legendLabels are provided', () => {
       expect(
         addLegend(defaultSpec, {
-          labelWrapLimit: 2,
+          _labelWrap: 2,
           legendLabels: [{ seriesName: 1, label: 'Any event' }],
         }).legends?.[0].encode?.labels?.update?.text
       ).toStrictEqual({
@@ -338,16 +338,16 @@ describe('addLegend()', () => {
       });
     });
 
-    test('should use labelLimit as the wrap width when both labelLimit and labelWrapLimit are provided', () => {
+    test('should use labelLimit as the wrap width when both labelLimit and _labelWrap are provided', () => {
       expect(
-        addLegend(defaultSpec, { labelLimit: 100, labelWrapLimit: 3 }).legends?.[0].encode?.labels?.update?.text
+        addLegend(defaultSpec, { labelLimit: 100, _labelWrap: 3 }).legends?.[0].encode?.labels?.update?.text
       ).toStrictEqual({
         signal: "wrapLabelText(datum.value, 100, 3, 'normal', 14)",
       });
     });
 
-    test('should not wrap labels when labelWrapLimit is 1 or less', () => {
-      expect(addLegend(defaultSpec, { labelWrapLimit: 1 }).legends?.[0].encode).toStrictEqual(defaultLegend.encode);
+    test('should not wrap labels when _labelWrap is 1 or less', () => {
+      expect(addLegend(defaultSpec, { _labelWrap: 1 }).legends?.[0].encode).toStrictEqual(defaultLegend.encode);
     });
 
     test('should add titleLimit if provided', () => {

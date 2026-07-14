@@ -60,7 +60,7 @@ export interface LegendOptions {
    * Each line wraps by word up to `labelLimit` pixels wide. If the label still doesn't fit after wrapping to this
    * many lines, the final line is truncated with an ellipsis.
    */
-  labelWrapLimit?: number;
+  _labelWrap?: number;
   /** line type or key in the data that is used as the line type facet for the symbols */
   lineType?: LineTypeFacet;
   /** line type or key in the data that is used as the line type facet for the symbols */

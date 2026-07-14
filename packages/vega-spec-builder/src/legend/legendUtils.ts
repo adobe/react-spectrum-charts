@@ -110,7 +110,7 @@ export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, 
     legendOptions.name,
     legendOptions.legendLabels,
     legendOptions.labelLimit,
-    legendOptions.labelWrapLimit
+    legendOptions._labelWrap
   );
   const showHideEncodings = getShowHideEncodings(legendOptions);
   const clickEncodings = getClickEncodings(legendOptions);
@@ -128,15 +128,15 @@ const getLegendLabelsEncodings = (
   name: string,
   legendLabels: LegendLabel[] | undefined,
   labelLimit: number | undefined,
-  labelWrapLimit: number | undefined
+  _labelWrap: number | undefined
 ): LegendEncode => {
-  if (labelWrapLimit && labelWrapLimit > 1) {
+  if (_labelWrap && _labelWrap > 1) {
     // resolves to the custom legendLabel for the seriesName if one exists, otherwise falls back to the raw value
     const resolvedLabelExpr = legendLabels
       ? `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label : datum.value`
       : 'datum.value';
     const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
-    const wrappedLinesExpr = `wrapLabelText(${resolvedLabelExpr}, ${effectiveLabelLimit}, ${labelWrapLimit}, 'normal', ${DEFAULT_FONT_SIZE})`;
+    const wrappedLinesExpr = `wrapLabelText(${resolvedLabelExpr}, ${effectiveLabelLimit}, ${_labelWrap}, 'normal', ${DEFAULT_FONT_SIZE})`;
     return {
       labels: {
         update: {

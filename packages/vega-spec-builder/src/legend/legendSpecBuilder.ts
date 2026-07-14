@@ -204,7 +204,7 @@ export const formatFacetRefsWithPresets = (
  * @returns
  */
 const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userMeta: UserMeta): Legend => {
-  const { name, position, title, labelLimit, labelWrapLimit, titleLimit } = options;
+  const { name, position, title, labelLimit, _labelWrap, titleLimit } = options;
   const legend: Legend = {
     fill: `${name}Entries`,
     direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
@@ -215,7 +215,7 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
     labelLimit,
   };
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
-  if (labelWrapLimit && labelWrapLimit > 1) {
+  if (_labelWrap && _labelWrap > 1) {
     // for the legend label offset to work, gridAlign needs to be none to stop the auto-centering
     legend.gridAlign = 'none';
   }
