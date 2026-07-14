@@ -35,6 +35,7 @@ const Legend: FC<LegendProps> = ({
   position = 'bottom',
   symbolShape,
   title,
+  _preferredColumns,
 }) => {
   return null;
 };

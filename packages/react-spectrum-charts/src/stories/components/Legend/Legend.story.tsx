@@ -48,6 +48,18 @@ const legendColumnsLongLabelData = longLabelSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 1200 + di * 150, series }))
 );
 
+// 5 series, three short + two long labels — exercises per-column (align: 'each') sizing
+const longLabel5SeriesNames = [
+  'Users',
+  'Events',
+  'Sessions',
+  'Conversion Rate From All Marketing Channel Sources',
+  'Average Revenue Per Paying Customer Account',
+];
+const legendColumnsLongLabel5Data = longLabel5SeriesNames.flatMap((series, si) =>
+  WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 150, series }))
+);
+
 // Story 3: 20 series of varying label lengths
 const twentySeriesNames = [
   'DAU',
@@ -212,6 +224,32 @@ LegendColumns20Series.args = {
   highlight: true,
 };
 
+// _preferredColumns: pick the largest listed column count whose labels fit without truncation.
+// Resize the container to watch the layout step down 5 -> 3, then truncate at 3 when nothing fits.
+const PreferredColumns5or3 = bindWithProps(ResizableWith5Series);
+PreferredColumns5or3.args = {
+  _preferredColumns: [5, 3],
+  highlight: true,
+};
+
+// A longer candidate ladder over the 20-series data.
+const ResizableWith20SeriesPreferred = makeResizableLegendLineStory(legendColumns20SeriesData);
+const PreferredColumnsLadder = bindWithProps(ResizableWith20SeriesPreferred);
+PreferredColumnsLadder.args = {
+  _preferredColumns: [5, 4, 3, 2],
+  highlight: true,
+};
+
+// 5 items with two long labels: at 5 columns only the two long labels widen their own columns
+// (align: 'each'), so 5 can still fit in a wide container; narrowing steps down to 3.
+const ResizableWithLongLabelPreferred = makeResizableLegendLineStory(legendColumnsLongLabel5Data);
+const PreferredColumnsLongLabel = bindWithProps(ResizableWithLongLabelPreferred);
+PreferredColumnsLongLabel.args = {
+  _preferredColumns: [5, 3],
+  align: 'start',
+  highlight: true,
+};
+
 export {
   Basic,
   Descriptions,
@@ -229,4 +267,7 @@ export {
   LegendColumnsExtended,
   LegendColumnsLongLabel,
   LegendColumns20Series,
+  PreferredColumns5or3,
+  PreferredColumnsLadder,
+  PreferredColumnsLongLabel,
 };

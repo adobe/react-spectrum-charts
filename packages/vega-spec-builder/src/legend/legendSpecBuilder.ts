@@ -45,7 +45,17 @@ import {
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
-import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
+import {
+  Facet,
+  getColumns,
+  getDisplayLabelExpr,
+  getEncodings,
+  getHiddenEntriesFilter,
+  getPreferredColumns,
+  getPreferredColumnsData,
+  getPreferredLabelLimit,
+  getSymbolType,
+} from './legendUtils';
 
 export const addLegend = produce<
   ScSpec,
@@ -212,15 +222,18 @@ export const formatFacetRefsWithPresets = (
  * @returns
  */
 const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userMeta: UserMeta): Legend => {
-  const { name, position, title, labelLimit, _labelWrap, titleLimit } = options;
+  const { name, position, title, labelLimit, _labelWrap, titleLimit, _preferredColumns } = options;
+  // _preferredColumns only applies to horizontal legends, matching getColumns returning undefined for left/right
+  const usePreferredColumns =
+    _preferredColumns !== undefined && _preferredColumns.length > 0 && ['top', 'bottom'].includes(position);
   const legend: Legend = {
     fill: `${name}Entries`,
     direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
     orient: position,
     title,
     encode: getEncodings(facets, options, userMeta),
-    columns: getColumns(position, name, labelLimit),
-    labelLimit,
+    columns: usePreferredColumns ? getPreferredColumns(name, _preferredColumns) : getColumns(position, name, labelLimit),
+    labelLimit: usePreferredColumns ? getPreferredLabelLimit(name, _preferredColumns) : labelLimit,
   };
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
   if (_labelWrap && _labelWrap > 1) {
@@ -288,7 +301,7 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-  (data, { facets, hiddenEntries, keys, name }) => {
+  (data, { facets, hiddenEntries, keys, name, position, _preferredColumns }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
     data.push({
@@ -309,7 +322,6 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
     });
 
     // Measure the actual max display label width so getColumns can compute an accurate column count.
-    const labelLookupExpr = `indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries)].label : datum.${name}Entries`;
     data.push({
       name: `${name}_maxLabelWidth`,
       source: `${name}Aggregate`,
@@ -317,7 +329,7 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
         {
           type: 'formula',
           as: 'displayLabel',
-          expr: labelLookupExpr,
+          expr: getDisplayLabelExpr(name),
         },
         {
           type: 'formula',
@@ -332,6 +344,12 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
         },
       ],
     });
+
+    // When _preferredColumns is set on a horizontal legend, emit the per-candidate fit data sources
+    // that the columns/labelLimit signals use to pick the largest count that fits without truncation.
+    if (_preferredColumns?.length && ['top', 'bottom'].includes(position)) {
+      data.push(...getPreferredColumnsData(name, _preferredColumns));
+    }
 
     if (keys?.length) {
       const tableData = getTableData(data);

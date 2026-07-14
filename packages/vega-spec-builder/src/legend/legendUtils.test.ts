@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { SourceData } from 'vega';
+
 import { DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_LABEL_LIMIT, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
@@ -16,7 +18,11 @@ import { defaultLegendOptions } from './legendTestUtils';
 import {
   getClickEncodings,
   getColumns,
+  getDisplayLabelExpr,
   getHiddenSeriesColorRule,
+  getPreferredColumns,
+  getPreferredColumnsData,
+  getPreferredLabelLimit,
   getSymbolEncodings,
   getSymbolType,
   mergeLegendEncodings,
@@ -168,5 +174,81 @@ describe('getColumns()', () => {
 
   test('should use legend name in the data reference', () => {
     expect(getColumns('top', 'myLegend', 100)).toEqual(getExpectedColumnsSignal('myLegend', 100));
+  });
+});
+
+// Mirrors getFitExpr in legendUtils.ts: (n - 1) * DEFAULT_LEGEND_COLUMN_PADDING (20) inter-column padding
+const getExpectedFitExpr = (name: string, n: number) => {
+  const interColumnPadding = (n - 1) * DEFAULT_LEGEND_COLUMN_PADDING;
+  return `length(data('${name}_fit_${n}')) > 0 && (data('${name}_fit_${n}')[0].totalWidth + ${interColumnPadding} <= width)`;
+};
+
+describe('getPreferredColumns()', () => {
+  test('should chain candidates in order and fall back to the last value', () => {
+    expect(getPreferredColumns('legend0', [5, 3])).toEqual({
+      signal: `${getExpectedFitExpr('legend0', 5)} ? 5 : ${getExpectedFitExpr('legend0', 3)} ? 3 : 3`,
+    });
+  });
+
+  test('should use the legend name in the data reference', () => {
+    expect(getPreferredColumns('myLegend', [4])).toEqual({
+      signal: `${getExpectedFitExpr('myLegend', 4)} ? 4 : 4`,
+    });
+  });
+});
+
+describe('getPreferredLabelLimit()', () => {
+  test('should emit 0 only while a non-last candidate fits, else the fair-share width for the last count', () => {
+    // last value n=3 fair share: (width - (3-1)*20) / 3 - (18 swatch + 4 labelOffset)
+    expect(getPreferredLabelLimit('legend0', [5, 3])).toEqual({
+      signal: `(${getExpectedFitExpr('legend0', 5)}) ? 0 : (width - 40) / 3 - 22`,
+    });
+  });
+
+  test('should always emit the fair-share width when there is a single candidate', () => {
+    expect(getPreferredLabelLimit('legend0', [3])).toEqual({ signal: '(width - 40) / 3 - 22' });
+  });
+});
+
+describe('getPreferredColumnsData()', () => {
+  test('should emit an indexed label-widths source plus one fit source per candidate', () => {
+    const data = getPreferredColumnsData('legend0', [5, 3]);
+    expect(data.map((d) => d.name)).toEqual(['legend0_labelWidths', 'legend0_fit_5', 'legend0_fit_3']);
+  });
+
+  test('should index entries with a row_number window matching Vega entry order', () => {
+    const [labelWidths] = getPreferredColumnsData('legend0', [5, 3]);
+    expect((labelWidths as SourceData).source).toEqual('legend0Aggregate');
+    expect(labelWidths.transform).toContainEqual({ type: 'window', ops: ['row_number'], as: ['legendIndex'] });
+    expect(labelWidths.transform).toContainEqual({
+      type: 'formula',
+      as: 'displayLabel',
+      expr: getDisplayLabelExpr('legend0'),
+    });
+  });
+
+  test('should assign each entry to column = index % N per candidate', () => {
+    const [, fit5, fit3] = getPreferredColumnsData('legend0', [5, 3]);
+    expect(fit5.transform?.[0]).toEqual({ type: 'formula', as: 'col', expr: '(datum.legendIndex - 1) % 5' });
+    expect(fit3.transform?.[0]).toEqual({ type: 'formula', as: 'col', expr: '(datum.legendIndex - 1) % 3' });
+  });
+
+  test('should size each column to its widest label then sum the column totals', () => {
+    const [, fit5] = getPreferredColumnsData('legend0', [5, 3]);
+    expect(fit5.transform).toContainEqual({
+      type: 'aggregate',
+      groupby: ['col'],
+      fields: ['labelWidth'],
+      ops: ['max'],
+      as: ['colWidth'],
+    });
+    // per-column chrome: 18 swatch + 4 labelOffset
+    expect(fit5.transform).toContainEqual({ type: 'formula', as: 'colTotal', expr: 'datum.colWidth + 22' });
+    expect(fit5.transform).toContainEqual({
+      type: 'aggregate',
+      fields: ['colTotal'],
+      ops: ['sum'],
+      as: ['totalWidth'],
+    });
   });
 });

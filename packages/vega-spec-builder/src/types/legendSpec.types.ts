@@ -71,6 +71,13 @@ export interface LegendOptions {
   opacity?: OpacityFacet;
   /** where the legend should be displayed */
   position?: Position;
+  /**
+   * Ordered list of candidate column counts for horizontal (top/bottom) legends, e.g. `[5, 3]`.
+   * The largest listed count whose labels fit the available width without truncation is used.
+   * If none fit, the last (smallest) count is forced and labels are truncated to their fair share
+   * of the width. When set, this fully overrides `labelLimit`. Ignored for left/right legends.
+   */
+  _preferredColumns?: number[];
   /** customize the legend symbol shape */
   symbolShape?: SymbolShapeFacet;
   /** legend title */
