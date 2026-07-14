@@ -361,6 +361,48 @@ describe('addLegend()', () => {
       expect(legend?.title).toBe('My title');
     });
 
+    describe('align', () => {
+      test('align start pushes a legend.layout.bottom anchor patch to usermeta.patches', () => {
+        const spec = addLegend(defaultSpec, { align: 'start' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'start' } } } }]);
+      });
+
+      test('align middle passes through as anchor middle', () => {
+        const spec = addLegend(defaultSpec, { align: 'middle' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'middle' } } } }]);
+      });
+
+      test('align end pushes anchor end', () => {
+        const spec = addLegend(defaultSpec, { align: 'end' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'end' } } } }]);
+      });
+
+      test('align top position patches layout.top', () => {
+        const spec = addLegend(defaultSpec, { align: 'start', position: 'top' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { top: { anchor: 'start' } } } }]);
+      });
+
+      test('align left position patches layout.left', () => {
+        const spec = addLegend(defaultSpec, { align: 'start', position: 'left' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { left: { anchor: 'start' } } } }]);
+      });
+
+      test('align right position patches layout.right', () => {
+        const spec = addLegend(defaultSpec, { align: 'end', position: 'right' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { right: { anchor: 'end' } } } }]);
+      });
+
+      test('no align leaves usermeta.patches unset', () => {
+        const spec = addLegend(defaultSpec, {});
+        expect(spec.usermeta.patches).toBeUndefined();
+      });
+
+      test('does not write to spec.config', () => {
+        const spec = addLegend(defaultSpec, { align: 'start' });
+        expect(spec.config).toBeUndefined();
+      });
+    });
+
     test('should add fields to scales if they have not been added', () => {
       const legendSpec = addLegend(
         { ...defaultSpec, scales: [{ name: COLOR_SCALE, type: 'ordinal' }] },

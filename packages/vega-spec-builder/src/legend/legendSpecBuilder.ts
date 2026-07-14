@@ -62,6 +62,7 @@ export const addLegend = produce<
   (
     spec,
     {
+      align,
       color,
       hasMouseInteraction = false,
       hasOnClick = false,
@@ -90,6 +91,7 @@ export const addLegend = produce<
 
     // put options back together now that all defaults are set
     const legendOptions: LegendSpecOptions = {
+      align,
       color: formattedColor,
       hasMouseInteraction,
       hasOnClick,
@@ -106,6 +108,12 @@ export const addLegend = produce<
       colorScheme,
       ...options,
     };
+
+    if (align !== undefined) {
+      if (!spec.usermeta) spec.usermeta = {};
+      if (!spec.usermeta.patches) spec.usermeta.patches = [];
+      spec.usermeta.patches.push({ legend: { layout: { [position]: { anchor: align } } } });
+    }
 
     // Order matters here. Facets rely on the scales being set up.
     spec.scales = addScales(spec.scales ?? [], legendOptions);
