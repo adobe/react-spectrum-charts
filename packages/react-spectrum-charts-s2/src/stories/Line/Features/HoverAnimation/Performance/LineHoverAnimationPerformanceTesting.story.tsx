@@ -113,7 +113,11 @@ const DashboardStory: StoryFn<DashboardArgs> = ({
   pointsPerSeries,
 }): ReactElement => {
   const chartData = useMemo(
-    () => Array.from({ length: chartCount }, (_, i) => generateLargeData(seriesPerChart, pointsPerSeries, i)),
+    () =>
+      Array.from({ length: chartCount }, (_, i) => ({
+        id: `chart-${i}`,
+        data: generateLargeData(seriesPerChart, pointsPerSeries, i),
+      })),
     [chartCount, seriesPerChart, pointsPerSeries]
   );
 
@@ -135,8 +139,8 @@ const DashboardStory: StoryFn<DashboardArgs> = ({
         padding: 16,
       }}
     >
-      {chartData.map((data, i) => (
-        <DashboardChart key={i} data={data} animations={animations} />
+      {chartData.map(({ id, data }) => (
+        <DashboardChart key={id} data={data} animations={animations} />
       ))}
     </div>
   );
