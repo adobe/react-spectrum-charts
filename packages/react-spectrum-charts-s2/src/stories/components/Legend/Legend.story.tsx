@@ -25,13 +25,7 @@ const WEEK_DATETIMES = [
   1780639200000, 1780725600000, 1780812000000,
 ];
 
-const fiveSeriesNames = [
-  'CJA Users',
-  'Accounts',
-  'Events About Total Website Page Views And Engagement and More Views',
-  'Page Views',
-  'Total Unique Session Duration And Conversion Rate And Time',
-];
+const fiveSeriesNames = ['CJA Users', 'Accounts', 'Events', 'Page Views', 'Sessions'];
 const legendColumns5SeriesData = fiveSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 180, series }))
 );
@@ -115,7 +109,7 @@ const legendLabels = [
 
 const truncatedLegendLabels = [
   { seriesName: 'Windows', label: 'Very long Windows label that will be truncated without a custom labelLimit' },
-  { seriesName: 'Mac', label: 'Very long Mac label' },
+  { seriesName: 'Mac', label: 'Very long Mac label that will be truncated without a custom labelLimit' },
   { seriesName: 'Other', label: 'Very long Other label that will be truncated without a custom labelLimit' },
 ];
 
@@ -124,14 +118,6 @@ Labels.args = { legendLabels, highlight: true, ...defaultProps };
 
 const LabelLimit = bindWithProps(LegendBarStory);
 LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
-
-const LabelWrapLimit = bindWithProps(LegendBarStory);
-LabelWrapLimit.args = {
-  legendLabels: truncatedLegendLabels,
-  labelLimit: 150,
-  _labelWrap: 2,
-  ...defaultProps,
-};
 
 const TitleLimit = bindWithProps(LegendBarStory);
 TitleLimit.args = {
@@ -174,14 +160,12 @@ const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesDa
 const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
 LegendColumnsExtended.args = {
   labelLimit: 200,
-  _labelWrap: 2,
   highlight: true,
 };
 
 const ResizableWithLongLabel = makeResizableLegendLineStory(legendColumnsLongLabelData);
 const LegendColumnsLongLabel = bindWithProps(ResizableWithLongLabel);
 LegendColumnsLongLabel.args = {
-  legendLabels: truncatedLegendLabels,
   labelLimit: 500,
   highlight: true,
 };
@@ -199,7 +183,6 @@ export {
   Disconnected,
   Labels,
   LabelLimit,
-  LabelWrapLimit,
   TitleLimit,
   OnClick,
   Popover,

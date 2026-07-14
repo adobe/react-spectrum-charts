@@ -99,43 +99,6 @@ describe('truncateText()', () => {
   });
 });
 
-describe('wrapLabelText()', () => {
-  const longText =
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris.';
-  const shortText = 'Lorem ipsum';
-
-  test('returns a single line when the text already fits within maxWidth', () => {
-    expect(expressionFunctions.wrapLabelText(shortText, 200, 3)).toEqual([shortText]);
-  });
-
-  test('wraps long text across multiple lines by word, one line per array entry', () => {
-    const lines = expressionFunctions.wrapLabelText(longText, 100, 3);
-    expect(lines.length).toBeLessThanOrEqual(3);
-    expect(lines.length).toBeGreaterThan(1);
-    // every completed line (all but the last) must fit within maxWidth
-    for (const line of lines.slice(0, -1)) {
-      expect(expressionFunctions.getLabelWidth(line, 'normal', 12)).toBeLessThanOrEqual(100);
-    }
-  });
-
-  test('truncates the final line with an ellipsis when text still overflows after wrapping to maxLines', () => {
-    const lines = expressionFunctions.wrapLabelText(longText, 30, 2);
-    expect(lines).toHaveLength(2);
-    expect(lines[1].endsWith('…')).toBe(true);
-  });
-
-  test('behaves like truncateText when maxLines is 1', () => {
-    expect(expressionFunctions.wrapLabelText(longText, 60, 1)).toEqual([
-      expressionFunctions.truncateText(longText, 60),
-    ]);
-  });
-
-  test('never produces more lines than maxLines', () => {
-    const lines = expressionFunctions.wrapLabelText(longText, 30, 2);
-    expect(lines.length).toBeLessThanOrEqual(2);
-  });
-});
-
 describe('formatTimeDurationLabels()', () => {
   const formatDurationsEnUS = formatTimeDurationLabels(numberLocales['en-US']);
   const formatDurationsFrFr = formatTimeDurationLabels(numberLocales['fr-FR']);

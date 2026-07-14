@@ -40,7 +40,6 @@ export const getExpressionFunctions = (
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
     truncateText,
-    wrapLabelText,
   };
 };
 
@@ -205,58 +204,10 @@ const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = '
   return truncatedText + '\u2026';
 };
 
-/**
- * Wraps text by word into up to maxLines lines, each no wider than maxWidth.
- * If words remain after filling maxLines lines, the final line is truncated with an ellipsis.
- * @param text
- * @param maxWidth
- * @param maxLines
- * @param fontWeight
- * @param fontSize
- * @returns array of line strings, one entry per rendered line
- */
-const wrapLabelText = (
-  text: string,
-  maxWidth: number,
-  maxLines: number,
-  fontWeight: FontWeight = 'normal',
-  fontSize: number = 12
-): string[] => {
-  const words = text.split(/\s+/).filter(Boolean);
-  const lineLimit = Math.max(1, Math.floor(maxLines));
-
-  if (lineLimit <= 1 || words.length === 0) {
-    return [truncateText(text, maxWidth, fontWeight, fontSize)];
-  }
-
-  const lines: string[] = [];
-  let currentLine = '';
-  let wordIndex = 0;
-
-  while (wordIndex < words.length && lines.length < lineLimit - 1) {
-    const word = words[wordIndex];
-    const candidateLine = currentLine ? `${currentLine} ${word}` : word;
-    if (!currentLine || getLabelWidth(candidateLine, fontWeight, fontSize) <= maxWidth) {
-      currentLine = candidateLine;
-      wordIndex++;
-    } else {
-      lines.push(currentLine);
-      currentLine = '';
-    }
-  }
-
-  const remainingWords = words.slice(wordIndex);
-  const finalLine = currentLine ? `${currentLine} ${remainingWords.join(' ')}`.trim() : remainingWords.join(' ');
-  lines.push(truncateText(finalLine, maxWidth, fontWeight, fontSize));
-
-  return lines;
-};
-
 export const expressionFunctions = {
   consoleLog,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   getLabelWidth,
   truncateText,
-  wrapLabelText,
 };
