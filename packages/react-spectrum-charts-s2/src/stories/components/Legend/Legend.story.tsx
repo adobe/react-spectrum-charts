@@ -119,6 +119,14 @@ Labels.args = { legendLabels, highlight: true, ...defaultProps };
 const LabelLimit = bindWithProps(LegendBarStory);
 LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
 
+const LabelWrapLimit = bindWithProps(LegendBarStory);
+LabelWrapLimit.args = {
+  legendLabels: truncatedLegendLabels,
+  labelLimit: 150,
+  labelWrapLimit: 2,
+  ...defaultProps,
+};
+
 const TitleLimit = bindWithProps(LegendBarStory);
 TitleLimit.args = {
   title: 'Very long legend title that should be truncated',
@@ -183,6 +191,7 @@ export {
   Disconnected,
   Labels,
   LabelLimit,
+  LabelWrapLimit,
   TitleLimit,
   OnClick,
   Popover,

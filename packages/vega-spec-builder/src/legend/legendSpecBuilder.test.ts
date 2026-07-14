@@ -296,6 +296,47 @@ describe('addLegend()', () => {
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });
 
+    test('should wrap labels using wrapLabelText when labelWrapLimit is provided', () => {
+      expect(addLegend(defaultSpec, { labelWrapLimit: 2 }).legends?.[0].encode).toStrictEqual({
+        entries: {
+          name: 'legend0_legendEntry',
+        },
+        labels: {
+          update: {
+            ...hiddenSeriesLabelUpdateEncoding,
+            text: {
+              signal: "wrapLabelText(datum.value, 184, 2, 'normal', 14)",
+            },
+          },
+        },
+        symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings } },
+      });
+    });
+
+    test('should resolve legendLabels before wrapping when both labelWrapLimit and legendLabels are provided', () => {
+      expect(
+        addLegend(defaultSpec, {
+          labelWrapLimit: 2,
+          legendLabels: [{ seriesName: 1, label: 'Any event' }],
+        }).legends?.[0].encode?.labels?.update?.text
+      ).toStrictEqual({
+        signal:
+          "wrapLabelText(indexof(pluck(legend0_labels, 'seriesName'), datum.value) > -1 ? legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.value)].label : datum.value, 184, 2, 'normal', 14)",
+      });
+    });
+
+    test('should use labelLimit as the wrap width when both labelLimit and labelWrapLimit are provided', () => {
+      expect(
+        addLegend(defaultSpec, { labelLimit: 100, labelWrapLimit: 3 }).legends?.[0].encode?.labels?.update?.text
+      ).toStrictEqual({
+        signal: "wrapLabelText(datum.value, 100, 3, 'normal', 14)",
+      });
+    });
+
+    test('should not wrap labels when labelWrapLimit is 1 or less', () => {
+      expect(addLegend(defaultSpec, { labelWrapLimit: 1 }).legends?.[0].encode).toStrictEqual(defaultLegend.encode);
+    });
+
     test('should add titleLimit if provided', () => {
       const legendSpec = addLegend(defaultSpec, {
         descriptions: [{ seriesName: 'test', description: 'test' }],

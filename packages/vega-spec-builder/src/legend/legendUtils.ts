@@ -105,7 +105,12 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
 export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
   const symbolEncodings = getSymbolEncodings(facets, legendOptions);
   const hoverEncodings = getHoverEncodings(legendOptions, userMeta);
-  const legendLabelsEncodings = getLegendLabelsEncodings(legendOptions.name, legendOptions.legendLabels);
+  const legendLabelsEncodings = getLegendLabelsEncodings(
+    legendOptions.name,
+    legendOptions.legendLabels,
+    legendOptions.labelLimit,
+    legendOptions.labelWrapLimit
+  );
   const showHideEncodings = getShowHideEncodings(legendOptions);
   const clickEncodings = getClickEncodings(legendOptions);
   // merge the encodings together
@@ -118,7 +123,29 @@ export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, 
   ]);
 };
 
-const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | undefined): LegendEncode => {
+const getLegendLabelsEncodings = (
+  name: string,
+  legendLabels: LegendLabel[] | undefined,
+  labelLimit: number | undefined,
+  labelWrapLimit: number | undefined
+): LegendEncode => {
+  if (labelWrapLimit && labelWrapLimit > 1) {
+    // resolves to the custom legendLabel for the seriesName if one exists, otherwise falls back to the raw value
+    const resolvedLabelExpr = legendLabels
+      ? `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label : datum.value`
+      : 'datum.value';
+    const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
+    return {
+      labels: {
+        update: {
+          text: {
+            signal: `wrapLabelText(${resolvedLabelExpr}, ${effectiveLabelLimit}, ${labelWrapLimit}, 'normal', 14)`,
+          },
+        },
+      },
+    };
+  }
+
   if (legendLabels) {
     return {
       labels: {
