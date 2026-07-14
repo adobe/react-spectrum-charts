@@ -146,6 +146,7 @@ export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
+export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // consecutive ticks since hoverAnimating went false
 
 // scale names
 export const COLOR_SCALE = 'color';

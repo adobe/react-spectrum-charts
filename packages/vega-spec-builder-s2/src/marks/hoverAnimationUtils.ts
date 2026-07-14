@@ -18,6 +18,7 @@ import {
   HOVER_ACTIVE_TIMER,
   HOVER_ANIMATING,
   HOVER_ANIM_LAST_CHANGE_DATA,
+  HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
   HOVER_TARGETS,
   HOVER_TIMER,
@@ -218,12 +219,22 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
       }`,
     });
   }
+  if (!hasSignalByName(signals, HOVER_IDLE_TICKS)) {
+    signals.push({
+      name: HOVER_IDLE_TICKS,
+      // counts consecutive ticks since hoverAnimating went false; reset the moment it's true again
+      value: 0,
+      update: `${HOVER_ANIMATING} ? 0 : ${HOVER_IDLE_TICKS} + 1`,
+    });
+  }
   if (!hasSignalByName(signals, HOVER_ACTIVE_TIMER)) {
     signals.push({
       name: HOVER_ACTIVE_TIMER,
       value: 0,
-      // holds its previous value (self-reference) whenever hoverAnimating is false
-      update: `${HOVER_ANIMATING} ? ${HOVER_TIMER} : ${HOVER_ACTIVE_TIMER}`,
+      // tracks hoverTimer while animating, and for one tick past that (hoverIdleTicks <= 1) so the
+      // tick that captures the fraction's clamped resting value can't be skipped by a delayed frame
+      // on a slow machine; holds its previous value (self-reference) from the second idle tick on
+      update: `${HOVER_ANIMATING} || ${HOVER_IDLE_TICKS} <= 1 ? ${HOVER_TIMER} : ${HOVER_ACTIVE_TIMER}`,
     });
   }
 

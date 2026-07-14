@@ -150,16 +150,35 @@ of how many marks call in):
   The `+ ANIMATION_THROTTLE` headroom gives the timer one extra tick past the nominal animation duration so
   a transition is guaranteed to reach its exact resting value before `hoverAnimating` flips false.
 
-- **`hoverActiveTimer`** — a gated clock that tracks `hoverTimer` while animating, and **holds its previous
-  value (self-reference) while idle**:
+- **`hoverIdleTicks`** — counts consecutive ticks since `hoverAnimating` last went false, resetting to 0 the
+  moment it's true again:
   ```json
-  { "name": "hoverActiveTimer", "value": 0, "update": "hoverAnimating ? hoverTimer : hoverActiveTimer" }
+  { "name": "hoverIdleTicks", "value": 0, "update": "hoverAnimating ? 0 : hoverIdleTicks + 1" }
+  ```
+  Exists purely to give `hoverActiveTimer` (below) a one-tick grace period past the idle transition. Without
+  it, on a slow machine where frames get dropped, the tick where `hoverAnimating` flips false can be the
+  *same* tick that jumps straight from mid-transition elapsed time to past-threshold elapsed time — skipping
+  over the moment `hoverActiveTimer` would have captured the fraction's clamped resting value. That freezes
+  `hoverActiveTimer` (and therefore the animated opacity/stroke-width) at a stale mid-transition value
+  forever, since nothing re-fires it without a new hover event. Symptom in the wild: quickly hovering off one
+  chart onto another while the machine is under load leaves the first chart's emphasis visibly stuck until
+  you hover back over it.
+
+- **`hoverActiveTimer`** — a gated clock that tracks `hoverTimer` while animating, *and for one tick past
+  that* (`hoverIdleTicks <= 1`), then **holds its previous value (self-reference) from the second
+  consecutive idle tick on**:
+  ```json
+  { "name": "hoverActiveTimer", "value": 0,
+    "update": "hoverAnimating || hoverIdleTicks <= 1 ? hoverTimer : hoverActiveTimer" }
   ```
   `hoverFractionData` (§3e) reads *this*, not `hoverTimer`. Once `hoverActiveTimer` stops changing value,
   Vega's dataflow doesn't re-pulse anything downstream of it — so `hoverFractionData`'s `lerp(...)` formula
   transform (the actual per-row cost, which scales with series/mark count) stops recomputing entirely while
   idle. Any subsequent target change re-fires `hoverAnimLastChangeData`'s `on`-trigger for that mark, which
-  flips `hoverAnimating` true again and lets `hoverActiveTimer` resume tracking `hoverTimer`.
+  flips `hoverAnimating` true again and lets `hoverActiveTimer` resume tracking `hoverTimer`. The
+  `hoverIdleTicks <= 1` grace tick is what guarantees the resting value gets captured even when frames drop
+  right at the idle boundary — mirroring the same "one extra tick of headroom" pattern `hoverAnimating`
+  already uses via `+ ANIMATION_THROTTLE`.
 
 **What this does and doesn't save:** `hoverTimer` itself still ticks at 30fps forever (via the browser
 timer) as long as any animated mark exists — this gate doesn't stop that, and `hoverAnimating` /
@@ -187,9 +206,11 @@ hoverTargets signal ◄── hoverTargetData.target (0 / 0.5 / 1 from match rul
                 ▼
 hoverTimer (30fps) ──► hoverAnimating = (hoverTimer - lastChange) < speed + throttle
                                 │
-                                ▼
-                        hoverActiveTimer = hoverAnimating ? hoverTimer : hoverActiveTimer  (frozen while idle)
-                                │
+                                ├─► hoverIdleTicks = hoverAnimating ? 0 : hoverIdleTicks + 1
+                                │            │
+                                ▼            ▼
+                        hoverActiveTimer = (hoverAnimating || hoverIdleTicks <= 1) ? hoverTimer : hoverActiveTimer
+                                │                                        (frozen from the 2nd idle tick on)
                                 ▼
                         hoverFractionData.fraction = lerp(startValue→target, elapsed/speed)
 ```
@@ -342,6 +363,7 @@ Ordering guarantee: the chart builder computes `legendHighlightSignals` and pass
 | `HOVER_TARGETS` | `'hoverTargets'` | per-mark targets-array signal suffix |
 | `HOVER_ANIM_LAST_CHANGE_DATA` | `'hoverAnimLastChangeData'` | shared single-row data source name (§3f idle gate) |
 | `HOVER_ANIMATING` | `'hoverAnimating'` | shared boolean signal name (§3f idle gate) |
+| `HOVER_IDLE_TICKS` | `'hoverIdleTicks'` | shared idle-tick counter, gives `hoverActiveTimer` its one-tick grace period (§3f idle gate) |
 | `HOVER_ACTIVE_TIMER` | `'hoverActiveTimer'` | shared gated-clock signal name (§3f idle gate) |
 
 Data-source naming convention (relied on by legend injection): `{mark}_hoverTargetData`,
@@ -446,7 +468,8 @@ Everything downstream of `target` is generic.
   `getLineStrokeWidthRules`).
 - **`hoverAnimationUtils` unit tests (done)**: engine + ramps covered in `hoverAnimationUtils.test.ts`.
 - **Idle gating (§3f) — engine done, not yet wired into `addLine`/`addData`.** `addHoverAnimLastChangeData`,
-  `hoverAnimating`, and `hoverActiveTimer` exist in `hoverAnimationUtils.ts` with full unit test coverage,
+  `hoverAnimating`, `hoverIdleTicks`, and `hoverActiveTimer` exist in `hoverAnimationUtils.ts` with full unit
+  test coverage,
   but nothing in `lineSpecBuilder.ts` calls them yet — as of this writing `addHoverAnimationSignals` and
   `addHoverAnimLastChangeData` have no caller outside their own tests. Wiring this in means: call
   `addHoverAnimLastChangeData(data, name)` everywhere `addHoverAnimationSignals(signals, name)` is called

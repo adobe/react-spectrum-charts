@@ -18,6 +18,7 @@ import {
   HOVER_ACTIVE_TIMER,
   HOVER_ANIMATING,
   HOVER_ANIM_LAST_CHANGE_DATA,
+  HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
   HOVER_TARGETS,
   HOVER_TIMER,
@@ -206,9 +207,14 @@ describe('addHoverAnimationSignals()', () => {
         }`,
       },
       {
+        name: HOVER_IDLE_TICKS,
+        value: 0,
+        update: `${HOVER_ANIMATING} ? 0 : ${HOVER_IDLE_TICKS} + 1`,
+      },
+      {
         name: HOVER_ACTIVE_TIMER,
         value: 0,
-        update: `${HOVER_ANIMATING} ? ${HOVER_TIMER} : ${HOVER_ACTIVE_TIMER}`,
+        update: `${HOVER_ANIMATING} || ${HOVER_IDLE_TICKS} <= 1 ? ${HOVER_TIMER} : ${HOVER_ACTIVE_TIMER}`,
       },
       {
         name: `line0_${HOVER_TARGETS}`,
@@ -224,10 +230,12 @@ describe('addHoverAnimationSignals()', () => {
     // one shared timer, one shared gate pair, one targets signal per mark
     expect(signals.filter((s) => s.name === HOVER_TIMER)).toHaveLength(1);
     expect(signals.filter((s) => s.name === HOVER_ANIMATING)).toHaveLength(1);
+    expect(signals.filter((s) => s.name === HOVER_IDLE_TICKS)).toHaveLength(1);
     expect(signals.filter((s) => s.name === HOVER_ACTIVE_TIMER)).toHaveLength(1);
     expect(signals.map((s) => s.name)).toEqual([
       HOVER_TIMER,
       HOVER_ANIMATING,
+      HOVER_IDLE_TICKS,
       HOVER_ACTIVE_TIMER,
       `line0_${HOVER_TARGETS}`,
       `line1_${HOVER_TARGETS}`,
@@ -248,20 +256,40 @@ describe('addHoverAnimationSignals()', () => {
     expect(evalUpdate(ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE)).toBe(false);
   });
 
-  test('hoverActiveTimer tracks hoverTimer while animating and freezes otherwise', () => {
+  test('hoverIdleTicks resets to 0 while animating and counts up otherwise', () => {
+    const signals: Signal[] = [];
+    addHoverAnimationSignals(signals, 'line0');
+    const idleTicks = signals.find((s) => s.name === HOVER_IDLE_TICKS) as { update: string } | undefined;
+    const evalUpdate = (animating: boolean, previous: number): number => {
+      // eslint-disable-next-line no-new-func
+      return new Function(HOVER_ANIMATING, HOVER_IDLE_TICKS, `return ${idleTicks?.update};`)(animating, previous);
+    };
+    expect(evalUpdate(true, 3)).toBe(0);
+    expect(evalUpdate(false, 0)).toBe(1);
+    expect(evalUpdate(false, 1)).toBe(2);
+  });
+
+  test('hoverActiveTimer tracks hoverTimer while animating, for one tick past that, and freezes otherwise', () => {
     const signals: Signal[] = [];
     addHoverAnimationSignals(signals, 'line0');
     const activeTimer = signals.find((s) => s.name === HOVER_ACTIVE_TIMER) as { update: string } | undefined;
-    const evalUpdate = (animating: boolean, timer: number, previous: number): number => {
+    const evalUpdate = (animating: boolean, idleTicks: number, timer: number, previous: number): number => {
       // eslint-disable-next-line no-new-func
-      return new Function(HOVER_ANIMATING, HOVER_TIMER, HOVER_ACTIVE_TIMER, `return ${activeTimer?.update};`)(
-        animating,
-        timer,
-        previous
-      );
+      return new Function(
+        HOVER_ANIMATING,
+        HOVER_IDLE_TICKS,
+        HOVER_TIMER,
+        HOVER_ACTIVE_TIMER,
+        `return ${activeTimer?.update};`
+      )(animating, idleTicks, timer, previous);
     };
-    expect(evalUpdate(true, 500, 300)).toBe(500);
-    expect(evalUpdate(false, 500, 300)).toBe(300);
+    // still animating: tracks the timer regardless of idle tick count
+    expect(evalUpdate(true, 0, 500, 300)).toBe(500);
+    // just went idle this tick (hoverIdleTicks is 1): still tracks the timer one last time, so a
+    // delayed frame that jumps straight from mid-transition to idle can't skip the resting value
+    expect(evalUpdate(false, 1, 500, 300)).toBe(500);
+    // idle for a second consecutive tick: frozen at whatever value it last tracked
+    expect(evalUpdate(false, 2, 500, 300)).toBe(300);
   });
 });
 
