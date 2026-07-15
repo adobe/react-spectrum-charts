@@ -119,7 +119,7 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
 };
 
 /**
- * Calculates the fraction of the animation for each hoverable item.
+ * Calculates the fraction of the animation for each hoverable item. This is the actual linear interpolation between the startValue and target.
  * @param name - the name of the mark
  * @returns SourceData - the source data for the hover fraction data
  */
@@ -130,7 +130,7 @@ export const getHoverFractionData = (name: string): SourceData => ({
     {
       type: 'formula',
       as: 'fraction',
-      expr: `lerp([datum.startValue, datum.target], clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / ${ANIMATION_HOVER_SPEED}, 0, 1))`,
+      expr: `lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1))`,
     },
   ],
 });
