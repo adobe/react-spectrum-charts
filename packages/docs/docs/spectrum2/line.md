@@ -250,6 +250,12 @@ Use `excludeSeries` to prevent labels from appearing on specific series:
             <td>[]</td>
             <td>Series names that should not receive a label.</td>
         </tr>
+        <tr>
+            <td>fontSize</td>
+            <td>number</td>
+            <td>–</td>
+            <td>Override font size in pixels. When omitted, font size scales automatically with chart size.</td>
+        </tr>
     </tbody>
 </table>
 

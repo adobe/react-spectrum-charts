@@ -52,7 +52,7 @@ The same component works for horizontal bar charts. Labels appear to the right o
 
 ### BarDirectLabel props
 
-`BarDirectLabel` is intentionally minimal for v1 — additional options (custom format, prefix, etc.) will be added in future releases.
+The label text is derived automatically from the parent Bar's metric, dimension, and orientation. Additional options (custom format, prefix, etc.) will be added in future releases.
 
 <table>
     <thead>
@@ -65,7 +65,16 @@ The same component works for horizontal bar charts. Labels appear to the right o
     </thead>
     <tbody>
         <tr>
-            <td colspan="4"><em>No props in v1. The label text and placement are derived automatically from the parent Bar's metric, dimension, and orientation.</em></td>
+            <td>position</td>
+            <td>'start' | 'middle' | 'end' | 'end-outside'</td>
+            <td>'end-outside'</td>
+            <td>Where to place the label relative to the bar. <code>'end-outside'</code> places it outside the bar tip; <code>'end'</code> places it inside the bar, 8px from the tip; <code>'middle'</code> centers it within the bar; <code>'start'</code> places it inside the bar, 8px from the baseline edge.</td>
+        </tr>
+        <tr>
+            <td>fontSize</td>
+            <td>number</td>
+            <td>–</td>
+            <td>Override font size in pixels. When omitted, font size scales automatically with chart size.</td>
         </tr>
     </tbody>
 </table>
