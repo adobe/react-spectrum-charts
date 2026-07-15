@@ -209,7 +209,7 @@ describe('addHoverAnimationSignals()', () => {
       {
         name: HOVER_IDLE_TICKS,
         value: 0,
-        update: `${HOVER_ANIMATING} ? 0 : ${HOVER_IDLE_TICKS} + 1`,
+        update: `${HOVER_ANIMATING} ? 0 : min(${HOVER_TIMER} - ${HOVER_TIMER} + ${HOVER_IDLE_TICKS} + 1, 2)`,
       },
       {
         name: HOVER_ACTIVE_TIMER,
@@ -256,17 +256,34 @@ describe('addHoverAnimationSignals()', () => {
     expect(evalUpdate(ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE)).toBe(false);
   });
 
-  test('hoverIdleTicks resets to 0 while animating and counts up otherwise', () => {
+  test('hoverIdleTicks resets to 0 while animating and counts up otherwise, capped at 2', () => {
     const signals: Signal[] = [];
     addHoverAnimationSignals(signals, 'line0');
     const idleTicks = signals.find((s) => s.name === HOVER_IDLE_TICKS) as { update: string } | undefined;
-    const evalUpdate = (animating: boolean, previous: number): number => {
+    const evalUpdate = (animating: boolean, previous: number, timer = 0): number => {
       // eslint-disable-next-line no-new-func
-      return new Function(HOVER_ANIMATING, HOVER_IDLE_TICKS, `return ${idleTicks?.update};`)(animating, previous);
+      return new Function(HOVER_ANIMATING, HOVER_IDLE_TICKS, HOVER_TIMER, 'min', `return ${idleTicks?.update};`)(
+        animating,
+        previous,
+        timer,
+        Math.min
+      );
     };
     expect(evalUpdate(true, 3)).toBe(0);
     expect(evalUpdate(false, 0)).toBe(1);
     expect(evalUpdate(false, 1)).toBe(2);
+    expect(evalUpdate(false, 2)).toBe(2); // stays capped, doesn't grow unbounded
+  });
+
+  test('hoverIdleTicks depends on hoverTimer so it keeps getting scheduled once hoverAnimating stabilizes', () => {
+    // regression guard: hoverAnimating stops pulsing once its value stops changing (Vega skips
+    // propagation for unchanged operator values), so hoverIdleTicks needs its own dependency on
+    // something that always pulses every tick -- otherwise it gets stuck at 1 forever and
+    // hoverActiveTimer's `<= 1` freeze condition never advances past true. See design doc §3f.
+    const signals: Signal[] = [];
+    addHoverAnimationSignals(signals, 'line0');
+    const idleTicks = signals.find((s) => s.name === HOVER_IDLE_TICKS) as { update: string } | undefined;
+    expect(idleTicks?.update).toContain(HOVER_TIMER);
   });
 
   test('hoverActiveTimer tracks hoverTimer while animating, for one tick past that, and freezes otherwise', () => {

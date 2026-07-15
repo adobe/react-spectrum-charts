@@ -162,9 +162,10 @@ of how many marks call in):
   a transition is guaranteed to reach its exact resting value before `hoverAnimating` flips false.
 
 - **`hoverIdleTicks`** — counts consecutive ticks since `hoverAnimating` last went false, resetting to 0 the
-  moment it's true again:
+  moment it's true again, capped at 2 (only 0/1/≥2 are ever distinguished by `hoverActiveTimer` below):
   ```json
-  { "name": "hoverIdleTicks", "value": 0, "update": "hoverAnimating ? 0 : hoverIdleTicks + 1" }
+  { "name": "hoverIdleTicks", "value": 0,
+    "update": "hoverAnimating ? 0 : min(hoverTimer - hoverTimer + hoverIdleTicks + 1, 2)" }
   ```
   Exists purely to give `hoverActiveTimer` (below) a one-tick grace period past the idle transition. Without
   it, on a slow machine where frames get dropped, the tick where `hoverAnimating` flips false can be the
@@ -174,6 +175,47 @@ of how many marks call in):
   forever, since nothing re-fires it without a new hover event. Symptom in the wild: quickly hovering off one
   chart onto another while the machine is under load leaves the first chart's emphasis visibly stuck until
   you hover back over it.
+
+  **`hoverIdleTicks` scheduling — the `hoverTimer - hoverTimer` no-op.** This signal's *intended*
+  dependency is just `hoverAnimating`. But Vega's dataflow (`vega-dataflow`'s `Operator.evaluate`) skips
+  propagating a pulse to dependents once an operator's computed value stops changing (strict equality) —
+  that's the entire mechanism the idle gate relies on. Once `hoverAnimating` settles to `false` and *stays*
+  `false`, it stops pulsing its own dependents. If `hoverIdleTicks` depended on nothing else, it would be
+  evaluated exactly once — the tick `hoverAnimating` flips false, landing on `1` — and then never again,
+  permanently stuck at `1` (never reaching `2`). Since `hoverActiveTimer`'s freeze condition is
+  `hoverIdleTicks <= 1`, a permanently-stuck-at-`1` counter means the freeze branch is *never* taken —
+  `hoverActiveTimer` tracks `hoverTimer` forever, silently defeating the entire idle gate (this shipped
+  broken for a time: CPU dropped from ~65% idle to ~8% right after the gate was first added, then crept back
+  up to ~52% once this scheduling bug landed alongside the one-tick grace period). The fix: `hoverIdleTicks`
+  needs a real dependency on something that reliably pulses every tick regardless of `hoverAnimating`'s
+  value — `hoverTimer` (driven by the browser timer event) is exactly that, since its value is `now()` and
+  therefore always different tick-to-tick. `hoverTimer - hoverTimer` is always `0` — it contributes nothing
+  to the arithmetic, it exists solely so the expression *textually references* `hoverTimer`, which is all
+  Vega's parser needs to wire up the dependency edge. Confirmed via an isolated repro against the real
+  `vega` runtime: without the no-op, `hoverIdleTicks` prints `1` forever and never advances; with it, it
+  correctly advances to `2` on the next tick once idle.
+
+  **A second, independent race this fixes: cross-chart stalls.** Even with `hoverIdleTicks` scheduled
+  correctly, a *fixed time window* alone (as `hoverAnimating` uses) is not enough to guarantee correctness
+  under an unbounded stall. Consider a dashboard of many independent charts sharing one browser main thread:
+  hovering off chart A's mark directly onto chart B triggers chart B's *own* hover-driven work (new
+  tooltip, its own dataflow run, mark re-render) on that same thread. Under CPU throttling, that work can
+  block the thread long enough that by the time chart A's dataflow gets to run again, `hoverTimer` has
+  already jumped straight to the current real time — and `hoverAnimating` can already read `false` on that
+  very first post-stall evaluation, because the elapsed time already exceeds the window. Without a grace
+  tick, `hoverActiveTimer` would freeze *immediately* on that same evaluation, self-referencing its
+  *pre-stall, mid-transition* value — never getting a chance to sync to the current `hoverTimer` first, so
+  `hoverFractionData`'s `clamp(...)` never gets to saturate to the correct resting value. This is why
+  widening `hoverAnimating`'s fixed window (e.g. `ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE * 10`) only
+  raises the stall duration needed to trigger the bug rather than fixing it — it was reproduced again at
+  20x CPU slowdown after being suppressed at 6x. A correctly-scheduled `hoverIdleTicks` fixes this
+  structurally: no matter how long the stall, the *first* post-stall evaluation where `hoverAnimating`
+  reads `false` still grants `hoverActiveTimer` one more tick to sync to the current `hoverTimer` (because
+  `hoverIdleTicks` is guaranteed to read `1`, not `2`, on that first observation) — which is what lets
+  `hoverFractionData` correctly saturate to the resting value *before* the freeze takes effect on the tick
+  after. This is also why leaving to blank page worked all along and leaving onto another chart didn't:
+  blank page has no competing work to stall the thread, so chart A's ticks kept flowing close enough
+  together that even a same-tick freeze happened to land on the right value.
 
 - **`hoverActiveTimer`** — a gated clock that tracks `hoverTimer` while animating, *and for one tick past
   that* (`hoverIdleTicks <= 1`), then **holds its previous value (self-reference) from the second
@@ -217,8 +259,9 @@ hoverTargets signal ◄── hoverTargetData.target (0 / 0.5 / 1 from match rul
                 ▼
 hoverTimer (30fps) ──► hoverAnimating = (hoverTimer - lastChange) < speed + throttle
                                 │
-                                ├─► hoverIdleTicks = hoverAnimating ? 0 : hoverIdleTicks + 1
-                                │            │
+                                ├─► hoverIdleTicks = hoverAnimating ? 0 : min(hoverTimer - hoverTimer + hoverIdleTicks + 1, 2)
+                                │            │        (the `hoverTimer - hoverTimer` no-op forces this to be
+                                │            │         re-evaluated every tick -- see §3f prose above)
                                 ▼            ▼
                         hoverActiveTimer = (hoverAnimating || hoverIdleTicks <= 1) ? hoverTimer : hoverActiveTimer
                                 │                                        (frozen from the 2nd idle tick on)
@@ -389,7 +432,7 @@ Ordering guarantee: the chart builder computes `legendHighlightSignals` and pass
 | `HOVER_TARGETS` | `'hoverTargets'` | per-mark targets-array signal suffix |
 | `HOVER_ANIM_LAST_CHANGE_DATA` | `'hoverAnimLastChangeData'` | shared single-row data source name (§3f idle gate) |
 | `HOVER_ANIMATING` | `'hoverAnimating'` | shared boolean signal name (§3f idle gate) |
-| `HOVER_IDLE_TICKS` | `'hoverIdleTicks'` | shared idle-tick counter, gives `hoverActiveTimer` its one-tick grace period (§3f idle gate) |
+| `HOVER_IDLE_TICKS` | `'hoverIdleTicks'` | shared idle-tick counter capped at 2, gives `hoverActiveTimer` its one-tick grace period; needs a forced `hoverTimer` dependency to stay correctly scheduled (§3f idle gate) |
 | `HOVER_ACTIVE_TIMER` | `'hoverActiveTimer'` | shared gated-clock signal name (§3f idle gate) |
 
 Data-source naming convention (relied on by legend injection): `{mark}_hoverTargetData`,

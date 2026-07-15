@@ -222,9 +222,12 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
   if (!hasSignalByName(signals, HOVER_IDLE_TICKS)) {
     signals.push({
       name: HOVER_IDLE_TICKS,
-      // counts consecutive ticks since hoverAnimating went false; reset the moment it's true again
+      // counts consecutive ticks since hoverAnimating went false, capped at 2. The
+      // `${HOVER_TIMER} - ${HOVER_TIMER}` no-op forces a real dependency on hoverTimer so this signal
+      // stays scheduled every tick -- see design doc §3f ("hoverIdleTicks scheduling") for why that's
+      // required.
       value: 0,
-      update: `${HOVER_ANIMATING} ? 0 : ${HOVER_IDLE_TICKS} + 1`,
+      update: `${HOVER_ANIMATING} ? 0 : min(${HOVER_TIMER} - ${HOVER_TIMER} + ${HOVER_IDLE_TICKS} + 1, 2)`,
     });
   }
   if (!hasSignalByName(signals, HOVER_ACTIVE_TIMER)) {
