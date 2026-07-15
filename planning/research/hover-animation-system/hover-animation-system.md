@@ -111,11 +111,16 @@ The actual interpolation, recomputed every time its driving clock ticks:
 ```json
 { "name": "line0_hoverFractionData", "source": "line0_hoverAnimStateData",
   "transform": [{ "type": "formula", "as": "fraction",
-    "expr": "lerp([datum.startValue, datum.target], clamp((hoverActiveTimer - datum.startTime) / 100, 0, 1))" }] }
+    "expr": "lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((hoverActiveTimer - datum.startTime) / (100 * abs(datum.target - datum.startValue)), 0, 1))" }] }
 ```
-`fraction` linearly interpolates `startValue → target` over `ANIMATION_HOVER_SPEED` (100ms). This is the
-animated emphasis level consumers read. Note it reads `hoverActiveTimer`, not `hoverTimer` directly — see
-§3f, the idle gate that freezes this recompute while nothing is transitioning.
+`fraction` linearly interpolates `startValue → target` at **constant speed**, not fixed duration:
+`ANIMATION_HOVER_SPEED` (100ms) is the time for a full `0↔1` sweep, and the denominator scales it by
+`abs(target - startValue)` so a shorter hop (e.g. a reversal mid-animation, where `startValue` is
+wherever the fraction currently sits) finishes proportionally sooner instead of taking the same 100ms as
+a full sweep. `target === startValue` is special-cased to `1` (elapsed already "complete") purely to
+avoid a `0/0` division — it's not a real animation, just the resting state. This is the animated emphasis
+level consumers read. Note it reads `hoverActiveTimer`, not `hoverTimer` directly — see §3f, the idle gate
+that freezes this recompute while nothing is transitioning.
 
 ### 3f. Idle gating — freezing the clock while nothing animates
 
@@ -376,7 +381,7 @@ Ordering guarantee: the chart builder computes `legendHighlightSignals` and pass
 | Constant | Value | Meaning |
 |---|---|---|
 | `ANIMATION_THROTTLE` | `33` | timer throttle (ms) → ~30fps |
-| `ANIMATION_HOVER_SPEED` | `100` | animation duration (ms) |
+| `ANIMATION_HOVER_SPEED` | `100` | ms for a full `0↔1` sweep; actual duration scales down for shorter hops (§3e) |
 | `HOVER_OPACITY_LOW` | `0.2` | opacity of a deemphasized line |
 | `FADE_FACTOR` | `0.2` | opacity of a deemphasized legend entry (same value, legend-scoped name) |
 | `HOVER_NEUTRAL_TARGET` | `0.5` | the neutral emphasis level (fallback target when nothing is hovered) |
