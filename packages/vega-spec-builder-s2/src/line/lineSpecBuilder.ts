@@ -215,66 +215,19 @@ const getUniqueSeriesIds = (data: ChartData[] | undefined, facets: string[]): st
 };
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const {
-    alternateSegmentKey,
-    chartInspects,
-    dimension,
-    dimensionHover,
-    forecasts,
-    highlightedItem,
-    isSparkline,
-    isMethodLast,
-    metric,
-    name,
-    seriesIds,
-    scaleType,
-    primarySeries,
-    staticPoint,
-  } = options;
+  const { chartInspects, dimension, dimensionHover, isSparkline, isMethodLast, name, scaleType, staticPoint } = options;
   const tableData = getTableData(data);
   if (scaleType === 'time') {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
-  const inspectAlreadyGroupsByDimension = chartInspects.some(({ highlightBy }) => highlightBy === 'dimension');
-  if (dimensionHover && !inspectAlreadyGroupsByDimension) {
-    tableData.transform = tableData.transform ?? [];
-    tableData.transform.push(getGroupIdTransform([dimension], name));
-  }
-  if (alternateSegmentKey) {
-    tableData.transform = tableData.transform ?? [];
-    tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
-    // time data was transformed above, so we need to use the transformed dimension
-    const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
-    data.push(...getAlternateSegmentData(name, dimSortField));
-  } else if (forecasts.length > 0) {
-    tableData.transform = tableData.transform ?? [];
-    const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
-    tableData.transform.push(
-      getForecastAlternateFlagTransform(name, dimension, forecasts[0].start),
-      getForecastEffectiveValueTransform(name, metric, forecasts[0].metric)
-    );
-    data.push(...getAlternateSegmentData(name, dimSortField));
-  } else if (primarySeries) {
-    data.push(getPrimarySeriesFacetData(name, primarySeries));
-  }
-  if (isInteractive(options) || highlightedItem !== undefined) {
-    data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
-    if (options.showHoverLabel) {
-      data.push(getHoverLabelData(options));
-    }
-  }
-  // hover animation data
-  if (options.isAnimate) {
-    data.push(
-      getHoverTargetData({ name, groupby: [SERIES_ID], rules: getLineHoverRules(options) }),
-      getHoverAnimStateData({ name, keys: seriesIds ?? [] }),
-      getHoverFractionData(name)
-    );
-    addHoverAnimLastChangeData(data, name);
-  }
+  addDimensionHoverGroupTransform(tableData, chartInspects, dimensionHover, dimension, name);
+  addSegmentData(data, tableData, options);
+  addLineHoverData(data, options);
+
   if (staticPoint || isSparkline) {
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
   }
+
   addDualMetricAxisData(data, options);
   addTrendlineData(data, options);
   addInspectData(data, options, false);
@@ -285,6 +238,68 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     data.push(getLineDirectLabelData(options.name, specOpts, options));
   }
 });
+
+/**
+ * Adds the groupId transform used by dimensionHover, unless a ChartInspect is already grouping by dimension.
+ */
+const addDimensionHoverGroupTransform = (
+  tableData: Data,
+  chartInspects: LineSpecOptions['chartInspects'],
+  dimensionHover: boolean,
+  dimension: string,
+  name: string
+): void => {
+  const inspectAlreadyGroupsByDimension = chartInspects.some(({ highlightBy }) => highlightBy === 'dimension');
+  if (!dimensionHover || inspectAlreadyGroupsByDimension) return;
+  tableData.transform = tableData.transform ?? [];
+  tableData.transform.push(getGroupIdTransform([dimension], name));
+};
+
+/**
+ * Adds the data sources for whichever segmenting feature is in use: alternative segments, forecasts,
+ * or a primary series facet. These are mutually exclusive.
+ */
+const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions): void => {
+  const { alternateSegmentKey, dimension, forecasts, metric, name, primarySeries, scaleType } = options;
+  // time data was transformed above, so we need to use the transformed dimension
+  const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+  if (alternateSegmentKey) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
+    data.push(...getAlternateSegmentData(name, dimSortField));
+  } else if (forecasts.length > 0) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push(
+      getForecastAlternateFlagTransform(name, dimension, forecasts[0].start),
+      getForecastEffectiveValueTransform(name, metric, forecasts[0].metric)
+    );
+    data.push(...getAlternateSegmentData(name, dimSortField));
+  } else if (primarySeries) {
+    data.push(getPrimarySeriesFacetData(name, primarySeries));
+  }
+};
+
+/**
+ * Adds the hover-label/highlight data sources for interactive or highlighted lines, plus the
+ * hover-animation engine's data sources when the line is animated.
+ */
+const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
+  const { chartInspects, highlightedItem, isAnimate, name, seriesIds, showHoverLabel } = options;
+  if (isInteractive(options) || highlightedItem !== undefined) {
+    data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
+    if (showHoverLabel) {
+      data.push(getHoverLabelData(options));
+    }
+  }
+  if (isAnimate) {
+    data.push(
+      getHoverTargetData({ name, groupby: [SERIES_ID], rules: getLineHoverRules(options) }),
+      getHoverAnimStateData({ name, keys: seriesIds ?? [] }),
+      getHoverFractionData(name)
+    );
+    addHoverAnimLastChangeData(data, name);
+  }
+};
 
 /**
  * Adds data sources for dual metric axis feature
