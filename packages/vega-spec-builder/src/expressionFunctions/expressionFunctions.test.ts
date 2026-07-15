@@ -170,6 +170,64 @@ describe('wrapLabelText()', () => {
     const lines = expressionFunctions.wrapLabelText(longText, 30, 2);
     expect(lines.length).toBeLessThanOrEqual(2);
   });
+
+  // Issue A: a final line whose width falls in truncateText's reserved ellipsis band
+  // (maxWidth - 4, maxWidth] must be kept verbatim, not ellipsized.
+  test('keeps a final line that fits maxWidth even when it lands in the ellipsis-reserve band', () => {
+    // 'hello world' is 11 wide, inside (12 - 4, 12]; it fits on one line and must not truncate.
+    expect(expressionFunctions.wrapLabelText('hello world', 12, 3)).toEqual(['hello world']);
+  });
+
+  test('wraps a fitting trailing word onto a spare line instead of truncating it', () => {
+    // Both words fit at width 8; the trailing word wraps rather than being ellipsized on line 1.
+    expect(expressionFunctions.wrapLabelText('hello world', 8, 3)).toEqual(['hello', 'world']);
+  });
+
+  // Issue B: an over-wide word committed to an intermediate line is truncated progressively so the
+  // line collapses toward maxWidth rather than overflowing the column.
+  test('truncates an over-wide word on an intermediate line so it fits maxWidth', () => {
+    const lines = expressionFunctions.wrapLabelText('Supercalifragilistic short', 12, 2);
+    expect(lines).toHaveLength(2);
+    expect(lines[0].endsWith('…')).toBe(true);
+    expect(expressionFunctions.getLabelWidth(lines[0], 'normal', 12)).toBeLessThanOrEqual(12);
+  });
+});
+
+describe('wrapTruncates()', () => {
+  const longText =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris.';
+  const shortText = 'Lorem ipsum';
+
+  test('returns false when the text fits within maxLines at maxWidth', () => {
+    expect(expressionFunctions.wrapTruncates(shortText, 200, 3)).toBe(false);
+  });
+
+  test('returns false when the whole text fits on one line at a generous width', () => {
+    expect(expressionFunctions.wrapTruncates(longText, 2000, 2)).toBe(false);
+  });
+
+  test('returns true when the text needs more than maxLines lines', () => {
+    expect(expressionFunctions.wrapTruncates(longText, 30, 2)).toBe(true);
+  });
+
+  test('returns true when a single word is wider than maxWidth', () => {
+    expect(expressionFunctions.wrapTruncates('Supercalifragilisticexpialidocious', 20, 3)).toBe(true);
+  });
+
+  test('agrees with wrapLabelText: truncates exactly when the wrapped result is ellipsized', () => {
+    const lines = expressionFunctions.wrapLabelText(longText, 30, 2);
+    const wasTruncated = lines[lines.length - 1].endsWith('…');
+    expect(expressionFunctions.wrapTruncates(longText, 30, 2)).toBe(wasTruncated);
+  });
+
+  // Both use the same maxWidth threshold: within truncateText's reserved band (maxWidth - 4, maxWidth]
+  // wrapTruncates must report "fits" and wrapLabelText must not ellipsize, so the fit prediction that
+  // drives the column/wrap decision matches what actually renders.
+  test('agrees with wrapLabelText in the ellipsis-reserve band: neither truncates a fitting label', () => {
+    expect(expressionFunctions.wrapTruncates('hello world', 12, 3)).toBe(false);
+    const lines = expressionFunctions.wrapLabelText('hello world', 12, 3);
+    expect(lines.some((line) => line.endsWith('…'))).toBe(false);
+  });
 });
 
 describe('formatTimeDurationLabels()', () => {

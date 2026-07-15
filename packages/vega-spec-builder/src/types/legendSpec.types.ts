@@ -26,6 +26,13 @@ export type LegendDescription = { seriesName: string; description: string; title
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
 
 export interface LegendOptions {
+  /**
+   * Alignment of the legend along its main axis.
+   * For horizontal legends (bottom/top): start=left, middle=center, end=right.
+   * For vertical legends (left/right): start=top, middle=center, end=bottom.
+   * @default 'middle'
+   */
+  align?: 'start' | 'middle' | 'end';
   /** color or key in the data that is used as the color facet for the symbols */
   color?: ColorFacet;
   /** series that should be hidden by default (uncontrolled) */
@@ -52,6 +59,11 @@ export interface LegendOptions {
    * Maximum number of lines a legend label can wrap onto before truncating.
    * Each line wraps by word up to `labelLimit` pixels wide. If the label still doesn't fit after wrapping to this
    * many lines, the final line is truncated with an ellipsis.
+   *
+   * NOTE: The leading underscore marks this as a targeted, internal-use property. It exists to support
+   * a specific horizontal-legend layout requirement and is not a generally supported prop — its
+   * behavior outside that use case (e.g. vertical legends, or combinations beyond `_preferredColumns`)
+   * is not guaranteed. Use at your own risk.
    */
   _labelWrap?: number;
   /** line type or key in the data that is used as the line type facet for the symbols */
@@ -64,6 +76,17 @@ export interface LegendOptions {
   opacity?: OpacityFacet;
   /** where the legend should be displayed */
   position?: Position;
+  /**
+   * Ordered list of candidate column counts for horizontal (top/bottom) legends, e.g. `[5, 3]`.
+   * The largest listed count whose labels fit the available width without truncation is used.
+   * If none fit, the last (smallest) count is forced and labels are truncated to their fair share
+   * of the width. When set, this fully overrides `labelLimit`. Ignored for left/right legends.
+   *
+   * NOTE: The leading underscore marks this as a targeted, internal-use property. It exists to support
+   * a specific horizontal-legend layout requirement and is not a generally supported prop — its
+   * behavior outside that use case is not guaranteed. Use at your own risk.
+   */
+  _preferredColumns?: number[];
   /** customize the legend symbol shape */
   symbolShape?: SymbolShapeFacet;
   /** legend title */

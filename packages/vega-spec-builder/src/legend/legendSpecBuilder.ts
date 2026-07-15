@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Legend, Mark, Scale, Signal } from 'vega';
+import { Data, Legend, Mark, Scale, Signal, SignalRef } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -45,7 +45,17 @@ import {
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
-import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
+import {
+  Facet,
+  getColumns,
+  getDisplayLabelExpr,
+  getEncodings,
+  getHiddenEntriesFilter,
+  getPreferredColumns,
+  getPreferredColumnsData,
+  getPreferredLabelLimit,
+  getSymbolType,
+} from './legendUtils';
 
 export const addLegend = produce<
   ScSpec,
@@ -62,6 +72,7 @@ export const addLegend = produce<
   (
     spec,
     {
+      align,
       color,
       hasMouseInteraction = false,
       hasOnClick = false,
@@ -90,6 +101,7 @@ export const addLegend = produce<
 
     // put options back together now that all defaults are set
     const legendOptions: LegendSpecOptions = {
+      align,
       color: formattedColor,
       hasMouseInteraction,
       hasOnClick,
@@ -106,6 +118,12 @@ export const addLegend = produce<
       colorScheme,
       ...options,
     };
+
+    if (align !== undefined) {
+      if (!spec.usermeta) spec.usermeta = {};
+      if (!spec.usermeta.patches) spec.usermeta.patches = [];
+      spec.usermeta.patches.push({ legend: { layout: { [position]: { anchor: align } } } });
+    }
 
     // Order matters here. Facets rely on the scales being set up.
     spec.scales = addScales(spec.scales ?? [], legendOptions);
@@ -204,15 +222,29 @@ export const formatFacetRefsWithPresets = (
  * @returns
  */
 const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userMeta: UserMeta): Legend => {
-  const { name, position, title, labelLimit, _labelWrap, titleLimit } = options;
+  const { name, position, title, labelLimit, _labelWrap, titleLimit, _preferredColumns } = options;
+  // _preferredColumns only applies to horizontal legends, matching getColumns returning undefined for left/right
+  const usePreferredColumns =
+    _preferredColumns !== undefined && _preferredColumns.length > 0 && ['top', 'bottom'].includes(position);
+  // When both are set, _preferredColumns owns truncation and uses wrapping as a lever; labelLimit
+  // becomes the chosen candidate's dynamic wrap width (see getPreferredWrapWidth).
+  const usePreferredWrap = usePreferredColumns && Boolean(_labelWrap && _labelWrap > 1);
+  let preferredLabelLimit: SignalRef | number | undefined = labelLimit;
+  // In combined mode wrapLabelText already wraps/ellipsizes at the dynamic width, so leave Vega's
+  // labelLimit unlimited (0). Setting it to the fair-share width caused a hairline band where Vega's
+  // text rendering truncated a line our canvas measurement had fit — truncation before wrapping.
+  if (usePreferredWrap) preferredLabelLimit = 0;
+  else if (usePreferredColumns) preferredLabelLimit = getPreferredLabelLimit(name, _preferredColumns as number[]);
   const legend: Legend = {
     fill: `${name}Entries`,
     direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
     orient: position,
     title,
     encode: getEncodings(facets, options, userMeta),
-    columns: getColumns(position, name, labelLimit),
-    labelLimit,
+    columns: usePreferredColumns
+      ? getPreferredColumns(name, _preferredColumns as number[], _labelWrap)
+      : getColumns(position, name, labelLimit),
+    labelLimit: preferredLabelLimit,
   };
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
   if (_labelWrap && _labelWrap > 1) {
@@ -280,50 +312,56 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-  (data, { facets, hiddenEntries, keys, name }) => {
+  (data, { facets, hiddenEntries, keys, name, position, _preferredColumns, _labelWrap }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
-    data.push({
-      name: `${name}Aggregate`,
-      source: 'table',
-      transform: [
-        {
-          type: 'aggregate',
-          groupby: facets,
-        },
-        {
-          type: 'formula',
-          as: `${name}Entries`,
-          expr,
-        },
-        ...getHiddenEntriesFilter(hiddenEntries, name),
-      ],
-    });
+    data.push(
+      {
+        name: `${name}Aggregate`,
+        source: 'table',
+        transform: [
+          {
+            type: 'aggregate',
+            groupby: facets,
+          },
+          {
+            type: 'formula',
+            as: `${name}Entries`,
+            expr,
+          },
+          ...getHiddenEntriesFilter(hiddenEntries, name),
+        ],
+      },
+      // Measure the actual max display label width so getColumns can compute an accurate column count.
+      {
+        name: `${name}_maxLabelWidth`,
+        source: `${name}Aggregate`,
+        transform: [
+          {
+            type: 'formula',
+            as: 'displayLabel',
+            expr: getDisplayLabelExpr(name),
+          },
+          {
+            type: 'formula',
+            as: 'labelWidth',
+            expr: "getLabelWidth(datum.displayLabel, 'normal', 14)",
+          },
+          {
+            type: 'aggregate',
+            fields: ['labelWidth'],
+            ops: ['max'],
+            as: ['maxLabelWidth'],
+          },
+        ],
+      }
+    );
 
-    // Measure the actual max display label width so getColumns can compute an accurate column count.
-    const labelLookupExpr = `indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries)].label : datum.${name}Entries`;
-    data.push({
-      name: `${name}_maxLabelWidth`,
-      source: `${name}Aggregate`,
-      transform: [
-        {
-          type: 'formula',
-          as: 'displayLabel',
-          expr: labelLookupExpr,
-        },
-        {
-          type: 'formula',
-          as: 'labelWidth',
-          expr: "getLabelWidth(datum.displayLabel, 'normal', 14)",
-        },
-        {
-          type: 'aggregate',
-          fields: ['labelWidth'],
-          ops: ['max'],
-          as: ['maxLabelWidth'],
-        },
-      ],
-    });
+    // When _preferredColumns is set on a horizontal legend, emit the per-candidate fit data sources
+    // that the columns/labelLimit signals use to pick the largest count that fits without truncation.
+    if (_preferredColumns?.length && ['top', 'bottom'].includes(position)) {
+      data.push(...getPreferredColumnsData(name, _preferredColumns, _labelWrap));
+    }
 
     if (keys?.length) {
       const tableData = getTableData(data);

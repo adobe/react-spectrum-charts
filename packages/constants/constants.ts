@@ -118,6 +118,8 @@ export const DEFAULT_LEGEND_LABEL_LIMIT = 184;
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 export const CONTROLLED_HIGHLIGHTED_TABLE = 'controlledHighlightedTable';
+/** Single-row data source recording timestamp of the most recent hover target change */
+export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData'; 
 
 // vega data field names
 export const DIMENSION_FIELD = 'rscDimensionField';
@@ -140,6 +142,11 @@ export const SELECTED_SERIES = 'selectedSeries'; // series
 export const SELECTED_GROUP = 'selectedGroup'; // data point
 export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
+export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
+export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
+export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
+export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
+export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // consecutive ticks since hoverAnimating went false
 
 // scale names
 export const COLOR_SCALE = 'color';
@@ -164,6 +171,19 @@ export const DISCRETE_PADDING = 0.5;
 export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 0;
 export const TRELLIS_PADDING = 0.2;
+
+// hover animation constants
+/** Timer signal update interval in ms. Caps timer signal update at ~30fps. */
+export const ANIMATION_THROTTLE = 33;
+/** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
+export const ANIMATION_HOVER_SPEED = 100;
+/**
+ * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
+ * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
+ * Consumers map the lower half [0, neutral] for deemphasis (e.g. opacity) and the upper half [neutral, 1]
+ * for emphasis (e.g. stroke width).
+ */
+export const HOVER_NEUTRAL_TARGET = 0.5;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
