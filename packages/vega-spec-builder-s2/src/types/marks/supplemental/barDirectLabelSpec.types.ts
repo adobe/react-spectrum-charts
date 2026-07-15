@@ -17,6 +17,8 @@ export type BarDirectLabelPositionType = 'start' | 'middle' | 'end' | 'end-outsi
 
 export interface BarDirectLabelOptions {
   position?: BarDirectLabelPositionType;
+  /** Override font size in pixels. When omitted, font size scales automatically with chart size. */
+  fontSize?: number;
 }
 
 export interface BarDirectLabelSpecOptions extends BarDirectLabelOptions {
