@@ -23,8 +23,6 @@ export interface BarDirectLabelProps {
    * @default 'end-outside'
    */
   position?: BarDirectLabelPosition;
-  /** Override font size in pixels. When omitted, font size scales automatically with chart size. */
-  fontSize?: number;
 }
 
 export type BarDirectLabelElement = ReactElement<

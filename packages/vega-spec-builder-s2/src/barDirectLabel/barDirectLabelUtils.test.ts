@@ -37,15 +37,6 @@ describe('getBarDirectLabelSpecOptions()', () => {
     const options = getBarDirectLabelSpecOptions({ position: 'middle' }, 0, defaultBarOptions);
     expect(options.position).toBe('middle');
   });
-
-  it('defaults fontSize to undefined when not provided', () => {
-    expect(defaultSpecOptions.fontSize).toBeUndefined();
-  });
-
-  it('respects a provided fontSize', () => {
-    const options = getBarDirectLabelSpecOptions({ fontSize: 20 }, 0, defaultBarOptions);
-    expect(options.fontSize).toBe(20);
-  });
 });
 
 
@@ -208,17 +199,10 @@ describe('getBarDirectLabelMarks()', () => {
     expect((bg as TextMark).encode?.update?.opacity).toBeUndefined();
   });
 
-  it('both marks default fontSize to the chart-size signal when not overridden', () => {
+  it('both marks use the chart-size signal for fontSize', () => {
     const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
     expect((bg as TextMark).encode?.update?.fontSize).toHaveProperty('signal', CHART_SIZE_FONT_SIZE);
     expect((main as TextMark).encode?.update?.fontSize).toHaveProperty('signal', CHART_SIZE_FONT_SIZE);
-  });
-
-  it('both marks use an explicit fontSize override when provided', () => {
-    const options = getBarDirectLabelSpecOptions({ fontSize: 20 }, 0, defaultBarOptions);
-    const [bg, main] = getBarDirectLabelMarks(options, defaultBarOptions);
-    expect((bg as TextMark).encode?.update?.fontSize).toHaveProperty('value', 20);
-    expect((main as TextMark).encode?.update?.fontSize).toHaveProperty('value', 20);
   });
 
   it('marks source directly from FILTERED_TABLE', () => {

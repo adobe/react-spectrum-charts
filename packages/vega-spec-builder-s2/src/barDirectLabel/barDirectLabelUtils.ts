@@ -108,7 +108,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
     ? { signal: `datum[${JSON.stringify(colorOverride)}]` }
     : getColorProductionRule(color, colorScheme);
 
-  const fontSizeEncoding = getDirectLabelFontSizeProductionRule(labelOptions.fontSize);
+  const fontSizeEncoding = getDirectLabelFontSizeProductionRule();
 
   // Label text computed inline — no derived dataset needed
   const textSignal = `format(datum["${metric}"], "${DEFAULT_NUMBER_FORMAT}")`;
@@ -193,7 +193,6 @@ export const getBarDirectLabelSpecOptions = (
   colorOverride: barOptions.colorOverride,
   colorScheme: barOptions.colorScheme,
   dimension: barOptions.dimension,
-  fontSize: labelOptions.fontSize,
   index,
   metric: barOptions.metric,
   metricAxis: barOptions.metricAxis,

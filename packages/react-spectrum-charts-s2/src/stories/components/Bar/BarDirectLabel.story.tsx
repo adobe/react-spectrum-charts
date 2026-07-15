@@ -23,9 +23,6 @@ import { barData, mixedBarData } from './data';
 export default {
   title: 'RSC/Bar/BarDirectLabel',
   component: BarDirectLabel,
-  argTypes: {
-    fontSize: { control: { type: 'number' } },
-  },
 };
 
 const BarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
@@ -110,7 +107,4 @@ Position.args = { ...defaultProps, position: 'middle' };
 const PositionHorizontal = bindWithProps(HorizontalBarDirectLabelStory);
 PositionHorizontal.args = { ...defaultProps, position: 'start' };
 
-const FontSizeOverride = bindWithProps(BarDirectLabelStory);
-FontSizeOverride.args = { ...defaultProps, fontSize: 24 };
-
-export { Default, Horizontal, MixedValues, MixedValuesHorizontal, Position, PositionHorizontal, FontSizeOverride };
+export { Default, Horizontal, MixedValues, MixedValuesHorizontal, Position, PositionHorizontal };
