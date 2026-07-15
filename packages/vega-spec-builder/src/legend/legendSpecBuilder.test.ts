@@ -350,6 +350,31 @@ describe('addLegend()', () => {
       expect(addLegend(defaultSpec, { _labelWrap: 1 }).legends?.[0].encode).toStrictEqual(defaultLegend.encode);
     });
 
+    test('should set labelLimit to 0 when both _preferredColumns and _labelWrap are provided', () => {
+      const legend = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0];
+      expect(legend?.labelLimit).toBe(0);
+    });
+
+    test('should use fit-or-wrap branches for columns when both _preferredColumns and _labelWrap are provided', () => {
+      const legend = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0];
+      expect((legend?.columns as { signal: string }).signal).toContain("data('legend0_wrapfit_5')");
+    });
+
+    test('should wrap labels at the dynamic preferred wrap width when both _preferredColumns and _labelWrap are provided', () => {
+      const text = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0].encode?.labels
+        ?.update?.text as { signal: string };
+      // dynamic width references the fit/wrapfit data sources rather than the static labelLimit
+      expect(text.signal.startsWith('wrapLabelText(datum.value, ')).toBe(true);
+      expect(text.signal).toContain("data('legend0_wrapfit_5')");
+    });
+
+    test('should emit wrapfit data sources when both _preferredColumns and _labelWrap are provided', () => {
+      const data = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).data;
+      expect(data?.map((d) => d.name)).toEqual(
+        expect.arrayContaining(['legend0_wrapfit_5', 'legend0_wrapfit_3'])
+      );
+    });
+
     test('should add titleLimit if provided', () => {
       const legendSpec = addLegend(defaultSpec, {
         descriptions: [{ seriesName: 'test', description: 'test' }],
@@ -359,6 +384,48 @@ describe('addLegend()', () => {
       const legend = legendSpec.legends?.[0];
       expect(legend?.titleLimit).toBe(123);
       expect(legend?.title).toBe('My title');
+    });
+
+    describe('align', () => {
+      test('align start pushes a legend.layout.bottom anchor patch to usermeta.patches', () => {
+        const spec = addLegend(defaultSpec, { align: 'start' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'start' } } } }]);
+      });
+
+      test('align middle passes through as anchor middle', () => {
+        const spec = addLegend(defaultSpec, { align: 'middle' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'middle' } } } }]);
+      });
+
+      test('align end pushes anchor end', () => {
+        const spec = addLegend(defaultSpec, { align: 'end' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'end' } } } }]);
+      });
+
+      test('align top position patches layout.top', () => {
+        const spec = addLegend(defaultSpec, { align: 'start', position: 'top' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { top: { anchor: 'start' } } } }]);
+      });
+
+      test('align left position patches layout.left', () => {
+        const spec = addLegend(defaultSpec, { align: 'start', position: 'left' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { left: { anchor: 'start' } } } }]);
+      });
+
+      test('align right position patches layout.right', () => {
+        const spec = addLegend(defaultSpec, { align: 'end', position: 'right' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { right: { anchor: 'end' } } } }]);
+      });
+
+      test('no align leaves usermeta.patches unset', () => {
+        const spec = addLegend(defaultSpec, {});
+        expect(spec.usermeta.patches).toBeUndefined();
+      });
+
+      test('does not write to spec.config', () => {
+        const spec = addLegend(defaultSpec, { align: 'start' });
+        expect(spec.config).toBeUndefined();
+      });
     });
 
     test('should add fields to scales if they have not been added', () => {

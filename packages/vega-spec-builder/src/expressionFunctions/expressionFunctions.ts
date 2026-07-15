@@ -43,6 +43,7 @@ export const getExpressionFunctions = (
     getLabelWidth,
     truncateText,
     wrapLabelText,
+    wrapTruncates,
   };
 };
 
@@ -259,7 +260,10 @@ const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = '
 
 /**
  * Wraps text by word into up to maxLines lines, each no wider than maxWidth.
- * If words remain after filling maxLines lines, the final line is truncated with an ellipsis.
+ * Every committed line — intermediate and final — is truncated with an ellipsis only when it
+ * genuinely exceeds maxWidth, so a line that fits is kept verbatim (no phantom ellipsis in the
+ * `maxWidth - 4` band `truncateText` reserves) and an over-wide line (e.g. a single word wider than
+ * the column) is shortened progressively rather than overflowing.
  * @param text
  * @param maxWidth
  * @param maxLines
@@ -274,11 +278,20 @@ const wrapLabelText = (
   fontWeight: FontWeight = 'normal',
   fontSize: number = 12
 ): string[] => {
+  // Truncate a line only when it actually overflows maxWidth. truncateText reserves ellipsis space
+  // (maxWidth - 4), so calling it on a line that already fits would ellipsize text that renders fine
+  // and diverge from wrapTruncates (which tests fit at maxWidth with no reservation).
+  // Truncate a line only when it actually overflows maxWidth. truncateText reserves ellipsis space
+  // (maxWidth - 4), so calling it on a line that already fits would ellipsize text that renders fine
+  // and diverge from wrapTruncates (which tests fit at maxWidth with no reservation).
+  const fitLine = (line: string) =>
+    getLabelWidth(line, fontWeight, fontSize) <= maxWidth ? line : truncateText(line, maxWidth, fontWeight, fontSize);
+
   const words = text.split(/\s+/).filter(Boolean);
   const lineLimit = Math.max(1, Math.floor(maxLines));
 
   if (lineLimit <= 1 || words.length === 0) {
-    return [truncateText(text, maxWidth, fontWeight, fontSize)];
+    return [fitLine(text)];
   }
 
   const lines: string[] = [];
@@ -292,16 +305,56 @@ const wrapLabelText = (
       currentLine = candidateLine;
       wordIndex++;
     } else {
-      lines.push(currentLine);
+      lines.push(fitLine(currentLine));
       currentLine = '';
     }
   }
 
   const remainingWords = words.slice(wordIndex);
   const finalLine = currentLine ? `${currentLine} ${remainingWords.join(' ')}`.trim() : remainingWords.join(' ');
-  lines.push(truncateText(finalLine, maxWidth, fontWeight, fontSize));
+  lines.push(fitLine(finalLine));
 
   return lines;
+};
+
+/**
+ * Tests whether wrapping `text` by word into at most `maxLines` lines, each no wider than `maxWidth`,
+ * would require truncation — i.e. some text cannot be shown. Returns `true` when a single word is
+ * wider than `maxWidth`, or when the greedy word-pack needs more than `maxLines` lines. Mirrors
+ * `wrapLabelText`'s greedy packing so the prediction matches the rendered result.
+ * @param text
+ * @param maxWidth
+ * @param maxLines
+ * @param fontWeight
+ * @param fontSize
+ * @returns true if the text would truncate/overflow, false if it fully fits
+ */
+const wrapTruncates = (
+  text: string,
+  maxWidth: number,
+  maxLines: number,
+  fontWeight: FontWeight = 'normal',
+  fontSize: number = 12
+): boolean => {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lineLimit = Math.max(1, Math.floor(maxLines));
+  if (words.length === 0) return false;
+
+  let lineCount = 1;
+  let currentLine = '';
+  for (const word of words) {
+    // a single word wider than the column can never fit on any line → will truncate
+    if (getLabelWidth(word, fontWeight, fontSize) > maxWidth) return true;
+    const candidateLine = currentLine ? `${currentLine} ${word}` : word;
+    if (!currentLine || getLabelWidth(candidateLine, fontWeight, fontSize) <= maxWidth) {
+      currentLine = candidateLine;
+    } else {
+      lineCount++;
+      if (lineCount > lineLimit) return true;
+      currentLine = word;
+    }
+  }
+  return false;
 };
 
 export const expressionFunctions = {
@@ -312,4 +365,5 @@ export const expressionFunctions = {
   getLabelWidth,
   truncateText,
   wrapLabelText,
+  wrapTruncates,
 };

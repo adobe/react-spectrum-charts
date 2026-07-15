@@ -19,6 +19,12 @@ The `Legend` component is used to display a legend for the visualization.
   </thead>
   <tbody>
     <tr>
+      <td>align</td>
+      <td>'start' | 'middle' | 'end'</td>
+      <td>'middle'</td>
+      <td>Alignment of the legend along its edge. For horizontal legends (bottom/top): 'start' = left, 'middle' = center, 'end' = right. For vertical legends (left/right): 'start' = top, 'middle' = center, 'end' = bottom.</td>
+    </tr>
+    <tr>
       <td>color</td>
       <td>string | \{value: Color}</td>
       <td>–</td>
@@ -65,12 +71,6 @@ The `Legend` component is used to display a legend for the visualization.
       <td>number</td>
       <td>–</td>
       <td>Max width in pixels before truncating a legend label. If not specified, labels will not be truncated. Influences legend column layout by calculating how many legend items can fit horizontally based on the label width (for top/bottom positioned legends).</td>
-    </tr>
-    <tr>
-      <td>_labelWrap</td>
-      <td>number</td>
-      <td>–</td>
-      <td>Maximum number of lines a legend label can wrap onto before truncating. Each line wraps by word up to `labelLimit` pixels wide. If the label still doesn't fit after wrapping to this many lines, the final line is truncated with an ellipsis. If not specified, labels will not wrap.</td>
     </tr>
     <tr>
       <td>legendLabels</td>
