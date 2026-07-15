@@ -136,7 +136,7 @@ describe('getHoverFractionData()', () => {
         {
           type: 'formula',
           as: 'fraction',
-          expr: `lerp([datum.startValue, datum.target], clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / ${ANIMATION_HOVER_SPEED}, 0, 1))`,
+          expr: `lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1))`,
         },
       ],
     });
