@@ -315,46 +315,47 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
   (data, { facets, hiddenEntries, keys, name, position, _preferredColumns, _labelWrap }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
-    data.push({
-      name: `${name}Aggregate`,
-      source: 'table',
-      transform: [
-        {
-          type: 'aggregate',
-          groupby: facets,
-        },
-        {
-          type: 'formula',
-          as: `${name}Entries`,
-          expr,
-        },
-        ...getHiddenEntriesFilter(hiddenEntries, name),
-      ],
-    });
-
-    // Measure the actual max display label width so getColumns can compute an accurate column count.
-    data.push({
-      name: `${name}_maxLabelWidth`,
-      source: `${name}Aggregate`,
-      transform: [
-        {
-          type: 'formula',
-          as: 'displayLabel',
-          expr: getDisplayLabelExpr(name),
-        },
-        {
-          type: 'formula',
-          as: 'labelWidth',
-          expr: "getLabelWidth(datum.displayLabel, 'normal', 14)",
-        },
-        {
-          type: 'aggregate',
-          fields: ['labelWidth'],
-          ops: ['max'],
-          as: ['maxLabelWidth'],
-        },
-      ],
-    });
+    data.push(
+      {
+        name: `${name}Aggregate`,
+        source: 'table',
+        transform: [
+          {
+            type: 'aggregate',
+            groupby: facets,
+          },
+          {
+            type: 'formula',
+            as: `${name}Entries`,
+            expr,
+          },
+          ...getHiddenEntriesFilter(hiddenEntries, name),
+        ],
+      },
+      // Measure the actual max display label width so getColumns can compute an accurate column count.
+      {
+        name: `${name}_maxLabelWidth`,
+        source: `${name}Aggregate`,
+        transform: [
+          {
+            type: 'formula',
+            as: 'displayLabel',
+            expr: getDisplayLabelExpr(name),
+          },
+          {
+            type: 'formula',
+            as: 'labelWidth',
+            expr: "getLabelWidth(datum.displayLabel, 'normal', 14)",
+          },
+          {
+            type: 'aggregate',
+            fields: ['labelWidth'],
+            ops: ['max'],
+            as: ['maxLabelWidth'],
+          },
+        ],
+      }
+    );
 
     // When _preferredColumns is set on a horizontal legend, emit the per-candidate fit data sources
     // that the columns/labelLimit signals use to pick the largest count that fits without truncation.

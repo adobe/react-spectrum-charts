@@ -216,7 +216,7 @@ export const getPreferredColumnsData = (name: string, preferredColumns: number[]
  */
 export const getPreferredColumns = (name: string, preferredColumns: number[], labelWrap?: number): SignalRef => {
   const useWrap = Boolean(labelWrap && labelWrap > 1);
-  const lastValue = preferredColumns[preferredColumns.length - 1];
+  const lastValue = preferredColumns.at(-1) ?? 1;
   const branches = preferredColumns.map((n) => {
     // With wrapping, a candidate also qualifies if it fits once labels wrap without truncating.
     const condition = useWrap ? `(${getFitExpr(name, n)} || ${getWrapFitExpr(name, n)})` : getFitExpr(name, n);
@@ -233,7 +233,7 @@ export const getPreferredColumns = (name: string, preferredColumns: number[], la
  * (via getLegendLabelsEncodings) and the legend labelLimit so all three stay in sync.
  */
 export const getPreferredWrapWidthExpr = (name: string, preferredColumns: number[]): string => {
-  const lastValue = preferredColumns[preferredColumns.length - 1];
+  const lastValue = preferredColumns.at(-1) ?? 1;
   const branches = preferredColumns.map((n) => {
     const qualifies = `(${getFitExpr(name, n)} || ${getWrapFitExpr(name, n)})`;
     const chosenWidth = `(${getFitExpr(name, n)} ? width : ${getFairShareExpr(n)})`;
@@ -260,7 +260,7 @@ export const getPreferredWrapWidth = (name: string, preferredColumns: number[]):
  * width to the fair share the instant `n` stops fitting.
  */
 export const getPreferredLabelLimit = (name: string, preferredColumns: number[]): SignalRef => {
-  const n = preferredColumns[preferredColumns.length - 1];
+  const n = preferredColumns.at(-1) ?? 1;
   const fairShareLimit = getFairShareExpr(n);
 
   // With a single candidate the last count is the only count, so always use the fair-share limit.

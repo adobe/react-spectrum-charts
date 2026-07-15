@@ -260,7 +260,10 @@ const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = '
 
 /**
  * Wraps text by word into up to maxLines lines, each no wider than maxWidth.
- * If words remain after filling maxLines lines, the final line is truncated with an ellipsis.
+ * Every committed line — intermediate and final — is truncated with an ellipsis only when it
+ * genuinely exceeds maxWidth, so a line that fits is kept verbatim (no phantom ellipsis in the
+ * `maxWidth - 4` band `truncateText` reserves) and an over-wide line (e.g. a single word wider than
+ * the column) is shortened progressively rather than overflowing.
  * @param text
  * @param maxWidth
  * @param maxLines
@@ -275,11 +278,20 @@ const wrapLabelText = (
   fontWeight: FontWeight = 'normal',
   fontSize: number = 12
 ): string[] => {
+  // Truncate a line only when it actually overflows maxWidth. truncateText reserves ellipsis space
+  // (maxWidth - 4), so calling it on a line that already fits would ellipsize text that renders fine
+  // and diverge from wrapTruncates (which tests fit at maxWidth with no reservation).
+  // Truncate a line only when it actually overflows maxWidth. truncateText reserves ellipsis space
+  // (maxWidth - 4), so calling it on a line that already fits would ellipsize text that renders fine
+  // and diverge from wrapTruncates (which tests fit at maxWidth with no reservation).
+  const fitLine = (line: string) =>
+    getLabelWidth(line, fontWeight, fontSize) <= maxWidth ? line : truncateText(line, maxWidth, fontWeight, fontSize);
+
   const words = text.split(/\s+/).filter(Boolean);
   const lineLimit = Math.max(1, Math.floor(maxLines));
 
   if (lineLimit <= 1 || words.length === 0) {
-    return [truncateText(text, maxWidth, fontWeight, fontSize)];
+    return [fitLine(text)];
   }
 
   const lines: string[] = [];
@@ -293,14 +305,14 @@ const wrapLabelText = (
       currentLine = candidateLine;
       wordIndex++;
     } else {
-      lines.push(currentLine);
+      lines.push(fitLine(currentLine));
       currentLine = '';
     }
   }
 
   const remainingWords = words.slice(wordIndex);
   const finalLine = currentLine ? `${currentLine} ${remainingWords.join(' ')}`.trim() : remainingWords.join(' ');
-  lines.push(truncateText(finalLine, maxWidth, fontWeight, fontSize));
+  lines.push(fitLine(finalLine));
 
   return lines;
 };

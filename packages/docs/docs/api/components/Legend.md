@@ -73,12 +73,6 @@ The `Legend` component is used to display a legend for the visualization.
       <td>Max width in pixels before truncating a legend label. If not specified, labels will not be truncated. Influences legend column layout by calculating how many legend items can fit horizontally based on the label width (for top/bottom positioned legends).</td>
     </tr>
     <tr>
-      <td>_labelWrap</td>
-      <td>number</td>
-      <td>–</td>
-      <td>Maximum number of lines a legend label can wrap onto before truncating. Each line wraps by word up to `labelLimit` pixels wide. If the label still doesn't fit after wrapping to this many lines, the final line is truncated with an ellipsis. If not specified, labels will not wrap.</td>
-    </tr>
-    <tr>
       <td>legendLabels</td>
       <td>\{seriesName: string | number, label: string, maxLength?: number}[]</td>
       <td>-</td>
