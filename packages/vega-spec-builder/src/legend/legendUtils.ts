@@ -106,6 +106,15 @@ const LEGEND_SYMBOL_RENDERED_WIDTH = 18;
 const LEGEND_ITEM_BASE = LEGEND_SYMBOL_RENDERED_WIDTH + LEGEND_LABEL_OFFSET;
 
 /**
+ * Per-column safety margin added to the full-width fit estimate ONLY (not the fair-share wrap width,
+ * which must stay exact). Vega ceils each column's right edge (`Math.ceil(b.x2)` in grid.js) and the
+ * symbol stroke overhangs slightly, so the summed float estimate runs a few px light — worst at the
+ * largest column count. This margin makes `fitsFull` hand off to the exact wrap/step-down path just
+ * before the layout would actually overrun `width`.
+ */
+const LEGEND_COLUMN_FIT_MARGIN = 2;
+
+/**
  * Expression that resolves an entry's display label: the custom legendLabel if one exists for the
  * series, otherwise the raw entry value. Shared by the max-label-width and preferred-columns data.
  */
@@ -123,12 +132,32 @@ const getFitExpr = (name: string, n: number): string => {
 };
 
 /**
+ * Per-column fair-share width expression for candidate `n`: the reactive `width` split into `n` equal
+ * columns, minus inter-column padding and per-item chrome. Used as both the wrap width and the
+ * fallback truncation width so the fit test and the rendered wrap agree.
+ */
+const getFairShareExpr = (n: number): string => {
+  const interColumnPadding = (n - 1) * DEFAULT_LEGEND_COLUMN_PADDING;
+  return `(width - ${interColumnPadding}) / ${n} - ${LEGEND_ITEM_BASE}`;
+};
+
+/**
+ * Boolean expression testing whether candidate column count `n` fits when labels are wrapped (up to
+ * `_labelWrap` lines) at `n`'s fair-share width with no label truncating. Backed by
+ * `${name}_wrapfit_${n}` (see getPreferredColumnsData).
+ */
+const getWrapFitExpr = (name: string, n: number): string =>
+  `length(data('${name}_wrapfit_${n}')) > 0 && data('${name}_wrapfit_${n}')[0].anyTruncated === 0`;
+
+/**
  * Builds the data sources backing the `_preferredColumns` layout decision:
  * - `${name}_labelWidths`: one row per legend entry with its measured label width and stable order index
  * - `${name}_fit_${n}`: for each candidate `n`, the summed width of the `n`-column layout, sized
  *   per-column to that column's widest label (matching Vega's `align: 'each'` grid).
+ * - `${name}_wrapfit_${n}` (only when `labelWrap > 1`): for each candidate `n`, whether any label
+ *   would still truncate after wrapping to `labelWrap` lines at `n`'s fair-share width.
  */
-export const getPreferredColumnsData = (name: string, preferredColumns: number[]): Data[] => {
+export const getPreferredColumnsData = (name: string, preferredColumns: number[], labelWrap?: number): Data[] => {
   const labelWidths: Data = {
     name: `${name}_labelWidths`,
     source: `${name}Aggregate`,
@@ -147,23 +176,79 @@ export const getPreferredColumnsData = (name: string, preferredColumns: number[]
       { type: 'formula', as: 'col', expr: `(datum.legendIndex - 1) % ${n}` },
       // each column is sized to its own widest label (align: 'each')
       { type: 'aggregate', groupby: ['col'], fields: ['labelWidth'], ops: ['max'], as: ['colWidth'] },
-      { type: 'formula', as: 'colTotal', expr: `datum.colWidth + ${LEGEND_ITEM_BASE}` },
+      // ceil the label width to match Vega's per-column Math.ceil, plus a small overhang margin
+      {
+        type: 'formula',
+        as: 'colTotal',
+        expr: `ceil(datum.colWidth) + ${LEGEND_ITEM_BASE + LEGEND_COLUMN_FIT_MARGIN}`,
+      },
       { type: 'aggregate', fields: ['colTotal'], ops: ['sum'], as: ['totalWidth'] },
     ],
   }));
 
-  return [labelWidths, ...fitSources];
+  const sources = [labelWidths, ...fitSources];
+
+  // When wrapping is available, add a per-candidate source that flags whether wrapping to labelWrap
+  // lines at that candidate's fair-share width still truncates any label. `width` is reactive, so
+  // these recompute on resize alongside the fit sources.
+  if (labelWrap && labelWrap > 1) {
+    const wrapFitSources: Data[] = preferredColumns.map((n) => ({
+      name: `${name}_wrapfit_${n}`,
+      source: `${name}_labelWidths`,
+      transform: [
+        {
+          type: 'formula',
+          as: 'truncated',
+          expr: `wrapTruncates(datum.displayLabel, ${getFairShareExpr(n)}, ${labelWrap}, 'normal', ${DEFAULT_FONT_SIZE}) ? 1 : 0`,
+        },
+        { type: 'aggregate', fields: ['truncated'], ops: ['max'], as: ['anyTruncated'] },
+      ],
+    }));
+    sources.push(...wrapFitSources);
+  }
+
+  return sources;
 };
 
 /**
  * Emits the `columns` signal for a `_preferredColumns` legend: walks the candidate list in order and
  * picks the first count that fits at full label width, falling back to the last (smallest) count.
  */
-export const getPreferredColumns = (name: string, preferredColumns: number[]): SignalRef => {
+export const getPreferredColumns = (name: string, preferredColumns: number[], labelWrap?: number): SignalRef => {
+  const useWrap = Boolean(labelWrap && labelWrap > 1);
   const lastValue = preferredColumns[preferredColumns.length - 1];
-  const branches = preferredColumns.map((n) => `${getFitExpr(name, n)} ? ${n}`);
+  const branches = preferredColumns.map((n) => {
+    // With wrapping, a candidate also qualifies if it fits once labels wrap without truncating.
+    const condition = useWrap ? `(${getFitExpr(name, n)} || ${getWrapFitExpr(name, n)})` : getFitExpr(name, n);
+    return `${condition} ? ${n}`;
+  });
   return { signal: `${branches.join(' : ')} : ${lastValue}` };
 };
+
+/**
+ * Raw expression (not wrapped in a SignalRef) for the wrap width of the chosen candidate in a
+ * combined `_preferredColumns` + `_labelWrap` legend. For each candidate: `width` when it fit at full
+ * single-line width (so labels stay on one line), otherwise the candidate's fair-share width. The
+ * last candidate always uses fair-share, allowing truncation. Shared by the label text/dy signals
+ * (via getLegendLabelsEncodings) and the legend labelLimit so all three stay in sync.
+ */
+export const getPreferredWrapWidthExpr = (name: string, preferredColumns: number[]): string => {
+  const lastValue = preferredColumns[preferredColumns.length - 1];
+  const branches = preferredColumns.map((n) => {
+    const qualifies = `(${getFitExpr(name, n)} || ${getWrapFitExpr(name, n)})`;
+    const chosenWidth = `(${getFitExpr(name, n)} ? width : ${getFairShareExpr(n)})`;
+    return `${qualifies} ? ${chosenWidth}`;
+  });
+  return `${branches.join(' : ')} : ${getFairShareExpr(lastValue)}`;
+};
+
+/**
+ * SignalRef wrapper around getPreferredWrapWidthExpr, used for the legend `labelLimit` in combined
+ * `_preferredColumns` + `_labelWrap` mode.
+ */
+export const getPreferredWrapWidth = (name: string, preferredColumns: number[]): SignalRef => ({
+  signal: getPreferredWrapWidthExpr(name, preferredColumns),
+});
 
 /**
  * Emits the `labelLimit` signal for a `_preferredColumns` legend.
@@ -176,9 +261,7 @@ export const getPreferredColumns = (name: string, preferredColumns: number[]): S
  */
 export const getPreferredLabelLimit = (name: string, preferredColumns: number[]): SignalRef => {
   const n = preferredColumns[preferredColumns.length - 1];
-  const interColumnPadding = (n - 1) * DEFAULT_LEGEND_COLUMN_PADDING;
-  const share = `(width - ${interColumnPadding}) / ${n}`;
-  const fairShareLimit = `${share} - ${LEGEND_ITEM_BASE}`;
+  const fairShareLimit = getFairShareExpr(n);
 
   // With a single candidate the last count is the only count, so always use the fair-share limit.
   const nonLastCandidates = preferredColumns.slice(0, -1);
@@ -210,14 +293,18 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
  * @returns
  */
 export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
+  const { name, position, legendLabels, labelLimit, _labelWrap, _preferredColumns } = legendOptions;
   const symbolEncodings = getSymbolEncodings(facets, legendOptions);
   const hoverEncodings = getHoverEncodings(legendOptions, userMeta);
-  const legendLabelsEncodings = getLegendLabelsEncodings(
-    legendOptions.name,
-    legendOptions.legendLabels,
-    legendOptions.labelLimit,
-    legendOptions._labelWrap
-  );
+  // In combined _preferredColumns + _labelWrap mode, wrap labels at the chosen candidate's dynamic
+  // width instead of the static labelLimit so text, dy, and truncation all track the column count.
+  const usePreferredColumns =
+    _preferredColumns !== undefined && _preferredColumns.length > 0 && ['top', 'bottom'].includes(position);
+  const wrapWidthExpr =
+    usePreferredColumns && _labelWrap && _labelWrap > 1
+      ? getPreferredWrapWidthExpr(name, _preferredColumns)
+      : undefined;
+  const legendLabelsEncodings = getLegendLabelsEncodings(name, legendLabels, labelLimit, _labelWrap, wrapWidthExpr);
   const showHideEncodings = getShowHideEncodings(legendOptions);
   const clickEncodings = getClickEncodings(legendOptions);
   // merge the encodings together
@@ -234,15 +321,17 @@ const getLegendLabelsEncodings = (
   name: string,
   legendLabels: LegendLabel[] | undefined,
   labelLimit: number | undefined,
-  _labelWrap: number | undefined
+  _labelWrap: number | undefined,
+  wrapWidthExpr?: string
 ): LegendEncode => {
   if (_labelWrap && _labelWrap > 1) {
     // resolves to the custom legendLabel for the seriesName if one exists, otherwise falls back to the raw value
     const resolvedLabelExpr = legendLabels
       ? `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label : datum.value`
       : 'datum.value';
-    const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
-    const wrappedLinesExpr = `wrapLabelText(${resolvedLabelExpr}, ${effectiveLabelLimit}, ${_labelWrap}, 'normal', ${DEFAULT_FONT_SIZE})`;
+    // With _preferredColumns, wrap at the chosen candidate's dynamic width; otherwise the static labelLimit.
+    const wrapWidth = wrapWidthExpr ?? `${labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT}`;
+    const wrappedLinesExpr = `wrapLabelText(${resolvedLabelExpr}, ${wrapWidth}, ${_labelWrap}, 'normal', ${DEFAULT_FONT_SIZE})`;
     return {
       labels: {
         update: {

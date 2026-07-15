@@ -50,10 +50,10 @@ const legendColumnsLongLabelData = longLabelSeriesNames.flatMap((series, si) =>
 
 // 5 series, three short + two long labels — exercises per-column (align: 'each') sizing
 const longLabel5SeriesNames = [
+  'Conversion Rate From All Marketing Channel Sources',
   'Users',
   'Events',
   'Sessions',
-  'Conversion Rate From All Marketing Channel Sources',
   'Average Revenue Per Paying Customer Account',
 ];
 const legendColumnsLongLabel5Data = longLabel5SeriesNames.flatMap((series, si) =>
@@ -250,6 +250,17 @@ PreferredColumnsLongLabel.args = {
   highlight: true,
 };
 
+// Combined _preferredColumns + _labelWrap: at each candidate, labels wrap (up to _labelWrap lines)
+// to keep that column count before stepping down. Resize wide->narrow to watch 5 full -> 5 wrapped
+// -> 3 wrapped -> 3 truncated.
+const PreferredColumnsWithWrap = bindWithProps(ResizableWithLongLabelPreferred);
+PreferredColumnsWithWrap.args = {
+  _preferredColumns: [5, 3],
+  _labelWrap: 3,
+  align: 'start',
+  highlight: true,
+};
+
 export {
   Basic,
   Descriptions,
@@ -270,4 +281,5 @@ export {
   PreferredColumns5or3,
   PreferredColumnsLadder,
   PreferredColumnsLongLabel,
+  PreferredColumnsWithWrap,
 };

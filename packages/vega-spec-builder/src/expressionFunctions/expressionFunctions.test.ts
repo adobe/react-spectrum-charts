@@ -172,6 +172,34 @@ describe('wrapLabelText()', () => {
   });
 });
 
+describe('wrapTruncates()', () => {
+  const longText =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris.';
+  const shortText = 'Lorem ipsum';
+
+  test('returns false when the text fits within maxLines at maxWidth', () => {
+    expect(expressionFunctions.wrapTruncates(shortText, 200, 3)).toBe(false);
+  });
+
+  test('returns false when the whole text fits on one line at a generous width', () => {
+    expect(expressionFunctions.wrapTruncates(longText, 2000, 2)).toBe(false);
+  });
+
+  test('returns true when the text needs more than maxLines lines', () => {
+    expect(expressionFunctions.wrapTruncates(longText, 30, 2)).toBe(true);
+  });
+
+  test('returns true when a single word is wider than maxWidth', () => {
+    expect(expressionFunctions.wrapTruncates('Supercalifragilisticexpialidocious', 20, 3)).toBe(true);
+  });
+
+  test('agrees with wrapLabelText: truncates exactly when the wrapped result is ellipsized', () => {
+    const lines = expressionFunctions.wrapLabelText(longText, 30, 2);
+    const wasTruncated = lines[lines.length - 1].endsWith('…');
+    expect(expressionFunctions.wrapTruncates(longText, 30, 2)).toBe(wasTruncated);
+  });
+});
+
 describe('formatTimeDurationLabels()', () => {
   const formatDurationsEnUS = formatTimeDurationLabels(numberLocales['en-US']);
   const formatDurationsFrFr = formatTimeDurationLabels(numberLocales['fr-FR']);

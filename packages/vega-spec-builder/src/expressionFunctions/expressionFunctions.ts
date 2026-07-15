@@ -43,6 +43,7 @@ export const getExpressionFunctions = (
     getLabelWidth,
     truncateText,
     wrapLabelText,
+    wrapTruncates,
   };
 };
 
@@ -304,6 +305,46 @@ const wrapLabelText = (
   return lines;
 };
 
+/**
+ * Tests whether wrapping `text` by word into at most `maxLines` lines, each no wider than `maxWidth`,
+ * would require truncation — i.e. some text cannot be shown. Returns `true` when a single word is
+ * wider than `maxWidth`, or when the greedy word-pack needs more than `maxLines` lines. Mirrors
+ * `wrapLabelText`'s greedy packing so the prediction matches the rendered result.
+ * @param text
+ * @param maxWidth
+ * @param maxLines
+ * @param fontWeight
+ * @param fontSize
+ * @returns true if the text would truncate/overflow, false if it fully fits
+ */
+const wrapTruncates = (
+  text: string,
+  maxWidth: number,
+  maxLines: number,
+  fontWeight: FontWeight = 'normal',
+  fontSize: number = 12
+): boolean => {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lineLimit = Math.max(1, Math.floor(maxLines));
+  if (words.length === 0) return false;
+
+  let lineCount = 1;
+  let currentLine = '';
+  for (const word of words) {
+    // a single word wider than the column can never fit on any line → will truncate
+    if (getLabelWidth(word, fontWeight, fontSize) > maxWidth) return true;
+    const candidateLine = currentLine ? `${currentLine} ${word}` : word;
+    if (!currentLine || getLabelWidth(candidateLine, fontWeight, fontSize) <= maxWidth) {
+      currentLine = candidateLine;
+    } else {
+      lineCount++;
+      if (lineCount > lineLimit) return true;
+      currentLine = word;
+    }
+  }
+  return false;
+};
+
 export const expressionFunctions = {
   consoleLog,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
@@ -312,4 +353,5 @@ export const expressionFunctions = {
   getLabelWidth,
   truncateText,
   wrapLabelText,
+  wrapTruncates,
 };

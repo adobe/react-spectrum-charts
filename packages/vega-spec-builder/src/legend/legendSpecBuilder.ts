@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Legend, Mark, Scale, Signal } from 'vega';
+import { Data, Legend, Mark, Scale, Signal, SignalRef } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -226,14 +226,25 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
   // _preferredColumns only applies to horizontal legends, matching getColumns returning undefined for left/right
   const usePreferredColumns =
     _preferredColumns !== undefined && _preferredColumns.length > 0 && ['top', 'bottom'].includes(position);
+  // When both are set, _preferredColumns owns truncation and uses wrapping as a lever; labelLimit
+  // becomes the chosen candidate's dynamic wrap width (see getPreferredWrapWidth).
+  const usePreferredWrap = usePreferredColumns && Boolean(_labelWrap && _labelWrap > 1);
+  let preferredLabelLimit: SignalRef | number | undefined = labelLimit;
+  // In combined mode wrapLabelText already wraps/ellipsizes at the dynamic width, so leave Vega's
+  // labelLimit unlimited (0). Setting it to the fair-share width caused a hairline band where Vega's
+  // text rendering truncated a line our canvas measurement had fit — truncation before wrapping.
+  if (usePreferredWrap) preferredLabelLimit = 0;
+  else if (usePreferredColumns) preferredLabelLimit = getPreferredLabelLimit(name, _preferredColumns as number[]);
   const legend: Legend = {
     fill: `${name}Entries`,
     direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
     orient: position,
     title,
     encode: getEncodings(facets, options, userMeta),
-    columns: usePreferredColumns ? getPreferredColumns(name, _preferredColumns) : getColumns(position, name, labelLimit),
-    labelLimit: usePreferredColumns ? getPreferredLabelLimit(name, _preferredColumns) : labelLimit,
+    columns: usePreferredColumns
+      ? getPreferredColumns(name, _preferredColumns as number[], _labelWrap)
+      : getColumns(position, name, labelLimit),
+    labelLimit: preferredLabelLimit,
   };
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
   if (_labelWrap && _labelWrap > 1) {
@@ -301,7 +312,7 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-  (data, { facets, hiddenEntries, keys, name, position, _preferredColumns }) => {
+  (data, { facets, hiddenEntries, keys, name, position, _preferredColumns, _labelWrap }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
     data.push({
@@ -348,7 +359,7 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
     // When _preferredColumns is set on a horizontal legend, emit the per-candidate fit data sources
     // that the columns/labelLimit signals use to pick the largest count that fits without truncation.
     if (_preferredColumns?.length && ['top', 'bottom'].includes(position)) {
-      data.push(...getPreferredColumnsData(name, _preferredColumns));
+      data.push(...getPreferredColumnsData(name, _preferredColumns, _labelWrap));
     }
 
     if (keys?.length) {

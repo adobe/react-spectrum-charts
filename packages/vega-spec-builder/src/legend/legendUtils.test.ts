@@ -23,6 +23,7 @@ import {
   getPreferredColumns,
   getPreferredColumnsData,
   getPreferredLabelLimit,
+  getPreferredWrapWidth,
   getSymbolEncodings,
   getSymbolType,
   mergeLegendEncodings,
@@ -183,6 +184,13 @@ const getExpectedFitExpr = (name: string, n: number) => {
   return `length(data('${name}_fit_${n}')) > 0 && (data('${name}_fit_${n}')[0].totalWidth + ${interColumnPadding} <= width)`;
 };
 
+// Mirrors getWrapFitExpr in legendUtils.ts
+const getExpectedWrapFitExpr = (name: string, n: number) =>
+  `length(data('${name}_wrapfit_${n}')) > 0 && data('${name}_wrapfit_${n}')[0].anyTruncated === 0`;
+
+// Mirrors getFairShareExpr in legendUtils.ts: 22 = 18 swatch + 4 labelOffset
+const getExpectedFairShare = (n: number) => `(width - ${(n - 1) * DEFAULT_LEGEND_COLUMN_PADDING}) / ${n} - 22`;
+
 describe('getPreferredColumns()', () => {
   test('should chain candidates in order and fall back to the last value', () => {
     expect(getPreferredColumns('legend0', [5, 3])).toEqual({
@@ -193,6 +201,33 @@ describe('getPreferredColumns()', () => {
   test('should use the legend name in the data reference', () => {
     expect(getPreferredColumns('myLegend', [4])).toEqual({
       signal: `${getExpectedFitExpr('myLegend', 4)} ? 4 : 4`,
+    });
+  });
+
+  test('should also accept a candidate that fits once wrapped when labelWrap is set', () => {
+    expect(getPreferredColumns('legend0', [5, 3], 2)).toEqual({
+      signal:
+        `(${getExpectedFitExpr('legend0', 5)} || ${getExpectedWrapFitExpr('legend0', 5)}) ? 5 : ` +
+        `(${getExpectedFitExpr('legend0', 3)} || ${getExpectedWrapFitExpr('legend0', 3)}) ? 3 : 3`,
+    });
+  });
+
+  test('should not add wrap conditions when labelWrap is 1 or less', () => {
+    expect(getPreferredColumns('legend0', [5, 3], 1)).toEqual({
+      signal: `${getExpectedFitExpr('legend0', 5)} ? 5 : ${getExpectedFitExpr('legend0', 3)} ? 3 : 3`,
+    });
+  });
+});
+
+describe('getPreferredWrapWidth()', () => {
+  test('should wrap at full width when a candidate fits unwrapped, else its fair-share width', () => {
+    expect(getPreferredWrapWidth('legend0', [5, 3])).toEqual({
+      signal:
+        `(${getExpectedFitExpr('legend0', 5)} || ${getExpectedWrapFitExpr('legend0', 5)}) ? ` +
+        `(${getExpectedFitExpr('legend0', 5)} ? width : ${getExpectedFairShare(5)}) : ` +
+        `(${getExpectedFitExpr('legend0', 3)} || ${getExpectedWrapFitExpr('legend0', 3)}) ? ` +
+        `(${getExpectedFitExpr('legend0', 3)} ? width : ${getExpectedFairShare(3)}) : ` +
+        `${getExpectedFairShare(3)}`,
     });
   });
 });
@@ -242,13 +277,42 @@ describe('getPreferredColumnsData()', () => {
       ops: ['max'],
       as: ['colWidth'],
     });
-    // per-column chrome: 18 swatch + 4 labelOffset
-    expect(fit5.transform).toContainEqual({ type: 'formula', as: 'colTotal', expr: 'datum.colWidth + 22' });
+    // per-column chrome: 18 swatch + 4 labelOffset + 2 fit margin, label width ceiled to match Vega
+    expect(fit5.transform).toContainEqual({ type: 'formula', as: 'colTotal', expr: 'ceil(datum.colWidth) + 24' });
     expect(fit5.transform).toContainEqual({
       type: 'aggregate',
       fields: ['colTotal'],
       ops: ['sum'],
       as: ['totalWidth'],
     });
+  });
+
+  test('should not emit wrapfit sources when labelWrap is absent', () => {
+    const data = getPreferredColumnsData('legend0', [5, 3]);
+    expect(data.some((d) => d.name.includes('_wrapfit_'))).toBe(false);
+  });
+
+  test('should emit one wrapfit source per candidate when labelWrap > 1', () => {
+    const data = getPreferredColumnsData('legend0', [5, 3], 2);
+    expect(data.map((d) => d.name)).toEqual([
+      'legend0_labelWidths',
+      'legend0_fit_5',
+      'legend0_fit_3',
+      'legend0_wrapfit_5',
+      'legend0_wrapfit_3',
+    ]);
+  });
+
+  test('should flag any label truncating after wrapping at the candidate fair-share width', () => {
+    const data = getPreferredColumnsData('legend0', [5, 3], 2);
+    const wrapfit5 = data.find((d) => d.name === 'legend0_wrapfit_5');
+    expect(wrapfit5?.transform).toEqual([
+      {
+        type: 'formula',
+        as: 'truncated',
+        expr: `wrapTruncates(datum.displayLabel, ${getExpectedFairShare(5)}, 2, 'normal', 14) ? 1 : 0`,
+      },
+      { type: 'aggregate', fields: ['truncated'], ops: ['max'], as: ['anyTruncated'] },
+    ]);
   });
 });

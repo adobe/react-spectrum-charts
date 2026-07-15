@@ -350,6 +350,31 @@ describe('addLegend()', () => {
       expect(addLegend(defaultSpec, { _labelWrap: 1 }).legends?.[0].encode).toStrictEqual(defaultLegend.encode);
     });
 
+    test('should set labelLimit to 0 when both _preferredColumns and _labelWrap are provided', () => {
+      const legend = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0];
+      expect(legend?.labelLimit).toBe(0);
+    });
+
+    test('should use fit-or-wrap branches for columns when both _preferredColumns and _labelWrap are provided', () => {
+      const legend = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0];
+      expect((legend?.columns as { signal: string }).signal).toContain("data('legend0_wrapfit_5')");
+    });
+
+    test('should wrap labels at the dynamic preferred wrap width when both _preferredColumns and _labelWrap are provided', () => {
+      const text = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0].encode?.labels
+        ?.update?.text as { signal: string };
+      // dynamic width references the fit/wrapfit data sources rather than the static labelLimit
+      expect(text.signal.startsWith('wrapLabelText(datum.value, ')).toBe(true);
+      expect(text.signal).toContain("data('legend0_wrapfit_5')");
+    });
+
+    test('should emit wrapfit data sources when both _preferredColumns and _labelWrap are provided', () => {
+      const data = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).data;
+      expect(data?.map((d) => d.name)).toEqual(
+        expect.arrayContaining(['legend0_wrapfit_5', 'legend0_wrapfit_3'])
+      );
+    });
+
     test('should add titleLimit if provided', () => {
       const legendSpec = addLegend(defaultSpec, {
         descriptions: [{ seriesName: 'test', description: 'test' }],
