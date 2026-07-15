@@ -29,8 +29,10 @@ import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
+  DEFAULT_METRIC,
   FILTERED_TABLE,
   HIGHLIGHTED_GROUP,
   LINEAR_COLOR_SCALE,
@@ -54,6 +56,7 @@ import { colorSchemes, getS2ColorValue } from '@spectrum-charts/themes';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
+import { DivergingBarContext } from './axis/axisUtils';
 import { addBar } from './bar/barSpecBuilder';
 import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
@@ -76,6 +79,7 @@ import {
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
 import {
+  BarOptions,
   ChartColors,
   ChartOptions,
   ChartSpecOptions,
@@ -86,11 +90,66 @@ import {
   LineType,
   LineTypes,
   LineWidth,
+  MarkOptions,
   Opacities,
+  Position,
   ScSpec,
   SymbolShapes,
   SymbolSize,
 } from './types';
+
+/**
+ * When a chart has exactly one bar mark, every category maps to rows that agree in sign, and the
+ * given axis position is that bar's dimension axis, returns the context `diverging` needs to look
+ * up each category's paired bar value.
+ *
+ * A category is only ambiguous when its rows *disagree* in sign (e.g. "New"/"Churned" per month —
+ * one row positive, one negative) — there, the sign lookup would arbitrarily pick whichever row
+ * comes first and silently mislabel the rest, so `diverging` falls back to default axis positioning
+ * (the axis stays at the chart edge, same as if `diverging` were never set) instead of guessing.
+ *
+ * A category with multiple rows that all share the same sign (e.g. a dodged "This Year"/"Last
+ * Year" comparison where both periods grew, or both declined) isn't ambiguous — every row agrees,
+ * so the lookup is correct regardless of which row it finds, and the empty side of zero really is
+ * empty for that category. Those categories don't block `diverging` from activating.
+ */
+const getDivergingBarContext = (
+  marks: MarkOptions[],
+  data: ChartOptions['data'],
+  position: Position
+): DivergingBarContext | undefined => {
+  const barMarks = marks.filter((mark): mark is BarOptions => mark.markType === 'bar');
+  if (barMarks.length !== 1) return undefined;
+
+  const [bar] = barMarks;
+  const dimensionAxisIsVertical = bar.orientation === 'horizontal';
+  const axisIsVertical = position === 'left' || position === 'right';
+  if (axisIsVertical !== dimensionAxisIsVertical) return undefined;
+
+  const dimension = bar.dimension ?? DEFAULT_CATEGORICAL_DIMENSION;
+  const metric = bar.metric ?? DEFAULT_METRIC;
+
+  const hasPositiveByCategory = new Set<unknown>();
+  const hasNegativeByCategory = new Set<unknown>();
+  for (const datum of data ?? []) {
+    if (typeof datum !== 'object' || datum === null || !(dimension in datum) || !(metric in datum)) continue;
+    const category = (datum as Record<string, unknown>)[dimension];
+    const value = (datum as Record<string, unknown>)[metric];
+    if (typeof value !== 'number') continue;
+    if (value < 0) hasNegativeByCategory.add(category);
+    if (value > 0) hasPositiveByCategory.add(category);
+  }
+  const hasCategoryWithConflictingSigns = [...hasPositiveByCategory].some((category) =>
+    hasNegativeByCategory.has(category)
+  );
+  if (hasCategoryWithConflictingSigns) return undefined;
+
+  return {
+    dataName: FILTERED_TABLE,
+    dimension,
+    metric,
+  };
+};
 import { addVenn } from './venn/vennSpecBuilder';
 
 export function buildSpec({
@@ -195,10 +254,12 @@ export function buildSpec({
   }, spec);
 
   spec = [...axes].reduce((acc: ScSpec, axis, index) => {
+    const divergingContext = axis.diverging ? getDivergingBarContext(marks, data, axis.position) : undefined;
     return addAxis(acc, {
       ...axis,
       ...specOptions,
       index,
+      divergingContext,
     });
   }, spec);
 

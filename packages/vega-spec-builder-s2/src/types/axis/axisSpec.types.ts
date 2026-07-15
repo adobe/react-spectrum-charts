@@ -64,6 +64,17 @@ export interface AxisOptions {
    * If baseline is drawn relative to a categorical axis, this prop is ignored
    */
   baselineOffset?: number;
+  /**
+   * For a categorical axis whose opposing scale is linear and diverging (has both positive and
+   * negative values): repositions the whole axis (ticks, labels, domain line) to sit at the zero
+   * baseline instead of the chart edge, and flips each label to the side opposite its bar's
+   * direction (so it never overlaps the bar).
+   *
+   * Only takes effect when the chart has exactly one bar mark and this axis is that bar's
+   * dimension axis. Charts with multiple series per category (e.g. two bars diverging from the
+   * same category) aren't supported — the label falls back to default positioning in that case.
+   */
+  diverging?: boolean;
 
   /** Sets the granularity of the primary axis labels for time axis. If this axis is not for a time axis, this prop is ignored. */
   granularity?: Granularity;
