@@ -45,7 +45,7 @@ const mockSeriesFill = { scale: 'color', field: 'series' };
 describe('getBarDirectLabelPositionEncodings()', () => {
   describe('end-outside', () => {
     it('vertical: offsets label away from bar tip, fill uses series color', () => {
-      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end-outside', true, 'value', 'y', mockSeriesFill);
+      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end-outside', true, 'value', 'y', mockSeriesFill, "format(datum['value'], ',.2~f')");
       expect(Array.isArray(metricAxisEncoding)).toBe(true);
       const [neg, pos] = metricAxisEncoding as { offset: number }[];
       expect(neg.offset).toBeGreaterThan(0); // negative bar: label below
@@ -54,7 +54,7 @@ describe('getBarDirectLabelPositionEncodings()', () => {
     });
 
     it('horizontal: offsets label away from bar tip, fill uses series color', () => {
-      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end-outside', false, 'value', 'x', mockSeriesFill);
+      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end-outside', false, 'value', 'x', mockSeriesFill, "format(datum['value'], ',.2~f')");
       expect(Array.isArray(metricAxisEncoding)).toBe(true);
       const [neg, pos] = metricAxisEncoding as { offset: number }[];
       expect(neg.offset).toBeLessThan(0); // negative bar: label to the left
@@ -63,7 +63,7 @@ describe('getBarDirectLabelPositionEncodings()', () => {
     });
 
     it('baseline points away from bar (top for negative, bottom for positive)', () => {
-      const { verticalBaseline } = getBarDirectLabelPositionEncodings('end-outside', true, 'value', 'y', mockSeriesFill);
+      const { verticalBaseline } = getBarDirectLabelPositionEncodings('end-outside', true, 'value', 'y', mockSeriesFill, "format(datum['value'], ',.2~f')");
       expect(Array.isArray(verticalBaseline)).toBe(true);
       const [neg, pos] = verticalBaseline as { value: string }[];
       expect(neg.value).toBe('top');
@@ -73,7 +73,7 @@ describe('getBarDirectLabelPositionEncodings()', () => {
 
   describe('end', () => {
     it('vertical: offsets label inward from bar tip, fill uses background color', () => {
-      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill);
+      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill, "format(datum['value'], ',.2~f')");
       expect(Array.isArray(metricAxisEncoding)).toBe(true);
       const [neg, pos] = metricAxisEncoding as { offset: number }[];
       expect(neg.offset).toBeLessThan(0); // negative bar: label offset upward (inward)
@@ -82,14 +82,14 @@ describe('getBarDirectLabelPositionEncodings()', () => {
     });
 
     it('baseline points toward bar interior (bottom for negative, top for positive)', () => {
-      const { verticalBaseline } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill);
+      const { verticalBaseline } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill, "format(datum['value'], ',.2~f')");
       const [neg, pos] = verticalBaseline as { value: string }[];
       expect(neg.value).toBe('bottom');
       expect(pos.value).toBe('top');
     });
 
     it('anchors to the bar tip (field: metric)', () => {
-      const { metricAxisEncoding } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill);
+      const { metricAxisEncoding } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill, "format(datum['value'], ',.2~f')");
       const [, pos] = metricAxisEncoding as { field?: string }[];
       expect(pos.field).toBe('value');
     });
@@ -97,7 +97,7 @@ describe('getBarDirectLabelPositionEncodings()', () => {
 
   describe('start', () => {
     it('anchors to the bar baseline (value: 0), fill uses background color', () => {
-      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('start', true, 'value', 'y', mockSeriesFill);
+      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('start', true, 'value', 'y', mockSeriesFill, "format(datum['value'], ',.2~f')");
       expect(Array.isArray(metricAxisEncoding)).toBe(true);
       const [, pos] = metricAxisEncoding as { value?: number; field?: string }[];
       expect(pos.value).toBe(0);
@@ -106,7 +106,7 @@ describe('getBarDirectLabelPositionEncodings()', () => {
     });
 
     it('baseline points away from baseline edge (same as end-outside)', () => {
-      const { verticalBaseline } = getBarDirectLabelPositionEncodings('start', true, 'value', 'y', mockSeriesFill);
+      const { verticalBaseline } = getBarDirectLabelPositionEncodings('start', true, 'value', 'y', mockSeriesFill, "format(datum['value'], ',.2~f')");
       const [neg, pos] = verticalBaseline as { value: string }[];
       expect(neg.value).toBe('top');
       expect(pos.value).toBe('bottom');
@@ -115,7 +115,7 @@ describe('getBarDirectLabelPositionEncodings()', () => {
 
   describe('middle', () => {
     it('returns a signal expression for the midpoint, fill uses background color', () => {
-      const { metricAxisEncoding, seriesFill, verticalBaseline, horizontalAlign } = getBarDirectLabelPositionEncodings('middle', true, 'value', 'y', mockSeriesFill);
+      const { metricAxisEncoding, seriesFill, verticalBaseline, horizontalAlign } = getBarDirectLabelPositionEncodings('middle', true, 'value', 'y', mockSeriesFill, "format(datum['value'], ',.2~f')");
       expect(metricAxisEncoding).toHaveProperty('signal');
       expect((metricAxisEncoding as { signal: string }).signal).toContain("scale('y', 0)");
       expect((metricAxisEncoding as { signal: string }).signal).toContain("datum['value']");

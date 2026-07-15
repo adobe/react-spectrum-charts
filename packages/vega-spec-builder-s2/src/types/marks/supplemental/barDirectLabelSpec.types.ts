@@ -10,13 +10,15 @@
  * governing permissions and limitations under the License.
  */
 import { ColorScheme } from '../../chartSpec.types';
-import { ColorFacet, Orientation } from '../../specUtil.types';
+import { ColorFacet, NumberFormat, Orientation } from '../../specUtil.types';
 import { DualFacet } from '../barSpec.types';
 
 export type BarDirectLabelPositionType = 'start' | 'middle' | 'end' | 'end-outside';
 
 export interface BarDirectLabelOptions {
   position?: BarDirectLabelPositionType;
+  /** d3-format specifier (or 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber') for the label text. Defaults to ',.2~f'. */
+  numberFormat?: NumberFormat;
 }
 
 export interface BarDirectLabelSpecOptions extends BarDirectLabelOptions {
@@ -28,6 +30,7 @@ export interface BarDirectLabelSpecOptions extends BarDirectLabelOptions {
   index: number;
   metric: string;
   metricAxis?: string;
+  numberFormat: NumberFormat;
   orientation: Orientation;
   position: BarDirectLabelPositionType;
 }

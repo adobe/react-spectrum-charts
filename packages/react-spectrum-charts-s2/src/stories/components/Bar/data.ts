@@ -100,6 +100,155 @@ export const mixedBarData = [
   { browser: 'Explorer', downloads: -500 },
 ];
 
+/**
+ * Diverging conversion-rate-change data matching the AN-456581 Figma reference.
+ * Note: the reference design shows "FB Stories" for both a positive and a negative row; renamed
+ * the negative one to "FB Post" here since a band scale needs a unique dimension value per row.
+ */
+export const divergingConversionRateData = [
+  { channel: 'IG Stories', changeRate: 0.131, barColor: '#2d7d46' },
+  { channel: 'IG Reels', changeRate: 0.082, barColor: '#2d7d46' },
+  { channel: 'FB Stories', changeRate: 0.013, barColor: '#2d7d46' },
+  { channel: 'FB Video', changeRate: 0.008, barColor: '#2d7d46' },
+  { channel: 'FB Post', changeRate: -0.01, barColor: '#d7373f' },
+  { channel: 'FB Reels', changeRate: -0.029, barColor: '#d7373f' },
+];
+
+/** Same values as divergingConversionRateData, with long category names to check label truncation/collision. */
+export const divergingConversionRateDataLongLabels = [
+  { channel: 'Instagram Stories Advertisement Campaign', changeRate: 0.131, barColor: '#2d7d46' },
+  { channel: 'Instagram Reels Sponsored Content', changeRate: 0.082, barColor: '#2d7d46' },
+  { channel: 'Facebook Stories Organic Posts', changeRate: 0.013, barColor: '#2d7d46' },
+  { channel: 'Facebook Video Advertisement Placement', changeRate: 0.008, barColor: '#2d7d46' },
+  { channel: 'Facebook Post Boosted Content', changeRate: -0.01, barColor: '#d7373f' },
+  { channel: 'Facebook Reels Sponsored Video Content', changeRate: -0.029, barColor: '#d7373f' },
+];
+
+/**
+ * Regression-guard data: two dodged series per category ("New" and "Churned"), each category
+ * diverging in opposite directions — the population-pyramid-style shape a single `<Bar>` mark
+ * can't unambiguously assign a sign to. `getDivergingBarContext` detects the multiple rows per
+ * category and safely declines to activate `diverging` here, rather than guessing.
+ */
+export const dualSeriesDivergingData = [
+  { channel: 'IG Stories', series: 'New', changeRate: 0.131 },
+  { channel: 'IG Stories', series: 'Churned', changeRate: -0.045 },
+  { channel: 'IG Reels', series: 'New', changeRate: 0.082 },
+  { channel: 'IG Reels', series: 'Churned', changeRate: -0.061 },
+  { channel: 'FB Stories', series: 'New', changeRate: 0.013 },
+  { channel: 'FB Stories', series: 'Churned', changeRate: -0.09 },
+];
+
+/**
+ * Regression-guard data matching a real-world "monthly growth cohorts" chart: a stacked vertical
+ * bar with New/Retained/Returned stacked above zero and Churned stacked below, per month. Every
+ * month has multiple rows (one per series), so `getDivergingBarContext` declines here too — the
+ * expected convention for this chart shape keeps the month axis at the bottom edge and only draws
+ * a zero-gridline through the middle (via plain `baseline`), rather than moving the axis itself.
+ */
+export const stackedCohortData = [
+  { month: 'Oct 2024', series: 'New', users: 1700 },
+  { month: 'Oct 2024', series: 'Retained', users: 1000 },
+  { month: 'Oct 2024', series: 'Returned', users: 500 },
+  { month: 'Oct 2024', series: 'Churned', users: -1500 },
+  { month: 'Nov', series: 'New', users: 1000 },
+  { month: 'Nov', series: 'Retained', users: 800 },
+  { month: 'Nov', series: 'Returned', users: 400 },
+  { month: 'Nov', series: 'Churned', users: -2700 },
+  { month: 'Dec', series: 'New', users: 1200 },
+  { month: 'Dec', series: 'Retained', users: 900 },
+  { month: 'Dec', series: 'Returned', users: 400 },
+  { month: 'Dec', series: 'Churned', users: -1700 },
+  { month: 'Jan 2025', series: 'New', users: 1400 },
+  { month: 'Jan 2025', series: 'Retained', users: 1000 },
+  { month: 'Jan 2025', series: 'Returned', users: 800 },
+  { month: 'Jan 2025', series: 'Churned', users: -1500 },
+  { month: 'Feb', series: 'New', users: 1500 },
+  { month: 'Feb', series: 'Retained', users: 1100 },
+  { month: 'Feb', series: 'Returned', users: 900 },
+  { month: 'Feb', series: 'Churned', users: -1300 },
+  { month: 'Mar', series: 'New', users: 1700 },
+  { month: 'Mar', series: 'Retained', users: 1300 },
+  { month: 'Mar', series: 'Returned', users: 1000 },
+  { month: 'Mar', series: 'Churned', users: -1200 },
+];
+
+/**
+ * Regression-guard data matching a Likert-scale survey chart: a horizontal stacked bar per
+ * concept, with "Strongly Negative"/"Negative" stacked left of zero and "Neutral"/"Positive"/
+ * "Strongly Positive" stacked right of it — the same mixed-sign-rows-per-category shape as
+ * `stackedCohortData`, just horizontal and with two negative-going series instead of one.
+ * `getDivergingBarContext` declines here too; the concept axis stays at the left edge.
+ */
+export const likertSurveyData = [
+  { concept: 'Concept 1', response: 'Strongly Negative', order: 0, value: -10, barColor: '#7a2e0e' },
+  { concept: 'Concept 1', response: 'Negative', order: 1, value: -25, barColor: '#e2711d' },
+  { concept: 'Concept 1', response: 'Neutral', order: 2, value: 20, barColor: '#ffc93c' },
+  { concept: 'Concept 1', response: 'Positive', order: 3, value: 15, barColor: '#1f9c8a' },
+  { concept: 'Concept 1', response: 'Strongly Positive', order: 4, value: 10, barColor: '#0b4f4a' },
+  { concept: 'Concept 2', response: 'Strongly Negative', order: 0, value: -8, barColor: '#7a2e0e' },
+  { concept: 'Concept 2', response: 'Negative', order: 1, value: -7, barColor: '#e2711d' },
+  { concept: 'Concept 2', response: 'Neutral', order: 2, value: 45, barColor: '#ffc93c' },
+  { concept: 'Concept 2', response: 'Positive', order: 3, value: 25, barColor: '#1f9c8a' },
+  { concept: 'Concept 2', response: 'Strongly Positive', order: 4, value: 5, barColor: '#0b4f4a' },
+  { concept: 'Concept 3', response: 'Strongly Negative', order: 0, value: -2, barColor: '#7a2e0e' },
+  { concept: 'Concept 3', response: 'Negative', order: 1, value: -3, barColor: '#e2711d' },
+  { concept: 'Concept 3', response: 'Neutral', order: 2, value: 15, barColor: '#ffc93c' },
+  { concept: 'Concept 3', response: 'Positive', order: 3, value: 45, barColor: '#1f9c8a' },
+  { concept: 'Concept 3', response: 'Strongly Positive', order: 4, value: 30, barColor: '#0b4f4a' },
+];
+
+/**
+ * Open-question demo data: a year-over-year revenue-change comparison, dodged by "This Year" vs
+ * "Last Year." Two rows per category (like `dualSeriesDivergingData`), but here every category's
+ * rows *agree* in sign — Product A/B are positive both years (growing), Product C/D are negative
+ * both years (declining). Unlike the population-pyramid case, there's no real ambiguity here: the
+ * empty side of zero for each category is genuinely empty regardless of which row the lookup
+ * happens to find first. The current rows-per-category guard still declines `diverging` for this
+ * chart, which is the "too conservative" question — see #2 in the diverging open-questions list.
+ */
+export const sameSignDodgedData = [
+  { product: 'Product A', period: 'This Year', changeRate: 0.15 },
+  { product: 'Product A', period: 'Last Year', changeRate: 0.08 },
+  { product: 'Product B', period: 'This Year', changeRate: 0.05 },
+  { product: 'Product B', period: 'Last Year', changeRate: 0.03 },
+  { product: 'Product C', period: 'This Year', changeRate: -0.12 },
+  { product: 'Product C', period: 'Last Year', changeRate: -0.18 },
+  { product: 'Product D', period: 'This Year', changeRate: -0.03 },
+  { product: 'Product D', period: 'Last Year', changeRate: -0.01 },
+];
+
+/**
+ * Verification data for `labelFormat="time"` + `diverging` (single series, mixed sign, monthly
+ * granularity) — checked safe via buildSpec/vega.parse before adding this story: no crash, and
+ * (for the vertical-bar/bottom-axis case) the primary+secondary time axis pair both get the same
+ * offset and an identical flip encode, since their row separation is a static `dy`, not
+ * `labelPadding`-based like sub-labels.
+ */
+export const timeAxisDivergingData = [
+  { day: '2024-11-15 00:00:00.0', changeRate: 0.131 },
+  { day: '2024-12-20 00:00:00.0', changeRate: 0.082 },
+  { day: '2025-01-10 00:00:00.0', changeRate: -0.01 },
+  { day: '2025-02-05 00:00:00.0', changeRate: -0.05 },
+];
+
+/**
+ * Trellis demo data: single series per category, sign consistent for a given channel across both
+ * panels (IG Stories always positive, FB Post/FB Reels always negative) — isolates the confirmed
+ * plumbing gap (`divergingContext` never reaches `addAxesToTrellisGroup`'s per-panel axes) from the
+ * separate global-vs-per-panel sign-scoping question.
+ */
+export const trellisDivergingData = [
+  { region: 'Region A', channel: 'IG Stories', changeRate: 0.131 },
+  { region: 'Region A', channel: 'IG Reels', changeRate: 0.082 },
+  { region: 'Region A', channel: 'FB Post', changeRate: -0.01 },
+  { region: 'Region A', channel: 'FB Reels', changeRate: -0.029 },
+  { region: 'Region B', channel: 'IG Stories', changeRate: 0.05 },
+  { region: 'Region B', channel: 'IG Reels', changeRate: 0.03 },
+  { region: 'Region B', channel: 'FB Post', changeRate: -0.02 },
+  { region: 'Region B', channel: 'FB Reels', changeRate: -0.04 },
+];
+
 export const barDataTwoSeries = [
   { browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
   { browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },

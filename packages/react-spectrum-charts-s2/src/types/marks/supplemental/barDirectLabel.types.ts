@@ -11,18 +11,28 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
+import { NumberFormat } from '@spectrum-charts/vega-spec-builder-s2';
+
 export type BarDirectLabelPosition = 'start' | 'middle' | 'end' | 'end-outside';
 
 export interface BarDirectLabelProps {
   /**
    * Where to place the label relative to the bar.
-   * - 'end-outside': outside the bar tip (default)
+   * - 'end-outside': outside the bar tip (default). Adaptive — renders inside the bar
+   *   (background-color fill) when there's room for the label, otherwise outside the tip
+   *   (series-color fill).
    * - 'end': inside the bar, 8px from the tip
    * - 'middle': centered within the bar
    * - 'start': inside the bar, 8px from the baseline edge
    * @default 'end-outside'
    */
   position?: BarDirectLabelPosition;
+  /**
+   * d3-format specifier for the label text (e.g. `,.1%` for percentages), or one of
+   * 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber'.
+   * @default ',.2~f'
+   */
+  numberFormat?: NumberFormat;
 }
 
 export type BarDirectLabelElement = ReactElement<
