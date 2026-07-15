@@ -90,4 +90,6 @@ export interface LineMarkOptions {
   alternateSegmentLabel?: string;
   primarySeries?: number | string[];
   otherSeriesColor?: string;
+  /** Resolved in addLine: whether this line uses the hover-animation system (see usesHoverAnimation). */
+  isAnimate?: boolean;
 }

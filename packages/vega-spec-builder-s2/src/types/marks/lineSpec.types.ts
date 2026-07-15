@@ -11,7 +11,7 @@
  */
 import { INTERACTION_MODE } from '@spectrum-charts/constants';
 
-import { ColorScheme, HighlightedItem } from '../chartSpec.types';
+import { ChartData, ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
@@ -157,6 +157,10 @@ type LineOptionsWithDefaults =
   | 'trendlines';
 
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
+  data?: ChartData[];
+  seriesIds?: string[];
+  /** Resolved in addLine: whether this line uses the hover-animation system (see usesHoverAnimation). */
+  isAnimate?: boolean;
   backgroundColor?: string;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];

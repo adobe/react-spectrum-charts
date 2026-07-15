@@ -34,13 +34,14 @@ import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '.
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
-import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import { addHoverAnimationSignals, getHoverAnimStateData, getHoverFractionData, getHoverTargetData } from '../marks/hoverAnimationUtils';
+import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
 import { getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, getLineForecastBoundaryMark, getLineForecastLabelMarks, getLineForecastSpecOptions } from '../lineForecast';
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
-import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
-import { getHoverLabelData, getLineHighlightedData, getLineStaticPointData, getPrimarySeriesFacetData, getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { ChartData, ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
+import { getHoverLabelData, getLineHighlightedData, getLineStaticPointData, getPrimarySeriesFacetData, getPrimarySeriesOtherExpr, getLineHoverRules } from './lineDataUtils';
 import { getHighlightedSeriesOpacityRules, getLineGradientMark, getLineHighlightOverlayGroup, getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
@@ -49,17 +50,20 @@ export const addLine = produce<
   ScSpec,
   [
     LineOptions & {
+      animations?: boolean;
       colorScheme?: ColorScheme;
       highlightedItem?: HighlightedItem;
       index?: number;
       idKey: string;
       comboSiblingNames?: string[];
+      data?: ChartData[];
     }
   ]
 >(
   (
     spec,
     {
+      animations,
       chartPopovers = [],
       chartInspects = [],
       color = { value: 'categorical-100' },
@@ -90,12 +94,15 @@ export const addLine = produce<
       otherSeriesColor,
       showHoverLabel = true,
       dimensionHover = false,
+      data,
       ...options
-    }
+    },
   ) => {
     const lineName = toCamelCase(name || `line${index}`);
     // ChartInspect owns the hover story when present — suppress the hover value label
     const effectiveShowHoverLabel = chartInspects.length > 0 ? false : showHoverLabel;
+    const { facets } = getFacetsFromOptions({ color, lineType, opacity });
+    const seriesIds = getUniqueSeriesIds(data, facets);
     // put options back together now that all defaults are set
     const lineOptions: LineSpecOptions = {
       chartPopovers,
@@ -141,11 +148,18 @@ export const addLine = produce<
       otherSeriesColor,
       showHoverLabel: effectiveShowHoverLabel,
       dimensionHover,
+      seriesIds,
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
+    // Chart-level `animations` (default on) can force the whole line onto the original production-rule
+    // system; otherwise it animates when the line has any hover/highlight interaction.
+    lineOptions.isAnimate = animations !== false && usesHoverAnimation(lineOptions);
 
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
+    if (lineOptions.isAnimate) {
+      spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
+    }
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = setScales(spec.scales ?? [], lineOptions);
@@ -155,27 +169,55 @@ export const addLine = produce<
   }
 );
 
-export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { alternateSegmentKey, chartInspects, dimension, dimensionHover, forecasts, highlightedItem, isSparkline, isMethodLast, metric, name, scaleType, primarySeries, staticPoint } =
-    options;
-  const tableData = getTableData(data);
-  if (scaleType === 'time') {
-    tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-  }
+/**
+ * Whether the line participates in the hover-animation system — i.e. whether it creates hover data
+ * sources, the timer signal, registers itself in `animatedMarks`, and uses the animated mark encodings.
+ * Computed once in `addLine` and stored on `options.isAnimate`; every downstream gate reads that
+ * resolved boolean so the data sources and the encodings that reference them stay in lockstep. A
+ * highlight legend counts (via legendHighlightSignals) so both the legend and the line animate.
+ */
+const usesHoverAnimation = (options: LineSpecOptions): boolean =>
+  isInteractive(options) ||
+  options.highlightedItem !== undefined ||
+  (options.legendHighlightSignals?.length ?? 0) > 0;
+
+const getUniqueSeriesIds = (data: ChartData[] | undefined, facets: string[]): string[] => {
+  if (!data?.length || !facets.length) return [];
+  return [...new Set(
+    data.map(row => facets.map(f => (row as Record<string, unknown>)[f]).join(' | '))
+  )];
+};
+
+/**
+ * Adds the groupId transform used by dimensionHover, unless a ChartInspect is already grouping by dimension.
+ */
+const addDimensionHoverGroupTransform = (
+  tableData: Data,
+  chartInspects: LineSpecOptions['chartInspects'],
+  dimensionHover: boolean,
+  dimension: string,
+  name: string
+): void => {
   const inspectAlreadyGroupsByDimension = chartInspects.some(({ highlightBy }) => highlightBy === 'dimension');
-  if (dimensionHover && !inspectAlreadyGroupsByDimension) {
-    tableData.transform = tableData.transform ?? [];
-    tableData.transform.push(getGroupIdTransform([dimension], name));
-  }
+  if (!dimensionHover || inspectAlreadyGroupsByDimension) return;
+  tableData.transform = tableData.transform ?? [];
+  tableData.transform.push(getGroupIdTransform([dimension], name));
+};
+
+/**
+ * Adds the data sources for whichever segmenting feature is in use: alternate segments, forecasts,
+ * or a primary series facet. These are mutually exclusive, hence the if/else-if chain.
+ */
+const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions): void => {
+  const { alternateSegmentKey, dimension, forecasts, metric, name, primarySeries, scaleType } = options;
+  // time data was transformed above, so we need to use the transformed dimension
+  const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
   if (alternateSegmentKey) {
     tableData.transform = tableData.transform ?? [];
     tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
-    // time data was transformed above, so we need to use the transformed dimension
-    const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
     data.push(...getAlternateSegmentData(name, dimSortField));
   } else if (forecasts.length > 0) {
     tableData.transform = tableData.transform ?? [];
-    const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
     tableData.transform.push(
       getForecastAlternateFlagTransform(name, dimension, forecasts[0].start),
       getForecastEffectiveValueTransform(name, metric, forecasts[0].metric)
@@ -184,15 +226,43 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   } else if (primarySeries) {
     data.push(getPrimarySeriesFacetData(name, primarySeries));
   }
+};
+
+/**
+ * Adds the hover-label/highlight data sources for interactive or highlighted lines, plus the
+ * hover-animation engine's data sources when the line is animated.
+ */
+const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
+  const { chartInspects, highlightedItem, isAnimate, name, seriesIds, showHoverLabel } = options;
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
-    if (options.showHoverLabel) {
+    if (showHoverLabel) {
       data.push(getHoverLabelData(options));
     }
   }
+  if (isAnimate) {
+    data.push(
+      getHoverTargetData({ name, groupby: [SERIES_ID], rules: getLineHoverRules(options) }),
+      getHoverAnimStateData({ name, keys: seriesIds ?? [] }), // keyField defaults to SERIES_ID
+      getHoverFractionData(name)
+    );
+  }
+};
+
+export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
+  const { dimension, dimensionHover, chartInspects, isSparkline, isMethodLast, name, scaleType, staticPoint } = options;
+  const tableData = getTableData(data);
+  if (scaleType === 'time') {
+    tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+  }
+  addDimensionHoverGroupTransform(tableData, chartInspects, dimensionHover, dimension, name);
+  addSegmentData(data, tableData, options);
+  addLineHoverData(data, options);
+
   if (staticPoint || isSparkline) {
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
   }
+
   addDualMetricAxisData(data, options);
   addTrendlineData(data, options);
   addInspectData(data, options, false);
@@ -237,6 +307,10 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
 
   if (isDualMetricAxis(options)) {
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
+  }
+
+  if (options.isAnimate) {
+    addHoverAnimationSignals(signals, name);
   }
 
   if (!isInteractive(options)) return;

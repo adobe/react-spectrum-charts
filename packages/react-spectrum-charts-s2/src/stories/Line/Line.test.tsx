@@ -26,6 +26,7 @@ import {
   rightClickNthElement,
   screen,
   unhoverNthElement,
+  waitFor,
   within,
 } from '../../test-utils';
 import '../../test-utils/__mocks__/matchMedia.mock';
@@ -137,28 +138,34 @@ describe('Line', () => {
     expect(entries.length).toEqual(4);
     await hoverNthElement(entries, 0);
 
-    // symbol opacity should be reduced for all but the first symbol
-    let symbols = getAllLegendSymbols(chart);
-    expect(symbols[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    // symbol opacity should be reduced for all but the first symbol (opacity animates, so poll to settle)
+    const symbols = getAllLegendSymbols(chart);
+    await waitFor(() => {
+      expect(symbols[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
     // line opacity should be reduced for all but the first line
-    let lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(lines[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    const lines = await findAllMarksByGroupName(chart, 'line0');
+    await waitFor(() => {
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
     await unhoverNthElement(entries, 0);
     await hoverNthElement(entries, 3);
 
     // symbol opacity should be reduced for all but the last symbol
-    symbols = getAllLegendSymbols(chart);
-    expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(symbols[3]).toHaveAttribute('opacity', '1');
+    await waitFor(() => {
+      expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(symbols[3]).toHaveAttribute('opacity', '1');
+    });
 
     // line opacity should be reduced for all but the last line
-    lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(lines[3]).toHaveAttribute('opacity', '1');
+    await waitFor(() => {
+      expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(lines[3]).toHaveAttribute('opacity', '1');
+    });
   });
 
   test('Trend scale renders', async () => {
@@ -204,8 +211,11 @@ describe('Line', () => {
       // hover and validate all hover components are visible
       await hoverNthElement(paths, 0);
 
-      expect(lines[0]).toHaveAttribute('opacity', '1');
-      expect(lines[1]).toHaveAttribute('opacity', '0.2');
+      // opacity animates on hover, so poll until the non-hovered line settles at the faded value
+      await waitFor(() => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(lines[1]).toHaveAttribute('opacity', '0.2');
+      });
     });
   });
 

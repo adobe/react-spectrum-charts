@@ -31,6 +31,7 @@ import {
   DEFAULT_LINE_TYPES,
   DEFAULT_SECONDARY_COLOR,
   FILTERED_TABLE,
+  HOVER_TIMER,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   MARK_ID,
@@ -59,7 +60,7 @@ import {
 } from './chartSpecBuilder';
 import { defaultSignals } from './specTestUtils';
 import { baseData } from './specUtils';
-import { BarOptions, ChartSpecOptions, LineType } from './types';
+import { BarOptions, ChartSpecOptions, LineOptions, LineType } from './types';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
@@ -90,6 +91,7 @@ const defaultBarOptions: BarOptions = { markType: 'bar', dimension: 'browser', m
 jest.mock('./legend/legendHighlightUtils', () => {
   return {
     getLegendHighlightSignals: jest.fn().mockReturnValue([]),
+    injectLegendHoverIntoHoverData: jest.fn(),
     setHoverOpacityForMarks: jest.fn(),
     setHoverStrokeWidthForMarks: jest.fn(),
   };
@@ -434,6 +436,26 @@ describe('Chart spec builder', () => {
       expect(spec.signals?.find((signal) => signal.name === CONTROLLED_HIGHLIGHTED_SERIES)).toEqual(
         uncontrolledHighlightSignal
       );
+    });
+  });
+
+  describe('animations toggle', () => {
+    const interactiveLine: LineOptions = {
+      markType: 'line',
+      dimension: 'browser',
+      metric: 'downloads',
+      color: 'series',
+      chartPopovers: [{}],
+    };
+
+    test('creates the hover-animation timer for an interactive line by default', () => {
+      const spec = buildSpec({ ...defaultSpecOptions, marks: [interactiveLine] });
+      expect(spec.signals?.some((signal) => signal.name === HOVER_TIMER)).toBe(true);
+    });
+
+    test('animations: false removes the hover-animation timer (falls back to production rules)', () => {
+      const spec = buildSpec({ ...defaultSpecOptions, marks: [interactiveLine], animations: false });
+      expect(spec.signals?.some((signal) => signal.name === HOVER_TIMER)).toBe(false);
     });
   });
 

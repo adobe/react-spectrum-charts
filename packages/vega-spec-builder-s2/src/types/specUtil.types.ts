@@ -38,6 +38,7 @@ export interface ScSpec extends Spec {
 }
 
 export type UserMeta = {
+  animatedMarks?: string[];       // Marks that are animated using the hover animation system.
   interactiveMarks?: string[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;

@@ -17,12 +17,16 @@ import {
   GROUP_ID,
   HOVERED_ITEM,
   SELECTED_ITEM,
+  SELECTED_SERIES,
   SERIES_ID,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
 } from '@spectrum-charts/constants';
 
 import { hasPopover, isInteractive } from '../marks/markUtils';
 import { getCascadeTransforms } from './directLabelUtils';
 import { LineSpecOptions } from '../types';
+import { HoverMatchRule } from '../marks/hoverAnimationUtils';
 
 /**
  * gets the data used for highlighting hovered data points
@@ -132,4 +136,31 @@ export const getLineStaticPointData = (
       },
     ],
   };
+};
+
+/**
+ * Constructs the conditions for the hover interaction rules, storing the hover state as target values for each hoverable item
+ * @param param0 
+ * @returns 
+ */
+export const getLineHoverRules = (
+  { interactiveMarkName, popoverMarkName, comboSiblingNames, isHighlightedByGroup }: LineSpecOptions
+): HoverMatchRule[] => {
+  const rules: HoverMatchRule[] = [];
+  if (interactiveMarkName) {
+    const expr = isHighlightedByGroup 
+      ? `length(data('${interactiveMarkName}_highlightedData')) ? (indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 0) : null` 
+      : `isValid(${interactiveMarkName}_${HOVERED_ITEM}) ? (${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
+    rules.push({ as: 'hoveredMatch', expr: expr });
+  }
+  rules.push(
+    { as: 'controlledTableMatch',  expr: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) ? (indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : 0) : null` },
+    { as: 'controlledSeriesMatch', expr: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null` },
+  );
+  if (popoverMarkName) rules.push({ as: 'popoverMatch', expr: `isValid(${SELECTED_SERIES}) ? (${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null` });
+  if (comboSiblingNames?.length) {
+    const siblingTest = comboSiblingNames.map((s) => `isValid(${s}_${HOVERED_ITEM})`).join(' || ')
+    rules.push({ as: 'comboSiblingMatch', expr: `(${siblingTest}) ? 1 : 0` });
+  }
+  return rules;
 };
