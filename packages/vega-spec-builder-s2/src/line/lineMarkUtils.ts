@@ -273,7 +273,7 @@ export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule
   if (displayOnHover) return [DEFAULT_OPACITY_RULE];
 
   if (isAnimate) {
-    // Fade deemphasized series; neutral and emphasized both stay fully opaque.
+    // Fade deemphasized series; neutral and emphasized both stay fully opaque
     const ramp = getDeemphasisRamp(getHoverFractionSignal(name));
     return {
       signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
