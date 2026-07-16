@@ -158,20 +158,36 @@ Story: `DivergingConversionRates` in
 
 - **"Diverging Signals" (opposite-direction dual-series per category)** — explicitly out of scope, as
   planned. Falls back to default axis positioning; no centered-label treatment implemented either
-  (question 1 in "Questions for Alan" above).
+  (question 1 in "Questions for Alan" above). Tracked in
+  **[AN-462749](https://jira.corp.adobe.com/browse/AN-462749)**.
 - **Figma pixel-check** — the Figma frame was never actually fetched/viewed in any session; spacing
-  is verified against Vega's real behavior, not against the design spec's exact values.
+  is verified against Vega's real behavior, not against the design spec's exact values. Tracked in
+  **[AN-462749](https://jira.corp.adobe.com/browse/AN-462749)**.
 - **`AxisThumbnail`** — crash fixed, but the thumbnail image mark itself doesn't move with the
-  diverging axis offset (question 5 in "Questions for Alan" above).
+  diverging axis offset (question 5 in "Questions for Alan" above). Tracked in
+  **[AN-462759](https://jira.corp.adobe.com/browse/AN-462759)**.
 - **`labelFormat="time"` axes** — fixed (primary/secondary row stacking direction now sign-aware),
   see `WorkingTimeAxis` story.
 - **Sub-labels** — fixed (`getPriorityMergedSignal` resolves the align/baseline conflict), see
   `WithSubLabelsFixed` story; open question on vertical-axis overlap remains (question 3 above).
+  Tracked in **[AN-462760](https://jira.corp.adobe.com/browse/AN-462760)**.
 - **Trellis charts** — fixed (root axis suppressed, panel axes get facet-scoped diverging context),
-  see `TrellisDiverging` story.
-- **No unit tests** — intentionally out of scope. This ticket (AN-456581) is a research task; the
-  Storybook stories in `DivergingRisks.story.tsx` serve as the verification/regression record for
-  this pass instead of a unit test suite.
+  see `TrellisDiverging` story. Whether this combination should be supported at all is still open
+  (question 4 above). Tracked in **[AN-462755](https://jira.corp.adobe.com/browse/AN-462755)**.
+- **No unit tests** — intentionally out of scope for AN-456581 (a research task); the Storybook
+  stories in `DivergingRisks.story.tsx` serve as the verification/regression record for this pass
+  instead of a unit test suite. Adding tests is in scope for
+  **[AN-462749](https://jira.corp.adobe.com/browse/AN-462749)**.
+
+**Follow-up implementation tickets** (all under Epic
+[AN-455181](https://jira.corp.adobe.com/browse/AN-455181)):
+
+| Ticket | Scope | Status |
+| --- | --- | --- |
+| [AN-462749](https://jira.corp.adobe.com/browse/AN-462749) | Land the core `<Axis diverging>` feature: unit tests, Figma validation, extend label-flip to two-series always-opposite-sign bars | Ready |
+| [AN-462755](https://jira.corp.adobe.com/browse/AN-462755) | Research spike: should trellis + diverging be a supported combination? | Blocked on Alan's final call |
+| [AN-462759](https://jira.corp.adobe.com/browse/AN-462759) | `AxisThumbnail` position should follow the diverging axis offset | Ready |
+| [AN-462760](https://jira.corp.adobe.com/browse/AN-462760) | Long-label handling (adaptive truncation + wrapping) on diverging axes, including vertical-axis sub-label wrapping | Blocked on design input |
 
 ---
 
@@ -218,9 +234,10 @@ a no-op rather than a bug. Not worth a fix or an Alan question.
 
 ---
 
-## Questions for Alan (design input needed)
+## Questions for Alan (answered)
 
-Drafted for the user to send via Slack — not posted to Jira.
+Drafted for the user to send via Slack — not posted to Jira. Replies received 2026-07-16; none of
+these answers are implemented yet — captured here as direction for a follow-up pass.
 
 **1. Diverging Signals (two-series, always-opposite-sign) label treatment**
 Two bars sharing a category, one series always positive and one always negative (e.g. "New" vs
@@ -230,12 +247,29 @@ side to lean into. (Distinct from single-series diverging, which flips the label
 multi-series diverging, e.g. monthly cohorts, where the axis stays at the edge with no
 repositioning.)
 
+> **Alan's reply:** "This should function the same as the other cases in my opinion. The label is
+> on the opposite side of the axis from its bar." — i.e. no separate centered-in-the-gutter
+> treatment; extend the same opposite-side-of-its-bar flip logic already used for the single-series
+> case to this one instead of leaving it as a decline/fallback. **Follow-up:** `getDivergingBarContext`
+> currently declines outright whenever a category has sign-conflicting rows
+> (`DodgedTwoSeriesFallback` story) — this reply means that guard should be relaxed for this shape,
+> with the sign test resolved per-row (each bar's own sign) rather than per-category.
+
 **2. Long category labels on diverging bar charts**
 `diverging` moves the category axis to the zero-value line, which can land close to or far from the
 chart edge depending on the data's positive/negative split — so available space for long labels
 varies per chart. Currently labels always truncate to the same fixed ~180px width regardless of
 available space. Should that stay fixed, adapt to available space, or should a minimum margin
 always be reserved instead?
+
+> **Alan's reply:** Maximize visible text — likely different truncation per label rather than one
+> fixed width, and there are upcoming shared utilities that may make this easier. Open sub-question
+> he flagged for further design input: whether a label should be allowed to extend/wrap all the way
+> across the viz when it falls to the right of the axis — his intuition is wrapping would look
+> cleanest, but variable/thin bar widths make that tricky to implement cleanly. **Follow-up:**
+> treat as a two-part item — (a) per-label adaptive truncation using the upcoming utilities, (b)
+> a separate, harder wrapping investigation gated on bar-width variability, still needing design
+> sign-off.
 
 **3. `subLabels` behavior on a left/right (vertical) axis**
 `subLabels` on a bottom/top axis naturally stacks as a second row (works for any text length). On a
@@ -244,11 +278,20 @@ left/right axis, the separation is a small horizontal offset instead, so long su
 axis stack as a second row like bottom/top does, or is `subLabels` only intended for short content
 (single digits/glyphs) in that orientation?
 
+> **Alan's reply:** Sub-labels should wrap — same bar-width-variability challenge as question 2
+> applies here too. **Follow-up:** blocked on the same open wrapping-implementation question as #2;
+> should likely be solved together rather than as two separate efforts.
+
 **4. Is trellis + diverging an expected combination?**
 Now works correctly (took two rounds of fixes), and panels align consistently since they share the
 same metric scale. But is this combination something the design system actually expects to
 support, or a low-priority edge case? Useful to know before investing in further refinement (e.g.
 `subLabels`/`AxisThumbnail` *inside* a trellis panel, untested).
+
+> **Reply:** "I don't think we should support diverging trellises but curious on Alan's input" —
+> this reply leans toward *not* supporting the combination, but explicitly defers to Alan's own
+> input, so **this question is still genuinely open**, unlike 1/2/3/5. No follow-up action until a
+> final call comes back.
 
 **5. Diverging axis + `AxisThumbnail` — thumbnails don't move with the axis**
 When `diverging` repositions a categorical axis to the zero baseline, the thumbnail images
@@ -258,6 +301,11 @@ detached from the labels/axis they're supposed to annotate (see `WithThumbnailCo
 `DivergingRisks.story.tsx`). Should axis thumbnails move to sit next to the axis at the zero line
 (following each row), stay anchored at the chart edge as-is, or should `diverging` +
 `AxisThumbnail` just not be supported together for now?
+
+> **Alan's reply:** "Anything tied to the axis label should move with it." — thumbnails should move
+> in lockstep with the axis's `offset`. **Follow-up:** fix `getAxisThumbnailPosition`
+> (`axisThumbnailUtils.ts`) so the thumbnail image mark's position incorporates the axis's diverging
+> `offset` signal, since today it's a fixed-pixel, top-level sibling mark with no reference to it.
 
 ---
 
