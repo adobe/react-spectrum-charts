@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
+import { AggregateTransform, Data, FormulaTransform, GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
 
 import {
   CHART_SIZE_HOVER_STROKE_WIDTH,
@@ -29,16 +29,128 @@ export const getLegendHighlightSignals = (legends: LegendOptions[]): string[] =>
     .filter((legend) => legend.highlight)
     .map((legend) => `${legend.name}_${HOVERED_SERIES}`);
 
+type DataTransforms = NonNullable<Data['transform']>;
+
+/**
+ * Merges a legend hover match rule into an existing `_hoverTargetData` source's `target` formula,
+ * and (for grouped legends) adds the legend's group field to the aggregate's groupby.
+ */
+const injectLegendHoverIntoTargetData = (
+  transform: DataTransforms,
+  legendName: string,
+  matchExpr: string,
+  groupIdField: string,
+  keys?: string[]
+): void => {
+  if (keys?.length) {
+    // Add legend group field to aggregate's groupby
+    const aggregateTransform = transform.find((t): t is AggregateTransform => t.type === 'aggregate');
+    if (aggregateTransform && Array.isArray(aggregateTransform.groupby)) {
+      aggregateTransform.groupby.push(groupIdField);
+    }
+  }
+
+  // Change the old target's name to conditions
+  const targetTransform = transform.find((t): t is FormulaTransform => t.type === 'formula' && t.as === 'target');
+  if (targetTransform) {
+    targetTransform.as = 'conditions';
+  }
+
+  // Add the legend hover match formula, then combine it with the prior target into a new target formula
+  transform.push(
+    {
+      type: 'formula' as const,
+      as: `legendHoverMatch`,
+      expr: `(isValid(${legendName}_${HOVERED_SERIES})) ? ((${matchExpr}) ? 1 : 0) : null`,
+    },
+    {
+      type: 'formula' as const,
+      as: `target`,
+      expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : isValid(datum.legendHoverMatch) ? datum.legendHoverMatch : datum.conditions`,
+    }
+  );
+};
+
+/**
+ * For grouped legends, brings the group field into an existing `_hoverFractionData` source via
+ * lookup, then adds a `_hoverGroupFractionData` source that aggregates fractions by group (max).
+ */
+const addGroupedFractionData = (
+  fractionDataName: string,
+  transform: DataTransforms,
+  data: Data[],
+  groupIdField: string
+): void => {
+  const markName = fractionDataName.replace('_hoverFractionData', '');
+  transform.push({
+    type: 'lookup' as const,
+    from: `${markName}_hoverTargetData`,
+    key: SERIES_ID,
+    fields: [SERIES_ID],
+    values: [groupIdField],
+    as: [groupIdField]
+  });
+
+  data.push({
+    name: `${markName}_hoverGroupFractionData`,
+    source: `${markName}_hoverFractionData`,
+    transform: [
+      {
+        type: 'aggregate' as const,
+        groupby: [groupIdField],
+        fields: ['fraction'],
+        ops: ['max'],
+        as: ['fraction']
+      },
+    ],
+  });
+};
+
+/**
+ * Injects a legend hover rule into the hover target data for the chart.
+ */
+export const injectLegendHoverIntoData = (legendName: string, data: Data[], keys?: string[]): void => {
+  const groupIdField = `${legendName}_${GROUP_ID}`;
+  // The ungrouped branch matches on SERIES_ID, not the animated mark's own identity field, so legend
+  // hover matches at the series level even for marks whose animation identity is finer-grained (e.g. a
+  // future bar mark keyed by rscMarkId). This requires every animated mark's own `_hoverTargetData`
+  // aggregate to include SERIES_ID in its groupby regardless of its animation keyField — see the design
+  // doc §11 ("Extending to other marks") for that contract.
+  const matchExpr = keys?.length
+    ? `${legendName}_${HOVERED_SERIES} === datum.${legendName}_${GROUP_ID} ? 1 : 0`
+    : `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : 0`;
+
+  for (const source of data) {
+    const { name, transform } = source;
+    if (!Array.isArray(transform) || typeof name !== 'string') continue;
+    if (name.endsWith('_hoverTargetData')) {
+      injectLegendHoverIntoTargetData(transform, legendName, matchExpr, groupIdField, keys);
+    }
+    if (name.endsWith('_hoverFractionData') && keys?.length) {
+      addGroupedFractionData(name, transform, data, groupIdField);
+    }
+  }
+};
+
 /**
  * Adds opacity tests for marks whose fill/stroke is driven by the color scale, and for marks
  * that are already per-series (e.g. trendlines, which facet by series regardless of their own
  * color encoding — a trendline with an overridden literal color still needs to fade on legend hover).
  */
-export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?: string[], controlled = false) => {
+export const setHoverOpacityForMarks = (
+  legendName: string,
+  marks: Mark[],
+  keys?: string[],
+  controlled = false,
+  animatedMarks: string[] = []
+) => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
   const seriesMarks = flatMarks.filter(markIsSeriesAware);
   seriesMarks.forEach((mark) => {
+    // Skip marks on the new hover-animation system
+    if (mark.name && animatedMarks.includes(mark.name)) return;
+
     // need to drill down to the prop we need to set and add missing properties if needed
     if (!mark.encode) {
       mark.encode = { update: {} };

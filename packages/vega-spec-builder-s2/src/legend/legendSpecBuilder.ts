@@ -44,7 +44,7 @@ import {
   UserMeta,
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
-import { setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils';
+import { injectLegendHoverIntoData, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
 
 export const addLegend = produce<
@@ -140,7 +140,7 @@ export const addLegend = produce<
 
       spec.data = addData(spec.data ?? [], { ...legendOptions, facets: uniqueFacetFields });
       spec.signals = addSignals(spec.signals ?? [], legendOptions);
-      spec.marks = addMarks(spec.marks ?? [], legendOptions);
+      spec.marks = addMarks(spec.marks ?? [], legendOptions, spec.usermeta?.animatedMarks ?? []);
 
       // add the legend
       legends.push(getCategoricalLegend(ordinalFacets, legendOptions, spec.usermeta));
@@ -272,9 +272,9 @@ const addScales = produce<Scale[], [LegendSpecOptions]>((scales, { color, lineTy
   addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
 });
 
-const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys, name }) => {
+const addMarks = produce<Mark[], [LegendSpecOptions, string[]]>((marks, { highlight, keys, name }, animatedMarks) => {
   if (highlight) {
-    setHoverOpacityForMarks(name, marks, keys);
+    setHoverOpacityForMarks(name, marks, keys, undefined, animatedMarks);
     setHoverStrokeWidthForMarks(name, marks, keys);
   }
 });
@@ -285,7 +285,7 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-  (data, { facets, hiddenEntries, keys, name }) => {
+  (data, { facets, hiddenEntries, highlight, keys, name }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
     data.push({
@@ -348,6 +348,10 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
       if (data.transform?.[0] && 'expr' in data.transform[0]) {
         data.transform[0].expr += ` || datum.${SERIES_ID} === ${name}_${HOVERED_SERIES}`;
       }
+    }
+
+    if (highlight) {
+      injectLegendHoverIntoData(name, data, keys);
     }
   }
 );

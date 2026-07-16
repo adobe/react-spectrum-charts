@@ -17,9 +17,11 @@ import {
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_SECONDARY_COLOR,
+  FILTERED_TABLE,
   GROUP_ID,
   HOVERED_SERIES,
   LINEAR_COLOR_SCALE,
+  SERIES_ID,
   TABLE,
 } from '@spectrum-charts/constants';
 
@@ -416,6 +418,38 @@ describe('addData()', () => {
       keys: ['key1', 'key2'],
     });
     expect(data[0].transform).toHaveLength(1);
+  });
+
+  const hoverTargetData: Data = {
+    name: 'line0_hoverTargetData',
+    source: FILTERED_TABLE,
+    transform: [
+      { type: 'aggregate', groupby: [SERIES_ID] },
+      { type: 'formula', as: 'hoveredMatch', expr: 'isValid(hoveredItem) ? 1 : null' },
+      { type: 'formula', as: 'target', expr: 'isValid(datum.hoveredMatch) ? datum.hoveredMatch : 0.5' },
+    ],
+  };
+
+  test('injects legend hover into _hoverTargetData sources when highlight is true', () => {
+    const data = addData([...baseData, hoverTargetData], {
+      ...defaultLegendOptions,
+      facets: [DEFAULT_COLOR],
+      highlight: true,
+    });
+    const targetData = data.find((d) => d.name === 'line0_hoverTargetData');
+    expect(targetData?.transform).toHaveLength(5);
+    expect(targetData?.transform?.[2]).toHaveProperty('as', 'conditions');
+    expect(targetData?.transform?.[4]).toHaveProperty('as', 'target');
+  });
+
+  test('does not inject legend hover into _hoverTargetData sources when highlight is false', () => {
+    const data = addData([...baseData, hoverTargetData], {
+      ...defaultLegendOptions,
+      facets: [DEFAULT_COLOR],
+      highlight: false,
+    });
+    const targetData = data.find((d) => d.name === 'line0_hoverTargetData');
+    expect(targetData?.transform).toStrictEqual(hoverTargetData.transform);
   });
 });
 

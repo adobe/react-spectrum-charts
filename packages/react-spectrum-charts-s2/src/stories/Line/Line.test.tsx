@@ -147,11 +147,14 @@ describe('Line', () => {
     expect(entries.length).toEqual(4);
     await hoverNthElement(entries, 0);
 
-    // symbol opacity should be reduced for all but the first symbol (legend opacity is not yet wired
-    // into the hover-animation system, so this stays an instant, synchronous check)
+    // symbol opacity should be reduced for all but the first symbol. Legend opacity is now driven by
+    // the same animated fraction data as the line for animated marks, so it settles asynchronously
+    // rather than flipping instantly — hence the waitFor rather than a direct synchronous assertion.
     let symbols = getAllLegendSymbols(chart);
-    expect(symbols[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    await waitFor(() => {
+      expect(symbols[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
     await waitForMarksByGroupName(chart, 'line0', (lines) => {
       expect(lines[0]).toHaveAttribute('opacity', '1');
@@ -163,8 +166,10 @@ describe('Line', () => {
 
     // symbol opacity should be reduced for all but the last symbol
     symbols = getAllLegendSymbols(chart);
-    expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(symbols[3]).toHaveAttribute('opacity', '1');
+    await waitFor(() => {
+      expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(symbols[3]).toHaveAttribute('opacity', '1');
+    });
 
     // line opacity should be reduced for all but the last line
     await waitForMarksByGroupName(chart, 'line0', (lines) => {

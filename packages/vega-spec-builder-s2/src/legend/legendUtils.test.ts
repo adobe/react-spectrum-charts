@@ -9,14 +9,28 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_LABEL_LIMIT, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE, GROUP_ID, ROUNDED_SQUARE_PATH, VISIBILITY_OFF_PATH } from '@spectrum-charts/constants';
+import {
+  DEFAULT_LEGEND_COLUMN_PADDING,
+  DEFAULT_LEGEND_LABEL_LIMIT,
+  DEFAULT_LEGEND_SYMBOL_WIDTH,
+  DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
+  FILTERED_TABLE,
+  GROUP_ID,
+  ROUNDED_SQUARE_PATH,
+  SERIES_ID,
+  VISIBILITY_OFF_PATH,
+} from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
 import { defaultLegendOptions } from './legendTestUtils';
 import {
   getClickEncodings,
   getColumns,
   getHiddenSeriesColorRule,
+  getLegendOpacity,
+  getOpacityEncoding,
   getShowHideEncodings,
   getSymbolEncodings,
   getSymbolType,
@@ -232,5 +246,52 @@ describe('getColumns()', () => {
 
   test('should use legend name in the data reference', () => {
     expect(getColumns('top', 'myLegend', 100)).toEqual(getExpectedColumnsSignal('myLegend', 100));
+  });
+});
+
+describe('getLegendOpacity()', () => {
+  test('falls back to getOpacityEncoding when userMeta has no animatedMarks', () => {
+    const options = { ...defaultLegendOptions, highlight: true };
+    expect(getLegendOpacity(options, {})).toStrictEqual(getOpacityEncoding(options, {}));
+  });
+
+  test('falls back to getOpacityEncoding when animatedMarks is empty', () => {
+    const options = { ...defaultLegendOptions, highlight: true };
+    expect(getLegendOpacity(options, { animatedMarks: [] })).toStrictEqual(getOpacityEncoding(options, {}));
+  });
+
+  test('builds a per-series animated rule for an ungrouped legend', () => {
+    const fractionData = `data('line0_hoverFractionData')`;
+    const fraction = `(${fractionData}[indexof(pluck(${fractionData}, '${SERIES_ID}'), datum.value)] || {fraction: ${FADE_FACTOR}}).fraction`;
+    const ramp = getDeemphasisRamp(fraction);
+
+    expect(getLegendOpacity(defaultLegendOptions, { animatedMarks: ['line0'] })).toStrictEqual([
+      {
+        test: `length(${fractionData})`,
+        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+      },
+      DEFAULT_OPACITY_RULE,
+    ]);
+  });
+
+  test('uses the group fraction data and legend group id field when keys are provided', () => {
+    const options = { ...defaultLegendOptions, keys: ['category'] };
+    const fractionData = `data('line0_hoverGroupFractionData')`;
+    const fraction = `(${fractionData}[indexof(pluck(${fractionData}, '${options.name}_${GROUP_ID}'), datum.value)] || {fraction: ${FADE_FACTOR}}).fraction`;
+    const ramp = getDeemphasisRamp(fraction);
+
+    expect(getLegendOpacity(options, { animatedMarks: ['line0'] })).toStrictEqual([
+      {
+        test: `length(${fractionData})`,
+        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+      },
+      DEFAULT_OPACITY_RULE,
+    ]);
+  });
+
+  test('adds one rule per registered animated mark, plus the fallback rule', () => {
+    const result = getLegendOpacity(defaultLegendOptions, { animatedMarks: ['line0', 'line1'] });
+    expect(Array.isArray(result) && result).toHaveLength(3);
+    expect(Array.isArray(result) && result[2]).toEqual(DEFAULT_OPACITY_RULE);
   });
 });
