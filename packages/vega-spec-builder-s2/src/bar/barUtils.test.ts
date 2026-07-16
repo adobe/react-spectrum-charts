@@ -12,15 +12,18 @@
 import { RectEncodeEntry } from 'vega';
 
 import {
+  BACKGROUND_COLOR,
   COLOR_SCALE,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
   FILTERED_TABLE,
+  LAST_RSC_SERIES_ID,
   MARK_ID,
   PADDING_RATIO,
   SELECTED_GROUP,
   SELECTED_ITEM,
+  SERIES_ID,
   STACK_ID,
 } from '@spectrum-charts/constants';
 
@@ -38,6 +41,8 @@ import {
   getBarDimensionAreaPositionEncodings,
   getBarDimensionHoverArea,
   getBarFillEncoding,
+  getBarItemSelectionBackdrop,
+  getBarItemSelectionRing,
   getBarPadding,
   getBaseBarEnterEncodings,
   getBaseScaleName,
@@ -52,6 +57,7 @@ import {
   getStroke,
   getStrokeDash,
   getStrokeWidth,
+  shouldShowItemSelectionRing,
 } from './barUtils';
 
 const defaultDodgedXEncodings: RectEncodeEntry = {
@@ -501,6 +507,159 @@ describe('barUtils', () => {
         name: 'bar0_selectionRing',
         type: 'rect',
       });
+    });
+  });
+
+  describe('shouldShowItemSelectionRing()', () => {
+    test('returns false when there are no popovers', () => {
+      expect(shouldShowItemSelectionRing(defaultBarOptions)).toBe(false);
+    });
+    test('returns true for a default (item) popover', () => {
+      expect(shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{}] })).toBe(true);
+    });
+    test('returns false when the popover highlights by dimension', () => {
+      expect(
+        shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }] })
+      ).toBe(false);
+    });
+    test('returns true for a series popover', () => {
+      expect(
+        shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{ UNSAFE_highlightBy: 'series' }] })
+      ).toBe(true);
+    });
+    test('returns true for an array (custom keys) popover', () => {
+      expect(
+        shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{ UNSAFE_highlightBy: ['operatingSystem'] }] })
+      ).toBe(true);
+    });
+    test('returns false when any popover highlights by dimension', () => {
+      expect(
+        shouldShowItemSelectionRing({
+          ...defaultBarOptions,
+          chartPopovers: [{}, { UNSAFE_highlightBy: 'dimension' }],
+        })
+      ).toBe(false);
+    });
+  });
+
+  describe('getBarItemSelectionBackdrop()', () => {
+    test('returns an opaque, stroke-less rect outset from the bar to fill the selection gap', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const backdrop = getBarItemSelectionBackdrop(options, FILTERED_TABLE, dimensionEncodings);
+      expect(backdrop).toStrictEqual({
+        name: 'bar0_itemSelectionBackdrop',
+        type: 'rect',
+        from: { data: FILTERED_TABLE },
+        interactive: false,
+        encode: {
+          enter: {
+            cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            fill: { signal: BACKGROUND_COLOR },
+          },
+          update: {
+            y: { signal: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) - 3` },
+            y2: { signal: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) + 3` },
+            x: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
+            width: { signal: `bandwidth('bar0_position') * 1 + 6` },
+            opacity: [
+              { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
+              { value: 0 },
+            ],
+          },
+        },
+      });
+    });
+  });
+
+  describe('getBarItemSelectionRing()', () => {
+    test('returns a stroke-only rect (transparent fill) outset from the bar with a concentric corner radius', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      expect(ring).toStrictEqual({
+        name: 'bar0_itemSelectionRing',
+        type: 'rect',
+        from: { data: FILTERED_TABLE },
+        interactive: false,
+        encode: {
+          enter: {
+            cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            fill: { value: 'transparent' },
+            stroke: { value: '#4B75FF' },
+            strokeWidth: { value: 2 },
+          },
+          update: {
+            y: { signal: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) - 3` },
+            y2: { signal: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) + 3` },
+            x: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
+            width: { signal: `bandwidth('bar0_position') * 1 + 6` },
+            opacity: [
+              { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
+              { value: 0 },
+            ],
+          },
+        },
+      });
+    });
+
+    test('outsets along the metric (x) and dimension (y) axes when the bar is horizontal', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged', orientation: 'horizontal' };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      // metric axis is x for a horizontal bar; the ring outsets x/x2 and the dimension band on y
+      expect(ring.encode?.update).toStrictEqual({
+        x: { signal: `min(scale('xLinear', 0), scale('xLinear', datum.${DEFAULT_METRIC})) - 3` },
+        x2: { signal: `max(scale('xLinear', 0), scale('xLinear', datum.${DEFAULT_METRIC})) + 3` },
+        y: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
+        height: { signal: `bandwidth('bar0_position') * 1 + 6` },
+        opacity: [
+          { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
+          { value: 0 },
+        ],
+      });
+    });
+
+    test('flattens the stacked bar metric production rule (test/signal branches) into a ternary', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'stacked' };
+      const dimensionEncodings: RectEncodeEntry = {
+        x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
+        width: { scale: 'xBand', band: 1 },
+      };
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      const update = ring.encode?.update as { y: { signal: string }; y2: { signal: string } } & RectEncodeEntry;
+
+      // dimension axis (x) collapses the band-scale encodings, outset by the ring padding
+      expect(update.x).toStrictEqual({ signal: `scale('xBand', datum.${DEFAULT_CATEGORICAL_DIMENSION}) - 3` });
+      expect(update.width).toStrictEqual({ signal: `bandwidth('xBand') * 1 + 6` });
+      // metric axis (y) flattens the 3-branch stacked rule into a nested ternary, then outsets by padding
+      expect(update.y.signal).toMatch(/^min\(/);
+      expect(update.y.signal).toContain(' ? ');
+      expect(update.y.signal).toContain(`max(scale('yLinear', datum.${DEFAULT_METRIC}0) - 1.5`);
+      expect(update.y.signal).toContain(`min(scale('yLinear', datum.${DEFAULT_METRIC}0) + 1.5`);
+      expect(update.y.signal.endsWith(' - 3')).toBe(true);
+      expect(update.y2.signal.startsWith('max(')).toBe(true);
+      expect(update.y2.signal.endsWith(' + 3')).toBe(true);
+    });
+
+    test('flattens the dual-metric-axis metric production rule (series-id branches) without throwing', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged', dualMetricAxis: true };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      const update = ring.encode?.update as { y: { signal: string }; y2: { signal: string } };
+
+      // the dual-axis metric rules branch on SERIES_ID and reference the primary + secondary scales
+      expect(update.y.signal).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
+      expect(update.y.signal).toContain(`scale('yLinearSecondary', 0)`);
+      expect(update.y.signal).toContain(`scale('yLinearPrimary', 0)`);
+      expect(update.y2.signal).toContain(`scale('yLinearSecondary', datum.${DEFAULT_METRIC})`);
+      expect(update.y2.signal).toContain(`scale('yLinearPrimary', datum.${DEFAULT_METRIC})`);
     });
   });
 

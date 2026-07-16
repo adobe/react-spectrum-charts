@@ -244,5 +244,28 @@ describe('dodgedBarUtils', () => {
       expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
       expect(marks[1].name).toEqual('bar0_group');
     });
+    test('adds the selection backdrop under the bars and the outline ring on top when an item popover exists', () => {
+      const marks = getDodgedMarks({
+        ...defaultDodgedOptions,
+        chartPopovers: [{}],
+      });
+      const mark = marks[0] as GroupMark;
+      expect(mark.marks).toHaveLength(4);
+      // backdrop is drawn first (underneath) to fill the gap; the outline ring is drawn last (on top)
+      expect(mark.marks?.[0].name).toEqual('bar0_itemSelectionBackdrop');
+      expect(mark.marks?.[1].name).toEqual('bar0_background');
+      expect(mark.marks?.[2].name).toEqual('bar0');
+      expect(mark.marks?.[3].name).toEqual('bar0_itemSelectionRing');
+    });
+    test('does not add the item selection marks when the popover highlights by dimension', () => {
+      const marks = getDodgedMarks({
+        ...defaultDodgedOptions,
+        chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }],
+      });
+      const mark = marks[0] as GroupMark;
+      const names = mark.marks?.map((ringMark) => ringMark.name);
+      expect(names).not.toContain('bar0_itemSelectionBackdrop');
+      expect(names).not.toContain('bar0_itemSelectionRing');
+    });
   });
 });
