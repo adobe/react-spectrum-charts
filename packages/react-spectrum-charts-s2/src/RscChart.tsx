@@ -199,6 +199,7 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
   return (
     <>
       <button
+        type="button"
         id={`${name}-${rightClick ? 'contextmenu' : 'popover'}-button`}
         aria-hidden="true"
         tabIndex={-1}
