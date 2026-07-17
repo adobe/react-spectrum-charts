@@ -398,7 +398,11 @@ const productionRuleToExpr = (rule: ProductionRule<NumericValueRef>): string => 
   if (!Array.isArray(rule)) return numericRuleToExpr(rule as unknown as NumericRule);
 
   const rules = rule as unknown as NumericRule[];
-  let expr = numericRuleToExpr(rules[rules.length - 1]);
+  const fallbackRule = rules.at(-1);
+  if (fallbackRule === undefined) {
+    throw new Error('getBarItemSelectionRing: empty production rule array');
+  }
+  let expr = numericRuleToExpr(fallbackRule);
   for (let i = rules.length - 2; i >= 0; i--) {
     expr = `${rules[i].test} ? ${numericRuleToExpr(rules[i])} : ${expr}`;
   }
