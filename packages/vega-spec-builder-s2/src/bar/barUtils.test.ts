@@ -693,6 +693,37 @@ describe('barUtils', () => {
       expect(backdropEnter.cornerRadiusTopLeft).toStrictEqual(ringEnter.cornerRadiusTopLeft);
       expect(backdropEnter.cornerRadiusBottomRight).toStrictEqual(ringEnter.cornerRadiusBottomRight);
     });
+
+    test('serializes a plain value-ref dimension encoding into a numeric outset expression', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      // a value-based (non-scaled) dimension encoding still resolves to a numeric outset
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, { x: { value: 7 }, width: { value: 20 } });
+      const update = ring.encode?.update as RectEncodeEntry;
+      expect(update.x).toStrictEqual({ signal: '7 - 3' });
+      expect(update.width).toStrictEqual({ signal: '20 + 6' });
+    });
+
+    test('throws on unsupported value-ref shapes rather than emitting invalid Vega', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      // no signal/scale/value at all
+      expect(() => getBarItemSelectionRing(options, FILTERED_TABLE, { x: {}, width: { value: 20 } })).toThrow(
+        'unsupported numeric production rule'
+      );
+      // a scale ref with no field/band/value to resolve
+      expect(() =>
+        getBarItemSelectionRing(options, FILTERED_TABLE, {
+          x: { scale: 'xBand' },
+          width: { value: 20 },
+        } as RectEncodeEntry)
+      ).toThrow('unsupported numeric production rule');
+    });
+
+    test('throws on an empty production-rule array', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      expect(() => getBarItemSelectionRing(options, FILTERED_TABLE, { x: [], width: { value: 20 } })).toThrow(
+        'empty production rule array'
+      );
+    });
   });
 
   describe('getStrokeDash()', () => {

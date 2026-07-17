@@ -348,14 +348,13 @@ const SELECTION_RING_PADDING = SELECTION_RING_GAP + SELECTION_RING_STROKE_WIDTH 
  */
 const getSelectionRingCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEntry => {
   const barCornerRadius = getCornerRadiusEncodings(options);
-  // each corner is a plain-numeric production rule; widen every branch's value by the gap
-  const widen = (rule: ProductionRule<NumericValueRef>): ProductionRule<NumericValueRef> => {
-    const add = (branch: NumericValueRef): NumericValueRef => ({
+  // every corner from getCornerRadiusEncodings is a conditional array of plain-numeric branches;
+  // widen each branch's value by the gap so the ring's corners stay concentric with the bar's
+  const widen = (rule: ProductionRule<NumericValueRef>): ProductionRule<NumericValueRef> =>
+    (rule as ({ test?: string; value: number } & NumericValueRef)[]).map((branch) => ({
       ...branch,
-      value: (branch as { value: number }).value + SELECTION_RING_GAP,
-    });
-    return (Array.isArray(rule) ? rule.map(add) : add(rule)) as ProductionRule<NumericValueRef>;
-  };
+      value: branch.value + SELECTION_RING_GAP,
+    })) as ProductionRule<NumericValueRef>;
   return {
     cornerRadiusTopLeft: widen(barCornerRadius.cornerRadiusTopLeft as ProductionRule<NumericValueRef>),
     cornerRadiusTopRight: widen(barCornerRadius.cornerRadiusTopRight as ProductionRule<NumericValueRef>),
