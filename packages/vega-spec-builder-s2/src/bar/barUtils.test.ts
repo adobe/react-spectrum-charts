@@ -661,6 +661,38 @@ describe('barUtils', () => {
       expect(update.y2.signal).toContain(`scale('yLinearSecondary', datum.${DEFAULT_METRIC})`);
       expect(update.y2.signal).toContain(`scale('yLinearPrimary', datum.${DEFAULT_METRIC})`);
     });
+
+    test('widens the stacked bar per-corner radius rules by the gap', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'stacked' };
+      const dimensionEncodings: RectEncodeEntry = {
+        x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
+        width: { scale: 'xBand', band: 1 },
+      };
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      const enter = ring.encode?.enter as RectEncodeEntry;
+
+      // the ring reuses the bar's stacked corner-radius production rules (including the
+      // data('..._stacks') test strings), each branch's value widened by the 2px gap
+      const barCorners = getStackedCornerRadiusEncodings(options);
+      const widenBranches = (rule: RectEncodeEntry['cornerRadiusTopLeft']) =>
+        (rule as { test?: string; value: number }[]).map((branch) => ({ ...branch, value: branch.value + 2 }));
+      expect(enter.cornerRadiusTopLeft).toStrictEqual(widenBranches(barCorners.cornerRadiusTopLeft));
+      expect(enter.cornerRadiusBottomRight).toStrictEqual(widenBranches(barCorners.cornerRadiusBottomRight));
+    });
+
+    test('backdrop and outline ring share identical position and corner-radius encodings', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const backdrop = getBarItemSelectionBackdrop(options, FILTERED_TABLE, dimensionEncodings);
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      const backdropEnter = backdrop.encode?.enter as RectEncodeEntry;
+      const ringEnter = ring.encode?.enter as RectEncodeEntry;
+
+      // the two marks must stay geometrically aligned — they differ only in fill/stroke
+      expect(backdrop.encode?.update).toStrictEqual(ring.encode?.update);
+      expect(backdropEnter.cornerRadiusTopLeft).toStrictEqual(ringEnter.cornerRadiusTopLeft);
+      expect(backdropEnter.cornerRadiusBottomRight).toStrictEqual(ringEnter.cornerRadiusBottomRight);
+    });
   });
 
   describe('getStrokeDash()', () => {
