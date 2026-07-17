@@ -12,6 +12,7 @@
 import { SignalRef } from 'vega';
 
 import {
+  CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -36,6 +37,7 @@ import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
   getCursor,
+  getDirectLabelFontSizeProductionRule,
   getHighlightOpacityValue,
   getInteractiveMarkName,
   getLineWidthProductionRule,
@@ -135,6 +137,15 @@ describe('getSymbolSizeProductionRule()', () => {
   });
   test('should return static value squared if static value supplied', () => {
     expect(getSymbolSizeProductionRule({ value: 5 })).toStrictEqual({ value: 25 });
+  });
+});
+
+describe('getDirectLabelFontSizeProductionRule()', () => {
+  test('should return the chart-size signal when fontSize is not provided', () => {
+    expect(getDirectLabelFontSizeProductionRule()).toStrictEqual({ signal: CHART_SIZE_FONT_SIZE });
+  });
+  test('should return a static value when fontSize is provided', () => {
+    expect(getDirectLabelFontSizeProductionRule(20)).toStrictEqual({ value: 20 });
   });
 });
 
