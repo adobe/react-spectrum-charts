@@ -339,22 +339,6 @@ const SELECTION_RING_STROKE_WIDTH = 2;
 // exactly at the gap boundary, so the rendered border spans [gap, gap + strokeWidth] from the bar's edge.
 const SELECTION_RING_PADDING = SELECTION_RING_GAP + SELECTION_RING_STROKE_WIDTH / 2;
 
-interface NumericRule {
-  test?: string;
-  value?: number;
-  signal?: string;
-  scale?: string;
-  field?: string;
-  band?: number;
-}
-
-const CORNER_RADIUS_KEYS = [
-  'cornerRadiusTopLeft',
-  'cornerRadiusTopRight',
-  'cornerRadiusBottomLeft',
-  'cornerRadiusBottomRight',
-] as const;
-
 /**
  * The selection ring's corner radius matches the bar's own per-corner radius (already
  * orientation/sign-aware via {@link getCornerRadiusEncodings}), widened by the ring's gap to the bar
@@ -364,15 +348,20 @@ const CORNER_RADIUS_KEYS = [
  */
 const getSelectionRingCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEntry => {
   const barCornerRadius = getCornerRadiusEncodings(options);
-  // each corner is a plain-numeric production rule; widen every branch by the gap
+  // each corner is a plain-numeric production rule; widen every branch's value by the gap
   const widen = (rule: ProductionRule<NumericValueRef>): ProductionRule<NumericValueRef> => {
-    const add = (r: NumericRule): NumericRule => ({ ...r, value: (r.value as number) + SELECTION_RING_GAP });
-    const rules = rule as unknown as NumericRule | NumericRule[];
-    return (Array.isArray(rules) ? rules.map(add) : add(rules)) as ProductionRule<NumericValueRef>;
+    const add = (branch: NumericValueRef): NumericValueRef => ({
+      ...branch,
+      value: (branch as { value: number }).value + SELECTION_RING_GAP,
+    });
+    return (Array.isArray(rule) ? rule.map(add) : add(rule)) as ProductionRule<NumericValueRef>;
   };
-  return Object.fromEntries(
-    CORNER_RADIUS_KEYS.map((key) => [key, widen(barCornerRadius[key] as ProductionRule<NumericValueRef>)])
-  ) as RectEncodeEntry;
+  return {
+    cornerRadiusTopLeft: widen(barCornerRadius.cornerRadiusTopLeft as ProductionRule<NumericValueRef>),
+    cornerRadiusTopRight: widen(barCornerRadius.cornerRadiusTopRight as ProductionRule<NumericValueRef>),
+    cornerRadiusBottomLeft: widen(barCornerRadius.cornerRadiusBottomLeft as ProductionRule<NumericValueRef>),
+    cornerRadiusBottomRight: widen(barCornerRadius.cornerRadiusBottomRight as ProductionRule<NumericValueRef>),
+  };
 };
 
 /**
@@ -380,31 +369,32 @@ const getSelectionRingCornerRadiusEncodings = (options: BarSpecOptions): RectEnc
  * Vega expression string, e.g. `test1 ? expr1 : test2 ? expr2 : exprFallback`.
  */
 const productionRuleToExpr = (rule: ProductionRule<NumericValueRef>): string => {
-  const numericRuleToExpr = ({ test: _test, ...valueRef }: NumericRule): string => {
+  const valueRefToExpr = (valueRef: NumericValueRef): string => {
     if ('signal' in valueRef) return valueRef.signal as string;
     if ('scale' in valueRef) {
       const scaleName = valueRef.scale as string;
       if ('field' in valueRef) return `scale('${scaleName}', datum.${valueRef.field as string})`;
-      if ('band' in valueRef) return `bandwidth('${scaleName}') * ${valueRef.band}`;
+      if ('band' in valueRef) return `bandwidth('${scaleName}') * ${valueRef.band as number}`;
       if ('value' in valueRef) return `scale('${scaleName}', ${JSON.stringify(valueRef.value)})`;
     } else if ('value' in valueRef) {
-      return `${valueRef.value}`;
+      return `${valueRef.value as number}`;
     }
     // Fail fast on any production-rule shape this helper wasn't built to serialize, rather than
     // silently emitting an invalid Vega expression like `scale('x', undefined)` or `undefined`.
     throw new Error(`getBarItemSelectionRing: unsupported numeric production rule ${JSON.stringify(valueRef)}`);
   };
 
-  if (!Array.isArray(rule)) return numericRuleToExpr(rule as unknown as NumericRule);
+  if (!Array.isArray(rule)) return valueRefToExpr(rule);
 
-  const rules = rule as unknown as NumericRule[];
-  const fallbackRule = rules.at(-1);
+  // array form = conditional rules, each an optional `test` plus a value ref
+  const branches = rule as ({ test?: string } & NumericValueRef)[];
+  const fallbackRule = branches.at(-1);
   if (fallbackRule === undefined) {
     throw new Error('getBarItemSelectionRing: empty production rule array');
   }
-  let expr = numericRuleToExpr(fallbackRule);
-  for (let i = rules.length - 2; i >= 0; i--) {
-    expr = `${rules[i].test} ? ${numericRuleToExpr(rules[i])} : ${expr}`;
+  let expr = valueRefToExpr(fallbackRule);
+  for (let i = branches.length - 2; i >= 0; i--) {
+    expr = `${branches[i].test} ? ${valueRefToExpr(branches[i])} : ${expr}`;
   }
   return expr;
 };
