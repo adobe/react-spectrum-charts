@@ -90,4 +90,5 @@ export interface LineMarkOptions {
   alternateSegmentLabel?: string;
   primarySeries?: number | string[];
   otherSeriesColor?: string;
+  isAnimate?: boolean;
 }

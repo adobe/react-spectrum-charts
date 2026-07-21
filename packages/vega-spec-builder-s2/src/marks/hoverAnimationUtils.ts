@@ -18,8 +18,11 @@ import {
   HOVER_ACTIVE_TIMER,
   HOVER_ANIMATING,
   HOVER_ANIM_LAST_CHANGE_DATA,
+  HOVER_ANIM_STATE_DATA,
+  HOVER_FRACTION_DATA,
   HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
+  HOVER_TARGET_DATA,
   HOVER_TARGETS,
   HOVER_TIMER,
   SERIES_ID,
@@ -77,7 +80,7 @@ export const getHoverTargetData = ({
     rules.map((r) => `isValid(datum.${r.as}) ? datum.${r.as}`).join(' : ') + ` : ${HOVER_NEUTRAL_TARGET}`;
   transforms.push({ type: 'formula', as: 'target', expr: targetExpr });
 
-  return { name: `${name}_hoverTargetData`, source, transform: transforms };
+  return { name: `${name}_${HOVER_TARGET_DATA}`, source, transform: transforms };
 };
 
 export interface HoverAnimStateOptions {
@@ -92,7 +95,7 @@ export interface HoverAnimStateOptions {
  * @returns ValuesData - the values data for the hover animation state data
  */
 export const getHoverAnimStateData = ({ name, keys, keyField = SERIES_ID }: HoverAnimStateOptions): ValuesData => ({
-  name: `${name}_hoverAnimStateData`,
+  name: `${name}_${HOVER_ANIM_STATE_DATA}`,
   values: keys.map((id) => ({ [keyField]: id, startTime: 0, startValue: 1, target: 1 })),
   on: keys.map((_, i) => getOnTriggerEntry(name, i)),
 });
@@ -106,9 +109,9 @@ export const getHoverAnimStateData = ({ name, keys, keyField = SERIES_ID }: Hove
  * @returns OnTrigger - the on trigger entry for the hoverable item
  */
 const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
-  const animRef = `data('${name}_hoverAnimStateData')[${i}]`;
+  const animRef = `data('${name}_${HOVER_ANIM_STATE_DATA}')[${i}]`;
   const targetSigRef = `${name}_${HOVER_TARGETS}[${i}]`;
-  const fracRef = `(data('${name}_hoverFractionData') || [])[${i}]`;
+  const fracRef = `(data('${name}_${HOVER_FRACTION_DATA}') || [])[${i}]`;
   const hasChanged = `${targetSigRef} !== ${animRef}.target`;
   const fracExpr = `(${fracRef} || {fraction: 1}).fraction`;
   return {
@@ -124,8 +127,8 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
  * @returns SourceData - the source data for the hover fraction data
  */
 export const getHoverFractionData = (name: string): SourceData => ({
-  name: `${name}_hoverFractionData`,
-  source: `${name}_hoverAnimStateData`,
+  name: `${name}_${HOVER_FRACTION_DATA}`,
+  source: `${name}_${HOVER_ANIM_STATE_DATA}`,
   transform: [
     {
       type: 'formula',
@@ -169,7 +172,7 @@ export const addHoverAnimLastChangeData = (data: Data[], name: string): void => 
  * @returns string - the signal for the hover fraction
  */
 export const getHoverFractionSignal = (name: string, keyField: string = SERIES_ID): string => {
-  const fractionData = `data('${name}_hoverFractionData')`;
+  const fractionData = `data('${name}_${HOVER_FRACTION_DATA}')`;
   const lookup = `indexof(pluck(${fractionData}, '${keyField}'), datum.${keyField})`;
   // default to the neutral emphasis level when this datum has no animation row
   return `(${fractionData}[${lookup}] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`;
@@ -222,9 +225,11 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
   if (!hasSignalByName(signals, HOVER_IDLE_TICKS)) {
     signals.push({
       name: HOVER_IDLE_TICKS,
-      // counts consecutive ticks since hoverAnimating went false; reset the moment it's true again
+      // gates hoverActiveTimer's one-tick grace period below: 0 while animating, 1 on the first
+      // idle tick (still grace), 2+ once fully idle. Capped at 2 since nothing checks higher values.
+      // Grace period prevents bug with slow machines skipping the final tick of the animation.
       value: 0,
-      update: `${HOVER_ANIMATING} ? 0 : ${HOVER_IDLE_TICKS} + 1`,
+      update: `${HOVER_ANIMATING} ? 0 : min(${HOVER_TIMER} - ${HOVER_TIMER} + ${HOVER_IDLE_TICKS} + 1, 2)`,
     });
   }
   if (!hasSignalByName(signals, HOVER_ACTIVE_TIMER)) {
@@ -240,6 +245,6 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
 
   signals.push({
     name: `${name}_${HOVER_TARGETS}`,
-    update: `pluck(data('${name}_hoverTargetData'), 'target')`,
+    update: `pluck(data('${name}_${HOVER_TARGET_DATA}'), 'target')`,
   });
 };

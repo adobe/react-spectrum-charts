@@ -85,8 +85,8 @@ type DashboardChartProps = {
  * makes the Line interactive (wires up the voronoi hover overlay + hoveredItem signal), which is
  * what the hover-animation system needs to trigger at all.
  */
-const DashboardChart = ({ data, animations: _animations }: DashboardChartProps): ReactElement => {
-  const chartProps: ChartProps = useChartProps({ data, width: 'auto', height: '100%' });
+const DashboardChart = ({ data, animations }: DashboardChartProps): ReactElement => {
+  const chartProps: ChartProps = useChartProps({ data, animations, width: 'auto', height: '100%' });
   return (
     <div style={{ height: CHART_HEIGHT, overflow: 'hidden', border: '1px solid var(--spectrum-gray-300)' }}>
       <Chart {...chartProps}>
@@ -146,16 +146,16 @@ const DashboardStory: StoryFn<DashboardArgs> = ({
   );
 };
 
-type LargeDatasetArgs = ComponentProps<typeof Line> & { seriesPerChart: number; pointsPerSeries: number };
+type LargeDatasetArgs = ComponentProps<typeof Line> & { seriesPerChart: number; pointsPerSeries: number; animations?: boolean };
 
 /**
  * Performance stress test — a single chart with a large generated dataset. Hover a legend entry
  * or a data point to watch the hover-animation system fade/emphasize at scale (toggle
  * `animations` to compare).
  */
-const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({ seriesPerChart, pointsPerSeries, ...args }): ReactElement => {
+const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({ seriesPerChart, pointsPerSeries, animations, ...args }): ReactElement => {
   const data = useMemo(() => generateLargeData(seriesPerChart, pointsPerSeries), [seriesPerChart, pointsPerSeries]);
-  const chartProps = useChartProps({ ...defaultChartProps, data });
+  const chartProps = useChartProps({ ...defaultChartProps, data, animations });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Value" />

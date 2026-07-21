@@ -13,6 +13,7 @@ import { Data } from 'vega';
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_POINT_SIZE,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
@@ -23,7 +24,9 @@ import {
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
-  CHART_SIZE_POINT_SIZE,
+  HOVER_ANIM_LAST_CHANGE_DATA,
+  HOVER_TARGETS,
+  HOVER_TIMER,
   LINEAR_PADDING,
   MARK_ID,
   SERIES_ID,
@@ -320,11 +323,7 @@ const metricRangeWithDisplayPointMarks = [
   metricRangeGroupMark,
 ];
 
-const displayPointMarks = [
-  line0_groupMark,
-  staticPointBackgroundMark,
-  staticPointMark,
-];
+const displayPointMarks = [line0_groupMark, staticPointBackgroundMark, staticPointMark];
 
 describe('lineSpecBuilder', () => {
   describe('addLine()', () => {
@@ -332,6 +331,37 @@ describe('lineSpecBuilder', () => {
       expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' })).toStrictEqual(
         defaultSpec
       );
+    });
+
+    describe('isAnimate gate', () => {
+      test('an interactive line resolves isAnimate true, registers usermeta.animatedMarks, and creates hover-animation data', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+        expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(true);
+      });
+
+      test('a non-interactive line does not animate', () => {
+        const spec = addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(false);
+      });
+
+      test('the chart-level animations: false prop disables animation even for an interactive line', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+          animations: false,
+        });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(false);
+      });
     });
   });
 
@@ -436,7 +466,9 @@ describe('lineSpecBuilder', () => {
         alternateSegmentKey: 'isEstimated',
       });
       const tableData = resultData.find((d) => d.name === TABLE);
-      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')).toBe(true);
+      expect(
+        tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')
+      ).toBe(true);
 
       const expectedSegmentData = getAlternateSegmentData('line0', `${DEFAULT_TIME_DIMENSION}0`);
       expect(resultData.find((d) => d.name === 'line0_segmented')).toStrictEqual(expectedSegmentData[0]);
@@ -457,8 +489,12 @@ describe('lineSpecBuilder', () => {
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
       const tableData = resultData.find((d) => d.name === TABLE);
-      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')).toBe(true);
-      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(true);
+      expect(
+        tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')
+      ).toBe(true);
+      expect(
+        tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')
+      ).toBe(true);
 
       const expectedSegmentData = getAlternateSegmentData('line0', `${DEFAULT_TIME_DIMENSION}0`);
       expect(resultData.find((d) => d.name === 'line0_segmented')).toStrictEqual(expectedSegmentData[0]);
@@ -488,7 +524,9 @@ describe('lineSpecBuilder', () => {
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
       const tableData = resultData.find((d) => d.name === TABLE);
-      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(false);
+      expect(
+        tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')
+      ).toBe(false);
     });
 
     test('with primarySeries adds primarySeriesFacetData when no alternateSegmentKey or forecasts', () => {
@@ -517,6 +555,31 @@ describe('lineSpecBuilder', () => {
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
       expect(resultData.find((d) => d.name === 'line0_primarySeriesFacetData')).toBeUndefined();
+    });
+
+    describe('hover animation', () => {
+      test('adds the hover-animation data sources when isAnimate is true', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          interactiveMarkName: 'line0',
+          isAnimate: true,
+          seriesIds: ['a', 'b'],
+        });
+        expect(resultData.find((d) => d.name === 'line0_hoverTargetData')).toBeDefined();
+        expect(resultData.find((d) => d.name === 'line0_hoverAnimStateData')).toBeDefined();
+        expect(resultData.find((d) => d.name === 'line0_hoverFractionData')).toBeDefined();
+        expect(resultData.find((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toBeDefined();
+      });
+
+      test('does not add the hover-animation data sources when isAnimate is false', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          interactiveMarkName: 'line0',
+          isAnimate: false,
+        });
+        expect(resultData.find((d) => d.name === 'line0_hoverTargetData')).toBeUndefined();
+        expect(resultData.find((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toBeUndefined();
+      });
     });
   });
 
@@ -600,8 +663,8 @@ describe('lineSpecBuilder', () => {
                   strokeCap: { value: 'round' },
                   strokeOpacity: DEFAULT_OPACITY_RULE,
                   strokeDash: { value: [8, 8] },
-              y: [{ field: 'value', scale: 'yLinear' }],
-            },
+                  y: [{ field: 'value', scale: 'yLinear' }],
+                },
                 update: {
                   x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
                   opacity: [DEFAULT_OPACITY_RULE],
@@ -829,7 +892,9 @@ describe('lineSpecBuilder', () => {
 
     test('with interpolate, should add interpolate to line mark', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, interpolate: 'basis' });
-      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      const innerMarks = (
+        marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }
+      ).marks;
       expect(innerMarks).toHaveLength(1);
       expect(innerMarks[0].type).toBe('line');
       expect(innerMarks[0].encode?.update?.interpolate).toEqual({ value: 'basis' });
@@ -837,31 +902,42 @@ describe('lineSpecBuilder', () => {
 
     test('with gradient and interpolate, should add interpolate to gradient mark and line mark', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, interpolate: 'basis', gradient: true });
-      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      const innerMarks = (
+        marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }
+      ).marks;
       expect(innerMarks).toHaveLength(2);
       expect(innerMarks[0].type).toBe('area');
       expect(innerMarks[0].encode?.update?.interpolate).toEqual({ value: 'basis' });
       expect(innerMarks[1].type).toBe('line');
       expect(innerMarks[1].encode?.update?.interpolate).toEqual({ value: 'basis' });
-     
     });
 
     test('without interpolate, should not add interpolate to line mark', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, interpolate: undefined });
-      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      const innerMarks = (
+        marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }
+      ).marks;
       expect(innerMarks).toHaveLength(1);
       expect(innerMarks[0].type).toBe('line');
       expect(innerMarks[0].encode?.update?.interpolate).toBeUndefined();
     });
 
     test('with alternateSegmentKey uses line0_with_bridges as facet data', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+        alternateSegmentLineType: 'dotted',
+      });
       const groupMark = marks[0] as { from: { facet: { data: string; groupby: string[] } } };
       expect(groupMark.from.facet.data).toBe('line0_with_bridges');
     });
 
     test('with alternateSegmentKey extends facet groupby with segmentId', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+        alternateSegmentLineType: 'dotted',
+      });
       const groupMark = marks[0] as { from: { facet: { groupby: string[] } } };
       expect(groupMark.from.facet.groupby).toContain('line0_segmentId');
     });
@@ -873,7 +949,11 @@ describe('lineSpecBuilder', () => {
     });
 
     test('with alternateSegmentKey, line mark strokeDash uses a signal', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+        alternateSegmentLineType: 'dotted',
+      });
       const groupMark = marks[0] as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
       const strokeDash = groupMark.marks[0].encode.enter.strokeDash;
       expect(strokeDash).toHaveProperty('signal');
@@ -923,7 +1003,9 @@ describe('lineSpecBuilder', () => {
         ...defaultLineOptions,
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
-      const groupMark = marks.find((m) => m.name === 'line0_group') as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
+      const groupMark = marks.find((m) => m.name === 'line0_group') as {
+        marks: { encode: { enter: { strokeDash: unknown } } }[];
+      };
       expect(groupMark?.marks?.[0]?.encode?.enter?.strokeDash).toHaveProperty('signal');
     });
 
@@ -932,7 +1014,9 @@ describe('lineSpecBuilder', () => {
         ...defaultLineOptions,
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
-      const groupMark = marks.find((m) => m.name === 'line0_group') as { marks: { encode: { enter: { y: { field: string }[] } } }[] };
+      const groupMark = marks.find((m) => m.name === 'line0_group') as {
+        marks: { encode: { enter: { y: { field: string }[] } } }[];
+      };
       const yEncoding = groupMark?.marks?.[0]?.encode?.enter?.y;
       expect(yEncoding).toBeDefined();
       expect(Array.isArray(yEncoding)).toBe(true);
@@ -1001,6 +1085,19 @@ describe('lineSpecBuilder', () => {
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(8);
+    });
+
+    describe('hover animation', () => {
+      test('adds the hover-animation engine signals (shared timer + per-mark targets) when isAnimate is true', () => {
+        const signals = addSignals([], { ...defaultLineOptions, isAnimate: true });
+        expect(signals.some((s) => s.name === HOVER_TIMER)).toBe(true);
+        expect(signals.some((s) => s.name === `line0_${HOVER_TARGETS}`)).toBe(true);
+      });
+
+      test('does not add the hover-animation engine signals when isAnimate is false', () => {
+        const signals = addSignals([], { ...defaultLineOptions, isAnimate: false });
+        expect(signals.some((s) => s.name === HOVER_TIMER)).toBe(false);
+      });
     });
   });
 });

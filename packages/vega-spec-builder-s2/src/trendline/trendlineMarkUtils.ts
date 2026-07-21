@@ -344,7 +344,7 @@ const getLineMarkOptions = (
     popoverMarkName,
     scaleType: dimensionScaleType,
     staticPoint,
-
+    isAnimate: false,
     ...override,
   };
 };

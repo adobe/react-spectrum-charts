@@ -119,7 +119,10 @@ export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 export const CONTROLLED_HIGHLIGHTED_TABLE = 'controlledHighlightedTable';
 /** Single-row data source recording timestamp of the most recent hover target change */
-export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData'; 
+export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData';
+export const HOVER_TARGET_DATA = 'hoverTargetData';
+export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
+export const HOVER_FRACTION_DATA = 'hoverFractionData';
 
 // vega data field names
 export const DIMENSION_FIELD = 'rscDimensionField';
@@ -146,7 +149,7 @@ export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
-export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // consecutive ticks since hoverAnimating went false
+export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's one-tick grace period after hoverAnimating goes false
 
 // scale names
 export const COLOR_SCALE = 'color';

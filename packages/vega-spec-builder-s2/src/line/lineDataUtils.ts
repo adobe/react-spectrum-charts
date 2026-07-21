@@ -11,18 +11,13 @@
  */
 import { SourceData } from 'vega';
 
-import {
-  CONTROLLED_HIGHLIGHTED_ITEM,
-  FILTERED_TABLE,
-  GROUP_ID,
-  HOVERED_ITEM,
-  SELECTED_ITEM,
-  SERIES_ID,
-} from '@spectrum-charts/constants';
+import { CONTROLLED_HIGHLIGHTED_ITEM, CONTROLLED_HIGHLIGHTED_SERIES, CONTROLLED_HIGHLIGHTED_TABLE, FILTERED_TABLE, GROUP_ID, HOVERED_ITEM, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/constants';
 
+import { HoverMatchRule } from '../marks/hoverAnimationUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
-import { getCascadeTransforms } from './directLabelUtils';
 import { LineSpecOptions } from '../types';
+import { getCascadeTransforms } from './directLabelUtils';
+
 
 /**
  * gets the data used for highlighting hovered data points
@@ -132,4 +127,38 @@ export const getLineStaticPointData = (
       },
     ],
   };
+};
+
+/**
+ * Constructs the conditions for the hover interaction rules, storing the hover state as target values for each hoverable item
+ * @param lineOptions - the line spec options containing the interactive mark name, popover mark name, combo sibling names, and whether the series is highlighted by group
+ * @returns HoverMatchRule[] - the hover interaction rules
+ */
+export const getLineHoverRules = (
+  { interactiveMarkName, popoverMarkName, comboSiblingNames, isHighlightedByGroup }: LineSpecOptions
+): HoverMatchRule[] => {
+  const rules: HoverMatchRule[] = [];
+
+  if (interactiveMarkName) {
+    const hoveredGroupExpr = `length(data('${interactiveMarkName}_highlightedData')) ? (indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 0) : null`;
+    const hoveredItemExpr = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) ? (${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
+    const hoveredMatchExpr = isHighlightedByGroup ? hoveredGroupExpr : hoveredItemExpr;
+    rules.push({ as: 'hoveredMatch', expr: hoveredMatchExpr });
+  }
+  const controlledTableMatchExpr = `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) ? (indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : 0) : null`;
+  const controlledSeriesMatchExpr = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`;
+  rules.push(
+    { as: 'controlledTableMatch',  expr: controlledTableMatchExpr },
+    { as: 'controlledSeriesMatch', expr: controlledSeriesMatchExpr },
+  );
+  if (popoverMarkName) {
+    const popoverMatchExpr = `isValid(${SELECTED_SERIES}) ? (${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`;
+    rules.push({ as: 'popoverMatch', expr: popoverMatchExpr });
+  }
+  if (comboSiblingNames?.length) {
+    const siblingTest = comboSiblingNames.map((s) => `isValid(${s}_${HOVERED_ITEM})`).join(' || ')
+    const comboSiblingMatchExpr = `(${siblingTest}) ? 1 : 0`;
+    rules.push({ as: 'comboSiblingMatch', expr: comboSiblingMatchExpr });
+  }
+  return rules;
 };

@@ -50,7 +50,16 @@ import { ChartProps } from '../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/HoverAnimation',
   component: Line,
+  argTypes: {
+    animations: {
+      control: 'boolean',
+      description: 'Chart-level toggle for the animated hover/highlight system.',
+    },
+  },
+  args: { animations: true },
 };
+
+type HoverAnimationArgs = ComponentProps<typeof Line> & { animations?: boolean };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
@@ -86,8 +95,8 @@ const groupedData = workspaceTrendsData.map((d) => ({ ...d, category: seriesCate
  * Point hover — hovering a data point emphasizes that point's series (the `hoveredMatch` rule).
  * ChartInspect makes the line interactive, which is what creates the hover-animation data.
  */
-const PointHoverStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps });
+const PointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -101,8 +110,8 @@ const PointHoverStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): Rea
 };
 
 /** Legend hover — hovering a legend entry emphasizes that series (the injected `legendHoverMatch` rule). */
-const LegendHoverStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps });
+const LegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -114,8 +123,8 @@ const LegendHoverStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): Re
 };
 
 /** Grouped legend hover — hovering a grouped legend entry emphasizes every series in that group. */
-const GroupedLegendHoverStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: groupedData });
+const GroupedLegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: groupedData, animations });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -127,8 +136,8 @@ const GroupedLegendHoverStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args
 };
 
 /** Popover selection — clicking a point selects its series (the `popoverMatch` rule) and keeps it emphasized. */
-const PopoverSelectionStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps });
+const PopoverSelectionStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -142,8 +151,8 @@ const PopoverSelectionStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }
 };
 
 /** Controlled highlight — an external `highlightedSeries` chart prop emphasizes a series (the `controlledSeriesMatch` rule). */
-const ControlledHighlightStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Freeform table' });
+const ControlledHighlightStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Freeform table', animations });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -155,8 +164,8 @@ const ControlledHighlightStory: StoryFn<ComponentProps<typeof Line>> = ({ ...arg
 };
 
 /** onClick — an onClick handler makes the line interactive, so hovering points animates the emphasis. */
-const OnClickStory: StoryFn<ComponentProps<typeof Line>> = ({ ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps });
+const OnClickStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
