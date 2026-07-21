@@ -350,29 +350,80 @@ describe('addLegend()', () => {
       expect(addLegend(defaultSpec, { _labelWrap: 1 }).legends?.[0].encode).toStrictEqual(defaultLegend.encode);
     });
 
-    test('should set labelLimit to 0 when both _preferredColumns and _labelWrap are provided', () => {
+    test('should reference the columnLayout signal for labelLimit when both _preferredColumns and _labelWrap are provided', () => {
       const legend = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0];
-      expect(legend?.labelLimit).toBe(0);
+      // getLegendColumnLayout resolves this to 0 (unlimited) at runtime when labelWrap is set
+      expect(legend?.labelLimit).toEqual({ signal: 'legend0_columnLayout.labelLimit' });
     });
 
-    test('should use fit-or-wrap branches for columns when both _preferredColumns and _labelWrap are provided', () => {
+    test('should reference the columnLayout signal for columns when both _preferredColumns and _labelWrap are provided', () => {
       const legend = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0];
-      expect((legend?.columns as { signal: string }).signal).toContain("data('legend0_wrapfit_5')");
+      expect(legend?.columns).toEqual({ signal: 'legend0_columnLayout.columns' });
     });
 
     test('should wrap labels at the dynamic preferred wrap width when both _preferredColumns and _labelWrap are provided', () => {
       const text = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0].encode?.labels
         ?.update?.text as { signal: string };
-      // dynamic width references the fit/wrapfit data sources rather than the static labelLimit
-      expect(text.signal.startsWith('wrapLabelText(datum.value, ')).toBe(true);
-      expect(text.signal).toContain("data('legend0_wrapfit_5')");
+      // dynamic width references the columnLayout signal rather than the static labelLimit
+      expect(text.signal).toStrictEqual("wrapLabelText(datum.value, legend0_columnLayout.wrapWidth, 2, 'normal', 14)");
     });
 
-    test('should emit wrapfit data sources when both _preferredColumns and _labelWrap are provided', () => {
-      const data = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).data;
-      expect(data?.map((d) => d.name)).toEqual(
-        expect.arrayContaining(['legend0_wrapfit_5', 'legend0_wrapfit_3'])
-      );
+    test('should emit the columnLayout signal when both _preferredColumns and _labelWrap are provided', () => {
+      const signals = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).signals;
+      const columnLayoutSignal = signals?.find((s) => 'name' in s && s.name === 'legend0_columnLayout');
+      expect(columnLayoutSignal).toEqual({
+        name: 'legend0_columnLayout',
+        update: "getLegendColumnLayout(data('legend0_labelWidths'), width, [5,3], 2)",
+      });
+    });
+
+    describe('_maxRows', () => {
+      test('should not emit legend0_pages or legend0AggregateAll when _maxRows is not set', () => {
+        const legendSpec = addLegend(defaultSpec, { _preferredColumns: [5, 3] });
+        expect(legendSpec.signals?.some((s) => 'name' in s && s.name === 'legend0_pages')).toBe(false);
+        expect(legendSpec.data?.some((d) => d.name === 'legend0AggregateAll')).toBe(false);
+      });
+
+      test('should not emit legend0_pages when _maxRows is set without _preferredColumns', () => {
+        const legendSpec = addLegend(defaultSpec, { _maxRows: 2 });
+        expect(legendSpec.signals?.some((s) => 'name' in s && s.name === 'legend0_pages')).toBe(false);
+      });
+
+      test('should emit the legend0_pages signal referencing legend0_pagesLabelWidths when _maxRows and _preferredColumns are both set', () => {
+        const signals = addLegend(defaultSpec, { _preferredColumns: [5, 3], _maxRows: 2 }).signals;
+        const pagesSignal = signals?.find((s) => 'name' in s && s.name === 'legend0_pages');
+        expect(pagesSignal).toEqual({
+          name: 'legend0_pages',
+          update: "getLegendPages(data('legend0_pagesLabelWidths'), width, [5,3], 2, 1)",
+        });
+      });
+
+      // Regression: legend0_pages must plan against every entry, not the hiddenEntries-filtered set
+      test('should source legend0AggregateAll from the unaggregated table, without the hiddenEntries filter, even when hiddenEntries is set', () => {
+        const data = addLegend(defaultSpec, {
+          _preferredColumns: [5, 3],
+          _maxRows: 2,
+          hiddenEntries: ['red'],
+        }).data;
+
+        const aggregateAll = data?.find((d) => d.name === 'legend0AggregateAll');
+        expect(aggregateAll).toBeDefined();
+        expect(aggregateAll?.transform?.some((t) => t.type === 'filter')).toBe(false);
+
+        // the live-render aggregate must still carry the hiddenEntries filter
+        const aggregate = data?.find((d) => d.name === 'legend0Aggregate');
+        expect(aggregate?.transform?.some((t) => t.type === 'filter')).toBe(true);
+      });
+
+      test('should source legend0_pagesLabelWidths from legend0AggregateAll, not legend0_labelWidths from the filtered aggregate', () => {
+        const data = addLegend(defaultSpec, { _preferredColumns: [5, 3], _maxRows: 2 }).data;
+
+        const pagesLabelWidths = data?.find((d) => d.name === 'legend0_pagesLabelWidths');
+        expect(pagesLabelWidths).toMatchObject({ source: 'legend0AggregateAll' });
+
+        const labelWidths = data?.find((d) => d.name === 'legend0_labelWidths');
+        expect(labelWidths).toMatchObject({ source: 'legend0Aggregate' });
+      });
     });
 
     test('should add titleLimit if provided', () => {

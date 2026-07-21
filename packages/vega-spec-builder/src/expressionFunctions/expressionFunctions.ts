@@ -12,6 +12,7 @@
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 
+import { DEFAULT_FONT_SIZE, DEFAULT_LEGEND_COLUMN_PADDING } from '@spectrum-charts/constants';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/themes';
 
@@ -21,6 +22,26 @@ export interface LabelDatum {
   index: number;
   label: string;
   value: string | number;
+}
+
+export interface LegendLabelWidthDatum {
+  legendIndex: number;
+  displayLabel: string;
+  labelWidth: number;
+}
+
+export interface LegendColumnLayout {
+  columns: number;
+  /** 0 means unlimited, matching Vega's own labelLimit convention */
+  labelLimit: number;
+  /** dynamic wrap width for the chosen column count; only meaningful when labelWrap > 1 */
+  wrapWidth: number;
+}
+
+export interface LegendPage {
+  columns: number;
+  start: number;
+  end: number;
 }
 
 export const getExpressionFunctions = (
@@ -41,6 +62,9 @@ export const getExpressionFunctions = (
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     formatVerticalAxisTimeLabelTooltips: formatVerticalAxisTimeLabelTooltips(dateLocaleCode),
     getLabelWidth,
+
+    getLegendColumnLayout,
+    getLegendPages,
     truncateText,
     wrapLabelText,
     wrapTruncates,
@@ -357,12 +381,153 @@ const wrapTruncates = (
   return false;
 };
 
+// Rendered width of the default size-250 circle legend symbol (2 * sqrt(250 / PI)), plus the gap
+// Vega's theme leaves at its default (labelOffset), used as the per-item chrome in every column.
+const LEGEND_SYMBOL_RENDERED_WIDTH = 18;
+const LEGEND_LABEL_OFFSET = 4;
+const LEGEND_ITEM_BASE = LEGEND_SYMBOL_RENDERED_WIDTH + LEGEND_LABEL_OFFSET;
+// Safety margin added only to the full-width fit estimate (not the fair-share wrap width, which must
+// stay exact) to match Vega's own per-column Math.ceil and symbol stroke overhang.
+const LEGEND_COLUMN_FIT_MARGIN = 2;
+
+const getFairShareWidth = (width: number, columns: number): number =>
+  (width - (columns - 1) * DEFAULT_LEGEND_COLUMN_PADDING) / columns - LEGEND_ITEM_BASE;
+
+// Matches Vega's per-entry column assignment (column = index % columns) and per-column sizing
+// (align: 'each', each column sized to its own widest label).
+const fitsAtFullWidth = (items: LegendLabelWidthDatum[], width: number, columns: number): boolean => {
+  if (!items.length) return true;
+  const colWidths = new Array(columns).fill(0);
+  items.forEach((item, i) => {
+    const col = i % columns;
+    colWidths[col] = Math.max(colWidths[col], item.labelWidth);
+  });
+  const totalWidth = colWidths.reduce(
+    (sum, w) => sum + Math.ceil(w) + LEGEND_ITEM_BASE + LEGEND_COLUMN_FIT_MARGIN,
+    0
+  );
+  return totalWidth + (columns - 1) * DEFAULT_LEGEND_COLUMN_PADDING <= width;
+};
+
+const fitsWhenWrapped = (
+  items: LegendLabelWidthDatum[],
+  width: number,
+  columns: number,
+  labelWrap: number
+): boolean => {
+  const wrapWidth = getFairShareWidth(width, columns);
+  return items.every((item) => !wrapTruncates(item.displayLabel, wrapWidth, labelWrap, 'normal', DEFAULT_FONT_SIZE));
+};
+
+/**
+ * Picks the largest candidate column count whose labels fit the available width, falling back to
+ * the last (smallest) candidate if none fit. This is the single source of truth for the
+ * `_preferredColumns` layout decision: it drives both the legend's actual rendered `columns`/
+ * `labelLimit` (via a signal referencing this function) and, via `getLegendPages`, upfront
+ * pagination planning outside of Vega — both call this exact same logic against the same measured
+ * label widths, so they can never disagree about how a given set of items would lay out.
+ * @param items ordered legend entries with their measured label widths (see `${name}_labelWidths`)
+ * @param width available width for the legend
+ * @param candidates ordered list of candidate column counts, e.g. [5, 3]
+ * @param labelWrap max lines a label may wrap onto before truncating; 1 (default) disables wrapping
+ */
+const getLegendColumnLayout = (
+  items: LegendLabelWidthDatum[],
+  width: number,
+  candidates: number[],
+  labelWrap = 1
+): LegendColumnLayout => {
+  const lastCandidate = candidates.at(-1);
+  if (lastCandidate === undefined) return { columns: 1, labelLimit: 0, wrapWidth: 0 };
+  const useWrap = labelWrap > 1;
+
+  for (let i = 0; i < candidates.length; i++) {
+    const n = candidates[i];
+    const isLast = i === candidates.length - 1;
+    const fullWidthFits = fitsAtFullWidth(items, width, n);
+    if (fullWidthFits || (useWrap && fitsWhenWrapped(items, width, n, labelWrap))) {
+      if (useWrap) {
+        return { columns: n, labelLimit: 0, wrapWidth: fullWidthFits ? width : getFairShareWidth(width, n) };
+      }
+      return { columns: n, labelLimit: isLast ? getFairShareWidth(width, lastCandidate) : 0, wrapWidth: 0 };
+    }
+  }
+
+  return {
+    columns: lastCandidate,
+    labelLimit: useWrap ? 0 : getFairShareWidth(width, lastCandidate),
+    wrapWidth: useWrap ? getFairShareWidth(width, lastCandidate) : 0,
+  };
+};
+
+/**
+ * Picks the column count for a page starting at the front of `remaining`, testing each candidate
+ * `n` against only the `n * rows` items that would actually land on the page if `n` wins — not the
+ * full `remaining` tail. A label further down the list (destined for a later page) must never
+ * influence this page's column count; testing against the whole tail let a long label past the page
+ * boundary fail a larger candidate's fit test even though that label never renders on this page.
+ */
+const getPageColumnCount = (
+  remaining: LegendLabelWidthDatum[],
+  width: number,
+  candidates: number[],
+  rows: number,
+  labelWrap: number
+): number => {
+  const lastCandidate = candidates.at(-1);
+  if (lastCandidate === undefined) return 1;
+  const useWrap = labelWrap > 1;
+
+  for (const n of candidates) {
+    const pageItems = remaining.slice(0, n * rows);
+    const fullWidthFits = fitsAtFullWidth(pageItems, width, n);
+    if (fullWidthFits || (useWrap && fitsWhenWrapped(pageItems, width, n, labelWrap))) {
+      return n;
+    }
+  }
+  return lastCandidate;
+};
+
+/**
+ * Splits the full ordered legend entry list into pages of at most `columns * maxRows` items each,
+ * recomputing `columns` from scratch for each page's own labels via `getPageColumnCount` (so a page
+ * of short labels can use a wider candidate than a page with one long label) — bounded to just the
+ * items that would land on that page, so a label on a later page can never affect this page's
+ * column count. Exposed via the `${name}_pages` signal for pagination UIs built outside RSC.
+ * @param items ordered legend entries with their measured label widths (see `${name}_labelWidths`)
+ * @param width available width for the legend
+ * @param candidates ordered list of candidate column counts, e.g. [5, 3]
+ * @param maxRows maximum rows of entries allowed per page
+ * @param labelWrap max lines a label may wrap onto before truncating; 1 (default) disables wrapping
+ */
+const getLegendPages = (
+  items: LegendLabelWidthDatum[],
+  width: number,
+  candidates: number[],
+  maxRows: number,
+  labelWrap = 1
+): LegendPage[] => {
+  const rows = Math.max(1, maxRows);
+  const pages: LegendPage[] = [];
+  let start = 0;
+  while (start < items.length) {
+    const remaining = items.slice(start);
+    const columns = getPageColumnCount(remaining, width, candidates, rows, labelWrap);
+    const pageSize = Math.max(1, Math.min(remaining.length, columns * rows));
+    pages.push({ columns, start, end: start + pageSize - 1 });
+    start += pageSize;
+  }
+  return pages;
+};
+
 export const expressionFunctions = {
   consoleLog,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   formatVerticalAxisTimeLabelTooltips: formatVerticalAxisTimeLabelTooltips(),
   getLabelWidth,
+  getLegendColumnLayout,
+  getLegendPages,
   truncateText,
   wrapLabelText,
   wrapTruncates,

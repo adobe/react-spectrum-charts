@@ -15,6 +15,7 @@ import { Locale, TimeLocale } from 'vega';
 
 import {
   LabelDatum,
+  LegendLabelWidthDatum,
   expressionFunctions,
   getLocaleCode,
   formatHorizontalTimeAxisLabels,
@@ -227,6 +228,81 @@ describe('wrapTruncates()', () => {
     expect(expressionFunctions.wrapTruncates('hello world', 12, 3)).toBe(false);
     const lines = expressionFunctions.wrapLabelText('hello world', 12, 3);
     expect(lines.some((line) => line.endsWith('…'))).toBe(false);
+  });
+});
+
+describe('getLegendColumnLayout()', () => {
+  const item = (legendIndex: number, labelWidth = 40): LegendLabelWidthDatum => ({
+    legendIndex,
+    displayLabel: `Item ${legendIndex}`,
+    labelWidth,
+  });
+
+  test('picks the largest candidate that fits at full width', () => {
+    const items = [item(1), item(2), item(3), item(4), item(5)];
+    const layout = expressionFunctions.getLegendColumnLayout(items, 600, [5, 3]);
+    expect(layout.columns).toBe(5);
+    // a non-last candidate fitting means labelLimit is unlimited
+    expect(layout.labelLimit).toBe(0);
+  });
+
+  test('falls back to a smaller candidate when the larger one does not fit', () => {
+    const items = [item(1, 300), item(2), item(3), item(4), item(5)];
+    const layout = expressionFunctions.getLegendColumnLayout(items, 200, [5, 3]);
+    expect(layout.columns).toBe(3);
+  });
+
+  test('falls back to the last candidate and uses its fair-share labelLimit when nothing fits', () => {
+    const items = [item(1, 300), item(2, 300), item(3, 300)];
+    const layout = expressionFunctions.getLegendColumnLayout(items, 140, [5, 3]);
+    expect(layout.columns).toBe(3);
+    expect(layout.labelLimit).toBeGreaterThan(0);
+  });
+
+  test('with labelWrap, a candidate that only fits once wrapped is chosen with labelLimit 0', () => {
+    const displayLabel = 'Supercalifragilisticexpialidocious is quite long';
+    const items = [
+      { legendIndex: 1, displayLabel, labelWidth: expressionFunctions.getLabelWidth(displayLabel, 'normal', 14) },
+    ];
+    const layout = expressionFunctions.getLegendColumnLayout(items, 100, [1], 2);
+    expect(layout.labelLimit).toBe(0);
+    expect(layout.wrapWidth).toBeGreaterThan(0);
+  });
+});
+
+describe('getLegendPages()', () => {
+  const items = (n: number, labelWidth = 40): LegendLabelWidthDatum[] =>
+    Array.from({ length: n }, (_, i) => ({ legendIndex: i + 1, displayLabel: `Item ${i}`, labelWidth }));
+
+  test('returns a single page when everything fits within columns * maxRows', () => {
+    const pages = expressionFunctions.getLegendPages(items(4), 600, [5, 3], 2);
+    expect(pages).toEqual([{ columns: 5, start: 0, end: 3 }]);
+  });
+
+  test('splits into multiple pages with inclusive, contiguous start/end bounds', () => {
+    const pages = expressionFunctions.getLegendPages(items(16), 600, [5, 3], 2);
+    expect(pages).toEqual([
+      { columns: 5, start: 0, end: 9 },
+      { columns: 5, start: 10, end: 15 },
+    ]);
+  });
+
+  // Regression: a long label destined for a later page must not shrink an earlier page's column
+  // count (see planning/research/legend-pagination-columns-mismatch.md).
+  test('a long label past a page boundary does not affect an earlier page column count', () => {
+    const list = items(16);
+    list[11] = { ...list[11], labelWidth: 300 };
+    const pages = expressionFunctions.getLegendPages(list, 600, [5, 3], 2);
+
+    expect(pages[0]).toEqual({ columns: 5, start: 0, end: 9 });
+    const pageWithLongLabel = pages.find((p) => p.start <= 11 && p.end >= 11);
+    expect(pageWithLongLabel?.columns).toBe(3);
+  });
+
+  test('guards against a non-positive maxRows looping forever', () => {
+    const pages = expressionFunctions.getLegendPages(items(3), 600, [5, 3], 0);
+    expect(pages.every((p) => p.end >= p.start)).toBe(true);
+    expect(pages[pages.length - 1].end).toBe(2);
   });
 });
 

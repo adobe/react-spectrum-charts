@@ -25,6 +25,7 @@ const Legend: FC<LegendProps> = ({
   isToggleable = false,
   legendLabels,
   _labelWrap,
+  _maxRows,
   titleLimit,
   lineType,
   lineWidth,

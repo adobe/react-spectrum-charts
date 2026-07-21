@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Legend, Mark, Scale, Signal, SignalRef } from 'vega';
+import { Data, Legend, Mark, Scale, Signal } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -47,13 +47,15 @@ import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
 import {
   Facet,
+  getColumnLayoutExpr,
   getColumns,
   getDisplayLabelExpr,
   getEncodings,
   getHiddenEntriesFilter,
-  getPreferredColumns,
-  getPreferredColumnsData,
-  getPreferredLabelLimit,
+  getLabelWidthsData,
+  getPagesExpr,
+  getPagesLabelWidthsData,
+  getRowCappedAggregateData,
   getSymbolType,
 } from './legendUtils';
 
@@ -137,12 +139,21 @@ export const addLegend = produce<
 
     // if there are any categorical facets, add the legend and supporting data, signals and marks
     if (ordinalFacets.length) {
+      // When _maxRows is set alongside _preferredColumns on a horizontal legend, render from the
+      // row-capped aggregate so the legend itself never exceeds the row cap (see
+      // getRowCappedAggregateData) — otherwise it's a pure passthrough of every visible entry.
+      const usesRowCap =
+        legendOptions._maxRows !== undefined &&
+        legendOptions._preferredColumns !== undefined &&
+        legendOptions._preferredColumns.length > 0 &&
+        ['top', 'bottom'].includes(legendOptions.position);
+
       // add the legendEntries scale
       // this scale is used to generate every combination of the catergorical facets
       spec.scales.push({
         name: `${name}Entries`,
         type: 'ordinal',
-        domain: { data: `${name}Aggregate`, field: `${name}Entries` },
+        domain: { data: usesRowCap ? `${name}AggregateCapped` : `${name}Aggregate`, field: `${name}Entries` },
       });
 
       // just want the unique fields
@@ -226,25 +237,16 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
   // _preferredColumns only applies to horizontal legends, matching getColumns returning undefined for left/right
   const usePreferredColumns =
     _preferredColumns !== undefined && _preferredColumns.length > 0 && ['top', 'bottom'].includes(position);
-  // When both are set, _preferredColumns owns truncation and uses wrapping as a lever; labelLimit
-  // becomes the chosen candidate's dynamic wrap width (see getPreferredWrapWidth).
-  const usePreferredWrap = usePreferredColumns && Boolean(_labelWrap && _labelWrap > 1);
-  let preferredLabelLimit: SignalRef | number | undefined = labelLimit;
-  // In combined mode wrapLabelText already wraps/ellipsizes at the dynamic width, so leave Vega's
-  // labelLimit unlimited (0). Setting it to the fair-share width caused a hairline band where Vega's
-  // text rendering truncated a line our canvas measurement had fit — truncation before wrapping.
-  if (usePreferredWrap) preferredLabelLimit = 0;
-  else if (usePreferredColumns) preferredLabelLimit = getPreferredLabelLimit(name, _preferredColumns as number[]);
+  // columns/labelLimit/wrapWidth are all resolved together by the ${name}_columnLayout signal (see
+  // addSignals)
   const legend: Legend = {
     fill: `${name}Entries`,
     direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
     orient: position,
     title,
     encode: getEncodings(facets, options, userMeta),
-    columns: usePreferredColumns
-      ? getPreferredColumns(name, _preferredColumns as number[], _labelWrap)
-      : getColumns(position, name, labelLimit),
-    labelLimit: preferredLabelLimit,
+    columns: usePreferredColumns ? { signal: `${name}_columnLayout.columns` } : getColumns(position, name, labelLimit),
+    labelLimit: usePreferredColumns ? { signal: `${name}_columnLayout.labelLimit` } : labelLimit,
   };
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
   if (_labelWrap && _labelWrap > 1) {
@@ -312,7 +314,7 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-  (data, { facets, hiddenEntries, keys, name, position, _preferredColumns, _labelWrap }) => {
+  (data, { facets, hiddenEntries, keys, name, position, _preferredColumns, _maxRows }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
     data.push(
@@ -357,10 +359,30 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
       }
     );
 
-    // When _preferredColumns is set on a horizontal legend, emit the per-candidate fit data sources
-    // that the columns/labelLimit signals use to pick the largest count that fits without truncation.
+    // When _preferredColumns is set on a horizontal legend, emit the per-entry label-width data that
+    // the ${name}_columnLayout signal uses to pick the largest count that fits the currently visible
+    // (hiddenEntries-filtered) entries.
     if (_preferredColumns?.length && ['top', 'bottom'].includes(position)) {
-      data.push(...getPreferredColumnsData(name, _preferredColumns, _labelWrap));
+      data.push(getLabelWidthsData(name));
+    }
+
+    // ${name}_pages needs to plan every entry up front, unaffected by hiddenEntries — otherwise
+    // applying one page's hiddenEntries would shrink the  data the next page plan is computed
+    // from. ${name}AggregateAll mirrors ${name}Aggregate without the hiddenEntries filter step.
+    if (_maxRows !== undefined && _preferredColumns?.length && ['top', 'bottom'].includes(position)) {
+      data.push(
+        {
+          name: `${name}AggregateAll`,
+          source: 'table',
+          transform: [
+            { type: 'aggregate', groupby: facets },
+            { type: 'formula', as: `${name}Entries`, expr },
+          ],
+        },
+        getPagesLabelWidthsData(name),
+        // Enforces _maxRows at render time so the legend never visibly wraps past its row cap during resize
+        getRowCappedAggregateData(name, _maxRows)
+      );
     }
 
     if (keys?.length) {
@@ -386,7 +408,7 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
 );
 
 export const addSignals = produce<Signal[], [LegendSpecOptions]>(
-  (signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
+  (signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name, position, _preferredColumns, _labelWrap, _maxRows }) => {
     if (highlight) {
       addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
     }
@@ -394,5 +416,17 @@ export const addSignals = produce<Signal[], [LegendSpecOptions]>(
     // Always emit _labels so the _maxLabelWidth data transform can safely reference it.
     // Defaults to [] when no legendLabels prop is set; the lookup falls through to datum.${name}Entries.
     signals.push(getGenericValueSignal(`${name}_labels`, legendLabels ?? []));
+
+    // _preferredColumns only applies to horizontal legends, matching getColumns returning undefined for left/right
+    const usePreferredColumns =
+      _preferredColumns !== undefined && _preferredColumns.length > 0 && ['top', 'bottom'].includes(position);
+    if (usePreferredColumns) {
+      signals.push({ name: `${name}_columnLayout`, update: getColumnLayoutExpr(name, _preferredColumns, _labelWrap) });
+      // ${name}_pages is only useful for external pagination once _maxRows is set; it's not needed
+      // to render the legend itself, so it's skipped otherwise.
+      if (_maxRows !== undefined) {
+        signals.push({ name: `${name}_pages`, update: getPagesExpr(name, _preferredColumns, _maxRows, _labelWrap) });
+      }
+    }
   }
 );
