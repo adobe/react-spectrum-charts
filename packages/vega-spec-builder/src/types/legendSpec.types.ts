@@ -87,6 +87,17 @@ export interface LegendOptions {
    * behavior outside that use case is not guaranteed. Use at your own risk.
    */
   _preferredColumns?: number[];
+  /**
+   * Maximum rows of legend entries the legend will render, and the row budget used to compute the
+   * `${name}_pages` signal for pagination UIs built outside RSC. Requires `_preferredColumns` to
+   * also be set. The legend itself is capped at `columns * _maxRows` entries. Entries
+   * beyond the cap are dropped from rendering, not just hidden by `hiddenEntries` semantics.
+   *
+   * NOTE: The leading underscore marks this as a targeted, internal-use property. It exists to support
+   * a specific horizontal-legend layout requirement and is not a generally supported prop — its
+   * behavior outside that use case is not guaranteed. Use at your own risk.
+   */
+  _maxRows?: number;
   /** customize the legend symbol shape */
   symbolShape?: SymbolShapeFacet;
   /** legend title */

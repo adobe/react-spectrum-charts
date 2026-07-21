@@ -9,10 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { View } from '@adobe/react-spectrum';
+import { Button, Flex, Text, View } from '@adobe/react-spectrum';
 import { StoryFn } from '@storybook/react';
+import { View as VegaView } from 'vega';
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartPopover, Legend, Line } from '../../../components';
@@ -261,6 +262,87 @@ PreferredColumnsWithWrap.args = {
   highlight: true,
 };
 
+type LegendPage = { columns: number; start: number; end: number };
+
+const arePagesEqual = (a: LegendPage[], b: LegendPage[]): boolean =>
+  a.length === b.length && a.every((p, i) => p.columns === b[i].columns && p.start === b[i].start && p.end === b[i].end);
+
+const PreferredColumnsWithPaginationStory: StoryFn<typeof Legend> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: legendColumns20SeriesData, width: 700, height: 300 });
+  const [pages, setPages] = useState<LegendPage[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
+
+  // A ref lets us attach the listener without ever triggering a render just because a view became ready.
+  const viewRef = useRef<VegaView | undefined>(undefined);
+  const listenerRef = useRef<(() => void) | undefined>(undefined);
+
+  const handleVegaViewReady = useCallback((newView: VegaView) => {
+    if (viewRef.current && listenerRef.current) {
+      viewRef.current.removeSignalListener('legend0_pages', listenerRef.current);
+    }
+    viewRef.current = newView;
+
+    const updatePages = () => {
+      const next: LegendPage[] = newView.signal('legend0_pages') ?? [];
+      // Only update state when the content actually changed, so once the page plan settles React
+      // can bail out of rendering entirely rather than cascading into another spec rebuild.
+      setPages((prev) => (arePagesEqual(prev, next) ? prev : next));
+    };
+    listenerRef.current = updatePages;
+    updatePages();
+    newView.addSignalListener('legend0_pages', updatePages);
+  }, []);
+
+  useEffect(() => {
+    if (pageIndex > pages.length - 1) setPageIndex(0);
+  }, [pages, pageIndex]);
+
+  const hiddenEntries = useMemo(() => {
+    const page = pages[pageIndex];
+    if (!page) return [];
+    const visibleSeries = twentySeriesNames.slice(page.start, page.end + 1);
+    return twentySeriesNames.filter((series) => !visibleSeries.includes(series));
+  }, [pages, pageIndex]);
+
+  return (
+    <Flex direction="column" gap="size-100">
+      <Chart {...chartProps} onVegaViewReady={handleVegaViewReady}>
+        <Axis position="left" grid />
+        <Axis position="bottom" labelFormat="time" baseline ticks />
+        <Line color="series" dimension="datetime" metric="value" scaleType="time" />
+        <Legend {...args} hiddenEntries={hiddenEntries} />
+      </Chart>
+      <Flex gap="size-100" alignItems="center">
+        <Button
+          variant="secondary"
+          onPress={() => setPageIndex((i) => Math.max(0, i - 1))}
+          isDisabled={pageIndex === 0}
+        >
+          Previous
+        </Button>
+        <Text>
+          Page {pages.length ? pageIndex + 1 : 0} of {pages.length}
+        </Text>
+        <Button
+          variant="secondary"
+          onPress={() => setPageIndex((i) => Math.min(pages.length - 1, i + 1))}
+          isDisabled={pageIndex >= pages.length - 1}
+        >
+          Next
+        </Button>
+      </Flex>
+    </Flex>
+  );
+};
+
+const PreferredColumnsWithPagination = bindWithProps(PreferredColumnsWithPaginationStory);
+PreferredColumnsWithPagination.args = {
+  _preferredColumns: [5, 3],
+  _maxRows: 2,
+  _labelWrap: 2,
+  highlight: true,
+};
+
 export {
   Basic,
   Descriptions,
@@ -282,4 +364,5 @@ export {
   PreferredColumnsLadder,
   PreferredColumnsLongLabel,
   PreferredColumnsWithWrap,
+  PreferredColumnsWithPagination,
 };
