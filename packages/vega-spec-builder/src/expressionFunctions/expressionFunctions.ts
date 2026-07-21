@@ -420,6 +420,37 @@ const fitsWhenWrapped = (
 };
 
 /**
+ * Builds the layout for a candidate `n` that qualifies (fits, at full width or wrapped), or
+ * `undefined` if it doesn't. Isolates the fit test and the resulting labelLimit/wrapWidth
+ * computation so `getLegendColumnLayout`'s loop body stays a single, flat check.
+ */
+const getColumnLayoutForCandidate = (
+  items: LegendLabelWidthDatum[],
+  width: number,
+  n: number,
+  lastCandidate: number,
+  useWrap: boolean,
+  labelWrap: number
+): LegendColumnLayout | undefined => {
+  const fullWidthFits = fitsAtFullWidth(items, width, n);
+  const wrapFits = useWrap && !fullWidthFits && fitsWhenWrapped(items, width, n, labelWrap);
+  if (!fullWidthFits && !wrapFits) return undefined;
+
+  if (useWrap) {
+    return { columns: n, labelLimit: 0, wrapWidth: fullWidthFits ? width : getFairShareWidth(width, n) };
+  }
+  const isLast = n === lastCandidate;
+  return { columns: n, labelLimit: isLast ? getFairShareWidth(width, lastCandidate) : 0, wrapWidth: 0 };
+};
+
+/** Layout used when no candidate fits: force the last (smallest) candidate, truncating to its fair share. */
+const getFallbackColumnLayout = (width: number, lastCandidate: number, useWrap: boolean): LegendColumnLayout => ({
+  columns: lastCandidate,
+  labelLimit: useWrap ? 0 : getFairShareWidth(width, lastCandidate),
+  wrapWidth: useWrap ? getFairShareWidth(width, lastCandidate) : 0,
+});
+
+/**
  * Picks the largest candidate column count whose labels fit the available width, falling back to
  * the last (smallest) candidate if none fit. This is the single source of truth for the
  * `_preferredColumns` layout decision: it drives both the legend's actual rendered `columns`/
@@ -441,23 +472,14 @@ const getLegendColumnLayout = (
   if (lastCandidate === undefined) return { columns: 1, labelLimit: 0, wrapWidth: 0 };
   const useWrap = labelWrap > 1;
 
-  for (let i = 0; i < candidates.length; i++) {
-    const n = candidates[i];
-    const isLast = i === candidates.length - 1;
-    const fullWidthFits = fitsAtFullWidth(items, width, n);
-    if (fullWidthFits || (useWrap && fitsWhenWrapped(items, width, n, labelWrap))) {
-      if (useWrap) {
-        return { columns: n, labelLimit: 0, wrapWidth: fullWidthFits ? width : getFairShareWidth(width, n) };
-      }
-      return { columns: n, labelLimit: isLast ? getFairShareWidth(width, lastCandidate) : 0, wrapWidth: 0 };
+  for (const n of candidates) {
+    const layout = getColumnLayoutForCandidate(items, width, n, lastCandidate, useWrap, labelWrap);
+    if (layout) {
+      return layout;
     }
   }
 
-  return {
-    columns: lastCandidate,
-    labelLimit: useWrap ? 0 : getFairShareWidth(width, lastCandidate),
-    wrapWidth: useWrap ? getFairShareWidth(width, lastCandidate) : 0,
-  };
+  return getFallbackColumnLayout(width, lastCandidate, useWrap);
 };
 
 /**
