@@ -111,11 +111,6 @@ const addGroupedFractionData = (
  */
 export const injectLegendHoverIntoData = (legendName: string, data: Data[], keys?: string[]): void => {
   const groupIdField = `${legendName}_${GROUP_ID}`;
-  // The ungrouped branch matches on SERIES_ID, not the animated mark's own identity field, so legend
-  // hover matches at the series level even for marks whose animation identity is finer-grained (e.g. a
-  // future bar mark keyed by rscMarkId). This requires every animated mark's own `_hoverTargetData`
-  // aggregate to include SERIES_ID in its groupby regardless of its animation keyField — see the design
-  // doc §11 ("Extending to other marks") for that contract.
   const matchExpr = keys?.length
     ? `${legendName}_${HOVERED_SERIES} === datum.${legendName}_${GROUP_ID} ? 1 : 0`
     : `${legendName}_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : 0`;
