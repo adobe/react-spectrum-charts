@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Signal } from 'vega';
+import { NumericValueRef, ProductionRule, Signal } from 'vega';
 
-import { DIMENSION_HOVER_AREA, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, FADE_FACTOR, HOVERED_ITEM } from '@spectrum-charts/constants';
 
 /**
  * Returns the Vega mark name to stamp onto an axis's primary label encode block so that
@@ -53,4 +53,30 @@ export const addAxisLabelHoverSignalWiring = (
   }
 
   return signals;
+};
+
+/**
+ * Returns a fillOpacity production rule for axis labels that fades every label except the one
+ * matching the currently-hovered dimension value, mirroring the fade applied to bars by the same
+ * dimension-hover-area signal(s). Reuses `datum.value` (the label's own dimension value) rather
+ * than a named field, since that's how Vega represents an axis label's datum.
+ *
+ * Only reacts to the dimension-hover-area signal (axis label hover, or hovering the dimension area
+ * on stacked/dodged bars) - direct item-level bar hover (`<bar>_hoveredItem`) is intentionally not
+ * included, since a single hovered segment doesn't represent "this whole category is hovered."
+ */
+export const getAxisLabelDimensionFillOpacity = (
+  barDimensionFields: { name: string; dimension: string }[],
+  scaleField: string | undefined
+): ProductionRule<NumericValueRef> => {
+  const matchingBars = barDimensionFields.filter(({ dimension }) => dimension === scaleField);
+  const rules: ({ test?: string } & NumericValueRef)[] = matchingBars.map(({ name, dimension }) => {
+    const signalName = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
+    return {
+      test: `isValid(${signalName})`,
+      signal: `${signalName}.${dimension} === datum.value ? 1 : ${FADE_FACTOR}`,
+    };
+  });
+  rules.push({ value: 1 });
+  return rules;
 };

@@ -30,6 +30,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
   DEFAULT_SECONDARY_COLOR,
+  FADE_FACTOR,
   FILTERED_TABLE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
@@ -528,6 +529,12 @@ describe('Chart spec builder', () => {
         update: '{ browser: datum.value }',
       });
       expect(signal?.on).toContainEqual({ events: '@axis0_labelHover:mouseout', update: 'null' });
+
+      // other axis labels dim along with the bars when one is hovered
+      expect(axis?.encode?.labels?.update?.fillOpacity).toContainEqual({
+        test: 'isValid(bar0_dimensionHoverArea_hoveredItem)',
+        signal: `bar0_dimensionHoverArea_hoveredItem.browser === datum.value ? 1 : ${FADE_FACTOR}`,
+      });
     });
 
     test('wires axis label hover using the trellis group inner scale field, not the outer trellis/facet field', () => {

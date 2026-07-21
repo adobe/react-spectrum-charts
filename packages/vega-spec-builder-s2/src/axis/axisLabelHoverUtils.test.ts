@@ -11,9 +11,13 @@
  */
 import { Signal } from 'vega';
 
-import { DIMENSION_HOVER_AREA, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, FADE_FACTOR, HOVERED_ITEM } from '@spectrum-charts/constants';
 
-import { addAxisLabelHoverSignalWiring, getAxisLabelHoverMarkName } from './axisLabelHoverUtils';
+import {
+  addAxisLabelHoverSignalWiring,
+  getAxisLabelDimensionFillOpacity,
+  getAxisLabelHoverMarkName,
+} from './axisLabelHoverUtils';
 
 const getDimensionHoverAreaSignal = (barName: string): Signal => ({
   description: `Tracks the hovered item for ${barName}_${DIMENSION_HOVER_AREA}`,
@@ -111,5 +115,43 @@ describe('addAxisLabelHoverSignalWiring()', () => {
     signals = addAxisLabelHoverSignalWiring(signals, [{ name: 'bar0', dimension: 'category' }], 'category', 'axis0_labelHover');
 
     expect(signals[0].on).toHaveLength(4);
+  });
+});
+
+describe('getAxisLabelDimensionFillOpacity()', () => {
+  test('returns a fade rule keyed on the matching bar dimension-hover-area signal, plus a default', () => {
+    const rules = getAxisLabelDimensionFillOpacity([{ name: 'bar0', dimension: 'category' }], 'category');
+
+    expect(rules).toHaveLength(2);
+    expect(rules[0]).toStrictEqual({
+      test: 'isValid(bar0_dimensionHoverArea_hoveredItem)',
+      signal: `bar0_dimensionHoverArea_hoveredItem.category === datum.value ? 1 : ${FADE_FACTOR}`,
+    });
+    expect(rules[1]).toStrictEqual({ value: 1 });
+  });
+
+  test('returns just the default rule when no barDimensionFields entry matches scaleField', () => {
+    const rules = getAxisLabelDimensionFillOpacity([{ name: 'bar0', dimension: 'category' }], 'otherField');
+    expect(rules).toStrictEqual([{ value: 1 }]);
+  });
+
+  test('returns just the default rule when scaleField is undefined', () => {
+    const rules = getAxisLabelDimensionFillOpacity([{ name: 'bar0', dimension: 'category' }], undefined);
+    expect(rules).toStrictEqual([{ value: 1 }]);
+  });
+
+  test('returns one rule per matching bar for multi-bar (e.g. combo) charts sharing a dimension', () => {
+    const rules = getAxisLabelDimensionFillOpacity(
+      [
+        { name: 'bar0', dimension: 'category' },
+        { name: 'bar1', dimension: 'category' },
+      ],
+      'category'
+    );
+
+    expect(rules).toHaveLength(3);
+    expect(rules[0]).toHaveProperty('test', 'isValid(bar0_dimensionHoverArea_hoveredItem)');
+    expect(rules[1]).toHaveProperty('test', 'isValid(bar1_dimensionHoverArea_hoveredItem)');
+    expect(rules[2]).toStrictEqual({ value: 1 });
   });
 });

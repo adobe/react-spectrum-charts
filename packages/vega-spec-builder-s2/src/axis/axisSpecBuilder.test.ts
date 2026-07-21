@@ -558,6 +558,13 @@ describe('Spec builder, Axis', () => {
         })[0];
         expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
         expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.fillOpacity).toStrictEqual([
+          {
+            test: 'isValid(bar0_dimensionHoverArea_hoveredItem)',
+            signal: `bar0_dimensionHoverArea_hoveredItem.category === datum.value ? 1 : ${FADE_FACTOR}`,
+          },
+          { value: 1 },
+        ]);
       });
 
       test('does not stamp a name or force interactive when no barDimensionFields entry matches scaleField', () => {
@@ -569,6 +576,7 @@ describe('Spec builder, Axis', () => {
         })[0];
         expect(axis.encode?.labels).not.toHaveProperty('name');
         expect(axis.encode?.labels).toHaveProperty('interactive', false);
+        expect(axis.encode?.labels?.update).not.toHaveProperty('fillOpacity');
       });
 
       test('does not stamp a name or force interactive when usermeta.barDimensionFields is absent', () => {

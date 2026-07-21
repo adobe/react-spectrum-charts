@@ -39,7 +39,11 @@ import {
 import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
-import { addAxisLabelHoverSignalWiring, getAxisLabelHoverMarkName } from './axisLabelHoverUtils';
+import {
+  addAxisLabelHoverSignalWiring,
+  getAxisLabelDimensionFillOpacity,
+  getAxisLabelHoverMarkName,
+} from './axisLabelHoverUtils';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import {
@@ -392,99 +396,13 @@ export const addAxes = produce<
   const newAxes: Axis[] = [];
   // adds all the trellis axis options if this is a trellis axis
   axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
-  const {
-    baseline,
-    colorScheme,
-    usermeta,
-    labelAlign,
-    labelFontWeight,
-    labelFormat,
-    labelOrientation,
-    hideDefaultLabels,
-    name,
-    position,
-    hasTooltip,
-  } = axisOptions;
+  const { baseline, labelFormat, position, usermeta } = axisOptions;
 
   if (labelFormat === 'time') {
     // time axis actually needs two axes. A primary and secondary.
     newAxes.push(...getTimeAxes(scaleName, axisOptions));
   } else {
-    const axis = getDefaultAxis(axisOptions, scaleName);
-
-    const hasMatchingDimensionBar =
-      !hideDefaultLabels && (usermeta?.barDimensionFields ?? []).some((field) => field.dimension === scaleField);
-    if (hasMatchingDimensionBar) {
-      axis.encode = deepmerge(axis.encode ?? {}, {
-        labels: {
-          name: getAxisLabelHoverMarkName(name),
-          interactive: true,
-        },
-      });
-    }
-
-    // if labels exist, add them to the axis
-    if (axisOptions.labels.length) {
-      const labels = axisOptions.labels;
-      const signalName = `${name}_labels`;
-      axis.values = labels.map((label) => getLabelValue(label));
-      const baseEncoding = getAxisLabelsEncoding(
-        labelAlign,
-        labelFontWeight,
-        'label',
-        labelOrientation,
-        position,
-        signalName
-      );
-      const encodingWithOptionalTooltip = hasTooltip
-        ? {
-            ...baseEncoding,
-            update: {
-              ...baseEncoding.update,
-              tooltip: { signal: 'datum.value' },
-            },
-          }
-        : baseEncoding;
-      axis.encode = {
-        labels: {
-          name: getAxisLabelHoverMarkName(name),
-          interactive: hasTooltip || hasMatchingDimensionBar,
-          ...encodingWithOptionalTooltip,
-        },
-      };
-    }
-
-    // if sublabels exist, create a new axis for the sub labels
-    if (hasSubLabels(axisOptions)) {
-      axis.titlePadding = 24;
-
-      // add sublabel axis
-      const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
-
-      handleDualMetricAxisConfig({
-        dualMetricAxis,
-        axis: subLabelAxis,
-        usermeta,
-        scaleName,
-        colorScheme,
-        position,
-        incrementMetricAxisCount: false,
-      });
-
-      newAxes.push(subLabelAxis);
-    }
-
-    handleDualMetricAxisConfig({
-      dualMetricAxis,
-      axis,
-      usermeta,
-      scaleName,
-      colorScheme,
-      position,
-      incrementMetricAxisCount: true,
-    });
-
-    newAxes.unshift(axis);
+    buildStandardAxes(newAxes, axisOptions, scaleName, usermeta, scaleField, dualMetricAxis);
   }
 
   // add baseline
@@ -492,26 +410,7 @@ export const addAxes = produce<
     newAxes[0] = setAxisBaseline(newAxes[0], baseline);
   }
 
-  if (scaleTypeSupportsThumbnails(axisOptions.scaleType)) {
-    for (const axisThumbnail of getAxisThumbnails(axisOptions)) {
-      const encodings: AxisEncode = {
-        labels: {
-          update: {
-            ...getAxisThumbnailLabelOffset(axisThumbnail.name, position),
-          },
-        },
-      };
-
-      // apply encodings to all axes
-      for (const axis of newAxes) {
-        if (axis.encode) {
-          axis.encode = deepmerge(axis.encode, encodings);
-        } else {
-          axis.encode = encodings;
-        }
-      }
-    }
-  }
+  applyAxisThumbnailEncodings(newAxes, axisOptions, position);
 
   const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
   for (const axisAnnotation of axisAnnotations) {
@@ -520,6 +419,135 @@ export const addAxes = produce<
 
   axes.push(...newAxes);
 });
+
+/**
+ * Builds the standard (non-time-format) axis - and, if configured, its paired sub-label axis -
+ * and pushes them onto `newAxes`. Split out of `addAxes` to keep cognitive complexity down.
+ */
+function buildStandardAxes(
+  newAxes: Axis[],
+  axisOptions: AxisSpecOptions,
+  scaleName: string,
+  usermeta: UserMeta,
+  scaleField?: string,
+  dualMetricAxis?: boolean
+): void {
+  const { colorScheme, position } = axisOptions;
+  const axis = getDefaultAxis(axisOptions, scaleName);
+
+  applyAxisLabelEncodings(axis, axisOptions, usermeta, scaleField);
+
+  // if sublabels exist, create a new axis for the sub labels
+  if (hasSubLabels(axisOptions)) {
+    axis.titlePadding = 24;
+
+    // add sublabel axis
+    const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
+
+    handleDualMetricAxisConfig({
+      dualMetricAxis,
+      axis: subLabelAxis,
+      usermeta,
+      scaleName,
+      colorScheme,
+      position,
+      incrementMetricAxisCount: false,
+    });
+
+    newAxes.push(subLabelAxis);
+  }
+
+  handleDualMetricAxisConfig({
+    dualMetricAxis,
+    axis,
+    usermeta,
+    scaleName,
+    colorScheme,
+    position,
+    incrementMetricAxisCount: true,
+  });
+
+  newAxes.unshift(axis);
+}
+
+/**
+ * Stamps hover-mark-name/interactive/fillOpacity encoding onto an axis's labels, for both the
+ * default (auto-generated) label case and the custom `labels` prop case. Split out of `addAxes`
+ * to keep cognitive complexity down.
+ */
+function applyAxisLabelEncodings(
+  axis: Axis,
+  axisOptions: AxisSpecOptions,
+  usermeta: UserMeta,
+  scaleField?: string
+): void {
+  const { hideDefaultLabels, labelAlign, labelFontWeight, labelOrientation, name, position, hasTooltip } = axisOptions;
+
+  const matchingBarDimensionFields = hideDefaultLabels
+    ? []
+    : (usermeta?.barDimensionFields ?? []).filter((field) => field.dimension === scaleField);
+  const hasMatchingDimensionBar = matchingBarDimensionFields.length > 0;
+
+  if (hasMatchingDimensionBar) {
+    axis.encode = deepmerge(axis.encode ?? {}, {
+      labels: {
+        name: getAxisLabelHoverMarkName(name),
+        interactive: true,
+        update: {
+          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields, scaleField),
+        },
+      },
+    });
+  }
+
+  // if labels exist, add them to the axis
+  if (!axisOptions.labels.length) return;
+
+  const labels = axisOptions.labels;
+  const signalName = `${name}_labels`;
+  axis.values = labels.map((label) => getLabelValue(label));
+  const baseEncoding = getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', labelOrientation, position, signalName);
+  const encodingWithOptionalTooltip = hasTooltip
+    ? { ...baseEncoding, update: { ...baseEncoding.update, tooltip: { signal: 'datum.value' } } }
+    : baseEncoding;
+
+  axis.encode = {
+    labels: {
+      name: getAxisLabelHoverMarkName(name),
+      interactive: hasTooltip || hasMatchingDimensionBar,
+      ...encodingWithOptionalTooltip,
+      ...(hasMatchingDimensionBar && {
+        update: {
+          ...encodingWithOptionalTooltip.update,
+          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields, scaleField),
+        },
+      }),
+    },
+  };
+}
+
+/**
+ * Applies axis-thumbnail label offset encodings to every axis built for this scale. Split out of
+ * `addAxes` to keep cognitive complexity down (this was the deepest-nested block: if -> for -> for -> if/else).
+ */
+function applyAxisThumbnailEncodings(newAxes: Axis[], axisOptions: AxisSpecOptions, position: Position): void {
+  if (!scaleTypeSupportsThumbnails(axisOptions.scaleType)) return;
+
+  for (const axisThumbnail of getAxisThumbnails(axisOptions)) {
+    const encodings: AxisEncode = {
+      labels: {
+        update: {
+          ...getAxisThumbnailLabelOffset(axisThumbnail.name, position),
+        },
+      },
+    };
+
+    // apply encodings to all axes
+    for (const axis of newAxes) {
+      axis.encode = axis.encode ? deepmerge(axis.encode, encodings) : encodings;
+    }
+  }
+}
 
 /**
  * Adds dual metric axis configuration to the axis
