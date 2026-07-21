@@ -183,7 +183,7 @@ export const addLine = produce<
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
-    lineOptions.isAnimate = animations !== false && usesHoverAnimation(lineOptions);
+    lineOptions.isAnimate = usesHoverAnimation(animations, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     if (lineOptions.isAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
     spec.data = addData(spec.data ?? [], lineOptions);
@@ -199,9 +199,11 @@ export const addLine = produce<
  * Whether the line participates in the hover-animation system.
  * Computed once in `addLine` and stored on `options.isAnimate`; every downstream gate reads that
  * resolved boolean. A highlight legend counts (via legendHighlightSignals) so both the legend and the line animate.
+ * `animations === false` opts out unconditionally, regardless of the other conditions.
  */
-const usesHoverAnimation = (options: LineSpecOptions): boolean =>
-  isInteractive(options) || options.highlightedItem !== undefined || (options.legendHighlightSignals?.length ?? 0) > 0;
+const usesHoverAnimation = (animations: boolean | undefined, options: LineSpecOptions): boolean =>
+  animations !== false &&
+  (isInteractive(options) || options.highlightedItem !== undefined || (options.legendHighlightSignals?.length ?? 0) > 0);
 
 /**
  * Gets the unique series ids for the line
