@@ -369,6 +369,13 @@ yet — see above). The `!Array.isArray` guards in `setHoverOpacityForMarks` / `
 then re-engage (array ⇒ old legend-hover path applies), so the entire old system is restored coherently by
 flipping one prop.
 
+**`setHoverOpacityForMarks` skips animated marks explicitly.** When animated, `update.opacity` is a single
+`{ signal: ... }` ref (not an array), and legend hover for that mark is already delivered through the
+animation pipeline (`injectLegendHoverIntoData`, §7). `setHoverOpacityForMarks` takes an `animatedMarks:
+string[]` param (`usermeta.animatedMarks`, §7) and returns early for any mark whose name is in it, before
+touching `update.opacity`. `setHoverStrokeWidthForMarks` has no such guard — stroke width isn't animated
+yet (§1).
+
 **Why resolve-once-and-thread rather than each function recomputing?** Two reasons:
 1. **Type visibility.** The encoding functions are typed on `LineMarkOptions`, which historically didn't
    carry `legendHighlightSignals`, so if they recomputed the gate themselves they couldn't see the legend
@@ -404,7 +411,7 @@ sequential builder calls operating on the same spec.
 Flow:
 1. `addLine` registers the mark: `addUserMetaAnimatedMark(spec.usermeta, lineName)` (gated by
    `usesHoverAnimation`, so the list truthfully reflects marks that have `_hoverFractionData`).
-2. `addLegend` runs **after** the marks. `injectLegendHoverIntoHoverData(legendName, data, keys)` mutates
+2. `addLegend` runs **after** the marks. `injectLegendHoverIntoData(legendName, data, keys)` mutates
    each `*_hoverTargetData`: renames the existing `target` formula to `conditions`, adds a
    `legendHoverMatch` formula, and rebuilds `target` as
    `hoveredMatch ?? legendHoverMatch ?? conditions`. For grouped legends it also aggregates a
@@ -453,7 +460,7 @@ one shared row for the whole chart (§3f).
 | `vega-spec-builder-s2/src/line/lineSpecBuilder.ts` | `usesHoverAnimation` gate; wires data/signals/registration in `addData`/`addSignals`/`addLine` |
 | `vega-spec-builder-s2/src/trendline/trendlineMarkUtils.ts` | `getLineMarkOptions` — sets `isAnimate: false` for trendline marks (§6 overlay exception) |
 | `vega-spec-builder-s2/src/metricRange/metricRangeUtils.ts` | `getMetricRangeMark` — sets `isAnimate: false` for the boundary line (§6 overlay exception) |
-| `vega-spec-builder-s2/src/legend/legendHighlightUtils.ts` | `injectLegendHoverIntoHoverData`, `getLegendHighlightSignals` |
+| `vega-spec-builder-s2/src/legend/legendHighlightUtils.ts` | `injectLegendHoverIntoData`, `getLegendHighlightSignals` |
 | `vega-spec-builder-s2/src/legend/legendUtils.ts` | `getLegendOpacity` (legend consumer) |
 | `vega-spec-builder-s2/src/specUtils.ts` + `types/specUtil.types.ts` | `addUserMetaAnimatedMark`, `animatedMarks` on `UserMeta` |
 
@@ -518,13 +525,16 @@ mark could pass `rscMarkId` (bar) etc. — see §11.
 3. Write the mark's match rules (`getLineHoverRules` analog).
 4. Write consumers (opacity, stroke width, …) that map `getHoverFractionSignal` via the ramps.
 5. Add the `usesHoverAnimation` gate and wire data/signals/registration + gate the encodings in lockstep.
-6. Legend: `animatedMarks` UserMeta registry, `injectLegendHoverIntoHoverData`, `getLegendOpacity`.
+6. Legend: `animatedMarks` UserMeta registry, `injectLegendHoverIntoData`, `getLegendOpacity`.
 
 **Extending to other marks (e.g. bar):** the engine is reusable. Choose the identity `keyField` = the
 finest independently-animatable unit (series for line; `rscMarkId` for bar). Write mark-specific match
 rules and consumers. For bars, carry both `rscMarkId` (animation identity) and `rscSeriesId`/group in the
 target-data `groupby` so series/legend-level highlights can set the target for all bars of a series.
-Everything downstream of `target` is generic.
+Everything downstream of `target` is generic. This isn't optional: `injectLegendHoverIntoData`'s ungrouped
+match expression hard-codes `datum.${SERIES_ID}` (not the mark's own `keyField`) precisely so legend hover
+matches at the series level regardless of animation identity — skip `rscSeriesId` in a new mark's groupby
+and legend-hover injection silently stops matching (no error, nothing highlights).
 
 **Adding a new animated property:** just add a consumer that maps `getHoverFractionSignal` (via
 `getDeemphasisRamp`, `getEmphasisRamp`, or its own math). No engine change.
@@ -558,4 +568,8 @@ Everything downstream of `target` is generic.
   `isAnimate` field is new in this branch; spreading the parent line's options into a renamed mark
   silently carries it along unless overridden, which is why these two needed the same fix already applied
   to the overlay.)
+- **Legend integration (done)** (§7): `injectLegendHoverIntoData` wired into `addData` (`legendSpecBuilder.ts`)
+  behind `if (highlight)`; `getLegendOpacity` wired into `getHoverEncodings` (`legendUtils.ts`), replacing
+  `getOpacityEncoding` for labels/symbols. `setHoverOpacityForMarks` takes the `animatedMarks` param (§6) so
+  it no longer clobbers animated lines' opacity when a legend's `highlight` triggers it.
 - **Other marks** (bar, area, …) don't use the system yet.

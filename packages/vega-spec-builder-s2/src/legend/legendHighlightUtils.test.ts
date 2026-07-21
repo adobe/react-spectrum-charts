@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Mark } from 'vega';
+import { AggregateTransform, Data, FormulaTransform, LookupTransform, Mark } from 'vega';
 
 import {
   CHART_SIZE_HOVER_STROKE_WIDTH,
@@ -18,6 +18,8 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_STROKE_WIDTH_RULE,
   FADE_FACTOR,
+  FILTERED_TABLE,
+  GROUP_ID,
   HOVERED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -26,6 +28,7 @@ import {
   encodingUsesScale,
   getHighlightOpacityRule,
   getHighlightStrokeWidthRule,
+  injectLegendHoverIntoData,
   setHoverOpacityForMarks,
   setHoverStrokeWidthForMarks,
 } from './legendHighlightUtils';
@@ -77,6 +80,107 @@ const defaultOpacityEncoding = {
     },
   ],
 };
+
+const hoverTargetData: Data = {
+  name: 'line0_hoverTargetData',
+  source: FILTERED_TABLE,
+  transform: [
+    { type: 'aggregate', groupby: [SERIES_ID] },
+    { type: 'formula', as: 'hoveredMatch', expr: `isValid(hoveredItem) ? 1 : null` },
+    { type: 'formula', as: 'target', expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : 0.5` },
+  ],
+};
+
+const hoverFractionData: Data = {
+  name: 'line0_hoverFractionData',
+  source: 'line0_hoverAnimStateData',
+  transform: [{ type: 'formula', as: 'fraction', expr: 'lerp(...)' }],
+};
+
+const getExpectedLegendHoverFormulas = (legendName: string, matchExpr: string): FormulaTransform[] => [
+  {
+    type: 'formula',
+    as: 'legendHoverMatch',
+    expr: `(isValid(${legendName}_${HOVERED_SERIES})) ? ((${matchExpr}) ? 1 : 0) : null`,
+  },
+  {
+    type: 'formula',
+    as: 'target',
+    expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : isValid(datum.legendHoverMatch) ? datum.legendHoverMatch : datum.conditions`,
+  },
+];
+
+describe('injectLegendHoverIntoData()', () => {
+  test('renames the existing target formula to conditions and appends the legendHoverMatch/target formulas', () => {
+    const data = JSON.parse(JSON.stringify([hoverTargetData]));
+    injectLegendHoverIntoData('legend0', data);
+
+    const transform = data[0].transform as FormulaTransform[];
+    expect(transform).toHaveLength(5);
+    expect(transform[2]).toHaveProperty('as', 'conditions');
+    expect(transform.slice(-2)).toEqual(
+      getExpectedLegendHoverFormulas('legend0', `legend0_${HOVERED_SERIES} === datum.${SERIES_ID} ? 1 : 0`)
+    );
+  });
+
+  test('uses the legend group match expression and extends the aggregate groupby when keys are provided', () => {
+    const data = JSON.parse(JSON.stringify([hoverTargetData]));
+    injectLegendHoverIntoData('legend0', data, ['category']);
+
+    const transform = data[0].transform as (AggregateTransform | FormulaTransform)[];
+    expect(transform[0]).toHaveProperty('groupby', [SERIES_ID, `legend0_${GROUP_ID}`]);
+    expect(transform.slice(-2)).toEqual(
+      getExpectedLegendHoverFormulas('legend0', `legend0_${HOVERED_SERIES} === datum.legend0_${GROUP_ID} ? 1 : 0`)
+    );
+  });
+
+  test('adds a grouped fraction data source and lookup transform when keys are provided and a _hoverFractionData source exists', () => {
+    const data = JSON.parse(JSON.stringify([hoverTargetData, hoverFractionData]));
+    injectLegendHoverIntoData('legend0', data, ['category']);
+
+    const fractionTransform = data[1].transform as LookupTransform[];
+    expect(fractionTransform).toHaveLength(2);
+    expect(fractionTransform[1]).toEqual({
+      type: 'lookup',
+      from: 'line0_hoverTargetData',
+      key: SERIES_ID,
+      fields: [SERIES_ID],
+      values: [`legend0_${GROUP_ID}`],
+      as: [`legend0_${GROUP_ID}`],
+    });
+
+    const groupFractionData = data.find((d: Data) => d.name === 'line0_hoverGroupFractionData');
+    expect(groupFractionData).toEqual({
+      name: 'line0_hoverGroupFractionData',
+      source: 'line0_hoverFractionData',
+      transform: [
+        {
+          type: 'aggregate',
+          groupby: [`legend0_${GROUP_ID}`],
+          fields: ['fraction'],
+          ops: ['max'],
+          as: ['fraction'],
+        },
+      ],
+    });
+  });
+
+  test('does not touch _hoverFractionData when keys are not provided', () => {
+    const data = JSON.parse(JSON.stringify([hoverTargetData, hoverFractionData]));
+    injectLegendHoverIntoData('legend0', data);
+
+    expect(data).toHaveLength(2);
+    expect(data[1].transform).toEqual(hoverFractionData.transform);
+  });
+
+  test('leaves data sources that are not hover target/fraction data untouched', () => {
+    const otherData: Data = { name: 'table', source: 'table', transform: [{ type: 'identifier', as: 'id' }] };
+    const data = JSON.parse(JSON.stringify([otherData]));
+    injectLegendHoverIntoData('legend0', data);
+
+    expect(data).toEqual([otherData]);
+  });
+});
 
 describe('getHighlightOpacityRule()', () => {
   test('should use HIGHLIGHTED_SERIES in test if there are not any keys', () => {
@@ -155,6 +259,29 @@ describe('setHoverOpacityForMarks()', () => {
       expect(marks[0].encode.update.opacity[0]).toEqual(getHighlightOpacityRule('legend0', false));
     });
   });
+  describe('mark using the new hover animation system', () => {
+    const animatedLineMark: Mark = {
+      ...defaultMark,
+      name: 'line0',
+      encode: {
+        ...defaultMark.encode,
+        update: { opacity: { signal: `0.2 + (1 - 0.2) * clamp(0.5 / 0.5, 0, 1)` } },
+      },
+    };
+
+    test('is left untouched when its name is in animatedMarks', () => {
+      const marks = JSON.parse(JSON.stringify([animatedLineMark]));
+      setHoverOpacityForMarks('legend0', marks, undefined, false, ['line0']);
+      expect(marks[0].encode.update.opacity).toEqual(animatedLineMark.encode?.update?.opacity);
+    });
+
+    test('still gets the legend-hover opacity rule spliced in when its name is not in animatedMarks', () => {
+      const marks = JSON.parse(JSON.stringify([animatedLineMark]));
+      setHoverOpacityForMarks('legend0', marks, undefined, false, ['line1']);
+      expect(marks[0].encode.update.opacity[0]).toEqual(getHighlightOpacityRule('legend0', false));
+    });
+  });
+
   describe('trendline hover-support mark sharing the trendline name prefix', () => {
     // Named like `<parent>Trendline_hoverRule` — shares the "Trendline" prefix with the
     // trendline's own line mark, but isn't the trendline mark itself. Its non-array opacity
