@@ -548,6 +548,63 @@ describe('Spec builder, Axis', () => {
       });
     });
 
+    describe('label hover wiring', () => {
+      test('stamps a name and sets interactive true when usermeta.barDimensionFields matches scaleField', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { barDimensionFields: [{ name: 'bar0', dimension: 'category' }] },
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+      });
+
+      test('does not stamp a name or force interactive when no barDimensionFields entry matches scaleField', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'otherField',
+          usermeta: { barDimensionFields: [{ name: 'bar0', dimension: 'category' }] },
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+      });
+
+      test('does not stamp a name or force interactive when usermeta.barDimensionFields is absent', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+      });
+
+      test('does not wire when hideDefaultLabels is true, even with a matching bar', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hideDefaultLabels: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { barDimensionFields: [{ name: 'bar0', dimension: 'category' }] },
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+      });
+
+      test('a matching bar does not override an existing hasTooltip-driven interactive:true', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasTooltip: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { barDimensionFields: [{ name: 'bar0', dimension: 'category' }] },
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+      });
+    });
+
     describe('axisThumbnails', () => {
       test('should not add thumbnail encodings when scale type does not support thumbnails', () => {
         const axes = addAxes([], {

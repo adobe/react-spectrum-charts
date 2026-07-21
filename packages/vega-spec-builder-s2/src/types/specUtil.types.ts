@@ -43,6 +43,7 @@ export type UserMeta = {
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];
+  barDimensionFields?: { name: string; dimension: string }[];
 };
 
 export interface MarkBounds {

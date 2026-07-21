@@ -31,11 +31,7 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
-import {
-  addInspectData,
-  addInspectSignals,
-  hasInspectWithDimensionAreaTarget,
-} from '../chartInspect/chartInspectUtils';
+import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
 import { getInteractiveMarkName } from '../marks/markUtils';
 import {
@@ -153,6 +149,13 @@ export const addBar = produce<
 
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, barOptions.interactiveMarkName);
 
+    if (barOptions.interactiveMarkName) {
+      spec.usermeta.barDimensionFields = [
+        ...(spec.usermeta.barDimensionFields ?? []),
+        { name: barOptions.name, dimension: barOptions.dimension },
+      ];
+    }
+
     spec.data = addData(spec.data ?? [], barOptions);
     spec.signals = addSignals(spec.signals ?? [], barOptions);
     spec.scales = addScales(spec.scales ?? [], barOptions);
@@ -183,9 +186,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     return;
   }
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
-  if (hasInspectWithDimensionAreaTarget(chartInspects)) {
-    addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
-  }
+  addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
   addInspectSignals(signals, options);
   setTrendlineSignals(signals, options);
 });
