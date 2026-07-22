@@ -39,27 +39,35 @@ export const getMatchingInteractiveBarDimensionFields = (
 
   const matches: { name: string; dimension: string }[] = [];
   for (const source of data) {
-    if (!source.name) continue;
-    const match = /^(.+)_(?:stacks|groups)$/.exec(source.name);
-    if (!match) continue;
-
-    const barName = match[1];
-    const aggregateTransform = source.transform?.find((transform) => transform.type === 'aggregate');
-    const groupby = aggregateTransform && 'groupby' in aggregateTransform ? aggregateTransform.groupby : undefined;
-    const groupsByScaleField = Array.isArray(groupby) && groupby.includes(scaleField);
-    if (!groupsByScaleField) continue;
-
-    const hasInteractiveSignal = signals.some(
-      (signal) => signal.name === `${barName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
-    );
-    if (!hasInteractiveSignal) continue;
-
-    if (!matches.some((existing) => existing.name === barName)) {
-      matches.push({ name: barName, dimension: scaleField });
-    }
+    const barName = getMatchingInteractiveBarName(source, signals, scaleField);
+    if (!barName) continue;
+    if (matches.some((existing) => existing.name === barName)) continue;
+    matches.push({ name: barName, dimension: scaleField });
   }
   return matches;
 };
+
+/**
+ * Returns the bar name backing this data source if it's a `_stacks`/`_groups` aggregate source
+ * grouped by `scaleField` AND the bar is interactive, otherwise undefined. Split out of
+ * `getMatchingInteractiveBarDimensionFields` to keep cognitive complexity down.
+ */
+function getMatchingInteractiveBarName(source: Data, signals: Signal[], scaleField: string): string | undefined {
+  if (!source.name) return undefined;
+  const match = /^(.+)_(?:stacks|groups)$/.exec(source.name);
+  if (!match) return undefined;
+
+  const barName = match[1];
+  const aggregateTransform = source.transform?.find((transform) => transform.type === 'aggregate');
+  const groupby = aggregateTransform && 'groupby' in aggregateTransform ? aggregateTransform.groupby : undefined;
+  const groupsByScaleField = Array.isArray(groupby) && groupby.includes(scaleField);
+  if (!groupsByScaleField) return undefined;
+
+  const hasInteractiveSignal = signals.some(
+    (signal) => signal.name === `${barName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
+  );
+  return hasInteractiveSignal ? barName : undefined;
+}
 
 /**
  * Wires axis label mouseover/mouseout events into any Bar mark's existing dimension-hover-area
