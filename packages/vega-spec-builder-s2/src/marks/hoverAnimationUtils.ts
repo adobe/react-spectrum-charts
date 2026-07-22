@@ -14,7 +14,6 @@ import { AggregateTransform, Data, FormulaTransform, OnTrigger, Signal, SourceDa
 import {
   ANIMATION_HOVER_SPEED,
   ANIMATION_THROTTLE,
-  FILTERED_TABLE,
   HOVER_ACTIVE_TIMER,
   HOVER_ANIMATING,
   HOVER_ANIM_LAST_CHANGE_DATA,
@@ -26,6 +25,7 @@ import {
   HOVER_TARGETS,
   HOVER_TIMER,
   SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/constants';
 
 import { hasSignalByName } from '../signal/signalSpecBuilder';
@@ -40,7 +40,7 @@ export interface HoverTargetDataOptions {
   name: string;
   groupby: string[];
   rules: HoverMatchRule[];
-  source?: string; // defaults to FILTERED_TABLE
+  source?: string; // defaults to TABLE
 }
 
 /**
@@ -52,11 +52,11 @@ export interface HoverTargetDataOptions {
  *  - name: 'line0'
  *  - groupby: ['${SERIES_ID}']
  *  - rules: [{ as: 'hoveredMatch', expr: `isValid(${HOVERED_ITEM}) ? (${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null` }]
- *  - source: FILTERED_TABLE
+ *  - source: TABLE
  *
  *  This will generate the following data source:
  * ```typescript
- *  { name: 'line0_hoverTargetData', source: FILTERED_TABLE, transform: [
+ *  { name: 'line0_hoverTargetData', source: TABLE, transform: [
  *      { type: 'aggregate', groupby: ['${SERIES_ID}'] },
  *      { type: 'formula', as: 'hoveredMatch', expr: `isValid(${HOVERED_ITEM}) ? (${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null` },
  *      { type: 'formula', as: 'target', expr: `isValid(datum.hoveredMatch) ? datum.hoveredMatch : ${HOVER_NEUTRAL_TARGET}` }
@@ -70,7 +70,7 @@ export const getHoverTargetData = ({
   name,
   groupby,
   rules,
-  source = FILTERED_TABLE,
+  source = TABLE,
 }: HoverTargetDataOptions): SourceData => {
   const transforms: (AggregateTransform | FormulaTransform)[] = [
     { type: 'aggregate', groupby: groupby },

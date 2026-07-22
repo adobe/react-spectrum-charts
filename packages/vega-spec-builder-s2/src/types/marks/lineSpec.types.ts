@@ -164,6 +164,7 @@ export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOpti
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];
   highlightedItem?: HighlightedItem;
+  highlightedSeries?: string | number;
   idKey: string;
   index: number;
   interactiveMarkName: string | undefined;

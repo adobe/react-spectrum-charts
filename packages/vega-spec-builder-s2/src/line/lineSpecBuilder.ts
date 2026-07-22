@@ -23,6 +23,7 @@ import {
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
@@ -83,6 +84,7 @@ export const addLine = produce<
       animations?: boolean;
       colorScheme?: ColorScheme;
       highlightedItem?: HighlightedItem;
+      highlightedSeries?: string | number;
       index?: number;
       idKey: string;
       comboSiblingNames?: string[];
@@ -199,11 +201,17 @@ export const addLine = produce<
  * Whether the line participates in the hover-animation system.
  * Computed once in `addLine` and stored on `options.isAnimate`; every downstream gate reads that
  * resolved boolean. A highlight legend counts (via legendHighlightSignals) so both the legend and the line animate.
+ * `highlightedItem`/`highlightedSeries` are the chart-level controlled-highlight props; either one alone
+ * is enough to animate, since `getLineHoverRules` always wires both `controlledTableMatch` and
+ * `controlledSeriesMatch` regardless of which is set.
  * `animations === false` opts out unconditionally, regardless of the other conditions.
  */
 const usesHoverAnimation = (animations: boolean | undefined, options: LineSpecOptions): boolean =>
   animations !== false &&
-  (isInteractive(options) || options.highlightedItem !== undefined || (options.legendHighlightSignals?.length ?? 0) > 0);
+  (isInteractive(options) ||
+    options.highlightedItem !== undefined ||
+    options.highlightedSeries !== undefined ||
+    (options.legendHighlightSignals?.length ?? 0) > 0);
 
 /**
  * Gets the unique series ids for the line

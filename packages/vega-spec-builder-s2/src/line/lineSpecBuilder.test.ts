@@ -378,6 +378,46 @@ describe('lineSpecBuilder', () => {
         });
         expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
       });
+
+      test('interactionMode "item" resolves isAnimate the same as the default (nearest) mode', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+          interactionMode: 'item',
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+
+        const hoverTargetData = spec.data?.find((d) => d.name === 'line0_hoverTargetData');
+        expect(hoverTargetData).toBeDefined();
+
+        // hoveredMatch reads the same `line0_hoveredItem` signal regardless of interactionMode --
+        // item mode just adds extra `on` triggers (from the item-hover marks) to that same signal
+        // (see addHoverSignals in lineSpecBuilder.ts), so the animation match rule doesn't change.
+        const hoveredMatchRule = (hoverTargetData?.transform as { as?: string; expr?: string }[] | undefined)?.find(
+          (t) => t.as === 'hoveredMatch'
+        );
+        expect(hoveredMatchRule?.expr).toContain(`line0_${HOVERED_ITEM}`);
+      });
+
+      test('a chart-level highlightedItem alone (no other line interactivity) resolves isAnimate true', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          highlightedItem: 'abc123',
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+
+        const hoverTargetData = spec.data?.find((d) => d.name === 'line0_hoverTargetData');
+        expect(hoverTargetData).toBeDefined();
+
+        // controlledTableMatch/controlledSeriesMatch are pushed unconditionally by getLineHoverRules,
+        // so a highlightedItem-only line still gets both controlled-highlight rules wired.
+        const rules = (hoverTargetData?.transform as { as?: string }[] | undefined)?.map((t) => t.as);
+        expect(rules).toEqual(expect.arrayContaining(['controlledTableMatch', 'controlledSeriesMatch']));
+      });
     });
   });
 

@@ -14,7 +14,6 @@ import { Data, Signal, ValuesData } from 'vega';
 import {
   ANIMATION_HOVER_SPEED,
   ANIMATION_THROTTLE,
-  FILTERED_TABLE,
   HOVER_ACTIVE_TIMER,
   HOVER_ANIMATING,
   HOVER_ANIM_LAST_CHANGE_DATA,
@@ -24,6 +23,7 @@ import {
   HOVER_TIMER,
   MARK_ID,
   SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/constants';
 
 import {
@@ -46,7 +46,7 @@ describe('getHoverTargetData()', () => {
     });
     expect(result).toStrictEqual({
       name: 'line0_hoverTargetData',
-      source: FILTERED_TABLE,
+      source: TABLE,
       transform: [
         { type: 'aggregate', groupby: [SERIES_ID] },
         { type: 'formula', as: 'hoveredMatch', expr: 'HOVER_EXPR' },
