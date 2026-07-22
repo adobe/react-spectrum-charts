@@ -91,6 +91,9 @@ export const getDisplayLabelExpr = (name: string): string =>
   `indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries)].label : datum.${name}Entries`;
 
 const getLabelWidthTransforms = (name: string): Data['transform'] => [
+  // entryKey is the raw entry value, unaffected by any legendLabels override, so a page-aware
+  // render lookup can match an entry even when displayLabel has been customized.
+  { type: 'formula', as: 'entryKey', expr: `datum.${name}Entries` },
   { type: 'formula', as: 'displayLabel', expr: getDisplayLabelExpr(name) },
   { type: 'formula', as: 'labelWidth', expr: "getLabelWidth(datum.displayLabel, 'normal', 14)" },
   { type: 'window', ops: ['row_number'], as: ['legendIndex'] },
@@ -139,13 +142,26 @@ export const getRowCappedAggregateData = (name: string, maxRows: number): Data =
 
 /**
  * Expression for the `${name}_columnLayout` signal: resolves the chosen column count, labelLimit,
- * and (when `_labelWrap` is combined with `_preferredColumns`) dynamic wrap width, via the
- * `getLegendColumnLayout` expression function.
+ * and (when `_labelWrap` is combined with `_preferredColumns`) dynamic wrap width.
+ *
+ * When `maxRows` is set (pagination active), defers to `getLegendColumnLayoutForPage`, which looks
+ * up whatever `${name}_pages` already decided for the currently-visible page, instead of
+ * independently re-testing candidates against just the visible subset.
  */
-export const getColumnLayoutExpr = (name: string, preferredColumns: number[], labelWrap?: number): string =>
-  `getLegendColumnLayout(data('${name}_labelWidths'), width, ${JSON.stringify(preferredColumns)}, ${
+export const getColumnLayoutExpr = (
+  name: string,
+  preferredColumns: number[],
+  labelWrap?: number,
+  maxRows?: number
+): string => {
+  const candidates = JSON.stringify(preferredColumns);
+  if (maxRows === undefined) {
+    return `getLegendColumnLayout(data('${name}_labelWidths'), width, ${candidates}, ${labelWrap ?? 1})`;
+  }
+  return `getLegendColumnLayoutForPage(data('${name}_labelWidths'), data('${name}_pagesLabelWidths'), ${name}_pages, ${candidates}, width, ${
     labelWrap ?? 1
   })`;
+};
 
 /**
  * Expression for the `${name}_pages` signal: the full pagination plan for every legend entry

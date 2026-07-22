@@ -26,6 +26,9 @@ export interface LabelDatum {
 
 export interface LegendLabelWidthDatum {
   legendIndex: number;
+  /** the raw entry key (unaffected by any legendLabels override), used to match an entry across
+   * the visible (hiddenEntries-filtered) and full (unfiltered) label-width lists */
+  entryKey: string;
   displayLabel: string;
   labelWidth: number;
 }
@@ -64,6 +67,7 @@ export const getExpressionFunctions = (
     getLabelWidth,
 
     getLegendColumnLayout,
+    getLegendColumnLayoutForPage,
     getLegendPages,
     truncateText,
     wrapLabelText,
@@ -542,6 +546,47 @@ const getLegendPages = (
   return pages;
 };
 
+/**
+ * Resolves the live `${name}_columnLayout` for a paginated legend by deferring to whatever
+ * `getLegendPages` already decided for the page currently visible, instead of independently
+ * re-testing candidates against just the visible subset. That independent re-test is the source of
+ * a real inconsistency: a page can end up with fewer items than a larger candidate would allow
+ * (because a *different* item elsewhere in the original candidate-sized group didn't fit), and that
+ * smaller, "easier" subset can then trivially satisfy a *larger* candidate in isolation — rendering
+ * more columns than the page was actually planned around.
+ *
+ * Finds the currently-visible page by matching the first visible item's `entryKey` against its
+ * position in the full (unfiltered) list, then locating the page whose range starts there.
+ * @param visibleItems the currently-visible (hiddenEntries-filtered) entries — see `${name}_labelWidths`
+ * @param fullItems every entry, unfiltered — see `${name}_pagesLabelWidths`
+ * @param pages the full pagination plan — see `${name}_pages`
+ * @param candidates ordered list of candidate column counts, e.g. [5, 3]
+ * @param width available width for the legend
+ * @param labelWrap max lines a label may wrap onto before truncating; 1 (default) disables wrapping
+ */
+const getLegendColumnLayoutForPage = (
+  visibleItems: LegendLabelWidthDatum[],
+  fullItems: LegendLabelWidthDatum[],
+  pages: LegendPage[],
+  candidates: number[],
+  width: number,
+  labelWrap = 1
+): LegendColumnLayout => {
+  const lastCandidate = candidates.at(-1);
+  if (!visibleItems.length || !pages.length || lastCandidate === undefined) {
+    return { columns: 1, labelLimit: 0, wrapWidth: 0 };
+  }
+
+  const startIndex = fullItems.findIndex((item) => item.entryKey === visibleItems[0].entryKey);
+  const page = pages.find((p) => p.start === startIndex) ?? pages[pages.length - 1];
+
+  const useWrap = labelWrap > 1;
+  return (
+    getColumnLayoutForCandidate(visibleItems, width, page.columns, lastCandidate, useWrap, labelWrap) ??
+    getFallbackColumnLayout(width, lastCandidate, useWrap)
+  );
+};
+
 export const expressionFunctions = {
   consoleLog,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
@@ -549,6 +594,7 @@ export const expressionFunctions = {
   formatVerticalAxisTimeLabelTooltips: formatVerticalAxisTimeLabelTooltips(),
   getLabelWidth,
   getLegendColumnLayout,
+  getLegendColumnLayoutForPage,
   getLegendPages,
   truncateText,
   wrapLabelText,
