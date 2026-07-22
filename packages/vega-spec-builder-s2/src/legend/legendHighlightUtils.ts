@@ -17,6 +17,7 @@ import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   FADE_FACTOR,
   GROUP_ID,
+  HOVER_FRACTION_DATA,
   HOVERED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -128,23 +129,29 @@ export const injectLegendHoverIntoData = (legendName: string, data: Data[], keys
 };
 
 /**
+ * Whether an opacity encoding already reads from the hover-animation engine's fraction data
+ */
+const isAnimatedOpacity = (opacity: ProductionRule<NumericValueRef> | undefined): boolean => {
+  const rules = Array.isArray(opacity) ? opacity : [opacity];
+  return rules.some(
+    (rule) =>
+      typeof (rule as { signal?: string })?.signal === 'string' &&
+      (rule as { signal: string }).signal.includes(HOVER_FRACTION_DATA)
+  );
+};
+
+/**
  * Adds opacity tests for marks whose fill/stroke is driven by the color scale, and for marks
  * that are already per-series (e.g. trendlines, which facet by series regardless of their own
  * color encoding — a trendline with an overridden literal color still needs to fade on legend hover).
  */
-export const setHoverOpacityForMarks = (
-  legendName: string,
-  marks: Mark[],
-  keys?: string[],
-  controlled = false,
-  animatedMarks: string[] = []
-) => {
+export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?: string[], controlled = false) => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
   const seriesMarks = flatMarks.filter(markIsSeriesAware);
   seriesMarks.forEach((mark) => {
-    // Skip marks on the new hover-animation system
-    if (mark.name && animatedMarks.includes(mark.name)) return;
+    // Skip marks already on the hover-animation system — their opacity is driven by the animated fraction
+    if (isAnimatedOpacity(mark.encode?.update?.opacity)) return;
 
     // need to drill down to the prop we need to set and add missing properties if needed
     if (!mark.encode) {

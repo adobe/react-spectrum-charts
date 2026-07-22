@@ -267,6 +267,13 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
   };
 };
 
+export const getLineDeemphasisOpacitySignal = (name: string): ProductionRule<NumericValueRef> => {
+  const ramp = getDeemphasisRamp(getHoverFractionSignal(name));
+  return {
+    signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+  };
+};
+
 export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule<NumericValueRef> => {
   const { displayOnHover, isAnimate, name } = lineMarkOptions;
   // displayOnHover overlay marks manage their own visibility via getHighlightedSeriesOpacityRules
@@ -274,10 +281,7 @@ export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule
 
   if (isAnimate) {
     // Fade deemphasized series; neutral and emphasized both stay fully opaque
-    const ramp = getDeemphasisRamp(getHoverFractionSignal(name));
-    return {
-      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
-    };
+    return getLineDeemphasisOpacitySignal(name);
   }
 
   // Return the original opacity rules ProductionRule if we aren't using hover animations

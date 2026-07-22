@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SymbolMark } from 'vega';
+import { NumericValueRef, ProductionRule, SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -26,7 +26,7 @@ import {
   getXProductionRule,
 } from '../marks/markUtils';
 import { LineSpecOptions } from '../types';
-import { getLineYEncoding } from './lineMarkUtils';
+import { getLineYEncoding, getLineDeemphasisOpacitySignal } from './lineMarkUtils';
 import { LineMarkOptions } from './lineUtils';
 
 const getPointSizeEncoding = (pointSize: number | undefined) =>
@@ -46,25 +46,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     scaleType,
     dimension,
     pointSize,
-    interactiveMarkName,
-    isHighlightedByGroup,
   } = lineOptions;
-
-  const opacityRules: ({ test?: string; value?: number; signal?: string })[] = [];
-  if (interactiveMarkName) {
-    if (isHighlightedByGroup) {
-      opacityRules.push({
-        test: `length(data('${interactiveMarkName}_highlightedData'))`,
-        signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
-      });
-    } else {
-      opacityRules.push({
-        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      });
-    }
-  }
-  opacityRules.push(DEFAULT_OPACITY_RULE);
 
   return {
     name: `${name}_staticPoints`,
@@ -80,10 +62,40 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
       },
       update: {
         x: getXProductionRule(scaleType, dimension),
-        opacity: opacityRules,
+        opacity: getOpacity(lineOptions),
       },
     },
   };
+};
+
+const getOpacity = (lineOptions: LineSpecOptions): ProductionRule<NumericValueRef> => {
+  const {
+    name,
+    interactiveMarkName,
+    isAnimate,
+    isHighlightedByGroup,
+  } = lineOptions;
+  
+  // Animated 
+  if (isAnimate) return getLineDeemphasisOpacitySignal(name);
+  
+  // Non-animated
+  const opacityRules: ProductionRule<NumericValueRef> = [];
+  if (interactiveMarkName) {
+    if (isHighlightedByGroup) {
+      opacityRules.push({
+        test: `length(data('${interactiveMarkName}_highlightedData'))`,
+        signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
+      });
+    } else {
+      opacityRules.push({
+        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      });
+    }
+  }
+  opacityRules.push(DEFAULT_OPACITY_RULE);
+  return opacityRules;
 };
 
 /**

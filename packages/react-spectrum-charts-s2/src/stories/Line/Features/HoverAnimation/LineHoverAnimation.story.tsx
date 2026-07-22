@@ -19,9 +19,9 @@ import { StoryFn } from '@storybook/react';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../../components';
+import { Axis, ChartInspect, ChartPopover, Legend, Line, LineDirectLabel } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../stories/data/data';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
 import { formatTimestamp } from '../../../../stories/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
@@ -40,6 +40,10 @@ import { ChartProps } from '../../../../types';
 // │ ControlledHighlight │ highlightedSeries chart prop                             │ controlledSeriesMatch                         │
 // ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
 // │ OnClick             │ onClick handler makes the line interactive               │ hoveredMatch (interactive-via-click)          │
+// ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │ StaticPointHover    │ <ChartInspect> + staticPoint — hover a data point        │ hoveredMatch (getLineStaticPoint consumer)    │
+// ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │ DirectLabelHover    │ <ChartInspect> + <LineDirectLabel> — hover a data point  │ hoveredMatch (directLabelUtils consumer)      │
 // └─────────────────────┴──────────────────────────────────────────────────────────┴───────────────────────────────────────────────┘
 
 /**
@@ -176,6 +180,45 @@ const OnClickStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): Rea
   );
 };
 
+/**
+ * Static point hover — hovering a data point (`ChartInspect`) fades the always-visible static point
+ * markers for deemphasized series along with the line itself, demonstrating `getLineStaticPoint`'s
+ * wiring into the same animated fraction as `getLineOpacity`.
+ */
+const StaticPointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints, animations });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+/**
+ * Direct label hover — hovering a data point (`ChartInspect`) fades the end-of-line direct labels
+ * for deemphasized series along with the line itself. The label's background halo stays fully
+ * opaque throughout — only the foreground text fades.
+ */
+const DirectLabelHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args}>
+        <LineDirectLabel value="series" />
+        <ChartInspect>{dialogContent}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
 export const PointHover = bindWithProps(PointHoverStory);
 PointHover.args = { ...defaultArgs };
 
@@ -193,3 +236,9 @@ ControlledHighlight.args = { ...defaultArgs };
 
 export const OnClick = bindWithProps(OnClickStory);
 OnClick.args = { ...defaultArgs };
+
+export const StaticPointHover = bindWithProps(StaticPointHoverStory);
+StaticPointHover.args = { ...defaultArgs, staticPoint: 'staticPoint' };
+
+export const DirectLabelHover = bindWithProps(DirectLabelHoverStory);
+DirectLabelHover.args = { ...defaultArgs };

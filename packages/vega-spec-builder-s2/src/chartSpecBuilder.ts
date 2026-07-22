@@ -213,7 +213,7 @@ export function buildSpec({
 
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {
-    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true, spec.usermeta?.animatedMarks ?? []);
+    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
     setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
   }
 
