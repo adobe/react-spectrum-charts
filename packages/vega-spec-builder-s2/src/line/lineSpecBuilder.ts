@@ -23,7 +23,6 @@ import {
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SERIES_ID,
-  TABLE,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
