@@ -18,25 +18,26 @@ Writes:
 
 ## Step 1 — Screenshot the story
 
-Kill any stale Storybook process on port 6008 first:
+Read `chartWidth` and `chartHeight` from `design-observation.json` and the port from
+`./tmp/storybook-port.txt` (note: outside `./tmp/ai/` — that directory is wiped by the analyze
+step), then screenshot:
+
 ```bash
-lsof -ti:6008 | xargs kill -9 2>/dev/null
+STORYBOOK_PORT=$(cat ./tmp/storybook-port.txt)
+node scripts/ai/playwright-screenshot.mjs <storyId> ./tmp/ai/result.png <chartWidth> <chartHeight> --port $STORYBOOK_PORT
 ```
 
-Ensure `playwright` and its Chromium browser are available before proceeding:
-```bash
-node -e "require('playwright')" 2>/dev/null || yarn add -DW playwright --ignore-engines
-yarn playwright install chromium
-```
-`yarn playwright install chromium` is idempotent — it exits immediately if Chromium is already downloaded.
+The script attaches to the already-running Storybook server started in Phase 0, loads the story,
+and captures the screenshot. It also writes:
+- `./tmp/ai/plot-bounds.json` — the Vega plot area bounding box
+- `./tmp/ai/result.svg` — the raw Vega `svg.marks` element HTML
 
-Read `chartWidth` and `chartHeight` from `design-observation.json`, then screenshot:
-```bash
-node scripts/ai/playwright-screenshot.mjs <storyId> ./tmp/ai/result.png <chartWidth> <chartHeight>
-```
+After the screenshot, extract structural data from the result SVG:
 
-The script starts its own Storybook dev server on port 6008, takes the screenshot, and shuts down.
-It also writes `./tmp/ai/plot-bounds.json` (the Vega plot area bounding box).
+```bash
+node scripts/ai/extract-structure.mjs ./tmp/ai/result.svg
+# reads result.svg (unchanged), writes result.structure.json alongside it
+```
 
 **If the screenshot fails** and the error suggests stale build output (e.g. component not rendering,
 `TypeError: X is not a function`, missing props on types), run the following **once** as a recovery
@@ -44,37 +45,66 @@ step, then retry the screenshot:
 ```bash
 yarn build:parallel && yarn build:s2
 ```
-Do not run this preemptively or for unrelated failures (wrong story ID, timeout, Storybook startup error).
+Do not run this preemptively or for unrelated failures (wrong story ID, timeout).
 
 ---
 
-## Step 2 — Direct visual comparison
+## Step 2 — Structural comparison
+
+**Read `./tmp/ai/reference.structure.json` and `./tmp/ai/result.structure.json` in the same
+response.** These are the extracted SVG structures for the reference design and the RSC render.
+
+The two SVGs are produced by different tools (Figma vs Vega) so their schemas differ — do not
+diff them mechanically. Instead, reason about what each element represents in context:
+
+| What to look for | Reference field | Result field |
+|---|---|---|
+| **Title font size** | `shape-curved` text paths near top or explicit text nodes with large fontSize | same area in result — compare computed font size |
+| **Axis label font size** | text nodes near axis positions | same in result |
+| **Gridline count** | `line-horizontal` array length | `line-horizontal` array length |
+| **Gridline y-positions** | `start[1]` of each `line-horizontal` entry | same |
+| **Data line shape** | `line-open` path `start` and `end` y-coordinates at each x-tick | same — compare relative vertical positions |
+| **Mark colors** | `strokes` and `fills` arrays | same |
+| **Axis tick count** | `line-vertical` array length | same |
+
+For the data line shape specifically: map the `line-open` path points to x-axis ticks using
+x-coordinates, then compare the y-position (as a fraction of plot height) at each tick between
+reference and result. A large fraction difference at a specific tick = data shape mismatch there.
+
+State what you find for each row. This structural pass catches things the pixel comparison misses:
+exact font sizes, exact gridline counts, and per-tick data shape fidelity.
+
+---
+
+## Step 3 — Direct visual comparison
 
 **Read `./tmp/ai/reference.png` and `./tmp/ai/result.png` in the same response.**
 
-Compare every visible property against the items listed in `implementation-hypothesis.json`:
+Compare every visible property against the items listed in `implementation-hypothesis.json`.
+Use the structural findings from Step 2 to anchor your observations — if the structure says
+title font-size differs, confirm it visually here.
 
 | Property | What to check |
 |---|---|
-| **Title** | Present? Text matches? Font size appropriate? |
+| **Title** | Present? Text matches? Font size — use structural finding from Step 2 |
+| **Title-to-chart spacing** | Gap between the bottom of the title text and the top of the plot/axis area — measure visually in pixels and compare |
+| **Internal chart spacing** | Left margin (axis labels to plot edge), right margin, top padding above the first gridline, bottom padding below the x-axis — compare all four sides |
 | **Legend position** | Top / bottom / left / right? Labels visible, not truncated? |
 | **Axis label values** | Tick values match exactly? |
 | **Axis tick spacing** | Tick intervals match? |
 | **X-axis baseline/ticks** | Present? Match reference? |
-| **Grid lines** | Count and orientation match? |
+| **Grid lines** | Count and orientation match? Use structural count from Step 2 |
 | **Series count** | Same number of lines/bars/etc.? |
-| **Curve shapes** | Do relative positions of all series match at multiple x-positions? |
+| **Curve shapes** | Do peaks and valleys align at the same x-axis ticks? Use per-tick structural comparison from Step 2. **If the shape still doesn't match after the first retryable fix attempt, classify as a library/interpolation gap rather than continuing to tweak data.** |
+| **Curve smoothness** | Is there a visible S-curve bump or inflection near the start of a diminishing-returns curve? This is a monotone interpolation artifact caused by a sharp slope change at the first data point. Check if the first point should be anchored to `(0, 0)` — Category 1 if so. If the bump is at an interior point, classify as Category 3. |
 | **Colors** | Accepted gap — S2 defaults vs design brand colors always differ. |
 | **Chart dimensions** | Overall aspect ratio match? |
 
 **For every item in `capturedElements` and `explicitlyNotCaptured` from the hypothesis, explicitly
-state what you observe in each image before drawing any conclusion.** Do not infer a feature is
-working from how the code is written — confirm it from the pixels. If an item in
-`explicitlyNotCaptured` appears to work visually, re-examine carefully before reversing the
-classification.
+state what you observe before drawing any conclusion.**
 
-State differences in plain language. This is the primary assessment — the pixel diff below is
-a quantitative confirmation, not a substitute for direct observation.
+State differences in plain language. The pixel diff below is a quantitative confirmation, not a
+substitute for direct observation.
 
 ---
 

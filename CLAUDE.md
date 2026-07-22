@@ -289,6 +289,23 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 
 When fixing a bug or refactoring behavior in an s1 package file, always check whether the corresponding s2 file needs the same change. The packages mirror each other structurally but s2 has no Venn support, no `s2` prop, and uses s2-specific imports (`vega-spec-builder-s2`, `react-spectrum-charts-s2`). A fix in one without the other leaves the packages inconsistent.
 
+## Building After Spec Builder Changes
+
+Storybook's dev server rebuilds story files via HMR but does **not** rebuild library packages.
+After modifying any file in `vega-spec-builder-s2/`, `vega-spec-builder/`,
+`react-spectrum-charts-s2/`, or `react-spectrum-charts/`, run `yarn build:s2` before
+screenshotting or verifying behavior in Storybook. Story-only changes (props, data values,
+JSX structure) are picked up automatically after ~3 seconds without a rebuild.
+
+## S2 Spec Builder Defaults
+
+When a Vega configuration value differs from the S2 design spec (e.g. title offset, font
+weight, font size, axis label spacing), encode it as a named default in `s2DefaultOptions`
+inside the relevant `vega-spec-builder-s2` spec builder file. Do not expose it as a
+user-facing React prop unless the S2 design spec intentionally allows per-chart variation.
+Check `applyTitleOptionsDefaults` in `vega-spec-builder-s2/src/title/titleSpecBuilder.ts`
+as the canonical pattern.
+
 ---
 
 ## Before Implementing Any Feature or Bug Fix

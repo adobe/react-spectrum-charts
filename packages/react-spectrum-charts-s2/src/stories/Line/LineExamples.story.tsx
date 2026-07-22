@@ -174,3 +174,47 @@ TotalVisitsL.args = {
   metric: 'percentChange',
   scaleType: 'time',
 };
+
+// Paid media impact — single series showing how revenue grows as spend increases.
+// Spend and revenue are stored as actual dollar amounts so shortCurrency formatting
+// renders $100M, $200M, etc. Data points sampled from the Figma bezier path.
+const paidMediaData = [
+  { spend:           0, revenue:           0, series: 'Revenue' },
+  { spend:   6_000_000, revenue:  68_000_000, series: 'Revenue' },
+  { spend:  17_000_000, revenue: 137_000_000, series: 'Revenue' },
+  { spend:  34_000_000, revenue: 211_000_000, series: 'Revenue' },
+  { spend:  58_000_000, revenue: 285_000_000, series: 'Revenue' },
+  { spend:  90_000_000, revenue: 358_000_000, series: 'Revenue' },
+  { spend: 131_000_000, revenue: 425_000_000, series: 'Revenue' },
+  { spend: 182_000_000, revenue: 483_000_000, series: 'Revenue' },
+  { spend: 244_000_000, revenue: 528_000_000, series: 'Revenue' },
+  { spend: 316_000_000, revenue: 558_000_000, series: 'Revenue' },
+  { spend: 401_000_000, revenue: 568_000_000, series: 'Revenue' },
+];
+
+const paidMediaChartProps: ChartProps = {
+  data: paidMediaData,
+  width: 615,
+  height: 370,
+};
+
+const PaidMediaImpactStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const props = useChartProps(paidMediaChartProps);
+  return (
+    <Chart {...props}>
+      <Title text="Paid Media Impact: Revenue Outpaces Spend" fontSize={18} />
+      <Axis position="left" grid title="Revenue" range={[0, 600_000_000]} labels={[{ value: 0, label: '0' }, { value: 300_000_000, label: '$300M' }, { value: 600_000_000, label: '$600M' }]} />
+      <Axis position="bottom" title="Spend" baseline ticks range={[0, 400_000_000]} tickCountLimit={4} tickMinStep={100_000_000} numberFormat="shortCurrency" />
+      <Line {...args} />
+    </Chart>
+  );
+};
+
+export const PaidMediaImpact = bindWithProps(PaidMediaImpactStory);
+PaidMediaImpact.args = {
+  color: 'series',
+  dimension: 'spend',
+  metric: 'revenue',
+  scaleType: 'linear',
+  interpolate: 'monotone',
+};

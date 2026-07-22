@@ -17,6 +17,75 @@ All intermediate artifacts are written to `./tmp/ai/`.
 
 ---
 
+## Phase 0 — Environment setup
+
+Run these steps once before Phase 1. They are prerequisites for Phase 3.
+
+### Read the Storybook port
+
+The port is set per-developer in `.env` as `STORYBOOK_AI_PORT`. This keeps multiple
+worktrees from colliding — each developer assigns a unique port in their local `.env`.
+
+**Important:** Write the port file to `./tmp/storybook-port.txt` (NOT inside `./tmp/ai/`).
+The `analyze-chart-design` skill deletes `./tmp/ai/` in its Step 0 — anything inside it
+will be lost before Phase 3 runs.
+
+```bash
+mkdir -p ./tmp
+source .env 2>/dev/null || true
+STORYBOOK_PORT=${STORYBOOK_AI_PORT:-6100}
+echo $STORYBOOK_PORT > ./tmp/storybook-port.txt
+echo "Storybook port: $STORYBOOK_PORT"
+```
+
+If `.env` is missing, fall back to 6100 and continue — do not abort.
+
+### Ensure Playwright and Chromium are available
+
+```bash
+node -e "require('playwright')" 2>/dev/null || yarn add -DW playwright --ignore-engines
+yarn playwright install chromium
+```
+
+`yarn playwright install chromium` is idempotent — exits immediately if already downloaded.
+
+### Start Storybook in the background
+
+Start the S2 Storybook server on the derived port and keep it running for the entire workflow.
+The screenshot script attaches to it rather than starting/stopping its own server each iteration.
+
+**If Storybook is already running on the port, attach to it — do not start a second instance.**
+Multiple instances on competing ports are the root cause of port drift between sessions.
+
+**Important:** Write the PID file to `./tmp/storybook-pid.txt` (NOT inside `./tmp/ai/`) for
+the same reason as the port file.
+
+```bash
+STORYBOOK_PORT=$(cat ./tmp/storybook-port.txt)
+if curl -s http://localhost:$STORYBOOK_PORT > /dev/null 2>&1; then
+  echo "Storybook already running on port $STORYBOOK_PORT — attaching."
+else
+  yarn storybook dev -p $STORYBOOK_PORT --config-dir .storybook-s2 --ci > ./tmp/ai/storybook.log 2>&1 &
+  echo $! > ./tmp/storybook-pid.txt
+  echo "Storybook PID: $!"
+  # Wait for it to be ready (poll every second, 120 s timeout)
+  for i in $(seq 1 120); do
+    curl -s http://localhost:$STORYBOOK_PORT > /dev/null 2>&1 && echo "Storybook ready on port $STORYBOOK_PORT" && break
+    sleep 1
+    [ $i -eq 120 ] && echo "ERROR: Storybook failed to start. Check ./tmp/ai/storybook.log" && exit 1
+  done
+  # Verify it actually started on the expected port (not auto-incremented)
+  ACTUAL_PORT=$(grep -o "localhost:[0-9]*" ./tmp/ai/storybook.log | head -1 | cut -d: -f2)
+  if [ "$ACTUAL_PORT" != "$STORYBOOK_PORT" ]; then
+    echo "ERROR: Storybook started on port $ACTUAL_PORT instead of $STORYBOOK_PORT."
+    echo "Another process may still be holding $STORYBOOK_PORT. Kill it and retry."
+    exit 1
+  fi
+fi
+```
+
+---
+
 ## Phase 1 — Analyze
 
 Invoke the `analyze-chart-design` skill with `$ARGUMENTS` (the Figma URL).
@@ -48,7 +117,12 @@ Wait for it to complete and confirm that:
 
 3. Read `./tmp/ai/gap-classification.json`. Apply the stop conditions below.
 
-4. If continuing: apply all Category 1 (retryable) fixes directly to the story, then loop.
+4. If continuing: apply all Category 1 (retryable) fixes directly to the story. Then:
+   - **Story/data changes only** (props, data values, axis config): Storybook HMR picks these
+     up automatically. Wait ~3 seconds before screenshotting.
+   - **Spec builder changes** (any edit to `vega-spec-builder-s2/` or `vega-spec-builder/`):
+     Run `yarn build:s2` before screenshotting — HMR does not rebuild library code.
+   Then loop.
 
 ### Stop conditions (check in order — stop on first match)
 
@@ -63,11 +137,24 @@ Wait for it to complete and confirm that:
 
 ## Phase 4 — Final gap report
 
+### Tear down Storybook
+
+Only kill the process if we started it (PID file exists and was written this session).
+Do not kill a Storybook that was already running when Phase 0 attached to it.
+
+```bash
+if [ -f ./tmp/storybook-pid.txt ]; then
+  kill $(cat ./tmp/storybook-pid.txt) 2>/dev/null && echo "Storybook stopped" || echo "Storybook already stopped"
+fi
+```
+
 Read the final `./tmp/ai/gap-classification.json` and `./tmp/ai/verification-report.json`
 and present:
 
 ```
 ## Story: <storyExportName>
+
+**View in Storybook:** http://localhost:<port>/?path=/story/<storyId>
 
 ### What was implemented
 [bullet list of capturedElements from implementation-hypothesis.json]
@@ -83,5 +170,8 @@ and present:
 | [label] | [N — label] | [description] | [what RSC produces] | [suggestedAction or "None"] |
 
 One row per non-retryable discrepancy. Use em-dashes for empty cells.
+
+The `<port>` comes from `./tmp/storybook-port.txt`. The `<storyId>` is the kebab-case story ID
+used throughout Phase 3.
 
 Present this report directly — do not spawn another agent for this step.

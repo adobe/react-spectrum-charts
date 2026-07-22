@@ -49,6 +49,23 @@ For each feature, record one of:
 `explicitlyNotCaptured` in the hypothesis instead of attempting them and letting
 `verify-chart-story` discover the gap.
 
+**Decompose compound problems before classifying.** A design feature that cannot be matched
+exactly may still have sub-properties that are independently controllable. Always assess each
+dimension separately:
+
+- **Tick count vs tick values**: if the design shows N gridlines and the tick values cannot
+  match (e.g. non-linear scale), that does not mean the count cannot match. Always check
+  `tickCountLimit` on `Axis` as a first-class option. Set `tickCountLimit={N-1}` (excluding
+  the baseline) to approximate the visual density even when exact values differ. Classify
+  "tick count" and "tick values" as separate feasibility items.
+
+- **Axis position vs axis formatting**: the side an axis appears on is independent of its
+  label format. Assess each separately.
+
+- **Title text vs title style**: title text is always supported; font size (`fontSize` prop on
+  `Title`) may differ from the design default. Always read `titleFontSize` from
+  `design-observation.json` and apply it explicitly — do not rely on the RSC default.
+
 ---
 
 ## Step 3 — Write `implementation-hypothesis.json`
@@ -122,10 +139,11 @@ MyStoryName.args = {
 };
 ```
 
-**Chart sizing:** Use `chartWidth` × `chartHeight` from `design-observation.json` (these are
-the RSC `Chart` target dimensions determined during analysis — the full frame size when the
-Figma node contains title/legend siblings). A numeric `width` bypasses ResizeObserver entirely
-— no hover-shrink, no layout reflow. Do not use `minWidth`/`maxWidth`.
+**Chart sizing:** Use `chartWidth` × `chartHeight` from `design-observation.json`. These are
+computed by `analyze-chart-design` from `referencePlotBounds` (the Figma SVG gridline-derived
+plot area) plus RSC axis/title overhead — not from the outer Figma frame or inner content group.
+A numeric `width` bypasses ResizeObserver entirely — no hover-shrink, no layout reflow. Do not
+use `minWidth`/`maxWidth`.
 
 ```ts
 const defaultChartProps: ChartProps = {
@@ -159,6 +177,13 @@ minimum values needed to render the chart. Concretely:
 
 The goal is that a developer reading the story understands both what props to use *and* what
 their data might look like in practice.
+
+**Curve smoothness near the origin.** For diminishing-returns or power-law curves where the
+axis starts at zero, check whether the first data point should be `(0, 0)`. If the Figma-derived
+first point has a very small non-zero value (e.g. spend < 1% of axis max) AND the slope from
+that first point to the second is much steeper than subsequent slopes, monotone cubic interpolation
+will generate an S-curve bump at the start. Replace the first point with `(dimensionField: 0,
+metricField: 0)` to give the interpolation a clean zero-crossing and eliminate the bump.
 
 **Do not work around gaps by changing chart semantics** (e.g. converting linear → categorical
 just to match specific tick labels). If the only path corrupts the data model, record it in
