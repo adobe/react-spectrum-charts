@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, LINE_POINT_ANNOTATION_OFFSET } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, LINE_POINT_ANNOTATION_OFFSET } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { defaultLineOptions } from '../lineTestUtils';
@@ -139,6 +139,10 @@ describe('getLinePointAnnotationMarks', () => {
 			expect(getBackgroundMark().encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
 		});
 
+		test('uses chart size font size signal', () => {
+			expect(getBackgroundMark().encode?.enter).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
+		});
+
 		test('has label transform', () => {
 			const transform = getBackgroundMark().transform;
 			expect(transform).toHaveLength(1);
@@ -236,6 +240,25 @@ describe('getLinePointAnnotationMarks', () => {
 
 		test('applies font weight in update encoding', () => {
 			expect(getForegroundMark().encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
+		});
+
+		test('uses chart size font size signal', () => {
+			expect(getForegroundMark().encode?.enter).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
+		});
+	});
+
+	describe('background and foreground alignment', () => {
+		// The foreground mark renders the visible text; the background mark renders the halo and
+		// runs the label transform that positions both. If their fontSize or fontWeight ever drift
+		// apart, the halo stops matching the glyph size and visibly misaligns from the text.
+		test('background and foreground share the same fontSize', () => {
+			const [backgroundMark, foregroundMark] = getLinePointAnnotationMarks(lineOptionsWithAnnotations);
+			expect(backgroundMark.encode?.enter?.fontSize).toEqual(foregroundMark.encode?.enter?.fontSize);
+		});
+
+		test('background and foreground share the same fontWeight', () => {
+			const [backgroundMark, foregroundMark] = getLinePointAnnotationMarks(lineOptionsWithAnnotations);
+			expect(backgroundMark.encode?.update?.fontWeight).toEqual(foregroundMark.encode?.update?.fontWeight);
 		});
 	});
 

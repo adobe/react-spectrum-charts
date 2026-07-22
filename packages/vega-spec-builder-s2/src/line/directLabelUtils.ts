@@ -155,7 +155,10 @@ export const getLabelTransformTextMarks = (
     interactive: false,
     from: { data: backgroundMarkName },
     encode: {
-      enter: { fill: getDirectLabelForegroundFill(colorScheme, foregroundFillOverride) },
+      enter: {
+        fill: getDirectLabelForegroundFill(colorScheme, foregroundFillOverride),
+        fontSize: { signal: CHART_SIZE_FONT_SIZE },
+      },
       update: {
         text: { field: 'text' },
         x: { field: 'x' },
