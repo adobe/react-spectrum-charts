@@ -30,6 +30,7 @@ import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimati
 import {
   getAlternateSegmentStrokeDash,
   getHighlightedSeriesOpacityRules,
+  getLineDeemphasisOpacitySignal,
   getLineGradientMark,
   getLineHighlightOverlayGroup,
   getLineHoverMarks,
@@ -274,6 +275,22 @@ describe('getLineOpacity()', () => {
         displayOnHover: true,
       });
       expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
+    });
+  });
+});
+
+describe('getLineDeemphasisOpacitySignal()', () => {
+  test('returns the shared deemphasis-ramp opacity signal for the given mark name', () => {
+    const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
+    expect(getLineDeemphasisOpacitySignal('line0')).toStrictEqual({
+      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+    });
+  });
+
+  test('uses the given mark name in the fraction lookup, not a hardcoded one', () => {
+    const ramp = getDeemphasisRamp(getHoverFractionSignal('bar0'));
+    expect(getLineDeemphasisOpacitySignal('bar0')).toStrictEqual({
+      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
     });
   });
 });

@@ -292,6 +292,24 @@ describe('setHoverOpacityForMarks()', () => {
       setHoverOpacityForMarks('legend0', marks);
       expect(marks[0].encode.update.opacity[0]).toEqual(getHighlightOpacityRule('legend0', false));
     });
+
+    test('is left untouched when its opacity is an array containing a hoverFractionData-referencing rule', () => {
+      const animatedArrayMark: Mark = {
+        ...animatedLineMark,
+        encode: {
+          ...animatedLineMark.encode,
+          update: {
+            opacity: [
+              { test: 'someCondition', value: 0 },
+              animatedLineMark.encode?.update?.opacity as { signal: string },
+            ],
+          },
+        },
+      };
+      const marks = JSON.parse(JSON.stringify([animatedArrayMark]));
+      setHoverOpacityForMarks('legend0', marks);
+      expect(marks[0].encode.update.opacity).toEqual(animatedArrayMark.encode?.update?.opacity);
+    });
   });
 
   describe('trendline hover-support mark sharing the trendline name prefix', () => {

@@ -362,6 +362,22 @@ describe('lineSpecBuilder', () => {
         expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
         expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(false);
       });
+
+      test('registers only the line name in animatedMarks, never sub-mark names, even with static points and direct labels', () => {
+        // getLegendOpacity (legendUtils.ts) iterates animatedMarks and builds a data() reference for
+        // each name — registering a sub-mark name here would make it reference a _hoverFractionData
+        // source that was never created. Static points/direct labels share the line's own fraction
+        // data instead of getting their own, so animatedMarks must stay line-name-only.
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+          staticPoint: 'staticPoint',
+          lineDirectLabels: [{}],
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+      });
     });
   });
 
