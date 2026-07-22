@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, Data, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -549,12 +549,27 @@ describe('Spec builder, Axis', () => {
     });
 
     describe('label hover wiring', () => {
-      test('stamps a name and sets interactive true when usermeta.barDimensionFields matches scaleField', () => {
+      // represents an already-interactive bar named "bar0" with dimension "category" - derived
+      // straight from the built spec (data + signals), not from usermeta.
+      const interactiveBarData: Data[] = [
+        {
+          name: 'bar0_stacks',
+          source: 'filteredTable',
+          transform: [{ type: 'aggregate', groupby: ['category'], fields: ['value1', 'value1'], ops: ['min', 'max'] }],
+        },
+      ];
+      const interactiveBarSignals: Signal[] = [
+        { name: 'bar0_dimensionHoverArea_hoveredItem', value: null, on: [] },
+      ];
+
+      test('stamps a name and sets interactive true when an interactive bar matches scaleField', () => {
         const axis = addAxes([], {
           ...defaultAxisOptions,
           scaleName: 'xBand',
           scaleField: 'category',
-          usermeta: { barDimensionFields: [{ name: 'bar0', dimension: 'category' }] },
+          usermeta: {},
+          data: interactiveBarData,
+          signals: interactiveBarSignals,
         })[0];
         expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
         expect(axis.encode?.labels).toHaveProperty('interactive', true);
@@ -567,19 +582,21 @@ describe('Spec builder, Axis', () => {
         ]);
       });
 
-      test('does not stamp a name or force interactive when no barDimensionFields entry matches scaleField', () => {
+      test('does not stamp a name or force interactive when no interactive bar matches scaleField', () => {
         const axis = addAxes([], {
           ...defaultAxisOptions,
           scaleName: 'xBand',
           scaleField: 'otherField',
-          usermeta: { barDimensionFields: [{ name: 'bar0', dimension: 'category' }] },
+          usermeta: {},
+          data: interactiveBarData,
+          signals: interactiveBarSignals,
         })[0];
         expect(axis.encode?.labels).not.toHaveProperty('name');
         expect(axis.encode?.labels).toHaveProperty('interactive', false);
         expect(axis.encode?.labels?.update).not.toHaveProperty('fillOpacity');
       });
 
-      test('does not stamp a name or force interactive when usermeta.barDimensionFields is absent', () => {
+      test('does not stamp a name or force interactive when there is no bar data/signals at all', () => {
         const axis = addAxes([], {
           ...defaultAxisOptions,
           scaleName: 'xBand',
@@ -596,7 +613,9 @@ describe('Spec builder, Axis', () => {
           hideDefaultLabels: true,
           scaleName: 'xBand',
           scaleField: 'category',
-          usermeta: { barDimensionFields: [{ name: 'bar0', dimension: 'category' }] },
+          usermeta: {},
+          data: interactiveBarData,
+          signals: interactiveBarSignals,
         })[0];
         expect(axis.encode?.labels).not.toHaveProperty('name');
       });
@@ -607,7 +626,9 @@ describe('Spec builder, Axis', () => {
           hasTooltip: true,
           scaleName: 'xBand',
           scaleField: 'category',
-          usermeta: { barDimensionFields: [{ name: 'bar0', dimension: 'category' }] },
+          usermeta: {},
+          data: interactiveBarData,
+          signals: interactiveBarSignals,
         })[0];
         expect(axis.encode?.labels).toHaveProperty('interactive', true);
       });

@@ -43,6 +43,7 @@ import {
   addAxisLabelHoverSignalWiring,
   getAxisLabelDimensionFillOpacity,
   getAxisLabelHoverMarkName,
+  getMatchingInteractiveBarDimensionFields,
 } from './axisLabelHoverUtils';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
@@ -146,12 +147,15 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     }
 
     const usermeta = spec.usermeta;
+    const data = spec.data ?? [];
     spec.axes = addAxes(spec.axes ?? [], {
       ...axisOptions,
       scaleName,
       scaleField,
       opposingScaleType,
       usermeta,
+      data,
+      signals: spec.signals ?? [],
 
       // we don't want to show the grid on top level
       // axes for trellised charts
@@ -162,6 +166,8 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     spec.marks = addAxesMarks(spec.marks ?? [], {
       ...axisOptions,
       usermeta,
+      data,
+      signals: spec.signals ?? [],
       scaleName,
       scaleField,
       opposingScaleType,
@@ -169,10 +175,14 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     });
 
     if (!hideDefaultLabels) {
+      const matchingBars = getMatchingInteractiveBarDimensionFields(
+        data,
+        spec.signals ?? [],
+        getEffectiveScaleField(spec, position, scaleField)
+      );
       spec.signals = addAxisLabelHoverSignalWiring(
         spec.signals ?? [],
-        usermeta.barDimensionFields ?? [],
-        getEffectiveScaleField(spec, position, scaleField),
+        matchingBars,
         getAxisLabelHoverMarkName(axisOptions.name)
       );
     }
@@ -390,9 +400,11 @@ export const addAxes = produce<
       opposingScaleType?: string;
       dualMetricAxis?: boolean;
       usermeta: UserMeta;
+      data?: Data[];
+      signals?: Signal[];
     }
   ]
->((axes, { scaleName, scaleField, opposingScaleType, dualMetricAxis, ...axisOptions }) => {
+>((axes, { scaleName, scaleField, opposingScaleType, dualMetricAxis, data = [], signals = [], ...axisOptions }) => {
   const newAxes: Axis[] = [];
   // adds all the trellis axis options if this is a trellis axis
   axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
@@ -402,7 +414,7 @@ export const addAxes = produce<
     // time axis actually needs two axes. A primary and secondary.
     newAxes.push(...getTimeAxes(scaleName, axisOptions));
   } else {
-    buildStandardAxes(newAxes, axisOptions, scaleName, usermeta, scaleField, dualMetricAxis);
+    buildStandardAxes(newAxes, axisOptions, scaleName, usermeta, data, signals, scaleField, dualMetricAxis);
   }
 
   // add baseline
@@ -429,13 +441,15 @@ function buildStandardAxes(
   axisOptions: AxisSpecOptions,
   scaleName: string,
   usermeta: UserMeta,
+  data: Data[],
+  signals: Signal[],
   scaleField?: string,
   dualMetricAxis?: boolean
 ): void {
   const { colorScheme, position } = axisOptions;
   const axis = getDefaultAxis(axisOptions, scaleName);
 
-  applyAxisLabelEncodings(axis, axisOptions, usermeta, scaleField);
+  applyAxisLabelEncodings(axis, axisOptions, data, signals, scaleField);
 
   // if sublabels exist, create a new axis for the sub labels
   if (hasSubLabels(axisOptions)) {
@@ -478,14 +492,15 @@ function buildStandardAxes(
 function applyAxisLabelEncodings(
   axis: Axis,
   axisOptions: AxisSpecOptions,
-  usermeta: UserMeta,
+  data: Data[],
+  signals: Signal[],
   scaleField?: string
 ): void {
   const { hideDefaultLabels, labelAlign, labelFontWeight, labelOrientation, name, position, hasTooltip } = axisOptions;
 
   const matchingBarDimensionFields = hideDefaultLabels
     ? []
-    : (usermeta?.barDimensionFields ?? []).filter((field) => field.dimension === scaleField);
+    : getMatchingInteractiveBarDimensionFields(data, signals, scaleField);
   const hasMatchingDimensionBar = matchingBarDimensionFields.length > 0;
 
   if (hasMatchingDimensionBar) {
@@ -494,7 +509,7 @@ function applyAxisLabelEncodings(
         name: getAxisLabelHoverMarkName(name),
         interactive: true,
         update: {
-          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields, scaleField),
+          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields),
         },
       },
     });
@@ -519,7 +534,7 @@ function applyAxisLabelEncodings(
       ...(hasMatchingDimensionBar && {
         update: {
           ...encodingWithOptionalTooltip.update,
-          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields, scaleField),
+          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields),
         },
       }),
     },
@@ -598,10 +613,23 @@ export const addAxesMarks = produce<
       opposingScaleType?: string;
       dualMetricAxis?: boolean;
       usermeta: UserMeta;
+      data?: Data[];
+      signals?: Signal[];
     }
   ]
 >((marks, options) => {
-  const { baseline, baselineOffset, opposingScaleType, position, scaleField, scaleName, scaleType, usermeta } = options;
+  const {
+    baseline,
+    baselineOffset,
+    opposingScaleType,
+    position,
+    scaleField,
+    scaleName,
+    scaleType,
+    usermeta,
+    data = [],
+    signals = [],
+  } = options;
 
   // only add reference lines to linear or time scales
   if (scaleTypeSupportsReferenceLines(scaleType)) {
@@ -616,7 +644,7 @@ export const addAxesMarks = produce<
   }
 
   if (isTrellised) {
-    addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta, scaleField);
+    addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta, data, signals, scaleField);
   }
 
   for (const axisAnnotation of getAxisAnnotationsFromChildren(options)) {
@@ -651,6 +679,8 @@ function addAxesToTrellisGroup(
   trellisGroupMark: GroupMark,
   scaleName: string,
   usermeta: UserMeta,
+  data: Data[],
+  signals: Signal[],
   scaleField?: string
 ) {
   const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
@@ -684,6 +714,8 @@ function addAxesToTrellisGroup(
     scaleType,
     dualMetricAxis: false, // trellis axes don't support dualMetricAxis scaling
     usermeta,
+    data,
+    signals,
   });
 
   // titles on axes within the trellis group have special encodings so that the title is only shown on the first axis

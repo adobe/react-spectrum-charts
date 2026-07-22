@@ -9,15 +9,56 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { NumericValueRef, ProductionRule, Signal } from 'vega';
+import { Data, NumericValueRef, ProductionRule, Signal } from 'vega';
 
-import { DIMENSION_HOVER_AREA, FADE_FACTOR, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, HOVERED_ITEM, FADE_FACTOR } from '@spectrum-charts/constants';
 
 /**
  * Returns the Vega mark name to stamp onto an axis's primary label encode block so that
  * hover/mouseout events can be bound to it via `@<name>:mouseover` event selectors.
  */
 export const getAxisLabelHoverMarkName = (axisName: string): string => `${axisName}_labelHover`;
+
+/**
+ * Matches this axis's dimension field (`scaleField`) against every interactive Bar in the already-built
+ * spec, without any cross-builder metadata channel (e.g. usermeta). Bar marks don't carry their dimension
+ * field as a directly readable property, but every stacked/dodged bar unconditionally creates a named,
+ * plain-data aggregate source keyed by that field:
+ *   - `${barName}_stacks` (stacked bars) - groupby includes the dimension (and trellis field, if any)
+ *   - `${barName}_groups` (dodged bars)  - groupby is exactly [dimension]
+ * created in barSpecBuilder.ts's addData (`getStackAggregateData`/`getDodgedGroupAggregateData`), regardless
+ * of interactivity. A bar only counts as "interactive" here if its `${barName}_dimensionHoverArea_hoveredItem`
+ * signal already exists (created in barSpecBuilder.ts's addSignals only when the bar is interactive).
+ */
+export const getMatchingInteractiveBarDimensionFields = (
+  data: Data[],
+  signals: Signal[],
+  scaleField: string | undefined
+): { name: string; dimension: string }[] => {
+  if (!scaleField) return [];
+
+  const matches: { name: string; dimension: string }[] = [];
+  for (const source of data) {
+    const match = source.name?.match(/^(.+)_(?:stacks|groups)$/);
+    if (!match) continue;
+
+    const barName = match[1];
+    const aggregateTransform = source.transform?.find((transform) => transform.type === 'aggregate');
+    const groupby = aggregateTransform && 'groupby' in aggregateTransform ? aggregateTransform.groupby : undefined;
+    const groupsByScaleField = Array.isArray(groupby) && groupby.some((field) => field === scaleField);
+    if (!groupsByScaleField) continue;
+
+    const hasInteractiveSignal = signals.some(
+      (signal) => signal.name === `${barName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
+    );
+    if (!hasInteractiveSignal) continue;
+
+    if (!matches.some((existing) => existing.name === barName)) {
+      matches.push({ name: barName, dimension: scaleField });
+    }
+  }
+  return matches;
+};
 
 /**
  * Wires axis label mouseover/mouseout events into any Bar mark's existing dimension-hover-area
@@ -30,13 +71,9 @@ export const getAxisLabelHoverMarkName = (axisName: string): string => `${axisNa
  */
 export const addAxisLabelHoverSignalWiring = (
   signals: Signal[],
-  barDimensionFields: { name: string; dimension: string }[],
-  scaleField: string | undefined,
+  matchingBars: { name: string; dimension: string }[],
   axisLabelMarkName: string
 ): Signal[] => {
-  if (!scaleField) return signals;
-
-  const matchingBars = barDimensionFields.filter(({ dimension }) => dimension === scaleField);
   for (const { name, dimension } of matchingBars) {
     const signalName = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
     const signal = signals.find((s) => s.name === signalName);
@@ -66,10 +103,8 @@ export const addAxisLabelHoverSignalWiring = (
  * included, since a single hovered segment doesn't represent "this whole category is hovered."
  */
 export const getAxisLabelDimensionFillOpacity = (
-  barDimensionFields: { name: string; dimension: string }[],
-  scaleField: string | undefined
+  matchingBars: { name: string; dimension: string }[]
 ): ProductionRule<NumericValueRef> => {
-  const matchingBars = barDimensionFields.filter(({ dimension }) => dimension === scaleField);
   const rules: ({ test?: string } & NumericValueRef)[] = matchingBars.map(({ name, dimension }) => {
     const signalName = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
     return {

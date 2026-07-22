@@ -267,22 +267,6 @@ describe('barSpecBuilder', () => {
           addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', orientation: 'horizontal' }).usermeta
         ).toHaveProperty('chartOrientation', 'horizontal');
       });
-
-      test('should add barDimensionFields if the bar is interactive', () => {
-        const usermeta = addBar(startingSpec, {
-          idKey: MARK_ID,
-          markType: 'bar',
-          chartPopovers: [{}],
-        }).usermeta;
-        expect(usermeta.barDimensionFields).toStrictEqual([
-          { name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION },
-        ]);
-      });
-
-      test('should not add barDimensionFields if the bar is not interactive', () => {
-        const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' }).usermeta;
-        expect(usermeta.barDimensionFields).toBeUndefined();
-      });
     });
   });
 
@@ -514,6 +498,30 @@ describe('barSpecBuilder', () => {
 
       test('should not add dimension hover area signal if the bar is not interactive', () => {
         const signals = addSignals(defaultSignals, defaultBarOptions);
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
+      });
+
+      test('should not add dimension hover area signal for a bar that is only interactive via barAnnotations', () => {
+        // barAnnotations alone isn't "interactive" per isInteractive() - the dimension hover area
+        // signal must stay in sync with that check, since it's what gates the rect mark
+        // (stackedBarUtils.ts/dodgedBarUtils.ts) and opacity rule (chartInspectUtils.ts) that
+        // consume this exact signal.
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          barAnnotations: [{ textKey: 'textLabel' }],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
+      });
+
+      test('should not add dimension hover area signal for a bar with only a non-displayOnHover trendline', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          trendlines: [{ displayOnHover: false }],
+        });
         expect(
           signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
         ).toBeUndefined();
