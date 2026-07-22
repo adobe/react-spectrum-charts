@@ -39,13 +39,14 @@ export const getMatchingInteractiveBarDimensionFields = (
 
   const matches: { name: string; dimension: string }[] = [];
   for (const source of data) {
-    const match = source.name?.match(/^(.+)_(?:stacks|groups)$/);
+    if (!source.name) continue;
+    const match = /^(.+)_(?:stacks|groups)$/.exec(source.name);
     if (!match) continue;
 
     const barName = match[1];
     const aggregateTransform = source.transform?.find((transform) => transform.type === 'aggregate');
     const groupby = aggregateTransform && 'groupby' in aggregateTransform ? aggregateTransform.groupby : undefined;
-    const groupsByScaleField = Array.isArray(groupby) && groupby.some((field) => field === scaleField);
+    const groupsByScaleField = Array.isArray(groupby) && groupby.includes(scaleField);
     if (!groupsByScaleField) continue;
 
     const hasInteractiveSignal = signals.some(

@@ -408,13 +408,13 @@ export const addAxes = produce<
   const newAxes: Axis[] = [];
   // adds all the trellis axis options if this is a trellis axis
   axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
-  const { baseline, labelFormat, position, usermeta } = axisOptions;
+  const { baseline, labelFormat, position } = axisOptions;
 
   if (labelFormat === 'time') {
     // time axis actually needs two axes. A primary and secondary.
     newAxes.push(...getTimeAxes(scaleName, axisOptions));
   } else {
-    buildStandardAxes(newAxes, axisOptions, scaleName, usermeta, data, signals, scaleField, dualMetricAxis);
+    buildStandardAxes(newAxes, axisOptions, scaleName, data, signals, scaleField, dualMetricAxis);
   }
 
   // add baseline
@@ -438,15 +438,14 @@ export const addAxes = produce<
  */
 function buildStandardAxes(
   newAxes: Axis[],
-  axisOptions: AxisSpecOptions,
+  axisOptions: AxisSpecOptions & { usermeta: UserMeta },
   scaleName: string,
-  usermeta: UserMeta,
   data: Data[],
   signals: Signal[],
   scaleField?: string,
   dualMetricAxis?: boolean
 ): void {
-  const { colorScheme, position } = axisOptions;
+  const { colorScheme, position, usermeta } = axisOptions;
   const axis = getDefaultAxis(axisOptions, scaleName);
 
   applyAxisLabelEncodings(axis, axisOptions, data, signals, scaleField);
