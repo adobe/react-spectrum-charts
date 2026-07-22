@@ -549,11 +549,7 @@ const getLegendPages = (
 /**
  * Resolves the live `${name}_columnLayout` for a paginated legend by deferring to whatever
  * `getLegendPages` already decided for the page currently visible, instead of independently
- * re-testing candidates against just the visible subset. That independent re-test is the source of
- * a real inconsistency: a page can end up with fewer items than a larger candidate would allow
- * (because a *different* item elsewhere in the original candidate-sized group didn't fit), and that
- * smaller, "easier" subset can then trivially satisfy a *larger* candidate in isolation — rendering
- * more columns than the page was actually planned around.
+ * re-testing candidates against just the visible subset.
  *
  * Finds the currently-visible page by matching the first visible item's `entryKey` against its
  * position in the full (unfiltered) list, then locating the page whose range starts there.
