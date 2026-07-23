@@ -26,6 +26,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils';
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import {
   getAlternateSegmentStrokeDash,
@@ -132,6 +133,22 @@ describe('getLineMark()', () => {
       signal: expect.stringContaining("data('line0_hoverFractionData')"),
     });
     expect(Array.isArray(notAnimated.encode?.update?.opacity)).toBe(true);
+  });
+
+  describe('isDrawInAnimate', () => {
+    test('omits the enter y encoding and uses the draw-in x/y encodings in update when true', () => {
+      const lineMark = getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: true }, 'line0_facet');
+      expect(lineMark.encode?.enter).not.toHaveProperty('y');
+      expect(lineMark.encode?.update?.x).toStrictEqual(getLineDrawInXEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true }));
+      expect(lineMark.encode?.update?.y).toStrictEqual(getLineDrawInYEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true }));
+    });
+
+    test('keeps the static enter y encoding and the scale-based update x, with no update y, when false', () => {
+      const lineMark = getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: false }, 'line0_facet');
+      expect(lineMark.encode?.enter).toHaveProperty('y');
+      expect(lineMark.encode?.update).not.toHaveProperty('y');
+      expect(lineMark.encode?.update?.x).toStrictEqual({ field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' });
+    });
   });
 });
 

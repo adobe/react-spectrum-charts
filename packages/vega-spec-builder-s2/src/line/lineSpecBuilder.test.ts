@@ -419,6 +419,48 @@ describe('lineSpecBuilder', () => {
         expect(rules).toEqual(expect.arrayContaining(['controlledTableMatch', 'controlledSeriesMatch']));
       });
     });
+
+    describe('isDrawInAnimate gate', () => {
+      test.each(['time', 'linear', 'point'] as const)(
+        'animations: true creates draw-in data sources for a %s scale',
+        (scaleType) => {
+          const spec = addLine(startingSpec, {
+            idKey: MARK_ID,
+            color: DEFAULT_COLOR,
+            markType: 'line',
+            animations: true,
+            scaleType,
+          });
+          expect(spec.data?.some((d) => d.name === 'line0_drawInLerp')).toBe(true);
+        }
+      );
+
+      test('animations: true does not create draw-in data sources for an unsupported (band) scale', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          animations: true,
+          scaleType: 'band',
+        });
+        expect(spec.data?.some((d) => d.name === 'line0_drawInLerp')).toBe(false);
+      });
+
+      test('animations: false does not create draw-in data sources', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          animations: false,
+        });
+        expect(spec.data?.some((d) => d.name === 'line0_drawInLerp')).toBe(false);
+      });
+
+      test('omitting the animations prop does not create draw-in data sources', () => {
+        const spec = addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' });
+        expect(spec.data?.some((d) => d.name === 'line0_drawInLerp')).toBe(false);
+      });
+    });
   });
 
   describe('addData()', () => {
@@ -635,6 +677,56 @@ describe('lineSpecBuilder', () => {
         });
         expect(resultData.find((d) => d.name === 'line0_hoverTargetData')).toBeUndefined();
         expect(resultData.find((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toBeUndefined();
+      });
+    });
+
+    describe('draw-in animation', () => {
+      test('for a time scale, adds the ms-formula transform, the lead transform on filteredTable, and the prev/tip/lerp sources', () => {
+        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, scaleType: 'time' });
+        const tableData = resultData.find((d) => d.name === TABLE);
+        expect(tableData?.transform).toContainEqual({
+          type: 'formula',
+          expr: `toNumber(datum.${DEFAULT_TIME_DIMENSION})`,
+          as: 'rscDrawInTimeMs',
+        });
+        const filteredTableData = resultData.find((d) => d.name === FILTERED_TABLE);
+        expect(filteredTableData?.transform?.some((t) => t.type === 'window')).toBe(true);
+        expect(resultData.find((d) => d.name === 'line0_drawInPrev')).toBeDefined();
+        expect(resultData.find((d) => d.name === 'line0_drawInTip')).toBeDefined();
+        expect(resultData.find((d) => d.name === 'line0_drawInLerp')).toBeDefined();
+      });
+
+      test('for a linear scale, adds the lead transform on filteredTable without the ms-formula transform', () => {
+        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, scaleType: 'linear' });
+        const tableData = resultData.find((d) => d.name === TABLE);
+        expect(tableData?.transform?.some((t) => 'as' in t && t.as === 'rscDrawInTimeMs')).toBe(false);
+        const filteredTableData = resultData.find((d) => d.name === FILTERED_TABLE);
+        expect(filteredTableData?.transform?.some((t) => t.type === 'window')).toBe(true);
+        expect(resultData.find((d) => d.name === 'line0_drawInLerp')).toBeDefined();
+      });
+
+      test('for a point scale, adds a name-scoped indexed source with the lead transform instead of transforming filteredTable', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          isDrawInAnimate: true,
+          scaleType: 'point',
+          dimension: 'category',
+        });
+        const indexedData = resultData.find((d) => d.name === 'line0_drawInIndexed');
+        expect(indexedData).toBeDefined();
+        expect(indexedData?.transform?.some((t) => t.type === 'window')).toBe(true);
+        const filteredTableData = resultData.find((d) => d.name === FILTERED_TABLE);
+        expect(filteredTableData?.transform?.some((t) => t.type === 'window') ?? false).toBe(false);
+        expect(resultData.find((d) => d.name === 'line0_drawInPrev')).toHaveProperty('source', 'line0_drawInIndexed');
+        expect(resultData.find((d) => d.name === 'line0_drawInLerp')).toBeDefined();
+      });
+
+      test('does not add any draw-in data sources when isDrawInAnimate is false', () => {
+        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: false });
+        expect(resultData.find((d) => d.name === 'line0_drawInPrev')).toBeUndefined();
+        expect(resultData.find((d) => d.name === 'line0_drawInTip')).toBeUndefined();
+        expect(resultData.find((d) => d.name === 'line0_drawInLerp')).toBeUndefined();
+        expect(resultData.find((d) => d.name === 'line0_drawInIndexed')).toBeUndefined();
       });
     });
   });
@@ -1004,6 +1096,17 @@ describe('lineSpecBuilder', () => {
       expect(groupMark.from.facet.data).toBe(FILTERED_TABLE);
     });
 
+    test('with isDrawInAnimate uses the draw-in lerp source as facet data, overriding alternateSegmentKey/primarySeries', () => {
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        isDrawInAnimate: true,
+        alternateSegmentKey: 'isEstimated',
+        primarySeries: 3,
+      });
+      const groupMark = marks[0] as { from: { facet: { data: string } } };
+      expect(groupMark.from.facet.data).toBe('line0_drawInLerp');
+    });
+
     test('with alternateSegmentKey, line mark strokeDash uses a signal', () => {
       const marks = addLineMarks([], {
         ...defaultLineOptions,
@@ -1153,6 +1256,28 @@ describe('lineSpecBuilder', () => {
       test('does not add the hover-animation engine signals when isAnimate is false', () => {
         const signals = addSignals([], { ...defaultLineOptions, isAnimate: false });
         expect(signals.some((s) => s.name === HOVER_TIMER)).toBe(false);
+      });
+    });
+
+    describe('draw-in animation', () => {
+      test('adds the shared clock chain plus the per-mark domain/cutoff signals when isDrawInAnimate is true', () => {
+        const signals = addSignals([], { ...defaultLineOptions, isDrawInAnimate: true });
+        expect(signals.map((s) => s.name)).toEqual(
+          expect.arrayContaining([
+            'drawInStart',
+            'drawInAnimT',
+            'drawInAnimTEased',
+            'line0_drawInDomainMin',
+            'line0_drawInDomainMax',
+            'line0_drawInAnimCutoff',
+          ])
+        );
+      });
+
+      test('does not add the draw-in animation signals when isDrawInAnimate is false', () => {
+        const signals = addSignals([], { ...defaultLineOptions, isDrawInAnimate: false });
+        expect(signals.some((s) => s.name === 'drawInStart')).toBe(false);
+        expect(signals.some((s) => s.name === 'line0_drawInAnimCutoff')).toBe(false);
       });
     });
   });
