@@ -569,12 +569,13 @@ const getLegendColumnLayoutForPage = (
   labelWrap = 1
 ): LegendColumnLayout => {
   const lastCandidate = candidates.at(-1);
-  if (!visibleItems.length || !pages.length || lastCandidate === undefined) {
+  const lastPage = pages.at(-1);
+  if (!visibleItems.length || !lastPage || lastCandidate === undefined) {
     return { columns: 1, labelLimit: 0, wrapWidth: 0 };
   }
 
   const startIndex = fullItems.findIndex((item) => item.entryKey === visibleItems[0].entryKey);
-  const page = pages.find((p) => p.start === startIndex) ?? pages[pages.length - 1];
+  const page = pages.find((p) => p.start === startIndex) ?? lastPage;
 
   const useWrap = labelWrap > 1;
   return (
