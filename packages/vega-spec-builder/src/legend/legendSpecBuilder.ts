@@ -12,52 +12,22 @@
 import { produce } from 'immer';
 import { Data, Legend, Mark, Scale, Signal } from 'vega';
 
-import {
-  COLOR_SCALE,
-  DEFAULT_COLOR_SCHEME,
-  GROUP_ID,
-  HOVERED_SERIES,
-  LINEAR_COLOR_SCALE,
-  LINE_TYPE_SCALE,
-  OPACITY_SCALE,
-  SERIES_ID,
-  SYMBOL_SHAPE_SCALE,
-  SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
+
+
+import { COLOR_SCALE, DEFAULT_COLOR_SCHEME, GROUP_ID, HOVERED_SERIES, LINEAR_COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, SERIES_ID, SYMBOL_SHAPE_SCALE, SYMBOL_SIZE_SCALE } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
+
+
 
 import { getTableData } from '../data/dataUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
 import { addHighlightSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { getLineWidthPixelsFromLineWidth, getPathFromSymbolShape, getStrokeDashFromLineType } from '../specUtils';
-import {
-  ColorFacet,
-  ColorScheme,
-  FacetRef,
-  HighlightedItem,
-  LegendOptions,
-  LegendSpecOptions,
-  LineTypeFacet,
-  LineWidthFacet,
-  ScSpec,
-  SymbolShapeFacet,
-  UserMeta,
-} from '../types';
+import { ColorFacet, ColorScheme, FacetRef, HighlightedItem, LegendOptions, LegendSpecOptions, LineTypeFacet, LineWidthFacet, ScSpec, SymbolShapeFacet, UserMeta } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 import { setHoverOpacityForMarks } from './legendHighlightUtils';
-import {
-  Facet,
-  getColumnLayoutExpr,
-  getColumns,
-  getDisplayLabelExpr,
-  getEncodings,
-  getHiddenEntriesFilter,
-  getLabelWidthsData,
-  getPagesExpr,
-  getPagesLabelWidthsData,
-  getRowCappedAggregateData,
-  getSymbolType,
-} from './legendUtils';
+import { Facet, getColumnLayoutExpr, getColumns, getDisplayLabelExpr, getEncodings, getHiddenEntriesFilter, getLabelWidthsData, getPagesExpr, getPagesLabelWidthsData, getRowCappedAggregateData, getSymbolType } from './legendUtils';
+
 
 export const addLegend = produce<
   ScSpec,
@@ -421,12 +391,16 @@ export const addSignals = produce<Signal[], [LegendSpecOptions]>(
     const usePreferredColumns =
       _preferredColumns !== undefined && _preferredColumns.length > 0 && ['top', 'bottom'].includes(position);
     if (usePreferredColumns) {
-      signals.push({ name: `${name}_columnLayout`, update: getColumnLayoutExpr(name, _preferredColumns, _labelWrap) });
       // ${name}_pages is only useful for external pagination once _maxRows is set; it's not needed
       // to render the legend itself, so it's skipped otherwise.
       if (_maxRows !== undefined) {
         signals.push({ name: `${name}_pages`, update: getPagesExpr(name, _preferredColumns, _maxRows, _labelWrap) });
       }
+      // compute ${name}_columnLayout AFTER the page layout is computed, to get the correct per page column count decided by ${name}_pages
+      signals.push({
+        name: `${name}_columnLayout`,
+        update: getColumnLayoutExpr(name, _preferredColumns, _labelWrap, _maxRows),
+      });
     }
   }
 );

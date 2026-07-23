@@ -424,6 +424,27 @@ describe('addLegend()', () => {
         const labelWidths = data?.find((d) => d.name === 'legend0_labelWidths');
         expect(labelWidths).toMatchObject({ source: 'legend0Aggregate' });
       });
+
+      // Regression: the live render must defer to whatever ${name}_pages already decided for the
+      // currently-visible page, not independently re-test candidates against just that subset
+      test('should use the page-aware column layout expression when _maxRows is set', () => {
+        const signals = addLegend(defaultSpec, { _preferredColumns: [5, 3], _maxRows: 2 }).signals;
+        const columnLayoutSignal = signals?.find((s) => 'name' in s && s.name === 'legend0_columnLayout');
+        expect(columnLayoutSignal).toEqual({
+          name: 'legend0_columnLayout',
+          update:
+            "getLegendColumnLayoutForPage(data('legend0_labelWidths'), data('legend0_pagesLabelWidths'), legend0_pages, [5,3], width, 1)",
+        });
+      });
+
+      test('should use the original, self-contained column layout expression when _maxRows is not set', () => {
+        const signals = addLegend(defaultSpec, { _preferredColumns: [5, 3] }).signals;
+        const columnLayoutSignal = signals?.find((s) => 'name' in s && s.name === 'legend0_columnLayout');
+        expect(columnLayoutSignal).toEqual({
+          name: 'legend0_columnLayout',
+          update: "getLegendColumnLayout(data('legend0_labelWidths'), width, [5,3], 1)",
+        });
+      });
     });
 
     test('should add titleLimit if provided', () => {

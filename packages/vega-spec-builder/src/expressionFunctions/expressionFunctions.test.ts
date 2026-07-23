@@ -234,6 +234,7 @@ describe('wrapTruncates()', () => {
 describe('getLegendColumnLayout()', () => {
   const item = (legendIndex: number, labelWidth = 40): LegendLabelWidthDatum => ({
     legendIndex,
+    entryKey: `Item ${legendIndex}`,
     displayLabel: `Item ${legendIndex}`,
     labelWidth,
   });
@@ -262,7 +263,12 @@ describe('getLegendColumnLayout()', () => {
   test('with labelWrap, a candidate that only fits once wrapped is chosen with labelLimit 0', () => {
     const displayLabel = 'Supercalifragilisticexpialidocious is quite long';
     const items = [
-      { legendIndex: 1, displayLabel, labelWidth: expressionFunctions.getLabelWidth(displayLabel, 'normal', 14) },
+      {
+        legendIndex: 1,
+        entryKey: displayLabel,
+        displayLabel,
+        labelWidth: expressionFunctions.getLabelWidth(displayLabel, 'normal', 14),
+      },
     ];
     const layout = expressionFunctions.getLegendColumnLayout(items, 100, [1], 2);
     expect(layout.labelLimit).toBe(0);
@@ -272,7 +278,12 @@ describe('getLegendColumnLayout()', () => {
 
 describe('getLegendPages()', () => {
   const items = (n: number, labelWidth = 40): LegendLabelWidthDatum[] =>
-    Array.from({ length: n }, (_, i) => ({ legendIndex: i + 1, displayLabel: `Item ${i}`, labelWidth }));
+    Array.from({ length: n }, (_, i) => ({
+      legendIndex: i + 1,
+      entryKey: `Item ${i}`,
+      displayLabel: `Item ${i}`,
+      labelWidth,
+    }));
 
   test('returns a single page when everything fits within columns * maxRows', () => {
     const pages = expressionFunctions.getLegendPages(items(4), 600, [5, 3], 2);
@@ -303,6 +314,70 @@ describe('getLegendPages()', () => {
     const pages = expressionFunctions.getLegendPages(items(3), 600, [5, 3], 0);
     expect(pages.every((p) => p.end >= p.start)).toBe(true);
     expect(pages[pages.length - 1].end).toBe(2);
+  });
+});
+
+describe('getLegendColumnLayoutForPage()', () => {
+  const item = (legendIndex: number, entryKey: string, labelWidth = 40): LegendLabelWidthDatum => ({
+    legendIndex,
+    entryKey,
+    displayLabel: entryKey,
+    labelWidth,
+  });
+
+  const fullItems = Array.from({ length: 10 }, (_, i) => item(i + 1, `Series ${i}`));
+  // The plan rejected 5 columns for the original 10-item candidate set (some other item didn't fit)
+  // and landed on 3 columns for a 6-item page. In isolation, these 6 short-labeled items would
+  // trivially satisfy 5 columns too.
+  const visiblePage0Items = fullItems.slice(0, 6);
+
+  test("defers to the plan's column count even when the visible subset could independently satisfy a larger candidate", () => {
+    const pages = [
+      { columns: 3, start: 0, end: 5 },
+      { columns: 3, start: 6, end: 9 },
+    ];
+    const layout = expressionFunctions.getLegendColumnLayoutForPage(
+      visiblePage0Items,
+      fullItems,
+      pages,
+      [5, 3],
+      600,
+      1
+    );
+    expect(layout.columns).toBe(3);
+
+    // sanity check: the independent (non-page-aware) function really would pick 5 for just these 6 —
+    // this is the mismatch getLegendColumnLayoutForPage exists to avoid.
+    const independentLayout = expressionFunctions.getLegendColumnLayout(visiblePage0Items, 600, [5, 3], 1);
+    expect(independentLayout.columns).toBe(5);
+  });
+
+  test("matches the currently-visible page by the first visible entry's position in the full list", () => {
+    const pages = [
+      { columns: 5, start: 0, end: 5 },
+      { columns: 3, start: 6, end: 9 },
+    ];
+    const visiblePage1Items = fullItems.slice(6, 10);
+    const layout = expressionFunctions.getLegendColumnLayoutForPage(visiblePage1Items, fullItems, pages, [5, 3], 600, 1);
+    expect(layout.columns).toBe(3);
+  });
+
+  test('falls back to the last page when the visible entry cannot be matched against the full list', () => {
+    const pages = [
+      { columns: 5, start: 0, end: 5 },
+      { columns: 3, start: 6, end: 9 },
+    ];
+    const unmatchedItem = item(1, 'Not In Full List');
+    const layout = expressionFunctions.getLegendColumnLayoutForPage([unmatchedItem], fullItems, pages, [5, 3], 600, 1);
+    expect(layout.columns).toBe(3);
+  });
+
+  test('returns a safe default when there are no visible items or no pages', () => {
+    expect(expressionFunctions.getLegendColumnLayoutForPage([], fullItems, [], [5, 3], 600, 1)).toEqual({
+      columns: 1,
+      labelLimit: 0,
+      wrapWidth: 0,
+    });
   });
 });
 
