@@ -20,6 +20,7 @@ import {
   FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
+  HOVER_FRACTION_DATA,
   HOVERED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -265,20 +266,49 @@ describe('setHoverOpacityForMarks()', () => {
       name: 'line0',
       encode: {
         ...defaultMark.encode,
-        update: { opacity: { signal: `0.2 + (1 - 0.2) * clamp(0.5 / 0.5, 0, 1)` } },
+        update: {
+          opacity: {
+            signal: `0.2 + (1 - 0.2) * clamp((data('line0_${HOVER_FRACTION_DATA}')[0] || {fraction: 0.5}).fraction / 0.5, 0, 1)`,
+          },
+        },
       },
     };
 
-    test('is left untouched when its name is in animatedMarks', () => {
+    test('is left untouched when its opacity signal already reads from hoverFractionData', () => {
       const marks = JSON.parse(JSON.stringify([animatedLineMark]));
-      setHoverOpacityForMarks('legend0', marks, undefined, false, ['line0']);
+      setHoverOpacityForMarks('legend0', marks);
       expect(marks[0].encode.update.opacity).toEqual(animatedLineMark.encode?.update?.opacity);
     });
 
-    test('still gets the legend-hover opacity rule spliced in when its name is not in animatedMarks', () => {
-      const marks = JSON.parse(JSON.stringify([animatedLineMark]));
-      setHoverOpacityForMarks('legend0', marks, undefined, false, ['line1']);
+    test('still gets the legend-hover opacity rule spliced in when its opacity signal does not reference hoverFractionData', () => {
+      const nonAnimatedMark: Mark = {
+        ...animatedLineMark,
+        encode: {
+          ...animatedLineMark.encode,
+          update: { opacity: { signal: `length(data('line0_highlightedData')) ? 1 : 0.2` } },
+        },
+      };
+      const marks = JSON.parse(JSON.stringify([nonAnimatedMark]));
+      setHoverOpacityForMarks('legend0', marks);
       expect(marks[0].encode.update.opacity[0]).toEqual(getHighlightOpacityRule('legend0', false));
+    });
+
+    test('is left untouched when its opacity is an array containing a hoverFractionData-referencing rule', () => {
+      const animatedArrayMark: Mark = {
+        ...animatedLineMark,
+        encode: {
+          ...animatedLineMark.encode,
+          update: {
+            opacity: [
+              { test: 'someCondition', value: 0 },
+              animatedLineMark.encode?.update?.opacity as { signal: string },
+            ],
+          },
+        },
+      };
+      const marks = JSON.parse(JSON.stringify([animatedArrayMark]));
+      setHoverOpacityForMarks('legend0', marks);
+      expect(marks[0].encode.update.opacity).toEqual(animatedArrayMark.encode?.update?.opacity);
     });
   });
 

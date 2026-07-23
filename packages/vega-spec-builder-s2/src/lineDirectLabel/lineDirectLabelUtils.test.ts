@@ -18,11 +18,13 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
+	FADE_FACTOR,
 	FILTERED_TABLE,
 	MARK_ID,
 	SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions } from '../types';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from './lineDirectLabelUtils';
 
@@ -450,6 +452,16 @@ describe('getLineDirectLabelMarks', () => {
 	test('foreground mark has opacity rules for hover dimming', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 		expect(marks[1].encode?.update).toHaveProperty('opacity');
+	});
+
+	test('foreground mark uses the animated deemphasis-ramp signal when isAnimate is true, background stays opaque', () => {
+		const lineOpts = { ...defaultLineOptions, interactiveMarkName: 'line0', isAnimate: true };
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, lineOpts, 'gray-50', 'light');
+		const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
+		expect(marks[1].encode?.update).toHaveProperty('opacity', {
+			signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+		});
+		expect(marks[0].encode?.update).toHaveProperty('opacity', { value: 1 });
 	});
 
 	test('both marks have fixed fontWeight from DIRECT_LABEL_FONT_WEIGHT', () => {

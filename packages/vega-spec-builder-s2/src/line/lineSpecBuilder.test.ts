@@ -362,6 +362,62 @@ describe('lineSpecBuilder', () => {
         expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
         expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(false);
       });
+
+      test('registers only the line name in animatedMarks, never sub-mark names, even with static points and direct labels', () => {
+        // getLegendOpacity (legendUtils.ts) iterates animatedMarks and builds a data() reference for
+        // each name — registering a sub-mark name here would make it reference a _hoverFractionData
+        // source that was never created. Static points/direct labels share the line's own fraction
+        // data instead of getting their own, so animatedMarks must stay line-name-only.
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+          staticPoint: 'staticPoint',
+          lineDirectLabels: [{}],
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+      });
+
+      test('interactionMode "item" resolves isAnimate the same as the default (nearest) mode', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+          interactionMode: 'item',
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+
+        const hoverTargetData = spec.data?.find((d) => d.name === 'line0_hoverTargetData');
+        expect(hoverTargetData).toBeDefined();
+
+        // hoveredMatch reads the same `line0_hoveredItem` signal regardless of interactionMode --
+        // item mode just adds extra `on` triggers (from the item-hover marks) to that same signal
+        // (see addHoverSignals in lineSpecBuilder.ts), so the animation match rule doesn't change.
+        const hoveredMatchRule = (hoverTargetData?.transform as { as?: string; expr?: string }[] | undefined)?.find(
+          (t) => t.as === 'hoveredMatch'
+        );
+        expect(hoveredMatchRule?.expr).toContain(`line0_${HOVERED_ITEM}`);
+      });
+
+      test('a chart-level highlightedItem alone (no other line interactivity) resolves isAnimate true', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          highlightedItem: 'abc123',
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+
+        const hoverTargetData = spec.data?.find((d) => d.name === 'line0_hoverTargetData');
+        expect(hoverTargetData).toBeDefined();
+
+        // controlledTableMatch/controlledSeriesMatch are pushed unconditionally by getLineHoverRules,
+        // so a highlightedItem-only line still gets both controlled-highlight rules wired.
+        const rules = (hoverTargetData?.transform as { as?: string }[] | undefined)?.map((t) => t.as);
+        expect(rules).toEqual(expect.arrayContaining(['controlledTableMatch', 'controlledSeriesMatch']));
+      });
     });
   });
 

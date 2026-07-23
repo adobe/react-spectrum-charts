@@ -19,10 +19,11 @@ whose visual treatment can be expressed as an emphasize/deemphasize ramp on that
 consumer — not just the two below. **Opacity** and **stroke width** are simply the two that have been built
 and tested so far: opacity (non-hovered series fade toward `0.2`) and stroke width (the hovered series grows
 toward the hover width). New properties are added purely by writing a new consumer that maps
-`getHoverFractionSignal` via the ramp helpers (§4) — no engine changes required. For the line mark, only
-**opacity** is wired up so far (`getLineOpacity`, §6) — deliberately left as the single reference example for
-how to wire a consumer; stroke width (`getLineStrokeWidth`) still uses the original instant production rules
-unconditionally and is a good next consumer to add by following the same pattern.
+`getHoverFractionSignal` via the ramp helpers (§4) — no engine changes required. For the line mark, **opacity**
+is now wired for three consumers, all built on one shared formula (`getLineDeemphasisOpacitySignal` in
+`lineMarkUtils.ts`): the line stroke (`getLineOpacity`, §6), static points (`getLineStaticPoint`), and the
+direct label's foreground text (`getLineDirectLabelMarks`, which just calls `getLineOpacity`). Stroke width
+(`getLineStrokeWidth`) still uses the original instant rules unconditionally — a good next consumer.
 
 ---
 
@@ -398,15 +399,21 @@ interactivity is a highlight legend now animates both its legend entry *and* its
 > metric-range boundary line (`getMetricRangeMark` in `metricRangeUtils.ts`) both hit this and now both
 > explicitly set `isAnimate: false` for the same reason as the overlay.
 
+> Static points and direct labels are the opposite of the overlay: they're **not** renamed marks, so they
+> correctly keep the parent's `isAnimate` and read the *same* line's `_hoverFractionData` rather than getting
+> their own. `getLineStaticPoint` branches on `isAnimate` via the shared `getLineDeemphasisOpacitySignal`;
+> `getLineDirectLabelMarks` just calls `getLineOpacity` directly. In both, only the **foreground** is
+> opacity-driven — the background halo mark has no `opacity` key at all, so it stays permanently opaque.
+
 ---
 
 ## 7. Legend integration (cross-builder coordination)
 
 The legend is built by a separate `produce` function from the marks, so it needs a channel to learn which
-marks animate and where their fraction data lives. That channel is **`usermeta.animatedMarks`** (a list of
-mark names), mirroring the pre-existing `usermeta.interactiveMarks` pattern. Vega's `usermeta` is
-arbitrary spec metadata Vega ignores — ideal for build-time bookkeeping that persists across the
-sequential builder calls operating on the same spec.
+*lines* animate and where their fraction data lives. That channel is **`usermeta.animatedMarks`** (a list of
+**line** names — see the important scoping note below), mirroring the pre-existing `usermeta.interactiveMarks`
+pattern. Vega's `usermeta` is arbitrary spec metadata Vega ignores — ideal for build-time bookkeeping that
+persists across the sequential builder calls operating on the same spec.
 
 Flow:
 1. `addLine` registers the mark: `addUserMetaAnimatedMark(spec.usermeta, lineName)` (gated by
@@ -423,6 +430,20 @@ Flow:
 Ordering guarantee: the chart builder computes `legendHighlightSignals` and passes it into `addLine`
 *before* `addLine` runs, and `addLegend` runs *after* all marks — so the line's `_hoverTargetData` /
 `animatedMarks` exist by the time the legend injects into and reads them.
+
+> **Keep `animatedMarks` scoped to line names only — a second, unrelated job shares the word "animated" and
+> must not reuse this list.** `getLegendOpacity` (step 3 above) builds `data('${markName}_hoverFractionData')`
+> for every name in the list, which only resolves for names with their own fraction data (the base line only —
+> static points and direct labels read the *line's* data, §6, not their own). Separately, legend `highlight`
+> and the chart-level controlled-highlight pass both call `setHoverOpacityForMarks`
+> (`legendHighlightUtils.ts`), which splices an instant legend-hover rule into every series-colored mark's
+> opacity *unless it's already animated* — a per-*mark* check, not per-line. Registering a sub-mark (e.g.
+> `${lineName}_staticPoints`) here to satisfy that check instead breaks `getLegendOpacity`, which then
+> references a fraction-data source that was never created. This was hit and fixed once (§10). The fix:
+> `setHoverOpacityForMarks` doesn't take a name list at all — `isAnimatedOpacity()` detects "already animated"
+> structurally, by checking whether the mark's own opacity signal already contains `hoverFractionData` (which
+> every consumer built via `getHoverFractionSignal` always does). No registration, ever, for any future
+> consumer.
 
 ---
 
@@ -456,13 +477,15 @@ one shared row for the whole chart (§3f).
 | `packages/constants/constants.ts` | all the constants above |
 | `vega-spec-builder-s2/src/marks/hoverAnimationUtils.ts` | **the engine** — `getHoverTargetData`, `getHoverAnimStateData`, `getHoverFractionData`, `addHoverAnimationSignals` (also adds the §3f idle-gate signals), `addHoverAnimLastChangeData` (§3f), `getHoverFractionSignal`, `getDeemphasisRamp`, `getEmphasisRamp`, `HoverMatchRule` type |
 | `vega-spec-builder-s2/src/line/lineDataUtils.ts` | `getLineHoverRules` (line-specific match rules) |
-| `vega-spec-builder-s2/src/line/lineMarkUtils.ts` | consumers: `getLineOpacity` (wired) / `getLineOpacityRules` (fallback), `getLineStrokeWidth` (not yet wired — still the original unconditional rules); plus `getHighlightedSeriesOpacityRules` (the overlay — see §10) |
+| `vega-spec-builder-s2/src/line/lineMarkUtils.ts` | consumers: `getLineOpacity` (wired) / `getLineOpacityRules` (fallback), `getLineDeemphasisOpacitySignal` (shared animated formula), `getLineStrokeWidth` (not yet wired); plus `getHighlightedSeriesOpacityRules` (the overlay — see §10) |
+| `vega-spec-builder-s2/src/line/linePointUtils.ts` | `getLineStaticPoint` (wired via `getLineDeemphasisOpacitySignal`) |
+| `vega-spec-builder-s2/src/lineDirectLabel/lineDirectLabelUtils.ts` | `getLineDirectLabelMarks` — foreground wired via `getLineOpacity`; background has no `opacity` key, stays opaque |
 | `vega-spec-builder-s2/src/line/lineSpecBuilder.ts` | `usesHoverAnimation` gate; wires data/signals/registration in `addData`/`addSignals`/`addLine` |
 | `vega-spec-builder-s2/src/trendline/trendlineMarkUtils.ts` | `getLineMarkOptions` — sets `isAnimate: false` for trendline marks (§6 overlay exception) |
 | `vega-spec-builder-s2/src/metricRange/metricRangeUtils.ts` | `getMetricRangeMark` — sets `isAnimate: false` for the boundary line (§6 overlay exception) |
-| `vega-spec-builder-s2/src/legend/legendHighlightUtils.ts` | `injectLegendHoverIntoData`, `getLegendHighlightSignals` |
-| `vega-spec-builder-s2/src/legend/legendUtils.ts` | `getLegendOpacity` (legend consumer) |
-| `vega-spec-builder-s2/src/specUtils.ts` + `types/specUtil.types.ts` | `addUserMetaAnimatedMark`, `animatedMarks` on `UserMeta` |
+| `vega-spec-builder-s2/src/legend/legendHighlightUtils.ts` | `injectLegendHoverIntoData`, `getLegendHighlightSignals`; `setHoverOpacityForMarks` + `isAnimatedOpacity` (§7) |
+| `vega-spec-builder-s2/src/legend/legendUtils.ts` | `getLegendOpacity` (legend consumer, reads `animatedMarks`) |
+| `vega-spec-builder-s2/src/specUtils.ts` + `types/specUtil.types.ts` | `addUserMetaAnimatedMark`, `animatedMarks` on `UserMeta` — **line names only**, see §7 |
 
 The engine functions are parameterized by an **identity `keyField`** (default `rscSeriesId`). A different
 mark could pass `rscMarkId` (bar) etc. — see §11.
@@ -509,6 +532,12 @@ mark could pass `rscMarkId` (bar) etc. — see §11.
 - **`hoverFractionData` reads the gated clock, not the raw timer.** If you add a new fraction-consuming
   data source, make sure its elapsed-time calc uses `hoverActiveTimer`, not `hoverTimer` directly — using
   the raw timer would keep recomputing that data source every tick even while idle, defeating the gate.
+- **Don't reuse `usermeta.animatedMarks` for "is this mark already animated" checks.** It's scoped to line
+  names for `getLegendOpacity`'s fraction-data lookups only (§7). Registering a sub-mark (static point,
+  direct label) there to protect it from `setHoverOpacityForMarks`'s legend-hover splice makes
+  `getLegendOpacity` reference a `_hoverFractionData` source that doesn't exist for that sub-mark, throwing
+  at runtime. `setHoverOpacityForMarks` instead detects "already animated" structurally via
+  `isAnimatedOpacity()` (does the opacity signal contain `hoverFractionData`) — no list, no registration.
 
 ---
 
@@ -543,13 +572,13 @@ and legend-hover injection silently stops matching (no error, nothing highlights
 
 ## 12. Status / not-yet-done
 
-- **Opacity is wired for line (done); stroke width is intentionally deferred.** `getLineOpacity` branches
-  on `isAnimate` (animated signal vs. `getLineOpacityRules` fallback) and is meant as the single reference
-  example for how to wire a consumer. `getLineStrokeWidth` was deliberately left untouched — still the
-  original unconditional instant production rules — so it remains a clean next-consumer exercise rather
-  than being done alongside opacity in the same pass. The engine itself is not limited to these two
-  properties; any property whose visual treatment maps onto the emphasize/deemphasize ramp (§2, §4) is a
-  valid consumer, opacity and stroke width are just the two that have actually been built/tested.
+- **Opacity is wired for line, static points, and direct labels (done); stroke width is intentionally
+  deferred.** `getLineOpacity` branches on `isAnimate` (animated signal vs. `getLineOpacityRules` fallback)
+  and was the original reference example; `getLineStaticPoint` and `getLineDirectLabelMarks` now follow the
+  same pattern (§1, §6). `getLineStrokeWidth` was deliberately left untouched — still the original
+  unconditional instant production rules — so it remains a clean next-consumer exercise. The engine itself
+  is not limited to these properties; any property whose visual treatment maps onto the emphasize/deemphasize
+  ramp (§2, §4) is a valid consumer.
 - **Gate resolved via `isAnimate`** (§6): computed once in `addLine`, threaded to data/signals/encodings.
   This closed the earlier legend-only-highlight gap — legend-only lines now animate their strokes/opacity
   too, not just the legend.
@@ -570,6 +599,6 @@ and legend-hover injection silently stops matching (no error, nothing highlights
   to the overlay.)
 - **Legend integration (done)** (§7): `injectLegendHoverIntoData` wired into `addData` (`legendSpecBuilder.ts`)
   behind `if (highlight)`; `getLegendOpacity` wired into `getHoverEncodings` (`legendUtils.ts`), replacing
-  `getOpacityEncoding` for labels/symbols. `setHoverOpacityForMarks` takes the `animatedMarks` param (§6) so
-  it no longer clobbers animated lines' opacity when a legend's `highlight` triggers it.
+  `getOpacityEncoding` for labels/symbols. `setHoverOpacityForMarks` no longer clobbers already-animated
+  marks' opacity, via the structural `isAnimatedOpacity()` check (§7) rather than a name list.
 - **Other marks** (bar, area, …) don't use the system yet.

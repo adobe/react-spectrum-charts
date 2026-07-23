@@ -436,6 +436,17 @@ describe('Chart spec builder', () => {
         uncontrolledHighlightSignal
       );
     });
+
+    test('animates a line via the hover-animation system when only highlightedSeries is set (no other line interactivity)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        marks: [{ markType: 'line', dimension: 'datetime', metric: 'value', color: 'series' }],
+        highlightedSeries: 'Chrome',
+      });
+
+      expect(spec.usermeta?.animatedMarks).toContain('line0');
+      expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(true);
+    });
   });
 
   describe('getDefaultSignals()', () => {

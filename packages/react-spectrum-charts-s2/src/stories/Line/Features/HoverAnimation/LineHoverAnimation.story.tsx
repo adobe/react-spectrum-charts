@@ -19,28 +19,36 @@ import { StoryFn } from '@storybook/react';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../../components';
+import { Axis, ChartInspect, ChartPopover, Legend, Line, LineDirectLabel } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../stories/data/data';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
 import { formatTimestamp } from '../../../../stories/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
-// ┌─────────────────────┬──────────────────────────────────────────────────────────┬───────────────────────────────────────────────┐
-// │        Story        │                         Trigger                          │                  Match rule                   │
-// ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
-// │ PointHover          │ <ChartInspect> — hover a data point                      │ hoveredMatch                                  │
-// ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
-// │ LegendHover         │ <Legend highlight /> — hover a legend entry              │ injected legendHoverMatch                     │
-// ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
-// │ GroupedLegendHover  │ <Legend keys={['category']} highlight /> on grouped data │ grouped legend hover (hoverGroupFractionData) │
-// ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
-// │ PopoverSelection    │ <ChartPopover> — click a point to select                 │ popoverMatch                                  │
-// ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
-// │ ControlledHighlight │ highlightedSeries chart prop                             │ controlledSeriesMatch                         │
-// ├─────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
-// │ OnClick             │ onClick handler makes the line interactive               │ hoveredMatch (interactive-via-click)          │
-// └─────────────────────┴──────────────────────────────────────────────────────────┴───────────────────────────────────────────────┘
+// ┌─────────────────────────┬──────────────────────────────────────────────────────────┬───────────────────────────────────────────────┐
+// │          Story          │                         Trigger                          │                   Match rule                  │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │        PointHover       │           <ChartInspect> — hover a data point            │                  hoveredMatch                 │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │       LegendHover       │       <Legend highlight /> — hover a legend entry        │           injected legendHoverMatch           │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │    GroupedLegendHover   │ <Legend keys={['category']} highlight /> on grouped data │ grouped legend hover (hoverGroupFractionData) │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │     PopoverSelection    │         <ChartPopover> — click a point to select         │                  popoverMatch                 │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │   ControlledHighlight   │               highlightedSeries chart prop               │             controlledSeriesMatch             │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │ ControlledHighlightItem │                highlightedItem chart prop                │              controlledTableMatch             │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │         OnClick         │        onClick handler makes the line interactive        │      hoveredMatch (interactive-via-click)     │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │     StaticPointHover    │    <ChartInspect> + staticPoint — hover a data point     │   hoveredMatch (getLineStaticPoint consumer)  │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │     DirectLabelHover    │ <ChartInspect> + <LineDirectLabel> — hover a data point  │    hoveredMatch (directLabelUtils consumer)   │
+// ├─────────────────────────┼──────────────────────────────────────────────────────────┼───────────────────────────────────────────────┤
+// │       HiddenSeries      │  <Legend highlight isToggleable defaultHiddenSeries />   │      demo — see AN-460581, may misbehave      │
+// └─────────────────────────┴──────────────────────────────────────────────────────────┴───────────────────────────────────────────────┘
 
 /**
  * Showcases the line hover-animation system across every interaction that can emphasize a series.
@@ -163,6 +171,19 @@ const ControlledHighlightStory: StoryFn<HoverAnimationArgs> = ({ animations, ...
   );
 };
 
+/** Controlled highlight — an external `highlightedItem` chart prop emphasizes the row's series (the `controlledTableMatch` rule). */
+const ControlledHighlightItemStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, highlightedItem: 0, animations });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args} />
+      <Legend />
+    </Chart>
+  );
+};
+
 /** onClick — an onClick handler makes the line interactive, so hovering points animates the emphasis. */
 const OnClickStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, animations });
@@ -172,6 +193,60 @@ const OnClickStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): Rea
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line {...args} onClick={action('onClick')} />
       <Legend />
+    </Chart>
+  );
+};
+
+/**
+ * Static point hover — hovering a data point (`ChartInspect`) fades the always-visible static point
+ * markers for deemphasized series along with the line itself, demonstrating `getLineStaticPoint`'s
+ * wiring into the same animated fraction as `getLineOpacity`.
+ */
+const StaticPointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints, animations });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+/**
+ * Direct label hover — hovering a data point (`ChartInspect`) fades the end-of-line direct labels
+ * for deemphasized series along with the line itself. The label's background halo stays fully
+ * opaque throughout — only the foreground text fades.
+ */
+const DirectLabelHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args}>
+        <LineDirectLabel value="series" />
+        <ChartInspect>{dialogContent}</ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+/** Hidden Series - combines Legend `defaultHiddenSeries`/`isToggleable` with the hover-animation */
+const HiddenSeriesStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+      </Line>
+      <Legend highlight isToggleable defaultHiddenSeries={['Add Bar viz']} />
     </Chart>
   );
 };
@@ -191,5 +266,17 @@ PopoverSelection.args = { ...defaultArgs };
 export const ControlledHighlight = bindWithProps(ControlledHighlightStory);
 ControlledHighlight.args = { ...defaultArgs };
 
+export const ControlledHighlightItem = bindWithProps(ControlledHighlightItemStory);
+ControlledHighlightItem.args = { ...defaultArgs };
+
 export const OnClick = bindWithProps(OnClickStory);
 OnClick.args = { ...defaultArgs };
+
+export const StaticPointHover = bindWithProps(StaticPointHoverStory);
+StaticPointHover.args = { ...defaultArgs, staticPoint: 'staticPoint' };
+
+export const DirectLabelHover = bindWithProps(DirectLabelHoverStory);
+DirectLabelHover.args = { ...defaultArgs };
+
+export const HiddenSeries = bindWithProps(HiddenSeriesStory);
+HiddenSeries.args = { ...defaultArgs };

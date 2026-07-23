@@ -147,7 +147,15 @@ export function buildSpec({
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const legendHighlightSignals = getLegendHighlightSignals(legends);
-  const specOptions = { animations, backgroundColor, colorScheme, idKey, highlightedItem, legendHighlightSignals };
+  const specOptions = {
+    animations,
+    backgroundColor,
+    colorScheme,
+    idKey,
+    highlightedItem,
+    highlightedSeries,
+    legendHighlightSignals,
+  };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':
@@ -213,7 +221,7 @@ export function buildSpec({
 
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {
-    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true, spec.usermeta?.animatedMarks ?? []);
+    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
     setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
   }
 

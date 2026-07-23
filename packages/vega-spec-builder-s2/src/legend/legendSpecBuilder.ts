@@ -140,7 +140,7 @@ export const addLegend = produce<
 
       spec.data = addData(spec.data ?? [], { ...legendOptions, facets: uniqueFacetFields });
       spec.signals = addSignals(spec.signals ?? [], legendOptions);
-      spec.marks = addMarks(spec.marks ?? [], legendOptions, spec.usermeta?.animatedMarks ?? []);
+      spec.marks = addMarks(spec.marks ?? [], legendOptions);
 
       // add the legend
       legends.push(getCategoricalLegend(ordinalFacets, legendOptions, spec.usermeta));
@@ -272,9 +272,9 @@ const addScales = produce<Scale[], [LegendSpecOptions]>((scales, { color, lineTy
   addFieldToFacetScaleDomain(scales, SYMBOL_SHAPE_SCALE, symbolShape);
 });
 
-const addMarks = produce<Mark[], [LegendSpecOptions, string[]]>((marks, { highlight, keys, name }, animatedMarks) => {
+const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys, name }) => {
   if (highlight) {
-    setHoverOpacityForMarks(name, marks, keys, undefined, animatedMarks);
+    setHoverOpacityForMarks(name, marks, keys);
     setHoverStrokeWidthForMarks(name, marks, keys);
   }
 });
