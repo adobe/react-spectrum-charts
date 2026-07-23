@@ -116,7 +116,10 @@ export const addLineDrawInLeadTransform = (sourceData: Data, options: LineSpecOp
   sourceData.transform = sourceData.transform ?? [];
   const alreadyAdded = sourceData.transform.some(
     (transform) =>
-      transform.type === 'window' && Array.isArray(transform.as) && transform.as.join() === asFields.join()
+      transform.type === 'window' &&
+      Array.isArray(transform.as) &&
+      transform.as.length === asFields.length &&
+      transform.as.every((field, i) => field === asFields[i])
   );
   if (alreadyAdded) return;
   sourceData.transform.push({
