@@ -13,6 +13,7 @@ import { Mark, NumericValueRef, PathMark, ProductionRule, RuleMark, ScaleType, S
 
 import {
   CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_FONT_SIZE,
   CHART_SIZE_STROKE_WIDTH,
   DEFAULT_FONT_COLOR,
   REFERENCE_LINE_AUTO_RULE_X2_OFFSET,
@@ -260,6 +261,7 @@ export const getReferenceLineTextMark = (
 
   const sharedUpdate = {
     fontWeight: { value: REFERENCE_LINE_LABEL_FONT_WEIGHT },
+    fontSize: { signal: CHART_SIZE_FONT_SIZE },
   };
 
   return [

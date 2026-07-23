@@ -14,6 +14,7 @@ import {
   BaseValueRef,
   Color,
   ColorValueRef,
+  Data,
   FilterTransform,
   GuideEncodeEntry,
   LegendEncode,
@@ -28,6 +29,7 @@ import {
   COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
+  DEFAULT_FONT_SIZE,
   DEFAULT_LEGEND_COLUMN_PADDING,
   DEFAULT_LEGEND_LABEL_LIMIT,
   DEFAULT_LEGEND_SYMBOL_WIDTH,
@@ -82,6 +84,84 @@ export const getColumns = (position: Position, name: string, labelLimit?: number
 };
 
 /**
+ * Expression that resolves an entry's display label: the custom legendLabel if one exists for the
+ * series, otherwise the raw entry value. Shared by the max-label-width and preferred-columns data.
+ */
+export const getDisplayLabelExpr = (name: string): string =>
+  `indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries)].label : datum.${name}Entries`;
+
+const getLabelWidthTransforms = (name: string): Data['transform'] => [
+  { type: 'formula', as: 'displayLabel', expr: getDisplayLabelExpr(name) },
+  { type: 'formula', as: 'labelWidth', expr: "getLabelWidth(datum.displayLabel, 'normal', 14)" },
+  { type: 'window', ops: ['row_number'], as: ['legendIndex'] },
+];
+
+/**
+ * Data source backing the live `_preferredColumns` layout decision: one row per *currently visible*
+ * legend entry with its measured label width and a stable order index
+ * Consumed by `getLegendColumnLayout` (see expressionFunctions.ts) via the
+ * `${name}_columnLayout` signal, which drives the legend's actual rendered columns/labelLimit — this
+ * is deliberately scoped to whatever's currently shown, so a page of short labels can use a wider
+ * column count than a page with one long label.
+ */
+export const getLabelWidthsData = (name: string): Data => ({
+  name: `${name}_labelWidths`,
+  source: `${name}Aggregate`,
+  transform: getLabelWidthTransforms(name),
+});
+
+/**
+ * Data source backing `${name}_pages`: the same per-entry label-width measurement as
+ * `${name}_labelWidths`, but sourced from the *unfiltered* `${name}AggregateAll` instead of the
+ * `hiddenEntries`-filtered `${name}Aggregate`. needed to plan the full pagination sequence up front, over every entry
+ */
+export const getPagesLabelWidthsData = (name: string): Data => ({
+  name: `${name}_pagesLabelWidths`,
+  source: `${name}AggregateAll`,
+  transform: getLabelWidthTransforms(name),
+});
+
+/**
+ * Data source that caps the live-rendered legend entries at `columns * maxRows`, referencing the
+ * live `${name}_columnLayout.columns` signal so the cap tracks whatever Vega just resolved for the
+ * current width — not a value from a prior render.
+ *
+ * Only the legend's own `${name}Entries` scale domain points at this when `_maxRows` is set
+ */
+export const getRowCappedAggregateData = (name: string, maxRows: number): Data => ({
+  name: `${name}AggregateCapped`,
+  source: `${name}Aggregate`,
+  transform: [
+    { type: 'window', ops: ['row_number'], as: [`${name}RowIndex`] },
+    { type: 'filter', expr: `datum.${name}RowIndex <= ${name}_columnLayout.columns * ${maxRows}` },
+  ],
+});
+
+/**
+ * Expression for the `${name}_columnLayout` signal: resolves the chosen column count, labelLimit,
+ * and (when `_labelWrap` is combined with `_preferredColumns`) dynamic wrap width, via the
+ * `getLegendColumnLayout` expression function.
+ */
+export const getColumnLayoutExpr = (name: string, preferredColumns: number[], labelWrap?: number): string =>
+  `getLegendColumnLayout(data('${name}_labelWidths'), width, ${JSON.stringify(preferredColumns)}, ${
+    labelWrap ?? 1
+  })`;
+
+/**
+ * Expression for the `${name}_pages` signal: the full pagination plan for every legend entry
+ * Only emitted when `_maxRows` is set.
+ */
+export const getPagesExpr = (
+  name: string,
+  preferredColumns: number[],
+  maxRows: number,
+  labelWrap?: number
+): string =>
+  `getLegendPages(data('${name}_pagesLabelWidths'), width, ${JSON.stringify(preferredColumns)}, ${maxRows}, ${
+    labelWrap ?? 1
+  })`;
+
+/**
  * Gets the filter transform for hidden entries
  * @param hiddenEntries
  * @returns
@@ -103,9 +183,16 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
  * @returns
  */
 export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
+  const { name, position, legendLabels, labelLimit, _labelWrap, _preferredColumns } = legendOptions;
   const symbolEncodings = getSymbolEncodings(facets, legendOptions);
   const hoverEncodings = getHoverEncodings(legendOptions, userMeta);
-  const legendLabelsEncodings = getLegendLabelsEncodings(legendOptions.name, legendOptions.legendLabels);
+  // In combined _preferredColumns + _labelWrap mode, wrap labels at the chosen candidate's dynamic
+  // width instead of the static labelLimit so text, dy, and truncation all track the column count.
+  const usePreferredColumns =
+    _preferredColumns !== undefined && _preferredColumns.length > 0 && ['top', 'bottom'].includes(position);
+  const wrapWidthExpr =
+    usePreferredColumns && _labelWrap && _labelWrap > 1 ? `${name}_columnLayout.wrapWidth` : undefined;
+  const legendLabelsEncodings = getLegendLabelsEncodings(name, legendLabels, labelLimit, _labelWrap, wrapWidthExpr);
   const showHideEncodings = getShowHideEncodings(legendOptions);
   const clickEncodings = getClickEncodings(legendOptions);
   // merge the encodings together
@@ -118,7 +205,33 @@ export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, 
   ]);
 };
 
-const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | undefined): LegendEncode => {
+const getLegendLabelsEncodings = (
+  name: string,
+  legendLabels: LegendLabel[] | undefined,
+  labelLimit: number | undefined,
+  _labelWrap: number | undefined,
+  wrapWidthExpr?: string
+): LegendEncode => {
+  if (_labelWrap && _labelWrap > 1) {
+    // resolves to the custom legendLabel for the seriesName if one exists, otherwise falls back to the raw value
+    const resolvedLabelExpr = legendLabels
+      ? `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label : datum.value`
+      : 'datum.value';
+    // With _preferredColumns, wrap at the chosen candidate's dynamic width; otherwise the static labelLimit.
+    const wrapWidth = wrapWidthExpr ?? `${labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT}`;
+    const wrappedLinesExpr = `wrapLabelText(${resolvedLabelExpr}, ${wrapWidth}, ${_labelWrap}, 'normal', ${DEFAULT_FONT_SIZE})`;
+    return {
+      labels: {
+        update: {
+
+          text: { signal: wrappedLinesExpr },
+          // Vega stacks label lines downwards, so this offset shift the label up by half of the label height so that the legend symbol stays centered
+          dy: { signal: `-(length(${wrappedLinesExpr}) - 1) * ${DEFAULT_FONT_SIZE / 2}` },
+        },
+      },
+    };
+  }
+
   if (legendLabels) {
     return {
       labels: {

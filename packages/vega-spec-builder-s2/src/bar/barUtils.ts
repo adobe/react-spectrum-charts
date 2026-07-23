@@ -21,6 +21,7 @@ import {
 } from 'vega';
 
 import {
+  BACKGROUND_COLOR,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
@@ -317,6 +318,172 @@ export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef
     defaultProductionRule,
   ];
 };
+
+/**
+ * Determines whether the per-item selection ring should be added for this mark.
+ * Mutually exclusive with the dimension-level {@link getDimensionSelectionRing}, which
+ * already provides its own group-spanning ring for `UNSAFE_highlightBy: 'dimension'` popovers.
+ */
+export const shouldShowItemSelectionRing = (options: BarSpecOptions): boolean => {
+  const { chartPopovers, name } = options;
+  const popovers = getPopovers(chartPopovers, name);
+  return popovers.length > 0 && !popovers.some(({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension');
+};
+
+// gap, in pixels, between the bar's own edge and the selection ring's stroke (matches Figma's `padding: 2px`)
+const SELECTION_RING_GAP = 2;
+// matches Figma's `border: 2px solid`
+const SELECTION_RING_STROKE_WIDTH = 2;
+// Vega centers a rect's stroke on its path, but the Figma spec draws the border fully outside the
+// padding box. Offsetting the path by gap + half the stroke width makes the stroke's inner edge land
+// exactly at the gap boundary, so the rendered border spans [gap, gap + strokeWidth] from the bar's edge.
+const SELECTION_RING_PADDING = SELECTION_RING_GAP + SELECTION_RING_STROKE_WIDTH / 2;
+
+/**
+ * The selection ring's corner radius matches the bar's own per-corner radius (already
+ * orientation/sign-aware via {@link getCornerRadiusEncodings}), widened by the ring's gap to the bar
+ * so the ring's corners stay visually concentric with the bar's own corners. Per the Figma spec
+ * (`border-radius: 2px … 6px`) the outset here is the gap only (bar radius 0/4 → ring 2/6), not the
+ * position padding — the extra half-stroke used for positioning would over-round each corner by 1px.
+ */
+const getSelectionRingCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEntry => {
+  const barCornerRadius = getCornerRadiusEncodings(options);
+  // every corner from getCornerRadiusEncodings is a conditional array of plain-numeric branches;
+  // widen each branch's value by the gap so the ring's corners stay concentric with the bar's
+  const widen = (rule: ProductionRule<NumericValueRef>): ProductionRule<NumericValueRef> =>
+    (rule as ({ test?: string; value: number } & NumericValueRef)[]).map((branch) => ({
+      ...branch,
+      value: branch.value + SELECTION_RING_GAP,
+    })) as ProductionRule<NumericValueRef>;
+  return {
+    cornerRadiusTopLeft: widen(barCornerRadius.cornerRadiusTopLeft as ProductionRule<NumericValueRef>),
+    cornerRadiusTopRight: widen(barCornerRadius.cornerRadiusTopRight as ProductionRule<NumericValueRef>),
+    cornerRadiusBottomLeft: widen(barCornerRadius.cornerRadiusBottomLeft as ProductionRule<NumericValueRef>),
+    cornerRadiusBottomRight: widen(barCornerRadius.cornerRadiusBottomRight as ProductionRule<NumericValueRef>),
+  };
+};
+
+/**
+ * Collapses a (possibly multi-branch, conditional) numeric production rule into a single
+ * Vega expression string, e.g. `test1 ? expr1 : test2 ? expr2 : exprFallback`.
+ */
+const productionRuleToExpr = (rule: ProductionRule<NumericValueRef>): string => {
+  const valueRefToExpr = (valueRef: NumericValueRef): string => {
+    if ('signal' in valueRef) return valueRef.signal as string;
+    if ('scale' in valueRef) {
+      const scaleName = valueRef.scale as string;
+      if ('field' in valueRef) return `scale('${scaleName}', datum.${valueRef.field as string})`;
+      if ('band' in valueRef) return `bandwidth('${scaleName}') * ${valueRef.band as number}`;
+      if ('value' in valueRef) return `scale('${scaleName}', ${JSON.stringify(valueRef.value)})`;
+    } else if ('value' in valueRef) {
+      return `${valueRef.value as number}`;
+    }
+    // Fail fast on any production-rule shape this helper wasn't built to serialize, rather than
+    // silently emitting an invalid Vega expression like `scale('x', undefined)` or `undefined`.
+    throw new Error(`getBarItemSelectionRing: unsupported numeric production rule ${JSON.stringify(valueRef)}`);
+  };
+
+  if (!Array.isArray(rule)) return valueRefToExpr(rule);
+
+  // array form = conditional rules, each an optional `test` plus a value ref
+  const branches = rule as ({ test?: string } & NumericValueRef)[];
+  const fallbackRule = branches.at(-1);
+  if (fallbackRule === undefined) {
+    throw new Error('getBarItemSelectionRing: empty production rule array');
+  }
+  let expr = valueRefToExpr(fallbackRule);
+  for (let i = branches.length - 2; i >= 0; i--) {
+    expr = `${branches[i].test} ? ${valueRefToExpr(branches[i])} : ${expr}`;
+  }
+  return expr;
+};
+
+/**
+ * Shared position/size/visibility (`update`) encodings for the two selection-ring marks. The rect is
+ * outset from the bar's bounds by {@link SELECTION_RING_PADDING} on every side and is only visible
+ * (opacity 1) for the bar whose mark ID matches the {@link SELECTED_ITEM} signal.
+ */
+const getSelectionRingUpdateEncodings = (
+  options: BarSpecOptions,
+  dimensionEncodings: RectEncodeEntry
+): RectEncodeEntry => {
+  const { idKey, orientation } = options;
+  const { metricAxis, dimensionAxis, dimensionSizeSignal } = getOrientationProperties(orientation);
+  const metricEndKey = `${metricAxis}2`;
+
+  const metricEncodings = getMetricEncodings(options);
+  const metricStartExpr = productionRuleToExpr(metricEncodings[metricAxis] as ProductionRule<NumericValueRef>);
+  const metricEndExpr = productionRuleToExpr(metricEncodings[metricEndKey] as ProductionRule<NumericValueRef>);
+
+  const dimensionPosExpr = productionRuleToExpr(dimensionEncodings[dimensionAxis] as ProductionRule<NumericValueRef>);
+  const dimensionSizeExpr = productionRuleToExpr(
+    dimensionEncodings[dimensionSizeSignal] as ProductionRule<NumericValueRef>
+  );
+
+  return {
+    [metricAxis]: { signal: `min(${metricStartExpr}, ${metricEndExpr}) - ${SELECTION_RING_PADDING}` },
+    [metricEndKey]: { signal: `max(${metricStartExpr}, ${metricEndExpr}) + ${SELECTION_RING_PADDING}` },
+    [dimensionAxis]: { signal: `${dimensionPosExpr} - ${SELECTION_RING_PADDING}` },
+    [dimensionSizeSignal]: { signal: `${dimensionSizeExpr} + ${2 * SELECTION_RING_PADDING}` },
+    opacity: [
+      { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, value: 1 },
+      { value: 0 },
+    ],
+  };
+};
+
+/**
+ * Opaque backdrop for the selection ring, drawn UNDERNEATH the bar. It is outset from the bar and
+ * filled with the chart's background color so the gap between the bar and the stroke reads as an
+ * opaque halo (elements behind the bar aren't visible through it) rather than showing gridlines or
+ * other marks. It carries no stroke — the visible outline is {@link getBarItemSelectionRing}, drawn
+ * on top. Kept separate so the stroke can render above the bars while the fill stays below (an opaque
+ * fill drawn on top would cover the bar itself).
+ */
+export const getBarItemSelectionBackdrop = (
+  options: BarSpecOptions,
+  dataSource: string,
+  dimensionEncodings: RectEncodeEntry
+): RectMark => ({
+  name: `${options.name}_itemSelectionBackdrop`,
+  type: 'rect',
+  from: { data: dataSource },
+  interactive: false,
+  encode: {
+    enter: {
+      ...getSelectionRingCornerRadiusEncodings(options),
+      fill: { signal: BACKGROUND_COLOR },
+    },
+    update: getSelectionRingUpdateEncodings(options, dimensionEncodings),
+  },
+});
+
+/**
+ * The visible selection outline: a stroke-only rect drawn ON TOP of the bar marks so it is never
+ * occluded. This matters for stacked bars, where adjacent segments (drawn after) would paint over a
+ * ring drawn underneath. Its fill is transparent so it doesn't cover the bar; the opaque gap is
+ * provided by {@link getBarItemSelectionBackdrop}, drawn underneath. Only visible for the bar whose
+ * mark ID matches the {@link SELECTED_ITEM} signal.
+ */
+export const getBarItemSelectionRing = (
+  options: BarSpecOptions,
+  dataSource: string,
+  dimensionEncodings: RectEncodeEntry
+): RectMark => ({
+  name: `${options.name}_itemSelectionRing`,
+  type: 'rect',
+  from: { data: dataSource },
+  interactive: false,
+  encode: {
+    enter: {
+      ...getSelectionRingCornerRadiusEncodings(options),
+      fill: { value: 'transparent' },
+      stroke: { value: getS2ColorValue('blue-800', options.colorScheme) },
+      strokeWidth: { value: SELECTION_RING_STROKE_WIDTH },
+    },
+    update: getSelectionRingUpdateEncodings(options, dimensionEncodings),
+  },
+});
 
 export const getDimensionSelectionRing = (options: BarSpecOptions): RectMark => {
   const { name, colorScheme, paddingRatio, orientation } = options;

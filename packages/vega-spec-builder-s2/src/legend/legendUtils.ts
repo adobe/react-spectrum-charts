@@ -61,6 +61,7 @@ import {
   SecondaryFacetType,
   UserMeta,
 } from '../types';
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
 
 export interface Facet {
   facetType: FacetType | SecondaryFacetType;
@@ -159,12 +160,12 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
       },
       labels: {
         update: {
-          opacity: getOpacityEncoding(options, userMeta),
+          opacity: getLegendOpacity(options, userMeta),
         },
       },
       symbols: {
         update: {
-          opacity: getOpacityEncoding(options, userMeta),
+          opacity: getLegendOpacity(options, userMeta),
         },
       },
     };
@@ -182,6 +183,32 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
 
   return {};
 };
+
+export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> | undefined => {
+  const rules: ProductionRule<NumericValueRef> = [];
+
+  for (const markName of userMeta.animatedMarks || []) {
+    const isGrouped = !!options.keys?.length;
+    const fractionData = isGrouped ? `data('${markName}_hoverGroupFractionData')` : `data('${markName}_hoverFractionData')`;
+    const lookupField = isGrouped ? `${options.name}_${GROUP_ID}` : SERIES_ID;
+    const seriesLookup = `indexof(pluck(${fractionData}, '${lookupField}'), datum.value)`;
+    // default to the neutral emphasis level when a legend entry has no animation row
+    const fraction = `(${fractionData}[${seriesLookup}] || {fraction: ${FADE_FACTOR}}).fraction`;
+    // fade deemphasized entries to FADE_FACTOR; neutral and emphasized both stay fully opaque
+    const ramp = getDeemphasisRamp(fraction);
+    rules.push({
+      test: `length(${fractionData})`,
+      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+    });
+  }
+
+  if (rules.length) {
+    return [...rules, DEFAULT_OPACITY_RULE];
+  }
+
+  // Fall back to old rules if no animated marks are present (not using hover animation system)
+  return getOpacityEncoding(options, userMeta);
+}
 
 const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefined, name: string) => {
   if (descriptions?.length) {

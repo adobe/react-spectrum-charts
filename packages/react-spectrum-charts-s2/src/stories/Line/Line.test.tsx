@@ -26,6 +26,8 @@ import {
   rightClickNthElement,
   screen,
   unhoverNthElement,
+  waitFor,
+  waitForMarksByGroupName,
   within,
 } from '../../test-utils';
 import '../../test-utils/__mocks__/matchMedia.mock';
@@ -33,6 +35,14 @@ import { Basic } from './Features/LineBasic.story';
 import { LineWithAxisAndLegend } from './Features/LineWithAxisAndLegend.story';
 import { LineWithUTCDatetimeFormat } from './Features/LineWithUTCDatetimeFormat.story';
 import { HistoricalCompare } from './Features/LineHistoricalCompare.story';
+import {
+  ControlledHighlight as HoverAnimationControlledHighlight,
+  GroupedLegendHover as HoverAnimationGroupedLegendHover,
+  LegendHover as HoverAnimationLegendHover,
+  OnClick as HoverAnimationOnClick,
+  PointHover as HoverAnimationPointHover,
+  PopoverSelection as HoverAnimationPopoverSelection,
+} from './Features/HoverAnimation/LineHoverAnimation.story';
 import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story';
 import { LineType } from './Features/LineType.story';
 import { Opacity } from './Features/LineOpacity.story';
@@ -137,28 +147,127 @@ describe('Line', () => {
     expect(entries.length).toEqual(4);
     await hoverNthElement(entries, 0);
 
-    // symbol opacity should be reduced for all but the first symbol
+    // symbol opacity should be reduced for all but the first symbol. Legend opacity is now driven by
+    // the same animated fraction data as the line for animated marks, so it settles asynchronously
+    // rather than flipping instantly — hence the waitFor rather than a direct synchronous assertion.
     let symbols = getAllLegendSymbols(chart);
-    expect(symbols[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    await waitFor(() => {
+      expect(symbols[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
-    // line opacity should be reduced for all but the first line
-    let lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(lines[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    await waitForMarksByGroupName(chart, 'line0', (lines) => {
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
     await unhoverNthElement(entries, 0);
     await hoverNthElement(entries, 3);
 
     // symbol opacity should be reduced for all but the last symbol
     symbols = getAllLegendSymbols(chart);
-    expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(symbols[3]).toHaveAttribute('opacity', '1');
+    await waitFor(() => {
+      expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(symbols[3]).toHaveAttribute('opacity', '1');
+    });
 
     // line opacity should be reduced for all but the last line
-    lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(lines[3]).toHaveAttribute('opacity', '1');
+    await waitForMarksByGroupName(chart, 'line0', (lines) => {
+      expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(lines[3]).toHaveAttribute('opacity', '1');
+    });
+  });
+
+  describe('HoverAnimation', () => {
+    test('hovering a data point emphasizes its series and animates the others down to the faded opacity', async () => {
+      render(<HoverAnimationPointHover {...HoverAnimationPointHover.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('with animations disabled, the fade is applied via the original instant rules instead of the animated signal', async () => {
+      render(<HoverAnimationPointHover {...HoverAnimationPointHover.args} animations={false} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      const lines = await findAllMarksByGroupName(chart, 'line0');
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
+
+    test('hovering a legend entry emphasizes the matching series', async () => {
+      render(<HoverAnimationLegendHover {...HoverAnimationLegendHover.args} />);
+      const chart = await findChart();
+
+      const entries = getAllLegendEntries(chart);
+      await hoverNthElement(entries, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('hovering a grouped legend entry emphasizes every series in that group', async () => {
+      render(<HoverAnimationGroupedLegendHover {...HoverAnimationGroupedLegendHover.args} />);
+      const chart = await findChart();
+
+      const entries = getAllLegendEntries(chart);
+      await hoverNthElement(entries, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        // the two series in the hovered group stay fully opaque; the other group's two series fade
+        const opacities = lines.map((line) => line.getAttribute('opacity'));
+        expect(opacities.filter((o) => o === '1')).toHaveLength(2);
+        expect(opacities.filter((o) => o === `${FADE_FACTOR}`)).toHaveLength(2);
+      });
+    });
+
+    test('selecting a point via popover keeps its series emphasized', async () => {
+      render(<HoverAnimationPopoverSelection {...HoverAnimationPopoverSelection.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await clickNthElement(paths, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('the controlled highlightedSeries prop emphasizes that series without any hover', async () => {
+      render(<HoverAnimationControlledHighlight {...HoverAnimationControlledHighlight.args} />);
+      const chart = await findChart();
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        const opacities = lines.map((line) => line.getAttribute('opacity'));
+        expect(opacities.filter((o) => o === '1')).toHaveLength(1);
+        expect(opacities.filter((o) => o === `${FADE_FACTOR}`)).toHaveLength(3);
+      });
+    });
+
+    test('an onClick handler alone makes the line interactive, so hovering still animates the emphasis', async () => {
+      render(<HoverAnimationOnClick {...HoverAnimationOnClick.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
   });
 
   test('Trend scale renders', async () => {
@@ -204,8 +313,10 @@ describe('Line', () => {
       // hover and validate all hover components are visible
       await hoverNthElement(paths, 0);
 
-      expect(lines[0]).toHaveAttribute('opacity', '1');
-      expect(lines[1]).toHaveAttribute('opacity', '0.2');
+      await waitFor(() => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(lines[1]).toHaveAttribute('opacity', '0.2');
+      });
     });
   });
 

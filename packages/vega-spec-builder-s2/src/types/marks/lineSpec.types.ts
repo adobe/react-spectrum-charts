@@ -11,7 +11,7 @@
  */
 import { INTERACTION_MODE } from '@spectrum-charts/constants';
 
-import { ColorScheme, HighlightedItem } from '../chartSpec.types';
+import { ChartData, ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
@@ -106,6 +106,23 @@ export interface LineOptions {
    * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
    */
   otherSeriesColor?: string;
+  /**
+   * If `true`, all series at the hovered x-dimension highlight simultaneously instead of
+   * only the nearest series. Hover value labels show for every series at that dimension.
+   * @default false
+   */
+  dimensionHover?: boolean;
+  /**
+   * If `true`, shows the metric value as a label adjacent to the hovered data point.
+   * Suppressed when a `<ChartInspect>` child is present.
+   * @default true
+   */
+  showHoverLabel?: boolean;
+  /**
+   * Data field key to display in the hover value label. Defaults to the `metric` field.
+   * Use this to show a pre-formatted or alternate field (e.g. `'displayValue'`) instead of the raw metric.
+   */
+  hoverLabelKey?: string;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
@@ -122,6 +139,7 @@ type LineOptionsWithDefaults =
   | 'chartInspects'
   | 'color'
   | 'dimension'
+  | 'dimensionHover'
   | 'forecasts'
   | 'gradient'
   | 'hasOnClick'
@@ -135,9 +153,13 @@ type LineOptionsWithDefaults =
   | 'name'
   | 'opacity'
   | 'scaleType'
+  | 'showHoverLabel'
   | 'trendlines';
 
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
+  data?: ChartData[];
+  seriesIds?: string[];
+  isAnimate?: boolean;
   backgroundColor?: string;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];

@@ -14,7 +14,7 @@ import { ColorValueRef, Mark, TextMark } from 'vega';
 import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
 
 import { getOrientationProperties } from '../bar/barUtils';
-import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
+import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils';
 import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types';
 
 // Pixel gap between the bar tip and the label (end-outside)
@@ -108,6 +108,8 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
     ? { signal: `datum[${JSON.stringify(colorOverride)}]` }
     : getColorProductionRule(color, colorScheme);
 
+  const fontSizeEncoding = getDirectLabelFontSizeProductionRule();
+
   // Label text computed inline — no derived dataset needed
   const textSignal = `format(datum["${metric}"], "${DEFAULT_NUMBER_FORMAT}")`;
 
@@ -152,6 +154,9 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
         strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
         fill: { value: 'transparent' },
       },
+      update: {
+        fontSize: fontSizeEncoding,
+      },
     },
   };
 
@@ -167,6 +172,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
       },
       update: {
         opacity: getMarkOpacity(barOptions),
+        fontSize: fontSizeEncoding,
       },
     },
   };

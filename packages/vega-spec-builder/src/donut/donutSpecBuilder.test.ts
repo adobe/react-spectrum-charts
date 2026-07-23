@@ -20,7 +20,7 @@ describe('addData', () => {
   test('should add data correctly for boolean donut', () => {
     const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, isBoolean: true });
 
-    expect(data).toHaveLength(3);
+    expect(data).toHaveLength(4);
     expect(data[2].transform).toHaveLength(2);
     expect(data[2].transform?.[0].type).toBe('window');
     expect(data[2].transform?.[1].type).toBe('filter');
@@ -28,12 +28,22 @@ describe('addData', () => {
 
   test('should add data correctly for non-boolean donut', () => {
     const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
-    expect(data).toHaveLength(2);
+    expect(data).toHaveLength(3);
     expect(data[1].transform).toHaveLength(4);
     expect(data[1].transform?.[0].type).toBe('pie');
     expect(data[1].transform?.[1]).toHaveProperty('as', 'testName_arcTheta');
     expect(data[1].transform?.[2]).toHaveProperty('as', 'testName_arcLength');
     expect(data[1].transform?.[3]).toHaveProperty('as', 'testName_arcPercent');
+  });
+
+  test('should add the sum data used to detect the empty state', () => {
+    const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
+    const sumData = data.find((d) => d.name === 'testName_sumData');
+    expect(sumData).toBeDefined();
+    expect(sumData?.transform).toHaveLength(1);
+    expect(sumData?.transform?.[0]).toHaveProperty('type', 'aggregate');
+    expect(sumData?.transform?.[0]).toHaveProperty('fields', ['testMetric']);
+    expect(sumData?.transform?.[0]).toHaveProperty('ops', ['sum']);
   });
 });
 
@@ -62,6 +72,16 @@ describe('addSignals()', () => {
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
+  });
+});
+
+describe('addMarks()', () => {
+  test('should add the empty state ring before the arc mark', () => {
+    const marks = addMarks([], defaultDonutOptions);
+    expect(marks).toHaveLength(2);
+    expect(marks[0]).toHaveProperty('name', 'testName_emptyState');
+    expect(marks[0]).toHaveProperty('type', 'arc');
+    expect(marks[1]).toHaveProperty('name', 'testName');
   });
 });
 

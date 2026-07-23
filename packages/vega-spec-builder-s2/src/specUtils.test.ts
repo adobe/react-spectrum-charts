@@ -29,6 +29,7 @@ import {
 
 import {
   addUserMetaInteractiveMark,
+  addUserMetaAnimatedMark,
   getChartConfig,
   getD3FormatSpecifierFromNumberFormat,
   getDimensionField,
@@ -245,5 +246,11 @@ describe('wrapTitleText()', () => {
 describe('addUserMetaInteractiveMark()', () => {
   test('should add the interactive mark to the user meta', () => {
     expect(addUserMetaInteractiveMark({ interactiveMarks: [] }, 'line0')).toEqual({ interactiveMarks: ['line0'] });
+  });
+});
+
+describe('addUserMetaAnimatedMark()', () => {
+  test('should add the animated mark to the user meta', () => {
+    expect(addUserMetaAnimatedMark({ animatedMarks: [] }, 'line0')).toEqual({ animatedMarks: ['line0'] });
   });
 });

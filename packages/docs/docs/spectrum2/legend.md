@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Legend (S2)
 
-The `Legend` component in the S2 package supports all props from the [base Legend component](/docs/api/components/Legend) plus the S2-exclusive `align` prop for controlling legend alignment along its edge.
+The `Legend` component in the S2 package supports all props from the [base Legend component](/docs/api/components/Legend), including `align` for controlling legend alignment along its edge.
 
 ```jsx
 import { Chart, Axis, Line, Legend } from '@spectrum-charts/react-spectrum-charts-s2';

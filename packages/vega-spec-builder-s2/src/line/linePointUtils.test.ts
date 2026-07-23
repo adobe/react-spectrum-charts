@@ -50,6 +50,7 @@ describe('getHighlightPoint()', () => {
     expect(mark.encode?.enter).toBeDefined();
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
     expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_HOVER_STROKE_WIDTH });
   });
@@ -93,6 +94,7 @@ describe('getSelectionPoint()', () => {
     expect(mark.encode?.enter).toBeDefined();
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
     expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_HOVER_STROKE_WIDTH });
   });

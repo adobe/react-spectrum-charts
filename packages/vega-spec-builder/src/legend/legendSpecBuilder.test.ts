@@ -296,6 +296,136 @@ describe('addLegend()', () => {
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });
 
+    test('should wrap labels using wrapLabelText when _labelWrap is provided', () => {
+      expect(addLegend(defaultSpec, { _labelWrap: 2 }).legends?.[0].encode).toStrictEqual({
+        entries: {
+          name: 'legend0_legendEntry',
+        },
+        labels: {
+          update: {
+            ...hiddenSeriesLabelUpdateEncoding,
+            text: {
+              signal: "wrapLabelText(datum.value, 184, 2, 'normal', 14)",
+            },
+            dy: {
+              signal: "-(length(wrapLabelText(datum.value, 184, 2, 'normal', 14)) - 1) * 7",
+            },
+          },
+        },
+        symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings } },
+      });
+    });
+
+    test('should disable gridAlign when _labelWrap is provided', () => {
+      const legend = addLegend(defaultSpec, { _labelWrap: 2 }).legends?.[0];
+      expect(legend?.gridAlign).toBe('none');
+    });
+
+    test('should not set gridAlign when _labelWrap is not provided', () => {
+      const legend = addLegend(defaultSpec, {}).legends?.[0];
+      expect(legend?.gridAlign).toBeUndefined();
+    });
+
+    test('should resolve legendLabels before wrapping when both _labelWrap and legendLabels are provided', () => {
+      expect(
+        addLegend(defaultSpec, {
+          _labelWrap: 2,
+          legendLabels: [{ seriesName: 1, label: 'Any event' }],
+        }).legends?.[0].encode?.labels?.update?.text
+      ).toStrictEqual({
+        signal:
+          "wrapLabelText(indexof(pluck(legend0_labels, 'seriesName'), datum.value) > -1 ? legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.value)].label : datum.value, 184, 2, 'normal', 14)",
+      });
+    });
+
+    test('should use labelLimit as the wrap width when both labelLimit and _labelWrap are provided', () => {
+      expect(
+        addLegend(defaultSpec, { labelLimit: 100, _labelWrap: 3 }).legends?.[0].encode?.labels?.update?.text
+      ).toStrictEqual({
+        signal: "wrapLabelText(datum.value, 100, 3, 'normal', 14)",
+      });
+    });
+
+    test('should not wrap labels when _labelWrap is 1 or less', () => {
+      expect(addLegend(defaultSpec, { _labelWrap: 1 }).legends?.[0].encode).toStrictEqual(defaultLegend.encode);
+    });
+
+    test('should reference the columnLayout signal for labelLimit when both _preferredColumns and _labelWrap are provided', () => {
+      const legend = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0];
+      // getLegendColumnLayout resolves this to 0 (unlimited) at runtime when labelWrap is set
+      expect(legend?.labelLimit).toEqual({ signal: 'legend0_columnLayout.labelLimit' });
+    });
+
+    test('should reference the columnLayout signal for columns when both _preferredColumns and _labelWrap are provided', () => {
+      const legend = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0];
+      expect(legend?.columns).toEqual({ signal: 'legend0_columnLayout.columns' });
+    });
+
+    test('should wrap labels at the dynamic preferred wrap width when both _preferredColumns and _labelWrap are provided', () => {
+      const text = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).legends?.[0].encode?.labels
+        ?.update?.text as { signal: string };
+      // dynamic width references the columnLayout signal rather than the static labelLimit
+      expect(text.signal).toStrictEqual("wrapLabelText(datum.value, legend0_columnLayout.wrapWidth, 2, 'normal', 14)");
+    });
+
+    test('should emit the columnLayout signal when both _preferredColumns and _labelWrap are provided', () => {
+      const signals = addLegend(defaultSpec, { _preferredColumns: [5, 3], _labelWrap: 2 }).signals;
+      const columnLayoutSignal = signals?.find((s) => 'name' in s && s.name === 'legend0_columnLayout');
+      expect(columnLayoutSignal).toEqual({
+        name: 'legend0_columnLayout',
+        update: "getLegendColumnLayout(data('legend0_labelWidths'), width, [5,3], 2)",
+      });
+    });
+
+    describe('_maxRows', () => {
+      test('should not emit legend0_pages or legend0AggregateAll when _maxRows is not set', () => {
+        const legendSpec = addLegend(defaultSpec, { _preferredColumns: [5, 3] });
+        expect(legendSpec.signals?.some((s) => 'name' in s && s.name === 'legend0_pages')).toBe(false);
+        expect(legendSpec.data?.some((d) => d.name === 'legend0AggregateAll')).toBe(false);
+      });
+
+      test('should not emit legend0_pages when _maxRows is set without _preferredColumns', () => {
+        const legendSpec = addLegend(defaultSpec, { _maxRows: 2 });
+        expect(legendSpec.signals?.some((s) => 'name' in s && s.name === 'legend0_pages')).toBe(false);
+      });
+
+      test('should emit the legend0_pages signal referencing legend0_pagesLabelWidths when _maxRows and _preferredColumns are both set', () => {
+        const signals = addLegend(defaultSpec, { _preferredColumns: [5, 3], _maxRows: 2 }).signals;
+        const pagesSignal = signals?.find((s) => 'name' in s && s.name === 'legend0_pages');
+        expect(pagesSignal).toEqual({
+          name: 'legend0_pages',
+          update: "getLegendPages(data('legend0_pagesLabelWidths'), width, [5,3], 2, 1)",
+        });
+      });
+
+      // Regression: legend0_pages must plan against every entry, not the hiddenEntries-filtered set
+      test('should source legend0AggregateAll from the unaggregated table, without the hiddenEntries filter, even when hiddenEntries is set', () => {
+        const data = addLegend(defaultSpec, {
+          _preferredColumns: [5, 3],
+          _maxRows: 2,
+          hiddenEntries: ['red'],
+        }).data;
+
+        const aggregateAll = data?.find((d) => d.name === 'legend0AggregateAll');
+        expect(aggregateAll).toBeDefined();
+        expect(aggregateAll?.transform?.some((t) => t.type === 'filter')).toBe(false);
+
+        // the live-render aggregate must still carry the hiddenEntries filter
+        const aggregate = data?.find((d) => d.name === 'legend0Aggregate');
+        expect(aggregate?.transform?.some((t) => t.type === 'filter')).toBe(true);
+      });
+
+      test('should source legend0_pagesLabelWidths from legend0AggregateAll, not legend0_labelWidths from the filtered aggregate', () => {
+        const data = addLegend(defaultSpec, { _preferredColumns: [5, 3], _maxRows: 2 }).data;
+
+        const pagesLabelWidths = data?.find((d) => d.name === 'legend0_pagesLabelWidths');
+        expect(pagesLabelWidths).toMatchObject({ source: 'legend0AggregateAll' });
+
+        const labelWidths = data?.find((d) => d.name === 'legend0_labelWidths');
+        expect(labelWidths).toMatchObject({ source: 'legend0Aggregate' });
+      });
+    });
+
     test('should add titleLimit if provided', () => {
       const legendSpec = addLegend(defaultSpec, {
         descriptions: [{ seriesName: 'test', description: 'test' }],
@@ -305,6 +435,48 @@ describe('addLegend()', () => {
       const legend = legendSpec.legends?.[0];
       expect(legend?.titleLimit).toBe(123);
       expect(legend?.title).toBe('My title');
+    });
+
+    describe('align', () => {
+      test('align start pushes a legend.layout.bottom anchor patch to usermeta.patches', () => {
+        const spec = addLegend(defaultSpec, { align: 'start' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'start' } } } }]);
+      });
+
+      test('align middle passes through as anchor middle', () => {
+        const spec = addLegend(defaultSpec, { align: 'middle' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'middle' } } } }]);
+      });
+
+      test('align end pushes anchor end', () => {
+        const spec = addLegend(defaultSpec, { align: 'end' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'end' } } } }]);
+      });
+
+      test('align top position patches layout.top', () => {
+        const spec = addLegend(defaultSpec, { align: 'start', position: 'top' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { top: { anchor: 'start' } } } }]);
+      });
+
+      test('align left position patches layout.left', () => {
+        const spec = addLegend(defaultSpec, { align: 'start', position: 'left' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { left: { anchor: 'start' } } } }]);
+      });
+
+      test('align right position patches layout.right', () => {
+        const spec = addLegend(defaultSpec, { align: 'end', position: 'right' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { right: { anchor: 'end' } } } }]);
+      });
+
+      test('no align leaves usermeta.patches unset', () => {
+        const spec = addLegend(defaultSpec, {});
+        expect(spec.usermeta.patches).toBeUndefined();
+      });
+
+      test('does not write to spec.config', () => {
+        const spec = addLegend(defaultSpec, { align: 'start' });
+        expect(spec.config).toBeUndefined();
+      });
     });
 
     test('should add fields to scales if they have not been added', () => {

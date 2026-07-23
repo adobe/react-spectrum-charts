@@ -15,6 +15,7 @@ import { Locale, TimeLocale } from 'vega';
 
 import {
   LabelDatum,
+  LegendLabelWidthDatum,
   expressionFunctions,
   getLocaleCode,
   formatHorizontalTimeAxisLabels,
@@ -132,6 +133,176 @@ describe('truncateText()', () => {
   });
   test('should not truncate text that is shorter than maxLength', () => {
     expect(expressionFunctions.truncateText(shortText, 100)).toBe(shortText);
+  });
+});
+
+describe('wrapLabelText()', () => {
+  const longText =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris.';
+  const shortText = 'Lorem ipsum';
+
+  test('returns a single line when the text already fits within maxWidth', () => {
+    expect(expressionFunctions.wrapLabelText(shortText, 200, 3)).toEqual([shortText]);
+  });
+
+  test('wraps long text across multiple lines by word, one line per array entry', () => {
+    const lines = expressionFunctions.wrapLabelText(longText, 100, 3);
+    expect(lines.length).toBeLessThanOrEqual(3);
+    expect(lines.length).toBeGreaterThan(1);
+    // every completed line (all but the last) must fit within maxWidth
+    for (const line of lines.slice(0, -1)) {
+      expect(expressionFunctions.getLabelWidth(line, 'normal', 12)).toBeLessThanOrEqual(100);
+    }
+  });
+
+  test('truncates the final line with an ellipsis when text still overflows after wrapping to maxLines', () => {
+    const lines = expressionFunctions.wrapLabelText(longText, 30, 2);
+    expect(lines).toHaveLength(2);
+    expect(lines[1].endsWith('…')).toBe(true);
+  });
+
+  test('behaves like truncateText when maxLines is 1', () => {
+    expect(expressionFunctions.wrapLabelText(longText, 60, 1)).toEqual([
+      expressionFunctions.truncateText(longText, 60),
+    ]);
+  });
+
+  test('never produces more lines than maxLines', () => {
+    const lines = expressionFunctions.wrapLabelText(longText, 30, 2);
+    expect(lines.length).toBeLessThanOrEqual(2);
+  });
+
+  // Issue A: a final line whose width falls in truncateText's reserved ellipsis band
+  // (maxWidth - 4, maxWidth] must be kept verbatim, not ellipsized.
+  test('keeps a final line that fits maxWidth even when it lands in the ellipsis-reserve band', () => {
+    // 'hello world' is 11 wide, inside (12 - 4, 12]; it fits on one line and must not truncate.
+    expect(expressionFunctions.wrapLabelText('hello world', 12, 3)).toEqual(['hello world']);
+  });
+
+  test('wraps a fitting trailing word onto a spare line instead of truncating it', () => {
+    // Both words fit at width 8; the trailing word wraps rather than being ellipsized on line 1.
+    expect(expressionFunctions.wrapLabelText('hello world', 8, 3)).toEqual(['hello', 'world']);
+  });
+
+  // Issue B: an over-wide word committed to an intermediate line is truncated progressively so the
+  // line collapses toward maxWidth rather than overflowing the column.
+  test('truncates an over-wide word on an intermediate line so it fits maxWidth', () => {
+    const lines = expressionFunctions.wrapLabelText('Supercalifragilistic short', 12, 2);
+    expect(lines).toHaveLength(2);
+    expect(lines[0].endsWith('…')).toBe(true);
+    expect(expressionFunctions.getLabelWidth(lines[0], 'normal', 12)).toBeLessThanOrEqual(12);
+  });
+});
+
+describe('wrapTruncates()', () => {
+  const longText =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris.';
+  const shortText = 'Lorem ipsum';
+
+  test('returns false when the text fits within maxLines at maxWidth', () => {
+    expect(expressionFunctions.wrapTruncates(shortText, 200, 3)).toBe(false);
+  });
+
+  test('returns false when the whole text fits on one line at a generous width', () => {
+    expect(expressionFunctions.wrapTruncates(longText, 2000, 2)).toBe(false);
+  });
+
+  test('returns true when the text needs more than maxLines lines', () => {
+    expect(expressionFunctions.wrapTruncates(longText, 30, 2)).toBe(true);
+  });
+
+  test('returns true when a single word is wider than maxWidth', () => {
+    expect(expressionFunctions.wrapTruncates('Supercalifragilisticexpialidocious', 20, 3)).toBe(true);
+  });
+
+  test('agrees with wrapLabelText: truncates exactly when the wrapped result is ellipsized', () => {
+    const lines = expressionFunctions.wrapLabelText(longText, 30, 2);
+    const wasTruncated = lines[lines.length - 1].endsWith('…');
+    expect(expressionFunctions.wrapTruncates(longText, 30, 2)).toBe(wasTruncated);
+  });
+
+  // Both use the same maxWidth threshold: within truncateText's reserved band (maxWidth - 4, maxWidth]
+  // wrapTruncates must report "fits" and wrapLabelText must not ellipsize, so the fit prediction that
+  // drives the column/wrap decision matches what actually renders.
+  test('agrees with wrapLabelText in the ellipsis-reserve band: neither truncates a fitting label', () => {
+    expect(expressionFunctions.wrapTruncates('hello world', 12, 3)).toBe(false);
+    const lines = expressionFunctions.wrapLabelText('hello world', 12, 3);
+    expect(lines.some((line) => line.endsWith('…'))).toBe(false);
+  });
+});
+
+describe('getLegendColumnLayout()', () => {
+  const item = (legendIndex: number, labelWidth = 40): LegendLabelWidthDatum => ({
+    legendIndex,
+    displayLabel: `Item ${legendIndex}`,
+    labelWidth,
+  });
+
+  test('picks the largest candidate that fits at full width', () => {
+    const items = [item(1), item(2), item(3), item(4), item(5)];
+    const layout = expressionFunctions.getLegendColumnLayout(items, 600, [5, 3]);
+    expect(layout.columns).toBe(5);
+    // a non-last candidate fitting means labelLimit is unlimited
+    expect(layout.labelLimit).toBe(0);
+  });
+
+  test('falls back to a smaller candidate when the larger one does not fit', () => {
+    const items = [item(1, 300), item(2), item(3), item(4), item(5)];
+    const layout = expressionFunctions.getLegendColumnLayout(items, 200, [5, 3]);
+    expect(layout.columns).toBe(3);
+  });
+
+  test('falls back to the last candidate and uses its fair-share labelLimit when nothing fits', () => {
+    const items = [item(1, 300), item(2, 300), item(3, 300)];
+    const layout = expressionFunctions.getLegendColumnLayout(items, 140, [5, 3]);
+    expect(layout.columns).toBe(3);
+    expect(layout.labelLimit).toBeGreaterThan(0);
+  });
+
+  test('with labelWrap, a candidate that only fits once wrapped is chosen with labelLimit 0', () => {
+    const displayLabel = 'Supercalifragilisticexpialidocious is quite long';
+    const items = [
+      { legendIndex: 1, displayLabel, labelWidth: expressionFunctions.getLabelWidth(displayLabel, 'normal', 14) },
+    ];
+    const layout = expressionFunctions.getLegendColumnLayout(items, 100, [1], 2);
+    expect(layout.labelLimit).toBe(0);
+    expect(layout.wrapWidth).toBeGreaterThan(0);
+  });
+});
+
+describe('getLegendPages()', () => {
+  const items = (n: number, labelWidth = 40): LegendLabelWidthDatum[] =>
+    Array.from({ length: n }, (_, i) => ({ legendIndex: i + 1, displayLabel: `Item ${i}`, labelWidth }));
+
+  test('returns a single page when everything fits within columns * maxRows', () => {
+    const pages = expressionFunctions.getLegendPages(items(4), 600, [5, 3], 2);
+    expect(pages).toEqual([{ columns: 5, start: 0, end: 3 }]);
+  });
+
+  test('splits into multiple pages with inclusive, contiguous start/end bounds', () => {
+    const pages = expressionFunctions.getLegendPages(items(16), 600, [5, 3], 2);
+    expect(pages).toEqual([
+      { columns: 5, start: 0, end: 9 },
+      { columns: 5, start: 10, end: 15 },
+    ]);
+  });
+
+  // Regression: a long label destined for a later page must not shrink an earlier page's column
+  // count (see planning/research/legend-pagination-columns-mismatch.md).
+  test('a long label past a page boundary does not affect an earlier page column count', () => {
+    const list = items(16);
+    list[11] = { ...list[11], labelWidth: 300 };
+    const pages = expressionFunctions.getLegendPages(list, 600, [5, 3], 2);
+
+    expect(pages[0]).toEqual({ columns: 5, start: 0, end: 9 });
+    const pageWithLongLabel = pages.find((p) => p.start <= 11 && p.end >= 11);
+    expect(pageWithLongLabel?.columns).toBe(3);
+  });
+
+  test('guards against a non-positive maxRows looping forever', () => {
+    const pages = expressionFunctions.getLegendPages(items(3), 600, [5, 3], 0);
+    expect(pages.every((p) => p.end >= p.start)).toBe(true);
+    expect(pages[pages.length - 1].end).toBe(2);
   });
 });
 

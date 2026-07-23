@@ -11,6 +11,7 @@
  */
 import {
   CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_FONT_SIZE,
   CHART_SIZE_STROKE_WIDTH,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_FONT_COLOR,
@@ -361,14 +362,13 @@ describe('getReferenceLineTextMark() — S2 direct label pattern', () => {
     expect(marks[1].encode?.enter?.stroke).toBeUndefined();
   });
 
-  test('both marks inherit font, fontSize, lineHeight from theme (no explicit overrides)', () => {
+  test('both marks inherit font, lineHeight from theme (no explicit overrides)', () => {
     const marks = getReferenceLineTextMark(
       { ...defaultReferenceLineOptions, label: 'Target' },
       defaultYPositionEncoding
     );
     for (const mark of marks) {
       expect(mark.encode?.enter?.font).toBeUndefined();
-      expect(mark.encode?.enter?.fontSize).toBeUndefined();
       expect(mark.encode?.enter?.lineHeight).toBeUndefined();
     }
   });
@@ -381,6 +381,20 @@ describe('getReferenceLineTextMark() — S2 direct label pattern', () => {
     for (const mark of marks) {
       expect(mark.encode?.update?.fontWeight).toBeDefined();
       expect((mark.encode?.update?.fontWeight as { value: number }).value).toBe(REFERENCE_LINE_LABEL_FONT_WEIGHT);
+    }
+  });
+
+  test('fontSize uses the same CHART_SIZE_FONT_SIZE signal regardless of explicit size tier or secondary', () => {
+    for (const size of ['XS', 'S', 'M', 'L'] as const) {
+      for (const secondary of [false, true]) {
+        const marks = getReferenceLineTextMark(
+          { ...defaultReferenceLineOptions, label: 'Target', size, secondary },
+          defaultYPositionEncoding
+        );
+        for (const mark of marks) {
+          expect(mark.encode?.update?.fontSize).toStrictEqual({ signal: CHART_SIZE_FONT_SIZE });
+        }
+      }
     }
   });
 

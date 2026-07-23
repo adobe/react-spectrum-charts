@@ -11,9 +11,17 @@
  */
 import { FilterTransform } from 'vega';
 
-import { GROUP_ID, SELECTED_ITEM, SERIES_ID } from '@spectrum-charts/constants';
+import {
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
+  SELECTED_ITEM,
+  SELECTED_SERIES,
+  SERIES_ID,
+} from '@spectrum-charts/constants';
 
-import { getLineHighlightedData, getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { defaultLineOptions } from './lineTestUtils';
 
 describe('getLineHighlightedData()', () => {
@@ -33,6 +41,7 @@ describe('getLineHighlightedData()', () => {
         ...defaultLineOptions,
         chartPopovers: [{}],
         chartInspects: [{ highlightBy: 'dimension' }],
+        isHighlightedByGroup: true,
       }).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
@@ -53,5 +62,75 @@ describe('getPrimarySeriesOtherExpr()', () => {
   test('uses provided datumPath', () => {
     const expr = getPrimarySeriesOtherExpr(['series1'], 'datum.datum');
     expect(expr).toContain('datum.datum');
+  });
+});
+
+describe('getLineHoverRules()', () => {
+  test('without interactiveMarkName, popoverMarkName, or comboSiblingNames only includes the controlled rules', () => {
+    const rules = getLineHoverRules(defaultLineOptions);
+    expect(rules).toStrictEqual([
+      {
+        as: 'controlledTableMatch',
+        expr: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) ? (indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : 0) : null`,
+      },
+      {
+        as: 'controlledSeriesMatch',
+        expr: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`,
+      },
+    ]);
+  });
+
+  test('with interactiveMarkName adds a hoveredMatch rule keyed off the hovered-item signal', () => {
+    const rules = getLineHoverRules({ ...defaultLineOptions, interactiveMarkName: 'line0' });
+    expect(rules[0]).toStrictEqual({
+      as: 'hoveredMatch',
+      expr: `isValid(line0_${HOVERED_ITEM}) ? (line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`,
+    });
+  });
+
+  test('with interactiveMarkName and isHighlightedByGroup, hoveredMatch checks the highlightedData set instead', () => {
+    const rules = getLineHoverRules({
+      ...defaultLineOptions,
+      interactiveMarkName: 'line0',
+      isHighlightedByGroup: true,
+    });
+    expect(rules[0]).toStrictEqual({
+      as: 'hoveredMatch',
+      expr: `length(data('line0_highlightedData')) ? (indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 0) : null`,
+    });
+  });
+
+  test('with popoverMarkName adds a popoverMatch rule keyed off the selected series', () => {
+    const rules = getLineHoverRules({ ...defaultLineOptions, popoverMarkName: 'line0' });
+    const popoverRule = rules.find((r) => r.as === 'popoverMatch');
+    expect(popoverRule).toStrictEqual({
+      as: 'popoverMatch',
+      expr: `isValid(${SELECTED_SERIES}) ? (${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`,
+    });
+  });
+
+  test('with comboSiblingNames adds a comboSiblingMatch rule checking every sibling hovered-item signal', () => {
+    const rules = getLineHoverRules({ ...defaultLineOptions, comboSiblingNames: ['bar0', 'bar1'] });
+    const comboRule = rules.find((r) => r.as === 'comboSiblingMatch');
+    expect(comboRule).toStrictEqual({
+      as: 'comboSiblingMatch',
+      expr: `(isValid(bar0_${HOVERED_ITEM}) || isValid(bar1_${HOVERED_ITEM})) ? 1 : 0`,
+    });
+  });
+
+  test('composes all rules together in order when every condition applies', () => {
+    const rules = getLineHoverRules({
+      ...defaultLineOptions,
+      interactiveMarkName: 'line0',
+      popoverMarkName: 'line0',
+      comboSiblingNames: ['bar0'],
+    });
+    expect(rules.map((r) => r.as)).toStrictEqual([
+      'hoveredMatch',
+      'controlledTableMatch',
+      'controlledSeriesMatch',
+      'popoverMatch',
+      'comboSiblingMatch',
+    ]);
   });
 });

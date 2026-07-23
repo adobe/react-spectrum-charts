@@ -62,4 +62,6 @@ export const defaultLineOptions: LineSpecOptions = {
   trendlines: [],
   interpolate: undefined,
   alternateSegmentLineType: 'dotted',
+  dimensionHover: false,
+  showHoverLabel: true,
 };

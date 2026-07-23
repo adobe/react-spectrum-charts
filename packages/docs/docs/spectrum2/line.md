@@ -250,6 +250,12 @@ Use `excludeSeries` to prevent labels from appearing on specific series:
             <td>[]</td>
             <td>Series names that should not receive a label.</td>
         </tr>
+        <tr>
+            <td>fontSize</td>
+            <td>number</td>
+            <td>–</td>
+            <td>Override font size in pixels. When omitted, font size scales automatically with chart size.</td>
+        </tr>
     </tbody>
 </table>
 
@@ -502,6 +508,24 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
             <td>string</td>
             <td>–</td>
             <td>Text appended to the hover value label for alternate-segment points (e.g. <code>'(Estimated)'</code>).</td>
+        </tr>
+        <tr>
+            <td>showHoverLabel</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>When true, shows the metric value as a label adjacent to the hovered data point. Suppressed when a <code>ChartInspect</code> child is present.</td>
+        </tr>
+        <tr>
+            <td>dimensionHover</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>When true, all series at the hovered x-dimension highlight simultaneously instead of only the nearest series. Hover value labels show for every series at that dimension.</td>
+        </tr>
+        <tr>
+            <td>hoverLabelKey</td>
+            <td>string</td>
+            <td>(metric field)</td>
+            <td>Data field key to display in the hover value label. Defaults to the <code>metric</code> field. Use this to show a pre-formatted or alternate field instead of the raw metric value.</td>
         </tr>
     </tbody>
 </table>

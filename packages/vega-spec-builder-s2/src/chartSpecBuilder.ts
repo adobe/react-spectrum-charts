@@ -17,6 +17,8 @@ import {
   CHART_SIZE_BREAKPOINTS,
   CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_HOVER_STROKE_WIDTHS,
+  CHART_SIZE_LABEL_GAP,
+  CHART_SIZE_LABEL_GAPS,
   CHART_SIZE_POINT_SIZE,
   CHART_SIZE_POINT_SIZES,
   CHART_SIZE_STROKE_WIDTH,
@@ -92,6 +94,7 @@ import {
 import { addVenn } from './venn/vennSpecBuilder';
 
 export function buildSpec({
+  animations,
   axes = [],
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
   chartHeight,
@@ -147,7 +150,7 @@ export function buildSpec({
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const legendHighlightSignals = getLegendHighlightSignals(legends);
-  const specOptions = { backgroundColor, colorScheme, idKey, highlightedItem, legendHighlightSignals };
+  const specOptions = { animations, backgroundColor, colorScheme, idKey, highlightedItem, legendHighlightSignals };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':
@@ -167,7 +170,7 @@ export function buildSpec({
         return addDonut(acc, { ...mark, ...specOptions, index: donutCount });
       case 'line':
         lineCount++;
-        return addLine(acc, { ...mark, ...specOptions, index: lineCount });
+        return addLine(acc, { ...mark, ...specOptions, index: lineCount, data });
       case 'scatter':
         scatterCount++;
         return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
@@ -213,7 +216,7 @@ export function buildSpec({
 
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {
-    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
+    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true, spec.usermeta?.animatedMarks ?? []);
     setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
   }
 
@@ -302,6 +305,11 @@ export const getDefaultSignals = ({
     update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`
   }
 
+  const chartSizeLabelGapSignal: Signal = {
+    name: CHART_SIZE_LABEL_GAP,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_LABEL_GAPS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_LABEL_GAPS.M} : ${CHART_SIZE_LABEL_GAPS.L}`,
+  };
+
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getS2ColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal(REFERENCE_LINE_LABEL_BACKGROUND_STROKE, referenceLineLabelStroke),
@@ -319,6 +327,7 @@ export const getDefaultSignals = ({
     chartSizeHoverStrokeWidthSignal,
     chartSizePointSizeSignal,
     chartSizeFontSizeSignal,
+    chartSizeLabelGapSignal,
   ];
 };
 

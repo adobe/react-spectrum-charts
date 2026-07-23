@@ -23,6 +23,39 @@ import {
 import { encodingUsesScale, getHighlightOpacityRule, setHoverOpacityForMarks } from './legendHighlightUtils';
 import { defaultMark } from './legendTestUtils';
 
+// Mirrors a trendline mark whose color has been overridden with a literal value rather than a
+// color scale facet. It's still per-series (faceted by series regardless of its own color), so
+// it should still receive the legend-hover rule based on its name, not its color encoding.
+const trendlineWithOverriddenColorMark: Mark = {
+  name: 'line0Trendline0',
+  type: 'line',
+  from: { data: 'line0Trendline0_facet' },
+  encode: {
+    enter: {
+      stroke: { value: '#ABC123' },
+    },
+    update: {
+      opacity: [DEFAULT_OPACITY_RULE],
+    },
+  },
+};
+
+// Mirrors a metric range's own line mark with an overridden literal color — the only metric
+// range sub-mark whose color is overridable, so it needs the same name-based fallback.
+const metricRangeLineWithOverriddenColorMark: Mark = {
+  name: 'line0MetricRange0_line',
+  type: 'line',
+  from: { data: 'line0MetricRange0_facet' },
+  encode: {
+    enter: {
+      stroke: { value: '#ABC123' },
+    },
+    update: {
+      opacity: [DEFAULT_OPACITY_RULE],
+    },
+  },
+};
+
 const defaultGroupMark: Mark = {
   type: 'group',
   marks: [defaultMark],
@@ -88,6 +121,13 @@ describe('setHoverOpacityForMarks()', () => {
       ]);
     });
   });
+  describe('trendline mark with an overridden (non-scale) color', () => {
+    test('still gets the legend-hover opacity rule spliced in, based on its name rather than its color encoding', () => {
+      const marks = JSON.parse(JSON.stringify([trendlineWithOverriddenColorMark]));
+      setHoverOpacityForMarks('legend0', marks);
+      expect(marks[0].encode.update.opacity[0]).toEqual(getHighlightOpacityRule('legend0', false));
+    });
+  });
   describe('group mark initial state', () => {
     test('encoding should be added for opacity', () => {
       const marks = JSON.parse(JSON.stringify([defaultGroupMark]));
@@ -98,6 +138,35 @@ describe('setHoverOpacityForMarks()', () => {
           marks: [{ ...defaultMark, encode: { ...defaultMark.encode, update: defaultOpacityEncoding } }],
         },
       ]);
+    });
+  });
+  describe('metric range line mark with an overridden (non-scale) color', () => {
+    test('still gets the legend-hover opacity rule spliced in, based on its name rather than its color encoding', () => {
+      const marks = JSON.parse(JSON.stringify([metricRangeLineWithOverriddenColorMark]));
+      setHoverOpacityForMarks('legend0', marks);
+      expect(marks[0].encode.update.opacity[0]).toEqual(getHighlightOpacityRule('legend0', false));
+    });
+  });
+  describe('trendline hover-support mark sharing the trendline name prefix', () => {
+    // Named like `<parent>Trendline_hoverRule` — shares the "Trendline" prefix with the
+    // trendline's own line mark, but isn't the trendline mark itself. Its non-array opacity
+    // rule is unrelated to series matching (it hides the guide line when something is selected)
+    // and must not be clobbered by the legend-hover splice logic.
+    const trendlineHoverRuleMark: Mark = {
+      name: 'line0Trendline_hoverRule',
+      type: 'rule',
+      encode: {
+        enter: {},
+        update: {
+          opacity: { signal: `length(data('line0Trendline_selectedData')) > 0 ? 0 : 1` },
+        },
+      },
+    };
+
+    test('is left untouched, preserving its non-array opacity rule', () => {
+      const marks = JSON.parse(JSON.stringify([trendlineHoverRuleMark]));
+      setHoverOpacityForMarks('legend0', marks);
+      expect(marks[0].encode.update.opacity).toEqual(trendlineHoverRuleMark.encode?.update?.opacity);
     });
   });
 });

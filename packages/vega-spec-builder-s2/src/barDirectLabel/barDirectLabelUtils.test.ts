@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
 import { TextMark } from 'vega';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
@@ -193,10 +193,16 @@ describe('getBarDirectLabelMarks()', () => {
     expect(marks[1].interactive).toBe(false);
   });
 
-  it('main mark has update.opacity; background mark does not', () => {
+  it("main mark has update.opacity; background mark's update has no opacity", () => {
     const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
     expect((main as TextMark).encode?.update?.opacity).toBeDefined();
-    expect((bg as TextMark).encode?.update).toBeUndefined();
+    expect((bg as TextMark).encode?.update?.opacity).toBeUndefined();
+  });
+
+  it('both marks use the chart-size signal for fontSize', () => {
+    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
+    expect((bg as TextMark).encode?.update?.fontSize).toHaveProperty('signal', CHART_SIZE_FONT_SIZE);
+    expect((main as TextMark).encode?.update?.fontSize).toHaveProperty('signal', CHART_SIZE_FONT_SIZE);
   });
 
   it('marks source directly from FILTERED_TABLE', () => {

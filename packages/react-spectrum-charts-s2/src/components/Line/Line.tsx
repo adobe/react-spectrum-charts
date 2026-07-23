@@ -36,6 +36,8 @@ const Line: FC<LineProps> = ({
   alternateSegmentLabel,
   primarySeries,
   otherSeriesColor,
+  dimensionHover = false,
+  showHoverLabel = true,
   contextMenuMode = 'interaction',
 }: LineProps) => {
   return null;
