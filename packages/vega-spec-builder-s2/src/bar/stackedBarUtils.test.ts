@@ -101,13 +101,28 @@ describe('stackedBarUtils', () => {
         ...defaultBarOptions,
         chartPopovers: [{}],
       });
-      expect(marks).toHaveLength(4);
-      // backdrop is drawn first (underneath) to fill the gap; the outline ring is drawn last (on top)
-      // so it is never occluded by adjacent stack segments
-      expect(marks[0].name).toEqual('bar0_itemSelectionBackdrop');
-      expect(marks[1].name).toEqual('bar0_background');
-      expect(marks[2].name).toEqual('bar0');
-      expect(marks[3].name).toEqual('bar0_itemSelectionRing');
+      expect(marks).toHaveLength(5);
+      // the dimension hover area is added first since the bar is interactive; the backdrop is drawn
+      // next (underneath) to fill the gap; the outline ring is drawn last (on top) so it is never
+      // occluded by adjacent stack segments
+      expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
+      expect(marks[1].name).toEqual('bar0_itemSelectionBackdrop');
+      expect(marks[2].name).toEqual('bar0_background');
+      expect(marks[3].name).toEqual('bar0');
+      expect(marks[4].name).toEqual('bar0_itemSelectionRing');
+    });
+
+    test('adds the dimension hover area mark whenever the bar is interactive, regardless of chartInspect target', () => {
+      const marks = getStackedBarMarks({
+        ...defaultBarOptions,
+        chartPopovers: [{}],
+      });
+      expect(marks.find((mark) => mark.name === 'bar0_dimensionHoverArea')).toBeDefined();
+    });
+
+    test('does not add the dimension hover area mark if the bar is not interactive', () => {
+      const marks = getStackedBarMarks(defaultBarOptions);
+      expect(marks.find((mark) => mark.name === 'bar0_dimensionHoverArea')).toBeUndefined();
     });
     test('does not add the item selection marks when the popover highlights by dimension', () => {
       const marks = getStackedBarMarks({

@@ -278,19 +278,21 @@ describe('barSpecBuilder', () => {
     });
     test('should add hover events if inspect is present', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartInspects: [{}] });
-      expect(signals.at(-1)).toHaveProperty('on');
-      expect(signals.at(-1)?.on).toHaveLength(2);
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      const hoveredItemSignal = signals.find((signal) => signal.name === 'bar0_hoveredItem');
+      expect(hoveredItemSignal).toHaveProperty('on');
+      expect(hoveredItemSignal?.on).toHaveLength(2);
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
     });
     test('should exclude data with key from update if inspect has excludeDataKey', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultBarOptions,
         chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
       });
-      expect(signals.at(-1)).toHaveProperty('on');
-      expect(signals.at(-1)?.on).toHaveLength(2);
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
+      const hoveredItemSignal = signals.find((signal) => signal.name === 'bar0_hoveredItem');
+      expect(hoveredItemSignal).toHaveProperty('on');
+      expect(hoveredItemSignal?.on).toHaveLength(2);
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     });
 
     describe('dualMetricAxis signals', () => {
@@ -482,6 +484,47 @@ describe('barSpecBuilder', () => {
         expect(
           signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
         ).toBeDefined();
+      });
+
+      test('should add dimension hover area signal whenever the bar is interactive, regardless of chartInspect target', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          chartPopovers: [{}],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeDefined();
+      });
+
+      test('should not add dimension hover area signal if the bar is not interactive', () => {
+        const signals = addSignals(defaultSignals, defaultBarOptions);
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
+      });
+
+      test('should not add dimension hover area signal for a bar that is only interactive via barAnnotations', () => {
+        // barAnnotations alone isn't "interactive" per isInteractive() - the dimension hover area
+        // signal must stay in sync with that check, since it's what gates the rect mark
+        // (stackedBarUtils.ts/dodgedBarUtils.ts) and opacity rule (chartInspectUtils.ts) that
+        // consume this exact signal.
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          barAnnotations: [{ textKey: 'textLabel' }],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
+      });
+
+      test('should not add dimension hover area signal for a bar with only a non-displayOnHover trendline', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          trendlines: [{ displayOnHover: false }],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
       });
     });
   });
@@ -799,9 +842,11 @@ describe('barSpecBuilder', () => {
         ...defaultBarOptions,
         chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }],
       });
-      expect(marks).toHaveLength(3);
+      // the bar is interactive (has a popover), so the dimension hover area mark is also prepended
+      expect(marks).toHaveLength(4);
+      expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
 
-      const selectionRingMark = marks[2] as RectMark;
+      const selectionRingMark = marks[3] as RectMark;
       expect(selectionRingMark.type).toEqual('rect');
       expect(selectionRingMark.name).toEqual('bar0_selectionRing');
     });

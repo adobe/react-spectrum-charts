@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data } from 'vega';
+import { Data, GroupMark } from 'vega';
 
 import { colorSchemes, spectrum2Colors } from '@spectrum-charts/themes';
 
@@ -30,6 +30,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
   DEFAULT_SECONDARY_COLOR,
+  FADE_FACTOR,
   FILTERED_TABLE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
@@ -509,5 +510,68 @@ describe('Chart spec builder', () => {
       );
     });
 
+  });
+
+  describe('axis label hover (AN-456589)', () => {
+    test('hovering an interactive bar chart axis label wires into the bar dimension hover signal', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        marks: [{ ...defaultBarOptions, chartPopovers: [{}] }],
+        axes: [{ position: 'bottom' }],
+      });
+
+      const axis = spec.axes?.[0];
+      expect(axis?.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+      expect(axis?.encode?.labels).toHaveProperty('interactive', true);
+
+      const signal = spec.signals?.find((s) => s.name === 'bar0_dimensionHoverArea_hoveredItem');
+      expect(signal?.on).toContainEqual({
+        events: '@axis0_labelHover:mouseover',
+        update: '{ browser: datum.value }',
+      });
+      expect(signal?.on).toContainEqual({ events: '@axis0_labelHover:mouseout', update: 'null' });
+
+      // other axis labels dim along with the bars when one is hovered
+      expect(axis?.encode?.labels?.update?.fillOpacity).toContainEqual({
+        test: 'isValid(bar0_dimensionHoverArea_hoveredItem)',
+        signal: `bar0_dimensionHoverArea_hoveredItem.browser === datum.value ? 1 : ${FADE_FACTOR}`,
+      });
+    });
+
+    test('wires axis label hover using the trellis group inner scale field, not the outer trellis/facet field', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { browser: 'Chrome', event: 'A', downloads: 10 },
+          { browser: 'Firefox', event: 'A', downloads: 5 },
+          { browser: 'Chrome', event: 'B', downloads: 3 },
+        ],
+        marks: [{ ...defaultBarOptions, trellis: 'event', chartPopovers: [{}] }],
+        axes: [{ position: 'bottom' }],
+      });
+
+      const trellisGroup = spec.marks?.find((mark) => mark.name?.includes('Trellis')) as GroupMark;
+      const trellisAxis = trellisGroup?.axes?.[0];
+      expect(trellisAxis?.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+      expect(trellisAxis?.encode?.labels).toHaveProperty('interactive', true);
+
+      const signal = spec.signals?.find((s) => s.name === 'bar0_dimensionHoverArea_hoveredItem');
+      expect(signal?.on).toContainEqual({
+        events: '@axis0_labelHover:mouseover',
+        update: '{ browser: datum.value }',
+      });
+    });
+
+    test('does not wire axis label hover for a fully static bar chart (no interactive children)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        marks: [defaultBarOptions],
+        axes: [{ position: 'bottom' }],
+      });
+
+      const axis = spec.axes?.[0];
+      expect(axis?.encode?.labels).not.toHaveProperty('name');
+      expect(spec.signals?.find((s) => s.name === 'bar0_dimensionHoverArea_hoveredItem')).toBeUndefined();
+    });
   });
 });

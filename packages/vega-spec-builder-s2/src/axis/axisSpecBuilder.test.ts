@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, Data, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -545,6 +545,92 @@ describe('Spec builder, Axis', () => {
           usermeta,
         });
         expect(usermeta).toEqual({});
+      });
+    });
+
+    describe('label hover wiring', () => {
+      // represents an already-interactive bar named "bar0" with dimension "category" - derived
+      // straight from the built spec (data + signals), not from usermeta.
+      const interactiveBarData: Data[] = [
+        {
+          name: 'bar0_stacks',
+          source: 'filteredTable',
+          transform: [{ type: 'aggregate', groupby: ['category'], fields: ['value1', 'value1'], ops: ['min', 'max'] }],
+        },
+      ];
+      const interactiveBarSignals: Signal[] = [
+        { name: 'bar0_dimensionHoverArea_hoveredItem', value: null, on: [] },
+      ];
+
+      test('stamps a name and sets interactive true when an interactive bar matches scaleField', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+          data: interactiveBarData,
+          signals: interactiveBarSignals,
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.fillOpacity).toStrictEqual([
+          {
+            test: 'isValid(bar0_dimensionHoverArea_hoveredItem)',
+            signal: `bar0_dimensionHoverArea_hoveredItem.category === datum.value ? 1 : ${FADE_FACTOR}`,
+          },
+          { value: 1 },
+        ]);
+      });
+
+      test('does not stamp a name or force interactive when no interactive bar matches scaleField', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'otherField',
+          usermeta: {},
+          data: interactiveBarData,
+          signals: interactiveBarSignals,
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+        expect(axis.encode?.labels?.update).not.toHaveProperty('fillOpacity');
+      });
+
+      test('does not stamp a name or force interactive when there is no bar data/signals at all', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+      });
+
+      test('does not wire when hideDefaultLabels is true, even with a matching bar', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hideDefaultLabels: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+          data: interactiveBarData,
+          signals: interactiveBarSignals,
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+      });
+
+      test('a matching bar does not override an existing hasTooltip-driven interactive:true', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasTooltip: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+          data: interactiveBarData,
+          signals: interactiveBarSignals,
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
       });
     });
 
