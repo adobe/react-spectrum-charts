@@ -43,6 +43,7 @@ import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
+import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils'
 import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
@@ -234,6 +235,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     scaleType,
     primarySeries,
     interpolate,
+    isDrawInAnimate,
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
   const popoverWithDimensionHighlightExists = popovers.some(
@@ -248,7 +250,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     interactive: false,
     encode: {
       enter: {
-        y: getLineYEncoding(lineMarkOptions, metric),
+        ...(isDrawInAnimate ? {} : { y: getLineYEncoding(lineMarkOptions, metric) }),
         stroke: getStrokeEncoding(primarySeries, otherSeriesColor, color, colorScheme),
         strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
@@ -258,7 +260,8 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
       },
       update: {
         // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
-        x: getXProductionRule(scaleType, dimension),
+        x: isDrawInAnimate ? getLineDrawInXEncoding(lineMarkOptions) : getXProductionRule(scaleType, dimension),
+        ...(isDrawInAnimate ? { y: getLineDrawInYEncoding(lineMarkOptions) } : {}),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
         strokeWidth: getLineStrokeWidth(lineMarkOptions),

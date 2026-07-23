@@ -91,4 +91,5 @@ export interface LineMarkOptions {
   primarySeries?: number | string[];
   otherSeriesColor?: string;
   isAnimate?: boolean;
+  isDrawInAnimate?: boolean;
 }

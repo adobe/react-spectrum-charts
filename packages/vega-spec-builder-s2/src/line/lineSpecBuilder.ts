@@ -33,7 +33,7 @@ import {
   isHighlightedByGroup,
 } from '../chartInspect/chartInspectUtils';
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
-import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
+import { addTimeTransform, getFilteredInspectData, getFilteredTableData, getTableData } from '../data/dataUtils';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
 import {
   getForecastAlternateFlagTransform,
@@ -75,6 +75,7 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
+import { addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData } from '../marks/drawInAnimationUtils';
 
 export const addLine = produce<
   ScSpec,
@@ -185,6 +186,7 @@ export const addLine = produce<
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
     lineOptions.isAnimate = usesHoverAnimation(animations, lineOptions);
+    lineOptions.isDrawInAnimate = isLineDrawInSupported(animations, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     if (lineOptions.isAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
     spec.data = addData(spec.data ?? [], lineOptions);
@@ -213,6 +215,13 @@ const usesHoverAnimation = (animations: boolean | undefined, options: LineSpecOp
     (options.legendHighlightSignals?.length ?? 0) > 0);
 
 /**
+ * Whether the line participates in the draw-in animation system.
+ */
+const isLineDrawInSupported = (animations: boolean | undefined, options: LineSpecOptions): boolean =>
+  animations === true &&
+  (options.scaleType === 'time' || options.scaleType === 'linear' || options.scaleType === 'point');
+
+/**
  * Gets the unique series ids for the line
  * @param data - the data for the line
  * @param facets - the facets for the line
@@ -228,10 +237,24 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   const tableData = getTableData(data);
   if (scaleType === 'time') {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+    if (options.isDrawInAnimate) {
+      tableData.transform = addLineDrawInTimeMsTransform(tableData.transform ?? [], dimension);
+    }
   }
   addDimensionHoverGroupTransform(tableData, chartInspects, dimensionHover, dimension, name);
   addSegmentData(data, tableData, options);
   addLineHoverData(data, options);
+
+  if (options.isDrawInAnimate) {
+    if (scaleType === 'point') {
+      const pointIndexData = getLineDrawInPointIndexData(options);
+      addLineDrawInLeadTransform(pointIndexData, options);
+      data.push(pointIndexData, ...getLineDrawInData(options));
+    } else {
+      addLineDrawInLeadTransform(getFilteredTableData(data), options);
+      data.push(...getLineDrawInData(options));
+    }
+  }
 
   if (staticPoint || isSparkline) {
     data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
@@ -349,6 +372,10 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     addHoverAnimationSignals(signals, name);
   }
 
+  if (options.isDrawInAnimate) {
+    addLineDrawInAnimationSignals(signals, options);
+  }
+
   if (!isInteractive(options)) return;
   const { primarySeries } = options;
   // datum.datum because the voronoi mark uses datumOrder=2
@@ -417,7 +444,10 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
   // when primarySeries is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
   const defaultFacetData = primarySeries ? `${name}_primarySeriesFacetData` : FILTERED_TABLE;
-  const facetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
+  const alternateSegmentsFacetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
+  // when animated, facet from the draw-in lerp source (prev + tip) so the line renders clipped to
+  // the animated cutoff instead of the full series
+  const facetData = options.isDrawInAnimate ? `${name}_drawInLerp` : alternateSegmentsFacetData;
   const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
 
   // when forecasts are present, override metric to effectiveValue and set alternateSegmentKey
