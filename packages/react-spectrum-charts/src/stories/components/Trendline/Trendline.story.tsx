@@ -10,18 +10,9 @@
  * governing permissions and limitations under the License.
  */
 import { ReactElement } from 'react';
-
-
-
 import { StoryFn } from '@storybook/react';
-
-
-
 import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
-
-
-
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line, Scatter, Title, Trendline } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';

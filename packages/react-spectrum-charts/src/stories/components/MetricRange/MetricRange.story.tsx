@@ -10,17 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import React, { ReactElement } from 'react';
-
-
-
 import { StoryFn } from '@storybook/react';
-
-
-
 import { Content } from '@adobe/react-spectrum';
-
-
-
 import { Chart } from '../../../Chart';
 import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange, Trendline } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
