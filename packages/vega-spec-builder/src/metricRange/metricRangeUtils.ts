@@ -200,6 +200,7 @@ export const getMetricRangeMark = (
     isMetricRange: true,
     parentName: lineMarkOptions.name,
     displayOnHover: metricRangeOptions.displayOnHover,
+    displayOnHoverTrigger: metricRangeOptions.displayOnHoverTrigger,
     hoverContext,
     interactiveMarkName: lineMarkOptions.interactiveMarkName,
     interactionMode: lineMarkOptions.interactionMode,
@@ -215,6 +216,7 @@ export const getMetricRangeMark = (
     lineType: { value: metricRangeOptions.lineType },
     lineWidth: { value: metricRangeOptions.lineWidth },
     displayOnHover: metricRangeOptions.displayOnHover,
+    displayOnHoverTrigger: metricRangeOptions.displayOnHoverTrigger,
     opacity: metricRangeOptions.lineOpacity ? metricRangeOptions.lineOpacity : { value: 1 },
     hoverContext,
     interactiveMarkName,
@@ -237,7 +239,7 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
 
   const ctx = getHoverContext(markOptions);
   for (const metricRangeOptions of metricRanges) {
-    const { displayOnHover, hoverPoint, metric, name } = metricRangeOptions;
+    const { displayOnHover, displayOnHoverTrigger, hoverPoint, metric, name } = metricRangeOptions;
     // if hoverPoint is true and the line is interactive, add a filtered data source to rows where the
     // MetricRange metric is valid. This prevents hover marks from being created at NaN y positions
     // for rows where the metric is null.
@@ -249,7 +251,7 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
       data.push({
         name: `${name}_highlightedData`,
         source: FILTERED_TABLE,
-        transform: [{ type: 'filter', expr: getSeriesHoverPredicate(ctx) }],
+        transform: [{ type: 'filter', expr: getSeriesHoverPredicate(ctx, displayOnHoverTrigger) }],
       });
     }
   }

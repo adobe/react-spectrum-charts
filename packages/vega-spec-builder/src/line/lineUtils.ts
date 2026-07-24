@@ -15,6 +15,7 @@ import {
   ChartTooltipOptions,
   ColorFacet,
   ColorScheme,
+  DisplayOnHoverTrigger,
   DonutSummaryOptions,
   HighlightedItem,
   InteractionMode,
@@ -64,6 +65,8 @@ export interface LineMarkOptions {
   comboSiblingNames?: string[];
   dimension: string;
   displayOnHover?: boolean | 'metric' | 'range';
+  /** Restricts which hover trigger reveals `displayOnHover` content. Undefined matches any active hover (legacy behavior). */
+  displayOnHoverTrigger?: DisplayOnHoverTrigger;
   donutSummaries?: DonutSummaryOptions[];
   dualMetricAxis?: boolean;
   hasOnClick?: boolean;

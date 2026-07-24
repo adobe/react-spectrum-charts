@@ -71,6 +71,7 @@ export type Datum = object & {
 };
 
 export type HoverType = 'point' | 'dimension';
+export type DisplayOnHoverTrigger = 'nearest' | 'item' | 'dimension';
 export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | string;
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';

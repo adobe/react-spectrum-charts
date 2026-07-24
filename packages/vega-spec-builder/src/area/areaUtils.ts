@@ -35,6 +35,7 @@ import {
   ChartTooltipOptions,
   ColorFacet,
   ColorScheme,
+  DisplayOnHoverTrigger,
   HighlightedItem,
   InteractionMode,
   ScaleType,
@@ -45,6 +46,8 @@ export interface AreaMarkOptions {
   colorScheme: ColorScheme;
   dimension: string;
   displayOnHover?: boolean | 'metric' | 'range';
+  /** Restricts which hover trigger reveals `displayOnHover` content. Undefined matches any active hover (legacy behavior). */
+  displayOnHoverTrigger?: DisplayOnHoverTrigger;
   highlightedItem?: HighlightedItem;
   /** Resolved hover context — required when isMetricRange && displayOnHover is set. */
   hoverContext?: HoverContext;
@@ -113,16 +116,17 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     chartPopovers,
     displayOnHover,
     hoverContext,
+    displayOnHoverTrigger,
     isHighlightedByGroup,
     isMetricRange,
     highlightedItem,
     name,
   } = areaOptions;
   if (isMetricRange && displayOnHover === 'range' && hoverContext) {
-    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show');
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show', displayOnHoverTrigger);
   }
   if (isMetricRange && (displayOnHover === true || displayOnHover === 'metric') && hoverContext) {
-    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'fade');
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'fade', displayOnHoverTrigger);
   }
 
   if (!isInteractive(areaOptions) && !highlightedItem) {

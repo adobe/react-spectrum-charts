@@ -11,9 +11,15 @@
  */
 import React, { ReactElement } from 'react';
 
+
+
 import { StoryFn } from '@storybook/react';
 
+
+
 import { Content } from '@adobe/react-spectrum';
+
+
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartPopover, ChartTooltip, Legend, Line, MetricRange, Trendline } from '../../../components';
@@ -21,6 +27,7 @@ import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { workspaceTrendsDataWithAnomalies, workspaceTrendsDataWithBoundaryMetricRange, workspaceTrendsDataWithExtremeMetricRange, workspaceTrendsDataWithForecast, workspaceTrendsDataWithNullsInMetricRange, workspaceTrendsDataWithOutOfDomainMetricRange } from '../../data/data';
+
 
 export default {
   title: 'RSC/MetricRange',
@@ -280,6 +287,20 @@ DisplayOnHoverDimension.args = {
   displayOnHover: true,
 };
 
+// Line is in dimension mode (interactionMode="dimension").
+// displayOnHoverTrigger="item" (reveals only when hovering near an actual point).
+const DisplayOnHoverItemTrigger = bindWithProps(MetricRangeWithTooltipDimensionStory);
+DisplayOnHoverItemTrigger.args = {
+  lineType: 'shortDash',
+  lineWidth: 'S',
+  rangeOpacity: 0.2,
+  metricEnd: 'metricEnd',
+  metricStart: 'metricStart',
+  metric: 'metric',
+  displayOnHover: true,
+  displayOnHoverTrigger: 'item',
+};
+
 const DisplayOnHoverTrendlineDimension = bindWithProps(MetricRangeWithTrendlineAndDimensionStory);
 DisplayOnHoverTrendlineDimension.args = {
   lineType: 'shortDash',
@@ -424,6 +445,7 @@ export {
   Basic,
   DisplayOnHover,
   DisplayOnHoverDimension,
+  DisplayOnHoverItemTrigger,
   DisplayOnHoverTrendlineDimension,
   DisplayOnHoverLinearWithTrendline,
   DisplayOnHoverControlled,
