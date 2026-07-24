@@ -332,6 +332,47 @@ describe('getLineOpacity()', () => {
     expect(opacityRule[1]).toEqual({ value: 0 });
   });
 
+  test('displayOnHoverTrigger "item" excludes dimension hover rule even when interactionMode is dimension', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+    });
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: true,
+      displayOnHoverTrigger: 'item',
+      interactionMode: 'dimension',
+      isMetricRange: true,
+      hoverContext: ctx,
+    });
+    expect(JSON.stringify(opacityRule[0])).not.toContain('dimensionHoverArea');
+    expect(JSON.stringify(opacityRule[0])).toContain(`line0_${HOVERED_ITEM}`);
+  });
+
+  test('displayOnHoverTrigger "dimension" excludes item-series-match rule even though item hover is active', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+    });
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: true,
+      displayOnHoverTrigger: 'dimension',
+      interactionMode: 'dimension',
+      isMetricRange: true,
+      hoverContext: ctx,
+    });
+    const test = (opacityRule[0] as { test?: string })?.test;
+    expect(test).toContain('dimensionHoverArea');
+    expect(test).not.toContain(`line0_${HOVERED_ITEM}.`);
+  });
+
   test('returns opacity rules when displayOnHover is "metric" to show the line on hover', () => {
     const ctx = getHoverContext({
       ...defaultLineOptions,
