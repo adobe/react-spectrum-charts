@@ -619,7 +619,7 @@ export const getLineHighlightOverlayGroup = (
   const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
 
   const baseLineMark = getLineMark(
-    { ...markOptions, name: `${name}_highlightOverlayLine`, isAnimate: false },
+    { ...markOptions, name: `${name}_highlightOverlayLine`, isAnimate: false, isDrawInAnimate: false },
     `${name}_highlightOverlay_facet`
   );
 

@@ -613,4 +613,18 @@ describe('getLineHighlightOverlayGroup()', () => {
     const marks = (group as { marks: { encode: { update: { opacity: unknown } } }[] }).marks;
     expect(Array.isArray(marks[0].encode.update.opacity)).toBe(true);
   });
+
+  test('overlay line does not use draw-in x/y encoding, even when the parent line is draw-in animated', () => {
+    // the overlay mark is renamed to `${name}_highlightOverlayLine`, but the draw-in cutoff signal is
+    // only ever registered under the original line's name — using draw-in encoding here would reference
+    // a signal that doesn't exist (e.g. "line0_highlightOverlayLine_drawInAnimCutoff")
+    const group = getLineHighlightOverlayGroup(
+      { ...defaultLineMarkOptions, isDrawInAnimate: true },
+      'filteredTable',
+      [SERIES_ID]
+    );
+    const marks = (group as { marks: { encode: { update: { x: { signal?: string } } } }[] }).marks;
+    expect(marks[0].encode.update.x).not.toHaveProperty('signal');
+    expect(marks[0].encode.update).not.toHaveProperty('y');
+  });
 });
