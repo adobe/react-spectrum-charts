@@ -123,6 +123,12 @@ export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData';
 export const HOVER_TARGET_DATA = 'hoverTargetData';
 export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
 export const HOVER_FRACTION_DATA = 'hoverFractionData';
+/** Draw-in animation: the already-drawn portion, the single lerping tip point, and their merge (source the line mark renders from) */
+export const DRAW_IN_PREV_DATA = 'drawInPrev'; // suffix: ${name}_drawInPrev
+export const DRAW_IN_TIP_DATA = 'drawInTip'; // suffix: ${name}_drawInTip
+export const DRAW_IN_LERP_DATA = 'drawInLerp'; // suffix: ${name}_drawInLerp
+/** Point-scale-only: derived source carrying each row's ordinal index (see DRAW_IN_POINT_INDEX_FIELD) */
+export const DRAW_IN_POINT_INDEX_DATA = 'drawInIndexed'; // suffix: ${name}_drawInIndexed
 
 // vega data field names
 export const DIMENSION_FIELD = 'rscDimensionField';
@@ -133,6 +139,19 @@ export const SERIES_ID = 'rscSeriesId';
 export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
+/** Numeric-ms formula field added to `table` for time-scale lines so draw-in cutoff/tween math can compare raw numbers */
+export const DRAW_IN_TIME_MS_FIELD = 'rscDrawInTimeMs';
+/** Lead-window fields on filteredTable: each row's next point's dimension/metric value */
+export const DRAW_IN_NEXT_DIM_FIELD = 'drawInNextDimValue'; // suffix: ${name}_drawInNextDimValue
+export const DRAW_IN_NEXT_METRIC_FIELD = 'drawInNextMetricValue'; // suffix: ${name}_drawInNextMetricValue
+/** Point-scale-only: this row's ordinal index within the x scale's domain — a numeric sort key standing
+ *  in for the (usually non-numeric) category value, since draw-in's cutoff/tween math needs raw numbers */
+export const DRAW_IN_POINT_INDEX_FIELD = 'drawInPointIndex'; // suffix: ${name}_drawInPointIndex
+/** Point-scale-only: next point's actual category value (for scale lookup), separate from
+ *  DRAW_IN_NEXT_DIM_FIELD (next ordinal index, for cutoff/tween math) since the two diverge for point scales */
+export const DRAW_IN_NEXT_CATEGORY_FIELD = 'drawInNextCategoryValue'; // suffix: ${name}_drawInNextCategoryValue
+/** Flag marking the tip row within DRAW_IN_TIP_DATA/DRAW_IN_LERP_DATA */
+export const DRAW_IN_TIP_FLAG = 'isDrawInTip';
 
 // signal names
 export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
@@ -150,6 +169,12 @@ export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
 export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's one-tick grace period after hoverAnimating goes false
+export const DRAW_IN_START = 'drawInStart'; // mount timestamp, captured once
+export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
+export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-out) progress
+export const DRAW_IN_DOMAIN_MIN = 'drawInDomainMin'; // draw-in animation: dimension scale domain min, captured once at mount
+export const DRAW_IN_DOMAIN_MAX = 'drawInDomainMax'; // draw-in animation: dimension scale domain max, captured once at mount
+export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
 
 // scale names
 export const COLOR_SCALE = 'color';
@@ -187,6 +212,10 @@ export const ANIMATION_HOVER_SPEED = 100;
  * for emphasis (e.g. stroke width).
  */
 export const HOVER_NEUTRAL_TARGET = 0.5;
+
+// draw-in animation constants
+/** Time in ms it takes to animate the draw-in animation */
+export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */

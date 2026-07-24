@@ -1,0 +1,1702 @@
+{
+    "width": 530,
+    "height": 400,
+    "config": {
+        "axis": {
+            "bandPosition": 0.5,
+            "domain": false,
+            "domainWidth": 1,
+            "domainColor": "#DBDBDB",
+            "gridColor": "#393939",
+            "labelFont": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+            "labelFontSize": 14,
+            "labelFontWeight": "normal",
+            "labelPadding": 8,
+            "labelOverlap": true,
+            "labelColor": "#AFAFAF",
+            "ticks": false,
+            "tickColor": "#393939",
+            "tickRound": true,
+            "tickSize": 8,
+            "tickCap": "round",
+            "tickWidth": 1,
+            "titleAnchor": "middle",
+            "titleColor": "#AFAFAF",
+            "titleFont": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+            "titleFontSize": 14,
+            "titleFontWeight": "normal",
+            "titlePadding": 16
+        },
+        "range": {
+            "category": [
+                "rgb(15, 181, 174)",
+                "rgb(64, 70, 202)",
+                "rgb(246, 133, 17)",
+                "rgb(222, 61, 130)",
+                "rgb(126, 132, 250)",
+                "rgb(114, 224, 106)",
+                "rgb(20, 122, 243)",
+                "rgb(115, 38, 211)",
+                "rgb(232, 198, 0)",
+                "rgb(203, 93, 0)",
+                "rgb(0, 143, 93)",
+                "rgb(188, 233, 49)",
+                "rgb(90, 169, 250)",
+                "rgb(192, 56, 204)",
+                "rgb(245, 107, 183)",
+                "rgb(255, 226, 46)"
+            ],
+            "diverging": [
+                "rgb(88, 0, 0)",
+                "rgb(121, 38, 11)",
+                "rgb(156, 69, 17)",
+                "rgb(189, 101, 26)",
+                "rgb(221, 134, 41)",
+                "rgb(245, 173, 82)",
+                "rgb(254, 214, 147)",
+                "rgb(255, 255, 224)",
+                "rgb(187, 228, 209)",
+                "rgb(118, 199, 190)",
+                "rgb(62, 168, 166)",
+                "rgb(32, 130, 136)",
+                "rgb(7, 103, 105)",
+                "rgb(0, 73, 75)",
+                "rgb(0, 44, 45)"
+            ],
+            "ordinal": [
+                "rgb(15, 181, 174)",
+                "rgb(64, 70, 202)",
+                "rgb(246, 133, 17)",
+                "rgb(222, 61, 130)",
+                "rgb(126, 132, 250)",
+                "rgb(114, 224, 106)",
+                "rgb(20, 122, 243)",
+                "rgb(115, 38, 211)",
+                "rgb(232, 198, 0)",
+                "rgb(203, 93, 0)",
+                "rgb(0, 143, 93)",
+                "rgb(188, 233, 49)",
+                "rgb(90, 169, 250)",
+                "rgb(192, 56, 204)",
+                "rgb(245, 107, 183)",
+                "rgb(255, 226, 46)"
+            ],
+            "ramp": [
+                "rgb(253, 231, 37)",
+                "rgb(210, 226, 27)",
+                "rgb(165, 219, 54)",
+                "rgb(122, 209, 81)",
+                "rgb(84, 197, 104)",
+                "rgb(53, 183, 121)",
+                "rgb(34, 168, 132)",
+                "rgb(31, 152, 139)",
+                "rgb(35, 136, 142)",
+                "rgb(42, 120, 142)",
+                "rgb(49, 104, 142)",
+                "rgb(57, 86, 140)",
+                "rgb(65, 68, 135)",
+                "rgb(71, 47, 125)",
+                "rgb(72, 26, 108)",
+                "rgb(68, 1, 84)"
+            ]
+        },
+        "background": "transparent",
+        "legend": {
+            "columnPadding": 20,
+            "labelColor": "#DBDBDB",
+            "padding": 8,
+            "labelFont": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+            "labelFontSize": 14,
+            "labelFontWeight": "normal",
+            "labelLimit": 184,
+            "layout": {
+                "bottom": {
+                    "anchor": "middle",
+                    "direction": "horizontal",
+                    "center": true,
+                    "offset": 24,
+                    "bounds": "full",
+                    "margin": 48
+                },
+                "top": {
+                    "anchor": "middle",
+                    "direction": "horizontal",
+                    "center": true,
+                    "offset": 24,
+                    "bounds": "full",
+                    "margin": 48
+                },
+                "left": {
+                    "anchor": "middle",
+                    "direction": "vertical",
+                    "center": false,
+                    "offset": 24,
+                    "bounds": "full",
+                    "margin": 24
+                },
+                "right": {
+                    "anchor": "middle",
+                    "direction": "vertical",
+                    "center": false,
+                    "offset": 24,
+                    "bounds": "full",
+                    "margin": 24
+                }
+            },
+            "rowPadding": 8,
+            "symbolSize": 250,
+            "symbolType": "M -0.55 -1 h 1.1 a 0.45 0.45 0 0 1 0.45 0.45 v 1.1 a 0.45 0.45 0 0 1 -0.45 0.45 h -1.1 a 0.45 0.45 0 0 1 -0.45 -0.45 v -1.1 a 0.45 0.45 0 0 1 0.45 -0.45 z",
+            "symbolStrokeColor": "#AFAFAF",
+            "titleColor": "#DBDBDB",
+            "titleFont": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+            "titleFontSize": 14,
+            "titlePadding": 8
+        },
+        "arc": {
+            "fill": "#5424DB"
+        },
+        "area": {
+            "fill": "#5424DB",
+            "opacity": 0.8
+        },
+        "line": {
+            "strokeWidth": 2.5,
+            "stroke": "#5424DB"
+        },
+        "path": {
+            "stroke": "#5424DB"
+        },
+        "rect": {
+            "strokeWidth": 0,
+            "stroke": "#122D9A",
+            "fill": "#5424DB"
+        },
+        "rule": {
+            "stroke": "#DBDBDB",
+            "strokeWidth": 1
+        },
+        "shape": {
+            "stroke": "#5424DB"
+        },
+        "symbol": {
+            "strokeWidth": 2,
+            "size": 100,
+            "fill": "#5424DB"
+        },
+        "text": {
+            "fill": "#DBDBDB",
+            "font": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+            "fontSize": 14
+        },
+        "title": {
+            "offset": 10,
+            "font": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+            "fontSize": 22,
+            "color": "#DBDBDB",
+            "anchor": "start",
+            "frame": "group"
+        },
+        "autosize": {
+            "type": "fit",
+            "contains": "padding",
+            "resize": true
+        }
+    },
+    "usermeta": {
+        "interactiveMarks": [
+            "line0"
+        ],
+        "animatedMarks": [
+            "line0"
+        ]
+    },
+    "data": [
+        {
+            "name": "table",
+            "values": [
+                {
+                    "datetime": 1667890800000,
+                    "point": 1,
+                    "value": 3738,
+                    "users": 477,
+                    "series": "Add Fallout",
+                    "rscMarkId": 1,
+                    "datetime0": "2022-11-08T07:00:00.000Z",
+                    "datetime1": "2022-11-08T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1667890800000,
+                    "rscSeriesId": "Add Fallout"
+                },
+                {
+                    "datetime": 1667977200000,
+                    "point": 2,
+                    "value": 2704,
+                    "users": 481,
+                    "series": "Add Fallout",
+                    "rscMarkId": 2,
+                    "datetime0": "2022-11-09T07:00:00.000Z",
+                    "datetime1": "2022-11-09T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1667977200000,
+                    "rscSeriesId": "Add Fallout"
+                },
+                {
+                    "datetime": 1668063600000,
+                    "point": 3,
+                    "value": 1730,
+                    "users": 483,
+                    "series": "Add Fallout",
+                    "rscMarkId": 3,
+                    "datetime0": "2022-11-10T07:00:00.000Z",
+                    "datetime1": "2022-11-10T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668063600000,
+                    "rscSeriesId": "Add Fallout"
+                },
+                {
+                    "datetime": 1668150000000,
+                    "point": 4,
+                    "value": 465,
+                    "users": 310,
+                    "series": "Add Fallout",
+                    "rscMarkId": 4,
+                    "datetime0": "2022-11-11T07:00:00.000Z",
+                    "datetime1": "2022-11-11T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668150000000,
+                    "rscSeriesId": "Add Fallout"
+                },
+                {
+                    "datetime": 1668236400000,
+                    "point": 5,
+                    "value": 31,
+                    "users": 18,
+                    "series": "Add Fallout",
+                    "rscMarkId": 5,
+                    "datetime0": "2022-11-12T07:00:00.000Z",
+                    "datetime1": "2022-11-12T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668236400000,
+                    "rscSeriesId": "Add Fallout"
+                },
+                {
+                    "datetime": 1668322800000,
+                    "point": 8,
+                    "value": 108,
+                    "users": 70,
+                    "series": "Add Fallout",
+                    "rscMarkId": 6,
+                    "datetime0": "2022-11-13T07:00:00.000Z",
+                    "datetime1": "2022-11-13T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668322800000,
+                    "rscSeriesId": "Add Fallout"
+                },
+                {
+                    "datetime": 1668409200000,
+                    "point": 12,
+                    "value": 648,
+                    "users": 438,
+                    "series": "Add Fallout",
+                    "rscMarkId": 7,
+                    "datetime0": "2022-11-14T07:00:00.000Z",
+                    "datetime1": "2022-11-14T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668409200000,
+                    "rscSeriesId": "Add Fallout"
+                },
+                {
+                    "datetime": 1667890800000,
+                    "point": 4,
+                    "value": 12208,
+                    "users": 5253,
+                    "series": "Add Freeform table",
+                    "rscMarkId": 8,
+                    "datetime0": "2022-11-08T07:00:00.000Z",
+                    "datetime1": "2022-11-08T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1667890800000,
+                    "rscSeriesId": "Add Freeform table"
+                },
+                {
+                    "datetime": 1667977200000,
+                    "point": 5,
+                    "value": 11309,
+                    "users": 5103,
+                    "series": "Add Freeform table",
+                    "rscMarkId": 9,
+                    "datetime0": "2022-11-09T07:00:00.000Z",
+                    "datetime1": "2022-11-09T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1667977200000,
+                    "rscSeriesId": "Add Freeform table"
+                },
+                {
+                    "datetime": 1668063600000,
+                    "point": 17,
+                    "value": 11099,
+                    "users": 5047,
+                    "series": "Add Freeform table",
+                    "rscMarkId": 10,
+                    "datetime0": "2022-11-10T07:00:00.000Z",
+                    "datetime1": "2022-11-10T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668063600000,
+                    "rscSeriesId": "Add Freeform table"
+                },
+                {
+                    "datetime": 1668150000000,
+                    "point": 20,
+                    "value": 7243,
+                    "users": 3386,
+                    "series": "Add Freeform table",
+                    "rscMarkId": 11,
+                    "datetime0": "2022-11-11T07:00:00.000Z",
+                    "datetime1": "2022-11-11T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668150000000,
+                    "rscSeriesId": "Add Freeform table"
+                },
+                {
+                    "datetime": 1668236400000,
+                    "point": 21,
+                    "value": 395,
+                    "users": 205,
+                    "series": "Add Freeform table",
+                    "rscMarkId": 12,
+                    "datetime0": "2022-11-12T07:00:00.000Z",
+                    "datetime1": "2022-11-12T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668236400000,
+                    "rscSeriesId": "Add Freeform table"
+                },
+                {
+                    "datetime": 1668322800000,
+                    "point": 22,
+                    "value": 1606,
+                    "users": 790,
+                    "series": "Add Freeform table",
+                    "rscMarkId": 13,
+                    "datetime0": "2022-11-13T07:00:00.000Z",
+                    "datetime1": "2022-11-13T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668322800000,
+                    "rscSeriesId": "Add Freeform table"
+                },
+                {
+                    "datetime": 1668409200000,
+                    "point": 25,
+                    "value": 10932,
+                    "users": 4913,
+                    "series": "Add Freeform table",
+                    "rscMarkId": 14,
+                    "datetime0": "2022-11-14T07:00:00.000Z",
+                    "datetime1": "2022-11-14T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668409200000,
+                    "rscSeriesId": "Add Freeform table"
+                },
+                {
+                    "datetime": 1667890800000,
+                    "point": 4,
+                    "value": 1208,
+                    "users": 2253,
+                    "series": "Add Line viz",
+                    "rscMarkId": 15,
+                    "datetime0": "2022-11-08T07:00:00.000Z",
+                    "datetime1": "2022-11-08T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1667890800000,
+                    "rscSeriesId": "Add Line viz"
+                },
+                {
+                    "datetime": 1667977200000,
+                    "point": 5,
+                    "value": 1309,
+                    "users": 1103,
+                    "series": "Add Line viz",
+                    "rscMarkId": 16,
+                    "datetime0": "2022-11-09T07:00:00.000Z",
+                    "datetime1": "2022-11-09T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1667977200000,
+                    "rscSeriesId": "Add Line viz"
+                },
+                {
+                    "datetime": 1668063600000,
+                    "point": 17,
+                    "value": 1699,
+                    "users": 1547,
+                    "series": "Add Line viz",
+                    "rscMarkId": 17,
+                    "datetime0": "2022-11-10T07:00:00.000Z",
+                    "datetime1": "2022-11-10T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668063600000,
+                    "rscSeriesId": "Add Line viz"
+                },
+                {
+                    "datetime": 1668150000000,
+                    "point": 20,
+                    "value": 2743,
+                    "users": 1386,
+                    "series": "Add Line viz",
+                    "rscMarkId": 18,
+                    "datetime0": "2022-11-11T07:00:00.000Z",
+                    "datetime1": "2022-11-11T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668150000000,
+                    "rscSeriesId": "Add Line viz"
+                },
+                {
+                    "datetime": 1668236400000,
+                    "point": 21,
+                    "value": 2350,
+                    "users": 75,
+                    "series": "Add Line viz",
+                    "rscMarkId": 19,
+                    "datetime0": "2022-11-12T07:00:00.000Z",
+                    "datetime1": "2022-11-12T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668236400000,
+                    "rscSeriesId": "Add Line viz"
+                },
+                {
+                    "datetime": 1668322800000,
+                    "point": 22,
+                    "value": 2806,
+                    "users": 270,
+                    "series": "Add Line viz",
+                    "rscMarkId": 20,
+                    "datetime0": "2022-11-13T07:00:00.000Z",
+                    "datetime1": "2022-11-13T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668322800000,
+                    "rscSeriesId": "Add Line viz"
+                },
+                {
+                    "datetime": 1668409200000,
+                    "point": 25,
+                    "value": 1932,
+                    "users": 1413,
+                    "series": "Add Line viz",
+                    "rscMarkId": 21,
+                    "datetime0": "2022-11-14T07:00:00.000Z",
+                    "datetime1": "2022-11-14T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668409200000,
+                    "rscSeriesId": "Add Line viz"
+                },
+                {
+                    "datetime": 1667890800000,
+                    "point": 4,
+                    "value": 208,
+                    "users": 3523,
+                    "series": "Add Bar viz",
+                    "rscMarkId": 22,
+                    "datetime0": "2022-11-08T07:00:00.000Z",
+                    "datetime1": "2022-11-08T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1667890800000,
+                    "rscSeriesId": "Add Bar viz"
+                },
+                {
+                    "datetime": 1667977200000,
+                    "point": 5,
+                    "value": 309,
+                    "users": 3513,
+                    "series": "Add Bar viz",
+                    "rscMarkId": 23,
+                    "datetime0": "2022-11-09T07:00:00.000Z",
+                    "datetime1": "2022-11-09T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1667977200000,
+                    "rscSeriesId": "Add Bar viz"
+                },
+                {
+                    "datetime": 1668063600000,
+                    "point": 17,
+                    "value": 1099,
+                    "users": 3507,
+                    "series": "Add Bar viz",
+                    "rscMarkId": 24,
+                    "datetime0": "2022-11-10T07:00:00.000Z",
+                    "datetime1": "2022-11-10T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668063600000,
+                    "rscSeriesId": "Add Bar viz"
+                },
+                {
+                    "datetime": 1668150000000,
+                    "point": 20,
+                    "value": 1743,
+                    "users": 3336,
+                    "series": "Add Bar viz",
+                    "rscMarkId": 25,
+                    "datetime0": "2022-11-11T07:00:00.000Z",
+                    "datetime1": "2022-11-11T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668150000000,
+                    "rscSeriesId": "Add Bar viz"
+                },
+                {
+                    "datetime": 1668236400000,
+                    "point": 21,
+                    "value": 3350,
+                    "users": 3025,
+                    "series": "Add Bar viz",
+                    "rscMarkId": 26,
+                    "datetime0": "2022-11-12T07:00:00.000Z",
+                    "datetime1": "2022-11-12T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668236400000,
+                    "rscSeriesId": "Add Bar viz"
+                },
+                {
+                    "datetime": 1668322800000,
+                    "point": 22,
+                    "value": 4806,
+                    "users": 3070,
+                    "series": "Add Bar viz",
+                    "rscMarkId": 27,
+                    "datetime0": "2022-11-13T07:00:00.000Z",
+                    "datetime1": "2022-11-13T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668322800000,
+                    "rscSeriesId": "Add Bar viz"
+                },
+                {
+                    "datetime": 1668409200000,
+                    "point": 25,
+                    "value": 6932,
+                    "users": 3493,
+                    "series": "Add Bar viz",
+                    "rscMarkId": 28,
+                    "datetime0": "2022-11-14T07:00:00.000Z",
+                    "datetime1": "2022-11-14T07:00:01.000Z",
+                    "rscDrawInTimeMs": 1668409200000,
+                    "rscSeriesId": "Add Bar viz"
+                }
+            ],
+            "transform": [
+                {
+                    "type": "identifier",
+                    "as": "rscMarkId"
+                },
+                {
+                    "type": "formula",
+                    "expr": "toDate(datum[\"datetime\"])",
+                    "as": "datetime"
+                },
+                {
+                    "type": "timeunit",
+                    "field": "datetime",
+                    "units": [
+                        "year",
+                        "month",
+                        "date",
+                        "hours",
+                        "minutes",
+                        "seconds"
+                    ],
+                    "as": [
+                        "datetime0",
+                        "datetime1"
+                    ]
+                },
+                {
+                    "type": "formula",
+                    "expr": "toNumber(datum.datetime)",
+                    "as": "rscDrawInTimeMs"
+                },
+                {
+                    "type": "formula",
+                    "as": "rscSeriesId",
+                    "expr": "datum.series"
+                }
+            ]
+        },
+        {
+            "name": "filteredTable",
+            "source": "table",
+            "transform": [
+                {
+                    "type": "filter",
+                    "expr": "indexof(hiddenSeries, datum.rscSeriesId) === -1"
+                },
+                {
+                    "type": "window",
+                    "sort": {
+                        "field": "rscDrawInTimeMs",
+                        "order": "ascending"
+                    },
+                    "groupby": [
+                        "rscSeriesId"
+                    ],
+                    "ops": [
+                        "lead",
+                        "lead"
+                    ],
+                    "fields": [
+                        "rscDrawInTimeMs",
+                        "value"
+                    ],
+                    "as": [
+                        "line0_drawInNextDimValue",
+                        "line0_drawInNextMetricValue"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "controlledHighlightedTable",
+            "source": "filteredTable",
+            "transform": [
+                {
+                    "type": "filter",
+                    "expr": "isArray(controlledHighlightedItem) && indexof(controlledHighlightedItem, datum.rscMarkId) > -1"
+                }
+            ]
+        },
+        {
+            "name": "line0_highlightedData",
+            "source": "filteredTable",
+            "transform": [
+                {
+                    "type": "filter",
+                    "expr": "isArray(controlledHighlightedItem) && indexof(controlledHighlightedItem, datum.rscMarkId) > -1 || isValid(line0_hoveredItem) && line0_hoveredItem.rscMarkId === datum.rscMarkId"
+                }
+            ]
+        },
+        {
+            "name": "filteredTableForInspect",
+            "source": "filteredTable"
+        },
+        {
+            "name": "line0_hoverLabelData",
+            "source": "line0_highlightedData",
+            "transform": [
+                {
+                    "type": "joinaggregate",
+                    "fields": [
+                        "value"
+                    ],
+                    "ops": [
+                        "count"
+                    ],
+                    "as": [
+                        "_hover_seriesCount"
+                    ]
+                },
+                {
+                    "type": "window",
+                    "sort": {
+                        "field": [
+                            "value"
+                        ],
+                        "order": [
+                            "descending"
+                        ]
+                    },
+                    "ops": [
+                        "rank"
+                    ],
+                    "as": [
+                        "_hover_metricRank"
+                    ]
+                },
+                {
+                    "type": "formula",
+                    "as": "_hover_scaledY",
+                    "expr": "scale('yLinear', datum[\"value\"])"
+                },
+                {
+                    "type": "formula",
+                    "as": "_hover_adjustedY",
+                    "expr": "datum._hover_scaledY - datum._hover_metricRank * rscChartSizeLabelGap"
+                },
+                {
+                    "type": "window",
+                    "sort": {
+                        "field": [
+                            "_hover_metricRank"
+                        ],
+                        "order": [
+                            "ascending"
+                        ]
+                    },
+                    "frame": [
+                        null,
+                        0
+                    ],
+                    "ops": [
+                        "max"
+                    ],
+                    "fields": [
+                        "_hover_adjustedY"
+                    ],
+                    "as": [
+                        "_hover_cumMaxAdjusted"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "line0_hoverTargetData",
+            "source": "table",
+            "transform": [
+                {
+                    "type": "aggregate",
+                    "groupby": [
+                        "rscSeriesId"
+                    ]
+                },
+                {
+                    "type": "formula",
+                    "as": "hoveredMatch",
+                    "expr": "isValid(line0_hoveredItem) ? (line0_hoveredItem.rscSeriesId === datum.rscSeriesId ? 1 : 0) : null"
+                },
+                {
+                    "type": "formula",
+                    "as": "controlledTableMatch",
+                    "expr": "length(data('controlledHighlightedTable')) ? (indexof(pluck(data('controlledHighlightedTable'), 'rscSeriesId'), datum.rscSeriesId) > -1 ? 1 : 0) : null"
+                },
+                {
+                    "type": "formula",
+                    "as": "controlledSeriesMatch",
+                    "expr": "isValid(controlledHighlightedSeries) ? (controlledHighlightedSeries === datum.rscSeriesId ? 1 : 0) : null"
+                },
+                {
+                    "type": "formula",
+                    "as": "target",
+                    "expr": "isValid(datum.hoveredMatch) ? datum.hoveredMatch : isValid(datum.controlledTableMatch) ? datum.controlledTableMatch : isValid(datum.controlledSeriesMatch) ? datum.controlledSeriesMatch : 0.5"
+                }
+            ]
+        },
+        {
+            "name": "line0_hoverAnimStateData",
+            "values": [
+                {
+                    "rscSeriesId": "Add Fallout",
+                    "startTime": 0,
+                    "startValue": 1,
+                    "target": 1
+                },
+                {
+                    "rscSeriesId": "Add Freeform table",
+                    "startTime": 0,
+                    "startValue": 1,
+                    "target": 1
+                },
+                {
+                    "rscSeriesId": "Add Line viz",
+                    "startTime": 0,
+                    "startValue": 1,
+                    "target": 1
+                },
+                {
+                    "rscSeriesId": "Add Bar viz",
+                    "startTime": 0,
+                    "startValue": 1,
+                    "target": 1
+                }
+            ],
+            "on": [
+                {
+                    "trigger": "line0_hoverTargets",
+                    "modify": "data('line0_hoverAnimStateData')[0]",
+                    "values": "{startTime: line0_hoverTargets[0] !== data('line0_hoverAnimStateData')[0].target ? now() : data('line0_hoverAnimStateData')[0].startTime, startValue: line0_hoverTargets[0] !== data('line0_hoverAnimStateData')[0].target ? ((data('line0_hoverFractionData') || [])[0] || {fraction: 1}).fraction : data('line0_hoverAnimStateData')[0].startValue, target: line0_hoverTargets[0]}"
+                },
+                {
+                    "trigger": "line0_hoverTargets",
+                    "modify": "data('line0_hoverAnimStateData')[1]",
+                    "values": "{startTime: line0_hoverTargets[1] !== data('line0_hoverAnimStateData')[1].target ? now() : data('line0_hoverAnimStateData')[1].startTime, startValue: line0_hoverTargets[1] !== data('line0_hoverAnimStateData')[1].target ? ((data('line0_hoverFractionData') || [])[1] || {fraction: 1}).fraction : data('line0_hoverAnimStateData')[1].startValue, target: line0_hoverTargets[1]}"
+                },
+                {
+                    "trigger": "line0_hoverTargets",
+                    "modify": "data('line0_hoverAnimStateData')[2]",
+                    "values": "{startTime: line0_hoverTargets[2] !== data('line0_hoverAnimStateData')[2].target ? now() : data('line0_hoverAnimStateData')[2].startTime, startValue: line0_hoverTargets[2] !== data('line0_hoverAnimStateData')[2].target ? ((data('line0_hoverFractionData') || [])[2] || {fraction: 1}).fraction : data('line0_hoverAnimStateData')[2].startValue, target: line0_hoverTargets[2]}"
+                },
+                {
+                    "trigger": "line0_hoverTargets",
+                    "modify": "data('line0_hoverAnimStateData')[3]",
+                    "values": "{startTime: line0_hoverTargets[3] !== data('line0_hoverAnimStateData')[3].target ? now() : data('line0_hoverAnimStateData')[3].startTime, startValue: line0_hoverTargets[3] !== data('line0_hoverAnimStateData')[3].target ? ((data('line0_hoverFractionData') || [])[3] || {fraction: 1}).fraction : data('line0_hoverAnimStateData')[3].startValue, target: line0_hoverTargets[3]}"
+                }
+            ]
+        },
+        {
+            "name": "line0_hoverFractionData",
+            "source": "line0_hoverAnimStateData",
+            "transform": [
+                {
+                    "type": "formula",
+                    "as": "fraction",
+                    "expr": "lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((hoverActiveTimer - datum.startTime) / (100 * abs(datum.target - datum.startValue)), 0, 1))"
+                }
+            ]
+        },
+        {
+            "name": "hoverAnimLastChangeData",
+            "values": [
+                {
+                    "lastChange": 0
+                }
+            ],
+            "on": [
+                {
+                    "trigger": "line0_hoverTargets",
+                    "modify": "data('hoverAnimLastChangeData')[0]",
+                    "values": "{lastChange: now()}"
+                }
+            ]
+        },
+        {
+            "name": "line0_drawInPrev",
+            "source": "filteredTable",
+            "transform": [
+                {
+                    "type": "filter",
+                    "expr": "datum.rscDrawInTimeMs <= line0_drawInAnimCutoff"
+                }
+            ]
+        },
+        {
+            "name": "line0_drawInTip",
+            "source": "filteredTable",
+            "transform": [
+                {
+                    "type": "filter",
+                    "expr": "datum.rscDrawInTimeMs <= line0_drawInAnimCutoff && isValid(datum.line0_drawInNextDimValue) && datum.line0_drawInNextDimValue > line0_drawInAnimCutoff"
+                },
+                {
+                    "type": "formula",
+                    "as": "isDrawInTip",
+                    "expr": "true"
+                }
+            ]
+        },
+        {
+            "name": "line0_drawInLerp",
+            "source": [
+                "line0_drawInPrev",
+                "line0_drawInTip"
+            ]
+        },
+        {
+            "name": "legend0Aggregate",
+            "source": "table",
+            "transform": [
+                {
+                    "type": "aggregate",
+                    "groupby": [
+                        "series"
+                    ]
+                },
+                {
+                    "type": "formula",
+                    "as": "legend0Entries",
+                    "expr": "datum.series"
+                }
+            ]
+        },
+        {
+            "name": "legend0_maxLabelWidth",
+            "source": "legend0Aggregate",
+            "transform": [
+                {
+                    "type": "formula",
+                    "as": "displayLabel",
+                    "expr": "indexof(pluck(legend0_labels, 'seriesName'), datum.legend0Entries) > -1 ? legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.legend0Entries)].label : datum.legend0Entries"
+                },
+                {
+                    "type": "formula",
+                    "as": "labelWidth",
+                    "expr": "200"
+                },
+                {
+                    "type": "aggregate",
+                    "fields": [
+                        "labelWidth"
+                    ],
+                    "ops": [
+                        "max"
+                    ],
+                    "as": [
+                        "maxLabelWidth"
+                    ]
+                }
+            ]
+        }
+    ],
+    "background": "transparent",
+    "signals": [
+        {
+            "name": "chartBackgroundColor",
+            "value": "#111111"
+        },
+        {
+            "name": "referenceLineLabelBackgroundStroke",
+            "value": "#111111"
+        },
+        {
+            "name": "colors",
+            "value": [
+                [
+                    "#5424DB"
+                ],
+                [
+                    "#D92361"
+                ],
+                [
+                    "#E86A00"
+                ],
+                [
+                    "#5D89FF"
+                ],
+                [
+                    "#9A47E2"
+                ],
+                [
+                    "#F24CB8"
+                ],
+                [
+                    "#0BA286"
+                ],
+                [
+                    "#9C28AF"
+                ],
+                [
+                    "#036E45"
+                ],
+                [
+                    "#52A119"
+                ],
+                [
+                    "#FF513D"
+                ],
+                [
+                    "#046691"
+                ],
+                [
+                    "#424242"
+                ],
+                [
+                    "#056B74"
+                ],
+                [
+                    "#C67E58"
+                ],
+                [
+                    "#865500"
+                ],
+                [
+                    "#274DEA"
+                ],
+                [
+                    "#056C5C"
+                ],
+                [
+                    "#FF94DB"
+                ],
+                [
+                    "#811B0E"
+                ]
+            ]
+        },
+        {
+            "name": "lineTypes",
+            "value": [
+                [
+                    []
+                ],
+                [
+                    [
+                        7,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        0,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        2,
+                        3,
+                        7,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        11,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        5,
+                        2,
+                        11,
+                        2
+                    ]
+                ]
+            ]
+        },
+        {
+            "name": "opacities",
+            "value": [
+                [
+                    1
+                ]
+            ]
+        },
+        {
+            "name": "hiddenSeries",
+            "value": []
+        },
+        {
+            "name": "controlledHighlightedItem",
+            "value": null
+        },
+        {
+            "name": "highlightedGroup",
+            "value": null
+        },
+        {
+            "name": "controlledHighlightedSeries",
+            "value": null
+        },
+        {
+            "name": "selectedItem",
+            "value": null
+        },
+        {
+            "name": "selectedSeries",
+            "value": null
+        },
+        {
+            "name": "selectedGroup",
+            "value": null
+        },
+        {
+            "name": "rscChartSizeStrokeWidth",
+            
+        },
+        {
+            "name": "rscChartSizeHoverStrokeWidth",
+            
+        },
+        {
+            "name": "rscChartSizePointSize",
+            
+        },
+        {
+            "name": "rscChartSizeFontSize",
+            
+        },
+        {
+            "name": "rscChartSizeLabelGap",
+            
+        },
+        {
+            "name": "hoverTimer",
+            "value": 0,
+            "on": [
+                {
+                    "events": {
+                        "type": "timer",
+                        "throttle": 33
+                    },
+                    "update": "now()"
+                }
+            ]
+        },
+        {
+            "name": "hoverAnimating",
+            "value": false,
+            "update": "(hoverTimer - data('hoverAnimLastChangeData')[0].lastChange) < 133"
+        },
+        {
+            "name": "hoverIdleTicks",
+            "value": 0,
+            "update": "hoverAnimating ? 0 : min(hoverTimer - hoverTimer + hoverIdleTicks + 1, 2)"
+        },
+        {
+            "name": "hoverActiveTimer",
+            "value": 0,
+            "update": "hoverAnimating || hoverIdleTicks <= 1 ? hoverTimer : hoverActiveTimer"
+        },
+        {
+            "name": "line0_hoverTargets",
+            "update": "pluck(data('line0_hoverTargetData'), 'target')"
+        },
+        {
+            "name": "drawInStart",
+            "update": "now()"
+        },
+        {
+            "name": "drawInAnimT",
+            "init": "0",
+            "on": [
+                {
+                    "events": {
+                        "type": "timer",
+                        "throttle": 33
+                    },
+                    "update": "clamp((now() - drawInStart) / 1000, 0, 1)"
+                }
+            ]
+        },
+        {
+            "name": "drawInAnimTEased",
+            "update": "drawInAnimT < 0.5 ? 2 * pow(drawInAnimT, 2) : 1 - pow(-2 * drawInAnimT + 2, 2) / 2"
+        },
+        {
+            "name": "line0_drawInDomainMin",
+            "init": "toNumber(extent(domain('xTime'))[0])"
+        },
+        {
+            "name": "line0_drawInDomainMax",
+            "init": "toNumber(extent(domain('xTime'))[1])"
+        },
+        {
+            "name": "line0_drawInAnimCutoff",
+            "update": "drawInAnimTEased * (line0_drawInDomainMax - line0_drawInDomainMin) + line0_drawInDomainMin"
+        },
+        {
+            "description": "Tracks the hovered item for line0",
+            "name": "line0_hoveredItem",
+            "value": null,
+            "on": [
+                {
+                    "events": "@line0_voronoi:mouseover",
+                    "update": "datum.datum"
+                },
+                {
+                    "events": "@line0_voronoi:mouseout",
+                    "update": "null"
+                }
+            ]
+        },
+        {
+            "name": "legend0_labels",
+            "value": []
+        }
+    ],
+    "scales": [
+        {
+            "name": "color",
+            "type": "ordinal",
+            "range": [
+                "#5424DB",
+                "#D92361",
+                "#E86A00",
+                "#5D89FF",
+                "#9A47E2",
+                "#F24CB8",
+                "#0BA286",
+                "#9C28AF",
+                "#036E45",
+                "#52A119",
+                "#FF513D",
+                "#046691",
+                "#424242",
+                "#056B74",
+                "#C67E58",
+                "#865500",
+                "#274DEA",
+                "#056C5C",
+                "#FF94DB",
+                "#811B0E"
+            ],
+            "domain": {
+                "data": "table",
+                "fields": [
+                    "series"
+                ]
+            }
+        },
+        {
+            "name": "xTime",
+            "type": "time",
+            "range": "width",
+            "domain": {
+                "data": "filteredTable",
+                "fields": [
+                    "datetime0"
+                ]
+            },
+            "padding": 0
+        },
+        {
+            "name": "yLinear",
+            "type": "linear",
+            "range": "height",
+            "domain": {
+                "data": "filteredTable",
+                "fields": [
+                    "value"
+                ]
+            },
+            "nice": true,
+            "zero": true
+        },
+        {
+            "name": "legend0Entries",
+            "type": "ordinal",
+            "domain": {
+                "data": "legend0Aggregate",
+                "field": "legend0Entries"
+            }
+        }
+    ],
+    "marks": [
+        {
+            "name": "line0_group",
+            "type": "group",
+            "from": {
+                "facet": {
+                    "name": "line0_facet",
+                    "data": "line0_drawInLerp",
+                    "groupby": [
+                        "series"
+                    ]
+                }
+            },
+            "marks": [
+                {
+                    "name": "line0",
+                    "description": "line0",
+                    "type": "line",
+                    "from": {
+                        "data": "line0_facet"
+                    },
+                    "interactive": false,
+                    "encode": {
+                        "enter": {
+                            "stroke": {
+                                "scale": "color",
+                                "field": "series"
+                            },
+                            "strokeCap": {
+                                "value": "round"
+                            },
+                            "strokeDash": {
+                                "value": []
+                            },
+                            "strokeOpacity": {
+                                "value": 1
+                            }
+                        },
+                        "update": {
+                            "x": {
+                                "signal": "isValid(datum.isDrawInTip) ? lerp([scale('xTime', datum.datetime0), scale('xTime', datum.line0_drawInNextDimValue)], clamp((line0_drawInAnimCutoff - datum.rscDrawInTimeMs) / (datum.line0_drawInNextDimValue - datum.rscDrawInTimeMs), 0, 1)) : scale('xTime', datum.datetime0)"
+                            },
+                            "y": {
+                                "signal": "isValid(datum.isDrawInTip) ? lerp([scale('yLinear', datum.value), scale('yLinear', datum.line0_drawInNextMetricValue)], clamp((line0_drawInAnimCutoff - datum.rscDrawInTimeMs) / (datum.line0_drawInNextDimValue - datum.rscDrawInTimeMs), 0, 1)) : scale('yLinear', datum.value)"
+                            },
+                            "opacity": {
+                                "signal": "0.2 + (1 - 0.2) * clamp((data('line0_hoverFractionData')[indexof(pluck(data('line0_hoverFractionData'), 'rscSeriesId'), datum.rscSeriesId)] || {fraction: 0.5}).fraction / 0.5, 0, 1)"
+                            },
+                            "strokeWidth": [
+                                {
+                                    "test": "isValid(line0_hoveredItem)",
+                                    "signal": "line0_hoveredItem.rscSeriesId === datum.rscSeriesId ? rscChartSizeHoverStrokeWidth : rscChartSizeStrokeWidth"
+                                },
+                                {
+                                    "test": "length(data('controlledHighlightedTable'))",
+                                    "signal": "indexof(pluck(data('controlledHighlightedTable'), 'rscSeriesId'), datum.rscSeriesId) > -1 ? rscChartSizeHoverStrokeWidth : rscChartSizeStrokeWidth"
+                                },
+                                {
+                                    "test": "isValid(controlledHighlightedSeries)",
+                                    "signal": "controlledHighlightedSeries === datum.rscSeriesId ? rscChartSizeHoverStrokeWidth : rscChartSizeStrokeWidth"
+                                },
+                                {
+                                    "signal": "rscChartSizeStrokeWidth"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "line0_hoverRule",
+            "description": "line0_hoverRule",
+            "type": "rule",
+            "from": {
+                "data": "line0_highlightedData"
+            },
+            "interactive": false,
+            "encode": {
+                "enter": {
+                    "y": {
+                        "value": 0
+                    },
+                    "y2": {
+                        "signal": "height"
+                    },
+                    "strokeWidth": {
+                        "value": 1
+                    }
+                },
+                "update": {
+                    "x": {
+                        "scale": "xTime",
+                        "field": "datetime0"
+                    },
+                    "opacity": {
+                        "signal": "length(data('line0_selectedData')) > 0 ? 0 : 1"
+                    }
+                }
+            }
+        },
+        {
+            "name": "line0_point_highlight",
+            "description": "line0_point_highlight",
+            "type": "symbol",
+            "from": {
+                "data": "line0_highlightedData"
+            },
+            "interactive": false,
+            "encode": {
+                "enter": {
+                    "size": {
+                        "signal": "rscChartSizePointSize"
+                    },
+                    "fill": {
+                        "signal": "chartBackgroundColor"
+                    },
+                    "stroke": {
+                        "scale": "color",
+                        "field": "series"
+                    },
+                    "strokeWidth": {
+                        "signal": "rscChartSizeHoverStrokeWidth"
+                    },
+                    "y": [
+                        {
+                            "scale": "yLinear",
+                            "field": "value"
+                        }
+                    ]
+                },
+                "update": {
+                    "x": {
+                        "scale": "xTime",
+                        "field": "datetime0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "line0_hoverLabelBg",
+            "type": "text",
+            "interactive": false,
+            "from": {
+                "data": "line0_hoverLabelData"
+            },
+            "encode": {
+                "enter": {
+                    "text": {
+                        "signal": "datum[\"value\"]"
+                    },
+                    "fill": {
+                        "value": "transparent"
+                    },
+                    "stroke": {
+                        "signal": "chartBackgroundColor"
+                    },
+                    "strokeWidth": {
+                        "value": 4
+                    },
+                    "fontWeight": {
+                        "value": 700
+                    },
+                    "fontSize": {
+                        "signal": "rscChartSizeFontSize"
+                    }
+                },
+                "update": {
+                    "x": {
+                        "scale": "xTime",
+                        "field": "datetime0"
+                    },
+                    "y": [
+                        {
+                            "scale": "yLinear",
+                            "field": "value",
+                            "offset": {
+                                "signal": "datum._hover_cumMaxAdjusted + datum._hover_metricRank * rscChartSizeLabelGap - datum._hover_scaledY"
+                            }
+                        }
+                    ],
+                    "dx": {
+                        "signal": "scale('xTime', datum['datetime0']) + 200 + 9 > width ? -9 : 9"
+                    },
+                    "align": {
+                        "signal": "scale('xTime', datum['datetime0']) + 200 + 9 > width ? 'right' : 'left'"
+                    },
+                    "baseline": {
+                        "value": "middle"
+                    }
+                }
+            }
+        },
+        {
+            "name": "line0_hoverLabel",
+            "type": "text",
+            "interactive": false,
+            "from": {
+                "data": "line0_hoverLabelData"
+            },
+            "encode": {
+                "enter": {
+                    "text": {
+                        "signal": "datum[\"value\"]"
+                    },
+                    "fill": {
+                        "signal": "scale('color', datum.series)"
+                    },
+                    "fontWeight": {
+                        "value": 700
+                    },
+                    "fontSize": {
+                        "signal": "rscChartSizeFontSize"
+                    }
+                },
+                "update": {
+                    "x": {
+                        "scale": "xTime",
+                        "field": "datetime0"
+                    },
+                    "y": [
+                        {
+                            "scale": "yLinear",
+                            "field": "value",
+                            "offset": {
+                                "signal": "datum._hover_cumMaxAdjusted + datum._hover_metricRank * rscChartSizeLabelGap - datum._hover_scaledY"
+                            }
+                        }
+                    ],
+                    "dx": {
+                        "signal": "scale('xTime', datum['datetime0']) + 200 + 9 > width ? -9 : 9"
+                    },
+                    "align": {
+                        "signal": "scale('xTime', datum['datetime0']) + 200 + 9 > width ? 'right' : 'left'"
+                    },
+                    "baseline": {
+                        "value": "middle"
+                    }
+                }
+            }
+        },
+        {
+            "name": "line0_pointsForVoronoi",
+            "description": "line0_pointsForVoronoi",
+            "type": "symbol",
+            "from": {
+                "data": "filteredTableForInspect"
+            },
+            "interactive": false,
+            "encode": {
+                "enter": {
+                    "y": [
+                        {
+                            "scale": "yLinear",
+                            "field": "value"
+                        }
+                    ],
+                    "fill": {
+                        "value": "transparent"
+                    },
+                    "stroke": {
+                        "value": "transparent"
+                    }
+                },
+                "update": {
+                    "x": {
+                        "scale": "xTime",
+                        "field": "datetime0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "line0_voronoi",
+            "description": "line0_voronoi",
+            "type": "path",
+            "from": {
+                "data": "line0_pointsForVoronoi"
+            },
+            "encode": {
+                "enter": {
+                    "fill": {
+                        "value": "transparent"
+                    },
+                    "stroke": {
+                        "value": "transparent"
+                    },
+                    "isVoronoi": {
+                        "value": true
+                    }
+                },
+                "update": {
+                    "cursor": {
+                        "value": "pointer"
+                    }
+                }
+            },
+            "transform": [
+                {
+                    "type": "voronoi",
+                    "x": "datum.x",
+                    "y": "datum.y",
+                    "size": [
+                        {
+                            "signal": "max(width, 1)"
+                        },
+                        {
+                            "signal": "max(height, 1)"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "xBaseline",
+            "description": "xBaseline",
+            "type": "rule",
+            "interactive": false,
+            "encode": {
+                "update": {
+                    "x": {
+                        "value": 0
+                    },
+                    "x2": {
+                        "signal": "width"
+                    },
+                    "y": {
+                        "scale": "yLinear",
+                        "value": 0
+                    }
+                }
+            }
+        }
+    ],
+    "legends": [
+        {
+            "fill": "legend0Entries",
+            "direction": "horizontal",
+            "orient": "bottom",
+            "encode": {
+                "entries": {
+                    "name": "legend0_legendEntry",
+                    "interactive": true,
+                    "enter": {},
+                    "update": {
+                        "fill": {
+                            "value": "transparent"
+                        }
+                    }
+                },
+                "symbols": {
+                    "enter": {},
+                    "update": {
+                        "fill": [
+                            {
+                                "signal": "scale('color', data('legend0Aggregate')[datum.index].series)"
+                            }
+                        ],
+                        "stroke": [
+                            {
+                                "signal": "scale('color', data('legend0Aggregate')[datum.index].series)"
+                            }
+                        ],
+                        "opacity": [
+                            {
+                                "test": "length(data('line0_hoverFractionData'))",
+                                "signal": "0.2 + (1 - 0.2) * clamp((data('line0_hoverFractionData')[indexof(pluck(data('line0_hoverFractionData'), 'rscSeriesId'), datum.value)] || {fraction: 0.2}).fraction / 0.5, 0, 1)"
+                            },
+                            {
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "labels": {
+                    "update": {
+                        "opacity": [
+                            {
+                                "test": "length(data('line0_hoverFractionData'))",
+                                "signal": "0.2 + (1 - 0.2) * clamp((data('line0_hoverFractionData')[indexof(pluck(data('line0_hoverFractionData'), 'rscSeriesId'), datum.value)] || {fraction: 0.2}).fraction / 0.5, 0, 1)"
+                            },
+                            {
+                                "value": 1
+                            }
+                        ],
+                        "fill": [
+                            {
+                                "value": "#AFAFAF"
+                            }
+                        ]
+                    }
+                }
+            },
+            "columns": {
+                "signal": "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 184, 184) + 36)))"
+            }
+        }
+    ],
+    "axes": [
+        {
+            "scale": "yLinear",
+            "orient": "left",
+            "grid": true,
+            "ticks": false,
+            "tickCount": {
+                "signal": "clamp(ceil(height/100), 2, 10)"
+            },
+            "title": "Users",
+            "labelAngle": 0,
+            "labelFontWeight": "normal",
+            "labels": true,
+            "labelAlign": "right",
+            "labelBaseline": "middle",
+            "encode": {
+                "labels": {
+                    "interactive": false,
+                    "update": {
+                        "text": [
+                            // {
+                            //     "test": "isNumber(datum['value'])",
+                            //     "signal": "formatShortNumber(datum['value'])"
+                            // },
+                            {
+                                "signal": "datum.value"
+                            }
+                        ]
+                    }
+                }
+            },
+            "domain": false,
+            "domainWidth": 2
+        },
+        {
+            "scale": "xTime",
+            "orient": "bottom",
+            "grid": false,
+            "ticks": true,
+            "tickCount": "day",
+            "formatType": "time",
+            "labelAngle": 0,
+            "labelSeparation": 12,
+            "format": "%-d",
+            "labelAlign": "center",
+            "labelBaseline": "top"
+        },
+        {
+            "scale": "xTime",
+            "orient": "bottom",
+            "format": "%b",
+            "tickCount": "day",
+            "formatType": "time",
+            "labelOverlap": "greedy",
+            "labelFontWeight": "normal",
+            "labelAngle": 0,
+            "labelAlign": "center",
+            "labelBaseline": "top",
+            "encode": {
+                "labels": {
+                    "interactive": false,
+                    "enter": {
+                        "dy": {
+                            "value": 28
+                        }
+                    },
+                    "update": {
+                        // "text": {
+                        //     "signal": "formatHorizontalTimeAxisLabels(datum)"
+                        // }
+                    }
+                }
+            }
+        }
+    ]
+}
