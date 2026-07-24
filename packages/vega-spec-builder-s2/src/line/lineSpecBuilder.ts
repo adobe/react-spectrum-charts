@@ -17,6 +17,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
+  DRAW_IN_PREV_DATA,
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -257,7 +258,11 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   }
 
   if (staticPoint || isSparkline) {
-    data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    if (options.isDrawInAnimate){
+      data.push(getLineStaticPointData(name, staticPoint, `${name}_${DRAW_IN_PREV_DATA}`, isSparkline, isMethodLast));
+    } else {
+      data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    }
   }
 
   addDualMetricAxisData(data, options);

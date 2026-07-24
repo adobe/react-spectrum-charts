@@ -11,10 +11,11 @@
  */
 
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics, not React propTypes */
-import { ComponentProps, ReactElement, useMemo } from 'react';
+import { ComponentProps, ReactElement, useMemo, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { DRAW_IN_ANIMATION_DURATION_MS } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../../Chart';
@@ -167,11 +168,79 @@ const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({ seriesPerChart, pointsPe
   );
 };
 
+type ResizeDuringAnimationArgs = ComponentProps<typeof Line> & {
+  seriesPerChart: number;
+  pointsPerSeries: number;
+  animations?: boolean;
+};
+
+/**
+ * Performance stress test — a single resizable chart with draw-in animation enabled. Click "Replay"
+ * then immediately drag the container's resize handle to resize while the line is still drawing in
+ * (draw-in only runs for DRAW_IN_ANIMATION_DURATION_MS after mount), checking that the animated x/y
+ * encoding stays in sync with the container's new dimensions instead of desyncing or jumping.
+ */
+const ResizeDuringAnimationStory: StoryFn<ResizeDuringAnimationArgs> = ({
+  seriesPerChart,
+  pointsPerSeries,
+  animations,
+  ...args
+}): ReactElement => {
+  const [replayKey, setReplayKey] = useState(0);
+  const data = useMemo(
+    () => generateLargeData(seriesPerChart, pointsPerSeries),
+    [seriesPerChart, pointsPerSeries, replayKey]
+  );
+  const chartProps = useChartProps({ data, animations, width: 'auto', height: '100%' });
+
+  return (
+    <div>
+      <button type="button" onClick={() => setReplayKey((key) => key + 1)} style={{ marginBottom: 8 }}>
+        Replay ({DRAW_IN_ANIMATION_DURATION_MS}ms window — start dragging the resize handle right after clicking)
+      </button>
+      <div
+        style={{
+          resize: 'both',
+          overflow: 'auto',
+          width: 700,
+          height: 400,
+          minWidth: 200,
+          minHeight: 200,
+          maxWidth: 1600,
+          maxHeight: 1200,
+          border: '2px solid var(--spectrum-gray-400)',
+          padding: 16,
+        }}
+      >
+        <Chart {...chartProps} key={replayKey}>
+          <Axis position="left" grid title="Value" />
+          <Axis position="bottom" labelFormat="time" baseline ticks />
+          <Line {...args}>
+            <ChartInspect>{dialogContent}</ChartInspect>
+          </Line>
+        </Chart>
+      </div>
+    </div>
+  );
+};
+
 export const Dashboard = bindWithProps(DashboardStory);
 Dashboard.args = { animations: true, chartCount: 20, seriesPerChart: 10, pointsPerSeries: 10 };
 
-export const LargeDataset = bindWithProps(LargeDatasetStory);
-LargeDataset.args = { ...defaultArgs, seriesPerChart: 100, pointsPerSeries: 10 };
-(LargeDataset as unknown as { argTypes: Record<string, { table: { disable: true } }> }).argTypes = {
+export const ManySeriesFewPointsDataset = bindWithProps(LargeDatasetStory);
+ManySeriesFewPointsDataset.args = { ...defaultArgs, seriesPerChart: 100, pointsPerSeries: 10 };
+(ManySeriesFewPointsDataset as unknown as { argTypes: Record<string, { table: { disable: true } }> }).argTypes = {
+  chartCount: { table: { disable: true } },
+};
+
+export const FewSeriesManyPointsDataset = bindWithProps(LargeDatasetStory);
+FewSeriesManyPointsDataset.args = { ...defaultArgs, seriesPerChart: 3, pointsPerSeries: 300 };
+(FewSeriesManyPointsDataset as unknown as { argTypes: Record<string, { table: { disable: true } }> }).argTypes = {
+  chartCount: { table: { disable: true } },
+};
+
+export const ResizeDuringAnimation = bindWithProps(ResizeDuringAnimationStory);
+ResizeDuringAnimation.args = { ...defaultArgs, seriesPerChart: 8, pointsPerSeries: 200, animations: true };
+(ResizeDuringAnimation as unknown as { argTypes: Record<string, { table: { disable: true } }> }).argTypes = {
   chartCount: { table: { disable: true } },
 };
