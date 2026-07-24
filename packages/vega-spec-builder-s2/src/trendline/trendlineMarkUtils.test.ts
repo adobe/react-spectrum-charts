@@ -11,7 +11,13 @@
  */
 import { Facet, From, GroupMark, Mark } from 'vega';
 
-import { COLOR_SCALE, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import {
+  COLOR_SCALE,
+  DEFAULT_TIME_DIMENSION,
+  REFERENCE_LINE_END_CAP_PATH,
+  REFERENCE_LINE_START_CAP_PATH,
+  TRENDLINE_VALUE,
+} from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
 import {
@@ -19,9 +25,11 @@ import {
   getLineYProductionRule,
   getRuleXEncodings,
   getRuleYEncodings,
+  getTrendlineEndCapMark,
   getTrendlineLineMark,
   getTrendlineMarks,
   getTrendlineRuleMark,
+  getTrendlineStartCapMark,
 } from './trendlineMarkUtils';
 import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
 
@@ -33,6 +41,26 @@ describe('getTrendlineMarks()', () => {
     });
     expect(marks).toHaveLength(1);
     expect(marks[0]).toHaveProperty('type', 'rule');
+  });
+  test('should return rule mark and two cap path marks when showEndCaps is true', () => {
+    const marks = getTrendlineMarks({
+      ...defaultLineOptions,
+      trendlines: [{ method: 'average', showEndCaps: true }],
+    });
+    expect(marks).toHaveLength(3);
+    expect(marks[0]).toHaveProperty('type', 'rule');
+    expect(marks[1]).toHaveProperty('type', 'path');
+    expect(marks[1]).toHaveProperty('name', 'line0Trendline0_startCap');
+    expect(marks[2]).toHaveProperty('type', 'path');
+    expect(marks[2]).toHaveProperty('name', 'line0Trendline0_endCap');
+  });
+  test('should not add cap marks for non-aggregate methods even when showEndCaps is true', () => {
+    const marks = getTrendlineMarks({
+      ...defaultLineOptions,
+      trendlines: [{ method: 'linear', showEndCaps: true }],
+    });
+    expect(marks).toHaveLength(1);
+    expect(marks[0]).toHaveProperty('type', 'group');
   });
   test('should return group and line mark for non-aggregate methods', () => {
     const marks = getTrendlineMarks({
@@ -115,6 +143,72 @@ describe('getTrendlineRuleMark()', () => {
       { ...defaultTrendlineOptions, method: 'median' }
     );
     expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);
+  });
+});
+
+describe('getTrendlineStartCapMark()', () => {
+  test('should return a path mark with the start cap path', () => {
+    const mark = getTrendlineStartCapMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'average' });
+    expect(mark.type).toBe('path');
+    expect(mark.name).toBe('line0Trendline0_startCap');
+    expect(mark.encode?.enter).toHaveProperty('path', { value: REFERENCE_LINE_START_CAP_PATH });
+  });
+  test('should use series color if static color is not provided', () => {
+    const mark = getTrendlineStartCapMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'average' });
+    expect(mark.encode?.enter?.fill).toEqual({ field: 'series', scale: COLOR_SCALE });
+  });
+  test('should use static color if provided', () => {
+    const mark = getTrendlineStartCapMark(defaultLineOptions, {
+      ...defaultTrendlineOptions,
+      trendlineColor: { value: 'gray-500' },
+      method: 'average',
+    });
+    expect(mark.encode?.enter?.fill).toEqual({ value: spectrum2Colors.light['gray-500'] });
+  });
+  test('should use TRENDLINE_VALUE for the y encoding', () => {
+    const mark = getTrendlineStartCapMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'average' });
+    expect(mark.encode?.enter?.y).toEqual({ scale: 'yLinear', field: TRENDLINE_VALUE });
+  });
+  test('should use x from getRuleXEncodings for the update x encoding', () => {
+    const mark = getTrendlineStartCapMark(defaultLineOptions, {
+      ...defaultTrendlineOptions,
+      method: 'average',
+      dimensionExtent: [0, 10],
+    });
+    expect(mark.encode?.update?.x).toEqual({ scale: 'xTime', value: 0 });
+  });
+});
+
+describe('getTrendlineEndCapMark()', () => {
+  test('should return a path mark with the end cap path', () => {
+    const mark = getTrendlineEndCapMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'average' });
+    expect(mark.type).toBe('path');
+    expect(mark.name).toBe('line0Trendline0_endCap');
+    expect(mark.encode?.enter).toHaveProperty('path', { value: REFERENCE_LINE_END_CAP_PATH });
+  });
+  test('should use series color if static color is not provided', () => {
+    const mark = getTrendlineEndCapMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'average' });
+    expect(mark.encode?.enter?.fill).toEqual({ field: 'series', scale: COLOR_SCALE });
+  });
+  test('should use static color if provided', () => {
+    const mark = getTrendlineEndCapMark(defaultLineOptions, {
+      ...defaultTrendlineOptions,
+      trendlineColor: { value: 'gray-500' },
+      method: 'average',
+    });
+    expect(mark.encode?.enter?.fill).toEqual({ value: spectrum2Colors.light['gray-500'] });
+  });
+  test('should use TRENDLINE_VALUE for the y encoding', () => {
+    const mark = getTrendlineEndCapMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'average' });
+    expect(mark.encode?.enter?.y).toEqual({ scale: 'yLinear', field: TRENDLINE_VALUE });
+  });
+  test('should use x2 from getRuleXEncodings for the update x encoding', () => {
+    const mark = getTrendlineEndCapMark(defaultLineOptions, {
+      ...defaultTrendlineOptions,
+      method: 'average',
+      dimensionExtent: [0, 10],
+    });
+    expect(mark.encode?.update?.x).toEqual({ scale: 'xTime', value: 10 });
   });
 });
 
