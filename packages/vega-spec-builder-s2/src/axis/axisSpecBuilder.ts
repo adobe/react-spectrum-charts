@@ -181,8 +181,8 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 
     if (!hideDefaultLabels) {
       const matchingBars = getMatchingInteractiveBarDimensionFields(
-        usermeta?.interactiveMarks,
-        getEffectiveScaleField(spec, position, scaleField)
+        getEffectiveScaleField(spec, position, scaleField),
+        usermeta?.interactiveMarks
       );
       spec.signals = addAxisLabelHoverSignalWiring(
         spec.signals ?? [],
@@ -489,7 +489,7 @@ function applyAxisLabelEncodings(
 
   const matchingBarDimensionFields = hideDefaultLabels
     ? []
-    : getMatchingInteractiveBarDimensionFields(interactiveMarks, scaleField);
+    : getMatchingInteractiveBarDimensionFields(scaleField, interactiveMarks);
   const hasMatchingDimensionBar = matchingBarDimensionFields.length > 0;
 
   if (hasMatchingDimensionBar) {

@@ -25,8 +25,8 @@ export const getAxisLabelHoverMarkName = (axisName: string): string => `${axisNa
 
 /** Filters `usermeta.interactiveMarks` to entries matching this axis's dimension field. */
 export const getMatchingInteractiveBarDimensionFields = (
-  interactiveMarks: InteractiveMark[] = [],
-  scaleField: string | undefined
+  scaleField: string | undefined,
+  interactiveMarks: InteractiveMark[] = []
 ): MatchedInteractiveMark[] => {
   if (!scaleField) return [];
   return interactiveMarks.filter(

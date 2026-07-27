@@ -40,28 +40,28 @@ describe('getAxisLabelHoverMarkName()', () => {
 describe('getMatchingInteractiveBarDimensionFields()', () => {
   test('matches an interactive bar whose usermeta dimension matches scaleField', () => {
     const interactiveMarks: InteractiveMark[] = [{ name: 'bar0', dimension: 'category' }];
-    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, 'category')).toStrictEqual([
+    expect(getMatchingInteractiveBarDimensionFields('category', interactiveMarks)).toStrictEqual([
       { name: 'bar0', dimension: 'category' },
     ]);
   });
 
   test('does not match when the interactive mark dimension is for a different field', () => {
     const interactiveMarks: InteractiveMark[] = [{ name: 'bar0', dimension: 'category' }];
-    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, 'otherField')).toStrictEqual([]);
+    expect(getMatchingInteractiveBarDimensionFields('otherField', interactiveMarks)).toStrictEqual([]);
   });
 
   test('does not match an interactive mark with no dimension (e.g. a non-bar mark, or a non-interactive bar)', () => {
     const interactiveMarks: InteractiveMark[] = [{ name: 'bar0' }];
-    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, 'category')).toStrictEqual([]);
+    expect(getMatchingInteractiveBarDimensionFields('category', interactiveMarks)).toStrictEqual([]);
   });
 
   test('returns an empty list when scaleField is undefined', () => {
     const interactiveMarks: InteractiveMark[] = [{ name: 'bar0', dimension: 'category' }];
-    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, undefined)).toStrictEqual([]);
+    expect(getMatchingInteractiveBarDimensionFields(undefined, interactiveMarks)).toStrictEqual([]);
   });
 
   test('returns an empty list when interactiveMarks is undefined', () => {
-    expect(getMatchingInteractiveBarDimensionFields(undefined, 'category')).toStrictEqual([]);
+    expect(getMatchingInteractiveBarDimensionFields('category', undefined)).toStrictEqual([]);
   });
 
   test('matches multiple interactive bars sharing a dimension (e.g. a combo chart)', () => {
@@ -69,7 +69,7 @@ describe('getMatchingInteractiveBarDimensionFields()', () => {
       { name: 'bar0', dimension: 'category' },
       { name: 'bar1', dimension: 'category' },
     ];
-    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, 'category')).toStrictEqual([
+    expect(getMatchingInteractiveBarDimensionFields('category', interactiveMarks)).toStrictEqual([
       { name: 'bar0', dimension: 'category' },
       { name: 'bar1', dimension: 'category' },
     ]);
