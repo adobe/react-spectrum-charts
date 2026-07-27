@@ -254,6 +254,16 @@ TruncateLabels.args = {
   title: 'Browser',
 };
 
+const OnClick = bindWithProps(SubLabelStory);
+OnClick.args = {
+  position: 'bottom',
+  baseline: true,
+  title: 'Browser',
+  onClick: (value, index) => {
+    console.log('axis label clicked:', value, index);
+  },
+};
+
 const TickMinStep = bindWithProps(LinearAxisStory);
 TickMinStep.args = {
   position: 'bottom',
@@ -394,6 +404,7 @@ export {
   MultilineTitle,
   NonLinearAxis,
   NumberFormat,
+  OnClick,
   SecondGranularity,
   SecondGranularityLine,
   SubLabels,

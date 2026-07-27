@@ -20,6 +20,7 @@ import {
   getItemBounds,
   getItemName,
   getLegendItemValue,
+  getOnAxisLabelClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
   handleLegendItemClick,
@@ -517,5 +518,93 @@ describe('getOnChartMarkContextMenuCallback()', () => {
       const [, datum] = onContextMenu.mock.calls[0];
       expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
     });
+  });
+});
+
+describe('getOnAxisLabelClickCallback()', () => {
+  const fakeClickEvent = { type: 'click' } as Parameters<ReturnType<typeof getOnAxisLabelClickCallback>>[0];
+
+  // mimics Vega's tick datum shape - index is a fraction (i / (tickCount - 1)), not a position
+  const getAxisLabelItem = (value: string, normalizedIndex: number, markItemCount = 5) =>
+    ({
+      datum: { value, index: normalizedIndex },
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      mark: {
+        role: 'axis-label',
+        name: 'axis0_labelHover',
+        marktype: 'text',
+        group: { x: 0, y: 0 },
+        items: new Array(markItemCount).fill(null),
+      },
+    } as unknown as Item);
+
+  test('calls onClick with the label value and the recovered integer index', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    // 3rd of 5 ticks -> recovered index 2
+    callback(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onClick).toHaveBeenCalledWith('Safari', 2);
+  });
+
+  test('recovers index 0 and the last index correctly', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    callback(fakeClickEvent, getAxisLabelItem('Chrome', 0));
+    callback(fakeClickEvent, getAxisLabelItem('Explorer', 1));
+    expect(onClick).toHaveBeenNthCalledWith(1, 'Chrome', 0);
+    expect(onClick).toHaveBeenNthCalledWith(2, 'Explorer', 4);
+  });
+
+  test('does not call onClick when the item is not an axis-label mark', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    const nonAxisLabelItem = {
+      datum: { value: 'Safari', index: 0.5 },
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      mark: { role: 'mark', name: 'axis0_labelHover', marktype: 'text', group: { x: 0, y: 0 }, items: [] },
+    } as unknown as Item;
+    callback(fakeClickEvent, nonAxisLabelItem);
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('does not call onClick when no detail matches the mark name', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis1', onClick }]);
+    callback(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('does not call onClick when axisLabelOnClickDetails is empty or undefined', () => {
+    const onClick = jest.fn();
+    getOnAxisLabelClickCallback([])(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
+    getOnAxisLabelClickCallback(undefined)(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('does not throw when item is null', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    expect(() => callback(fakeClickEvent, null as unknown as ActionItem)).not.toThrow();
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('does not call onClick for the synthetic "extra" boundary tick on binned domains', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    // Vega's extra boundary tick: index -1, no top-level value
+    const extraTickItem = {
+      datum: { index: -1, extra: { value: 'Chrome' }, label: '' },
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      mark: {
+        role: 'axis-label',
+        name: 'axis0_labelHover',
+        marktype: 'text',
+        group: { x: 0, y: 0 },
+        items: new Array(5).fill(null),
+      },
+    } as unknown as Item;
+    callback(fakeClickEvent, extraTickItem);
+    expect(onClick).not.toHaveBeenCalled();
   });
 });

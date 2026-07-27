@@ -36,6 +36,7 @@ import {
   addAxisAnnotationSignals,
   getAxisAnnotationsFromChildren,
 } from '../axisAnnotation/axisAnnotationUtils';
+import { getCursor } from '../marks/markUtils';
 import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import {
@@ -52,7 +53,7 @@ import {
 import {
   addAxisLabelHoverSignalWiring,
   getAxisLabelDimensionFillOpacity,
-  getAxisLabelHoverMarkName,
+  getAxisLabelMarkName,
   getMatchingInteractiveBarDimensionFields,
 } from './axisLabelHoverUtils';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
@@ -88,6 +89,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
       colorScheme = DEFAULT_COLOR_SCHEME,
       granularity = DEFAULT_GRANULARITY,
       grid = false,
+      hasOnClick = false,
       hideDefaultLabels = false,
       index = 0,
       labelAlign = DEFAULT_LABEL_ALIGN,
@@ -122,6 +124,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
       colorScheme,
       granularity,
       grid,
+      hasOnClick,
       hideDefaultLabels,
       index,
       labelAlign,
@@ -187,7 +190,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
       spec.signals = addAxisLabelHoverSignalWiring(
         spec.signals ?? [],
         matchingBars,
-        getAxisLabelHoverMarkName(axisOptions.name)
+        getAxisLabelMarkName(axisOptions.name)
       );
     }
 
@@ -485,20 +488,25 @@ function applyAxisLabelEncodings(
   interactiveMarks: InteractiveMark[] | undefined,
   scaleField?: string
 ): void {
-  const { hideDefaultLabels, labelAlign, labelFontWeight, labelOrientation, name, position, hasTooltip } = axisOptions;
+  const { hasOnClick, hideDefaultLabels, labelAlign, labelFontWeight, labelOrientation, name, position, hasTooltip } =
+    axisOptions;
 
   const matchingBarDimensionFields = hideDefaultLabels
     ? []
     : getMatchingInteractiveBarDimensionFields(scaleField, interactiveMarks);
   const hasMatchingDimensionBar = matchingBarDimensionFields.length > 0;
+  // independent of the bar-dimension-hover match; mirrors hideDefaultLabels gating above
+  const isClickable = hasOnClick && !hideDefaultLabels;
+  const cursor = getCursor([], isClickable);
 
-  if (hasMatchingDimensionBar) {
+  if (hasMatchingDimensionBar || isClickable) {
     axis.encode = deepmerge(axis.encode ?? {}, {
       labels: {
-        name: getAxisLabelHoverMarkName(name),
+        name: getAxisLabelMarkName(name),
         interactive: true,
         update: {
-          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields),
+          ...(hasMatchingDimensionBar && { fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields) }),
+          ...(cursor && { cursor }),
         },
       },
     });
@@ -517,13 +525,14 @@ function applyAxisLabelEncodings(
 
   axis.encode = {
     labels: {
-      name: getAxisLabelHoverMarkName(name),
-      interactive: hasTooltip || hasMatchingDimensionBar,
+      name: getAxisLabelMarkName(name),
+      interactive: hasTooltip || hasMatchingDimensionBar || isClickable,
       ...encodingWithOptionalTooltip,
-      ...(hasMatchingDimensionBar && {
+      ...((hasMatchingDimensionBar || cursor) && {
         update: {
           ...encodingWithOptionalTooltip.update,
-          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields),
+          ...(hasMatchingDimensionBar && { fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields) }),
+          ...(cursor && { cursor }),
         },
       }),
     },
