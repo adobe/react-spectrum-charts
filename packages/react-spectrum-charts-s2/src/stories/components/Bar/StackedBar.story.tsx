@@ -151,6 +151,12 @@ InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
+// Hovering an axis label highlights the matching stack, same as hovering the stack itself.
+const AxisLabelHighlight = bindWithProps(StackedBarPopoverStory);
+AxisLabelHighlight.args = {
+  ...defaultProps,
+};
+
 export {
   Basic,
   NegativeStack,
@@ -158,5 +164,6 @@ export {
   Popover,
   StackedBarWithUTCDatetimeFormat,
   InspectOnDimensionArea,
+  AxisLabelHighlight,
   WithBarLabels,
 };

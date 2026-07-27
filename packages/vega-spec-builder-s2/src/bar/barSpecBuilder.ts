@@ -31,13 +31,9 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
-import {
-  addInspectData,
-  addInspectSignals,
-  hasInspectWithDimensionAreaTarget,
-} from '../chartInspect/chartInspectUtils';
+import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
-import { getInteractiveMarkName } from '../marks/markUtils';
+import { getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import {
   addDomainFields,
   addFieldToFacetScaleDomain,
@@ -151,7 +147,12 @@ export const addBar = produce<
       chartOrientation: barOptions.orientation,
     };
 
-    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, barOptions.interactiveMarkName);
+    // dimension is gated by isInteractive(), not interactiveMarkName (broader, e.g. highlightedItem-only bars)
+    spec.usermeta = addUserMetaInteractiveMark(
+      spec.usermeta,
+      barOptions.interactiveMarkName,
+      isInteractive(barOptions) ? barOptions.dimension : undefined
+    );
 
     spec.data = addData(spec.data ?? [], barOptions);
     spec.signals = addSignals(spec.signals ?? [], barOptions);
@@ -183,7 +184,8 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     return;
   }
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
-  if (hasInspectWithDimensionAreaTarget(chartInspects)) {
+  // gated by isInteractive() to match the rect mark and opacity rule that consume this signal
+  if (isInteractive(options)) {
     addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
   }
   addInspectSignals(signals, options);

@@ -38,7 +38,23 @@ import {
 } from '../axisAnnotation/axisAnnotationUtils';
 import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
-import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
+import {
+  AxisOptions,
+  AxisSpecOptions,
+  ColorScheme,
+  InteractiveMark,
+  Label,
+  Orientation,
+  Position,
+  ScSpec,
+  UserMeta,
+} from '../types';
+import {
+  addAxisLabelHoverSignalWiring,
+  getAxisLabelDimensionFillOpacity,
+  getAxisLabelHoverMarkName,
+  getMatchingInteractiveBarDimensionFields,
+} from './axisLabelHoverUtils';
 import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
 import { getReferenceLineMarks, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import {
@@ -144,6 +160,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     spec.axes = addAxes(spec.axes ?? [], {
       ...axisOptions,
       scaleName,
+      scaleField,
       opposingScaleType,
       usermeta,
 
@@ -162,9 +179,37 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
       dualMetricAxis,
     });
 
+    if (!hideDefaultLabels) {
+      const matchingBars = getMatchingInteractiveBarDimensionFields(
+        getEffectiveScaleField(spec, position, scaleField),
+        usermeta?.interactiveMarks
+      );
+      spec.signals = addAxisLabelHoverSignalWiring(
+        spec.signals ?? [],
+        matchingBars,
+        getAxisLabelHoverMarkName(axisOptions.name)
+      );
+    }
+
     return spec;
   }
 );
+
+/**
+ * For a trellised chart, resolves the trellis group's inner per-panel scale field (distinct from
+ * the outer trellis/facet field) when this axis's orientation matches the trellis orientation.
+ */
+function getEffectiveScaleField(spec: ScSpec, position: Position, scaleField?: string): string | undefined {
+  const trellisGroupMark = spec.marks?.find((mark) => mark.name?.includes('Trellis')) as GroupMark | undefined;
+  if (!trellisGroupMark) return scaleField;
+
+  const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
+  const axisOrientation = position === 'bottom' || position === 'top' ? 'horizontal' : 'vertical';
+  if (trellisOrientation !== axisOrientation) return scaleField;
+
+  const scale = getScale(trellisGroupMark.scales ?? [], position);
+  return getScaleField(scale);
+}
 
 export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }]>((data, options) => {
   const axisAnnotations = getAxisAnnotationsFromChildren(options);
@@ -353,94 +398,23 @@ export const addAxes = produce<
   [
     AxisSpecOptions & {
       scaleName: string;
+      scaleField?: string;
       opposingScaleType?: string;
       dualMetricAxis?: boolean;
       usermeta: UserMeta;
     }
   ]
->((axes, { scaleName, opposingScaleType, dualMetricAxis, ...axisOptions }) => {
+>((axes, { scaleName, scaleField, opposingScaleType, dualMetricAxis, ...axisOptions }) => {
   const newAxes: Axis[] = [];
   // adds all the trellis axis options if this is a trellis axis
   axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
-  const {
-    baseline,
-    colorScheme,
-    usermeta,
-    labelAlign,
-    labelFontWeight,
-    labelFormat,
-    labelOrientation,
-    name,
-    position,
-    hasTooltip,
-  } = axisOptions;
+  const { baseline, labelFormat, position } = axisOptions;
 
   if (labelFormat === 'time') {
     // time axis actually needs two axes. A primary and secondary.
     newAxes.push(...getTimeAxes(scaleName, axisOptions));
   } else {
-    const axis = getDefaultAxis(axisOptions, scaleName);
-    // if labels exist, add them to the axis
-    if (axisOptions.labels.length) {
-      const labels = axisOptions.labels;
-      const signalName = `${name}_labels`;
-      axis.values = labels.map((label) => getLabelValue(label));
-      const baseEncoding = getAxisLabelsEncoding(
-        labelAlign,
-        labelFontWeight,
-        'label',
-        labelOrientation,
-        position,
-        signalName
-      );
-      const encodingWithOptionalTooltip = hasTooltip
-        ? {
-            ...baseEncoding,
-            update: {
-              ...baseEncoding.update,
-              tooltip: { signal: 'datum.value' },
-            },
-          }
-        : baseEncoding;
-      axis.encode = {
-        labels: {
-          interactive: hasTooltip,
-          ...encodingWithOptionalTooltip,
-        },
-      };
-    }
-
-    // if sublabels exist, create a new axis for the sub labels
-    if (hasSubLabels(axisOptions)) {
-      axis.titlePadding = 24;
-
-      // add sublabel axis
-      const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
-
-      handleDualMetricAxisConfig({
-        dualMetricAxis,
-        axis: subLabelAxis,
-        usermeta,
-        scaleName,
-        colorScheme,
-        position,
-        incrementMetricAxisCount: false,
-      });
-
-      newAxes.push(subLabelAxis);
-    }
-
-    handleDualMetricAxisConfig({
-      dualMetricAxis,
-      axis,
-      usermeta,
-      scaleName,
-      colorScheme,
-      position,
-      incrementMetricAxisCount: true,
-    });
-
-    newAxes.unshift(axis);
+    buildStandardAxes(newAxes, axisOptions, scaleName, scaleField, dualMetricAxis);
   }
 
   // add baseline
@@ -448,26 +422,7 @@ export const addAxes = produce<
     newAxes[0] = setAxisBaseline(newAxes[0], baseline);
   }
 
-  if (scaleTypeSupportsThumbnails(axisOptions.scaleType)) {
-    for (const axisThumbnail of getAxisThumbnails(axisOptions)) {
-      const encodings: AxisEncode = {
-        labels: {
-          update: {
-            ...getAxisThumbnailLabelOffset(axisThumbnail.name, position),
-          },
-        },
-      };
-
-      // apply encodings to all axes
-      for (const axis of newAxes) {
-        if (axis.encode) {
-          axis.encode = deepmerge(axis.encode, encodings);
-        } else {
-          axis.encode = encodings;
-        }
-      }
-    }
-  }
+  applyAxisThumbnailEncodings(newAxes, axisOptions, position);
 
   const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
   for (const axisAnnotation of axisAnnotations) {
@@ -476,6 +431,124 @@ export const addAxes = produce<
 
   axes.push(...newAxes);
 });
+
+/** Split out of `addAxes` to keep cognitive complexity down. */
+function buildStandardAxes(
+  newAxes: Axis[],
+  axisOptions: AxisSpecOptions & { usermeta: UserMeta },
+  scaleName: string,
+  scaleField?: string,
+  dualMetricAxis?: boolean
+): void {
+  const { colorScheme, position, usermeta } = axisOptions;
+  const axis = getDefaultAxis(axisOptions, scaleName);
+
+  applyAxisLabelEncodings(axis, axisOptions, usermeta?.interactiveMarks, scaleField);
+
+  // if sublabels exist, create a new axis for the sub labels
+  if (hasSubLabels(axisOptions)) {
+    axis.titlePadding = 24;
+
+    // add sublabel axis
+    const subLabelAxis = getSubLabelAxis(axisOptions, scaleName);
+
+    handleDualMetricAxisConfig({
+      dualMetricAxis,
+      axis: subLabelAxis,
+      usermeta,
+      scaleName,
+      colorScheme,
+      position,
+      incrementMetricAxisCount: false,
+    });
+
+    newAxes.push(subLabelAxis);
+  }
+
+  handleDualMetricAxisConfig({
+    dualMetricAxis,
+    axis,
+    usermeta,
+    scaleName,
+    colorScheme,
+    position,
+    incrementMetricAxisCount: true,
+  });
+
+  newAxes.unshift(axis);
+}
+
+/** Applies to both default and custom `labels` axes. Split out of `addAxes` for cognitive complexity. */
+function applyAxisLabelEncodings(
+  axis: Axis,
+  axisOptions: AxisSpecOptions,
+  interactiveMarks: InteractiveMark[] | undefined,
+  scaleField?: string
+): void {
+  const { hideDefaultLabels, labelAlign, labelFontWeight, labelOrientation, name, position, hasTooltip } = axisOptions;
+
+  const matchingBarDimensionFields = hideDefaultLabels
+    ? []
+    : getMatchingInteractiveBarDimensionFields(scaleField, interactiveMarks);
+  const hasMatchingDimensionBar = matchingBarDimensionFields.length > 0;
+
+  if (hasMatchingDimensionBar) {
+    axis.encode = deepmerge(axis.encode ?? {}, {
+      labels: {
+        name: getAxisLabelHoverMarkName(name),
+        interactive: true,
+        update: {
+          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields),
+        },
+      },
+    });
+  }
+
+  // if labels exist, add them to the axis
+  if (!axisOptions.labels.length) return;
+
+  const labels = axisOptions.labels;
+  const signalName = `${name}_labels`;
+  axis.values = labels.map((label) => getLabelValue(label));
+  const baseEncoding = getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', labelOrientation, position, signalName);
+  const encodingWithOptionalTooltip = hasTooltip
+    ? { ...baseEncoding, update: { ...baseEncoding.update, tooltip: { signal: 'datum.value' } } }
+    : baseEncoding;
+
+  axis.encode = {
+    labels: {
+      name: getAxisLabelHoverMarkName(name),
+      interactive: hasTooltip || hasMatchingDimensionBar,
+      ...encodingWithOptionalTooltip,
+      ...(hasMatchingDimensionBar && {
+        update: {
+          ...encodingWithOptionalTooltip.update,
+          fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields),
+        },
+      }),
+    },
+  };
+}
+
+/** Split out of `addAxes` to keep cognitive complexity down. */
+function applyAxisThumbnailEncodings(newAxes: Axis[], axisOptions: AxisSpecOptions, position: Position): void {
+  if (!scaleTypeSupportsThumbnails(axisOptions.scaleType)) return;
+
+  for (const axisThumbnail of getAxisThumbnails(axisOptions)) {
+    const encodings: AxisEncode = {
+      labels: {
+        update: {
+          ...getAxisThumbnailLabelOffset(axisThumbnail.name, position),
+        },
+      },
+    };
+
+    // apply encodings to all axes
+    for (const axis of newAxes) {
+      axis.encode = axis.encode ? deepmerge(axis.encode, encodings) : encodings;
+    }
+  }
+}
 
 /**
  * Adds dual metric axis configuration to the axis
@@ -507,7 +580,7 @@ const handleDualMetricAxisConfig = ({
       axis,
       usermeta.metricAxisCount === 0,
       scaleName,
-      usermeta.interactiveMarks ?? [],
+      (usermeta.interactiveMarks ?? []).map((mark) => mark.name),
       colorScheme
     );
     if (incrementMetricAxisCount) {
@@ -529,7 +602,8 @@ export const addAxesMarks = produce<
     }
   ]
 >((marks, options) => {
-  const { baseline, baselineOffset, opposingScaleType, position, scaleField, scaleName, scaleType, usermeta } = options;
+  const { baseline, baselineOffset, opposingScaleType, position, scaleField, scaleName, scaleType, usermeta } =
+    options;
 
   // only add reference lines to linear or time scales
   if (scaleTypeSupportsReferenceLines(scaleType)) {
@@ -544,7 +618,7 @@ export const addAxesMarks = produce<
   }
 
   if (isTrellised) {
-    addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta);
+    addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta, scaleField);
   }
 
   for (const axisAnnotation of getAxisAnnotationsFromChildren(options)) {
@@ -578,7 +652,8 @@ function addAxesToTrellisGroup(
   options: AxisSpecOptions,
   trellisGroupMark: GroupMark,
   scaleName: string,
-  usermeta: UserMeta
+  usermeta: UserMeta,
+  scaleField?: string
 ) {
   const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
   const axisOrientation = options.position === 'bottom' || options.position === 'top' ? 'horizontal' : 'vertical';
@@ -593,6 +668,8 @@ function addAxesToTrellisGroup(
     const scale = getScale(trellisGroupMark.scales ?? [], options.position);
     scaleName = scale.name;
     scaleType = scale.type ?? 'linear';
+    // the trellis group's inner scale has its own field, distinct from the outer trellis/facet field.
+    scaleField = getScaleField(scale);
   } else {
     // if the axis is not the same orientation as the trellis, then we don't display the title
     // because it will be displayed on the root axis at the spec level
@@ -603,6 +680,7 @@ function addAxesToTrellisGroup(
     ...options,
     hideDefaultLabels,
     scaleName,
+    scaleField,
     scaleType,
     dualMetricAxis: false, // trellis axes don't support dualMetricAxis scaling
     usermeta,

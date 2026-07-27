@@ -211,6 +211,12 @@ InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
+// Hovering an axis label highlights the matching bar, same as hovering the bar itself.
+const AxisLabelHighlight = bindWithProps(BarWithInspectStory);
+AxisLabelHighlight.args = {
+  ...defaultProps,
+};
+
 export {
   BarWithUTCDatetimeFormat,
   Basic,
@@ -222,5 +228,6 @@ export {
   Opacity,
   PaddingRatio,
   InspectOnDimensionArea,
+  AxisLabelHighlight,
   WithInspect,
 };

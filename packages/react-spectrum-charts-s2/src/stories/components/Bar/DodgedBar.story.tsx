@@ -151,4 +151,21 @@ InspectOnDimensionArea.args = {
   color: 'operatingSystem',
 };
 
-export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, OnClick, Opacity, Popover, InspectOnDimensionArea };
+// Hovering an axis label highlights the matching dodged group, same as hovering the group itself.
+const AxisLabelHighlight = bindWithProps(DodgedBarPopoverStory);
+AxisLabelHighlight.args = {
+  ...defaultProps,
+  color: 'operatingSystem',
+};
+
+export {
+  Color,
+  DodgedStacked,
+  DodgedStackedWithLabels,
+  LineType,
+  OnClick,
+  Opacity,
+  Popover,
+  InspectOnDimensionArea,
+  AxisLabelHighlight,
+};

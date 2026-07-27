@@ -13,7 +13,6 @@ import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/constants';
 
-import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
@@ -35,7 +34,7 @@ import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
   const marks: Mark[] = [];
 
-  if (hasInspectWithDimensionAreaTarget(options.chartInspects)) {
+  if (isInteractive(options)) {
     marks.push(getBarDimensionHoverArea(options, 'stacked'));
   }
 

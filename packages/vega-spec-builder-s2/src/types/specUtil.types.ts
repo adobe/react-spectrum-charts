@@ -37,9 +37,14 @@ export interface ScSpec extends Spec {
   usermeta: UserMeta;
 }
 
+export type InteractiveMark = {
+  name: string;
+  dimension?: string;
+};
+
 export type UserMeta = {
   animatedMarks?: string[];
-  interactiveMarks?: string[];
+  interactiveMarks?: InteractiveMark[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];

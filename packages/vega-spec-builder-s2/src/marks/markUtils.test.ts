@@ -291,14 +291,15 @@ describe('getMarkOpacity()', () => {
     expect(getMarkOpacity(defaultBarOptions)).toStrictEqual([DEFAULT_OPACITY_RULE]);
   });
   test('Inspect child, should return tests for hover and default to opacity', () => {
+    // defaultBarOptions has a `dimension`, so a dimension-hover-area rule is now always spliced in too
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartInspects: [{}] });
-    expect(opacity).toHaveLength(3);
+    expect(opacity).toHaveLength(4);
     expect(opacity[0].test).toContain(HOVERED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
   });
   test('Popover child, should return tests for hover and select and default to opacity', () => {
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartPopovers: [{}] });
-    expect(opacity).toHaveLength(5);
+    expect(opacity).toHaveLength(6);
     expect(opacity[0].test).toEqual(`isValid(${SELECTED_ITEM})`);
     expect(opacity[1].test).toEqual(`isValid(${SELECTED_GROUP})`);
 
