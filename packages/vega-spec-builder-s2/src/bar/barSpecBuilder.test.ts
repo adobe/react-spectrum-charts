@@ -267,6 +267,25 @@ describe('barSpecBuilder', () => {
           addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', orientation: 'horizontal' }).usermeta
         ).toHaveProperty('chartOrientation', 'horizontal');
       });
+
+      test('should attach the dimension to the interactive mark entry when the bar is interactive', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartPopovers: [{}],
+        }).usermeta;
+        expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION }]);
+      });
+
+      test('should not attach a dimension for a bar that is only interactive via highlightedItem', () => {
+        // highlightedItem alone isn't "interactive" per isInteractive()
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          highlightedItem: 'someValue',
+        }).usermeta;
+        expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: undefined }]);
+      });
     });
   });
 
@@ -504,10 +523,7 @@ describe('barSpecBuilder', () => {
       });
 
       test('should not add dimension hover area signal for a bar that is only interactive via barAnnotations', () => {
-        // barAnnotations alone isn't "interactive" per isInteractive() - the dimension hover area
-        // signal must stay in sync with that check, since it's what gates the rect mark
-        // (stackedBarUtils.ts/dodgedBarUtils.ts) and opacity rule (chartInspectUtils.ts) that
-        // consume this exact signal.
+        // barAnnotations alone isn't "interactive" per isInteractive()
         const signals = addSignals(defaultSignals, {
           ...defaultBarOptions,
           barAnnotations: [{ textKey: 'textLabel' }],

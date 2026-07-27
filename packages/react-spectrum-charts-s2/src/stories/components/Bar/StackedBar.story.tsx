@@ -151,9 +151,7 @@ InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
-// Hovering an axis label highlights the entire stack sharing that dimension value, the same way
-// hovering the stack itself does. This only requires the bar to already be interactive (e.g. via
-// ChartPopover below) — no ChartInspect dimensionArea target needed.
+// Hovering an axis label highlights the matching stack, same as hovering the stack itself.
 const AxisLabelHighlight = bindWithProps(StackedBarPopoverStory);
 AxisLabelHighlight.args = {
   ...defaultProps,

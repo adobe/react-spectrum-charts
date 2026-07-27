@@ -211,7 +211,15 @@ describe('getChartConfig()', () => {
 
 describe('addUserMetaInteractiveMark()', () => {
   test('should add the interactive mark to the user meta', () => {
-    expect(addUserMetaInteractiveMark({ interactiveMarks: [] }, 'line0')).toEqual({ interactiveMarks: ['line0'] });
+    expect(addUserMetaInteractiveMark({ interactiveMarks: [] }, 'line0')).toEqual({
+      interactiveMarks: [{ name: 'line0', dimension: undefined }],
+    });
+  });
+
+  test('should attach a dimension when provided (e.g. for an interactive bar)', () => {
+    expect(addUserMetaInteractiveMark({ interactiveMarks: [] }, 'bar0', 'category')).toEqual({
+      interactiveMarks: [{ name: 'bar0', dimension: 'category' }],
+    });
   });
 });
 

@@ -313,14 +313,17 @@ export function getChartConfig(config: Config | undefined, colorScheme: ColorSch
  * Adds an interactive mark to the user meta
  * @param usermeta
  * @param interactiveMarkName
+ * @param dimension the mark's dimension field, if it needs to be discoverable by other builders
  * @returns
  */
-export const addUserMetaInteractiveMark = produce<UserMeta, [string?]>((usermeta, interactiveMarkName) => {
-  usermeta.interactiveMarks = [
-    ...(usermeta.interactiveMarks ?? []),
-    ...(interactiveMarkName ? [interactiveMarkName] : []),
-  ];
-});
+export const addUserMetaInteractiveMark = produce<UserMeta, [string?, string?]>(
+  (usermeta, interactiveMarkName, dimension) => {
+    usermeta.interactiveMarks = [
+      ...(usermeta.interactiveMarks ?? []),
+      ...(interactiveMarkName ? [{ name: interactiveMarkName, dimension }] : []),
+    ];
+  }
+);
 
 export const addUserMetaAnimatedMark = produce<UserMeta, [string?]>((usermeta, animatedMarkName) => {
   usermeta.animatedMarks = [

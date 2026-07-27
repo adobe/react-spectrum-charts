@@ -151,9 +151,7 @@ InspectOnDimensionArea.args = {
   color: 'operatingSystem',
 };
 
-// Hovering an axis label highlights the entire dodged group sharing that dimension value, the same
-// way hovering the group itself does. This only requires the bar to already be interactive (e.g. via
-// ChartPopover below) — no ChartInspect dimensionArea target needed.
+// Hovering an axis label highlights the matching dodged group, same as hovering the group itself.
 const AxisLabelHighlight = bindWithProps(DodgedBarPopoverStory);
 AxisLabelHighlight.args = {
   ...defaultProps,

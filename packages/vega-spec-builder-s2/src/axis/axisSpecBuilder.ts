@@ -38,7 +38,17 @@ import {
 } from '../axisAnnotation/axisAnnotationUtils';
 import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
-import { AxisOptions, AxisSpecOptions, ColorScheme, Label, Orientation, Position, ScSpec, UserMeta } from '../types';
+import {
+  AxisOptions,
+  AxisSpecOptions,
+  ColorScheme,
+  InteractiveMark,
+  Label,
+  Orientation,
+  Position,
+  ScSpec,
+  UserMeta,
+} from '../types';
 import {
   addAxisLabelHoverSignalWiring,
   getAxisLabelDimensionFillOpacity,
@@ -147,15 +157,12 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     }
 
     const usermeta = spec.usermeta;
-    const data = spec.data ?? [];
     spec.axes = addAxes(spec.axes ?? [], {
       ...axisOptions,
       scaleName,
       scaleField,
       opposingScaleType,
       usermeta,
-      data,
-      signals: spec.signals ?? [],
 
       // we don't want to show the grid on top level
       // axes for trellised charts
@@ -166,8 +173,6 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     spec.marks = addAxesMarks(spec.marks ?? [], {
       ...axisOptions,
       usermeta,
-      data,
-      signals: spec.signals ?? [],
       scaleName,
       scaleField,
       opposingScaleType,
@@ -176,8 +181,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 
     if (!hideDefaultLabels) {
       const matchingBars = getMatchingInteractiveBarDimensionFields(
-        data,
-        spec.signals ?? [],
+        usermeta?.interactiveMarks,
         getEffectiveScaleField(spec, position, scaleField)
       );
       spec.signals = addAxisLabelHoverSignalWiring(
@@ -192,10 +196,8 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 );
 
 /**
- * For a trellised chart, the outer scale's field (e.g. the trellis/facet field) is not the field
- * that the trellis group's own inner per-panel axis actually renders - that lives on a separate
- * scale scoped to the trellis group. Resolves to that inner field when this axis's orientation
- * matches the trellis orientation, otherwise falls back to the outer scaleField unchanged.
+ * For a trellised chart, resolves the trellis group's inner per-panel scale field (distinct from
+ * the outer trellis/facet field) when this axis's orientation matches the trellis orientation.
  */
 function getEffectiveScaleField(spec: ScSpec, position: Position, scaleField?: string): string | undefined {
   const trellisGroupMark = spec.marks?.find((mark) => mark.name?.includes('Trellis')) as GroupMark | undefined;
@@ -400,11 +402,9 @@ export const addAxes = produce<
       opposingScaleType?: string;
       dualMetricAxis?: boolean;
       usermeta: UserMeta;
-      data?: Data[];
-      signals?: Signal[];
     }
   ]
->((axes, { scaleName, scaleField, opposingScaleType, dualMetricAxis, data = [], signals = [], ...axisOptions }) => {
+>((axes, { scaleName, scaleField, opposingScaleType, dualMetricAxis, ...axisOptions }) => {
   const newAxes: Axis[] = [];
   // adds all the trellis axis options if this is a trellis axis
   axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
@@ -414,7 +414,7 @@ export const addAxes = produce<
     // time axis actually needs two axes. A primary and secondary.
     newAxes.push(...getTimeAxes(scaleName, axisOptions));
   } else {
-    buildStandardAxes(newAxes, axisOptions, scaleName, data, signals, scaleField, dualMetricAxis);
+    buildStandardAxes(newAxes, axisOptions, scaleName, scaleField, dualMetricAxis);
   }
 
   // add baseline
@@ -432,23 +432,18 @@ export const addAxes = produce<
   axes.push(...newAxes);
 });
 
-/**
- * Builds the standard (non-time-format) axis - and, if configured, its paired sub-label axis -
- * and pushes them onto `newAxes`. Split out of `addAxes` to keep cognitive complexity down.
- */
+/** Split out of `addAxes` to keep cognitive complexity down. */
 function buildStandardAxes(
   newAxes: Axis[],
   axisOptions: AxisSpecOptions & { usermeta: UserMeta },
   scaleName: string,
-  data: Data[],
-  signals: Signal[],
   scaleField?: string,
   dualMetricAxis?: boolean
 ): void {
   const { colorScheme, position, usermeta } = axisOptions;
   const axis = getDefaultAxis(axisOptions, scaleName);
 
-  applyAxisLabelEncodings(axis, axisOptions, data, signals, scaleField);
+  applyAxisLabelEncodings(axis, axisOptions, usermeta?.interactiveMarks, scaleField);
 
   // if sublabels exist, create a new axis for the sub labels
   if (hasSubLabels(axisOptions)) {
@@ -483,23 +478,18 @@ function buildStandardAxes(
   newAxes.unshift(axis);
 }
 
-/**
- * Stamps hover-mark-name/interactive/fillOpacity encoding onto an axis's labels, for both the
- * default (auto-generated) label case and the custom `labels` prop case. Split out of `addAxes`
- * to keep cognitive complexity down.
- */
+/** Applies to both default and custom `labels` axes. Split out of `addAxes` for cognitive complexity. */
 function applyAxisLabelEncodings(
   axis: Axis,
   axisOptions: AxisSpecOptions,
-  data: Data[],
-  signals: Signal[],
+  interactiveMarks: InteractiveMark[] | undefined,
   scaleField?: string
 ): void {
   const { hideDefaultLabels, labelAlign, labelFontWeight, labelOrientation, name, position, hasTooltip } = axisOptions;
 
   const matchingBarDimensionFields = hideDefaultLabels
     ? []
-    : getMatchingInteractiveBarDimensionFields(data, signals, scaleField);
+    : getMatchingInteractiveBarDimensionFields(interactiveMarks, scaleField);
   const hasMatchingDimensionBar = matchingBarDimensionFields.length > 0;
 
   if (hasMatchingDimensionBar) {
@@ -540,10 +530,7 @@ function applyAxisLabelEncodings(
   };
 }
 
-/**
- * Applies axis-thumbnail label offset encodings to every axis built for this scale. Split out of
- * `addAxes` to keep cognitive complexity down (this was the deepest-nested block: if -> for -> for -> if/else).
- */
+/** Split out of `addAxes` to keep cognitive complexity down. */
 function applyAxisThumbnailEncodings(newAxes: Axis[], axisOptions: AxisSpecOptions, position: Position): void {
   if (!scaleTypeSupportsThumbnails(axisOptions.scaleType)) return;
 
@@ -593,7 +580,7 @@ const handleDualMetricAxisConfig = ({
       axis,
       usermeta.metricAxisCount === 0,
       scaleName,
-      usermeta.interactiveMarks ?? [],
+      (usermeta.interactiveMarks ?? []).map((mark) => mark.name),
       colorScheme
     );
     if (incrementMetricAxisCount) {
@@ -612,23 +599,11 @@ export const addAxesMarks = produce<
       opposingScaleType?: string;
       dualMetricAxis?: boolean;
       usermeta: UserMeta;
-      data?: Data[];
-      signals?: Signal[];
     }
   ]
 >((marks, options) => {
-  const {
-    baseline,
-    baselineOffset,
-    opposingScaleType,
-    position,
-    scaleField,
-    scaleName,
-    scaleType,
-    usermeta,
-    data = [],
-    signals = [],
-  } = options;
+  const { baseline, baselineOffset, opposingScaleType, position, scaleField, scaleName, scaleType, usermeta } =
+    options;
 
   // only add reference lines to linear or time scales
   if (scaleTypeSupportsReferenceLines(scaleType)) {
@@ -643,7 +618,7 @@ export const addAxesMarks = produce<
   }
 
   if (isTrellised) {
-    addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta, data, signals, scaleField);
+    addAxesToTrellisGroup(options, trellisGroupMark, scaleName, usermeta, scaleField);
   }
 
   for (const axisAnnotation of getAxisAnnotationsFromChildren(options)) {
@@ -678,8 +653,6 @@ function addAxesToTrellisGroup(
   trellisGroupMark: GroupMark,
   scaleName: string,
   usermeta: UserMeta,
-  data: Data[],
-  signals: Signal[],
   scaleField?: string
 ) {
   const trellisOrientation = trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical';
@@ -695,9 +668,7 @@ function addAxesToTrellisGroup(
     const scale = getScale(trellisGroupMark.scales ?? [], options.position);
     scaleName = scale.name;
     scaleType = scale.type ?? 'linear';
-    // the trellis group's inner per-panel scale has its own field, distinct from the outer
-    // trellis/facet scale's field - must be recomputed here or axis-label-hover matching
-    // (and anything else keyed on scaleField) silently compares against the wrong field.
+    // the trellis group's inner scale has its own field, distinct from the outer trellis/facet field.
     scaleField = getScaleField(scale);
   } else {
     // if the axis is not the same orientation as the trellis, then we don't display the title
@@ -713,8 +684,6 @@ function addAxesToTrellisGroup(
     scaleType,
     dualMetricAxis: false, // trellis axes don't support dualMetricAxis scaling
     usermeta,
-    data,
-    signals,
   });
 
   // titles on axes within the trellis group have special encodings so that the title is only shown on the first axis

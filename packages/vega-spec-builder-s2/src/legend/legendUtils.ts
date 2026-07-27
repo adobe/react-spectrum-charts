@@ -223,7 +223,7 @@ export const getOpacityEncoding = (
       signal: `${highlightSignalName} === datum.value ? 1 : ${FADE_FACTOR}`,
     });
   }
-  for (const markName of userMeta.interactiveMarks || []) {
+  for (const { name: markName } of userMeta.interactiveMarks || []) {
     rules.push({
       test: `isValid(${markName}_${HOVERED_ITEM})`,
       signal: `${markName}_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,

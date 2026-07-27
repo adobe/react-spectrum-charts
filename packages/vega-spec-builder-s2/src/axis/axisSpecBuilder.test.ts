@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, Data, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -343,7 +343,7 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: { interactiveMarks: ['bar0'] },
+          usermeta: { interactiveMarks: [{ name: 'bar0' }] },
         })[0].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
@@ -376,7 +376,7 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: { interactiveMarks: ['bar0'] },
+          usermeta: { interactiveMarks: [{ name: 'bar0' }] },
         })[0].encode?.title?.update?.fillOpacity;
         expect(titleFillOpacityEncoding).toHaveLength(1);
         expect(titleFillOpacityEncoding?.[0]).toEqual({
@@ -411,7 +411,7 @@ describe('Spec builder, Axis', () => {
           scaleName: 'yLinear',
           scaleType: 'linear',
           subLabels: defaultSubLabels,
-          usermeta: { interactiveMarks: ['bar0'] },
+          usermeta: { interactiveMarks: [{ name: 'bar0' }] },
         })[1].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
@@ -467,7 +467,7 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: { metricAxisCount: 1, interactiveMarks: ['bar0'] },
+          usermeta: { metricAxisCount: 1, interactiveMarks: [{ name: 'bar0' }] },
         })[0].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
@@ -498,7 +498,7 @@ describe('Spec builder, Axis', () => {
           scaleName: 'yLinear',
           scaleType: 'linear',
           subLabels: defaultSubLabels,
-          usermeta: { metricAxisCount: 1, interactiveMarks: ['bar0'] },
+          usermeta: { metricAxisCount: 1, interactiveMarks: [{ name: 'bar0' }] },
         })[1].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
@@ -549,27 +549,15 @@ describe('Spec builder, Axis', () => {
     });
 
     describe('label hover wiring', () => {
-      // represents an already-interactive bar named "bar0" with dimension "category" - derived
-      // straight from the built spec (data + signals), not from usermeta.
-      const interactiveBarData: Data[] = [
-        {
-          name: 'bar0_stacks',
-          source: 'filteredTable',
-          transform: [{ type: 'aggregate', groupby: ['category'], fields: ['value1', 'value1'], ops: ['min', 'max'] }],
-        },
-      ];
-      const interactiveBarSignals: Signal[] = [
-        { name: 'bar0_dimensionHoverArea_hoveredItem', value: null, on: [] },
-      ];
+      // an interactive bar named "bar0" with dimension "category"
+      const interactiveMarks = [{ name: 'bar0', dimension: 'category' }];
 
       test('stamps a name and sets interactive true when an interactive bar matches scaleField', () => {
         const axis = addAxes([], {
           ...defaultAxisOptions,
           scaleName: 'xBand',
           scaleField: 'category',
-          usermeta: {},
-          data: interactiveBarData,
-          signals: interactiveBarSignals,
+          usermeta: { interactiveMarks },
         })[0];
         expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
         expect(axis.encode?.labels).toHaveProperty('interactive', true);
@@ -587,16 +575,14 @@ describe('Spec builder, Axis', () => {
           ...defaultAxisOptions,
           scaleName: 'xBand',
           scaleField: 'otherField',
-          usermeta: {},
-          data: interactiveBarData,
-          signals: interactiveBarSignals,
+          usermeta: { interactiveMarks },
         })[0];
         expect(axis.encode?.labels).not.toHaveProperty('name');
         expect(axis.encode?.labels).toHaveProperty('interactive', false);
         expect(axis.encode?.labels?.update).not.toHaveProperty('fillOpacity');
       });
 
-      test('does not stamp a name or force interactive when there is no bar data/signals at all', () => {
+      test('does not stamp a name or force interactive when there are no interactive marks at all', () => {
         const axis = addAxes([], {
           ...defaultAxisOptions,
           scaleName: 'xBand',
@@ -613,9 +599,7 @@ describe('Spec builder, Axis', () => {
           hideDefaultLabels: true,
           scaleName: 'xBand',
           scaleField: 'category',
-          usermeta: {},
-          data: interactiveBarData,
-          signals: interactiveBarSignals,
+          usermeta: { interactiveMarks },
         })[0];
         expect(axis.encode?.labels).not.toHaveProperty('name');
       });
@@ -626,9 +610,7 @@ describe('Spec builder, Axis', () => {
           hasTooltip: true,
           scaleName: 'xBand',
           scaleField: 'category',
-          usermeta: {},
-          data: interactiveBarData,
-          signals: interactiveBarSignals,
+          usermeta: { interactiveMarks },
         })[0];
         expect(axis.encode?.labels).toHaveProperty('interactive', true);
       });

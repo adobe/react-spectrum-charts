@@ -211,9 +211,7 @@ InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
-// Hovering an axis label highlights the single bar matching that dimension value, the same way
-// hovering the bar itself does. This only requires the bar to already be interactive (e.g. via
-// ChartInspect below) — no dimensionArea target needed for a non-stacked, non-dodged bar.
+// Hovering an axis label highlights the matching bar, same as hovering the bar itself.
 const AxisLabelHighlight = bindWithProps(BarWithInspectStory);
 AxisLabelHighlight.args = {
   ...defaultProps,

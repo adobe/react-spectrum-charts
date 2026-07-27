@@ -147,7 +147,12 @@ export const addBar = produce<
       chartOrientation: barOptions.orientation,
     };
 
-    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, barOptions.interactiveMarkName);
+    // dimension is gated by isInteractive(), not interactiveMarkName (broader, e.g. highlightedItem-only bars)
+    spec.usermeta = addUserMetaInteractiveMark(
+      spec.usermeta,
+      barOptions.interactiveMarkName,
+      isInteractive(barOptions) ? barOptions.dimension : undefined
+    );
 
     spec.data = addData(spec.data ?? [], barOptions);
     spec.signals = addSignals(spec.signals ?? [], barOptions);
@@ -179,11 +184,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     return;
   }
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
-  // gated by isInteractive() (not the broader check above) so this signal's existence always
-  // matches the rect mark (stackedBarUtils.ts/dodgedBarUtils.ts) and opacity rule
-  // (chartInspectUtils.ts's addHoverdDimenstionAreaOpacityRules) that depend on it - otherwise a
-  // bar interactive only via e.g. barAnnotations could get axis-label-hover wiring
-  // (axisLabelHoverUtils.ts) with no corresponding bar highlight.
+  // gated by isInteractive() to match the rect mark and opacity rule that consume this signal
   if (isInteractive(options)) {
     addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
   }

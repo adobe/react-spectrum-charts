@@ -231,9 +231,7 @@ export const addHoverdDimenstionAreaOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
   markOptions: InspectParentOptions
 ) => {
-  // only bar marks create the dimensionHoverArea signal/rect this rule depends on (see barSpecBuilder.ts,
-  // stackedBarUtils.ts, dodgedBarUtils.ts) - other mark types with a `dimension` field (e.g. scatter)
-  // must not get this rule since the signal it references would never exist for them.
+  // scatter also has a `dimension` field but never creates this signal - scope to bar only.
   if (markOptions.markType !== 'bar' || !('dimension' in markOptions)) return;
   const { name, dimension } = markOptions;
   const hoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;

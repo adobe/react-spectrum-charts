@@ -9,10 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Signal } from 'vega';
+import { Signal } from 'vega';
 
 import { DIMENSION_HOVER_AREA, FADE_FACTOR, HOVERED_ITEM } from '@spectrum-charts/constants';
 
+import { InteractiveMark } from '../types';
 import {
   addAxisLabelHoverSignalWiring,
   getAxisLabelDimensionFillOpacity,
@@ -30,18 +31,6 @@ const getDimensionHoverAreaSignal = (barName: string): Signal => ({
   ],
 });
 
-const getStacksDataSource = (barName: string, dimension: string): Data => ({
-  name: `${barName}_stacks`,
-  source: 'filteredTable',
-  transform: [{ type: 'aggregate', groupby: [dimension], fields: ['value1', 'value1'], ops: ['min', 'max'] }],
-});
-
-const getGroupsDataSource = (barName: string, dimension: string): Data => ({
-  name: `${barName}_groups`,
-  source: 'filteredTable',
-  transform: [{ type: 'aggregate', groupby: [dimension] }],
-});
-
 describe('getAxisLabelHoverMarkName()', () => {
   test('returns a name derived from the axis name', () => {
     expect(getAxisLabelHoverMarkName('axis0')).toEqual('axis0_labelHover');
@@ -49,52 +38,41 @@ describe('getAxisLabelHoverMarkName()', () => {
 });
 
 describe('getMatchingInteractiveBarDimensionFields()', () => {
-  test('matches a stacked bar via its _stacks data source groupby', () => {
-    const data = [getStacksDataSource('bar0', 'category')];
-    const signals = [getDimensionHoverAreaSignal('bar0')];
-    expect(getMatchingInteractiveBarDimensionFields(data, signals, 'category')).toStrictEqual([
+  test('matches an interactive bar whose usermeta dimension matches scaleField', () => {
+    const interactiveMarks: InteractiveMark[] = [{ name: 'bar0', dimension: 'category' }];
+    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, 'category')).toStrictEqual([
       { name: 'bar0', dimension: 'category' },
     ]);
   });
 
-  test('matches a dodged bar via its _groups data source groupby', () => {
-    const data = [getGroupsDataSource('bar0', 'category')];
-    const signals = [getDimensionHoverAreaSignal('bar0')];
-    expect(getMatchingInteractiveBarDimensionFields(data, signals, 'category')).toStrictEqual([
-      { name: 'bar0', dimension: 'category' },
-    ]);
+  test('does not match when the interactive mark dimension is for a different field', () => {
+    const interactiveMarks: InteractiveMark[] = [{ name: 'bar0', dimension: 'category' }];
+    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, 'otherField')).toStrictEqual([]);
   });
 
-  test('does not match when the data source groupby is for a different field', () => {
-    const data = [getStacksDataSource('bar0', 'category')];
-    const signals = [getDimensionHoverAreaSignal('bar0')];
-    expect(getMatchingInteractiveBarDimensionFields(data, signals, 'otherField')).toStrictEqual([]);
-  });
-
-  test('does not match when the bar is not interactive (no dimension-hover-area signal exists)', () => {
-    const data = [getStacksDataSource('bar0', 'category')];
-    expect(getMatchingInteractiveBarDimensionFields(data, [], 'category')).toStrictEqual([]);
+  test('does not match an interactive mark with no dimension (e.g. a non-bar mark, or a non-interactive bar)', () => {
+    const interactiveMarks: InteractiveMark[] = [{ name: 'bar0' }];
+    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, 'category')).toStrictEqual([]);
   });
 
   test('returns an empty list when scaleField is undefined', () => {
-    const data = [getStacksDataSource('bar0', 'category')];
-    const signals = [getDimensionHoverAreaSignal('bar0')];
-    expect(getMatchingInteractiveBarDimensionFields(data, signals, undefined)).toStrictEqual([]);
+    const interactiveMarks: InteractiveMark[] = [{ name: 'bar0', dimension: 'category' }];
+    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, undefined)).toStrictEqual([]);
+  });
+
+  test('returns an empty list when interactiveMarks is undefined', () => {
+    expect(getMatchingInteractiveBarDimensionFields(undefined, 'category')).toStrictEqual([]);
   });
 
   test('matches multiple interactive bars sharing a dimension (e.g. a combo chart)', () => {
-    const data = [getStacksDataSource('bar0', 'category'), getGroupsDataSource('bar1', 'category')];
-    const signals = [getDimensionHoverAreaSignal('bar0'), getDimensionHoverAreaSignal('bar1')];
-    expect(getMatchingInteractiveBarDimensionFields(data, signals, 'category')).toStrictEqual([
+    const interactiveMarks: InteractiveMark[] = [
+      { name: 'bar0', dimension: 'category' },
+      { name: 'bar1', dimension: 'category' },
+    ];
+    expect(getMatchingInteractiveBarDimensionFields(interactiveMarks, 'category')).toStrictEqual([
       { name: 'bar0', dimension: 'category' },
       { name: 'bar1', dimension: 'category' },
     ]);
-  });
-
-  test('ignores unrelated data sources', () => {
-    const data: Data[] = [{ name: 'filteredTable', source: 'table' }];
-    const signals = [getDimensionHoverAreaSignal('bar0')];
-    expect(getMatchingInteractiveBarDimensionFields(data, signals, 'category')).toStrictEqual([]);
   });
 });
 

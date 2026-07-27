@@ -102,9 +102,7 @@ describe('stackedBarUtils', () => {
         chartPopovers: [{}],
       });
       expect(marks).toHaveLength(5);
-      // the dimension hover area is added first since the bar is interactive; the backdrop is drawn
-      // next (underneath) to fill the gap; the outline ring is drawn last (on top) so it is never
-      // occluded by adjacent stack segments
+      // dimension hover area first, backdrop underneath, outline ring on top
       expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
       expect(marks[1].name).toEqual('bar0_itemSelectionBackdrop');
       expect(marks[2].name).toEqual('bar0_background');
