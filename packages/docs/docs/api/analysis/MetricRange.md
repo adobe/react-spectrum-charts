@@ -45,6 +45,12 @@ The `MetricRange` component is used to add a custom area mark onto visualization
             <td>Controls which parts of the metric range are visible only on hover. <code>true</code>: both the metric line and range area are hidden until hover. <code>'metric'</code>: only the metric line is hidden until hover; the range area is always visible. <code>'range'</code>: only the range area is hidden until hover; the metric line is always visible. <code>false</code>: both are always visible.</td>
         </tr>
         <tr>
+            <td>displayOnHoverTrigger</td>
+            <td>'nearest' | 'item' | 'dimension'</td>
+            <td>–</td>
+            <td>Restricts which hover interaction reveals the metric range when <code>displayOnHover</code> is set, independent of the parent <code>Line</code>'s <code>interactionMode</code>. For example, a line using <code>interactionMode="dimension"</code> can still set <code>displayOnHoverTrigger="item"</code> on its metric range so it only appears when hovering near an actual point, not anywhere along the dimension strip. Has no effect unless <code>displayOnHover</code> is set; if undefined, the metric range reveals on any active hover.</td>
+        </tr>
+        <tr>
             <td>hoverPoint</td>
             <td>boolean</td>
             <td>false</td>

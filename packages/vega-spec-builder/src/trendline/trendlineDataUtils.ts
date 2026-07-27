@@ -19,7 +19,7 @@ import { getUniqueDimensionData } from '../line/lineDataUtils';
 import { isInteractive } from '../marks/markUtils';
 import { HoverContext, getHoverContext, getItemHoverPredicate, getSeriesHoverPredicate } from '../marks/hoverContext';
 import { getFacetsFromOptions } from '../specUtils';
-import { LineSpecOptions, TrendlineMethod, TrendlineSpecOptions } from '../types';
+import { DisplayOnHoverTrigger, LineSpecOptions, TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
   getAggregateTransform,
   getMetricFilterTransform,
@@ -83,7 +83,7 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
   }
 
   for (const trendlineOptions of trendlines) {
-    const { displayOnHover, method, name } = trendlineOptions;
+    const { displayOnHover, displayOnHoverTrigger, method, name } = trendlineOptions;
     const { facets } = getFacetsFromOptions({ color, lineType });
 
     if (isRegressionMethod(method)) {
@@ -94,7 +94,7 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
       data.push(getWindowTrendlineData(markOptions, trendlineOptions));
     }
     if (displayOnHover) {
-      data.push(getTrendlineDisplayOnHoverData(name, method, ctx));
+      data.push(getTrendlineDisplayOnHoverData(name, method, ctx, displayOnHoverTrigger));
     }
     if (isInteractive(trendlineOptions)) {
       concatenatedTrendlineData.source.push(`${name}_data`);
@@ -326,16 +326,18 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentOpti
 /**
  * Gets the data source and transforms for displaying the trendline on hover.
  * Uses HoverContext so all active signal namespaces (parent + trendline, item + dimension)
- * are included in the filter expression.
+ * are included in the filter expression, unless restricted by `displayOnHoverTrigger`.
  * @param trendlineName
  * @param method
  * @param ctx
+ * @param displayOnHoverTrigger restricts the filter to a specific hover scope (see `TrendlineOptions.displayOnHoverTrigger`)
  * @returns SourceData
  */
 export const getTrendlineDisplayOnHoverData = (
   trendlineName: string,
   method: TrendlineMethod,
-  ctx: HoverContext
+  ctx: HoverContext,
+  displayOnHoverTrigger?: DisplayOnHoverTrigger
 ): SourceData => {
   const source = isWindowMethod(method) ? `${trendlineName}_data` : `${trendlineName}_highResolutionData`;
   return {
@@ -344,7 +346,7 @@ export const getTrendlineDisplayOnHoverData = (
     transform: [
       {
         type: 'filter',
-        expr: getSeriesHoverPredicate(ctx),
+        expr: getSeriesHoverPredicate(ctx, displayOnHoverTrigger),
       },
     ],
   };

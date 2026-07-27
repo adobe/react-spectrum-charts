@@ -45,7 +45,7 @@ import { getHoverContext } from './hoverContext';
 import { defaultLineOptions } from '../trendline/trendlineTestUtils';
 import { getTrendlineData, getTrendlineDisplayOnHoverData } from '../trendline/trendlineDataUtils';
 import { setTrendlineSignals } from '../trendline/trendlineSignalUtils';
-import { LineSpecOptions } from '../types';
+import { DisplayOnHoverTrigger, LineSpecOptions } from '../types';
 
 type Cell = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 
@@ -87,10 +87,10 @@ const trendlineHighlightExpr = (cell: Cell): string => {
 };
 
 /** Returns the filter expr for the metricRange displayOnHover data (cell-agnostic; uses parent). */
-const metricRangeDisplayOnHoverExpr = (cell: Cell): string => {
+const metricRangeDisplayOnHoverExpr = (cell: Cell, displayOnHoverTrigger?: DisplayOnHoverTrigger): string => {
   const opts: LineSpecOptions = {
     ...buildOptions(cell),
-    metricRanges: [{ metricStart: 'low', metricEnd: 'high', displayOnHover: true }],
+    metricRanges: [{ metricStart: 'low', metricEnd: 'high', displayOnHover: true, displayOnHoverTrigger }],
   };
   const data = getMetricRangeData(opts);
   const transform = data[0]?.transform?.[0];
@@ -99,10 +99,10 @@ const metricRangeDisplayOnHoverExpr = (cell: Cell): string => {
 };
 
 /** Returns the filter expr for displayOnHover trendline data (cell-aware, but only valid when trendline owns). */
-const trendlineDisplayOnHoverExpr = (cell: Cell): string => {
+const trendlineDisplayOnHoverExpr = (cell: Cell, displayOnHoverTrigger?: DisplayOnHoverTrigger): string => {
   const opts = buildOptions(cell);
   const ctx = getHoverContext(opts);
-  const data = getTrendlineDisplayOnHoverData('line0Trendline0', 'linear', ctx);
+  const data = getTrendlineDisplayOnHoverData('line0Trendline0', 'linear', ctx, displayOnHoverTrigger);
   return (data.transform?.[0] as { expr: string }).expr;
 };
 
@@ -268,5 +268,69 @@ describe('hover namespace matrix — opacity rules', () => {
     expect(JSON.stringify(rules)).toContain(ITEM_HOVER_TRENDLINE);
     expect(rules).toHaveLength(2);
     expect(rules[rules.length - 1]).toEqual({ value: 0 });
+  });
+
+  describe('displayOnHoverTrigger scoping (cell D — all four namespaces active)', () => {
+    test('trigger "item" restricts the combined test to item-hover signals only', () => {
+      const ctx = getHoverContext(buildOptions('D'));
+      const rules = getMetricRangeHoverVisibilityOpacityRules(
+        ctx,
+        'show',
+        'item'
+      ) as Array<{ test?: string; value?: number }>;
+      const flat = JSON.stringify(rules);
+      expect(flat).toContain(ITEM_HOVER_LINE);
+      expect(flat).toContain(ITEM_HOVER_TRENDLINE);
+      expect(flat).not.toContain(DIMENSION_HOVER_AREA);
+    });
+
+    test('trigger "dimension" restricts the combined test to dimension-strip signals only', () => {
+      const ctx = getHoverContext(buildOptions('D'));
+      const rules = getMetricRangeHoverVisibilityOpacityRules(
+        ctx,
+        'show',
+        'dimension'
+      ) as Array<{ test?: string; value?: number }>;
+      const flat = JSON.stringify(rules);
+      expect(flat).toContain(DIM_HOVER_LINE);
+      expect(flat).toContain(DIM_HOVER_TRENDLINE);
+      expect(flat).not.toContain(`${ITEM_HOVER_LINE}.`);
+      expect(flat).not.toContain(`${ITEM_HOVER_TRENDLINE}.`);
+    });
+
+    test('metricRange displayOnHover filter honors trigger "item" (excludes dimension signal)', () => {
+      const expr = metricRangeDisplayOnHoverExpr('D', 'item');
+      expect(expr).toContain(ITEM_HOVER_LINE);
+      expect(expr).toContain(ITEM_HOVER_TRENDLINE);
+      expect(expr).not.toContain(DIMENSION_HOVER_AREA);
+    });
+
+    test('metricRange displayOnHover filter honors trigger "dimension" (excludes item-series-match signal)', () => {
+      const expr = metricRangeDisplayOnHoverExpr('D', 'dimension');
+      expect(expr).toContain(DIM_HOVER_LINE);
+      expect(expr).toContain(DIM_HOVER_TRENDLINE);
+      expect(expr).not.toContain(`${ITEM_HOVER_LINE}.`);
+      expect(expr).not.toContain(`${ITEM_HOVER_TRENDLINE}.`);
+    });
+
+    test('trendline displayOnHover filter honors trigger "item" (excludes dimension signal)', () => {
+      const expr = trendlineDisplayOnHoverExpr('D', 'item');
+      expect(expr).toContain(ITEM_HOVER_LINE);
+      expect(expr).toContain(ITEM_HOVER_TRENDLINE);
+      expect(expr).not.toContain(DIMENSION_HOVER_AREA);
+    });
+
+    test('trendline displayOnHover filter honors trigger "dimension" (excludes item-series-match signal)', () => {
+      const expr = trendlineDisplayOnHoverExpr('D', 'dimension');
+      expect(expr).toContain(DIM_HOVER_LINE);
+      expect(expr).toContain(DIM_HOVER_TRENDLINE);
+      expect(expr).not.toContain(`${ITEM_HOVER_LINE}.`);
+      expect(expr).not.toContain(`${ITEM_HOVER_TRENDLINE}.`);
+    });
+
+    test('trigger undefined (legacy) still includes all four namespaces, matching prior D-cell behavior', () => {
+      expect(metricRangeDisplayOnHoverExpr('D')).toContain(DIMENSION_HOVER_AREA);
+      expect(trendlineDisplayOnHoverExpr('D')).toContain(DIMENSION_HOVER_AREA);
+    });
   });
 });

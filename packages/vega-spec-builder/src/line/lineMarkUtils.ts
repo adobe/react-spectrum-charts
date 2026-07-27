@@ -133,6 +133,7 @@ export const getLineOpacity = ({
   displayOnHover,
   comboSiblingNames,
   hoverContext,
+  displayOnHoverTrigger,
   interactiveMarkName,
   interactionMode,
   isMetricRange,
@@ -148,7 +149,7 @@ export const getLineOpacity = ({
     hoverContext &&
     highlightedItem === undefined
   ) {
-    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show');
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show', displayOnHoverTrigger);
   }
 
   if ((!interactiveMarkName || displayOnHover === true) && highlightedItem === undefined) {
