@@ -20,8 +20,8 @@ export type MarkCallback = (datum: Datum) => void;
 /** Callback for right-click context menu. Receives the native mouse event (for position and preventDefault) and the datum. */
 export type ContextMenuCallback = (event: MouseEvent, datum: Datum) => void;
 
-/** Callback for axis label clicks: receives the label's value and its tick index. */
-export type AxisLabelClickCallback = (value: string | number, index: number) => void;
+/** Callback for axis label clicks: receives the label's value (Date for time axes) and its tick index. */
+export type AxisLabelClickCallback = (value: string | number | Date, index: number) => void;
 
 export interface ClickableChartProps {
   /** Callback that will be run when a point/section is clicked */

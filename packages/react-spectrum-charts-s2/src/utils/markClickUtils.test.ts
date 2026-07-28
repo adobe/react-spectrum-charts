@@ -525,7 +525,7 @@ describe('getOnAxisLabelClickCallback()', () => {
   const fakeClickEvent = { type: 'click' } as Parameters<ReturnType<typeof getOnAxisLabelClickCallback>>[0];
 
   // mimics Vega's tick datum shape - index is a fraction (i / (tickCount - 1)), not a position
-  const getAxisLabelItem = (value: string, normalizedIndex: number, markItemCount = 5) =>
+  const getAxisLabelItem = (value: string | Date, normalizedIndex: number, markItemCount = 5) =>
     ({
       datum: { value, index: normalizedIndex },
       bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
@@ -554,6 +554,14 @@ describe('getOnAxisLabelClickCallback()', () => {
     callback(fakeClickEvent, getAxisLabelItem('Explorer', 1));
     expect(onClick).toHaveBeenNthCalledWith(1, 'Chrome', 0);
     expect(onClick).toHaveBeenNthCalledWith(2, 'Explorer', 4);
+  });
+
+  test('passes through a Date value unchanged for time-scale axis labels', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    const tickDate = new Date('2026-01-01');
+    callback(fakeClickEvent, getAxisLabelItem(tickDate, 0));
+    expect(onClick).toHaveBeenCalledWith(tickDate, 0);
   });
 
   test('does not call onClick when the item is not an axis-label mark', () => {

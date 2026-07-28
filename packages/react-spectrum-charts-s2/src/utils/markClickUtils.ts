@@ -168,7 +168,7 @@ export const getOnAxisLabelClickCallback = (
     if (!item || !axisLabelOnClickDetails?.length || !isAxisLabelItem(item)) return;
 
     const itemName = getItemName(item);
-    const datum = item.datum as { value?: string | number; index: number };
+    const datum = item.datum as { value?: string | number | Date; index: number };
     // Vega's synthetic "extra" boundary tick (binned domains) has index -1 and no value
     // (vega-encode's AxisTicks) - skip it rather than firing onClick with a bad value/index.
     if (datum.index < 0 || datum.value === undefined) return;
