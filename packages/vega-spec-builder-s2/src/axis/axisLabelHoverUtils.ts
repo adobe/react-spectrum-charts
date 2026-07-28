@@ -18,10 +18,10 @@ import { InteractiveMark } from '../types';
 type MatchedInteractiveMark = Required<InteractiveMark>;
 
 /**
- * Returns the Vega mark name to stamp onto an axis's primary label encode block so that
- * hover/mouseout events can be bound to it via `@<name>:mouseover` event selectors.
+ * Vega mark name stamped onto an axis's primary label encode block - shared by hover and click
+ * wiring since Vega only allows one `encode.labels.name` per axis.
  */
-export const getAxisLabelHoverMarkName = (axisName: string): string => `${axisName}_labelHover`;
+export const getAxisLabelMarkName = (axisName: string): string => `${axisName}_labelHover`;
 
 /** Filters `usermeta.interactiveMarks` to entries matching this axis's dimension field. */
 export const getMatchingInteractiveBarDimensionFields = (
