@@ -289,10 +289,16 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
       return '$,.2f'; // currency format
     case 'standardNumber':
       return ','; // standard number format
+    case 'percentage':
+      return '~%'; // percentage format
     default:
       return numberFormat;
   }
 };
+
+/** Backslashes must be escaped before quotes — otherwise a trailing backslash-quote can terminate the outer Vega expression string early. */
+export const escapeD3FormatSpecifier = (formatSpec: string): string =>
+  formatSpec.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 
 /**
  * Merges the provided config with the Spectrum Vega config

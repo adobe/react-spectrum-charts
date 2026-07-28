@@ -20,7 +20,7 @@ import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils';
 import { getLineOpacity } from '../line/lineMarkUtils';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getDimensionField, getFacetsFromOptions } from '../specUtils';
+import { escapeD3FormatSpecifier, getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
 
 /**
@@ -98,7 +98,7 @@ const DEFAULT_NUMBER_FORMAT = ',.2~f';
 
 function getEscapedFormat(formatSpec?: string): string {
 	const resolved = formatSpec || DEFAULT_NUMBER_FORMAT;
-	return '"' + resolved.replaceAll('"', String.raw`\"`) + '"';
+	return '"' + escapeD3FormatSpecifier(resolved) + '"';
 }
 
 function getLabelValueExpr(value: LabelValue, metric: string, colorField?: string, formatSpec?: string): string {

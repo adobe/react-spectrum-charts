@@ -294,6 +294,19 @@ describe('getLineDirectLabelData', () => {
 		expect((formula as { expr: string }).expr).toContain('\\"');
 	});
 
+	test('escapes quotes and backslashes so the generated expression stays a single well-formed call', () => {
+		const maliciousFormat = '.1f\\"'; // ends with a literal backslash followed by a quote
+		const opts = { ...defaultLabelSpecOptions, format: maliciousFormat };
+		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === 'directLabel_text');
+		const { expr } = formula as { expr: string };
+		const match = expr.match(/^format\(datum\["[^"]*"\], "(.*)"\)$/);
+		expect(match).not.toBeNull();
+		const [, escapedSpec] = match as RegExpMatchArray;
+		expect(JSON.parse(`"${escapedSpec}"`)).toEqual(maliciousFormat);
+	});
+
 	test('includes dimension filter expression', () => {
 		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
 		const transforms = getTransforms(data);
