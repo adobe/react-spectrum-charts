@@ -538,13 +538,13 @@ describe('getOnAxisLabelClickCallback()', () => {
       },
     } as unknown as Item);
 
-  test('calls onClick with the label value and the recovered integer index', () => {
+  test('calls onClick with the native event, the label value, and the recovered integer index', () => {
     const onClick = jest.fn();
     const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
     // 3rd of 5 ticks -> recovered index 2
     callback(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
     expect(onClick).toHaveBeenCalledTimes(1);
-    expect(onClick).toHaveBeenCalledWith('Safari', 2);
+    expect(onClick).toHaveBeenCalledWith(fakeClickEvent, 'Safari', 2);
   });
 
   test('recovers index 0 and the last index correctly', () => {
@@ -552,8 +552,8 @@ describe('getOnAxisLabelClickCallback()', () => {
     const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
     callback(fakeClickEvent, getAxisLabelItem('Chrome', 0));
     callback(fakeClickEvent, getAxisLabelItem('Explorer', 1));
-    expect(onClick).toHaveBeenNthCalledWith(1, 'Chrome', 0);
-    expect(onClick).toHaveBeenNthCalledWith(2, 'Explorer', 4);
+    expect(onClick).toHaveBeenNthCalledWith(1, fakeClickEvent, 'Chrome', 0);
+    expect(onClick).toHaveBeenNthCalledWith(2, fakeClickEvent, 'Explorer', 4);
   });
 
   test('passes through a Date value unchanged for time-scale axis labels', () => {
@@ -561,7 +561,16 @@ describe('getOnAxisLabelClickCallback()', () => {
     const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
     const tickDate = new Date('2026-01-01');
     callback(fakeClickEvent, getAxisLabelItem(tickDate, 0));
-    expect(onClick).toHaveBeenCalledWith(tickDate, 0);
+    expect(onClick).toHaveBeenCalledWith(fakeClickEvent, tickDate, 0);
+  });
+
+  test('unwraps sourceEvent to pass the underlying native mouse event', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    const nativeEvent = { clientX: 10, clientY: 20 } as unknown as MouseEvent;
+    const wrappedEvent = { type: 'click', sourceEvent: nativeEvent } as unknown as typeof fakeClickEvent;
+    callback(wrappedEvent, getAxisLabelItem('Safari', 0.5));
+    expect(onClick).toHaveBeenCalledWith(nativeEvent, 'Safari', 2);
   });
 
   test('does not call onClick when the item is not an axis-label mark', () => {

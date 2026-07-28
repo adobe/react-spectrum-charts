@@ -164,7 +164,7 @@ export const getOnChartMarkContextMenuCallback = (
 export const getOnAxisLabelClickCallback = (
   axisLabelOnClickDetails?: AxisLabelOnClickDetail[]
 ): ViewEventCallback => {
-  return (_event, item) => {
+  return (event, item) => {
     if (!item || !axisLabelOnClickDetails?.length || !isAxisLabelItem(item)) return;
 
     const itemName = getItemName(item);
@@ -174,7 +174,8 @@ export const getOnAxisLabelClickCallback = (
     if (datum.index < 0 || datum.value === undefined) return;
 
     const index = getAxisLabelIndex(item, datum.index);
-    axisLabelOnClickDetails.find((detail) => detail.markName === itemName)?.onClick?.(datum.value, index);
+    const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+    axisLabelOnClickDetails.find((detail) => detail.markName === itemName)?.onClick?.(nativeEvent, datum.value, index);
   };
 };
 

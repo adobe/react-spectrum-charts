@@ -11,6 +11,7 @@
  */
 import React, { ReactElement } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
@@ -259,9 +260,7 @@ OnClick.args = {
   position: 'bottom',
   baseline: true,
   title: 'Browser',
-  onClick: (value, index) => {
-    console.log('axis label clicked:', value, index);
-  },
+  onClick: action('onClick'),
 };
 
 const TickMinStep = bindWithProps(LinearAxisStory);

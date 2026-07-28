@@ -11,6 +11,7 @@
  */
 import { ReactElement } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
@@ -132,9 +133,7 @@ OnClick.args = {
   dimension: 'browser',
   order: 'order',
   color: 'operatingSystem',
-  onClick: (datum) => {
-    console.log('datum:', datum);
-  },
+  onClick: action('onClick'),
 };
 
 const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);

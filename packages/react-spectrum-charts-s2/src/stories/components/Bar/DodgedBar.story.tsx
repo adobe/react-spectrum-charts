@@ -11,6 +11,7 @@
  */
 import { ReactElement } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { s2Categorical6 } from '@spectrum-charts/themes';
@@ -140,9 +141,7 @@ OnClick.args = {
   dimension: 'browser',
   order: 'order',
   color: 'operatingSystem',
-  onClick: (datum) => {
-    console.log('datum:', datum);
-  },
+  onClick: action('onClick'),
 };
 
 const InspectOnDimensionArea = bindWithProps(DimensionAreaStory);
