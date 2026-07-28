@@ -681,6 +681,32 @@ describe('Spec builder, Axis', () => {
         expect(axis.encode?.labels).not.toHaveProperty('name');
         expect(axis.encode?.labels?.update).not.toHaveProperty('cursor');
       });
+
+      test('adds interactive and cursor to custom labels when hasOnClick is true', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          labels: [1, 2, 3],
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+      });
+
+      test('does not add interactive or cursor to custom labels when hasOnClick is false', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: false,
+          labels: [1, 2, 3],
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+        expect(axis.encode?.labels?.update).not.toHaveProperty('cursor');
+      });
     });
 
     describe('axisThumbnails', () => {
