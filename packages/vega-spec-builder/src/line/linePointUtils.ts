@@ -110,11 +110,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
 };
 
 /**
- * Gets a background mark for static points to prevent opacity from revealing the line behind
- * the point. This mark stays fully opaque (no opacity rules) so it always covers the line
- * underneath — needed because a hollow static point's own fill is BACKGROUND_COLOR, and
- * dimming that fill's opacity (via getLineOpacity on getLineStaticPoint) would otherwise let
- * the line bleed through what's supposed to look like a clean punched-out hole.
+ * Gets a background to static points to prevent opacity from revealing the line behind the point.
  * @param lineOptions
  * @returns SymbolMark
  */

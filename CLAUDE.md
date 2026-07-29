@@ -246,6 +246,31 @@ S2 stories live in `packages/react-spectrum-charts-s2/src/stories/<ComponentName
 const inner = condition ? 'inner_a' : 'inner_b';
 `outer ${inner} rest`
 ```
+
+- **JSDoc is one description line, plus `@param`/`@returns` — never a multi-line rationale.** Existing functions in this codebase (e.g. `getHighlightBackgroundPoint` in `linePointUtils.ts`) already follow this; match that length, don't expand it. The same one-line-max rule applies to inline `//` comments on call sites. If a function's behavior genuinely needs more than one line to explain, that explanation belongs in the PR description or a `planning/` doc, not the docstring — it will rot in place as the code evolves around it.
+
+```ts
+// Bad — restates the fix instead of documenting the function
+/**
+ * Gets a background mark for static points to prevent opacity from revealing the line behind
+ * the point. This mark stays fully opaque (no opacity rules) so it always covers the line
+ * underneath — needed because a hollow static point's own fill is BACKGROUND_COLOR, and
+ * dimming that fill's opacity would otherwise let the line bleed through what's supposed to
+ * look like a clean punched-out hole.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+
+// Good
+/**
+ * Gets a background to static points to prevent opacity from revealing the line behind the point.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+```
+
+- **Storybook stories get a one-line comment at most**, stating only what a reviewer/tester wouldn't otherwise infer from the story's args (e.g. why a particular prop combination is being isolated). Don't narrate the investigation that led to the story.
+
 ## Test Completeness Checklist
 
 After any feature implementation, verify all of the following before considering the work done:

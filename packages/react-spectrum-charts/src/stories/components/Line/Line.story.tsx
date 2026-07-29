@@ -150,11 +150,7 @@ const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement =>
   );
 };
 
-// No ChartTooltip/ChartPopover/onClick/Legend — highlightedSeries is the only interaction
-// source, so interactiveMarkName is never set. The line and its static points still dim the
-// non-highlighted series ("Add Freeform table"): a chart-level mechanism independent of
-// getLineOpacity (chartSpecBuilder.ts's `if (highlightedSeries) setHoverOpacityForMarks(...)`)
-// splices the controlled-highlight rule into every series-aware mark regardless of interactivity.
+// No tooltip/popover/click/legend — confirms highlightedSeries alone still dims series.
 const ControlledHighlightNoInteractionStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({
     ...defaultChartProps,

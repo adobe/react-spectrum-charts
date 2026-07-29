@@ -272,8 +272,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     marks: [getLineMark(options, `${name}_facet`)],
   });
   if (staticPoint || isSparkline) {
-    // background point behind the static point, prevents the line from bleeding through a
-    // dimmed/hollow point's opacity
+    // background point prevents the line from bleeding through a dimmed/hollow point
     marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
   }
   if ((staticPoint || isSparkline) && linePointAnnotations.length > 0) {

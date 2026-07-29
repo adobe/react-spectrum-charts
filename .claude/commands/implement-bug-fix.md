@@ -80,6 +80,9 @@ Any mark that is purely visual (annotation text, halo, badge, reference label) m
 ### S2 parity is always required
 When fixing a bug in an s1 file, find the corresponding s2 file (`packages/vega-spec-builder-s2/` mirrors `packages/vega-spec-builder/`). Apply the same fix unless the bug doesn't exist in s2 — but verify, don't assume. S2 has intentional simplifications (no Venn, simpler static point rendering) so don't port s1-specific behavior blindly.
 
+### Comments stay short — no narration of the fix
+New or touched functions get at most a one-line JSDoc (description + `@param`/`@returns`), matching the length of sibling functions in the same file. Do not add paragraphs explaining what bug was fixed, why, or what the investigation found — that belongs in the PR description and commit message, never in the code. See `CLAUDE.md`'s Code Style section for a worked example.
+
 ---
 
 ## Writing the Regression Test

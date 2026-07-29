@@ -217,3 +217,5 @@ S2-exclusive components (like `BarDirectLabel`, `LineDirectLabel`) only exist in
 **`displayName` on the wrong object** — Set `displayName` on the component function itself, not on the import. It must be set before the component is used in the `sanitizeChildren` set or the switch case.
 
 **Copyright header missing** — Every new `.ts`/`.tsx` source file requires the Apache 2.0 copyright block at the top. ESLint enforces this as a hard error. See `.claude/architecture.md` for the exact header text. Story files (`.story.tsx`) are exempt.
+
+**Multi-line JSDoc/comments narrating the change** — New functions get at most a one-line JSDoc (description + `@param`/`@returns`), matching the length of sibling functions in the same file. Do not add paragraphs explaining why the component was added or what was investigated while building it — that belongs in the PR description, never the code. See `CLAUDE.md`'s Code Style section for a worked example.

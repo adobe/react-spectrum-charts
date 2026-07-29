@@ -194,3 +194,5 @@ Check whether the mark exists in S2 (`packages/vega-spec-builder-s2/src/` and `p
 **Failing TypeScript but not failing tests** — `yarn test` does not type-check. Always run `yarn tsc --noEmit` after writing test files.
 
 **Type literals widened with `| string`** — When a prop takes a fixed set of values, define it as a string literal union (`'left' | 'right' | 'center'`). Do not add `| string` to widen it — restrict to known valid values only. ESLint and TypeScript will not catch this, but SonarQube will flag it as a code smell.
+
+**Multi-line JSDoc/comments narrating the change** — New or modified functions get at most a one-line JSDoc (description + `@param`/`@returns`), matching the length of sibling functions in the same file. Do not add paragraphs explaining why the prop was added, what it fixes, or what was investigated — that belongs in the PR description, never the code. See `CLAUDE.md`'s Code Style section for a worked example.
