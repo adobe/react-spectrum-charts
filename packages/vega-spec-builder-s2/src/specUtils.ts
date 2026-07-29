@@ -298,7 +298,7 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat 
 
 /** Backslashes must be escaped before quotes — otherwise a trailing backslash-quote can terminate the outer Vega expression string early. */
 export const escapeD3FormatSpecifier = (formatSpec: string): string =>
-  formatSpec.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+  formatSpec.replaceAll('\\', String.raw`\\`).replaceAll('"', String.raw`\"`);
 
 /**
  * Merges the provided config with the Spectrum Vega config
