@@ -1,0 +1,42 @@
+{
+  "id": "default-hidden-series-bar-reposition",
+  "title": "defaultHiddenSeries Bar Reposition Bug",
+  "chartType": "bar",
+  "kind": "bug",
+  "variant": "s1",
+  "status": "approved",
+  "complexity": {
+    "score": 3,
+    "rationale": "Likely a single re-embed/trigger gap between the defaultHiddenSeries initial signal seed and a runtime legend toggle, rather than a new mechanism — but needs confirmation on main before the fix can be scoped further."
+  },
+  "summary": "With defaultHiddenSeries set, hiding an additional series via the legend does not reposition the remaining stacked bars, even though the initial defaultHiddenSeries state renders correctly.",
+  "symptom": "With defaultHiddenSeries={['Other']} set, toggling an additional series (e.g. 'Windows') via the legend does not reposition the remaining bars. The initial defaultHiddenSeries state works correctly — the bug only triggers when the user hides a second series on top of an existing default hidden series. Reproduced on both the reactUpgrade branch and main locally; not reproducible on the hosted Storybook, likely because it's out of sync with a recent regression on main rather than a React 19-specific bug.",
+  "rootCause": "Not yet confirmed. Likely related to the known encode.enter issue: stacked bar positions are computed in encode.enter only and require a full re-embed to reposition. The interaction between the initial defaultHiddenSeries signal seed and a subsequent runtime legend toggle may not be triggering the re-embed needed to recalculate bar positions.",
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "touchesLegendInteraction is true because the bug is only triggered by a legend click toggling a second series on top of an already-hidden defaultHiddenSeries entry. requiresS1S2Parity is true because defaultHiddenSeries is implemented separately in packages/react-spectrum-charts/src/hooks/useLegend.tsx and packages/react-spectrum-charts-s2/src/hooks/useLegend.tsx — investigation should confirm which package(s) actually reproduce the bug before scoping the fix to one."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/react-spectrum-charts/src/hooks/useLegend.tsx",
+      "change": "Investigate first — confirm on main whether the re-embed needed after a legend toggle runs correctly when defaultHiddenSeries was already seeded."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/hooks/useLegend.tsx",
+      "change": "Check for the same gap in the S2 equivalent once the S1/main repro is confirmed."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/bar/stackedBarUtils.ts",
+      "change": "Likely fix location if the root cause is confirmed as the known encode.enter re-embed issue — stacked bar positions computed only in enter need a full re-embed trigger, not a signal update, to recompute after the second toggle."
+    }
+  ],
+  "openQuestions": [
+    "Reproduce on main first to confirm this isn't already fixed or React-19-specific.",
+    "variant is provisionally 's1' (react-spectrum-charts) since the original report didn't distinguish S1 from S2 — confirm which package(s) actually reproduce the bug and update variant/requiresS1S2Parity accordingly."
+  ]
+}

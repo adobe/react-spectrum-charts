@@ -302,7 +302,7 @@ Before writing any code, always:
    - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
    - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
    - New prop on an existing component → `.claude/commands/implement-new-prop.md`
-4. Check `planning/specs/<chartType>/` for an approved spec matching the feature — if one exists, the matched skill file's Step 0 has you read it and treat it as authoritative
+4. Check for an approved spec matching the work — features at `planning/specs/<chartType>/`, bugs at `planning/specs/<chartType>/issues/` — if one exists, the matched skill file's Step 0 has you read it and treat it as authoritative
 5. Follow the steps in the matched skill file
 
 ---
@@ -326,26 +326,26 @@ Chart-level props (on `<Chart>` itself, not a mark) follow a different file path
 
 ## Issue Tracking
 
-Known bugs that are not being acted on immediately go in `planning/issues/` as markdown files. Each doc should include:
-- **Status** — Open / In Progress
-- **Symptom** — 1-2 sentence description of the observable behavior
-- **Root cause** — Technical explanation with `file:line` references
-- **Relevant files** — Table of files and their role
-- **Proposed fix** — Direction, not full implementation
-
-When the user describes a bug or observation and says they want to note it for later, create a doc there without being asked for the format.
+Known bugs that are not being acted on immediately go in
+`planning/specs/<chartType>/issues/<slug>.json` as a `kind: "bug"` spec, validated against
+`planning/specs/schema.json`. When the user describes a bug or observation and says they
+want to note it for later, use the `file-issue` skill (`.claude/commands/file-issue.md`) —
+it investigates the root cause and writes the spec without being asked for the exact format.
 
 ---
 
-## Chart Feature Spec System
+## Chart Feature & Bug Spec System
 
-Feature specs live in `planning/specs/<chartType>/<slug>.json`, one JSON file per feature,
-validated against `planning/specs/schema.json`. The workflow has three phases: gather
-design tokens/requirements informally, convert them into a spec via the
-`generate-chart-spec` skill (`.claude/commands/generate-chart-spec.md`), submit the spec as
-a PR for review, then implement against the approved spec — the `implement-new-*` skills
-check for one first. Full field-by-field guidance, the complexity rubric, and the
-`crossCutting` flag definitions are in `planning/specs/README.md`.
+Specs live in `planning/specs/<chartType>/<slug>.json` (features) or
+`planning/specs/<chartType>/issues/<slug>.json` (bugs), one JSON file per feature/bug,
+validated against `planning/specs/schema.json`. Features: gather design tokens/requirements
+informally, convert them into a spec via the `generate-chart-spec` skill
+(`.claude/commands/generate-chart-spec.md`), submit the spec as a PR for review, then
+implement against the approved spec — the `implement-new-*` skills check for one first.
+Bugs: investigate and file via the `file-issue` skill
+(`.claude/commands/file-issue.md`), submit as a PR, then `implement-bug-fix` checks for one
+first. Full field-by-field guidance, the complexity rubric, and the `crossCutting` flag
+definitions are in `planning/specs/README.md`.
 
 ---
 

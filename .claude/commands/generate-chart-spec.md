@@ -1,9 +1,14 @@
 # Generate a Chart Feature Spec
 
-Converts gathered design tokens and requirements into a validated JSON feature spec at
-`planning/specs/<chartType>/<slug>.json`. The spec is submitted as a PR; once approved, the
-`implement-new-prop` / `implement-new-chart-mark` / `implement-new-child-component` skills
-read it as the authoritative source of requirements, edge cases, and implementation plan.
+Converts gathered design tokens and requirements into a validated JSON `kind: "feature"`
+spec at `planning/specs/<chartType>/<slug>.json`. The spec is submitted as a PR; once
+approved, the `implement-new-prop` / `implement-new-chart-mark` / `implement-new-child-component`
+skills read it as the authoritative source of requirements, edge cases, and implementation
+plan.
+
+This skill is for not-yet-built features only. For a bug in existing behavior, use the
+`file-issue` skill instead — it produces a `kind: "bug"` spec at
+`planning/specs/<chartType>/issues/<slug>.json`.
 
 Read `planning/specs/README.md` first — it documents the complexity rubric, the edge-case
 checklist, and the `crossCutting` flags referenced below. Read `planning/specs/schema.json`
@@ -52,7 +57,10 @@ a sibling there, `requiresS1S2Parity` is likely `true`.
 
 Fill out every required field from `schema.json`:
 
-- `id`, `title`, `chartType`, `summary`
+- `id`, `title`, `chartType`, `kind: "feature"`, `summary`
+- `variant`: `"s1"`, `"s2"`, or `"both"` — whichever package variant(s) Step 2's exploration
+  and the resulting `implementationPlan` actually target. See README.md's `variant` section
+  for how this differs from `crossCutting.requiresS1S2Parity`.
 - `status`: `"approved"` (default — see README.md for why there's no draft/in-review state)
 - `complexity`: score (`1|2|3|5`) + a one-line rationale, using the rubric in README.md
 - `requirements`: the behavior requirements from Step 1, as discrete bullets

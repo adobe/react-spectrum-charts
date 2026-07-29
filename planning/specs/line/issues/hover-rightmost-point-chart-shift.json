@@ -1,0 +1,53 @@
+{
+  "id": "hover-rightmost-point-chart-shift",
+  "title": "Hovering the Rightmost Data Point Causes a Slight Horizontal Chart Shift",
+  "chartType": "line",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "complexity": {
+    "score": 5,
+    "rationale": "Root cause is unconfirmed and likely spans the autosize/layout system rather than a single encode site; the same autosize config and hover-mark structure exist in both S1 and S2, so the fix may need to be verified/applied in both."
+  },
+  "summary": "Hovering the rightmost data point on an S2 line chart shifts the entire chart (marks and axes) slightly left, reverting when the hover moves off; suspected cause is a hover mark overflowing the plot area, triggering Vega's fit-with-padding autosize to compensate.",
+  "symptom": "When hovering over the rightmost data point on a line chart, the entire chart — including axes — shifts slightly to the left. Moving off the rightmost point shifts it back. The shift is horizontal only and affects all marks and axes in the plot area. It occurs regardless of whether hover labels are enabled. Confirmed on the WithoutHoverLabel, WithHoverLabel, and DimensionHover stories in 'React Spectrum Charts 2/Line/Features/HoverLabel'.",
+  "rootCause": "Unconfirmed. Investigation narrowed it to a pre-existing issue in the hover marks (hover rule, highlight point), not the hover label feature. The chart uses autosize: { type: 'fit', contains: 'padding', resize: true }, which reruns layout on every update. Leading hypothesis: a hover mark at the rightmost data point overflows the plot area boundary by a pixel or two (the hover rule's 1px stroke bleeding past x = width, or the highlight point's stroke at the chart edge), causing Vega to add right padding, compress the plot width, and shift all content left. When the hover moves off the rightmost point, the padding reverts.",
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "touchesHoverAnimation/touchesTooltipOrPopover: getHoverRule() and getHighlightPoint() are both part of the interactive hover/tooltip mark group added alongside the voronoi overlay in lineMarkUtils.ts, the same file that reads isAnimate for hover animation — worth checking whether animated marks change the overflow behavior. requiresS1S2Parity: true because packages/vega-spec-builder/src/line/lineMarkUtils.ts has the identical getHoverRule/getHighlightPoint structure and packages/react-spectrum-charts/src/hooks/useSpec.tsx:171 sets the identical autosize config as the S2 side — the bug has only been confirmed in S2 stories so far; S1 should be checked for the same symptom once root cause is confirmed."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/lineMarkUtils.ts",
+      "change": "getHoverRule(), getHighlightPoint() — the hover marks suspected of overflowing the plot boundary at the rightmost point. Bug location, pending confirmation.",
+      "lines": "421-476"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/linePointUtils.ts",
+      "change": "getHighlightPoint() — highlight point size and stroke; check whether stroke width pushes the point's bounding box past x = width at the rightmost datum."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/hooks/useSpec.tsx",
+      "change": "Sets autosize: { type: 'fit', contains: 'padding', resize: true }. Confirm whether a different autosize/padding strategy avoids the recompute, or whether clamping the hover mark's bounds is preferable.",
+      "lines": "171"
+    },
+    {
+      "file": "packages/themes/src/spectrum2Theme.ts",
+      "change": "Also sets the same autosize config — check whether it needs to change in tandem with useSpec.tsx.",
+      "lines": "160"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/line/lineMarkUtils.ts",
+      "change": "S1 parity check — has the same getHoverRule/getHighlightPoint structure and the same autosize config in react-spectrum-charts/src/hooks/useSpec.tsx:171. Verify whether S1 reproduces the same shift once the S2 root cause is confirmed."
+    }
+  ],
+  "openQuestions": [
+    "Confirm the root cause hypothesis (hover mark stroke overflow vs. autosize recompute) with a direct measurement of plot area padding before/after hover.",
+    "Does this reproduce on S1 (react-spectrum-charts / vega-spec-builder), given the identical autosize config?"
+  ]
+}
