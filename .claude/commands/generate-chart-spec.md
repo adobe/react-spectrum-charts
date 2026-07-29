@@ -74,8 +74,9 @@ Fill out every required field from `schema.json`:
   an approximate `lines` range where you have one
 - `openQuestions`: anything you couldn't resolve from the gathered material
 
-Write the file to `planning/specs/<chartType>/<slug>.json`. `<slug>` is a kebab-case
-derivation of the title.
+Write the file to `planning/specs/<chartType>/<slug>.json` — the base directory, never
+`implemented/`, since a freshly generated spec is by definition not yet built. `<slug>` is a
+kebab-case derivation of the title.
 
 ---
 

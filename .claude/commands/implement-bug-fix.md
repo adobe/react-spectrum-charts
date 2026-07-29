@@ -6,19 +6,24 @@ Use this skill when fixing a bug. Read `.claude/architecture.md` first — diagn
 
 ## Step 0: Check for a Filed Bug Spec
 
-Look for `planning/specs/<chartType>/issues/<slug>.json` matching this bug. If one exists
-and `status` is `"approved"` or `"implemented"`, read it and start from its `symptom`,
-`rootCause`, `crossCutting`, and `implementationPlan` instead of rediscovering them from
-scratch — `crossCutting` tells you up front whether the fix needs to interact with hover
-animation, controlled highlight, legend interaction, or tooltip/popover wiring, and whether
-S1/S2 parity applies. Use `implementationPlan` as a starting file checklist, re-locating by
-symbol name if its line numbers have drifted.
+Look for `planning/specs/<chartType>/issues/<slug>.json` matching this bug, checking both
+the base `issues/` directory (still open) and its `implemented/` subfolder (already fixed —
+still useful context, e.g. to check whether this is a regression of a previously-fixed bug).
+If one exists and `status` is `"approved"` or `"implemented"`, read it and start from its
+`symptom`, `rootCause`, `crossCutting`, and `implementationPlan` instead of rediscovering
+them from scratch — `crossCutting` tells you up front whether the fix needs to interact with
+hover animation, controlled highlight, legend interaction, or tooltip/popover wiring, and
+whether S1/S2 parity applies. Use `implementationPlan` as a starting file checklist,
+re-locating by symbol name if its line numbers have drifted.
 
 Treat `rootCause` as a starting hypothesis, not gospel — re-verify it against the current
 code before implementing, since the spec may have been filed before other changes landed. If
 the code no longer matches the spec's description, update the spec (`status:
 "needs-revision"` or a corrected `rootCause`) as part of the fix PR. If no spec exists,
 proceed as below.
+
+When the bug is fixed, set the spec's `status` to `"implemented"` and `git mv` the file into
+`planning/specs/<chartType>/issues/implemented/<slug>.json` as part of the same PR.
 
 ---
 

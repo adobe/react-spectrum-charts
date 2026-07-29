@@ -1,0 +1,51 @@
+{
+  "id": "hover-point-opacity-s2-non-animated-gap",
+  "title": "S2 Static Points Miss Controlled-Highlight/Selection Opacity When Hover Animation Is Off",
+  "chartType": "line",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "complexity": {
+    "score": 1,
+    "rationale": "Adding two production rules (CONTROLLED_HIGHLIGHTED_TABLE/SERIES) plus a SELECTED_SERIES rule to one non-animated branch of one function, matching a pattern that already exists in getLineOpacityRules() for the line mark itself."
+  },
+  "summary": "S2's static-point opacity helper only has full 5-state interaction coverage (hover, group highlight, controlled highlight, controlled series, popover selection) when isAnimate is true. When isAnimate is false, it only handles hover and group highlight — the same class of bug as line-point-opacity-mismatch, but narrower and still unfixed in S2.",
+  "symptom": "Not yet observed in the UI — found via code/test-coverage inspection while investigating line-point-opacity-mismatch (S1), not from a user-reported repro. Static points on an S2 line chart would stay at full opacity during controlled-highlight (highlightedItem/highlightedSeries props) or popover-selection dimming specifically when animations={false} is set and there is no popover/tooltip/legend driving isAnimate to true — that combination is required for the gap to be reachable, per usesHoverAnimation() in lineSpecBuilder.ts:208.",
+  "rootCause": "getOpacity() in vega-spec-builder-s2/src/line/linePointUtils.ts:71-99 branches on isAnimate. When true, it delegates to getLineDeemphasisOpacitySignal(name), driven by getLineHoverRules() (lineDataUtils.ts:130-163) — which does include CONTROLLED_HIGHLIGHTED_TABLE/SERIES and SELECTED_SERIES match rules, giving full parity with the line mark. When isAnimate is false, the function falls through to a plain opacityRules array that only pushes a rule for interactiveMarkName (hover, or group-highlight via isHighlightedByGroup) before defaulting to DEFAULT_OPACITY_RULE — it never checks CONTROLLED_HIGHLIGHTED_TABLE, CONTROLLED_HIGHLIGHTED_SERIES, or SELECTED_SERIES at all. Confirmed by the test file: linePointUtils.test.ts:214-238 has cases for the non-animated hover and group-highlight rules but none for controlled-highlight or selection in that same non-animated branch. isAnimate is computed by usesHoverAnimation() (lineSpecBuilder.ts:208), which is true by default whenever the line is interactive, has controlled highlight props, or legend highlight signals — unless animations={false} is explicitly passed — so this gap is narrow in practice, not the common case.",
+  "comparison": [
+    {
+      "aspect": "getOpacity() non-animated branch vs. getLineOpacityRules() (the line mark's own non-animated opacity, lineMarkUtils.ts:291-341)",
+      "expected": "Rules for CONTROLLED_HIGHLIGHTED_TABLE, CONTROLLED_HIGHLIGHTED_SERIES, and (if popoverMarkName) SELECTED_SERIES, matching the line mark",
+      "actual": "Only a rule for interactiveMarkName's HOVERED_ITEM or isHighlightedByGroup — no controlled-highlight or selection rules present"
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation is true because the fix is scoped to the isAnimate-false branch of a function that also has an isAnimate-true branch — care is needed not to disturb the animated path. touchesControlledHighlight and touchesTooltipOrPopover are true because the missing rules are exactly CONTROLLED_HIGHLIGHTED_TABLE/SERIES and (for popoverMarkName) SELECTED_SERIES. requiresS1S2Parity is false: S1 has no isAnimate concept in its line files at all (see line-point-opacity-mismatch), so there's no S1 equivalent of this specific animated/non-animated split to keep in parity with."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/linePointUtils.ts",
+      "change": "Bug location. In getOpacity()'s non-animated branch (after the interactiveMarkName block, before the final DEFAULT_OPACITY_RULE push), add the same CONTROLLED_HIGHLIGHTED_TABLE/CONTROLLED_HIGHLIGHTED_SERIES rules getLineOpacityRules() pushes (lineMarkUtils.ts:315-323), and a SELECTED_SERIES rule when popoverMarkName is set (lineMarkUtils.ts:325-330). Requires destructuring popoverMarkName in addition to the fields already destructured.",
+      "lines": "71-99"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/lineMarkUtils.ts",
+      "change": "Reference only — getLineOpacityRules() is the pattern to mirror for the new rules.",
+      "lines": "291-341"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/linePointUtils.test.ts",
+      "change": "Add non-animated test cases for controlled-highlight-table, controlled-highlight-series, and popover-selection opacity dimming, alongside the existing hover/group-highlight cases at lines 214-238."
+    }
+  ],
+  "relatedIssues": ["line-point-opacity-mismatch"],
+  "openQuestions": [
+    "Has anyone actually observed this in the UI, or is it purely a code-coverage finding? No repro has been filed yet — confirm with animations={false} + highlightedItem/highlightedSeries + no popover/tooltip/legend before prioritizing."
+  ]
+}

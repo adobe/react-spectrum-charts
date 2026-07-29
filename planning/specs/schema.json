@@ -40,7 +40,7 @@
     "chartType": {
       "type": "string",
       "enum": ["area", "bar", "bigNumber", "bullet", "combo", "donut", "line", "scatter", "venn", "chart"],
-      "description": "Matches an existing markType, or 'chart' for a chart-level (not mark-specific) feature/bug. Also determines the planning/specs/<chartType>/ directory the file lives in — features at planning/specs/<chartType>/<slug>.json, bugs at planning/specs/<chartType>/issues/<slug>.json."
+      "description": "Matches an existing markType, or 'chart' for a chart-level (not mark-specific) feature/bug. Also determines the planning/specs/<chartType>/ directory the file lives in — features at planning/specs/<chartType>/<slug>.json, bugs at planning/specs/<chartType>/issues/<slug>.json. Add an 'implemented/' segment before the filename once status becomes 'implemented' (e.g. planning/specs/<chartType>/implemented/<slug>.json or .../issues/implemented/<slug>.json) — see README.md's Status lifecycle section."
     },
     "kind": {
       "type": "string",
@@ -55,7 +55,7 @@
     "status": {
       "type": "string",
       "enum": ["approved", "implemented", "needs-revision"],
-      "description": "Defaults to 'approved' — a spec only lands in main once its PR is reviewed, so draft/in-review states are represented by the PR itself, not this field. Move to 'implemented' once the feature/fix PR lands, or 'needs-revision' if the spec is found stale/wrong. For kind: 'bug', 'approved' means the bug is filed and open; 'implemented' means it's fixed."
+      "description": "Defaults to 'approved' — a spec only lands in main once its PR is reviewed, so draft/in-review states are represented by the PR itself, not this field. Move to 'implemented' once the feature/fix PR lands, or 'needs-revision' if the spec is found stale/wrong. For kind: 'bug', 'approved' means the bug is filed and open; 'implemented' means it's fixed. Setting status to 'implemented' also means relocating the file into the 'implemented/' subfolder of its directory in the same PR — see README.md."
     },
     "complexity": {
       "type": "object",
@@ -206,6 +206,11 @@
       "type": "array",
       "items": { "type": "string" },
       "description": "Anything unresolved that reviewers should weigh in on."
+    },
+    "relatedIssues": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional. IDs of other specs (features or bugs) related to this one — e.g. a narrower/broader variant of the same underlying defect discovered during investigation or implementation, or a follow-up filed as a result of this one."
     }
   }
 }

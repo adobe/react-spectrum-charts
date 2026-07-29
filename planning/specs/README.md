@@ -10,31 +10,41 @@ field (`"feature"` or `"bug"`) determines which other fields are required — se
 
 ```
 planning/specs/
-  schema.json                 # JSON Schema (draft-07) every spec validates against
-  README.md                   # this file
-  bar/<slug>.json             # kind: "feature" specs
-  bar/issues/<slug>.json      # kind: "bug" specs
+  schema.json                              # JSON Schema (draft-07) every spec validates against
+  README.md                                # this file
+  bar/<slug>.json                          # kind: "feature", not yet implemented
+  bar/implemented/<slug>.json              # kind: "feature", status: "implemented"
+  bar/issues/<slug>.json                   # kind: "bug", open
+  bar/issues/implemented/<slug>.json       # kind: "bug", status: "implemented" (fixed)
   line/<slug>.json
+  line/implemented/<slug>.json
   line/issues/<slug>.json
+  line/issues/implemented/<slug>.json
   donut/<slug>.json
+  donut/implemented/<slug>.json
   donut/issues/<slug>.json
+  donut/issues/implemented/<slug>.json
   ...
 ```
 
 One spec per feature or bug, filed under the directory matching its `chartType`. Chart-level
 (non-mark-specific) work goes under `chart/`. Bugs always live in the `issues/` subdirectory
-of their chart type; features live directly under the chart type directory.
+of their chart type; features live directly under the chart type directory. Within either of
+those, an `implemented/` subdirectory separates finished work from what's still outstanding
+— see [Status lifecycle](#status-lifecycle) for when a spec moves there.
 
 ## Kinds: feature vs bug
 
 - **`kind: "feature"`** — a capability that doesn't exist yet. Requires `requirements` and
   `edgeCases`. Produced by the `generate-chart-spec` skill
   (`.claude/commands/generate-chart-spec.md`) and filed at
-  `planning/specs/<chartType>/<slug>.json`.
+  `planning/specs/<chartType>/<slug>.json` (moves to
+  `planning/specs/<chartType>/implemented/<slug>.json` once built).
 - **`kind: "bug"`** — a defect in existing behavior. Requires `symptom` and `rootCause`
   instead (an optional `comparison` field can capture working-vs-buggy behavior
   side-by-side). Produced by the `file-issue` skill (`.claude/commands/file-issue.md`) and
-  filed at `planning/specs/<chartType>/issues/<slug>.json`.
+  filed at `planning/specs/<chartType>/issues/<slug>.json` (moves to
+  `planning/specs/<chartType>/issues/implemented/<slug>.json` once fixed).
 
 Both kinds share `complexity`, `variant`, `crossCutting`, and `implementationPlan` — the
 rubric and flags below apply the same way to a bug fix as to a feature. For a bug,
@@ -81,6 +91,28 @@ whether S1 has the same bug — don't assume it does or doesn't.
    `symptom`/`rootCause`/`crossCutting`/`implementationPlan` as authoritative starting
    context instead of rediscovering them from scratch — though root cause should still be
    re-verified against current code, since it may have drifted since filing.
+
+## Writing `rootCause` (keeping it from bloating)
+
+`rootCause` states the current, accurate technical explanation of the defect — what's wrong
+in the code and why, with file:line references. It is not an investigation log. Specifically:
+
+- **No narrative labels.** Don't write `FIXED:`, `CORRECTED:`, or "two additional gaps found
+  during verification" inside `rootCause`. The spec's `status` and its directory
+  (`issues/` vs. `issues/implemented/`) already say whether it's fixed; a fix PR's diff and
+  description already say what changed and when a prior belief was wrong. `rootCause` should
+  just state what's true now, not the history of how that understanding was reached.
+- **Per-file "what changed" goes in `implementationPlan`,** not `rootCause` — each entry's
+  `change` field is exactly the place for "added X to Y."
+- **Per-aspect expected-vs-actual goes in `comparison`,** not prose in `rootCause` — that's
+  what the structured field exists for.
+- **A related-but-distinct defect discovered mid-investigation gets its own spec** (`kind:
+  "bug"`), cross-linked via `relatedIssues`, not a paragraph re-explaining it inline. If the
+  investigation turns up something outside this bug's own symptom, that's a new spec, not
+  supporting evidence to pile into this one.
+- **Target length: a tight paragraph per distinct defect actually fixed under this spec.** If
+  it's sprawling into multiple paragraphs of narrative, something belongs in
+  `implementationPlan`, `comparison`, or a separate spec instead.
 
 ## Complexity rubric
 
@@ -136,6 +168,17 @@ later found stale or wrong — fix it via a normal PR editing the JSON, reviewed
 way). For `kind: "bug"`, read `approved` as "filed and open" and `implemented` as "fixed" —
 this replaces the old `Status: Open` field used in the markdown issue docs this system
 superseded.
+
+**Moving to `implemented` also means moving the file.** `approved` and `needs-revision`
+specs live directly in `planning/specs/<chartType>/` (features) or
+`planning/specs/<chartType>/issues/` (bugs). The moment a spec's `status` is set to
+`implemented` — as part of the same PR that lands the feature/fix — relocate the file into
+that directory's `implemented/` subfolder (`git mv`, not a copy). This keeps the
+non-`implemented/` directories showing only outstanding work at a glance, without having to
+open every file to check `status`. The `implement-new-*` / `implement-bug-fix` skills do
+this move as part of their completion steps; when checking for an existing spec at Step 0,
+check both the base directory and its `implemented/` subfolder, since a spec already marked
+`implemented` can still be useful context (e.g. for a regression).
 
 ## Schema
 

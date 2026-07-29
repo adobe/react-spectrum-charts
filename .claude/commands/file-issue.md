@@ -70,8 +70,9 @@ Fill out every required field from `schema.json`:
 - `openQuestions`: anything unresolved, especially unconfirmed root causes or unverified
   S1/S2 parity
 
-Write the file to `planning/specs/<chartType>/issues/<slug>.json`. `<slug>` is a kebab-case
-derivation of the title.
+Write the file to `planning/specs/<chartType>/issues/<slug>.json` — the base `issues/`
+directory, never `issues/implemented/`, since a freshly filed bug is by definition not yet
+fixed. `<slug>` is a kebab-case derivation of the title.
 
 ## Step 4 — Validate and report
 

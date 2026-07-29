@@ -8,14 +8,18 @@ Read `.claude/architecture.md` first — this is the most involved type of chang
 
 ## Step 0: Check for an Approved Spec
 
-Look for `planning/specs/<chartType>/<slug>.json` matching this feature. If one exists and
-`status` is `"approved"` or `"implemented"`, read it and treat its `requirements`,
-`edgeCases`, and `crossCutting` flags as authoritative instead of re-deriving them —
-`crossCutting` in particular tells you up front whether this mark needs to interact with
-hover animation, controlled highlight, legend interaction, or tooltip/popover wiring, and
-whether S1/S2 parity is required. Use `implementationPlan` as a starting file checklist,
-re-locating by symbol name if its line numbers have drifted. If no spec exists, proceed as
-below.
+Look for `planning/specs/<chartType>/<slug>.json` matching this feature, checking both the
+base directory (not yet implemented) and its `implemented/` subfolder (already shipped —
+still useful context, e.g. for a regression). If one exists and `status` is `"approved"` or
+`"implemented"`, read it and treat its `requirements`, `edgeCases`, and `crossCutting` flags
+as authoritative instead of re-deriving them — `crossCutting` in particular tells you up
+front whether this mark needs to interact with hover animation, controlled highlight, legend
+interaction, or tooltip/popover wiring, and whether S1/S2 parity is required. Use
+`implementationPlan` as a starting file checklist, re-locating by symbol name if its line
+numbers have drifted. If no spec exists, proceed as below.
+
+When the mark ships, set the spec's `status` to `"implemented"` and `git mv` the file into
+`planning/specs/<chartType>/implemented/<slug>.json` as part of the same PR.
 
 ---
 
