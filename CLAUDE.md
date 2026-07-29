@@ -302,7 +302,8 @@ Before writing any code, always:
    - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
    - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
    - New prop on an existing component → `.claude/commands/implement-new-prop.md`
-4. Follow the steps in the matched skill file
+4. Check `planning/specs/<chartType>/` for an approved spec matching the feature — if one exists, the matched skill file's Step 0 has you read it and treat it as authoritative
+5. Follow the steps in the matched skill file
 
 ---
 
@@ -333,6 +334,18 @@ Known bugs that are not being acted on immediately go in `planning/issues/` as m
 - **Proposed fix** — Direction, not full implementation
 
 When the user describes a bug or observation and says they want to note it for later, create a doc there without being asked for the format.
+
+---
+
+## Chart Feature Spec System
+
+Feature specs live in `planning/specs/<chartType>/<slug>.json`, one JSON file per feature,
+validated against `planning/specs/schema.json`. The workflow has three phases: gather
+design tokens/requirements informally, convert them into a spec via the
+`generate-chart-spec` skill (`.claude/commands/generate-chart-spec.md`), submit the spec as
+a PR for review, then implement against the approved spec — the `implement-new-*` skills
+check for one first. Full field-by-field guidance, the complexity rubric, and the
+`crossCutting` flag definitions are in `planning/specs/README.md`.
 
 ---
 
