@@ -150,6 +150,26 @@ const LineWithVisiblePointsStory: StoryFn<typeof Line> = (args): ReactElement =>
   );
 };
 
+// No ChartTooltip/ChartPopover/onClick/Legend — highlightedSeries is the only interaction
+// source, so interactiveMarkName is never set. The line and its static points still dim the
+// non-highlighted series ("Add Freeform table"): a chart-level mechanism independent of
+// getLineOpacity (chartSpecBuilder.ts's `if (highlightedSeries) setHoverOpacityForMarks(...)`)
+// splices the controlled-highlight rule into every series-aware mark regardless of interactivity.
+const ControlledHighlightNoInteractionStory: StoryFn<typeof Line> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data: workspaceTrendsDataWithVisiblePoints,
+    highlightedSeries: 'Add Fallout',
+  });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args} />
+    </Chart>
+  );
+};
+
 // datetime 1667977200000 coincides with the "Add Fallout" static point.
 // Hover over that point to verify hover marks render above (front) or below (back) the reference line.
 const ReferenceLineLayerFrontStory: StoryFn<typeof Line> = (): ReactElement => {
@@ -356,6 +376,14 @@ DimensionTooltip.args = {
 
 const WithStaticPoints = bindWithProps(LineWithVisiblePointsStory);
 WithStaticPoints.args = {
+  ...defaultArgs,
+  dimension: 'datetime',
+  metric: 'value',
+  staticPoint: 'staticPoint',
+};
+
+const WithControlledHighlightNoInteraction = bindWithProps(ControlledHighlightNoInteractionStory);
+WithControlledHighlightNoInteraction.args = {
   ...defaultArgs,
   dimension: 'datetime',
   metric: 'value',
@@ -579,6 +607,7 @@ export {
   DimensionTooltip,
   TrendScale,
   WithStaticPoints,
+  WithControlledHighlightNoInteraction,
   WithSolidAndHollowStaticPoints,
   WithStaticPointsAndDialogs,
   ReferenceLineLayerFront,

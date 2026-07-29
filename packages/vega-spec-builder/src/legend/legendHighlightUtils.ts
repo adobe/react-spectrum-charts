@@ -130,12 +130,17 @@ export const markIsSeriesAware = (mark: Mark): boolean =>
   markUsesSeriesColorScale(mark) || isTrendlineOrMetricRangeLineMark(mark);
 
 /**
- * Determines if the supplied encoding uses a scale to set the value
+ * Determines if the supplied encoding uses a scale to set the value. Recurses into
+ * array-shaped production rules (conditional test/value pairs) since a mark's fill/stroke is
+ * often a fallback chain (e.g. static points' hollow-test override) where only one branch is
+ * scale-driven — the array itself never has a 'scale' key, only its elements might.
  * @param encoding
  * @returns boolean
  */
 export const encodingUsesScale = <T>(encoding?: ProductionRule<T>): boolean => {
-  if (!encoding || typeof encoding !== 'object') return false;
+  if (!encoding) return false;
+  if (Array.isArray(encoding)) return encoding.some((rule) => encodingUsesScale(rule));
+  if (typeof encoding !== 'object') return false;
   if ('scale' in encoding) return true;
   if ('signal' in encoding && typeof encoding.signal === 'string' && encoding.signal.includes('scale(')) {
     return true;
