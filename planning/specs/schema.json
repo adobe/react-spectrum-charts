@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/adobe/react-spectrum-charts/planning/specs/schema.json",
+  "title": "Chart Feature Spec",
+  "description": "One feature spec, produced by the generate-chart-spec skill from gathered design tokens/requirements, reviewed via PR, then consumed by the implement-new-* skills. See planning/specs/README.md for the full workflow and field-by-field guidance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "chartType",
+    "status",
+    "complexity",
+    "summary",
+    "requirements",
+    "edgeCases",
+    "crossCutting",
+    "implementationPlan"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Kebab-case slug, matches the filename without extension."
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable feature name."
+    },
+    "chartType": {
+      "type": "string",
+      "enum": ["area", "bar", "bigNumber", "bullet", "combo", "donut", "line", "scatter", "venn", "chart"],
+      "description": "Matches an existing markType, or 'chart' for a chart-level (not mark-specific) feature. Also determines the planning/specs/<chartType>/ directory the file lives in."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["approved", "implemented", "needs-revision"],
+      "description": "Defaults to 'approved' — a spec only lands in main once its PR is reviewed, so draft/in-review states are represented by the PR itself, not this field. Move to 'implemented' once the feature PR lands, or 'needs-revision' if the spec is found stale/wrong."
+    },
+    "complexity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "rationale"],
+      "properties": {
+        "score": {
+          "type": "integer",
+          "enum": [1, 2, 3, 5],
+          "description": "1-2 simple (plain passthrough prop), 3 moderate (new logic in one spec-builder function), 5 complex (new mark/child component or cross-cutting change). See README.md rubric."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Short free-text justification for the score."
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "1-3 sentence description of the feature."
+    },
+    "requirements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Behavior requirements gathered in phase 1, one per entry."
+    },
+    "designTokens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["token", "value", "usage"],
+        "properties": {
+          "token": { "type": "string" },
+          "value": { "type": "string" },
+          "usage": { "type": "string", "description": "Where/how this token applies." }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "url"],
+        "properties": {
+          "type": { "type": "string", "enum": ["figma", "jira", "other"] },
+          "url": { "type": "string" }
+        }
+      }
+    },
+    "edgeCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case", "expectedBehavior"],
+        "properties": {
+          "case": { "type": "string", "description": "Description of the scenario." },
+          "expectedBehavior": { "type": "string", "description": "What should happen." }
+        }
+      },
+      "description": "See README.md for the standard edge-case checklist (empty data, single point, many series, long labels, breakpoints, light/dark background, S1/S2 parity, accessibility, interaction conflicts)."
+    },
+    "crossCutting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "touchesHoverAnimation",
+        "touchesControlledHighlight",
+        "touchesLegendInteraction",
+        "touchesTooltipOrPopover",
+        "requiresNewSignalOrScale",
+        "requiresS1S2Parity"
+      ],
+      "properties": {
+        "touchesHoverAnimation": {
+          "type": "boolean",
+          "description": "The mouse-hover animation system (isAnimate gate, hoverAnimationUtils.ts, usermeta.animatedMark)."
+        },
+        "touchesControlledHighlight": {
+          "type": "boolean",
+          "description": "The externally-controlled highlight system (CONTROLLED_HIGHLIGHTED_TABLE/SERIES), driven by props/state rather than mouse position."
+        },
+        "touchesLegendInteraction": {
+          "type": "boolean",
+          "description": "Legend hover/click driving mark opacity/highlight (legendHighlightSignals)."
+        },
+        "touchesTooltipOrPopover": {
+          "type": "boolean",
+          "description": "The interactive-mark system (isInteractive, voronoi hover overlay, interactiveMarkName, COMPONENT_NAME popover-content matching)."
+        },
+        "requiresNewSignalOrScale": {
+          "type": "boolean",
+          "description": "A new Vega signal (needs a symmetric set/clear) or a new/extended facet scale (color/lineType/opacity)."
+        },
+        "requiresS1S2Parity": {
+          "type": "boolean",
+          "description": "Whether the corresponding vega-spec-builder (s1) file needs the mirrored change."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-text elaboration for any flag set to true above."
+        }
+      }
+    },
+    "implementationPlan": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "change"],
+        "properties": {
+          "file": { "type": "string", "description": "Repo-relative path." },
+          "change": { "type": "string", "description": "Description of what changes in this file." },
+          "lines": {
+            "type": "string",
+            "description": "Approximate line range at time of authoring, e.g. '88-129'. May drift — re-locate by symbol name if stale."
+          }
+        }
+      }
+    },
+    "openQuestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Anything unresolved that reviewers should weigh in on."
+    }
+  }
+}

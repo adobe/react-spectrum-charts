@@ -6,6 +6,18 @@ Read `.claude/architecture.md` for the dispatch pipeline, the sanitize gate (all
 
 ---
 
+## Step 0: Check for an Approved Spec
+
+Look for `planning/specs/<chartType>/<slug>.json` matching this feature. If one exists and
+`status` is `"approved"` or `"implemented"`, read it and treat its `requirements`,
+`edgeCases`, and `crossCutting` flags as authoritative instead of re-deriving them —
+`crossCutting` in particular tells you up front whether this component needs to interact
+with hover animation, controlled highlight, legend interaction, or tooltip/popover wiring.
+Use `implementationPlan` as a starting file checklist, re-locating by symbol name if its
+line numbers have drifted. If no spec exists, proceed as below.
+
+---
+
 ## Implementation Steps
 
 ### Step 1: Define types in `vega-spec-builder`
