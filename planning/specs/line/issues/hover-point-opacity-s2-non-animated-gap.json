@@ -5,6 +5,7 @@
   "kind": "bug",
   "variant": "s2",
   "status": "approved",
+  "lastUpdated": "2026-07-29",
   "complexity": {
     "score": 1,
     "rationale": "Adding two production rules (CONTROLLED_HIGHLIGHTED_TABLE/SERIES) plus a SELECTED_SERIES rule to one non-animated branch of one function, matching a pattern that already exists in getLineOpacityRules() for the line mark itself."

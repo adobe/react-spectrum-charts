@@ -12,6 +12,7 @@
     "kind",
     "variant",
     "status",
+    "lastUpdated",
     "complexity",
     "summary",
     "crossCutting",
@@ -56,6 +57,11 @@
       "type": "string",
       "enum": ["approved", "implemented", "needs-revision"],
       "description": "Defaults to 'approved' — a spec only lands in main once its PR is reviewed, so draft/in-review states are represented by the PR itself, not this field. Move to 'implemented' once the feature/fix PR lands, or 'needs-revision' if the spec is found stale/wrong. For kind: 'bug', 'approved' means the bug is filed and open; 'implemented' means it's fixed. Setting status to 'implemented' also means relocating the file into the 'implemented/' subfolder of its directory in the same PR — see README.md."
+    },
+    "lastUpdated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date (YYYY-MM-DD) of the last substantive edit to this spec. Must be obtained by running `date +%Y-%m-%d` in a shell — never inferred from a model's own sense of the current date, which can be stale or wrong. Update this any time any field in the spec changes, not just on creation. See README.md's 'Stamping lastUpdated' section."
     },
     "complexity": {
       "type": "object",

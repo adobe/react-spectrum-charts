@@ -5,6 +5,7 @@
   "kind": "bug",
   "variant": "s1",
   "status": "implemented",
+  "lastUpdated": "2026-07-30",
   "complexity": {
     "score": 3,
     "rationale": "Reused S1's own existing getLineOpacity() directly in getLineStaticPoint() — no signature change needed. Turned out to require two follow-on fixes beyond the initial encode change: a legend-hover detection gap in legendHighlightUtils.ts (encodingUsesScale didn't recurse into array-shaped fill/stroke), and a new always-opaque background mark to stop the line bleeding through dimmed hollow points. Still contained to a small, well-understood set of files, hence not scored 5."
@@ -32,11 +33,11 @@
   "crossCutting": {
     "touchesHoverAnimation": false,
     "touchesControlledHighlight": true,
-    "touchesLegendInteraction": false,
+    "touchesLegendInteraction": true,
     "touchesTooltipOrPopover": true,
     "requiresNewSignalOrScale": false,
     "requiresS1S2Parity": false,
-    "notes": "touchesControlledHighlight and touchesTooltipOrPopover are true because getLineOpacity() branches on CONTROLLED_HIGHLIGHTED_TABLE/CONTROLLED_HIGHLIGHTED_SERIES and on interactiveMarkName's HOVERED_ITEM/SELECTED_SERIES signals (set by the voronoi hover/tooltip and popover system) — the fix threads these through to points via the same function the line mark already uses, so no new signal wiring was needed. touchesHoverAnimation and touchesLegendInteraction are false in S1: grep confirms neither hoverAnimationUtils.ts nor legendHighlightSignals-equivalent signals are referenced anywhere in vega-spec-builder/src/line/lineMarkUtils.ts or legendSpecBuilder.ts — those mechanisms are S2-only. requiresS1S2Parity is false for *this* spec's fix (the S1 code path) because no S1 change requires a mirrored S2 change here; the separate, narrower S2 non-animated gap is tracked in its own follow-up spec rather than folded into this one."
+    "notes": "touchesControlledHighlight and touchesTooltipOrPopover are true because getLineOpacity() branches on CONTROLLED_HIGHLIGHTED_TABLE/CONTROLLED_HIGHLIGHTED_SERIES and on interactiveMarkName's HOVERED_ITEM/SELECTED_SERIES signals (set by the voronoi hover/tooltip and popover system) — the fix threads these through to points via the same function the line mark already uses, so no new signal wiring was needed. touchesLegendInteraction is true: fixing encodingUsesScale() in legendHighlightUtils.ts (array recursion) was required for legend hover to recognize static points as series-aware at all — this was not caught until implementation, after the flag was first set false based on lineMarkUtils.ts alone not referencing legend signals directly (still true, but incomplete — the legend side of the interaction lives in a separate file). touchesHoverAnimation is false in S1: grep confirms hoverAnimationUtils.ts is never referenced in vega-spec-builder/src/line/lineMarkUtils.ts — that mechanism is S2-only. requiresS1S2Parity is false for *this* spec's fix (the S1 code path) because no S1 change requires a mirrored S2 change here; the separate, narrower S2 non-animated gap is tracked in its own follow-up spec rather than folded into this one."
   },
   "implementationPlan": [
     {
@@ -60,6 +61,15 @@
     {
       "file": "packages/vega-spec-builder/src/line/lineSpecBuilder.test.ts",
       "change": "Fixed. Updated the displayPointMarks and metricRangeWithDisplayPointMarks toStrictEqual fixtures (addLineMarks() tests) to include the new fillOpacity/opacity default values, per the snapshot-test completeness checklist."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendHighlightUtils.ts",
+      "change": "Fixed. encodingUsesScale() now recurses into array-shaped production rules instead of only checking the top-level value for a 'scale' key — needed because static points' fill/stroke are conditional arrays (hollow-test fallback), which previously made markIsSeriesAware() always return false for them, excluding them from the legend-hover opacity splice entirely.",
+      "lines": "137-144"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendHighlightUtils.test.ts",
+      "change": "Fixed. Added array-recursion cases to the encodingUsesScale() describe block and a static-point-shaped mark case to setHoverOpacityForMarks() confirming it now receives the legend-hover opacity rule."
     },
     {
       "file": "packages/vega-spec-builder/src/chartSpecBuilder.ts",

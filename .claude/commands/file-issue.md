@@ -53,6 +53,8 @@ Fill out every required field from `schema.json`:
   checked, use that one and leave an `openQuestions` entry for the other, or set
   `crossCutting.requiresS1S2Parity: true` with a note.
 - `status`: `"approved"` (default — means filed/open for a bug; see README.md)
+- `lastUpdated`: run `date +%Y-%m-%d` in a shell and use its literal output — never your own
+  sense of the current date. See README.md's "Stamping lastUpdated."
 - `complexity`: score (`1|2|3|5`) + a one-line rationale, using the rubric in README.md —
   score by how much the *fix* is expected to touch, not how hard the bug was to find
 - `symptom`: 1-2 sentences, the observable/user-facing behavior

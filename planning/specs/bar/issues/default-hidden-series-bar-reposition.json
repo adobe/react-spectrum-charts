@@ -5,6 +5,7 @@
   "kind": "bug",
   "variant": "s1",
   "status": "approved",
+  "lastUpdated": "2026-07-29",
   "complexity": {
     "score": 3,
     "rationale": "Likely a single re-embed/trigger gap between the defaultHiddenSeries initial signal seed and a runtime legend toggle, rather than a new mechanism — but needs confirmation on main before the fix can be scoped further."

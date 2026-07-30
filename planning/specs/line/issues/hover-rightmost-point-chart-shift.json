@@ -5,6 +5,7 @@
   "kind": "bug",
   "variant": "s2",
   "status": "approved",
+  "lastUpdated": "2026-07-29",
   "complexity": {
     "score": 5,
     "rationale": "Root cause is unconfirmed and likely spans the autosize/layout system rather than a single encode site; the same autosize config and hover-mark structure exist in both S1 and S2, so the fix may need to be verified/applied in both."

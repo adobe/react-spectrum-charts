@@ -180,6 +180,49 @@ this move as part of their completion steps; when checking for an existing spec 
 check both the base directory and its `implemented/` subfolder, since a spec already marked
 `implemented` can still be useful context (e.g. for a regression).
 
+## Reconcile the whole spec before marking `implemented`
+
+Specs get edited incrementally as implementation progresses — a mid-implementation discovery
+(a second file that also needed fixing, a flag that turns out to be true after all) tends to
+get patched into whichever field prompted it (`rootCause`, `comparison`) without revisiting
+the others. That's how a spec ends up internally inconsistent: e.g. `rootCause` describing a
+fix to `legendHighlightUtils.ts` while `crossCutting.touchesLegendInteraction` still says
+`false` and `implementationPlan` never lists that file, because the flag and the plan were
+set once during initial filing and never revisited after the later discovery changed the
+facts. This is especially easy to miss across multiple turns or when work is split across
+agents — each edit looks locally correct without a final pass over the whole document.
+
+Before setting `status: "implemented"`, treat this as a mandatory close-out step, not a
+courtesy check:
+
+- Run `git status`/`git diff --stat` against the base branch and confirm every changed file
+  appears in `implementationPlan`. Add any that don't — including files you only fixed as a
+  side effect of the main change.
+- Re-derive every `crossCutting` flag against the *final* diff, not the state of the
+  investigation when the spec was first filed or when `rootCause` was last edited. A flag
+  that was correctly `false` at filing time can become `true` after a mid-implementation
+  discovery, or vice versa.
+- Treat any edit to one narrative field (`rootCause`, `summary`, `comparison`) as a trigger to
+  re-check every other field in the same spec, not just the one you're touching — they
+  describe the same underlying set of facts, so a change to what happened should prompt
+  checking whether it changed what you'd say elsewhere too.
+
+## Stamping `lastUpdated`
+
+Every spec has a `lastUpdated` field (`YYYY-MM-DD`). Whenever you create or modify a spec —
+filing it, editing any field during implementation, the reconciliation pass above, anything —
+update `lastUpdated` to the current date.
+
+**Get that date by running `date +%Y-%m-%d` in a shell, not from your own sense of "today."**
+A model's internal notion of the current date can be stale, wrong, or simply absent depending
+on the environment, and this field exists specifically so a spec's staleness can be trusted —
+a wrong date defeats the purpose. Never hand-write a date into `lastUpdated` without having
+just run the command and used its literal output.
+
+This is what makes staleness checkable at all: a spec with an old `lastUpdated` next to a
+codebase that's since moved on is a signal to re-verify `rootCause`/`implementationPlan`
+before trusting them (see the Step 0 guidance in each `implement-*` skill).
+
 ## Schema
 
 See `schema.json` for the full field-level contract (required fields, enums, shapes).

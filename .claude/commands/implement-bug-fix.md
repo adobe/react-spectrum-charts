@@ -22,7 +22,12 @@ the code no longer matches the spec's description, update the spec (`status:
 "needs-revision"` or a corrected `rootCause`) as part of the fix PR. If no spec exists,
 proceed as below.
 
-When the bug is fixed, set the spec's `status` to `"implemented"` and `git mv` the file into
+Before setting `status` to `"implemented"`, reconcile the whole spec against the final diff —
+see README.md's "Reconcile the whole spec before marking implemented." A discovery made
+mid-implementation (a second file that needed fixing, a `crossCutting` flag that turns out to
+be true) must be reflected everywhere it's relevant, not just in `rootCause`. Any time you
+touch a field, re-stamp `lastUpdated` with the output of `date +%Y-%m-%d` — never a
+hand-written guess. Then `git mv` the file into
 `planning/specs/<chartType>/issues/implemented/<slug>.json` as part of the same PR.
 
 ---

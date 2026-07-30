@@ -18,8 +18,13 @@ interaction, or tooltip/popover wiring, and whether S1/S2 parity is required. Us
 `implementationPlan` as a starting file checklist, re-locating by symbol name if its line
 numbers have drifted. If no spec exists, proceed as below.
 
-When the mark ships, set the spec's `status` to `"implemented"` and `git mv` the file into
-`planning/specs/<chartType>/implemented/<slug>.json` as part of the same PR.
+Before setting `status` to `"implemented"`, reconcile the whole spec against the final diff —
+see README.md's "Reconcile the whole spec before marking implemented." A discovery made
+mid-implementation must be reflected everywhere it's relevant (`crossCutting`,
+`implementationPlan`), not just wherever you first noted it. Any time you touch a field,
+re-stamp `lastUpdated` with the output of `date +%Y-%m-%d` — never a hand-written guess. Then
+`git mv` the file into `planning/specs/<chartType>/implemented/<slug>.json` as part of the
+same PR.
 
 ---
 

@@ -62,6 +62,8 @@ Fill out every required field from `schema.json`:
   and the resulting `implementationPlan` actually target. See README.md's `variant` section
   for how this differs from `crossCutting.requiresS1S2Parity`.
 - `status`: `"approved"` (default — see README.md for why there's no draft/in-review state)
+- `lastUpdated`: run `date +%Y-%m-%d` in a shell and use its literal output — never your own
+  sense of the current date. See README.md's "Stamping lastUpdated."
 - `complexity`: score (`1|2|3|5`) + a one-line rationale, using the rubric in README.md
 - `requirements`: the behavior requirements from Step 1, as discrete bullets
 - `designTokens` / `references`: from Step 1, if any were gathered
