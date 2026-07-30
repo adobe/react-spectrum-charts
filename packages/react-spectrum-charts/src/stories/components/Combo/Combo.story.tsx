@@ -13,12 +13,14 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { ColorFacet } from '@spectrum-charts/vega-spec-builder';
+
 import { Chart } from '../../../Chart';
 import { Combo } from '../../../alpha';
 import { Axis, Bar, ChartTooltip, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
+import { ChartProps, ComboProps } from '../../../types';
 import { peopleAdoptionComboData, peopleTotalComboData } from '../../data/data';
 import { formatTimestamp } from '../../storyUtils';
 
@@ -34,19 +36,26 @@ const defaultChartProps: ChartProps = {
   height: 400,
 };
 
+/**
+ * Shared people/adoption-rate combo marks, reused by the s2 combo story so the two don't drift.
+ * `lineColor` is the only thing that differs between the s1 and s2 renderings.
+ */
+export const getPeopleAdoptionComboMarks = (
+  args: ComboProps,
+  lineColor: ColorFacet = { value: 'indigo-900' }
+): ReactElement[] => [
+  <Axis key="left" position="left" title="People" grid />,
+  <Axis key="right" position="right" name="adoption" title="Adoption Rate" />,
+  <Axis key="bottom" position="bottom" labelFormat="time" baseline ticks />,
+  <Combo key="combo" {...args}>
+    <Bar metric="people" />
+    <Line metric="adoptionRate" metricAxis="adoption" color={lineColor} scaleType="point" />
+  </Combo>,
+];
+
 const BasicComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" title="People" grid />
-      <Axis position="right" name="adoption" title="Adoption Rate" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Combo {...args}>
-        <Bar metric="people" />
-        <Line metric="adoptionRate" metricAxis="adoption" color={{ value: 'indigo-900' }} scaleType="point" />
-      </Combo>
-    </Chart>
-  );
+  return <Chart {...chartProps}>{getPeopleAdoptionComboMarks(args)}</Chart>;
 };
 
 const TooltipStory: StoryFn<typeof Combo> = (args): ReactElement => {

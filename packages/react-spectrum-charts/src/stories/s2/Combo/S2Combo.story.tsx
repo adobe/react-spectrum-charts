@@ -15,11 +15,11 @@ import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
 import { Combo } from '../../../alpha';
-import { Axis, Bar, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { peopleAdoptionComboData } from '../../data/data';
+import { getPeopleAdoptionComboMarks } from '../../components/Combo/Combo.story';
 
 export default {
   title: 'RSC/Chart/S2/Combo',
@@ -36,17 +36,7 @@ const defaultChartProps: ChartProps = {
 
 const S2ComboStory: StoryFn<typeof Combo> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" title="People" grid />
-      <Axis position="right" name="adoption" title="Adoption Rate" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Combo {...args}>
-        <Bar metric="people" />
-        <Line metric="adoptionRate" metricAxis="adoption" color={{ value: 'categorical-200' }} scaleType="point" />
-      </Combo>
-    </Chart>
-  );
+  return <Chart {...chartProps}>{getPeopleAdoptionComboMarks(args, { value: 'categorical-200' })}</Chart>;
 };
 
 const S2Combo = bindWithProps(S2ComboStory);
