@@ -53,6 +53,7 @@ export const addLine = produce<
       index?: number;
       idKey: string;
       comboSiblingNames?: string[];
+      s2?: boolean;
     }
   ]
 >(

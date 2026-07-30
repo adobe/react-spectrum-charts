@@ -233,7 +233,8 @@ export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): 
 export const getColorProductionRule = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+  s2 = false
 ): ColorValueRef => {
   const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
   if (Array.isArray(color)) {
@@ -244,7 +245,7 @@ export const getColorProductionRule = (
   if (typeof color === 'string') {
     return { scale: colorScaleName, field: color };
   }
-  return { value: getColorValue(color.value, colorScheme) };
+  return { value: getColorValue(color.value, colorScheme, s2) };
 };
 
 /**
@@ -257,9 +258,10 @@ export const getColorProductionRule = (
 export const getColorProductionRuleSignalString = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+  s2 = false
 ): string => {
-  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType);
+  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType, s2);
   if ('signal' in colorRule) {
     return colorRule.signal;
   }

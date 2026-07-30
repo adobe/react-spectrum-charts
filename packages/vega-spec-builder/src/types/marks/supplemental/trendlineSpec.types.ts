@@ -111,6 +111,7 @@ export interface TrendlineSpecOptions extends PartiallyRequired<TrendlineOptions
   isDimensionNormalized: boolean;
   metric: string;
   name: string;
+  s2?: boolean;
   trendlineColor: ColorFacet;
   trendlineDimension: string;
   trendlineMetric: string;

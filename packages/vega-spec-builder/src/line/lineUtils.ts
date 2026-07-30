@@ -85,6 +85,7 @@ export interface LineMarkOptions {
   name: string;
   opacity: OpacityFacet;
   popoverMarkName?: string;
+  s2?: boolean;
   scaleType: ScaleType;
   scatterPaths?: ScatterPathOptions[];
   segmentLabels?: SegmentLabelOptions[];
