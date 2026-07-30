@@ -36,13 +36,15 @@ const defaultChartProps: ChartProps = {
   height: 400,
 };
 
+const DEFAULT_LINE_COLOR: ColorFacet = { value: 'indigo-900' };
+
 /**
  * Shared people/adoption-rate combo marks, reused by the s2 combo story so the two don't drift.
  * `lineColor` is the only thing that differs between the s1 and s2 renderings.
  */
 export const getPeopleAdoptionComboMarks = (
   args: ComboProps,
-  lineColor: ColorFacet = { value: 'indigo-900' }
+  lineColor: ColorFacet = DEFAULT_LINE_COLOR
 ): ReactElement[] => [
   <Axis key="left" position="left" title="People" grid />,
   <Axis key="right" position="right" name="adoption" title="Adoption Rate" />,
