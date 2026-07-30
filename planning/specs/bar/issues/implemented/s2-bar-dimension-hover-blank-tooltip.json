@@ -1,0 +1,53 @@
+{
+  "id": "s2-bar-dimension-hover-blank-tooltip",
+  "title": "S2 Bar Nearest-Hover Highlight Shows Blank Tooltip",
+  "chartType": "bar",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-07-30",
+  "complexity": {
+    "score": 3,
+    "rationale": "Fix re-gates one existing encode key (a conditional tooltip encode) and restores one small helper function that was deleted; no new mark, signal, or scale is needed since the underlying rect/signal must stay unconditional for a separate intended feature."
+  },
+  "summary": "In S2 bar charts, hovering the padding gap next to a bar correctly triggers the intended nearest-bar highlight, but also populates a tooltip from an aggregate datum missing the metric/series fields the tooltip content needs, so the tooltip renders blank.",
+  "symptom": "Hovering just outside a bar (in the gap between bars) in an S2 bar chart highlights the nearest bar as intended, but shows a tooltip with no value instead of the metric value shown when hovering directly over the bar.",
+  "rootCause": "packages/vega-spec-builder-s2/src/bar/barUtils.ts:610-627 (getBarDimensionHoverArea) sets its `tooltip` encode key via `getInspectEncoding(options.chartInspects ?? [], ..., { dimension })` unconditionally whenever `chartInspects.length > 0` (markUtils.ts:90-115 has no target-based gating). This rect's `from` data source is `${barName}_stacks` / `${barName}_groups` (barSpecBuilder.ts, getStackAggregateData ~234-249 and getDodgedGroupAggregateData ~271-283), which are aggregate sources carrying only grouping/aggregate fields (e.g. an auto-named `min_<metric>1`, or just the dimension for dodged) - not the plain metric/series fields a normal item tooltip's content reads, so the tooltip renders blank. This rect mark is added unconditionally by stackedBarUtils.ts:37 and dodgedBarUtils.ts:86 whenever `isInteractive(options)` is true, which is correct and intentional (needed by the axis-label-hover feature and by the nearest-bar highlight fade rule in chartInspectUtils.ts's addHoverdDimenstionAreaOpacityRules, both of which depend on this mark and its `${name}_dimensionHoverArea_hoveredItem` signal existing for every interactive bar chart) - but its `tooltip` encode key was left ungated when the surrounding mark-creation gate changed. Before commit 7bfc581c365da5070376f2f8fc2e1725d5fe1940 ('feat: AN-456589 Highlight bar on axis label hover', 2026-07-21), the whole mark - and by extension this tooltip - only ever existed when `hasInspectWithDimensionAreaTarget(options.chartInspects)` was true (an inspect explicitly targeting `'dimensionArea'`). That commit deleted `hasInspectWithDimensionAreaTarget` entirely and replaced the mark-creation checks with `isInteractive(options)`, so now any interactive bar chart with only the default item tooltip (`targets: ['item']` per `applyInspectPropDefaults`, chartInspectUtils.ts:62) also gets a tooltip from this rect whenever the nearest-bar-hover behavior fires.",
+  "comparison": [
+    {
+      "aspect": "Gating of the dimension-hover-area rect's tooltip encode",
+      "expected": "S1's packages/vega-spec-builder/src/bar/stackedBarUtils.ts:35 and dodgedBarUtils.ts:74 only ever create getBarDimensionHoverArea (barUtils.ts:448) when hasTooltipWithDimensionAreaTarget(options.chartTooltips) is true, so its own unconditional tooltip encode (barUtils.ts:462) only ever fires for charts that opted into targets: ['dimensionArea'].",
+      "actual": "S2's getBarDimensionHoverArea (barUtils.ts:623) sets a tooltip encode unconditionally whenever chartInspects.length > 0, and the mark itself is now created by stackedBarUtils.ts:37 / dodgedBarUtils.ts:86 whenever isInteractive(options) is true (any tooltip/popover/onClick/trendline), so the tooltip fires even for the default item-target tooltip."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesTooltipOrPopover is true because the defect is precisely a tooltip content bug in the interactive-mark/inspect system (getInspectEncoding + isInteractive gating). requiresS1S2Parity is false because S1 does not reproduce this bug - dodgedBarUtils.ts:74 / stackedBarUtils.ts:35 still gate the entire dimensionHoverArea mark behind hasTooltipWithDimensionAreaTarget(options.chartTooltips), so S1's own unconditional tooltip line never fires outside an explicit dimensionArea target. S1's gating function is the reference the S2 fix should restore, but scoped only to the tooltip encode key - not to the mark/signal's existence, which S2 correctly needs unconditional for the axis-label-hover feature (AN-456589) and the nearest-bar highlight fade rule."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barUtils.ts",
+      "change": "In getBarDimensionHoverArea, gate the `tooltip` encode key so it's only set when an inspect targets 'dimensionArea' (restore the check removed in 7bfc581), instead of unconditionally calling getInspectEncoding whenever chartInspects.length > 0. Leave the rest of the mark (name, from, interactive: true, position encodings) untouched - it must keep existing unconditionally for every interactive bar chart.",
+      "lines": "610-627"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/chartInspect/chartInspectUtils.ts",
+      "change": "Re-add a hasInspectWithDimensionAreaTarget(chartInspects) export (deleted in 7bfc581 alongside the addHoverdDimenstionAreaOpacityRules gate change) for barUtils.ts to import and use only at the tooltip encode site. Do not use it to gate mark or signal creation in stackedBarUtils.ts, dodgedBarUtils.ts, or barSpecBuilder.ts's addSignals - those must stay unconditional on isInteractive(options) for the axis-label-hover and nearest-bar-highlight fade behavior to keep working.",
+      "lines": "~230-243 (near addHoverdDimenstionAreaOpacityRules, where the deleted function used to live)"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barUtils.test.ts",
+      "change": "Add a regression test asserting getBarDimensionHoverArea's tooltip encode is undefined when chartInspects has no dimensionArea-targeting entry (default item tooltip), and still populated when one does.",
+      "lines": "n/a - new test cases"
+    }
+  ],
+  "openQuestions": [
+    "Is the nearest-bar opacity fade highlight itself (addHoverdDimenstionAreaOpacityRules in chartInspectUtils.ts, gated only on markType === 'bar') intended to apply unconditionally to every interactive bar chart regardless of inspect target, or should it also be scoped to dimensionArea-targeting inspects? This fix assumed the fade highlight is desired as-is (the reporting user described it as 'fine') and scoped the fix to the tooltip content only - still open if that assumption needs revisiting."
+  ],
+  "relatedIssues": ["s2-bar-axis-label-fade-inconsistent-hover-source"]
+}

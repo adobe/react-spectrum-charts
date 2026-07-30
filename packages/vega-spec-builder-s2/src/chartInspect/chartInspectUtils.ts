@@ -240,3 +240,8 @@ export const addHoverdDimenstionAreaOpacityRules = (
     signal: `${hoveredItemSignal}.${dimension} === datum.${dimension} ? 1 : ${FADE_FACTOR}`,
   });
 };
+
+/** Whether any inspect on this mark targets the dimension-hover-area rect's own tooltip, rather than just the item mark. */
+export const hasInspectWithDimensionAreaTarget = (chartInspects: ChartInspectOptions[]) => {
+  return chartInspects.some(({ targets }) => targets?.includes('dimensionArea'));
+};
