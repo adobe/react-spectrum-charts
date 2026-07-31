@@ -201,7 +201,7 @@ describe('addDrawInClockSignals()', () => {
     const signals: Signal[] = [];
     addDrawInClockSignals(signals);
     expect(signals).toStrictEqual([
-      { name: 'drawInStart', update: 'now()' },
+      { name: 'drawInStart', init: 'now()' },
       {
         name: 'drawInAnimT',
         init: '0',
