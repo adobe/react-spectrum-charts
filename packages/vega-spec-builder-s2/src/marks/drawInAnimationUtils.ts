@@ -179,10 +179,13 @@ export const getLineDrawInData = (options: LineSpecOptions): Data[] => {
 /**
  * Adds the shared mount-timer chain (`drawInStart` -> `drawInAnimT` -> `drawInAnimTEased`) every
  * draw-in animated mark reads from.
+ * `drawInStart` - captures the wall clock time once at the start of the animation
+ * `drawInAnimT` - the animation progess (t) from 0-1
+ * `drawInAnimTEased` - the animation progress with easing applied. Current easing formula is in-out quadratic
  */
 export const addDrawInClockSignals = (signals: Signal[]): void => {
   if (!hasSignalByName(signals, DRAW_IN_START)) {
-    signals.push({ name: DRAW_IN_START, update: 'now()' });
+    signals.push({ name: DRAW_IN_START, init: 'now()' });
   }
   if (!hasSignalByName(signals, DRAW_IN_ANIM_T)) {
     signals.push({
