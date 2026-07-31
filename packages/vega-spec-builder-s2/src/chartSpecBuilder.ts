@@ -99,21 +99,37 @@ import {
 } from './types';
 
 /**
- * When a chart has exactly one bar mark, every category maps to rows that agree in sign, and the
- * given axis position is that bar's dimension axis, returns the context `diverging` needs to look
- * up each category's paired bar value.
- *
- * A category is only ambiguous when its rows *disagree* in sign (e.g. "New"/"Churned" per month —
- * one row positive, one negative) — there, the sign lookup would arbitrarily pick whichever row
- * comes first and silently mislabel the rest, so `diverging` falls back to default axis positioning
- * (the axis stays at the chart edge, same as if `diverging` were never set) instead of guessing.
- *
- * A category with multiple rows that all share the same sign (e.g. a dodged "This Year"/"Last
- * Year" comparison where both periods grew, or both declined) isn't ambiguous — every row agrees,
- * so the lookup is correct regardless of which row it finds, and the empty side of zero really is
- * empty for that category. Those categories don't block `diverging` from activating.
+ * A dodged two-series always-opposite-sign split (population-pyramid, e.g. "New" always positive,
+ * "Churned" always negative): each series is consistently signed and the two are opposite, so every
+ * bar has an unambiguous sign to flip its label against — unlike a stacked mixed-sign category.
  */
-const getDivergingBarContext = (
+const isTwoSeriesOppositeSignDodged = (bar: BarOptions, data: ChartOptions['data'], metric: string): boolean => {
+  if (bar.type !== 'dodged') return false;
+  const series = typeof bar.color === 'string' ? bar.color : undefined;
+  if (!series) return false;
+
+  const signBySeries = new Map<unknown, number>();
+  for (const datum of data ?? []) {
+    if (typeof datum !== 'object' || datum === null || !(series in datum) || !(metric in datum)) continue;
+    const value = (datum as Record<string, unknown>)[metric];
+    if (typeof value !== 'number' || value === 0) continue;
+    const seriesKey = (datum as Record<string, unknown>)[series];
+    const sign = value < 0 ? -1 : 1;
+    if (signBySeries.get(seriesKey) === -sign) return false; // this series isn't consistently signed
+    signBySeries.set(seriesKey, sign);
+  }
+  const signs = [...signBySeries.values()];
+  return signs.length === 2 && signs[0] !== signs[1];
+};
+
+/**
+ * Returns the context `diverging` needs to look up each category's paired bar sign — only when the
+ * chart has exactly one bar mark and this axis is its dimension axis. Declines when a category's rows
+ * disagree in sign (the lookup would pick one arbitrarily and mislabel the rest), except a dodged
+ * two-series always-opposite-sign split ({@link isTwoSeriesOppositeSignDodged}). Same-signed multi-row
+ * categories are never ambiguous and don't block activation.
+ */
+export const getDivergingBarContext = (
   marks: MarkOptions[],
   data: ChartOptions['data'],
   position: Position
@@ -142,7 +158,9 @@ const getDivergingBarContext = (
   const hasCategoryWithConflictingSigns = [...hasPositiveByCategory].some((category) =>
     hasNegativeByCategory.has(category)
   );
-  if (hasCategoryWithConflictingSigns) return undefined;
+  if (hasCategoryWithConflictingSigns && !isTwoSeriesOppositeSignDodged(bar, data, metric)) {
+    return undefined;
+  }
 
   return {
     dataName: FILTERED_TABLE,
@@ -262,8 +280,9 @@ export function buildSpec({
     });
   }, spec);
 
+  const hasDivergingBar = marks.some((mark) => mark.markType === 'bar' && mark.diverging);
   spec = [...axes].reduce((acc: ScSpec, axis, index) => {
-    const divergingContext = axis.diverging ? getDivergingBarContext(marks, data, axis.position) : undefined;
+    const divergingContext = hasDivergingBar ? getDivergingBarContext(marks, data, axis.position) : undefined;
     return addAxis(acc, {
       ...axis,
       ...specOptions,

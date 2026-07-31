@@ -2,7 +2,7 @@
 
 > **Status: Implemented (S2 only).**
 > Ticket AN-456581 started as a research spike; the recommendation below was implemented directly
-> in the same pass rather than handed off to a follow-up ticket. The `<Axis diverging>` prop now
+> in the same pass rather than handed off to a follow-up ticket. The `<Bar diverging>` prop now
 > exists in `vega-spec-builder-s2` — see [Implementation Summary](#implementation-summary) for
 > what shipped and what's still open.
 
@@ -133,7 +133,7 @@ already computes** — not to invent a new positioning concept.
 ## Implementation Summary
 
 The recommendation was carried out directly rather than handed off: **the native Vega `Axis` was
-not replaced.** A new opt-in `<Axis diverging>` prop (S2 only) layers two additive changes on top of
+not replaced.** A new opt-in `<Bar diverging>` prop (S2 only) layers two additive changes on top of
 the real `Axis` object:
 
 1. `offset` set to a signal that relocates the whole axis group to the opposing linear scale's zero
@@ -184,7 +184,7 @@ Story: `DivergingConversionRates` in
 
 | Ticket | Scope | Status |
 | --- | --- | --- |
-| [AN-462749](https://jira.corp.adobe.com/browse/AN-462749) | Land the core `<Axis diverging>` feature: unit tests, Figma validation, extend label-flip to two-series always-opposite-sign bars | Ready |
+| [AN-462749](https://jira.corp.adobe.com/browse/AN-462749) | Land the core `<Bar diverging>` feature: unit tests, Figma validation, extend label-flip to two-series always-opposite-sign bars | Ready |
 | [AN-462755](https://jira.corp.adobe.com/browse/AN-462755) | Research spike: should trellis + diverging be a supported combination? | Blocked on Alan's final call |
 | [AN-462759](https://jira.corp.adobe.com/browse/AN-462759) | `AxisThumbnail` position should follow the diverging axis offset | Ready |
 | [AN-462760](https://jira.corp.adobe.com/browse/AN-462760) | Long-label handling (adaptive truncation + wrapping) on diverging axes, including vertical-axis sub-label wrapping | Blocked on design input |

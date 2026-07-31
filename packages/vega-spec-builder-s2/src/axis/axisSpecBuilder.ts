@@ -97,7 +97,6 @@ export const addAxis = produce<
       baseline = false,
       baselineOffset = 0,
       colorScheme = DEFAULT_COLOR_SCHEME,
-      diverging = false,
       divergingContext,
       granularity = DEFAULT_GRANULARITY,
       grid = false,
@@ -134,7 +133,6 @@ export const addAxis = produce<
       baseline,
       baselineOffset,
       colorScheme,
-      diverging,
       granularity,
       grid,
       hideDefaultLabels,
@@ -462,27 +460,21 @@ export const addAxes = produce<
     newAxes[0] = setAxisBaseline(newAxes[0], baseline);
   }
 
-  // reposition to the zero baseline and flip labels by sign for a diverging bar chart.
-  // `divergingContext` is only produced when a `<Bar diverging>` mark is present and this is its
-  // dimension axis (see getDivergingBarContext in chartSpecBuilder), so its presence is the gate.
+  // move the axis to the zero line and flip labels by sign. `divergingContext` exists only for a
+  // `<Bar diverging>` mark's dimension axis (see getDivergingBarContext), so it gates this block.
   if (divergingContext && opposingScaleType === 'linear' && opposingScaleName) {
     const isNegativeTest = getDivergingTickIsNegativeTest(divergingContext);
     const offset = getDivergingAxisOffset(position, opposingScaleName);
     const alignOrBaselineKey = isVerticalAxis(position) ? 'align' : 'baseline';
     const offsetKey = isVerticalAxis(position) ? 'dx' : 'dy';
 
-    // apply to every axis in this group (the main axis, and the sub-label/primary-time-axis if
-    // present) so they move together and stay aligned — each axis's own labelPadding must be used,
-    // since the sub-label axis sets a larger, different labelPadding than the main axis's default
+    // apply to every axis in the group (main + sub-label/time axis) so they move together, using
+    // each axis's own labelPadding (the sub-label axis's differs from the main axis default).
     newAxes.forEach((divergingAxis, index) => {
       const labelPadding = typeof divergingAxis.labelPadding === 'number' ? divergingAxis.labelPadding : undefined;
 
-      // the primary time axis positions itself with a static `enter.dy` (e.g. +20px, to sit below
-      // the secondary month/day row) — Vega's `update` always supersedes `enter` for the same
-      // property on the same mark, so writing our own `update.dx`/`dy` would silently erase that
-      // static offset and collapse the two rows onto each other. `getDivergingLabelEncode` folds
-      // this "extra outward push" into its own per-branch math (it must flip sign when the row
-      // flips, not just add), rather than being layered on externally.
+      // a static `enter.dy` (e.g. the time axis stacking rows) would be erased by our `update`
+      // (update supersedes enter), so fold it into getDivergingLabelEncode where it flips with the row.
       const existingEnterOffset = divergingAxis.encode?.labels?.enter?.[offsetKey];
       const extraOutwardOffset =
         existingEnterOffset && typeof existingEnterOffset === 'object' && 'value' in existingEnterOffset
@@ -490,10 +482,8 @@ export const addAxes = produce<
           : 0;
       const divergingLabelEncode = getDivergingLabelEncode(position, isNegativeTest, labelPadding, extraOutwardOffset);
 
-      // an axis using `labels`/`subLabels` controlled overrides already has its own align/baseline
-      // rule array — deepmerge would concatenate it with diverging's, stranding an untested
-      // fallback rule mid-array (invalid Vega, crashes the parser). Merge by priority instead: the
-      // explicit per-value override wins when it matches, otherwise diverging's flip decides.
+      // an axis with controlled `labels`/`subLabels` already has an align/baseline rule array; merge
+      // by priority (its override wins, else diverging's flip) so deepmerge replaces, not concatenates.
       const existingAlignOrBaseline = divergingAxis.encode?.labels?.update?.[alignOrBaselineKey];
       const alignOrBaseline = existingAlignOrBaseline
         ? getPriorityMergedSignal(existingAlignOrBaseline, divergingLabelEncode.update[alignOrBaselineKey])
@@ -629,9 +619,8 @@ function applyAxisThumbnailEncodings(newAxes: Axis[], axisOptions: AxisSpecOptio
 
     // apply encodings to all axes
     for (const axis of newAxes) {
-      // Combine additively instead of letting deepmerge concatenate two independent rule arrays
-      // (e.g. diverging's dx/dy) — concatenation strands the first array's untested fallback rule
-      // mid-array, which is invalid Vega and crashes the parser ("Illegal callee type: Literal").
+      // sum with any existing offset (e.g. diverging's dx/dy); deepmerge would concatenate the two
+      // rule arrays, stranding an untested fallback mid-array and crashing the parser.
       const existingOffset = axis.encode?.labels?.update?.[offsetKey];
       const combinedOffset = existingOffset
         ? { signal: `${productionRuleToExpr(existingOffset)} + ${productionRuleToExpr(thumbnailOffset)}` }

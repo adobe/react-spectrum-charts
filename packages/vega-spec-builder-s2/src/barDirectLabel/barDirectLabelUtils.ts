@@ -11,26 +11,17 @@
  */
 import { ColorValueRef, Mark, TextMark } from 'vega';
 
-import {
-  BACKGROUND_COLOR,
-  DEFAULT_FONT_SIZE,
-  DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
-  DIRECT_LABEL_FONT_WEIGHT,
-  FILTERED_TABLE,
-} from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
 
 import { getOrientationProperties } from '../bar/barUtils';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils';
-import { getTextNumberFormat } from '../textUtils';
 import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types';
 
-// Pixel gap between the bar tip and the label (end-outside, when the label doesn't fit inside the bar)
+// Pixel gap between the bar tip and the label (end-outside)
 const VERTICAL_LABEL_OFFSET = 6;
 const HORIZONTAL_LABEL_OFFSET = 8;
-// Pixel gap between the label and the bar edge for inside positions (start, end, middle, and end-outside when it fits)
+// Pixel gap between the label and the bar edge for inside positions (start, end, middle)
 const INSIDE_LABEL_OFFSET = 8;
-// Extra clearance required on either side of the label for it to be considered "fits inside the bar"
-const FIT_PADDING = 2 * INSIDE_LABEL_OFFSET;
 const DEFAULT_NUMBER_FORMAT = ',.2~f';
 
 /**
@@ -39,16 +30,14 @@ const DEFAULT_NUMBER_FORMAT = ',.2~f';
  * @param isVertical - whether the bar is vertically oriented
  * @param metric - the metric field name
  * @param metricScaleKey - the Vega scale name for the metric axis
- * @param fillEncoding - the series color encoding used for labels placed outside the bar
- * @param textSignal - the Vega signal expression that produces the label's text
+ * @param fillEncoding - the series color encoding used for end-outside labels
  */
 export const getBarDirectLabelPositionEncodings = (
   position: BarDirectLabelPositionType,
   isVertical: boolean,
   metric: string,
   metricScaleKey: string,
-  fillEncoding: ColorValueRef,
-  textSignal: string
+  fillEncoding: ColorValueRef
 ) => {
   if (position === 'middle') {
     const midSignal = `(scale('${metricScaleKey}', 0) + scale('${metricScaleKey}', datum['${metric}'])) / 2`;
@@ -57,19 +46,18 @@ export const getBarDirectLabelPositionEncodings = (
       verticalBaseline: { value: 'middle' as const },
       horizontalAlign: { value: 'center' as const },
       seriesFill: { signal: BACKGROUND_COLOR },
-      isInsideTest: undefined as string | undefined,
     };
-  }
-
-  if (position === 'end-outside') {
-    return getAdaptiveEndPositionEncodings(isVertical, metric, metricScaleKey, fillEncoding, textSignal);
   }
 
   // 'end' reverses offset direction and baseline/align relative to 'end-outside' and 'start'
   const isEndInside = position === 'end';
+  const isEndOutside = position === 'end-outside';
   const directionMultiplier = isEndInside ? -1 : 1;
 
-  // 'start' anchors to the bar baseline (0), 'end' anchors to the bar tip (metric)
+  const verticalOffset = isEndOutside ? VERTICAL_LABEL_OFFSET : INSIDE_LABEL_OFFSET;
+  const horizontalOffset = isEndOutside ? HORIZONTAL_LABEL_OFFSET : INSIDE_LABEL_OFFSET;
+
+  // 'start' anchors to the bar baseline (0), the others anchor to the bar tip (metric)
   const anchor = position === 'start' ? { value: 0 } : { field: metric };
 
   const [negBaseline, posBaseline] = isEndInside
@@ -83,12 +71,12 @@ export const getBarDirectLabelPositionEncodings = (
   return {
     metricAxisEncoding: isVertical
       ? [
-          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: directionMultiplier * INSIDE_LABEL_OFFSET },
-          { scale: metricScaleKey, ...anchor, offset: -directionMultiplier * INSIDE_LABEL_OFFSET },
+          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: directionMultiplier * verticalOffset },
+          { scale: metricScaleKey, ...anchor, offset: -directionMultiplier * verticalOffset },
         ]
       : [
-          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: -directionMultiplier * INSIDE_LABEL_OFFSET },
-          { scale: metricScaleKey, ...anchor, offset: directionMultiplier * INSIDE_LABEL_OFFSET },
+          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: -directionMultiplier * horizontalOffset },
+          { scale: metricScaleKey, ...anchor, offset: directionMultiplier * horizontalOffset },
         ],
     verticalBaseline: [
       { test: `datum["${metric}"] < 0`, value: negBaseline },
@@ -98,78 +86,7 @@ export const getBarDirectLabelPositionEncodings = (
       { test: `datum["${metric}"] < 0`, value: negAlign },
       { value: posAlign },
     ],
-    seriesFill: { signal: BACKGROUND_COLOR },
-    isInsideTest: undefined as string | undefined,
-  };
-};
-
-/**
- * 'end-outside' placement is adaptive: when a bar is long enough to fit the label, the label
- * renders inside, anchored near the *baseline* (zero) edge — the same spot 'start' anchors to —
- * with a background-color fill so it reads against the bar's own color. When the bar is too
- * short, the label falls back to sitting outside the tip in the series color, anchored at the
- * bar's far end, exactly like the previous always-outside behavior.
- *
- * Anchor position (baseline vs. tip) depends on fit, but text alignment and baseline only depend
- * on sign — 'start' and 'end-outside' already share the same align/baseline convention, so no
- * extra branching is needed there.
- *
- * "Fits" is evaluated per-datum against the bar's actual rendered length, since bar length varies
- * row to row. Vertical bars approximate the label's footprint with font size (text isn't rotated,
- * so its height along the bar is roughly one line); horizontal bars measure the real text width via
- * the `getLabelWidth` expression function (same helper `barAnnotationUtils` uses for annotations).
- */
-const getAdaptiveEndPositionEncodings = (
-  isVertical: boolean,
-  metric: string,
-  metricScaleKey: string,
-  fillEncoding: ColorValueRef,
-  textSignal: string
-) => {
-  const barLength = `abs(scale('${metricScaleKey}', datum["${metric}"]) - scale('${metricScaleKey}', 0))`;
-  const requiredSpace = isVertical
-    ? `${DEFAULT_FONT_SIZE + FIT_PADDING}`
-    : `(getLabelWidth(${textSignal}, ${DIRECT_LABEL_FONT_WEIGHT}, ${DEFAULT_FONT_SIZE}) + ${FIT_PADDING})`;
-  const fitsInside = `${barLength} > ${requiredSpace}`;
-  const negativeAndFits = `datum["${metric}"] < 0 && ${fitsInside}`;
-  const negative = `datum["${metric}"] < 0`;
-
-  const seriesFill = [{ test: fitsInside, signal: BACKGROUND_COLOR }, fillEncoding];
-
-  if (isVertical) {
-    return {
-      metricAxisEncoding: [
-        // fits inside: anchor at the zero baseline, nudged toward the bar's interior
-        { test: negativeAndFits, scale: metricScaleKey, value: 0, offset: INSIDE_LABEL_OFFSET },
-        // doesn't fit: anchor at the tip, nudged away from the bar (outside)
-        { test: negative, scale: metricScaleKey, field: metric, offset: VERTICAL_LABEL_OFFSET },
-        { test: fitsInside, scale: metricScaleKey, value: 0, offset: -INSIDE_LABEL_OFFSET },
-        { scale: metricScaleKey, field: metric, offset: -VERTICAL_LABEL_OFFSET },
-      ],
-      verticalBaseline: [
-        { test: negative, value: 'top' as const },
-        { value: 'bottom' as const },
-      ],
-      horizontalAlign: { value: 'center' as const },
-      seriesFill,
-      isInsideTest: fitsInside,
-    };
-  }
-
-  return {
-    metricAxisEncoding: [
-      { test: negativeAndFits, scale: metricScaleKey, value: 0, offset: -INSIDE_LABEL_OFFSET },
-      { test: negative, scale: metricScaleKey, field: metric, offset: -HORIZONTAL_LABEL_OFFSET },
-      { test: fitsInside, scale: metricScaleKey, value: 0, offset: INSIDE_LABEL_OFFSET },
-      { scale: metricScaleKey, field: metric, offset: HORIZONTAL_LABEL_OFFSET },
-    ],
-    verticalBaseline: { value: 'middle' as const },
-    horizontalAlign: [
-      { test: negative, value: 'right' as const },
-      { value: 'left' as const },
-    ],
-    seriesFill,
-    isInsideTest: fitsInside,
+    seriesFill: isEndOutside ? fillEncoding : { signal: BACKGROUND_COLOR },
   };
 };
 
@@ -181,19 +98,8 @@ const getAdaptiveEndPositionEncodings = (
  * No separate data source is needed — each row in FILTERED_TABLE is already one bar.
  */
 export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, barOptions: BarSpecOptions): Mark[] => {
-  const {
-    barName,
-    color,
-    colorOverride,
-    colorScheme,
-    dimension,
-    index,
-    metric,
-    metricAxis,
-    numberFormat,
-    orientation,
-    position,
-  } = labelOptions;
+  const { barName, color, colorOverride, colorScheme, dimension, index, metric, metricAxis, orientation, position } =
+    labelOptions;
 
   const { metricScaleKey, dimensionScaleKey } = getOrientationProperties(orientation, metricAxis);
   const isVertical = orientation === 'vertical';
@@ -204,18 +110,19 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
 
   const fontSizeEncoding = getDirectLabelFontSizeProductionRule();
 
-  // Label text: a Vega production rule (conditional on isNumber) built from the requested format.
-  // Reuse the same helper Axis/Bullet/DonutSummary use so numberFormat behaves identically everywhere.
-  const textRule = getTextNumberFormat(numberFormat, metric);
-  // A single representative signal for the "does it fit inside the bar" width measurement below —
-  // the last rule is always the unconditional fallback, so it's a safe stand-in for any format.
-  const textSignal = (textRule[textRule.length - 1] as { signal: string }).signal;
+  // Label text computed inline — no derived dataset needed
+  const textSignal = `format(datum["${metric}"], "${DEFAULT_NUMBER_FORMAT}")`;
 
   // Dimension axis: center of the bar's band
   const dimensionBandCenter = { scale: dimensionScaleKey, field: dimension, band: 0.5 };
 
-  const { metricAxisEncoding, verticalBaseline, horizontalAlign, seriesFill, isInsideTest } =
-    getBarDirectLabelPositionEncodings(position, isVertical, metric, metricScaleKey, fillEncoding, textSignal);
+  const { metricAxisEncoding, verticalBaseline, horizontalAlign, seriesFill } = getBarDirectLabelPositionEncodings(
+    position,
+    isVertical,
+    metric,
+    metricScaleKey,
+    fillEncoding
+  );
 
   const baseEnter = isVertical
     ? {
@@ -223,7 +130,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
         y: metricAxisEncoding,
         align: { value: 'center' as const },
         baseline: verticalBaseline,
-        text: textRule,
+        text: { signal: textSignal },
         fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
       }
     : {
@@ -231,7 +138,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
         x: metricAxisEncoding,
         baseline: { value: 'middle' as const },
         align: horizontalAlign,
-        text: textRule,
+        text: { signal: textSignal },
         fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
       };
 
@@ -244,11 +151,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
       enter: {
         ...baseEnter,
         stroke: { signal: BACKGROUND_COLOR },
-        // when the label sits inside the bar, its fill already contrasts against the bar's own
-        // color, so the halo would just be visual noise — only render it for outside placements
-        strokeWidth: isInsideTest
-          ? [{ test: isInsideTest, value: 0 }, { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH }]
-          : { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
+        strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
         fill: { value: 'transparent' },
       },
       update: {
@@ -293,7 +196,6 @@ export const getBarDirectLabelSpecOptions = (
   index,
   metric: barOptions.metric,
   metricAxis: barOptions.metricAxis,
-  numberFormat: labelOptions.numberFormat ?? DEFAULT_NUMBER_FORMAT,
   orientation: barOptions.orientation,
   position: labelOptions.position ?? 'end-outside',
 });

@@ -26,20 +26,19 @@ export default {
 };
 
 /**
- * AN-456581 spike — reproduces the diverging conversion-rate-change chart from the Figma
- * reference. `diverging` repositions the dimension axis to the zero baseline and flips each
- * category label to the side opposite its bar (only supported for a single bar mark — see
- * `getDivergingBarContext` in chartSpecBuilder.ts).
+ * Diverging conversion-rate chart from the Figma reference (node 3876-58702) — the frame to validate
+ * spacing against. `<Bar diverging>` moves the dimension axis to the zero baseline and flips each
+ * label to the side opposite its bar. Single-bar-mark only.
  */
 const DivergingBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: divergingConversionRateData, width: 700, height: 500 });
   return (
     <Chart {...chartProps}>
       <Title text="Instagram improved, Facebook Reels did worse" fontSize={22} />
-      <Axis position="left" baseline diverging />
+      <Axis position="left" baseline />
       <Axis position="bottom" grid labelFormat="percentage" title="Conversion rate change, month over month" />
-      <Bar {...args}>
-        <BarDirectLabel numberFormat=",.1%" />
+      <Bar {...args} diverging>
+        <BarDirectLabel />
       </Bar>
     </Chart>
   );

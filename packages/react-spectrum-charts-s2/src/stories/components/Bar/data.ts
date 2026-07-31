@@ -125,10 +125,8 @@ export const divergingConversionRateDataLongLabels = [
 ];
 
 /**
- * Regression-guard data: two dodged series per category ("New" and "Churned"), each category
- * diverging in opposite directions — the population-pyramid-style shape a single `<Bar>` mark
- * can't unambiguously assign a sign to. `getDivergingBarContext` detects the multiple rows per
- * category and safely declines to activate `diverging` here, rather than guessing.
+ * Population-pyramid split: two dodged series ("New" always +, "Churned" always −). Consistently
+ * signed and opposite, so `diverging` activates via `isTwoSeriesOppositeSignDodged`.
  */
 export const dualSeriesDivergingData = [
   { channel: 'IG Stories', series: 'New', changeRate: 0.131 },
@@ -199,13 +197,8 @@ export const likertSurveyData = [
 ];
 
 /**
- * Open-question demo data: a year-over-year revenue-change comparison, dodged by "This Year" vs
- * "Last Year." Two rows per category (like `dualSeriesDivergingData`), but here every category's
- * rows *agree* in sign — Product A/B are positive both years (growing), Product C/D are negative
- * both years (declining). Unlike the population-pyramid case, there's no real ambiguity here: the
- * empty side of zero for each category is genuinely empty regardless of which row the lookup
- * happens to find first. The current rows-per-category guard still declines `diverging` for this
- * chart, which is the "too conservative" question — see #2 in the diverging open-questions list.
+ * Year-over-year comparison dodged by "This Year"/"Last Year." Two rows per category but both agree
+ * in sign (A/B grew, C/D declined), so there's no ambiguity and `diverging` activates.
  */
 export const sameSignDodgedData = [
   { product: 'Product A', period: 'This Year', changeRate: 0.15 },

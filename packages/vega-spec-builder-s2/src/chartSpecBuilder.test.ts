@@ -47,6 +47,7 @@ import {
   addData,
   buildSpec,
   getColorScale,
+  getDivergingBarContext,
   getDefaultSignals,
   getLineTypeScale,
   getLineWidthScale,
@@ -583,6 +584,94 @@ describe('Chart spec builder', () => {
       const axis = spec.axes?.[0];
       expect(axis?.encode?.labels).not.toHaveProperty('name');
       expect(spec.signals?.find((s) => s.name === 'bar0_dimensionHoverArea_hoveredItem')).toBeUndefined();
+    });
+  });
+
+  describe('getDivergingBarContext()', () => {
+    const singleSeriesData = [
+      { channel: 'A', changeRate: 0.1 },
+      { channel: 'B', changeRate: -0.2 },
+    ];
+    const horizontalBar: BarOptions = {
+      markType: 'bar',
+      orientation: 'horizontal',
+      dimension: 'channel',
+      metric: 'changeRate',
+    };
+    const expectedContext = { dataName: FILTERED_TABLE, dimension: 'channel', metric: 'changeRate' };
+
+    test('returns the context for a single-series diverging bar on its dimension axis', () => {
+      expect(getDivergingBarContext([horizontalBar], singleSeriesData, 'left')).toStrictEqual(expectedContext);
+    });
+
+    test('declines when there is not exactly one bar mark', () => {
+      expect(getDivergingBarContext([], singleSeriesData, 'left')).toBeUndefined();
+      expect(getDivergingBarContext([horizontalBar, horizontalBar], singleSeriesData, 'left')).toBeUndefined();
+    });
+
+    test('declines when the axis is not the bar dimension axis', () => {
+      // a horizontal bar's dimension axis is vertical, so a bottom axis is the metric axis
+      expect(getDivergingBarContext([horizontalBar], singleSeriesData, 'bottom')).toBeUndefined();
+    });
+
+    test('declines a stacked category with conflicting signs', () => {
+      const stackedBar: BarOptions = { ...horizontalBar, color: 'series' };
+      const stackedData = [
+        { channel: 'A', series: 'New', changeRate: 0.1 },
+        { channel: 'A', series: 'Churned', changeRate: -0.2 },
+      ];
+      expect(getDivergingBarContext([stackedBar], stackedData, 'left')).toBeUndefined();
+    });
+
+    test('activates a dodged two-series always-opposite-sign split (population pyramid)', () => {
+      const dodgedBar: BarOptions = { ...horizontalBar, type: 'dodged', color: 'series' };
+      const dodgedData = [
+        { channel: 'A', series: 'New', changeRate: 0.1 },
+        { channel: 'A', series: 'Churned', changeRate: -0.2 },
+        { channel: 'B', series: 'New', changeRate: 0.05 },
+        { channel: 'B', series: 'Churned', changeRate: -0.3 },
+      ];
+      expect(getDivergingBarContext([dodgedBar], dodgedData, 'left')).toStrictEqual(expectedContext);
+    });
+
+    test('activates a same-signed dodged comparison (no sign conflict)', () => {
+      const dodgedBar: BarOptions = { ...horizontalBar, type: 'dodged', color: 'period' };
+      const sameSignData = [
+        { channel: 'A', period: 'This Year', changeRate: 0.15 },
+        { channel: 'A', period: 'Last Year', changeRate: 0.08 },
+      ];
+      expect(getDivergingBarContext([dodgedBar], sameSignData, 'left')).toStrictEqual(expectedContext);
+    });
+
+    test('declines a dodged split that is not exactly two opposite-signed series', () => {
+      const dodgedBar: BarOptions = { ...horizontalBar, type: 'dodged', color: 'series' };
+      const threeSeriesData = [
+        { channel: 'A', series: 'New', changeRate: 0.1 },
+        { channel: 'A', series: 'Retained', changeRate: 0.2 },
+        { channel: 'A', series: 'Churned', changeRate: -0.2 },
+      ];
+      expect(getDivergingBarContext([dodgedBar], threeSeriesData, 'left')).toBeUndefined();
+    });
+  });
+
+  describe('diverging bar axis wiring', () => {
+    const divergingData = [
+      { channel: 'A', changeRate: 0.1 },
+      { channel: 'B', changeRate: -0.2 },
+    ];
+    const buildDivergingSpec = (diverging: boolean) =>
+      buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging }],
+        axes: [{ position: 'left', baseline: true }],
+      });
+
+    test('repositions the dimension axis (adds an offset) only when the bar sets diverging', () => {
+      const withDiverging = (buildDivergingSpec(true).axes ?? []).filter((axis) => 'offset' in axis);
+      const withoutDiverging = (buildDivergingSpec(false).axes ?? []).filter((axis) => 'offset' in axis);
+      expect(withDiverging.length).toBeGreaterThan(0);
+      expect(withoutDiverging).toHaveLength(0);
     });
   });
 });

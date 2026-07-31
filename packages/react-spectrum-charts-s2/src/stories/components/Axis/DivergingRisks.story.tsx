@@ -43,9 +43,9 @@ const WorkingStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Title text="Working: single bar mark, single series per category" fontSize={16} />
-      <Axis position="left" baseline diverging />
+      <Axis position="left" baseline />
       <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
     </Chart>
   );
 };
@@ -74,9 +74,9 @@ const WorkingVerticalStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Title text="Working (vertical): single bar mark, single series per category" fontSize={16} />
-      <Axis position="bottom" baseline diverging />
+      <Axis position="bottom" baseline />
       <Axis position="left" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
     </Chart>
   );
 };
@@ -107,9 +107,9 @@ const WorkingTimeAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Title text="Working: labelFormat=time + diverging (primary/secondary axis pair)" fontSize={16} />
-      <Axis position="bottom" baseline diverging labelFormat="time" granularity="month" />
+      <Axis position="bottom" baseline labelFormat="time" granularity="month" />
       <Axis position="left" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
     </Chart>
   );
 };
@@ -144,9 +144,9 @@ const TrellisDivergingStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Title text="Fixed: diverging now correctly applies per trellis panel" fontSize={16} />
-      <Axis position="left" baseline diverging />
+      <Axis position="left" baseline />
       <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
     </Chart>
   );
 };
@@ -170,9 +170,9 @@ const LongLabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Title text="Long labels: same data as Working, longer category names" fontSize={16} />
-      <Axis position="left" baseline diverging />
+      <Axis position="left" baseline />
       <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
     </Chart>
   );
 };
@@ -183,28 +183,26 @@ LongLabels.args = {
 };
 
 /**
- * FIXED (regression guard) — `diverging` used to only count `<Bar>` *marks*, not series. A single
- * dodged `<Bar color="series">` is still one mark, so it used to NOT fall back and would silently
- * use whichever series came first per category ("New") to decide every label's side, mislabeling
- * the rest. `getDivergingBarContext` now also checks rows-per-category and declines here — the
- * axis stays at the default edge position, same as if `diverging` were never set. This is the
- * "Diverging Signals" (two bars, one category) case from the ticket.
+ * ACTIVATES (AN-462749) — population-pyramid case: a dodged `<Bar color="series">`, "New" always +,
+ * "Churned" always −. Per Alan this flips each label opposite its own bar (like single-series), so
+ * the guard makes an exception for a dodged two-series opposite-sign split
+ * (`isTwoSeriesOppositeSignDodged`). Stacked mixed-sign cases still decline.
  */
 const DodgedTwoSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: dualSeriesDivergingData, width: 700, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Title text="Fixed: dodged two-series bar — diverging safely declines" fontSize={16} />
-      <Axis position="left" baseline diverging />
+      <Title text="Diverging signals: dodged two-series bar — axis moves to zero, labels flip per bar" fontSize={16} />
+      <Axis position="left" baseline />
       <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
       <Legend title="Series" />
     </Chart>
   );
 };
 
-const DodgedTwoSeriesFallback = bindWithProps(DodgedTwoSeriesStory);
-DodgedTwoSeriesFallback.args = {
+const DodgedTwoSeries = bindWithProps(DodgedTwoSeriesStory);
+DodgedTwoSeries.args = {
   dimension: 'channel',
   metric: 'changeRate',
   orientation: 'horizontal',
@@ -213,26 +211,19 @@ DodgedTwoSeriesFallback.args = {
 } satisfies BarProps;
 
 /**
- * FIXED (guard refinement) — a year-over-year revenue-change comparison, dodged by "This Year" vs
- * "Last Year." Two rows per category, same shape as `DodgedTwoSeriesFallback` above, but here
- * every category's rows *agree* in sign (Product A/B grew both years, Product C/D declined both
- * years) — unlike the population-pyramid case, there's no real ambiguity: the empty side of zero
- * for each category is genuinely empty regardless of which row the lookup finds first.
- *
- * `getDivergingBarContext` used to decline here too (blanket "more than one row per category"),
- * which was over-conservative. It now checks for actual sign *disagreement* within a category
- * instead of raw row count, so this chart correctly activates `diverging` — while
- * `DodgedTwoSeriesFallback`/`StackedCohortFallback`/`LikertSurveyFallback` (which do have
- * conflicting signs within a category) still correctly decline.
+ * ACTIVATES — a year-over-year comparison dodged by "This Year"/"Last Year." Two rows per category
+ * but both *agree* in sign (Product A/B grew, C/D declined), so there's no ambiguity and the guard
+ * activates. Guards against over-declining on row count alone; sign-conflicting dodged bars still
+ * activate via the two-series exception, only stacked mixed-sign cases decline.
  */
 const SameSignDodgedStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: sameSignDodgedData, width: 700, height: 400 });
   return (
     <Chart {...chartProps}>
       <Title text="Fixed: same-signed dodged bars — diverging now correctly activates" fontSize={16} />
-      <Axis position="left" baseline diverging />
+      <Axis position="left" baseline />
       <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
       <Legend title="Period" />
     </Chart>
   );
@@ -259,9 +250,9 @@ const StackedCohortStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Title text="Fixed: stacked multi-series cohort chart — diverging safely declines" fontSize={16} />
-      <Axis position="bottom" baseline diverging />
+      <Axis position="bottom" baseline />
       <Axis position="left" grid title="Users" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
       <Legend title="Cohort" />
     </Chart>
   );
@@ -288,9 +279,9 @@ const LikertSurveyStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Title text="Fixed: Likert survey chart — diverging safely declines" fontSize={16} />
-      <Axis position="left" baseline diverging />
+      <Axis position="left" baseline />
       <Axis position="bottom" grid />
-      <Bar {...args} />
+      <Bar {...args} diverging />
       <Legend title="Response" />
     </Chart>
   );
@@ -334,11 +325,11 @@ const ThumbnailConflictStory: StoryFn<typeof Bar> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Title text="Partially fixed: crash resolved, thumbnails still disconnected from labels" fontSize={16} />
-      <Axis position="left" baseline diverging>
+      <Axis position="left" baseline>
         <AxisThumbnail urlKey="thumbnail" />
       </Axis>
       <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
     </Chart>
   );
 };
@@ -370,7 +361,6 @@ const SubLabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis
         position="left"
         baseline
-        diverging
         subLabels={[
           { value: 'IG Stories', subLabel: 'Instagram' },
           { value: 'IG Reels', subLabel: 'Instagram' },
@@ -381,7 +371,7 @@ const SubLabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
         ]}
       />
       <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} />
+      <Bar {...args} diverging />
     </Chart>
   );
 };
@@ -396,7 +386,7 @@ export {
   WorkingVertical,
   WorkingTimeAxis,
   LongLabels,
-  DodgedTwoSeriesFallback,
+  DodgedTwoSeries,
   SameSignDodged,
   StackedCohortFallback,
   LikertSurveyFallback,
