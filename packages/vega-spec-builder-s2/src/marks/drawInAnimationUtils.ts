@@ -37,6 +37,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { hasTransformByAs } from '../data/dataUtils';
 import { isDualMetricAxis, LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
@@ -88,10 +89,7 @@ export const getLineDrawInPointIndexData = (options: LineSpecOptions): SourceDat
  * Date-typed and cutoff/tween math needs raw numbers. Only relevant for 'time' scales.
  */
 export const addLineDrawInTimeMsTransform = produce<Transforms[], [string]>((transforms, dimension) => {
-  const alreadyAdded = transforms.some(
-    (transform) => transform.type === 'formula' && transform.as === DRAW_IN_TIME_MS_FIELD
-  );
-  if (alreadyAdded) return;
+  if (hasTransformByAs(transforms, DRAW_IN_TIME_MS_FIELD)) return;
   transforms.push({
     type: 'formula',
     expr: `toNumber(datum.${dimension})`,
@@ -121,15 +119,16 @@ export const addLineDrawInLeadTransform = (sourceData: Data, options: LineSpecOp
       transform.as.length === asFields.length &&
       transform.as.every((field, i) => field === asFields[i])
   );
-  if (alreadyAdded) return;
-  sourceData.transform.push({
-    type: 'window',
-    sort: { field: sortField, order: 'ascending' },
-    groupby: [SERIES_ID],
-    ops: fields.map((): 'lead' => 'lead'),
-    fields,
-    as: asFields,
-  });
+  if (!alreadyAdded) {
+    sourceData.transform.push({
+      type: 'window',
+      sort: { field: sortField, order: 'ascending' },
+      groupby: [SERIES_ID],
+      ops: fields.map((): 'lead' => 'lead'),
+      fields,
+      as: asFields,
+    });
+  }
 };
 
 /**
