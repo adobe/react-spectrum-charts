@@ -33,6 +33,8 @@ const {
   DIRECT_LABEL_FONT_SIZE_M,
   DIRECT_LABEL_FONT_SIZE_S,
   DIRECT_LABEL_FONT_WEIGHT,
+  REFERENCE_LINE_START_CAP_PATH,
+  ROUNDED_SQUARE_PATH,
 } = constants;
 
 export type DesignTokenCategory = {
@@ -120,10 +122,23 @@ const spacing: DesignTokenCategory = {
     symbol: {
       strokeWidth: DEFAULT_SYMBOL_STROKE_WIDTH,
     },
+    referenceLine: {
+      capRuleGap: 1, // constants.ts:271 (REFERENCE_LINE_CAP_RULE_GAP, not exported)
+    },
   },
 };
 
-export const DESIGN_TOKEN_CATEGORIES: DesignTokenCategory[] = [colors, typography, spacing];
+const svgPaths: DesignTokenCategory = {
+  id: 'svg-paths',
+  title: 'Spectrum 2 SVG Paths',
+  description: 'Reusable SVG path shapes for chart decorations. Reuse these instead of inventing a new path.',
+  tokens: {
+    referenceLineCaretPath: REFERENCE_LINE_START_CAP_PATH,
+    roundedSquarePath: ROUNDED_SQUARE_PATH,
+  },
+};
+
+export const DESIGN_TOKEN_CATEGORIES: DesignTokenCategory[] = [colors, typography, spacing, svgPaths];
 
 export function getDesignTokenCategory(id: string): DesignTokenCategory {
   const category = DESIGN_TOKEN_CATEGORIES.find((c) => c.id === id);
