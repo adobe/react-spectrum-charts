@@ -33,7 +33,7 @@ export default {
   component: Bar,
 };
 
-/** Canonical single-series horizontal diverging; value labels use the adaptive `end-outside` default. */
+/** Canonical single-series horizontal diverging; value labels use adaptive `position="start"` — inside near the axis, spilling outside when they don't fit. */
 const HorizontalStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: divergingConversionRateData, width: 700, height: 400 });
   return (
@@ -42,7 +42,7 @@ const HorizontalStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position="left" baseline />
       <Axis position="bottom" grid labelFormat="percentage" />
       <Bar {...args} diverging>
-        <BarDirectLabel />
+        <BarDirectLabel position="start" />
       </Bar>
     </Chart>
   );
@@ -60,7 +60,7 @@ Horizontal.args = {
   ...defaultProps,
 };
 
-/** Single-series diverging, vertical — dimension on the bottom axis, so the baseline/dy flip applies (not align/dx). */
+/** Single-series diverging, vertical — dimension on the bottom axis (baseline/dy flip). Value labels forced outside via `position="end-outside"`. */
 const VerticalStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: divergingConversionRateData, width: 500, height: 500 });
   return (
@@ -68,7 +68,9 @@ const VerticalStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Title text="Single-series vertical — axis at zero, labels flip opposite each bar" fontSize={16} />
       <Axis position="bottom" baseline />
       <Axis position="left" grid labelFormat="percentage" />
-      <Bar {...args} diverging />
+      <Bar {...args} diverging>
+        <BarDirectLabel position="end-outside" />
+      </Bar>
     </Chart>
   );
 };

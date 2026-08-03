@@ -60,16 +60,18 @@ export const getBarDirectLabelPositionEncodings = (
     };
   }
 
-  if (position === 'end-outside') {
+  if (position === 'start') {
+    // opt-in adaptive inside: near the baseline when the label fits, spilling outside the tip otherwise
     return getAdaptiveEndPositionEncodings(isVertical, metric, metricScaleKey, fillEncoding, textSignal);
   }
 
-  // 'end' reverses offset direction and baseline/align relative to 'end-outside' and 'start'
+  // 'end' (inside) and 'end-outside' (always outside) both anchor at the bar tip
   const isEndInside = position === 'end';
+  const isEndOutside = position === 'end-outside';
   const directionMultiplier = isEndInside ? -1 : 1;
-
-  // 'start' anchors to the bar baseline (0), 'end' anchors to the bar tip (metric)
-  const anchor = position === 'start' ? { value: 0 } : { field: metric };
+  const verticalOffset = isEndOutside ? VERTICAL_LABEL_OFFSET : INSIDE_LABEL_OFFSET;
+  const horizontalOffset = isEndOutside ? HORIZONTAL_LABEL_OFFSET : INSIDE_LABEL_OFFSET;
+  const anchor = { field: metric };
 
   const [negBaseline, posBaseline] = isEndInside
     ? ['bottom' as const, 'top' as const]
@@ -82,12 +84,12 @@ export const getBarDirectLabelPositionEncodings = (
   return {
     metricAxisEncoding: isVertical
       ? [
-          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: directionMultiplier * INSIDE_LABEL_OFFSET },
-          { scale: metricScaleKey, ...anchor, offset: -directionMultiplier * INSIDE_LABEL_OFFSET },
+          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: directionMultiplier * verticalOffset },
+          { scale: metricScaleKey, ...anchor, offset: -directionMultiplier * verticalOffset },
         ]
       : [
-          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: -directionMultiplier * INSIDE_LABEL_OFFSET },
-          { scale: metricScaleKey, ...anchor, offset: directionMultiplier * INSIDE_LABEL_OFFSET },
+          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: -directionMultiplier * horizontalOffset },
+          { scale: metricScaleKey, ...anchor, offset: directionMultiplier * horizontalOffset },
         ],
     verticalBaseline: [
       { test: `datum["${metric}"] < 0`, value: negBaseline },
@@ -97,15 +99,15 @@ export const getBarDirectLabelPositionEncodings = (
       { test: `datum["${metric}"] < 0`, value: negAlign },
       { value: posAlign },
     ],
-    seriesFill: { signal: BACKGROUND_COLOR },
+    seriesFill: isEndOutside ? fillEncoding : { signal: BACKGROUND_COLOR },
     isInsideTest: undefined as string | undefined,
   };
 };
 
 /**
- * Adaptive 'end-outside': if the bar fits the label, place it inside near the zero baseline
- * (background fill); otherwise outside the tip (series color). Fit is measured per-datum — horizontal
- * via `getLabelWidth`, vertical approximated by font size.
+ * Adaptive inside placement (the `start` position): if the bar fits the label, place it inside near
+ * the zero baseline (background fill); otherwise spill it outside the tip (series color). Fit is
+ * measured per-datum — horizontal via `getLabelWidth`, vertical approximated by font size.
  */
 const getAdaptiveEndPositionEncodings = (
   isVertical: boolean,
@@ -246,7 +248,10 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
     },
   };
 
-  return position === 'end-outside' ? [backgroundMark, mainMark] : [mainMark];
+  // the background halo is only needed where a label can sit outside the bar: always-outside
+  // ('end-outside') or the adaptive position when it spills out (`isInsideTest` set)
+  const hasOutsideLabel = position === 'end-outside' || Boolean(isInsideTest);
+  return hasOutsideLabel ? [backgroundMark, mainMark] : [mainMark];
 };
 
 /**
