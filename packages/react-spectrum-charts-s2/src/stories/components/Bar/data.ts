@@ -101,7 +101,7 @@ export const mixedBarData = [
 ];
 
 /**
- * Diverging conversion-rate-change data matching the AN-456581 Figma reference.
+ * Diverging conversion-rate-change data matching the Figma reference.
  * Note: the reference design shows "FB Stories" for both a positive and a negative row; renamed
  * the negative one to "FB Post" here since a band scale needs a unique dimension value per row.
  */
@@ -223,23 +223,6 @@ export const timeAxisDivergingData = [
   { day: '2024-12-20 00:00:00.0', changeRate: 0.082 },
   { day: '2025-01-10 00:00:00.0', changeRate: -0.01 },
   { day: '2025-02-05 00:00:00.0', changeRate: -0.05 },
-];
-
-/**
- * Trellis demo data: single series per category, sign consistent for a given channel across both
- * panels (IG Stories always positive, FB Post/FB Reels always negative) — isolates the confirmed
- * plumbing gap (`divergingContext` never reaches `addAxesToTrellisGroup`'s per-panel axes) from the
- * separate global-vs-per-panel sign-scoping question.
- */
-export const trellisDivergingData = [
-  { region: 'Region A', channel: 'IG Stories', changeRate: 0.131 },
-  { region: 'Region A', channel: 'IG Reels', changeRate: 0.082 },
-  { region: 'Region A', channel: 'FB Post', changeRate: -0.01 },
-  { region: 'Region A', channel: 'FB Reels', changeRate: -0.029 },
-  { region: 'Region B', channel: 'IG Stories', changeRate: 0.05 },
-  { region: 'Region B', channel: 'IG Reels', changeRate: 0.03 },
-  { region: 'Region B', channel: 'FB Post', changeRate: -0.02 },
-  { region: 'Region B', channel: 'FB Reels', changeRate: -0.04 },
 ];
 
 export const barDataTwoSeries = [

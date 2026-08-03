@@ -673,5 +673,46 @@ describe('Chart spec builder', () => {
       expect(withDiverging.length).toBeGreaterThan(0);
       expect(withoutDiverging).toHaveLength(0);
     });
+
+    test('is a no-op on a trellised chart — no offset, no crash', () => {
+      const build = () =>
+        buildSpec({
+          ...defaultSpecOptions,
+          data: [
+            { region: 'A', channel: 'X', changeRate: 0.1 },
+            { region: 'A', channel: 'Y', changeRate: -0.2 },
+            { region: 'B', channel: 'X', changeRate: 0.3 },
+          ],
+          marks: [
+            { markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', trellis: 'region', diverging: true },
+          ],
+          axes: [{ position: 'left', baseline: true }],
+        });
+      expect(build).not.toThrow();
+      const allAxes = [
+        ...(build().axes ?? []),
+        ...(build().marks ?? []).flatMap((mark) => ('axes' in mark ? (mark.axes ?? []) : [])),
+      ];
+      expect(allAxes.filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op when the dimension axis has subLabels — no offset', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        axes: [
+          {
+            position: 'left',
+            baseline: true,
+            subLabels: [
+              { value: 'A', subLabel: 'group 1' },
+              { value: 'B', subLabel: 'group 1' },
+            ],
+          },
+        ],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
   });
 });

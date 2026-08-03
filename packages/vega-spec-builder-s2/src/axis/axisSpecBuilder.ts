@@ -171,20 +171,11 @@ export const addAxis = produce<
 
     const usermeta = spec.usermeta;
 
-    // A trellised chart duplicates this axis position's labels once per panel (see
-    // addAxesToTrellisGroup, invoked from addAxesMarks below). The "root" axis built here is a
-    // shared/decorative axis — it's not the one that actually renders each panel's bars, so its
-    // scale/domain don't line up with the per-panel data the way the sign lookup expects.
-    // Confirmed this isn't just an inert no-op: applying diverging's offset+encode to it caused a
-    // real crash. Suppress it here whenever this position will be duplicated per panel, and rely
-    // on addAxesMarks/addAxesToTrellisGroup (passed the real divergingContext below) to apply it
-    // to the panel axes instead, which are the ones that actually need it.
-    const trellisGroupMark = spec.marks?.find((mark) => mark.name?.includes('Trellis')) as GroupMark | undefined;
-    const isAxisDuplicatedPerTrellisPanel =
-      trellisGroupMark !== undefined &&
-      (trellisGroupMark.name?.startsWith('x') ? 'horizontal' : 'vertical') ===
-        (position === 'bottom' || position === 'top' ? 'horizontal' : 'vertical');
-    const rootDivergingContext = isAxisDuplicatedPerTrellisPanel ? undefined : divergingContext;
+    // diverging + trellis and diverging + subLabels are future stories: suppress
+    // diverging in both cases so it's a clean no-op. The trellis root axis's scale doesn't map to
+    // per-panel data (applying it crashed); subLabels add a second axis row diverging shouldn't move.
+    const divergingContextForAxes =
+      isTrellisedChart(spec) || hasSubLabels(axisOptions) ? undefined : divergingContext;
 
     spec.axes = addAxes(spec.axes ?? [], {
       ...axisOptions,
@@ -192,7 +183,7 @@ export const addAxis = produce<
       scaleField,
       opposingScaleType,
       opposingScaleName,
-      divergingContext: rootDivergingContext,
+      divergingContext: divergingContextForAxes,
       usermeta,
 
       // we don't want to show the grid on top level
@@ -208,7 +199,7 @@ export const addAxis = produce<
       scaleField,
       opposingScaleType,
       opposingScaleName,
-      divergingContext,
+      divergingContext: divergingContextForAxes,
       dualMetricAxis,
     });
 
@@ -468,8 +459,8 @@ export const addAxes = produce<
     const alignOrBaselineKey = isVerticalAxis(position) ? 'align' : 'baseline';
     const offsetKey = isVerticalAxis(position) ? 'dx' : 'dy';
 
-    // apply to every axis in the group (main + sub-label/time axis) so they move together, using
-    // each axis's own labelPadding (the sub-label axis's differs from the main axis default).
+    // apply to every axis in the group (e.g. the time axis's primary + secondary rows) so they move
+    // together, using each axis's own labelPadding when it sets one.
     newAxes.forEach((divergingAxis, index) => {
       const labelPadding = typeof divergingAxis.labelPadding === 'number' ? divergingAxis.labelPadding : undefined;
 
@@ -482,8 +473,8 @@ export const addAxes = produce<
           : 0;
       const divergingLabelEncode = getDivergingLabelEncode(position, isNegativeTest, labelPadding, extraOutwardOffset);
 
-      // an axis with controlled `labels`/`subLabels` already has an align/baseline rule array; merge
-      // by priority (its override wins, else diverging's flip) so deepmerge replaces, not concatenates.
+      // an axis with a controlled `labels` override already has an align/baseline rule array; merge by
+      // priority (its override wins, else diverging's flip) so deepmerge replaces, not concatenates.
       const existingAlignOrBaseline = divergingAxis.encode?.labels?.update?.[alignOrBaselineKey];
       const alignOrBaseline = existingAlignOrBaseline
         ? getPriorityMergedSignal(existingAlignOrBaseline, divergingLabelEncode.update[alignOrBaselineKey])
@@ -759,16 +750,7 @@ function addAxesToTrellisGroup(
     options.title = undefined;
   }
 
-  // the panel's own data is a *facet* of the global data (e.g. `bar0_trellis`, faceted by the
-  // trellis field) — scope the diverging sign lookup to this panel's facet dataset instead of the
-  // global one, so a category name that repeats across panels (e.g. the same product in every
-  // region) is looked up within the right panel, not wherever it first appears globally.
-  const facetName = (trellisGroupMark.from as { facet?: { name?: string } } | undefined)?.facet?.name;
-  const divergingContext =
-    options.divergingContext && facetName
-      ? { ...options.divergingContext, dataName: facetName }
-      : options.divergingContext;
-
+  // diverging is suppressed on trellised charts, so panel axes never get it.
   let newAxes = addAxes([], {
     ...options,
     hideDefaultLabels,
@@ -777,7 +759,7 @@ function addAxesToTrellisGroup(
     scaleType,
     dualMetricAxis: false, // trellis axes don't support dualMetricAxis scaling
     usermeta,
-    divergingContext,
+    divergingContext: undefined,
   });
 
   // titles on axes within the trellis group have special encodings so that the title is only shown on the first axis
