@@ -98,11 +98,7 @@ import {
   SymbolSize,
 } from './types';
 
-/**
- * A dodged two-series always-opposite-sign split (population-pyramid, e.g. "New" always positive,
- * "Churned" always negative): each series is consistently signed and the two are opposite, so every
- * bar has an unambiguous sign to flip its label against — unlike a stacked mixed-sign category.
- */
+/** True for a dodged two-series split where each series is consistently signed and opposite (e.g. population-pyramid "New"/"Churned"), so every bar has an unambiguous sign. */
 const isTwoSeriesOppositeSignDodged = (bar: BarOptions, data: ChartOptions['data'], metric: string): boolean => {
   if (bar.type !== 'dodged') return false;
   const series = typeof bar.color === 'string' ? bar.color : undefined;
@@ -122,13 +118,7 @@ const isTwoSeriesOppositeSignDodged = (bar: BarOptions, data: ChartOptions['data
   return signs.length === 2 && signs[0] !== signs[1];
 };
 
-/**
- * Returns the context `diverging` needs to look up each category's paired bar sign — only when the
- * chart has exactly one bar mark and this axis is its dimension axis. Declines when a category's rows
- * disagree in sign (the lookup would pick one arbitrarily and mislabel the rest), except a dodged
- * two-series always-opposite-sign split ({@link isTwoSeriesOppositeSignDodged}). Same-signed multi-row
- * categories are never ambiguous and don't block activation.
- */
+/** Context `diverging` needs to look up each category's bar sign; only for a single bar mark on its dimension axis, and declines when a category's rows disagree in sign (unless {@link isTwoSeriesOppositeSignDodged}). */
 export const getDivergingBarContext = (
   marks: MarkOptions[],
   data: ChartOptions['data'],

@@ -69,10 +69,7 @@ export interface BarOptions {
   trellisPadding?: number;
   /** Bar type. */
   type?: BarType;
-  /**
-   * Diverging bar chart (metric spans positive and negative): moves the dimension axis to the zero
-   * baseline and flips each label to the side opposite its bar. Only the single-bar-mark case.
-   */
+  /** Diverging bar chart (metric spans positive and negative): moves the dimension axis to the zero baseline and flips each label to the opposite side of its bar. Single-bar-mark only. */
   diverging?: boolean;
   /** Axis that the metric is trended against (y-axis for a vertical bar) */
   metricAxis?: string;

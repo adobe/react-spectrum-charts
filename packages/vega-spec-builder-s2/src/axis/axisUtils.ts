@@ -318,13 +318,7 @@ export const getOpposingRange = (position: Position): 'width' | 'height' => {
   return 'height';
 };
 
-/**
- * Gets the name of the opposing scale (the scale for the perpendicular axis).
- * Mirrors getOpposingScaleType, but returns the scale's name instead of its type.
- * @param scales
- * @param position
- * @returns scaleName
- */
+/** Gets the name of the opposing scale (the scale for the perpendicular axis); mirrors `getOpposingScaleType`. */
 export const getOpposingScaleName = (scales: Scale[], position: Position): string => {
   const scale = scales.find((s) => 'range' in s && s.range === getOpposingRange(position));
   return scale?.name ?? getDefaultOpposingScaleNameFromPosition(position);
@@ -337,11 +331,7 @@ export interface DivergingBarContext {
   metric: string;
 }
 
-/**
- * Vega axis `offset` signal moving a categorical axis from the chart edge to its opposing linear
- * scale's zero line. Positive `offset` moves outward, so reaching the interior zero needs a negative
- * offset from the default edge (0 for left/top, range size for right/bottom).
- */
+/** Vega axis `offset` signal moving a categorical axis to its opposing scale's zero line; negative because `offset` moves outward from the edge. */
 export const getDivergingAxisOffset = (position: Position, opposingScaleName: string): SignalRef => {
   if (position === 'left' || position === 'top') {
     return { signal: `-scale('${opposingScaleName}', 0)` };
@@ -350,24 +340,14 @@ export const getDivergingAxisOffset = (position: Position, opposingScaleName: st
   return { signal: `scale('${opposingScaleName}', 0) - ${rangeSizeSignal}` };
 };
 
-/**
- * Vega expression, true when the bar paired with an axis tick is negative — joins back to the bar's
- * data on the dimension field. Assumes one resolvable sign per category.
- */
+/** Vega expression, true when the bar paired with an axis tick is negative; assumes one resolvable sign per category. */
 export const getDivergingTickIsNegativeTest = ({ dataName, dimension, metric }: DivergingBarContext): string =>
   `data('${dataName}')[indexof(pluck(data('${dataName}'), '${dimension}'), datum.value)]['${metric}'] < 0`;
 
 // spectrum2Theme's default axis `labelPadding`; the sub-label axis sets a larger value and must pass its own in.
 const DEFAULT_AXIS_LABEL_PADDING = 8;
 
-/**
- * Axis `encode.labels` that flips each tick's align (left/right axis) or baseline (top/bottom) to
- * the side opposite its bar's sign, with a `2 * labelPadding` offset so the flipped label mirrors to
- * the same distance from zero — Vega doesn't recompute the anchor when align/baseline is overridden,
- * so without it the label overlaps the bar. `labelPadding` must be the axis's effective value.
- * `extraOutwardOffset` (a static push, e.g. a time axis's `enter.dy`) flips sign with the test rather
- * than being added as a constant; 0 is the plain formula.
- */
+/** Axis label encode that flips each tick's align/baseline to the opposite side of its bar's sign, offsetting by `2 * labelPadding` since Vega doesn't recompute the anchor on override; `extraOutwardOffset` is a static push (e.g. a time axis's `dy`) that flips sign with the test instead of adding as a constant. */
 export const getDivergingLabelEncode = (
   position: Position,
   isNegativeTest: string,
@@ -432,12 +412,7 @@ const ruleEntryToExpr = (entry: unknown): string => {
   return entry.signal !== undefined ? entry.signal : JSON.stringify(entry.value);
 };
 
-/**
- * Flattens a Vega ProductionRule (single `{value}`/`{signal}` or a `{test, value|signal}[]` array)
- * into one expression string, so two rules on the same encode channel can be combined (summed for
- * `dx`/`dy`) instead of array-concatenated — concatenation strands an untested fallback mid-array
- * and crashes the parser (`Illegal callee type: Literal`). Takes `unknown` to match structurally.
- */
+/** Flattens a Vega ProductionRule into one expression string; array-concatenating two rules instead strands an untested fallback mid-array and crashes the parser. */
 export const productionRuleToExpr = (rule: unknown): string => {
   if (!Array.isArray(rule)) return ruleEntryToExpr(rule);
   const [head, ...rest] = rule;
@@ -445,12 +420,7 @@ export const productionRuleToExpr = (rule: unknown): string => {
   return `(${head.test} ? (${ruleEntryToExpr(head)}) : (${productionRuleToExpr(rest)}))`;
 };
 
-/**
- * Merges two ProductionRules by priority (`priorityRule`'s tested entries first, then `fallbackRule`)
- * into one `{signal}` — the string-channel (`align`/`baseline`) counterpart to `productionRuleToExpr`'s
- * sum, where you need a priority chain, not addition. Returning a `{signal}` lets `deepmerge` replace
- * rather than concatenate (which would strand an untested entry mid-array and crash the parser).
- */
+/** Merges two ProductionRules by priority (`priorityRule`'s tested entries first) into one `{signal}`, so `deepmerge` replaces rather than array-concatenates and crashes the parser. */
 export const getPriorityMergedSignal = (priorityRule: unknown, fallbackRule: unknown): SignalRef => {
   const priorityEntries = (Array.isArray(priorityRule) ? priorityRule : [priorityRule]).filter(
     (entry): entry is RuleEntry => isRuleEntry(entry) && Boolean(entry.test)
