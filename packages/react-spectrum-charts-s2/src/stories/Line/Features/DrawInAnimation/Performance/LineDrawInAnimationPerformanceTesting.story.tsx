@@ -187,10 +187,7 @@ const ResizeDuringAnimationStory: StoryFn<ResizeDuringAnimationArgs> = ({
   ...args
 }): ReactElement => {
   const [replayKey, setReplayKey] = useState(0);
-  const data = useMemo(
-    () => generateLargeData(seriesPerChart, pointsPerSeries),
-    [seriesPerChart, pointsPerSeries, replayKey]
-  );
+  const data = useMemo(() => generateLargeData(seriesPerChart, pointsPerSeries), [seriesPerChart, pointsPerSeries]);
   const chartProps = useChartProps({ data, animations, width: 'auto', height: '100%' });
 
   return (
