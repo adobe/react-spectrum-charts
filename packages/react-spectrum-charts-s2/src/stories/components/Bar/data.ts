@@ -100,11 +100,7 @@ export const mixedBarData = [
   { browser: 'Explorer', downloads: -500 },
 ];
 
-/**
- * Diverging conversion-rate-change data matching the Figma reference.
- * Note: the reference design shows "FB Stories" for both a positive and a negative row; renamed
- * the negative one to "FB Post" here since a band scale needs a unique dimension value per row.
- */
+/** Diverging conversion-rate-change data matching the Figma reference ("FB Stories" negative row renamed to "FB Post" for a unique band-scale value). */
 export const divergingConversionRateData = [
   { channel: 'IG Stories', changeRate: 0.131, barColor: '#2d7d46' },
   { channel: 'IG Reels', changeRate: 0.082, barColor: '#2d7d46' },
@@ -124,10 +120,7 @@ export const divergingConversionRateDataLongLabels = [
   { channel: 'Facebook Reels Sponsored Video Content', changeRate: -0.029, barColor: '#d7373f' },
 ];
 
-/**
- * Population-pyramid split: two dodged series ("New" always +, "Churned" always −). Consistently
- * signed and opposite, so `diverging` activates via `isTwoSeriesOppositeSignDodged`.
- */
+/** Population-pyramid split: two dodged series, consistently opposite-signed, so `diverging` activates via `isTwoSeriesOppositeSignDodged`. */
 export const dualSeriesDivergingData = [
   { channel: 'IG Stories', series: 'New', changeRate: 0.131 },
   { channel: 'IG Stories', series: 'Churned', changeRate: -0.045 },
@@ -137,13 +130,7 @@ export const dualSeriesDivergingData = [
   { channel: 'FB Stories', series: 'Churned', changeRate: -0.09 },
 ];
 
-/**
- * Regression-guard data matching a real-world "monthly growth cohorts" chart: a stacked vertical
- * bar with New/Retained/Returned stacked above zero and Churned stacked below, per month. Every
- * month has multiple rows (one per series), so `getDivergingBarContext` declines here too — the
- * expected convention for this chart shape keeps the month axis at the bottom edge and only draws
- * a zero-gridline through the middle (via plain `baseline`), rather than moving the axis itself.
- */
+/** Regression guard: stacked "monthly growth cohorts" bar with multiple rows per month, so `getDivergingBarContext` declines and the axis stays at the bottom edge with a plain `baseline` zero-gridline. */
 export const stackedCohortData = [
   { month: 'Oct 2024', series: 'New', users: 1700 },
   { month: 'Oct 2024', series: 'Retained', users: 1000 },
@@ -171,13 +158,7 @@ export const stackedCohortData = [
   { month: 'Mar', series: 'Churned', users: -1200 },
 ];
 
-/**
- * Regression-guard data matching a Likert-scale survey chart: a horizontal stacked bar per
- * concept, with "Strongly Negative"/"Negative" stacked left of zero and "Neutral"/"Positive"/
- * "Strongly Positive" stacked right of it — the same mixed-sign-rows-per-category shape as
- * `stackedCohortData`, just horizontal and with two negative-going series instead of one.
- * `getDivergingBarContext` declines here too; the concept axis stays at the left edge.
- */
+/** Regression guard: Likert-scale survey data, same mixed-sign-rows-per-category shape as `stackedCohortData` but horizontal — `getDivergingBarContext` declines and the concept axis stays at the left edge. */
 export const likertSurveyData = [
   { concept: 'Concept 1', response: 'Strongly Negative', order: 0, value: -10, barColor: '#7a2e0e' },
   { concept: 'Concept 1', response: 'Negative', order: 1, value: -25, barColor: '#e2711d' },
@@ -196,10 +177,7 @@ export const likertSurveyData = [
   { concept: 'Concept 3', response: 'Strongly Positive', order: 4, value: 30, barColor: '#0b4f4a' },
 ];
 
-/**
- * Year-over-year comparison dodged by "This Year"/"Last Year." Two rows per category but both agree
- * in sign (A/B grew, C/D declined), so there's no ambiguity and `diverging` activates.
- */
+/** Year-over-year comparison dodged by period; both rows per category agree in sign, so `diverging` activates without ambiguity. */
 export const sameSignDodgedData = [
   { product: 'Product A', period: 'This Year', changeRate: 0.15 },
   { product: 'Product A', period: 'Last Year', changeRate: 0.08 },
@@ -211,13 +189,7 @@ export const sameSignDodgedData = [
   { product: 'Product D', period: 'Last Year', changeRate: -0.01 },
 ];
 
-/**
- * Verification data for `labelFormat="time"` + `diverging` (single series, mixed sign, monthly
- * granularity) — checked safe via buildSpec/vega.parse before adding this story: no crash, and
- * (for the vertical-bar/bottom-axis case) the primary+secondary time axis pair both get the same
- * offset and an identical flip encode, since their row separation is a static `dy`, not
- * `labelPadding`-based like sub-labels.
- */
+/** Verifies `labelFormat="time"` + `diverging` (mixed sign, monthly granularity): primary/secondary time axes share the same offset and flip encode via a static `dy`, not `labelPadding`. */
 export const timeAxisDivergingData = [
   { day: '2024-11-15 00:00:00.0', changeRate: 0.131 },
   { day: '2024-12-20 00:00:00.0', changeRate: 0.082 },
@@ -334,7 +306,7 @@ interface GenerateMockDataForTrellisArgs {
   randomizeSteps?: boolean;
 }
 
-// Helper to calculate order based on the orderBy parameter
+// Order by whichever property matches orderBy
 const getOrder = (
   p1i: number,
   p2i: number,
