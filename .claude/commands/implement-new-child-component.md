@@ -8,13 +8,23 @@ Read `.claude/architecture.md` for the dispatch pipeline, the sanitize gate (all
 
 ## Step 0: Check for an Approved Spec
 
-Look for `planning/specs/<chartType>/<slug>.json` matching this feature. If one exists and
-`status` is `"approved"` or `"implemented"`, read it and treat its `requirements`,
-`edgeCases`, and `crossCutting` flags as authoritative instead of re-deriving them —
-`crossCutting` in particular tells you up front whether this component needs to interact
-with hover animation, controlled highlight, legend interaction, or tooltip/popover wiring.
-Use `implementationPlan` as a starting file checklist, re-locating by symbol name if its
-line numbers have drifted. If no spec exists, proceed as below.
+Look for `planning/specs/<chartType>/<slug>.json` matching this feature, checking both the
+base directory (not yet implemented) and its `implemented/` subfolder (already shipped —
+still useful context, e.g. for a regression). If one exists and `status` is `"approved"` or
+`"implemented"`, read it and treat its `requirements`, `edgeCases`, and `crossCutting` flags
+as authoritative instead of re-deriving them — `crossCutting` in particular tells you up
+front whether this component needs to interact with hover animation, controlled highlight,
+legend interaction, or tooltip/popover wiring. Use `implementationPlan` as a starting file
+checklist, re-locating by symbol name if its line numbers have drifted. If no spec exists,
+proceed as below.
+
+Before setting `status` to `"implemented"`, reconcile the whole spec against the final diff —
+see README.md's "Reconcile the whole spec before marking implemented." A discovery made
+mid-implementation must be reflected everywhere it's relevant (`crossCutting`,
+`implementationPlan`), not just wherever you first noted it. Any time you touch a field,
+re-stamp `lastUpdated` with the output of `date +%Y-%m-%d` — never a hand-written guess. Then
+`git mv` the file into `planning/specs/<chartType>/implemented/<slug>.json` as part of the
+same PR.
 
 ---
 
@@ -212,3 +222,5 @@ S2-exclusive components (like `BarDirectLabel`, `LineDirectLabel`) only exist in
 **`displayName` on the wrong object** — Set `displayName` on the component function itself, not on the import. It must be set before the component is used in the `sanitizeChildren` set or the switch case.
 
 **Copyright header missing** — Every new `.ts`/`.tsx` source file requires the Apache 2.0 copyright block at the top. ESLint enforces this as a hard error. See `.claude/architecture.md` for the exact header text. Story files (`.story.tsx`) are exempt.
+
+**Multi-line JSDoc/comments narrating the change** — New functions get at most a one-line JSDoc (description + `@param`/`@returns`), matching the length of sibling functions in the same file. Do not add paragraphs explaining why the component was added or what was investigated while building it — that belongs in the PR description, never the code. See `CLAUDE.md`'s Code Style section for a worked example.

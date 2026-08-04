@@ -28,7 +28,7 @@ import {
   hasPopover,
 } from '../marks/markUtils';
 import { LineSpecOptions, ProductionRuleTests } from '../types';
-import { getLineYEncoding } from './lineMarkUtils';
+import { getLineOpacity, getLineYEncoding } from './lineMarkUtils';
 import { staticPointTestExpr, LineMarkOptions } from './lineUtils';
 
 const getSelectedTest = (name: string, idKey: string) =>
@@ -81,6 +81,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     isSparkline,
     staticPoint,
     pointSize = 125,
+    opacity,
   } = lineOptions;
 
   const fillEncode = getStaticPointFillEncode({ color, colorScheme, isSparkline, staticPoint });
@@ -96,7 +97,36 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
       enter: {
         size: { value: pointSize },
         fill: fillEncode,
+        fillOpacity: getOpacityProductionRule(opacity),
         stroke: strokeEncode,
+        y: getLineYEncoding(lineOptions, metric),
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimension),
+        opacity: getLineOpacity(lineOptions),
+      },
+    },
+  };
+};
+
+/**
+ * Gets a background to static points to prevent opacity from revealing the line behind the point.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): SymbolMark => {
+  const { name, metric, scaleType, dimension, pointSize = 125 } = lineOptions;
+  return {
+    name: `${name}_staticPointBackground`,
+    description: `${name}_staticPointBackground`,
+    type: 'symbol',
+    from: { data: `${name}_staticPointData` },
+    interactive: false,
+    encode: {
+      enter: {
+        size: { value: pointSize },
+        fill: { signal: BACKGROUND_COLOR },
+        stroke: { signal: BACKGROUND_COLOR },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {

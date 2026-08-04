@@ -8,13 +8,23 @@ Read `.claude/architecture.md` for the three-type system (Options / SpecOptions 
 
 ## Step 0: Check for an Approved Spec
 
-Look for `planning/specs/<chartType>/<slug>.json` matching this feature. If one exists and
-`status` is `"approved"` or `"implemented"`, read it and treat its `requirements`,
-`edgeCases`, and `crossCutting` flags as authoritative instead of re-deriving them —
-`crossCutting` in particular tells you up front whether this prop needs to interact with
-hover animation, controlled highlight, legend interaction, or tooltip/popover wiring.
-Use `implementationPlan` as a starting file checklist, re-locating by symbol name if its
-line numbers have drifted. If no spec exists, proceed as below.
+Look for `planning/specs/<chartType>/<slug>.json` matching this feature, checking both the
+base directory (not yet implemented) and its `implemented/` subfolder (already shipped —
+still useful context, e.g. for a regression). If one exists and `status` is `"approved"` or
+`"implemented"`, read it and treat its `requirements`, `edgeCases`, and `crossCutting` flags
+as authoritative instead of re-deriving them — `crossCutting` in particular tells you up
+front whether this prop needs to interact with hover animation, controlled highlight, legend
+interaction, or tooltip/popover wiring. Use `implementationPlan` as a starting file
+checklist, re-locating by symbol name if its line numbers have drifted. If no spec exists,
+proceed as below.
+
+Before setting `status` to `"implemented"`, reconcile the whole spec against the final diff —
+see README.md's "Reconcile the whole spec before marking implemented." A discovery made
+mid-implementation must be reflected everywhere it's relevant (`crossCutting`,
+`implementationPlan`), not just wherever you first noted it. Any time you touch a field,
+re-stamp `lastUpdated` with the output of `date +%Y-%m-%d` — never a hand-written guess. Then
+`git mv` the file into `planning/specs/<chartType>/implemented/<slug>.json` as part of the
+same PR.
 
 ---
 
@@ -189,3 +199,5 @@ Check whether the mark exists in S2 (`packages/vega-spec-builder-s2/src/` and `p
 **Failing TypeScript but not failing tests** — `yarn test` does not type-check. Always run `yarn tsc --noEmit` after writing test files.
 
 **Type literals widened with `| string`** — When a prop takes a fixed set of values, define it as a string literal union (`'left' | 'right' | 'center'`). Do not add `| string` to widen it — restrict to known valid values only. ESLint and TypeScript will not catch this, but SonarQube will flag it as a code smell.
+
+**Multi-line JSDoc/comments narrating the change** — New or modified functions get at most a one-line JSDoc (description + `@param`/`@returns`), matching the length of sibling functions in the same file. Do not add paragraphs explaining why the prop was added, what it fixes, or what was investigated — that belongs in the PR description, never the code. See `CLAUDE.md`'s Code Style section for a worked example.
