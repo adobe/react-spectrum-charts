@@ -64,7 +64,7 @@
     "build:docs:s2": "yarn workspace @spectrum-charts/docs-s2 build",
     "start:docs:s2": "yarn workspace @spectrum-charts/docs-s2 start",
     "docs:update-cursor-rule": "node scripts/createCursorRule.js",
-    "skills:update-design-tokens": "yarn workspace @spectrum-charts/mcp build && node scripts/createDesignTokenSkill.js",
+    "skills:update-s2-design-tokens": "yarn workspace @spectrum-charts/mcp build && node scripts/createDesignTokenSkill.js",
     "skills:update-chart-features": "yarn workspace @spectrum-charts/mcp build && node scripts/createChartFeatureSkill.js",
     "clean": "yarn workspaces run clean",
     "clean:parallel": "concurrently 'yarn workspace @spectrum-charts/themes clean' 'yarn workspace @spectrum-charts/constants clean' 'yarn workspace @spectrum-charts/utils clean' 'yarn workspace @spectrum-charts/locales clean' 'yarn workspace @spectrum-charts/vega-spec-builder clean' 'yarn workspace @adobe/react-spectrum-charts clean'",

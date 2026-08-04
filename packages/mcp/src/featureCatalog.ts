@@ -31,8 +31,13 @@ export type ChartFeature = {
   description: string;
   /** @spectrum-charts/constants names referenced by this feature's builder. */
   relatedTokens: string[];
-  /** Whether a JSX wrapper component exists today, per RSC generation (spec-builder support always exists). */
-  rscSupport: { s1: boolean; s2: boolean };
+  /**
+   * Whether a JSX wrapper component exists today, per RSC generation (spec-builder support always exists).
+   * `s1Maturity`/`s2Maturity` are set when the component ships from a non-stable import path
+   * (`@adobe/react-spectrum-charts/alpha` or `/rc`) rather than the stable barrel — alpha and RC
+   * components are still considered supported (s1/s2: true), just not stable yet.
+   */
+  rscSupport: { s1: boolean; s2: boolean; s1Maturity?: 'alpha' | 'rc'; s2Maturity?: 'alpha' | 'rc' };
   optionsType: ChartFeatureTypeRef;
   /** Repo-relative path to the spec-builder implementation, when independently confirmed. */
   builderFile?: string;
@@ -85,7 +90,7 @@ export const CHART_FEATURE_CATALOG: ChartFeature[] = [
       "Renders a compact horizontal/vertical 'target vs. actual' gauge bar (KPI-style), with optional " +
       'qualitative threshold bands and a target marker.',
     relatedTokens: ['DEFAULT_BULLET_DIRECTION', 'DEFAULT_COLOR_SCHEME'],
-    rscSupport: { s1: false, s2: false },
+    rscSupport: { s1: true, s2: false, s1Maturity: 'alpha' },
     optionsType: { typeName: 'BulletOptions', filePath: `${S2_TYPES}/marks/bulletSpec.types.ts` },
     builderFile: `${S2_SRC}/bullet/bulletSpecBuilder.ts`,
   },
@@ -98,7 +103,7 @@ export const CHART_FEATURE_CATALOG: ChartFeature[] = [
       'Composites a Bar mark and a Line mark on the same chart/axes (e.g. bars for volume + line for a rate), ' +
       'so the two mark families can share a dimension/scale.',
     relatedTokens: [],
-    rscSupport: { s1: false, s2: false },
+    rscSupport: { s1: true, s2: false, s1Maturity: 'alpha' },
     optionsType: { typeName: 'ComboOptions', filePath: `${S2_TYPES}/marks/comboSpec.types.ts` },
     builderFile: `${S2_SRC}/combo/comboSpecBuilder.ts`,
   },
@@ -111,7 +116,7 @@ export const CHART_FEATURE_CATALOG: ChartFeature[] = [
       "Renders proportional data as a ring (or pie when holeRatio=0), with an optional center summary " +
       'metric and per-segment labels.',
     relatedTokens: ['DEFAULT_COLOR_SCHEME'],
-    rscSupport: { s1: false, s2: true },
+    rscSupport: { s1: true, s2: true, s1Maturity: 'rc', s2Maturity: 'rc' },
     optionsType: { typeName: 'DonutOptions', filePath: `${S2_TYPES}/marks/donutSpec.types.ts` },
     builderFile: `${S2_SRC}/donut/donutSpecBuilder.ts`,
   },
@@ -157,7 +162,7 @@ export const CHART_FEATURE_CATALOG: ChartFeature[] = [
     description:
       'Draws a proportional Venn/Euler diagram of set sizes and intersections, with labels inside sets/intersections.',
     relatedTokens: ['DEFAULT_COLOR_SCHEME'],
-    rscSupport: { s1: false, s2: false },
+    rscSupport: { s1: true, s2: false, s1Maturity: 'alpha' },
     optionsType: { typeName: 'VennOptions', filePath: `${S2_TYPES}/marks/vennSpec.types.ts` },
     builderFile: `${S2_SRC}/venn/vennSpecBuilder.ts`,
   },
@@ -330,7 +335,7 @@ export const CHART_FEATURE_CATALOG: ChartFeature[] = [
     appliesTo: ['donut'],
     description: "Shows a formatted metric total/summary in the donut's center hole.",
     relatedTokens: [],
-    rscSupport: { s1: false, s2: true },
+    rscSupport: { s1: true, s2: true, s1Maturity: 'rc', s2Maturity: 'rc' },
     // NOTE: "dountSummarySpec.types.ts" (missing "n") is the real filename in the repo — not a transcription error.
     optionsType: { typeName: 'DonutSummaryOptions', filePath: `${S2_TYPES}/marks/supplemental/dountSummarySpec.types.ts` },
   },
@@ -341,7 +346,7 @@ export const CHART_FEATURE_CATALOG: ChartFeature[] = [
     appliesTo: ['donut'],
     description: 'Labels each donut segment with its value and/or percent-of-whole.',
     relatedTokens: [],
-    rscSupport: { s1: false, s2: true },
+    rscSupport: { s1: true, s2: true, s1Maturity: 'rc', s2Maturity: 'rc' },
     optionsType: { typeName: 'SegmentLabelOptions', filePath: `${S2_TYPES}/marks/supplemental/segmentLabelSpec.types.ts` },
   },
 
