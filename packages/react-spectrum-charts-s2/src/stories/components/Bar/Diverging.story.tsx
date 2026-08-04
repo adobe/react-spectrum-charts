@@ -79,10 +79,7 @@ Vertical.args = {
   colorOverride: 'barColor',
 } satisfies BarProps;
 
-/**
- * `labelFormat="time"` makes a primary+secondary axis pair; diverging folds the primary row's static
- * `enter.dy` into `extraOutwardOffset` (flipping with the row) so both rows stay stacked.
- */
+/** `labelFormat="time"` makes a primary+secondary axis pair; diverging flips both rows together via `extraOutwardOffset`. */
 const TimeAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: timeAxisDivergingData, width: 700, height: 400 });
   return (

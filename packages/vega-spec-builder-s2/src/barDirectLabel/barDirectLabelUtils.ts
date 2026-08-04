@@ -105,11 +105,7 @@ export const getBarDirectLabelPositionEncodings = (
   };
 };
 
-/**
- * Adaptive inside placement (the `start` position): if the bar fits the label, place it inside near
- * the zero baseline (background fill); otherwise spill it outside the tip (series color). Fit is
- * measured per-datum — horizontal via `getLabelWidth`, vertical approximated by font size.
- */
+/** The `start` position: inside near the baseline when the label fits, spilling outside the tip otherwise. */
 const getAdaptiveEndPositionEncodings = (
   isVertical: boolean,
   metric: string,
@@ -251,8 +247,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
     },
   };
 
-  // the background halo is only needed where a label can sit outside the bar: always-outside
-  // ('end-outside') or the adaptive position when it spills out (`isInsideTest` set)
+  // background halo only needed where a label can sit outside the bar: end-outside, or adaptive when it spills
   const hasOutsideLabel = position === 'end-outside' || Boolean(isInsideTest);
   return hasOutsideLabel ? [backgroundMark, mainMark] : [mainMark];
 };

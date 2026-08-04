@@ -156,8 +156,7 @@ export const addBar = produce<
       isInteractive(barOptions) ? barOptions.dimension : undefined
     );
 
-    // single-series only: with no facet (color/lineType/opacity) and no dodging, every category has
-    // exactly one row, so its sign is always well-defined. Dodged and multi-series stacked bars are a future story.
+    // diverging is single-series only: dodged and faceted (multi-row-per-category) bars have no well-defined sign
     const hasSeriesFacet = getFacetsFromOptions({ color, lineType, opacity }).facets.length > 0;
     if (diverging && type !== 'dodged' && !hasSeriesFacet) {
       spec.usermeta = addUserMetaDivergingBarMark(

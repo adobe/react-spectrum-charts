@@ -225,8 +225,7 @@ export function buildSpec({
   spec = JSON.parse(JSON.stringify(spec));
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
-  // a diverging axis is offset onto the opposing grid; sibling axis groups paint in array order, so
-  // render it last, otherwise a later grid axis paints its gridlines over the diverging axis's labels.
+  // sibling axes paint in array order, so move the diverging axis last or a later grid axis paints over its labels
   if (spec.usermeta?.divergingBarMarks?.length && spec.axes) {
     spec.axes = [...spec.axes].sort((a, b) => Number(isDivergingAxis(a)) - Number(isDivergingAxis(b)));
   }
