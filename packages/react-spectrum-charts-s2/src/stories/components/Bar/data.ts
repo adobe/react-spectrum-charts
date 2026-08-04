@@ -11,11 +11,11 @@
  */
 
 export const barData = [
-  { browser: 'Chrome', downloads: 27000, percentLabel: '53.1%' },
-  { browser: 'Firefox', downloads: 8000, percentLabel: '15.7%' },
-  { browser: 'Safari', downloads: 7750, percentLabel: '15.2%' },
-  { browser: 'Edge', downloads: 7600, percentLabel: '14.9%' },
-  { browser: 'Explorer', downloads: 500, percentLabel: '1.0%' },
+  { browser: 'Chrome', downloads: 27000, percentLabel: '53.1%', share: 0.531 },
+  { browser: 'Firefox', downloads: 8000, percentLabel: '15.7%', share: 0.157 },
+  { browser: 'Safari', downloads: 7750, percentLabel: '15.2%', share: 0.152 },
+  { browser: 'Edge', downloads: 7600, percentLabel: '14.9%', share: 0.149 },
+  { browser: 'Explorer', downloads: 500, percentLabel: '1.0%', share: 0.01 },
 ];
 
 export const barDataLongLabels = [

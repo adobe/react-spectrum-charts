@@ -102,4 +102,5 @@ export interface BulletSpecOptions extends PartiallyRequired<BulletOptions, Bull
   idKey: string;
   index: number;
   interactiveMarkName: string | undefined;
+  s2?: boolean;
 }

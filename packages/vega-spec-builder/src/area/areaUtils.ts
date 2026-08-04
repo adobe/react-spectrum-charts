@@ -61,6 +61,7 @@ export interface AreaMarkOptions {
   name: string;
   opacity: number;
   parentName?: string; // Optional name of mark that this area is a child of. Used for metric ranges.
+  s2?: boolean;
   scaleType: ScaleType;
 
   chartPopovers?: ChartPopoverOptions[];
@@ -83,6 +84,7 @@ export const getAreaMark = (
     scaleType,
     dimension,
     opacity,
+    s2,
   } = areaOptions;
   return {
     name,
@@ -94,7 +96,7 @@ export const getAreaMark = (
       enter: {
         y: { scale: 'yLinear', field: metricStart },
         y2: { scale: 'yLinear', field: metricEnd },
-        fill: getColorProductionRule(color, colorScheme),
+        fill: getColorProductionRule(color, colorScheme, undefined, s2),
         tooltip: getTooltip(chartTooltips ?? [], name),
         ...getBorderStrokeEncodings(isStacked, true),
         defined: { signal: `isValid(datum["${metricStart}"]) || isValid(datum["${metricEnd}"])` },

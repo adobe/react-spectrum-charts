@@ -46,7 +46,7 @@ export const getSumData = ({ metric, name }: DonutSpecOptions): SourceData => ({
 });
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { chartPopovers, chartTooltips, color, colorScheme, holeRatio, idKey, name } = options;
+  const { chartPopovers, chartTooltips, color, colorScheme, holeRatio, idKey, name, s2 } = options;
   return {
     type: 'arc',
     name,
@@ -54,11 +54,11 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
     from: { data: FILTERED_TABLE },
     encode: {
       enter: {
-        fill: getColorProductionRule(color, colorScheme),
+        fill: getColorProductionRule(color, colorScheme, undefined, s2),
         x: { signal: 'width / 2' },
         y: { signal: 'height / 2' },
         tooltip: getTooltip(chartTooltips, name),
-        stroke: { value: getColorValue('static-blue', colorScheme) },
+        stroke: { value: getColorValue('static-blue', colorScheme, s2) },
       },
       update: {
         startAngle: { field: `${name}_startAngle` },
@@ -82,7 +82,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
  * @returns ArcMark
  */
 export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { colorScheme, holeRatio, name } = options;
+  const { colorScheme, holeRatio, name, s2 } = options;
   return {
     type: 'arc',
     name: `${name}_emptyState`,
@@ -90,7 +90,7 @@ export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
     interactive: false,
     encode: {
       enter: {
-        fill: { value: getColorValue('gray-200', colorScheme) },
+        fill: { value: getColorValue('gray-200', colorScheme, s2) },
         x: { signal: 'width / 2' },
         y: { signal: 'height / 2' },
         startAngle: { value: 0 },
