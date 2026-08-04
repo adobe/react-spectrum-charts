@@ -50,7 +50,7 @@ import {
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder';
-import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import { addUserMetaDivergingBarMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
@@ -89,6 +89,7 @@ export const addBar = produce<
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_CATEGORICAL_DIMENSION,
+      diverging = false,
       dualMetricAxis = false,
       hasOnClick = false,
       hasSquareCorners = false,
@@ -116,6 +117,7 @@ export const addBar = produce<
       chartPopovers,
       chartInspects,
       dimensionScaleType: 'band',
+      diverging,
       dualMetricAxis,
       orientation,
       color,
@@ -153,6 +155,17 @@ export const addBar = produce<
       barOptions.interactiveMarkName,
       isInteractive(barOptions) ? barOptions.dimension : undefined
     );
+
+    // diverging is single-series only: dodged and faceted (multi-row-per-category) bars have no well-defined sign
+    const hasSeriesFacet = getFacetsFromOptions({ color, lineType, opacity }).facets.length > 0;
+    if (diverging && type !== 'dodged' && !hasSeriesFacet) {
+      spec.usermeta = addUserMetaDivergingBarMark(
+        spec.usermeta,
+        barOptions.name,
+        barOptions.dimension,
+        barOptions.metric
+      );
+    }
 
     spec.data = addData(spec.data ?? [], barOptions);
     spec.signals = addSignals(spec.signals ?? [], barOptions);

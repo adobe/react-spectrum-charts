@@ -286,6 +286,59 @@ describe('barSpecBuilder', () => {
         }).usermeta;
         expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: undefined }]);
       });
+
+      test('should add a divergingBarMarks entry for a single-series diverging bar', () => {
+        const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', diverging: true }).usermeta;
+        expect(usermeta.divergingBarMarks).toStrictEqual([
+          { name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION, metric: DEFAULT_METRIC },
+        ]);
+      });
+
+      test('should not add a divergingBarMarks entry when diverging is not set', () => {
+        const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry when the bar has a color facet, even if diverging is set', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          color: 'series',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry for a dodged bar, even with no facet set', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          type: 'dodged',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry when dodged by a lineType facet (not color)', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          type: 'dodged',
+          lineType: 'period',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry for a stacked bar faceted by opacity (not color)', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          opacity: 'tier',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
     });
   });
 

@@ -331,6 +331,17 @@ export const addUserMetaInteractiveMark = produce<UserMeta, [string?, string?]>(
   }
 );
 
+/**
+ * Adds a diverging bar mark to the user meta, so axis building can find its dimension/metric
+ * without parsing marks or data directly. Only called for single-series bars (see {@link addBar}) —
+ * a category with more than one row per bar has no single well-defined sign.
+ */
+export const addUserMetaDivergingBarMark = produce<UserMeta, [string, string, string]>(
+  (usermeta, name, dimension, metric) => {
+    usermeta.divergingBarMarks = [...(usermeta.divergingBarMarks ?? []), { name, dimension, metric }];
+  }
+);
+
 export const addUserMetaAnimatedMark = produce<UserMeta, [string?]>((usermeta, animatedMarkName) => {
   usermeta.animatedMarks = [
     ...(usermeta.animatedMarks ?? []),
