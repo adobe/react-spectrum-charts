@@ -616,6 +616,99 @@ describe('Spec builder, Axis', () => {
       });
     });
 
+    describe('onClick wiring', () => {
+      test('stamps a name, sets interactive true, and adds a pointer cursor when hasOnClick is true', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+      });
+
+      test('is independent of a matching interactive bar - no matching bar is required', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { interactiveMarks: [] },
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+        expect(axis.encode?.labels?.update).not.toHaveProperty('fillOpacity');
+      });
+
+      test('adds both the dimension fillOpacity fade and the pointer cursor when hasOnClick and a matching bar are both present', () => {
+        // an interactive bar named "bar0" with dimension "category"
+        const interactiveMarks = [{ name: 'bar0', dimension: 'category' }];
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { interactiveMarks },
+        })[0];
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+        expect(axis.encode?.labels?.update).toHaveProperty('fillOpacity');
+      });
+
+      test('does not add a cursor when hasOnClick is false and there is no matching bar', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: false,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels?.update).not.toHaveProperty('cursor');
+      });
+
+      test('does not stamp name/interactive/cursor when hideDefaultLabels is true, even with hasOnClick', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          hideDefaultLabels: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels?.update).not.toHaveProperty('cursor');
+      });
+
+      test('adds interactive and cursor to custom labels when hasOnClick is true', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          labels: [1, 2, 3],
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+      });
+
+      test('does not add interactive or cursor to custom labels when hasOnClick is false', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: false,
+          labels: [1, 2, 3],
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+        expect(axis.encode?.labels?.update).not.toHaveProperty('cursor');
+      });
+    });
+
     describe('axisThumbnails', () => {
       test('should not add thumbnail encodings when scale type does not support thumbnails', () => {
         const axes = addAxes([], {

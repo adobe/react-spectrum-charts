@@ -20,12 +20,14 @@ import { Legend } from '../components';
 import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
 import {
+  getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
   getOnMouseInputCallback,
   setSelectedSignals,
 } from '../utils';
+import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails';
 import { UseLegendProps } from './useLegend';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails';
 import useMarkOnClickDetails from './useMarkOnClickDetails';
@@ -48,6 +50,7 @@ const useNewChartView = (
     onMouseOver: onLegendMouseOver,
   } = legendProps;
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
+  const axisLabelOnClickDetails = useAxisLabelOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
   const legendHasPopover = useMemo(
@@ -142,10 +145,14 @@ const useNewChartView = (
         view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(chartView, markClickDetails));
       }
       view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
+      if (axisLabelOnClickDetails.length) {
+        view.addEventListener('click', getOnAxisLabelClickCallback(axisLabelOnClickDetails));
+      }
       view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver, markMouseInputDetails));
       view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut, markMouseInputDetails));
     },
     [
+      axisLabelOnClickDetails,
       chartId,
       chartView,
       idKey,

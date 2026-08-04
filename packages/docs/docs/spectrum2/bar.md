@@ -52,7 +52,7 @@ The same component works for horizontal bar charts. Labels appear to the right o
 
 ### BarDirectLabel props
 
-The label text is derived automatically from the parent Bar's metric, dimension, and orientation. Additional options (custom format, prefix, etc.) will be added in future releases.
+The label text is derived automatically from the parent Bar's metric, dimension, and orientation.
 
 <table>
     <thead>
@@ -69,6 +69,12 @@ The label text is derived automatically from the parent Bar's metric, dimension,
             <td>'start' | 'middle' | 'end' | 'end-outside'</td>
             <td>'end-outside'</td>
             <td>Where to place the label relative to the bar. <code>'end-outside'</code> places it outside the bar tip; <code>'end'</code> places it inside the bar, 8px from the tip; <code>'middle'</code> centers it within the bar; <code>'start'</code> places it inside the bar, 8px from the baseline edge.</td>
+        </tr>
+        <tr>
+            <td>format</td>
+            <td>'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | 'percentage' | string</td>
+            <td>',.2~f'</td>
+            <td>Number format for the label value. Accepts a named preset or a custom d3-format specifier string (e.g. <code>'.1f'</code>).</td>
         </tr>
     </tbody>
 </table>

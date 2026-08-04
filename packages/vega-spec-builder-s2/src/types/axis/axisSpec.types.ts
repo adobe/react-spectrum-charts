@@ -118,6 +118,8 @@ export interface AxisOptions {
   ticks?: boolean;
   /** Enables hover tooltips on axis labels for this axis. */
   hasTooltip?: boolean;
+  /** Whether the axis has an onClick callback set. */
+  hasOnClick?: boolean;
   /**
    * The minimum desired step between axis ticks, in terms of scale domain values.
    * For example, a value of 1 indicates that ticks should not be less than 1 unit apart.
@@ -165,6 +167,7 @@ type AxisOptionsWithDefaults =
   | 'baselineOffset'
   | 'granularity'
   | 'grid'
+  | 'hasOnClick'
   | 'hideDefaultLabels'
   | 'labelAlign'
   | 'labelFontWeight'

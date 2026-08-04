@@ -11,6 +11,8 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
+import { NumberFormat } from '@spectrum-charts/vega-spec-builder-s2';
+
 export type BarDirectLabelPosition = 'start' | 'middle' | 'end' | 'end-outside';
 
 export interface BarDirectLabelProps {
@@ -23,6 +25,8 @@ export interface BarDirectLabelProps {
    * @default 'end-outside'
    */
   position?: BarDirectLabelPosition;
+  /** Number format for the label value — a named preset or custom d3-format specifier. @default ',.2~f' */
+  format?: NumberFormat;
 }
 
 export type BarDirectLabelElement = ReactElement<

@@ -11,6 +11,7 @@
  */
 import { ReactElement, useState } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { GROUP_DATA } from '@spectrum-charts/constants';
@@ -181,9 +182,7 @@ const OnClick = bindWithProps(BarStory);
 OnClick.args = {
   dimension: 'browser',
   metric: 'downloads',
-  onClick: (datum) => {
-    console.log('datum:', datum);
-  },
+  onClick: action('onClick'),
 };
 
 const OnMouseInputs = bindWithProps(OnMouseInputsStory);

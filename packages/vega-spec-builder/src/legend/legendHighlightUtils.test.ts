@@ -187,4 +187,40 @@ describe('encodingUsesScale()', () => {
   test('should return false if encoding is not related to a scale', () => {
     expect(encodingUsesScale({ value: 1 })).toBe(false);
   });
+
+  test('should return true if any element of an array-shaped encoding uses a scale', () => {
+    expect(
+      encodingUsesScale([{ test: 'datum.staticPoint === true', signal: 'BACKGROUND_COLOR' }, { scale: 'color' }])
+    ).toBe(true);
+  });
+  test('should return false if no element of an array-shaped encoding uses a scale', () => {
+    expect(
+      encodingUsesScale([{ test: 'datum.staticPoint === true', value: '#fff' }, { value: '#000' }])
+    ).toBe(false);
+  });
+});
+
+describe('static point mark (array-shaped fill/stroke with a scale fallback)', () => {
+  const staticPointMark: Mark = {
+    name: 'line0_staticPoints',
+    type: 'symbol',
+    from: { data: 'line0_staticPointData' },
+    encode: {
+      enter: {
+        fill: [
+          { test: "datum.staticPoint === 'hollow'", signal: 'BACKGROUND_COLOR' },
+          { scale: 'color', field: SERIES_ID },
+        ],
+      },
+      update: {
+        opacity: [DEFAULT_OPACITY_RULE],
+      },
+    },
+  };
+
+  test('is recognized as series-aware because its fill array contains a scale-based rule', () => {
+    const marks = JSON.parse(JSON.stringify([staticPointMark]));
+    setHoverOpacityForMarks('legend0', marks);
+    expect(marks[0].encode.update.opacity[0]).toEqual(getHighlightOpacityRule('legend0', false));
+  });
 });

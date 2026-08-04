@@ -17,7 +17,7 @@ import { InteractiveMark } from '../types';
 import {
   addAxisLabelHoverSignalWiring,
   getAxisLabelDimensionFillOpacity,
-  getAxisLabelHoverMarkName,
+  getAxisLabelMarkName,
   getMatchingInteractiveBarDimensionFields,
 } from './axisLabelHoverUtils';
 
@@ -31,9 +31,9 @@ const getDimensionHoverAreaSignal = (barName: string): Signal => ({
   ],
 });
 
-describe('getAxisLabelHoverMarkName()', () => {
+describe('getAxisLabelMarkName()', () => {
   test('returns a name derived from the axis name', () => {
-    expect(getAxisLabelHoverMarkName('axis0')).toEqual('axis0_labelHover');
+    expect(getAxisLabelMarkName('axis0')).toEqual('axis0_labelHover');
   });
 });
 

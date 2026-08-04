@@ -63,4 +63,5 @@ export interface AreaSpecOptions extends PartiallyRequired<AreaOptions, AreaOpti
   idKey: string;
   interactiveMarkName?: string;
   index: number;
+  s2?: boolean;
 }

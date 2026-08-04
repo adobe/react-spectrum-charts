@@ -37,6 +37,15 @@ describe('getBarDirectLabelSpecOptions()', () => {
     const options = getBarDirectLabelSpecOptions({ position: 'middle' }, 0, defaultBarOptions);
     expect(options.position).toBe('middle');
   });
+
+  it('defaults format to an empty string when not provided', () => {
+    expect(defaultSpecOptions.format).toBe('');
+  });
+
+  it('respects a provided format', () => {
+    const options = getBarDirectLabelSpecOptions({ format: 'percentage' }, 0, defaultBarOptions);
+    expect(options.format).toBe('percentage');
+  });
 });
 
 
@@ -226,5 +235,53 @@ describe('getBarDirectLabelMarks()', () => {
   it('marks source directly from FILTERED_TABLE', () => {
     const marks = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
     marks.forEach(mark => expect((mark as TextMark).from?.data).toBe(FILTERED_TABLE));
+  });
+
+  describe('format', () => {
+    it('falls back to the default d3 spec when format is not provided', () => {
+      const [, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
+      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
+        'signal',
+        `format(datum["${defaultBarOptions.metric}"], ",.2~f")`
+      );
+    });
+
+    it('resolves the "percentage" preset to the ~% d3 spec', () => {
+      const options = getBarDirectLabelSpecOptions({ format: 'percentage' }, 0, defaultBarOptions);
+      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
+      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
+        'signal',
+        `format(datum["${defaultBarOptions.metric}"], "~%")`
+      );
+    });
+
+    it('resolves the "currency" preset to the $,.2f d3 spec', () => {
+      const options = getBarDirectLabelSpecOptions({ format: 'currency' }, 0, defaultBarOptions);
+      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
+      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
+        'signal',
+        `format(datum["${defaultBarOptions.metric}"], "$,.2f")`
+      );
+    });
+
+    it('passes a custom d3-format specifier string straight through', () => {
+      const options = getBarDirectLabelSpecOptions({ format: '.1f' }, 0, defaultBarOptions);
+      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
+      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
+        'signal',
+        `format(datum["${defaultBarOptions.metric}"], ".1f")`
+      );
+    });
+
+    it('escapes embedded quotes and backslashes so the generated expression stays a single well-formed call', () => {
+      const maliciousFormat = '.1f\\"'; // ends with a literal backslash followed by a quote
+      const options = getBarDirectLabelSpecOptions({ format: maliciousFormat }, 0, defaultBarOptions);
+      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
+      const { signal } = (main as TextMark).encode?.enter?.text as { signal: string };
+      const match = signal.match(/^format\(datum\["[^"]*"\], "(.*)"\)$/);
+      expect(match).not.toBeNull();
+      const [, escapedSpec] = match as RegExpMatchArray;
+      expect(JSON.parse(`"${escapedSpec}"`)).toEqual(maliciousFormat);
+    });
   });
 });
