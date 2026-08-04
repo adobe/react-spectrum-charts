@@ -1,9 +1,9 @@
 # Hover Animation System — Design & Architecture
 
-A reference for rebuilding the line/mark hover-animation system (smooth opacity / stroke-width
-transitions on hover) from scratch. Written against the `vega-spec-builder-s2` implementation but the
-design is engine-agnostic: it's a Vega-signal/data-flow pattern that can be reproduced anywhere charts
-are compiled to Vega specs.
+A reference for rebuilding the hover-animation system (smooth opacity / stroke-width transitions on
+hover) from scratch. Written against the `vega-spec-builder-s2` implementation but the design is
+mark-agnostic and currently wired into line only (see §11) — it's a Vega-signal/data-flow pattern that
+can be reproduced for any mark compiled to a Vega spec.
 
 ---
 
@@ -126,7 +126,7 @@ that freezes this recompute while nothing is transitioning.
 ### 3f. Idle gating — freezing the clock while nothing animates
 
 `hoverTimer` (§3a) ticks at 30fps for as long as *any* animated mark exists on the chart (gated at the
-chart level by `isAnimate`, §6 — that gate decides *whether the timer exists at all*). But most of a
+chart level by `isHoverAnimate`, §6 — that gate decides *whether the timer exists at all*). But most of a
 chart's life is spent with nothing hovered and no transition in flight: once a fade/grow finishes, there's
 no reason to keep recomputing `hoverFractionData`'s `lerp(...)` for every row of every animated mark on
 every tick forever. Idle gating adds a second, narrower gate: **pause the *clock that drives the fraction
@@ -325,7 +325,7 @@ nothing active at all → falls through to the neutral fallback (`0.5`).
 
 ---
 
-## 6. The gate — resolve once, thread down (`isAnimate`)
+## 6. The gate — resolve once, thread down (`isHoverAnimate`)
 
 Creating the timer + data sources on a static, non-interactive chart means a 30fps re-render forever, so
 whether a line animates is gated. The gate is **computed exactly once**, in `addLine`, where the full
@@ -333,39 +333,43 @@ whether a line animates is gated. The gate is **computed exactly once**, in `add
 
 ```ts
 // in addLine, LineSpecOptions in scope (has legendHighlightSignals + everything isInteractive needs)
-// `animations` is a chart-level prop (default on) that can force the whole line onto the old system.
-lineOptions.isAnimate = animations !== false && usesHoverAnimation(lineOptions);
+// `animations` (master kill switch, default on) and `animationTypes` (default ['hover']) are both
+// chart-level props that can force the whole line onto the old system.
+lineOptions.isHoverAnimate = usesHoverAnimation(animations, animationTypes, lineOptions);
 
-const usesHoverAnimation = (options) =>
-  isInteractive(options) || options.highlightedItem !== undefined
-  || (options.legendHighlightSignals?.length ?? 0) > 0;
+const usesHoverAnimation = (animations, animationTypes, options) =>
+  animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
+  (isInteractive(options) || options.highlightedItem !== undefined
+  || (options.legendHighlightSignals?.length ?? 0) > 0);
 ```
 
-`isAnimate` is stored on the options object (added to both `LineSpecOptions` and the narrower
+`isHoverAnimate` is stored on the options object (added to both `LineSpecOptions` and the narrower
 `LineMarkOptions`) so every downstream reader gets the *same resolved answer* rather than recomputing:
 
-- data sources (`hoverTargetData` / `hoverAnimStateData` / `hoverFractionData`) — `if (options.isAnimate)`
-- the `hoverTimer` + `hoverTargets` signals — `if (options.isAnimate)`
-- `animatedMarks` registration (see §7) — `if (isAnimate)`
-- the property encodings — `getLineOpacity` branches: `isAnimate` → animated signal, else → the original
+- data sources (`hoverTargetData` / `hoverAnimStateData` / `hoverFractionData`) — `if (options.isHoverAnimate)`
+- the `hoverTimer` + `hoverTargets` signals — `if (options.isHoverAnimate)`
+- `animatedMarks` registration (see §7) — `if (isHoverAnimate)`
+- the property encodings — `getLineOpacity` branches: `isHoverAnimate` → animated signal, else → the original
   instant production-rule fade (`getLineOpacityRules`). This is currently the *only* wired consumer for
-  line — see §1. `getLineStrokeWidth` does not read `isAnimate` at all yet and always returns the original
+  line — see §1. `getLineStrokeWidth` does not read `isHoverAnimate` at all yet and always returns the original
   instant production rules; wiring it up means splitting it the same way (`getLineStrokeWidth` wrapper +
   a `getLineStrokeWidthRules` fallback), which hasn't been done.
 - any mark options that reuse `getLineMark`/`getLineOpacity` under a **different mark name** than the one
-  the data sources were built for **must** override `isAnimate: false` — otherwise the encoding references
+  the data sources were built for **must** override `isHoverAnimate: false` — otherwise the encoding references
   a `_hoverFractionData` that doesn't exist for that name and Vega throws "Unrecognized data set" at
   runtime. Three call sites do this today: the highlight overlay, trendlines, and the metric-range boundary
   line (see the Overlay exception note below).
 
-### The `animations` toggle (chart-level prop)
+### The `animations`/`animationTypes` toggles (chart-level props)
 
-`<Chart animations={false}>` opts the whole chart out of the animated system back to the original instant
-production-rule highlight. It's a `ChartOptions` field (default `true` = animated), threaded through
-`chartSpecBuilder`'s `specOptions` into every mark — so `animations !== false` simply becomes one more
-factor in `isAnimate`. When off: no hover data/timer is created, `animatedMarks` stays empty (so the
+`<Chart animations={false}>` is a master kill switch: it opts the whole chart out of every animation type
+(hover and draw-in) back to the original instant production-rule highlight, regardless of `animationTypes`.
+`animationTypes` (default `['hover']`) is the per-type opt-in list — omit `'hover'` to disable just the
+hover system while leaving `animations` (and e.g. draw-in) untouched. Both are `ChartOptions` fields
+threaded through `chartSpecBuilder`'s `specOptions` into every mark. When off: no hover data/timer is
+created, `animatedMarks` stays empty (so the
 legend falls back to `getOpacityEncoding`), and `getLineOpacity` returns the production-rule array
-(`getLineStrokeWidth` returns that array unconditionally either way, since it isn't gated on `isAnimate`
+(`getLineStrokeWidth` returns that array unconditionally either way, since it isn't gated on `isHoverAnimate`
 yet — see above). The `!Array.isArray` guards in `setHoverOpacityForMarks` / `setHoverStrokeWidthForMarks`
 then re-engage (array ⇒ old legend-hover path applies), so the entire old system is restored coherently by
 flipping one prop.
@@ -390,18 +394,18 @@ This unified the previously-split gate and **closed the legend-only-highlight ga
 interactivity is a highlight legend now animates both its legend entry *and* its strokes/opacity.
 
 > Overlay exception: the highlight overlay (§10) reuses `getLineMark` under a *different* mark name that
-> has no `_hoverFractionData`. It's built with `isAnimate: false` so its animated encodings resolve to the
+> has no `_hoverFractionData`. It's built with `isHoverAnimate: false` so its animated encodings resolve to the
 > static default instead of referencing a data source that only exists for the base line's name.
 >
 > The same fix is required anywhere else `getLineMark`/`getLineOpacity` is reused under a renamed mark by
-> spreading the parent line's options — spreading also carries along the parent's `isAnimate: true`, which
+> spreading the parent line's options — spreading also carries along the parent's `isHoverAnimate: true`, which
 > is wrong for the renamed mark. Trendlines (`getLineMarkOptions` in `trendlineMarkUtils.ts`) and the
 > metric-range boundary line (`getMetricRangeMark` in `metricRangeUtils.ts`) both hit this and now both
-> explicitly set `isAnimate: false` for the same reason as the overlay.
+> explicitly set `isHoverAnimate: false` for the same reason as the overlay.
 
 > Static points and direct labels are the opposite of the overlay: they're **not** renamed marks, so they
-> correctly keep the parent's `isAnimate` and read the *same* line's `_hoverFractionData` rather than getting
-> their own. `getLineStaticPoint` branches on `isAnimate` via the shared `getLineDeemphasisOpacitySignal`;
+> correctly keep the parent's `isHoverAnimate` and read the *same* line's `_hoverFractionData` rather than getting
+> their own. `getLineStaticPoint` branches on `isHoverAnimate` via the shared `getLineDeemphasisOpacitySignal`;
 > `getLineDirectLabelMarks` just calls `getLineOpacity` directly. In both, only the **foreground** is
 > opacity-driven — the background halo mark has no `opacity` key at all, so it stays permanently opaque.
 
@@ -481,8 +485,8 @@ one shared row for the whole chart (§3f).
 | `vega-spec-builder-s2/src/line/linePointUtils.ts` | `getLineStaticPoint` (wired via `getLineDeemphasisOpacitySignal`) |
 | `vega-spec-builder-s2/src/lineDirectLabel/lineDirectLabelUtils.ts` | `getLineDirectLabelMarks` — foreground wired via `getLineOpacity`; background has no `opacity` key, stays opaque |
 | `vega-spec-builder-s2/src/line/lineSpecBuilder.ts` | `usesHoverAnimation` gate; wires data/signals/registration in `addData`/`addSignals`/`addLine` |
-| `vega-spec-builder-s2/src/trendline/trendlineMarkUtils.ts` | `getLineMarkOptions` — sets `isAnimate: false` for trendline marks (§6 overlay exception) |
-| `vega-spec-builder-s2/src/metricRange/metricRangeUtils.ts` | `getMetricRangeMark` — sets `isAnimate: false` for the boundary line (§6 overlay exception) |
+| `vega-spec-builder-s2/src/trendline/trendlineMarkUtils.ts` | `getLineMarkOptions` — sets `isHoverAnimate: false` for trendline marks (§6 overlay exception) |
+| `vega-spec-builder-s2/src/metricRange/metricRangeUtils.ts` | `getMetricRangeMark` — sets `isHoverAnimate: false` for the boundary line (§6 overlay exception) |
 | `vega-spec-builder-s2/src/legend/legendHighlightUtils.ts` | `injectLegendHoverIntoData`, `getLegendHighlightSignals`; `setHoverOpacityForMarks` + `isAnimatedOpacity` (§7) |
 | `vega-spec-builder-s2/src/legend/legendUtils.ts` | `getLegendOpacity` (legend consumer, reads `animatedMarks`) |
 | `vega-spec-builder-s2/src/specUtils.ts` + `types/specUtil.types.ts` | `addUserMetaAnimatedMark`, `animatedMarks` on `UserMeta` — **line names only**, see §7 |
@@ -504,13 +508,13 @@ mark could pass `rscMarkId` (bar) etc. — see §11.
   production rules with fallback `0` (hidden at rest), the *opposite* resting state from the main line
   (visible at rest). Do not try to feed it the fraction — at rest the fraction is neutral (→ visible),
   which would make the overlay cover the labels. The main line carries the animation; the overlay just
-  reorders. Also build the overlay with **`isAnimate: false`**: it reuses `getLineMark` under a different
+  reorders. Also build the overlay with **`isHoverAnimate: false`**: it reuses `getLineMark` under a different
   mark name that has no `_hoverFractionData`, so an animated encoding on it would reference a data source
   that was only emitted for the base line's name (Vega "unrecognized data set"). Trendlines and the
   metric-range boundary line hit this same trap (both reuse `getLineMark`/`getLineOpacity` under a renamed
-  mark by spreading the parent line's options, which also spreads `isAnimate: true`) and both now set
-  `isAnimate: false` explicitly for the same reason — see §6.
-- **Gate the data and the encoding with the *same resolved value*.** Compute `isAnimate` once (§6) and
+  mark by spreading the parent line's options, which also spreads `isHoverAnimate: true`) and both now set
+  `isHoverAnimate: false` explicitly for the same reason — see §6.
+- **Gate the data and the encoding with the *same resolved value*.** Compute `isHoverAnimate` once (§6) and
   thread it to both the data-creation gate and the encoding functions. If the two are computed
   independently they can drift, and an animated encoding will reference a `_hoverFractionData` that was
   never created. Resolving once and threading also lets the encoding functions honor conditions their
@@ -573,28 +577,29 @@ and legend-hover injection silently stops matching (no error, nothing highlights
 ## 12. Status / not-yet-done
 
 - **Opacity is wired for line, static points, and direct labels (done); stroke width is intentionally
-  deferred.** `getLineOpacity` branches on `isAnimate` (animated signal vs. `getLineOpacityRules` fallback)
+  deferred.** `getLineOpacity` branches on `isHoverAnimate` (animated signal vs. `getLineOpacityRules` fallback)
   and was the original reference example; `getLineStaticPoint` and `getLineDirectLabelMarks` now follow the
   same pattern (§1, §6). `getLineStrokeWidth` was deliberately left untouched — still the original
   unconditional instant production rules — so it remains a clean next-consumer exercise. The engine itself
   is not limited to these properties; any property whose visual treatment maps onto the emphasize/deemphasize
   ramp (§2, §4) is a valid consumer.
-- **Gate resolved via `isAnimate`** (§6): computed once in `addLine`, threaded to data/signals/encodings.
+- **Gate resolved via `isHoverAnimate`** (§6): computed once in `addLine`, threaded to data/signals/encodings.
   This closed the earlier legend-only-highlight gap — legend-only lines now animate their strokes/opacity
   too, not just the legend.
-- **`animations` toggle (done)** (§6): chart-level prop (default on) that swaps the whole chart between
-  the animated system and the restored original production-rule highlight (`getLineOpacityRules`; there is
-  no `getLineStrokeWidthRules` — `getLineStrokeWidth` only has the one, unconditional, implementation).
+- **`animations`/`animationTypes` toggles (done)** (§6): `animations` is a chart-level master kill switch
+  (default on); `animationTypes` (default `['hover']`) is the per-type opt-in list. Either can swap a line
+  between the animated system and the restored original production-rule highlight (`getLineOpacityRules`;
+  there is no `getLineStrokeWidthRules` — `getLineStrokeWidth` only has the one, unconditional, implementation).
 - **`hoverAnimationUtils` unit tests (done)**: engine + ramps covered in `hoverAnimationUtils.test.ts`.
 - **Idle gating (§3f) — done, wired into `addLine`/`addData`/`addSignals`.** `addHoverAnimLastChangeData(data, name)`
-  is called alongside `addHoverAnimationSignals(signals, name)`, both gated by `if (options.isAnimate)` in
+  is called alongside `addHoverAnimationSignals(signals, name)`, both gated by `if (options.isHoverAnimate)` in
   `addData`/`addSignals` respectively, so the pairing required by the §10 gotcha holds for every animated line.
 - **`comboSiblingMatch`** semantics predate the 3-state target — review before relying on it.
 - **Metric-range line and trendlines under an animated parent (fixed).** Like the overlay, both the
   metric-range boundary line (`getMetricRangeMark`) and trendline marks (`getLineMarkOptions` in
   `trendlineMarkUtils.ts`) reuse `getLineMark`/`getLineOpacity` under a renamed mark with no
-  `_hoverFractionData` of its own. Both now explicitly set `isAnimate: false` — see §6/§10. (The
-  `isAnimate` field is new in this branch; spreading the parent line's options into a renamed mark
+  `_hoverFractionData` of its own. Both now explicitly set `isHoverAnimate: false` — see §6/§10. (The
+  `isHoverAnimate` field is new in this branch; spreading the parent line's options into a renamed mark
   silently carries it along unless overridden, which is why these two needed the same fix already applied
   to the overlay.)
 - **Legend integration (done)** (§7): `injectLegendHoverIntoData` wired into `addData` (`legendSpecBuilder.ts`)

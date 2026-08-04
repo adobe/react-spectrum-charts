@@ -13,7 +13,9 @@ import { produce } from 'immer';
 import { Data, Mark, Scale, Signal } from 'vega';
 
 import {
+  AnimationType,
   COLOR_SCALE,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
@@ -83,6 +85,7 @@ export const addLine = produce<
   [
     LineOptions & {
       animations?: boolean;
+      animationTypes?: AnimationType[];
       colorScheme?: ColorScheme;
       highlightedItem?: HighlightedItem;
       highlightedSeries?: string | number;
@@ -97,6 +100,7 @@ export const addLine = produce<
     spec,
     {
       animations,
+      animationTypes,
       chartPopovers = [],
       chartInspects = [],
       color = { value: 'categorical-100' },
@@ -186,10 +190,10 @@ export const addLine = produce<
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
-    lineOptions.isAnimate = usesHoverAnimation(animations, lineOptions);
-    lineOptions.isDrawInAnimate = isLineDrawInSupported(animations, lineOptions);
+    lineOptions.isHoverAnimate = usesHoverAnimation(animations, animationTypes, lineOptions);
+    lineOptions.isDrawInAnimate = isLineDrawInSupported(animations, animationTypes, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
-    if (lineOptions.isAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
+    if (lineOptions.isHoverAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = setScales(spec.scales ?? [], lineOptions);
@@ -201,15 +205,21 @@ export const addLine = produce<
 
 /**
  * Whether the line participates in the hover-animation system.
- * Computed once in `addLine` and stored on `options.isAnimate`; every downstream gate reads that
+ * Computed once in `addLine` and stored on `options.isHoverAnimate`; every downstream gate reads that
  * resolved boolean. A highlight legend counts (via legendHighlightSignals) so both the legend and the line animate.
  * `highlightedItem`/`highlightedSeries` are the chart-level controlled-highlight props; either one alone
  * is enough to animate, since `getLineHoverRules` always wires both `controlledTableMatch` and
  * `controlledSeriesMatch` regardless of which is set.
- * `animations === false` opts out unconditionally, regardless of the other conditions.
+ * `animations === false` is the master kill switch and opts out unconditionally; otherwise hover is
+ * gated on `animationTypes` including `'hover'` (defaults to `DEFAULT_ANIMATION_TYPES`, which does).
  */
-const usesHoverAnimation = (animations: boolean | undefined, options: LineSpecOptions): boolean =>
+const usesHoverAnimation = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined,
+  options: LineSpecOptions
+): boolean =>
   animations !== false &&
+  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
   (isInteractive(options) ||
     options.highlightedItem !== undefined ||
     options.highlightedSeries !== undefined ||
@@ -217,9 +227,16 @@ const usesHoverAnimation = (animations: boolean | undefined, options: LineSpecOp
 
 /**
  * Whether the line participates in the draw-in animation system.
+ * Unlike hover animation, this is opt-in — `animationTypes` must explicitly include `'drawIn'` — since
+ * draw-in is still gated to a subset of scale types. `animations === false` still overrides unconditionally.
  */
-const isLineDrawInSupported = (animations: boolean | undefined, options: LineSpecOptions): boolean =>
-  animations === true &&
+const isLineDrawInSupported = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined,
+  options: LineSpecOptions
+): boolean =>
+  animations !== false &&
+  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn') &&
   (options.scaleType === 'time' || options.scaleType === 'linear' || options.scaleType === 'point');
 
 /**
@@ -321,14 +338,14 @@ const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions)
  * hover-animation engine's data sources when the line is animated.
  */
 const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
-  const { chartInspects, highlightedItem, isAnimate, name, seriesIds, showHoverLabel } = options;
+  const { chartInspects, highlightedItem, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
     if (showHoverLabel) {
       data.push(getHoverLabelData(options));
     }
   }
-  if (isAnimate) {
+  if (isHoverAnimate) {
     data.push(
       getHoverTargetData({ name, groupby: [SERIES_ID], rules: getLineHoverRules(options) }),
       getHoverAnimStateData({ name, keys: seriesIds ?? [] }),
@@ -373,7 +390,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
   }
 
-  if (options.isAnimate) {
+  if (options.isHoverAnimate) {
     addHoverAnimationSignals(signals, name);
   }
 

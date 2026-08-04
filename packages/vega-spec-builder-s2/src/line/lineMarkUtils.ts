@@ -278,11 +278,11 @@ export const getLineDeemphasisOpacitySignal = (name: string): ProductionRule<Num
 };
 
 export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  const { displayOnHover, isAnimate, name } = lineMarkOptions;
+  const { displayOnHover, isHoverAnimate, name } = lineMarkOptions;
   // displayOnHover overlay marks manage their own visibility via getHighlightedSeriesOpacityRules
   if (displayOnHover) return [DEFAULT_OPACITY_RULE];
 
-  if (isAnimate) {
+  if (isHoverAnimate) {
     // Fade deemphasized series; neutral and emphasized both stay fully opaque
     return getLineDeemphasisOpacitySignal(name);
   }
@@ -619,7 +619,7 @@ export const getLineHighlightOverlayGroup = (
   const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
 
   const baseLineMark = getLineMark(
-    { ...markOptions, name: `${name}_highlightOverlayLine`, isAnimate: false, isDrawInAnimate: false },
+    { ...markOptions, name: `${name}_highlightOverlayLine`, isHoverAnimate: false, isDrawInAnimate: false },
     `${name}_highlightOverlay_facet`
   );
 

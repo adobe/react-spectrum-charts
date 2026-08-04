@@ -159,7 +159,7 @@ type LineOptionsWithDefaults =
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
   data?: ChartData[];
   seriesIds?: string[];
-  isAnimate?: boolean;
+  isHoverAnimate?: boolean;
   isDrawInAnimate?: boolean;
   backgroundColor?: string;
   colorScheme: ColorScheme;

@@ -182,10 +182,10 @@ describe('getMetricRangeMark', () => {
 
   test('boundary line opacity stays the static instant-rule array even when the parent line is animated', () => {
     // the boundary line renders under `${metricRangeName}_line`, which has no `_hoverFractionData` of
-    // its own — getMetricRangeMark forces isAnimate: false for exactly this reason, otherwise this
+    // its own — getMetricRangeMark forces isHoverAnimate: false for exactly this reason, otherwise this
     // would reference a data source that was only ever created for the parent line's name
     const [lineMark] = getMetricRangeMark(
-      { ...defaultLineOptions, interactiveMarkName: 'line0', isAnimate: true },
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       defaultMetricRangeSpecOptions
     );
     expect(Array.isArray((lineMark as { encode: { update: { opacity: unknown } } }).encode.update.opacity)).toBe(

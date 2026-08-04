@@ -15,6 +15,8 @@ import { ComponentProps, ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { AnimationType } from '@spectrum-charts/constants';
+
 import { Chart } from '../../../../Chart';
 import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
@@ -35,13 +37,18 @@ export default {
   argTypes: {
     animations: {
       control: 'boolean',
-      description: 'Chart-level toggle for the animated draw-in/hover system.',
+      description: 'Chart-level master kill switch for all animations.',
+    },
+    animationTypes: {
+      control: { type: 'check' },
+      options: ['hover', 'drawIn'],
+      description: 'Which animation types are enabled.',
     },
   },
-  args: { animations: true },
+  args: { animations: true, animationTypes: ['hover', 'drawIn'] },
 };
 
-type DrawInAnimationArgs = ComponentProps<typeof Line> & { animations?: boolean };
+type DrawInAnimationArgs = ComponentProps<typeof Line> & { animations?: boolean; animationTypes?: AnimationType[] };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
@@ -103,9 +110,9 @@ const lineDualAxisData = [
   { datetime: 1668409200000, value: 3.8, series: 'Conversion Rate (%)', order: 1 },
 ];
 
-/** Baseline — a time-scale line, the only scale type draw-in currently animates. */
-const TimeScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+/** Baseline — a time-scale line, one of the three scale types draw-in supports (time/linear/point). */
+const TimeScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -116,12 +123,9 @@ const TimeScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): 
   );
 };
 
-/**
- * Point scale — not yet supported by draw-in (`isLineDrawInSupported` gates it off), so the line
- * should render at its normal, static position regardless of the `animations` toggle.
- */
-const PointScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+/** Point scale — a point-scale line */
+const PointScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -132,9 +136,9 @@ const PointScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }):
   );
 };
 
-/** Linear scale — the other continuous scale type draw-in supports, using the numeric `point` field. */
-const LinearScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+/** Linear scale — a linear-scale line, using the numeric `point` field. */
+const LinearScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -146,8 +150,8 @@ const LinearScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args })
 };
 
 /** Funky data shape — unsorted, uneven-length series data, still on a time scale. */
-const FunkyDataShapeStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: funkyLineData, animations });
+const FunkyDataShapeStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: funkyLineData, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -158,13 +162,9 @@ const FunkyDataShapeStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args
   );
 };
 
-/**
- * Categorical point scale — a real string dimension (`quarter`), the shape the scale-type gate
- * actually protects against (unlike `PointScale`, whose numeric `datetime` field works whether or
- * not the gate is applied). Should render at normal static positions, no draw-in, no crash.
- */
-const CategoricalPointScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: categoricalPointData, animations });
+/** Categorical point scale — a real string dimension (`quarter`), unlike `PointScale`'s numeric field. */
+const CategoricalPointScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: categoricalPointData, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Value" />
@@ -176,8 +176,8 @@ const CategoricalPointScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, 
 };
 
 /** Using cardinal interpolation. */
-const CardinalInterpStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const CardinalInterpStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -188,8 +188,8 @@ const CardinalInterpStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args
   );
 };
 
-const DualMetrixAxisStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: lineDualAxisData, animations });
+const DualMetrixAxisStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: lineDualAxisData, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" labelFormat="time" baseline ticks title="Date" />
@@ -207,8 +207,8 @@ const DualMetrixAxisStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args
  * markers for deemphasized series along with the line itself, demonstrating `getLineStaticPoint`'s
  * wiring into the same animated fraction as `getLineOpacity`.
  */
-const StaticPointStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints, animations });
+const StaticPointStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -226,8 +226,8 @@ const StaticPointStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args })
  * for deemphasized series along with the line itself. The label's background halo stays fully
  * opaque throughout — only the foreground text fades.
  */
-const DirectLabelStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const DirectLabelStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -242,8 +242,8 @@ const DirectLabelStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args })
 };
 
 /** Hidden Series - combines Legend `defaultHiddenSeries`/`isToggleable` with the hover-animation */
-const HiddenSeriesStory: StoryFn<DrawInAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const HiddenSeriesStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />

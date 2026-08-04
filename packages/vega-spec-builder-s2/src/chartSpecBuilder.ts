@@ -101,6 +101,7 @@ const isDivergingAxis = (axis: Axis): boolean => {
 
 export function buildSpec({
   animations,
+  animationTypes,
   axes = [],
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
   chartHeight,
@@ -155,6 +156,7 @@ export function buildSpec({
   const legendHighlightSignals = getLegendHighlightSignals(legends);
   const specOptions = {
     animations,
+    animationTypes,
     backgroundColor,
     colorScheme,
     idKey,
