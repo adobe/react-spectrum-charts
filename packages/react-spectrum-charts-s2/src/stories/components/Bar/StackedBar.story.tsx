@@ -11,6 +11,7 @@
  */
 import { ReactElement } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
@@ -132,9 +133,7 @@ OnClick.args = {
   dimension: 'browser',
   order: 'order',
   color: 'operatingSystem',
-  onClick: (datum) => {
-    console.log('datum:', datum);
-  },
+  onClick: action('onClick'),
 };
 
 const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);
@@ -151,6 +150,12 @@ InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
+// Hovering an axis label highlights the matching stack, same as hovering the stack itself.
+const AxisLabelHighlight = bindWithProps(StackedBarPopoverStory);
+AxisLabelHighlight.args = {
+  ...defaultProps,
+};
+
 export {
   Basic,
   NegativeStack,
@@ -158,5 +163,6 @@ export {
   Popover,
   StackedBarWithUTCDatetimeFormat,
   InspectOnDimensionArea,
+  AxisLabelHighlight,
   WithBarLabels,
 };

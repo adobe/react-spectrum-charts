@@ -17,6 +17,7 @@ import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID 
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 import { ContextMenuMode } from '../types/marks/line.types';
 
+import { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails';
 import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
 import { toggleStringArrayValue } from '../utils';
@@ -152,6 +153,42 @@ export const getOnChartMarkContextMenuCallback = (
       detail.onContextMenu(nativeEvent, datum);
     }
   };
+};
+
+/**
+ * Callback for the `onClick` prop on an Axis, fired when an axis label is clicked.
+ * Matches via Vega's `axis-label` mark role, not the Bar/Line mark-name convention.
+ * @param axisLabelOnClickDetails - The details for all axes with the onClick prop.
+ * @returns The callback for axis label click events.
+ */
+export const getOnAxisLabelClickCallback = (
+  axisLabelOnClickDetails?: AxisLabelOnClickDetail[]
+): ViewEventCallback => {
+  return (event, item) => {
+    if (!item || !axisLabelOnClickDetails?.length || !isAxisLabelItem(item)) return;
+
+    const itemName = getItemName(item);
+    const datum = item.datum as { value?: string | number | Date; index: number };
+    // Vega's synthetic "extra" boundary tick (binned domains) has index -1 and no value
+    // (vega-encode's AxisTicks) - skip it rather than firing onClick with a bad value/index.
+    if (datum.index < 0 || datum.value === undefined) return;
+
+    const index = getAxisLabelIndex(item, datum.index);
+    const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+    axisLabelOnClickDetails.find((detail) => detail.markName === itemName)?.onClick?.(nativeEvent, datum.value, index);
+  };
+};
+
+const isAxisLabelItem = (item: ActionItem): boolean =>
+  isItemSceneItem(item) && 'role' in item.mark && item.mark.role === 'axis-label';
+
+/**
+ * Vega's tick datum.index is a fraction (`i / (tickCount - 1)`, per vega-encode's AxisTicks),
+ * not a 0-based position. Recovers the real index from the sibling tick count on the mark.
+ */
+const getAxisLabelIndex = (item: NonNullable<ActionItem>, normalizedIndex: number): number => {
+  const tickCount = isItemSceneItem(item) ? item.mark.items.length : 1;
+  return Math.round(normalizedIndex * (tickCount - 1));
 };
 
 const toComparableValue = (val: unknown): string | number => {

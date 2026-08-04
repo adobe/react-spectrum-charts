@@ -283,16 +283,22 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
  * @param numberFormat
  * @returns
  */
-export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
+export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat): string => {
   switch (numberFormat) {
     case 'currency':
       return '$,.2f'; // currency format
     case 'standardNumber':
       return ','; // standard number format
+    case 'percentage':
+      return '~%'; // percentage format
     default:
       return numberFormat;
   }
 };
+
+/** Backslashes must be escaped before quotes — otherwise a trailing backslash-quote can terminate the outer Vega expression string early. */
+export const escapeD3FormatSpecifier = (formatSpec: string): string =>
+  formatSpec.replaceAll('\\', String.raw`\\`).replaceAll('"', String.raw`\"`);
 
 /**
  * Merges the provided config with the Spectrum Vega config
@@ -313,14 +319,17 @@ export function getChartConfig(config: Config | undefined, colorScheme: ColorSch
  * Adds an interactive mark to the user meta
  * @param usermeta
  * @param interactiveMarkName
+ * @param dimension the mark's dimension field, if it needs to be discoverable by other builders
  * @returns
  */
-export const addUserMetaInteractiveMark = produce<UserMeta, [string?]>((usermeta, interactiveMarkName) => {
-  usermeta.interactiveMarks = [
-    ...(usermeta.interactiveMarks ?? []),
-    ...(interactiveMarkName ? [interactiveMarkName] : []),
-  ];
-});
+export const addUserMetaInteractiveMark = produce<UserMeta, [string?, string?]>(
+  (usermeta, interactiveMarkName, dimension) => {
+    usermeta.interactiveMarks = [
+      ...(usermeta.interactiveMarks ?? []),
+      ...(interactiveMarkName ? [{ name: interactiveMarkName, dimension }] : []),
+    ];
+  }
+);
 
 export const addUserMetaAnimatedMark = produce<UserMeta, [string?]>((usermeta, animatedMarkName) => {
   usermeta.animatedMarks = [

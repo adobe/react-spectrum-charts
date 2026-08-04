@@ -37,9 +37,14 @@ export interface ScSpec extends Spec {
   usermeta: UserMeta;
 }
 
+export type InteractiveMark = {
+  name: string;
+  dimension?: string;
+};
+
 export type UserMeta = {
   animatedMarks?: string[];
-  interactiveMarks?: string[];
+  interactiveMarks?: InteractiveMark[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];
@@ -68,7 +73,7 @@ export type Datum = object & {
   [key: string]: any;
 };
 
-export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | string;
+export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | 'percentage' | string;
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 export type ScaleType = 'linear' | 'point' | 'time' | 'band';

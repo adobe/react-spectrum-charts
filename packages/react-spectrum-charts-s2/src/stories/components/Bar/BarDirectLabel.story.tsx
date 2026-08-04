@@ -88,6 +88,19 @@ const BarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement =
   );
 };
 
+const PercentageBarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barData, width: 600, height: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Share" labelFormat="percentage" />
+      <Bar dimension="browser" metric="share">
+        <BarDirectLabel {...args} />
+      </Bar>
+    </Chart>
+  );
+};
+
 const HorizontalBarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 400 });
   return (
@@ -225,7 +238,23 @@ Position.args = { ...defaultProps, position: 'middle' };
 const PositionHorizontal = bindWithProps(HorizontalBarDirectLabelStory);
 PositionHorizontal.args = { ...defaultProps, position: 'start' };
 
+const PercentageFormat = bindWithProps(PercentageBarDirectLabelStory);
+PercentageFormat.args = { ...defaultProps, format: 'percentage' };
+
+const CustomFormat = bindWithProps(BarDirectLabelStory);
+CustomFormat.args = { ...defaultProps, format: '.1f' };
+
 const SizeScaling = bindWithProps(BarDirectLabelSizeScalingStory);
 SizeScaling.args = { ...defaultProps };
 
-export { Default, Horizontal, MixedValues, MixedValuesHorizontal, Position, PositionHorizontal, SizeScaling };
+export {
+  Default,
+  Horizontal,
+  MixedValues,
+  MixedValuesHorizontal,
+  Position,
+  PositionHorizontal,
+  PercentageFormat,
+  CustomFormat,
+  SizeScaling,
+};

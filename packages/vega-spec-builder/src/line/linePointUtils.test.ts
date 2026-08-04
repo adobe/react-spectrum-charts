@@ -12,12 +12,17 @@
 import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_COLOR,
   DEFAULT_SYMBOL_SIZE,
   DEFAULT_SYMBOL_STROKE_WIDTH,
+  FADE_FACTOR,
+  HOVERED_ITEM,
   MARK_ID,
   SELECTED_GROUP,
   SELECTED_ITEM,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import {
@@ -28,6 +33,7 @@ import {
   getHighlightPointStrokeOpacity,
   getHighlightPointStrokeWidth,
   getLineStaticPoint,
+  getLineStaticPointBackground,
   getSecondaryHighlightPoint,
   getSelectionPoint,
   getSelectRingPoint,
@@ -328,5 +334,64 @@ describe('getLineStaticPoint()', () => {
     });
     expect(mark.encode?.enter?.fill).toEqual(solidFill);
     expect(mark.encode?.enter?.stroke).toEqual(solidStroke);
+  });
+
+  test('uses the opacity facet for fillOpacity', () => {
+    const mark = getLineStaticPoint({ ...defaultLineOptions, opacity: { value: 0.5 } });
+    expect(mark.encode?.enter?.fillOpacity).toEqual({ value: 0.5 });
+  });
+
+  test('defaults to full opacity when there is no interactivity', () => {
+    const mark = getLineStaticPoint(defaultLineOptions);
+    expect(mark.encode?.update?.opacity).toEqual([{ value: 1 }]);
+  });
+
+  test('dims points on hover of another series, matching the line mark opacity rules', () => {
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      interactiveMarkName: 'line0',
+      chartTooltips: [{}],
+    });
+    expect(mark.encode?.update?.opacity).toEqual([
+      {
+        test: `isValid(line0_${HOVERED_ITEM})`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} || indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 || isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      },
+      {
+        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+      },
+      {
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      },
+      { value: 1 },
+    ]);
+  });
+});
+
+describe('getLineStaticPointBackground()', () => {
+  test('should use BACKGROUND_COLOR for both fill and stroke', () => {
+    const mark = getLineStaticPointBackground(defaultLineOptions);
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
+    expect(mark.encode?.enter?.stroke).toEqual({ signal: BACKGROUND_COLOR });
+  });
+
+  test('should not have any opacity encoding, so it never dims regardless of interaction state', () => {
+    const mark = getLineStaticPointBackground({
+      ...defaultLineOptions,
+      interactiveMarkName: 'line0',
+      chartTooltips: [{}],
+    });
+    expect(mark.encode?.enter?.opacity).toBeUndefined();
+    expect(mark.encode?.update?.opacity).toBeUndefined();
+  });
+
+  test('should use the same staticPointData source and position as the foreground point', () => {
+    const background = getLineStaticPointBackground(defaultLineOptions);
+    const foreground = getLineStaticPoint(defaultLineOptions);
+    expect(background.from).toEqual(foreground.from);
+    expect(background.encode?.enter?.y).toEqual(foreground.encode?.enter?.y);
+    expect(background.encode?.update?.x).toEqual(foreground.encode?.update?.x);
   });
 });

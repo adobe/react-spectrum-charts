@@ -123,7 +123,7 @@ export const getMetricRangeHoverPoints = (
   lineMarkOptions: LineSpecOptions,
   metricRangeOptions: MetricRangeSpecOptions
 ): SymbolMark[] => {
-  const { color: lineColor, colorScheme, dimension, scaleType } = lineMarkOptions;
+  const { color: lineColor, colorScheme, dimension, s2, scaleType } = lineMarkOptions;
   const { color: rangeColor, metric, name } = metricRangeOptions;
   const highlightedData = `${name}_hoverPointData`;
   const color = rangeColor ? { value: rangeColor } : lineColor;
@@ -160,12 +160,12 @@ export const getMetricRangeHoverPoints = (
     encode: {
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
       },
       update: {
         fill: { signal: BACKGROUND_COLOR },
         size: { value: DEFAULT_SYMBOL_SIZE },
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
         strokeOpacity: getOpacityProductionRule(lineMarkOptions.opacity),
         strokeWidth: { value: DEFAULT_SYMBOL_STROKE_WIDTH },
         x: getXProductionRule(scaleType, dimension),
@@ -205,6 +205,7 @@ export const getMetricRangeMark = (
     interactiveMarkName: lineMarkOptions.interactiveMarkName,
     interactionMode: lineMarkOptions.interactionMode,
     isHighlightedByGroup: lineMarkOptions.isHighlightedByGroup,
+    s2: lineMarkOptions.s2,
   };
   const { interactiveMarkName, ...baseLineMarkOptions } = lineMarkOptions;
   const lineOptions: LineMarkOptions = {

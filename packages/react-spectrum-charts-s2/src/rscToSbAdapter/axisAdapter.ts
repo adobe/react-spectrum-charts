@@ -14,12 +14,13 @@ import { AxisOptions } from '@spectrum-charts/vega-spec-builder-s2';
 import { AxisProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
-export const getAxisOptions = ({ children, ...axisProps }: AxisProps): AxisOptions => {
+export const getAxisOptions = ({ children, onClick, ...axisProps }: AxisProps): AxisOptions => {
   const { referenceLines, axisThumbnails } = childrenToOptions(children);
 
   return {
     ...axisProps,
     referenceLines,
     axisThumbnails,
+    hasOnClick: Boolean(onClick),
   };
 };

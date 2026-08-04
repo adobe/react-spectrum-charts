@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Copyright 2025 Adobe. All rights reserved.
+ * Copyright 2026 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -55,6 +55,12 @@ function renderFeature(feature) {
     feature.relatedTokens.length ? feature.relatedTokens.map((t) => `\`${t}\``).join(', ') : '_none_'
   }\n`;
   md += `- **RSC support**: S1 ${feature.rscSupport.s1 ? '✅' : '❌'}, S2 ${feature.rscSupport.s2 ? '✅' : '❌'}\n`;
+  if (feature.rscSupport.s1Maturity || feature.rscSupport.s2Maturity) {
+    const parts = [];
+    if (feature.rscSupport.s1Maturity) parts.push(`S1 via \`${feature.rscSupport.s1Maturity}\` import path`);
+    if (feature.rscSupport.s2Maturity) parts.push(`S2 via \`${feature.rscSupport.s2Maturity}\` import path`);
+    md += `- **Maturity**: ${parts.join(', ')} — not yet in the stable barrel, but alpha/rc components are considered supported\n`;
+  }
   md += `- **Canonical parameter shape**: \`${feature.optionsType.typeName}\` in \`${feature.optionsType.filePath}\`\n`;
   if (feature.builderFile) {
     md += `- **Builder implementation**: \`${feature.builderFile}\`\n`;
@@ -98,7 +104,7 @@ description: Engine-agnostic catalog of every chart feature React Spectrum Chart
 
 *Generated on: ${new Date().toISOString()}*
 
-This is the same data served by the \`list_chart_features\`/\`read_chart_feature\` tools in \`@spectrum-charts/mcp\`. Parameter shapes are intentionally not transcribed here — each feature points at its canonical \`*Options\` TypeScript type instead, so this catalog can't drift from the real source. "RSC support" reflects whether a JSX wrapper component exists today; a feature with no RSC component is still a real, spec-buildable feature for the Vega/Chart.js/D3 fallback path.
+This is the same data served by the \`list_chart_features\`/\`read_chart_feature\` tools in \`@spectrum-charts/mcp\`. Parameter shapes are intentionally not transcribed here — each feature points at its canonical \`*Options\` TypeScript type instead, so this catalog can't drift from the real source. "RSC support" reflects whether a JSX wrapper component exists today, including alpha/rc import paths (\`@adobe/react-spectrum-charts/alpha\` or \`/rc\`) — those are considered supported, just not yet in the stable barrel; a feature with no RSC component at all is still a real, spec-buildable feature for the Vega/Chart.js/D3 fallback path.
 
 ${sections}
 `;

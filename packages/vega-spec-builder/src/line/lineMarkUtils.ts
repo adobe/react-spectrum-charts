@@ -97,6 +97,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     metric,
     name,
     opacity,
+    s2,
     scaleType,
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
@@ -113,7 +114,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     encode: {
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
         strokeWidth: getLineWidthProductionRule(lineWidth),

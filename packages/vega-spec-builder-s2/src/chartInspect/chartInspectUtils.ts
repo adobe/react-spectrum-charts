@@ -231,15 +231,12 @@ export const addHoverdDimenstionAreaOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
   markOptions: InspectParentOptions
 ) => {
-  if (!hasInspectWithDimensionAreaTarget(markOptions.chartInspects) || !('dimension' in markOptions)) return;
+  // scatter also has a `dimension` field but never creates this signal - scope to bar only.
+  if (markOptions.markType !== 'bar' || !('dimension' in markOptions)) return;
   const { name, dimension } = markOptions;
   const hoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
   opacityRules.push({
     test: `isValid(${hoveredItemSignal})`,
     signal: `${hoveredItemSignal}.${dimension} === datum.${dimension} ? 1 : ${FADE_FACTOR}`,
   });
-};
-
-export const hasInspectWithDimensionAreaTarget = (chartInspects: ChartInspectOptions[]) => {
-  return chartInspects.some(({ targets }) => targets?.includes('dimensionArea'));
 };

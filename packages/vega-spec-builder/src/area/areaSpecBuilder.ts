@@ -28,7 +28,7 @@ import {
   SELECTED_ITEM,
   SELECTED_SERIES,
 } from '@spectrum-charts/constants';
-import { spectrumColors } from '@spectrum-charts/themes';
+import { getColorValue } from '@spectrum-charts/themes';
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import {
@@ -256,6 +256,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecOptions]>((marks, areaOptio
     metric,
     name,
     opacity,
+    s2,
     scaleType,
   } = areaOptions;
   let { metricStart, metricEnd } = areaOptions;
@@ -290,12 +291,13 @@ export const addAreaMarks = produce<Mark[], [AreaSpecOptions]>((marks, areaOptio
           metricEnd,
           name,
           opacity,
+          s2,
           scaleType,
         }),
         ...getAnchorPointMark(areaOptions),
       ],
     },
-    ...getSelectedAreaMarks({ chartPopovers, name, scaleType, color, dimension, metricEnd, metricStart }),
+    ...getSelectedAreaMarks({ chartPopovers, name, scaleType, color, dimension, metricEnd, metricStart, colorScheme, s2 }),
     ...getHoverMarks(areaOptions)
   );
   return marks;
@@ -380,17 +382,21 @@ const getSelectedAreaMarks = ({
   name,
   scaleType,
   color,
+  colorScheme,
   dimension,
   metricEnd,
   metricStart,
+  s2,
 }: {
   chartPopovers: ChartPopoverOptions[];
   name: string;
   scaleType: ScaleType;
   color: string;
+  colorScheme: ColorScheme;
   dimension: string;
   metricEnd: string;
   metricStart: string;
+  s2?: boolean;
 }): Mark[] => {
   if (!chartPopovers.length) return [];
   return [
@@ -405,7 +411,7 @@ const getSelectedAreaMarks = ({
           y2: { scale: 'yLinear', field: metricEnd },
           // need to fill this so the white border doesn't slightly bleed around the blue select border
           fill: { scale: COLOR_SCALE, field: color },
-          stroke: { value: spectrumColors.light['static-blue'] },
+          stroke: { value: getColorValue('static-blue', colorScheme, s2) },
           strokeWidth: { value: 2 },
           strokeJoin: { value: 'round' },
         },

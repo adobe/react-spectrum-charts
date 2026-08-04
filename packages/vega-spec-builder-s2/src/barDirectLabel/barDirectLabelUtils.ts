@@ -15,6 +15,7 @@ import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FO
 
 import { getOrientationProperties } from '../bar/barUtils';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils';
+import { escapeD3FormatSpecifier, getD3FormatSpecifierFromNumberFormat } from '../specUtils';
 import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types';
 
 // Pixel gap between the bar tip and the label (end-outside)
@@ -98,7 +99,7 @@ export const getBarDirectLabelPositionEncodings = (
  * No separate data source is needed — each row in FILTERED_TABLE is already one bar.
  */
 export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, barOptions: BarSpecOptions): Mark[] => {
-  const { barName, color, colorOverride, colorScheme, dimension, index, metric, metricAxis, orientation, position } =
+  const { barName, color, colorOverride, colorScheme, dimension, format, index, metric, metricAxis, orientation, position } =
     labelOptions;
 
   const { metricScaleKey, dimensionScaleKey } = getOrientationProperties(orientation, metricAxis);
@@ -111,7 +112,9 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
   const fontSizeEncoding = getDirectLabelFontSizeProductionRule();
 
   // Label text computed inline — no derived dataset needed
-  const textSignal = `format(datum["${metric}"], "${DEFAULT_NUMBER_FORMAT}")`;
+  const resolvedFormat = format || DEFAULT_NUMBER_FORMAT;
+  const d3Spec = getD3FormatSpecifierFromNumberFormat(resolvedFormat);
+  const textSignal = `format(datum["${metric}"], "${escapeD3FormatSpecifier(d3Spec)}")`;
 
   // Dimension axis: center of the bar's band
   const dimensionBandCenter = { scale: dimensionScaleKey, field: dimension, band: 0.5 };
@@ -193,6 +196,7 @@ export const getBarDirectLabelSpecOptions = (
   colorOverride: barOptions.colorOverride,
   colorScheme: barOptions.colorScheme,
   dimension: barOptions.dimension,
+  format: labelOptions.format ?? '',
   index,
   metric: barOptions.metric,
   metricAxis: barOptions.metricAxis,
