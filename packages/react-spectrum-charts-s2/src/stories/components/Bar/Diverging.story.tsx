@@ -21,9 +21,7 @@ import { BarProps } from '../../../types';
 import {
   divergingConversionRateData,
   divergingConversionRateDataLongLabels,
-  dualSeriesDivergingData,
   likertSurveyData,
-  sameSignDodgedData,
   stackedCohortData,
   timeAxisDivergingData,
 } from './data';
@@ -126,55 +124,6 @@ LongLabels.args = {
 };
 
 /**
- * ACTIVATES — population-pyramid dodged two-series (New +/Churned −); each label flips opposite its
- * own bar via the two-series opposite-sign exception (`isTwoSeriesOppositeSignDodged`).
- */
-const DodgedTwoSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: dualSeriesDivergingData, width: 700, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Diverging signals: dodged two-series bar — axis moves to zero, labels flip per bar" fontSize={16} />
-      <Axis position="left" baseline />
-      <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} diverging />
-      <Legend title="Series" />
-    </Chart>
-  );
-};
-
-const DodgedTwoSeries = bindWithProps(DodgedTwoSeriesStory);
-DodgedTwoSeries.args = {
-  dimension: 'channel',
-  metric: 'changeRate',
-  orientation: 'horizontal',
-  type: 'dodged',
-  color: 'series',
-} satisfies BarProps;
-
-/** ACTIVATES — dodged two rows per category that agree in sign (both grew, or both declined), so there's no ambiguity. */
-const SameSignDodgedStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: sameSignDodgedData, width: 700, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Fixed: same-signed dodged bars — diverging now correctly activates" fontSize={16} />
-      <Axis position="left" baseline />
-      <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} diverging />
-      <Legend title="Period" />
-    </Chart>
-  );
-};
-
-const SameSignDodged = bindWithProps(SameSignDodgedStory);
-SameSignDodged.args = {
-  dimension: 'product',
-  metric: 'changeRate',
-  orientation: 'horizontal',
-  type: 'dodged',
-  color: 'period',
-} satisfies BarProps;
-
-/**
  * DECLINES (guard) — stacked multi-series cohort with mixed-sign rows per month; the axis stays at
  * the edge with only a zero baseline, rather than moving to a per-row zero.
  */
@@ -227,8 +176,6 @@ export {
   Vertical,
   TimeAxis,
   LongLabels,
-  DodgedTwoSeries,
-  SameSignDodged,
   StackedCohortFallback,
   LikertSurveyFallback,
 };

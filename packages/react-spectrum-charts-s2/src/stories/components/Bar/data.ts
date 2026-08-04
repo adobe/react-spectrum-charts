@@ -120,16 +120,6 @@ export const divergingConversionRateDataLongLabels = [
   { channel: 'Facebook Reels Sponsored Video Content', changeRate: -0.029, barColor: '#d7373f' },
 ];
 
-/** Population-pyramid split: two dodged series, consistently opposite-signed, so `diverging` activates via `isTwoSeriesOppositeSignDodged`. */
-export const dualSeriesDivergingData = [
-  { channel: 'IG Stories', series: 'New', changeRate: 0.131 },
-  { channel: 'IG Stories', series: 'Churned', changeRate: -0.045 },
-  { channel: 'IG Reels', series: 'New', changeRate: 0.082 },
-  { channel: 'IG Reels', series: 'Churned', changeRate: -0.061 },
-  { channel: 'FB Stories', series: 'New', changeRate: 0.013 },
-  { channel: 'FB Stories', series: 'Churned', changeRate: -0.09 },
-];
-
 /** Regression guard: stacked "monthly growth cohorts" bar with multiple rows per month, so `getDivergingBarContext` declines and the axis stays at the bottom edge with a plain `baseline` zero-gridline. */
 export const stackedCohortData = [
   { month: 'Oct 2024', series: 'New', users: 1700 },
@@ -175,18 +165,6 @@ export const likertSurveyData = [
   { concept: 'Concept 3', response: 'Neutral', order: 2, value: 15, barColor: '#ffc93c' },
   { concept: 'Concept 3', response: 'Positive', order: 3, value: 45, barColor: '#1f9c8a' },
   { concept: 'Concept 3', response: 'Strongly Positive', order: 4, value: 30, barColor: '#0b4f4a' },
-];
-
-/** Year-over-year comparison dodged by period; both rows per category agree in sign, so `diverging` activates without ambiguity. */
-export const sameSignDodgedData = [
-  { product: 'Product A', period: 'This Year', changeRate: 0.15 },
-  { product: 'Product A', period: 'Last Year', changeRate: 0.08 },
-  { product: 'Product B', period: 'This Year', changeRate: 0.05 },
-  { product: 'Product B', period: 'Last Year', changeRate: 0.03 },
-  { product: 'Product C', period: 'This Year', changeRate: -0.12 },
-  { product: 'Product C', period: 'Last Year', changeRate: -0.18 },
-  { product: 'Product D', period: 'This Year', changeRate: -0.03 },
-  { product: 'Product D', period: 'Last Year', changeRate: -0.01 },
 ];
 
 /** Verifies `labelFormat="time"` + `diverging` (mixed sign, monthly granularity): primary/secondary time axes share the same offset and flip encode via a static `dy`, not `labelPadding`. */

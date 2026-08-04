@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
+import { Axis, Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -98,27 +98,7 @@ import {
   SymbolSize,
 } from './types';
 
-/** True for a dodged two-series split where each series is consistently signed and opposite (e.g. population-pyramid "New"/"Churned"), so every bar has an unambiguous sign. */
-const isTwoSeriesOppositeSignDodged = (bar: BarOptions, data: ChartOptions['data'], metric: string): boolean => {
-  if (bar.type !== 'dodged') return false;
-  const series = typeof bar.color === 'string' ? bar.color : undefined;
-  if (!series) return false;
-
-  const signBySeries = new Map<unknown, number>();
-  for (const datum of data ?? []) {
-    if (typeof datum !== 'object' || datum === null || !(series in datum) || !(metric in datum)) continue;
-    const value = (datum as Record<string, unknown>)[metric];
-    if (typeof value !== 'number' || value === 0) continue;
-    const seriesKey = (datum as Record<string, unknown>)[series];
-    const sign = value < 0 ? -1 : 1;
-    if (signBySeries.get(seriesKey) === -sign) return false; // this series isn't consistently signed
-    signBySeries.set(seriesKey, sign);
-  }
-  const signs = [...signBySeries.values()];
-  return signs.length === 2 && signs[0] !== signs[1];
-};
-
-/** Context `diverging` needs to look up each category's bar sign; only for a single bar mark on its dimension axis, and declines when a category's rows disagree in sign (unless {@link isTwoSeriesOppositeSignDodged}). */
+/** Context `diverging` needs to look up each category's bar sign; only for a single non-dodged bar mark on its dimension axis, and declines when a category's rows disagree in sign. */
 export const getDivergingBarContext = (
   marks: MarkOptions[],
   data: ChartOptions['data'],
@@ -128,6 +108,8 @@ export const getDivergingBarContext = (
   if (barMarks.length !== 1) return undefined;
 
   const [bar] = barMarks;
+  if (bar.type === 'dodged') return undefined;
+
   const dimensionAxisIsVertical = bar.orientation === 'horizontal';
   const axisIsVertical = position === 'left' || position === 'right';
   if (axisIsVertical !== dimensionAxisIsVertical) return undefined;
@@ -148,15 +130,19 @@ export const getDivergingBarContext = (
   const hasCategoryWithConflictingSigns = [...hasPositiveByCategory].some((category) =>
     hasNegativeByCategory.has(category)
   );
-  if (hasCategoryWithConflictingSigns && !isTwoSeriesOppositeSignDodged(bar, data, metric)) {
-    return undefined;
-  }
+  if (hasCategoryWithConflictingSigns) return undefined;
 
   return {
     dataName: FILTERED_TABLE,
     dimension,
     metric,
   };
+};
+
+/** True for an axis repositioned to its opposing scale's zero line (its `offset` is a `scale(…, 0)` signal). */
+const isDivergingAxis = (axis: Axis): boolean => {
+  const { offset } = axis;
+  return typeof offset === 'object' && offset !== null && 'signal' in offset && /scale\(.*,\s*0\)/.test(String(offset.signal));
 };
 import { addVenn } from './venn/vennSpecBuilder';
 
@@ -288,6 +274,12 @@ export function buildSpec({
   // copy the spec so we don't mutate the original
   spec = JSON.parse(JSON.stringify(spec));
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
+
+  // a diverging axis is offset onto the opposing grid; sibling axis groups paint in array order, so
+  // render it last, otherwise a later grid axis paints its gridlines over the diverging axis's labels.
+  if (hasDivergingBar && spec.axes) {
+    spec.axes = [...spec.axes].sort((a, b) => Number(isDivergingAxis(a)) - Number(isDivergingAxis(b)));
+  }
 
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {

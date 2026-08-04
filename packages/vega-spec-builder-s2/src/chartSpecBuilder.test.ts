@@ -623,7 +623,7 @@ describe('Chart spec builder', () => {
       expect(getDivergingBarContext([stackedBar], stackedData, 'left')).toBeUndefined();
     });
 
-    test('activates a dodged two-series always-opposite-sign split (population pyramid)', () => {
+    test('declines any dodged bar (diverging is unsupported for dodged)', () => {
       const dodgedBar: BarOptions = { ...horizontalBar, type: 'dodged', color: 'series' };
       const dodgedData = [
         { channel: 'A', series: 'New', changeRate: 0.1 },
@@ -631,26 +631,7 @@ describe('Chart spec builder', () => {
         { channel: 'B', series: 'New', changeRate: 0.05 },
         { channel: 'B', series: 'Churned', changeRate: -0.3 },
       ];
-      expect(getDivergingBarContext([dodgedBar], dodgedData, 'left')).toStrictEqual(expectedContext);
-    });
-
-    test('activates a same-signed dodged comparison (no sign conflict)', () => {
-      const dodgedBar: BarOptions = { ...horizontalBar, type: 'dodged', color: 'period' };
-      const sameSignData = [
-        { channel: 'A', period: 'This Year', changeRate: 0.15 },
-        { channel: 'A', period: 'Last Year', changeRate: 0.08 },
-      ];
-      expect(getDivergingBarContext([dodgedBar], sameSignData, 'left')).toStrictEqual(expectedContext);
-    });
-
-    test('declines a dodged split that is not exactly two opposite-signed series', () => {
-      const dodgedBar: BarOptions = { ...horizontalBar, type: 'dodged', color: 'series' };
-      const threeSeriesData = [
-        { channel: 'A', series: 'New', changeRate: 0.1 },
-        { channel: 'A', series: 'Retained', changeRate: 0.2 },
-        { channel: 'A', series: 'Churned', changeRate: -0.2 },
-      ];
-      expect(getDivergingBarContext([dodgedBar], threeSeriesData, 'left')).toBeUndefined();
+      expect(getDivergingBarContext([dodgedBar], dodgedData, 'left')).toBeUndefined();
     });
   });
 
@@ -713,6 +694,24 @@ describe('Chart spec builder', () => {
         ],
       });
       expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('renders the diverging axis last so its labels paint over the opposing grid', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        // diverging (left) axis declared BEFORE the grid axis; it must be reordered to paint last
+        axes: [
+          { position: 'left', baseline: true },
+          { position: 'bottom', grid: true },
+        ],
+      });
+      const axes = spec.axes ?? [];
+      expect(axes).toHaveLength(2);
+      expect(axes.at(-1)).toHaveProperty('offset'); // diverging axis painted last
+      expect(axes[0]).not.toHaveProperty('offset'); // grid axis painted first (behind)
+      expect(axes[0].grid).toBe(true);
     });
   });
 });
