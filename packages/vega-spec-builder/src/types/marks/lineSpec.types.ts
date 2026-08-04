@@ -104,4 +104,5 @@ export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOpti
   lineWidth?: FacetRef<LineWidth>;
   popoverMarkName: string | undefined;
   interactionMode?: InteractionMode;
+  s2?: boolean;
 }
