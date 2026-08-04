@@ -47,7 +47,6 @@ import {
   addData,
   buildSpec,
   getColorScale,
-  getDivergingBarContext,
   getDefaultSignals,
   getLineTypeScale,
   getLineWidthScale,
@@ -587,54 +586,6 @@ describe('Chart spec builder', () => {
     });
   });
 
-  describe('getDivergingBarContext()', () => {
-    const singleSeriesData = [
-      { channel: 'A', changeRate: 0.1 },
-      { channel: 'B', changeRate: -0.2 },
-    ];
-    const horizontalBar: BarOptions = {
-      markType: 'bar',
-      orientation: 'horizontal',
-      dimension: 'channel',
-      metric: 'changeRate',
-    };
-    const expectedContext = { dataName: FILTERED_TABLE, dimension: 'channel', metric: 'changeRate' };
-
-    test('returns the context for a single-series diverging bar on its dimension axis', () => {
-      expect(getDivergingBarContext([horizontalBar], singleSeriesData, 'left')).toStrictEqual(expectedContext);
-    });
-
-    test('declines when there is not exactly one bar mark', () => {
-      expect(getDivergingBarContext([], singleSeriesData, 'left')).toBeUndefined();
-      expect(getDivergingBarContext([horizontalBar, horizontalBar], singleSeriesData, 'left')).toBeUndefined();
-    });
-
-    test('declines when the axis is not the bar dimension axis', () => {
-      // a horizontal bar's dimension axis is vertical, so a bottom axis is the metric axis
-      expect(getDivergingBarContext([horizontalBar], singleSeriesData, 'bottom')).toBeUndefined();
-    });
-
-    test('declines a stacked category with conflicting signs', () => {
-      const stackedBar: BarOptions = { ...horizontalBar, color: 'series' };
-      const stackedData = [
-        { channel: 'A', series: 'New', changeRate: 0.1 },
-        { channel: 'A', series: 'Churned', changeRate: -0.2 },
-      ];
-      expect(getDivergingBarContext([stackedBar], stackedData, 'left')).toBeUndefined();
-    });
-
-    test('declines any dodged bar (diverging is unsupported for dodged)', () => {
-      const dodgedBar: BarOptions = { ...horizontalBar, type: 'dodged', color: 'series' };
-      const dodgedData = [
-        { channel: 'A', series: 'New', changeRate: 0.1 },
-        { channel: 'A', series: 'Churned', changeRate: -0.2 },
-        { channel: 'B', series: 'New', changeRate: 0.05 },
-        { channel: 'B', series: 'Churned', changeRate: -0.3 },
-      ];
-      expect(getDivergingBarContext([dodgedBar], dodgedData, 'left')).toBeUndefined();
-    });
-  });
-
   describe('diverging bar axis wiring', () => {
     const divergingData = [
       { channel: 'A', changeRate: 0.1 },
@@ -653,6 +604,92 @@ describe('Chart spec builder', () => {
       const withoutDiverging = (buildDivergingSpec(false).axes ?? []).filter((axis) => 'offset' in axis);
       expect(withDiverging.length).toBeGreaterThan(0);
       expect(withoutDiverging).toHaveLength(0);
+    });
+
+    test('is a no-op for a multi-series bar (color facet) — single-series only for now', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', series: 'New', changeRate: 0.1 },
+          { channel: 'A', series: 'Churned', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            color: 'series',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a dodged bar with no facet set', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            type: 'dodged',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a bar dodged by a lineType facet (not color)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', period: 'This', changeRate: 0.1 },
+          { channel: 'A', period: 'Last', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            type: 'dodged',
+            lineType: 'period',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a stacked bar faceted by opacity (not color)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', tier: 'Free', changeRate: 0.1 },
+          { channel: 'A', tier: 'Paid', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            opacity: 'tier',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
     });
 
     test('is a no-op on a trellised chart — no offset, no crash', () => {

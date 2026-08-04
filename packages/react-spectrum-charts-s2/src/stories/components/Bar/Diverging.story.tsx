@@ -14,15 +14,13 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, BarDirectLabel, Legend, Title } from '../../../components';
+import { Axis, Bar, BarDirectLabel, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
 import {
   divergingConversionRateData,
   divergingConversionRateDataLongLabels,
-  likertSurveyData,
-  stackedCohortData,
   timeAxisDivergingData,
 } from './data';
 
@@ -40,7 +38,7 @@ const HorizontalStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position="left" baseline />
       <Axis position="bottom" grid labelFormat="percentage" />
       <Bar {...args} diverging>
-        <BarDirectLabel position="start" />
+        <BarDirectLabel position="start" format="percentage" />
       </Bar>
     </Chart>
   );
@@ -67,7 +65,7 @@ const VerticalStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position="bottom" baseline />
       <Axis position="left" grid labelFormat="percentage" />
       <Bar {...args} diverging>
-        <BarDirectLabel position="end-outside" />
+        <BarDirectLabel position="end-outside" format="percentage" />
       </Bar>
     </Chart>
   );
@@ -123,59 +121,9 @@ LongLabels.args = {
   ...defaultProps,
 };
 
-/**
- * DECLINES (guard) — stacked multi-series cohort with mixed-sign rows per month; the axis stays at
- * the edge with only a zero baseline, rather than moving to a per-row zero.
- */
-const StackedCohortStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: stackedCohortData, width: 700, height: 450 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Fixed: stacked multi-series cohort chart — diverging safely declines" fontSize={16} />
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid title="Users" />
-      <Bar {...args} diverging />
-      <Legend title="Cohort" />
-    </Chart>
-  );
-};
-
-const StackedCohortFallback = bindWithProps(StackedCohortStory);
-StackedCohortFallback.args = {
-  dimension: 'month',
-  metric: 'users',
-  orientation: 'vertical',
-  color: 'series',
-} satisfies BarProps;
-
-/** DECLINES (guard) — Likert stacked bar, mixed-sign rows per concept (same shape as the cohort chart); axis stays at the edge. */
-const LikertSurveyStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: likertSurveyData, width: 700, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Fixed: Likert survey chart — diverging safely declines" fontSize={16} />
-      <Axis position="left" baseline />
-      <Axis position="bottom" grid />
-      <Bar {...args} diverging />
-      <Legend title="Response" />
-    </Chart>
-  );
-};
-
-const LikertSurveyFallback = bindWithProps(LikertSurveyStory);
-LikertSurveyFallback.args = {
-  dimension: 'concept',
-  metric: 'value',
-  orientation: 'horizontal',
-  order: 'order',
-  colorOverride: 'barColor',
-} satisfies BarProps;
-
 export {
   Horizontal,
   Vertical,
   TimeAxis,
   LongLabels,
-  StackedCohortFallback,
-  LikertSurveyFallback,
 };

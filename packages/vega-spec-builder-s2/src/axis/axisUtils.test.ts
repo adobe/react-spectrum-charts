@@ -11,13 +11,16 @@
  */
 import { Scale } from 'vega';
 
-import { AxisSpecOptions, SubLabel } from '../types';
+import { FILTERED_TABLE } from '@spectrum-charts/constants';
+
+import { AxisSpecOptions, DivergingBarMark, SubLabel } from '../types';
 import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
 import {
   DivergingBarContext,
   getBaselineRule,
   getDefaultAxis,
   getDivergingAxisOffset,
+  getDivergingBarContext,
   getDivergingLabelEncode,
   getDivergingTickIsNegativeTest,
   getIsMetricAxis,
@@ -441,5 +444,30 @@ describe('getPriorityMergedSignal()', () => {
     expect(getPriorityMergedSignal(priority, fallback)).toStrictEqual({
       signal: '(P ? ("x") : ((F ? ("a") : ("b"))))',
     });
+  });
+});
+
+describe('getDivergingBarContext()', () => {
+  const divergingBarMarks: DivergingBarMark[] = [{ name: 'bar0', dimension: 'channel', metric: 'changeRate' }];
+
+  test('returns context for the matching dimension field', () => {
+    expect(getDivergingBarContext('channel', divergingBarMarks)).toStrictEqual({
+      dataName: FILTERED_TABLE,
+      dimension: 'channel',
+      metric: 'changeRate',
+    });
+  });
+
+  test('returns undefined when no entry matches the scale field', () => {
+    expect(getDivergingBarContext('other', divergingBarMarks)).toBeUndefined();
+  });
+
+  test('returns undefined when there are no diverging bar marks', () => {
+    expect(getDivergingBarContext('channel', [])).toBeUndefined();
+    expect(getDivergingBarContext('channel')).toBeUndefined();
+  });
+
+  test('returns undefined when scaleField is undefined', () => {
+    expect(getDivergingBarContext(undefined, divergingBarMarks)).toBeUndefined();
   });
 });

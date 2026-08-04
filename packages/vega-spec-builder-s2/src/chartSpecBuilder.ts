@@ -29,10 +29,8 @@ import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
-  DEFAULT_METRIC,
   FILTERED_TABLE,
   HIGHLIGHTED_GROUP,
   LINEAR_COLOR_SCALE,
@@ -56,7 +54,6 @@ import { colorSchemes, getS2ColorValue } from '@spectrum-charts/themes';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
-import { DivergingBarContext } from './axis/axisUtils';
 import { addBar } from './bar/barSpecBuilder';
 import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
@@ -79,7 +76,6 @@ import {
 } from './specUtils';
 import { addTitle } from './title/titleSpecBuilder';
 import {
-  BarOptions,
   ChartColors,
   ChartOptions,
   ChartSpecOptions,
@@ -90,61 +86,18 @@ import {
   LineType,
   LineTypes,
   LineWidth,
-  MarkOptions,
   Opacities,
-  Position,
   ScSpec,
   SymbolShapes,
   SymbolSize,
 } from './types';
-
-/** Context `diverging` needs to look up each category's bar sign; only for a single non-dodged bar mark on its dimension axis, and declines when a category's rows disagree in sign. */
-export const getDivergingBarContext = (
-  marks: MarkOptions[],
-  data: ChartOptions['data'],
-  position: Position
-): DivergingBarContext | undefined => {
-  const barMarks = marks.filter((mark): mark is BarOptions => mark.markType === 'bar');
-  if (barMarks.length !== 1) return undefined;
-
-  const [bar] = barMarks;
-  if (bar.type === 'dodged') return undefined;
-
-  const dimensionAxisIsVertical = bar.orientation === 'horizontal';
-  const axisIsVertical = position === 'left' || position === 'right';
-  if (axisIsVertical !== dimensionAxisIsVertical) return undefined;
-
-  const dimension = bar.dimension ?? DEFAULT_CATEGORICAL_DIMENSION;
-  const metric = bar.metric ?? DEFAULT_METRIC;
-
-  const hasPositiveByCategory = new Set<unknown>();
-  const hasNegativeByCategory = new Set<unknown>();
-  for (const datum of data ?? []) {
-    if (typeof datum !== 'object' || datum === null || !(dimension in datum) || !(metric in datum)) continue;
-    const category = (datum as Record<string, unknown>)[dimension];
-    const value = (datum as Record<string, unknown>)[metric];
-    if (typeof value !== 'number') continue;
-    if (value < 0) hasNegativeByCategory.add(category);
-    if (value > 0) hasPositiveByCategory.add(category);
-  }
-  const hasCategoryWithConflictingSigns = [...hasPositiveByCategory].some((category) =>
-    hasNegativeByCategory.has(category)
-  );
-  if (hasCategoryWithConflictingSigns) return undefined;
-
-  return {
-    dataName: FILTERED_TABLE,
-    dimension,
-    metric,
-  };
-};
+import { addVenn } from './venn/vennSpecBuilder';
 
 /** True for an axis repositioned to its opposing scale's zero line (its `offset` is a `scale(…, 0)` signal). */
 const isDivergingAxis = (axis: Axis): boolean => {
   const { offset } = axis;
   return typeof offset === 'object' && offset !== null && 'signal' in offset && /scale\(.*,\s*0\)/.test(String(offset.signal));
 };
-import { addVenn } from './venn/vennSpecBuilder';
 
 export function buildSpec({
   animations,
@@ -256,14 +209,11 @@ export function buildSpec({
     });
   }, spec);
 
-  const hasDivergingBar = marks.some((mark) => mark.markType === 'bar' && mark.diverging);
   spec = [...axes].reduce((acc: ScSpec, axis, index) => {
-    const divergingContext = hasDivergingBar ? getDivergingBarContext(marks, data, axis.position) : undefined;
     return addAxis(acc, {
       ...axis,
       ...specOptions,
       index,
-      divergingContext,
     });
   }, spec);
 
@@ -277,7 +227,7 @@ export function buildSpec({
 
   // a diverging axis is offset onto the opposing grid; sibling axis groups paint in array order, so
   // render it last, otherwise a later grid axis paints its gridlines over the diverging axis's labels.
-  if (hasDivergingBar && spec.axes) {
+  if (spec.usermeta?.divergingBarMarks?.length && spec.axes) {
     spec.axes = [...spec.axes].sort((a, b) => Number(isDivergingAxis(a)) - Number(isDivergingAxis(b)));
   }
 

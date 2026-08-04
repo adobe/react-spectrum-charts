@@ -11,7 +11,9 @@
  */
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
-import { AxisSpecOptions, Granularity, Orientation, Position } from '../types';
+import { FILTERED_TABLE } from '@spectrum-charts/constants';
+
+import { AxisSpecOptions, DivergingBarMark, Granularity, Orientation, Position } from '../types';
 import {
   getAxisLabelsEncoding,
   getLabelAnchorValues,
@@ -330,6 +332,20 @@ export interface DivergingBarContext {
   dimension: string;
   metric: string;
 }
+
+/**
+ * Finds the `usermeta.divergingBarMarks` entry for this axis's dimension field, mirroring
+ * {@link getMatchingInteractiveBarDimensionFields}. `addBar` only ever adds an entry for a
+ * single-series bar (see `addBar`), so at most one match is expected.
+ */
+export const getDivergingBarContext = (
+  scaleField: string | undefined,
+  divergingBarMarks: DivergingBarMark[] = []
+): DivergingBarContext | undefined => {
+  const match = divergingBarMarks.find((mark) => mark.dimension === scaleField);
+  if (!match) return undefined;
+  return { dataName: FILTERED_TABLE, dimension: match.dimension, metric: match.metric };
+};
 
 /** Vega axis `offset` signal moving a categorical axis to its opposing scale's zero line; negative because `offset` moves outward from the edge. */
 export const getDivergingAxisOffset = (position: Position, opposingScaleName: string): SignalRef => {

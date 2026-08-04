@@ -107,7 +107,7 @@ export const divergingConversionRateData = [
   { channel: 'FB Stories', changeRate: 0.013, barColor: '#2d7d46' },
   { channel: 'FB Video', changeRate: 0.008, barColor: '#2d7d46' },
   { channel: 'FB Post', changeRate: -0.01, barColor: '#d7373f' },
-  { channel: 'FB Reels', changeRate: -0.029, barColor: '#d7373f' },
+  { channel: 'FB Reels', changeRate: -0.07, barColor: '#d7373f' },
 ];
 
 /** Same values as divergingConversionRateData, with long category names to check label truncation/collision. */
@@ -118,53 +118,6 @@ export const divergingConversionRateDataLongLabels = [
   { channel: 'Facebook Video Advertisement Placement', changeRate: 0.008, barColor: '#2d7d46' },
   { channel: 'Facebook Post Boosted Content', changeRate: -0.01, barColor: '#d7373f' },
   { channel: 'Facebook Reels Sponsored Video Content', changeRate: -0.029, barColor: '#d7373f' },
-];
-
-/** Regression guard: stacked "monthly growth cohorts" bar with multiple rows per month, so `getDivergingBarContext` declines and the axis stays at the bottom edge with a plain `baseline` zero-gridline. */
-export const stackedCohortData = [
-  { month: 'Oct 2024', series: 'New', users: 1700 },
-  { month: 'Oct 2024', series: 'Retained', users: 1000 },
-  { month: 'Oct 2024', series: 'Returned', users: 500 },
-  { month: 'Oct 2024', series: 'Churned', users: -1500 },
-  { month: 'Nov', series: 'New', users: 1000 },
-  { month: 'Nov', series: 'Retained', users: 800 },
-  { month: 'Nov', series: 'Returned', users: 400 },
-  { month: 'Nov', series: 'Churned', users: -2700 },
-  { month: 'Dec', series: 'New', users: 1200 },
-  { month: 'Dec', series: 'Retained', users: 900 },
-  { month: 'Dec', series: 'Returned', users: 400 },
-  { month: 'Dec', series: 'Churned', users: -1700 },
-  { month: 'Jan 2025', series: 'New', users: 1400 },
-  { month: 'Jan 2025', series: 'Retained', users: 1000 },
-  { month: 'Jan 2025', series: 'Returned', users: 800 },
-  { month: 'Jan 2025', series: 'Churned', users: -1500 },
-  { month: 'Feb', series: 'New', users: 1500 },
-  { month: 'Feb', series: 'Retained', users: 1100 },
-  { month: 'Feb', series: 'Returned', users: 900 },
-  { month: 'Feb', series: 'Churned', users: -1300 },
-  { month: 'Mar', series: 'New', users: 1700 },
-  { month: 'Mar', series: 'Retained', users: 1300 },
-  { month: 'Mar', series: 'Returned', users: 1000 },
-  { month: 'Mar', series: 'Churned', users: -1200 },
-];
-
-/** Regression guard: Likert-scale survey data, same mixed-sign-rows-per-category shape as `stackedCohortData` but horizontal — `getDivergingBarContext` declines and the concept axis stays at the left edge. */
-export const likertSurveyData = [
-  { concept: 'Concept 1', response: 'Strongly Negative', order: 0, value: -10, barColor: '#7a2e0e' },
-  { concept: 'Concept 1', response: 'Negative', order: 1, value: -25, barColor: '#e2711d' },
-  { concept: 'Concept 1', response: 'Neutral', order: 2, value: 20, barColor: '#ffc93c' },
-  { concept: 'Concept 1', response: 'Positive', order: 3, value: 15, barColor: '#1f9c8a' },
-  { concept: 'Concept 1', response: 'Strongly Positive', order: 4, value: 10, barColor: '#0b4f4a' },
-  { concept: 'Concept 2', response: 'Strongly Negative', order: 0, value: -8, barColor: '#7a2e0e' },
-  { concept: 'Concept 2', response: 'Negative', order: 1, value: -7, barColor: '#e2711d' },
-  { concept: 'Concept 2', response: 'Neutral', order: 2, value: 45, barColor: '#ffc93c' },
-  { concept: 'Concept 2', response: 'Positive', order: 3, value: 25, barColor: '#1f9c8a' },
-  { concept: 'Concept 2', response: 'Strongly Positive', order: 4, value: 5, barColor: '#0b4f4a' },
-  { concept: 'Concept 3', response: 'Strongly Negative', order: 0, value: -2, barColor: '#7a2e0e' },
-  { concept: 'Concept 3', response: 'Negative', order: 1, value: -3, barColor: '#e2711d' },
-  { concept: 'Concept 3', response: 'Neutral', order: 2, value: 15, barColor: '#ffc93c' },
-  { concept: 'Concept 3', response: 'Positive', order: 3, value: 45, barColor: '#1f9c8a' },
-  { concept: 'Concept 3', response: 'Strongly Positive', order: 4, value: 30, barColor: '#0b4f4a' },
 ];
 
 /** Verifies `labelFormat="time"` + `diverging` (mixed sign, monthly granularity): primary/secondary time axes share the same offset and flip encode via a static `dy`, not `labelPadding`. */

@@ -71,6 +71,7 @@ import {
   getBaselineRule,
   getDefaultAxis,
   getDivergingAxisOffset,
+  getDivergingBarContext,
   getDivergingLabelEncode,
   getDivergingTickIsNegativeTest,
   getIsMetricAxis,
@@ -85,10 +86,7 @@ import {
   productionRuleToExpr,
 } from './axisUtils';
 
-export const addAxis = produce<
-  ScSpec,
-  [AxisOptions & { colorScheme?: ColorScheme; index?: number; divergingContext?: DivergingBarContext }]
->(
+export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
   (
     spec,
     {
@@ -98,7 +96,6 @@ export const addAxis = produce<
       baseline = false,
       baselineOffset = 0,
       colorScheme = DEFAULT_COLOR_SCHEME,
-      divergingContext,
       granularity = DEFAULT_GRANULARITY,
       grid = false,
       hasOnClick = false,
@@ -178,7 +175,9 @@ export const addAxis = produce<
     // diverging in both cases so it's a clean no-op. The trellis root axis's scale doesn't map to
     // per-panel data (applying it crashed); subLabels add a second axis row diverging shouldn't move.
     const divergingContextForAxes =
-      isTrellisedChart(spec) || hasSubLabels(axisOptions) ? undefined : divergingContext;
+      isTrellisedChart(spec) || hasSubLabels(axisOptions)
+        ? undefined
+        : getDivergingBarContext(scaleField, usermeta?.divergingBarMarks);
 
     spec.axes = addAxes(spec.axes ?? [], {
       ...axisOptions,
