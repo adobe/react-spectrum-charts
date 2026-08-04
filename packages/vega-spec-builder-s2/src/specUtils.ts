@@ -283,16 +283,22 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
  * @param numberFormat
  * @returns
  */
-export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
+export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat): string => {
   switch (numberFormat) {
     case 'currency':
       return '$,.2f'; // currency format
     case 'standardNumber':
       return ','; // standard number format
+    case 'percentage':
+      return '~%'; // percentage format
     default:
       return numberFormat;
   }
 };
+
+/** Backslashes must be escaped before quotes — otherwise a trailing backslash-quote can terminate the outer Vega expression string early. */
+export const escapeD3FormatSpecifier = (formatSpec: string): string =>
+  formatSpec.replaceAll('\\', String.raw`\\`).replaceAll('"', String.raw`\"`);
 
 /**
  * Merges the provided config with the Spectrum Vega config

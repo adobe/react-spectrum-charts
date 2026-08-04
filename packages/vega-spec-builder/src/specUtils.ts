@@ -281,7 +281,7 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
  * @param numberFormat
  * @returns
  */
-export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
+export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat): string => {
   switch (numberFormat) {
     case 'currency':
       return '$,.2f'; // currency format
