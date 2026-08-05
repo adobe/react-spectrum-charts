@@ -568,6 +568,16 @@ describe('barSpecBuilder', () => {
         ).toBeDefined();
       });
 
+      test('should wire the bar mark itself onto the dimension hover area signal, not just the hover area rect', () => {
+        const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartPopovers: [{}] });
+        const signal = signals.find(
+          (signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
+        );
+        expect(signal?.on).toContainEqual(
+          expect.objectContaining({ events: `@${defaultBarOptions.name}:mouseover` })
+        );
+      });
+
       test('should not add dimension hover area signal if the bar is not interactive', () => {
         const signals = addSignals(defaultSignals, defaultBarOptions);
         expect(

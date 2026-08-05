@@ -28,6 +28,19 @@ export const getForecastEffectiveValueTransform = (name: string, metric: string,
   expr: `isValid(datum['${metric}']) ? datum['${metric}'] : datum['${forecastMetric}']`,
 });
 
+/**
+ * Resolves the metric field to plot, using the forecast-aware effective value when a forecast is active.
+ * @param options
+ * @returns string
+ */
+export const getEffectiveMetricField = ({
+  alternateSegmentKey,
+  forecasts,
+  metric,
+  name,
+}: Pick<LineSpecOptions, 'alternateSegmentKey' | 'forecasts' | 'metric' | 'name'>): string =>
+  !alternateSegmentKey && forecasts.length > 0 ? `${name}_effectiveValue` : metric;
+
 export const getLineForecastSpecOptions = (
   forecast: LineForecastOptions,
   index: number,
