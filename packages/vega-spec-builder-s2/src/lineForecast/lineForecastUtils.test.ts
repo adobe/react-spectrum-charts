@@ -10,12 +10,39 @@
  * governing permissions and limitations under the License.
  */
 
-import { getForecastEffectiveValueTransform } from './lineForecastUtils';
+import { getEffectiveMetricField, getForecastEffectiveValueTransform } from './lineForecastUtils';
 
 describe('getForecastEffectiveValueTransform', () => {
   test('builds a formula that uses the historical metric when valid, falling back to forecast', () => {
     const transform = getForecastEffectiveValueTransform('line0', 'value', 'forecastValue');
     expect(transform.as).toBe('line0_effectiveValue');
     expect(transform.expr).toBe("isValid(datum['value']) ? datum['value'] : datum['forecastValue']");
+  });
+});
+
+describe('getEffectiveMetricField', () => {
+  test('returns the raw metric when there are no forecasts', () => {
+    const field = getEffectiveMetricField({ alternateSegmentKey: undefined, forecasts: [], metric: 'value', name: 'line0' });
+    expect(field).toBe('value');
+  });
+
+  test('returns the raw metric when alternateSegmentKey is set, even with forecasts present', () => {
+    const field = getEffectiveMetricField({
+      alternateSegmentKey: 'isAlternate',
+      forecasts: [{ metric: 'forecastValue', start: 5 }],
+      metric: 'value',
+      name: 'line0',
+    });
+    expect(field).toBe('value');
+  });
+
+  test('returns the effective value field when forecasts are present and alternateSegmentKey is unset', () => {
+    const field = getEffectiveMetricField({
+      alternateSegmentKey: undefined,
+      forecasts: [{ metric: 'forecastValue', start: 5 }],
+      metric: 'value',
+      name: 'line0',
+    });
+    expect(field).toBe('line0_effectiveValue');
   });
 });

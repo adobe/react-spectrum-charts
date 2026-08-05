@@ -116,21 +116,48 @@ in the code and why, with file:line references. It is not an investigation log. 
 
 ## Complexity rubric
 
-Scored 1-2 / 3 / 5, like story points, in the `complexity.score` field:
+Scored 1 / 2 / 3 / 5, like story points, in the `complexity.score` field. **Remaining
+research burden is the primary axis, implementation size is secondary** — the score reflects
+what's left to figure out and build *as of the current state of this spec*, not how hard the
+original investigation was historically:
 
-- **1-2 (Simple):** plain value prop, passes through `*Options` unchanged, no new
-  encode/scale/signal logic. Touches the type file + one encode site + story.
-- **3 (Moderate):** new field needs logic in *one* of `addData` / `addSignals` /
-  `setScales` / `addMarks` for an existing mark (new signal, conditional encode, new
-  transform).
-- **5 (Complex):** new mark type, new child component, or a change spanning multiple of
-  data/signals/scales/marks — includes new interaction behavior (hover/selection) or S1/S2
-  parity work across packages.
+- **1 (No research, basic implementation):** the approach is fully known and the change
+  itself is trivial — a literal constant/value tweak, a single encode line, a plain
+  passthrough prop. Nothing left to investigate, nothing nontrivial to coordinate.
+- **2 (No research, more than basic implementation):** the approach is fully known — no
+  open questions, no unconfirmed root cause — but the change touches a few coordinated
+  call sites or files, possibly including both s1 and s2, or a verification story that
+  follows an existing story as a template. Still mechanical and low-risk, just more than a
+  one-liner. **This is where most "spans multiple files" or "s1 + s2" fixes belong**, as
+  long as every site is the *same already-precedented edit* applied again — e.g. copying a
+  sibling mark's existing opacity-encode call to a new mark, or making the identical change
+  in each package.
+- **3 (Minimal research, real implementation complexity):** some investigation or
+  verification is still genuinely left to do (a small unresolved question whose answer
+  could change the shape of the fix, not just confirm a strong existing hypothesis) *and*
+  at least one site requires actual new logic or a design decision — not just repeating a
+  pattern that already exists elsewhere in the same file.
+- **5 (Significant research *and* implementation complexity):** both axes are heavy at
+  once — substantial unknowns still to resolve (unconfirmed root cause, an open design
+  question that could change the shape of the fix) combined with an implementation where
+  multiple sites each require *different*, non-precedented reasoning (new mark type, new
+  child component, genuinely new interaction behavior) — not the same known fix copied to
+  more places.
 
-The same rubric applies to bugs: score by how much of the codebase the *fix* is expected to
-touch, not how hard the bug was to find. A one-line missing-encode fix is a 1-2 even if the
-investigation took a while; an unconfirmed root cause spanning layout/autosize or multiple
-packages is a 5.
+**Breadth is not depth.** The number of files, call sites, or packages a fix touches does
+not by itself raise the score. Ask, per site: does this edit require a new design decision,
+or is it the same already-working pattern (already visible elsewhere in the codebase) copied
+to one more place? A fix that touches four files across s1 and s2 but does the identical,
+already-precedented thing at each one is a 2, not a 5 — "S1/S2 parity work across packages"
+only earns a 5 when the packages' implementations genuinely diverge and each needs separate
+reasoning, not when it's one pattern applied twice.
+
+**Score at spec-lock-in time, not at first-report time.** A bug that took a long
+investigation to root-cause is not automatically a 5 — once that investigation is captured
+in `rootCause` and the fix approach is fully decided, remaining research is zero and the
+score should reflect only what's left: usually a 1 or 2. Re-score whenever a spec's design
+changes (e.g. after choosing a simpler implementation approach during review) rather than
+leaving the original estimate in place.
 
 ## Edge case checklist
 
