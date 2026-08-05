@@ -230,8 +230,8 @@ export function buildSpec({
     spec.axes = [...spec.axes].sort((a, b) => Number(isDivergingAxis(a)) - Number(isDivergingAxis(b)));
   }
 
-  // diverging thumbnails are bandwidth-sized (width) and placed off the zero line (height), so Vega's default `pad`
-  // autosize feeds them back into width/height and collapses the plot; RSC sizes the view itself, so pin autosize off
+  // diverging thumbnails anchor to the opposing scale's zero line, so their overflow is coupled to the fitted plot
+  // size and `fit` has no stable fixpoint — it re-fits per pulse and collapses on hover; RSC sizes the view, so opt out
   if (spec.usermeta?.divergingBarMarks?.length && axes.some((axis) => axis.axisThumbnails?.length)) {
     spec.autosize = { type: 'none' };
   }
