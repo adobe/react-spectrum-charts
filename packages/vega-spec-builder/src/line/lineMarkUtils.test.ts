@@ -18,6 +18,7 @@ import {
   DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   HOVERED_ITEM,
+  LAST_RSC_SERIES_ID,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -25,7 +26,7 @@ import {
 import type { Mark } from 'vega';
 
 import { getHoverContext } from '../marks/hoverContext';
-import { getLineHoverMarks, getLineMark, getLineOpacity, getLineYEncoding, getVoronoiYEncoding } from './lineMarkUtils';
+import { getClampedYEncoding, getLineHoverMarks, getLineMark, getLineOpacity, getLineYEncoding, getVoronoiYEncoding } from './lineMarkUtils';
 import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
@@ -224,6 +225,29 @@ describe('getVoronoiYEncoding()', () => {
       'value'
     );
     expect(encoding).toEqual([{ scale: 'yLinear', field: 'value' }]);
+  });
+});
+
+describe('getClampedYEncoding()', () => {
+  test('returns a signal that clamps the scaled metric to [0, height]', () => {
+    const encoding = getClampedYEncoding(defaultLineMarkOptions, 'metric');
+    expect(encoding).toEqual([{ signal: `clamp(scale('yLinear', datum['metric']), 0, height)` }]);
+  });
+
+  test('uses the metricAxis scale name when provided', () => {
+    const encoding = getClampedYEncoding({ ...defaultLineMarkOptions, metricAxis: 'yLinear2' }, 'metric');
+    expect(encoding).toEqual([{ signal: `clamp(scale('yLinear2', datum['metric']), 0, height)` }]);
+  });
+
+  test('clamps both branches when dualMetricAxis is true', () => {
+    const encoding = getClampedYEncoding({ ...defaultLineMarkOptions, dualMetricAxis: true }, 'metric');
+    expect(encoding).toEqual([
+      {
+        test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
+        signal: `clamp(scale('yLinearSecondary', datum['metric']), 0, height)`,
+      },
+      { signal: `clamp(scale('yLinearPrimary', datum['metric']), 0, height)` },
+    ]);
   });
 });
 
