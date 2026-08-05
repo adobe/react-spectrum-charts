@@ -175,19 +175,6 @@ const CategoricalPointScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, 
   );
 };
 
-/** Using cardinal interpolation. */
-const CardinalInterpStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line {...args} />
-      <Legend />
-    </Chart>
-  );
-};
-
 const DualMetrixAxisStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: lineDualAxisData, animations, animationTypes });
   return (
@@ -271,7 +258,7 @@ FunkyDataShape.args = { ...defaultArgs };
 export const CategoricalPointScale = bindWithProps(CategoricalPointScaleStory);
 CategoricalPointScale.args = { ...defaultArgs, dimension: 'quarter', metric: 'value', scaleType: 'point' };
 
-export const CardinalInterpolation = bindWithProps(CardinalInterpStory);
+export const CardinalInterpolation = bindWithProps(TimeScaleStory);
 CardinalInterpolation.args = { ...defaultArgs, interpolate: 'cardinal' };
 
 export const DualMetrixAxisDrawIn = bindWithProps(DualMetrixAxisStory);
