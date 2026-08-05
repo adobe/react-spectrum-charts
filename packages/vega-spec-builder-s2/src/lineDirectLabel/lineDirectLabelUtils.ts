@@ -18,6 +18,7 @@ import { getCascadeTransforms, MIN_LABEL_GAP } from '../line/directLabelUtils';
 
 import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils';
 import { getLineOpacity } from '../line/lineMarkUtils';
+import { getEffectiveMetricField } from '../lineForecast';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import { escapeD3FormatSpecifier, getDimensionField, getFacetsFromOptions } from '../specUtils';
@@ -230,7 +231,7 @@ export const getLineDirectLabelSpecOptions = (
 	format: labelOptions.format ?? '',
 	index,
 	lineName: lineOptions.name,
-	metric: lineOptions.metric,
+	metric: getEffectiveMetricField(lineOptions),
 	position: labelOptions.position ?? 'end',
 	prefix: labelOptions.prefix ?? '',
 	scaleType: lineOptions.scaleType,

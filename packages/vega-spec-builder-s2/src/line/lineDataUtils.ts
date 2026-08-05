@@ -13,6 +13,7 @@ import { SourceData } from 'vega';
 
 import { CONTROLLED_HIGHLIGHTED_ITEM, CONTROLLED_HIGHLIGHTED_SERIES, CONTROLLED_HIGHLIGHTED_TABLE, FILTERED_TABLE, GROUP_ID, HOVERED_ITEM, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/constants';
 
+import { getEffectiveMetricField } from '../lineForecast';
 import { HoverMatchRule } from '../marks/hoverAnimationUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
 import { LineSpecOptions } from '../types';
@@ -89,13 +90,13 @@ export const getPrimarySeriesFacetData = (name: string, primarySeries: number | 
  * at the same hovered dimension are spread apart rather than overlapping.
  */
 export const getHoverLabelData = (options: LineSpecOptions): SourceData => {
-  const { metric, name, metricAxis } = options;
+  const { name, metricAxis } = options;
   const yScaleName = metricAxis || 'yLinear';
 
   return {
     name: `${name}_hoverLabelData`,
     source: `${name}_highlightedData`,
-    transform: getCascadeTransforms(yScaleName, metric, 'hover'),
+    transform: getCascadeTransforms(yScaleName, getEffectiveMetricField(options), 'hover'),
   };
 };
 

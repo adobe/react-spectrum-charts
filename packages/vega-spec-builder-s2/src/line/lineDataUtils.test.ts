@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FilterTransform } from 'vega';
+import { FilterTransform, FormulaTransform } from 'vega';
 
 import {
   CONTROLLED_HIGHLIGHTED_SERIES,
@@ -21,7 +21,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
-import { getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { getHoverLabelData, getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { defaultLineOptions } from './lineTestUtils';
 
 describe('getLineHighlightedData()', () => {
@@ -45,6 +45,21 @@ describe('getLineHighlightedData()', () => {
       }).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
+  });
+});
+
+describe('getHoverLabelData()', () => {
+  test('uses the raw metric field when there is no forecast', () => {
+    const scaledYFormula = getHoverLabelData(defaultLineOptions).transform?.[2] as FormulaTransform;
+    expect(scaledYFormula.expr).toBe(`scale('yLinear', datum["${defaultLineOptions.metric}"])`);
+  });
+
+  test('uses the forecast-aware effectiveValue field when a forecast is active', () => {
+    const scaledYFormula = getHoverLabelData({
+      ...defaultLineOptions,
+      forecasts: [{ metric: 'forecastValue', start: 5 }],
+    }).transform?.[2] as FormulaTransform;
+    expect(scaledYFormula.expr).toBe(`scale('yLinear', datum["${defaultLineOptions.name}_effectiveValue"])`);
   });
 });
 
