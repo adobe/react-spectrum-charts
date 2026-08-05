@@ -71,7 +71,7 @@
         "score": {
           "type": "integer",
           "enum": [1, 2, 3, 5],
-          "description": "1-2 simple (plain passthrough prop), 3 moderate (new logic in one spec-builder function), 5 complex (new mark/child component or cross-cutting change). See README.md rubric."
+          "description": "Research burden is the primary axis, implementation size secondary, scored as of the spec's current state (not first-report time): 1 no research + basic implementation, 2 no research + multi-file/s1+s2 implementation where every site repeats the same precedented edit, 3 minimal remaining research + at least one site needing new (non-precedented) logic, 5 significant remaining research + multiple sites each needing different, non-precedented reasoning. Breadth (file/package count) alone never raises the score. See README.md rubric."
         },
         "rationale": {
           "type": "string",
