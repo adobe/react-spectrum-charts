@@ -24,7 +24,7 @@
     "url": "https://github.com/adobe/react-spectrum-charts/issues"
   },
   "scripts": {
-    "build": "tsc && node scripts/build-docs.js",
+    "build": "yarn workspace @spectrum-charts/constants build && yarn workspace @spectrum-charts/themes build && tsc && node scripts/build-docs.js",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
     "dev": "yarn build && node dist/index.js",
