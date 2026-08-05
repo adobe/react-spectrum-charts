@@ -882,6 +882,19 @@ describe('getBarDimensionHoverArea()', () => {
       'bar0_groups'
     );
   });
+
+  test('should not set a tooltip when no inspect targets dimensionArea', () => {
+    const mark = getBarDimensionHoverArea({ ...defaultBarOptions, chartInspects: [{ targets: ['item'] }] }, 'stacked');
+    expect(mark.encode?.enter).toHaveProperty('tooltip', undefined);
+  });
+
+  test('should set a tooltip when an inspect targets dimensionArea', () => {
+    const mark = getBarDimensionHoverArea(
+      { ...defaultBarOptions, chartInspects: [{ targets: ['dimensionArea'] }] },
+      'stacked'
+    );
+    expect(mark.encode?.enter?.tooltip).toBeDefined();
+  });
 });
 
 describe('getBarDimensionAreaPositionEncodings()', () => {

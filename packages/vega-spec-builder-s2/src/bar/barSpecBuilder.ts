@@ -200,6 +200,10 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   // gated by isInteractive() to match the rect mark and opacity rule that consume this signal
   if (isInteractive(options)) {
     addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
+    // the bar mark sits on top of the dimensionHoverArea rect and occludes it, so also wire the bar's
+    // own hover directly onto this signal - otherwise hovering a bar (rather than the padding around it)
+    // never triggers the dimension fade rule that reads this signal.
+    addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`, name);
   }
   addInspectSignals(signals, options);
   setTrendlineSignals(signals, options);
