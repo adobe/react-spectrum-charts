@@ -64,7 +64,6 @@ export interface AxisOptions {
    * If baseline is drawn relative to a categorical axis, this prop is ignored
    */
   baselineOffset?: number;
-
   /** Sets the granularity of the primary axis labels for time axis. If this axis is not for a time axis, this prop is ignored. */
   granularity?: Granularity;
   /** Displays gridlines at each tick location */

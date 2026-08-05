@@ -11,7 +11,9 @@
  */
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
-import { AxisSpecOptions, Granularity, Orientation, Position } from '../types';
+import { FILTERED_TABLE } from '@spectrum-charts/constants';
+
+import { AxisSpecOptions, DivergingBarMark, Granularity, Orientation, Position } from '../types';
 import {
   getAxisLabelsEncoding,
   getLabelAnchorValues,
@@ -316,6 +318,131 @@ export const getOpposingRange = (position: Position): 'width' | 'height' => {
     return 'width';
   }
   return 'height';
+};
+
+/** Gets the name of the opposing scale (the scale for the perpendicular axis); mirrors `getOpposingScaleType`. */
+export const getOpposingScaleName = (scales: Scale[], position: Position): string => {
+  const scale = scales.find((s) => 'range' in s && s.range === getOpposingRange(position));
+  return scale?.name ?? getDefaultOpposingScaleNameFromPosition(position);
+};
+
+/** Context needed to look up the sign of the bar paired with a diverging axis tick. */
+export interface DivergingBarContext {
+  dataName: string;
+  dimension: string;
+  metric: string;
+}
+
+/**
+ * Finds the `usermeta.divergingBarMarks` entry for this axis's dimension field, mirroring
+ * {@link getMatchingInteractiveBarDimensionFields}. `addBar` only ever adds an entry for a
+ * single-series bar (see `addBar`), so at most one match is expected.
+ */
+export const getDivergingBarContext = (
+  scaleField: string | undefined,
+  divergingBarMarks: DivergingBarMark[] = []
+): DivergingBarContext | undefined => {
+  const match = divergingBarMarks.find((mark) => mark.dimension === scaleField);
+  if (!match) return undefined;
+  return { dataName: FILTERED_TABLE, dimension: match.dimension, metric: match.metric };
+};
+
+/** Vega axis `offset` signal moving a categorical axis to its opposing scale's zero line; negative because `offset` moves outward from the edge. */
+export const getDivergingAxisOffset = (position: Position, opposingScaleName: string): SignalRef => {
+  if (position === 'left' || position === 'top') {
+    return { signal: `-scale('${opposingScaleName}', 0)` };
+  }
+  const rangeSizeSignal = position === 'right' ? 'width' : 'height';
+  return { signal: `scale('${opposingScaleName}', 0) - ${rangeSizeSignal}` };
+};
+
+/** Vega expression, true when the bar paired with an axis tick is negative; assumes one resolvable sign per category. */
+export const getDivergingTickIsNegativeTest = ({ dataName, dimension, metric }: DivergingBarContext): string =>
+  `data('${dataName}')[indexof(pluck(data('${dataName}'), '${dimension}'), datum.value)]['${metric}'] < 0`;
+
+// spectrum2Theme's default axis `labelPadding`; the sub-label axis sets a larger value and must pass its own in.
+const DEFAULT_AXIS_LABEL_PADDING = 8;
+
+/** Axis label encode that flips each tick's align/baseline to the opposite side of its bar's sign, offsetting by `2 * labelPadding` since Vega doesn't recompute the anchor on override; `extraOutwardOffset` is a static push (e.g. a time axis's `dy`) that flips sign with the test instead of adding as a constant. */
+export const getDivergingLabelEncode = (
+  position: Position,
+  isNegativeTest: string,
+  labelPadding: number = DEFAULT_AXIS_LABEL_PADDING,
+  extraOutwardOffset = 0
+) => {
+  const gapCompensation = 2 * labelPadding;
+
+  if (isVerticalAxis(position)) {
+    const flippedOffset = position === 'left' ? gapCompensation : -gapCompensation;
+    return {
+      update: {
+        align: [
+          { test: isNegativeTest, value: 'left' as const },
+          { value: 'right' as const },
+        ],
+        dx:
+          position === 'left'
+            ? [
+                { test: isNegativeTest, value: flippedOffset - extraOutwardOffset },
+                { value: extraOutwardOffset },
+              ]
+            : [
+                { test: isNegativeTest, value: extraOutwardOffset },
+                { value: flippedOffset - extraOutwardOffset },
+              ],
+      },
+    };
+  }
+
+  const flippedOffset = position === 'top' ? gapCompensation : -gapCompensation;
+  return {
+    update: {
+      baseline: [
+        { test: isNegativeTest, value: 'bottom' as const },
+        { value: 'top' as const },
+      ],
+      dy:
+        position === 'top'
+          ? [
+              { test: isNegativeTest, value: extraOutwardOffset },
+              { value: flippedOffset - extraOutwardOffset },
+            ]
+          : [
+              { test: isNegativeTest, value: flippedOffset - extraOutwardOffset },
+              { value: extraOutwardOffset },
+            ],
+    },
+  };
+};
+
+interface RuleEntry {
+  test?: string;
+  value?: unknown;
+  signal?: string;
+}
+
+const isRuleEntry = (entry: unknown): entry is RuleEntry => typeof entry === 'object' && entry !== null;
+
+const ruleEntryToExpr = (entry: unknown): string => {
+  if (!isRuleEntry(entry)) return JSON.stringify(entry);
+  return entry.signal !== undefined ? entry.signal : JSON.stringify(entry.value);
+};
+
+/** Flattens a Vega ProductionRule into one expression string; array-concatenating two rules instead strands an untested fallback mid-array and crashes the parser. */
+export const productionRuleToExpr = (rule: unknown): string => {
+  if (!Array.isArray(rule)) return ruleEntryToExpr(rule);
+  const [head, ...rest] = rule;
+  if (!isRuleEntry(head) || !head.test || rest.length === 0) return ruleEntryToExpr(head);
+  return `(${head.test} ? (${ruleEntryToExpr(head)}) : (${productionRuleToExpr(rest)}))`;
+};
+
+/** Merges two ProductionRules by priority (`priorityRule`'s tested entries first) into one `{signal}`, so `deepmerge` replaces rather than array-concatenates and crashes the parser. */
+export const getPriorityMergedSignal = (priorityRule: unknown, fallbackRule: unknown): SignalRef => {
+  const priorityEntries = (Array.isArray(priorityRule) ? priorityRule : [priorityRule]).filter(
+    (entry): entry is RuleEntry => isRuleEntry(entry) && Boolean(entry.test)
+  );
+  const fallbackEntries = Array.isArray(fallbackRule) ? fallbackRule : [fallbackRule];
+  return { signal: productionRuleToExpr([...priorityEntries, ...fallbackEntries]) };
 };
 
 /**

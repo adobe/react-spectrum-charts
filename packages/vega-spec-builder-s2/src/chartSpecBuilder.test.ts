@@ -585,4 +585,170 @@ describe('Chart spec builder', () => {
       expect(spec.signals?.find((s) => s.name === 'bar0_dimensionHoverArea_hoveredItem')).toBeUndefined();
     });
   });
+
+  describe('diverging bar axis wiring', () => {
+    const divergingData = [
+      { channel: 'A', changeRate: 0.1 },
+      { channel: 'B', changeRate: -0.2 },
+    ];
+    const buildDivergingSpec = (diverging: boolean) =>
+      buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging }],
+        axes: [{ position: 'left', baseline: true }],
+      });
+
+    test('repositions the dimension axis (adds an offset) only when the bar sets diverging', () => {
+      const withDiverging = (buildDivergingSpec(true).axes ?? []).filter((axis) => 'offset' in axis);
+      const withoutDiverging = (buildDivergingSpec(false).axes ?? []).filter((axis) => 'offset' in axis);
+      expect(withDiverging.length).toBeGreaterThan(0);
+      expect(withoutDiverging).toHaveLength(0);
+    });
+
+    test('is a no-op for a multi-series bar (color facet) — single-series only for now', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', series: 'New', changeRate: 0.1 },
+          { channel: 'A', series: 'Churned', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            color: 'series',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a dodged bar with no facet set', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            type: 'dodged',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a bar dodged by a lineType facet (not color)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', period: 'This', changeRate: 0.1 },
+          { channel: 'A', period: 'Last', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            type: 'dodged',
+            lineType: 'period',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a stacked bar faceted by opacity (not color)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', tier: 'Free', changeRate: 0.1 },
+          { channel: 'A', tier: 'Paid', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            opacity: 'tier',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op on a trellised chart — no offset, no crash', () => {
+      const build = () =>
+        buildSpec({
+          ...defaultSpecOptions,
+          data: [
+            { region: 'A', channel: 'X', changeRate: 0.1 },
+            { region: 'A', channel: 'Y', changeRate: -0.2 },
+            { region: 'B', channel: 'X', changeRate: 0.3 },
+          ],
+          marks: [
+            { markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', trellis: 'region', diverging: true },
+          ],
+          axes: [{ position: 'left', baseline: true }],
+        });
+      expect(build).not.toThrow();
+      const allAxes = [
+        ...(build().axes ?? []),
+        ...(build().marks ?? []).flatMap((mark) => ('axes' in mark ? (mark.axes ?? []) : [])),
+      ];
+      expect(allAxes.filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op when the dimension axis has subLabels — no offset', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        axes: [
+          {
+            position: 'left',
+            baseline: true,
+            subLabels: [
+              { value: 'A', subLabel: 'group 1' },
+              { value: 'B', subLabel: 'group 1' },
+            ],
+          },
+        ],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('renders the diverging axis last so its labels paint over the opposing grid', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        // diverging (left) axis declared BEFORE the grid axis; it must be reordered to paint last
+        axes: [
+          { position: 'left', baseline: true },
+          { position: 'bottom', grid: true },
+        ],
+      });
+      const axes = spec.axes ?? [];
+      expect(axes).toHaveLength(2);
+      expect(axes.at(-1)).toHaveProperty('offset'); // diverging axis painted last
+      expect(axes[0]).not.toHaveProperty('offset'); // grid axis painted first (behind)
+      expect(axes[0].grid).toBe(true);
+    });
+  });
 });

@@ -42,9 +42,17 @@ export type InteractiveMark = {
   dimension?: string;
 };
 
+/** A single-series bar mark with `diverging: true`; lets axis building find its dimension/metric without parsing marks or data directly. */
+export type DivergingBarMark = {
+  name: string;
+  dimension: string;
+  metric: string;
+};
+
 export type UserMeta = {
   animatedMarks?: string[];
   interactiveMarks?: InteractiveMark[];
+  divergingBarMarks?: DivergingBarMark[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];

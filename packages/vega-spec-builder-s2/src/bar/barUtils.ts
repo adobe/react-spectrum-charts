@@ -32,6 +32,7 @@ import {
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
+import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
 import {
   getColorProductionRule,
@@ -620,7 +621,9 @@ export const getBarDimensionHoverArea = (options: BarSpecOptions, type: 'stacked
     encode: {
       enter: {
         fill: { value: 'transparent' },
-        tooltip: getInspectEncoding(options.chartInspects ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension }),
+        tooltip: hasInspectWithDimensionAreaTarget(options.chartInspects ?? [])
+          ? getInspectEncoding(options.chartInspects ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension })
+          : undefined,
       },
       update: {
         ...getBarDimensionAreaPositionEncodings(options),

@@ -9,9 +9,28 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AxisSpecOptions, SubLabel } from '../types';
+import { Scale } from 'vega';
+
+import { FILTERED_TABLE } from '@spectrum-charts/constants';
+
+import { AxisSpecOptions, DivergingBarMark, SubLabel } from '../types';
 import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
-import { getBaselineRule, getDefaultAxis, getIsMetricAxis, getSubLabelAxis, getTickCount, getTimeAxes } from './axisUtils';
+import {
+  DivergingBarContext,
+  getBaselineRule,
+  getDefaultAxis,
+  getDivergingAxisOffset,
+  getDivergingBarContext,
+  getDivergingLabelEncode,
+  getDivergingTickIsNegativeTest,
+  getIsMetricAxis,
+  getOpposingScaleName,
+  getPriorityMergedSignal,
+  getSubLabelAxis,
+  getTickCount,
+  getTimeAxes,
+  productionRuleToExpr,
+} from './axisUtils';
 
 describe('getBaselineRule', () => {
   describe('initial state', () => {
@@ -314,5 +333,141 @@ describe('getIsMetricAxis()', () => {
     test('should return true for bottom axis', () => {
       expect(getIsMetricAxis('bottom', 'horizontal')).toBe(true);
     });
+  });
+});
+
+describe('getOpposingScaleName()', () => {
+  test('falls back to the default linear scale name when no matching scale is present', () => {
+    expect(getOpposingScaleName([], 'left')).toBe('xLinear');
+    expect(getOpposingScaleName([], 'right')).toBe('xLinear');
+    expect(getOpposingScaleName([], 'top')).toBe('yLinear');
+    expect(getOpposingScaleName([], 'bottom')).toBe('yLinear');
+  });
+  test('returns the name of the scale whose range matches the opposing dimension', () => {
+    const scales = [
+      { name: 'myMetric', type: 'linear', range: 'width' },
+      { name: 'other', type: 'band', range: 'height' },
+    ] as Scale[];
+    expect(getOpposingScaleName(scales, 'left')).toBe('myMetric'); // vertical axis → opposing range 'width'
+    expect(getOpposingScaleName(scales, 'bottom')).toBe('other'); // horizontal axis → opposing range 'height'
+  });
+});
+
+describe('getDivergingAxisOffset()', () => {
+  test('left/top move inward with a negated zero-position offset', () => {
+    expect(getDivergingAxisOffset('left', 'testScale')).toStrictEqual({ signal: "-scale('testScale', 0)" });
+    expect(getDivergingAxisOffset('top', 'testScale')).toStrictEqual({ signal: "-scale('testScale', 0)" });
+  });
+  test('right/bottom move inward relative to the range size', () => {
+    expect(getDivergingAxisOffset('right', 'testScale')).toStrictEqual({ signal: "scale('testScale', 0) - width" });
+    expect(getDivergingAxisOffset('bottom', 'testScale')).toStrictEqual({ signal: "scale('testScale', 0) - height" });
+  });
+});
+
+describe('getDivergingTickIsNegativeTest()', () => {
+  test('joins back to the bar data on the dimension and tests the metric sign', () => {
+    const context: DivergingBarContext = { dataName: 'filteredTable', dimension: 'channel', metric: 'changeRate' };
+    expect(getDivergingTickIsNegativeTest(context)).toBe(
+      "data('filteredTable')[indexof(pluck(data('filteredTable'), 'channel'), datum.value)]['changeRate'] < 0"
+    );
+  });
+});
+
+describe('getDivergingLabelEncode()', () => {
+  describe('vertical axes flip align + compensate dx', () => {
+    test("left axis: default labelPadding (8) → 2*8 gap compensation", () => {
+      expect(getDivergingLabelEncode('left', 'isNeg')).toStrictEqual({
+        update: {
+          align: [{ test: 'isNeg', value: 'left' }, { value: 'right' }],
+          dx: [{ test: 'isNeg', value: 16 }, { value: 0 }],
+        },
+      });
+    });
+    test('right axis: flipped offset is negative', () => {
+      expect(getDivergingLabelEncode('right', 'isNeg')).toStrictEqual({
+        update: {
+          align: [{ test: 'isNeg', value: 'left' }, { value: 'right' }],
+          dx: [{ test: 'isNeg', value: 0 }, { value: -16 }],
+        },
+      });
+    });
+    test('custom labelPadding scales the gap compensation', () => {
+      expect(getDivergingLabelEncode('left', 'isNeg', 24).update.dx).toStrictEqual([
+        { test: 'isNeg', value: 48 },
+        { value: 0 },
+      ]);
+    });
+    test('extraOutwardOffset flips sign with the test (not added as a constant)', () => {
+      expect(getDivergingLabelEncode('left', 'isNeg', 8, 20).update.dx).toStrictEqual([
+        { test: 'isNeg', value: -4 },
+        { value: 20 },
+      ]);
+    });
+  });
+  describe('horizontal axes flip baseline + compensate dy', () => {
+    test('top axis', () => {
+      expect(getDivergingLabelEncode('top', 'isNeg')).toStrictEqual({
+        update: {
+          baseline: [{ test: 'isNeg', value: 'bottom' }, { value: 'top' }],
+          dy: [{ test: 'isNeg', value: 0 }, { value: 16 }],
+        },
+      });
+    });
+    test('bottom axis', () => {
+      expect(getDivergingLabelEncode('bottom', 'isNeg')).toStrictEqual({
+        update: {
+          baseline: [{ test: 'isNeg', value: 'bottom' }, { value: 'top' }],
+          dy: [{ test: 'isNeg', value: -16 }, { value: 0 }],
+        },
+      });
+    });
+  });
+});
+
+describe('productionRuleToExpr()', () => {
+  test('single value rule → JSON literal', () => {
+    expect(productionRuleToExpr({ value: 'left' })).toBe('"left"');
+    expect(productionRuleToExpr({ value: 16 })).toBe('16');
+  });
+  test('single signal rule → the signal expression', () => {
+    expect(productionRuleToExpr({ signal: 'foo + 1' })).toBe('foo + 1');
+  });
+  test('conditional rule array → nested ternary (never a stranded fallback)', () => {
+    expect(productionRuleToExpr([{ test: 'T', value: 'a' }, { value: 'b' }])).toBe('(T ? ("a") : ("b"))');
+  });
+});
+
+describe('getPriorityMergedSignal()', () => {
+  test('priority tested entries win, then the full fallback chain, as one signal', () => {
+    const priority = [{ test: 'P', value: 'x' }, { value: 'ignoredFallback' }];
+    const fallback = [{ test: 'F', value: 'a' }, { value: 'b' }];
+    expect(getPriorityMergedSignal(priority, fallback)).toStrictEqual({
+      signal: '(P ? ("x") : ((F ? ("a") : ("b"))))',
+    });
+  });
+});
+
+describe('getDivergingBarContext()', () => {
+  const divergingBarMarks: DivergingBarMark[] = [{ name: 'bar0', dimension: 'channel', metric: 'changeRate' }];
+
+  test('returns context for the matching dimension field', () => {
+    expect(getDivergingBarContext('channel', divergingBarMarks)).toStrictEqual({
+      dataName: FILTERED_TABLE,
+      dimension: 'channel',
+      metric: 'changeRate',
+    });
+  });
+
+  test('returns undefined when no entry matches the scale field', () => {
+    expect(getDivergingBarContext('other', divergingBarMarks)).toBeUndefined();
+  });
+
+  test('returns undefined when there are no diverging bar marks', () => {
+    expect(getDivergingBarContext('channel', [])).toBeUndefined();
+    expect(getDivergingBarContext('channel')).toBeUndefined();
+  });
+
+  test('returns undefined when scaleField is undefined', () => {
+    expect(getDivergingBarContext(undefined, divergingBarMarks)).toBeUndefined();
   });
 });
