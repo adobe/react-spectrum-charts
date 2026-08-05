@@ -49,8 +49,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.24.3",
-    "@spectrum-charts/constants": "1.47.0",
-    "@spectrum-charts/themes": "1.47.0",
+    "@spectrum-charts/constants": "1.49.0",
+    "@spectrum-charts/themes": "1.49.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {
