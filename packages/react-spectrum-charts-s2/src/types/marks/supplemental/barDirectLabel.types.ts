@@ -18,10 +18,10 @@ export type BarDirectLabelPosition = 'start' | 'middle' | 'end' | 'end-outside';
 export interface BarDirectLabelProps {
   /**
    * Where to place the label relative to the bar.
-   * - 'end-outside': outside the bar tip (default)
+   * - 'end-outside': always outside the bar tip (default)
    * - 'end': inside the bar, 8px from the tip
    * - 'middle': centered within the bar
-   * - 'start': inside the bar, 8px from the baseline edge
+   * - 'start': inside near the baseline when the label fits, spilling outside the tip when it doesn't
    * @default 'end-outside'
    */
   position?: BarDirectLabelPosition;

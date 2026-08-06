@@ -40,6 +40,13 @@ export const addTimeTransform = produce<Transforms[], [string]>((transforms, dim
   }
 });
 
+/**
+ * Whether a transform with the given `as` field already exists in the array — guards against
+ * double-adding the same derived field when multiple marks/calls share a data source.
+ */
+export const hasTransformByAs = (transforms: Transforms[], as: string): boolean =>
+  transforms.some((transform) => 'as' in transform && transform.as === as);
+
 export const getTransformSort = (order?: string): Compare | undefined => {
   if (order) {
     return { field: order };

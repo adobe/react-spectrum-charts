@@ -81,6 +81,26 @@ The label text is derived automatically from the parent Bar's metric, dimension,
 
 ---
 
+## Diverging bars
+
+Set `diverging` on `Bar` for a metric that spans positive and negative values (e.g. percent change). It moves the categorical axis to the zero baseline and flips each axis label to the side opposite its bar, so labels never overlap the bars.
+
+```jsx
+<Chart data={data}>
+  <Axis position="left" baseline />
+  <Axis position="bottom" grid labelFormat="percentage" />
+  <Bar dimension="channel" metric="changeRate" orientation="horizontal" diverging>
+    <BarDirectLabel position="start" format="percentage" />
+  </Bar>
+</Chart>
+```
+
+:::note Single-series only
+`diverging` only supports a single-series bar (no `color`, `lineType`, or `opacity` facet, and not `type="dodged"`) that is the only bar mark on the chart. It is also a no-op on a trellised chart or when the axis has `subLabels`. In any of these cases the axis stays at its normal position and `diverging` has no effect.
+:::
+
+---
+
 ## Bar props (S2)
 
 <table>
@@ -110,6 +130,12 @@ The label text is derived automatically from the parent Bar's metric, dimension,
             <td>string</td>
             <td>'category'</td>
             <td>Key in the data used for the categorical axis.</td>
+        </tr>
+        <tr>
+            <td>diverging</td>
+            <td>boolean</td>
+            <td>–</td>
+            <td>Moves the categorical axis to the zero baseline and flips each label to the opposite side of its bar. Single-series bars only — see the note above.</td>
         </tr>
         <tr>
             <td>metric</td>

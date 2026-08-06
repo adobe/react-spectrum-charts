@@ -21,7 +21,7 @@ import {
 
 import { AreaMarkOptions, getAreaMark } from '../area/areaUtils';
 import { getFilteredIsValidData } from '../line/lineDataUtils';
-import { getLineMark, getLineYEncoding } from '../line/lineMarkUtils';
+import { getClampedYEncoding, getLineMark } from '../line/lineMarkUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getColorProductionRule, getOpacityProductionRule, getXProductionRule } from '../marks/markUtils';
 import { getHoverContext, getSeriesHoverPredicate } from '../marks/hoverContext';
@@ -140,7 +140,7 @@ export const getMetricRangeHoverPoints = (
       enter: {
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
-        y: getLineYEncoding(lineMarkOptions, metric),
+        y: getClampedYEncoding(lineMarkOptions, metric),
       },
       update: {
         size: { value: DEFAULT_SYMBOL_SIZE },
@@ -159,7 +159,7 @@ export const getMetricRangeHoverPoints = (
     interactive: false,
     encode: {
       enter: {
-        y: getLineYEncoding(lineMarkOptions, metric),
+        y: getClampedYEncoding(lineMarkOptions, metric),
         stroke: getColorProductionRule(color, colorScheme, undefined, s2),
       },
       update: {

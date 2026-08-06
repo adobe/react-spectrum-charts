@@ -100,6 +100,34 @@ export const mixedBarData = [
   { browser: 'Explorer', downloads: -500 },
 ];
 
+/** Diverging conversion-rate-change data matching the Figma reference ("FB Stories" negative row renamed to "FB Post" for a unique band-scale value). */
+export const divergingConversionRateData = [
+  { channel: 'IG Stories', changeRate: 0.131, barColor: '#2d7d46' },
+  { channel: 'IG Reels', changeRate: 0.082, barColor: '#2d7d46' },
+  { channel: 'FB Stories', changeRate: 0.013, barColor: '#2d7d46' },
+  { channel: 'FB Video', changeRate: 0.008, barColor: '#2d7d46' },
+  { channel: 'FB Post', changeRate: -0.01, barColor: '#d7373f' },
+  { channel: 'FB Reels', changeRate: -0.07, barColor: '#d7373f' },
+];
+
+/** Same values as divergingConversionRateData, with long category names to check label truncation/collision. */
+export const divergingConversionRateDataLongLabels = [
+  { channel: 'Instagram Stories Advertisement Campaign', changeRate: 0.131, barColor: '#2d7d46' },
+  { channel: 'Instagram Reels Sponsored Content', changeRate: 0.082, barColor: '#2d7d46' },
+  { channel: 'Facebook Stories Organic Posts', changeRate: 0.013, barColor: '#2d7d46' },
+  { channel: 'Facebook Video Advertisement Placement', changeRate: 0.008, barColor: '#2d7d46' },
+  { channel: 'Facebook Post Boosted Content', changeRate: -0.01, barColor: '#d7373f' },
+  { channel: 'Facebook Reels Sponsored Video Content', changeRate: -0.029, barColor: '#d7373f' },
+];
+
+/** Verifies `labelFormat="time"` + `diverging` (mixed sign, monthly granularity): primary/secondary time axes share the same offset and flip encode via a static `dy`, not `labelPadding`. */
+export const timeAxisDivergingData = [
+  { day: '2024-11-15 00:00:00.0', changeRate: 0.131 },
+  { day: '2024-12-20 00:00:00.0', changeRate: 0.082 },
+  { day: '2025-01-10 00:00:00.0', changeRate: -0.01 },
+  { day: '2025-02-05 00:00:00.0', changeRate: -0.05 },
+];
+
 export const barDataTwoSeries = [
   { browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },
   { browser: 'Chrome', value: 3, operatingSystem: 'Mac', order: 1, percentLabel: '30%' },
@@ -209,7 +237,7 @@ interface GenerateMockDataForTrellisArgs {
   randomizeSteps?: boolean;
 }
 
-// Helper to calculate order based on the orderBy parameter
+// Order by whichever property matches orderBy
 const getOrder = (
   p1i: number,
   p2i: number,

@@ -36,6 +36,7 @@ import { addPopoverData } from '../chartPopover/chartPopoverUtils';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
 import {
+  getEffectiveMetricField,
   getForecastAlternateFlagTransform,
   getForecastEffectiveValueTransform,
   getLineForecastBoundaryMark,
@@ -425,7 +426,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   const markOptions = hasForecast
     ? {
         ...options,
-        metric: `${name}_effectiveValue`,
+        metric: getEffectiveMetricField(options),
         alternateSegmentKey: `${name}_alternateFlag`,
       }
     : options;
@@ -499,10 +500,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
 });
 
 const getMetricKeys = (lineOptions: LineSpecOptions) => {
-  const hasForecast = (lineOptions.forecasts ?? []).length > 0 && !lineOptions.alternateSegmentKey;
-  // when forecasts are present, use effectiveValue for the y-scale domain since it covers both
-  // the historical metric and forecast metric(s) in a single unified field
-  const metricKeys = hasForecast ? [`${lineOptions.name}_effectiveValue`] : [lineOptions.metric];
+  const metricKeys = [getEffectiveMetricField(lineOptions)];
 
   // metric range fields should be added if metric-axis will be scaled to fit
   const metricRanges = getMetricRanges(lineOptions);

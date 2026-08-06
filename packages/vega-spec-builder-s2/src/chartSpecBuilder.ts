@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
+import { Axis, Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -92,6 +92,12 @@ import {
   SymbolSize,
 } from './types';
 import { addVenn } from './venn/vennSpecBuilder';
+
+/** True for an axis repositioned to its opposing scale's zero line (its `offset` is a `scale(…, 0)` signal). */
+const isDivergingAxis = (axis: Axis): boolean => {
+  const { offset } = axis;
+  return typeof offset === 'object' && offset !== null && 'signal' in offset && /scale\(.*,\s*0\)/.test(String(offset.signal));
+};
 
 export function buildSpec({
   animations,
@@ -218,6 +224,11 @@ export function buildSpec({
   // copy the spec so we don't mutate the original
   spec = JSON.parse(JSON.stringify(spec));
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
+
+  // sibling axes paint in array order, so move the diverging axis last or a later grid axis paints over its labels
+  if (spec.usermeta?.divergingBarMarks?.length && spec.axes) {
+    spec.axes = [...spec.axes].sort((a, b) => Number(isDivergingAxis(a)) - Number(isDivergingAxis(b)));
+  }
 
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {
