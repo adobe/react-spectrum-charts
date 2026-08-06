@@ -34,13 +34,9 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
-import {
-  addInspectData,
-  addInspectSignals,
-  hasInspectWithDimensionAreaTarget,
-} from '../chartInspect/chartInspectUtils';
+import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
-import { getInteractiveMarkName } from '../marks/markUtils';
+import { getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import {
   addDomainFields,
   addFieldToFacetScaleDomain,
@@ -57,7 +53,7 @@ import {
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder';
-import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import { addUserMetaDivergingBarMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
@@ -98,6 +94,7 @@ export const addBar = produce<
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_CATEGORICAL_DIMENSION,
+      diverging = false,
       dualMetricAxis = false,
       hasOnClick = false,
       hasSquareCorners = false,
@@ -125,6 +122,7 @@ export const addBar = produce<
       chartPopovers,
       chartInspects,
       dimensionScaleType: 'band',
+      diverging,
       dualMetricAxis,
       orientation,
       color,
@@ -156,7 +154,23 @@ export const addBar = produce<
       chartOrientation: barOptions.orientation,
     };
 
-    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, barOptions.interactiveMarkName);
+    // dimension is gated by isInteractive(), not interactiveMarkName (broader, e.g. highlightedItem-only bars)
+    spec.usermeta = addUserMetaInteractiveMark(
+      spec.usermeta,
+      barOptions.interactiveMarkName,
+      isInteractive(barOptions) ? barOptions.dimension : undefined
+    );
+
+    // diverging is single-series only: dodged and faceted (multi-row-per-category) bars have no well-defined sign
+    const hasSeriesFacet = getFacetsFromOptions({ color, lineType, opacity }).facets.length > 0;
+    if (diverging && type !== 'dodged' && !hasSeriesFacet) {
+      spec.usermeta = addUserMetaDivergingBarMark(
+        spec.usermeta,
+        barOptions.name,
+        barOptions.dimension,
+        barOptions.metric
+      );
+    }
 
     spec.data = addData(spec.data ?? [], barOptions);
     spec.signals = addSignals(spec.signals ?? [], barOptions);
@@ -196,8 +210,13 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     return;
   }
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
-  if (hasInspectWithDimensionAreaTarget(chartInspects)) {
+  // gated by isInteractive() to match the rect mark and opacity rule that consume this signal
+  if (isInteractive(options)) {
     addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
+    // the bar mark sits on top of the dimensionHoverArea rect and occludes it, so also wire the bar's
+    // own hover directly onto this signal - otherwise hovering a bar (rather than the padding around it)
+    // never triggers the dimension fade rule that reads this signal.
+    addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`, name);
   }
   addInspectSignals(signals, options);
   setTrendlineSignals(signals, options);

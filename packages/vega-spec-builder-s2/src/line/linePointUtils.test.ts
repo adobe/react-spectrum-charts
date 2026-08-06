@@ -20,6 +20,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import {
   getHighlightBackgroundPoint,
   getHighlightPoint,
@@ -50,6 +51,7 @@ describe('getHighlightPoint()', () => {
     expect(mark.encode?.enter).toBeDefined();
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
     expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_HOVER_STROKE_WIDTH });
   });
@@ -93,6 +95,7 @@ describe('getSelectionPoint()', () => {
     expect(mark.encode?.enter).toBeDefined();
     expect(mark.encode?.update).toBeDefined();
     expect(mark.encode?.enter?.y).toEqual([{ field: 'value', scale: 'yLinear' }]);
+    expect(mark.encode?.enter?.fill).toEqual({ signal: BACKGROUND_COLOR });
     expect(mark.encode?.enter?.stroke).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
     expect(mark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_HOVER_STROKE_WIDTH });
   });
@@ -232,6 +235,29 @@ describe('getLineStaticPoint()', () => {
       },
       { value: 1 },
     ]);
+  });
+
+  describe('when isAnimate is true', () => {
+    test('returns the animated deemphasis-ramp signal instead of the instant production rules', () => {
+      const mark = getLineStaticPoint({ ...defaultLineOptions, interactiveMarkName: 'line0', isAnimate: true });
+      const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
+      expect(mark.encode?.update?.opacity).toStrictEqual({
+        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+      });
+    });
+
+    test('takes precedence over the instant isHighlightedByGroup rules', () => {
+      const mark = getLineStaticPoint({
+        ...defaultLineOptions,
+        interactiveMarkName: 'line0',
+        isHighlightedByGroup: true,
+        isAnimate: true,
+      });
+      const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
+      expect(mark.encode?.update?.opacity).toStrictEqual({
+        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+      });
+    });
   });
 });
 

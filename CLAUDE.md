@@ -246,6 +246,31 @@ S2 stories live in `packages/react-spectrum-charts-s2/src/stories/<ComponentName
 const inner = condition ? 'inner_a' : 'inner_b';
 `outer ${inner} rest`
 ```
+
+- **JSDoc is one description line, plus `@param`/`@returns` — never a multi-line rationale.** Existing functions in this codebase (e.g. `getHighlightBackgroundPoint` in `linePointUtils.ts`) already follow this; match that length, don't expand it. The same one-line-max rule applies to inline `//` comments on call sites. If a function's behavior genuinely needs more than one line to explain, that explanation belongs in the PR description or a `planning/` doc, not the docstring — it will rot in place as the code evolves around it.
+
+```ts
+// Bad — restates the fix instead of documenting the function
+/**
+ * Gets a background mark for static points to prevent opacity from revealing the line behind
+ * the point. This mark stays fully opaque (no opacity rules) so it always covers the line
+ * underneath — needed because a hollow static point's own fill is BACKGROUND_COLOR, and
+ * dimming that fill's opacity would otherwise let the line bleed through what's supposed to
+ * look like a clean punched-out hole.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+
+// Good
+/**
+ * Gets a background to static points to prevent opacity from revealing the line behind the point.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+```
+
+- **Storybook stories get a one-line comment at most**, stating only what a reviewer/tester wouldn't otherwise infer from the story's args (e.g. why a particular prop combination is being isolated). Don't narrate the investigation that led to the story.
+
 ## Test Completeness Checklist
 
 After any feature implementation, verify all of the following before considering the work done:
@@ -302,7 +327,8 @@ Before writing any code, always:
    - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
    - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
    - New prop on an existing component → `.claude/commands/implement-new-prop.md`
-4. Follow the steps in the matched skill file
+4. Check for an approved spec matching the work — features at `planning/specs/<chartType>/`, bugs at `planning/specs/<chartType>/issues/` — if one exists, the matched skill file's Step 0 has you read it and treat it as authoritative
+5. Follow the steps in the matched skill file
 
 ---
 
@@ -325,14 +351,26 @@ Chart-level props (on `<Chart>` itself, not a mark) follow a different file path
 
 ## Issue Tracking
 
-Known bugs that are not being acted on immediately go in `planning/issues/` as markdown files. Each doc should include:
-- **Status** — Open / In Progress
-- **Symptom** — 1-2 sentence description of the observable behavior
-- **Root cause** — Technical explanation with `file:line` references
-- **Relevant files** — Table of files and their role
-- **Proposed fix** — Direction, not full implementation
+Known bugs that are not being acted on immediately go in
+`planning/specs/<chartType>/issues/<slug>.json` as a `kind: "bug"` spec, validated against
+`planning/specs/schema.json`. When the user describes a bug or observation and says they
+want to note it for later, use the `file-issue` skill (`.claude/commands/file-issue.md`) —
+it investigates the root cause and writes the spec without being asked for the exact format.
 
-When the user describes a bug or observation and says they want to note it for later, create a doc there without being asked for the format.
+---
+
+## Chart Feature & Bug Spec System
+
+Specs live in `planning/specs/<chartType>/<slug>.json` (features) or
+`planning/specs/<chartType>/issues/<slug>.json` (bugs), one JSON file per feature/bug,
+validated against `planning/specs/schema.json`. Features: gather design tokens/requirements
+informally, convert them into a spec via the `generate-chart-spec` skill
+(`.claude/commands/generate-chart-spec.md`), submit the spec as a PR for review, then
+implement against the approved spec — the `implement-new-*` skills check for one first.
+Bugs: investigate and file via the `file-issue` skill
+(`.claude/commands/file-issue.md`), submit as a PR, then `implement-bug-fix` checks for one
+first. Full field-by-field guidance, the complexity rubric, and the `crossCutting` flag
+definitions are in `planning/specs/README.md`.
 
 ---
 

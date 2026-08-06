@@ -79,10 +79,16 @@ export interface LineMarkOptions {
   scaleType: ScaleType;
   scatterPaths?: ScatterPathOptions[];
   segmentLabels?: SegmentLabelOptions[];
+  dimensionHover?: boolean;
+  hoverLabelKey?: string;
+  showHoverLabel?: boolean;
   staticPoint?: string;
   trendlines?: TrendlineOptions[];
   interpolate?: InterpolationType;
   alternateSegmentKey?: string;
   alternateSegmentLineType?: LineType;
   alternateSegmentLabel?: string;
+  primarySeries?: number | string[];
+  otherSeriesColor?: string;
+  isAnimate?: boolean;
 }

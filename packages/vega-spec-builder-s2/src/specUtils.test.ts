@@ -20,6 +20,7 @@ import {
   LINE_TYPE_SCALE,
   ROUNDED_SQUARE_PATH,
   TABLE,
+  VISIBILITY_OFF_PATH,
 } from '@spectrum-charts/constants';
 import {
   getSpectrum2VegaConfig,
@@ -28,6 +29,8 @@ import {
 
 import {
   addUserMetaInteractiveMark,
+  addUserMetaAnimatedMark,
+  escapeD3FormatSpecifier,
   getChartConfig,
   getD3FormatSpecifierFromNumberFormat,
   getDimensionField,
@@ -127,7 +130,7 @@ describe('getStrokeDashFromLineType()', () => {
   test('should convert line type names to their coresponding stroke dash array', () => {
     expect(getStrokeDashFromLineType('solid')).toStrictEqual([]);
     expect(getStrokeDashFromLineType('dashed')).toStrictEqual([7, 4]);
-    expect(getStrokeDashFromLineType('dotted')).toStrictEqual([2, 3]);
+    expect(getStrokeDashFromLineType('dotted')).toStrictEqual([0, 4]);
     expect(getStrokeDashFromLineType('dotDash')).toStrictEqual([2, 3, 7, 4]);
     expect(getStrokeDashFromLineType('shortDash')).toStrictEqual([3, 4]);
     expect(getStrokeDashFromLineType('longDash')).toStrictEqual([11, 4]);
@@ -152,6 +155,9 @@ describe('getLineWidthPixelsFromLineWidth', () => {
 describe('getPathFromSymbolShape()', () => {
   test('return rounded square path for rounded-square', () => {
     expect(getPathFromSymbolShape('rounded-square')).toBe(ROUNDED_SQUARE_PATH);
+  });
+  test('return visibility-off icon path for visibility-off', () => {
+    expect(getPathFromSymbolShape('visibility-off')).toBe(VISIBILITY_OFF_PATH);
   });
   test('return input unless input is rounded-square', () => {
     expect(getPathFromSymbolShape('circle')).toBe('circle');
@@ -188,7 +194,25 @@ describe('getD3FormatSpecifierFromNumberFormat()', () => {
   test('should return proper formats', () => {
     expect(getD3FormatSpecifierFromNumberFormat('currency')).toEqual('$,.2f');
     expect(getD3FormatSpecifierFromNumberFormat('standardNumber')).toEqual(',');
+    expect(getD3FormatSpecifierFromNumberFormat('percentage')).toEqual('~%');
     expect(getD3FormatSpecifierFromNumberFormat(',.2f')).toEqual(',.2f');
+  });
+});
+
+describe('escapeD3FormatSpecifier()', () => {
+  test('escapes embedded double quotes', () => {
+    expect(escapeD3FormatSpecifier('foo"bar')).toEqual('foo\\"bar');
+  });
+
+  test('escapes embedded backslashes', () => {
+    expect(escapeD3FormatSpecifier('foo\\bar')).toEqual('foo\\\\bar');
+  });
+
+  test('escapes backslashes before quotes so a trailing backslash-quote cannot terminate the outer string early', () => {
+    const input = '\\"'; // backslash followed by a quote
+    const escaped = escapeD3FormatSpecifier(input);
+    // JSON string-escaping rules match Vega's, so this doubles as a round-trip proof
+    expect(JSON.parse(`"${escaped}"`)).toEqual(input);
   });
 });
 
@@ -206,6 +230,20 @@ describe('getChartConfig()', () => {
 
 describe('addUserMetaInteractiveMark()', () => {
   test('should add the interactive mark to the user meta', () => {
-    expect(addUserMetaInteractiveMark({ interactiveMarks: [] }, 'line0')).toEqual({ interactiveMarks: ['line0'] });
+    expect(addUserMetaInteractiveMark({ interactiveMarks: [] }, 'line0')).toEqual({
+      interactiveMarks: [{ name: 'line0', dimension: undefined }],
+    });
+  });
+
+  test('should attach a dimension when provided (e.g. for an interactive bar)', () => {
+    expect(addUserMetaInteractiveMark({ interactiveMarks: [] }, 'bar0', 'category')).toEqual({
+      interactiveMarks: [{ name: 'bar0', dimension: 'category' }],
+    });
+  });
+});
+
+describe('addUserMetaAnimatedMark()', () => {
+  test('should add the animated mark to the user meta', () => {
+    expect(addUserMetaAnimatedMark({ animatedMarks: [] }, 'line0')).toEqual({ animatedMarks: ['line0'] });
   });
 });

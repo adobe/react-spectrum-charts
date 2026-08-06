@@ -77,6 +77,17 @@ export const CHART_SIZE_POINT_SIZES = {
   L: (BASE_POINT_DIAMETER * CHART_SIZE_SCALE_RATIOS.L) ** 2,
 } as const;
 
+/** Vega signal name for the chart-size-derived label gap, driven by a reactive expression. */
+export const CHART_SIZE_LABEL_GAP = 'rscChartSizeLabelGap';
+
+/** Minimum vertical gap (px) between co-located labels per chart size tier. Base M = 12px. */
+const BASE_LABEL_GAP = 12;
+export const CHART_SIZE_LABEL_GAPS = {
+  S: BASE_LABEL_GAP * CHART_SIZE_SCALE_RATIOS.S,
+  M: BASE_LABEL_GAP * CHART_SIZE_SCALE_RATIOS.M,
+  L: BASE_LABEL_GAP * CHART_SIZE_SCALE_RATIOS.L,
+} as const;
+
 export const DEFAULT_LINEAR_DIMENSION = 'x';
 export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';
@@ -107,6 +118,17 @@ export const DEFAULT_LEGEND_LABEL_LIMIT = 184;
 export const TABLE = 'table';
 export const FILTERED_TABLE = 'filteredTable';
 export const CONTROLLED_HIGHLIGHTED_TABLE = 'controlledHighlightedTable';
+/** Single-row data source recording timestamp of the most recent hover target change */
+export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData';
+export const HOVER_TARGET_DATA = 'hoverTargetData';
+export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
+export const HOVER_FRACTION_DATA = 'hoverFractionData';
+/** Draw-in animation: the already-drawn portion, the single lerping tip point, and their merge (source the line mark renders from) */
+export const DRAW_IN_PREV_DATA = 'drawInPrev'; // suffix: ${name}_drawInPrev
+export const DRAW_IN_TIP_DATA = 'drawInTip'; // suffix: ${name}_drawInTip
+export const DRAW_IN_LERP_DATA = 'drawInLerp'; // suffix: ${name}_drawInLerp
+/** Point-scale-only: derived source carrying each row's ordinal index (see DRAW_IN_POINT_INDEX_FIELD) */
+export const DRAW_IN_POINT_INDEX_DATA = 'drawInIndexed'; // suffix: ${name}_drawInIndexed
 
 // vega data field names
 export const DIMENSION_FIELD = 'rscDimensionField';
@@ -117,6 +139,19 @@ export const SERIES_ID = 'rscSeriesId';
 export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
+/** Numeric-ms formula field added to `table` for time-scale lines so draw-in cutoff/tween math can compare raw numbers */
+export const DRAW_IN_TIME_MS_FIELD = 'rscDrawInTimeMs';
+/** Lead-window fields on filteredTable: each row's next point's dimension/metric value */
+export const DRAW_IN_NEXT_DIM_FIELD = 'drawInNextDimValue'; // suffix: ${name}_drawInNextDimValue
+export const DRAW_IN_NEXT_METRIC_FIELD = 'drawInNextMetricValue'; // suffix: ${name}_drawInNextMetricValue
+/** Point-scale-only: this row's ordinal index within the x scale's domain — a numeric sort key standing
+ *  in for the (usually non-numeric) category value, since draw-in's cutoff/tween math needs raw numbers */
+export const DRAW_IN_POINT_INDEX_FIELD = 'drawInPointIndex'; // suffix: ${name}_drawInPointIndex
+/** Point-scale-only: next point's actual category value (for scale lookup), separate from
+ *  DRAW_IN_NEXT_DIM_FIELD (next ordinal index, for cutoff/tween math) since the two diverge for point scales */
+export const DRAW_IN_NEXT_CATEGORY_FIELD = 'drawInNextCategoryValue'; // suffix: ${name}_drawInNextCategoryValue
+/** Flag marking the tip row within DRAW_IN_TIP_DATA/DRAW_IN_LERP_DATA */
+export const DRAW_IN_TIP_FLAG = 'isDrawInTip';
 
 // signal names
 export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
@@ -134,6 +169,17 @@ export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keybo
 export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
 /** Separator joining fields into a unique data-navigator node id (e.g. stacked segment = dimension + series). */
 export const NAVIGATION_ID_SEPARATOR = '__rsc__';
+export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
+export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
+export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
+export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
+export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's one-tick grace period after hoverAnimating goes false
+export const DRAW_IN_START = 'drawInStart'; // mount timestamp, captured once
+export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
+export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-out) progress
+export const DRAW_IN_DOMAIN_MIN = 'drawInDomainMin'; // draw-in animation: dimension scale domain min, captured once at mount
+export const DRAW_IN_DOMAIN_MAX = 'drawInDomainMax'; // draw-in animation: dimension scale domain max, captured once at mount
+export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
 
 // scale names
 export const COLOR_SCALE = 'color';
@@ -147,6 +193,8 @@ export const SYMBOL_PATH_WIDTH_SCALE = 'symbolPathWidth';
 
 // encode rules
 export const DEFAULT_OPACITY_RULE = { value: 1 };
+/** Default rule for stroke width when not hovered */
+export const DEFAULT_STROKE_WIDTH_RULE = { signal: CHART_SIZE_STROKE_WIDTH };
 
 // corner radius
 export const CORNER_RADIUS = 6;
@@ -156,6 +204,23 @@ export const DISCRETE_PADDING = 0.5;
 export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 0;
 export const TRELLIS_PADDING = 0.2;
+
+// hover animation constants
+/** Timer signal update interval in ms. Caps timer signal update at ~30fps. */
+export const ANIMATION_THROTTLE = 33;
+/** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
+export const ANIMATION_HOVER_SPEED = 100;
+/**
+ * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
+ * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
+ * Consumers map the lower half [0, neutral] for deemphasis (e.g. opacity) and the upper half [neutral, 1]
+ * for emphasis (e.g. stroke width).
+ */
+export const HOVER_NEUTRAL_TARGET = 0.5;
+
+// draw-in animation constants
+/** Time in ms it takes to animate the draw-in animation */
+export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
@@ -210,11 +275,117 @@ export const REFERENCE_LINE_LABEL_FONT_WEIGHT = DIRECT_LABEL_FONT_WEIGHT;
 export const REFERENCE_LINE_LABEL_BACKGROUND_STROKE = 'referenceLineLabelBackgroundStroke';
 export const REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH = DIRECT_LABEL_BACKGROUND_STROKE_WIDTH;
 export const REFERENCE_LINE_LABEL_OFFSET_FROM_LINE = 9;
-// Arrow cap SVG paths from referenceLineSpec.json
+
 export const REFERENCE_LINE_START_CAP_PATH =
-  'M2.82 -0.59249 C3.3 -0.31536 3.3 0.37746 2.82 0.65459 L-2.22 3.56444 C-2.7 3.84157 -3.3 3.49516 -3.3 2.9409 L-3.3 -2.87879 C-3.3 -3.43304 -2.7 -3.77946 -2.22 -3.50233 L2.82 -0.59249Z';
+  'M5.1 -0.51962C5.5 -0.28868 5.5 0.28867 5.1 0.51961L0.899999 2.94449C0.5 3.17543 -3.01029e-07 2.88675 -2.8084e-07 2.42487L-6.8851e-08 -2.42487C-4.86616e-08 -2.88675 0.5 -3.17543 0.9 -2.94449L5.1 -0.51962Z';
 export const REFERENCE_LINE_END_CAP_PATH =
-  'M0.360029 -0.623544C-0.119971 -0.346416 -0.119970 0.346404 0.360030 0.623532L5.400036 3.533388C5.880024 3.810516 6.480024 3.464100 6.480024 2.909844L6.480024 -2.909844C6.480024 -3.464100 5.880024 -3.810516 5.400024 -3.533388L0.360029 -0.623544Z';
+  'M0.30039 -0.51962C-0.0996097 -0.28868 -0.0996091 0.28867 0.300391 0.51961L4.50039 2.94449C4.90039 3.17543 5.40039 2.88675 5.40039 2.42487L5.40039 -2.42487C5.40039 -2.88675 4.90039 -3.17543 4.50039 -2.94449L0.30039 -0.51962Z';
+
+export type ReferenceLineSize = 'XS' | 'S' | 'M' | 'L';
+
+// Stroke widths per size tier for S2 reference lines (design confirmed).
+export const REFERENCE_LINE_SIZE_STROKE_WIDTHS: Record<ReferenceLineSize, number> = {
+  XS: 1,
+  S: 1.5,
+  M: 1.5,
+  L: 2.5,
+};
+
+// Max x-coordinate (right tip) of the start cap path
+const REFERENCE_LINE_CAP_RIGHT_TIP: Record<ReferenceLineSize, number> = {
+  XS: 3.41667,
+  S: 5.5,
+  M: 5.5,
+  L: 6.83333,
+};
+
+// x-anchor for the start cap mark in chart space (left face of cap is at x≈0 in path space).
+const REFERENCE_LINE_START_CAP_ANCHOR = 5;
+// Gap in px between cap tip and rule stroke's visible left edge.
+const REFERENCE_LINE_CAP_RULE_GAP = 1;
+
+// Rule x-start for explicit size — uses REFERENCE_LINE_SIZE_STROKE_WIDTHS per tier.
+export const REFERENCE_LINE_RULE_X_START: Record<ReferenceLineSize, number> = {
+  XS: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.XS + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.XS / 2, // 9.91667
+  S: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.S + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2,   // 12.25
+  M: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.M + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2,   // 12.25
+  L: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.L + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2,   // 14.08333
+};
+
+// Rule x-start for auto mode — uses CHART_SIZE_STROKE_WIDTH signal values (S=1.5px, M=2px, L=3px)
+// so the 1px gap is correct when stroke width reacts to chart width.
+export const REFERENCE_LINE_AUTO_RULE_X_START = {
+  S: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.S + REFERENCE_LINE_CAP_RULE_GAP + 1.5 / 2, // 12.25
+  M: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.M + REFERENCE_LINE_CAP_RULE_GAP + 1,   // strokeWidth(2)/2 = 1, total 12.5
+  L: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.L + REFERENCE_LINE_CAP_RULE_GAP + 3 / 2,   // 14.33333
+};
+
+// Right face x in path space for each end cap. S and M share paths.
+const REFERENCE_LINE_END_CAP_RIGHT_FACE_X: Record<ReferenceLineSize, number> = {
+  XS: 3.34961,
+  S: 5.40039,
+  M: 5.40039,
+  L: 6.7002,
+};
+
+// Desired clip past the right chart boundary for XS size.
+const REFERENCE_LINE_END_CAP_CLIP = 0.4;
+
+// Fixed x-anchor offset from `width` for S/M/L end caps — mirrors REFERENCE_LINE_START_CAP_ANCHOR.
+// All three sizes share the same origin; larger caps grow further into the clip zone on the right.
+const REFERENCE_LINE_END_CAP_ANCHOR = REFERENCE_LINE_END_CAP_RIGHT_FACE_X.S - REFERENCE_LINE_END_CAP_CLIP; // 5.00039
+
+export const REFERENCE_LINE_END_CAP_ANCHOR_OFFSET: Record<ReferenceLineSize, number> = {
+  XS: REFERENCE_LINE_END_CAP_RIGHT_FACE_X.XS - REFERENCE_LINE_END_CAP_CLIP, // 2.94961
+  S: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
+  M: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
+  L: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
+};
+
+// Rule x2 offset for explicit size = end cap anchor + gap + strokeWidth/2.
+// S and M produce the same x2; L produces a shorter line (larger SW reduces x2 further left).
+export const REFERENCE_LINE_RULE_X2_OFFSET: Record<ReferenceLineSize, number> = {
+  XS: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.XS + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.XS / 2, // 4.44961
+  S: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2,   // 6.75039
+  M: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2,   // 6.75039
+  L: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2,   // 7.25039
+};
+
+// Rule x2 offset for auto mode — uses CHART_SIZE_STROKE_WIDTH signal values (1.5/2/3px).
+export const REFERENCE_LINE_AUTO_RULE_X2_OFFSET = {
+  S: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 0.75, // 6.75039
+  M: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 1,    // 7.00039
+  L: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 1.5,  // 7.50039
+};
+
+// Caret SVG paths per size tier, y-shifted to center on reference line.
+// S and M share the same path geometry.
+export const REFERENCE_LINE_START_CAP_PATHS: Record<ReferenceLineSize, string> = {
+  XS: 'M3.15 -0.34641C3.41667 -0.19245 3.41667 0.19245 3.15 0.34641L0.6 1.81866C0.333334 1.97262 -1.87092e-07 1.78017 -1.73632e-07 1.47225L-4.49247e-08 -1.47224C-3.14651e-08 -1.78016 0.333333 -1.97261 0.6 -1.81865L3.15 -0.34641Z',
+  S: REFERENCE_LINE_START_CAP_PATH,
+  M: REFERENCE_LINE_START_CAP_PATH,
+  L: 'M6.3 -0.69283C6.83333 -0.38491 6.83333 0.38490 6.3 0.69282L1.2 3.63730C0.666667 3.94522 -3.74184e-07 3.56032 -3.47265e-07 2.94448L-8.98494e-08 -2.94449C-6.29301e-08 -3.56033 0.666666 -3.94523 1.2 -3.63731L6.3 -0.69283Z',
+};
+
+export const REFERENCE_LINE_END_CAP_PATHS: Record<ReferenceLineSize, string> = {
+  XS: 'M0.19961 -0.34641C-0.067057 -0.19245 -0.0670574 0.19245 0.199609 0.34641L2.74961 1.81866C3.01628 1.97262 3.34961 1.78017 3.34961 1.47225L3.34961 -1.47224C3.34961 -1.78016 3.01628 -1.97261 2.74961 -1.81865L0.19961 -0.34641Z',
+  S: REFERENCE_LINE_END_CAP_PATH,
+  M: REFERENCE_LINE_END_CAP_PATH,
+  L: 'M0.400196 -0.69283C-0.133137 -0.38491 -0.133138 0.38490 0.400195 0.69282L5.50019 3.63730C6.03353 3.94522 6.7002 3.56032 6.7002 2.94448L6.7002 -2.94449C6.7002 -3.56033 6.03353 -3.94523 5.5002 -3.63731L0.400196 -0.69283Z',
+};
+
+// Secondary reference line stroke color per size tier.
+// XS uses gray-600 for sparkline contexts; S/M/L match the primary gray-800.
+// Label color matches the stroke color for each tier.
+export const REFERENCE_LINE_SECONDARY_COLORS: Record<ReferenceLineSize, string> = {
+  XS: 'gray-600',
+  S: DEFAULT_FONT_COLOR,
+  M: DEFAULT_FONT_COLOR,
+  L: DEFAULT_FONT_COLOR,
+};
+
+// Secondary reference line stroke width — always 1px regardless of size.
+export const REFERENCE_LINE_SECONDARY_STROKE_WIDTH = 1;
 
 // time constants
 export const MS_PER_DAY = 86400000;
@@ -265,3 +436,10 @@ export const SENTIMENT_NEUTRAL_PATH =
 
 export const SENTIMENT_POSITIVE_PATH =
   'M 0 -1 A 1 1 90 1 0 1 0 A 1 1 90 0 0 0 -1 Z M -0.3522 -0.5916 A 0.215 0.215 90 0 1 -0.1647 -0.3572 A 0.215 0.215 90 0 1 -0.3522 -0.1229 A 0.215 0.215 90 0 1 -0.5397 -0.3572 A 0.2149 0.2149 90 0 1 -0.3522 -0.5916 Z M 0.3421 -0.598 A 0.215 0.215 90 0 1 0.5296 -0.3635 A 0.2149 0.2149 90 0 1 0.3421 -0.1291 A 0.2149 0.2149 90 0 1 0.1546 -0.3635 A 0.215 0.215 90 0 1 0.3421 -0.598 Z M 0 0.6275 A 0.6161 0.6161 90 0 1 -0.625 0.1187 H 0.625 A 0.6161 0.6161 90 0 1 0 0.6275 Z';
+
+// Derived from @react-spectrum/s2/icons/VisibilityOff (20x20 viewBox), re-centered on origin and
+// scaled down 8.5x to match this file's ~[-1, 1] symbol-path convention (a smaller divisor than
+// sibling shapes, since this icon's thin linework would read as too faint otherwise). Legend
+// symbol shape for toggled-off/hidden series entries in S2.
+export const VISIBILITY_OFF_PATH =
+  'M-0.004 0.7862 C-0.5753 0.7862 -1.0882 0.2699 -1.0882 0.0261 c0 -0.1082 0.1016 -0.2776 0.2589 -0.4315 c0.0347 -0.0339 0.0906 -0.0334 0.1247 0.0013 c0.0341 0.0348 0.0335 0.0906 -0.0013 0.1248 c-0.1541 0.1507 -0.2059 0.2729 -0.2059 0.3054 c0 0.1346 0.4291 0.5835 0.9078 0.5835 c0.0711 0 0.1448 -0.0099 0.2192 -0.0295 c0.0468 -0.012 0.0953 0.0156 0.1079 0.0628 c0.0125 0.0471 -0.0158 0.0953 -0.0628 0.1079 c-0.0889 0.0235 -0.1779 0.0353 -0.2642 0.0353 M0.7769 0.4521 c-0.024 0 -0.0478 -0.0096 -0.0652 -0.0287 c-0.0329 -0.036 -0.0304 -0.0918 0.0056 -0.1247 c0.1341 -0.1226 0.1944 -0.2332 0.1944 -0.2726 c0 -0.0944 -0.224 -0.3855 -0.5306 -0.5355 c-0.1188 -0.06 -0.2506 -0.0922 -0.3824 -0.0939 c-0.0729 0 -0.1487 0.0111 -0.2241 0.0329 c-0.0471 0.0128 -0.0958 -0.0136 -0.1093 -0.0604 c-0.0135 -0.0468 0.0135 -0.0958 0.0604 -0.1093 c0.0912 -0.0265 0.1835 -0.0398 0.2742 -0.0398 c0.1595 0.002 0.3181 0.0408 0.4596 0.1122 c0.3226 0.158 0.6286 0.4953 0.6286 0.6936 c0 0.1081 -0.0941 0.2587 -0.2518 0.4028 c-0.0169 0.0155 -0.0384 0.0232 -0.0595 0.0232 M1.0329 0.9107 l-0.6798 -0.6798 c0.024 -0.0348 0.0421 -0.0724 0.0541 -0.1113 c0.0245 -0.0805 -0.0541 -0.1471 -0.1318 -0.1148 c-0.0582 0.0242 -0.1113 0.0165 -0.1388 0.0095 L-0.0249 -0.1471 c-0.0111 -0.0435 -0.0093 -0.0876 0.0047 -0.1276 c0.0262 -0.0749 -0.0556 -0.1482 -0.1294 -0.1188 q-0.0416 0.0165 -0.0796 0.0421 L-0.9082 -1.0305 c-0.0345 -0.0345 -0.0902 -0.0345 -0.1247 0 s-0.0345 0.0904 0 0.1247 l1.9412 1.9412 c0.0172 0.0173 0.0398 0.0259 0.0624 0.0259 s0.0452 -0.0086 0.0624 -0.0259 c0.0345 -0.0344 0.0345 -0.0902 0 -0.1247 M-0.2112 0.3527 c0.0818 0.0511 0.1792 0.0691 0.2728 0.0569 L-0.4068 -0.0587 c-0.0198 0.1547 0.0454 0.3176 0.1956 0.4114';

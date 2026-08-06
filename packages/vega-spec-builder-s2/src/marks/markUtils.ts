@@ -24,6 +24,7 @@ import {
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
   COMPONENT_NAME,
   DEFAULT_OPACITY_RULE,
@@ -259,6 +260,9 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
   }
   return { value: getStrokeDashFromLineType(lineType.value) };
 };
+
+export const getDirectLabelFontSizeProductionRule = (fontSize?: number): { signal: string } | { value: number } =>
+  fontSize == null ? { signal: CHART_SIZE_FONT_SIZE } : { value: fontSize };
 
 export const getHighlightOpacityValue = (
   opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE

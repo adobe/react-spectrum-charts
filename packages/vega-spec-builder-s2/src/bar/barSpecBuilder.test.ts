@@ -270,6 +270,78 @@ describe('barSpecBuilder', () => {
           addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', orientation: 'horizontal' }).usermeta
         ).toHaveProperty('chartOrientation', 'horizontal');
       });
+
+      test('should attach the dimension to the interactive mark entry when the bar is interactive', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartPopovers: [{}],
+        }).usermeta;
+        expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION }]);
+      });
+
+      test('should not attach a dimension for a bar that is only interactive via highlightedItem', () => {
+        // highlightedItem alone isn't "interactive" per isInteractive()
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          highlightedItem: 'someValue',
+        }).usermeta;
+        expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: undefined }]);
+      });
+
+      test('should add a divergingBarMarks entry for a single-series diverging bar', () => {
+        const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', diverging: true }).usermeta;
+        expect(usermeta.divergingBarMarks).toStrictEqual([
+          { name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION, metric: DEFAULT_METRIC },
+        ]);
+      });
+
+      test('should not add a divergingBarMarks entry when diverging is not set', () => {
+        const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry when the bar has a color facet, even if diverging is set', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          color: 'series',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry for a dodged bar, even with no facet set', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          type: 'dodged',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry when dodged by a lineType facet (not color)', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          type: 'dodged',
+          lineType: 'period',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry for a stacked bar faceted by opacity (not color)', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          opacity: 'tier',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
     });
   });
 
@@ -292,19 +364,21 @@ describe('barSpecBuilder', () => {
     });
     test('should add hover events if inspect is present', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartInspects: [{}] });
-      expect(signals.at(-1)).toHaveProperty('on');
-      expect(signals.at(-1)?.on).toHaveLength(2);
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      const hoveredItemSignal = signals.find((signal) => signal.name === 'bar0_hoveredItem');
+      expect(hoveredItemSignal).toHaveProperty('on');
+      expect(hoveredItemSignal?.on).toHaveLength(2);
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
     });
     test('should exclude data with key from update if inspect has excludeDataKey', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultBarOptions,
         chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
       });
-      expect(signals.at(-1)).toHaveProperty('on');
-      expect(signals.at(-1)?.on).toHaveLength(2);
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
+      const hoveredItemSignal = signals.find((signal) => signal.name === 'bar0_hoveredItem');
+      expect(hoveredItemSignal).toHaveProperty('on');
+      expect(hoveredItemSignal?.on).toHaveLength(2);
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     });
 
     describe('dualMetricAxis signals', () => {
@@ -496,6 +570,54 @@ describe('barSpecBuilder', () => {
         expect(
           signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
         ).toBeDefined();
+      });
+
+      test('should add dimension hover area signal whenever the bar is interactive, regardless of chartInspect target', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          chartPopovers: [{}],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeDefined();
+      });
+
+      test('should wire the bar mark itself onto the dimension hover area signal, not just the hover area rect', () => {
+        const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartPopovers: [{}] });
+        const signal = signals.find(
+          (signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
+        );
+        expect(signal?.on).toContainEqual(
+          expect.objectContaining({ events: `@${defaultBarOptions.name}:mouseover` })
+        );
+      });
+
+      test('should not add dimension hover area signal if the bar is not interactive', () => {
+        const signals = addSignals(defaultSignals, defaultBarOptions);
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
+      });
+
+      test('should not add dimension hover area signal for a bar that is only interactive via barAnnotations', () => {
+        // barAnnotations alone isn't "interactive" per isInteractive()
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          barAnnotations: [{ textKey: 'textLabel' }],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
+      });
+
+      test('should not add dimension hover area signal for a bar with only a non-displayOnHover trendline', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          trendlines: [{ displayOnHover: false }],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
       });
     });
   });
@@ -840,9 +962,11 @@ describe('barSpecBuilder', () => {
         ...defaultBarOptions,
         chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }],
       });
-      expect(marks).toHaveLength(3);
+      // the bar is interactive (has a popover), so the dimension hover area mark is also prepended
+      expect(marks).toHaveLength(4);
+      expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
 
-      const selectionRingMark = marks[2] as RectMark;
+      const selectionRingMark = marks[3] as RectMark;
       expect(selectionRingMark.type).toEqual('rect');
       expect(selectionRingMark.name).toEqual('bar0_selectionRing');
     });

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data } from 'vega';
+import { Data, GroupMark } from 'vega';
 
 import { colorSchemes, spectrum2Colors } from '@spectrum-charts/themes';
 
@@ -30,6 +30,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
   DEFAULT_SECONDARY_COLOR,
+  FADE_FACTOR,
   FILTERED_TABLE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
@@ -90,7 +91,9 @@ const defaultBarOptions: BarOptions = { markType: 'bar', dimension: 'browser', m
 jest.mock('./legend/legendHighlightUtils', () => {
   return {
     getLegendHighlightSignals: jest.fn().mockReturnValue([]),
+    injectLegendHoverIntoData: jest.fn(),
     setHoverOpacityForMarks: jest.fn(),
+    setHoverStrokeWidthForMarks: jest.fn(),
   };
 });
 
@@ -216,7 +219,7 @@ describe('Chart spec builder', () => {
     });
 
     test('should convert line type names', () => {
-      expect(getTwoDimensionalLineTypes([['solid', 'dashed'], ['dotted']])).toStrictEqual([[[], [7, 4]], [[2, 3]]]);
+      expect(getTwoDimensionalLineTypes([['solid', 'dashed'], ['dotted']])).toStrictEqual([[[], [7, 4]], [[0, 4]]]);
     });
   });
 
@@ -434,6 +437,17 @@ describe('Chart spec builder', () => {
         uncontrolledHighlightSignal
       );
     });
+
+    test('animates a line via the hover-animation system when only highlightedSeries is set (no other line interactivity)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        marks: [{ markType: 'line', dimension: 'datetime', metric: 'value', color: 'series' }],
+        highlightedSeries: 'Chrome',
+      });
+
+      expect(spec.usermeta?.animatedMarks).toContain('line0');
+      expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(true);
+    });
   });
 
   describe('getDefaultSignals()', () => {
@@ -507,5 +521,234 @@ describe('Chart spec builder', () => {
       );
     });
 
+  });
+
+  describe('axis label hover (AN-456589)', () => {
+    test('hovering an interactive bar chart axis label wires into the bar dimension hover signal', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        marks: [{ ...defaultBarOptions, chartPopovers: [{}] }],
+        axes: [{ position: 'bottom' }],
+      });
+
+      const axis = spec.axes?.[0];
+      expect(axis?.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+      expect(axis?.encode?.labels).toHaveProperty('interactive', true);
+
+      const signal = spec.signals?.find((s) => s.name === 'bar0_dimensionHoverArea_hoveredItem');
+      expect(signal?.on).toContainEqual({
+        events: '@axis0_labelHover:mouseover',
+        update: '{ browser: datum.value }',
+      });
+      expect(signal?.on).toContainEqual({ events: '@axis0_labelHover:mouseout', update: 'null' });
+
+      // other axis labels dim along with the bars when one is hovered
+      expect(axis?.encode?.labels?.update?.fillOpacity).toContainEqual({
+        test: 'isValid(bar0_dimensionHoverArea_hoveredItem)',
+        signal: `bar0_dimensionHoverArea_hoveredItem.browser === datum.value ? 1 : ${FADE_FACTOR}`,
+      });
+    });
+
+    test('wires axis label hover using the trellis group inner scale field, not the outer trellis/facet field', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { browser: 'Chrome', event: 'A', downloads: 10 },
+          { browser: 'Firefox', event: 'A', downloads: 5 },
+          { browser: 'Chrome', event: 'B', downloads: 3 },
+        ],
+        marks: [{ ...defaultBarOptions, trellis: 'event', chartPopovers: [{}] }],
+        axes: [{ position: 'bottom' }],
+      });
+
+      const trellisGroup = spec.marks?.find((mark) => mark.name?.includes('Trellis')) as GroupMark;
+      const trellisAxis = trellisGroup?.axes?.[0];
+      expect(trellisAxis?.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+      expect(trellisAxis?.encode?.labels).toHaveProperty('interactive', true);
+
+      const signal = spec.signals?.find((s) => s.name === 'bar0_dimensionHoverArea_hoveredItem');
+      expect(signal?.on).toContainEqual({
+        events: '@axis0_labelHover:mouseover',
+        update: '{ browser: datum.value }',
+      });
+    });
+
+    test('does not wire axis label hover for a fully static bar chart (no interactive children)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        marks: [defaultBarOptions],
+        axes: [{ position: 'bottom' }],
+      });
+
+      const axis = spec.axes?.[0];
+      expect(axis?.encode?.labels).not.toHaveProperty('name');
+      expect(spec.signals?.find((s) => s.name === 'bar0_dimensionHoverArea_hoveredItem')).toBeUndefined();
+    });
+  });
+
+  describe('diverging bar axis wiring', () => {
+    const divergingData = [
+      { channel: 'A', changeRate: 0.1 },
+      { channel: 'B', changeRate: -0.2 },
+    ];
+    const buildDivergingSpec = (diverging: boolean) =>
+      buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging }],
+        axes: [{ position: 'left', baseline: true }],
+      });
+
+    test('repositions the dimension axis (adds an offset) only when the bar sets diverging', () => {
+      const withDiverging = (buildDivergingSpec(true).axes ?? []).filter((axis) => 'offset' in axis);
+      const withoutDiverging = (buildDivergingSpec(false).axes ?? []).filter((axis) => 'offset' in axis);
+      expect(withDiverging.length).toBeGreaterThan(0);
+      expect(withoutDiverging).toHaveLength(0);
+    });
+
+    test('is a no-op for a multi-series bar (color facet) — single-series only for now', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', series: 'New', changeRate: 0.1 },
+          { channel: 'A', series: 'Churned', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            color: 'series',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a dodged bar with no facet set', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            type: 'dodged',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a bar dodged by a lineType facet (not color)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', period: 'This', changeRate: 0.1 },
+          { channel: 'A', period: 'Last', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            type: 'dodged',
+            lineType: 'period',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op for a stacked bar faceted by opacity (not color)', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: [
+          { channel: 'A', tier: 'Free', changeRate: 0.1 },
+          { channel: 'A', tier: 'Paid', changeRate: -0.2 },
+        ],
+        marks: [
+          {
+            markType: 'bar',
+            orientation: 'horizontal',
+            dimension: 'channel',
+            metric: 'changeRate',
+            opacity: 'tier',
+            diverging: true,
+          },
+        ],
+        axes: [{ position: 'left', baseline: true }],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op on a trellised chart — no offset, no crash', () => {
+      const build = () =>
+        buildSpec({
+          ...defaultSpecOptions,
+          data: [
+            { region: 'A', channel: 'X', changeRate: 0.1 },
+            { region: 'A', channel: 'Y', changeRate: -0.2 },
+            { region: 'B', channel: 'X', changeRate: 0.3 },
+          ],
+          marks: [
+            { markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', trellis: 'region', diverging: true },
+          ],
+          axes: [{ position: 'left', baseline: true }],
+        });
+      expect(build).not.toThrow();
+      const allAxes = [
+        ...(build().axes ?? []),
+        ...(build().marks ?? []).flatMap((mark) => ('axes' in mark ? (mark.axes ?? []) : [])),
+      ];
+      expect(allAxes.filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('is a no-op when the dimension axis has subLabels — no offset', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        axes: [
+          {
+            position: 'left',
+            baseline: true,
+            subLabels: [
+              { value: 'A', subLabel: 'group 1' },
+              { value: 'B', subLabel: 'group 1' },
+            ],
+          },
+        ],
+      });
+      expect((spec.axes ?? []).filter((axis) => 'offset' in axis)).toHaveLength(0);
+    });
+
+    test('renders the diverging axis last so its labels paint over the opposing grid', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        // diverging (left) axis declared BEFORE the grid axis; it must be reordered to paint last
+        axes: [
+          { position: 'left', baseline: true },
+          { position: 'bottom', grid: true },
+        ],
+      });
+      const axes = spec.axes ?? [];
+      expect(axes).toHaveLength(2);
+      expect(axes.at(-1)).toHaveProperty('offset'); // diverging axis painted last
+      expect(axes[0]).not.toHaveProperty('offset'); // grid axis painted first (behind)
+      expect(axes[0].grid).toBe(true);
+    });
   });
 });

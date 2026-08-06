@@ -12,6 +12,7 @@
 import { SignalRef } from 'vega';
 
 import {
+  CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -36,6 +37,7 @@ import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
   getCursor,
+  getDirectLabelFontSizeProductionRule,
   getHighlightOpacityValue,
   getInteractiveMarkName,
   getLineWidthProductionRule,
@@ -110,7 +112,7 @@ describe('getStrokeDashProductionRule', () => {
   });
 
   test('should return static value and convert preset line type to dash array', () => {
-    expect(getStrokeDashProductionRule({ value: 'dotted' })).toStrictEqual({ value: [2, 3] });
+    expect(getStrokeDashProductionRule({ value: 'dotted' })).toStrictEqual({ value: [0, 4] });
   });
 
   test('should return static value of the dash array provided', () => {
@@ -135,6 +137,15 @@ describe('getSymbolSizeProductionRule()', () => {
   });
   test('should return static value squared if static value supplied', () => {
     expect(getSymbolSizeProductionRule({ value: 5 })).toStrictEqual({ value: 25 });
+  });
+});
+
+describe('getDirectLabelFontSizeProductionRule()', () => {
+  test('should return the chart-size signal when fontSize is not provided', () => {
+    expect(getDirectLabelFontSizeProductionRule()).toStrictEqual({ signal: CHART_SIZE_FONT_SIZE });
+  });
+  test('should return a static value when fontSize is provided', () => {
+    expect(getDirectLabelFontSizeProductionRule(20)).toStrictEqual({ value: 20 });
   });
 });
 
@@ -280,14 +291,15 @@ describe('getMarkOpacity()', () => {
     expect(getMarkOpacity(defaultBarOptions)).toStrictEqual([DEFAULT_OPACITY_RULE]);
   });
   test('Inspect child, should return tests for hover and default to opacity', () => {
+    // defaultBarOptions has a `dimension`, so a dimension-hover-area rule is now always spliced in too
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartInspects: [{}] });
-    expect(opacity).toHaveLength(3);
+    expect(opacity).toHaveLength(4);
     expect(opacity[0].test).toContain(HOVERED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
   });
   test('Popover child, should return tests for hover and select and default to opacity', () => {
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartPopovers: [{}] });
-    expect(opacity).toHaveLength(5);
+    expect(opacity).toHaveLength(6);
     expect(opacity[0].test).toEqual(`isValid(${SELECTED_ITEM})`);
     expect(opacity[1].test).toEqual(`isValid(${SELECTED_GROUP})`);
 

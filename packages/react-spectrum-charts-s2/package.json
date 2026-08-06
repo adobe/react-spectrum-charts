@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/react-spectrum-charts-s2",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Declarative library for composing Spectrum 2 visualizations in React.",
   "browser": "./dist/index.js",
   "module": "./dist/index.js",
@@ -76,11 +76,11 @@
     "publish-package": "npm publish --access public --tag alpha --registry https://registry.npmjs.org"
   },
   "dependencies": {
-    "@spectrum-charts/constants": "1.43.0",
-    "@spectrum-charts/locales": "1.43.0",
-    "@spectrum-charts/themes": "1.43.0",
-    "@spectrum-charts/utils": "1.43.0",
-    "@spectrum-charts/vega-spec-builder-s2": "0.2.0",
+    "@spectrum-charts/constants": "1.49.0",
+    "@spectrum-charts/locales": "1.49.0",
+    "@spectrum-charts/themes": "1.49.0",
+    "@spectrum-charts/utils": "1.49.0",
+    "@spectrum-charts/vega-spec-builder-s2": "0.4.0",
     "d3-format": "^3.1.0",
     "data-navigator": "^2.4.1",
     "deepmerge": ">= 4.0.0",

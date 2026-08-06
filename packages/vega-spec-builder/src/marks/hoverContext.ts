@@ -9,24 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { CONTROLLED_HIGHLIGHTED_ITEM, CONTROLLED_HIGHLIGHTED_SERIES, CONTROLLED_HIGHLIGHTED_TABLE, DIMENSION_HOVER_AREA, GROUP_ID, HOVERED_ITEM, INTERACTION_MODE, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/constants';
 
-import {
-  CONTROLLED_HIGHLIGHTED_ITEM,
-  CONTROLLED_HIGHLIGHTED_SERIES,
-  CONTROLLED_HIGHLIGHTED_TABLE,
-  DIMENSION_HOVER_AREA,
-  GROUP_ID,
-  HOVERED_ITEM,
-  INTERACTION_MODE,
-  SELECTED_ITEM,
-  SELECTED_SERIES,
-  SERIES_ID,
-} from '@spectrum-charts/constants';
+
 
 import { isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
 import { getDimensionField } from '../line/lineDataUtils';
-import { LineSpecOptions } from '../types';
+import { DisplayOnHoverTrigger, LineSpecOptions } from '../types';
 import { hasPopover, hasTooltip, isInteractive } from './markUtils';
+
 
 export interface HoverContext {
   /** Mark namespaces that have an active `<prefix>_hoveredItem` signal (point-level hover). */
@@ -85,19 +76,38 @@ export const getHoverContext = (markOptions: LineSpecOptions): HoverContext => {
 
 const isTrendlinePrefix = (prefix: string): boolean => prefix.endsWith('Trendline');
 
-export const getSeriesHoverPredicate = (ctx: HoverContext): string => {
-  const clauses: string[] = [];
+/** Whether item-level (`nearest`/`item`) hover clauses should be included for the given trigger. */
+export const shouldIncludeItemHoverClauses = (trigger?: DisplayOnHoverTrigger): boolean => trigger !== 'dimension';
 
-  for (const prefix of ctx.itemPrefixes) {
-    const useGroup = isTrendlinePrefix(prefix) ? ctx.isHighlightedByGroupTrendline : ctx.isHighlightedByGroupParent;
-    const matchField = useGroup ? GROUP_ID : SERIES_ID;
-    clauses.push(
-      `isValid(${prefix}_${HOVERED_ITEM}) && ${prefix}_${HOVERED_ITEM}.${matchField} === datum.${matchField}`
-    );
+/** Whether dimension-level hover clauses should be included for the given trigger. */
+export const shouldIncludeDimensionHoverClauses = (trigger?: DisplayOnHoverTrigger): boolean =>
+  trigger === undefined || trigger === 'dimension';
+
+/**
+ * Builds the "is this datum's series hovered" predicate used to gate `displayOnHover` visibility.
+ * @param ctx resolved hover context for the parent mark
+ * @param scope optional hover trigger to restrict the predicate to. When omitted, both item-level
+ * (`nearest`/`item`) and dimension-level hover signals are included, matching legacy `displayOnHover: true` behavior.
+ */
+export const getSeriesHoverPredicate = (ctx: HoverContext, scope?: DisplayOnHoverTrigger): string => {
+  const clauses: string[] = [];
+  const includeItemClauses = shouldIncludeItemHoverClauses(scope);
+  const includeDimensionClauses = shouldIncludeDimensionHoverClauses(scope);
+
+  if (includeItemClauses) {
+    for (const prefix of ctx.itemPrefixes) {
+      const useGroup = isTrendlinePrefix(prefix) ? ctx.isHighlightedByGroupTrendline : ctx.isHighlightedByGroupParent;
+      const matchField = useGroup ? GROUP_ID : SERIES_ID;
+      clauses.push(
+        `isValid(${prefix}_${HOVERED_ITEM}) && ${prefix}_${HOVERED_ITEM}.${matchField} === datum.${matchField}`
+      );
+    }
   }
 
-  for (const prefix of ctx.dimensionPrefixes) {
-    clauses.push(`isValid(${prefix}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
+  if (includeDimensionClauses) {
+    for (const prefix of ctx.dimensionPrefixes) {
+      clauses.push(`isValid(${prefix}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
+    }
   }
 
   if (ctx.hasSelection) {

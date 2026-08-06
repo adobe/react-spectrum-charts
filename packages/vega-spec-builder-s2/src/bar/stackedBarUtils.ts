@@ -13,7 +13,6 @@ import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/constants';
 
-import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
@@ -21,20 +20,32 @@ import { getBarFocusRing, getStackFocusRing } from './barFocusRingUtils';
 import {
   getBarDimensionHoverArea,
   getBarEnterEncodings,
+  getBarItemSelectionBackdrop,
+  getBarItemSelectionRing,
   getBarUpdateEncodings,
   getBaseBarEnterEncodings,
   getDodgedDimensionEncodings,
   getDodgedGroupMark,
   getOrientationProperties,
   isDodgedAndStacked,
+  shouldShowItemSelectionRing,
 } from './barUtils';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
   const marks: Mark[] = [];
 
-  if (hasInspectWithDimensionAreaTarget(options.chartInspects)) {
+  if (isInteractive(options)) {
     marks.push(getBarDimensionHoverArea(options, 'stacked'));
+  }
+
+  const showItemSelectionRing = shouldShowItemSelectionRing(options);
+  const ringDataSource = getBaseDataSourceName(options);
+  const ringDimensionEncodings = getStackedDimensionEncodings(options);
+
+  // opaque backdrop drawn underneath the bar so the gap around the selected bar reads as an opaque halo
+  if (showItemSelectionRing) {
+    marks.push(getBarItemSelectionBackdrop(options, ringDataSource, ringDimensionEncodings));
   }
 
   marks.push(
@@ -52,6 +63,11 @@ export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
     )
   );
 
+  // visible outline drawn on top of the bars so it is never occluded (e.g. by adjacent stack segments)
+  if (showItemSelectionRing) {
+    marks.push(getBarItemSelectionRing(options, ringDataSource, ringDimensionEncodings));
+  }
+
   // focus rings for keyboard navigation (experimental): a per-segment ring always, plus a per-stack
   // group ring when the bar is actually stacked (a series/color field is present).
   if (options.accessibleNavigation) {
@@ -66,6 +82,14 @@ export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
 
 export const getDodgedAndStackedBarMark = (options: BarSpecOptions): GroupMark => {
   const marks: Mark[] = [];
+  const showItemSelectionRing = shouldShowItemSelectionRing(options);
+  const ringDataSource = `${options.name}_facet`;
+  const ringDimensionEncodings = getStackedDimensionEncodings(options);
+
+  if (showItemSelectionRing) {
+    marks.push(getBarItemSelectionBackdrop(options, ringDataSource, ringDimensionEncodings));
+  }
+
   marks.push(
     // add background marks
     getStackedBackgroundBar(options),
@@ -74,6 +98,10 @@ export const getDodgedAndStackedBarMark = (options: BarSpecOptions): GroupMark =
     // add annotation marks
     ...getAnnotationMarks(options, `${options.name}_facet`, `${options.name}_position`, `${options.name}_dodgeGroup`)
   );
+
+  if (showItemSelectionRing) {
+    marks.push(getBarItemSelectionRing(options, ringDataSource, ringDimensionEncodings));
+  }
 
   return { ...getDodgedGroupMark(options), marks };
 };

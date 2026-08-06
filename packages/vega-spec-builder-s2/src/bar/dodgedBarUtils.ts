@@ -13,7 +13,6 @@ import { GroupMark, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR } from '@spectrum-charts/constants';
 
-import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getBarFocusRing } from './barFocusRingUtils';
@@ -21,19 +20,28 @@ import { getAnnotationMarks } from './barAnnotationUtils';
 import {
   getBarDimensionHoverArea,
   getBarEnterEncodings,
+  getBarItemSelectionBackdrop,
+  getBarItemSelectionRing,
   getBarUpdateEncodings,
   getBaseBarEnterEncodings,
   getDodgedDimensionEncodings,
   getDodgedGroupMark,
+  shouldShowItemSelectionRing,
 } from './barUtils';
 
 export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[] => {
   const { name } = options;
+  const showItemSelectionRing = shouldShowItemSelectionRing(options);
+  const ringDimensionEncodings = getDodgedDimensionEncodings(options);
 
   const marks: (GroupMark | RectMark)[] = [
     {
       ...getDodgedGroupMark(options),
       marks: [
+        // opaque backdrop drawn underneath the bar so the gap around the selected bar reads as an opaque halo
+        ...(showItemSelectionRing
+          ? [getBarItemSelectionBackdrop(options, `${name}_facet`, ringDimensionEncodings)]
+          : []),
         // background bars
         {
           name: `${name}_background`,
@@ -68,13 +76,17 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
           },
         },
         ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
+        // visible outline drawn on top of the bars so it is never occluded by adjacent marks
+        ...(showItemSelectionRing
+          ? [getBarItemSelectionRing(options, `${name}_facet`, ringDimensionEncodings)]
+          : []),
         // focus ring for keyboard navigation (experimental); inside the group so it can read the bar mark bounds
         ...(options.accessibleNavigation ? [getBarFocusRing(options)] : []),
       ],
     },
   ];
 
-  if (hasInspectWithDimensionAreaTarget(options.chartInspects)) {
+  if (isInteractive(options)) {
     marks.unshift(getBarDimensionHoverArea(options, 'dodged'));
   }
 
