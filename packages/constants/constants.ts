@@ -164,7 +164,7 @@ export const SELECTED_SERIES = 'selectedSeries'; // series
 export const SELECTED_GROUP = 'selectedGroup'; // data point
 export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
-export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
+export const ANIMATION_TIMER = 'animationTimer'; // main animation timer signal
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
@@ -199,6 +199,12 @@ export const DISCRETE_PADDING = 0.5;
 export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 0;
 export const TRELLIS_PADDING = 0.2;
+
+// animation constants
+/** Individual animation systems that can be toggled on via the `animationTypes` chart prop. */
+export type AnimationType = 'hover' | 'drawIn';
+/** Default `animationTypes` value: hover animations on, draw-in animations off. */
+export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover'];
 
 // hover animation constants
 /** Timer signal update interval in ms. Caps timer signal update at ~30fps. */

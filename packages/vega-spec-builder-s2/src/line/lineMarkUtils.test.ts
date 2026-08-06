@@ -26,6 +26,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils';
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import {
   getAlternateSegmentStrokeDash,
@@ -115,23 +116,39 @@ describe('getLineMark()', () => {
     expect(stroke[1]).toEqual({ field: 'series', scale: COLOR_SCALE });
   });
 
-  test('isAnimate: false forces the static instant-rule opacity even for an otherwise-interactive line', () => {
+  test('isHoverAnimate: false forces the static instant-rule opacity even for an otherwise-interactive line', () => {
     // this is the override every renamed-mark reuse of getLineMark relies on (highlight overlay,
     // trendlines, metric-range boundary line) — they all spread an interactive parent's options under
-    // a different mark name, so isAnimate must be forced false or the opacity would reference a
+    // a different mark name, so isHoverAnimate must be forced false or the opacity would reference a
     // `_hoverFractionData` that only exists for the base line's name
     const animated = getLineMark(
-      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isAnimate: true },
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       'line0_facet'
     );
     const notAnimated = getLineMark(
-      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isAnimate: false },
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isHoverAnimate: false },
       'line0_facet'
     );
     expect(animated.encode?.update?.opacity).toStrictEqual({
       signal: expect.stringContaining("data('line0_hoverFractionData')"),
     });
     expect(Array.isArray(notAnimated.encode?.update?.opacity)).toBe(true);
+  });
+
+  describe('isDrawInAnimate', () => {
+    test('omits the enter y encoding and uses the draw-in x/y encodings in update when true', () => {
+      const lineMark = getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: true }, 'line0_facet');
+      expect(lineMark.encode?.enter).not.toHaveProperty('y');
+      expect(lineMark.encode?.update?.x).toStrictEqual(getLineDrawInXEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true }));
+      expect(lineMark.encode?.update?.y).toStrictEqual(getLineDrawInYEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true }));
+    });
+
+    test('keeps the static enter y encoding and the scale-based update x, with no update y, when false', () => {
+      const lineMark = getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: false }, 'line0_facet');
+      expect(lineMark.encode?.enter).toHaveProperty('y');
+      expect(lineMark.encode?.update).not.toHaveProperty('y');
+      expect(lineMark.encode?.update?.x).toStrictEqual({ field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' });
+    });
   });
 });
 
@@ -256,12 +273,12 @@ describe('getLineOpacity()', () => {
     expect(comboRule?.test).toBe(`isValid(bar0_${HOVERED_ITEM}) || isValid(bar1_${HOVERED_ITEM})`);
   });
 
-  describe('when isAnimate is true', () => {
+  describe('when isHoverAnimate is true', () => {
     test('returns the animated deemphasis-ramp signal instead of the instant production rules', () => {
       const opacityRule = getLineOpacity({
         ...defaultLineMarkOptions,
         interactiveMarkName: 'line0',
-        isAnimate: true,
+        isHoverAnimate: true,
       });
       const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
       expect(opacityRule).toStrictEqual({ signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` });
@@ -271,7 +288,7 @@ describe('getLineOpacity()', () => {
       const opacityRule = getLineOpacity({
         ...defaultLineMarkOptions,
         interactiveMarkName: 'line0',
-        isAnimate: true,
+        isHoverAnimate: true,
         displayOnHover: true,
       });
       expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
@@ -585,15 +602,29 @@ describe('getLineHighlightOverlayGroup()', () => {
   });
 
   test('overlay opacity always comes from getHighlightedSeriesOpacityRules, even when the parent line is animated', () => {
-    // opacity is always overwritten by opacityRules (below), regardless of isAnimate — the isAnimate:
+    // opacity is always overwritten by opacityRules (below), regardless of isHoverAnimate — the isHoverAnimate:
     // false passed into the underlying getLineMark call only matters for encodings that AREN'T
     // subsequently overwritten here (see the getLineMark() tests for where that override is observable)
     const group = getLineHighlightOverlayGroup(
-      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isAnimate: true },
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       'filteredTable',
       [SERIES_ID]
     );
     const marks = (group as { marks: { encode: { update: { opacity: unknown } } }[] }).marks;
     expect(Array.isArray(marks[0].encode.update.opacity)).toBe(true);
+  });
+
+  test('overlay line does not use draw-in x/y encoding, even when the parent line is draw-in animated', () => {
+    // the overlay mark is renamed to `${name}_highlightOverlayLine`, but the draw-in cutoff signal is
+    // only ever registered under the original line's name — using draw-in encoding here would reference
+    // a signal that doesn't exist (e.g. "line0_highlightOverlayLine_drawInAnimCutoff")
+    const group = getLineHighlightOverlayGroup(
+      { ...defaultLineMarkOptions, isDrawInAnimate: true },
+      'filteredTable',
+      [SERIES_ID]
+    );
+    const marks = (group as { marks: { encode: { update: { x: { signal?: string } } } }[] }).marks;
+    expect(marks[0].encode.update.x).not.toHaveProperty('signal');
+    expect(marks[0].encode.update).not.toHaveProperty('y');
   });
 });
