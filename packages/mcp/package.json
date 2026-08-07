@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/mcp",
-  "version": "1.43.0",
+  "version": "1.49.0",
   "description": "MCP Server for React Spectrum Charts documentation",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,7 +24,7 @@
     "url": "https://github.com/adobe/react-spectrum-charts/issues"
   },
   "scripts": {
-    "build": "tsc && node scripts/build-docs.js",
+    "build": "yarn workspace @spectrum-charts/constants build && yarn workspace @spectrum-charts/themes build && tsc && node scripts/build-docs.js",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
     "dev": "yarn build && node dist/index.js",
@@ -49,6 +49,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.24.3",
+    "@spectrum-charts/constants": "1.49.0",
+    "@spectrum-charts/themes": "1.49.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {

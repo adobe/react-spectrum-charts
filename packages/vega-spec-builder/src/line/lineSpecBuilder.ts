@@ -41,7 +41,7 @@ import { ColorScheme, Granularity, HighlightedItem, LineOptions, LineSpecOptions
 import { getFilteredIsValidData, getLineHighlightedData, getLineStaticPointData, getUniqueDimensionData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
-import { getLineStaticPoint } from './linePointUtils';
+import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
 
 export const addLine = produce<
@@ -53,6 +53,7 @@ export const addLine = produce<
       index?: number;
       idKey: string;
       comboSiblingNames?: string[];
+      s2?: boolean;
     }
   ]
 >(
@@ -271,7 +272,10 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     },
     marks: [getLineMark(options, `${name}_facet`)],
   });
-  if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
+  if (staticPoint || isSparkline) {
+    // background point prevents the line from bleeding through a dimmed/hollow point
+    marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
+  }
   if ((staticPoint || isSparkline) && linePointAnnotations.length > 0) {
     marks.push(...getLinePointAnnotationMarks(options));
   }

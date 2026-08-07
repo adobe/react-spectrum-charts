@@ -11,11 +11,13 @@
  */
 import { Structure } from 'data-navigator';
 
+import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { buildBarStructure } from './buildBarStructure';
+import { buildBarStructure, getBarNodeId } from './buildBarStructure';
+import { buildLineStructure, getLineNodeId } from './buildLineStructure';
 
-export type NavigableChartType = 'bar';
+export type NavigableChartType = 'bar' | 'line';
 
 export interface ChartStructureOptions {
   /** The chart type to build a navigation structure for. */
@@ -28,6 +30,8 @@ export interface ChartStructureOptions {
   color?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
+  /** Whether the dimension field is time-scaled (used by line charts to format dates in labels). */
+  isTimeDimension?: boolean;
   /** Optional chart title for the accessible description. */
   title?: string;
 }
@@ -39,7 +43,22 @@ export interface ChartStructure {
 
 const structureBuilders: Record<NavigableChartType, (options: ChartStructureOptions) => ChartStructure> = {
   bar: buildBarStructure,
+  line: buildLineStructure,
 };
 
 export const buildChartStructure = (options: ChartStructureOptions): ChartStructure | undefined =>
   structureBuilders[options.chartType]?.(options);
+
+export type NodeIdOptions = Pick<ChartStructureOptions, 'dimension' | 'color'>;
+
+const nodeIdResolvers: Record<NavigableChartType, (datum: SimpleData, options: NodeIdOptions) => string | undefined> = {
+  bar: (datum, { dimension = DEFAULT_CATEGORICAL_DIMENSION, color }) => getBarNodeId(datum, dimension, color),
+  line: (datum, { color }) => getLineNodeId(datum, color),
+};
+
+/** Resolves the data-navigator leaf node id for a rendered datum — used to move focus on click. */
+export const getNodeIdForDatum = (
+  chartType: NavigableChartType,
+  datum: SimpleData,
+  options: NodeIdOptions
+): string | undefined => nodeIdResolvers[chartType]?.(datum, options);

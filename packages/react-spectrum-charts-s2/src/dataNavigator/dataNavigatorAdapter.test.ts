@@ -32,15 +32,27 @@ const stackedData = [
 
 let container: HTMLElement;
 let signal: jest.Mock;
+let addEventListenerMock: jest.Mock;
+let removeEventListenerMock: jest.Mock;
 let view: View;
 
 const mockView = () => {
   signal = jest.fn();
-  return { signal, runAsync: jest.fn() } as unknown as View;
+  addEventListenerMock = jest.fn();
+  removeEventListenerMock = jest.fn();
+  return {
+    signal,
+    runAsync: jest.fn(),
+    addEventListener: addEventListenerMock,
+    removeEventListener: removeEventListenerMock,
+  } as unknown as View;
 };
 
 const signaledWith = (name: string, value: unknown): boolean =>
   signal.mock.calls.some(([n, v]) => n === name && v === value);
+
+const getClickHandler = (): ((event: unknown, item?: unknown) => void) | undefined =>
+  addEventListenerMock.mock.calls.find(([type]) => type === 'click')?.[1];
 
 const entryButton = (): HTMLButtonElement => container.querySelector('button') as HTMLButtonElement;
 // data-navigator renders exactly one node element (class `dn-node`) at a time; it carries the
@@ -129,6 +141,44 @@ describe('attachDataNavigator()', () => {
     expect(focused()).toBeNull();
     expect(signaledWith(FOCUSED_REGION, null)).toBe(true);
     expect(signaledWith(FOCUSED_ITEM, null)).toBe(true);
+  });
+
+  describe('click moves focus', () => {
+    test('registers a click listener on the view', () => {
+      attach();
+      expect(getClickHandler()).toBeDefined();
+    });
+
+    test('clicking a rendered datum moves focus to the matching bar without requiring keyboard entry first', () => {
+      attach();
+      getClickHandler()?.(undefined, { datum: { browser: 'Firefox' } });
+      expect(signaledWith(FOCUSED_ITEM, 'Firefox')).toBe(true);
+    });
+
+    test('unwraps one level of nesting for overlay marks (e.g. a voronoi cell)', () => {
+      attach();
+      getClickHandler()?.(undefined, { datum: { datum: { browser: 'Safari' } } });
+      expect(signaledWith(FOCUSED_ITEM, 'Safari')).toBe(true);
+    });
+
+    test('does nothing when the clicked datum does not resolve to a node', () => {
+      attach();
+      getClickHandler()?.(undefined, { datum: { unrelated: true } });
+      expect(signal).not.toHaveBeenCalled();
+    });
+
+    test('does nothing when there is no item under the click', () => {
+      attach();
+      getClickHandler()?.(undefined, undefined);
+      expect(signal).not.toHaveBeenCalled();
+    });
+
+    test('removes the click listener on cleanup', () => {
+      const cleanup = attach();
+      const handler = getClickHandler();
+      cleanup();
+      expect(removeEventListenerMock).toHaveBeenCalledWith('click', handler);
+    });
   });
 
   describe('stacked bars (series present)', () => {

@@ -134,7 +134,8 @@ export const addHoveredItemSignal = (
   markName: string,
   targetName?: string,
   datumOrder = 1,
-  excludeDataKeys?: string[]
+  excludeDataKeys?: string[],
+  excludeCondition?: string
 ): void => {
   targetName = targetName || markName;
   const signalName = `${markName}_${HOVERED_ITEM}`;
@@ -158,7 +159,8 @@ export const addHoveredItemSignal = (
 
   const excludeDataKeysCondition = excludeDataKeys?.map((excludeDataKey) => `${datum}.${excludeDataKey}`).join(' || ');
 
-  const update = excludeDataKeysCondition ? `(${excludeDataKeysCondition}) ? null : ${datum}` : datum;
+  const combinedExcludeCondition = [excludeDataKeysCondition, excludeCondition].filter(Boolean).join(' || ');
+  const update = combinedExcludeCondition ? `(${combinedExcludeCondition}) ? null : ${datum}` : datum;
 
   signal.on.push({ events: `@${targetName}:mouseover`, update }, { events: `@${targetName}:mouseout`, update: 'null' });
 };

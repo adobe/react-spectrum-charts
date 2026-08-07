@@ -20,13 +20,15 @@ import { Legend } from '../components';
 import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
 import {
+  getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
   getOnMouseInputCallback,
   setSelectedSignals,
 } from '../utils';
-import useLegend from './useLegend';
+import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails';
+import { UseLegendProps } from './useLegend';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails';
 import useMarkOnClickDetails from './useMarkOnClickDetails';
 import usePopovers from './usePopovers';
@@ -34,7 +36,8 @@ import usePopovers from './usePopovers';
 const useNewChartView = (
   { idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  inspectOptions: TooltipOptions
+  inspectOptions: TooltipOptions,
+  legendProps: UseLegendProps
 ) => {
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const popovers = usePopovers(sanitizedChildren);
@@ -45,8 +48,9 @@ const useNewChartView = (
     onClick: onLegendClick,
     onMouseOut: onLegendMouseOut,
     onMouseOver: onLegendMouseOver,
-  } = useLegend(sanitizedChildren); // gets props from the legend if it exists
+  } = legendProps;
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
+  const axisLabelOnClickDetails = useAxisLabelOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
   const legendHasPopover = useMemo(
@@ -128,7 +132,7 @@ const useNewChartView = (
               legendIsToggleable,
               onLegendClick,
               trigger: 'contextmenu',
-              markHasPopover: markHasPopover,
+              markHasPopover,
             })
           );
         }
@@ -141,10 +145,14 @@ const useNewChartView = (
         view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(chartView, markClickDetails));
       }
       view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
+      if (axisLabelOnClickDetails.length) {
+        view.addEventListener('click', getOnAxisLabelClickCallback(axisLabelOnClickDetails));
+      }
       view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver, markMouseInputDetails));
       view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut, markMouseInputDetails));
     },
     [
+      axisLabelOnClickDetails,
       chartId,
       chartView,
       idKey,

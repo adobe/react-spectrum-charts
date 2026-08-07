@@ -29,6 +29,8 @@ export interface NavigatorProps {
   color?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
+  /** Whether the dimension field is time-scaled (line charts only; formats dates in accessible labels). */
+  isTimeDimension?: boolean;
   /** Optional chart title for the accessible description. */
   title?: string;
   /** Ref to the positioned container that wraps the chart. */
@@ -37,6 +39,13 @@ export interface NavigatorProps {
   chartId: string;
   /** Accessor for the live Vega view. */
   getView: () => View | undefined;
+  /**
+   * Bumped by the caller once the Vega view is actually ready. attachDataNavigator's click
+   * listener needs a live view, but this effect can run before vega-embed's async setup
+   * resolves, so getView() may return undefined at first attach — this forces a re-attach once
+   * the view exists.
+   */
+  viewVersion?: number;
 }
 
 export const Navigator = ({
@@ -45,18 +54,31 @@ export const Navigator = ({
   dimension,
   color,
   metric,
+  isTimeDimension,
   title,
   containerRef,
   chartId,
   getView,
+  viewVersion,
 }: NavigatorProps): null => {
   useEffect(() => {
     const container = containerRef.current;
     if (!container || data.length === 0) {
       return;
     }
-    attachDataNavigator({ container, chartType, data, dimension, color, metric, title, chartId, getView });
-  }, [chartType, data, dimension, color, metric, title, chartId, containerRef, getView]);
+    return attachDataNavigator({
+      container,
+      chartType,
+      data,
+      dimension,
+      color,
+      metric,
+      isTimeDimension,
+      title,
+      chartId,
+      getView,
+    });
+  }, [chartType, data, dimension, color, metric, isTimeDimension, title, chartId, containerRef, getView, viewVersion]);
 
   return null;
 };

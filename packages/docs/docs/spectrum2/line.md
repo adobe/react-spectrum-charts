@@ -250,8 +250,38 @@ Use `excludeSeries` to prevent labels from appearing on specific series:
             <td>[]</td>
             <td>Series names that should not receive a label.</td>
         </tr>
+        <tr>
+            <td>fontSize</td>
+            <td>number</td>
+            <td>–</td>
+            <td>Override font size in pixels. When omitted, font size scales automatically with chart size.</td>
+        </tr>
     </tbody>
 </table>
+
+---
+
+## Primary series
+
+The `primarySeries` prop designates which series render with full color. All other series are rendered in a de-emphasized gray, making it easy to highlight one or a few key series against a backdrop of contextual data.
+
+Pass a number to promote the first N series (by color scale order), or a string array to name specific series explicitly:
+
+```jsx
+{/* Highlight the first 2 series by color scale order */}
+<Line color="series" primarySeries={2} />
+
+{/* Highlight specific named series */}
+<Line color="series" primarySeries={['Revenue', 'Target']} />
+```
+
+Use `otherSeriesColor` to override the default gray used for de-emphasized series:
+
+```jsx
+<Line color="series" primarySeries={2} otherSeriesColor="gray-100" />
+```
+
+When `primarySeries` is combined with `LineDirectLabel`, direct labels are only shown on the primary series.
 
 ---
 
@@ -450,6 +480,18 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
             <td>Key in the data whose truthy value causes a visible point to be drawn at that data item.</td>
         </tr>
         <tr>
+            <td>primarySeries</td>
+            <td>number | string[]</td>
+            <td>–</td>
+            <td><strong>S2 only.</strong> Designates which series render with full color. A number promotes the first N series by color scale order; a string array names specific series explicitly. All other series are rendered in a de-emphasized gray. When used with <code>LineDirectLabel</code>, labels are suppressed on non-primary series.</td>
+        </tr>
+        <tr>
+            <td>otherSeriesColor</td>
+            <td>string</td>
+            <td>'gray-400'</td>
+            <td><strong>S2 only.</strong> Overrides the default gray used for de-emphasized series when <code>primarySeries</code> is set. Accepts any Spectrum 2 color token (e.g. <code>'gray-200'</code>) or CSS color value.</td>
+        </tr>
+        <tr>
             <td>alternateSegmentKey</td>
             <td>string</td>
             <td>–</td>
@@ -467,6 +509,24 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
             <td>–</td>
             <td>Text appended to the hover value label for alternate-segment points (e.g. <code>'(Estimated)'</code>).</td>
         </tr>
+        <tr>
+            <td>showHoverLabel</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>When true, shows the metric value as a label adjacent to the hovered data point. Suppressed when a <code>ChartInspect</code> child is present.</td>
+        </tr>
+        <tr>
+            <td>dimensionHover</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>When true, all series at the hovered x-dimension highlight simultaneously instead of only the nearest series. Hover value labels show for every series at that dimension.</td>
+        </tr>
+        <tr>
+            <td>hoverLabelKey</td>
+            <td>string</td>
+            <td>(metric field)</td>
+            <td>Data field key to display in the hover value label. Defaults to the <code>metric</code> field. Use this to show a pre-formatted or alternate field instead of the raw metric value.</td>
+        </tr>
     </tbody>
 </table>
 
@@ -477,13 +537,13 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
 The `ReferenceLine` component is a child of `Axis` that draws a vertical or horizontal reference line at a specified value. It is available in the S2 package and styled to the Spectrum 2 visual spec.
 
 ```jsx
-import { Chart, Axis, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Chart, Axis, Line, ReferenceLine } from '@spectrum-charts/react-spectrum-charts-s2';
 
 <Chart data={data}>
-  <Axis position="bottom" labelFormat="time" ticks baseline>
-    <ReferenceLine value={1706745600000} label="Launch" />
+  <Axis position="left" grid>
+    <ReferenceLine value={5000} label="Target" />
   </Axis>
-  <Axis position="left" grid />
+  <Axis position="bottom" labelFormat="time" ticks baseline />
   <Line color="series" />
 </Chart>
 ```
@@ -491,7 +551,7 @@ import { Chart, Axis, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 ![Line reference line light](/img/s2_line_referenceLine_light.png#gh-light-mode-only)
 ![Line reference line dark](/img/s2_line_referenceLine_dark.png#gh-dark-mode-only)
 
-The reference line is drawn on the axis it is nested inside. Use a bottom/top axis child for vertical reference lines (marking a point in time or a categorical value), and a left/right axis child for horizontal reference lines (marking a threshold value).
+In S2, reference lines are **horizontal only** — place `<ReferenceLine>` inside a left or right `<Axis>` and give it a numeric metric value (e.g. a threshold count). Bottom/top axes are not supported in S2.
 
 ### Reference line with label
 
@@ -500,6 +560,24 @@ The reference line is drawn on the axis it is nested inside. Use a bottom/top ax
   <ReferenceLine value={1000} label="Target" />
 </Axis>
 ```
+
+### Secondary style
+
+Set `secondary` to `true` to render a lighter, lower-emphasis reference line. Secondary lines have no caret caps and use a lighter stroke color, making them suitable for contextual reference values (baselines, prior-period comparisons) that should visually recede behind a primary target line.
+
+```jsx
+<Axis position="left" grid>
+  <ReferenceLine value={7500} label="Target" />
+  <ReferenceLine value={5000} label="Last year" secondary />
+</Axis>
+```
+
+Stroke weight is always 1px for secondary lines. Stroke and label color are size-dependent:
+
+| Size | Stroke / label color |
+|------|---------------------|
+| `'XS'` | `gray-600` |
+| `'S'` / `'M'` / `'L'` / auto | `gray-800` |
 
 ### Positioning on bar charts
 
@@ -540,6 +618,18 @@ On bar charts with categorical axes, the `position` prop controls whether the re
             <td>'before' | 'after' | 'center'</td>
             <td>'center'</td>
             <td>Controls where the line is drawn relative to the value. Only relevant for bar charts with categorical axes.</td>
+        </tr>
+        <tr>
+            <td>size</td>
+            <td>'XS' | 'S' | 'M' | 'L'</td>
+            <td>auto</td>
+            <td>Controls the stroke weight and caret triangle dimensions. When omitted, both react to the chart width automatically (S below 400px, M below 800px, L at 800px+). Use <code>'XS'</code> for sparkline contexts.</td>
+        </tr>
+        <tr>
+            <td>secondary</td>
+            <td>boolean</td>
+            <td>–</td>
+            <td>When true, renders a lighter secondary style: no caret caps, 1px stroke weight, full-width rule, and size-dependent color (<code>gray-600</code> at XS, <code>gray-800</code> for other sizes). Label color matches the stroke color. Use for contextual reference values (baselines, prior-period comparisons) that should recede behind a primary target line.</td>
         </tr>
     </tbody>
 </table>

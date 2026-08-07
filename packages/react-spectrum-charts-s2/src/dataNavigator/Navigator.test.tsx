@@ -23,7 +23,13 @@ const data: SimpleData[] = [
   { browser: 'Firefox', downloads: 8000 },
 ];
 
-const getView = () => ({ signal: jest.fn(), runAsync: jest.fn() }) as unknown as View;
+const getView = () =>
+  ({
+    signal: jest.fn(),
+    runAsync: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  }) as unknown as View;
 
 const Harness = ({ chartData }: { chartData: SimpleData[] }): ReactElement => {
   const ref = useRef<HTMLDivElement>(null);

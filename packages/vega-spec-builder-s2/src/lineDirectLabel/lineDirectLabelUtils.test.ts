@@ -18,11 +18,13 @@ import {
 	DEFAULT_COLOR_SCHEME,
 	DEFAULT_METRIC,
 	DEFAULT_TIME_DIMENSION,
+	FADE_FACTOR,
 	FILTERED_TABLE,
 	MARK_ID,
 	SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions } from '../types';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from './lineDirectLabelUtils';
 
@@ -56,6 +58,8 @@ const defaultLineOptions: LineSpecOptions = {
 	trendlines: [],
 	lineCap: 'round',
 	interpolate: undefined,
+	dimensionHover: false,
+	showHoverLabel: true,
 };
 
 const defaultLabelSpecOptions: LineDirectLabelSpecOptions = {
@@ -218,7 +222,7 @@ describe('getLineDirectLabelData', () => {
 		const transforms = getTransforms(data);
 		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === '_adjustedY');
 		expect(formula).toBeDefined();
-		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * 12');
+		expect((formula as { expr: string }).expr).toBe('datum._scaledY - datum._metricRank * rscChartSizeLabelGap');
 	});
 
 	test('includes _cumMaxAdjusted cumulative window transform', () => {
@@ -290,6 +294,19 @@ describe('getLineDirectLabelData', () => {
 		expect((formula as { expr: string }).expr).toContain('\\"');
 	});
 
+	test('escapes quotes and backslashes so the generated expression stays a single well-formed call', () => {
+		const maliciousFormat = '.1f\\"'; // ends with a literal backslash followed by a quote
+		const opts = { ...defaultLabelSpecOptions, format: maliciousFormat };
+		const data = getLineDirectLabelData('line0', opts, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const formula = transforms.find((t) => t.type === 'formula' && 'as' in t && t.as === 'directLabel_text');
+		const { expr } = formula as { expr: string };
+		const match = expr.match(/^format\(datum\["[^"]*"\], "(.*)"\)$/);
+		expect(match).not.toBeNull();
+		const [, escapedSpec] = match as RegExpMatchArray;
+		expect(JSON.parse(`"${escapedSpec}"`)).toEqual(maliciousFormat);
+	});
+
 	test('includes dimension filter expression', () => {
 		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
 		const transforms = getTransforms(data);
@@ -318,6 +335,26 @@ describe('getLineDirectLabelData', () => {
 			(t) => t.type === 'joinaggregate' && 'as' in t && asArray(t.as).includes('_extremeDim')
 		);
 		expect(joinagg).toHaveProperty('ops', ['max']);
+	});
+
+	test('adds primarySeries filter when lineOptions.primarySeries is set', () => {
+		const lineOptsWithPrimary: LineSpecOptions = { ...defaultLineOptions, primarySeries: ['series1', 'series2'] };
+		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, lineOptsWithPrimary);
+		const transforms = getTransforms(data);
+		const primaryFilter = transforms.find(
+			(t) => t.type === 'filter' && 'expr' in t && (t as { expr: string }).expr.startsWith('!(')
+		);
+		expect(primaryFilter).toBeDefined();
+		expect((primaryFilter as { expr: string }).expr).toContain('["series1","series2"]');
+	});
+
+	test('omits primarySeries filter when lineOptions.primarySeries is not set', () => {
+		const data = getLineDirectLabelData('line0', defaultLabelSpecOptions, defaultLineOptions);
+		const transforms = getTransforms(data);
+		const primaryFilter = transforms.find(
+			(t) => t.type === 'filter' && 'expr' in t && (t as { expr: string }).expr.startsWith('!(')
+		);
+		expect(primaryFilter).toBeUndefined();
 	});
 });
 
@@ -372,7 +409,8 @@ describe('getLineDirectLabelMarks', () => {
 		const evalOffsetSignal = (datum: Record<string, number>): number => {
 			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 			const signal = (marks[0].encode?.enter?.y as { offset: { signal: string } }).offset.signal;
-			return new Function('datum', `return ${signal}`)(datum);
+			// rscChartSizeLabelGap is a Vega signal; inject its M-tier value (12) for unit evaluation
+			return new Function('datum', 'rscChartSizeLabelGap', `return ${signal}`)(datum, 12);
 		};
 
 		test('rank 1 always places label 12px above the line terminus', () => {
@@ -429,6 +467,16 @@ describe('getLineDirectLabelMarks', () => {
 		expect(marks[1].encode?.update).toHaveProperty('opacity');
 	});
 
+	test('foreground mark uses the animated deemphasis-ramp signal when isAnimate is true, background stays opaque', () => {
+		const lineOpts = { ...defaultLineOptions, interactiveMarkName: 'line0', isAnimate: true };
+		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, lineOpts, 'gray-50', 'light');
+		const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
+		expect(marks[1].encode?.update).toHaveProperty('opacity', {
+			signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+		});
+		expect(marks[0].encode?.update).toHaveProperty('opacity', { value: 1 });
+	});
+
 	test('both marks have fixed fontWeight from DIRECT_LABEL_FONT_WEIGHT', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
 		expect(marks[0].encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
@@ -482,8 +530,15 @@ describe('getLineDirectLabelMarks', () => {
 		expect(bgStroke.value).toBeTruthy();
 	});
 
-	test('text expression has no prefix when prefix is empty', () => {
+	test('text expression has no prefix when prefix is empty string', () => {
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light');
+		const textSignal = (marks[0].encode?.enter?.text as { signal: string }).signal;
+		expect(textSignal).toBe('datum.directLabel_text');
+	});
+
+	test('text expression has no prefix when prefix is undefined (uses default)', () => {
+		const opts = { ...defaultLabelSpecOptions, prefix: undefined };
+		const marks = getLineDirectLabelMarks('line0', opts, defaultLineOptions, 'gray-50', 'light');
 		const textSignal = (marks[0].encode?.enter?.text as { signal: string }).signal;
 		expect(textSignal).toBe('datum.directLabel_text');
 	});
@@ -500,6 +555,30 @@ describe('getLineDirectLabelMarks', () => {
 		const marks = getLineDirectLabelMarks('line0', opts, defaultLineOptions, 'gray-50', 'light');
 		expect(marks[0].from).toEqual({ data: 'line0DirectLabel1_data' });
 		expect(marks[1].from).toEqual({ data: 'line0DirectLabel1_data' });
+	});
+
+	describe('with fgOpacityRules', () => {
+		const fgRules = [{ value: 1 as number }, { value: 0 as number }];
+
+		test('returns two marks with _fg suffix when fgOpacityRules is provided', () => {
+			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light', fgRules);
+			expect(marks).toHaveLength(2);
+			expect(marks[0].name).toBe('line0DirectLabel0_bg_fg');
+			expect(marks[1].name).toBe('line0DirectLabel0_fg');
+		});
+
+		test('fg marks use the provided fgOpacityRules for opacity', () => {
+			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light', fgRules);
+			const fgMark = marks[1] as { encode: { update: { opacity: unknown } } };
+			expect(fgMark.encode.update.opacity).toEqual(fgRules);
+		});
+
+		test('fg marks preserve other encoding from base marks', () => {
+			const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, defaultLineOptions, 'gray-50', 'light', fgRules);
+			expect(marks[0].type).toBe('text');
+			expect(marks[1].type).toBe('text');
+			expect(marks[0].interactive).toBe(false);
+		});
 	});
 
 	test('both marks have matching encoding for position=start', () => {

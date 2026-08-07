@@ -9,16 +9,31 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ArrayValueRef, LineMark, Mark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
+import {
+  ArrayValueRef,
+  ColorValueRef,
+  LineMark,
+  Mark,
+  NumericValueRef,
+  ProductionRule,
+  RuleMark,
+  TextMark,
+} from 'vega';
 
 import {
+  CHART_SIZE_FONT_SIZE,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_INTERACTION_MODE,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
@@ -26,8 +41,11 @@ import {
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
+import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
@@ -38,15 +56,14 @@ import {
   getXProductionRule,
   hasPopover,
 } from '../marks/markUtils';
-import { getStrokeDashFromLineType } from '../specUtils';
+import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { getStrokeDashFromLineType } from '../specUtils';
 import { ScaleType } from '../types';
-import {
-  getHighlightPoint,
-  getSecondaryHighlightPoint,
-  getSelectionPoint,
-} from './linePointUtils';
-import { isDualMetricAxis, LineMarkOptions } from './lineUtils';
+import { MIN_LABEL_GAP, getDirectLabelTextMarks } from './directLabelUtils';
+import { getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { getHighlightPoint, getSecondaryHighlightPoint, getSelectionPoint } from './linePointUtils';
+import { LineMarkOptions, isDualMetricAxis } from './lineUtils';
 
 /**
  * Gets the Y encoding for line marks with dual metric axis support
@@ -56,11 +73,11 @@ import { isDualMetricAxis, LineMarkOptions } from './lineUtils';
  */
 export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: string): ProductionRule<NumericValueRef> => {
   const { metricAxis } = lineMarkOptions;
-  
+
   if (isDualMetricAxis(lineMarkOptions)) {
     const baseScaleName = metricAxis || 'yLinear';
     const scaleNames = getDualAxisScaleNames(baseScaleName);
-    
+
     return [
       {
         test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
@@ -73,12 +90,34 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
       },
     ];
   }
-  
+
   return [{ scale: metricAxis || 'yLinear', field: metric }];
 };
 
 const GRADIENT_BASE_OPACITY = 0.2;
 const FORECAST_GRADIENT_RATIO = 0.4;
+
+/** Builds the `stroke` encoding for a line mark, inserting a gray color rule for non-primary series. */
+const getStrokeEncoding = (
+  primarySeries: number | string[] | undefined,
+  otherSeriesColor: string | undefined,
+  color: LineMarkOptions['color'],
+  colorScheme: LineMarkOptions['colorScheme']
+): ColorValueRef | ProductionRule<ColorValueRef> => {
+  const normalColor = getColorProductionRule(color, colorScheme);
+  if (!primarySeries) {
+    return normalColor;
+  }
+
+  const grayColor = getS2ColorValue(otherSeriesColor || 'gray-400', colorScheme);
+  return [
+    {
+      test: getPrimarySeriesOtherExpr(primarySeries, 'datum'),
+      value: grayColor,
+    },
+    normalColor,
+  ];
+};
 
 /**
  * Generates an area mark with a gradient fill beneath the line, fading from the line's color to transparent.
@@ -102,7 +141,10 @@ export const getLineGradientMark = (lineMarkOptions: LineMarkOptions, dataSource
       update: {
         x: getXProductionRule(scaleType, dimension),
         opacity: [
-          { test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`, value: 0 },
+          {
+            test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`,
+            value: 0,
+          },
           ...[getLineOpacity(lineMarkOptions)].flat(),
         ],
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
@@ -164,7 +206,7 @@ const getLineTypeDashSignal = (lineTypeFacet: LineMarkOptions['lineType']): stri
 export const getAlternateSegmentStrokeDash = (
   name: string,
   lineType: LineMarkOptions['lineType'],
-  alternateSegmentLineType: LineMarkOptions['alternateSegmentLineType'] 
+  alternateSegmentLineType: LineMarkOptions['alternateSegmentLineType']
 ): ArrayValueRef | undefined => {
   if (!alternateSegmentLineType) return;
   const altDash = JSON.stringify(getStrokeDashFromLineType(alternateSegmentLineType));
@@ -186,13 +228,15 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     color,
     colorScheme,
     dimension,
+    otherSeriesColor,
     lineCap = 'round',
     lineType,
     metric,
     name,
     opacity,
     scaleType,
-    interpolate
+    primarySeries,
+    interpolate,
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
   const popoverWithDimensionHighlightExists = popovers.some(
@@ -208,34 +252,67 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     encode: {
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getStrokeEncoding(primarySeries, otherSeriesColor, color, colorScheme),
         strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
           ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
           : getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
-        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
-        // this has to be in update because when you resize the window that doesn't rebuild the spec
-        // but it may change the x position if it causes the chart to resize
+        // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
         x: getXProductionRule(scaleType, dimension),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
+        strokeWidth: getLineStrokeWidth(lineMarkOptions),
       },
     },
   };
 };
 
-export const getLineOpacity = ({
-  displayOnHover,
+export const getLineDeemphasisOpacitySignal = (name: string): NumericValueRef => {
+  const ramp = getDeemphasisRamp(getHoverFractionSignal(name));
+  return {
+    signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+  };
+};
+
+export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule<NumericValueRef> => {
+  const { accessibleNavigation, color, displayOnHover, isAnimate, name } = lineMarkOptions;
+  // displayOnHover overlay marks manage their own visibility via getHighlightedSeriesOpacityRules
+  if (displayOnHover) return [DEFAULT_OPACITY_RULE];
+
+  if (isAnimate) {
+    // The hover-animation ramp only re-tweens off signals its `on` triggers watch for, so it never
+    // reacts to keyboard-driven focus changes. Give focus an immediate, unanimated value that wins
+    // while it's active; mouse-driven hover falls through to the existing animated ramp unaffected.
+    if (accessibleNavigation && typeof color === 'string') {
+      return [
+        {
+          test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+          signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? 1 : ${FADE_FACTOR}`,
+        },
+        getLineDeemphasisOpacitySignal(name),
+      ];
+    }
+    // Fade deemphasized series; neutral and emphasized both stay fully opaque
+    return getLineDeemphasisOpacitySignal(name);
+  }
+
+  // Return the original opacity rules ProductionRule if we aren't using hover animations
+  return getLineOpacityRules(lineMarkOptions);
+};
+
+export const getLineOpacityRules = ({
+  accessibleNavigation,
+  color,
   comboSiblingNames,
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
   highlightedItem,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
+  if (!interactiveMarkName && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
@@ -278,10 +355,88 @@ export const getLineOpacity = ({
     });
   }
 
-  // This allows us to only show the metric range when hovering over the parent line component.
+  // Falls after the hover rule (above) and before the default, so hovering another line still wins
+  // while it's active, and moving the mouse away reveals the focused line's full opacity again.
+  // Stays in effect whether the line itself or one of its points is focused.
+  if (accessibleNavigation && typeof color === 'string') {
+    strokeOpacityRules.push({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+
   strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 
   return strokeOpacityRules;
+};
+
+/**
+ * Gets the production rules for strokeWidth
+ */
+export const getLineStrokeWidth = ({
+  accessibleNavigation,
+  color,
+  displayOnHover,
+  comboSiblingNames,
+  interactiveMarkName,
+  popoverMarkName,
+  isHighlightedByGroup,
+  highlightedItem,
+}: LineMarkOptions): ProductionRule<NumericValueRef> => {
+  // No interactivity -> use default (no hover)
+  if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_STROKE_WIDTH_RULE];
+  const strokeWidthRules: ProductionRule<NumericValueRef> = [];
+
+  if (interactiveMarkName) {
+    if (isHighlightedByGroup) {
+      strokeWidthRules.push({
+        test: `length(data('${interactiveMarkName}_highlightedData'))`,
+        signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
+    } else {
+      strokeWidthRules.push({
+        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
+    }
+  }
+
+  strokeWidthRules.push(
+    {
+      test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+      signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    },
+    {
+      test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+      signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    }
+  );
+
+  if (popoverMarkName) {
+    strokeWidthRules.push({
+      test: `isValid(${SELECTED_SERIES})`,
+      signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    });
+  }
+
+  if (comboSiblingNames?.length) {
+    const test = comboSiblingNames.map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`).join(' || ');
+    strokeWidthRules.push({
+      test,
+      signal: CHART_SIZE_STROKE_WIDTH,
+    });
+  }
+
+  if (accessibleNavigation && typeof color === 'string') {
+    strokeWidthRules.push({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+    });
+  }
+
+  strokeWidthRules.push(DEFAULT_STROKE_WIDTH_RULE);
+
+  return strokeWidthRules;
 };
 
 /**
@@ -296,7 +451,7 @@ export const getLineHoverMarks = (
   dataSource: string,
   secondaryHighlightedMetric?: string
 ): Mark[] => {
-  const { dimension, name, scaleType } = lineOptions;
+  const { dimension, name, scaleType, showHoverLabel = true } = lineOptions;
   return [
     // vertical rule shown for the hovered or selected point
     getHoverRule(dimension, name, scaleType),
@@ -306,9 +461,52 @@ export const getLineHoverMarks = (
     getHighlightPoint(lineOptions),
     // additional point that gets highlighted like the trendline or raw line point
     ...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
+    // hover value label: background halo + foreground text — omitted when showHoverLabel is false
+    ...(showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
     // get interactive marks for the line
     ...getInteractiveMarks(dataSource, lineOptions),
   ];
+};
+
+/**
+ * Two text marks (background halo + foreground) showing the metric value adjacent to the hovered point.
+ * Reads from hoverLabelData which carries cascade transforms — when multiple series share the same
+ * hovered dimension (dimensionHover), labels are spread apart using the same cascading formula as
+ * direct labels rather than stacking on top of each other.
+ */
+const getHoverValueLabelMarks = (lineOptions: LineMarkOptions): TextMark[] => {
+  const { color, colorScheme, dimension, hoverLabelKey, metric, metricAxis, name, scaleType } = lineOptions;
+  const labelField = hoverLabelKey ?? metric;
+  const yScaleName = metricAxis || 'yLinear';
+
+  const scaleName = getScaleName('x', scaleType);
+  const xField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
+  // Offset between the hover point center and the label.
+  const LABEL_POINT_GAP = 9;
+  // Flip label to the left side when the label would overflow the right edge of the chart.
+  const nearRightEdge = `scale('${scaleName}', datum['${xField}']) + getLabelWidth(datum["${labelField}"], 'bold', ${CHART_SIZE_FONT_SIZE}) + ${LABEL_POINT_GAP} > width`;
+
+  // Cascade correction only — no fixed anchor offset. Labels default to the natural y of each
+  // hover point; the formula only pushes them apart when they would otherwise collide.
+  const cascadeOffset = `datum._hover_cumMaxAdjusted + datum._hover_metricRank * ${MIN_LABEL_GAP} - datum._hover_scaledY`;
+
+  return getDirectLabelTextMarks(
+    `${name}_hoverLabelBg`,
+    `${name}_hoverLabel`,
+    `${name}_hoverLabelData`,
+    `datum["${labelField}"]`,
+    {
+      x: getXProductionRule(scaleType, dimension),
+      y: [{ scale: yScaleName, field: metric, offset: { signal: cascadeOffset } }],
+      additional: {
+        dx: { signal: `${nearRightEdge} ? -${LABEL_POINT_GAP} : ${LABEL_POINT_GAP}` },
+        align: { signal: `${nearRightEdge} ? 'right' : 'left'` },
+        baseline: { value: 'middle' },
+      },
+    },
+    colorScheme,
+    { signal: getColorProductionRuleSignalString(color, colorScheme) }
+  );
 };
 
 const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): RuleMark => {
@@ -362,7 +560,7 @@ const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark
  */
 const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: string): Mark => {
   const { dimension, metric, name, scaleType } = lineOptions;
-  
+
   return {
     name: `${name}_pointsForVoronoi`,
     description: `${name}_pointsForVoronoi`,
@@ -387,7 +585,15 @@ const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Ma
 
   return [
     // area around item that triggers hover
-    getItemHoverArea(chartInspects, dataSource, dimension, metric, name, scaleType, getLineYEncoding(lineOptions, metric)),
+    getItemHoverArea(
+      chartInspects,
+      dataSource,
+      dimension,
+      metric,
+      name,
+      scaleType,
+      getLineYEncoding(lineOptions, metric)
+    ),
   ];
 };
 
@@ -397,9 +603,11 @@ const getItemHoverMarks = (lineOptions: LineMarkOptions, dataSource: string): Ma
  * array pattern as `getLineOpacity`, but uses `value: 1` (show) per matching condition and
  * `value: 0` (hide) as the fallback — in contrast to the fade pattern used for regular marks.
  */
-export const getHighlightedSeriesOpacityRules = (
-  markOptions: { interactiveMarkName?: string; isHighlightedByGroup?: boolean; legendHighlightSignals?: string[] }
-): ProductionRule<NumericValueRef> => {
+export const getHighlightedSeriesOpacityRules = (markOptions: {
+  interactiveMarkName?: string;
+  isHighlightedByGroup?: boolean;
+  legendHighlightSignals?: string[];
+}): ProductionRule<NumericValueRef> => {
   const { interactiveMarkName, isHighlightedByGroup, legendHighlightSignals } = markOptions;
   return [
     ...(interactiveMarkName
@@ -444,7 +652,7 @@ export const getLineHighlightOverlayGroup = (
   const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
 
   const baseLineMark = getLineMark(
-    { ...markOptions, name: `${name}_highlightOverlayLine` },
+    { ...markOptions, name: `${name}_highlightOverlayLine`, isAnimate: false },
     `${name}_highlightOverlay_facet`
   );
 
