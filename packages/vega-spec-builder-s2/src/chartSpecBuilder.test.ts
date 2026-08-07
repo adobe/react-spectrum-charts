@@ -750,5 +750,35 @@ describe('Chart spec builder', () => {
       expect(axes[0]).not.toHaveProperty('offset'); // grid axis painted first (behind)
       expect(axes[0].grid).toBe(true);
     });
+
+    test('pins autosize off only when a diverging axis also has thumbnails', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'vertical', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        axes: [{ position: 'bottom', baseline: true, axisThumbnails: [{ urlKey: 'thumbnail' }] }],
+      });
+      expect(spec.autosize).toEqual({ type: 'none' });
+    });
+
+    test('leaves autosize unset for a diverging axis without thumbnails', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'vertical', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        axes: [{ position: 'bottom', baseline: true }],
+      });
+      expect(spec.autosize).toBeUndefined();
+    });
+
+    test('leaves autosize unset for a thumbnail axis when the bar is not diverging', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        data: divergingData,
+        marks: [{ markType: 'bar', orientation: 'vertical', dimension: 'channel', metric: 'changeRate' }],
+        axes: [{ position: 'bottom', baseline: true, axisThumbnails: [{ urlKey: 'thumbnail' }] }],
+      });
+      expect(spec.autosize).toBeUndefined();
+    });
   });
 });
