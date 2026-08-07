@@ -18,11 +18,14 @@ const { name, version } = require('./package.json');
 const banner = `${name}@v${version}`;
 
 module.exports = {
-  entry: './index.ts',
+  entry: {
+    index: './index.ts',
+    'pre-alpha': './pre-alpha/index.ts',
+  },
   mode: 'production',
 
   output: {
-    filename: 'index.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
     library: 'spectrumChartsReactSpectrumChartsS2',
     libraryTarget: 'umd',

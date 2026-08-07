@@ -15,39 +15,45 @@ import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';
-import { DonutSummary, SegmentLabel } from '../pre-alpha';
-import { getDonutOptions } from './donutAdapter';
+import { ScatterAnnotation, ScatterPath, Trendline } from '../pre-alpha';
+import { getScatterOptions } from './scatterAdapter';
 
-describe('getDonutOptions()', () => {
+describe('getScatterOptions()', () => {
   it('should return all basic options', () => {
-    const options = getDonutOptions({});
-    expect(options.markType).toBe('donut');
+    const options = getScatterOptions({});
+    expect(options.markType).toBe('scatter');
     expect(options.chartPopovers).toHaveLength(0);
     expect(options.chartInspects).toHaveLength(0);
-    expect(options.donutSummaries).toHaveLength(0);
+    expect(options.scatterAnnotations).toHaveLength(0);
+    expect(options.scatterPaths).toHaveLength(0);
+    expect(options.trendlines).toHaveLength(0);
   });
   it('should convert popover children to chartPopovers array', () => {
-    const options = getDonutOptions({ children: [createElement(ChartPopover)] });
+    const options = getScatterOptions({ children: [createElement(ChartPopover)] });
     expect(options.chartPopovers).toHaveLength(1);
   });
   it('should convert ChartInspect children to chartInspects array', () => {
-    const options = getDonutOptions({ children: [createElement(ChartInspect)] });
+    const options = getScatterOptions({ children: [createElement(ChartInspect)] });
     expect(options.chartInspects).toHaveLength(1);
   });
-  it('should convert donnut summary children to donutSummaries array', () => {
-    const options = getDonutOptions({ children: [createElement(DonutSummary)] });
-    expect(options.donutSummaries).toHaveLength(1);
+  it('should convert scatter path children to scatterPaths array', () => {
+    const options = getScatterOptions({ children: [createElement(ScatterPath)] });
+    expect(options.scatterPaths).toHaveLength(1);
   });
-  it('should convert segment label children to segmentLabels array', () => {
-    const options = getDonutOptions({ children: [createElement(SegmentLabel)] });
-    expect(options.segmentLabels).toHaveLength(1);
+  it('should convert scatter annotation children to scatterAnnotations array', () => {
+    const options = getScatterOptions({ children: [createElement(ScatterAnnotation)] });
+    expect(options.scatterAnnotations).toHaveLength(1);
+  });
+  it('should convert trendline children to trendlines array', () => {
+    const options = getScatterOptions({ children: [createElement(Trendline)] });
+    expect(options.trendlines).toHaveLength(1);
   });
   it('should pass through included props', () => {
-    const options = getDonutOptions({ color: DEFAULT_COLOR });
+    const options = getScatterOptions({ color: DEFAULT_COLOR });
     expect(options).toHaveProperty('color', DEFAULT_COLOR);
   });
   it('should not add props that are not provided', () => {
-    const options = getDonutOptions({});
+    const options = getScatterOptions({});
     expect(options).not.toHaveProperty('color');
   });
 });

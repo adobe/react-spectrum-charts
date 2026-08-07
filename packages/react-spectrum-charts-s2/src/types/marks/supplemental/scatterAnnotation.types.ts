@@ -9,10 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+import { ScatterAnnotationOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export * from './supplemental';
+export interface ScatterAnnotationProps extends ScatterAnnotationOptions {}
+
+export type ScatterAnnotationElement = ReactElement<
+  ScatterAnnotationProps,
+  JSXElementConstructor<ScatterAnnotationProps>
+>;

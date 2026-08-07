@@ -16,4 +16,8 @@ export * from './dountSummary.types';
 export * from './lineForecast.types';
 export * from './lineDirectLabel.types';
 export * from './linePointAnnotation.types';
+export * from './scatterAnnotation.types';
+export * from './scatterPath.types';
 export * from './segmentLabel.types';
+export * from './trendline.types';
+export * from './trendlineAnnotation.types';

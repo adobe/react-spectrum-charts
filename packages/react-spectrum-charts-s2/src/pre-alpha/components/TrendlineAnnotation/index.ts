@@ -10,9 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
-
-export * from './supplemental';
+export * from './TrendlineAnnotation';

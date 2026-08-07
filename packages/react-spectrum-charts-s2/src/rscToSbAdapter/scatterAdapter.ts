@@ -9,10 +9,20 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ScatterOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+import { ScatterProps } from '../types';
+import { childrenToOptions } from './childrenAdapter';
 
-export * from './supplemental';
+export const getScatterOptions = ({ children, ...scatterProps }: ScatterProps): ScatterOptions => {
+  const { chartInspects, chartPopovers, scatterAnnotations, scatterPaths, trendlines } = childrenToOptions(children);
+  return {
+    ...scatterProps,
+    chartInspects,
+    chartPopovers,
+    markType: 'scatter',
+    scatterAnnotations,
+    scatterPaths,
+    trendlines,
+  };
+};

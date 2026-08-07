@@ -15,7 +15,7 @@ import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, SegmentLabel } from '../../../rc';
+import { Donut, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { basicDonutData, sliveredDonutData } from '../Donut/data';

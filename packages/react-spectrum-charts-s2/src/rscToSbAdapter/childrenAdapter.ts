@@ -24,8 +24,12 @@ import {
   LinePointAnnotationOptions,
   MarkOptions,
   ReferenceLineOptions,
+  ScatterAnnotationOptions,
+  ScatterPathOptions,
   SegmentLabelOptions,
   TitleOptions,
+  TrendlineAnnotationOptions,
+  TrendlineOptions,
 } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Axis } from '../components/Axis';
@@ -41,7 +45,16 @@ import { LineForecast } from '../components/LineForecast';
 import { LinePointAnnotation } from '../components/LinePointAnnotation';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
-import { Donut, DonutSummary, SegmentLabel } from '../rc';
+import {
+  Donut,
+  DonutSummary,
+  Scatter,
+  ScatterAnnotation,
+  ScatterPath,
+  SegmentLabel,
+  Trendline,
+  TrendlineAnnotation,
+} from '../pre-alpha';
 import {
   AxisProps,
   AxisThumbnailProps,
@@ -57,8 +70,13 @@ import {
   LinePointAnnotationProps,
   LineProps,
   ReferenceLineProps,
+  ScatterAnnotationProps,
+  ScatterPathProps,
+  ScatterProps,
   SegmentLabelProps,
   TitleProps,
+  TrendlineAnnotationProps,
+  TrendlineProps,
 } from '../types';
 import { sanitizeChildren } from '../utils';
 import { getAxisOptions } from './axisAdapter';
@@ -68,6 +86,8 @@ import { getChartInspectOptions } from './chartInspectAdapter';
 import { getDonutOptions } from './donutAdapter';
 import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
+import { getScatterOptions } from './scatterAdapter';
+import { getTrendlineOptions } from './trendlineAdapter';
 
 export const childrenToOptions = (
   children: React.ReactNode
@@ -86,8 +106,12 @@ export const childrenToOptions = (
   lines: LineOptions[];
   marks: MarkOptions[];
   referenceLines: ReferenceLineOptions[];
+  scatterAnnotations: ScatterAnnotationOptions[];
+  scatterPaths: ScatterPathOptions[];
   segmentLabels: SegmentLabelOptions[];
   titles: TitleOptions[];
+  trendlineAnnotations: TrendlineAnnotationOptions[];
+  trendlines: TrendlineOptions[];
 } => {
   const axes: AxisOptions[] = [];
   const axisThumbnails: AxisThumbnailOptions[] = [];
@@ -103,8 +127,12 @@ export const childrenToOptions = (
   const lines: LineOptions[] = [];
   const marks: MarkOptions[] = [];
   const referenceLines: ReferenceLineOptions[] = [];
+  const scatterAnnotations: ScatterAnnotationOptions[] = [];
+  const scatterPaths: ScatterPathOptions[] = [];
   const segmentLabels: SegmentLabelOptions[] = [];
   const titles: TitleOptions[] = [];
+  const trendlineAnnotations: TrendlineAnnotationOptions[] = [];
+  const trendlines: TrendlineOptions[] = [];
 
   for (const child of sanitizeChildren(children)) {
     if (!('displayName' in child.type)) {
@@ -169,12 +197,32 @@ export const childrenToOptions = (
         referenceLines.push(child.props as ReferenceLineProps);
         break;
 
+      case Scatter.displayName:
+        marks.push(getScatterOptions(child.props as ScatterProps));
+        break;
+
+      case ScatterAnnotation.displayName:
+        scatterAnnotations.push(child.props as ScatterAnnotationProps);
+        break;
+
+      case ScatterPath.displayName:
+        scatterPaths.push(child.props as ScatterPathProps);
+        break;
+
       case SegmentLabel.displayName:
         segmentLabels.push(child.props as SegmentLabelProps);
         break;
 
       case Title.displayName:
         titles.push(child.props as TitleProps);
+        break;
+
+      case Trendline.displayName:
+        trendlines.push(getTrendlineOptions(child.props as TrendlineProps));
+        break;
+
+      case TrendlineAnnotation.displayName:
+        trendlineAnnotations.push(child.props as TrendlineAnnotationProps);
         break;
 
       default:
@@ -197,7 +245,11 @@ export const childrenToOptions = (
     lines,
     marks,
     referenceLines,
+    scatterAnnotations,
+    scatterPaths,
     segmentLabels,
     titles,
+    trendlineAnnotations,
+    trendlines,
   };
 };

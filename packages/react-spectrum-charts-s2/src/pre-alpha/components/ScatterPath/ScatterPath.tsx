@@ -10,9 +10,17 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
 
-export * from './supplemental';
+import { ScatterPathProps } from '../../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const ScatterPath: FC<ScatterPathProps> = ({ color = 'gray-500', groupBy, pathWidth = { value: 'M' }, opacity = 0.5 }) => {
+  return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+ScatterPath.displayName = 'ScatterPath';
+
+export { ScatterPath };

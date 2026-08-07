@@ -11,7 +11,7 @@
  */
 import { DONUT_SUMMARY_MIN_RADIUS } from '@spectrum-charts/constants';
 
-import { DonutSummary } from '../../../rc';
+import { DonutSummary } from '../../../pre-alpha';
 import { render, screen } from '../../../test-utils';
 import { Basic, NoLabel, NumberFormat } from './DonutSummary.story';
 
