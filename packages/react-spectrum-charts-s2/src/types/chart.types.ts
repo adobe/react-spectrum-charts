@@ -28,10 +28,18 @@ import { AxisElement } from './axis';
 import { ChartInspectElement, ChartPopoverElement } from './dialogs';
 import { LegendElement } from './legend.types';
 import { BarAnnotationElement, BarElement, DonutElement, DonutSummaryElement, LineElement } from './marks';
+import { ScatterElement } from './marks/scatter.types';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
 
-export type ChartChildElement = AxisElement | BarElement | DonutElement | LegendElement | LineElement | TitleElement;
+export type ChartChildElement =
+  | AxisElement
+  | BarElement
+  | DonutElement
+  | LegendElement
+  | LineElement
+  | ScatterElement
+  | TitleElement;
 export type MarkChildElement = BarAnnotationElement | ChartInspectElement | ChartPopoverElement | DonutSummaryElement;
 
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {

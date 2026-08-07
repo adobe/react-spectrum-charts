@@ -9,10 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { TrendlineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+import { TrendlineProps } from '../types';
+import { childrenToOptions } from './childrenAdapter';
 
-export * from './supplemental';
+export const getTrendlineOptions = ({ children, ...trendlineProps }: TrendlineProps): TrendlineOptions => {
+  const { chartInspects, trendlineAnnotations } = childrenToOptions(children);
+
+  return {
+    ...trendlineProps,
+    chartInspects,
+    trendlineAnnotations,
+  };
+};

@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { SegmentLabel } from '../../../rc';
+import { SegmentLabel } from '../../../pre-alpha';
 import { findChart, render, screen } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, Percent, Value, ValueFormat } from './SegmentLabel.story';

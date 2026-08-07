@@ -10,6 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Donut';
-export * from './DonutSummary';
-export * from './SegmentLabel';
+export * from './ScatterPath';

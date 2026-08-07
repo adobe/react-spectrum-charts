@@ -10,9 +10,20 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
 
-export * from './supplemental';
+import { ScatterAnnotationProps } from '../../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const ScatterAnnotation: FC<ScatterAnnotationProps> = ({
+  anchor = ['right', 'top', 'bottom', 'left'],
+  textKey = 'annotation',
+}) => {
+  return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+ScatterAnnotation.displayName = 'ScatterAnnotation';
+
+export { ScatterAnnotation };

@@ -15,7 +15,7 @@ import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary } from '../../../rc';
+import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutSummaryProps } from '../../../types';
 import { basicDonutData } from '../Donut/data';
