@@ -32,6 +32,8 @@ import {
   DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
@@ -42,6 +44,7 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import {
   getColorProductionRule,
@@ -267,7 +270,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
   };
 };
 
-export const getLineDeemphasisOpacitySignal = (name: string): ProductionRule<NumericValueRef> => {
+export const getLineDeemphasisOpacitySignal = (name: string): NumericValueRef => {
   const ramp = getDeemphasisRamp(getHoverFractionSignal(name));
   return {
     signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
@@ -275,11 +278,23 @@ export const getLineDeemphasisOpacitySignal = (name: string): ProductionRule<Num
 };
 
 export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  const { displayOnHover, isAnimate, name } = lineMarkOptions;
+  const { accessibleNavigation, color, displayOnHover, isAnimate, name } = lineMarkOptions;
   // displayOnHover overlay marks manage their own visibility via getHighlightedSeriesOpacityRules
   if (displayOnHover) return [DEFAULT_OPACITY_RULE];
 
   if (isAnimate) {
+    // The hover-animation ramp only re-tweens off signals its `on` triggers watch for, so it never
+    // reacts to keyboard-driven focus changes. Give focus an immediate, unanimated value that wins
+    // while it's active; mouse-driven hover falls through to the existing animated ramp unaffected.
+    if (accessibleNavigation && typeof color === 'string') {
+      return [
+        {
+          test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+          signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? 1 : ${FADE_FACTOR}`,
+        },
+        getLineDeemphasisOpacitySignal(name),
+      ];
+    }
     // Fade deemphasized series; neutral and emphasized both stay fully opaque
     return getLineDeemphasisOpacitySignal(name);
   }
@@ -289,6 +304,8 @@ export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule
 };
 
 export const getLineOpacityRules = ({
+  accessibleNavigation,
+  color,
   comboSiblingNames,
   interactiveMarkName,
   popoverMarkName,
@@ -338,6 +355,16 @@ export const getLineOpacityRules = ({
     });
   }
 
+  // Falls after the hover rule (above) and before the default, so hovering another line still wins
+  // while it's active, and moving the mouse away reveals the focused line's full opacity again.
+  // Stays in effect whether the line itself or one of its points is focused.
+  if (accessibleNavigation && typeof color === 'string') {
+    strokeOpacityRules.push({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+
   strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 
   return strokeOpacityRules;
@@ -347,6 +374,8 @@ export const getLineOpacityRules = ({
  * Gets the production rules for strokeWidth
  */
 export const getLineStrokeWidth = ({
+  accessibleNavigation,
+  color,
   displayOnHover,
   comboSiblingNames,
   interactiveMarkName,
@@ -395,6 +424,13 @@ export const getLineStrokeWidth = ({
     strokeWidthRules.push({
       test,
       signal: CHART_SIZE_STROKE_WIDTH,
+    });
+  }
+
+  if (accessibleNavigation && typeof color === 'string') {
+    strokeWidthRules.push({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
     });
   }
 

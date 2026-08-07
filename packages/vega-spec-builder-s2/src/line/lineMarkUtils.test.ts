@@ -19,6 +19,8 @@ import {
   DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   HOVERED_ITEM,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -26,6 +28,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import {
   getAlternateSegmentStrokeDash,
@@ -35,7 +38,9 @@ import {
   getLineHighlightOverlayGroup,
   getLineHoverMarks,
   getLineMark,
-  getLineOpacity, getLineStrokeWidth,
+  getLineOpacity,
+  getLineOpacityRules,
+  getLineStrokeWidth,
 } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
@@ -276,6 +281,34 @@ describe('getLineOpacity()', () => {
       });
       expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
     });
+
+    test('adds an instant focus rule ahead of the ramp when accessibleNavigation is enabled with a string color', () => {
+      const opacityRule = getLineOpacity({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        isAnimate: true,
+        accessibleNavigation: true,
+        color: 'series',
+      });
+      expect(opacityRule).toStrictEqual([
+        {
+          test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+          signal: `(${getFocusedGroupOrItemMatchExpr('datum.series')}) ? 1 : ${FADE_FACTOR}`,
+        },
+        getLineDeemphasisOpacitySignal('line0'),
+      ]);
+    });
+
+    test('falls back to the plain ramp when accessibleNavigation is enabled but color is not a string', () => {
+      const opacityRule = getLineOpacity({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        isAnimate: true,
+        accessibleNavigation: true,
+        color: { value: 'categorical-100' },
+      });
+      expect(opacityRule).toStrictEqual(getLineDeemphasisOpacitySignal('line0'));
+    });
   });
 });
 
@@ -292,6 +325,31 @@ describe('getLineDeemphasisOpacitySignal()', () => {
     expect(getLineDeemphasisOpacitySignal('bar0')).toStrictEqual({
       signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
     });
+  });
+});
+
+describe('getLineOpacityRules()', () => {
+  test('fades non-focused lines when accessibleNavigation is enabled with a string color', () => {
+    const result = getLineOpacityRules({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      accessibleNavigation: true,
+      color: 'series',
+    });
+    expect(result).toContainEqual({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.series')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  test('does not add a focus rule for a single-line (non-string color) chart', () => {
+    const result = getLineOpacityRules({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      accessibleNavigation: true,
+      color: { value: 'categorical-100' },
+    });
+    expect(JSON.stringify(result)).not.toContain(FOCUSED_DIMENSION);
   });
 });
 
@@ -376,6 +434,31 @@ describe('getLineStrokeWidth()', () => {
     expect(result).toContainEqual({
       test: `isValid(line1_${HOVERED_ITEM})`,
       signal: CHART_SIZE_STROKE_WIDTH,
+    });
+  });
+
+  describe('accessibleNavigation', () => {
+    test('thickens the focused line when enabled with a string color', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        accessibleNavigation: true,
+        color: 'series',
+      });
+      expect(result).toContainEqual({
+        test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+        signal: `(${getFocusedGroupOrItemMatchExpr('datum.series')}) ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
+    });
+
+    test('does not add a focus rule for a single-line (non-string color) chart', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        accessibleNavigation: true,
+        color: { value: 'categorical-100' },
+      });
+      expect(JSON.stringify(result)).not.toContain(FOCUSED_DIMENSION);
     });
   });
 });

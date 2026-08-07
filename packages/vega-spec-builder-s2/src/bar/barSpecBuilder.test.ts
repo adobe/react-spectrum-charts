@@ -914,6 +914,14 @@ describe('barSpecBuilder', () => {
         const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
         expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
       });
+      test('makes the bar mark itself interactive, so a click can move keyboard focus', () => {
+        const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true });
+        expect(marks.find((mark) => mark.name === 'bar0')).toHaveProperty('interactive', true);
+      });
+      test('leaves the bar mark non-interactive by default', () => {
+        const marks = addMarks([], defaultBarOptions);
+        expect(marks.find((mark) => mark.name === 'bar0')).toHaveProperty('interactive', false);
+      });
     });
 
     describe('with annotations', () => {

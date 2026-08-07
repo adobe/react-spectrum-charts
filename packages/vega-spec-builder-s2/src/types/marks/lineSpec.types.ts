@@ -157,6 +157,8 @@ type LineOptionsWithDefaults =
   | 'trendlines';
 
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
+  /** Experimental: keyboard navigation focus rings/signals are emitted when true. @see ChartOptions.accessibleNavigation */
+  accessibleNavigation?: boolean;
   data?: ChartData[];
   seriesIds?: string[];
   isAnimate?: boolean;

@@ -134,7 +134,8 @@ export const getStackedBar = (options: BarSpecOptions): RectMark => {
     description: name,
     type: 'rect',
     from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBaseDataSourceName(options) },
-    interactive: isInteractive(options),
+    // interactive when accessibleNavigation is on too, so a click can move keyboard focus to this bar
+    interactive: isInteractive(options) || Boolean(options.accessibleNavigation),
     encode: {
       enter: {
         ...getBaseBarEnterEncodings(options),

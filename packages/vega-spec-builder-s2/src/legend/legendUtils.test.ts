@@ -16,6 +16,8 @@ import {
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   GROUP_ID,
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
@@ -23,6 +25,7 @@ import {
 } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
 import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
 import { defaultLegendOptions } from './legendTestUtils';
 import {
@@ -249,6 +252,21 @@ describe('getColumns()', () => {
   });
 });
 
+describe('getOpacityEncoding()', () => {
+  test('fades non-focused entries when accessibleNavigation is enabled', () => {
+    const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, {});
+    expect(rules).toContainEqual({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  test('does not add a focus rule by default', () => {
+    const rules = getOpacityEncoding(defaultLegendOptions, {});
+    expect(rules).toBeUndefined();
+  });
+});
+
 describe('getLegendOpacity()', () => {
   test('falls back to getOpacityEncoding when userMeta has no animatedMarks', () => {
     const options = { ...defaultLegendOptions, highlight: true };
@@ -293,5 +311,19 @@ describe('getLegendOpacity()', () => {
     const result = getLegendOpacity(defaultLegendOptions, { animatedMarks: ['line0', 'line1'] });
     expect(Array.isArray(result) && result).toHaveLength(3);
     expect(Array.isArray(result) && result[2]).toEqual(DEFAULT_OPACITY_RULE);
+  });
+
+  test('adds an instant focus rule ahead of the animated ramp rules when accessibleNavigation is enabled', () => {
+    const options = { ...defaultLegendOptions, accessibleNavigation: true };
+    const result = getLegendOpacity(options, { animatedMarks: ['line0'] });
+    expect(Array.isArray(result) && result[0]).toStrictEqual({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  test('falls back to getOpacityEncoding (which has its own focus rule) when there are no animated marks', () => {
+    const options = { ...defaultLegendOptions, accessibleNavigation: true };
+    expect(getLegendOpacity(options, {})).toStrictEqual(getOpacityEncoding(options, {}));
   });
 });

@@ -169,6 +169,8 @@ export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keybo
 export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
 /** Separator joining fields into a unique data-navigator node id (e.g. stacked segment = dimension + series). */
 export const NAVIGATION_ID_SEPARATOR = '__rsc__';
+/** Data field carrying a point's 1-based position within its own line, used to key keyboard-navigation focus. */
+export const NAVIGATION_INDEX_FIELD = '_dnIndex';
 export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal

@@ -34,6 +34,8 @@ import {
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
@@ -61,6 +63,7 @@ import {
   SecondaryFacetType,
   UserMeta,
 } from '../types';
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
 import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
 
 export interface Facet {
@@ -182,6 +185,16 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
 export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> | undefined => {
   const rules: ProductionRule<NumericValueRef> = [];
 
+  // Checked first: the animated ramp rules below only re-tween off signals their `on` triggers
+  // watch for, so they never react to keyboard-driven focus changes. Give focus an instant,
+  // unanimated value that wins while it's active; mouse-driven hover falls through to the ramp.
+  if (options.accessibleNavigation && userMeta.animatedMarks?.length) {
+    rules.push({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+
   for (const markName of userMeta.animatedMarks || []) {
     const isGrouped = !!options.keys?.length;
     const fractionData = isGrouped ? `data('${markName}_hoverGroupFractionData')` : `data('${markName}_hoverFractionData')`;
@@ -218,7 +231,7 @@ const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefi
  * @returns opactiy encoding
  */
 export const getOpacityEncoding = (
-  { highlight, highlightedItem, highlightedSeries, keys, chartPopovers, name: legendName }: LegendSpecOptions,
+  { accessibleNavigation, highlight, highlightedItem, highlightedSeries, keys, chartPopovers, name: legendName }: LegendSpecOptions,
   userMeta: UserMeta
 ): ProductionRule<NumericValueRef> | undefined => {
   const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : CONTROLLED_HIGHLIGHTED_SERIES;
@@ -254,6 +267,15 @@ export const getOpacityEncoding = (
     rules.push({
       test: `isValid(${markName}_${HOVERED_ITEM})`,
       signal: `${markName}_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+
+  // Falls after mark hover rules (above), so hovering a line still wins over keyboard focus while
+  // active. Stays in effect whether the line itself or one of its points is focused.
+  if (accessibleNavigation) {
+    rules.push({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value')}) ? 1 : ${FADE_FACTOR}`,
     });
   }
 

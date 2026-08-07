@@ -11,7 +11,7 @@
  */
 import { NodeObject } from 'data-navigator';
 
-import { buildBarStructure, buildChartDescription, buildNodeLabel, segmentId } from './buildBarStructure';
+import { buildBarStructure, buildChartDescription, buildNodeLabel, getBarNodeId, segmentId } from './buildBarStructure';
 
 const data = [
   { browser: 'Chrome', downloads: 27000 },
@@ -114,5 +114,21 @@ describe('buildNodeLabel()', () => {
     expect(label).toContain('browser: Chrome');
     expect(label).toContain('downloads: 27000');
     expect(label).not.toContain('_dnId');
+  });
+});
+
+describe('getBarNodeId()', () => {
+  test('keys a basic bar datum by its dimension value', () => {
+    expect(getBarNodeId({ browser: 'Chrome', downloads: 27000 }, 'browser')).toBe('Chrome');
+  });
+
+  test('keys a stacked bar datum by the dimension + series composite', () => {
+    expect(getBarNodeId({ browser: 'Chrome', os: 'Windows', downloads: 18000 }, 'browser', 'os')).toBe(
+      segmentId('Chrome', 'Windows')
+    );
+  });
+
+  test('returns undefined when the dimension value is missing', () => {
+    expect(getBarNodeId({ downloads: 27000 }, 'browser')).toBeUndefined();
   });
 });

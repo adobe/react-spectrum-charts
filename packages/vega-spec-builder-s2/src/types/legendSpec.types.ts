@@ -86,6 +86,8 @@ type LegendOptionsWithDefaults =
   | 'name';
 
 export interface LegendSpecOptions extends PartiallyRequired<LegendOptions, LegendOptionsWithDefaults> {
+  /** Experimental: fades non-focused legend entries when a sibling mark's keyboard focus is on a line. */
+  accessibleNavigation?: boolean;
   color?: FacetRef<string>;
   colorScheme: ColorScheme;
   hiddenSeries: string[];

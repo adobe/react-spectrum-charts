@@ -9,13 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/constants';
 
-import { Bar } from '../components/Bar';
-import { Line } from '../components/Line';
-import { NavigableChartType } from './buildChartStructure';
-
-export const getNavigableChartType = (displayName: unknown): NavigableChartType | undefined => {
-  if (displayName === Bar.displayName) return 'bar';
-  if (displayName === Line.displayName) return 'line';
-  return undefined;
-};
+/** Joins two values into a composite data-navigator node id (e.g. a stacked bar segment or a line point). */
+export const segmentId = (a: unknown, b: unknown): string => `${a}${NAVIGATION_ID_SEPARATOR}${b}`;

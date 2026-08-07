@@ -11,14 +11,36 @@
  */
 import { SourceData } from 'vega';
 
-import { CONTROLLED_HIGHLIGHTED_ITEM, CONTROLLED_HIGHLIGHTED_SERIES, CONTROLLED_HIGHLIGHTED_TABLE, FILTERED_TABLE, GROUP_ID, HOVERED_ITEM, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/constants';
+import {
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
+  FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  GROUP_ID,
+  HOVERED_ITEM,
+  NAVIGATION_ID_SEPARATOR,
+  NAVIGATION_INDEX_FIELD,
+  SELECTED_ITEM,
+  SELECTED_SERIES,
+  SERIES_ID,
+} from '@spectrum-charts/constants';
 
 import { getEffectiveMetricField } from '../lineForecast';
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
 import { HoverMatchRule } from '../marks/hoverAnimationUtils';
 import { hasPopover, isInteractive } from '../marks/markUtils';
 import { LineSpecOptions } from '../types';
 import { getCascadeTransforms } from './directLabelUtils';
 
+/** A Vega expression matching the point currently focused via keyboard navigation. */
+const getFocusedItemMatchExpr = (color?: string): string => {
+  const focusedId = color
+    ? `datum.${color} + "${NAVIGATION_ID_SEPARATOR}" + datum.${NAVIGATION_INDEX_FIELD}`
+    : `'' + datum.${NAVIGATION_INDEX_FIELD}`;
+  return `${FOCUSED_ITEM} === ${focusedId}`;
+};
 
 /**
  * gets the data used for highlighting hovered data points
@@ -27,18 +49,26 @@ import { getCascadeTransforms } from './directLabelUtils';
  * @returns
  */
 export const getLineHighlightedData = (options: LineSpecOptions): SourceData => {
-  const { name: lineName, idKey } = options;
+  const { accessibleNavigation, color, name: lineName, idKey } = options;
 
   let expr = `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`;
 
-  if (isInteractive(options)) {
+  if (isInteractive(options) || accessibleNavigation) {
     const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;
     const groupKey = `${lineName}_${GROUP_ID}`;
-    if (options.isHighlightedByGroup) {
-      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`;
-    } else {
-      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
-    }
+    const hoverMatchExpr = options.isHighlightedByGroup
+      ? `${hoveredItemSignal}.${groupKey} === datum.${groupKey}`
+      : `${hoveredItemSignal}.${idKey} === datum.${idKey}`;
+
+    // Hovering always takes precedence over keyboard focus; moving the mouse away reveals the
+    // focused point again (rather than showing both simultaneously) since this whole clause is an
+    // `isValid(hoveredItemSignal) ? hover match : focus match` — never both.
+    expr += accessibleNavigation
+      ? ` || (isValid(${hoveredItemSignal}) ? (${hoverMatchExpr}) : (${getFocusedItemMatchExpr(
+          typeof color === 'string' ? color : undefined
+        )}))`
+      : ` || isValid(${hoveredItemSignal}) && (${hoverMatchExpr})`;
+
     if (hasPopover(options)) {
       expr = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${expr}`;
     }
@@ -136,7 +166,7 @@ export const getLineStaticPointData = (
  * @returns HoverMatchRule[] - the hover interaction rules
  */
 export const getLineHoverRules = (
-  { interactiveMarkName, popoverMarkName, comboSiblingNames, isHighlightedByGroup }: LineSpecOptions
+  { accessibleNavigation, color, interactiveMarkName, popoverMarkName, comboSiblingNames, isHighlightedByGroup }: LineSpecOptions
 ): HoverMatchRule[] => {
   const rules: HoverMatchRule[] = [];
 
@@ -160,6 +190,16 @@ export const getLineHoverRules = (
     const siblingTest = comboSiblingNames.map((s) => `isValid(${s}_${HOVERED_ITEM})`).join(' || ')
     const comboSiblingMatchExpr = `(${siblingTest}) ? 1 : 0`;
     rules.push({ as: 'comboSiblingMatch', expr: comboSiblingMatchExpr });
+  }
+  // Falls last (after hover/controlled/popover/combo), so those still win over keyboard focus when
+  // active. Needed because the hover-animation engine (used whenever this line is "animated" — e.g.
+  // has a popover, inspect, or click handler) computes its own opacity signal, bypassing
+  // getLineOpacityRules entirely — this keeps keyboard focus reflected either way.
+  if (accessibleNavigation && typeof color === 'string') {
+    const focusMatchExpr = `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}) ? (${getFocusedGroupOrItemMatchExpr(
+      `datum.${color}`
+    )} ? 1 : 0) : null`;
+    rules.push({ as: 'focusMatch', expr: focusMatchExpr });
   }
   return rules;
 };

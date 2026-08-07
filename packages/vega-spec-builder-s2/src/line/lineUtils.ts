@@ -48,6 +48,8 @@ export const isDualMetricAxis = (options: { dualMetricAxis?: boolean }): boolean
 };
 
 export interface LineMarkOptions {
+  /** Experimental: keyboard navigation focus signals drive hover-style highlight/fade when true. */
+  accessibleNavigation?: boolean;
   barAnnotations?: BarAnnotationOptions[];
   chartPopovers?: ChartPopoverOptions[];
   chartInspects?: ChartInspectOptions[];

@@ -18,9 +18,13 @@ import {
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
+  NAVIGATION_INDEX_FIELD,
   OPACITY_SCALE,
   SERIES_ID,
 } from '@spectrum-charts/constants';
@@ -54,7 +58,12 @@ import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../mar
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
-import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
+import {
+  addHoveredItemSignal,
+  getFirstRscSeriesIdSignal,
+  getGenericValueSignal,
+  getLastRscSeriesIdSignal,
+} from '../signal/signalSpecBuilder';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import { ChartData, ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
@@ -66,6 +75,13 @@ import {
   getPrimarySeriesFacetData,
   getPrimarySeriesOtherExpr,
 } from './lineDataUtils';
+import {
+  getChartFocusRing,
+  getLineFocusRingGap,
+  getLineFocusRingOuter,
+  getLineGroupZIndexEncoding,
+  getPointFocusRing,
+} from './lineFocusRingUtils';
 import {
   getHighlightedSeriesOpacityRules,
   getLineGradientMark,
@@ -81,6 +97,7 @@ export const addLine = produce<
   ScSpec,
   [
     LineOptions & {
+      accessibleNavigation?: boolean;
       animations?: boolean;
       colorScheme?: ColorScheme;
       highlightedItem?: HighlightedItem;
@@ -152,18 +169,19 @@ export const addLine = produce<
       lineCap,
       lineDirectLabels,
       linePointAnnotations,
-      interactiveMarkName: getInteractiveMarkName(
-        {
-          chartPopovers,
-          chartInspects,
-          hasOnClick,
-          hasOnContextMenu,
-          highlightedItem: options.highlightedItem,
-          metricRanges,
-          trendlines,
-        },
-        lineName
-      ),
+      interactiveMarkName:
+        getInteractiveMarkName(
+          {
+            chartPopovers,
+            chartInspects,
+            hasOnClick,
+            hasOnContextMenu,
+            highlightedItem: options.highlightedItem,
+            metricRanges,
+            trendlines,
+          },
+          lineName
+        ) ?? (options.accessibleNavigation ? lineName : undefined),
       lineType,
       metric,
       metricAxis,
@@ -225,10 +243,30 @@ const getUniqueSeriesIds = (data: ChartData[] | undefined, facets: string[]): st
 };
 
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { chartInspects, dimension, dimensionHover, isSparkline, isMethodLast, name, scaleType, staticPoint } = options;
+  const {
+    accessibleNavigation,
+    chartInspects,
+    color,
+    dimension,
+    dimensionHover,
+    isSparkline,
+    isMethodLast,
+    name,
+    scaleType,
+    staticPoint,
+  } = options;
   const tableData = getTableData(data);
   if (scaleType === 'time') {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+  }
+  if (accessibleNavigation) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push({
+      type: 'window',
+      groupby: typeof color === 'string' ? [color] : [],
+      ops: ['row_number'],
+      as: [NAVIGATION_INDEX_FIELD],
+    });
   }
   addDimensionHoverGroupTransform(tableData, chartInspects, dimensionHover, dimension, name);
   addSegmentData(data, tableData, options);
@@ -294,8 +332,8 @@ const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions)
  * hover-animation engine's data sources when the line is animated.
  */
 const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
-  const { chartInspects, highlightedItem, isAnimate, name, seriesIds, showHoverLabel } = options;
-  if (isInteractive(options) || highlightedItem !== undefined) {
+  const { accessibleNavigation, chartInspects, highlightedItem, isAnimate, name, seriesIds, showHoverLabel } = options;
+  if (isInteractive(options) || highlightedItem !== undefined || accessibleNavigation) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
     if (showHoverLabel) {
       data.push(getHoverLabelData(options));
@@ -350,7 +388,15 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     addHoverAnimationSignals(signals, name);
   }
 
-  if (!isInteractive(options)) return;
+  if (options.accessibleNavigation) {
+    signals.push(
+      getGenericValueSignal(FOCUSED_ITEM),
+      getGenericValueSignal(FOCUSED_REGION),
+      getGenericValueSignal(FOCUSED_DIMENSION)
+    );
+  }
+
+  if (!isInteractive(options) && !options.accessibleNavigation) return;
   const { primarySeries } = options;
   // datum.datum because the voronoi mark uses datumOrder=2
   addHoveredItemSignal(
@@ -396,6 +442,7 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
   const {
+    accessibleNavigation,
     alternateSegmentKey,
     color,
     gradient,
@@ -431,7 +478,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
       }
     : options;
 
-  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
+  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined || accessibleNavigation;
   const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
 
   // boundary rules are drawn behind everything
@@ -439,6 +486,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     marks.push(getLineForecastBoundaryMark(getLineForecastSpecOptions(forecast, i, options)));
   }
 
+  const hasLineFocusRing = accessibleNavigation && typeof color === 'string';
   marks.push({
     name: `${name}_group`,
     type: 'group',
@@ -449,11 +497,22 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
         groupby: facetGroupby,
       },
     },
+    // raises the focused line's whole group (halo + line) above every other line, regardless of draw order
+    ...(hasLineFocusRing ? { encode: { update: { zindex: getLineGroupZIndexEncoding(color) } } } : {}),
     marks: [
+      // two-layer focus halo for keyboard navigation, drawn behind the real line: an outer accent
+      // ring, then a background-colored gap on top of it so the accent doesn't bleed into the line
+      ...(hasLineFocusRing
+        ? [getLineFocusRingOuter(markOptions, `${name}_facet`), getLineFocusRingGap(markOptions, `${name}_facet`)]
+        : []),
       ...(gradient ? [getLineGradientMark(markOptions, `${name}_facet`)] : []),
       getLineMark(markOptions, `${name}_facet`),
     ],
   });
+
+  if (accessibleNavigation) {
+    marks.push(getPointFocusRing(options), getChartFocusRing(options));
+  }
 
   if (staticPoint || isSparkline) {
     marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));

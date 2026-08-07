@@ -14,13 +14,18 @@ import { FilterTransform, FormulaTransform } from 'vega';
 import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   GROUP_ID,
   HOVERED_ITEM,
+  NAVIGATION_ID_SEPARATOR,
+  NAVIGATION_INDEX_FIELD,
   SELECTED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
 import { getHoverLabelData, getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { defaultLineOptions } from './lineTestUtils';
 
@@ -45,6 +50,35 @@ describe('getLineHighlightedData()', () => {
       }).transform?.[0] as FilterTransform
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
+  });
+
+  describe('accessibleNavigation', () => {
+    test('hovering takes precedence over the focused point when both are present', () => {
+      const expr = (
+        getLineHighlightedData({ ...defaultLineOptions, accessibleNavigation: true, color: 'series' })
+          .transform?.[0] as FilterTransform
+      ).expr;
+      expect(expr).toContain(
+        `isValid(${defaultLineOptions.name}_${HOVERED_ITEM}) ? (${defaultLineOptions.name}_${HOVERED_ITEM}.${defaultLineOptions.idKey} === datum.${defaultLineOptions.idKey}) : (${FOCUSED_ITEM} === datum.series + "${NAVIGATION_ID_SEPARATOR}" + datum.${NAVIGATION_INDEX_FIELD})`
+      );
+    });
+
+    test('keys the focused point on the index alone for a single-line (non-string color) chart', () => {
+      const expr = (
+        getLineHighlightedData({
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          color: { value: 'categorical-100' },
+        }).transform?.[0] as FilterTransform
+      ).expr;
+      expect(expr).toContain(`${FOCUSED_ITEM} === '' + datum.${NAVIGATION_INDEX_FIELD}`);
+    });
+
+    test('does not add a focus clause when accessibleNavigation is disabled', () => {
+      const expr = (getLineHighlightedData({ ...defaultLineOptions, color: 'series' }).transform?.[0] as FilterTransform)
+        .expr;
+      expect(expr).not.toContain(FOCUSED_ITEM);
+    });
   });
 });
 
@@ -147,5 +181,31 @@ describe('getLineHoverRules()', () => {
       'popoverMatch',
       'comboSiblingMatch',
     ]);
+  });
+
+  describe('accessibleNavigation', () => {
+    test('adds a focusMatch rule last when enabled with a string color', () => {
+      const rules = getLineHoverRules({ ...defaultLineOptions, accessibleNavigation: true, color: 'series' });
+      expect(rules.at(-1)).toStrictEqual({
+        as: 'focusMatch',
+        expr: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}) ? (${getFocusedGroupOrItemMatchExpr(
+          'datum.series'
+        )} ? 1 : 0) : null`,
+      });
+    });
+
+    test('does not add a focusMatch rule for a single-line (non-string color) chart', () => {
+      const rules = getLineHoverRules({
+        ...defaultLineOptions,
+        accessibleNavigation: true,
+        color: { value: 'categorical-100' },
+      });
+      expect(rules.find((r) => r.as === 'focusMatch')).toBeUndefined();
+    });
+
+    test('does not add a focusMatch rule by default', () => {
+      const rules = getLineHoverRules(defaultLineOptions);
+      expect(rules.find((r) => r.as === 'focusMatch')).toBeUndefined();
+    });
   });
 });

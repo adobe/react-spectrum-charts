@@ -11,12 +11,12 @@
  */
 
 import dataNavigator, { NodeObject } from 'data-navigator';
-import { View } from 'vega';
+import { Item, View } from 'vega';
 
 import { FOCUSED_DIMENSION, FOCUSED_ITEM, FOCUSED_REGION } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { NavigableChartType, buildChartStructure } from './buildChartStructure';
+import { NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure';
 import './dataNavigator.css';
 
 /*
@@ -50,6 +50,8 @@ export interface AttachDataNavigatorOptions {
   color?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
+  /** Whether the dimension field is time-scaled (line charts only; formats dates in accessible labels). */
+  isTimeDimension?: boolean;
   /** Optional chart title for the accessible description. */
   title?: string;
   /** Stable id used to namespace the rendered nav elements. */
@@ -105,12 +107,14 @@ export const attachDataNavigator = ({
   dimension,
   color,
   metric,
+  isTimeDimension,
   title,
   chartId,
   getView,
-}: AttachDataNavigatorOptions): void => {
-  const built = buildChartStructure({ chartType, data, dimension, color, metric, title });
-  if (!built) return;
+}: AttachDataNavigatorOptions): (() => void) => {
+  const noop = () => undefined;
+  const built = buildChartStructure({ chartType, data, dimension, color, metric, isTimeDimension, title });
+  if (!built) return noop;
   const { structure, entryPoint } = built;
 
   if (!container.id) {
@@ -202,4 +206,23 @@ export const attachDataNavigator = ({
       applyFocusSignals(getView(), CLEARED_FOCUS);
     });
   }
+
+  // Clicking a rendered mark moves focus to match (hovering never does — see nodeFocusSignals/applyFocusSignals,
+  // which are keyboard/click-driven only). Falls back to one level of datum unwrapping for overlay marks
+  // (e.g. a voronoi cell) whose own datum wraps the underlying point at `datum.datum`.
+  const resolveNodeId = (datum: unknown): string | undefined =>
+    datum ? getNodeIdForDatum(chartType, datum as SimpleData, { dimension, color }) : undefined;
+
+  const handleClick = (_event: unknown, item?: Item | null) => {
+    if (!item?.datum) return;
+    const nodeId = resolveNodeId(item.datum) ?? resolveNodeId((item.datum as { datum?: unknown }).datum);
+    if (!nodeId || nodeId === current) return;
+    const node = structure.nodes[nodeId];
+    if (node) navigate(node);
+  };
+
+  const view = getView();
+  view?.addEventListener('click', handleClick);
+
+  return () => view?.removeEventListener('click', handleClick);
 };

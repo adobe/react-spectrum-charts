@@ -113,10 +113,15 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   useChartImperativeHandle(ref, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
 
+  // Bumped once the Vega view actually exists, so Navigator's effect (which needs a live view to
+  // attach its click listener) re-runs even though it may have first mounted before the async
+  // vega-embed() call resolved.
+  const [viewVersion, setViewVersion] = useState(0);
   const handleNewView = useCallback(
     (view: VegaView) => {
       onNewView(view);
       onVegaViewReady?.(view);
+      setViewVersion((v) => v + 1);
     },
     [onNewView, onVegaViewReady]
   );
@@ -127,8 +132,11 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   );
   const navChartType =
     navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
-  const navFields = navChild?.props as { dimension?: string; metric?: string; color?: unknown } | undefined;
+  const navFields = navChild?.props as
+    | { dimension?: string; metric?: string; color?: unknown; scaleType?: string }
+    | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
+  const navIsTimeDimension = (navFields?.scaleType ?? 'time') === 'time';
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
 
@@ -162,10 +170,12 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             dimension={navFields?.dimension}
             color={navColor}
             metric={navFields?.metric}
+            isTimeDimension={navIsTimeDimension}
             title={title}
             containerRef={navContainerRef}
             chartId={chartId}
             getView={getView}
+            viewVersion={viewVersion}
           />
         )}
       </div>

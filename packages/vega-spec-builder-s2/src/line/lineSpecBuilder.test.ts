@@ -22,6 +22,9 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
   GROUP_ID,
   HOVERED_ITEM,
   HOVER_ANIM_LAST_CHANGE_DATA,
@@ -29,6 +32,7 @@ import {
   HOVER_TIMER,
   LINEAR_PADDING,
   MARK_ID,
+  NAVIGATION_INDEX_FIELD,
   SERIES_ID,
   TABLE,
   TRENDLINE_VALUE,
@@ -38,6 +42,7 @@ import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { ScSpec } from '../types';
+import { getLineGroupZIndexEncoding } from './lineFocusRingUtils';
 import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder';
 import { defaultLineOptions } from './lineTestUtils';
 
@@ -437,6 +442,40 @@ describe('lineSpecBuilder', () => {
       expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual(baseData);
     });
 
+    describe('accessibleNavigation', () => {
+      test('adds a per-line row index transform to the table, grouped by color, when enabled', () => {
+        const resultData = addData(baseData, { ...defaultLineOptions, accessibleNavigation: true });
+        const tableData = resultData.find((d) => d.name === TABLE);
+        expect(tableData?.transform).toContainEqual({
+          type: 'window',
+          groupby: [DEFAULT_COLOR],
+          ops: ['row_number'],
+          as: [NAVIGATION_INDEX_FIELD],
+        });
+      });
+
+      test('groups by nothing for a single-line (non-string color) chart', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          color: { value: 'categorical-100' },
+          accessibleNavigation: true,
+        });
+        const tableData = resultData.find((d) => d.name === TABLE);
+        expect(tableData?.transform).toContainEqual({
+          type: 'window',
+          groupby: [],
+          ops: ['row_number'],
+          as: [NAVIGATION_INDEX_FIELD],
+        });
+      });
+
+      test('does not add the row index transform by default', () => {
+        const resultData = addData(baseData, defaultLineOptions);
+        const tableData = resultData.find((d) => d.name === TABLE);
+        expect(tableData?.transform?.some((t) => 'as' in t && t.as?.[0] === NAVIGATION_INDEX_FIELD)).toBe(false);
+      });
+    });
+
     test('with dimensionHover adds groupId formula transform to table', () => {
       const resultData = addData(baseData, { ...defaultLineOptions, dimensionHover: true });
       const tableData = resultData.find((d) => d.name === TABLE);
@@ -748,6 +787,58 @@ describe('lineSpecBuilder', () => {
 
     test('with displayPointMark', () => {
       expect(addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual(displayPointMarks);
+    });
+
+    describe('accessibleNavigation', () => {
+      test('should add the chart and point focus rings when enabled', () => {
+        const marks = addLineMarks([], { ...defaultLineOptions, accessibleNavigation: true });
+        expect(marks.find((mark) => mark.name === 'chartFocusRing')).toBeDefined();
+        expect(marks.find((mark) => mark.name === 'line0_pointFocusRing')).toBeDefined();
+      });
+
+      test('should add the two-layer per-line focus halo inside the group and raise its z-index when color is a string field', () => {
+        const marks = addLineMarks([], { ...defaultLineOptions, accessibleNavigation: true });
+        const group = marks.find((mark) => mark.name === 'line0_group') as {
+          marks?: { name?: string }[];
+          encode?: { update?: { zindex?: unknown } };
+        };
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingOuter')).toBeDefined();
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingGap')).toBeDefined();
+        expect(group?.encode?.update?.zindex).toEqual(getLineGroupZIndexEncoding('series'));
+      });
+
+      test('should not add the per-line focus halo or z-index encoding for a single-line (non-string color) chart', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          color: { value: 'categorical-100' },
+          accessibleNavigation: true,
+        });
+        const group = marks.find((mark) => mark.name === 'line0_group') as {
+          marks?: { name?: string }[];
+          encode?: unknown;
+        };
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingOuter')).toBeUndefined();
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingGap')).toBeUndefined();
+        expect(group?.encode).toBeUndefined();
+      });
+
+      test('should add the hover rule/point/label marks when enabled, even with no other interactive feature', () => {
+        const marks = addLineMarks([], { ...defaultLineOptions, accessibleNavigation: true });
+        expect(marks.find((mark) => mark.name === 'line0_hoverRule')).toBeDefined();
+        expect(marks.find((mark) => mark.name === 'line0_point_highlight')).toBeDefined();
+        expect(marks.find((mark) => mark.name === 'line0_hoverLabel')).toBeDefined();
+      });
+
+      test('should not add focus rings or hover marks by default', () => {
+        const marks = addLineMarks([], defaultLineOptions);
+        expect(marks.find((mark) => mark.name === 'chartFocusRing')).toBeUndefined();
+        expect(marks.find((mark) => mark.name === 'line0_pointFocusRing')).toBeUndefined();
+        expect(marks.find((mark) => mark.name === 'line0_hoverRule')).toBeUndefined();
+        expect(marks.find((mark) => mark.name === 'line0_point_highlight')).toBeUndefined();
+        const group = marks.find((mark) => mark.name === 'line0_group') as { marks?: { name?: string }[] };
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingOuter')).toBeUndefined();
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingGap')).toBeUndefined();
+      });
     });
 
     describe('with annotations', () => {
@@ -1141,6 +1232,27 @@ describe('lineSpecBuilder', () => {
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(8);
+    });
+
+    describe('accessibleNavigation', () => {
+      test('should add focus signals when accessibleNavigation is enabled', () => {
+        const signals = addSignals(defaultSignals, { ...defaultLineOptions, accessibleNavigation: true });
+        expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeDefined();
+        expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeDefined();
+        expect(signals.find((signal) => signal.name === FOCUSED_DIMENSION)).toBeDefined();
+      });
+
+      test('should not add focus signals by default', () => {
+        const signals = addSignals(defaultSignals, defaultLineOptions);
+        expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
+        expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
+        expect(signals.find((signal) => signal.name === FOCUSED_DIMENSION)).toBeUndefined();
+      });
+
+      test('adds the hoveredItem signal even with no other interactive feature enabled', () => {
+        const signals = addSignals(defaultSignals, { ...defaultLineOptions, accessibleNavigation: true });
+        expect(signals.find((signal) => signal.name === `${defaultLineOptions.name}_${HOVERED_ITEM}`)).toBeDefined();
+      });
     });
 
     describe('hover animation', () => {

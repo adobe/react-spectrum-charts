@@ -11,8 +11,10 @@
  */
 import dataNavigator, { NavigationRules, NodeObject, Structure, StructureOptions } from 'data-navigator';
 
-import { DEFAULT_CATEGORICAL_DIMENSION, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/constants';
+import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+
+import { segmentId } from './segmentId';
 
 export interface BuildBarStructureOptions {
   /** The chart data (plain objects). */
@@ -28,19 +30,25 @@ export interface BuildBarStructureOptions {
 /** Data field that carries the composite leaf id for multi-series (stacked/dodged) bars. */
 const SEGMENT_ID_KEY = '_dnId';
 
-export const segmentId = (dimensionValue: unknown, seriesValue: unknown): string =>
-  `${dimensionValue}${NAVIGATION_ID_SEPARATOR}${seriesValue}`;
+export { segmentId };
 
 export interface BarStructure {
   structure: Structure;
   entryPoint: string | undefined;
 }
 
+/** The data-navigator leaf id for a rendered bar/segment's datum — used to move focus on click. */
+export const getBarNodeId = (datum: SimpleData, dimension: string, color?: string): string | undefined => {
+  const dimensionValue = datum[dimension];
+  if (dimensionValue == null) return undefined;
+  return color ? segmentId(dimensionValue, datum[color]) : String(dimensionValue);
+};
+
 /**
- * The keyboard navigation rules for a basic bar chart: left/right between bars,
+ * The keyboard navigation rules for a basic bar/line chart: left/right between siblings,
  * Enter to drill in, Escape to drill out (and exit once past the chart root).
  */
-const baseNavigationRules: NavigationRules = {
+export const baseNavigationRules: NavigationRules = {
   left: { key: 'ArrowLeft', direction: 'source' },
   right: { key: 'ArrowRight', direction: 'target' },
   child: { key: 'Enter', direction: 'target' },
