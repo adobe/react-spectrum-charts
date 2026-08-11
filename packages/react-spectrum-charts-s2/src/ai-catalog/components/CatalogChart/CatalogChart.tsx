@@ -45,8 +45,8 @@ const CatalogChart: FC<CatalogChartProps> = ({ request }) => {
       {...(parsed.colorScheme !== undefined && { colorScheme: parsed.colorScheme })}
       {...(parsed.backgroundColor !== undefined && { backgroundColor: parsed.backgroundColor })}
     >
-      {parsed.axes?.map(renderAxis)}
-      {parsed.children.map(renderMark)}
+      {parsed.axes?.map((axis, key) => renderAxis(axis, key))}
+      {parsed.children.map((mark, key) => renderMark(mark, key))}
     </Chart>
   );
 };

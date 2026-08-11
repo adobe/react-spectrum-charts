@@ -15,13 +15,12 @@ import { LineDecorationInput, LineInput } from '@spectrum-charts/schemas';
 
 import { Line, LineDirectLabel } from '../../../../components';
 
-function renderLineDecoration(decoration: LineDecorationInput, key: number): ReactElement {
-  switch (decoration.component) {
-    case 'LineDirectLabel': {
-      const { component: _component, ...props } = decoration;
-      return <LineDirectLabel key={key} {...props} />;
-    }
+function renderLineDecoration(decoration: LineDecorationInput, key: number): ReactElement | null {
+  if (decoration.component === 'LineDirectLabel') {
+    const { component: _component, ...props } = decoration;
+    return <LineDirectLabel key={key} {...props} />;
   }
+  return null;
 }
 
 export function renderCatalogLine(mark: LineInput, key: number): ReactElement {
