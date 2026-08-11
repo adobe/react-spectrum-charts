@@ -13,10 +13,13 @@ import { produce } from 'immer';
 import { Data, Mark, Scale, Signal } from 'vega';
 
 import {
+  AnimationType,
   COLOR_SCALE,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
+  DRAW_IN_PREV_DATA,
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -33,7 +36,7 @@ import {
   isHighlightedByGroup,
 } from '../chartInspect/chartInspectUtils';
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
-import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
+import { addTimeTransform, getFilteredInspectData, getFilteredTableData, getTableData } from '../data/dataUtils';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
 import {
   getEffectiveMetricField,
@@ -57,7 +60,16 @@ import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
-import { ChartData, ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
+import {
+  ChartData,
+  ColorScheme,
+  HighlightedItem,
+  LineDirectLabelSpecOptions,
+  LineForecastOptions,
+  LineOptions,
+  LineSpecOptions,
+  ScSpec,
+} from '../types';
 import {
   getHoverLabelData,
   getLineHighlightedData,
@@ -76,12 +88,14 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
+import { addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData } from '../marks/drawInAnimationUtils';
 
 export const addLine = produce<
   ScSpec,
   [
     LineOptions & {
       animations?: boolean;
+      animationTypes?: AnimationType[];
       colorScheme?: ColorScheme;
       highlightedItem?: HighlightedItem;
       highlightedSeries?: string | number;
@@ -96,6 +110,7 @@ export const addLine = produce<
     spec,
     {
       animations,
+      animationTypes,
       chartPopovers = [],
       chartInspects = [],
       color = { value: 'categorical-100' },
@@ -185,9 +200,10 @@ export const addLine = produce<
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
-    lineOptions.isAnimate = usesHoverAnimation(animations, lineOptions);
+    lineOptions.isHoverAnimate = usesHoverAnimation(animations, animationTypes, lineOptions);
+    lineOptions.isDrawInAnimate = isLineDrawInSupported(animations, animationTypes, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
-    if (lineOptions.isAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
+    if (lineOptions.isHoverAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = setScales(spec.scales ?? [], lineOptions);
@@ -199,19 +215,39 @@ export const addLine = produce<
 
 /**
  * Whether the line participates in the hover-animation system.
- * Computed once in `addLine` and stored on `options.isAnimate`; every downstream gate reads that
+ * Computed once in `addLine` and stored on `options.isHoverAnimate`; every downstream gate reads that
  * resolved boolean. A highlight legend counts (via legendHighlightSignals) so both the legend and the line animate.
  * `highlightedItem`/`highlightedSeries` are the chart-level controlled-highlight props; either one alone
  * is enough to animate, since `getLineHoverRules` always wires both `controlledTableMatch` and
  * `controlledSeriesMatch` regardless of which is set.
- * `animations === false` opts out unconditionally, regardless of the other conditions.
+ * `animations === false` is the master kill switch and opts out unconditionally; otherwise hover is
+ * gated on `animationTypes` including `'hover'` (defaults to `DEFAULT_ANIMATION_TYPES`, which does).
  */
-const usesHoverAnimation = (animations: boolean | undefined, options: LineSpecOptions): boolean =>
+const usesHoverAnimation = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined,
+  options: LineSpecOptions
+): boolean =>
   animations !== false &&
+  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
   (isInteractive(options) ||
     options.highlightedItem !== undefined ||
     options.highlightedSeries !== undefined ||
     (options.legendHighlightSignals?.length ?? 0) > 0);
+
+/**
+ * Whether the line participates in the draw-in animation system.
+ * Unlike hover animation, this is opt-in — `animationTypes` must explicitly include `'drawIn'` — since
+ * draw-in is still gated to a subset of scale types. `animations === false` still overrides unconditionally.
+ */
+const isLineDrawInSupported = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined,
+  options: LineSpecOptions
+): boolean =>
+  animations !== false &&
+  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn') &&
+  (options.scaleType === 'time' || options.scaleType === 'linear' || options.scaleType === 'point');
 
 /**
  * Gets the unique series ids for the line
@@ -229,13 +265,31 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   const tableData = getTableData(data);
   if (scaleType === 'time') {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+    if (options.isDrawInAnimate) {
+      tableData.transform = addLineDrawInTimeMsTransform(tableData.transform ?? [], dimension);
+    }
   }
   addDimensionHoverGroupTransform(tableData, chartInspects, dimensionHover, dimension, name);
   addSegmentData(data, tableData, options);
   addLineHoverData(data, options);
 
+  if (options.isDrawInAnimate) {
+    if (scaleType === 'point') {
+      const pointIndexData = getLineDrawInPointIndexData(options);
+      addLineDrawInLeadTransform(pointIndexData, options);
+      data.push(pointIndexData, ...getLineDrawInData(options));
+    } else {
+      addLineDrawInLeadTransform(getFilteredTableData(data), options);
+      data.push(...getLineDrawInData(options));
+    }
+  }
+
   if (staticPoint || isSparkline) {
-    data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    if (options.isDrawInAnimate){
+      data.push(getLineStaticPointData(name, staticPoint, `${name}_${DRAW_IN_PREV_DATA}`, isSparkline, isMethodLast));
+    } else {
+      data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    }
   }
 
   addDualMetricAxisData(data, options);
@@ -294,14 +348,14 @@ const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions)
  * hover-animation engine's data sources when the line is animated.
  */
 const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
-  const { chartInspects, highlightedItem, isAnimate, name, seriesIds, showHoverLabel } = options;
+  const { chartInspects, highlightedItem, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
     if (showHoverLabel) {
       data.push(getHoverLabelData(options));
     }
   }
-  if (isAnimate) {
+  if (isHoverAnimate) {
     data.push(
       getHoverTargetData({ name, groupby: [SERIES_ID], rules: getLineHoverRules(options) }),
       getHoverAnimStateData({ name, keys: seriesIds ?? [] }),
@@ -346,8 +400,12 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
   }
 
-  if (options.isAnimate) {
+  if (options.isHoverAnimate) {
     addHoverAnimationSignals(signals, name);
+  }
+
+  if (options.isDrawInAnimate) {
+    addLineDrawInAnimationSignals(signals, options);
   }
 
   if (!isInteractive(options)) return;
@@ -395,20 +453,41 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const {
-    alternateSegmentKey,
-    color,
-    gradient,
-    highlightedItem,
-    isSparkline,
-    legendHighlightSignals,
-    linePointAnnotations,
-    lineType,
-    name,
-    opacity,
-    primarySeries,
-    staticPoint,
-  } = options;
+  const { highlightedItem, legendHighlightSignals, name } = options;
+  const forecasts = options.forecasts ?? [];
+  const { facetData, facetGroupby, markOptions } = getLineFacetContext(options);
+
+  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
+  const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
+
+  // boundary rules are drawn behind everything
+  addLineForecastBoundaryMarks(marks, forecasts, options);
+  addLineGroupMark(marks, name, markOptions, facetData, facetGroupby);
+  addLineStaticPointMarks(marks, options);
+  marks.push(...getMetricRangeGroupMarks(options), ...getTrendlineMarks(options));
+
+  const labelSpecOpts = getLineDirectLabelSpecOptionsList(options);
+  addLineDirectLabelMarks(marks, options, labelSpecOpts);
+  if (hasHighlightState) {
+    addLineHighlightOverlayMarks(marks, options, markOptions, facetData, facetGroupby, labelSpecOpts);
+  }
+  // hover marks are last so hollow points and interaction marks always render above everything
+  if (hasInteractiveHighlight) {
+    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
+  }
+  // forecast labels are drawn last so they appear on top of other marks
+  addLineForecastLabelMarks(marks, forecasts, options);
+});
+
+/**
+ * Computes the facet source/groupby that the line's main group mark and highlight overlay both
+ * facet from, plus the mark options those marks render with (metric/alternateSegmentKey are
+ * overridden when a forecast is present, to trigger getAlternateSegmentStrokeDash in getLineMark).
+ */
+const getLineFacetContext = (
+  options: LineSpecOptions
+): { facetData: string; facetGroupby: string[]; markOptions: LineSpecOptions } => {
+  const { alternateSegmentKey, color, lineType, name, opacity, primarySeries } = options;
   const forecasts = options.forecasts ?? [];
   const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
@@ -418,11 +497,12 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
   // when primarySeries is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
   const defaultFacetData = primarySeries ? `${name}_primarySeriesFacetData` : FILTERED_TABLE;
-  const facetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
+  const alternateSegmentsFacetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
+  // when animated, facet from the draw-in lerp source (prev + tip) so the line renders clipped to
+  // the animated cutoff instead of the full series
+  const facetData = options.isDrawInAnimate ? `${name}_drawInLerp` : alternateSegmentsFacetData;
   const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
 
-  // when forecasts are present, override metric to effectiveValue and set alternateSegmentKey
-  // to trigger getAlternateSegmentStrokeDash in getLineMark
   const markOptions = hasForecast
     ? {
         ...options,
@@ -431,14 +511,26 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
       }
     : options;
 
-  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
-  const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
+  return { facetData, facetGroupby, markOptions };
+};
 
-  // boundary rules are drawn behind everything
+const addLineForecastBoundaryMarks = (
+  marks: Mark[],
+  forecasts: LineForecastOptions[],
+  options: LineSpecOptions
+): void => {
   for (const [i, forecast] of forecasts.entries()) {
     marks.push(getLineForecastBoundaryMark(getLineForecastSpecOptions(forecast, i, options)));
   }
+};
 
+const addLineGroupMark = (
+  marks: Mark[],
+  name: string,
+  markOptions: LineSpecOptions,
+  facetData: string,
+  facetGroupby: string[]
+): void => {
   marks.push({
     name: `${name}_group`,
     type: 'group',
@@ -450,54 +542,75 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
       },
     },
     marks: [
-      ...(gradient ? [getLineGradientMark(markOptions, `${name}_facet`)] : []),
+      ...(markOptions.gradient ? [getLineGradientMark(markOptions, `${name}_facet`)] : []),
       getLineMark(markOptions, `${name}_facet`),
     ],
   });
+};
 
-  if (staticPoint || isSparkline) {
-    marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
-    if (linePointAnnotations.length > 0) {
-      marks.push(...getLinePointAnnotationMarks(options));
-    }
+const addLineStaticPointMarks = (marks: Mark[], options: LineSpecOptions): void => {
+  const { isSparkline, linePointAnnotations, staticPoint } = options;
+  if (!staticPoint && !isSparkline) return;
+  marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
+  if (linePointAnnotations.length > 0) {
+    marks.push(...getLinePointAnnotationMarks(options));
   }
-  marks.push(...getMetricRangeGroupMarks(options), ...getTrendlineMarks(options));
-  // direct labels
-  const labelSpecOpts = (options.lineDirectLabels ?? []).map((label, i) =>
-    getLineDirectLabelSpecOptions(label, i, options)
-  );
+};
+
+const getLineDirectLabelSpecOptionsList = (options: LineSpecOptions): LineDirectLabelSpecOptions[] =>
+  (options.lineDirectLabels ?? []).map((label, i) => getLineDirectLabelSpecOptions(label, i, options));
+
+const addLineDirectLabelMarks = (
+  marks: Mark[],
+  options: LineSpecOptions,
+  labelSpecOpts: LineDirectLabelSpecOptions[]
+): void => {
   for (const specOpts of labelSpecOpts) {
     marks.push(
       ...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme)
     );
   }
-  // overlay renders the highlighted series on top of labels so the line stays in the foreground on hover
-  // fg labels are pushed in the same call (after the overlay group) so they always render above all overlay lines
-  if (hasHighlightState && labelSpecOpts.length) {
-    const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
-    marks.push(
-      getLineHighlightOverlayGroup(markOptions, facetData, facetGroupby),
-      ...labelSpecOpts.flatMap((specOpts) =>
-        getLineDirectLabelMarks(
-          options.name,
-          specOpts,
-          options,
-          options.backgroundColor,
-          options.colorScheme,
-          opacityRules
-        )
+};
+
+/**
+ * Renders the highlighted series on top of labels so the line stays in the foreground on hover.
+ * Foreground labels are pushed in the same call (after the overlay group) so they always render
+ * above all overlay lines.
+ */
+const addLineHighlightOverlayMarks = (
+  marks: Mark[],
+  options: LineSpecOptions,
+  markOptions: LineSpecOptions,
+  facetData: string,
+  facetGroupby: string[],
+  labelSpecOpts: LineDirectLabelSpecOptions[]
+): void => {
+  if (!labelSpecOpts.length) return;
+  const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
+  marks.push(
+    getLineHighlightOverlayGroup(markOptions, facetData, facetGroupby),
+    ...labelSpecOpts.flatMap((specOpts) =>
+      getLineDirectLabelMarks(
+        options.name,
+        specOpts,
+        options,
+        options.backgroundColor,
+        options.colorScheme,
+        opacityRules
       )
-    );
-  }
-  // hover marks are last so hollow points and interaction marks always render above everything
-  if (hasInteractiveHighlight) {
-    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
-  }
-  // forecast labels are drawn last so they appear on top of other marks
+    )
+  );
+};
+
+const addLineForecastLabelMarks = (
+  marks: Mark[],
+  forecasts: LineForecastOptions[],
+  options: LineSpecOptions
+): void => {
   for (const [i, forecast] of forecasts.entries()) {
     marks.push(...getLineForecastLabelMarks(getLineForecastSpecOptions(forecast, i, options)));
   }
-});
+};
 
 const getMetricKeys = (lineOptions: LineSpecOptions) => {
   const metricKeys = [getEffectiveMetricField(lineOptions)];

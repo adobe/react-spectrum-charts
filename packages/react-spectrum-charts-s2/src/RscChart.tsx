@@ -38,6 +38,7 @@ interface ChartDialogProps {
 export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHandle> }) => {
   const {
     animations,
+    animationTypes,
     backgroundColor,
     data,
     chartWidth,
@@ -71,6 +72,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   // THE MAGIC, builds our spec
   const spec = useSpec({
     animations,
+    animationTypes,
     backgroundColor,
     children: sanitizedChildren,
     colors,
