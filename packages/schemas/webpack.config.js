@@ -14,20 +14,19 @@
 const path = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
+
 const { name, version } = require('./package.json');
+
 const banner = `${name}@v${version}`;
 
 module.exports = {
-  entry: {
-    index: './index.ts',
-    'ai-catalog': './src/ai-catalog/index.ts',
-  },
+  entry: './src/index.ts',
   mode: 'production',
 
   output: {
-    filename: '[name].js',
+    filename: 'index.js',
     path: path.resolve(__dirname, 'dist'),
-    library: 'spectrumChartsReactSpectrumChartsS2',
+    library: 'spectrumChartsCustomCatalog',
     libraryTarget: 'umd',
     globalObject: 'this',
     clean: true,
@@ -40,34 +39,10 @@ module.exports = {
         exclude: /node_modules/,
         use: 'ts-loader',
       },
-      {
-        test: /\.(sa|sc|c)ss$/,
-        use: ['style-loader', 'css-loader'],
-        sideEffects: true,
-      },
     ],
   },
 
-  externals: [
-    nodeExternals(),
-    {
-      '@spectrum-charts/constants': '@spectrum-charts/constants',
-      '@spectrum-charts/utils': '@spectrum-charts/utils',
-      '@spectrum-charts/themes': '@spectrum-charts/themes',
-      '@spectrum-charts/locales': '@spectrum-charts/locales',
-      '@spectrum-charts/vega-spec-builder': '@spectrum-charts/vega-spec-builder',
-      '@spectrum-charts/vega-spec-builder-s2': '@spectrum-charts/vega-spec-builder-s2',
-      '@spectrum-charts/schemas': '@spectrum-charts/schemas',
-      '@adobe/react-spectrum': '@adobe/react-spectrum',
-      'react': 'react',
-      'react-dom': 'react-dom',
-      'react-dom/client': 'react-dom/client',
-      'react/jsx-runtime': 'react/jsx-runtime',
-      'react/jsx-dev-runtime': 'react/jsx-dev-runtime',
-      'vega': 'vega',
-      'vega-lite': 'vega-lite',
-    },
-  ],
+  externals: [nodeExternals()],
 
   optimization: {
     minimize: process.env.NODE_ENV === 'development' ? false : true,
@@ -76,7 +51,7 @@ module.exports = {
   plugins: [new webpack.BannerPlugin(banner)],
 
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx', '.css', '.json'],
+    extensions: ['.tsx', '.ts', '.js', '.jsx', '.json'],
   },
 
   devtool: 'source-map',
