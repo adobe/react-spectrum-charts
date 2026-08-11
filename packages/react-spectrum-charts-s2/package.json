@@ -7,28 +7,34 @@
   "main": "./dist/index.js",
   "exports": {
     ".": {
+      "types": "./dist/@types/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
-      "types": "./dist/@types/index.d.ts",
       "default": "./dist/index.js"
     },
     "./alpha": {
+      "types": "./dist/@types/alpha/index.d.ts",
       "import": "./dist/alpha.js",
       "require": "./dist/alpha.js",
-      "types": "./dist/@types/alpha/index.d.ts",
       "default": "./dist/alpha.js"
     },
     "./beta": {
+      "types": "./dist/@types/beta/index.d.ts",
       "import": "./dist/beta.js",
       "require": "./dist/beta.js",
-      "types": "./dist/@types/beta/index.d.ts",
       "default": "./dist/beta.js"
     },
     "./rc": {
+      "types": "./dist/@types/rc/index.d.ts",
       "import": "./dist/rc.js",
       "require": "./dist/rc.js",
-      "types": "./dist/@types/rc/index.d.ts",
       "default": "./dist/rc.js"
+    },
+    "./ai-catalog": {
+      "types": "./dist/@types/src/ai-catalog/index.d.ts",
+      "import": "./dist/ai-catalog.js",
+      "require": "./dist/ai-catalog.js",
+      "default": "./dist/ai-catalog.js"
     }
   },
   "typesVersions": {
@@ -44,6 +50,9 @@
       ],
       "rc": [
         "./dist/@types/rc/index.d.ts"
+      ],
+      "ai-catalog": [
+        "./dist/@types/src/ai-catalog/index.d.ts"
       ]
     }
   },
@@ -78,6 +87,7 @@
   "dependencies": {
     "@spectrum-charts/constants": "1.49.0",
     "@spectrum-charts/locales": "1.49.0",
+    "@spectrum-charts/schemas": "1.49.0",
     "@spectrum-charts/themes": "1.49.0",
     "@spectrum-charts/utils": "1.49.0",
     "@spectrum-charts/vega-spec-builder-s2": "0.4.0",
