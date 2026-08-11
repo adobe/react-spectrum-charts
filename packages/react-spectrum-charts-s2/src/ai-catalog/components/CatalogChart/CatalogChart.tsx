@@ -40,7 +40,11 @@ function renderMark(mark: MarkInput, key: number): ReactElement {
 const CatalogChart: FC<CatalogChartProps> = ({ request }) => {
   const parsed = parseChartRequest(request);
   return (
-    <Chart data={parsed.data.values} colorScheme={parsed.colorScheme} backgroundColor={parsed.backgroundColor}>
+    <Chart
+      data={parsed.data.values}
+      {...(parsed.colorScheme !== undefined && { colorScheme: parsed.colorScheme })}
+      {...(parsed.backgroundColor !== undefined && { backgroundColor: parsed.backgroundColor })}
+    >
       {parsed.axes?.map(renderAxis)}
       {parsed.children.map(renderMark)}
     </Chart>
