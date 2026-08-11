@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { findChart, getAllMarksByGroupName, render } from '../../../test-utils';
+import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen, within } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { CatalogChart } from './CatalogChart';
 
@@ -81,6 +81,32 @@ describe('CatalogChart', () => {
     expect(chart.querySelectorAll('text').length).toBeGreaterThan(0);
   });
 
+  test('ChartInspect decoration shows the default "dimension: metric" tooltip body on hover', async () => {
+    render(
+      <CatalogChart
+        request={{
+          component: 'Chart',
+          data: barData,
+          children: [
+            {
+              component: 'Bar',
+              dimension: 'browser',
+              metric: 'downloads',
+              decorations: [{ component: 'ChartInspect', highlightBy: 'item' }],
+            },
+          ],
+        }}
+      />
+    );
+
+    const chart = await findChart();
+    const bars = getAllMarksByGroupName(chart, 'bar0');
+
+    await hoverNthElement(bars, 0);
+    const tooltip = await screen.findByTestId('rsc-tooltip');
+    expect(within(tooltip).getByText('Chrome: 27000')).toBeInTheDocument();
+  });
+
   test('renders a Line mark with multiple color-faceted series', async () => {
     render(
       <CatalogChart
@@ -122,6 +148,68 @@ describe('CatalogChart', () => {
     const chart = await findChart();
     expect(getAllMarksByGroupName(chart, 'line0')).toHaveLength(2);
     expect(chart.querySelectorAll('text').length).toBeGreaterThan(0);
+  });
+
+  test('forwards colorScheme to the underlying Chart', async () => {
+    // "gray-100" is a named Spectrum token that resolves to a different hex value per color
+    // scheme, unlike the default categorical accent color (which happens to be scheme-invariant) —
+    // using it as backgroundColor makes colorScheme's effect on getColorValue observable.
+    const requestFor = (colorScheme: 'light' | 'dark') => ({
+      component: 'Chart' as const,
+      colorScheme,
+      backgroundColor: 'gray-100',
+      data: barData,
+      children: [{ component: 'Bar' as const, dimension: 'browser', metric: 'downloads' }],
+    });
+
+    const { container: lightContainer, unmount } = render(<CatalogChart request={requestFor('light')} />);
+    await findChart();
+    const lightBackground = lightContainer.querySelector('.rsc-container > div')?.getAttribute('style');
+    unmount();
+
+    const { container: darkContainer } = render(<CatalogChart request={requestFor('dark')} />);
+    await findChart();
+    const darkBackground = darkContainer.querySelector('.rsc-container > div')?.getAttribute('style');
+
+    // Regression test for the bug where CatalogChart always spread `colorScheme: parsed.colorScheme`
+    // onto <Chart> — an explicit `undefined` there silently overrode Chart's own default instead of
+    // falling back to it. This confirms an actually-provided colorScheme reaches the rendered chart.
+    expect(darkBackground).not.toEqual(lightBackground);
+  });
+
+  test('forwards backgroundColor to the underlying Chart', async () => {
+    const { container } = render(
+      <CatalogChart
+        request={{
+          component: 'Chart',
+          backgroundColor: 'gray-100',
+          data: barData,
+          children: [{ component: 'Bar', dimension: 'browser', metric: 'downloads' }],
+        }}
+      />
+    );
+
+    await findChart();
+    const styledDiv = container.querySelector('.rsc-container > div');
+    // DEFAULT_BACKGROUND_COLOR is 'transparent' — an explicitly-provided backgroundColor should
+    // resolve to a real color instead of falling through to (or being overridden to) the default.
+    expect(styledDiv).not.toHaveStyle({ backgroundColor: 'transparent' });
+  });
+
+  test('renders without axes when the request omits them', async () => {
+    render(
+      <CatalogChart
+        request={{
+          component: 'Chart',
+          data: barData,
+          children: [{ component: 'Bar', dimension: 'browser', metric: 'downloads' }],
+        }}
+      />
+    );
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+    expect(getAllMarksByGroupName(chart, 'bar0')).toHaveLength(barData.values.length);
   });
 
   test('throws for a request with an invalid mark discriminator', () => {
