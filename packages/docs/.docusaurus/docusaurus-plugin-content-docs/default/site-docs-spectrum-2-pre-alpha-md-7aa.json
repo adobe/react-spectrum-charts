@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/pre-alpha",
+  "title": "Pre-Alpha Components",
+  "description": "Pre-alpha components are chart types and child components that are functional and available",
+  "source": "@site/docs/spectrum2/pre-alpha.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/pre-alpha",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/pre-alpha",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/pre-alpha.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "sidebar_position": 6
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Chart Sizing (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/chart-sizing"
+  },
+  "next": {
+    "title": "Scatter (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/scatter"
+  }
+}

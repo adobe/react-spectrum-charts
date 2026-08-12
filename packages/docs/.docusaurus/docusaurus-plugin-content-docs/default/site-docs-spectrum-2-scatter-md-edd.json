@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/scatter",
+  "title": "Scatter (S2)",
+  "description": "Scatter is a pre-alpha component — it has no finalized Spectrum 2 design yet",
+  "source": "@site/docs/spectrum2/scatter.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/scatter",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/scatter",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/scatter.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "sidebar_position": 7
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Pre-Alpha Components",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/pre-alpha"
+  },
+  "next": {
+    "title": "Developer Docs",
+    "permalink": "/react-spectrum-charts/docs/docs/developers/DeveloperDocs"
+  }
+}
