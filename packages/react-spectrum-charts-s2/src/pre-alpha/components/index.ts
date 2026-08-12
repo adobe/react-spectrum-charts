@@ -10,9 +10,11 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
-
-export * from './supplemental';
+export * from './Donut';
+export * from './DonutSummary';
+export * from './Scatter';
+export * from './ScatterAnnotation';
+export * from './ScatterPath';
+export * from './SegmentLabel';
+export * from './Trendline';
+export * from './TrendlineAnnotation';

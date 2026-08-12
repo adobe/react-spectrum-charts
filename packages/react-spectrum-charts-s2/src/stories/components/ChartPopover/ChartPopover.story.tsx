@@ -18,7 +18,7 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartPopover, ChartInspect, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary } from '../../../rc';
+import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { browserData as data } from '../../data/data';

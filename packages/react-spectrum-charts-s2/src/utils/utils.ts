@@ -40,7 +40,16 @@ import {
   ReferenceLine,
   Title,
 } from '../components';
-import { Donut, DonutSummary, SegmentLabel } from '../rc';
+import {
+  Donut,
+  DonutSummary,
+  Scatter,
+  ScatterAnnotation,
+  ScatterPath,
+  SegmentLabel,
+  Trendline,
+  TrendlineAnnotation,
+} from '../pre-alpha';
 import {
   AxisChildElement,
   AxisElement,
@@ -57,8 +66,13 @@ import {
   LineForecastElement,
   LineDirectLabelElement,
   LineElement,
+  ScatterAnnotationElement,
+  ScatterElement,
+  ScatterPathElement,
   SegmentLabelElement,
   TitleElement,
+  TrendlineAnnotationElement,
+  TrendlineElement,
 } from '../types';
 
 type MarkChildElement =
@@ -68,7 +82,11 @@ type MarkChildElement =
   | DonutSummaryElement
   | LineForecastElement
   | LineDirectLabelElement
-  | SegmentLabelElement;
+  | ScatterAnnotationElement
+  | ScatterPathElement
+  | SegmentLabelElement
+  | TrendlineAnnotationElement
+  | TrendlineElement;
 type RscElement =
   | MarkChildElement
   | AxisElement
@@ -76,6 +94,7 @@ type RscElement =
   | DonutElement
   | LegendElement
   | LineElement
+  | ScatterElement
   | TitleElement;
 
 type MappedElement = { name: string; element: ChartElement | RscElement; parent?: string };
@@ -86,6 +105,7 @@ type ElementCounts = {
   donut: number;
   legend: number;
   line: number;
+  scatter: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -124,8 +144,13 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     LineForecast.displayName,
     LinePointAnnotation.displayName,
     ReferenceLine.displayName,
+    Scatter.displayName,
+    ScatterAnnotation.displayName,
+    ScatterPath.displayName,
     SegmentLabel.displayName,
     Title.displayName,
+    Trendline.displayName,
+    TrendlineAnnotation.displayName,
   ]);
   return toArray(children)
     .flat()
@@ -142,6 +167,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
     Donut.displayName,
     Legend.displayName,
     Line.displayName,
+    Scatter.displayName,
     Title.displayName,
   ]);
   return toArray(children)
@@ -157,7 +183,11 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
     DonutSummary.displayName,
     LineForecast.displayName,
     LineDirectLabel.displayName,
+    ScatterAnnotation.displayName,
+    ScatterPath.displayName,
     SegmentLabel.displayName,
+    Trendline.displayName,
+    TrendlineAnnotation.displayName,
   ]);
 
   return toArray(children)
@@ -332,6 +362,11 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Line.displayName:
       elementCounts.line++;
       return getComponentName(element as LineElement, `line${elementCounts.line}`);
+    case Scatter.displayName:
+      elementCounts.scatter++;
+      return getComponentName(element as ScatterElement, `scatter${elementCounts.scatter}`);
+    case Trendline.displayName:
+      return getComponentName(element as TrendlineElement, 'Trendline');
     default:
       return '';
   }
@@ -351,6 +386,7 @@ const initElementCounts = (): ElementCounts => ({
   donut: -1,
   legend: -1,
   line: -1,
+  scatter: -1,
 });
 
 /**

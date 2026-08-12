@@ -314,6 +314,8 @@ const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRa
     name: `${name}Trendline`,
     chartInspects: trendlines.flatMap((trendline) => trendline.chartInspects),
     metric: TRENDLINE_VALUE,
+    // forced false: this group's hover-label data source is never added, so leaving it unset crashes Vega on parse
+    showHoverLabel: false,
   });
 
   return {

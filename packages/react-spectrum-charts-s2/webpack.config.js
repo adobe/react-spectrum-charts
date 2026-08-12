@@ -21,6 +21,7 @@ module.exports = {
   entry: {
     index: './index.ts',
     'ai-catalog': './src/ai-catalog/index.ts',
+    'pre-alpha': './pre-alpha/index.ts',
   },
   mode: 'production',
 

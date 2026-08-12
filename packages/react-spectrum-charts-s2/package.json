@@ -24,11 +24,11 @@
       "require": "./dist/beta.js",
       "default": "./dist/beta.js"
     },
-    "./rc": {
-      "types": "./dist/@types/rc/index.d.ts",
-      "import": "./dist/rc.js",
-      "require": "./dist/rc.js",
-      "default": "./dist/rc.js"
+    "./pre-alpha": {
+      "types": "./dist/@types/pre-alpha/index.d.ts",
+      "import": "./dist/pre-alpha.js",
+      "require": "./dist/pre-alpha.js",
+      "default": "./dist/pre-alpha.js"
     },
     "./ai-catalog": {
       "types": "./dist/@types/src/ai-catalog/index.d.ts",
@@ -48,8 +48,8 @@
       "beta": [
         "./dist/@types/beta/index.d.ts"
       ],
-      "rc": [
-        "./dist/@types/rc/index.d.ts"
+      "pre-alpha": [
+        "./dist/@types/pre-alpha/index.d.ts"
       ],
       "ai-catalog": [
         "./dist/@types/src/ai-catalog/index.d.ts"

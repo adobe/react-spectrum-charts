@@ -9,10 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { findChart, render } from '../../../../test-utils';
+import { Inspect, Popover } from './ScatterInspect.story';
 
-export * from './bar.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+describe('Scatter Inspect', () => {
+  test('Inspect renders properly', async () => {
+    render(<Inspect {...Inspect.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+  });
 
-export * from './supplemental';
+  test('Popover renders properly', async () => {
+    render(<Popover {...Popover.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+  });
+});
