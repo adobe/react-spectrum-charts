@@ -79,7 +79,7 @@ const sidebars: SidebarsConfig = {
           type: 'category',
           label: 'Pre-Alpha Components',
           collapsed: true,
-          items: ['spectrum2/pre-alpha', 'spectrum2/scatter'],
+          items: ['spectrum2/pre-alpha', 'spectrum2/scatter', 'spectrum2/combo'],
         },
       ],
     },

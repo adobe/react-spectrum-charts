@@ -9,11 +9,18 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './bar.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+import { ComboOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export * from './supplemental';
+import { Children } from '../util.types';
+import { BarElement } from './bar.types';
+import { LineElement } from './line.types';
+
+export type ComboChildElement = BarElement | LineElement;
+
+export interface ComboProps extends Omit<ComboOptions, 'marks' | 'markType'> {
+  children?: Children<ComboChildElement>;
+}
+
+export type ComboElement = ReactElement<ComboProps, JSXElementConstructor<ComboProps>>;

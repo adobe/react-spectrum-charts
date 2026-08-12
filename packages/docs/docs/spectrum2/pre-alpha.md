@@ -21,6 +21,7 @@ Pre-alpha components:
 - `Scatter` — scatter plots, with `ScatterPath`, `ScatterAnnotation`, and `Trendline`
   (+ `TrendlineAnnotation`) child components
 - `Donut`, `DonutSummary`, `SegmentLabel` — donut charts
+- `Combo` — overlays a `Bar` mark and a `Line` mark in the same chart
 
 ## Importing pre-alpha components
 

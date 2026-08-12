@@ -9,11 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ComboOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export * from './bar.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+import { ComboProps } from '../types';
+import { childrenToOptions } from './childrenAdapter';
 
-export * from './supplemental';
+export const getComboOptions = ({ children, ...comboProps }: ComboProps): ComboOptions => {
+  return {
+    ...comboProps,
+    marks: childrenToOptions(children).marks as ComboOptions['marks'],
+    markType: 'combo',
+  };
+};

@@ -46,6 +46,7 @@ import { LinePointAnnotation } from '../components/LinePointAnnotation';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
 import {
+  Combo,
   Donut,
   DonutSummary,
   Scatter,
@@ -62,6 +63,7 @@ import {
   BarProps,
   ChartInspectProps,
   ChartPopoverProps,
+  ComboProps,
   DonutProps,
   DonutSummaryProps,
   LegendProps,
@@ -83,6 +85,7 @@ import { getAxisOptions } from './axisAdapter';
 import { getBarOptions } from './barAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
 import { getChartInspectOptions } from './chartInspectAdapter';
+import { getComboOptions } from './comboAdapter';
 import { getDonutOptions } from './donutAdapter';
 import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
@@ -162,6 +165,10 @@ export const childrenToOptions = (
 
       case ChartInspect.displayName:
         chartInspects.push(getChartInspectOptions(child.props as ChartInspectProps));
+        break;
+
+      case Combo.displayName:
+        marks.push(getComboOptions(child.props as ComboProps));
         break;
 
       case Donut.displayName:
