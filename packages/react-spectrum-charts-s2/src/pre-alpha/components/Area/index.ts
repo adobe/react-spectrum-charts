@@ -11,11 +11,3 @@
  */
 
 export * from './Area';
-export * from './Donut';
-export * from './DonutSummary';
-export * from './Scatter';
-export * from './ScatterAnnotation';
-export * from './ScatterPath';
-export * from './SegmentLabel';
-export * from './Trendline';
-export * from './TrendlineAnnotation';

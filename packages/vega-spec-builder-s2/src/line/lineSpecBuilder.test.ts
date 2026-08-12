@@ -246,6 +246,7 @@ const metricRangeGroupMark = {
             field: 'series',
           },
           tooltip: undefined,
+          defined: { signal: 'isValid(datum["start"]) || isValid(datum["end"])' },
         },
         update: {
           cursor: undefined,

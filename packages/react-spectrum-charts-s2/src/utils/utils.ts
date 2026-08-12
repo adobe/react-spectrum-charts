@@ -41,6 +41,7 @@ import {
   Title,
 } from '../components';
 import {
+  Area,
   Donut,
   DonutSummary,
   Scatter,
@@ -51,6 +52,7 @@ import {
   TrendlineAnnotation,
 } from '../pre-alpha';
 import {
+  AreaElement,
   AxisChildElement,
   AxisElement,
   BarAnnotationElement,
@@ -89,6 +91,7 @@ type MarkChildElement =
   | TrendlineElement;
 type RscElement =
   | MarkChildElement
+  | AreaElement
   | AxisElement
   | BarElement
   | DonutElement
@@ -99,6 +102,7 @@ type RscElement =
 
 type MappedElement = { name: string; element: ChartElement | RscElement; parent?: string };
 type ElementCounts = {
+  area: number;
   axis: number;
   axisAnnotation: number;
   bar: number;
@@ -130,6 +134,7 @@ export const getElementDisplayName = (element: unknown): string => {
 
 export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkChildElement)[] => {
   const validDisplayNames = new Set([
+    Area.displayName,
     Axis.displayName,
     AxisThumbnail.displayName,
     Bar.displayName,
@@ -162,6 +167,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
 // removes all non-chart specific elements
 export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[] => {
   const chartChildDisplyNames = new Set([
+    Area.displayName,
     Axis.displayName,
     Bar.displayName,
     Donut.displayName,
@@ -347,6 +353,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     return '';
   // use displayName since it is the olny way to check alpha and beta components
   switch (element.type.displayName) {
+    case Area.displayName:
+      elementCounts.area++;
+      return getComponentName(element as AreaElement, `area${elementCounts.area}`);
     case Axis.displayName:
       elementCounts.axis++;
       return getComponentName(element as AxisElement, `axis${elementCounts.axis}`);
@@ -380,6 +389,7 @@ export const getComponentName = (element: ChildElement<RscElement>, defaultName:
 };
 
 const initElementCounts = (): ElementCounts => ({
+  area: -1,
   axis: -1,
   axisAnnotation: -1,
   bar: -1,

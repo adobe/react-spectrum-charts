@@ -18,6 +18,7 @@ Pre-alpha components:
 
 ## Current pre-alpha components
 
+- `Area` — area charts
 - `Scatter` — scatter plots, with `ScatterPath`, `ScatterAnnotation`, and `Trendline`
   (+ `TrendlineAnnotation`) child components
 - `Donut`, `DonutSummary`, `SegmentLabel` — donut charts
