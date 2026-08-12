@@ -24,10 +24,10 @@
     "publish-package": "npm publish --access public --tag alpha --registry https://registry.npmjs.org"
   },
   "dependencies": {
-    "@spectrum-charts/constants": "1.49.0",
-    "@spectrum-charts/locales": "1.49.0",
-    "@spectrum-charts/themes": "1.49.0",
-    "@spectrum-charts/utils": "1.49.0",
+    "@spectrum-charts/constants": "1.51.0",
+    "@spectrum-charts/locales": "1.51.0",
+    "@spectrum-charts/themes": "1.51.0",
+    "@spectrum-charts/utils": "1.51.0",
     "immer": "^10.1.1",
     "vega": "^6.2.0",
     "venn-helper": "^2.3.6"
