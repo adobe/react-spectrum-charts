@@ -41,6 +41,7 @@ import {
   Title,
 } from '../components';
 import {
+  Bullet,
   Donut,
   DonutSummary,
   Scatter,
@@ -55,6 +56,7 @@ import {
   AxisElement,
   BarAnnotationElement,
   BarElement,
+  BulletElement,
   ChartChildElement,
   ChartElement,
   ChartInspectElement,
@@ -91,6 +93,7 @@ type RscElement =
   | MarkChildElement
   | AxisElement
   | BarElement
+  | BulletElement
   | DonutElement
   | LegendElement
   | LineElement
@@ -102,6 +105,7 @@ type ElementCounts = {
   axis: number;
   axisAnnotation: number;
   bar: number;
+  bullet: number;
   donut: number;
   legend: number;
   line: number;
@@ -134,6 +138,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     AxisThumbnail.displayName,
     Bar.displayName,
     BarDirectLabel.displayName,
+    Bullet.displayName,
     ChartInspect.displayName,
     ChartPopover.displayName,
     Donut.displayName,
@@ -164,6 +169,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
   const chartChildDisplyNames = new Set([
     Axis.displayName,
     Bar.displayName,
+    Bullet.displayName,
     Donut.displayName,
     Legend.displayName,
     Line.displayName,
@@ -353,6 +359,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Bar.displayName:
       elementCounts.bar++;
       return getComponentName(element as BarElement, `bar${elementCounts.bar}`);
+    case Bullet.displayName:
+      elementCounts.bullet++;
+      return getComponentName(element as BulletElement, `bullet${elementCounts.bullet}`);
     case Donut.displayName:
       elementCounts.donut++;
       return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
@@ -383,6 +392,7 @@ const initElementCounts = (): ElementCounts => ({
   axis: -1,
   axisAnnotation: -1,
   bar: -1,
+  bullet: -1,
   donut: -1,
   legend: -1,
   line: -1,

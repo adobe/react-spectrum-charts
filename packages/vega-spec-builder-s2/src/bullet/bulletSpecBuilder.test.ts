@@ -11,7 +11,7 @@
  */
 import { BulletOptions, ScSpec } from '../types';
 import { addBullet, addData, addScales, addSignals } from './bulletSpecBuilder';
-import { sampleOptionsColumn, sampleOptionsRow } from './bulletTestUtils';
+import { sampleOptionsColumn, sampleOptionsRow, sampleOptionsWithInspect } from './bulletTestUtils';
 
 describe('addBullet', () => {
   let spec: ScSpec;
@@ -37,6 +37,22 @@ describe('addBullet', () => {
     expect(newSpec).toHaveProperty('marks');
     expect(newSpec).toHaveProperty('scales');
     expect(newSpec).toHaveProperty('signals');
+  });
+
+  test('should mark the bullet as interactive in usermeta when chartInspects are provided', () => {
+    const bulletOptions: BulletOptions & { idKey: string } = {
+      markType: 'bullet',
+      name: 'testBullet',
+      metric: 'revenue',
+      dimension: 'region',
+      target: 'goal',
+      idKey: 'rscMarkId',
+      chartInspects: [{ highlightBy: 'item', targets: ['item'] }],
+    };
+
+    const newSpec = addBullet(spec, bulletOptions);
+
+    expect(newSpec.usermeta?.interactiveMarks).toContainEqual({ name: 'testBullet', dimension: undefined });
   });
 });
 
@@ -175,6 +191,16 @@ describe('getBulletSignals', () => {
       name: 'bulletChartHeight',
       update: "length(data('table')) * bulletGroupHeight + (length(data('table')) - 1) * gap + 10",
     });
+  });
+
+  test('Should not add hovered item or inspect signals when chartInspects are empty', () => {
+    const signals = addSignals([], sampleOptionsColumn);
+    expect(signals.find((signal) => signal.name === `${sampleOptionsColumn.name}_hoveredItem`)).toBeUndefined();
+  });
+
+  test('Should add hovered item signal when chartInspects are provided', () => {
+    const signals = addSignals([], sampleOptionsWithInspect);
+    expect(signals.find((signal) => signal.name === `${sampleOptionsWithInspect.name}_hoveredItem`)).toBeDefined();
   });
 });
 
