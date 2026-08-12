@@ -1,34 +1,40 @@
 {
   "name": "@spectrum-charts/react-spectrum-charts-s2",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Declarative library for composing Spectrum 2 visualizations in React.",
   "browser": "./dist/index.js",
   "module": "./dist/index.js",
   "main": "./dist/index.js",
   "exports": {
     ".": {
+      "types": "./dist/@types/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
-      "types": "./dist/@types/index.d.ts",
       "default": "./dist/index.js"
     },
     "./alpha": {
+      "types": "./dist/@types/alpha/index.d.ts",
       "import": "./dist/alpha.js",
       "require": "./dist/alpha.js",
-      "types": "./dist/@types/alpha/index.d.ts",
       "default": "./dist/alpha.js"
     },
     "./beta": {
+      "types": "./dist/@types/beta/index.d.ts",
       "import": "./dist/beta.js",
       "require": "./dist/beta.js",
-      "types": "./dist/@types/beta/index.d.ts",
       "default": "./dist/beta.js"
     },
     "./pre-alpha": {
+      "types": "./dist/@types/pre-alpha/index.d.ts",
       "import": "./dist/pre-alpha.js",
       "require": "./dist/pre-alpha.js",
-      "types": "./dist/@types/pre-alpha/index.d.ts",
       "default": "./dist/pre-alpha.js"
+    },
+    "./ai-catalog": {
+      "types": "./dist/@types/src/ai-catalog/index.d.ts",
+      "import": "./dist/ai-catalog.js",
+      "require": "./dist/ai-catalog.js",
+      "default": "./dist/ai-catalog.js"
     }
   },
   "typesVersions": {
@@ -44,6 +50,9 @@
       ],
       "pre-alpha": [
         "./dist/@types/pre-alpha/index.d.ts"
+      ],
+      "ai-catalog": [
+        "./dist/@types/src/ai-catalog/index.d.ts"
       ]
     }
   },
@@ -78,9 +87,10 @@
   "dependencies": {
     "@spectrum-charts/constants": "1.49.0",
     "@spectrum-charts/locales": "1.49.0",
+    "@spectrum-charts/schemas": "1.49.0",
     "@spectrum-charts/themes": "1.49.0",
     "@spectrum-charts/utils": "1.49.0",
-    "@spectrum-charts/vega-spec-builder-s2": "0.4.0",
+    "@spectrum-charts/vega-spec-builder-s2": "0.5.0",
     "d3-format": "^3.1.0",
     "deepmerge": ">= 4.0.0",
     "immer": ">= 9.0.0",

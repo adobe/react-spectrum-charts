@@ -20,7 +20,7 @@ import {
   HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
   HOVER_TARGETS,
-  HOVER_TIMER,
+  ANIMATION_TIMER,
   MARK_ID,
   SERIES_ID,
   TABLE,
@@ -195,26 +195,26 @@ describe('addHoverAnimationSignals()', () => {
     addHoverAnimationSignals(signals, 'line0');
     expect(signals).toStrictEqual([
       {
-        name: HOVER_TIMER,
+        name: ANIMATION_TIMER,
         value: 0,
         on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
       },
       {
         name: HOVER_ANIMATING,
         value: false,
-        update: `(${HOVER_TIMER} - data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0].lastChange) < ${
+        update: `(${ANIMATION_TIMER} - data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0].lastChange) < ${
           ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE
         }`,
       },
       {
         name: HOVER_IDLE_TICKS,
         value: 0,
-        update: `${HOVER_ANIMATING} ? 0 : min(${HOVER_TIMER} - ${HOVER_TIMER} + ${HOVER_IDLE_TICKS} + 1, 2)`,
+        update: `${HOVER_ANIMATING} ? 0 : min(${ANIMATION_TIMER} - ${ANIMATION_TIMER} + ${HOVER_IDLE_TICKS} + 1, 2)`,
       },
       {
         name: HOVER_ACTIVE_TIMER,
         value: 0,
-        update: `${HOVER_ANIMATING} || ${HOVER_IDLE_TICKS} <= 1 ? ${HOVER_TIMER} : ${HOVER_ACTIVE_TIMER}`,
+        update: `${HOVER_ANIMATING} || ${HOVER_IDLE_TICKS} <= 1 ? ${ANIMATION_TIMER} : ${HOVER_ACTIVE_TIMER}`,
       },
       {
         name: `line0_${HOVER_TARGETS}`,
@@ -228,12 +228,12 @@ describe('addHoverAnimationSignals()', () => {
     addHoverAnimationSignals(signals, 'line0');
     addHoverAnimationSignals(signals, 'line1');
     // one shared timer, one shared gate pair, one targets signal per mark
-    expect(signals.filter((s) => s.name === HOVER_TIMER)).toHaveLength(1);
+    expect(signals.filter((s) => s.name === ANIMATION_TIMER)).toHaveLength(1);
     expect(signals.filter((s) => s.name === HOVER_ANIMATING)).toHaveLength(1);
     expect(signals.filter((s) => s.name === HOVER_IDLE_TICKS)).toHaveLength(1);
     expect(signals.filter((s) => s.name === HOVER_ACTIVE_TIMER)).toHaveLength(1);
     expect(signals.map((s) => s.name)).toEqual([
-      HOVER_TIMER,
+      ANIMATION_TIMER,
       HOVER_ANIMATING,
       HOVER_IDLE_TICKS,
       HOVER_ACTIVE_TIMER,
@@ -249,7 +249,7 @@ describe('addHoverAnimationSignals()', () => {
     const evalUpdate = (elapsed: number): boolean => {
       const dataFn = () => [{ lastChange: 0 }];
       // eslint-disable-next-line no-new-func
-      return new Function(HOVER_TIMER, 'data', `return ${animating?.update};`)(elapsed, dataFn);
+      return new Function(ANIMATION_TIMER, 'data', `return ${animating?.update};`)(elapsed, dataFn);
     };
     expect(evalUpdate(0)).toBe(true);
     expect(evalUpdate(ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE - 1)).toBe(true);
@@ -262,7 +262,7 @@ describe('addHoverAnimationSignals()', () => {
     const idleTicks = signals.find((s) => s.name === HOVER_IDLE_TICKS) as { update: string } | undefined;
     const evalUpdate = (animating: boolean, previous: number, timer = 0): number => {
       // eslint-disable-next-line no-new-func
-      return new Function(HOVER_ANIMATING, HOVER_IDLE_TICKS, HOVER_TIMER, 'min', `return ${idleTicks?.update};`)(
+      return new Function(HOVER_ANIMATING, HOVER_IDLE_TICKS, ANIMATION_TIMER, 'min', `return ${idleTicks?.update};`)(
         animating,
         previous,
         timer,
@@ -283,7 +283,7 @@ describe('addHoverAnimationSignals()', () => {
     const signals: Signal[] = [];
     addHoverAnimationSignals(signals, 'line0');
     const idleTicks = signals.find((s) => s.name === HOVER_IDLE_TICKS) as { update: string } | undefined;
-    expect(idleTicks?.update).toContain(HOVER_TIMER);
+    expect(idleTicks?.update).toContain(ANIMATION_TIMER);
   });
 
   test('hoverActiveTimer tracks hoverTimer while animating, for one tick past that, and freezes otherwise', () => {
@@ -295,7 +295,7 @@ describe('addHoverAnimationSignals()', () => {
       return new Function(
         HOVER_ANIMATING,
         HOVER_IDLE_TICKS,
-        HOVER_TIMER,
+        ANIMATION_TIMER,
         HOVER_ACTIVE_TIMER,
         `return ${activeTimer?.update};`
       )(animating, idleTicks, timer, previous);

@@ -106,10 +106,10 @@ describe('getTrendlineRuleMark()', () => {
 
   test('opacity stays the static instant-rule array even when the parent line is animated', () => {
     // the trendline renders under its own mark name (`${parentName}Trendline${index}`), which has no
-    // `_hoverFractionData` of its own — getLineMarkOptions forces isAnimate: false for exactly this
+    // `_hoverFractionData` of its own — getLineMarkOptions forces isHoverAnimate: false for exactly this
     // reason, otherwise this would reference a data source that was only created for the parent's name
     const mark = getTrendlineRuleMark(
-      { ...defaultLineOptions, interactiveMarkName: 'line0', isAnimate: true },
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       { ...defaultTrendlineOptions, method: 'median' }
     );
     expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);
@@ -207,7 +207,7 @@ describe('getTrendlineLineMark()', () => {
 
   test('opacity stays the static instant-rule array even when the parent line is animated', () => {
     const mark = getTrendlineLineMark(
-      { ...defaultLineOptions, interactiveMarkName: 'line0', isAnimate: true },
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       defaultTrendlineOptions
     );
     expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);

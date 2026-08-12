@@ -416,6 +416,13 @@ describe('getMetricRangeHoverPoints', () => {
     expect(bg.encode?.update?.opacity).toEqual(expectedOpacity);
     expect(highlight.encode?.update?.opacity).toEqual(expectedOpacity);
   });
+
+  test('both marks clamp the y position to [0, height] so out-of-domain metrics do not overflow the plot', () => {
+    const [bg, highlight] = getMetricRangeHoverPoints(interactiveLineOptions, defaultMetricRangeSpecOptions);
+    const expectedSignal = `clamp(scale('yLinear', datum['${defaultMetricRangeSpecOptions.metric}']), 0, height)`;
+    expect(bg.encode?.enter?.y).toEqual([{ signal: expectedSignal }]);
+    expect(highlight.encode?.enter?.y).toEqual([{ signal: expectedSignal }]);
+  });
 });
 
 describe('getMetricRangeData', () => {

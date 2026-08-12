@@ -16,6 +16,7 @@ import { ComponentProps, ReactElement } from 'react';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
+import { AnimationType } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart';
@@ -61,13 +62,18 @@ export default {
   argTypes: {
     animations: {
       control: 'boolean',
-      description: 'Chart-level toggle for the animated hover/highlight system.',
+      description: 'Chart-level master kill switch for all animations.',
+    },
+    animationTypes: {
+      control: { type: 'check' },
+      options: ['hover'],
+      description: "Which animation types are enabled (only 'hover' is relevant to this story group).",
     },
   },
-  args: { animations: true },
+  args: { animations: true, animationTypes: ['hover'] },
 };
 
-type HoverAnimationArgs = ComponentProps<typeof Line> & { animations?: boolean };
+type HoverAnimationArgs = ComponentProps<typeof Line> & { animations?: boolean; animationTypes?: AnimationType[] };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
@@ -103,8 +109,8 @@ const groupedData = workspaceTrendsData.map((d) => ({ ...d, category: seriesCate
  * Point hover — hovering a data point emphasizes that point's series (the `hoveredMatch` rule).
  * ChartInspect makes the line interactive, which is what creates the hover-animation data.
  */
-const PointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const PointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -118,8 +124,8 @@ const PointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): 
 };
 
 /** Legend hover — hovering a legend entry emphasizes that series (the injected `legendHoverMatch` rule). */
-const LegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const LegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -131,8 +137,8 @@ const LegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }):
 };
 
 /** Grouped legend hover — hovering a grouped legend entry emphasizes every series in that group. */
-const GroupedLegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: groupedData, animations });
+const GroupedLegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: groupedData, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -144,8 +150,8 @@ const GroupedLegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...a
 };
 
 /** Popover selection — clicking a point selects its series (the `popoverMatch` rule) and keeps it emphasized. */
-const PopoverSelectionStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const PopoverSelectionStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -159,8 +165,8 @@ const PopoverSelectionStory: StoryFn<HoverAnimationArgs> = ({ animations, ...arg
 };
 
 /** Controlled highlight — an external `highlightedSeries` chart prop emphasizes a series (the `controlledSeriesMatch` rule). */
-const ControlledHighlightStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Freeform table', animations });
+const ControlledHighlightStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Freeform table', animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -172,8 +178,8 @@ const ControlledHighlightStory: StoryFn<HoverAnimationArgs> = ({ animations, ...
 };
 
 /** Controlled highlight — an external `highlightedItem` chart prop emphasizes the row's series (the `controlledTableMatch` rule). */
-const ControlledHighlightItemStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, highlightedItem: 0, animations });
+const ControlledHighlightItemStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, highlightedItem: 0, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -185,8 +191,8 @@ const ControlledHighlightItemStory: StoryFn<HoverAnimationArgs> = ({ animations,
 };
 
 /** onClick — an onClick handler makes the line interactive, so hovering points animates the emphasis. */
-const OnClickStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const OnClickStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -202,8 +208,8 @@ const OnClickStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): Rea
  * markers for deemphasized series along with the line itself, demonstrating `getLineStaticPoint`'s
  * wiring into the same animated fraction as `getLineOpacity`.
  */
-const StaticPointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints, animations });
+const StaticPointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -221,8 +227,8 @@ const StaticPointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...arg
  * for deemphasized series along with the line itself. The label's background halo stays fully
  * opaque throughout — only the foreground text fades.
  */
-const DirectLabelHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const DirectLabelHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -237,8 +243,8 @@ const DirectLabelHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...arg
 };
 
 /** Hidden Series - combines Legend `defaultHiddenSeries`/`isToggleable` with the hover-animation */
-const HiddenSeriesStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+const HiddenSeriesStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />

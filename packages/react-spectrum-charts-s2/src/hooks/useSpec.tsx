@@ -21,6 +21,7 @@ import { SanitizedSpecProps } from '../types';
 
 export default function useSpec({
   animations,
+  animationTypes,
   backgroundColor,
   children,
   colors,
@@ -53,6 +54,7 @@ export default function useSpec({
 
     const chartOptions = rscPropsToSpecBuilderOptions({
       animations,
+      animationTypes,
       backgroundColor,
       children,
       colors,
@@ -75,6 +77,7 @@ export default function useSpec({
   }, [
     UNSAFE_vegaSpec,
     animations,
+    animationTypes,
     backgroundColor,
     children,
     colors,
