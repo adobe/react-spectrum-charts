@@ -85,11 +85,11 @@
     "publish-package": "npm publish --access public --tag alpha --registry https://registry.npmjs.org"
   },
   "dependencies": {
-    "@spectrum-charts/constants": "1.51.0",
-    "@spectrum-charts/locales": "1.51.0",
-    "@spectrum-charts/schemas": "1.51.0",
-    "@spectrum-charts/themes": "1.51.0",
-    "@spectrum-charts/utils": "1.51.0",
+    "@spectrum-charts/constants": "1.52.0",
+    "@spectrum-charts/locales": "1.52.0",
+    "@spectrum-charts/schemas": "1.52.0",
+    "@spectrum-charts/themes": "1.52.0",
+    "@spectrum-charts/utils": "1.52.0",
     "@spectrum-charts/vega-spec-builder-s2": "0.6.0",
     "d3-format": "^3.1.0",
     "deepmerge": ">= 4.0.0",
