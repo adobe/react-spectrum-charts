@@ -27,7 +27,7 @@ import {
 } from '../../../data/bulletData';
 
 export default {
-  title: 'React Spectrum Charts 2/Bullet/Features/NumberFormat',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features/NumberFormat',
   component: Bullet,
 };
 

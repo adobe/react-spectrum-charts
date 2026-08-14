@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/vega-spec-builder-s2",
-  "version": "0.5.0",
+  "version": "0.6.1",
   "description": "Vega spec builder for Spectrum 2 charts (S2 always enabled)",
   "browser": "dist/index.js",
   "main": "dist/index.js",
@@ -24,10 +24,10 @@
     "publish-package": "npm publish --access public --tag alpha --registry https://registry.npmjs.org"
   },
   "dependencies": {
-    "@spectrum-charts/constants": "1.49.0",
-    "@spectrum-charts/locales": "1.49.0",
-    "@spectrum-charts/themes": "1.49.0",
-    "@spectrum-charts/utils": "1.49.0",
+    "@spectrum-charts/constants": "1.52.0",
+    "@spectrum-charts/locales": "1.52.0",
+    "@spectrum-charts/themes": "1.52.0",
+    "@spectrum-charts/utils": "1.52.0",
     "immer": "^10.1.1",
     "vega": "^6.2.0",
     "venn-helper": "^2.3.6"

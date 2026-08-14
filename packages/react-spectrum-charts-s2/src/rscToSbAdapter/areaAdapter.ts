@@ -9,12 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { AreaOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bullet.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+import { AreaProps } from '../types';
+import { childrenToOptions } from './childrenAdapter';
 
-export * from './supplemental';
+export const getAreaOptions = ({ children, ...areaProps }: AreaProps): AreaOptions => {
+  const { chartInspects, chartPopovers } = childrenToOptions(children);
+  return {
+    ...areaProps,
+    chartInspects,
+    chartPopovers,
+    markType: 'area',
+  };
+};

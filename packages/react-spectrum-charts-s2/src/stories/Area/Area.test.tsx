@@ -9,12 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Area } from '../../pre-alpha/components/Area';
+import { findChart, render } from '../../test-utils';
+import { Basic } from './Features/AreaBasic.story';
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bullet.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+describe('Area', () => {
+  // Area is not a real React component. This test just provides test coverage for sonarqube
+  test('Area pseudo element', () => {
+    render(<Area />);
+  });
 
-export * from './supplemental';
+  test('Basic renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+  });
+});

@@ -13,7 +13,7 @@ import { Fragment, createElement } from 'react';
 
 import { Chart } from '../Chart';
 import { Bar, ChartInspect, Line } from '../components';
-import { Bullet, Donut, Scatter, Trendline } from '../pre-alpha';
+import { Area, Bullet, Donut, Scatter, Trendline } from '../pre-alpha';
 import {
   debugLog,
   getAllElements,
@@ -57,6 +57,9 @@ describe('utils', () => {
               <ChartInspect />
             </Trendline>
           </Scatter>
+          <Area>
+            <ChartInspect />
+          </Area>
           <Bullet>
             <ChartInspect />
           </Bullet>
@@ -65,7 +68,7 @@ describe('utils', () => {
 
       const matches = getAllElements(element, ChartInspect);
 
-      expect(matches).toHaveLength(7);
+      expect(matches).toHaveLength(8);
       expect(matches[0].name).toBe('bar0');
       expect(matches[1].name).toBe('myLine');
       expect(matches[2].name).toBe('line1');
@@ -75,7 +78,8 @@ describe('utils', () => {
       // parent), so it must combine with its parent as `scatter1Trendline`, matching the
       // `${name}Trendline_hoverGroup` mark name in vega-spec-builder-s2.
       expect(matches[5].name).toBe('scatter1Trendline');
-      expect(matches[6].name).toBe('bullet0');
+      expect(matches[6].name).toBe('area0');
+      expect(matches[7].name).toBe('bullet0');
     });
   });
 

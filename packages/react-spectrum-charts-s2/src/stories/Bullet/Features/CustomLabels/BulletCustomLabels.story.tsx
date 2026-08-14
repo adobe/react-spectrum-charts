@@ -21,7 +21,7 @@ import { BulletProps, ChartProps } from '../../../../types';
 import { customLabelBulletData, customLabelThresholdsData } from '../../../data/bulletData';
 
 export default {
-  title: 'React Spectrum Charts 2/Bullet/Features/CustomLabels',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features/CustomLabels',
   component: Bullet,
 };
 

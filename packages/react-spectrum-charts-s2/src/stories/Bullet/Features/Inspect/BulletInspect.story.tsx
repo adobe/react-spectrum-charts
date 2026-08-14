@@ -24,7 +24,7 @@ import { BulletProps, ChartProps } from '../../../../types';
 import { basicBulletData, coloredThresholdsData } from '../../../data/bulletData';
 
 export default {
-  title: 'React Spectrum Charts 2/Bullet/Features/Inspect',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features/Inspect',
   component: Bullet,
 };
 

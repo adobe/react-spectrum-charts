@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+export * from './Area';
 export * from './Bullet';
 export * from './Donut';
 export * from './DonutSummary';
