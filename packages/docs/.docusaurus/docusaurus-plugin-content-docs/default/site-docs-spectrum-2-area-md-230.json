@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/area",
+  "title": "Area (S2)",
+  "description": "Area is a pre-alpha component — it has no finalized Spectrum 2 design yet",
+  "source": "@site/docs/spectrum2/area.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/area",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/area",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/area.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "sidebar_position": 8
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Pre-Alpha Components",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/pre-alpha"
+  },
+  "next": {
+    "title": "Scatter (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/scatter"
+  }
+}
