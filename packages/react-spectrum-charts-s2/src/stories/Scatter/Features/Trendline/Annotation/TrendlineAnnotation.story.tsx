@@ -22,7 +22,7 @@ import { TrendlineProps } from '../../../../../types';
 import { characterData } from '../../../../data/marioKartData';
 
 export default {
-  title: 'React Spectrum Charts 2/Scatter/Features/Trendline/Annotation',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Trendline/Annotation',
   component: TrendlineAnnotation,
 };
 

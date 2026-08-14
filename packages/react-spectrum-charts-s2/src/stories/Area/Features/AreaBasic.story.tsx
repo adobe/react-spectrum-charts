@@ -22,7 +22,7 @@ import { AreaProps, ChartProps } from '../../../types';
 import { workspaceTrendsData } from '../../data/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Area/Features',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Area/Features',
   component: Area,
 };
 

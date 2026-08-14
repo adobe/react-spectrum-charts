@@ -23,7 +23,7 @@ import { bindWithProps } from '../../../../test-utils';
 import { AreaProps, ChartProps } from '../../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Area/Features/Inspect',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Area/Features/Inspect',
   component: Area,
 };
 

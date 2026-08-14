@@ -27,7 +27,15 @@ import {
 import { AxisElement } from './axis';
 import { ChartInspectElement, ChartPopoverElement } from './dialogs';
 import { LegendElement } from './legend.types';
-import { AreaElement, BarAnnotationElement, BarElement, DonutElement, DonutSummaryElement, LineElement } from './marks';
+import {
+  AreaElement,
+  BarAnnotationElement,
+  BarElement,
+  BulletElement,
+  DonutElement,
+  DonutSummaryElement,
+  LineElement,
+} from './marks';
 import { ScatterElement } from './marks/scatter.types';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
@@ -36,6 +44,7 @@ export type ChartChildElement =
   | AreaElement
   | AxisElement
   | BarElement
+  | BulletElement
   | DonutElement
   | LegendElement
   | LineElement

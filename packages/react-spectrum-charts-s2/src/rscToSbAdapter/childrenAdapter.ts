@@ -47,6 +47,7 @@ import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
 import {
   Area,
+  Bullet,
   Donut,
   DonutSummary,
   Scatter,
@@ -62,6 +63,7 @@ import {
   AxisThumbnailProps,
   BarDirectLabelProps,
   BarProps,
+  BulletProps,
   ChartInspectProps,
   ChartPopoverProps,
   DonutProps,
@@ -84,6 +86,7 @@ import { sanitizeChildren } from '../utils';
 import { getAreaOptions } from './areaAdapter';
 import { getAxisOptions } from './axisAdapter';
 import { getBarOptions } from './barAdapter';
+import { getBulletOptions } from './bulletAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
 import { getChartInspectOptions } from './chartInspectAdapter';
 import { getDonutOptions } from './donutAdapter';
@@ -161,6 +164,10 @@ export const childrenToOptions = (
 
       case BarDirectLabel.displayName:
         barDirectLabels.push(child.props as BarDirectLabelProps);
+        break;
+
+      case Bullet.displayName:
+        marks.push(getBulletOptions(child.props as BulletProps));
         break;
 
       case ChartPopover.displayName:
