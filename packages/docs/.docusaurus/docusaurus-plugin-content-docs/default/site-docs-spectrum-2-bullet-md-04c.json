@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/bullet",
+  "title": "Bullet (S2)",
+  "description": "Bullet is a pre-alpha component — it has no finalized Spectrum 2 design yet",
+  "source": "@site/docs/spectrum2/bullet.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/bullet",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/bullet",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/bullet.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "sidebar_position": 8
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Area (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/area"
+  },
+  "next": {
+    "title": "Scatter (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/scatter"
+  }
+}
