@@ -22,7 +22,7 @@ import { ChartProps } from '../../../../types';
 import { characterData } from '../../../data/marioKartData';
 
 export default {
-  title: 'React Spectrum Charts 2/Scatter/Features/Path',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Path',
   component: ScatterPath,
 };
 

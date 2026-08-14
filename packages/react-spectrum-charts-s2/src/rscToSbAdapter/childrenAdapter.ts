@@ -46,6 +46,8 @@ import { LinePointAnnotation } from '../components/LinePointAnnotation';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
 import {
+  Area,
+  Bullet,
   Combo,
   Donut,
   DonutSummary,
@@ -57,10 +59,12 @@ import {
   TrendlineAnnotation,
 } from '../pre-alpha';
 import {
+  AreaProps,
   AxisProps,
   AxisThumbnailProps,
   BarDirectLabelProps,
   BarProps,
+  BulletProps,
   ChartInspectProps,
   ChartPopoverProps,
   ComboProps,
@@ -81,8 +85,10 @@ import {
   TrendlineProps,
 } from '../types';
 import { sanitizeChildren } from '../utils';
+import { getAreaOptions } from './areaAdapter';
 import { getAxisOptions } from './axisAdapter';
 import { getBarOptions } from './barAdapter';
+import { getBulletOptions } from './bulletAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
 import { getChartInspectOptions } from './chartInspectAdapter';
 import { getComboOptions } from './comboAdapter';
@@ -143,6 +149,10 @@ export const childrenToOptions = (
       continue;
     }
     switch (child.type.displayName) {
+      case Area.displayName:
+        marks.push(getAreaOptions(child.props as AreaProps));
+        break;
+
       case Axis.displayName:
         axes.push(getAxisOptions(child.props as AxisProps));
         break;
@@ -157,6 +167,10 @@ export const childrenToOptions = (
 
       case BarDirectLabel.displayName:
         barDirectLabels.push(child.props as BarDirectLabelProps);
+        break;
+
+      case Bullet.displayName:
+        marks.push(getBulletOptions(child.props as BulletProps));
         break;
 
       case ChartPopover.displayName:

@@ -27,14 +27,25 @@ import {
 import { AxisElement } from './axis';
 import { ChartInspectElement, ChartPopoverElement } from './dialogs';
 import { LegendElement } from './legend.types';
-import { BarAnnotationElement, BarElement, ComboElement, DonutElement, DonutSummaryElement, LineElement } from './marks';
+import {
+  AreaElement,
+  BarAnnotationElement,
+  BarElement,
+  BulletElement,
+  ComboElement,
+  DonutElement,
+  DonutSummaryElement,
+  LineElement,
+} from './marks';
 import { ScatterElement } from './marks/scatter.types';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
 
 export type ChartChildElement =
+  | AreaElement
   | AxisElement
   | BarElement
+  | BulletElement
   | ComboElement
   | DonutElement
   | LegendElement

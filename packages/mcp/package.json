@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/mcp",
-  "version": "1.51.0",
+  "version": "1.52.0",
   "description": "MCP Server for React Spectrum Charts documentation",
   "type": "module",
   "main": "./dist/index.js",
@@ -49,8 +49,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.24.3",
-    "@spectrum-charts/constants": "1.51.0",
-    "@spectrum-charts/themes": "1.51.0",
+    "@spectrum-charts/constants": "1.52.0",
+    "@spectrum-charts/themes": "1.52.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {

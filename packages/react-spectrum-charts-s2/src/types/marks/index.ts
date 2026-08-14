@@ -10,7 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
+export * from './area.types';
 export * from './bar.types';
+export * from './bullet.types';
 export * from './combo.types';
 export * from './donut.types';
 export * from './line.types';

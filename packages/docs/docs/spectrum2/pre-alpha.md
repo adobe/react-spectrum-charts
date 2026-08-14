@@ -18,9 +18,11 @@ Pre-alpha components:
 
 ## Current pre-alpha components
 
+- `Area` — area charts
 - `Scatter` — scatter plots, with `ScatterPath`, `ScatterAnnotation`, and `Trendline`
   (+ `TrendlineAnnotation`) child components
 - `Donut`, `DonutSummary`, `SegmentLabel` — donut charts
+- `Bullet` — bullet charts for KPI progress against targets, with `ChartInspect` support
 - `Combo` — overlays a `Bar` mark and a `Line` mark in the same chart
 
 ## Importing pre-alpha components

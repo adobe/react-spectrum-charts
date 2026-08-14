@@ -24,7 +24,7 @@ import { ChartProps, ScatterProps } from '../../../../types';
 import { characterData } from '../../../data/marioKartData';
 
 export default {
-  title: 'React Spectrum Charts 2/Scatter/Features/Inspect',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Inspect',
   component: Scatter,
 };
 
