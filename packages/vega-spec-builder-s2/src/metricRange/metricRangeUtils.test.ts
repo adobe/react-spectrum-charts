@@ -121,6 +121,7 @@ const basicMetricRangeMarks = [
         y: { scale: 'yLinear', field: 'metricStart' },
         y2: { scale: 'yLinear', field: 'metricEnd' },
         fill: { scale: COLOR_SCALE, field: 'series' },
+        defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
       },
       update: {
         cursor: undefined,

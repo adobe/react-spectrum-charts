@@ -107,6 +107,7 @@ const defaultSpec = initializeSpec({
               strokeWidth: { value: 1.5 },
               strokeJoin: { value: 'round' },
               tooltip: undefined,
+              defined: { signal: 'isValid(datum["value0"]) || isValid(datum["value1"])' },
             },
             update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },

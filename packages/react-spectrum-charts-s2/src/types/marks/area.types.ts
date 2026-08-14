@@ -9,13 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './Area';
-export * from './Donut';
-export * from './DonutSummary';
-export * from './Scatter';
-export * from './ScatterAnnotation';
-export * from './ScatterPath';
-export * from './SegmentLabel';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
+import { AreaOptions } from '@spectrum-charts/vega-spec-builder-s2';
+
+import { ChartInspectElement, ChartPopoverElement } from '../dialogs';
+import { Children } from '../util.types';
+
+type AreaChildElement = ChartInspectElement | ChartPopoverElement;
+
+export interface AreaProps extends Omit<AreaOptions, 'chartInspects' | 'chartPopovers' | 'markType'> {
+  children?: Children<AreaChildElement>;
+}
+
+export type AreaElement = ReactElement<AreaProps, JSXElementConstructor<AreaProps>>;
