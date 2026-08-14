@@ -1,0 +1,60 @@
+{
+  "id": "gh-701-bullet-value-label-color-coupling",
+  "title": "Bullet Value Label Color Is Coupled to thresholdBarColor Only When labelPosition Is Top",
+  "chartType": "bullet",
+  "kind": "bug",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "The technical cause is fully understood, but the fix direction (always render a fixed color vs. add a new independent label-color prop) is an open product decision raised by the issue itself, and whichever direction is chosen requires new logic in getBulletMarkValueLabel/getBulletLabelAxesRight that has no existing precedent to copy elsewhere in this file. The s1/s2 change is the same edit repeated, not extra complexity."
+  },
+  "summary": "When labelPosition is 'top', the Bullet chart's value label fill color is derived from the threshold bar's color whenever thresholdBarColor is enabled, but when labelPosition is 'side' the same value is instead rendered via a Vega axis label whose color never reacts to thresholdBarColor - so toggling labelPosition changes whether the value text's color responds to thresholdBarColor.",
+  "symptom": "With thresholdBarColor enabled, toggling a Bullet chart's labelPosition between 'top' and 'side' changes the value label's color: in the 'top' position the label can take on the active threshold segment's color, while in the 'side' position it always stays a fixed dark color.",
+  "rootCause": "When labelPosition is 'top' (or direction is 'row'), the value label is drawn by getBulletMarkValueLabel (packages/vega-spec-builder/src/bullet/bulletMarkUtils.ts:196-227; identical logic in packages/vega-spec-builder-s2/src/bullet/bulletMarkUtils.ts:182-213). Its `fill` is `{ signal: fillExpr }`, where fillExpr (bulletMarkUtils.ts:200-203 s1 / 186-189 s2) evaluates `datum.barColor === defaultColor ? solidColor : datum.barColor` whenever `thresholdBarColor` is true and thresholds exist, so the label's fill can become the active threshold segment's color (`datum.barColor`) rather than a fixed color. When labelPosition is 'side' (and direction is 'column'), the value is instead rendered by the `groupScale` right axis via getBulletLabelAxesRight (bulletMarkUtils.ts:433-458 s1 / 355-380 s2), which only sets `encode.labels.update.text` and has no `fill`/`labelColor` override and no reference to `thresholdBarColor` or `barColor` at all, so the axis label falls back to Vega's default label color and is unaffected by the threshold. addAxes (bulletMarkUtils.ts:485-493 s1 / 407-416 s2) only invokes getBulletLabelAxesRight when `labelPosition === 'side' && direction === 'column'`, so the two label-rendering code paths for 'top' vs. 'side' never share a color rule.",
+  "comparison": [
+    {
+      "aspect": "Value label fill/color source",
+      "expected": "The value text's color should be determined the same way regardless of labelPosition.",
+      "actual": "labelPosition 'top' draws the value as a text mark whose fill can be datum.barColor when thresholdBarColor is set; labelPosition 'side' draws the value via an Axis label with no fill override, always using Vega's default label color."
+    },
+    {
+      "aspect": "Effect of thresholdBarColor on the value label",
+      "expected": "thresholdBarColor should either consistently affect the value label's color in both positions, or (per the issue's suggested alternative) never affect it and always render a fixed, accessible color.",
+      "actual": "thresholdBarColor only affects the value label's color in the 'top' position; it has no effect at all in the 'side' position."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "packages/vega-spec-builder-s2/src/bullet/bulletMarkUtils.ts contains the same getBulletMarkValueLabel/getBulletLabelAxesRight logic (using getS2ColorValue instead of getColorValue), so the same fix must be applied there too."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/bullet/bulletMarkUtils.ts",
+      "change": "Bug location. Decide and implement a single color rule for the value label independent of labelPosition - either always use a fixed color (e.g. drop the thresholdBarColor-driven fillExpr in getBulletMarkValueLabel in favor of the existing solidColor), or expose an explicit label-color control and apply it consistently in both getBulletMarkValueLabel's fill and getBulletLabelAxesRight's axis label encode.",
+      "lines": "196-227 (getBulletMarkValueLabel), 433-458 (getBulletLabelAxesRight)"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bullet/bulletMarkUtils.ts",
+      "change": "Apply the identical fix for S2 parity.",
+      "lines": "182-213 (getBulletMarkValueLabel), 355-380 (getBulletLabelAxesRight)"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/bullet/bulletMarkUtils.test.ts",
+      "change": "Add/update tests asserting the value label's fill ('top' position, existing block at getBulletMarkValueLabel threshold color logic) and the right-axis label color ('side' position) agree with the chosen fixed-color/new-prop approach when thresholdBarColor is true.",
+      "lines": "428-461 (existing 'getBulletMarkValueLabel threshold color logic' describe block)"
+    }
+  ],
+  "openQuestions": [
+    "Per the issue, should the fix add a new dedicated label-color prop, or hardcode the value label to always render a fixed dark color regardless of thresholdBarColor/labelPosition? The issue author prefers the latter for accessibility but leaves the decision open."
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/701" }
+  ]
+}
