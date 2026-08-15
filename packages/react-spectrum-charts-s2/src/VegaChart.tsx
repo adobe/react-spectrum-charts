@@ -9,41 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, useEffect, useMemo, useRef } from 'react';
 
-import { Config, Padding, Renderers, Spec, View, expressionFunction } from 'vega';
-import embed from 'vega-embed';
+import { Config, Padding, Renderers, Spec, View } from 'vega';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
-import { getLocale } from '@spectrum-charts/locales';
-import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
 import { ChartProps } from './types';
-
-// Register a custom expression function that returns the full container width (including axis space).
-// `view._viewWidth` is the container width minus spec-level padding; adding padding back gives the
-// true container width. Passing `width` as an argument creates a reactive dependency so the signal
-// re-evaluates on every resize.
-expressionFunction('rscContainerWidth', function (this: { context: { dataflow: View } }) {
-  const view = this.context.dataflow;
-  const p = view.padding() as { left?: number; right?: number };
-  const viewWidth = (view as unknown as { _viewWidth?: number })._viewWidth ?? 0;
-  return viewWidth + (p.left ?? 0) + (p.right ?? 0);
-});
-
-/**
- * Resizes an existing Vega view without recreating it.
- */
-export const resizeView = (view: View | undefined, width: number, height: number): void => {
-  if (view && width && height) {
-    // Two passes: first updates width/height signals; second lets Vega re-settle layout
-    // after dependent changes (e.g. legend column count → legend height → plot area height).
-    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
-  }
-};
+import { VegaChartControllerHandle, attachVegaChartController } from './vegaChartController/attachVegaChartController';
+import { VegaChartInteractionConfig } from './vegaChartController/interactionConfig';
 
 export interface VegaChartProps {
   config: Config;
@@ -51,6 +29,7 @@ export interface VegaChartProps {
   data: ChartData[];
   debug: boolean;
   height: number;
+  interactionConfig?: VegaChartInteractionConfig;
   locale: ChartProps['locale'];
   onNewView: (view: View) => void;
   padding: Padding;
@@ -66,6 +45,7 @@ export const VegaChart: FC<VegaChartProps> = ({
   data,
   debug,
   height,
+  interactionConfig,
   locale,
   onNewView,
   padding,
@@ -76,13 +56,12 @@ export const VegaChart: FC<VegaChartProps> = ({
   width,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const chartView = useRef<View | undefined>(undefined);
+  const handleRef = useRef<VegaChartControllerHandle | null>(null);
+  // Skips the recreate effect on the very first render — the mount effect below already did the
+  // initial embed. Without this, every mount would embed twice (once from mount, once from recreate
+  // firing on the same render pass); harmless behaviorally thanks to attachVegaChartController's own
+  // cancellation guard, but a real efficiency regression.
   const hasMounted = useRef(false);
-  // AN-445759: flipped to true when dimensions become valid post-mount with no existing view,
-  // forcing the embed effect to run even though width/height are not in its deps.
-  const [needsInitEmbed, setNeedsInitEmbed] = useState(false);
-
-  const { number: numberLocale, time: timeLocale } = useMemo(() => getLocale(locale), [locale]);
 
   // Need to de a deep copy of the data because vega tries to transform the data
   const chartData = useMemo(() => {
@@ -99,72 +78,61 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   useDebugSpec(debug, spec, chartData, width, height, config);
 
-  // Handle resize without recreating the view (prevents axis image flickering).
-  // AN-445759: skip on initial mount — the embed effect handles that render. After mount, if
-  // dimensions become valid with no existing view (started at 0), trigger the embed via needsInitEmbed.
+  // Mount/destroy — runs exactly once per actual mount. Constructs the controller, which performs
+  // the initial embed itself if dimensions are already valid.
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const handle = attachVegaChartController(containerRef.current, {
+      chartData,
+      config,
+      data,
+      height,
+      interactionConfig,
+      locale,
+      onNewView,
+      padding,
+      renderer,
+      signals,
+      spec,
+      tooltip,
+      width,
+    });
+    handleRef.current = handle;
+    return () => {
+      handle.destroy();
+      handleRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount/unmount only; prop changes flow through the resize/recreate effects below, not through re-running this effect.
+  }, []);
+
+  // Cheap resize path — does not recreate the view (prevents axis image flickering).
+  useEffect(() => {
+    handleRef.current?.resize(width, height);
+  }, [width, height]);
+
+  // Expensive recreate path.
   useEffect(() => {
     if (!hasMounted.current) {
       hasMounted.current = true;
       return;
     }
-    if (width && height && !chartView.current) {
-      setNeedsInitEmbed(true);
-    } else {
-      resizeView(chartView.current, width, height);
-    }
-  }, [width, height]);
-
-  useEffect(() => {
-    if (width && height && containerRef.current) {
-      const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
-      const tableData = specCopy.data?.find((d) => d.name === TABLE);
-      if (tableData && 'values' in tableData) {
-        tableData.values = chartData.table;
-      }
-      if (signals) {
-        specCopy.signals = specCopy.signals?.map((signal) => {
-          if (signal.name in signals && signals[signal.name] !== undefined && 'value' in signal) {
-            signal.value = signals[signal.name];
-          }
-          return signal;
-        });
-      }
-      const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
-      const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
-      const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
-
-      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
-        chartView.current = view;
-        onNewView(view);
-        view.resize();
-        view.runAsync();
-        // One additional render to settle all resize calculations
-        setTimeout(() => view.runAsync(), 0);
-      });
-    }
-    return () => {
-      // destroy the chart on unmount
-      if (chartView.current) {
-        chartView.current.finalize();
-        chartView.current = undefined;
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    chartData.table,
-    config,
-    data,
-    needsInitEmbed,
-    numberLocale,
-    timeLocale,
-    onNewView,
-    padding,
-    renderer,
-    signals,
-    spec,
-    tooltip,
-    locale,
-  ]);
+    handleRef.current?.updateSpec({
+      chartData,
+      config,
+      data,
+      height,
+      interactionConfig,
+      locale,
+      onNewView,
+      padding,
+      renderer,
+      signals,
+      spec,
+      tooltip,
+      width,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- width/height intentionally excluded, handled by the resize effect above.
+  }, [chartData.table, config, data, interactionConfig, onNewView, padding, renderer, signals, spec, tooltip, locale]);
 
   return <div ref={containerRef} className="rsc"></div>;
 };

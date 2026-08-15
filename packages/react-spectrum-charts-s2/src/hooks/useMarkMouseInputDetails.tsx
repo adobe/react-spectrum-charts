@@ -11,18 +11,11 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
-
 import { Bar, BarElement, Chart, ChartChildElement } from '../index';
+import { MarkMouseInputDetail } from '../vegaChartController/interactionConfig';
 import { getAllMarkElements } from '../utils';
 
 type MappedMarkElement = { name: string; element: BarElement };
-
-export type MarkMouseInputDetail = {
-  markName?: string;
-  onMouseOver?: (datum: Datum) => void;
-  onMouseOut?: (datum: Datum) => void;
-};
 
 export default function useMarkMouseInputDetails(children: ChartChildElement[]): MarkMouseInputDetail[] {
   const markElements = useMemo(() => {

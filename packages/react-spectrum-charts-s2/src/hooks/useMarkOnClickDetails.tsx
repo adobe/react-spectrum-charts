@@ -11,19 +11,11 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { Bar, BarElement, Chart, ChartChildElement, Line, LineElement, MarkCallback } from '../index';
-import { ContextMenuMode } from '../types/marks/line.types';
-import { ContextMenuCallback } from '../types/util.types';
+import { Bar, BarElement, Chart, ChartChildElement, Line, LineElement } from '../index';
+import { MarkOnClickDetail } from '../vegaChartController/interactionConfig';
 import { getAllMarkElements } from '../utils';
 
 type MappedMarkElement = { name: string; element: BarElement | LineElement };
-
-export type MarkOnClickDetail = {
-  markName?: string;
-  onClick?: MarkCallback;
-  onContextMenu?: ContextMenuCallback;
-  contextMenuMode?: ContextMenuMode;
-};
 
 export default function useMarkOnClickDetails(children: ChartChildElement[]): MarkOnClickDetail[] {
   const markElements = useMemo(() => {
