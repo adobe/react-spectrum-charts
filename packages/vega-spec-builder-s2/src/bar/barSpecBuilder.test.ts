@@ -72,6 +72,14 @@ const startingSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
 });
 
+// addInspectSignals() (chartInspectUtils.ts) looks up the chart-level HIGHLIGHTED_GROUP signal by
+// name and expects it to already exist -- normally added by chartSpecBuilder before any mark builder
+// runs, so group-highlighted-by tests need to seed it explicitly since they call addBar() in isolation.
+const startingSpecWithHighlightSignals = initializeSpec({
+  scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
+  signals: defaultSignals,
+});
+
 const defaultMetricScaleDomain: ScaleData = { data: FILTERED_TABLE, fields: ['value1'] };
 const defaultMetricScale: Scale = {
   name: 'yLinear',
@@ -469,7 +477,7 @@ describe('barSpecBuilder', () => {
 
       describe('group-highlighted-by', () => {
         test('highlightBy: "dimension" adds a groupId transform keyed by the dimension and includes it in the hoverTargetData groupby', () => {
-          const spec = addBar(startingSpec, {
+          const spec = addBar(startingSpecWithHighlightSignals, {
             idKey: MARK_ID,
             markType: 'bar',
             chartInspects: [{ highlightBy: 'dimension' }],
@@ -491,7 +499,7 @@ describe('barSpecBuilder', () => {
         });
 
         test('highlightBy: "series" adds a groupId transform keyed by the series id', () => {
-          const spec = addBar(startingSpec, {
+          const spec = addBar(startingSpecWithHighlightSignals, {
             idKey: MARK_ID,
             markType: 'bar',
             chartInspects: [{ highlightBy: 'series' }],
@@ -506,7 +514,7 @@ describe('barSpecBuilder', () => {
         });
 
         test('highlightBy: [fields] adds a groupId transform joining the supplied fields', () => {
-          const spec = addBar(startingSpec, {
+          const spec = addBar(startingSpecWithHighlightSignals, {
             idKey: MARK_ID,
             markType: 'bar',
             chartInspects: [{ highlightBy: ['fieldA', 'fieldB'] }],
