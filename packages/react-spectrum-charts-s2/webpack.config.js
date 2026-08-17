@@ -20,7 +20,7 @@ const banner = `${name}@v${version}`;
 module.exports = {
   entry: {
     index: './index.ts',
-    // 'ai-catalog': './src/ai-catalog/index.ts', // commented out - pre-existing TS errors unrelated to this branch
+    'ai-catalog': './src/ai-catalog/index.ts',
     'pre-alpha': './pre-alpha/index.ts',
   },
   mode: 'production',
@@ -39,7 +39,7 @@ module.exports = {
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: { loader: 'ts-loader', options: { onlyCompileBundledFiles: true } },
+        use: 'ts-loader',
       },
       {
         test: /\.(sa|sc|c)ss$/,
