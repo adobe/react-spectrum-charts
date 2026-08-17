@@ -1,9 +1,7 @@
 # Using react-spectrum-charts-s2 with React Server Components
 
-> A naming note: "RSC" below always means **React Server Components**, the React feature. It's
-> unrelated to this codebase's own `Rsc`-prefixed internal naming (`RscChart.tsx`,
-> `rscToSbAdapter`), which predates React Server Components and just means "React Spectrum
-> Charts."
+> "RSC" below means **React Server Components**. This codebase's own `Rsc`-prefixed naming
+> (`RscChart.tsx`, `rscToSbAdapter`) means "React Spectrum Charts" — unrelated.
 
 Charts render through `vega-embed`, which mounts a live Vega `View` to a real DOM node and
 drives it with browser events — there's no server-side equivalent that preserves interactivity.
