@@ -1,0 +1,71 @@
+{
+  "id": "add-sankey-mark",
+  "title": "Add Sankey Chart Mark",
+  "chartType": "sankey",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "multi-consumer",
+  "complexity": {
+    "score": 5,
+    "rationale": "Vega has no native sankey/flow-layout transform, and a from-scratch implementation typically hand-rolls this rather than using a full crossing-minimizing sankey library. This means column assignment (topological layering from source/target pairs), vertical node positioning/packing, and link ribbon path geometry (a smooth bezier connecting node edges) are all genuinely new algorithms to design from scratch in this codebase, each independent of the others and each with open questions about exact behavior — the definition of significant research plus significant implementation complexity. Progressive node expansion (see requirements) adds a further independent piece of new interaction-state logic."
+  },
+  "summary": "A source/target/value flow mark with a custom multi-column layout (topological layering, no crossing minimization) rendering nodes as rects and flows as bezier ribbons sized by value, with separate node/link tooltips, click-to-pin, and optional progressive node expansion.",
+  "requirements": [
+    "Accepts `source`, `target`, `value` (required) fields defining weighted flow edges between named nodes",
+    "Assigns nodes to columns via topological layering (a node's column is derived from its position in the source→target dependency chain), not a fixed/manual column count",
+    "Renders each node as a rect sized by its total (in + out) flow value, and each flow as a ribbon (bezier-curved band) between the source and target node's edges, with ribbon thickness proportional to value",
+    "No crossing-minimization pass — ribbons may visually cross rather than adopting a more complex layout algorithm",
+    "Node hover/click and link (ribbon) hover/click have separate, independently-configurable tooltips",
+    "Clicking a node or link pins its highlight state (and, for a node, its connected flows), persisting past mouseout, following the same click-to-pin convention as Funnel/Network/Chord",
+    "Supports an optional progressive node-expansion mode: initially render only nodes within N hops of a starting node, with a click/interaction on an edge node revealing its next set of connected nodes and flows rather than rendering the full graph up front"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "A cycle in source/target relationships (A→B→A)", "expectedBehavior": "Topological layering cannot resolve a strict order for cyclic data — must be explicitly detected and either broken (e.g. treat the back-edge as a same-column flow) or the cyclic edge documented as unsupported, rather than infinite-looping the layering algorithm." },
+    { "case": "A node with only outgoing or only incoming flows (source or sink)", "expectedBehavior": "Renders in the first or last column respectively; layout must not require every node to have both in and out edges." },
+    { "case": "Disconnected flow chains (multiple unrelated source/target chains)", "expectedBehavior": "Each chain lays out independently within the shared column structure; no requirement to visually separate them." },
+    { "case": "A single node with no edges", "expectedBehavior": "Renders in its own column as an isolated rect with zero-width flows." },
+    { "case": "Two ribbons with identical column-adjacent source/target overlapping vertically", "expectedBehavior": "Since there's no crossing-minimization, overlaps/visual crossings are expected and acceptable per requirements — not a bug to fix." },
+    { "case": "Expanding a node that has no further un-shown connections", "expectedBehavior": "No-op — the expansion affordance should not be shown, or should be a no-op, when a node has nothing left to reveal." },
+    { "case": "Light vs dark background", "expectedBehavior": "Node/link colors resolve through the existing colorScheme-aware color scale." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesControlledHighlight: click-to-pin on nodes/links is new adjacency-based highlight logic, not CONTROLLED_HIGHLIGHTED_TABLE/SERIES, but should follow the same opacity-encode convention. touchesTooltipOrPopover: nodes and links each need independent ChartTooltip/ChartPopover configuration — this may require extending the interactive-mark system to support two distinct interactiveMarkNames within one mark group (node layer + link layer) rather than the single interactiveMarkName most marks use; flag for architecture review during implementation. requiresNewSignalOrScale: true — a `pinnedElement` signal (tracking either a node or link id), an `expandedNodes` signal for progressive expansion (set-valued, growing on interaction), plus a linear value-to-thickness scale for ribbons and node heights. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/sankeySpec.types.ts", "change": "Create SankeyOptions/SankeyOptionsWithDefaults/SankeySpecOptions with required `source`/`target`/`value` fields and an optional `expandable`/`initialHops` option pair for progressive node expansion." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Sankey types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add SankeyOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/sankey/sankeyTestUtils.ts", "change": "Fully-populated defaultSankeyOptions fixture, including a cyclic-edge variant and a source/sink-only-node variant." },
+    { "file": "packages/vega-spec-builder-s2/src/sankey/sankeyLayoutUtils.ts", "change": "New: assignColumns (topological layering from source/target pairs, with cycle detection), packNodesInColumn (vertical positioning sized by total flow value), buildRibbonPath (bezier path string between source/target node edges sized by value) — no existing Vega transform or codebase util covers any of this; all new." },
+    { "file": "packages/vega-spec-builder-s2/src/sankey/sankeyMarkUtils.ts", "change": "getSankeyNodeMark (rect per node), getSankeyLinkMark (path per flow using buildRibbonPath)." },
+    { "file": "packages/vega-spec-builder-s2/src/sankey/sankeySpecBuilder.ts", "change": "addSankey, addData (calls the new layout helpers to precompute node/link positions as data transforms, scoped to expandedNodes when expandable is set), addSignals (pinnedElement, expandedNodes, plus interactive-mark signals for both node and link layers), setScales (value-to-thickness linear scale, color scale)." },
+    { "file": "packages/vega-spec-builder-s2/src/sankey/sankeyLayoutUtils.test.ts", "change": "Unit tests for assignColumns (including cycle detection), packNodesInColumn, and buildRibbonPath geometry." },
+    { "file": "packages/vega-spec-builder-s2/src/sankey/sankeyMarkUtils.test.ts", "change": "Unit tests for getSankeyNodeMark/getSankeyLinkMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/sankey/sankeySpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register sankeyCount: -1 in initializeComponentCounts, import addSankey, add the 'sankey' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/sankey.types.ts", "change": "SankeyProps/SankeyElement, Omit-ing only fields replaced at the React boundary (separate node/link ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Sankey/Sankey.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Sankey/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Sankey'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Sankey from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Sankey to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Sankey/Sankey.story.tsx", "change": "Basic story plus a NodeAndLinkTooltip interaction story." }
+  ],
+  "openQuestions": [
+    "How should cyclic source/target data be handled — reject with a console warning and drop the back-edge, or render it as a same-column loop? Needs a product/design decision, not just an engineering default.",
+    "Does the interactive-mark system need architectural changes to support two independently-interactive layers (nodes and links) in one mark group, or is there already a precedent for this elsewhere worth checking first?",
+    "Exact node width and inter-column spacing — fixed pixel values, or proportional to chart width/number of columns?",
+    "For progressive node expansion: what triggers expansion (a dedicated affordance on the node vs. clicking the node itself, which would then conflict with click-to-pin), and how many hops does one expansion interaction reveal?"
+  ]
+}

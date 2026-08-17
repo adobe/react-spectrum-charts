@@ -1,0 +1,64 @@
+{
+  "id": "add-contour-mark",
+  "title": "Add Contour Chart Mark",
+  "chartType": "contour",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 2,
+    "rationale": "Vega has a native `contour` transform (2D kernel density estimation producing density bands directly), so no custom density-estimation algorithm needs to be designed. The underlying scatter-point layer reuses Scatter's existing symbol-mark construction as-is (aria-hidden, non-interactive). The only coordination work is layering the two and defaulting the points to non-interactive."
+  },
+  "summary": "An x/y density mark rendering KDE contour bands (Vega's native `contour` transform) with the underlying raw scatter points shown beneath, aria-hidden and non-interactive.",
+  "requirements": [
+    "Accepts `x`, `y` (required) continuous channels",
+    "Computes density contour bands via Vega's built-in `contour` transform (2D KDE) — no custom density algorithm",
+    "Renders the underlying raw data points beneath the contour bands, reusing Scatter's existing point-mark construction",
+    "Underlying points are `aria-hidden` and non-interactive — they are visual context only, not a hover/tooltip target"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Very few data points (e.g. fewer than 5)", "expectedBehavior": "KDE contour transform may produce sparse or empty bands with too little data — render whatever the transform outputs (including no bands) rather than special-casing a minimum count; underlying points still render." },
+    { "case": "All points at/near the same location", "expectedBehavior": "Density concentrates into a small number of tight, high-value bands — no special handling needed beyond what the contour transform already computes." },
+    { "case": "Light vs dark background", "expectedBehavior": "Contour band fill resolves through a theme-aware sequential color scale, consistent with Heatmap's sequential color scale approach." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Interaction conflicts", "expectedBehavior": "Since underlying points are non-interactive, hover/tooltip (if added to contour bands themselves in a later iteration) must not be blocked by the point layer's z-order." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesTooltipOrPopover: false for this initial spec — this feature has no stated tooltip behavior on bands, and underlying points are explicitly non-interactive; a future spec could add band-level tooltips. requiresNewSignalOrScale: true — a new sequential color scale over the contour transform's computed density value domain (same scale type Heatmap needs, but a separate scale instance since they're different marks). requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/contourSpec.types.ts", "change": "Create ContourOptions/ContourOptionsWithDefaults/ContourSpecOptions with required `x`/`y` fields." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Contour types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add ContourOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/contour/contourTestUtils.ts", "change": "Fully-populated defaultContourOptions fixture, including a sparse-data (few points) variant." },
+    { "file": "packages/vega-spec-builder-s2/src/contour/contourDataUtils.ts", "change": "addContourTransform (Vega `contour` transform configured for x/y KDE)." },
+    { "file": "packages/vega-spec-builder-s2/src/contour/contourMarkUtils.ts", "change": "getContourBandMark (path/shape mark per density band, filled via the new sequential scale), getUnderlyingPointMark (reuses scatterMarkUtils.ts's getScatterMark symbol construction with isInteractive forced false and aria-hidden set)." },
+    { "file": "packages/vega-spec-builder-s2/src/contour/contourSpecBuilder.ts", "change": "addContour, addData (calls addContourTransform), addSignals (none — non-interactive in this spec), setScales (sequential color scale over density value, plain continuous x/y scales)." },
+    { "file": "packages/vega-spec-builder-s2/src/contour/contourDataUtils.test.ts", "change": "Unit tests for addContourTransform, including the sparse-data case." },
+    { "file": "packages/vega-spec-builder-s2/src/contour/contourMarkUtils.test.ts", "change": "Unit tests for getContourBandMark/getUnderlyingPointMark using the fixture, asserting aria-hidden/non-interactive on the point layer." },
+    { "file": "packages/vega-spec-builder-s2/src/contour/contourSpecBuilder.test.ts", "change": "Per-function tests for addData/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register contourCount: -1 in initializeComponentCounts, import addContour, add the 'contour' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/contour.types.ts", "change": "ContourProps/ContourElement." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Contour/Contour.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Contour/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Contour'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Contour from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Contour to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Contour/Contour.story.tsx", "change": "Basic story with a clustered-points dataset showing visible density bands." }
+  ],
+  "openQuestions": [
+    "What sequential color palette/token should the density scale use, and should it match or differ from Heatmap's sequential scale for visual consistency across the two marks?",
+    "Should a future iteration add hover/tooltip on contour bands themselves (showing density value), given this spec explicitly scopes that out?"
+  ],
+  "relatedIssues": ["add-heatmap-mark", "add-geographic-mark"]
+}
