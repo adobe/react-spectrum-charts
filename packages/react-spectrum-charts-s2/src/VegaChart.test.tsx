@@ -13,7 +13,7 @@ import { render, waitFor } from '@testing-library/react';
 import { Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 
-import { clearPatternFillRegistry, getPatternFillUrl, registerPatternFill } from './utils';
+import { clearPatternFillRegistry, registerPatternFill } from './utils';
 import { VegaChart, VegaChartProps, resizeView } from './VegaChart';
 
 jest.mock('vega-embed');
@@ -146,7 +146,7 @@ describe('VegaChart init render cycle', () => {
 describe('canvas pattern-fill interception', () => {
 	const patternId = 'test-stripe';
 	const patternSpec = {
-		marks: [{ encode: { enter: { fill: { signal: getPatternFillUrl(patternId) } } } }],
+		marks: [{ encode: { enter: { fill: { value: { pattern: patternId } } } } }],
 	} as unknown as Spec;
 
 	let renderedCanvas: HTMLCanvasElement | undefined;
@@ -169,9 +169,9 @@ describe('canvas pattern-fill interception', () => {
 		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
 
 		const ctx = renderedCanvas?.getContext('2d') as CanvasRenderingContext2D;
-		ctx.fillStyle = getPatternFillUrl(patternId);
+		ctx.fillStyle = { pattern: patternId } as unknown as string;
 
-		expect(ctx.fillStyle).not.toBe(getPatternFillUrl(patternId));
+		expect(ctx.fillStyle).not.toEqual({ pattern: patternId });
 	});
 
 	test('does not engage the interception when renderer is svg', async () => {
@@ -180,7 +180,7 @@ describe('canvas pattern-fill interception', () => {
 		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
 
 		const ctx = renderedCanvas?.getContext('2d') as CanvasRenderingContext2D;
-		ctx.fillStyle = getPatternFillUrl(patternId);
+		ctx.fillStyle = { pattern: patternId } as unknown as string;
 
 		expect(ctx.fillStyle).toBe('#000000');
 	});
@@ -191,7 +191,7 @@ describe('canvas pattern-fill interception', () => {
 		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
 
 		const ctx = renderedCanvas?.getContext('2d') as CanvasRenderingContext2D;
-		ctx.fillStyle = getPatternFillUrl(patternId);
+		ctx.fillStyle = { pattern: patternId } as unknown as string;
 
 		expect(ctx.fillStyle).toBe('#000000');
 	});

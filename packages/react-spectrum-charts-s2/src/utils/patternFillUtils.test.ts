@@ -15,7 +15,6 @@ import {
   clearPatternFillRegistry,
   getPatternFillId,
   getPatternFillSource,
-  getPatternFillUrl,
   PatternTileSource,
   registerPatternFill,
   specHasPatternFill,
@@ -25,18 +24,16 @@ afterEach(() => {
   clearPatternFillRegistry();
 });
 
-describe('getPatternFillUrl() / getPatternFillId()', () => {
-  test('round-trips a pattern id through the url reference format', () => {
-    const url = getPatternFillUrl('stripe-blue');
-    expect(url).toBe('url(#rsc-pattern-stripe-blue)');
-    expect(getPatternFillId(url)).toBe('stripe-blue');
+describe('getPatternFillId()', () => {
+  test('extracts the pattern id from a structured pattern-fill value', () => {
+    expect(getPatternFillId({ pattern: 'stripe-blue' })).toBe('stripe-blue');
   });
 
   test('returns undefined for a plain color string', () => {
     expect(getPatternFillId('#ff0000')).toBeUndefined();
   });
 
-  test('returns undefined for a non-string value', () => {
+  test('returns undefined for a non-pattern-fill value', () => {
     expect(getPatternFillId(undefined)).toBeUndefined();
     expect(getPatternFillId({})).toBeUndefined();
   });
@@ -62,7 +59,7 @@ describe('specHasPatternFill()', () => {
 
   test('returns true when a pattern-fill reference appears anywhere in the spec', () => {
     const spec = {
-      marks: [{ encode: { enter: { fill: { signal: getPatternFillUrl('stripe-blue') } } } }],
+      marks: [{ encode: { enter: { fill: { value: { pattern: 'stripe-blue' } } } } }],
     } as unknown as Spec;
     expect(specHasPatternFill(spec)).toBe(true);
   });

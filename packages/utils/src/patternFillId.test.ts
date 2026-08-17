@@ -11,29 +11,32 @@
  */
 import {
   DEFAULT_PATTERN_FILL_IDS,
-  getColorMatchedPatternFillUrl,
   getPatternFillId,
-  getPatternFillUrl,
+  isPatternFillValue,
   resolvePatternFillGroup,
   resolvePatternFillValue,
 } from './patternFillId';
 
-describe('getPatternFillUrl() / getPatternFillId()', () => {
-  test('round-trips a pattern id through the url reference format', () => {
-    const url = getPatternFillUrl('diagonal-stripe');
-    expect(url).toBe('url(#rsc-pattern-diagonal-stripe)');
-    expect(getPatternFillId(url)).toBe('diagonal-stripe');
+describe('isPatternFillValue() / getPatternFillId()', () => {
+  test('recognizes a structured pattern-fill value', () => {
+    expect(isPatternFillValue({ pattern: 'diagonal-stripe' })).toBe(true);
+    expect(getPatternFillId({ pattern: 'diagonal-stripe' })).toBe('diagonal-stripe');
   });
 
-  test('returns undefined for a non-pattern-reference value', () => {
+  test('returns false/undefined for a plain color string', () => {
+    expect(isPatternFillValue('#ff0000')).toBe(false);
     expect(getPatternFillId('#ff0000')).toBeUndefined();
+  });
+
+  test('returns false/undefined for undefined', () => {
+    expect(isPatternFillValue(undefined)).toBe(false);
     expect(getPatternFillId(undefined)).toBeUndefined();
   });
 });
 
 describe('resolvePatternFillValue()', () => {
-  test('resolves a built-in pattern name to its url reference', () => {
-    expect(resolvePatternFillValue('dots')).toBe(getPatternFillUrl('dots'));
+  test('resolves a built-in pattern name to a structured value with no foreground', () => {
+    expect(resolvePatternFillValue('dots')).toStrictEqual({ pattern: 'dots' });
   });
 
   test('passes through a literal value unchanged', () => {
@@ -41,24 +44,16 @@ describe('resolvePatternFillValue()', () => {
   });
 });
 
-describe('getColorMatchedPatternFillUrl()', () => {
-  test('embeds the color in the pattern id, round-trippable via getPatternFillId', () => {
-    const url = getColorMatchedPatternFillUrl('dots', '#2680eb');
-    expect(url).toBe('url(#rsc-pattern-dots::#2680eb)');
-    expect(getPatternFillId(url)).toBe('dots::#2680eb');
-  });
-});
-
 describe('resolvePatternFillGroup()', () => {
   test('colorizes a built-in pattern name using a sibling literal color in the same group', () => {
     expect(resolvePatternFillGroup(['dots', '#2680eb'])).toStrictEqual([
-      getColorMatchedPatternFillUrl('dots', '#2680eb'),
+      { pattern: 'dots', foreground: '#2680eb' },
       '#2680eb',
     ]);
   });
 
-  test('falls back to the fixed neutral tile when no sibling color is present', () => {
-    expect(resolvePatternFillGroup(['dots', 'grid'])).toStrictEqual([getPatternFillUrl('dots'), getPatternFillUrl('grid')]);
+  test('falls back to the fixed neutral tile (no foreground) when no sibling color is present', () => {
+    expect(resolvePatternFillGroup(['dots', 'grid'])).toStrictEqual([{ pattern: 'dots' }, { pattern: 'grid' }]);
   });
 
   test('passes through literal colors unchanged regardless of group contents', () => {

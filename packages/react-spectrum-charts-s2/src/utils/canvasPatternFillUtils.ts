@@ -10,13 +10,16 @@
  * governing permissions and limitations under the License.
  */
 import {
-  COMPOSITE_PATTERN_SEPARATOR,
   getPatternFillId,
   getPatternFillSource,
+  isPatternFillValue,
+  PatternFillValue,
   PatternTileSource,
 } from './patternFillUtils';
 
 type FillStyleValue = string | CanvasGradient | CanvasPattern;
+/** The raw value Vega's canvas renderer may assign to fillStyle before our interception resolves it. */
+type InterceptedFillStyleValue = FillStyleValue | PatternFillValue;
 
 const patchedContexts = new WeakSet<CanvasRenderingContext2D>();
 
@@ -24,6 +27,9 @@ interface NativeFillStyleAccessor {
   get: (ctx: CanvasRenderingContext2D) => FillStyleValue;
   set: (ctx: CanvasRenderingContext2D, value: FillStyleValue) => void;
 }
+
+/** Serializes a structured pattern-fill value to a cache key; never used as the wire representation. */
+const getPatternCacheKey = (id: string, color?: string): string => (color ? `${id}::${color}` : id);
 
 const getNativeFillStyleAccessor = (ctx: CanvasRenderingContext2D): NativeFillStyleAccessor => {
   let proto: unknown = Object.getPrototypeOf(ctx);
@@ -78,17 +84,13 @@ const buildCanvasPattern = (ctx: CanvasRenderingContext2D, source: PatternTileSo
   return pattern ?? undefined;
 };
 
-/** Resolves a composite `baseId::color` id (see resolvePatternFillGroup) to an ad hoc, color-matched tile source. */
-const getColorMatchedPatternSource = (id: string): PatternTileSource | undefined => {
-  const separatorIndex = id.indexOf(COMPOSITE_PATTERN_SEPARATOR);
-  if (separatorIndex === -1) return undefined;
-
-  const baseSource = getPatternFillSource(id.slice(0, separatorIndex));
+/** Resolves a structured pattern-fill value's sibling color (see resolvePatternFillGroup) to an ad hoc, color-matched tile source. */
+const getColorMatchedPatternSource = (id: string, color: string): PatternTileSource | undefined => {
+  const baseSource = getPatternFillSource(id);
   if (!baseSource?.drawWithColor) return undefined;
 
-  const color = id.slice(separatorIndex + COMPOSITE_PATTERN_SEPARATOR.length);
   return {
-    id,
+    id: getPatternCacheKey(id, color),
     tileSize: baseSource.tileSize,
     rotation: baseSource.rotation,
     draw: (ctx, size) => baseSource.drawWithColor!(ctx, size, color),
@@ -97,22 +99,25 @@ const getColorMatchedPatternSource = (id: string): PatternTileSource | undefined
 
 const resolveFillStyleValue = (
   ctx: CanvasRenderingContext2D,
-  value: FillStyleValue,
+  value: InterceptedFillStyleValue,
   cache: Map<string, CanvasPattern>
 ): FillStyleValue => {
   const patternId = getPatternFillId(value);
-  if (patternId === undefined) return value;
+  if (patternId === undefined) return value as FillStyleValue;
 
-  const cached = cache.get(patternId);
+  const foreground = isPatternFillValue(value) ? value.foreground : undefined;
+  const cacheKey = getPatternCacheKey(patternId, foreground);
+
+  const cached = cache.get(cacheKey);
   if (cached) return cached;
 
-  const source = getPatternFillSource(patternId) ?? getColorMatchedPatternSource(patternId);
-  if (!source) return value;
+  const source = foreground ? getColorMatchedPatternSource(patternId, foreground) : getPatternFillSource(patternId);
+  if (!source) return value as FillStyleValue;
 
   const pattern = buildCanvasPattern(ctx, source);
-  if (!pattern) return value;
+  if (!pattern) return value as FillStyleValue;
 
-  cache.set(patternId, pattern);
+  cache.set(cacheKey, pattern);
   return pattern;
 };
 
@@ -133,7 +138,7 @@ export const patchCanvasContextForPatternFill = (ctx: CanvasRenderingContext2D):
     get(): FillStyleValue {
       return native.get(ctx);
     },
-    set(value: FillStyleValue) {
+    set(value: InterceptedFillStyleValue) {
       native.set(ctx, resolveFillStyleValue(ctx, value, cache));
     },
   });

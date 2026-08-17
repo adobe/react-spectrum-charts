@@ -19,8 +19,10 @@ import { TABLE } from '@spectrum-charts/constants';
 import { Chart } from '../Chart';
 import useChartProps from '../hooks/useChartProps';
 import { bindWithProps } from '../test-utils';
-import { getPatternFillUrl, registerPatternFill } from '../utils';
+import { PatternFillValue, registerPatternFill } from '../utils';
 import { barData } from './components/Bar/data';
+
+const patternValue = (pattern: string): PatternFillValue => ({ pattern });
 
 // Throwaway stories validating the canvas pattern-fill interception (planning/specs/chart/pattern-fill-rendering.json)
 // against a real browser, including edge cases from the spec. Uses UNSAFE_vegaSpec since no real mark prop exists
@@ -92,10 +94,15 @@ registerPatternFill({ id: identityDarkId, tileSize: TILE_SIZE, rotation: 45, dra
 
 const buildBarSpec = (
   fill: Record<string, unknown>,
-  options?: { hoverFillOpacity?: number; extraScales?: Record<string, unknown>[] }
+  options?: {
+    hoverFillOpacity?: number;
+    extraScales?: Record<string, unknown>[];
+    extraSignals?: Record<string, unknown>[];
+  }
 ): Spec =>
   ({
     $schema: 'https://vega.github.io/schema/vega/v5.json',
+    signals: options?.extraSignals ?? [],
     scales: [
       { name: 'xscale', type: 'band', domain: { data: TABLE, field: 'browser' }, range: 'width', padding: 0.1, round: true },
       { name: 'yscale', domain: { data: TABLE, field: 'downloads' }, nice: true, range: 'height' },
@@ -153,6 +160,9 @@ const dodgedStackedPeriodChartData = [
 // stack transform's y0/y1, with fill resolved from a real ordinal scale so the legend generates natively.
 const dodgedStackedPeriodSpec: Spec = {
   $schema: 'https://vega.github.io/schema/vega/v5.json',
+  // Vega's scale-range parser rejects literal objects in a `range: [...]` array (the same restriction that
+  // applies to Gradient objects) - the structured pattern-fill value is carried through a signal instead.
+  signals: [{ name: 'periodPatternRange', value: [patternValue(candyStripeId), '#2680eb'] }],
   scales: [
     { name: 'xscale', type: 'band', range: 'width', domain: { data: TABLE, field: 'browser' } },
     { name: 'yscale', domain: { data: 'stacked', field: 'y1' }, nice: true, zero: true, range: 'height' },
@@ -160,7 +170,7 @@ const dodgedStackedPeriodSpec: Spec = {
       name: 'periodScale',
       type: 'ordinal',
       domain: ['Previous', 'Current'],
-      range: [getPatternFillUrl(candyStripeId), '#2680eb'],
+      range: { signal: 'periodPatternRange' },
     },
   ],
   axes: [
@@ -227,7 +237,7 @@ const CandyStripeBar = bindWithProps(CanvasPatternFillStory);
 CandyStripeBar.args = {
   ...baseArgs,
   description: 'A bar chart with a candy-stripe canvas pattern fill instead of a solid color.',
-  UNSAFE_vegaSpec: buildBarSpec({ value: getPatternFillUrl(candyStripeId) }),
+  UNSAFE_vegaSpec: buildBarSpec({ value: patternValue(candyStripeId) }),
 };
 
 // Modeled on Bar/Features/Dodged Bar's DodgedStacked story (dodge by region, stack by period instead of
@@ -251,18 +261,26 @@ MultiplePatternsScale.args = {
   UNSAFE_vegaSpec: buildBarSpec(
     { scale: 'patternScale', field: 'browser' },
     {
+      // Vega's scale-range parser rejects literal objects in a `range: [...]` array (the same restriction
+      // that applies to Gradient objects) - the structured pattern-fill values are carried through a signal.
+      extraSignals: [
+        {
+          name: 'patternScaleRange',
+          value: [
+            patternValue(candyStripeId),
+            patternValue(dotsId),
+            patternValue(crosshatchId),
+            patternValue(candyStripeId),
+            patternValue(dotsId),
+          ],
+        },
+      ],
       extraScales: [
         {
           name: 'patternScale',
           type: 'ordinal',
           domain: { data: TABLE, field: 'browser' },
-          range: [
-            getPatternFillUrl(candyStripeId),
-            getPatternFillUrl(dotsId),
-            getPatternFillUrl(crosshatchId),
-            getPatternFillUrl(candyStripeId),
-            getPatternFillUrl(dotsId),
-          ],
+          range: { signal: 'patternScaleRange' },
         },
       ],
     }
@@ -276,7 +294,7 @@ const HoverOpacityCompositing = bindWithProps(CanvasPatternFillStory);
 HoverOpacityCompositing.args = {
   ...baseArgs,
   description: 'Hovering a bar dims it via fillOpacity - the pattern should stay visible underneath, just dimmer.',
-  UNSAFE_vegaSpec: buildBarSpec({ value: getPatternFillUrl(candyStripeId) }, { hoverFillOpacity: 0.3 }),
+  UNSAFE_vegaSpec: buildBarSpec({ value: patternValue(candyStripeId) }, { hoverFillOpacity: 0.3 }),
 };
 
 // Edge case: a changed resolved color/identity must produce a visually distinct pattern rather than reusing a
@@ -286,14 +304,14 @@ const PatternIdentityLight = bindWithProps(CanvasPatternFillStory);
 PatternIdentityLight.args = {
   ...baseArgs,
   description: 'Resolved identity "light" - compare against PatternIdentityDark.',
-  UNSAFE_vegaSpec: buildBarSpec({ value: getPatternFillUrl(identityLightId) }),
+  UNSAFE_vegaSpec: buildBarSpec({ value: patternValue(identityLightId) }),
 };
 
 const PatternIdentityDark = bindWithProps(CanvasPatternFillStory);
 PatternIdentityDark.args = {
   ...baseArgs,
   description: 'Resolved identity "dark" - compare against PatternIdentityLight.',
-  UNSAFE_vegaSpec: buildBarSpec({ value: getPatternFillUrl(identityDarkId) }),
+  UNSAFE_vegaSpec: buildBarSpec({ value: patternValue(identityDarkId) }),
 };
 
 // Edge case: the view is destroyed and recreated (a new canvas element). Forces a full unmount/remount via a
@@ -302,7 +320,7 @@ const RemountStress = (): ReactElement => {
   const [remountKey, setRemountKey] = useState(0);
   const chartProps = useChartProps({
     ...baseArgs,
-    UNSAFE_vegaSpec: buildBarSpec({ value: getPatternFillUrl(candyStripeId) }),
+    UNSAFE_vegaSpec: buildBarSpec({ value: patternValue(candyStripeId) }),
   });
   return (
     <div>

@@ -86,8 +86,8 @@ describe('getPatternProductionRule', () => {
     expect(getPatternProductionRule('period')).toStrictEqual({ scale: PATTERN_SCALE, field: 'period' });
   });
 
-  test('should resolve a built-in pattern name to its url reference for a static value', () => {
-    expect(getPatternProductionRule({ value: 'dots' })).toStrictEqual({ value: 'url(#rsc-pattern-dots)' });
+  test('should resolve a built-in pattern name to a structured pattern-fill value for a static value', () => {
+    expect(getPatternProductionRule({ value: 'dots' })).toStrictEqual({ value: { pattern: 'dots' } });
   });
 
   test('should pass through a literal color value unchanged for a static value', () => {

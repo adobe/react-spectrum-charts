@@ -202,7 +202,9 @@ export const getPatternProductionRule = (pattern: PatternFacet | DualFacet): Col
   if (typeof pattern === 'string') {
     return { scale: PATTERN_SCALE, field: pattern };
   }
-  return { value: resolvePatternFillValue(pattern.value) };
+  // resolvePatternFillValue may return a structured PatternFillValue, which Vega accepts as a literal encode
+  // value (unlike a scale range entry) but isn't shaped like ColorValueRef's own Gradient-object variant.
+  return { value: resolvePatternFillValue(pattern.value) } as unknown as ColorValueRef;
 };
 
 /**

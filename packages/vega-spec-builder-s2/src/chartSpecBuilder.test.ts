@@ -53,6 +53,7 @@ import {
   getLineWidthScale,
   getLinearColorScale,
   getOpacityScale,
+  getPatternRange,
   getPatternScale,
   getSymbolShapeScale,
   getSymbolSizeScale,
@@ -243,25 +244,25 @@ describe('Chart spec builder', () => {
   describe('getTwoDimensionalPatterns()', () => {
     test('should return the built-in pattern palette if undefined', () => {
       expect(getTwoDimensionalPatterns(undefined)).toStrictEqual([
-        ['url(#rsc-pattern-diagonal-stripe)'],
-        ['url(#rsc-pattern-diagonal-stripe-reverse)'],
-        ['url(#rsc-pattern-horizontal-stripe)'],
-        ['url(#rsc-pattern-dots)'],
-        ['url(#rsc-pattern-crosshatch)'],
-        ['url(#rsc-pattern-grid)'],
+        [{ pattern: 'diagonal-stripe' }],
+        [{ pattern: 'diagonal-stripe-reverse' }],
+        [{ pattern: 'horizontal-stripe' }],
+        [{ pattern: 'dots' }],
+        [{ pattern: 'crosshatch' }],
+        [{ pattern: 'grid' }],
       ]);
     });
 
     test('should resolve a 1d array as a single group, colorizing built-in names with a sibling color', () => {
       expect(getTwoDimensionalPatterns(['dots', '#2680eb'])).toStrictEqual([
-        ['url(#rsc-pattern-dots::#2680eb)'],
+        [{ pattern: 'dots', foreground: '#2680eb' }],
         ['#2680eb'],
       ]);
     });
 
     test('should pass through a 2d array, colorizing built-in names with a sibling color in the same row', () => {
       expect(getTwoDimensionalPatterns([['dots', '#2680eb']])).toStrictEqual([
-        ['url(#rsc-pattern-dots::#2680eb)', '#2680eb'],
+        [{ pattern: 'dots', foreground: '#2680eb' }, '#2680eb'],
       ]);
     });
   });
@@ -325,43 +326,42 @@ describe('Chart spec builder', () => {
   });
 
   describe('getPatternScale()', () => {
+    test("should return a scale whose range is a signal reference, since Vega's scale-range parser rejects literal objects", () => {
+      expect(getPatternScale()).toStrictEqual({
+        name: PATTERN_SCALE,
+        type: 'ordinal',
+        range: { signal: 'patternRange' },
+        domain: { data: 'table', fields: [] },
+      });
+    });
+  });
+
+  describe('getPatternRange()', () => {
     test('should return the built-in pattern palette if no patterns provided', () => {
-      const scale = getPatternScale();
-      expect(scale.name).toBe(PATTERN_SCALE);
-      expect(scale.type).toBe('ordinal');
-      expect(scale.range).toEqual(expect.arrayContaining(['url(#rsc-pattern-dots)']));
+      expect(getPatternRange()).toEqual(expect.arrayContaining([{ pattern: 'dots' }]));
     });
 
     test('should resolve built-in pattern names, colorized with a sibling literal color, in a patterns override', () => {
-      expect(getPatternScale(['dots', '#2680eb'])).toStrictEqual({
-        name: PATTERN_SCALE,
-        type: 'ordinal',
-        range: ['url(#rsc-pattern-dots::#2680eb)', '#2680eb'],
-        domain: { data: 'table', fields: [] },
-      });
+      expect(getPatternRange(['dots', '#2680eb'])).toStrictEqual([{ pattern: 'dots', foreground: '#2680eb' }, '#2680eb']);
     });
 
     test('should resolve an S2 color token in a patterns override, same as colors would', () => {
-      expect(getPatternScale(['dots', 'gray-700'], 'light')).toStrictEqual({
-        name: PATTERN_SCALE,
-        type: 'ordinal',
-        range: ['url(#rsc-pattern-dots::#505050)', '#505050'],
-        domain: { data: 'table', fields: [] },
-      });
+      expect(getPatternRange(['dots', 'gray-700'], 'light')).toStrictEqual([
+        { pattern: 'dots', foreground: '#505050' },
+        '#505050',
+      ]);
     });
 
     test('should use only the first pattern of each group if a 2d patterns override is provided', () => {
       expect(
-        getPatternScale([
+        getPatternRange([
           ['dots', '#2680eb'],
           ['grid', '#ff0000'],
         ])
-      ).toStrictEqual({
-        name: PATTERN_SCALE,
-        type: 'ordinal',
-        range: ['url(#rsc-pattern-dots::#2680eb)', 'url(#rsc-pattern-grid::#ff0000)'],
-        domain: { data: 'table', fields: [] },
-      });
+      ).toStrictEqual([
+        { pattern: 'dots', foreground: '#2680eb' },
+        { pattern: 'grid', foreground: '#ff0000' },
+      ]);
     });
   });
 
@@ -546,12 +546,23 @@ describe('Chart spec builder', () => {
       {
         name: 'patterns',
         value: [
-          ['url(#rsc-pattern-diagonal-stripe)'],
-          ['url(#rsc-pattern-diagonal-stripe-reverse)'],
-          ['url(#rsc-pattern-horizontal-stripe)'],
-          ['url(#rsc-pattern-dots)'],
-          ['url(#rsc-pattern-crosshatch)'],
-          ['url(#rsc-pattern-grid)'],
+          [{ pattern: 'diagonal-stripe' }],
+          [{ pattern: 'diagonal-stripe-reverse' }],
+          [{ pattern: 'horizontal-stripe' }],
+          [{ pattern: 'dots' }],
+          [{ pattern: 'crosshatch' }],
+          [{ pattern: 'grid' }],
+        ],
+      },
+      {
+        name: 'patternRange',
+        value: [
+          { pattern: 'diagonal-stripe' },
+          { pattern: 'diagonal-stripe-reverse' },
+          { pattern: 'horizontal-stripe' },
+          { pattern: 'dots' },
+          { pattern: 'crosshatch' },
+          { pattern: 'grid' },
         ],
       },
     ];

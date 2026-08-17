@@ -11,17 +11,11 @@
  */
 import { Spec } from 'vega';
 
-import { PATTERN_FILL_ID_PREFIX, getPatternFillId, getPatternFillUrl } from '@spectrum-charts/utils';
+import { getPatternFillId, isPatternFillValue } from '@spectrum-charts/utils';
 
-export { PATTERN_FILL_ID_PREFIX, getPatternFillId, getPatternFillUrl };
-export {
-  COMPOSITE_PATTERN_SEPARATOR,
-  DEFAULT_PATTERN_FILL_IDS,
-  getColorMatchedPatternFillUrl,
-  resolvePatternFillGroup,
-  resolvePatternFillValue,
-} from '@spectrum-charts/utils';
-export type { DefaultPatternFillId } from '@spectrum-charts/utils';
+export { getPatternFillId, isPatternFillValue };
+export { DEFAULT_PATTERN_FILL_IDS, resolvePatternFillGroup, resolvePatternFillValue } from '@spectrum-charts/utils';
+export type { DefaultPatternFillId, PatternFillValue } from '@spectrum-charts/utils';
 
 /**
  * A tile drawn once and repeated by the canvas/SVG pattern-fill interception, keyed by a stable identity.
@@ -30,7 +24,7 @@ export interface PatternTileSource {
   id: string;
   tileSize: { width: number; height: number };
   draw: (ctx: CanvasRenderingContext2D, tileSize: { width: number; height: number }) => void;
-  /** Draws the same shape recolored to match a sibling color, used for a composite (baseId::color) id. */
+  /** Draws the same shape recolored to match a sibling color, used when a PatternFillValue carries a foreground. */
   drawWithColor?: (ctx: CanvasRenderingContext2D, tileSize: { width: number; height: number }, color: string) => void;
   /** Degrees, applied as a transform on the pattern object rather than baked into the tile. */
   rotation?: number;
@@ -41,12 +35,12 @@ export interface PatternTileSource {
  * @param spec
  * @returns true if the spec contains a pattern-fill reference anywhere
  */
-export const specHasPatternFill = (spec: Spec): boolean => JSON.stringify(spec).includes(PATTERN_FILL_ID_PREFIX);
+export const specHasPatternFill = (spec: Spec): boolean => JSON.stringify(spec).includes('"pattern":');
 
 const registry = new Map<string, PatternTileSource>();
 
 /**
- * Registers a pattern tile source so mark encodes can reference it via getPatternFillUrl(source.id).
+ * Registers a pattern tile source so mark encodes can reference it via a { pattern: source.id } value.
  * @param source
  */
 export const registerPatternFill = (source: PatternTileSource): void => {

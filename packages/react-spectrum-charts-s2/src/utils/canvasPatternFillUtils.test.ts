@@ -10,13 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { patchCanvasContextForPatternFill } from './canvasPatternFillUtils';
-import {
-  clearPatternFillRegistry,
-  getColorMatchedPatternFillUrl,
-  getPatternFillUrl,
-  PatternTileSource,
-  registerPatternFill,
-} from './patternFillUtils';
+import { clearPatternFillRegistry, PatternFillValue, PatternTileSource, registerPatternFill } from './patternFillUtils';
 
 const getContext = (): CanvasRenderingContext2D => {
   const canvas = document.createElement('canvas');
@@ -28,6 +22,10 @@ const getContextWithPixelScale = (scale: number): CanvasRenderingContext2D => {
   Object.defineProperty(canvas, 'clientWidth', { value: 100, configurable: true });
   canvas.width = 100 * scale;
   return canvas.getContext('2d') as CanvasRenderingContext2D;
+};
+
+const setFillStyle = (ctx: CanvasRenderingContext2D, value: PatternFillValue | string): void => {
+  ctx.fillStyle = value as unknown as string;
 };
 
 const stripeSource: PatternTileSource = {
@@ -56,9 +54,9 @@ describe('patchCanvasContextForPatternFill()', () => {
     const ctx = getContext();
     patchCanvasContextForPatternFill(ctx);
 
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
 
-    expect(ctx.fillStyle).not.toBe(getPatternFillUrl('stripe-blue'));
+    expect(ctx.fillStyle).not.toEqual({ pattern: 'stripe-blue' });
     expect(stripeSource.draw).toHaveBeenCalledTimes(1);
   });
 
@@ -67,10 +65,10 @@ describe('patchCanvasContextForPatternFill()', () => {
     const ctx = getContext();
     patchCanvasContextForPatternFill(ctx);
 
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
     const first = ctx.fillStyle;
     ctx.fillStyle = '#00ff00';
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
     const second = ctx.fillStyle;
 
     expect(second).toBe(first);
@@ -84,9 +82,9 @@ describe('patchCanvasContextForPatternFill()', () => {
     const ctx = getContext();
     patchCanvasContextForPatternFill(ctx);
 
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
     const blue = ctx.fillStyle;
-    ctx.fillStyle = getPatternFillUrl('stripe-red');
+    setFillStyle(ctx, { pattern: 'stripe-red' });
     const red = ctx.fillStyle;
 
     expect(blue).not.toBe(red);
@@ -103,7 +101,7 @@ describe('patchCanvasContextForPatternFill()', () => {
     const ctx = getContext();
     patchCanvasContextForPatternFill(ctx);
 
-    ctx.fillStyle = getPatternFillUrl('stripe-rotated');
+    setFillStyle(ctx, { pattern: 'stripe-rotated' });
 
     const pattern = ctx.fillStyle as unknown as { setTransform: jest.Mock };
     expect(pattern.setTransform).toHaveBeenCalledTimes(1);
@@ -114,7 +112,7 @@ describe('patchCanvasContextForPatternFill()', () => {
     const ctx = getContext();
     patchCanvasContextForPatternFill(ctx);
 
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
 
     const pattern = ctx.fillStyle as unknown as { setTransform: jest.Mock };
     expect(pattern.setTransform).not.toHaveBeenCalled();
@@ -126,7 +124,7 @@ describe('patchCanvasContextForPatternFill()', () => {
     const createElementSpy = jest.spyOn(document, 'createElement');
     patchCanvasContextForPatternFill(ctx);
 
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
 
     const tile = createElementSpy.mock.results.find((r) => r.value.tagName === 'CANVAS')
       ?.value as HTMLCanvasElement;
@@ -140,7 +138,7 @@ describe('patchCanvasContextForPatternFill()', () => {
     const ctx = getContextWithPixelScale(2);
     patchCanvasContextForPatternFill(ctx);
 
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
 
     const pattern = ctx.fillStyle as unknown as { setTransform: jest.Mock };
     const transform = pattern.setTransform.mock.calls[0][0];
@@ -148,25 +146,25 @@ describe('patchCanvasContextForPatternFill()', () => {
     expect(transform.d).toBeCloseTo(0.5);
   });
 
-  test('resolves a composite (baseId::color) id to a color-matched CanvasPattern via drawWithColor', () => {
+  test('resolves a structured value with a foreground color to a color-matched CanvasPattern via drawWithColor', () => {
     const drawWithColor = jest.fn();
     registerPatternFill({ id: 'colorizable-stripe', tileSize: { width: 8, height: 8 }, draw: jest.fn(), drawWithColor });
     const ctx = getContext();
     patchCanvasContextForPatternFill(ctx);
 
-    ctx.fillStyle = getColorMatchedPatternFillUrl('colorizable-stripe', '#2680eb');
+    setFillStyle(ctx, { pattern: 'colorizable-stripe', foreground: '#2680eb' });
 
-    expect(ctx.fillStyle).not.toBe(getColorMatchedPatternFillUrl('colorizable-stripe', '#2680eb'));
+    expect(ctx.fillStyle).not.toEqual({ pattern: 'colorizable-stripe', foreground: '#2680eb' });
     expect(drawWithColor).toHaveBeenCalledWith(expect.anything(), { width: 8, height: 8 }, '#2680eb');
   });
 
-  test('falls back to native behavior for a composite id whose base source has no drawWithColor', () => {
+  test('falls back to native behavior for a foreground color whose base source has no drawWithColor', () => {
     registerPatternFill(stripeSource);
     const ctx = getContext();
     patchCanvasContextForPatternFill(ctx);
 
     ctx.fillStyle = '#0000ff';
-    ctx.fillStyle = getColorMatchedPatternFillUrl('stripe-blue', '#2680eb');
+    setFillStyle(ctx, { pattern: 'stripe-blue', foreground: '#2680eb' });
 
     expect(ctx.fillStyle).toBe('#0000ff');
   });
@@ -176,7 +174,7 @@ describe('patchCanvasContextForPatternFill()', () => {
     patchCanvasContextForPatternFill(ctx);
 
     ctx.fillStyle = '#0000ff';
-    ctx.fillStyle = getPatternFillUrl('not-registered');
+    setFillStyle(ctx, { pattern: 'not-registered' });
 
     expect(ctx.fillStyle).toBe('#0000ff');
   });
@@ -185,11 +183,11 @@ describe('patchCanvasContextForPatternFill()', () => {
     registerPatternFill(stripeSource);
     const ctx = getContext();
     patchCanvasContextForPatternFill(ctx);
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
     const first = ctx.fillStyle;
 
     patchCanvasContextForPatternFill(ctx);
-    ctx.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctx, { pattern: 'stripe-blue' });
     const second = ctx.fillStyle;
 
     expect(second).toBe(first);
@@ -203,8 +201,8 @@ describe('patchCanvasContextForPatternFill()', () => {
     patchCanvasContextForPatternFill(ctxA);
     patchCanvasContextForPatternFill(ctxB);
 
-    ctxA.fillStyle = getPatternFillUrl('stripe-blue');
-    ctxB.fillStyle = getPatternFillUrl('stripe-blue');
+    setFillStyle(ctxA, { pattern: 'stripe-blue' });
+    setFillStyle(ctxB, { pattern: 'stripe-blue' });
 
     expect(ctxA.fillStyle).not.toBe(ctxB.fillStyle);
     expect(stripeSource.draw).toHaveBeenCalledTimes(2);

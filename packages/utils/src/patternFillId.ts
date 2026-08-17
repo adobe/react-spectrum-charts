@@ -10,10 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-export const PATTERN_FILL_ID_PREFIX = 'rsc-pattern-';
-
-const PATTERN_FILL_URL_PATTERN = new RegExp(`^url\\(#${PATTERN_FILL_ID_PREFIX}(.+)\\)$`);
-
 /**
  * The built-in, colorScheme-independent pattern tile palette used as PATTERN_SCALE's default range.
  */
@@ -28,44 +24,44 @@ export const DEFAULT_PATTERN_FILL_IDS = [
 
 export type DefaultPatternFillId = (typeof DEFAULT_PATTERN_FILL_IDS)[number];
 
+const PATTERN_FILL_DISCRIMINANT = 'pattern';
+
 /**
- * Builds the fill-reference string a mark encode assigns to reference a registered pattern tile.
- * @param id
- * @returns url(#rsc-pattern-<id>)
+ * A reference to a registered built-in pattern tile, optionally recolored to match a sibling literal color.
+ * A plain object literal (like Vega's own `Gradient`) rather than a parsed string, so it can flow through
+ * a scale range/signal or an encode value unchanged.
  */
-export const getPatternFillUrl = (id: string): string => `url(#${PATTERN_FILL_ID_PREFIX}${id})`;
+export interface PatternFillValue {
+  pattern: string;
+  foreground?: string;
+}
+
+/**
+ * Mirrors Vega's own isGradient(value) => value && value.gradient check.
+ * @param value
+ * @returns true if value is a PatternFillValue
+ */
+export const isPatternFillValue = (value: unknown): value is PatternFillValue =>
+  typeof value === 'object' && value !== null && PATTERN_FILL_DISCRIMINANT in value;
 
 /**
  * Extracts the pattern id from a resolved fill value, if it is a pattern-fill reference.
  * @param value
  * @returns the pattern id, or undefined if value isn't a pattern-fill reference
  */
-export const getPatternFillId = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') return undefined;
-  return value.match(PATTERN_FILL_URL_PATTERN)?.[1];
-};
+export const getPatternFillId = (value: unknown): string | undefined =>
+  isPatternFillValue(value) ? value.pattern : undefined;
 
 const isBuiltInPatternFillId = (entry: string): boolean => (DEFAULT_PATTERN_FILL_IDS as readonly string[]).includes(entry);
 
 /**
- * Resolves a `patterns` override entry to a fill value: a built-in pattern name resolves to its
- * url reference, anything else passes through unchanged as a literal color value.
+ * Resolves a `patterns` override entry to a fill value: a built-in pattern name resolves to a
+ * PatternFillValue, anything else passes through unchanged as a literal color value.
  * @param entry
  * @returns the resolved fill value
  */
-export const resolvePatternFillValue = (entry: string): string =>
-  isBuiltInPatternFillId(entry) ? getPatternFillUrl(entry) : entry;
-
-export const COMPOSITE_PATTERN_SEPARATOR = '::';
-
-/**
- * Builds the fill-reference string for a built-in pattern shape recolored to match a sibling color.
- * @param baseId
- * @param color
- * @returns url(#rsc-pattern-<baseId>::<color>)
- */
-export const getColorMatchedPatternFillUrl = (baseId: string, color: string): string =>
-  getPatternFillUrl(`${baseId}${COMPOSITE_PATTERN_SEPARATOR}${color}`);
+export const resolvePatternFillValue = (entry: string): string | PatternFillValue =>
+  isBuiltInPatternFillId(entry) ? { pattern: entry } : entry;
 
 /**
  * Resolves a group of `patterns` entries together (a dual-facet row, or a whole 1D override): each
@@ -75,10 +71,10 @@ export const getColorMatchedPatternFillUrl = (baseId: string, color: string): st
  * @param group
  * @returns the resolved fill values, in the same order
  */
-export const resolvePatternFillGroup = (group: string[]): string[] => {
+export const resolvePatternFillGroup = (group: string[]): (string | PatternFillValue)[] => {
   const siblingColor = group.find((entry) => !isBuiltInPatternFillId(entry));
   return group.map((entry) => {
     if (!isBuiltInPatternFillId(entry)) return entry;
-    return siblingColor ? getColorMatchedPatternFillUrl(entry, siblingColor) : getPatternFillUrl(entry);
+    return siblingColor ? { pattern: entry, foreground: siblingColor } : { pattern: entry };
   });
 };
