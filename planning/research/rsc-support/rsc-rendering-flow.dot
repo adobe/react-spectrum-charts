@@ -1,0 +1,62 @@
+digraph rsc_rendering_flow {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", shape=box, style="rounded,filled", fontsize=13];
+  edge [fontname="Helvetica", fontsize=11];
+
+  subgraph cluster_server {
+    label="Server  (no \"use client\")";
+    fontsize=14;
+    style="rounded";
+    color="#6b7280";
+    margin=16;
+
+    server [
+      label=<<b>Server Component</b>  (e.g. app/page.tsx)<br/><br/>
+             const data = await fetchFromDb()<br/>
+             <i>DB access, secrets, co-located fetch</i><br/><br/>
+             &lt;Suspense fallback={&lt;ChartSkeleton /&gt;}&gt;<br/>
+             &nbsp;&nbsp;&lt;ChartSection data={data} /&gt;<br/>
+             &lt;/Suspense&gt;>,
+      fillcolor="#eef2ff", color="#4338ca"
+    ];
+  }
+
+  boundary [
+    label="RSC boundary — data crosses as plain\nserializable JSON. No functions involved,\nnothing new required here.",
+    shape=note, fillcolor="#fef9c3", color="#a16207", fontsize=11
+  ];
+
+  subgraph cluster_client {
+    label="Client  (\"use client\")";
+    fontsize=14;
+    style="rounded";
+    color="#6b7280";
+    margin=16;
+
+    client [
+      label=<<b>Client Component</b><br/><br/>
+             &lt;Chart data={data}&gt;<br/>
+             &nbsp;&nbsp;&lt;Axis /&gt; &lt;Legend highlight /&gt;<br/>
+             &nbsp;&nbsp;&lt;Line onClick={fn} /&gt;<br/>
+             &nbsp;&nbsp;&lt;ChartPopover&gt;{(datum, close) =&gt; ...}&lt;/ChartPopover&gt;<br/>
+             &lt;/Chart&gt;<br/><br/>
+             Unmodified, full JSX API.<br/>
+             childrenAdapter + buildSpec run here, in the browser,<br/>
+             exactly as they do today.>,
+      fillcolor="#ecfdf5", color="#047857"
+    ];
+
+    vega [
+      label=<vega-embed mount<br/><i>live Vega View, DOM node,<br/>signals, browser event listeners</i><br/>
+             <i>onClick / render-props are ordinary client<br/>closures — never crossed a boundary</i>>,
+      fillcolor="#ffffff", color="#047857", style="rounded,dashed", fontsize=11
+    ];
+
+    client -> vega [style=dashed, color="#047857", label="mounts"];
+  }
+
+  server -> boundary [color="#4338ca"];
+  boundary -> client [color="#047857"];
+}
