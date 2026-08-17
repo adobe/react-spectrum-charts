@@ -1,13 +1,17 @@
 # Using react-spectrum-charts-s2 with React Server Components
 
-Fetch data in a Server Component. Render the chart in a Client Component, using the library
-exactly as you do today — same `<Chart>`, same props, same `onClick`/`ChartPopover` callbacks.
-There is no separate RSC API.
+> A naming note: "RSC" below always means **React Server Components**, the React feature. It's
+> unrelated to this codebase's own `Rsc`-prefixed internal naming (`RscChart.tsx`,
+> `rscToSbAdapter`), which predates React Server Components and just means "React Spectrum
+> Charts."
 
-## Requires
-
-The `fix/vegachart-ssr-expressionfunction-crash` branch, or a release built from it. Published
-`0.4.1` does not include this fix and will crash under SSR (see "The fix" below).
+Charts render through `vega-embed`, which mounts a live Vega `View` to a real DOM node and
+drives it with browser events — there's no server-side equivalent that preserves interactivity.
+And any interactive callback (`onClick`, a `ChartPopover` render-prop) is arbitrary code the
+consumer writes, which only ever makes sense running in the browser where the click happens. So
+the chart itself — marks, interactivity, popovers — stays in a Client Component, unchanged from
+how you'd use this library without RSC at all. The only thing that moves to the server is
+fetching the data.
 
 ## Pattern
 
@@ -61,9 +65,10 @@ export function ChartClient({ data }: { data: ChartDatum[] }) {
     <Chart data={data}>
       <Axis position="bottom" labelFormat="time" baseline />
       <Axis position="left" grid />
-      <Line color="series" scaleType="time" dimension="datetime" metric="value" />
+      <Line color="series" scaleType="time" dimension="datetime" metric="value">
+        <ChartPopover>{(datum, close) => <MyPopoverContent datum={datum} onClose={close} />}</ChartPopover>
+      </Line>
       <Legend highlight />
-      <ChartPopover>{(datum, close) => <MyPopoverContent datum={datum} onClose={close} />}</ChartPopover>
     </Chart>
   );
 }
@@ -72,21 +77,3 @@ export function ChartClient({ data }: { data: ChartDatum[] }) {
 `data` is the only thing crossing the Server→Client boundary, as plain JSON. Everything else —
 spec building, mark rendering, `onClick`, popovers, legend interactions — runs client-side,
 unchanged.
-
-## Rules
-
-- **Don't put `onClick` or a `ChartPopover`/`ChartInspect` render-prop inside a Server
-  Component.** A closure defined in server-rendered code never reaches the browser — it's
-  captured and discarded during the server render, so it silently never fires. No error, no
-  warning. Keep interactive marks in the Client Component, as shown above.
-- **There's no server-rendered chart output.** `vega-embed` mounts a live `View` to a DOM node
-  in the browser; the chart appears once the Client Component's JS runs, same as it always has.
-
-## The fix
-
-`VegaChart.tsx` registered a Vega expression function unconditionally at module load, which
-throws under any SSR framework's server-render pass of a `"use client"` component — RSC or not.
-Fixed by guarding it on `typeof window !== 'undefined'`. Doesn't change `rscContainerWidth`'s
-behavior in the browser; it only skips registering during the server pass, where there's no
-`View` to use it anyway. Tracked in
-`planning/specs/chart/issues/implemented/vegachart-ssr-expressionfunction-crash.json`.
