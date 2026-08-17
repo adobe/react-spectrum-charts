@@ -182,6 +182,7 @@ export const LINE_TYPE_SCALE = 'lineType';
 export const LINEAR_COLOR_SCALE = 'linearColor';
 export const LINE_WIDTH_SCALE = 'lineWidth';
 export const OPACITY_SCALE = 'opacity';
+export const PATTERN_SCALE = 'pattern';
 export const SYMBOL_SHAPE_SCALE = 'symbolShape';
 export const SYMBOL_SIZE_SCALE = 'symbolSize';
 export const SYMBOL_PATH_WIDTH_SCALE = 'symbolPathWidth';

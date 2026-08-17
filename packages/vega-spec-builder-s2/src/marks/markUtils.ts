@@ -37,11 +37,13 @@ import {
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
+  PATTERN_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
+import { resolvePatternFillValue } from '@spectrum-charts/utils';
 
 import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils';
 import { LineMarkOptions } from '../line/lineUtils';
@@ -64,6 +66,7 @@ import {
   LineWidthFacet,
   MetricRangeOptions,
   OpacityFacet,
+  PatternFacet,
   ProductionRuleTests,
   ScaleType,
   ScatterSpecOptions,
@@ -183,6 +186,25 @@ export const getColorProductionRule = (
     return { scale: colorScaleName, field: color };
   }
   return { value: getS2ColorValue(color.value, colorScheme) };
+};
+
+/**
+ * Gets the pattern encoding
+ * @param pattern
+ * @returns ColorValueRef
+ */
+export const getPatternProductionRule = (pattern: PatternFacet | DualFacet): ColorValueRef => {
+  if (Array.isArray(pattern)) {
+    return {
+      signal: `scale('patterns', datum.${pattern[0]})[indexof(domain('secondaryPattern'), datum.${pattern[1]})% length(scale('patterns', datum.${pattern[0]}))]`,
+    };
+  }
+  if (typeof pattern === 'string') {
+    return { scale: PATTERN_SCALE, field: pattern };
+  }
+  // resolvePatternFillValue may return a structured PatternFillValue, which Vega accepts as a literal encode
+  // value (unlike a scale range entry) but isn't shaped like ColorValueRef's own Gradient-object variant.
+  return { value: resolvePatternFillValue(pattern.value) } as unknown as ColorValueRef;
 };
 
 /**

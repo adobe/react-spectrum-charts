@@ -39,6 +39,7 @@ import {
   getCursor,
   getMarkOpacity,
   getOpacityProductionRule,
+  getPatternProductionRule,
   getStrokeDashProductionRule,
   getInspectEncoding,
   hasPopover,
@@ -52,8 +53,8 @@ import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
  * checks to see if the bar is faceted in the stacked and dodged dimensions
  * @param color
  */
-export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecOptions): boolean => {
-  return [color, lineType, opacity].some((facet) => Array.isArray(facet) && facet.length === 2);
+export const isDodgedAndStacked = ({ color, lineType, opacity, pattern }: BarSpecOptions): boolean => {
+  return [color, lineType, opacity, pattern].some((facet) => Array.isArray(facet) && facet.length === 2);
 };
 
 /**
@@ -291,7 +292,7 @@ export const getBarFillEncoding = (options: BarSpecOptions): ColorValueRef => {
 };
 
 export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
-  fill: getBarFillEncoding(options),
+  fill: options.pattern ? getPatternProductionRule(options.pattern) : getBarFillEncoding(options),
   fillOpacity: getOpacityProductionRule(options.opacity),
   tooltip: getInspectEncoding(options.chartInspects, options.name),
 });

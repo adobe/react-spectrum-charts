@@ -38,6 +38,7 @@ import {
   LINE_WIDTH_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  PATTERN_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
   SELECTED_SERIES,
@@ -51,6 +52,7 @@ import {
   DIRECT_LABEL_FONT_SIZE_L,
 } from '@spectrum-charts/constants';
 import { colorSchemes, getS2ColorValue } from '@spectrum-charts/themes';
+import { DEFAULT_PATTERN_FILL_IDS, PatternFillValue, resolvePatternFillGroup } from '@spectrum-charts/utils';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
@@ -87,6 +89,7 @@ import {
   LineTypes,
   LineWidth,
   Opacities,
+  Patterns,
   ScSpec,
   SymbolShapes,
   SymbolSize,
@@ -119,6 +122,7 @@ export function buildSpec({
   lineWidths = ['M'],
   marks = [],
   opacities,
+  patterns,
   symbolShapes = ['rounded-square'],
   symbolSizes = ['XS', 'XL'],
   title,
@@ -142,6 +146,7 @@ export function buildSpec({
     lineWidths,
     marks,
     opacities,
+    patterns,
     symbolShapes,
     symbolSizes,
     title,
@@ -269,6 +274,7 @@ export const getDefaultSignals = ({
   colorScheme,
   lineTypes,
   opacities,
+  patterns,
   hiddenSeries,
   highlightedItem,
   highlightedSeries,
@@ -318,6 +324,8 @@ export const getDefaultSignals = ({
     getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
     getGenericValueSignal('lineTypes', getTwoDimensionalLineTypes(lineTypes)),
     getGenericValueSignal('opacities', getTwoDimensionalOpacities(opacities)),
+    getGenericValueSignal('patterns', getTwoDimensionalPatterns(patterns, colorScheme)),
+    getGenericValueSignal(PATTERN_RANGE_SIGNAL, getPatternRange(patterns, colorScheme)),
     getGenericValueSignal('hiddenSeries', hiddenSeries ?? []),
     getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM, formattedHighlightedItem),
     getGenericValueSignal(HIGHLIGHTED_GROUP),
@@ -373,6 +381,7 @@ const getDefaultScales = (
   getLineTypeScale(lineTypes),
   getLineWidthScale(lineWidths),
   getOpacityScale(opacities),
+  getPatternScale(),
   getSymbolShapeScale(symbolShapes),
   getSymbolSizeScale(symbolSizes),
   getSymbolPathWidthScale(symbolSizes),
@@ -455,6 +464,50 @@ export const getOpacityScale = (opacities?: Opacities): OrdinalScale | PointScal
     align: 1,
     domain: { data: TABLE, fields: [] },
   };
+};
+
+// Resolves an S2 color token (e.g. 'categorical-100') the same way getColors does, leaving built-in pattern
+// names untouched for resolvePatternFillGroup - getS2ColorValue already passes through non-token strings
+// (literal hex/rgb) unchanged, so this is safe to apply to every non-pattern-name entry unconditionally.
+const resolveS2PatternGroup = (group: string[], colorScheme: ColorScheme): (string | PatternFillValue)[] =>
+  resolvePatternFillGroup(
+    group.map((entry) => ((DEFAULT_PATTERN_FILL_IDS as readonly string[]).includes(entry) ? entry : getS2ColorValue(entry, colorScheme)))
+  );
+
+// PATTERN_SCALE's range is populated via this signal rather than a literal array: Vega's scale-range parser
+// rejects arbitrary objects in a literal range (verified via vega.parse()), the same restriction that applies
+// to Gradient objects there - a signal reference is exempt, which is also how the dual-facet 'patterns' scale
+// already carries its own structured-value range.
+const PATTERN_RANGE_SIGNAL = 'patternRange';
+
+export const getPatternRange = (
+  patterns: Patterns = [...DEFAULT_PATTERN_FILL_IDS],
+  colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME
+): (string | PatternFillValue)[] =>
+  // if a two dimensional scale was provided, then just grab the first pattern in each and set that as the range
+  isPatternArray(patterns)
+    ? resolveS2PatternGroup(patterns, colorScheme)
+    : patterns.map((patternGroup) => resolveS2PatternGroup(patternGroup, colorScheme)[0]);
+
+export const getPatternScale = (): OrdinalScale => ({
+  name: PATTERN_SCALE,
+  type: 'ordinal',
+  range: { signal: PATTERN_RANGE_SIGNAL },
+  domain: { data: TABLE, fields: [] },
+});
+
+export const getTwoDimensionalPatterns = (
+  patterns: Patterns = [...DEFAULT_PATTERN_FILL_IDS],
+  colorScheme: ColorScheme = DEFAULT_COLOR_SCHEME
+): (string | PatternFillValue)[][] => {
+  if (isPatternArray(patterns)) {
+    return resolveS2PatternGroup(patterns, colorScheme).map((pattern) => [pattern]);
+  }
+  return patterns.map((patternGroup) => resolveS2PatternGroup(patternGroup, colorScheme));
+};
+
+export const isPatternArray = (patterns: Patterns): patterns is string[] => {
+  return !patterns.some((pattern) => Array.isArray(pattern));
 };
 
 function getColors(colors: Colors, colorScheme: ColorScheme): string[] {

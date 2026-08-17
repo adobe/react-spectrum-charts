@@ -30,6 +30,7 @@ const Bar: FC<BarProps> = ({
   type = 'stacked',
   opacity = { value: 1 },
   lineType = { value: 'solid' },
+  pattern,
   orientation = 'vertical',
   trellisOrientation = 'horizontal',
   trellisPadding = TRELLIS_PADDING,

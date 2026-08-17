@@ -11,7 +11,14 @@
  */
 import { Scale } from 'vega';
 
-import { COLOR_SCALE, DEFAULT_COLOR, LINE_TYPE_SCALE, SYMBOL_SIZE_SCALE, TABLE } from '@spectrum-charts/constants';
+import {
+  COLOR_SCALE,
+  DEFAULT_COLOR,
+  LINE_TYPE_SCALE,
+  PATTERN_SCALE,
+  SYMBOL_SIZE_SCALE,
+  TABLE,
+} from '@spectrum-charts/constants';
 
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 
@@ -36,6 +43,18 @@ describe('getFacets()', () => {
     const { ordinalFacets, continuousFacets } = getFacets(scales);
     expect(ordinalFacets).toHaveLength(1);
     expect(continuousFacets).toHaveLength(1);
+  });
+
+  test('should recognize a used pattern scale as an ordinal facet', () => {
+    const scales: Scale[] = [
+      {
+        name: PATTERN_SCALE,
+        type: 'ordinal',
+        domain: { data: TABLE, fields: ['period'] },
+      },
+    ];
+    const { ordinalFacets } = getFacets(scales);
+    expect(ordinalFacets).toStrictEqual([{ facetType: PATTERN_SCALE, field: 'period' }]);
   });
 });
 

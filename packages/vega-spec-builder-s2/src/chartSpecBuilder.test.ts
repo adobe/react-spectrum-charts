@@ -36,6 +36,7 @@ import {
   LINE_WIDTH_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  PATTERN_SCALE,
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
   SYMBOL_SHAPE_SCALE,
@@ -52,11 +53,14 @@ import {
   getLineWidthScale,
   getLinearColorScale,
   getOpacityScale,
+  getPatternRange,
+  getPatternScale,
   getSymbolShapeScale,
   getSymbolSizeScale,
   getTwoDimensionalColorScheme,
   getTwoDimensionalLineTypes,
   getTwoDimensionalOpacities,
+  getTwoDimensionalPatterns,
 } from './chartSpecBuilder';
 import { defaultSignals } from './specTestUtils';
 import { baseData } from './specUtils';
@@ -237,6 +241,32 @@ describe('Chart spec builder', () => {
     });
   });
 
+  describe('getTwoDimensionalPatterns()', () => {
+    test('should return the built-in pattern palette if undefined', () => {
+      expect(getTwoDimensionalPatterns(undefined)).toStrictEqual([
+        [{ pattern: 'diagonal-stripe' }],
+        [{ pattern: 'diagonal-stripe-reverse' }],
+        [{ pattern: 'horizontal-stripe' }],
+        [{ pattern: 'dots' }],
+        [{ pattern: 'crosshatch' }],
+        [{ pattern: 'grid' }],
+      ]);
+    });
+
+    test('should resolve a 1d array as a single group, colorizing built-in names with a sibling color', () => {
+      expect(getTwoDimensionalPatterns(['dots', '#2680eb'])).toStrictEqual([
+        [{ pattern: 'dots', foreground: '#2680eb' }],
+        ['#2680eb'],
+      ]);
+    });
+
+    test('should pass through a 2d array, colorizing built-in names with a sibling color in the same row', () => {
+      expect(getTwoDimensionalPatterns([['dots', '#2680eb']])).toStrictEqual([
+        [{ pattern: 'dots', foreground: '#2680eb' }, '#2680eb'],
+      ]);
+    });
+  });
+
   describe('getLineTypeScale()', () => {
     test('should return lineType scale', () => {
       expect(getLineTypeScale(['solid', 'dashed'])).toStrictEqual({
@@ -292,6 +322,46 @@ describe('Chart spec builder', () => {
         range: [0.2, 0.6],
         domain: { data: 'table', fields: [] },
       });
+    });
+  });
+
+  describe('getPatternScale()', () => {
+    test("should return a scale whose range is a signal reference, since Vega's scale-range parser rejects literal objects", () => {
+      expect(getPatternScale()).toStrictEqual({
+        name: PATTERN_SCALE,
+        type: 'ordinal',
+        range: { signal: 'patternRange' },
+        domain: { data: 'table', fields: [] },
+      });
+    });
+  });
+
+  describe('getPatternRange()', () => {
+    test('should return the built-in pattern palette if no patterns provided', () => {
+      expect(getPatternRange()).toEqual(expect.arrayContaining([{ pattern: 'dots' }]));
+    });
+
+    test('should resolve built-in pattern names, colorized with a sibling literal color, in a patterns override', () => {
+      expect(getPatternRange(['dots', '#2680eb'])).toStrictEqual([{ pattern: 'dots', foreground: '#2680eb' }, '#2680eb']);
+    });
+
+    test('should resolve an S2 color token in a patterns override, same as colors would', () => {
+      expect(getPatternRange(['dots', 'gray-700'], 'light')).toStrictEqual([
+        { pattern: 'dots', foreground: '#505050' },
+        '#505050',
+      ]);
+    });
+
+    test('should use only the first pattern of each group if a 2d patterns override is provided', () => {
+      expect(
+        getPatternRange([
+          ['dots', '#2680eb'],
+          ['grid', '#ff0000'],
+        ])
+      ).toStrictEqual([
+        { pattern: 'dots', foreground: '#2680eb' },
+        { pattern: 'grid', foreground: '#ff0000' },
+      ]);
     });
   });
 
@@ -473,6 +543,28 @@ describe('Chart spec builder', () => {
       },
       { name: 'lineTypes', value: [[[7, 4]]] },
       { name: 'opacities', value: [[1]] },
+      {
+        name: 'patterns',
+        value: [
+          [{ pattern: 'diagonal-stripe' }],
+          [{ pattern: 'diagonal-stripe-reverse' }],
+          [{ pattern: 'horizontal-stripe' }],
+          [{ pattern: 'dots' }],
+          [{ pattern: 'crosshatch' }],
+          [{ pattern: 'grid' }],
+        ],
+      },
+      {
+        name: 'patternRange',
+        value: [
+          { pattern: 'diagonal-stripe' },
+          { pattern: 'diagonal-stripe-reverse' },
+          { pattern: 'horizontal-stripe' },
+          { pattern: 'dots' },
+          { pattern: 'crosshatch' },
+          { pattern: 'grid' },
+        ],
+      },
     ];
 
     const endSignals = defaultSignals;

@@ -41,6 +41,7 @@ import {
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
+  PATTERN_SCALE,
   SELECTED_GROUP,
   SELECTED_SERIES,
   SERIES_ID,
@@ -289,9 +290,12 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
       name,
     }),
   };
-  const colorRef = getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-    value: spectrum2Colors[colorScheme]['categorical-100'],
-  };
+  const patternRef = getSymbolFacetEncoding<string>({ facets, facetType: PATTERN_SCALE, name });
+  const colorRef =
+    patternRef ??
+    getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
+      value: spectrum2Colors[colorScheme]['categorical-100'],
+    };
   // Hidden entries swap shape to the "eye off" icon, colored to match the legend label text (not the series color).
   const isHidden = isToggleable || hiddenSeries.length > 0;
   const hiddenSeriesTest = keys?.length
@@ -343,6 +347,7 @@ const getSymbolFacetEncoding = <T>({
     lineType: { scale: 'secondaryLineType', signal: 'lineTypes' },
     lineWidth: { scale: 'secondaryLineWidth', signal: 'lineWidths' },
     opacity: { scale: 'secondaryOpacity', signal: 'opacities' },
+    pattern: { scale: 'secondaryPattern', signal: 'patterns' },
     symbolShape: { scale: 'secondarySymbolShape', signal: 'symbolShapes' },
     symbolSize: { scale: 'secondarySymbolSize', signal: 'symbolSizes' },
     symbolPathWidth: { scale: 'secondarySymbolPathWidth', signal: 'symbolPathWidths' },

@@ -145,6 +145,8 @@ export type OpacityFacet = FacetRef<number>;
 export type PathWidthFacet = FacetRef<PathWidth>;
 export type SymbolSizeFacet = FacetRef<SymbolSize>;
 export type SymbolShapeFacet = FacetRef<ChartSymbolShape>;
+/** A built-in pattern name (e.g. 'diagonal-stripe') or a literal color value, used as a static fill. */
+export type PatternFacet = FacetRef<string>;
 
 export type FacetType =
   | 'color'
@@ -152,6 +154,7 @@ export type FacetType =
   | 'lineType'
   | 'lineWidth'
   | 'opacity'
+  | 'pattern'
   | 'symbolShape'
   | 'symbolSize'
   | 'symbolPathWidth';
@@ -161,6 +164,7 @@ export type SecondaryFacetType =
   | 'secondaryLineType'
   | 'secondaryLineWidth'
   | 'secondaryOpacity'
+  | 'secondaryPattern'
   | 'secondarySymbolShape'
   | 'secondarySymbolSize'
   | 'secondarySymbolPathWidth';

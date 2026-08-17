@@ -12,7 +12,15 @@
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
-import { ColorFacet, LineTypeFacet, LineWidth, OpacityFacet, Orientation, PartiallyRequired } from '../specUtil.types';
+import {
+  ColorFacet,
+  LineTypeFacet,
+  LineWidth,
+  OpacityFacet,
+  Orientation,
+  PartiallyRequired,
+  PatternFacet,
+} from '../specUtil.types';
 import { BarAnnotationOptions } from './supplemental/barAnnotationSpec.types';
 import { BarDirectLabelOptions } from './supplemental/barDirectLabelSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
@@ -55,6 +63,13 @@ export interface BarOptions {
   order?: string;
   /** The direction of the bars. Defaults to "vertical". */
   orientation?: Orientation;
+  /**
+   * Pattern name/color or key(s) in the data that are used as the pattern facet - behaves exactly like
+   * {@link color}: a plain field dodges; a [primary, secondary] tuple dodges by primary and stacks by
+   * secondary. When set, bar fill uses the pattern scale instead of the color scale - {@link pattern}
+   * takes precedence over {@link color} for fill only.
+   */
+  pattern?: PatternFacet | DualFacet;
   /** Opacity or key in the data that is used as the opacity facet */
   opacity?: OpacityFacet | DualFacet;
   /** Sets inner padding (https://vega.github.io/vega/docs/scales/#band) */

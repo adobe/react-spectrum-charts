@@ -18,6 +18,7 @@ import {
   DEFAULT_SECONDARY_COLOR,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   LINE_TYPE_SCALE,
+  PATTERN_SCALE,
   ROUNDED_SQUARE_PATH,
   TABLE,
   VISIBILITY_OFF_PATH,
@@ -81,6 +82,24 @@ describe('getFacetsFromOptions()', () => {
       secondaryFacets: [DEFAULT_SECONDARY_COLOR],
     });
   });
+  test('should treat a plain pattern field as a primary facet, same as color', () => {
+    expect(getFacetsFromOptions({ pattern: 'period' })).toStrictEqual({
+      facets: ['period'],
+      secondaryFacets: [],
+    });
+  });
+  test('a plain pattern field combined with another primary facet contributes its own primary facet, not a secondary one', () => {
+    expect(getFacetsFromOptions({ color: DEFAULT_COLOR, pattern: 'period' })).toStrictEqual({
+      facets: [DEFAULT_COLOR, 'period'],
+      secondaryFacets: [],
+    });
+  });
+  test('should get secondary facet from a pattern dual-facet tuple, same as color', () => {
+    expect(getFacetsFromOptions({ pattern: ['region', 'period'] })).toStrictEqual({
+      facets: ['region'],
+      secondaryFacets: ['period'],
+    });
+  });
 });
 
 describe('getFacetsFromScales()', () => {
@@ -110,6 +129,24 @@ describe('getFacetsFromScales()', () => {
 
   test('should return empty array if scales are undefined', () => {
     expect(getFacetsFromScales()).toStrictEqual([]);
+  });
+
+  test('should include a pattern facet - rscSeriesId (and legend hover matching) depend on this', () => {
+    const defaultPatternScale: OrdinalScale = {
+      name: PATTERN_SCALE,
+      type: 'ordinal',
+      domain: { data: TABLE, fields: ['browser'] },
+    };
+    expect(getFacetsFromScales([defaultPatternScale])).toStrictEqual(['browser']);
+  });
+
+  test('should include a secondaryPattern facet', () => {
+    const defaultSecondaryPatternScale: OrdinalScale = {
+      name: 'secondaryPattern',
+      type: 'ordinal',
+      domain: { data: TABLE, fields: ['period'] },
+    };
+    expect(getFacetsFromScales([defaultSecondaryPatternScale])).toStrictEqual(['period']);
   });
 
   test('should return empty array if no scales have fields', () => {
