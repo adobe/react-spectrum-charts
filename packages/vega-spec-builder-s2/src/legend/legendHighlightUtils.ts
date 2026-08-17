@@ -290,7 +290,7 @@ const isTrendlineOrMetricRangeLineMark = (mark: Mark): boolean =>
 
 /** Determines if a mark is a renamed reuse of `getLineMark` rather than the chart's own primary line mark. */
 const isRenamedLineMark = (mark: Mark): boolean =>
-  isTrendlineOrMetricRangeLineMark(mark) || (Boolean(mark.name) && /_highlightOverlayLine$/.test(mark.name as string));
+  isTrendlineOrMetricRangeLineMark(mark) || Boolean(mark.name?.endsWith('_highlightOverlayLine'));
 
 /**
  * Determines if a mark should receive a legend-hover opacity rule — either because its own

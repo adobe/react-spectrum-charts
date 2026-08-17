@@ -12,6 +12,7 @@
 import {
   AggregateTransform,
   Data,
+  FormulaTransform,
   GroupMark,
   Mark,
   RectMark,
@@ -32,6 +33,7 @@ import {
   DEFAULT_SECONDARY_COLOR,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
+  GROUP_ID,
   HOVERED_ITEM,
   LINE_TYPE_SCALE,
   MARK_ID,
@@ -463,6 +465,70 @@ describe('barSpecBuilder', () => {
         );
         expect(ids).toHaveLength(2);
         expect(new Set(ids)).toHaveProperty('size', 2);
+      });
+
+      describe('group-highlighted-by', () => {
+        test('highlightBy: "dimension" adds a groupId transform keyed by the dimension and includes it in the hoverTargetData groupby', () => {
+          const spec = addBar(startingSpec, {
+            idKey: MARK_ID,
+            markType: 'bar',
+            chartInspects: [{ highlightBy: 'dimension' }],
+            animations: true,
+          });
+          const tableData = spec.data?.find((d) => d.name === TABLE);
+          expect(tableData?.transform).toContainEqual({
+            type: 'formula',
+            as: `bar0_${GROUP_ID}`,
+            expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
+          });
+          const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as
+            | SourceData
+            | undefined;
+          const aggregateTransform = hoverTargetData?.transform?.find(
+            (t): t is AggregateTransform => t.type === 'aggregate'
+          );
+          expect(aggregateTransform?.groupby).toContain(`bar0_${GROUP_ID}`);
+        });
+
+        test('highlightBy: "series" adds a groupId transform keyed by the series id', () => {
+          const spec = addBar(startingSpec, {
+            idKey: MARK_ID,
+            markType: 'bar',
+            chartInspects: [{ highlightBy: 'series' }],
+            animations: true,
+          });
+          const tableData = spec.data?.find((d) => d.name === TABLE);
+          expect(tableData?.transform).toContainEqual({
+            type: 'formula',
+            as: `bar0_${GROUP_ID}`,
+            expr: `datum.${SERIES_ID}`,
+          });
+        });
+
+        test('highlightBy: [fields] adds a groupId transform joining the supplied fields', () => {
+          const spec = addBar(startingSpec, {
+            idKey: MARK_ID,
+            markType: 'bar',
+            chartInspects: [{ highlightBy: ['fieldA', 'fieldB'] }],
+            animations: true,
+          });
+          const tableData = spec.data?.find((d) => d.name === TABLE);
+          const groupIdTransform = tableData?.transform?.find(
+            (t): t is FormulaTransform => 'as' in t && t.as === `bar0_${GROUP_ID}`
+          );
+          expect(groupIdTransform?.expr).toBe('datum.fieldA + " | " + datum.fieldB');
+        });
+
+        test('highlightBy: "item" does not add a groupId transform', () => {
+          const spec = addBar(startingSpec, {
+            idKey: MARK_ID,
+            markType: 'bar',
+            chartInspects: [{ highlightBy: 'item' }],
+            animations: true,
+          });
+          const tableData = spec.data?.find((d) => d.name === TABLE);
+          expect(tableData?.transform?.some((t) => 'as' in t && t.as === `bar0_${GROUP_ID}`)).toBe(false);
+        });
       });
     });
   });
