@@ -1,0 +1,34 @@
+digraph rsc_rendering_flow {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="#1e1e1e";
+  fontcolor="white";
+  nodesep=0.5;
+  ranksep=0.6;
+  node [fontname="Helvetica", shape=box, style="rounded,filled", fontsize=14, margin="0.3,0.2", fontcolor="white"];
+  edge [fontname="Helvetica", fontsize=11, fontcolor="white"];
+
+  server [
+    label="Server Component  (no \"use client\")\n\nFetches data — DB access, secrets stay server-side",
+    fillcolor="#312e81", color="#818cf8"
+  ];
+
+  boundary [
+    label="RSC boundary — data crosses as plain\nserializable JSON. No functions involved.",
+    shape=note, fillcolor="#78350f", color="#fbbf24", fontsize=11
+  ];
+
+  client [
+    label="Client Component  (\"use client\")\n\nRenders <Chart> — the full, unmodified JSX API\nchildrenAdapter + buildSpec run here, in the browser",
+    fillcolor="#064e3b", color="#34d399"
+  ];
+
+  vega [
+    label="vega-embed mount\nlive Vega View, DOM node, browser events\nonClick / render-props are ordinary client closures",
+    style="rounded,dashed", fillcolor="#1e1e1e", color="#34d399", fontsize=11
+  ];
+
+  server -> boundary [color="#818cf8"];
+  boundary -> client [color="#34d399"];
+  client -> vega [style=dashed, color="#34d399", label="mounts"];
+}
