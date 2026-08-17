@@ -21,8 +21,8 @@ pattern in production.
 
 ![RSC rendering flow: a Server Component fetches data and passes it as plain serializable JSON across the RSC boundary to a Client Component, which renders the full, unmodified Chart JSX API and mounts vega-embed in the browser.](./rsc-rendering-flow.svg)
 
-Three files, real working code (from the verified `rsc-server-components-demo` prototype,
-`app/baseline/`), in call order:
+The real code behind each box — from the verified `rsc-server-components-demo` prototype,
+`app/baseline/` — follows below, in call order:
 
 **1. Server Component** — fetch data, nothing else:
 
