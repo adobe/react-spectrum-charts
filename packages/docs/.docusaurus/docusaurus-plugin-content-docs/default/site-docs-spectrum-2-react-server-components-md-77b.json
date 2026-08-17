@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/react-server-components",
+  "title": "React Server Components (S2)",
+  "description": "\"RSC\" below means React Server Components. This codebase's own Rsc-prefixed naming",
+  "source": "@site/docs/spectrum2/react-server-components.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/react-server-components",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/react-server-components",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/react-server-components.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Chart Sizing (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/chart-sizing"
+  },
+  "next": {
+    "title": "Pre-Alpha Components",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/pre-alpha"
+  }
+}
