@@ -13,12 +13,15 @@ import { produce } from 'immer';
 import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal } from 'vega';
 
 import {
+  AnimationType,
   COLOR_SCALE,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
+  GROUP_ID,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -31,8 +34,22 @@ import {
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
-import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
+import {
+  addInspectData,
+  addInspectSignals,
+  getGroupIdTransform,
+  getInspects,
+  isHighlightedByGroup,
+} from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
+import {
+  addHoverAnimLastChangeData,
+  addHoverAnimationSignals,
+  getHoverAnimStateData,
+  getHoverFractionData,
+  getHoverSeriesFractionData,
+  getHoverTargetData,
+} from '../marks/hoverAnimationUtils';
 import { getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import {
   addDomainFields,
@@ -50,11 +67,13 @@ import {
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder';
-import { addUserMetaDivergingBarMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import { addUserMetaAnimatedMark, addUserMetaDivergingBarMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
-import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
+import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types';
 import {
+  getBarAnimIdField,
+  getBarHoverRules,
   getBarPadding,
   getBaseScaleName,
   getDimensionSelectionRing,
@@ -71,23 +90,31 @@ export const addBar = produce<
   ScSpec,
   [
     BarOptions & {
+      animations?: boolean;
+      animationTypes?: AnimationType[];
       colorScheme?: ColorScheme;
+      data?: ChartData[];
       highlightedItem?: HighlightedItem;
+      highlightedSeries?: string | number;
       index?: number;
       idKey: string;
       comboSiblingNames?: string[];
+      legendHighlightSignals?: string[];
     }
   ]
 >(
   (
     spec,
     {
+      animations,
+      animationTypes,
       barAnnotations = [],
       barDirectLabels = [],
       chartPopovers = [],
       chartInspects = [],
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
+      data,
       dimension = DEFAULT_CATEGORICAL_DIMENSION,
       diverging = false,
       dualMetricAxis = false,
@@ -110,10 +137,14 @@ export const addBar = produce<
     }
   ) => {
     const barName = toCamelCase(name || `bar${index}`);
+    const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
+    // both facets matter for per-bar uniqueness (e.g. dodged-and-stacked bars), unlike getStackFields
+    const barIds = getUniqueBarIds(data, dimension, [...facets, ...secondaryFacets], options.trellis);
     // put options back together now that all defaults are set
     const barOptions: BarSpecOptions = {
       barAnnotations,
       barDirectLabels,
+      barIds,
       chartPopovers,
       chartInspects,
       dimensionScaleType: 'band',
@@ -137,12 +168,15 @@ export const addBar = produce<
       name: barName,
       opacity,
       paddingRatio,
+      popoverMarkName: chartPopovers.length ? barName : undefined,
       trellisOrientation,
       trellisPadding,
       trendlines,
       type,
       ...options,
     };
+    barOptions.isHighlightedByGroup = isHighlightedByGroup(barOptions);
+    barOptions.isHoverAnimate = usesBarHoverAnimation(animations, animationTypes, barOptions);
 
     spec.usermeta = {
       ...spec.usermeta,
@@ -155,9 +189,12 @@ export const addBar = produce<
       barOptions.interactiveMarkName,
       isInteractive(barOptions) ? barOptions.dimension : undefined
     );
+    if (barOptions.isHoverAnimate) {
+      spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, barName);
+    }
 
     // diverging is single-series only: dodged and faceted (multi-row-per-category) bars have no well-defined sign
-    const hasSeriesFacet = getFacetsFromOptions({ color, lineType, opacity }).facets.length > 0;
+    const hasSeriesFacet = facets.length > 0;
     if (diverging && type !== 'dodged' && !hasSeriesFacet) {
       spec.usermeta = addUserMetaDivergingBarMark(
         spec.usermeta,
@@ -174,12 +211,42 @@ export const addBar = produce<
   }
 );
 
+/**
+ * Whether the bar participates in the hover-animation system. Unlike line's `usesHoverAnimation`
+ * (opt-out via `animations === false`), bar requires an explicit `animations={true}` -- bar's
+ * animated path is new and not yet the default experience, so it must be opted into per chart.
+ */
+const usesBarHoverAnimation = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined,
+  options: BarSpecOptions
+): boolean =>
+  animations === true &&
+  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
+  (isInteractive(options) ||
+    options.highlightedItem !== undefined ||
+    options.highlightedSeries !== undefined ||
+    (options.legendHighlightSignals?.length ?? 0) > 0);
+
+/** Unique composite hover-animation identity per rendered bar, computed from the real data (see `BarSpecOptions.barIds`). */
+const getUniqueBarIds = (
+  data: ChartData[] | undefined,
+  dimension: string,
+  facets: string[],
+  trellis?: string
+): string[] => {
+  if (!data?.length) return [];
+  const fields = [...(trellis ? [trellis] : []), dimension, ...facets];
+  return [...new Set(data.map((row) => fields.map((f) => (row as Record<string, unknown>)[f]).join(' | ')))];
+};
+
 export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options) => {
   const {
     barAnnotations,
     chartInspects,
     chartPopovers,
     hasOnClick,
+    isHoverAnimate,
     name,
     paddingRatio,
     paddingOuter: barPaddingOuter,
@@ -191,6 +258,10 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 
   if (isDualMetricAxis(options)) {
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
+  }
+
+  if (isHoverAnimate) {
+    addHoverAnimationSignals(signals, name);
   }
 
   if (!barAnnotations.length && !chartPopovers.length && !chartInspects.length && !trendlines.length && !hasOnClick) {
@@ -216,6 +287,8 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
 
+  addBarHoverData(data, options);
+
   const index = data.findIndex((d) => d.name === FILTERED_TABLE);
   data[index].transform = data[index].transform ?? [];
   if (type === 'stacked' || isDodgedAndStacked(options)) {
@@ -240,6 +313,52 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
   addInspectData(data, options);
   addPopoverData(data, options);
 });
+
+/** Adds the hover-animation engine's data sources for a bar mark (see `marks/hoverAnimationUtils.ts`). */
+const addBarHoverData = (data: Data[], options: BarSpecOptions): void => {
+  const { color, dimension, isHighlightedByGroup: highlightedByGroup, isHoverAnimate, lineType, name, opacity, trellis } = options;
+  if (!isHoverAnimate) return;
+
+  const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
+  const barAnimIdField = getBarAnimIdField(name);
+  const tableData = getTableData(data);
+  tableData.transform = tableData.transform ?? [];
+  tableData.transform.push({
+    type: 'formula',
+    as: barAnimIdField,
+    expr: [...(trellis ? [trellis] : []), dimension, ...facets, ...secondaryFacets]
+      .map((f) => `datum.${f}`)
+      .join(' + " | " + '),
+  });
+
+  // dimension must be its own groupby field since dimensionHoverMatch compares datum.${dimension} directly
+  const groupby = [barAnimIdField, options.idKey, SERIES_ID, dimension];
+  if (highlightedByGroup) {
+    const groupFields = getGroupHighlightFields(options);
+    if (groupFields) {
+      tableData.transform.push(getGroupIdTransform(groupFields, name));
+      groupby.push(`${name}_${GROUP_ID}`);
+    }
+  }
+
+  data.push(
+    getHoverTargetData({ name, groupby, rules: getBarHoverRules(options) }),
+    getHoverAnimStateData({ name, keys: options.barIds ?? [], keyField: barAnimIdField }),
+    getHoverFractionData(name),
+    getHoverSeriesFractionData(name, barAnimIdField)
+  );
+  addHoverAnimLastChangeData(data, name);
+};
+
+/** Resolves the fields a `ChartInspect`'s `highlightBy` refers to. Mirrors `chartInspectUtils.addInspectData`. */
+const getGroupHighlightFields = (options: BarSpecOptions): string[] | undefined => {
+  const inspect = getInspects(options).find(({ highlightBy }) => highlightBy && highlightBy !== 'item');
+  if (!inspect) return undefined;
+  if (inspect.highlightBy === 'dimension') return [options.dimension];
+  if (inspect.highlightBy === 'series') return [SERIES_ID];
+  if (Array.isArray(inspect.highlightBy)) return inspect.highlightBy;
+  return undefined;
+};
 
 /**
  * data aggregate used to calculate the min and max of the stack

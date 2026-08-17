@@ -18,6 +18,7 @@ import {
   render,
   screen,
   unhoverNthElement,
+  waitForMarksByGroupName,
   within,
 } from '../../../test-utils';
 import { InspectOnDimensionArea } from './StackedBar.story';
@@ -36,14 +37,19 @@ describe('InspectOnDimensionArea', () => {
     const inspect = await screen.findByTestId('rsc-tooltip');
     expect(inspect).toBeInTheDocument();
     expect(within(inspect).getByText('Chrome Downloads')).toBeInTheDocument();
-    expect(bars[0]).toHaveAttribute('opacity', `1`);
-    expect(bars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+    // opacity is now animated, so it settles asynchronously -- hence waitForMarksByGroupName
+    await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
+      expect(updatedBars[0]).toHaveAttribute('opacity', `1`);
+      expect(updatedBars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+    });
 
     await unhoverNthElement(dimensionAreas, 0);
 
     // hovering bar should do normal stuff
     await hoverNthElement(bars, 4);
-    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-    expect(bars[4]).toHaveAttribute('opacity', `1`);
+    await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
+      expect(updatedBars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(updatedBars[4]).toHaveAttribute('opacity', `1`);
+    });
   });
 });

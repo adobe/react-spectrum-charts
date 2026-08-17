@@ -36,6 +36,7 @@ import {
   LINE_TYPE_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  SERIES_ID,
   STACK_ID,
   TABLE,
 } from '@spectrum-charts/constants';
@@ -338,6 +339,130 @@ describe('barSpecBuilder', () => {
           opacity: 'tier',
         }).usermeta;
         expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+    });
+
+    describe('isHoverAnimate gate', () => {
+      test('an interactive bar does not animate by default -- animations must be explicitly opted into', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+        });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
+      });
+
+      test('an interactive bar with animations explicitly true resolves isHoverAnimate true, registers usermeta.animatedMarks, and creates hover-animation data', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: true,
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['bar0']);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(true);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverAnimStateData')).toBe(true);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverFractionData')).toBe(true);
+        // series-level aggregate needed so an ungrouped legend can read one fraction per series
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverSeriesFractionData')).toBe(true);
+      });
+
+      test('a non-interactive bar does not animate', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
+      });
+
+      test('an animationTypes list without "hover" disables animation even for an interactive, animations:true bar', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: true,
+          animationTypes: [],
+        });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
+      });
+
+      test('the chart-level animations: false master switch disables animation even for an interactive bar', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: false,
+        });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
+      });
+
+      test('a chart-level highlightedSeries alone (no other bar interactivity) resolves isHoverAnimate true when animations is opted into', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          highlightedSeries: 'seriesA',
+          animations: true,
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['bar0']);
+      });
+
+      test('computes the composite per-bar identity field from the real data and uses it as the hoverTargetData groupby / hoverAnimStateData keyField', () => {
+        const data = [
+          { [DEFAULT_CATEGORICAL_DIMENSION]: 'A', [DEFAULT_METRIC]: 1 },
+          { [DEFAULT_CATEGORICAL_DIMENSION]: 'B', [DEFAULT_METRIC]: 2 },
+        ];
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: true,
+          data,
+        });
+        const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as
+          | SourceData
+          | undefined;
+        const aggregateTransform = hoverTargetData?.transform?.find(
+          (t): t is AggregateTransform => t.type === 'aggregate'
+        );
+        expect(aggregateTransform?.groupby).toStrictEqual([
+          'bar0_rscBarAnimId',
+          MARK_ID,
+          SERIES_ID,
+          DEFAULT_CATEGORICAL_DIMENSION,
+        ]);
+
+        const hoverAnimStateData = spec.data?.find((d) => d.name === 'bar0_hoverAnimStateData') as
+          | ValuesData
+          | undefined;
+        expect(hoverAnimStateData?.values).toStrictEqual([
+          { bar0_rscBarAnimId: 'A', startTime: 0, startValue: 1, target: 1 },
+          { bar0_rscBarAnimId: 'B', startTime: 0, startValue: 1, target: 1 },
+        ]);
+      });
+
+      test('includes the secondary facet in the composite identity for dodged-and-stacked bars, so segments sharing a dimension + primary-facet value stay unique', () => {
+        // regression: the composite id previously omitted the secondary facet, colliding here
+        const data = [
+          { [DEFAULT_CATEGORICAL_DIMENSION]: 'A', primaryColor: 'X', secondaryColor: 'Y1', [DEFAULT_METRIC]: 1 },
+          { [DEFAULT_CATEGORICAL_DIMENSION]: 'A', primaryColor: 'X', secondaryColor: 'Y2', [DEFAULT_METRIC]: 2 },
+        ];
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: true,
+          color: ['primaryColor', 'secondaryColor'],
+          data,
+        });
+        const hoverAnimStateData = spec.data?.find((d) => d.name === 'bar0_hoverAnimStateData') as
+          | ValuesData
+          | undefined;
+        const ids = (hoverAnimStateData?.values as { bar0_rscBarAnimId: string }[] | undefined)?.map(
+          (v) => v.bar0_rscBarAnimId
+        );
+        expect(ids).toHaveLength(2);
+        expect(new Set(ids)).toHaveProperty('size', 2);
       });
     });
   });

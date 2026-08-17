@@ -171,7 +171,7 @@ export function buildSpec({
         return addArea(acc, { ...mark, ...specOptions, index: areaCount });
       case 'bar':
         barCount++;
-        return addBar(acc, { ...mark, ...specOptions, index: barCount });
+        return addBar(acc, { ...mark, ...specOptions, index: barCount, data });
       case 'bullet':
         bulletCount++;
         return addBullet(acc, { ...mark, ...specOptions, index: bulletCount });

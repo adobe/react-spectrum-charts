@@ -34,6 +34,7 @@ import {
   getHoverAnimStateData,
   getHoverFractionData,
   getHoverFractionSignal,
+  getHoverSeriesFractionData,
   getHoverTargetData,
 } from './hoverAnimationUtils';
 
@@ -138,6 +139,44 @@ describe('getHoverFractionData()', () => {
           as: 'fraction',
           expr: `lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1))`,
         },
+      ],
+    });
+  });
+});
+
+describe('getHoverSeriesFractionData()', () => {
+  test('defaults to SERIES_ID as the keyField (line: hoverFractionData is already keyed by series, so the lookup is a no-op)', () => {
+    expect(getHoverSeriesFractionData('line0')).toStrictEqual({
+      name: 'line0_hoverSeriesFractionData',
+      source: 'line0_hoverFractionData',
+      transform: [
+        {
+          type: 'lookup',
+          from: 'line0_hoverTargetData',
+          key: SERIES_ID,
+          fields: [SERIES_ID],
+          values: [SERIES_ID],
+          as: [SERIES_ID],
+        },
+        { type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] },
+      ],
+    });
+  });
+
+  test('looks up SERIES_ID via the mark-specific keyField before aggregating (bar: hoverFractionData is keyed by the composite barAnimId, which carries no SERIES_ID field of its own)', () => {
+    expect(getHoverSeriesFractionData('bar0', 'bar0_rscBarAnimId')).toStrictEqual({
+      name: 'bar0_hoverSeriesFractionData',
+      source: 'bar0_hoverFractionData',
+      transform: [
+        {
+          type: 'lookup',
+          from: 'bar0_hoverTargetData',
+          key: 'bar0_rscBarAnimId',
+          fields: ['bar0_rscBarAnimId'],
+          values: [SERIES_ID],
+          as: [SERIES_ID],
+        },
+        { type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] },
       ],
     });
   });

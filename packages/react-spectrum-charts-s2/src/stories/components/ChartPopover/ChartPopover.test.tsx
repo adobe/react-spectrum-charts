@@ -114,8 +114,8 @@ describe('ChartPopover', () => {
     expect(bars[0]).toHaveAttribute('opacity', '1');
     expect(bars[0]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
     expect(bars[0]).toHaveAttribute('stroke-width', '2');
-    // all other bars should be faded
-    expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    // all other bars should be faded -- opacity is now animated, so it settles asynchronously
+    await waitFor(() => expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy());
   });
 
   test('Popover should be corrrect size', async () => {
@@ -320,9 +320,11 @@ describe('ChartPopover', () => {
 
     bars = getAllMarksByGroupName(chart, 'bar0');
 
-    // validate the highlight visuals are present
-    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-    expect(bars[4]).toHaveAttribute('opacity', '1');
+    // validate the highlight visuals are present -- opacity is now animated, so it settles asynchronously
+    await waitFor(() => {
+      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(bars[4]).toHaveAttribute('opacity', '1');
+    });
     expect(bars[4]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
     expect(bars[4]).toHaveAttribute('stroke-width', '2');
   });
@@ -346,9 +348,11 @@ describe('ChartPopover', () => {
 
     bars = getAllMarksByGroupName(chart, 'bar0');
 
-    // validate the highlight visuals are present
-    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-    expect(bars[4]).toHaveAttribute('opacity', '1');
+    // validate the highlight visuals are present -- opacity is now animated, so it settles asynchronously
+    await waitFor(() => {
+      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(bars[4]).toHaveAttribute('opacity', '1');
+    });
 
     const selectionRingMarks = getAllMarksByGroupName(chart, 'bar0_selectionRing');
 

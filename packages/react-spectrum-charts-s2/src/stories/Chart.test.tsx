@@ -403,9 +403,12 @@ describe('Chart', () => {
       expect(chart).toBeInTheDocument();
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
-      expect(bars[14]).toHaveAttribute('opacity', '1');
-      expect(bars[13]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      expect(bars[15]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      // opacity is now animated, so it settles asynchronously -- hence waitFor
+      await waitFor(() => {
+        expect(bars[14]).toHaveAttribute('opacity', '1');
+        expect(bars[13]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+        expect(bars[15]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      });
     });
   });
 

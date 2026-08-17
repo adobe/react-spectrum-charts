@@ -1,9 +1,9 @@
 # Hover Animation System — Design & Architecture
 
 A reference for rebuilding the hover-animation system (smooth opacity / stroke-width transitions on
-hover) from scratch. Written against the `vega-spec-builder-s2` implementation but the design is
-mark-agnostic and currently wired into line only (see §11) — it's a Vega-signal/data-flow pattern that
-can be reproduced for any mark compiled to a Vega spec.
+hover) from scratch. Written against the `vega-spec-builder-s2` implementation. The design is
+mark-agnostic and is wired into line (per-series identity) and bar (per-item identity, §13) — it's a
+Vega-signal/data-flow pattern that can be reproduced for any mark compiled to a Vega spec.
 
 ---
 
@@ -561,13 +561,16 @@ mark could pass `rscMarkId` (bar) etc. — see §11.
 6. Legend: `animatedMarks` UserMeta registry, `injectLegendHoverIntoData`, `getLegendOpacity`.
 
 **Extending to other marks (e.g. bar):** the engine is reusable. Choose the identity `keyField` = the
-finest independently-animatable unit (series for line; `rscMarkId` for bar). Write mark-specific match
-rules and consumers. For bars, carry both `rscMarkId` (animation identity) and `rscSeriesId`/group in the
-target-data `groupby` so series/legend-level highlights can set the target for all bars of a series.
-Everything downstream of `target` is generic. This isn't optional: `injectLegendHoverIntoData`'s ungrouped
-match expression hard-codes `datum.${SERIES_ID}` (not the mark's own `keyField`) precisely so legend hover
-matches at the series level regardless of animation identity — skip `rscSeriesId` in a new mark's groupby
-and legend-hover injection silently stops matching (no error, nothing highlights).
+finest independently-animatable unit (series for line; a computed composite for bar — see §13, NOT
+`rscMarkId`). Write mark-specific match rules and consumers. Carry both the identity `keyField` and
+`rscSeriesId`/group in the target-data `groupby` so series/legend-level highlights can set the target for
+all items of a series. Everything downstream of `target` is generic. This isn't optional:
+`injectLegendHoverIntoData`'s ungrouped match expression hard-codes `datum.${SERIES_ID}` (not the mark's
+own `keyField`) precisely so legend hover matches at the series level regardless of animation identity —
+skip `rscSeriesId` in a new mark's groupby and legend-hover injection silently stops matching (no error,
+nothing highlights). If the identity is finer than series (bar: many rows per series), an ungrouped
+legend also needs `getHoverSeriesFractionData` (§13) — reading the mark's raw fraction data directly
+would pick one arbitrary row's fraction for the whole series.
 
 **Adding a new animated property:** just add a consumer that maps `getHoverFractionSignal` (via
 `getDeemphasisRamp`, `getEmphasisRamp`, or its own math). No engine change.
@@ -606,4 +609,84 @@ and legend-hover injection silently stops matching (no error, nothing highlights
   behind `if (highlight)`; `getLegendOpacity` wired into `getHoverEncodings` (`legendUtils.ts`), replacing
   `getOpacityEncoding` for labels/symbols. `setHoverOpacityForMarks` no longer clobbers already-animated
   marks' opacity, via the structural `isAnimatedOpacity()` check (§7) rather than a name list.
-- **Other marks** (bar, area, …) don't use the system yet.
+- **Bar (done)** — see §13 for the mark-specific design: composite `barAnimId` identity, the
+  `dimensionHoverMatch` consumer (axis-label/dimension-hover-area), and the `hoverSeriesFractionData`
+  lookup needed for legend integration.
+- **Other marks** (area, …) don't use the system yet.
+
+---
+
+## 13. Bar extension — mark-specific design
+
+Bar reuses the same engine (§3–§4) but everything about *identity* differs from line, because bar
+animates **per rendered bar**, not per series. Key files: `bar/barSpecBuilder.ts` (`addBarHoverData`,
+`usesBarHoverAnimation`, `getUniqueBarIds`), `bar/barUtils.ts` (`getBarHoverRules`, `getBarOpacity`,
+`getBarAnimIdField`), `marks/hoverAnimationUtils.ts` (`getHoverSeriesFractionData`).
+
+**Bar's animation is opt-in, not opt-out, unlike line.** `usesBarHoverAnimation` requires
+`animations === true` exactly. Line's `usesHoverAnimation` uses `animations !== false` (animates by
+default; `animations: false` is the escape hatch) because hover-fade is an established, already-shipped
+part of line's default experience. Bar's extension is newer, so every interactive/highlighted/
+legend-highlighted bar chart still gets the original instant highlight system by default — a consumer
+must explicitly pass `animations={true}` to opt into the animated path. In this codebase only
+`BarHoverAnimation.story.tsx` does this.
+
+**Identity: a computed composite, not `rscMarkId`.** `getHoverAnimStateData`'s `keys` must be a JS-side
+list, computable at spec-build time from the real `data` array (mirrors line's `seriesIds`, via
+`getUniqueSeriesIds`). `rscMarkId` is assigned by Vega's `identifier` transform *at runtime* after
+`view.insert(TABLE, data)` — not something JS can reliably predict ahead of time. Instead, bar computes
+`barAnimId` = `[trellis?, dimension, ...facets, ...secondaryFacets].join(' | ')`, both in JS
+(`getUniqueBarIds`, for `barIds`) and as a matching Vega `formula` transform on `TABLE`
+(`getBarAnimIdField`, in `addBarHoverData`) — the two must byte-match, same as any keyField (§10).
+
+**Both `facets` and `secondaryFacets` are required for uniqueness — this bit us.** `getFacetsFromOptions`
+returns `{facets, secondaryFacets}`; bar's own aggregation helpers (`getStackFields`, used for the
+`stack`/dodge transforms) deliberately only reference *one* of the two depending on `type`, since that
+serves a narrower grouping purpose. The composite identity is different: it must always include *both*,
+because a dodged-and-stacked (dual-facet, e.g. `color: [primary, secondary]`) bar has two independent
+axes of faceting, and two segments can share the same `dimension` + primary-facet value while differing
+only in the secondary facet. Omitting `secondaryFacets` collapses those two distinct bars onto one
+`barAnimId` — corrupting the shared animation-state row for both (wrong highlight targets, and two
+different bars visibly sharing one fade/emphasis state, as if only one of them existed).
+
+**`hoverTargetData`'s groupby carries extra fields purely for match-rule/lookup convenience.** Beyond
+`barAnimId`, it also includes `idKey` (`rscMarkId`) and `dimension` — none of these fan out extra rows
+(each is functionally determined by `barAnimId`, which is already unique), they just make
+`datum.<field>` available to match-rule expressions that need it directly rather than via `barAnimId`
+string-parsing. `dimensionHoverMatch` (below) is why `dimension` must be there explicitly.
+
+**`dimensionHoverMatch` — the axis-label/dimension-hover-area consumer.** Bar has a second, independent
+direct-interaction path beyond per-item hover: hovering the dimension-hover-area rect (the padding
+around a stack/dodge group) or an axis label (`axisLabelHoverUtils.ts`) both write into the same
+`${name}_dimensionHoverArea_hoveredItem` signal (wired in `addSignals`, gated by `isInteractive`).
+`getBarHoverRules` adds a `dimensionHoverMatch` rule reading that signal and comparing
+`datum.${dimension}` — this is *in addition to* the per-item `hoveredMatch` rule, and was missed in the
+first pass of the port (line has no equivalent path), which silently broke axis-label/dimension-area
+highlighting the moment a bar became hover-animated (the *old* instant `getMarkOpacity` path — via
+`addHoverdDimenstionAreaOpacityRules` in `chartInspectUtils.ts` — already had this rule; the animated
+path needs its own copy since it replaces `getMarkOpacity` entirely when `isHoverAnimate`).
+
+**Group-highlighted-by (ChartInspect `highlightBy`) also needs its own consumer path.** Mirrors line's
+`hoveredMatch` group branch exactly: when `isHighlightedByGroup`, the rule reads
+`${interactiveMarkName}_highlightedData`'s length (a data source already keyed by the shared
+`HIGHLIGHTED_GROUP` signal, which can be driven by more than just this mark's own hover) rather than the
+mark's direct per-item hover signal — reading the direct signal instead would miss group-highlight state
+set by anything other than this exact mark's own hover.
+
+**`getHoverSeriesFractionData` needs a lookup for any per-item-keyed mark.** `hoverFractionData`'s rows
+are keyed only by `keyField` — for bar that's `barAnimId`, which carries no `rscSeriesId` field of its
+own (unlike line, whose `keyField` *is* `rscSeriesId`, making the equivalent lookup a no-op). An
+ungrouped legend needs one fraction per series, so `getHoverSeriesFractionData(name, keyField)` first
+does a Vega `lookup` transform (`from: hoverTargetData, key: keyField, values: [SERIES_ID]`) to bring
+`rscSeriesId` onto each `hoverFractionData` row, *then* aggregates (max) by `rscSeriesId`. This lookup
+is only correct if `keyField` (`barAnimId`) is unique per row in `hoverTargetData` — i.e., depends
+directly on the facets/secondaryFacets uniqueness fix above. Get that wrong and the lookup silently
+associates the wrong series with colliding rows instead of just failing loudly.
+
+**Bar's stroke width does not thicken on hover, unlike line.** `setHoverStrokeWidthForMarks`
+(`legendHighlightUtils.ts`) filters to `mark.type === 'line'` — stroke growth is a line-specific visual
+language, so it's an allowlist rather than excluding each mark type that shouldn't grow. Within that
+allowlist, `isRenamedLineMark` further excludes marks that are `type: 'line'` but aren't the chart's own
+primary line — trendline, metric range boundary, and the hover highlight-overlay duplicate — identified
+by name suffix (`Trendline<N>`, `MetricRange<N>_line`, `_highlightOverlayLine`), so those don't thicken
+either unless a future feature explicitly asks for it.
