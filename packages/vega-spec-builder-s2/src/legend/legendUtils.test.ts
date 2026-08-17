@@ -17,6 +17,7 @@ import {
   FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
+  PATTERN_SCALE,
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
   VISIBILITY_OFF_PATH,
@@ -92,6 +93,16 @@ describe('getSymbolEncodings()', () => {
     const hiddenStrokeRule = encodings.symbols?.update?.stroke?.[0] as { test?: string; value?: string };
     expect(hiddenStrokeRule?.test).toContain(FILTERED_TABLE);
     expect(hiddenStrokeRule?.value).toBe('transparent');
+  });
+
+  test('a pattern facet takes precedence over color for the swatch fill', () => {
+    const encodings = getSymbolEncodings(
+      [{ facetType: PATTERN_SCALE, field: 'period' }],
+      defaultLegendOptions
+    );
+    expect(encodings.symbols?.update?.fill).toStrictEqual([
+      { signal: `scale('${PATTERN_SCALE}', data('legend0Aggregate')[datum.index].period)` },
+    ]);
   });
 });
 

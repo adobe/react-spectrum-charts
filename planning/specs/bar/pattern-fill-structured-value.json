@@ -1,0 +1,92 @@
+{
+  "id": "pattern-fill-structured-value",
+  "title": "Replace composite pattern-fill id string with a structured value type",
+  "chartType": "bar",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "complexity": {
+    "score": 5,
+    "rationale": "Not a repeat of any precedented edit in this codebase: it requires designing a new discriminated value type (no existing non-Vega-native value type exists here to copy) and verifying, via buildSpec()+vega.parse() rather than assumption, that Vega's own scale-range/expression-indexing/production-rule pipeline actually tolerates an object-valued range entry the same way it tolerates a Gradient-shaped one for the pattern facet's specific dual-facet indexed-lookup expression. Multiple sites (packages/utils's value construction, the canvas interception's cache-key/lookup logic, the spec builder's scale/signal construction, the legend swatch resolver) each need distinct, non-repeated reasoning about how they consume the new shape, not just a mechanical rename."
+  },
+  "summary": "Replaces the pattern-scale feature's (planning/specs/bar/implemented/pattern-scale.json) composite `baseId::color` string convention - used to color-match a built-in pattern tile to a sibling literal color in the same `patterns` group - with a structured, discriminated value object, mirroring how Vega's own `Gradient` type is already a plain object (`{gradient: 'linear', ...}`) usable as a literal scale-range/encode value rather than a parsed string. Removes all string-splitting/separator logic from the canvas interception layer. Motivated by a review of `vega/vega#4290` (an in-flight, unmerged upstream PR adding a native `Pattern` value type with first-class `foreground`/`background` properties): our own string convention was flagged as real, if minor, technical debt independent of that PR's outcome, and this codebase is expected to carry its own pattern-fill mechanism for a long time regardless of when/whether #4290 lands - see planning/research/vega-canvas-pattern-fill/vega-canvas-pattern-fill.md for the upstream context.",
+  "requirements": [
+    "Introduce a structured pattern-fill value type in packages/utils/src/patternFillId.ts (e.g. a plain object with a dedicated discriminant field, analogous to Vega's `isGradient(value) => value && value.gradient` check) that carries a built-in pattern id and an optional color to match, replacing the current `url(...)`-style string returned by getPatternFillUrl/getColorMatchedPatternFillUrl.",
+    "resolvePatternFillGroup returns this structured value (not a string) whenever it resolves a built-in pattern name - whether or not a sibling color is present in the group. When no sibling color exists, the value's color field is omitted/undefined and canvas resolution falls back to the fixed-neutral tile exactly as it does today.",
+    "getPatternFillId / resolvePatternFillValue (the single-value, no-group-context entry point) recognize the structured value via direct property access on the discriminant field - no string parsing, no separator, no `indexOf`/`slice`.",
+    "canvasPatternFillUtils.ts's getColorMatchedPatternSource (and resolveFillStyleValue's lookup/caching) reads `.id` and `.color` directly off the structured value. The `COMPOSITE_PATTERN_SEPARATOR` constant and all associated string-splitting logic are deleted, not just deprecated.",
+    "PATTERN_SCALE's range and the 'patterns'/'secondaryPattern' generic-value signal accept this structured value as a literal array entry, verified (not assumed) via buildSpec() + vega.parse() that Vega's scale resolution and the pattern facet's dual-facet indexed-lookup expression (scale('patterns', datum.primary)[indexof(domain('secondaryPattern'), datum.secondary) % length(...)]) both pass the object through unchanged to the mark's fill encode and, from there, to the canvas fillStyle assignment.",
+    "TypeScript types for whatever currently types PATTERN_SCALE's range / the 'patterns' signal's value accept the structured value alongside plain color strings, without an `any` cast - follow whatever precedent already exists for Gradient-shaped range entries in this codebase's own scale types.",
+    "Legend swatch fill resolution (legendUtils.ts's getSymbolEncodings) is re-verified against a real Legend rendering a pattern facet whose resolved value is the new structured object, not assumed correct from the mark-level fix alone - this mirrors the three-hardcoded-list legend risk that was real (not just theoretical) the first time this feature was built.",
+    "No change to the public `pattern` (Bar) / `patterns` (Chart) prop surface - this is purely an internal representation change. Existing stories (PatternFill.story.tsx) and their rendered output are unaffected and require no edits.",
+    "All existing tests asserting the old string shape (patternFillId.test.ts, canvasPatternFillUtils.test.ts, chartSpecBuilder.test.ts, and any others touching PATTERN_SCALE's range or the 'patterns' signal) are updated for the new value shape, not skipped or loosened."
+  ],
+  "edgeCases": [
+    {
+      "case": "A `patterns` group entry is a built-in pattern name with no sibling literal color in the same group.",
+      "expectedBehavior": "Resolves to the structured value with `color` omitted/undefined; canvas resolution uses the fixed-neutral `draw` tile source exactly as before this change - only the color-matched (drawWithColor) path is affected by the new shape."
+    },
+    {
+      "case": "A `patterns` entry is a literal color string, not a built-in pattern name.",
+      "expectedBehavior": "Stays a plain string, completely unaffected - only entries that resolve to a built-in pattern id become structured objects; this refactor doesn't touch how literal colors flow through the scale."
+    },
+    {
+      "case": "The compiled Vega spec is serialized (e.g. UNSAFE_vegaSpec debugging, a snapshot test, or a headless vg2png-style round trip through JSON).",
+      "expectedBehavior": "The structured value must survive a real JSON round-trip identically to how a Gradient-shaped object already does, since RSC builds specs as plain JS objects (not parsed from JSON text) end-to-end - verify this isn't broken by the new shape, particularly for any test that does deep-equality against a fixture built before this change."
+    },
+    {
+      "case": "A developer inspects the compiled spec's PATTERN_SCALE range or 'patterns' signal value directly (browser devtools, a debug log) while diagnosing a pattern-fill issue.",
+      "expectedBehavior": "They now see a structured object instead of a `url(...)`-style string - a legibility/debugging-experience change worth being aware of, not a behavioral edge case, but relevant if any tooling or documentation referenced the old string format."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "touchesLegendInteraction: the legend swatch fill resolver (legendUtils.ts's getSymbolEncodings) must be re-verified against the new structured value, since the original pattern-scale feature already proved this exact resolver has non-obvious, easy-to-miss failure modes for pattern facets (it required three separate hardcoded-list fixes the first time). requiresNewSignalOrScale is false - this change alters the *value shape* carried by the existing PATTERN_SCALE scale and 'patterns'/'secondaryPattern' signal, it does not add a new scale or signal. requiresS1S2Parity is true only in the same sense the original pattern-scale spec flagged it: s1 has no pattern-fill mechanism at all yet, so there is nothing to port today, but if/when s1 gains pattern-fill support, it should adopt this structured value shape from the start rather than reintroducing the string convention this spec removes."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/utils/src/patternFillId.ts",
+      "change": "Replace the string-returning getPatternFillUrl/getColorMatchedPatternFillUrl and the COMPOSITE_PATTERN_SEPARATOR convention with a structured PatternFillValue type (discriminant field + id + optional color) and a type guard (e.g. isPatternFillValue), mirroring Vega's own isGradient(value) pattern. resolvePatternFillGroup and resolvePatternFillValue return/recognize this type instead of a composite string."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/patternFillUtils.ts",
+      "change": "Update re-exports for the new type/guard names from @spectrum-charts/utils; PatternTileSource and the registry (registerPatternFill/getPatternFillSource/clearPatternFillRegistry/specHasPatternFill) are unaffected."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/canvasPatternFillUtils.ts",
+      "change": "getPatternFillId's lookup and getColorMatchedPatternSource read `.id`/`.color` directly off the structured value via the new type guard instead of indexOf/slice string parsing; resolveFillStyleValue's cache key becomes a value derived internally from the object (e.g. a small serialization used only as a Map key, never as the wire representation) rather than the id string itself carrying the color."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts",
+      "change": "getPatternScale/getTwoDimensionalPatterns/resolveS2PatternGroup updated for resolvePatternFillGroup's new return type; whatever type currently backs PATTERN_SCALE's OrdinalScale range / the 'patterns' signal's value is widened to accept the structured value alongside string, without an any cast."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/marks/markUtils.ts",
+      "change": "getPatternProductionRule's shape is unchanged (still emits a scale/signal reference, not a literal value) - only its type annotations may need widening if they assumed a string-only range."
+    },
+    {
+      "file": "packages/utils/src/patternFillId.test.ts",
+      "change": "Update assertions for the new structured value shape in place of the old composite string."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/canvasPatternFillUtils.test.ts",
+      "change": "Update fixtures/assertions for the new value shape; remove any test specifically covering the deleted composite-string-splitting path, replacing it with coverage of the structured-value color-match path."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.test.ts",
+      "change": "Update PATTERN_SCALE range / 'patterns' signal assertions for the new value shape."
+    }
+  ],
+  "openQuestions": [
+    "Exact discriminant field name/shape for the structured value (e.g. matching or deliberately diverging from Gradient's own `gradient` key) - not yet decided; pick something that can't collide with a real Gradient object or a plain color string.",
+    "Whether to name the new value's color field `color` (current internal naming) or `foreground` - the latter would reduce churn if/when this codebase eventually migrates to vega/vega#4290's native Pattern type (which uses `foreground`/`background`), at the cost of diverging from this codebase's current `patterns`/color-matching naming. Worth deciding deliberately rather than defaulting.",
+    "Whether the CanvasPatternFillPrototype.story.tsx prototype (from planning/specs/chart/pattern-fill-rendering.json, predates the real pattern-scale prop) depends on the old string convention directly via UNSAFE_vegaSpec - check before deleting the string-returning functions entirely, since that story is explicitly kept in place per prior direction and must keep working or be updated in the same PR."
+  ],
+  "relatedIssues": ["pattern-scale"]
+}

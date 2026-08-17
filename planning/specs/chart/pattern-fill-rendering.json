@@ -1,0 +1,90 @@
+{
+  "id": "pattern-fill-rendering",
+  "title": "Pattern-Fill Rendering for Canvas and SVG Renderers",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-15",
+  "complexity": {
+    "score": 5,
+    "rationale": "Neither renderer has any existing pattern-fill support to build on - a prior prototype covering both was discarded and no longer exists in source, so this is from-scratch work in two genuinely different rendering pipelines (canvas 2D context interception vs. SVG DOM/defs manipulation), each requiring its own non-precedented interception technique. Real unknowns remain (the shared tile/image value shape, device-pixel-ratio handling per renderer, cache lifetime per renderer) that could change the shape of either implementation, and the hard constraint of not modifying vega package internals rules out the simplest fix (a native Gradient-like value type) for both phases covered by this spec."
+  },
+  "summary": "Neither Vega's canvas renderer nor its SVG renderer currently supports rendering a pattern-reference fill (e.g. a candy-stripe/hatch tile used in place of a solid color) for any mark in this codebase - the only prior implementation was a discarded prototype that never landed in source. This spec covers building genuine pattern-fill rendering support for both renderers entirely at the RSC layer, without modifying the vega/vega-scenegraph/vega-embed package internals, so the feature ships on the stock upstream Vega dependency. A shared, renderer-agnostic tile/image value shape is defined once and consumed identically by a canvas interception path and an SVG interception path, so canvas and SVG output are visually equivalent for the same encoding. A later, separate initiative (not covered by this spec) may prototype and propose a native Vega-side implementation of the same mechanism once this RSC-layer version is built and validated.",
+  "requirements": [
+    "A fill value that resolves to a pattern-reference (a shared, renderer-agnostic tile/image source - not a plain color or gradient) must render as a real repeating pattern under the canvas renderer, visually equivalent to the same encoding rendered under the SVG renderer.",
+    "The mechanism must not require modifying the vega, vega-scenegraph, vega-embed, or any other Vega package's internals - RSC depends only on the stock, unmodified upstream Vega packages and achieves pattern rendering purely through interception/wrapping at the RSC layer, for both renderers.",
+    "Canvas: injection works by intercepting the point where a pattern-reference value is assigned as the canvas context's active fill, so no Vega dataflow or rendering code path needs to change.",
+    "SVG: injection works by detecting pattern-reference fill values on the rendered SVG output and supplying the corresponding <pattern> definition into the chart's own <defs>, so no change to Vega's SVG renderer is required.",
+    "Fill values that are not pattern references (plain colors, gradients) must continue to pass through both interception points completely unmodified.",
+    "A given pattern identity (e.g. a specific series color) must resolve to a single, cached pattern object per renderer (a CanvasPattern for canvas; a single shared <pattern> def for SVG) reused across draw calls/elements within the same chart instance, rather than rebuilding the underlying tile on every mark drawn.",
+    "Each interception must be applied at most once per chart instance (per canvas element/context for canvas; per rendered SVG root for SVG) and safe to invoke repeatedly across re-renders/resizes without double-wrapping or leaking state from a previous instance.",
+    "Any rotation/orientation applied to the pattern must be expressed as a transform on the pattern object itself (CanvasPattern.setTransform for canvas; the patternTransform attribute for SVG) rather than baked into the source tile/image, so tile generation stays a single reusable source of truth shared by both renderers, independent of orientation.",
+    "The tile/pattern-source representation (the generic tile-function/image value shape) is defined once, internal to RSC, and consumed identically by both the canvas and SVG interception paths, so canvas and SVG can never drift out of visual parity and so the representation could later be handed to a native Vega implementation largely as-is (see openQuestions).",
+    "Each interception should only engage for charts whose compiled spec actually contains a pattern-reference fill, so charts that don't use the feature incur no overhead in either renderer."
+  ],
+  "edgeCases": [
+    {
+      "case": "Multiple series/marks on the same chart resolve to different pattern-reference identities.",
+      "expectedBehavior": "Each distinct pattern identity gets its own cached pattern object per renderer; the cache key must be based on the resolved identity (e.g. color), not a single global cache entry, or later series would incorrectly reuse an earlier series' pattern."
+    },
+    {
+      "case": "A dense chart (many marks) shares only a handful of distinct pattern identities.",
+      "expectedBehavior": "Pattern lookup/creation must not become a per-draw-call or per-element bottleneck in either renderer - the common case of a cache hit should be cheap relative to the cost of drawing/painting the mark itself."
+    },
+    {
+      "case": "The chart's view is destroyed and recreated (resize triggering a new canvas element or SVG root, or a full chart remount).",
+      "expectedBehavior": "A new canvas element/context or SVG root gets independent interception and its own fresh cache; state tied to a previous, now-detached canvas or SVG root must not be reused or leak into the new one."
+    },
+    {
+      "case": "The chart renders at a non-1 device pixel ratio (high-DPI display).",
+      "expectedBehavior": "Canvas pattern tiles must repeat and align at the correct on-screen scale, tracking whatever DPR scaling the canvas renderer already applies to the drawing context. SVG patterns are resolution-independent by nature but must still align to the same visual tile size/spacing as the canvas version at any DPR."
+    },
+    {
+      "case": "colorScheme (light/dark) or theme changes, altering the resolved color a pattern-reference encodes.",
+      "expectedBehavior": "A changed resolved color must produce a new pattern (and cache entry) for that identity in both renderers, rather than reusing a stale, previously cached pattern built from the old color."
+    },
+    {
+      "case": "A mark's fill is driven by a per-row data field (e.g. a color override column) rather than a single static value for the whole mark.",
+      "expectedBehavior": "Each interception must resolve and cache per the actual per-row value at assignment/render time, not assume one fill value applies to the whole mark/context for the life of the chart, in either renderer."
+    },
+    {
+      "case": "A pattern-filled mark participates in hover animation, legend highlight, or externally controlled highlight, all of which drive opacity changes.",
+      "expectedBehavior": "Opacity/highlight encoding continues to composite over the resolved pattern via the existing globalAlpha (canvas) / fill-opacity (SVG) mechanism, unaffected by either interception. This is expected to work automatically since opacity and fill are set independently in both renderers, but must be explicitly verified during the phase 3 and phase 5 review/testing passes rather than assumed."
+    },
+    {
+      "case": "Renderer switch (canvas vs SVG) for the same chart/story, e.g. via a renderer prop or Storybook control.",
+      "expectedBehavior": "The same pattern-reference encoding must produce visually equivalent output regardless of which renderer is active, since both interception paths consume the same shared tile/image value shape."
+    },
+    {
+      "case": "S1 (vega-spec-builder / react-spectrum-charts) canvas and SVG rendering.",
+      "expectedBehavior": "Out of scope for this spec (s2-only), but the interception strategy for both renderers should be portable if s1 ever needs the same capability - see crossCutting.requiresS1S2Parity."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "requiresS1S2Parity: s1's react-spectrum-charts / vega-spec-builder also supports canvas and SVG renderers for bar and other marks. No s1 consumer currently needs pattern-reference fills, so no immediate port is required, but if one is added later it will need the same dual-renderer interception strategy implemented against s1's own rendering entry points. The four interaction-related flags are expected to stay false because opacity/highlight and fill are set independently in both renderers (canvas globalAlpha, SVG fill-opacity), but this assumption is called out explicitly in edgeCases and must be verified during phase 3/5 testing rather than trusted blindly - if verification finds an actual interaction, these flags and this spec must be updated before status moves to implemented."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/react-spectrum-charts-s2/src/VegaChart.tsx",
+      "change": "Strategy only: after a view mounts (and on any subsequent view recreation), if the compiled spec contains a pattern-reference fill anywhere, locate the chart's own canvas element (canvas renderer) or SVG root (SVG renderer) and engage the corresponding interception strategy against it. No specific line-level implementation is prescribed here - this entry only records where the responsibility of 'detect + wire up per renderer' belongs. Phase 2 (this spec's initial implementation pass) covers the canvas path; phase 4 covers the SVG path, added to this same file's detection/wiring logic."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/ (exact filenames TBD at implementation time)",
+      "change": "Strategy only: owns the shared tile/pattern-source value shape (the generic tile-function/image representation), plus two renderer-specific interception modules that both consume it - one recognizing a pattern-reference fill value at canvas fillStyle-assignment time (resolving/caching the corresponding CanvasPattern, tile generation + orientation transform) and one detecting pattern-reference fill values in rendered SVG output and injecting/caching the corresponding <pattern> def (with patternTransform for orientation) into the chart's <defs>. No specific API shape or code is prescribed here; the prior prototype exploring this space was intentionally discarded so this gets a from-scratch implementation against the strategy above, built in two phases (canvas first, SVG second) per the plan agreed with the requester."
+    }
+  ],
+  "openQuestions": [
+    "What exact shape should the shared tile/image pattern-source API take (a function returning a drawable, a pre-rendered image, or declarative tile-drawing instructions)? This needs to be settled during the canvas implementation phase, since both the SVG phase and any later native-Vega proposal build on whatever is chosen here.",
+    "How should device-pixel-ratio scaling be handled - for canvas tile sizing/alignment, and for keeping the SVG pattern's visual tile size in sync with the canvas version at any DPR - so neither renderer's output is blurry, misaligned, or out of parity with the other after a resize?",
+    "What is the right cache lifetime/scope per renderer - tied to the canvas element / SVG root, the view instance, or something longer-lived - given views can be destroyed and recreated on resize?",
+    "Does opacity/highlight compositing (hover animation, legend interaction, controlled highlight) actually continue to work transparently over pattern fills in both renderers once implemented, or does phase 3/5 testing surface a real interaction that needs explicit handling and a crossCutting flag update?",
+    "Once this RSC-layer implementation is built and validated (phases 1-5), what should the phase 6 native-Vega prototype/proposal actually change in vega-scenegraph (a Pattern.js sibling to Gradient.js, consumed by both SVGRenderer/SVGStringRenderer and the canvas color.js/gradient.js path) - this is intentionally left undesigned until the RSC-layer version proves out the tile/image value shape."
+  ]
+}

@@ -21,6 +21,7 @@ import {
   LAST_RSC_SERIES_ID,
   MARK_ID,
   PADDING_RATIO,
+  PATTERN_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
   SERIES_ID,
@@ -40,6 +41,7 @@ import {
 import {
   getBarDimensionAreaPositionEncodings,
   getBarDimensionHoverArea,
+  getBarEnterEncodings,
   getBarFillEncoding,
   getBarItemSelectionBackdrop,
   getBarItemSelectionRing,
@@ -50,6 +52,7 @@ import {
   getDimensionSelectionRing,
   getDodgedDimensionEncodings,
   getDodgedGroupMark,
+  isDodgedAndStacked,
   getMetricEncodings,
   getOrientationProperties,
   getStackedCornerRadiusEncodings,
@@ -408,6 +411,40 @@ describe('barUtils', () => {
       };
       const encoding = getBarFillEncoding(options);
       expect(encoding).toStrictEqual({ signal: 'datum["color-id"]' });
+    });
+  });
+
+  describe('isDodgedAndStacked() pattern', () => {
+    test('is false when pattern is a plain field, same as color', () => {
+      expect(
+        isDodgedAndStacked({ ...defaultBarOptions, color: { value: 'categorical-100' }, pattern: 'period' })
+      ).toBe(false);
+    });
+
+    test('is false when pattern is a plain field combined with an existing plain color facet', () => {
+      expect(isDodgedAndStacked({ ...defaultBarOptions, color: 'region', pattern: 'period' })).toBe(false);
+    });
+
+    test('is true when pattern is a dual-facet tuple, same as color', () => {
+      expect(
+        isDodgedAndStacked({ ...defaultBarOptions, color: { value: 'categorical-100' }, pattern: ['region', 'period'] })
+      ).toBe(true);
+    });
+
+    test('is false when neither pattern nor a dual-facet color/lineType/opacity is set', () => {
+      expect(isDodgedAndStacked(defaultBarOptions)).toBe(false);
+    });
+  });
+
+  describe('getBarEnterEncodings() pattern', () => {
+    test('fill uses the pattern scale when pattern is set', () => {
+      const encoding = getBarEnterEncodings({ ...defaultBarOptions, pattern: 'period' });
+      expect(encoding.fill).toStrictEqual({ scale: PATTERN_SCALE, field: 'period' });
+    });
+
+    test('fill falls back to the normal color encoding when pattern is unset', () => {
+      const encoding = getBarEnterEncodings(defaultBarOptions);
+      expect(encoding.fill).toStrictEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
     });
   });
 

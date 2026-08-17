@@ -20,6 +20,7 @@ import {
   LINE_TYPE_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  PATTERN_SCALE,
   ROUNDED_SQUARE_PATH,
   SENTIMENT_NEGATIVE_PATH,
   SENTIMENT_NEUTRAL_PATH,
@@ -41,6 +42,7 @@ import {
   LineWidth,
   NumberFormat,
   OpacityFacet,
+  PatternFacet,
   ScSpec,
   SymbolSize,
   SymbolSizeFacet,
@@ -48,7 +50,8 @@ import {
 } from './types';
 
 /**
- * gets all the keys that are used to facet by
+ * gets all the keys that are used to facet by. pattern behaves exactly like color/lineType/opacity: a plain
+ * field is always a primary (dodge) facet; a [primary, secondary] tuple contributes to both, identically.
  * @param facetOptions
  * @returns facets
  */
@@ -56,22 +59,24 @@ export const getFacetsFromOptions = ({
   color,
   lineType,
   opacity,
+  pattern,
   size,
 }: {
   color?: ColorFacet | DualFacet;
   lineType?: LineTypeFacet | DualFacet;
   opacity?: OpacityFacet | DualFacet;
+  pattern?: PatternFacet | DualFacet;
   size?: SymbolSizeFacet;
 }): { facets: string[]; secondaryFacets: string[] } => {
   // get all the keys that we need to facet by
   // filter out the ones that use static values instead of fields
-  let facets = [color, lineType, opacity, size]
+  let facets = [color, lineType, opacity, pattern, size]
     .map((facet) => (Array.isArray(facet) ? facet[0] : facet))
     .filter((facet): facet is string => typeof facet === 'string');
   // remove duplicates
   facets = [...new Set(facets)];
 
-  let secondaryFacets = [color, lineType, opacity]
+  let secondaryFacets = [color, lineType, opacity, pattern]
     .map((facet) => (Array.isArray(facet) ? facet[1] : undefined))
     .filter((facet): facet is string => typeof facet === 'string');
   // remove duplicates
@@ -90,9 +95,11 @@ export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
     COLOR_SCALE,
     LINE_TYPE_SCALE,
     OPACITY_SCALE,
+    PATTERN_SCALE,
     'secondaryColor',
     'secondaryLineType',
     'secondaryOpacity',
+    'secondaryPattern',
   ].reduce((acc, cur) => {
     const scale = scales.find((scale) => scale.name === cur);
     if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {

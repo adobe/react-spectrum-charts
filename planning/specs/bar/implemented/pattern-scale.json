@@ -1,0 +1,166 @@
+{
+  "id": "pattern-scale",
+  "title": "Pattern Scale for Bar (real pattern/patterns props)",
+  "chartType": "bar",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-08-17",
+  "complexity": {
+    "score": 5,
+    "rationale": "The canvas injection mechanism and its cache/DPR/rotation handling already exist and are proven (planning/specs/chart/pattern-fill-rendering.json's canvas phase, validated via its prototype stories, though that spec's own status is still approved pending its SVG phase) - reusing the canvas mechanism itself is precedented. What's new and undecided going in: a facet scale that mixes pattern-reference urls with plain color values in the same range (no existing scale does this), a shared id/url convention that must move to a new package boundary (packages/utils) so both vega-spec-builder-s2 and react-spectrum-charts-s2 can use it without a backwards dependency, and a built-in default tile palette that has to be designed from scratch (no precedent for a non-color facet scale's default range in this codebase). Each of those is a real design decision, not a repeat of an existing pattern, which is why this clears the 5 bar despite reusing the underlying render mechanism."
+  },
+  "summary": "Adds a real `pattern` prop on Bar (mirrors `color`, but scoped to a single field name, not an array) and a chart-level `patterns` override array (mirrors `colors`/`lineTypes`/`opacities`), backed by a new ordinal `PATTERN_SCALE`. `patterns` entries are either a built-in pattern name (resolved to a `url(#rsc-pattern-<id>)` reference via the existing canvas-fill mechanism) or a literal color value, so a single scale's range can mix pattern-filled and solid-filled domain values - the motivating case is a previous/current period comparison where the previous period renders candy-striped and the current period renders as a normal solid fill. Replaces the throwaway CanvasPatternFillPrototype stories' hand-written UNSAFE_vegaSpec approach with a real mark prop that goes through the actual S2 spec builder, so bars get real S2 styling (corner radius, theme-aware base rendering) and a real `<Legend>` reflecting the pattern/color mix natively.",
+  "requirements": [
+    "`pattern` on Bar behaves exactly like `color` (and `lineType`/`opacity`): a plain field name is always a primary (dodge) facet; a `[primary, secondary]` tuple dodges by primary and stacks by secondary, using the identical mechanism (getFacetsFromOptions, isDodgedAndStacked, addSecondaryScales, a 'patterns'/'secondaryPattern' scale+signal pair) as color's own dual-facet path. There is no context-dependent role-switching - pattern's role never changes based on what other facets are set, mirroring color exactly.",
+    "`pattern` is mutually exclusive with `color` for the fill encode only: if both are set, `pattern` takes precedence for fill via getBarEnterEncodings; `color` is otherwise unaffected and, if it is itself a field, still contributes its own primary/secondary facet(s) independently.",
+    "`patterns` on Chart is `string[] | string[][]` (mirrors `Opacities`'s exact shape) that overrides PATTERN_SCALE's range and the 'patterns' two-dimensional signal used by pattern's dual-facet lookup. Each entry is resolved as: if it matches a built-in pattern name, resolve it (see the color-matching requirement below); otherwise resolve it as an S2 color value via getS2ColorValue(entry, colorScheme) - the same resolution colors/getColors already applies, so an S2 token name (e.g. 'categorical-100') resolves to its real theme hex, and a literal hex/rgb value passes through unchanged since it isn't a recognized token key. getPatternScale/getTwoDimensionalPatterns take colorScheme as a parameter for this and are called with it from getDefaultScales/getDefaultSignals.",
+    "When `patterns` is not provided, PATTERN_SCALE's default range is the built-in pattern palette (a fixed, small set of neutral, colorScheme-independent tile patterns), analogous to the default categorical color palette used by COLOR_SCALE.",
+    "A built-in pattern name is resolved per-group (resolvePatternFillGroup), not independently: if the same group (a dual-facet row, or a whole 1D patterns array) also contains a literal color, the pattern is recolored to match that color instead of using the fixed neutral tile - e.g. `['diagonal-stripe', '#2680eb']` renders the stripe in #2680eb, not gray. This is a real, deliberate behavior change from an earlier version of this spec (which always resolved to a fixed neutral tile) - the motivating case (a previous/current comparison) requires the pattern to visually match the same color the solid segment uses, not an unrelated neutral texture. The canvas interception resolves this via a composite `baseId::color` id (getColorMatchedPatternFillUrl) and each built-in shape's new drawWithColor variant (transparent base, ink = the given color), falling back to the fixed neutral tile when no sibling color is present in the group.",
+    "The built-in pattern palette's id/url naming convention (getPatternFillUrl/getPatternFillId/the id prefix) moves to packages/utils so vega-spec-builder-s2 (to build PATTERN_SCALE's default range) and react-spectrum-charts-s2 (canvas registry + interception) can both depend on it without creating a backwards package dependency. react-spectrum-charts-s2 continues to re-export these from its own utils/index.ts so existing imports (including the CanvasPatternFillPrototype stories) don't need to change.",
+    "The built-in palette's tile-drawing functions (CanvasRenderingContext2D-based, browser-only) stay in react-spectrum-charts-s2, registered once at module load via the existing registerPatternFill() registry from planning/specs/chart/pattern-fill-rendering.json's implementation - no canvas API leaks into vega-spec-builder-s2.",
+    "PATTERN_SCALE follows the same setScales()/addFieldToFacetScaleDomain() extension pattern as COLOR_SCALE/LINE_TYPE_SCALE/OPACITY_SCALE: only marks that reference `pattern` as a field add a domain entry, and removeUnusedScales() strips PATTERN_SCALE entirely when no mark uses it.",
+    "Legend must render correctly for a mark using `pattern`: unlike the raw-spec prototype (where a hand-written `legends` block just worked), the real S2 Legend component required three explicit changes - PATTERN_SCALE added to legendFacetUtils.ts's facetScaleNames Set (or it's never recognized as a facet at all), a 'pattern' entry added to legendUtils.ts's secondaryFacetMapping (required for that mapped type's completeness), and the swatch fill resolver in getSymbolEncodings updated to prefer a PATTERN_SCALE facet over COLOR_SCALE, mirroring the mark-level fill precedence.",
+    "pattern-fill rendering only exists for the canvas renderer (SVG is a separate, not-yet-built phase of the mechanism spec) - a story or consumer using `pattern` must explicitly set `renderer=\"canvas\"` on Chart, since the default renderer is svg.",
+    "New Storybook stories demonstrate the real prop end to end, replacing what the UNSAFE_vegaSpec prototype stories approximated by hand: a previous/current period comparison using `pattern: ['region', 'period']` (dodges by region, stacks by period, matching color's own dual-facet convention exactly) with `patterns` supplied as a 2D array (one identical [stripe, solid] row per region value, since a dual-facet range varies by the primary by default - this is what makes period consistently control the pattern regardless of region) and a Legend scoped to `keys={['period']}`; and a default-palette story (`pattern` alone, no `patterns` override, no `color` field). Both explicitly set `renderer=\"canvas\"` and use real S2 styling (rounded corners, theme colors) via a real `<Legend>`."
+  ],
+  "edgeCases": [
+    {
+      "case": "`patterns` array is shorter than the field's domain (more categories than palette/override entries).",
+      "expectedBehavior": "Same behavior as COLOR_SCALE/other facet scales when the override array runs short - Vega's own ordinal scale range-cycling/undefined behavior applies uniformly, no special-casing for pattern."
+    },
+    {
+      "case": "A `patterns` entry doesn't match a built-in pattern name and isn't a valid color string either (typo).",
+      "expectedBehavior": "Passed through as a literal value like any other invalid color would be - this prop doesn't add new validation beyond what `colors` already does or doesn't do for bad hex/token strings."
+    },
+    {
+      "case": "Both `color` (a plain field) and `pattern` (a plain field) are set on the same Bar with type=\"dodged\".",
+      "expectedBehavior": "`pattern` wins for the fill encode. Both fields independently contribute their own primary/dodge facet, exactly as two plain fields on color and lineType would - the dodge-group key combines both; this does not by itself produce a stack. Use pattern's own dual-facet tuple to dodge-and-stack using pattern alone."
+    },
+    {
+      "case": "`pattern` is set alone (no other field-based facet) on a type=\"dodged\" Bar.",
+      "expectedBehavior": "pattern's field becomes the primary (dodge) facet itself, producing a valid (if degenerate, one row per dodge group) dodge-group formula - this was a real crash before the fix (an empty groupby produced an empty formula expr, which Vega's parser rejects), reproduced and confirmed via buildSpec()+vega.parse() outside any browser."
+    },
+    {
+      "case": "`pattern` is a [primary, secondary] dual-facet tuple.",
+      "expectedBehavior": "Dodges by primary and stacks by secondary, resolving fill via the same 2D indexed-lookup signal mechanism as color's own dual-facet (scale('patterns', datum.primary)[indexof(domain('secondaryPattern'), datum.secondary) % length(...)]). Because the lookup varies by primary by default, getting secondary (not primary) to consistently control the pattern requires supplying `patterns` as an explicit 2D array with one identical row per primary-domain value - the same requirement color's own dual-facet mechanism would impose for the equivalent 'vary by secondary' case."
+    },
+    {
+      "case": "`pattern` is used with the `canvas` renderer vs the `svg` renderer (default).",
+      "expectedBehavior": "SVG support depends on planning/specs/chart/pattern-fill-rendering.json's SVG phase (not yet implemented as of this spec). A chart using `pattern` must explicitly set `renderer=\"canvas\"` - this was a real bug found after implementation (a story omitted it, silently defaulting to svg, rendering blank/fallback fills) and is now its own requirement, not just an edge case to remember."
+    },
+    {
+      "case": "Hover animation, legend highlight, or controlled highlight interacting with a pattern-filled bar.",
+      "expectedBehavior": "Same assumption as the mechanism spec's edge case (opacity composites independently of fill, so it should just work) - re-verify specifically for a real Bar+Legend integration (not just the raw-spec prototype) before marking this implemented, since the real Legend's highlight-opacity wiring is more involved than the prototype's raw `legends` block."
+    },
+    {
+      "case": "S1 (vega-spec-builder / react-spectrum-charts) Bar.",
+      "expectedBehavior": "Out of scope for this spec (s2-only) - see crossCutting.requiresS1S2Parity."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": true,
+    "notes": "requiresNewSignalOrScale: adds PATTERN_SCALE, a new ordinal facet scale alongside COLOR_SCALE/LINE_TYPE_SCALE/OPACITY_SCALE. touchesLegendInteraction: confirmed true by direct investigation, not just a risk - there are three separate hardcoded facet-scale-name lists in this codebase, and PATTERN_SCALE/secondaryPattern had to be added to all three: legendFacetUtils.ts's facetScaleNames Set (legend facet recognition), legendUtils.ts's secondaryFacetMapping (dual-facet swatch lookup + type completeness), and specUtils.ts's getFacetsFromScales (drives the table's rscSeriesId formula, which legend<->mark hover cross-highlighting depends on - missing this caused hover matching to silently fail for any pattern-only bar, since rscSeriesId never included the pattern field at all). All three were found and fixed by building and testing against the real Legend component and real hover behavior, not by inspection alone. requiresS1S2Parity: s1 has no pattern-fill rendering mechanism at all yet (per the mechanism spec), so this mark-level prop is s2-only until that changes; no immediate port required."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/constants/constants.ts",
+      "change": "Add PATTERN_SCALE = 'pattern' alongside COLOR_SCALE/LINE_TYPE_SCALE/OPACITY_SCALE."
+    },
+    {
+      "file": "packages/utils/src/patternFillId.ts",
+      "change": "New file: PATTERN_FILL_ID_PREFIX, getPatternFillUrl(id), getPatternFillId(value), and DEFAULT_PATTERN_FILL_IDS - moved/promoted from react-spectrum-charts-s2's patternFillUtils.ts so vega-spec-builder-s2 can use the same convention without depending on react-spectrum-charts-s2. Also added COMPOSITE_PATTERN_SEPARATOR, getColorMatchedPatternFillUrl(baseId, color), and resolvePatternFillGroup(group) for the color-matching requirement above (resolvePatternFillValue kept as-is for the single-value, no-group-context case)."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/patternFillUtils.ts",
+      "change": "Re-export PATTERN_FILL_ID_PREFIX/getPatternFillUrl/getPatternFillId/DEFAULT_PATTERN_FILL_IDS/COMPOSITE_PATTERN_SEPARATOR/getColorMatchedPatternFillUrl/resolvePatternFillGroup from @spectrum-charts/utils instead of defining them locally, keeping PatternTileSource (now with an optional drawWithColor field), the registry (registerPatternFill/getPatternFillSource/clearPatternFillRegistry), and specHasPatternFill unchanged so existing imports (including CanvasPatternFillPrototype.story.tsx) don't break."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/defaultPatternFills.ts",
+      "change": "New file: registers the built-in tile palette via registerPatternFill(), at module load - imported for its side effect from utils/index.ts (see that entry below), not from Chart.tsx as originally planned. Each shape's draw function is now parameterized (ink color, optional base color) so it can produce both the fixed-neutral `draw` (white base, dark ink) and a `drawWithColor` variant (transparent base, ink = the given color) from the same drawing logic."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/canvasPatternFillUtils.ts",
+      "change": "Added getColorMatchedPatternSource: on a cache miss, if the pattern id contains the `::` composite separator, split it into a base id + embedded color, look up the base shape's drawWithColor, and build an ad hoc PatternTileSource from it - resolveFillStyleValue tries this as a fallback after the normal registry lookup."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/specUtil.types.ts",
+      "change": "Add PatternFacet = FacetRef<string>; add 'pattern' to FacetType and 'secondaryPattern' to SecondaryFacetType (required for legendUtils.ts's mapped-type completeness, even though the secondary/dual-facet path is not implemented for pattern in this pass)."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/barSpec.types.ts",
+      "change": "Add pattern?: PatternFacet | DualFacet to BarOptions, exactly mirroring color's type; no OptionsWithDefaults entry since absence means no pattern behavior."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts",
+      "change": "Add Patterns = string[] | string[][] to ChartOptions, exactly mirroring Opacities's shape (widened from an initial string[]-only version once pattern gained dual-facet support)."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts",
+      "change": "Add getPatternScale(patterns) mirroring getLineTypeScale (uses only the first entry of each group for a 2D override); getTwoDimensionalPatterns(patterns) mirroring getTwoDimensionalOpacities exactly; isPatternArray mirroring isNumberArray; register a 'patterns' signal in getDefaultSignals mirroring 'colors'/'lineTypes'/'opacities'. Thread patterns through buildSpec's destructure, the assembled options object, and getDefaultScales's/getDefaultSignals's params."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/marks/markUtils.ts",
+      "change": "Add getPatternProductionRule(pattern), mirroring getColorProductionRule's three branches exactly: array (2D indexed-lookup signal against 'patterns'/'secondaryPattern'), string (scale reference), static value."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barUtils.ts",
+      "change": "getBarEnterEncodings's fill checks options.pattern first (via getPatternProductionRule) before falling back to getBarFillEncoding - deliberately NOT changing getBarFillEncoding itself, since getStroke also calls it for the bar's default border color and must stay pattern-free (a CanvasPattern-driving string is not a sensible stroke value under the current canvas interception, which only patches fillStyle)."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barSpecBuilder.ts",
+      "change": "Destructure pattern (bare, no default) in addBar's produce callback and include it in the assembled BarSpecOptions; call addFieldToFacetScaleDomain(scales, PATTERN_SCALE, pattern) in addScales; pass pattern through to getStackFields and getDodgeGroupTransform (both call getFacetsFromOptions with pattern included)."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/specUtils.ts",
+      "change": "getFacetsFromOptions accepts an optional pattern param, included in the primary/secondary collection exactly like color/lineType/opacity (a plain field is always primary; array[1] is secondary). An earlier version of this fix special-cased pattern as context-dependent (primary only when no other facet existed) - reverted per direct instruction that pattern must behave exactly like color, with no role-switching. This still fixes the real crash (confirmed via buildSpec()+vega.parse()) where a type=\"dodged\" Bar using pattern alone produced an empty-string dodge-group formula expr that Vega's parser rejected - simply including pattern in the same unconditional list as color was sufficient. Also added PATTERN_SCALE/'secondaryPattern' to getFacetsFromScales's own separate hardcoded facet-scale-name list (used to build the table's rscSeriesId formula) - missing this broke legend<->mark hover cross-highlighting for any pattern-only bar, confirmed via the compiled spec's rscSeriesId formula before/after."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/legend/legendFacetUtils.ts",
+      "change": "Add PATTERN_SCALE and 'secondaryPattern' to the facetScaleNames Set, or the real Legend never recognizes a PATTERN_SCALE domain field as a facet at all."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/legend/legendUtils.ts",
+      "change": "Add a 'pattern' entry to secondaryFacetMapping (required for type completeness). In getSymbolEncodings, resolve a PATTERN_SCALE facet ref and prefer it over the color facet/customValue for the swatch's fill (and stroke), mirroring the mark-level precedence."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/index.ts",
+      "change": "Side-effect import of defaultPatternFills.ts so the built-in palette registers before any chart can reference it - simpler than threading an explicit import through Chart.tsx, since every chart already transitively imports from ./utils via VegaChart.tsx."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/RscChart.tsx",
+      "change": "Destructure/pass patterns to useSpec."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/hooks/useSpec.tsx",
+      "change": "Accept patterns, pass to rscPropsToSpecBuilderOptions, add to the memo dep array."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/components/Bar/Bar.tsx",
+      "change": "Add pattern to the destructure list (render-null component holding prop defaults/discovery), no default value."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barUtils.ts",
+      "change": "isDodgedAndStacked includes pattern in the same array-of-facets dual-tuple check as color/lineType/opacity - `[color, lineType, opacity, pattern].some(f => Array.isArray(f) && f.length === 2)` - reusing the existing getDodgedAndStackedBarMark structure for a pattern dual-facet tuple exactly as it already does for color's."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barSpecBuilder.ts",
+      "change": "addSecondaryScales adds a pattern entry ({value: pattern, scaleName: 'patterns', secondaryScaleName: 'secondaryPattern'}) to the same forEach array as color/lineType/opacity."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/Bar/PatternFill.story.tsx",
+      "change": "New file: PreviousCurrentComparison (pattern: ['region', 'period'], a dual-facet tuple dodging by region and stacking by period, exactly like a color dual-facet tuple; patterns is a 2D array with one row per region - ['#2680eb', 'diagonal-stripe'] for East, ['#e68619', 'diagonal-stripe'] for West - so each region gets its own color (mirroring DodgedStacked's per-OS color family) and the stripe is recolored to match via resolvePatternFillGroup; data lists Current before Previous per region so Current stacks on the bottom and gets range index 0 (solid), Previous index 1 (stripe); no `keys` on Legend, matching DodgedStacked's own unscoped dual-facet legend, which shows the full region x period cross-product) and DefaultPalette (pattern='browser' alone, no patterns override, so the built-in fixed-neutral tiles still apply since there's no sibling color), both explicitly setting renderer=\"canvas\"."
+    }
+  ],
+  "openQuestions": [
+    "Legend hover/click highlighting (legendHighlightUtils.ts) and hover-animation deemphasis were not specifically re-verified against a pattern-filled bar+Legend in this pass, beyond confirming the swatch itself renders correctly - the assumption that opacity composites independently of fill (from the mechanism spec) held for the swatch's own fill/stroke encode, but the highlight-driven opacity *rules* applied elsewhere in the legend/mark were not separately exercised.",
+    "pattern's dual-facet lookup was verified structurally (buildSpec output, vega.parse(), and unit tests on getFacetsFromOptions/isDodgedAndStacked/getDodgeGroupTransform/getPatternProductionRule) but not visually in a browser - the browser check is the user's own next step, not part of this implementation pass. Note the story's `patterns` override needing an explicit 2D array (one identical row per primary-domain value) to get period-consistent behavior is unwieldy for consumers who don't know the primary field's domain size in advance - worth revisiting if this becomes a common pattern.",
+    "A real Storybook rendering bug was found and fixed after the initial implementation: neither story set renderer=\"canvas\" explicitly, so both silently used the svg default, where pattern-fill isn't implemented. Nothing in buildSpec()/vega.parse() checks would ever catch this, since renderer is a React/VegaChart-level concern, not part of the compiled spec - worth remembering as a class of bug the spec-level verification approach in this pass cannot see."
+  ],
+  "relatedIssues": ["pattern-fill-structured-value"]
+}

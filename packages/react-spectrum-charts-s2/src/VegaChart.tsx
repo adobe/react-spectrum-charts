@@ -22,6 +22,7 @@ import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } 
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
 import { ChartProps } from './types';
+import { patchCanvasContextForPatternFill, specHasPatternFill } from './utils';
 
 // Register a custom expression function that returns the full container width (including axis space).
 // `view._viewWidth` is the container width minus spec-level padding; adding padding back gives the
@@ -136,6 +137,10 @@ export const VegaChart: FC<VegaChartProps> = ({
       embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
         chartView.current = view;
         onNewView(view);
+        if (renderer === 'canvas' && specHasPatternFill(specCopy)) {
+          const ctx = containerRef.current?.querySelector('canvas')?.getContext('2d');
+          if (ctx) patchCanvasContextForPatternFill(ctx);
+        }
         view.resize();
         view.runAsync();
         // One additional render to settle all resize calculations

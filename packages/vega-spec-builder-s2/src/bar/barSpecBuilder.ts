@@ -23,6 +23,7 @@ import {
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   PADDING_RATIO,
+  PATTERN_SCALE,
   SERIES_ID,
   STACK_ID,
   TIME,
@@ -101,6 +102,7 @@ export const addBar = produce<
       name,
       opacity = { value: 1 },
       orientation = 'vertical',
+      pattern,
       paddingRatio = PADDING_RATIO,
       trellisOrientation = 'horizontal',
       trellisPadding = TRELLIS_PADDING,
@@ -136,6 +138,7 @@ export const addBar = produce<
       metricAxis,
       name: barName,
       opacity,
+      pattern,
       paddingRatio,
       trellisOrientation,
       trellisPadding,
@@ -157,7 +160,7 @@ export const addBar = produce<
     );
 
     // diverging is single-series only: dodged and faceted (multi-row-per-category) bars have no well-defined sign
-    const hasSeriesFacet = getFacetsFromOptions({ color, lineType, opacity }).facets.length > 0;
+    const hasSeriesFacet = getFacetsFromOptions({ color, lineType, opacity, pattern }).facets.length > 0;
     if (diverging && type !== 'dodged' && !hasSeriesFacet) {
       spec.usermeta = addUserMetaDivergingBarMark(
         spec.usermeta,
@@ -275,8 +278,8 @@ export const getStackIdTransform = (options: BarSpecOptions): FormulaTransform =
   } as FormulaTransform;
 };
 
-const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: BarSpecOptions): string[] => {
-  const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
+const getStackFields = ({ trellis, color, dimension, lineType, opacity, pattern, type }: BarSpecOptions): string[] => {
+  const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity, pattern });
   return [
     ...(trellis ? [trellis] : []),
     dimension,
@@ -299,8 +302,15 @@ export const getDodgedGroupAggregateData = (options: BarSpecOptions): Data => {
   };
 };
 
-export const getDodgeGroupTransform = ({ color, lineType, name, opacity, type }: BarSpecOptions): FormulaTransform => {
-  const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
+export const getDodgeGroupTransform = ({
+  color,
+  lineType,
+  name,
+  opacity,
+  pattern,
+  type,
+}: BarSpecOptions): FormulaTransform => {
+  const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity, pattern });
   return {
     type: 'formula',
     as: `${name}_dodgeGroup`,
@@ -331,7 +341,7 @@ export const addDualMetricAxisData = (data: Data[], options: BarSpecOptions) => 
 };
 
 export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) => {
-  const { color, lineType, opacity, metricAxis } = options;
+  const { color, lineType, opacity, pattern, metricAxis } = options;
   const { metricAxis: axisType } = getOrientationProperties(options.orientation);
 
   addMetricScale(scales, getScaleValues(options), axisType);
@@ -351,6 +361,7 @@ export const addScales = produce<Scale[], [BarSpecOptions]>((scales, options) =>
   addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
   addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
   addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
+  addFieldToFacetScaleDomain(scales, PATTERN_SCALE, pattern);
   addSecondaryScales(scales, options);
 });
 
@@ -373,7 +384,7 @@ export const addDimensionScale = (
  * @param param1
  */
 export const addSecondaryScales = (scales: Scale[], options: BarSpecOptions) => {
-  const { color, lineType, opacity } = options;
+  const { color, lineType, opacity, pattern } = options;
   if (isDodgedAndStacked(options)) {
     [
       {
@@ -390,6 +401,11 @@ export const addSecondaryScales = (scales: Scale[], options: BarSpecOptions) => 
         value: opacity,
         scaleName: 'opacities',
         secondaryScaleName: 'secondaryOpacity',
+      },
+      {
+        value: pattern,
+        scaleName: 'patterns',
+        secondaryScaleName: 'secondaryPattern',
       },
     ].forEach(({ value, scaleName, secondaryScaleName }) => {
       if (Array.isArray(value) && value.length === 2) {

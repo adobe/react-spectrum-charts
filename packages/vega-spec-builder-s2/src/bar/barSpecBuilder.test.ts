@@ -36,6 +36,7 @@ import {
   LINE_TYPE_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  PATTERN_SCALE,
   STACK_ID,
   TABLE,
 } from '@spectrum-charts/constants';
@@ -657,6 +658,20 @@ describe('barSpecBuilder', () => {
           { domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: OPACITY_SCALE, type: 'point' },
           defaultMetricScale,
           defaultDimensionScale,
+        ]);
+      });
+
+      test('should add a pattern facet scale when pattern is a field reference', () => {
+        expect(
+          addScales(
+            [{ name: COLOR_SCALE, type: 'ordinal' }],
+            { ...defaultBarOptions, pattern: 'period' }
+          )
+        ).toStrictEqual([
+          defaultColorScale,
+          defaultMetricScale,
+          defaultDimensionScale,
+          { domain: { data: TABLE, fields: ['period'] }, name: PATTERN_SCALE, type: undefined },
         ]);
       });
 
@@ -1327,6 +1342,41 @@ describe('barSpecBuilder', () => {
       ).toStrictEqual({
         as: 'bar0_dodgeGroup',
         expr: `datum.${DEFAULT_COLOR} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
+        type: 'formula',
+      });
+    });
+
+    test('should use pattern as the dodge facet when it is the only facet', () => {
+      expect(
+        getDodgeGroupTransform({ ...defaultBarOptions, color: { value: 'categorical-100' }, type: 'dodged', pattern: 'period' })
+      ).toStrictEqual({
+        as: 'bar0_dodgeGroup',
+        expr: 'datum.period',
+        type: 'formula',
+      });
+    });
+
+    test('should combine pattern with another plain field-based facet as separate dodge facets, same as color+lineType would', () => {
+      expect(
+        getDodgeGroupTransform({ ...defaultBarOptions, color: 'region', type: 'dodged', pattern: 'period' })
+      ).toStrictEqual({
+        as: 'bar0_dodgeGroup',
+        expr: 'datum.region + "," + datum.period',
+        type: 'formula',
+      });
+    });
+
+    test('should stack by pattern within each dodge group when pattern is a dual-facet tuple', () => {
+      expect(
+        getDodgeGroupTransform({
+          ...defaultBarOptions,
+          color: { value: 'categorical-100' },
+          type: 'dodged',
+          pattern: ['region', 'period'],
+        })
+      ).toStrictEqual({
+        as: 'bar0_dodgeGroup',
+        expr: 'datum.region',
         type: 'formula',
       });
     });

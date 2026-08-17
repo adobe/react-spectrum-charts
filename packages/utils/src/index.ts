@@ -11,3 +11,4 @@
  */
 
 export * from './utils';
+export * from './patternFillId';

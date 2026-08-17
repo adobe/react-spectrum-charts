@@ -41,6 +41,8 @@ export type ChartColors = Colors | Colors[];
 export type LineTypes = LineType[] | LineType[][];
 export type Opacities = number[] | number[][];
 export type SymbolShapes = ChartSymbolShape[] | ChartSymbolShape[][];
+/** Each entry is a built-in pattern name (e.g. 'diagonal-stripe') or a literal color value. */
+export type Patterns = string[] | string[][];
 
 export interface ChartHandle {
   copy: () => Promise<string>;
@@ -92,6 +94,8 @@ export interface ChartOptions {
   lineWidths?: LineWidth[];
   /** Opacity scale*/
   opacities?: Opacities;
+  /** Pattern scale. Each entry is a built-in pattern name or a literal color value. Defaults to the built-in pattern palette. */
+  patterns?: Patterns;
   /** Chart title. If the `Title` component is provided as a child, the component will override this prop. */
   title?: string;
   /** Vega spec to be used instead of generating one using the component API. */

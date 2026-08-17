@@ -26,6 +26,7 @@ import {
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
+  PATTERN_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
@@ -43,6 +44,7 @@ import {
   getLineWidthProductionRule,
   getMarkOpacity,
   getOpacityProductionRule,
+  getPatternProductionRule,
   getStrokeDashProductionRule,
   getSymbolSizeProductionRule,
   getInspectEncoding,
@@ -75,6 +77,26 @@ describe('getColorProductionRule', () => {
   test('should return static value of the css color provided', () => {
     expect(getColorProductionRule({ value: 'rgb(255, 255, 255)' }, DEFAULT_COLOR_SCHEME)).toStrictEqual({
       value: 'rgb(255, 255, 255)',
+    });
+  });
+});
+
+describe('getPatternProductionRule', () => {
+  test('should return scale reference if pattern is a string', () => {
+    expect(getPatternProductionRule('period')).toStrictEqual({ scale: PATTERN_SCALE, field: 'period' });
+  });
+
+  test('should resolve a built-in pattern name to its url reference for a static value', () => {
+    expect(getPatternProductionRule({ value: 'dots' })).toStrictEqual({ value: 'url(#rsc-pattern-dots)' });
+  });
+
+  test('should pass through a literal color value unchanged for a static value', () => {
+    expect(getPatternProductionRule({ value: '#2680eb' })).toStrictEqual({ value: '#2680eb' });
+  });
+
+  test('should return a 2d lookup signal if a dual-facet tuple is provided, same shape as color', () => {
+    expect(getPatternProductionRule(['region', 'period'])).toStrictEqual({
+      signal: "scale('patterns', datum.region)[indexof(domain('secondaryPattern'), datum.period)% length(scale('patterns', datum.region))]",
     });
   });
 });

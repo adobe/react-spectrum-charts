@@ -36,6 +36,7 @@ import {
   LINE_WIDTH_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  PATTERN_SCALE,
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
   SYMBOL_SHAPE_SCALE,
@@ -52,11 +53,13 @@ import {
   getLineWidthScale,
   getLinearColorScale,
   getOpacityScale,
+  getPatternScale,
   getSymbolShapeScale,
   getSymbolSizeScale,
   getTwoDimensionalColorScheme,
   getTwoDimensionalLineTypes,
   getTwoDimensionalOpacities,
+  getTwoDimensionalPatterns,
 } from './chartSpecBuilder';
 import { defaultSignals } from './specTestUtils';
 import { baseData } from './specUtils';
@@ -237,6 +240,32 @@ describe('Chart spec builder', () => {
     });
   });
 
+  describe('getTwoDimensionalPatterns()', () => {
+    test('should return the built-in pattern palette if undefined', () => {
+      expect(getTwoDimensionalPatterns(undefined)).toStrictEqual([
+        ['url(#rsc-pattern-diagonal-stripe)'],
+        ['url(#rsc-pattern-diagonal-stripe-reverse)'],
+        ['url(#rsc-pattern-horizontal-stripe)'],
+        ['url(#rsc-pattern-dots)'],
+        ['url(#rsc-pattern-crosshatch)'],
+        ['url(#rsc-pattern-grid)'],
+      ]);
+    });
+
+    test('should resolve a 1d array as a single group, colorizing built-in names with a sibling color', () => {
+      expect(getTwoDimensionalPatterns(['dots', '#2680eb'])).toStrictEqual([
+        ['url(#rsc-pattern-dots::#2680eb)'],
+        ['#2680eb'],
+      ]);
+    });
+
+    test('should pass through a 2d array, colorizing built-in names with a sibling color in the same row', () => {
+      expect(getTwoDimensionalPatterns([['dots', '#2680eb']])).toStrictEqual([
+        ['url(#rsc-pattern-dots::#2680eb)', '#2680eb'],
+      ]);
+    });
+  });
+
   describe('getLineTypeScale()', () => {
     test('should return lineType scale', () => {
       expect(getLineTypeScale(['solid', 'dashed'])).toStrictEqual({
@@ -290,6 +319,47 @@ describe('Chart spec builder', () => {
         name: OPACITY_SCALE,
         type: 'ordinal',
         range: [0.2, 0.6],
+        domain: { data: 'table', fields: [] },
+      });
+    });
+  });
+
+  describe('getPatternScale()', () => {
+    test('should return the built-in pattern palette if no patterns provided', () => {
+      const scale = getPatternScale();
+      expect(scale.name).toBe(PATTERN_SCALE);
+      expect(scale.type).toBe('ordinal');
+      expect(scale.range).toEqual(expect.arrayContaining(['url(#rsc-pattern-dots)']));
+    });
+
+    test('should resolve built-in pattern names, colorized with a sibling literal color, in a patterns override', () => {
+      expect(getPatternScale(['dots', '#2680eb'])).toStrictEqual({
+        name: PATTERN_SCALE,
+        type: 'ordinal',
+        range: ['url(#rsc-pattern-dots::#2680eb)', '#2680eb'],
+        domain: { data: 'table', fields: [] },
+      });
+    });
+
+    test('should resolve an S2 color token in a patterns override, same as colors would', () => {
+      expect(getPatternScale(['dots', 'gray-700'], 'light')).toStrictEqual({
+        name: PATTERN_SCALE,
+        type: 'ordinal',
+        range: ['url(#rsc-pattern-dots::#505050)', '#505050'],
+        domain: { data: 'table', fields: [] },
+      });
+    });
+
+    test('should use only the first pattern of each group if a 2d patterns override is provided', () => {
+      expect(
+        getPatternScale([
+          ['dots', '#2680eb'],
+          ['grid', '#ff0000'],
+        ])
+      ).toStrictEqual({
+        name: PATTERN_SCALE,
+        type: 'ordinal',
+        range: ['url(#rsc-pattern-dots::#2680eb)', 'url(#rsc-pattern-grid::#ff0000)'],
         domain: { data: 'table', fields: [] },
       });
     });
@@ -473,6 +543,17 @@ describe('Chart spec builder', () => {
       },
       { name: 'lineTypes', value: [[[7, 4]]] },
       { name: 'opacities', value: [[1]] },
+      {
+        name: 'patterns',
+        value: [
+          ['url(#rsc-pattern-diagonal-stripe)'],
+          ['url(#rsc-pattern-diagonal-stripe-reverse)'],
+          ['url(#rsc-pattern-horizontal-stripe)'],
+          ['url(#rsc-pattern-dots)'],
+          ['url(#rsc-pattern-crosshatch)'],
+          ['url(#rsc-pattern-grid)'],
+        ],
+      },
     ];
 
     const endSignals = defaultSignals;

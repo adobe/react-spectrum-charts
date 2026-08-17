@@ -13,6 +13,7 @@ import { render, waitFor } from '@testing-library/react';
 import { Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 
+import { clearPatternFillRegistry, getPatternFillUrl, registerPatternFill } from './utils';
 import { VegaChart, VegaChartProps, resizeView } from './VegaChart';
 
 jest.mock('vega-embed');
@@ -139,5 +140,59 @@ describe('VegaChart init render cycle', () => {
 		rerender(<VegaChart {...defaultProps} width={800} height={600} />);
 
 		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+	});
+});
+
+describe('canvas pattern-fill interception', () => {
+	const patternId = 'test-stripe';
+	const patternSpec = {
+		marks: [{ encode: { enter: { fill: { signal: getPatternFillUrl(patternId) } } } }],
+	} as unknown as Spec;
+
+	let renderedCanvas: HTMLCanvasElement | undefined;
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		clearPatternFillRegistry();
+		registerPatternFill({ id: patternId, tileSize: { width: 4, height: 4 }, draw: jest.fn() });
+		renderedCanvas = undefined;
+		mockEmbed.mockImplementation((container) => {
+			renderedCanvas = document.createElement('canvas');
+			(container as HTMLElement).appendChild(renderedCanvas);
+			return Promise.resolve({ view: createMockView() } as unknown as Awaited<ReturnType<typeof embed>>);
+		});
+	});
+
+	test('engages the interception when renderer is canvas and the spec has a pattern-fill reference', async () => {
+		render(<VegaChart {...defaultProps} renderer="canvas" spec={patternSpec} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+
+		const ctx = renderedCanvas?.getContext('2d') as CanvasRenderingContext2D;
+		ctx.fillStyle = getPatternFillUrl(patternId);
+
+		expect(ctx.fillStyle).not.toBe(getPatternFillUrl(patternId));
+	});
+
+	test('does not engage the interception when renderer is svg', async () => {
+		render(<VegaChart {...defaultProps} renderer="svg" spec={patternSpec} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+
+		const ctx = renderedCanvas?.getContext('2d') as CanvasRenderingContext2D;
+		ctx.fillStyle = getPatternFillUrl(patternId);
+
+		expect(ctx.fillStyle).toBe('#000000');
+	});
+
+	test('does not engage the interception when the spec has no pattern-fill reference', async () => {
+		render(<VegaChart {...defaultProps} renderer="canvas" spec={defaultSpec} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+
+		const ctx = renderedCanvas?.getContext('2d') as CanvasRenderingContext2D;
+		ctx.fillStyle = getPatternFillUrl(patternId);
+
+		expect(ctx.fillStyle).toBe('#000000');
 	});
 });

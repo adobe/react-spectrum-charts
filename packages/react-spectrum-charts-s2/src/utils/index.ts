@@ -10,5 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
+// Side-effect only: registers the built-in pattern tile palette before any chart can reference it.
+import './defaultPatternFills';
+
 export * from './utils';
 export * from './markClickUtils';
+export * from './patternFillUtils';
+export * from './canvasPatternFillUtils';
