@@ -22,7 +22,7 @@ import { ChartProps, ComboProps } from '../../../../types';
 import { peopleTotalComboData } from '../../../data/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Combo/Features/DualAxis',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features/DualAxis',
   component: Combo,
 };
 

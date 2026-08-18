@@ -32,7 +32,7 @@ const ordersAndVisitsComboData = [
 ];
 
 export default {
-  title: 'React Spectrum Charts 2/Combo/Features',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features',
   component: Combo,
 };
 

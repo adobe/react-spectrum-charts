@@ -23,7 +23,7 @@ import { ChartProps, ComboProps } from '../../../../types';
 import { peopleAdoptionComboData } from '../../../data/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Combo/Features/Inspect',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features/Inspect',
   component: Combo,
 };
 
