@@ -1,0 +1,69 @@
+{
+  "id": "add-radar-mark",
+  "title": "Add Radar Chart Mark",
+  "chartType": "radar",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 3,
+    "rationale": "Vega has no native polar/radial line mark, so mapping each (category, value) point to x/y via trigonometric formula transforms (angle from category index, radius from value) and closing each series into a polygon is new geometry logic with no existing analog. Per-axis 'slice' tooltip aggregation (grouping every series' point at a given category into one tooltip) is also new — RSC's existing tooltip system keys off a single hovered mark/series, not a cross-series group-by-category view. Both are well-defined once designed, with the line enter-animation and legend-toggle pieces reusing existing Line/Bar conventions directly."
+  },
+  "summary": "A category/value/series polygon mark laying out each category as a spoke around a center point (polar coordinates computed via formula transform) with one closed polygon per series, per-axis slice tooltips showing all series' values at that category, and a legend with series toggle.",
+  "requirements": [
+    "Accepts `category` (defines the spokes/axes), `value` (quantitative) and `series` (required for multi-series grouping) channels",
+    "Computes each point's x/y from polar coordinates: angle derived from the category's position among all categories, radius derived from value against a shared radial scale",
+    "Renders one closed polygon (line back to the starting point) per series, connecting its points across all category spokes",
+    "Hovering a category spoke shows a single 'slice' tooltip listing every series' value at that category, not just the nearest series",
+    "Renders a path-draw enter animation per series polygon, reusing Line's existing stroke-dash sweep animation pattern",
+    "Shows a ChartLegend with series toggle, following the same legend/color-scale convention as Line/Bar when a series channel is present"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Single category (one spoke)", "expectedBehavior": "Degenerates to a single point per series rather than a closed polygon — document as an expected minimum-shape limitation, not a bug." },
+    { "case": "Single series", "expectedBehavior": "Renders one polygon; legend still shows per the same rule Line/Bar use ('legend shown only when series/color channel present with multiple values' — verify whether single-series Radar still needs a legend or matches Line's no-legend-for-one-series convention)." },
+    { "case": "A series missing a value for one category", "expectedBehavior": "Needs an explicit gap-handling rule (treat as zero, skip the vertex and connect across the gap, or break the polygon) — no existing RSC convention directly covers a missing radial vertex." },
+    { "case": "Many categories (dense spokes)", "expectedBehavior": "Spoke labels may need truncation/rotation at high category counts — flag as a design decision, not silently overlapping labels." },
+    { "case": "Negative values", "expectedBehavior": "Radial scale must define a sensible minimum radius behavior for negative values (e.g. clamp to center) since polar radius can't naturally go negative — needs an explicit decision." },
+    { "case": "Light vs dark background", "expectedBehavior": "Series stroke/fill colors resolve through the existing colorScheme-aware color scale, matching Line." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Interaction conflicts", "expectedBehavior": "Legend hover/click highlighting a series must correctly dim other series' polygons without breaking the per-axis slice tooltip's ability to still show all series' raw values." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: reuses Line's isAnimate-gated path-draw enter transition from lineMarkUtils.ts, applied per series polygon. touchesControlledHighlight/touchesLegendInteraction: reuses Line/Bar's existing legendHighlightSignals and CONTROLLED_HIGHLIGHTED_SERIES wiring directly, since Radar's series concept matches Line's. touchesTooltipOrPopover: the per-axis slice tooltip is new — it must aggregate all series' values at one category rather than keying off a single hovered mark, likely requiring a new tooltip data source (one row per category listing all series values) distinct from the existing per-mark ChartTooltip pattern. requiresNewSignalOrScale: true — a new angular (point) scale mapping category to angle, and a radial (linear) scale mapping value to radius; both are new scale shapes not used by any existing mark. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/radarSpec.types.ts", "change": "Create RadarOptions/RadarOptionsWithDefaults/RadarSpecOptions with required `category`/`value`/`series` fields." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Radar types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add RadarOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/radar/radarTestUtils.ts", "change": "Fully-populated defaultRadarOptions fixture, including a missing-value-for-one-category variant." },
+    { "file": "packages/vega-spec-builder-s2/src/radar/radarDataUtils.ts", "change": "addPolarCoordinateFields (formula transform computing angle from category index and x/y from angle+radius via the new angular/radial scales), addClosedPolygonPoint (duplicates each series' first point at the end so the line mark closes into a polygon), addSliceTooltipData (a derived per-category data source grouping all series' values, for the new slice-tooltip) — no existing util covers any of this." },
+    { "file": "packages/vega-spec-builder-s2/src/radar/radarMarkUtils.ts", "change": "getRadarPolygonMark, reusing lineMarkUtils.ts's getLineMark path-mark construction and enter-animation encode, driven by the computed x/y fields instead of a linear time/continuous scale." },
+    { "file": "packages/vega-spec-builder-s2/src/radar/radarSpecBuilder.ts", "change": "addRadar, addData (calls the new polar-coordinate/closing/slice-tooltip helpers), addSignals (reuse Line's legend-highlight and controlled-highlight signal helpers, plus new slice-hover signal), setScales (new angular point scale for category, new radial linear scale for value, reuse addFieldToFacetScaleDomain for the series color scale)." },
+    { "file": "packages/vega-spec-builder-s2/src/radar/radarDataUtils.test.ts", "change": "Unit tests for the polar-coordinate, polygon-closing, and slice-tooltip-data helpers, including the missing-value case." },
+    { "file": "packages/vega-spec-builder-s2/src/radar/radarMarkUtils.test.ts", "change": "Unit tests for getRadarPolygonMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/radar/radarSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register radarCount: -1 in initializeComponentCounts, import addRadar, add the 'radar' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/radar.types.ts", "change": "RadarProps/RadarElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Radar/Radar.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Radar/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Radar'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Radar from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Radar to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Radar/Radar.story.tsx", "change": "Basic multi-series story plus a SliceTooltip interaction story." }
+  ],
+  "openQuestions": [
+    "Gap-handling rule for a series missing a value at one category — zero, skip-and-connect, or break the polygon?",
+    "How should negative values map onto polar radius, given radius can't naturally go negative?",
+    "Does a single-series Radar still show a legend (unlike Line's no-legend-for-single-series rule), since even one radar polygon may benefit from a labeled series name?"
+  ]
+}

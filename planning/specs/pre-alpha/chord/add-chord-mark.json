@@ -1,0 +1,68 @@
+{
+  "id": "add-chord-mark",
+  "title": "Add Chord Chart Mark",
+  "chartType": "chord",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 5,
+    "rationale": "Vega has no native chord-layout transform (unlike hierarchy/force/voronoi, which map onto stratify/force/voronoi transforms) — a chord diagram's own reference implementations typically hand-roll this via a matrix-to-arc allocation plus a ribbon-path builder rather than a reusable library transform. Allocating group arcs from a value matrix and building ribbon paths between two arbitrary arc endpoints are both new geometry algorithms with no existing analog in this codebase. Zoom/pan is needed here too; if add-network-mark's shared zoomPanUtils.ts hasn't landed first, that's a second independent new subsystem, and click-to-pin must handle two distinct target types (a group vs. a ribbon) — multiple non-precedented pieces landing together."
+  },
+  "summary": "A source/target/value relationship mark rendering a chord diagram — group arcs sized by total flow around a circle, with ribbons between groups sized by value — reusing arc-geometry conventions from Donut where possible, with zoom/pan and click-to-pin on either a group or a ribbon.",
+  "requirements": [
+    "Accepts `source`, `target`, `value` (required) fields defining a weighted relationship matrix between named groups",
+    "Allocates each group an arc around a circle proportional to its total (in + out) flow value, analogous to Donut's angle allocation but for one node per distinct source/target identity rather than one arc per data row",
+    "Renders a ribbon (bezier band) between each source/target pair's arc positions, sized by value",
+    "Supports zoom and pan over the diagram",
+    "Clicking a group arc or a ribbon pins its highlight, dimming unrelated groups/ribbons, until clicked again or a background click clears it"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "A group with only outgoing or only incoming value (asymmetric relationship)", "expectedBehavior": "Still renders its arc sized by whichever total it has; chord layout must not assume symmetric in/out values per group." },
+    { "case": "A self-relationship (source === target within the same group)", "expectedBehavior": "Renders as a self-ribbon (a chord that starts and ends within the same group's arc) or is filtered out — needs an explicit decision, mirroring the same open question in add-network-mark for self-edges." },
+    { "case": "Two groups with identical total value", "expectedBehavior": "Arcs render with equal angular size; tie-break for arc ordering around the circle needs a deterministic rule (e.g. stable sort by first-seen order in the data)." },
+    { "case": "Many groups (small arcs)", "expectedBehavior": "Labels should suppress below an angle threshold, matching the same in-slice label rule Donut uses." },
+    { "case": "Clicking a ribbon whose two endpoint groups are already both pinned via separate group clicks", "expectedBehavior": "Pin state is exclusive to one target at a time (a group or a ribbon, not multiple) — clicking the ribbon replaces any existing group pin." },
+    { "case": "Light vs dark background", "expectedBehavior": "Group/ribbon colors resolve through the existing colorScheme-aware color scale." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: group arcs can reuse Donut's angle-sweep enter animation encode. touchesControlledHighlight: click-to-pin on a group or ribbon is new adjacency-based highlight logic, not CONTROLLED_HIGHLIGHTED_TABLE/SERIES, but should follow the same opacity-encode convention as other click-to-pin marks (Funnel/Network/Sankey). touchesTooltipOrPopover: groups and ribbons need independent ChartTooltip/ChartPopover configuration, the same two-layer interactive-mark question flagged in add-sankey-mark. requiresNewSignalOrScale: true — reuses (or, if not yet built, duplicates) add-network-mark's zoomPanUtils.ts zoom/pan signals, plus a new `pinnedElement` signal distinguishing a pinned group vs. ribbon. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/chordSpec.types.ts", "change": "Create ChordOptions/ChordOptionsWithDefaults/ChordSpecOptions with required `source`/`target`/`value` fields." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Chord types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add ChordOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/chord/chordTestUtils.ts", "change": "Fully-populated defaultChordOptions fixture, including an asymmetric-relationship variant and a self-relationship variant." },
+    { "file": "packages/vega-spec-builder-s2/src/chord/chordLayoutUtils.ts", "change": "New: buildGroupMatrix (aggregates source/target/value rows into a per-group total for arc sizing), allocateGroupArcs (angle allocation around the circle, reusing Donut's angle-math conventions where the shape fits), buildRibbonPath (bezier path between two arc endpoints, distinct from Sankey's ribbon geometry since chord ribbons connect two points on the same circle rather than two parallel columns) — no existing Vega transform covers this." },
+    { "file": "packages/vega-spec-builder-s2/src/chord/chordMarkUtils.ts", "change": "getChordGroupArcMark (reusing donutUtils.ts's arc-mark construction pattern), getChordRibbonMark (path per relationship using buildRibbonPath)." },
+    { "file": "packages/vega-spec-builder-s2/src/chord/chordSpecBuilder.ts", "change": "addChord, addData (calls the new layout helpers), addSignals (pinnedElement, zoom/pan signals — reusing marks/zoomPanUtils.ts from add-network-mark if it exists by implementation time, otherwise adding an equivalent here, plus interactive-mark signals for both group and ribbon layers), setScales (color scale keyed by group)." },
+    { "file": "packages/vega-spec-builder-s2/src/chord/chordLayoutUtils.test.ts", "change": "Unit tests for buildGroupMatrix, allocateGroupArcs, and buildRibbonPath geometry, including the asymmetric and self-relationship cases." },
+    { "file": "packages/vega-spec-builder-s2/src/chord/chordMarkUtils.test.ts", "change": "Unit tests for getChordGroupArcMark/getChordRibbonMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/chord/chordSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register chordCount: -1 in initializeComponentCounts, import addChord, add the 'chord' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/chord.types.ts", "change": "ChordProps/ChordElement, Omit-ing only fields replaced at the React boundary (separate group/ribbon ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Chord/Chord.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Chord/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Chord'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Chord from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Chord to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Chord/Chord.story.tsx", "change": "Basic story plus a GroupAndRibbonPin interaction story." }
+  ],
+  "openQuestions": [
+    "Should this spec's implementation wait until add-network-mark lands so it can reuse zoomPanUtils.ts directly, or proceed independently and reconcile duplication later? Affects sequencing of the two specs.",
+    "How should self-relationships (source === target) render — a self-ribbon within one group's arc, or filtered out entirely? Mirrors the equivalent open question in add-network-mark.",
+    "Deterministic group ordering rule around the circle when total values tie."
+  ],
+  "relatedIssues": ["add-network-mark", "add-sankey-mark"]
+}
