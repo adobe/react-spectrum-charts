@@ -21,6 +21,7 @@ import {
   HOVER_FRACTION_DATA,
   HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
+  HOVER_SERIES_FRACTION_DATA,
   HOVER_TARGET_DATA,
   HOVER_TARGETS,
   ANIMATION_TIMER,
@@ -135,6 +136,28 @@ export const getHoverFractionData = (name: string): SourceData => ({
       as: 'fraction',
       expr: `lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1))`,
     },
+  ],
+});
+
+/**
+ * Aggregates a mark's `hoverFractionData` up to one row per series (max fraction) for legend use.
+ * @param name - the name of the mark
+ * @param keyField - the identity field `hoverFractionData` is keyed by (defaults to SERIES_ID)
+ * @returns SourceData - the series-aggregated fraction data
+ */
+export const getHoverSeriesFractionData = (name: string, keyField: string = SERIES_ID): SourceData => ({
+  name: `${name}_${HOVER_SERIES_FRACTION_DATA}`,
+  source: `${name}_${HOVER_FRACTION_DATA}`,
+  transform: [
+    {
+      type: 'lookup',
+      from: `${name}_${HOVER_TARGET_DATA}`,
+      key: keyField,
+      fields: [keyField],
+      values: [SERIES_ID],
+      as: [SERIES_ID],
+    },
+    { type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] },
   ],
 });
 

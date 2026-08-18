@@ -260,8 +260,9 @@ describe('getLegendOpacity()', () => {
     expect(getLegendOpacity(options, { animatedMarks: [] })).toStrictEqual(getOpacityEncoding(options, {}));
   });
 
-  test('builds a per-series animated rule for an ungrouped legend', () => {
-    const fractionData = `data('line0_hoverFractionData')`;
+  test('builds a per-series animated rule for an ungrouped legend, reading the series-aggregated fraction data', () => {
+    // line's fraction data is already one row per series, so this aggregate is a no-op
+    const fractionData = `data('line0_hoverSeriesFractionData')`;
     const fraction = `(${fractionData}[indexof(pluck(${fractionData}, '${SERIES_ID}'), datum.value)] || {fraction: ${FADE_FACTOR}}).fraction`;
     const ramp = getDeemphasisRamp(fraction);
 

@@ -21,6 +21,7 @@ import {
   rightClickNthElement,
   screen,
   unhoverNthElement,
+  waitForMarksByGroupName,
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
@@ -234,15 +235,20 @@ describe('Bar', () => {
       let inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
       expect(within(inspect).getByText('Chrome: 27000')).toBeInTheDocument();
-      expect(bars[0]).toHaveAttribute('opacity', `1`);
-      expect(bars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      // opacity is now animated, so it settles asynchronously -- hence waitForMarksByGroupName
+      await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
+        expect(updatedBars[0]).toHaveAttribute('opacity', `1`);
+        expect(updatedBars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      });
 
       await unhoverNthElement(dimensionAreas, 0);
 
       // hovering bar should do normal stuff
       await hoverNthElement(bars, 4);
-      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      expect(bars[4]).toHaveAttribute('opacity', `1`);
+      await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
+        expect(updatedBars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+        expect(updatedBars[4]).toHaveAttribute('opacity', `1`);
+      });
       inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
       expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();
@@ -258,8 +264,11 @@ describe('Bar', () => {
 
       // hovering bar should do normal stuff
       await hoverNthElement(bars, 4);
-      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      expect(bars[4]).toHaveAttribute('opacity', `1`);
+      // opacity is now animated, so it settles asynchronously -- hence waitForMarksByGroupName
+      await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
+        expect(updatedBars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+        expect(updatedBars[4]).toHaveAttribute('opacity', `1`);
+      });
       const inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
       expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();

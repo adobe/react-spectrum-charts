@@ -14,10 +14,16 @@ import { RectEncodeEntry } from 'vega';
 import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
+  DIMENSION_HOVER_AREA,
+  FADE_FACTOR,
   FILTERED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
   MARK_ID,
   PADDING_RATIO,
@@ -38,11 +44,14 @@ import {
   defaultStackedYEncodings,
 } from './barTestUtils';
 import {
+  getBarAnimIdField,
   getBarDimensionAreaPositionEncodings,
   getBarDimensionHoverArea,
   getBarFillEncoding,
+  getBarHoverRules,
   getBarItemSelectionBackdrop,
   getBarItemSelectionRing,
+  getBarOpacity,
   getBarPadding,
   getBaseBarEnterEncodings,
   getBaseScaleName,
@@ -908,5 +917,108 @@ describe('getBarDimensionAreaPositionEncodings()', () => {
       orientation: 'horizontal',
     });
     expect(Object.keys(positionsEncodings)).toEqual(['x', 'x2', 'y', 'height']);
+  });
+});
+
+describe('getBarHoverRules()', () => {
+  test('without interactiveMarkName or popoverMarkName only includes the controlled rules', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: undefined });
+    expect(rules).toStrictEqual([
+      {
+        as: 'controlledTableMatch',
+        expr: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) ? (indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${MARK_ID}'), datum.${MARK_ID}) > -1 ? 1 : 0) : null`,
+      },
+      {
+        as: 'controlledSeriesMatch',
+        expr: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`,
+      },
+    ]);
+  });
+
+  test('with interactiveMarkName adds a hoveredMatch rule keyed off the hovered-item signal by idKey', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: 'bar0' });
+    expect(rules[0]).toStrictEqual({
+      as: 'hoveredMatch',
+      expr: `isValid(bar0_${HOVERED_ITEM}) ? (bar0_${HOVERED_ITEM}.${MARK_ID} === datum.${MARK_ID} ? 1 : 0) : null`,
+    });
+  });
+
+  test('with interactiveMarkName and isHighlightedByGroup, hoveredMatch reads the shared highlightedData set instead of the direct hover signal', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: 'bar0', isHighlightedByGroup: true });
+    expect(rules[0]).toStrictEqual({
+      as: 'hoveredMatch',
+      expr: `length(data('bar0_highlightedData')) ? (indexof(pluck(data('bar0_highlightedData'), 'bar0_${GROUP_ID}'), datum.bar0_${GROUP_ID}) !== -1 ? 1 : 0) : null`,
+    });
+  });
+
+  test('when isInteractive, adds a dimensionHoverMatch rule keyed off the dimension-hover-area signal (drives both dimension-area hover and axis-label hover)', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: undefined, chartInspects: [{}] });
+    const dimensionHoverRule = rules.find((r) => r.as === 'dimensionHoverMatch');
+    expect(dimensionHoverRule).toStrictEqual({
+      as: 'dimensionHoverMatch',
+      expr: `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}) ? (bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}.${DEFAULT_CATEGORICAL_DIMENSION} === datum.${DEFAULT_CATEGORICAL_DIMENSION} ? 1 : 0) : null`,
+    });
+  });
+
+  test('when not isInteractive, does not add a dimensionHoverMatch rule', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: undefined });
+    expect(rules.find((r) => r.as === 'dimensionHoverMatch')).toBeUndefined();
+  });
+
+  test('with popoverMarkName adds a popoverMatch rule keyed off the selected item', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, popoverMarkName: 'bar0' });
+    const popoverRule = rules.find((r) => r.as === 'popoverMatch');
+    expect(popoverRule).toStrictEqual({
+      as: 'popoverMatch',
+      expr: `isValid(${SELECTED_ITEM}) ? (${SELECTED_ITEM} === datum.${MARK_ID} ? 1 : 0) : null`,
+    });
+  });
+
+  test('with comboSiblingNames adds a comboSiblingMatch rule checking every sibling hovered-item signal', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, comboSiblingNames: ['line0'] });
+    const comboRule = rules.find((r) => r.as === 'comboSiblingMatch');
+    expect(comboRule).toStrictEqual({
+      as: 'comboSiblingMatch',
+      expr: `(isValid(line0_${HOVERED_ITEM})) ? 1 : 0`,
+    });
+  });
+
+  test('composes all rules together in order when every condition applies', () => {
+    const rules = getBarHoverRules({
+      ...defaultBarOptions,
+      interactiveMarkName: 'bar0',
+      chartInspects: [{}],
+      popoverMarkName: 'bar0',
+      comboSiblingNames: ['line0'],
+    });
+    expect(rules.map((r) => r.as)).toStrictEqual([
+      'hoveredMatch',
+      'dimensionHoverMatch',
+      'controlledTableMatch',
+      'controlledSeriesMatch',
+      'popoverMatch',
+      'comboSiblingMatch',
+    ]);
+  });
+});
+
+describe('getBarAnimIdField()', () => {
+  test('namespaces the composite hover-animation identity field by mark name', () => {
+    expect(getBarAnimIdField('bar0')).toBe('bar0_rscBarAnimId');
+  });
+});
+
+describe('getBarOpacity()', () => {
+  test('returns the animated deemphasis signal when isHoverAnimate', () => {
+    const opacity = getBarOpacity({ ...defaultBarOptions, isHoverAnimate: true });
+    expect(opacity).toStrictEqual({
+      signal: expect.stringContaining(`${FADE_FACTOR} + (1 - ${FADE_FACTOR}) *`),
+    });
+    expect((opacity as { signal: string }).signal).toContain('bar0_rscBarAnimId');
+  });
+
+  test('falls back to the instant getMarkOpacity rules when not isHoverAnimate', () => {
+    const opacity = getBarOpacity(defaultBarOptions);
+    expect(opacity).toStrictEqual([{ value: 1 }]);
   });
 });

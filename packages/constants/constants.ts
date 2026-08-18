@@ -123,6 +123,8 @@ export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData';
 export const HOVER_TARGET_DATA = 'hoverTargetData';
 export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
 export const HOVER_FRACTION_DATA = 'hoverFractionData';
+/** Series-level (max) aggregate of a per-item-animated mark's hoverFractionData, for ungrouped legends that need one fraction per series */
+export const HOVER_SERIES_FRACTION_DATA = 'hoverSeriesFractionData';
 /** Draw-in animation: the already-drawn portion, the single lerping tip point, and their merge (source the line mark renders from) */
 export const DRAW_IN_PREV_DATA = 'drawInPrev'; // suffix: ${name}_drawInPrev
 export const DRAW_IN_TIP_DATA = 'drawInTip'; // suffix: ${name}_drawInTip
@@ -136,6 +138,8 @@ export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
 export const GROUP_ID = 'rscGroupId';
 export const SERIES_ID = 'rscSeriesId';
+/** Composite per-bar hover-animation identity: dimension + series (+ trellis) values joined, since MARK_ID is runtime-assigned and not JS-computable ahead of time */
+export const BAR_ANIM_ID = 'rscBarAnimId';
 export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';

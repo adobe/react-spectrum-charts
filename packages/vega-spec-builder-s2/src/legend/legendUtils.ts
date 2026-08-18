@@ -184,7 +184,9 @@ export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta)
 
   for (const markName of userMeta.animatedMarks || []) {
     const isGrouped = !!options.keys?.length;
-    const fractionData = isGrouped ? `data('${markName}_hoverGroupFractionData')` : `data('${markName}_hoverFractionData')`;
+    // ungrouped legends always read the series-level aggregate, not a mark's fraction data directly
+    const fractionDataName = isGrouped ? `${markName}_hoverGroupFractionData` : `${markName}_hoverSeriesFractionData`;
+    const fractionData = `data('${fractionDataName}')`;
     const lookupField = isGrouped ? `${options.name}_${GROUP_ID}` : SERIES_ID;
     const seriesLookup = `indexof(pluck(${fractionData}, '${lookupField}'), datum.value)`;
     // default to the neutral emphasis level when a legend entry has no animation row

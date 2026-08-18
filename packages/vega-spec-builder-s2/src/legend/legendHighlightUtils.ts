@@ -182,13 +182,13 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
   });
 };
 
-/**
- * Injects a strokeWidth rule into marks that use the color scale so legend hover thickens the hovered series.
- */
+/** Injects a strokeWidth rule so legend hover thickens the hovered series -- the chart's own line mark only. */
 export const setHoverStrokeWidthForMarks = (legendName: string, marks: Mark[], keys?: string[], controlled = false) => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
-  const seriesMarks = flatMarks.filter(markUsesSeriesColorScale);
+  const seriesMarks = flatMarks.filter(
+    (mark) => mark.type === 'line' && !isRenamedLineMark(mark) && markUsesSeriesColorScale(mark)
+  );
   seriesMarks.forEach((mark) => {
     if (!mark.encode?.update) return;
     const { update } = mark.encode;
@@ -287,6 +287,10 @@ export const markUsesSeriesColorScale = (mark: Mark): boolean => {
  */
 const isTrendlineOrMetricRangeLineMark = (mark: Mark): boolean =>
   Boolean(mark.name) && /(Trendline\d+|MetricRange\d+_line)$/.test(mark.name as string);
+
+/** Determines if a mark is a renamed reuse of `getLineMark` rather than the chart's own primary line mark. */
+const isRenamedLineMark = (mark: Mark): boolean =>
+  isTrendlineOrMetricRangeLineMark(mark) || Boolean(mark.name?.endsWith('_highlightOverlayLine'));
 
 /**
  * Determines if a mark should receive a legend-hover opacity rule — either because its own

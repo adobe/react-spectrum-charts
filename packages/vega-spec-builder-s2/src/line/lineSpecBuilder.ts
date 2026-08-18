@@ -51,6 +51,7 @@ import {
   addHoverAnimationSignals,
   getHoverAnimStateData,
   getHoverFractionData,
+  getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils';
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
@@ -359,7 +360,8 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
     data.push(
       getHoverTargetData({ name, groupby: [SERIES_ID], rules: getLineHoverRules(options) }),
       getHoverAnimStateData({ name, keys: seriesIds ?? [] }),
-      getHoverFractionData(name)
+      getHoverFractionData(name),
+      getHoverSeriesFractionData(name) // no-op for line, already one row per series
     );
     addHoverAnimLastChangeData(data, name);
   }
