@@ -23,6 +23,7 @@ Pre-alpha components:
   (+ `TrendlineAnnotation`) child components
 - `Donut`, `DonutSummary`, `SegmentLabel` — donut charts
 - `Bullet` — bullet charts for KPI progress against targets, with `ChartInspect` support
+- `Combo` — overlays a `Bar` mark and a `Line` mark in the same chart
 
 ## Importing pre-alpha components
 

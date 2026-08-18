@@ -32,6 +32,7 @@ import {
   BarAnnotationElement,
   BarElement,
   BulletElement,
+  ComboElement,
   DonutElement,
   DonutSummaryElement,
   LineElement,
@@ -45,6 +46,7 @@ export type ChartChildElement =
   | AxisElement
   | BarElement
   | BulletElement
+  | ComboElement
   | DonutElement
   | LegendElement
   | LineElement

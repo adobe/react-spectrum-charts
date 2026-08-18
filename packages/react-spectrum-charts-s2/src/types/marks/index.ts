@@ -13,6 +13,7 @@
 export * from './area.types';
 export * from './bar.types';
 export * from './bullet.types';
+export * from './combo.types';
 export * from './donut.types';
 export * from './line.types';
 export * from './scatter.types';

@@ -48,6 +48,7 @@ import { Title } from '../components/Title';
 import {
   Area,
   Bullet,
+  Combo,
   Donut,
   DonutSummary,
   Scatter,
@@ -66,6 +67,7 @@ import {
   BulletProps,
   ChartInspectProps,
   ChartPopoverProps,
+  ComboProps,
   DonutProps,
   DonutSummaryProps,
   LegendProps,
@@ -89,6 +91,7 @@ import { getBarOptions } from './barAdapter';
 import { getBulletOptions } from './bulletAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
 import { getChartInspectOptions } from './chartInspectAdapter';
+import { getComboOptions } from './comboAdapter';
 import { getDonutOptions } from './donutAdapter';
 import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
@@ -176,6 +179,10 @@ export const childrenToOptions = (
 
       case ChartInspect.displayName:
         chartInspects.push(getChartInspectOptions(child.props as ChartInspectProps));
+        break;
+
+      case Combo.displayName:
+        marks.push(getComboOptions(child.props as ComboProps));
         break;
 
       case Donut.displayName:
