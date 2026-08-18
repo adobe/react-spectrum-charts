@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { createRef } from 'react';
+import { renderToString } from 'react-dom/server';
 
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
@@ -17,7 +18,15 @@ import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../Chart';
 import { Axis, Bar, ChartInspect, Line } from '../components';
-import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen, waitFor } from '../test-utils';
+import {
+  findChart,
+  getAllMarksByGroupName,
+  getChartContainer,
+  hoverNthElement,
+  render,
+  screen,
+  waitFor,
+} from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { getElement } from '../utils';
 import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story';
@@ -406,6 +415,30 @@ describe('Chart', () => {
       expect(bars[14]).toHaveAttribute('opacity', '1');
       expect(bars[13]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
       expect(bars[15]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+    });
+  });
+
+  describe('chartId', () => {
+    test('container id is deterministic across separate SSR render passes', () => {
+      // simulates two independent server render passes producing the same tree; a random-id generator would diverge between them
+      const getContainerId = () => {
+        const html = renderToString(<Basic {...Basic.args} />);
+        return html.match(/id="(rsc-[^"]+)"/)?.[1];
+      };
+
+      const firstId = getContainerId();
+      const secondId = getContainerId();
+
+      expect(firstId).toBeDefined();
+      expect(firstId).toBe(secondId);
+    });
+
+    test('container id contains no characters that break unescaped CSS id selectors', async () => {
+      render(<Basic {...Basic.args} />);
+      const chart = await findChart();
+      const id = getChartContainer(chart)?.id;
+
+      expect(id).toMatch(/^[A-Za-z0-9_-]+$/);
     });
   });
 
