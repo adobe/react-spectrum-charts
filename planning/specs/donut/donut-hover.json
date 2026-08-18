@@ -1,0 +1,97 @@
+{
+  "id": "donut-hover",
+  "title": "Donut Hover — Segment Fade & Direct Label Color Switch",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 3,
+    "rationale": "Most of the underlying machinery already exists and is shared (arc opacity fade already works correctly via the existing getMarkOpacity/addHoveredItemOpacityRules mechanism; extending it to the label text marks and broadening the isInteractive gate both follow an existing precedented pattern used elsewhere for trendlines/metricRanges' displayOnHover). What pushes this to a 3 rather than a 2: the hovered-segment value-line color switch (fill driven by HOVERED_ITEM) has no precedent anywhere in the codebase, and the legend-sync requirement reuses an existing generic mechanism (legendHighlightSignals) that's already computed and passed into donut's options but never consumed - Line/Bar's consumption of it is a real, confirmed precedent for the legend-hover-to-mark-opacity direction, but the reverse direction the user specifically asked about (mark-hover-to-legend-highlight) still needs confirming before treating it as a fully precedented port."
+  },
+  "summary": "When a donut segment is hovered, the arc's own opacity-fade behavior (hovered segment at full opacity/color, others faded to 0.2 opacity, same categorical colors) already works correctly today via the existing shared getMarkOpacity mechanism. What's missing: the hovered segment's direct-label value line must switch to that segment's own categorical color, and non-hovered segments' direct labels (both name and value lines) must fade to match their de-emphasized arcs - neither is implemented today. Additionally, a donut with only a SegmentLabel child (no popover/inspect/onClick) isn't currently considered interactive at all, so hovering it produces no visual feedback whatsoever, which contradicts the Figma reference showing hover working with 'a simple direct label applied' and no popover configured.",
+  "requirements": [
+    "Non-hovered arc segments fade to opacity 0.2 while keeping their own categorical color (not a gray swap) - this is already correctly implemented via the shared getMarkOpacity/addHoveredItemOpacityRules mechanism (FADE_FACTOR = 0.2) used by getArcMark; this feature must reuse that exact mechanism, not reimplement it.",
+    "The hovered segment's direct-label value line must switch to that segment's own categorical color, at full opacity - confirmed visually against the Figma reference (the hovered 'North America' segment's '60.8%' value renders in the segment's own indigo/purple, matching its arc color exactly). Not implemented today - the value line's fill is hardcoded to gray-700 always. This is this spec's own requirement to own end-to-end (donut-direct-labels is scoped to static layout only - ring gap, sizing, anchor offset - and explicitly excludes hover behavior).",
+    "The hovered segment's direct-label name line stays at its normal text-secondary color and full opacity, unchanged - confirmed in the Figma reference ('North America' name text remains normal dark gray while only its value switches color).",
+    "Non-hovered segments' direct labels (both name and value lines) must fade to match their de-emphasized arc - confirmed visually in the Figma reference (EMEA and Others' name+value text both render pale/faded when North America is hovered). Not implemented today - segmentLabelUtils.ts's text marks have no opacity encoding tied to hover state at all.",
+    "A donut with only a SegmentLabel (direct label) child configured to show value/percent - no chartPopover/chartInspect/onClick - must still be interactive for hover purposes (arc fade + label fade/color-switch), matching the Figma reference ('Hover animation with simple direct label applied', no popover present). Today, isInteractive() only returns true for popover/inspect/onClick/onContextMenu/hover-triggered trendlines or metric ranges - a bare SegmentLabel doesn't count, so the HOVERED_ITEM signal is never added and nothing happens on hover.",
+    "'Emphasize' - a static, per-segment design-time highlight shown in Figma's donut component variants (a Segment `Emphasize` property, independent of mouse position) - is a distinct, not-yet-built feature and explicitly out of scope for this mouse-hover spec; do not conflate the two.",
+    "When a donut segment is hovered, the corresponding entry in a paired `<Legend>` must highlight to match - confirmed by the user. `<Legend>` can already be composed with `<Donut>` today (see DonutLegendStory, react-spectrum-charts-s2/src/stories/components/Donut/Donut.story.tsx:47-93), and the generic `legendHighlightSignals` mechanism other marks use for this already exists and is already spread into donut's options at the chartSpecBuilder call site - but DonutSpecOptions never declares this field and donutSpecBuilder.ts never reads it, so it's silently dropped today. This needs the same wiring Line/Bar already have, adapted to donut's arc mark."
+  ],
+  "designTokens": [
+    { "token": "Hover - hovered segment", "value": "opacity 1.0, own categorical color (unchanged)", "usage": "Already implemented via getMarkOpacity on the arc mark." },
+    { "token": "Hover - non-hovered segments", "value": "opacity 0.2 (FADE_FACTOR), own categorical color - not a gray swap", "usage": "Already implemented via getMarkOpacity/addHoveredItemOpacityRules on the arc mark; must be reused (not reimplemented) for the direct-label text marks." },
+    { "token": "Hover - hovered segment's direct-label value", "value": "switches to the segment's own categorical color, full opacity", "usage": "Not yet implemented - packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts hardcodes gray-700 always." },
+    { "token": "Hover - hovered segment's direct-label name", "value": "unchanged - stays text-secondary (gray-700), full opacity", "usage": "Confirmed by the Figma reference; no change needed to the name line's color." },
+    { "token": "legendHighlightSignals", "value": "generic mechanism, not donut-specific", "usage": "Computed once via getLegendHighlightSignals(legends) in chartSpecBuilder.ts (~line 154) and spread into every mark's options, including donut's (chartSpecBuilder.ts ~181-183) - but DonutSpecOptions doesn't type this field and donutSpecBuilder.ts never reads it, unlike Line (lineSpec.types.ts:172, consumed in lineMarkUtils.ts:567-607 via getHighlightedSeriesOpacityRules) and Bar." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-direct-labels/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54426&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Donut with no interactive children and no SegmentLabel at all", "expectedBehavior": "Remains fully non-interactive on hover, unchanged from today - this feature only extends interactivity to the SegmentLabel case." },
+    { "case": "Donut with a chartPopover but no SegmentLabel", "expectedBehavior": "Existing arc fade behavior continues working unchanged; no label-specific hover behavior applies since there's no direct label to fade or recolor." },
+    { "case": "Mouse leaves the donut entirely (no segment hovered)", "expectedBehavior": "All arcs and all direct labels return to full opacity; no label shows the categorical color switch." },
+    { "case": "isBoolean donut variant", "expectedBehavior": "Segment labels are already unsupported for boolean donuts (existing restriction in getSegmentLabelMarks) - confirm this hover/fade/color-switch behavior is correctly scoped to only the standard (non-boolean) donut with a SegmentLabel, consistent with that existing restriction." },
+    { "case": "Externally-driven (controlled) highlight via CONTROLLED_HIGHLIGHTED_ITEM, not real mouse hover", "expectedBehavior": "The shared getMarkOpacity mechanism this feature reuses already fades the arc for controlled-highlight too, not just mouse hover - confirm whether the label fade/color-switch should also react to controlled-highlight for consistency, or should be mouse-hover-only (see openQuestions)." },
+    { "case": "S1 (out of scope)", "expectedBehavior": "packages/vega-spec-builder/src/donut/segmentLabelUtils.ts (s1) shares the same missing opacity encoding and hardcoded gray-700 fill, but per project direction this work is s2-only - s1 is intentionally left unchanged, not a gap to track here." },
+    { "case": "Donut paired with a `<Legend>` (already possible today, e.g. DonutLegendStory)", "expectedBehavior": "Hovering a donut arc highlights the matching legend entry, and hovering a legend entry fades/highlights the corresponding donut arc - mirroring the existing bidirectional-in-spirit legendHighlightSignals wiring Line/Bar already have. Today neither direction works for donut: the signal is computed and passed in but never consumed." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: this feature's core is wiring the existing HOVERED_ITEM signal into new opacity and fill encodes on the label text marks. touchesControlledHighlight: true because the shared getMarkOpacity/addHoveredItemOpacityRules mechanism this feature must reuse already fades the arc for CONTROLLED_HIGHLIGHTED_ITEM as well as mouse hover - reusing it for labels means they'd automatically pick up the same controlled-highlight behavior, which is an open question (see openQuestions), not an assumption. touchesLegendInteraction: true - confirmed by the user that a hovered slice must highlight its matching Legend entry; the generic legendHighlightSignals mechanism (chartSpecBuilder.ts ~154, ~181-183) is already computed and spread into donut's options today but DonutSpecOptions never declares the field and donutSpecBuilder.ts never consumes it, unlike Line (lineMarkUtils.ts:567-607) and Bar - this was incorrectly marked false in earlier drafts of this spec, conflating it with the separate not-yet-built donut-specific inline swatch legend from donut-chart-tokens (a different, unrelated 'legend'). touchesTooltipOrPopover: true because isInteractive()/hasPopover()/hasInspect() is the exact gate that determines whether the HOVERED_ITEM signal exists at all today, and requirement 5 proposes broadening that gate for the SegmentLabel case. requiresNewSignalOrScale is false - no new signal type is needed for the label color-switch/opacity work, and the legend-highlight signal itself already exists generically (getLegendHighlightSignals); the change is to when/what donut consumes, not a new signal being invented. requiresS1S2Parity is false: per project direction, this work is scoped to s2 only - packages/vega-spec-builder/src/donut/segmentLabelUtils.ts (s1) shares the identical gap today, but is intentionally left unchanged, not treated as a parity gap."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/marks/markUtils.ts",
+      "change": "Extend isInteractive so a donut with a SegmentLabel configured to show value/percent counts as interactive for hover purposes, following the same pattern already used for trendlines.some(displayOnHover) / metricRanges.some(displayOnHover).",
+      "lines": "135-155"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts",
+      "change": "Confirm/adjust the isInteractive gate in addSignals so addHoveredItemSignal fires for a SegmentLabel-only donut, consistent with the markUtils.ts change above.",
+      "lines": "165-170"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Add an opacity encode to both getSegmentLabelTextMark and getSegmentLabelValueTextMark reusing getMarkOpacity (the same mechanism the arc mark already uses). Add a fill production rule on the value mark's encode that switches to the segment's own categorical color (via getColorProductionRule, matching the arc's color resolution) when the HOVERED_ITEM signal's datum matches that segment's row, falling back to the existing gray-700 value otherwise.",
+      "lines": "56-140"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Add tests for the new hover-reactive opacity and fill encodings; update the existing test that currently asserts the value fill is always '#505050'.",
+      "lines": "145-159"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/SegmentLabel/SegmentLabel.story.tsx",
+      "change": "Add a hover story matching the Figma reference: SegmentLabel with value/percent, no popover configured, verifying hover fade + color-switch works without any interactive child other than the SegmentLabel itself.",
+      "lines": "N/A - new story"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/donutSpec.types.ts",
+      "change": "Add `legendHighlightSignals?: string[]` to DonutSpecOptions, mirroring LineSpecOptions (lineSpec.types.ts:172), so the field chartSpecBuilder.ts already spreads into donut's options actually gets typed/read.",
+      "lines": "55-61"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts and donutUtils.ts",
+      "change": "Consume `options.legendHighlightSignals` (currently ignored): wire the arc mark's opacity/fill so hovering a legend entry fades/highlights the matching segment, and ensure the donut's own HOVERED_ITEM state is exposed in a form the legend can react to for the reverse direction - mirroring lineMarkUtils.ts:567-607 (getHighlightedSeriesOpacityRules) and legendHighlightUtils.ts's setHoverOpacityForMarks/setHoverStrokeWidthForMarks.",
+      "lines": "48-92 (donutSpecBuilder.ts), 48-76 (donutUtils.ts getArcMark)"
+    }
+  ],
+  "openQuestions": [
+    "Should merely configuring a SegmentLabel with value/percent make the donut interactive-for-hover by default (matching the Figma reference), or should hover behavior remain gated behind an explicit popover/inspect/onClick as it is today - i.e. is this a new default behavior or should it require an opt-in?",
+    "Should the direct-label fade/color-switch also react to CONTROLLED_HIGHLIGHTED_ITEM (externally-driven highlight), matching the arc's existing shared mechanism, or should it be mouse-hover-only even though the underlying getMarkOpacity function doesn't distinguish between the two?",
+    "Confirm 'Emphasize' (the static per-segment property visible in Figma's donut component variants) is fully out of scope here and tracked as its own separate future feature, not partially addressed by this spec.",
+    "Confirm exactly which direction(s) Line/Bar's existing legendHighlightSignals mechanism implements today (research so far confirms legend-hover -> mark-opacity via getHighlightedSeriesOpacityRules/setHoverOpacityForMarks) - the user's ask is specifically the reverse direction (mark-hover -> legend-entry-highlight), which needs its own confirmation of precedent (or lack of one) before 'mirror Line/Bar' can be treated as a fully precedented port rather than partially new work."
+  ],
+  "relatedIssues": ["donut-direct-labels", "donut-summary-responsive-sizing"]
+}
