@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/donut",
+  "title": "Donut (S2)",
+  "description": "Donut is a pre-alpha component — it has no finalized Spectrum 2 design yet",
+  "source": "@site/docs/spectrum2/donut.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/donut",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/donut",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/donut.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "sidebar_position": 10
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Combo (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/combo"
+  },
+  "next": {
+    "title": "Scatter (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/scatter"
+  }
+}

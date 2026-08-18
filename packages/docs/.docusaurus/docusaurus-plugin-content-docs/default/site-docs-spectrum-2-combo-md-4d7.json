@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/combo",
+  "title": "Combo (S2)",
+  "description": "Combo is a pre-alpha component — it has no finalized Spectrum 2 design yet",
+  "source": "@site/docs/spectrum2/combo.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/combo",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/combo",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/combo.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "sidebar_position": 9
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Bullet (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/bullet"
+  },
+  "next": {
+    "title": "Donut (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/donut"
+  }
+}
