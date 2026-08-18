@@ -20,6 +20,7 @@ import {
   FOCUSED_ITEM,
   GROUP_ID,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
   NAVIGATION_ID_SEPARATOR,
   NAVIGATION_INDEX_FIELD,
   SELECTED_ITEM,
@@ -60,11 +61,12 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
       ? `${hoveredItemSignal}.${groupKey} === datum.${groupKey}`
       : `${hoveredItemSignal}.${idKey} === datum.${idKey}`;
 
-    // Hovering always takes precedence over keyboard focus; moving the mouse away reveals the
-    // focused point again (rather than showing both simultaneously) since this whole clause is an
-    // `isValid(hoveredItemSignal) ? hover match : focus match` — never both.
+    // Whichever modality was used most recently wins; moving the mouse away (or the mouse never
+    // having moved since the last keyboard interaction) reveals the focused point again — this
+    // whole clause is an `isValid(hoveredItemSignal) && pointer-was-last ? hover match : focus
+    // match`, never both.
     expr += accessibleNavigation
-      ? ` || (isValid(${hoveredItemSignal}) ? (${hoverMatchExpr}) : (${getFocusedItemMatchExpr(
+      ? ` || (isValid(${hoveredItemSignal}) && ${INTERACTION_MODALITY} !== 'keyboard' ? (${hoverMatchExpr}) : (${getFocusedItemMatchExpr(
           typeof color === 'string' ? color : undefined
         )}))`
       : ` || isValid(${hoveredItemSignal}) && (${hoverMatchExpr})`;
@@ -172,7 +174,10 @@ export const getLineHoverRules = (
 
   if (interactiveMarkName) {
     const hoveredGroupExpr = `length(data('${interactiveMarkName}_highlightedData')) ? (indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 0) : null`;
-    const hoveredItemExpr = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) ? (${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
+    const hoveredItemValidExpr = accessibleNavigation
+      ? `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`
+      : `isValid(${interactiveMarkName}_${HOVERED_ITEM})`;
+    const hoveredItemExpr = `${hoveredItemValidExpr} ? (${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
     const hoveredMatchExpr = isHighlightedByGroup ? hoveredGroupExpr : hoveredItemExpr;
     rules.push({ as: 'hoveredMatch', expr: hoveredMatchExpr });
   }
@@ -191,10 +196,11 @@ export const getLineHoverRules = (
     const comboSiblingMatchExpr = `(${siblingTest}) ? 1 : 0`;
     rules.push({ as: 'comboSiblingMatch', expr: comboSiblingMatchExpr });
   }
-  // Falls last (after hover/controlled/popover/combo), so those still win over keyboard focus when
-  // active. Needed because the hover-animation engine (used whenever this line is "animated" — e.g.
-  // has a popover, inspect, or click handler) computes its own opacity signal, bypassing
-  // getLineOpacityRules entirely — this keeps keyboard focus reflected either way.
+  // Falls last (after hover/controlled/popover/combo) as the fallback once hoveredMatch is gated
+  // out by interaction modality (see hoveredItemValidExpr above). Needed because the
+  // hover-animation engine (used whenever this line is "animated" — e.g. has a popover, inspect,
+  // or click handler) computes its own opacity signal, bypassing getLineOpacityRules entirely —
+  // this keeps keyboard focus reflected either way.
   if (accessibleNavigation && typeof color === 'string') {
     const focusMatchExpr = `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}) ? (${getFocusedGroupOrItemMatchExpr(
       `datum.${color}`

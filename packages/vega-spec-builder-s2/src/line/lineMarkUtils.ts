@@ -35,6 +35,7 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -285,11 +286,12 @@ export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule
   if (isAnimate) {
     // The hover-animation ramp only re-tweens off signals its `on` triggers watch for, so it never
     // reacts to keyboard-driven focus changes. Give focus an immediate, unanimated value that wins
-    // while it's active; mouse-driven hover falls through to the existing animated ramp unaffected.
+    // while keyboard is the most recently used modality; mouse-driven hover falls through to the
+    // existing animated ramp once a mouseover flips interactionModality back to 'pointer'.
     if (accessibleNavigation && typeof color === 'string') {
       return [
         {
-          test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+          test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}))`,
           signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? 1 : ${FADE_FACTOR}`,
         },
         getLineDeemphasisOpacitySignal(name),
@@ -322,8 +324,11 @@ export const getLineOpacityRules = ({
         signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
       });
     } else {
+      const hoveredItemTest = accessibleNavigation
+        ? `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`
+        : `isValid(${interactiveMarkName}_${HOVERED_ITEM})`;
       strokeOpacityRules.push({
-        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        test: hoveredItemTest,
         signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       });
     }
@@ -355,9 +360,9 @@ export const getLineOpacityRules = ({
     });
   }
 
-  // Falls after the hover rule (above) and before the default, so hovering another line still wins
-  // while it's active, and moving the mouse away reveals the focused line's full opacity again.
-  // Stays in effect whether the line itself or one of its points is focused.
+  // Falls after the hover rule (above) and before the default. The hover rule is gated out once
+  // interactionModality flips to 'keyboard' (see hoveredItemTest above), so this is the fallback
+  // that shows focus whenever keyboard was the most recently used modality.
   if (accessibleNavigation && typeof color === 'string') {
     strokeOpacityRules.push({
       test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
@@ -394,8 +399,11 @@ export const getLineStrokeWidth = ({
         signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
       });
     } else {
+      const hoveredItemTest = accessibleNavigation
+        ? `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`
+        : `isValid(${interactiveMarkName}_${HOVERED_ITEM})`;
       strokeWidthRules.push({
-        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
+        test: hoveredItemTest,
         signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
       });
     }

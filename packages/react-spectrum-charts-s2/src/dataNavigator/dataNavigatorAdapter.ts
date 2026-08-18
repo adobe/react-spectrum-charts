@@ -13,7 +13,7 @@
 import dataNavigator, { NodeObject } from 'data-navigator';
 import { Item, View } from 'vega';
 
-import { FOCUSED_DIMENSION, FOCUSED_ITEM, FOCUSED_REGION } from '@spectrum-charts/constants';
+import { FOCUSED_DIMENSION, FOCUSED_ITEM, FOCUSED_REGION, INTERACTION_MODALITY } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure';
@@ -90,6 +90,7 @@ const applyFocusSignals = (view: View | undefined, { item, region, dimension }: 
   view.signal(FOCUSED_ITEM, item);
   view.signal(FOCUSED_REGION, region);
   view.signal(FOCUSED_DIMENSION, dimension);
+  view.signal(INTERACTION_MODALITY, 'keyboard');
   view.runAsync();
 };
 
@@ -221,8 +222,22 @@ export const attachDataNavigator = ({
     if (node) navigate(node);
   };
 
+  // Leaving the chart entirely (item undefined) hands the hover-look back to whatever is
+  // currently focused, rather than leaving it stuck on the last-hovered mark.
+  const handleMouseOut = (_event: unknown, item?: Item | null) => {
+    if (item) return;
+    const view = getView();
+    if (!view) return;
+    view.signal(INTERACTION_MODALITY, 'keyboard');
+    view.runAsync();
+  };
+
   const view = getView();
   view?.addEventListener('click', handleClick);
+  view?.addEventListener('mouseout', handleMouseOut);
 
-  return () => view?.removeEventListener('click', handleClick);
+  return () => {
+    view?.removeEventListener('click', handleClick);
+    view?.removeEventListener('mouseout', handleMouseOut);
+  };
 };

@@ -11,10 +11,10 @@
  */
 import { Signal } from 'vega';
 
-import { FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, HOVERED_ITEM, INTERACTION_MODALITY } from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
-import { addHoveredItemSignal, getHighlightSignalUpdateExpression } from './signalSpecBuilder';
+import { addHoveredItemSignal, addInteractionModalitySignal, getHighlightSignalUpdateExpression } from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
   let signals: Signal[];
@@ -77,6 +77,32 @@ describe('signalSpecBuilder', () => {
       expect(signals).toHaveLength(1);
       expect(signals[0]).toHaveProperty('name', `line0_${HOVERED_ITEM}`);
       expect(signals[0]?.on?.[0]).toHaveProperty('update', 'datum.datum');
+    });
+  });
+
+  describe('addInteractionModalitySignal()', () => {
+    test('creates the signal with a mouseover trigger targeting pointer modality', () => {
+      signals = [];
+      addInteractionModalitySignal(signals, 'target0');
+      expect(signals).toHaveLength(1);
+      expect(signals[0]).toHaveProperty('name', INTERACTION_MODALITY);
+      expect(signals[0]?.on).toHaveLength(1);
+      expect(signals[0]?.on?.[0]).toStrictEqual({ events: '@target0:mouseover', update: `'pointer'` });
+    });
+
+    test('appends an on-trigger for a second target instead of creating a new signal', () => {
+      signals = [];
+      addInteractionModalitySignal(signals, 'target0');
+      addInteractionModalitySignal(signals, 'target1');
+      expect(signals).toHaveLength(1);
+      expect(signals[0]?.on).toHaveLength(2);
+      expect(signals[0]?.on?.[1]).toStrictEqual({ events: '@target1:mouseover', update: `'pointer'` });
+    });
+
+    test('does not add a mouseout trigger', () => {
+      signals = [];
+      addInteractionModalitySignal(signals, 'target0');
+      expect(signals[0]?.on?.some((on) => on.events === '@target0:mouseout')).toBe(false);
     });
   });
 });

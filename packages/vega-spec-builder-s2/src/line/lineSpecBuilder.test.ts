@@ -30,6 +30,7 @@ import {
   HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_TARGETS,
   HOVER_TIMER,
+  INTERACTION_MODALITY,
   LINEAR_PADDING,
   MARK_ID,
   NAVIGATION_INDEX_FIELD,
@@ -1234,6 +1235,18 @@ describe('lineSpecBuilder', () => {
       expect(signals.at(-1)?.on).toHaveLength(8);
     });
 
+    test('interactionMode item with accessibleNavigation adds an interactionModality trigger per hover mark', () => {
+      const signals = addSignals(defaultSignals, {
+        ...defaultLineOptions,
+        interactionMode: 'item',
+        chartInspects: [{}],
+        accessibleNavigation: true,
+      });
+      const modalitySignal = signals.find((signal) => signal.name === INTERACTION_MODALITY);
+      // one trigger for the base voronoi mark, plus one per item-mode hover mark
+      expect((modalitySignal?.on?.length ?? 0)).toBeGreaterThan(1);
+    });
+
     describe('accessibleNavigation', () => {
       test('should add focus signals when accessibleNavigation is enabled', () => {
         const signals = addSignals(defaultSignals, { ...defaultLineOptions, accessibleNavigation: true });
@@ -1252,6 +1265,20 @@ describe('lineSpecBuilder', () => {
       test('adds the hoveredItem signal even with no other interactive feature enabled', () => {
         const signals = addSignals(defaultSignals, { ...defaultLineOptions, accessibleNavigation: true });
         expect(signals.find((signal) => signal.name === `${defaultLineOptions.name}_${HOVERED_ITEM}`)).toBeDefined();
+      });
+
+      test('adds the interactionModality signal with a mouseover trigger on the voronoi mark', () => {
+        const signals = addSignals(defaultSignals, { ...defaultLineOptions, accessibleNavigation: true });
+        const modalitySignal = signals.find((signal) => signal.name === INTERACTION_MODALITY);
+        expect(modalitySignal).toBeDefined();
+        expect(modalitySignal?.on?.some((on) => on.events === `@${defaultLineOptions.name}_voronoi:mouseover`)).toBe(
+          true
+        );
+      });
+
+      test('does not add the interactionModality signal by default', () => {
+        const signals = addSignals(defaultSignals, defaultLineOptions);
+        expect(signals.find((signal) => signal.name === INTERACTION_MODALITY)).toBeUndefined();
       });
     });
 

@@ -18,6 +18,7 @@ import {
   GROUP_ID,
   HOVERED_ITEM,
   HOVERED_SERIES,
+  INTERACTION_MODALITY,
   LAST_RSC_SERIES_ID,
 } from '@spectrum-charts/constants';
 
@@ -163,4 +164,27 @@ export const addHoveredItemSignal = (
   const update = combinedExcludeCondition ? `(${combinedExcludeCondition}) ? null : ${datum}` : datum;
 
   signal.on.push({ events: `@${targetName}:mouseover`, update }, { events: `@${targetName}:mouseout`, update: 'null' });
+};
+
+/**
+ * Marks pointer as the most recently used input modality whenever the given mark is hovered.
+ * No mouseout trigger: moving from one interactive mark to another must not reset modality.
+ */
+export const addInteractionModalitySignal = (signals: Signal[], targetName: string): void => {
+  let signal = signals.find((signal) => signal.name === INTERACTION_MODALITY);
+  if (!signal) {
+    signal = {
+      description: 'Tracks whether pointer or keyboard was used most recently',
+      name: INTERACTION_MODALITY,
+      value: null,
+      on: [],
+    };
+    signals.push(signal);
+  }
+
+  if (signal.on === undefined) {
+    signal.on = [];
+  }
+
+  signal.on.push({ events: `@${targetName}:mouseover`, update: `'pointer'` });
 };

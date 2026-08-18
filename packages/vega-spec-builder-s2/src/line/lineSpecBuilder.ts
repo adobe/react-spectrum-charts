@@ -60,6 +60,7 @@ import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import {
   addHoveredItemSignal,
+  addInteractionModalitySignal,
   getFirstRscSeriesIdSignal,
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
@@ -407,6 +408,9 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     undefined,
     getPrimarySeriesExcludeCondition(primarySeries, 'datum.datum')
   );
+  if (options.accessibleNavigation) {
+    addInteractionModalitySignal(signals, `${name}_voronoi`);
+  }
   addHoverSignals(signals, options);
   addInspectSignals(signals, options);
 });
@@ -618,11 +622,14 @@ export const getAlternateSegmentData = (name: string, dimSortField: string): Dat
 ];
 
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
-  const { interactionMode, name: lineName, primarySeries } = options;
+  const { accessibleNavigation, interactionMode, name: lineName, primarySeries } = options;
   if (interactionMode !== INTERACTION_MODE.ITEM) return;
   const itemExcludeCondition = getPrimarySeriesExcludeCondition(primarySeries, 'datum');
   for (const hoverMarkName of getHoverMarkNames(lineName)) {
     addHoveredItemSignal(signals, lineName, hoverMarkName, 1, undefined, itemExcludeCondition);
+    if (accessibleNavigation) {
+      addInteractionModalitySignal(signals, hoverMarkName);
+    }
   }
 };
 

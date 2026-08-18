@@ -18,6 +18,7 @@ import {
   FOCUSED_ITEM,
   GROUP_ID,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
   NAVIGATION_ID_SEPARATOR,
   NAVIGATION_INDEX_FIELD,
   SELECTED_ITEM,
@@ -53,13 +54,13 @@ describe('getLineHighlightedData()', () => {
   });
 
   describe('accessibleNavigation', () => {
-    test('hovering takes precedence over the focused point when both are present', () => {
+    test('hovering takes precedence over the focused point when pointer was the last modality used', () => {
       const expr = (
         getLineHighlightedData({ ...defaultLineOptions, accessibleNavigation: true, color: 'series' })
           .transform?.[0] as FilterTransform
       ).expr;
       expect(expr).toContain(
-        `isValid(${defaultLineOptions.name}_${HOVERED_ITEM}) ? (${defaultLineOptions.name}_${HOVERED_ITEM}.${defaultLineOptions.idKey} === datum.${defaultLineOptions.idKey}) : (${FOCUSED_ITEM} === datum.series + "${NAVIGATION_ID_SEPARATOR}" + datum.${NAVIGATION_INDEX_FIELD})`
+        `isValid(${defaultLineOptions.name}_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard' ? (${defaultLineOptions.name}_${HOVERED_ITEM}.${defaultLineOptions.idKey} === datum.${defaultLineOptions.idKey}) : (${FOCUSED_ITEM} === datum.series + "${NAVIGATION_ID_SEPARATOR}" + datum.${NAVIGATION_INDEX_FIELD})`
       );
     });
 
@@ -78,6 +79,7 @@ describe('getLineHighlightedData()', () => {
       const expr = (getLineHighlightedData({ ...defaultLineOptions, color: 'series' }).transform?.[0] as FilterTransform)
         .expr;
       expect(expr).not.toContain(FOCUSED_ITEM);
+      expect(expr).not.toContain(INTERACTION_MODALITY);
     });
   });
 });
@@ -184,6 +186,14 @@ describe('getLineHoverRules()', () => {
   });
 
   describe('accessibleNavigation', () => {
+    test('gates the hoveredMatch rule on interactionModality when enabled', () => {
+      const rules = getLineHoverRules({ ...defaultLineOptions, interactiveMarkName: 'line0', accessibleNavigation: true });
+      expect(rules[0]).toStrictEqual({
+        as: 'hoveredMatch',
+        expr: `isValid(line0_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard' ? (line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`,
+      });
+    });
+
     test('adds a focusMatch rule last when enabled with a string color', () => {
       const rules = getLineHoverRules({ ...defaultLineOptions, accessibleNavigation: true, color: 'series' });
       expect(rules.at(-1)).toStrictEqual({

@@ -12,7 +12,7 @@
 import { fireEvent } from '@testing-library/react';
 import { View } from 'vega';
 
-import { FOCUSED_DIMENSION, FOCUSED_ITEM, FOCUSED_REGION } from '@spectrum-charts/constants';
+import { FOCUSED_DIMENSION, FOCUSED_ITEM, FOCUSED_REGION, INTERACTION_MODALITY } from '@spectrum-charts/constants';
 
 import { NavigableChartType } from './buildChartStructure';
 import { attachDataNavigator } from './dataNavigatorAdapter';
@@ -53,6 +53,9 @@ const signaledWith = (name: string, value: unknown): boolean =>
 
 const getClickHandler = (): ((event: unknown, item?: unknown) => void) | undefined =>
   addEventListenerMock.mock.calls.find(([type]) => type === 'click')?.[1];
+
+const getMouseOutHandler = (): ((event: unknown, item?: unknown) => void) | undefined =>
+  addEventListenerMock.mock.calls.find(([type]) => type === 'mouseout')?.[1];
 
 const entryButton = (): HTMLButtonElement => container.querySelector('button') as HTMLButtonElement;
 // data-navigator renders exactly one node element (class `dn-node`) at a time; it carries the
@@ -107,6 +110,7 @@ describe('attachDataNavigator()', () => {
     attach();
     entryButton().click();
     expect(signaledWith(FOCUSED_REGION, 'chart')).toBe(true);
+    expect(signaledWith(INTERACTION_MODALITY, 'keyboard')).toBe(true);
   });
 
   test('does not throw when there is no live view to signal', () => {
@@ -126,6 +130,7 @@ describe('attachDataNavigator()', () => {
     signal.mockClear();
     fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
     expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_ITEM && v !== null)).toBe(true);
+    expect(signaledWith(INTERACTION_MODALITY, 'keyboard')).toBe(true);
   });
 
   test('Escape at the chart root drills out and clears focus', () => {
@@ -178,6 +183,32 @@ describe('attachDataNavigator()', () => {
       const handler = getClickHandler();
       cleanup();
       expect(removeEventListenerMock).toHaveBeenCalledWith('click', handler);
+    });
+  });
+
+  describe('mouse leaves the chart', () => {
+    test('registers a mouseout listener on the view', () => {
+      attach();
+      expect(getMouseOutHandler()).toBeDefined();
+    });
+
+    test('leaving every mark (no item) restores keyboard modality', () => {
+      attach();
+      getMouseOutHandler()?.(undefined, undefined);
+      expect(signaledWith(INTERACTION_MODALITY, 'keyboard')).toBe(true);
+    });
+
+    test('does nothing while still over a mark', () => {
+      attach();
+      getMouseOutHandler()?.(undefined, { datum: { browser: 'Firefox' } });
+      expect(signal).not.toHaveBeenCalled();
+    });
+
+    test('removes the mouseout listener on cleanup', () => {
+      const cleanup = attach();
+      const handler = getMouseOutHandler();
+      cleanup();
+      expect(removeEventListenerMock).toHaveBeenCalledWith('mouseout', handler);
     });
   });
 

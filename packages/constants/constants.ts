@@ -167,6 +167,8 @@ export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-a
 export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
 export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
 export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
+/** Tracks whether keyboard navigation or pointer hover was used most recently, so hover-look encodings know which one to prefer. Values: 'pointer' | 'keyboard'. */
+export const INTERACTION_MODALITY = 'interactionModality';
 /** Separator joining fields into a unique data-navigator node id (e.g. stacked segment = dimension + series). */
 export const NAVIGATION_ID_SEPARATOR = '__rsc__';
 /** Data field carrying a point's 1-based position within its own line, used to key keyboard-navigation focus. */

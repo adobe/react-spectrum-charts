@@ -22,6 +22,7 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SELECTED_SERIES,
@@ -292,7 +293,7 @@ describe('getLineOpacity()', () => {
       });
       expect(opacityRule).toStrictEqual([
         {
-          test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+          test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}))`,
           signal: `(${getFocusedGroupOrItemMatchExpr('datum.series')}) ? 1 : ${FADE_FACTOR}`,
         },
         getLineDeemphasisOpacitySignal('line0'),
@@ -350,6 +351,26 @@ describe('getLineOpacityRules()', () => {
       color: { value: 'categorical-100' },
     });
     expect(JSON.stringify(result)).not.toContain(FOCUSED_DIMENSION);
+  });
+
+  test('gates the hover rule on interactionModality when accessibleNavigation is enabled', () => {
+    const result = getLineOpacityRules({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      accessibleNavigation: true,
+    });
+    expect(result[0]).toStrictEqual({
+      test: `isValid(line0_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`,
+      signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  test('does not gate the hover rule on interactionModality when accessibleNavigation is disabled', () => {
+    const result = getLineOpacityRules({ ...defaultLineMarkOptions, interactiveMarkName: 'line0' });
+    expect(result[0]).toStrictEqual({
+      test: `isValid(line0_${HOVERED_ITEM})`,
+      signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    });
   });
 });
 
@@ -459,6 +480,18 @@ describe('getLineStrokeWidth()', () => {
         color: { value: 'categorical-100' },
       });
       expect(JSON.stringify(result)).not.toContain(FOCUSED_DIMENSION);
+    });
+
+    test('gates the hover rule on interactionModality', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        accessibleNavigation: true,
+      });
+      expect(result[0]).toStrictEqual({
+        test: `isValid(line0_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
     });
   });
 });
