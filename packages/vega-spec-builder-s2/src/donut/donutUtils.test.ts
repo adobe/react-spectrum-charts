@@ -45,6 +45,21 @@ describe('getArcMark()', () => {
     expect(opacity).toHaveLength(2);
     expect(opacity?.[0]).toEqual({ test: getDonutEmptyStateTest('testName'), value: 0 });
   });
+  test('should use the normal color scale when isBoolean is false', () => {
+    const arcMark = getArcMark(defaultDonutOptions);
+    expect(arcMark.encode?.enter?.fill).toEqual({ scale: 'color', field: 'testColor' });
+  });
+  test('should force the secondary segment to secondary-gray when isBoolean is true', () => {
+    const arcMark = getArcMark({ ...defaultDonutOptions, isBoolean: true });
+    const fill = arcMark.encode?.enter?.fill;
+    expect(fill).toEqual([
+      {
+        test: `!(datum.${defaultDonutOptions.idKey} === data('testName_booleanData')[0].${defaultDonutOptions.idKey})`,
+        value: spectrum2Colors.light['gray-400'],
+      },
+      { scale: 'color', field: 'testColor' },
+    ]);
+  });
 });
 
 describe('getEmptyStateArcMark()', () => {
