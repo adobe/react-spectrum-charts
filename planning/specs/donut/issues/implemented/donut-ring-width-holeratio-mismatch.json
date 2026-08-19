@@ -1,0 +1,94 @@
+{
+  "id": "donut-ring-width-holeratio-mismatch",
+  "title": "Donut ring width scales proportionally (holeRatio) instead of matching Figma's near-fixed per-tier px values",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-08-19",
+  "complexity": {
+    "score": 5,
+    "rationale": "Root cause was fully confirmed up front, but the fix required resolving a real design question (how holeRatio should behave once ring width is tier-based) plus a second, unanticipated discovery mid-implementation: correcting the ring width made the S named tier's inner radius drop below the existing (s1-shared) DONUT_SUMMARY_MIN_RADIUS fit threshold, silently hiding center text that used to render. That required introducing a second, s2-only recalibrated threshold rather than just wiring the geometry fix through. Multiple sites each needed distinct reasoning: getArcMark/getEmptyStateArcMark's real ring geometry, a new sentinel-based branch for holeRatio, and donutSummaryUtils.ts's fit-gate threshold - not the same precedented edit repeated."
+  },
+  "summary": "The donut's actual rendered ring width (innerRadius = holeRatio * DONUT_RADIUS, default holeRatio=0.85) scaled proportionally with the donut's outer diameter. Figma's S2 design instead specifies a near-fixed ring width per named size tier (chart.donut.size.ring-width: XS=16/S=18/M=20/L=22/XL=24px) that grows much more slowly than diameter. Fixed by introducing a per-tier ring-width threshold scale/signal (getRingWidthScale/getRingWidthSignal in donutUtils.ts), applied only when holeRatio is left at its default (DEFAULT_HOLE_RATIO=0.85, now a named constant) - an explicitly customized holeRatio is still honored as a proportional ring, preserving backward compatibility for consumers relying on it. getArcMark, getEmptyStateArcMark, and donutSummaryUtils.ts's truncation/fit-gate formulas all now share one getDonutInnerRadiusExpr() helper so they can never drift out of sync with each other again. Discovered mid-fix: the corrected (thicker) ring at the S tier drops its inner radius below the old shared DONUT_SUMMARY_MIN_RADIUS (45px) fit threshold, so a new s2-only DONUT_SUMMARY_MIN_RADIUS_S2 (40px) was introduced to keep S-tier center text visible, without touching s1's shared constant.",
+  "symptom": "At every named size tier, the donut's ring was noticeably thinner than the Figma design shows, and the discrepancy grew as the donut got larger (the ring should barely thicken across tiers, but the old formula thickened it proportionally to diameter).",
+  "rootCause": "getArcMark and getEmptyStateArcMark in packages/vega-spec-builder-s2/src/donut/donutUtils.ts both computed `innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` }` with a default holeRatio of 0.85. This made ring width (outerRadius - innerRadius) a fixed proportion of the outer radius at every size, whereas the design's chart.donut.size.ring-width token is a near-fixed px value per named tier (16/18/20/22/24 for XS/S/M/L/XL) that does not scale proportionally with diameter. Confirmed by pixel-measuring the Figma reference (node 6030-54042, 'Donut sizes' frame): at S(120px)/M(160px)/L(200px) outer diameters, the actual rendered ring width was ~17.5px/19.5px/21.5px - matching the documented 18/20/22px tokens almost exactly, while the old holeRatio=0.85 formula produced only ~9px/12px/15px at the same diameters.",
+  "comparison": [
+    {
+      "aspect": "Ring width vs. outer diameter across named size tiers",
+      "expected": "Near-fixed px ring width per tier per chart.donut.size.ring-width: S=18px, M=20px, L=22px at 120/160/200px outer diameters - confirmed by pixel-measuring the Figma 'Donut sizes' reference frame (~17.5px/19.5px/21.5px measured) and by the fixed implementation (exact 18/20/22/24px match verified visually in Storybook).",
+      "actual": "Before the fix: innerRadius = holeRatio * DONUT_RADIUS (holeRatio=0.85 default) scaled ring width proportionally with diameter, producing ~9px/12px/15px at the same S/M/L diameters - roughly half the design's width at S, worse at larger tiers."
+    }
+  ],
+  "designTokens": [
+    {
+      "token": "chart.donut.size.ring-width (XS/S/M/L/XL)",
+      "value": "16 / 18 / 20 / 22 / 24 (px)",
+      "usage": "Fixed px ring (donut hole) width per named size tier - not a ratio of the outer diameter. Implemented as DONUT_RING_WIDTHS, applied via a threshold scale keyed off outer diameter, snapping to the nearest tier via the shared DONUT_SIZE_TIER_CUTPOINTS."
+    }
+  ],
+  "references": [
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54042&m=dev" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" }
+  ],
+  "edgeCases": [
+    {
+      "case": "User-supplied custom holeRatio",
+      "expectedBehavior": "Resolved: font size and ring width are diameter-tier-based only when holeRatio equals DEFAULT_HOLE_RATIO (0.85, the public prop's own default). Any explicitly customized holeRatio value is honored as a proportional ring exactly as before, preserving backward compatibility."
+    },
+    {
+      "case": "S-tier (120px) DonutSummary center text visibility",
+      "expectedBehavior": "Resolved via a new, s2-only DONUT_SUMMARY_MIN_RADIUS_S2 (40px, down from the s1-shared 45px): with the corrected ring width, S-tier's inner radius is 42px, which now clears the recalibrated threshold, so center text keeps rendering at S as it did before this fix (it would otherwise have newly disappeared as a side effect of correcting the ring geometry)."
+    },
+    {
+      "case": "getEmptyStateArcMark (empty-state gray ring)",
+      "expectedBehavior": "Resolved: bundled into the same fix via the shared getDonutInnerRadiusExpr() helper, so the empty-state ring always matches the real data ring's width."
+    },
+    {
+      "case": "Other consumers of DONUT_RADIUS * holeRatio not covered by this fix",
+      "expectedBehavior": "Segment label positioning (segmentLabelUtils.ts) and any future donut-benchmark line geometry do not currently depend on the inner radius, so they're unaffected by this fix - but should be re-checked against getDonutInnerRadiusExpr() if they ever start deriving positions from the donut's hole size."
+    },
+    {
+      "case": "S1 (out of scope)",
+      "expectedBehavior": "packages/vega-spec-builder/src/donut/donutUtils.ts (s1) has the identical `holeRatio * DONUT_RADIUS` formula, but per project direction this donut work is s2-only - s1 is intentionally left unchanged, not a gap to track here. The shared DONUT_SUMMARY_MIN_RADIUS and DONUT_SUMMARY_FONT_SIZE_RATIO constants were deliberately left untouched for this reason; s2-only counterparts were added alongside them instead."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: true - added getRingWidthScale/getRingWidthSignal (a new per-donut threshold scale/signal keyed off outer diameter, registered unconditionally whenever holeRatio is left at its default), reusing the outer-diameter-to-nearest-tier snapping approach from donut-summary-responsive-sizing. requiresS1S2Parity: false - packages/vega-spec-builder/src/donut/donutUtils.ts (s1) has the identical `holeRatio * DONUT_RADIUS` formula, but per project direction this donut work is s2-only; s1 is intentionally left unchanged, not treated as a parity gap."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/constants/constants.ts",
+      "change": "Added DEFAULT_HOLE_RATIO (0.85, extracted from the previous inline literal - also the sentinel for opting into tier-based ring width), DONUT_RING_WIDTHS ([16,18,20,22,24]), and DONUT_SUMMARY_MIN_RADIUS_S2 (40, an s2-only recalibration of the shared DONUT_SUMMARY_MIN_RADIUS discovered necessary mid-fix). Renamed DONUT_SUMMARY_SIZE_TIER_CUTPOINTS to DONUT_SIZE_TIER_CUTPOINTS since it's now shared by both ring width and donut summary font sizing, not summary-specific.",
+      "lines": "241-256"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "Added getRingWidthScale (threshold scale, outer diameter -> nearest tier's fixed ring width), getRingWidthSignal, and getDonutInnerRadiusExpr (returns the tier-based expression when holeRatio === DEFAULT_HOLE_RATIO, otherwise the original proportional expression for an explicitly customized holeRatio). getArcMark and getEmptyStateArcMark both now compute innerRadius via getDonutInnerRadiusExpr.",
+      "lines": "12-77, 84-106"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts",
+      "change": "holeRatio now defaults to DEFAULT_HOLE_RATIO. addScales/addSignals register the new ring-width scale/signal only when holeRatio === DEFAULT_HOLE_RATIO (unconditionally per donut, not gated behind DonutSummary presence, since the arc mark always renders).",
+      "lines": "15-21, 60-61, 151-171"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts",
+      "change": "getSummaryValueEncode/getSummaryValueLimit/getSummaryLabelEncode now call getDonutInnerRadiusExpr() instead of duplicating `DONUT_RADIUS * holeRatio`, and the fit-gate test now uses DONUT_SUMMARY_MIN_RADIUS_S2 instead of the s1-shared DONUT_SUMMARY_MIN_RADIUS.",
+      "lines": "26-37, 231-250, 280-297, 299-333"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.test.ts, donutSummaryUtils.test.tsx, donutSpecBuilder.test.ts",
+      "change": "Added coverage for getRingWidthScale/getRingWidthSignal/getDonutInnerRadiusExpr (both the default-holeRatio and customized-holeRatio branches), and updated existing assertions (scale/signal counts, hardcoded `* 0.85` formula strings, the recalibrated `< 40` fit-gate threshold) to match the new geometry.",
+      "lines": "N/A - updated and new test cases"
+    }
+  ],
+  "openQuestions": [],
+  "relatedIssues": ["donut-summary-responsive-sizing"]
+}

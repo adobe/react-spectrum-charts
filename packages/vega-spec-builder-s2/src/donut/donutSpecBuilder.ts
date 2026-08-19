@@ -16,6 +16,7 @@ import {
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
+  DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
   FILTERED_TABLE,
 } from '@spectrum-charts/constants';
@@ -32,7 +33,7 @@ import {
   getDonutSummaryScales,
   getDonutSummarySignals,
 } from './donutSummaryUtils';
-import { getArcMark, getEmptyStateArcMark, getSumData } from './donutUtils';
+import { getArcMark, getEmptyStateArcMark, getRingWidthScale, getRingWidthSignal, getSumData } from './donutUtils';
 import { getSegmentLabelMarks } from './segmentLabelUtils';
 
 export const addDonut = produce<
@@ -58,7 +59,7 @@ export const addDonut = produce<
       metric = DEFAULT_METRIC,
       name,
       startAngle = 0,
-      holeRatio = 0.85,
+      holeRatio = DEFAULT_HOLE_RATIO,
       isBoolean = false,
       segmentLabels = [],
       ...options
@@ -148,8 +149,11 @@ const getPieTransforms = ({ startAngle, metric, name }: DonutSpecOptions): (Form
 ];
 
 export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) => {
-  const { color } = options;
+  const { color, holeRatio } = options;
   addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
+  if (holeRatio === DEFAULT_HOLE_RATIO) {
+    scales.push(getRingWidthScale(options));
+  }
   scales.push(...getDonutSummaryScales(options));
 });
 
@@ -163,7 +167,10 @@ export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => 
 });
 
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {
-  const { chartInspects, name } = options;
+  const { chartInspects, holeRatio, name } = options;
+  if (holeRatio === DEFAULT_HOLE_RATIO) {
+    signals.push(getRingWidthSignal(options));
+  }
   signals.push(...getDonutSummarySignals(options));
   if (!isInteractive(options)) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
