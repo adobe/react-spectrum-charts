@@ -240,6 +240,15 @@ export const DONUT_SUMMARY_MAX_FONT_SIZE = 60;
 export const DONUT_SUMMARY_FONT_SIZE_RATIO = 0.35;
 /** Min inner radius to display the summary metric. If the inner radius is less than this, the summary metric is hidden. */
 export const DONUT_SUMMARY_MIN_RADIUS = 45;
+/**
+ * S2 donut summary named size-tier (XS/S/M/L/XL) midpoint cutpoints, keyed off the donut's outer diameter.
+ * A diameter snaps to whichever named tier it falls closest to.
+ */
+export const DONUT_SUMMARY_SIZE_TIER_CUTPOINTS = [90, 140, 180, 300];
+/** S2 donut summary metric value font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_SUMMARY_VALUE_FONT_SIZES = [18, 20, 22, 36, 50];
+/** S2 donut summary metric label font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_SUMMARY_LABEL_FONT_SIZES = [12, 14, 16, 20, 24];
 
 // venn constant
 export const DEFAULT_VENN_COLOR = 'sets';
