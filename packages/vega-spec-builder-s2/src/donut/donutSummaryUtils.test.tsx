@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import {
+  DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SUMMARY_LABEL_FONT_SIZES,
-  DONUT_SUMMARY_SIZE_TIER_CUTPOINTS,
   DONUT_SUMMARY_VALUE_FONT_SIZES,
 } from '@spectrum-charts/constants';
 
@@ -74,9 +74,9 @@ describe('getDonutSummaryScales()', () => {
       ...defaultDonutOptions,
       donutSummaries: [{ label: 'Visitors' }],
     });
-    expect(scales[0]).toHaveProperty('domain', DONUT_SUMMARY_SIZE_TIER_CUTPOINTS);
+    expect(scales[0]).toHaveProperty('domain', DONUT_SIZE_TIER_CUTPOINTS);
     expect(scales[0]).toHaveProperty('range', DONUT_SUMMARY_VALUE_FONT_SIZES);
-    expect(scales[1]).toHaveProperty('domain', DONUT_SUMMARY_SIZE_TIER_CUTPOINTS);
+    expect(scales[1]).toHaveProperty('domain', DONUT_SIZE_TIER_CUTPOINTS);
     expect(scales[1]).toHaveProperty('range', DONUT_SUMMARY_LABEL_FONT_SIZES);
   });
 });
@@ -194,13 +194,13 @@ describe('getSummaryValueBaseline()', () => {
 describe('getSummaryValueLimit()', () => {
   test('should use full font size in signal if label is truthy', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: 'Visitors' })).toEqual({
-      signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryValueFontSize, 2))',
+      signal: '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(testName_summaryValueFontSize, 2))',
     });
   });
 
   test('should use 1/2 font size in signal if label is falsey', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' })).toEqual({
-      signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryValueFontSize * 0.5, 2))',
+      signal: '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(testName_summaryValueFontSize * 0.5, 2))',
     });
   });
 });
@@ -233,7 +233,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
       label: 'Visitors',
     });
     expect(encode.update?.fontSize).toEqual([
-      { test: '(min(width, height) / 2 - 2) * 0.85 < 45', value: 0 },
+      { test: '((min(width, height) / 2 - 2) - testName_ringWidth) < 40', value: 0 },
       { signal: 'testName_summaryLabelFontSize' },
     ]);
   });
@@ -242,7 +242,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
     const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: true, label: 'Visitors' });
     expect(encode.update?.limit).toEqual({
       signal:
-        '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryLabelFontSize * 0.5, 2))',
+        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(testName_summaryLabelFontSize * 0.5, 2))',
     });
   });
 
@@ -250,7 +250,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
     const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: false, label: 'Visitors' });
     expect(encode.update?.limit).toEqual({
       signal:
-        '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize, 2))',
+        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize, 2))',
     });
   });
 });
