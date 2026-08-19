@@ -9,7 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_RING_WIDTHS, DONUT_SIZE_TIER_CUTPOINTS, FILTERED_TABLE } from '@spectrum-charts/constants';
+import {
+  DONUT_RING_WIDTHS,
+  DONUT_SIZE_TIER_CUTPOINTS,
+  DONUT_SLICE_GAPS,
+  FILTERED_TABLE,
+} from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
 import { defaultDonutOptions } from './donutTestUtils';
@@ -20,6 +25,8 @@ import {
   getEmptyStateArcMark,
   getRingWidthScale,
   getRingWidthSignal,
+  getSliceGapScale,
+  getSliceGapSignal,
   getSumData,
 } from './donutUtils';
 
@@ -65,6 +72,13 @@ describe('getArcMark()', () => {
     const arcMark = getArcMark({ ...defaultDonutOptions, holeRatio: 0.5 });
     expect(arcMark.encode?.update?.innerRadius).toEqual({ signal: '0.5 * (min(width, height) / 2 - 2)' });
   });
+
+  test('should convert the per-tier fixed slice gap to an angle at the outer radius', () => {
+    const arcMark = getArcMark(defaultDonutOptions);
+    expect(arcMark.encode?.update?.padAngle).toEqual({
+      signal: 'testName_sliceGap / (min(width, height) / 2 - 2)',
+    });
+  });
 });
 
 describe('getEmptyStateArcMark()', () => {
@@ -109,6 +123,28 @@ describe('getRingWidthSignal()', () => {
     expect(signal).toEqual({
       name: 'testName_ringWidth',
       update: "scale('testName_ringWidthScale', 2 * (min(width, height) / 2 - 2))",
+    });
+  });
+});
+
+describe('getSliceGapScale()', () => {
+  test('should snap outer diameter to the nearest named tier via the shared cutpoints', () => {
+    const scale = getSliceGapScale(defaultDonutOptions);
+    expect(scale).toEqual({
+      name: 'testName_sliceGapScale',
+      type: 'threshold',
+      domain: DONUT_SIZE_TIER_CUTPOINTS,
+      range: DONUT_SLICE_GAPS,
+    });
+  });
+});
+
+describe('getSliceGapSignal()', () => {
+  test('should resolve the slice gap from the outer diameter', () => {
+    const signal = getSliceGapSignal(defaultDonutOptions);
+    expect(signal).toEqual({
+      name: 'testName_sliceGap',
+      update: "scale('testName_sliceGapScale', 2 * (min(width, height) / 2 - 2))",
     });
   });
 });

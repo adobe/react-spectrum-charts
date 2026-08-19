@@ -16,6 +16,7 @@ import {
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SIZE_TIER_CUTPOINTS,
+  DONUT_SLICE_GAPS,
   FILTERED_TABLE,
   SELECTED_ITEM,
 } from '@spectrum-charts/constants';
@@ -75,6 +76,28 @@ export const getRingWidthSignal = ({ name }: DonutSpecOptions): Signal => ({
 });
 
 /**
+ * Gets the threshold scale that snaps a donut's outer diameter to its nearest named size tier's fixed slice gap
+ * @param donutOptions
+ * @returns ThresholdScale
+ */
+export const getSliceGapScale = ({ name }: DonutSpecOptions): ThresholdScale => ({
+  name: `${name}_sliceGapScale`,
+  type: 'threshold',
+  domain: DONUT_SIZE_TIER_CUTPOINTS,
+  range: DONUT_SLICE_GAPS,
+});
+
+/**
+ * Gets the signal that resolves a donut's fixed segment gap (in px) from its outer diameter
+ * @param donutOptions
+ * @returns Signal
+ */
+export const getSliceGapSignal = ({ name }: DonutSpecOptions): Signal => ({
+  name: `${name}_sliceGap`,
+  update: `scale('${name}_sliceGapScale', 2 * ${DONUT_RADIUS})`,
+});
+
+/**
  * Gets the donut's inner radius expression. Uses the fixed per-tier ring width when holeRatio is left at its
  * default, otherwise honors an explicitly customized holeRatio as a proportional ring
  * @param donutOptions
@@ -101,8 +124,8 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
       update: {
         startAngle: { field: `${name}_startAngle` },
         endAngle: { field: `${name}_endAngle` },
-        // 1 / DONUT_RADIUS gives a constant ~1px visual gap between segments regardless of donut size
-        padAngle: { signal: `1 / ${DONUT_RADIUS}` },
+        // converts the per-tier fixed px slice gap (chart.donut.size.slice-gap) to an angle at the outer radius
+        padAngle: { signal: `${name}_sliceGap / ${DONUT_RADIUS}` },
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },
         outerRadius: { signal: DONUT_RADIUS },
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
