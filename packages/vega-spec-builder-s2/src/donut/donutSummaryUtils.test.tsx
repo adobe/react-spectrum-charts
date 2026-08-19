@@ -9,6 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import {
+  DONUT_SUMMARY_LABEL_FONT_SIZES,
+  DONUT_SUMMARY_SIZE_TIER_CUTPOINTS,
+  DONUT_SUMMARY_VALUE_FONT_SIZES,
+} from '@spectrum-charts/constants';
+
 import { DonutSummarySpecOptions } from '../types';
 import {
   getBooleanDonutSummaryGroupMark,
@@ -53,13 +59,25 @@ describe('getDonutSummaryScales()', () => {
     expect(scales).toHaveLength(0);
   });
 
-  test('should return summary font size scale if there is a DonutSummary on the Donut', () => {
+  test('should return value and label font size scales if there is a DonutSummary on the Donut', () => {
     const scales = getDonutSummaryScales({
       ...defaultDonutOptions,
       donutSummaries: [{ label: 'Visitors' }],
     });
-    expect(scales).toHaveLength(1);
-    expect(scales[0].name).toEqual('testName_summaryFontSizeScale');
+    expect(scales).toHaveLength(2);
+    expect(scales[0].name).toEqual('testName_summaryValueFontSizeScale');
+    expect(scales[1].name).toEqual('testName_summaryLabelFontSizeScale');
+  });
+
+  test('should snap to the nearest named size tier via the shared cutpoints', () => {
+    const scales = getDonutSummaryScales({
+      ...defaultDonutOptions,
+      donutSummaries: [{ label: 'Visitors' }],
+    });
+    expect(scales[0]).toHaveProperty('domain', DONUT_SUMMARY_SIZE_TIER_CUTPOINTS);
+    expect(scales[0]).toHaveProperty('range', DONUT_SUMMARY_VALUE_FONT_SIZES);
+    expect(scales[1]).toHaveProperty('domain', DONUT_SUMMARY_SIZE_TIER_CUTPOINTS);
+    expect(scales[1]).toHaveProperty('range', DONUT_SUMMARY_LABEL_FONT_SIZES);
   });
 });
 
@@ -69,13 +87,20 @@ describe('getDonutSummarySignals()', () => {
     expect(signals).toHaveLength(0);
   });
 
-  test('should return summary font size scale if there is a DonutSummary on the Donut', () => {
+  test('should return value and label font size signals if there is a DonutSummary on the Donut', () => {
     const signals = getDonutSummarySignals({
       ...defaultDonutOptions,
       donutSummaries: [{ label: 'Visitors' }],
     });
-    expect(signals).toHaveLength(1);
-    expect(signals[0].name).toEqual('testName_summaryFontSize');
+    expect(signals).toHaveLength(2);
+    expect(signals[0]).toEqual({
+      name: 'testName_summaryValueFontSize',
+      update: "scale('testName_summaryValueFontSizeScale', 2 * (min(width, height) / 2 - 2))",
+    });
+    expect(signals[1]).toEqual({
+      name: 'testName_summaryLabelFontSize',
+      update: "scale('testName_summaryLabelFontSizeScale', 2 * (min(width, height) / 2 - 2))",
+    });
   });
 });
 
@@ -169,13 +194,13 @@ describe('getSummaryValueBaseline()', () => {
 describe('getSummaryValueLimit()', () => {
   test('should use full font size in signal if label is truthy', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: 'Visitors' })).toEqual({
-      signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryFontSize, 2))',
+      signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryValueFontSize, 2))',
     });
   });
 
   test('should use 1/2 font size in signal if label is falsey', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' })).toEqual({
-      signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryFontSize * 0.5, 2))',
+      signal: '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryValueFontSize * 0.5, 2))',
     });
   });
 });
@@ -198,7 +223,35 @@ describe('getSummaryLabelEncode() with hideValue', () => {
       label: 'Visitors',
     });
     expect(encode.update?.baseline).toEqual({ value: 'top' });
-    expect(encode.update?.dy).toBeDefined();
+    expect(encode.update?.dy).toEqual({ signal: 'ceil(testName_summaryValueFontSize * 0.25)' });
+  });
+
+  test('should use the label font size signal directly, not derived from the value font size', () => {
+    const encode = getSummaryLabelEncode({
+      ...defaultDonutSummaryOptions,
+      hideValue: false,
+      label: 'Visitors',
+    });
+    expect(encode.update?.fontSize).toEqual([
+      { test: '(min(width, height) / 2 - 2) * 0.85 < 45', value: 0 },
+      { signal: 'testName_summaryLabelFontSize' },
+    ]);
+  });
+
+  test('should compute the limit from label height alone when hideValue is true', () => {
+    const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: true, label: 'Visitors' });
+    expect(encode.update?.limit).toEqual({
+      signal:
+        '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(testName_summaryLabelFontSize * 0.5, 2))',
+    });
+  });
+
+  test('should compute the limit from the value dy offset plus label height when hideValue is false', () => {
+    const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: false, label: 'Visitors' });
+    expect(encode.update?.limit).toEqual({
+      signal:
+        '2 * sqrt(pow((min(width, height) / 2 - 2) * 0.85, 2) - pow(ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize, 2))',
+    });
   });
 });
 

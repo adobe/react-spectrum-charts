@@ -25,8 +25,10 @@ import {
 
 import {
   DONUT_RADIUS,
-  DONUT_SUMMARY_FONT_SIZE_RATIO,
+  DONUT_SUMMARY_LABEL_FONT_SIZES,
   DONUT_SUMMARY_MIN_RADIUS,
+  DONUT_SUMMARY_SIZE_TIER_CUTPOINTS,
+  DONUT_SUMMARY_VALUE_FONT_SIZES,
   FILTERED_TABLE,
 } from '@spectrum-charts/constants';
 
@@ -97,14 +99,20 @@ export const getDonutSummaryScales = (donutOptions: DonutSpecOptions): Threshold
   if (!donutSummary) {
     return [];
   }
+  const { name } = donutOptions;
+  // snaps the donut's outer diameter to the nearest named size tier's (XS/S/M/L/XL) font size
   return [
-    // This scale will snap the fontsize to the spectrum font sizes L - XXXXL
-    // 28 is the min, 60 is the max.
     {
-      name: `${donutOptions.name}_summaryFontSizeScale`,
+      name: `${name}_summaryValueFontSizeScale`,
       type: 'threshold',
-      domain: [32, 36, 40, 45, 50, 60],
-      range: [28, 32, 36, 40, 45, 50, 60],
+      domain: DONUT_SUMMARY_SIZE_TIER_CUTPOINTS,
+      range: DONUT_SUMMARY_VALUE_FONT_SIZES,
+    },
+    {
+      name: `${name}_summaryLabelFontSizeScale`,
+      type: 'threshold',
+      domain: DONUT_SUMMARY_SIZE_TIER_CUTPOINTS,
+      range: DONUT_SUMMARY_LABEL_FONT_SIZES,
     },
   ];
 };
@@ -119,11 +127,16 @@ export const getDonutSummarySignals = (donutOptions: DonutSpecOptions): Signal[]
   if (!donutSummary) {
     return [];
   }
-  const { name: donutName, holeRatio } = donutOptions;
+  const { name } = donutOptions;
+  const donutDiameter = `2 * ${DONUT_RADIUS}`;
   return [
     {
-      name: `${donutName}_summaryFontSize`,
-      update: `scale('${donutName}_summaryFontSizeScale', ${DONUT_RADIUS} * ${holeRatio} * ${DONUT_SUMMARY_FONT_SIZE_RATIO})`,
+      name: `${name}_summaryValueFontSize`,
+      update: `scale('${name}_summaryValueFontSizeScale', ${donutDiameter})`,
+    },
+    {
+      name: `${name}_summaryLabelFontSize`,
+      update: `scale('${name}_summaryLabelFontSizeScale', ${donutDiameter})`,
     },
   ];
 };
@@ -225,7 +238,7 @@ export const getSummaryValueEncode = (
       text: getSummaryValueText(options),
       fontSize: [
         { test: `${DONUT_RADIUS} * ${donutOptions.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
-        { signal: `${donutOptions.name}_summaryFontSize` },
+        { signal: `${donutOptions.name}_summaryValueFontSize` },
       ],
       fontWeight: { value: 800 }, // S2 font weight for value
       align: { value: 'center' },
@@ -271,7 +284,7 @@ export const getSummaryValueBaseline = (label?: string): TextBaselineValueRef =>
 export const getSummaryValueLimit = ({ donutOptions, label }: DonutSummarySpecOptions): NumericValueRef => {
   const { holeRatio, name } = donutOptions;
   // if there isn't a label, the height of the font from the center of the donut is 1/2 the font size
-  const fontHeight = label ? `${name}_summaryFontSize` : `${name}_summaryFontSize * 0.5`;
+  const fontHeight = label ? `${name}_summaryValueFontSize` : `${name}_summaryValueFontSize * 0.5`;
   const donutInnerRadius = `${DONUT_RADIUS} * ${holeRatio}`;
 
   return {
@@ -292,17 +305,21 @@ export const getSummaryLabelEncode = ({
   hideValue,
   label,
 }: DonutSummarySpecOptions & { label: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-  const fontSizeMultiplier = hideValue ? 0.25 : 0.75;
-  const limitSignal = `2 * sqrt(pow(${DONUT_RADIUS} * ${donutOptions.holeRatio}, 2) - pow(${donutOptions.name}_summaryFontSize * ${fontSizeMultiplier}, 2))`;
+  // height of the label block from the donut's center: half its own font size when centered alone,
+  // or the value's dy offset plus the label's full font size when stacked below the value
+  const heightFromCenter = hideValue
+    ? `${donutOptions.name}_summaryLabelFontSize * 0.5`
+    : `ceil(${donutOptions.name}_summaryValueFontSize * 0.25) + ${donutOptions.name}_summaryLabelFontSize`;
+  const limitSignal = `2 * sqrt(pow(${DONUT_RADIUS} * ${donutOptions.holeRatio}, 2) - pow(${heightFromCenter}, 2))`;
   return {
     update: {
       x: { signal: 'width / 2' },
       y: { signal: 'height / 2' },
-      ...(!hideValue && { dy: { signal: `ceil(${donutOptions.name}_summaryFontSize * 0.25)` } }),
+      ...(!hideValue && { dy: { signal: `ceil(${donutOptions.name}_summaryValueFontSize * 0.25)` } }),
       text: { value: label },
       fontSize: [
         { test: `${DONUT_RADIUS} * ${donutOptions.holeRatio} < ${DONUT_SUMMARY_MIN_RADIUS}`, value: 0 },
-        { signal: `ceil(${donutOptions.name}_summaryFontSize * 0.5)` },
+        { signal: `${donutOptions.name}_summaryLabelFontSize` },
       ],
       fontWeight: { value: 700 },
       align: { value: 'center' },
