@@ -1,0 +1,86 @@
+{
+  "id": "donut-ring-width-holeratio-mismatch",
+  "title": "Donut ring width scales proportionally (holeRatio) instead of matching Figma's near-fixed per-tier px values",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-19",
+  "complexity": {
+    "score": 5,
+    "rationale": "Root cause is fully confirmed (holeRatio scales ring width proportionally with diameter, but Figma's ring width grows nearly flat across tiers), but a real design question is still open: the public holeRatio prop currently controls ring geometry directly, and it's unclear how it should behave once ring width becomes a fixed per-tier lookup (ignored for named-tier consumers? only apply off-tier? deprecated?) - this is the same unresolved holeRatio-interaction question donut-summary-responsive-sizing already flagged and deferred. On top of that open question, a fix touches multiple sites needing different reasoning: getArcMark's real ring, getEmptyStateArcMark's matching empty-state ring, and donutSummaryUtils.ts's truncation-limit formulas (which intentionally reference the real holeRatio-derived radius today and would need re-verification once that radius's meaning changes)."
+  },
+  "summary": "The donut's actual rendered ring width (innerRadius = holeRatio * DONUT_RADIUS, default holeRatio=0.85) scales proportionally with the donut's outer diameter. Figma's S2 design instead specifies a near-fixed ring width per named size tier (chart.donut.size.ring-width: XS=16/S=18/M=20/L=22/XL=24px) that grows much more slowly than diameter. Measuring the actual Figma reference confirms the design values are accurate and that the current proportional formula renders a visibly thinner ring than intended at every tier, with the gap widening at larger sizes.",
+  "symptom": "At every named size tier, the donut's ring is noticeably thinner than the Figma design shows, and the discrepancy grows as the donut gets larger (the ring should barely thicken across tiers, but the current formula thickens it proportionally to diameter).",
+  "rootCause": "getArcMark and getEmptyStateArcMark in packages/vega-spec-builder-s2/src/donut/donutUtils.ts (lines ~67 and ~100 respectively) both compute `innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` }` with a default holeRatio of 0.85 (packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts). This makes ring width (outerRadius - innerRadius) a fixed proportion of the outer radius at every size, whereas the design's chart.donut.size.ring-width token is a near-fixed px value per named tier (16/18/20/22/24 for XS/S/M/L/XL) that does not scale proportionally with diameter. Confirmed by pixel-measuring the Figma reference (node 6030-54042, 'Donut sizes' frame): at S(120px)/M(160px)/L(200px) outer diameters, the actual rendered ring width is ~17.5px/19.5px/21.5px - matching the documented 18/20/22px tokens almost exactly. At the current default holeRatio=0.85, the same diameters would produce ring widths of only ~9px/12px/15px, roughly half the design's width at S and increasingly divergent at larger tiers since one scales proportionally and the other does not.",
+  "comparison": [
+    {
+      "aspect": "Ring width vs. outer diameter across named size tiers",
+      "expected": "Near-fixed px ring width per tier per chart.donut.size.ring-width: S=18px, M=20px, L=22px at 120/160/200px outer diameters - confirmed by pixel-measuring the Figma 'Donut sizes' reference frame (~17.5px/19.5px/21.5px measured).",
+      "actual": "innerRadius = holeRatio * DONUT_RADIUS (holeRatio=0.85 default) scales ring width proportionally with diameter, producing ~9px/12px/15px at the same S/M/L diameters - roughly half the design's width at S, worse at larger tiers."
+    }
+  ],
+  "designTokens": [
+    {
+      "token": "chart.donut.size.ring-width (XS/S/M/L/XL)",
+      "value": "16 / 18 / 20 / 22 / 24 (px)",
+      "usage": "Fixed px ring (donut hole) width per named size tier - not a ratio of the outer diameter. Also documented in planning/specs/donut/donut-summary-responsive-sizing.json, which reuses this same token for its own (deferred) truncation-limit discussion."
+    }
+  ],
+  "references": [
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54042&m=dev" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" }
+  ],
+  "edgeCases": [
+    {
+      "case": "User-supplied custom holeRatio",
+      "expectedBehavior": "Open question (see openQuestions) - no longer maps cleanly to any of the five named tiers once ring width is tier-based rather than ratio-based."
+    },
+    {
+      "case": "DonutSummary text truncation/fit math",
+      "expectedBehavior": "donutSummaryUtils.ts's getSummaryValueLimit/getSummaryLabelEncode currently reference the real holeRatio-derived inner radius (a deliberate choice made in donut-summary-responsive-sizing so truncation always matches the actual rendered ring) - once this bug's fix changes what that radius actually is, truncation should automatically follow, but needs re-verification, not just an assumption that it still holds."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: true - needs a new per-tier ring-width lookup (scale/signal), analogous to the DONUT_SUMMARY_SIZE_TIER_CUTPOINTS/font-size scales added for donut-summary-responsive-sizing, reusing the same outer-diameter-to-tier snapping approach. requiresS1S2Parity: false - packages/vega-spec-builder/src/donut/donutUtils.ts (s1) has the identical `holeRatio * DONUT_RADIUS` formula (confirmed at lines 67 and 100), but per project direction this donut work is s2-only; s1 is intentionally left unchanged, not treated as a parity gap."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "Bug location (getArcMark). Proposed direction: replace the holeRatio-derived innerRadius with one computed from a new per-tier fixed ring-width lookup (outerRadius minus the tier's ring width), reusing the outer-diameter-to-nearest-tier snapping pattern established in donutSummaryUtils.ts's getDonutSummaryScales/getDonutSummarySignals.",
+      "lines": "48-76"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "Bug location (getEmptyStateArcMark). Also holeRatio-derived; should mirror whatever fix getArcMark receives so the empty-state ring stays visually consistent with the real data ring.",
+      "lines": "84-106"
+    },
+    {
+      "file": "packages/constants/constants.ts",
+      "change": "Reference. Add a new per-tier ring-width constant array (16/18/20/22/24), following the naming/shape of DONUT_SUMMARY_SIZE_TIER_CUTPOINTS/DONUT_SUMMARY_VALUE_FONT_SIZES added for donut-summary-responsive-sizing.",
+      "lines": "N/A - new constants"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts",
+      "change": "Reference, not expected to change directly. getSummaryValueLimit/getSummaryLabelEncode already reference the real holeRatio-derived inner radius rather than duplicating a ring-width formula, so they should automatically reflect the corrected geometry once this bug's fix lands - verify this holds rather than assuming it.",
+      "lines": "279-296, 298-332"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.test.ts and donutSummaryUtils.test.tsx",
+      "change": "Reference. Existing tests hardcode `* 0.85` in expected signal strings; these will need updating once holeRatio is no longer the ring's geometry source.",
+      "lines": "N/A - existing test expectations will need updating"
+    }
+  ],
+  "openQuestions": [
+    "How should the public holeRatio prop behave once ring width is tier-based rather than ratio-based? Ignored/ineffective for consumers matching a named tier, only applied for custom/off-tier sizes, or deprecated entirely in favor of the fixed tiers? Same unresolved question already flagged (and deferred) in donut-summary-responsive-sizing.",
+    "Should getEmptyStateArcMark's ring-width fix be bundled into the same PR as getArcMark's, or tracked separately, given they're visually paired (the empty-state ring stands in for the data ring when there's no data)?",
+    "Once the real inner radius changes, do any other consumers of DONUT_RADIUS * holeRatio (segment label positioning, benchmark line geometry once donut-benchmark ships) need to be re-checked for the same assumption?"
+  ],
+  "relatedIssues": ["donut-summary-responsive-sizing"]
+}
