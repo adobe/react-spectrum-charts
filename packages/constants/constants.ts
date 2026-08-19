@@ -249,6 +249,8 @@ export const DEFAULT_HOLE_RATIO = 0.85;
 export const DONUT_SIZE_TIER_CUTPOINTS = [90, 140, 180, 300];
 /** S2 donut fixed ring (hole) width per named size tier (XS/S/M/L/XL), used only when holeRatio is left at DEFAULT_HOLE_RATIO */
 export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 24];
+/** S2 donut gap between adjacent segments per named size tier (XS/S/M/L/XL), per chart.donut.size.slice-gap */
+export const DONUT_SLICE_GAPS = [1, 2, 2, 2, 4];
 /**
  * S2 min inner radius to display the summary metric, recalibrated against the corrected per-tier ring width
  * (DONUT_SUMMARY_MIN_RADIUS is s1's, kept unchanged since it's paired with s1's proportional ring geometry).
