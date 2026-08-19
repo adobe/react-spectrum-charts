@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ArcMark, SourceData } from 'vega';
+import { ArcMark, ColorValueRef, ProductionRule, SourceData } from 'vega';
 
 import { DONUT_RADIUS, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
@@ -45,8 +45,27 @@ export const getSumData = ({ metric, name }: DonutSpecOptions): SourceData => ({
   ],
 });
 
+/**
+ * Gets the arc fill, forcing the secondary segment of a boolean donut to secondary-gray
+ * @param options
+ * @returns ColorValueRef | ProductionRule<ColorValueRef>
+ */
+const getArcFillEncoding = ({
+  color,
+  colorScheme,
+  idKey,
+  isBoolean,
+  name,
+}: DonutSpecOptions): ColorValueRef | ProductionRule<ColorValueRef> => {
+  const normalColor = getColorProductionRule(color, colorScheme);
+  if (!isBoolean) return normalColor;
+
+  const isPrimaryTest = `datum.${idKey} === data('${name}_booleanData')[0].${idKey}`;
+  return [{ test: `!(${isPrimaryTest})`, value: getS2ColorValue('gray-400', colorScheme) }, normalColor];
+};
+
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { chartPopovers, chartInspects, color, colorScheme, holeRatio, idKey, name } = options;
+  const { chartPopovers, chartInspects, colorScheme, holeRatio, idKey, name } = options;
   return {
     type: 'arc',
     name,
@@ -54,7 +73,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
     from: { data: FILTERED_TABLE },
     encode: {
       enter: {
-        fill: getColorProductionRule(color, colorScheme),
+        fill: getArcFillEncoding(options),
         x: { signal: 'width / 2' },
         y: { signal: 'height / 2' },
         tooltip: getInspectEncoding(chartInspects, name),
