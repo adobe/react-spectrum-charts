@@ -63,7 +63,7 @@ describe('addSignals()', () => {
       ...defaultDonutOptions,
       chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
     });
-    expect(signals).toHaveLength(defaultSignals.length + 1);
+    expect(signals).toHaveLength(defaultSignals.length + 2);
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
@@ -88,8 +88,9 @@ describe('addMarks()', () => {
 describe('donutSpecBuilder', () => {
   test('should add scales correctly', () => {
     const scales = addScales([], defaultDonutOptions);
-    expect(scales).toHaveLength(1);
+    expect(scales).toHaveLength(2);
     expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
+    expect(scales[1]).toHaveProperty('name', 'testName_ringWidthScale');
   });
 });
 
