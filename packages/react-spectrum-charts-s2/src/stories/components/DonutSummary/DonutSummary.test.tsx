@@ -33,12 +33,13 @@ describe('DonutSummary renders properly', () => {
     expect(metricValue).toHaveAttribute('transform', 'translate(175,175)');
   });
 
-  test('metric label text should be 1/2 the size of the metric value text', async () => {
+  test('metric value and label sizes should follow their own independent per-tier font sizes', async () => {
+    // 200px diameter -> 196px outer diameter -> falls in the L tier bucket (value 36px, label 20px)
     render(<Basic {...Basic.args} width={200} height={200} />);
     const metricValue = await screen.findByText('40K');
-    expect(metricValue).toHaveAttribute('font-size', '28px');
+    expect(metricValue).toHaveAttribute('font-size', '36px');
     const metricLabel = await screen.findByText('Visitors');
-    expect(metricLabel).toHaveAttribute('font-size', '14px');
+    expect(metricLabel).toHaveAttribute('font-size', '20px');
   });
 });
 
@@ -53,61 +54,39 @@ describe('NumberFormat ', () => {
   });
 });
 
-describe('Responsive font sizes should snap to correct font size based on inner radius', () => {
-  test('should snap to min if target < 28', async () => {
-    // 160 / 2 * 0.85 * 0.35 = 23.8
-    // this should be clamped to the min of 28
-    render(<Basic {...Basic.args} width={160} height={160} />);
-    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '28px');
+describe('Font sizes should snap to the nearest named size tier (XS/S/M/L/XL) by outer diameter', () => {
+  // width/height chosen so outer diameter (width - 4, from DONUT_RADIUS's -2px pad doubled)
+  // lands exactly on each tier's own defining diameter, safely inside that tier's bucket.
+  // XS (60px diameter) is omitted: at the default holeRatio, its inner radius can never
+  // clear DONUT_SUMMARY_MIN_RADIUS, so its own font size is never actually rendered/observable.
+  test('S tier (120px diameter): value 20px, label 14px', async () => {
+    render(<Basic {...Basic.args} width={124} height={124} />);
+    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '20px');
+    expect(await screen.findByText('Visitors')).toHaveAttribute('font-size', '14px');
   });
 
-  test('should snap to 28 if 28 < target < 32', async () => {
-    // 200 / 2 * 0.85 * 0.35 = 29.75
-    // this is less than 32 and greater than 28 so it should snap to 28
-    render(<Basic {...Basic.args} width={200} height={200} />);
-    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '28px');
+  test('M tier (160px diameter): value 22px, label 16px', async () => {
+    render(<Basic {...Basic.args} width={164} height={164} />);
+    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '22px');
+    expect(await screen.findByText('Visitors')).toHaveAttribute('font-size', '16px');
   });
 
-  test('should snap to 32 if 32 < target < 36', async () => {
-    // 240 / 2 * 0.85 * 0.35 = 35.7
-    // this is less than 36 and greater than 32 so it should snap to 32
-    render(<Basic {...Basic.args} width={240} height={240} />);
-    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '32px');
-  });
-
-  test('should snap to 36 if 36 < target < 40', async () => {
-    // 260 / 2 * 0.85 * 0.35 = 38.675
-    // this is less than 40 and greater than 36 so it should snap to 36
-    render(<Basic {...Basic.args} width={260} height={260} />);
+  test('L tier (200px diameter): value 36px, label 20px', async () => {
+    render(<Basic {...Basic.args} width={204} height={204} />);
     expect(await screen.findByText('40K')).toHaveAttribute('font-size', '36px');
+    expect(await screen.findByText('Visitors')).toHaveAttribute('font-size', '20px');
   });
 
-  test('should snap to 40 if 40 < target < 45', async () => {
-    // 300 / 2 * 0.85 * 0.35 = 44.625
-    // this is less than 44 and greater than 40 so it should snap to 40
-    render(<Basic {...Basic.args} width={300} height={300} />);
-    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '40px');
-  });
-
-  test('should snap to 45 if 45 < target < 50', async () => {
-    // 320 / 2 * 0.85 * 0.35 = 47.6
-    // this is less than 50 and greater than 45 so it should snap to 45
-    render(<Basic {...Basic.args} width={320} height={320} />);
-    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '45px');
-  });
-
-  test('should snap to 50 if 50 < target < 60', async () => {
-    // 400 / 2 * 0.85 * 0.35 = 59
-    // this is less than 60 and greater than 50 so it should snap to 50
-    render(<Basic {...Basic.args} width={400} height={400} />);
+  test('XL tier (400px+ diameter): value 50px, label 24px', async () => {
+    render(<Basic {...Basic.args} width={404} height={404} />);
     expect(await screen.findByText('40K')).toHaveAttribute('font-size', '50px');
+    expect(await screen.findByText('Visitors')).toHaveAttribute('font-size', '24px');
   });
 
-  test('should snap to max if target > 60', async () => {
-    // 600 / 2 * 0.85 * 0.35 = 89.25
-    // this is greater than 60 so it should snap to 60
-    render(<Basic {...Basic.args} width={600} height={600} />);
-    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '60px');
+  test('a diameter closer to M than S snaps to M', async () => {
+    // outer diameter 150 sits between S(120) and M(160), but closer to M
+    render(<Basic {...Basic.args} width={154} height={154} />);
+    expect(await screen.findByText('40K')).toHaveAttribute('font-size', '22px');
   });
 });
 
