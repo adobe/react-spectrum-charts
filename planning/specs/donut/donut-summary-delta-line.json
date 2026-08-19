@@ -1,0 +1,83 @@
+{
+  "id": "donut-summary-delta-line",
+  "title": "Donut Summary Delta Line — Third Sentiment-Colored Line",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "complexity": {
+    "score": 3,
+    "rationale": "Not yet built at all (current DonutSummary only ever renders value + label, no third line). The approach is largely precedented - another text mark stacked below the label, sized per its own tier-based ramp (same numeric values as metric-label, just bold + sentiment-colored) using the corrected per-tier model from donut-summary-responsive-sizing. What keeps this above a 2: the sign-to-sentiment-color mapping and the delta's exact stacking gap aren't documented anywhere, and truncation/fit math for value+label+delta together (a 3-line block) is new, not just a copy of the existing 2-line math."
+  },
+  "summary": "DonutSummary (the metric value + metric label centered in the donut) is missing a third, optional line: a sentiment-colored delta value (e.g. '+2.5%' in green, '-7.4%' in red) shown below the label. Confirmed via a live Figma reference showing this delta line at multiple donut sizes with donut-chart-tokens' 'Metric delta line' typography already documented (bold weight, sentiment-positive/-negative color). Confirmed with the user that which lines render (value/label/delta) is controlled purely by which props are supplied, independent of the donut's size tier - this is a separate, additive capability from donut-summary-responsive-sizing, which only covers correcting the existing value+label font-size math.",
+  "requirements": [
+    "Add an optional third line to DonutSummary: a delta value (e.g. '+2.5%', '-7.4%') rendered below the metric label, using bold weight (800) per donut-chart-tokens' 'Metric delta line' typography row.",
+    "Delta line font size follows the same per-tier px ramp as the metric label (XS 12(derived)/S 14/M 16/L 20/XL 24(derived), keyed to the donut's outer diameter per the corrected model in donut-summary-responsive-sizing) - it is not a differently-sized line, just a differently-colored and bolder one.",
+    "Delta line color is sentiment-based, not the static gray-800 used by value/label: `chart.donut.color.sentiment-positive` (#079355) for a positive delta, `chart.donut.color.sentiment-negative` (#F03823) for a negative delta - confirmed exact hex match against the green '+2.5%'/'+1.4%' text in the Figma reference.",
+    "Whether the delta line renders is controlled purely by whether a delta value is supplied (a prop), not by the donut's size tier - confirmed with the user that every size tier can show any combination of value/label/delta lines; the existing fit-based visibility cutoff (from donut-summary-responsive-sizing) is the only thing that should ever suppress it, not a deliberate per-tier design rule.",
+    "When rendered alongside the value and label lines, the delta line stacks directly below the label with a tight, consistent gap (see openQuestions - no spacing token is documented for this specific gap) - continuing the same tight vertical rhythm already used between the value and label lines.",
+    "The truncation 'limit' math and the fit-based visibility cutoff (both from donut-summary-responsive-sizing) must account for the combined height of value+label+delta when all three are present, not just value+label."
+  ],
+  "designTokens": [
+    { "token": "Metric delta line (XS/S/M/L/XL)", "value": "12(derived) / 14 / 16 / 20 / 24(derived) px, weight 800, color sentiment-positive/-negative", "usage": "Font size for the delta line, keyed to the donut's size tier - identical px values to the metric label, but bold and sentiment-colored instead of gray-800." },
+    { "token": "chart.donut.color.sentiment-positive", "value": "#079355 (green-800)", "usage": "Delta line color when the value is a positive change - confirmed exact match against the Figma reference." },
+    { "token": "chart.donut.color.sentiment-negative", "value": "#F03823 (red-800)", "usage": "Delta line color when the value is a negative change - documented in donut-chart-tokens, not directly visible in this particular reference (which only shows positive deltas), so unconfirmed visually for this feature specifically (though already confirmed for the Benchmark feature's segment coloring)." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54106&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Delta value of exactly 0 (no change)", "expectedBehavior": "Undocumented - confirm whether a zero delta uses a neutral color (not positive or negative), suppresses the +/- sign, or defaults to one sentiment color (see openQuestions)." },
+    { "case": "Delta supplied without a label (label omitted)", "expectedBehavior": "Undocumented - confirm whether the delta line stacks directly under the value in the label's usual position, or whether delta requires a label to be present." },
+    { "case": "Delta supplied with hideValue=true (value hidden, label+delta only)", "expectedBehavior": "Confirm the delta line's position shifts up to fill the gap left by the hidden value, consistent with how hideValue already repositions the label today." },
+    { "case": "Very small donut size (e.g. XS tier)", "expectedBehavior": "The delta line can still be configured to show at any size per this spec's requirements - the existing fit-based cutoff from donut-summary-responsive-sizing is the only thing that should hide it, not a hard per-tier suppression." },
+    { "case": "isBoolean donut (2-segment percent summary)", "expectedBehavior": "Unconfirmed whether a delta line is meaningful/supported for the boolean/percent summary variant, or only for the standard aggregated-sum summary - see openQuestions." },
+    { "case": "S1 parity", "expectedBehavior": "packages/vega-spec-builder/src/donut/donutSummaryUtils.ts (s1) has no delta-line concept at all to mirror - this is s2-only new work, not a parity gap." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: needs a new font-size signal/scale entry for the delta tier (reusing the corrected per-tier model from donut-summary-responsive-sizing) and a new sign-to-sentiment-color production rule - neither exists today. requiresS1S2Parity is false: s1 has no delta-line implementation at all to mirror, so this is s2-only work by definition. Per donut-chart-tokens' behavior tokens, hover/emphasize color-switching applies to direct-label/advanced-label/benchmark values, not the center metric summary - so touchesHoverAnimation is correctly false here, consistent with donut-summary-responsive-sizing."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/supplemental/dountSummarySpec.types.ts",
+      "change": "Add a `delta?: number` (or similarly-named) field to DonutSummaryOptions, following the existing `label`/`hideValue` pattern.",
+      "lines": "15-33"
+    },
+    {
+      "file": "packages/constants/constants.ts",
+      "change": "Add delta-line font-size tier constants (reusing the same per-tier px values as the metric-label constants added in donut-summary-responsive-sizing) and a default delta number format.",
+      "lines": "N/A - new constants, alongside the ones added by donut-summary-responsive-sizing"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts",
+      "change": "Add a new getSummaryDeltaEncode function (and corresponding text mark) rendering the delta line below the label, with a sentiment-color production rule based on the delta's sign. Update getSummaryValueLimit/getSummaryLabelEncode's truncation and dy-offset math to account for a third line when delta is present.",
+      "lines": "155-179, 290-315 (extending the group mark and label-encode logic added/corrected by donut-summary-responsive-sizing)"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.test.tsx",
+      "change": "Add tests for the delta line's font size per tier, sentiment-color selection (positive/negative), and the 3-line truncation/stacking math.",
+      "lines": "N/A - new test cases"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/DonutSummary/DonutSummary.story.tsx",
+      "change": "Add stories showing the delta line with a positive and a negative value, alongside the existing Basic/NoLabel/HideValue/Responsive stories.",
+      "lines": "1-86"
+    }
+  ],
+  "openQuestions": [
+    "What is the exact vertical gap between the label line and the delta line? No spacing token is documented for this specific gap in donut-chart-tokens (only the font-size ramp is given) - needs a value, likely similar in spirit to the existing tight value-to-label spacing.",
+    "How should a delta of exactly 0 be handled - neutral color, no sign, or defaulting to one sentiment color?",
+    "Does a delta line make sense for the isBoolean (2-segment percent) donut summary variant, or is it scoped only to the standard aggregated-sum summary?",
+    "Is the delta value's format always a percentage, or should it support the same numberFormat-style flexibility as the existing value/label (d3 format specifiers)?",
+    "What happens to the delta line's position when the label is omitted (does it take the label's usual slot) or when hideValue is set (does it shift up)?"
+  ],
+  "relatedIssues": ["donut-summary-responsive-sizing"]
+}

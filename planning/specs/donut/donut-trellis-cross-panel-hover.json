@@ -1,0 +1,67 @@
+{
+  "id": "donut-trellis-cross-panel-hover",
+  "title": "Donut Trellis — Cross-Panel Hover Highlight",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "complexity": {
+    "score": 3,
+    "rationale": "Deliberately scoped narrow (split out from the broader trellis work at the user's request, to avoid another sprawling 5). The fade/highlight visuals themselves are fully precedented (reuses the existing FADE_FACTOR opacity mechanism and donut-hover's legend-sync work) - what's genuinely new is sharing one hover signal across multiple independently-faceted Vega group marks (each trellis panel is its own facet with its own rows) and matching by category/color-field value instead of row id, since the standard per-donut HOVERED_ITEM match (by idKey) can't work across panels whose rows are entirely different. A related but not identical precedent exists (ChartInspect's highlightBy group-matching, chartInspectUtils.ts:126-137) for matching by a field value rather than idKey, though that solves a different problem (grouping within one mark, not sharing state across repeated facet instances)."
+  },
+  "summary": "When hovering a segment in one donut-trellis panel, the matching category must highlight (full opacity) across every panel simultaneously - not just the panel being hovered - while non-matching categories fade in every panel. Confirmed via a live Figma reference: hovering APAC's 'Phone' segment turns Phone full-opacity purple in all 5 region panels at once, fades Tablet/Desktop/Watch everywhere, and highlights the shared Legend's 'Phone' entry to match. Depends on donut-trellis (category mode) existing first for the panel/facet structure.",
+  "requirements": [
+    "Hovering any segment in any trellis panel highlights that segment's category (full opacity, own categorical color) across all panels, and fades the same non-hovered categories in every panel using the existing FADE_FACTOR (0.2) mechanism - not scoped to the single panel being hovered.",
+    "The shared Legend entry for the hovered category also highlights in sync, per donut-hover's legend-sync work - confirmed visually (the 'Phone' legend swatch shows full/dark text while Tablet/Desktop/Watch dim).",
+    "Matching must be done by category/color-field value, not row id - each panel facets a different subset of rows, so the standard per-row idKey-based HOVERED_ITEM comparison used by single-donut hover (donut-hover) cannot match across panels. The hover signal needs to live at a scope shared by all panels (outside any individual facet's group scope), not duplicated per panel.",
+    "This is additive to donut-trellis and donut-hover - it must not change single-donut (non-trellis) hover behavior at all."
+  ],
+  "designTokens": [],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54457&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Hovering a category with 0% share in some panels", "expectedBehavior": "That panel simply shows no visible highlighted arc (nothing to highlight) - no error, and the panel's other segments still fade correctly." },
+    { "case": "Rapid mouse movement between panels", "expectedBehavior": "The cross-panel highlight updates to match whichever segment is currently hovered, without getting stuck on a stale category from a previously-hovered panel." },
+    { "case": "Mouse leaves the whole trellis", "expectedBehavior": "All panels and the legend return to full opacity/normal color - same as the existing single-donut mouse-leave behavior." },
+    { "case": "A trellis panel also using donut-emphasize", "expectedBehavior": "Confirm hover's cross-panel fade and emphasize's static gray-swap don't conflict - same open interaction question already flagged between donut-hover and donut-emphasize, now also relevant per-panel." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: needs a signal shared across all trellis panels (not per-panel, unlike the existing HOVERED_ITEM), populated from any panel's arc mouseover and matched by category/color-field value rather than idKey - this specific cross-facet sharing pattern doesn't exist elsewhere in the codebase yet. touchesLegendInteraction: true, extending donut-hover's legend-sync work to react to the shared cross-panel signal instead of a single donut's local hover state. requiresS1S2Parity is false: no existing s1 Donut trellis to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisUtils.ts (from donut-trellis)",
+      "change": "Add a root-scoped hover signal (not per-panel) set via mouseover/mouseout on each panel's arc mark, storing the hovered category's field value. Extend each panel's arc opacity/fill rules to read this shared signal (matching by category value) instead of / alongside the per-panel HOVERED_ITEM.",
+      "lines": "N/A - extends the file donut-trellis creates"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/chartInspect/chartInspectUtils.ts",
+      "change": "Reference only - isHighlightedByGroup/GROUP_ID (lines 126-137) is a partial, related precedent for matching hover/highlight state by a field value rather than row id, though it solves a different problem (grouping within one mark via ChartInspect's highlightBy, not sharing state across independently repeated facet instances) - review before assuming it's directly reusable.",
+      "lines": "126-137"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts",
+      "change": "Wire the shared legend (per donut-hover's legendHighlightSignals work) to also react to this new cross-panel signal.",
+      "lines": "N/A - extends donut-hover's planned changes"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisUtils.test.ts (from donut-trellis)",
+      "change": "Add tests for the shared signal's cross-panel matching and legend sync.",
+      "lines": "N/A - extends the file donut-trellis creates"
+    }
+  ],
+  "openQuestions": [
+    "Is isHighlightedByGroup/GROUP_ID actually adaptable here, or does it solve a sufficiently different problem (stacked/grouped-series matching within one mark) that this needs its own from-scratch mechanism?",
+    "What's the exact signal-scoping approach for sharing state across independently-faceted Vega group marks, given each trellis panel is its own group with its own local data facet?"
+  ],
+  "relatedIssues": ["donut-trellis", "donut-hover", "donut-trellis-hover-value-callout"]
+}
