@@ -240,6 +240,26 @@ export const DONUT_SUMMARY_MAX_FONT_SIZE = 60;
 export const DONUT_SUMMARY_FONT_SIZE_RATIO = 0.35;
 /** Min inner radius to display the summary metric. If the inner radius is less than this, the summary metric is hidden. */
 export const DONUT_SUMMARY_MIN_RADIUS = 45;
+/** Default holeRatio - also acts as the sentinel value that opts a donut into the fixed per-tier ring width below, rather than a proportional ring */
+export const DEFAULT_HOLE_RATIO = 0.85;
+/**
+ * S2 donut named size-tier (XS/S/M/L/XL) midpoint cutpoints, keyed off the donut's outer diameter.
+ * A diameter snaps to whichever named tier it falls closest to. Shared by ring width and donut summary font sizing.
+ */
+export const DONUT_SIZE_TIER_CUTPOINTS = [90, 140, 180, 300];
+/** S2 donut fixed ring (hole) width per named size tier (XS/S/M/L/XL), used only when holeRatio is left at DEFAULT_HOLE_RATIO */
+export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 24];
+/** S2 donut gap between adjacent segments per named size tier (XS/S/M/L/XL), per chart.donut.size.slice-gap */
+export const DONUT_SLICE_GAPS = [1, 2, 2, 2, 4];
+/**
+ * S2 min inner radius to display the summary metric, recalibrated against the corrected per-tier ring width
+ * (DONUT_SUMMARY_MIN_RADIUS is s1's, kept unchanged since it's paired with s1's proportional ring geometry).
+ */
+export const DONUT_SUMMARY_MIN_RADIUS_S2 = 40;
+/** S2 donut summary metric value font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_SUMMARY_VALUE_FONT_SIZES = [18, 20, 22, 36, 50];
+/** S2 donut summary metric label font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_SUMMARY_LABEL_FONT_SIZES = [12, 14, 16, 20, 24];
 
 // venn constant
 export const DEFAULT_VENN_COLOR = 'sets';
