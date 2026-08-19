@@ -33,7 +33,15 @@ import {
   getDonutSummaryScales,
   getDonutSummarySignals,
 } from './donutSummaryUtils';
-import { getArcMark, getEmptyStateArcMark, getRingWidthScale, getRingWidthSignal, getSumData } from './donutUtils';
+import {
+  getArcMark,
+  getEmptyStateArcMark,
+  getRingWidthScale,
+  getRingWidthSignal,
+  getSliceGapScale,
+  getSliceGapSignal,
+  getSumData,
+} from './donutUtils';
 import { getSegmentLabelMarks } from './segmentLabelUtils';
 
 export const addDonut = produce<
@@ -154,6 +162,7 @@ export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) 
   if (holeRatio === DEFAULT_HOLE_RATIO) {
     scales.push(getRingWidthScale(options));
   }
+  scales.push(getSliceGapScale(options));
   scales.push(...getDonutSummaryScales(options));
 });
 
@@ -171,6 +180,7 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   if (holeRatio === DEFAULT_HOLE_RATIO) {
     signals.push(getRingWidthSignal(options));
   }
+  signals.push(getSliceGapSignal(options));
   signals.push(...getDonutSummarySignals(options));
   if (!isInteractive(options)) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
