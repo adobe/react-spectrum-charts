@@ -16,6 +16,7 @@ import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/constants';
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
+import { getBarFocusRing, getStackFocusRing } from './barFocusRingUtils';
 import {
   getBarDimensionHoverArea,
   getBarEnterEncodings,
@@ -65,6 +66,15 @@ export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
   // visible outline drawn on top of the bars so it is never occluded (e.g. by adjacent stack segments)
   if (showItemSelectionRing) {
     marks.push(getBarItemSelectionRing(options, ringDataSource, ringDimensionEncodings));
+  }
+
+  // focus rings for keyboard navigation (experimental): a per-segment ring always, plus a per-stack
+  // group ring when the bar is actually stacked (a series/color field is present).
+  if (options.accessibleNavigation) {
+    marks.push(getBarFocusRing(options));
+    if (typeof options.color === 'string') {
+      marks.push(getStackFocusRing(options));
+    }
   }
 
   return marks;
