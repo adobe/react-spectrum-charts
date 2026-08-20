@@ -289,10 +289,11 @@ export const getLineOpacity = (lineMarkOptions: LineMarkOptions): ProductionRule
     // while keyboard is the most recently used modality; mouse-driven hover falls through to the
     // existing animated ramp once a mouseover flips interactionModality back to 'pointer'.
     if (accessibleNavigation && typeof color === 'string') {
+      const focusMatchExpr = getFocusedGroupOrItemMatchExpr(`datum.${color}`);
       return [
         {
           test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}))`,
-          signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? 1 : ${FADE_FACTOR}`,
+          signal: `(${focusMatchExpr}) ? 1 : ${FADE_FACTOR}`,
         },
         getLineDeemphasisOpacitySignal(name),
       ];
@@ -364,9 +365,10 @@ export const getLineOpacityRules = ({
   // interactionModality flips to 'keyboard' (see hoveredItemTest above), so this is the fallback
   // that shows focus whenever keyboard was the most recently used modality.
   if (accessibleNavigation && typeof color === 'string') {
+    const focusMatchExpr = getFocusedGroupOrItemMatchExpr(`datum.${color}`);
     strokeOpacityRules.push({
       test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
-      signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? 1 : ${FADE_FACTOR}`,
+      signal: `(${focusMatchExpr}) ? 1 : ${FADE_FACTOR}`,
     });
   }
 
@@ -436,9 +438,10 @@ export const getLineStrokeWidth = ({
   }
 
   if (accessibleNavigation && typeof color === 'string') {
+    const focusMatchExpr = getFocusedGroupOrItemMatchExpr(`datum.${color}`);
     strokeWidthRules.push({
       test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
-      signal: `(${getFocusedGroupOrItemMatchExpr(`datum.${color}`)}) ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      signal: `(${focusMatchExpr}) ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
     });
   }
 

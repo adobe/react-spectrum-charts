@@ -102,3 +102,49 @@ describe('useNewChartView - axis label click wiring', () => {
     expect(clickListenerCount).toBe(1);
   });
 });
+
+describe('useNewChartView - Escape dismisses the vega-tooltip', () => {
+  let tooltipEl: HTMLDivElement;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseChartContext.mockReturnValue({
+      chartView: { current: undefined },
+      selectedData: { current: null },
+      selectedDataBounds: { current: undefined },
+      selectedDataName: { current: undefined },
+      chartId: 'test-chart',
+    } as unknown as ReturnType<typeof useChartContext>);
+    mockUsePopovers.mockReturnValue([]);
+    mockUseMarkOnClickDetails.mockReturnValue([]);
+    mockUseMarkMouseInputDetails.mockReturnValue([]);
+    mockUseAxisLabelOnClickDetails.mockReturnValue([]);
+
+    tooltipEl = document.createElement('div');
+    tooltipEl.id = 'vg-tooltip-element';
+    tooltipEl.classList.add('visible', 'light-theme');
+    document.body.appendChild(tooltipEl);
+  });
+
+  afterEach(() => {
+    tooltipEl.remove();
+  });
+
+  test('removes the visible class on Escape', () => {
+    getOnNewView();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(tooltipEl.classList.contains('visible')).toBe(false);
+  });
+
+  test('does nothing on other keys', () => {
+    getOnNewView();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    expect(tooltipEl.classList.contains('visible')).toBe(true);
+  });
+
+  test('does not throw when the tooltip element does not exist', () => {
+    tooltipEl.remove();
+    getOnNewView();
+    expect(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))).not.toThrow();
+  });
+});

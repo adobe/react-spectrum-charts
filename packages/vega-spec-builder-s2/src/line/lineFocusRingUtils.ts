@@ -9,29 +9,29 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineMark, NumericValueRef, ProductionRule, RectMark, SymbolMark } from 'vega';
+import { LineMark, NumericValueRef, ProductionRule, SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
   FILTERED_TABLE,
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
-  FOCUSED_REGION,
   NAVIGATION_ID_SEPARATOR,
   NAVIGATION_INDEX_FIELD,
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
+import { FOCUS_RING_STROKE_WIDTH } from '../marks/chartFocusRingUtils';
 import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
 import { getXProductionRule } from '../marks/markUtils';
 import { LineSpecOptions } from '../types';
 import { getLineYEncoding } from './lineMarkUtils';
 
-const FOCUS_RING_STROKE_WIDTH = 2;
+export { getChartFocusRing } from '../marks/chartFocusRingUtils';
+
 const LINE_FOCUS_RING_OUTER_STROKE_WIDTH = 12;
 const LINE_FOCUS_RING_GAP_STROKE_WIDTH = 8;
 const POINT_FOCUS_RING_SIZE = 500;
-const FOCUS_RING_ROUNDED_RADIUS = 6;
 
 const getLineFocusRingStrokeWidth = (color: LineSpecOptions['color'], width: number): ProductionRule<NumericValueRef> => [
   { test: `${FOCUSED_DIMENSION} === datum.${color}`, value: width },
@@ -129,34 +129,6 @@ export const getPointFocusRing = (options: LineSpecOptions): SymbolMark => {
       update: {
         x: getXProductionRule(scaleType, dimension),
         opacity: [{ test: `${FOCUSED_ITEM} === ${focusedItemId}`, value: 1 }, { value: 0 }],
-      },
-    },
-  };
-};
-
-/**
- * Whole-chart focus ring shown while the chart region itself is focused (before drilling into a
- * line or point).
- */
-export const getChartFocusRing = (options: LineSpecOptions): RectMark => {
-  const { colorScheme } = options;
-  return {
-    name: 'chartFocusRing',
-    type: 'rect',
-    interactive: false,
-    encode: {
-      enter: {
-        fill: { value: 'transparent' },
-        strokeWidth: { value: FOCUS_RING_STROKE_WIDTH },
-        stroke: { value: getS2ColorValue('blue-800', colorScheme) },
-        cornerRadius: { value: FOCUS_RING_ROUNDED_RADIUS },
-      },
-      update: {
-        x: { value: 0 },
-        x2: { signal: 'width' },
-        y: { value: 0 },
-        y2: { signal: 'height' },
-        opacity: [{ test: `${FOCUSED_REGION} === 'chart'`, value: 1 }, { value: 0 }],
       },
     },
   };

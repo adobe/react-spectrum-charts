@@ -104,7 +104,7 @@ const groupedData = workspaceTrendsData.map((d) => ({ ...d, category: seriesCate
  * ChartInspect makes the line interactive, which is what creates the hover-animation data.
  */
 const PointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+  const chartProps = useChartProps({ ...defaultChartProps, animations, accessibleNavigation: true });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -145,7 +145,7 @@ const GroupedLegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, ...a
 
 /** Popover selection — clicking a point selects its series (the `popoverMatch` rule) and keeps it emphasized. */
 const PopoverSelectionStory: StoryFn<HoverAnimationArgs> = ({ animations, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, animations });
+  const chartProps = useChartProps({ ...defaultChartProps, animations, accessibleNavigation: true });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />

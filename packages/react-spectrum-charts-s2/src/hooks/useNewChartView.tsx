@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { Item, View } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
@@ -41,6 +41,18 @@ const useNewChartView = (
 ) => {
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const popovers = usePopovers(sanitizedChildren);
+
+  // vega-tooltip (ChartInspect) is otherwise purely mouse-driven — hovering away is the only way
+  // to dismiss it. Let Escape dismiss it too, whatever triggered it (mouse hover or a synthesized
+  // keyboard-focus event from dataNavigator).
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      document.getElementById('vg-tooltip-element')?.classList.remove('visible');
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
   const {
     legendHiddenSeries,
     setLegendHiddenSeries,

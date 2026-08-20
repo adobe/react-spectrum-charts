@@ -78,14 +78,57 @@ const handleMarkClick = (
   // this means we don't need to set the signal value since it would just be cleared on rerender
   // instead, the rerender will set the value of the signal to the selectedData
   const itemName = getItemName(item);
-  selectedData.current = { [COMPONENT_NAME]: itemName, ...item.datum };
+  selectAndOpenPopover({
+    chartId,
+    itemName,
+    datum: item.datum as Datum,
+    bounds: getItemBounds(item),
+    selectedData,
+    selectedDataBounds,
+    selectedDataName,
+    trigger,
+  });
+};
+
+export interface SelectAndOpenPopoverArgs {
+  chartId: string;
+  itemName: string | undefined;
+  datum: Datum;
+  bounds: MarkBounds;
+  selectedData: RefObject<Datum | null>;
+  selectedDataBounds: RefObject<MarkBounds | undefined>;
+  selectedDataName: RefObject<string | undefined>;
+  trigger: 'click' | 'contextmenu';
+}
+
+/**
+ * Records the selected datum/bounds/name for the popover about to open, then opens it — shared by a real mark click and a keyboard-focus activation, which differ only in how `bounds` is computed.
+ */
+export const selectAndOpenPopover = ({
+  chartId,
+  itemName,
+  datum,
+  bounds,
+  selectedData,
+  selectedDataBounds,
+  selectedDataName,
+  trigger,
+}: SelectAndOpenPopoverArgs): void => {
+  selectedData.current = { [COMPONENT_NAME]: itemName, ...datum };
   // we need to anchor the popover to a div that we move to the same location as the selected mark
-  selectedDataBounds.current = getItemBounds(item);
+  selectedDataBounds.current = bounds;
   selectedDataName.current = itemName;
   triggerPopover(chartId, itemName, trigger);
 };
 
-const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
+/**
+ * Clicks the hidden trigger button `RscChart.tsx`'s `ChartDialog` renders for the named mark,
+ * opening its popover. `selectedData`/`selectedDataBounds`/`selectedDataName` must already be set.
+ * @param chartId
+ * @param itemName
+ * @param trigger
+ */
+export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
   if (!itemName) return;
   (
     document.querySelector(

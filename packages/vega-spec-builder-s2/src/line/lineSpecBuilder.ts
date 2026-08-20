@@ -24,6 +24,7 @@ import {
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
+  MARK_ID,
   NAVIGATION_INDEX_FIELD,
   OPACITY_SCALE,
   SERIES_ID,
@@ -201,6 +202,7 @@ export const addLine = produce<
       showHoverLabel: effectiveShowHoverLabel,
       dimensionHover,
       seriesIds,
+      data,
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
@@ -247,7 +249,6 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   const {
     accessibleNavigation,
     chartInspects,
-    color,
     dimension,
     dimensionHover,
     isSparkline,
@@ -261,12 +262,15 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
   if (accessibleNavigation) {
+    // The lookup table itself is a signal (getNavIndexByMarkIdSignal, added in addSignals) so this
+    // expr only ever does a signal reference plus a property lookup — embedding the table as a JSON
+    // literal directly in expr would make Vega's compiled expression reconstruct that whole object
+    // on every row evaluation.
     tableData.transform = tableData.transform ?? [];
     tableData.transform.push({
-      type: 'window',
-      groupby: typeof color === 'string' ? [color] : [],
-      ops: ['row_number'],
-      as: [NAVIGATION_INDEX_FIELD],
+      type: 'formula',
+      as: NAVIGATION_INDEX_FIELD,
+      expr: `${getNavIndexSignalName(name)}[datum.${MARK_ID}]`,
     });
   }
   addDimensionHoverGroupTransform(tableData, chartInspects, dimensionHover, dimension, name);
@@ -377,6 +381,27 @@ export const addDualMetricAxisData = (data: Data[], options: LineSpecOptions) =>
   }
 };
 
+/** Name of the signal holding the per-MARK_ID nav index lookup table for a given line mark. */
+export const getNavIndexSignalName = (name: string): string => `${name}_navIndexByMarkId`;
+
+/**
+ * Per-row nav index keyed by MARK_ID, embedded as a signal's value rather than a per-row `formula`
+ * literal. MARK_ID is always assigned 1-based in original row order by the `identifier` transform
+ * (see specUtils.ts), independent of any user-configurable idKey, so it's a safe join key here — a
+ * Vega `window` transform grouped by color would otherwise reorder the whole table, silently
+ * reordering every downstream mark (voronoi hit targets, draw order, etc.) for the whole line.
+ */
+const getNavIndexByMarkIdSignal = ({ color, data, name }: LineSpecOptions): Signal => {
+  const perColorCounts: Record<string, number> = {};
+  const navIndexByMarkId: Record<number, number> = {};
+  (data ?? []).forEach((row, i) => {
+    const key = typeof color === 'string' ? String((row as Record<string, unknown>)[color]) : '';
+    perColorCounts[key] = (perColorCounts[key] ?? 0) + 1;
+    navIndexByMarkId[i + 1] = perColorCounts[key];
+  });
+  return { name: getNavIndexSignalName(name), value: navIndexByMarkId };
+};
+
 export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options) => {
   const { name } = options;
   setTrendlineSignals(signals, options);
@@ -393,7 +418,8 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     signals.push(
       getGenericValueSignal(FOCUSED_ITEM),
       getGenericValueSignal(FOCUSED_REGION),
-      getGenericValueSignal(FOCUSED_DIMENSION)
+      getGenericValueSignal(FOCUSED_DIMENSION),
+      getNavIndexByMarkIdSignal(options)
     );
   }
 

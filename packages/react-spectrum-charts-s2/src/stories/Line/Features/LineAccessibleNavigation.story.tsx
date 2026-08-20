@@ -13,19 +13,30 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
+
 import { Chart } from '../../../Chart';
-import { Axis, Legend, Line } from '../../../components';
+import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { workspaceTrendsData, workspaceTrendsSixSeriesData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
+import { formatTimestamp } from '../../storyUtils';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features',
   component: Line,
 };
 
-// Tab into the chart to enter data-navigator keyboard navigation; Left/Right move between points, Escape exits.
+const dialogContent = (datum: Datum): ReactElement => (
+  <div>
+    <div>{formatTimestamp(datum.datetime as number)}</div>
+    <div>Event: {datum.series}</div>
+    <div>Users: {Number(datum.value).toLocaleString()}</div>
+  </div>
+);
+
+// Tab into the chart to enter data-navigator keyboard navigation; Left/Right move between points. Escape first dismisses a visible ChartInspect tooltip, then exits.
 const AccessibleNavigationStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps: ChartProps = {
     data: workspaceTrendsData,
@@ -39,12 +50,14 @@ const AccessibleNavigationStory: StoryFn<typeof Line> = (args): ReactElement => 
     <Chart {...props}>
       <Axis position="bottom" labelFormat="time" />
       <Axis position="left" grid />
-      <Line {...args} />
+      <Line {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+      </Line>
     </Chart>
   );
 };
 
-// Left/Right move between lines at the top level; Enter drills into a line so Left/Right then step through its points.
+// Left/Right move between lines at the top level; Enter drills into a line so Left/Right then step through its points. Enter on a point opens its ChartPopover, and Escape closes the popover (or dismisses a visible ChartInspect tooltip) before resuming drill-out.
 const AccessibleNavigationMultiSeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps: ChartProps = {
     data: workspaceTrendsSixSeriesData,
@@ -58,7 +71,10 @@ const AccessibleNavigationMultiSeriesStory: StoryFn<typeof Line> = (args): React
     <Chart {...props}>
       <Axis position="bottom" labelFormat="time" />
       <Axis position="left" grid />
-      <Line {...args} />
+      <Line {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+        <ChartPopover width="auto">{dialogContent}</ChartPopover>
+      </Line>
       <Legend lineWidth={{ value: 0 }} />
     </Chart>
   );

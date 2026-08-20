@@ -355,6 +355,12 @@ _* required_
 
 ---
 
+## Accessible keyboard navigation
+
+Set `accessibleNavigation` on `Chart` to enable keyboard navigation and focus rings for this line's points, including arrow keys to move between series. See [Accessible keyboard navigation](/docs/spectrum2/overview#accessible-keyboard-navigation) for supported interactions.
+
+---
+
 ## Line props (S2)
 
 :::note Not all base Line props are supported

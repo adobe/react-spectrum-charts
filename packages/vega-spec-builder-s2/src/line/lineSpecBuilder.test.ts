@@ -44,7 +44,15 @@ import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { ScSpec } from '../types';
 import { getLineGroupZIndexEncoding } from './lineFocusRingUtils';
-import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder';
+import {
+  addData,
+  addLine,
+  addLineMarks,
+  addSignals,
+  getAlternateSegmentData,
+  getNavIndexSignalName,
+  setScales,
+} from './lineSpecBuilder';
 import { defaultLineOptions } from './lineTestUtils';
 
 const startingSpec: ScSpec = initializeSpec({
@@ -444,29 +452,17 @@ describe('lineSpecBuilder', () => {
     });
 
     describe('accessibleNavigation', () => {
-      test('adds a per-line row index transform to the table, grouped by color, when enabled', () => {
-        const resultData = addData(baseData, { ...defaultLineOptions, accessibleNavigation: true });
-        const tableData = resultData.find((d) => d.name === TABLE);
-        expect(tableData?.transform).toContainEqual({
-          type: 'window',
-          groupby: [DEFAULT_COLOR],
-          ops: ['row_number'],
-          as: [NAVIGATION_INDEX_FIELD],
-        });
-      });
-
-      test('groups by nothing for a single-line (non-string color) chart', () => {
+      test('adds a formula transform reading MARK_ID out of the navIndexByMarkId signal, when enabled', () => {
         const resultData = addData(baseData, {
           ...defaultLineOptions,
-          color: { value: 'categorical-100' },
           accessibleNavigation: true,
+          data: [{ [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'B' }],
         });
         const tableData = resultData.find((d) => d.name === TABLE);
         expect(tableData?.transform).toContainEqual({
-          type: 'window',
-          groupby: [],
-          ops: ['row_number'],
-          as: [NAVIGATION_INDEX_FIELD],
+          type: 'formula',
+          as: NAVIGATION_INDEX_FIELD,
+          expr: `${getNavIndexSignalName('line0')}[datum.${MARK_ID}]`,
         });
       });
 
@@ -1260,6 +1256,58 @@ describe('lineSpecBuilder', () => {
         expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
         expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
         expect(signals.find((signal) => signal.name === FOCUSED_DIMENSION)).toBeUndefined();
+      });
+
+      test('adds a signal mapping MARK_ID to a per-color row index, when enabled', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          data: [{ [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'B' }],
+        });
+        expect(signals.find((signal) => signal.name === getNavIndexSignalName('line0'))).toHaveProperty('value', {
+          1: 1,
+          2: 2,
+          3: 1,
+        });
+      });
+
+      // Computed in JS rather than via a Vega `window` transform grouped by color — that would
+      // reorder the whole table by group, silently shuffling every other mark's draw/hit-test
+      // order for the entire line (see the comment on this block in lineSpecBuilder.ts).
+      test('indexes across the whole dataset for a single-line (non-string color) chart', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultLineOptions,
+          color: { value: 'categorical-100' },
+          accessibleNavigation: true,
+          data: [{ x: 1 }, { x: 2 }, { x: 3 }],
+        });
+        expect(signals.find((signal) => signal.name === getNavIndexSignalName('line0'))).toHaveProperty('value', {
+          1: 1,
+          2: 2,
+          3: 3,
+        });
+      });
+
+      test('does not add the navIndexByMarkId signal by default', () => {
+        const signals = addSignals(defaultSignals, defaultLineOptions);
+        expect(signals.find((signal) => signal.name === getNavIndexSignalName('line0'))).toBeUndefined();
+      });
+
+      // Regression test: addLine() destructures `data` off its incoming options for local use
+      // (getUniqueSeriesIds) — if the reassembled lineOptions object passed to addSignals doesn't
+      // re-attach it, options.data silently becomes undefined here even though a real caller
+      // (chartSpecBuilder.ts) always passes it. That's a different, easy-to-miss failure mode from
+      // the addSignals()-only tests above, which pass `data` directly and can't catch it.
+      test('addLine() (not just addSignals() in isolation) still computes real indices from real caller data', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          accessibleNavigation: true,
+          data: [{ [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'B' }],
+        });
+        const navIndexSignal = spec.signals?.find((signal) => signal.name === getNavIndexSignalName('line0'));
+        expect(navIndexSignal).toHaveProperty('value', { 1: 1, 2: 2, 3: 1 });
       });
 
       test('adds the hoveredItem signal even with no other interactive feature enabled', () => {
