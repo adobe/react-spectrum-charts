@@ -49,6 +49,7 @@ import {
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import {
   addHoveredItemSignal,
+  addInteractionModalitySignal,
   getFirstRscSeriesIdSignal,
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
@@ -200,6 +201,8 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
       getGenericValueSignal(FOCUSED_REGION),
       getGenericValueSignal(FOCUSED_DIMENSION)
     );
+    // The bar mark is always interactive when accessibleNavigation is on, so this signal must exist even without any other interactive feature.
+    addInteractionModalitySignal(signals, name);
   }
 
   if (isDualMetricAxis(options)) {

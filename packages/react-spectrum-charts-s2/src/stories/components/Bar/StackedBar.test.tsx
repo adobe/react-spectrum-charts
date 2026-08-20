@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { fireEvent } from '@testing-library/react';
+
 import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
 
 import {
@@ -20,7 +22,40 @@ import {
   unhoverNthElement,
   within,
 } from '../../../test-utils';
-import { InspectOnDimensionArea } from './StackedBar.story';
+import { AccessibleNavigation, InspectOnDimensionArea } from './StackedBar.story';
+
+describe('AccessibleNavigation', () => {
+  test('keyboard navigation moves focus and updates the corresponding focus ring at each level', async () => {
+    render(<AccessibleNavigation {...AccessibleNavigation.args} />);
+    const chart = await findChart();
+    const container = chart.closest('.rsc-container') as HTMLElement;
+
+    const entryButton = container.querySelector('button') as HTMLButtonElement;
+    expect(entryButton).toBeTruthy();
+    entryButton.click();
+
+    const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+    expect(dnNode()).toBeTruthy();
+
+    const [chartRing] = await findAllMarksByGroupName(chart, 'chartFocusRing');
+    expect(chartRing).toHaveAttribute('opacity', '1');
+
+    // drill into the first stack (division level)
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' });
+    const stackRings = await findAllMarksByGroupName(chart, 'bar0_stackFocusRing');
+    expect(stackRings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+
+    // drill into the first segment (leaf)
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' });
+    const segmentRings = await findAllMarksByGroupName(chart, 'bar0_focusRing');
+    expect(segmentRings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+
+    // arrow key moves focus to a sibling node
+    const focusedIdBefore = dnNode().id;
+    fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' });
+    expect(dnNode().id).not.toBe(focusedIdBefore);
+  });
+});
 
 describe('InspectOnDimensionArea', () => {
   test('hovering dimension area should apply highlight styling and show tooltip', async () => {

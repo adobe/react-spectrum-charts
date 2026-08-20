@@ -36,6 +36,7 @@ import {
   FOCUSED_ITEM,
   FOCUSED_REGION,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
   LINE_TYPE_SCALE,
   MARK_ID,
   OPACITY_SCALE,
@@ -361,6 +362,19 @@ describe('barSpecBuilder', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
       expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
+    });
+    // Regression test: applyFocusSignals (dataNavigatorAdapter.ts) writes to this signal on every
+    // keyboard focus move, unconditionally — if it isn't defined, that write throws on a real Vega
+    // View and keyboard navigation breaks entirely for a bar with no other interactive feature.
+    test('adds the interactionModality signal even with no other interactive feature enabled', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
+      const modalitySignal = signals.find((signal) => signal.name === INTERACTION_MODALITY);
+      expect(modalitySignal).toBeDefined();
+      expect(modalitySignal?.on?.some((on) => on.events === `@${defaultBarOptions.name}:mouseover`)).toBe(true);
+    });
+    test('does not add the interactionModality signal by default', () => {
+      const signals = addSignals(defaultSignals, defaultBarOptions);
+      expect(signals.find((signal) => signal.name === INTERACTION_MODALITY)).toBeUndefined();
     });
     test('should add hover events if inspect is present', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartInspects: [{}] });
