@@ -61,12 +61,22 @@ const baseValue = {
 function makeContext(
   idSignal?: { name: string },
   groupSignal?: { name: string }
-) {
+): ReturnType<typeof useChartContext> {
   return {
-    chartView: { current: { signal: mockSignal, data: mockData } },
+    chartView: {
+      current: { signal: mockSignal, data: mockData } as unknown as ReturnType<typeof useChartContext>['chartView']['current'],
+    },
+    chartId: 'test-chart',
+    selectedData: { current: null },
+    selectedDataName: { current: '' },
+    selectedDataBounds: { current: { x1: 0, x2: 0, y1: 0, y2: 0 } },
     controlledHoveredIdSignal: { current: idSignal },
     controlledHoveredGroupSignal: { current: groupSignal },
-  };
+    isPopoverOpen: false,
+    setIsPopoverOpen: jest.fn(),
+    popoverAnchorRef: { current: null },
+    popoverClosedAt: { current: null },
+  } as unknown as ReturnType<typeof useChartContext>;
 }
 
 function getFormatTooltip() {

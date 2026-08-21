@@ -19,6 +19,12 @@ The `Legend` component is used to display a legend for the visualization.
   </thead>
   <tbody>
     <tr>
+      <td>align</td>
+      <td>'start' | 'middle' | 'end'</td>
+      <td>'middle'</td>
+      <td>Alignment of the legend along its edge. For horizontal legends (bottom/top): 'start' = left, 'middle' = center, 'end' = right. For vertical legends (left/right): 'start' = top, 'middle' = center, 'end' = bottom.</td>
+    </tr>
+    <tr>
       <td>color</td>
       <td>string | \{value: Color}</td>
       <td>–</td>

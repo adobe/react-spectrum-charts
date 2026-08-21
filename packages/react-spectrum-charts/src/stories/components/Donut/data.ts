@@ -42,3 +42,9 @@ export const booleanDonutData = [
   { id: '1', value: 0.68 },
   { id: '2', value: 0.32 },
 ];
+
+export const zeroDonutData = [
+  { count: 0, browser: 'Chrome' },
+  { count: 0, browser: 'Firefox' },
+  { count: 0, browser: 'Safari' },
+];

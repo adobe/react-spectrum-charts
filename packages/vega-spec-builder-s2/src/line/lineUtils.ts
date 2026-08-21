@@ -48,6 +48,8 @@ export const isDualMetricAxis = (options: { dualMetricAxis?: boolean }): boolean
 };
 
 export interface LineMarkOptions {
+  /** Experimental: keyboard navigation focus signals drive hover-style highlight/fade when true. */
+  accessibleNavigation?: boolean;
   barAnnotations?: BarAnnotationOptions[];
   chartPopovers?: ChartPopoverOptions[];
   chartInspects?: ChartInspectOptions[];
@@ -79,10 +81,16 @@ export interface LineMarkOptions {
   scaleType: ScaleType;
   scatterPaths?: ScatterPathOptions[];
   segmentLabels?: SegmentLabelOptions[];
+  dimensionHover?: boolean;
+  hoverLabelKey?: string;
+  showHoverLabel?: boolean;
   staticPoint?: string;
   trendlines?: TrendlineOptions[];
   interpolate?: InterpolationType;
   alternateSegmentKey?: string;
   alternateSegmentLineType?: LineType;
   alternateSegmentLabel?: string;
+  primarySeries?: number | string[];
+  otherSeriesColor?: string;
+  isAnimate?: boolean;
 }

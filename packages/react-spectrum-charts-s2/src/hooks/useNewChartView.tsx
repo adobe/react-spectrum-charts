@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { Item, View } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
@@ -20,24 +20,38 @@ import { Legend } from '../components';
 import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
 import {
+  getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
   getOnMouseInputCallback,
   setSelectedSignals,
 } from '../utils';
-import useLegend from './useLegend';
+import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails';
+import { UseLegendProps } from './useLegend';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails';
 import useMarkOnClickDetails from './useMarkOnClickDetails';
 import usePopovers from './usePopovers';
 
 const useNewChartView = (
-  { idKey }: RscChartProps,
+  { accessibleNavigation, idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  inspectOptions: TooltipOptions
+  inspectOptions: TooltipOptions,
+  legendProps: UseLegendProps
 ) => {
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const popovers = usePopovers(sanitizedChildren);
+
+  // Only relevant to accessibleNavigation: vega-tooltip (ChartInspect) is otherwise purely mouse-driven, so a synthesized keyboard-focus tooltip has no "hover away" to dismiss it — Escape fills that gap.
+  useEffect(() => {
+    if (!accessibleNavigation) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      document.getElementById('vg-tooltip-element')?.classList.remove('visible');
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [accessibleNavigation]);
   const {
     legendHiddenSeries,
     setLegendHiddenSeries,
@@ -45,8 +59,9 @@ const useNewChartView = (
     onClick: onLegendClick,
     onMouseOut: onLegendMouseOut,
     onMouseOver: onLegendMouseOver,
-  } = useLegend(sanitizedChildren); // gets props from the legend if it exists
+  } = legendProps;
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
+  const axisLabelOnClickDetails = useAxisLabelOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
   const legendHasPopover = useMemo(
@@ -128,7 +143,7 @@ const useNewChartView = (
               legendIsToggleable,
               onLegendClick,
               trigger: 'contextmenu',
-              markHasPopover: markHasPopover,
+              markHasPopover,
             })
           );
         }
@@ -141,10 +156,14 @@ const useNewChartView = (
         view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(chartView, markClickDetails));
       }
       view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
+      if (axisLabelOnClickDetails.length) {
+        view.addEventListener('click', getOnAxisLabelClickCallback(axisLabelOnClickDetails));
+      }
       view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver, markMouseInputDetails));
       view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut, markMouseInputDetails));
     },
     [
+      axisLabelOnClickDetails,
       chartId,
       chartView,
       idKey,

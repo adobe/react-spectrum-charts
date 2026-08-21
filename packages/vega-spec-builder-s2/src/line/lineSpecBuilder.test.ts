@@ -13,18 +13,27 @@ import { Data } from 'vega';
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_POINT_SIZE,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
+  GROUP_ID,
   HOVERED_ITEM,
-  CHART_SIZE_POINT_SIZE,
-  CHART_SIZE_STROKE_WIDTH,
+  HOVER_ANIM_LAST_CHANGE_DATA,
+  HOVER_TARGETS,
+  HOVER_TIMER,
+  INTERACTION_MODALITY,
   LINEAR_PADDING,
   MARK_ID,
+  NAVIGATION_INDEX_FIELD,
   SERIES_ID,
   TABLE,
   TRENDLINE_VALUE,
@@ -34,7 +43,16 @@ import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { ScSpec } from '../types';
-import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder';
+import { getLineGroupZIndexEncoding } from './lineFocusRingUtils';
+import {
+  addData,
+  addLine,
+  addLineMarks,
+  addSignals,
+  getAlternateSegmentData,
+  getNavIndexSignalName,
+  setScales,
+} from './lineSpecBuilder';
 import { defaultLineOptions } from './lineTestUtils';
 
 const startingSpec: ScSpec = initializeSpec({
@@ -77,12 +95,12 @@ const defaultSpec = initializeSpec({
               strokeCap: { value: 'round' },
               strokeDash: { value: [] },
               strokeOpacity: DEFAULT_OPACITY_RULE,
-              strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
               y: [{ field: 'value', scale: 'yLinear' }],
             },
             update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
               opacity: [DEFAULT_OPACITY_RULE],
+              strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
             },
           },
           from: { data: 'line0_facet' },
@@ -160,11 +178,11 @@ const line0_groupMark = {
           strokeCap: { value: 'round' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-          strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
         },
         update: {
           x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
           opacity: [DEFAULT_OPACITY_RULE],
+          strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
         },
       },
     },
@@ -208,9 +226,6 @@ const metricRangeGroupMark = {
             value: [7, 4],
           },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-          strokeWidth: {
-            signal: CHART_SIZE_STROKE_WIDTH,
-          },
         },
         update: {
           x: {
@@ -218,6 +233,7 @@ const metricRangeGroupMark = {
             field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
           },
           opacity: [DEFAULT_OPACITY_RULE],
+          strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
         },
       },
     },
@@ -321,11 +337,7 @@ const metricRangeWithDisplayPointMarks = [
   metricRangeGroupMark,
 ];
 
-const displayPointMarks = [
-  line0_groupMark,
-  staticPointBackgroundMark,
-  staticPointMark,
-];
+const displayPointMarks = [line0_groupMark, staticPointBackgroundMark, staticPointMark];
 
 describe('lineSpecBuilder', () => {
   describe('addLine()', () => {
@@ -333,6 +345,93 @@ describe('lineSpecBuilder', () => {
       expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' })).toStrictEqual(
         defaultSpec
       );
+    });
+
+    describe('isAnimate gate', () => {
+      test('an interactive line resolves isAnimate true, registers usermeta.animatedMarks, and creates hover-animation data', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+        expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(true);
+      });
+
+      test('a non-interactive line does not animate', () => {
+        const spec = addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(false);
+      });
+
+      test('the chart-level animations: false prop disables animation even for an interactive line', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+          animations: false,
+        });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(false);
+      });
+
+      test('registers only the line name in animatedMarks, never sub-mark names, even with static points and direct labels', () => {
+        // getLegendOpacity (legendUtils.ts) iterates animatedMarks and builds a data() reference for
+        // each name — registering a sub-mark name here would make it reference a _hoverFractionData
+        // source that was never created. Static points/direct labels share the line's own fraction
+        // data instead of getting their own, so animatedMarks must stay line-name-only.
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+          staticPoint: 'staticPoint',
+          lineDirectLabels: [{}],
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+      });
+
+      test('interactionMode "item" resolves isAnimate the same as the default (nearest) mode', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          chartInspects: [{}],
+          interactionMode: 'item',
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+
+        const hoverTargetData = spec.data?.find((d) => d.name === 'line0_hoverTargetData');
+        expect(hoverTargetData).toBeDefined();
+
+        // hoveredMatch reads the same `line0_hoveredItem` signal regardless of interactionMode --
+        // item mode just adds extra `on` triggers (from the item-hover marks) to that same signal
+        // (see addHoverSignals in lineSpecBuilder.ts), so the animation match rule doesn't change.
+        const hoveredMatchRule = (hoverTargetData?.transform as { as?: string; expr?: string }[] | undefined)?.find(
+          (t) => t.as === 'hoveredMatch'
+        );
+        expect(hoveredMatchRule?.expr).toContain(`line0_${HOVERED_ITEM}`);
+      });
+
+      test('a chart-level highlightedItem alone (no other line interactivity) resolves isAnimate true', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          highlightedItem: 'abc123',
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
+
+        const hoverTargetData = spec.data?.find((d) => d.name === 'line0_hoverTargetData');
+        expect(hoverTargetData).toBeDefined();
+
+        // controlledTableMatch/controlledSeriesMatch are pushed unconditionally by getLineHoverRules,
+        // so a highlightedItem-only line still gets both controlled-highlight rules wired.
+        const rules = (hoverTargetData?.transform as { as?: string }[] | undefined)?.map((t) => t.as);
+        expect(rules).toEqual(expect.arrayContaining(['controlledTableMatch', 'controlledSeriesMatch']));
+      });
     });
   });
 
@@ -350,6 +449,48 @@ describe('lineSpecBuilder', () => {
     test('scaleTypes "point" and "linear" should return the original data', () => {
       expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual(baseData);
       expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual(baseData);
+    });
+
+    describe('accessibleNavigation', () => {
+      test('adds a formula transform reading MARK_ID out of the navIndexByMarkId signal, when enabled', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          data: [{ [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'B' }],
+        });
+        const tableData = resultData.find((d) => d.name === TABLE);
+        expect(tableData?.transform).toContainEqual({
+          type: 'formula',
+          as: NAVIGATION_INDEX_FIELD,
+          expr: `${getNavIndexSignalName('line0')}[datum.${MARK_ID}]`,
+        });
+      });
+
+      test('does not add the row index transform by default', () => {
+        const resultData = addData(baseData, defaultLineOptions);
+        const tableData = resultData.find((d) => d.name === TABLE);
+        expect(tableData?.transform?.some((t) => 'as' in t && t.as?.[0] === NAVIGATION_INDEX_FIELD)).toBe(false);
+      });
+    });
+
+    test('with dimensionHover adds groupId formula transform to table', () => {
+      const resultData = addData(baseData, { ...defaultLineOptions, dimensionHover: true });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform).toContainEqual({
+        type: 'formula',
+        as: `line0_${GROUP_ID}`,
+        expr: `datum.${DEFAULT_TIME_DIMENSION}`,
+      });
+    });
+
+    test('with dimensionHover and a chartInspect that groups by dimension does not add groupId transform', () => {
+      const resultData = addData(baseData, {
+        ...defaultLineOptions,
+        dimensionHover: true,
+        chartInspects: [{ highlightBy: 'dimension' }],
+      });
+      const tableData = resultData.find((d) => d.name === TABLE);
+      expect(tableData?.transform?.some((t) => 'as' in t && t.as === `line0_${GROUP_ID}`)).toBe(false);
     });
 
     test('should add trendline transform', () => {
@@ -417,7 +558,9 @@ describe('lineSpecBuilder', () => {
         alternateSegmentKey: 'isEstimated',
       });
       const tableData = resultData.find((d) => d.name === TABLE);
-      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')).toBe(true);
+      expect(
+        tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')
+      ).toBe(true);
 
       const expectedSegmentData = getAlternateSegmentData('line0', `${DEFAULT_TIME_DIMENSION}0`);
       expect(resultData.find((d) => d.name === 'line0_segmented')).toStrictEqual(expectedSegmentData[0]);
@@ -438,8 +581,12 @@ describe('lineSpecBuilder', () => {
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
       const tableData = resultData.find((d) => d.name === TABLE);
-      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')).toBe(true);
-      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(true);
+      expect(
+        tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_alternateFlag')
+      ).toBe(true);
+      expect(
+        tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')
+      ).toBe(true);
 
       const expectedSegmentData = getAlternateSegmentData('line0', `${DEFAULT_TIME_DIMENSION}0`);
       expect(resultData.find((d) => d.name === 'line0_segmented')).toStrictEqual(expectedSegmentData[0]);
@@ -469,7 +616,62 @@ describe('lineSpecBuilder', () => {
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
       const tableData = resultData.find((d) => d.name === TABLE);
-      expect(tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')).toBe(false);
+      expect(
+        tableData?.transform?.some((t) => t.type === 'formula' && (t as { as: string }).as === 'line0_effectiveValue')
+      ).toBe(false);
+    });
+
+    test('with primarySeries adds primarySeriesFacetData when no alternateSegmentKey or forecasts', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        primarySeries: 3,
+      });
+      const facetData = resultData.find((d) => d.name === 'line0_primarySeriesFacetData');
+      expect(facetData).toBeDefined();
+      expect(facetData).toHaveProperty('source', FILTERED_TABLE);
+    });
+
+    test('does not add primarySeriesFacetData when alternateSegmentKey is set', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        primarySeries: 3,
+        alternateSegmentKey: 'isEstimated',
+      });
+      expect(resultData.find((d) => d.name === 'line0_primarySeriesFacetData')).toBeUndefined();
+    });
+
+    test('does not add primarySeriesFacetData when forecasts are set', () => {
+      const resultData = addData(baseData ?? [], {
+        ...defaultLineOptions,
+        primarySeries: 3,
+        forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
+      });
+      expect(resultData.find((d) => d.name === 'line0_primarySeriesFacetData')).toBeUndefined();
+    });
+
+    describe('hover animation', () => {
+      test('adds the hover-animation data sources when isAnimate is true', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          interactiveMarkName: 'line0',
+          isAnimate: true,
+          seriesIds: ['a', 'b'],
+        });
+        expect(resultData.find((d) => d.name === 'line0_hoverTargetData')).toBeDefined();
+        expect(resultData.find((d) => d.name === 'line0_hoverAnimStateData')).toBeDefined();
+        expect(resultData.find((d) => d.name === 'line0_hoverFractionData')).toBeDefined();
+        expect(resultData.find((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toBeDefined();
+      });
+
+      test('does not add the hover-animation data sources when isAnimate is false', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          interactiveMarkName: 'line0',
+          isAnimate: false,
+        });
+        expect(resultData.find((d) => d.name === 'line0_hoverTargetData')).toBeUndefined();
+        expect(resultData.find((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toBeUndefined();
+      });
     });
   });
 
@@ -553,12 +755,12 @@ describe('lineSpecBuilder', () => {
                   strokeCap: { value: 'round' },
                   strokeOpacity: DEFAULT_OPACITY_RULE,
                   strokeDash: { value: [8, 8] },
-                  strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
-              y: [{ field: 'value', scale: 'yLinear' }],
-            },
+                  y: [{ field: 'value', scale: 'yLinear' }],
+                },
                 update: {
                   x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
                   opacity: [DEFAULT_OPACITY_RULE],
+                  strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
                 },
               },
               from: { data: 'line0_facet' },
@@ -582,6 +784,70 @@ describe('lineSpecBuilder', () => {
 
     test('with displayPointMark', () => {
       expect(addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual(displayPointMarks);
+    });
+
+    describe('accessibleNavigation', () => {
+      test('should add the chart and point focus rings when enabled', () => {
+        const marks = addLineMarks([], { ...defaultLineOptions, accessibleNavigation: true });
+        expect(marks.find((mark) => mark.name === 'chartFocusRing')).toBeDefined();
+        expect(marks.find((mark) => mark.name === 'line0_pointFocusRing')).toBeDefined();
+      });
+
+      test('should add the two-layer per-line focus halo inside the group and raise its z-index when color is a string field', () => {
+        const marks = addLineMarks([], { ...defaultLineOptions, accessibleNavigation: true });
+        const group = marks.find((mark) => mark.name === 'line0_group') as {
+          marks?: { name?: string }[];
+          encode?: { update?: { zindex?: unknown } };
+        };
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingOuter')).toBeDefined();
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingGap')).toBeDefined();
+        expect(group?.encode?.update?.zindex).toEqual(getLineGroupZIndexEncoding('series'));
+      });
+
+      test('should not add the per-line focus halo or z-index encoding for a single-line (non-string color) chart', () => {
+        const marks = addLineMarks([], {
+          ...defaultLineOptions,
+          color: { value: 'categorical-100' },
+          accessibleNavigation: true,
+        });
+        const group = marks.find((mark) => mark.name === 'line0_group') as {
+          marks?: { name?: string }[];
+          encode?: unknown;
+        };
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingOuter')).toBeUndefined();
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingGap')).toBeUndefined();
+        expect(group?.encode).toBeUndefined();
+      });
+
+      test('should add the hover rule/point/label marks when enabled, even with no other interactive feature', () => {
+        const marks = addLineMarks([], { ...defaultLineOptions, accessibleNavigation: true });
+        expect(marks.find((mark) => mark.name === 'line0_hoverRule')).toBeDefined();
+        expect(marks.find((mark) => mark.name === 'line0_point_highlight')).toBeDefined();
+        expect(marks.find((mark) => mark.name === 'line0_hoverLabel')).toBeDefined();
+      });
+
+      test('should not add focus rings or hover marks by default', () => {
+        const marks = addLineMarks([], defaultLineOptions);
+        expect(marks.find((mark) => mark.name === 'chartFocusRing')).toBeUndefined();
+        expect(marks.find((mark) => mark.name === 'line0_pointFocusRing')).toBeUndefined();
+        expect(marks.find((mark) => mark.name === 'line0_hoverRule')).toBeUndefined();
+        expect(marks.find((mark) => mark.name === 'line0_point_highlight')).toBeUndefined();
+        const group = marks.find((mark) => mark.name === 'line0_group') as { marks?: { name?: string }[] };
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingOuter')).toBeUndefined();
+        expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingGap')).toBeUndefined();
+      });
+
+      // Regression test: chartFocusRing is chart-wide, not mark-scoped, but addLineMarks runs once
+      // per Line mark on the chart — a second call must not push a second copy of the same-named mark.
+      test('does not add a duplicate chart focus ring when called again for a second line mark', () => {
+        const afterFirstLine = addLineMarks([], { ...defaultLineOptions, accessibleNavigation: true, name: 'line0' });
+        const afterSecondLine = addLineMarks(afterFirstLine, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          name: 'line1',
+        });
+        expect(afterSecondLine.filter((mark) => mark.name === 'chartFocusRing')).toHaveLength(1);
+      });
     });
 
     describe('with annotations', () => {
@@ -782,7 +1048,9 @@ describe('lineSpecBuilder', () => {
 
     test('with interpolate, should add interpolate to line mark', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, interpolate: 'basis' });
-      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      const innerMarks = (
+        marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }
+      ).marks;
       expect(innerMarks).toHaveLength(1);
       expect(innerMarks[0].type).toBe('line');
       expect(innerMarks[0].encode?.update?.interpolate).toEqual({ value: 'basis' });
@@ -790,31 +1058,42 @@ describe('lineSpecBuilder', () => {
 
     test('with gradient and interpolate, should add interpolate to gradient mark and line mark', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, interpolate: 'basis', gradient: true });
-      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      const innerMarks = (
+        marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }
+      ).marks;
       expect(innerMarks).toHaveLength(2);
       expect(innerMarks[0].type).toBe('area');
       expect(innerMarks[0].encode?.update?.interpolate).toEqual({ value: 'basis' });
       expect(innerMarks[1].type).toBe('line');
       expect(innerMarks[1].encode?.update?.interpolate).toEqual({ value: 'basis' });
-     
     });
 
     test('without interpolate, should not add interpolate to line mark', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, interpolate: undefined });
-      const innerMarks = (marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }).marks;
+      const innerMarks = (
+        marks[0] as { marks: { type: string; encode: { update: { interpolate: { value: string } } } }[] }
+      ).marks;
       expect(innerMarks).toHaveLength(1);
       expect(innerMarks[0].type).toBe('line');
       expect(innerMarks[0].encode?.update?.interpolate).toBeUndefined();
     });
 
     test('with alternateSegmentKey uses line0_with_bridges as facet data', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+        alternateSegmentLineType: 'dotted',
+      });
       const groupMark = marks[0] as { from: { facet: { data: string; groupby: string[] } } };
       expect(groupMark.from.facet.data).toBe('line0_with_bridges');
     });
 
     test('with alternateSegmentKey extends facet groupby with segmentId', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+        alternateSegmentLineType: 'dotted',
+      });
       const groupMark = marks[0] as { from: { facet: { groupby: string[] } } };
       expect(groupMark.from.facet.groupby).toContain('line0_segmentId');
     });
@@ -826,7 +1105,11 @@ describe('lineSpecBuilder', () => {
     });
 
     test('with alternateSegmentKey, line mark strokeDash uses a signal', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, alternateSegmentKey: 'isEstimated', alternateSegmentLineType: 'dotted' });
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        alternateSegmentKey: 'isEstimated',
+        alternateSegmentLineType: 'dotted',
+      });
       const groupMark = marks[0] as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
       const strokeDash = groupMark.marks[0].encode.enter.strokeDash;
       expect(strokeDash).toHaveProperty('signal');
@@ -876,7 +1159,9 @@ describe('lineSpecBuilder', () => {
         ...defaultLineOptions,
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
-      const groupMark = marks.find((m) => m.name === 'line0_group') as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
+      const groupMark = marks.find((m) => m.name === 'line0_group') as {
+        marks: { encode: { enter: { strokeDash: unknown } } }[];
+      };
       expect(groupMark?.marks?.[0]?.encode?.enter?.strokeDash).toHaveProperty('signal');
     });
 
@@ -885,7 +1170,9 @@ describe('lineSpecBuilder', () => {
         ...defaultLineOptions,
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
-      const groupMark = marks.find((m) => m.name === 'line0_group') as { marks: { encode: { enter: { y: { field: string }[] } } }[] };
+      const groupMark = marks.find((m) => m.name === 'line0_group') as {
+        marks: { encode: { enter: { y: { field: string }[] } } }[];
+      };
       const yEncoding = groupMark?.marks?.[0]?.encode?.enter?.y;
       expect(yEncoding).toBeDefined();
       expect(Array.isArray(yEncoding)).toBe(true);
@@ -954,6 +1241,137 @@ describe('lineSpecBuilder', () => {
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', `${defaultLineOptions.name}_${HOVERED_ITEM}`);
       expect(signals.at(-1)?.on).toHaveLength(8);
+    });
+
+    test('interactionMode item with accessibleNavigation adds an interactionModality trigger per hover mark', () => {
+      const signals = addSignals(defaultSignals, {
+        ...defaultLineOptions,
+        interactionMode: 'item',
+        chartInspects: [{}],
+        accessibleNavigation: true,
+      });
+      const modalitySignal = signals.find((signal) => signal.name === INTERACTION_MODALITY);
+      // one trigger for the base voronoi mark, plus one per item-mode hover mark
+      expect((modalitySignal?.on?.length ?? 0)).toBeGreaterThan(1);
+    });
+
+    describe('accessibleNavigation', () => {
+      test('should add focus signals when accessibleNavigation is enabled', () => {
+        const signals = addSignals(defaultSignals, { ...defaultLineOptions, accessibleNavigation: true });
+        expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeDefined();
+        expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeDefined();
+        expect(signals.find((signal) => signal.name === FOCUSED_DIMENSION)).toBeDefined();
+      });
+
+      test('should not add focus signals by default', () => {
+        const signals = addSignals(defaultSignals, defaultLineOptions);
+        expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
+        expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
+        expect(signals.find((signal) => signal.name === FOCUSED_DIMENSION)).toBeUndefined();
+      });
+
+      // Regression test: chartSpecBuilder.ts calls addSignals once per Line mark on the chart, and
+      // FOCUSED_ITEM/FOCUSED_REGION/FOCUSED_DIMENSION are chart-wide, not mark-scoped — a second call
+      // must not push a second copy, which Vega's parser rejects as a duplicate signal name.
+      test('does not add duplicate focus signals when called again for a second line mark', () => {
+        const afterFirstLine = addSignals(defaultSignals, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          name: 'line0',
+        });
+        const afterSecondLine = addSignals(afterFirstLine, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          name: 'line1',
+        });
+        expect(afterSecondLine.filter((signal) => signal.name === FOCUSED_ITEM)).toHaveLength(1);
+        expect(afterSecondLine.filter((signal) => signal.name === FOCUSED_REGION)).toHaveLength(1);
+        expect(afterSecondLine.filter((signal) => signal.name === FOCUSED_DIMENSION)).toHaveLength(1);
+      });
+
+      test('adds a signal mapping MARK_ID to a per-color row index, when enabled', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          data: [{ [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'B' }],
+        });
+        expect(signals.find((signal) => signal.name === getNavIndexSignalName('line0'))).toHaveProperty('value', {
+          1: 1,
+          2: 2,
+          3: 1,
+        });
+      });
+
+      // Computed in JS rather than via a Vega `window` transform grouped by color — that would
+      // reorder the whole table by group, silently shuffling every other mark's draw/hit-test
+      // order for the entire line (see the comment on this block in lineSpecBuilder.ts).
+      test('indexes across the whole dataset for a single-line (non-string color) chart', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultLineOptions,
+          color: { value: 'categorical-100' },
+          accessibleNavigation: true,
+          data: [{ x: 1 }, { x: 2 }, { x: 3 }],
+        });
+        expect(signals.find((signal) => signal.name === getNavIndexSignalName('line0'))).toHaveProperty('value', {
+          1: 1,
+          2: 2,
+          3: 3,
+        });
+      });
+
+      test('does not add the navIndexByMarkId signal by default', () => {
+        const signals = addSignals(defaultSignals, defaultLineOptions);
+        expect(signals.find((signal) => signal.name === getNavIndexSignalName('line0'))).toBeUndefined();
+      });
+
+      // Regression test: addLine() destructures `data` off its incoming options for local use
+      // (getUniqueSeriesIds) — if the reassembled lineOptions object passed to addSignals doesn't
+      // re-attach it, options.data silently becomes undefined here even though a real caller
+      // (chartSpecBuilder.ts) always passes it. That's a different, easy-to-miss failure mode from
+      // the addSignals()-only tests above, which pass `data` directly and can't catch it.
+      test('addLine() (not just addSignals() in isolation) still computes real indices from real caller data', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          accessibleNavigation: true,
+          data: [{ [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'A' }, { [DEFAULT_COLOR]: 'B' }],
+        });
+        const navIndexSignal = spec.signals?.find((signal) => signal.name === getNavIndexSignalName('line0'));
+        expect(navIndexSignal).toHaveProperty('value', { 1: 1, 2: 2, 3: 1 });
+      });
+
+      test('adds the hoveredItem signal even with no other interactive feature enabled', () => {
+        const signals = addSignals(defaultSignals, { ...defaultLineOptions, accessibleNavigation: true });
+        expect(signals.find((signal) => signal.name === `${defaultLineOptions.name}_${HOVERED_ITEM}`)).toBeDefined();
+      });
+
+      test('adds the interactionModality signal with a mouseover trigger on the voronoi mark', () => {
+        const signals = addSignals(defaultSignals, { ...defaultLineOptions, accessibleNavigation: true });
+        const modalitySignal = signals.find((signal) => signal.name === INTERACTION_MODALITY);
+        expect(modalitySignal).toBeDefined();
+        expect(modalitySignal?.on?.some((on) => on.events === `@${defaultLineOptions.name}_voronoi:mouseover`)).toBe(
+          true
+        );
+      });
+
+      test('does not add the interactionModality signal by default', () => {
+        const signals = addSignals(defaultSignals, defaultLineOptions);
+        expect(signals.find((signal) => signal.name === INTERACTION_MODALITY)).toBeUndefined();
+      });
+    });
+
+    describe('hover animation', () => {
+      test('adds the hover-animation engine signals (shared timer + per-mark targets) when isAnimate is true', () => {
+        const signals = addSignals([], { ...defaultLineOptions, isAnimate: true });
+        expect(signals.some((s) => s.name === HOVER_TIMER)).toBe(true);
+        expect(signals.some((s) => s.name === `line0_${HOVER_TARGETS}`)).toBe(true);
+      });
+
+      test('does not add the hover-animation engine signals when isAnimate is false', () => {
+        const signals = addSignals([], { ...defaultLineOptions, isAnimate: false });
+        expect(signals.some((s) => s.name === HOVER_TIMER)).toBe(false);
+      });
     });
   });
 });

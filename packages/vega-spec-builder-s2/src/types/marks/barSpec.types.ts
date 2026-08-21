@@ -69,6 +69,8 @@ export interface BarOptions {
   trellisPadding?: number;
   /** Bar type. */
   type?: BarType;
+  /** Diverging bar chart (metric spans positive and negative): moves the dimension axis to the zero baseline and flips each label to the opposite side of its bar. Single-series bars only; a no-op on dodged/stacked/multi-series bars. */
+  diverging?: boolean;
   /** Axis that the metric is trended against (y-axis for a vertical bar) */
   metricAxis?: string;
 
@@ -87,6 +89,7 @@ type BarOptionsWithDefaults =
   | 'chartPopovers'
   | 'chartInspects'
   | 'dimension'
+  | 'diverging'
   | 'hasOnClick'
   | 'hasSquareCorners'
   | 'lineType'

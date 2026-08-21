@@ -32,7 +32,6 @@ import {
   addInspectSignals,
   applyInspectPropDefaults,
   getInspects,
-  hasInspectWithDimensionAreaTarget,
   isHighlightedByGroup,
 } from './chartInspectUtils';
 
@@ -167,30 +166,35 @@ describe('addInspectSignals()', () => {
 });
 
 describe('addHoveredItemOpacityRules()', () => {
+  // getDefaultMarkOptions() always includes a `dimension`, so addHoverdDimenstionAreaOpacityRules
+  // now unconditionally splices in one extra rule (regardless of chartInspect target) - see below.
   test('should add hovered item opacity rules', () => {
     const opacityRules = [];
     addHoveredItemOpacityRules(opacityRules, getDefaultMarkOptions());
-    expect(opacityRules).toHaveLength(2);
+    expect(opacityRules).toHaveLength(3);
   });
   test('should add hovered item opacity rule at the correct index', () => {
     let opacityRules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
     addHoveredItemOpacityRules(opacityRules, getDefaultMarkOptions());
-    expect(opacityRules).toHaveLength(3);
+    expect(opacityRules).toHaveLength(4);
     expect(opacityRules[0].test).toContain(HOVERED_ITEM);
     expect(opacityRules[1].test).toContain(`isArray(${CONTROLLED_HIGHLIGHTED_ITEM})`);
-    expect(opacityRules[2]).toBe(DEFAULT_OPACITY_RULE);
+    expect(opacityRules[2]).toHaveProperty('test', `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
+    expect(opacityRules[3]).toBe(DEFAULT_OPACITY_RULE);
 
     opacityRules = [DEFAULT_OPACITY_RULE, { test: `this is a test ${HOVERED_ITEM}` }];
     addHoveredItemOpacityRules(opacityRules, getDefaultMarkOptions());
-    expect(opacityRules).toHaveLength(4);
+    expect(opacityRules).toHaveLength(5);
     expect(opacityRules[0]).toBe(DEFAULT_OPACITY_RULE);
     expect(opacityRules[1]).toHaveProperty('test', `this is a test ${HOVERED_ITEM}`);
     expect(opacityRules[2].test).toContain(HOVERED_ITEM);
+    expect(opacityRules[3].test).toContain(`isArray(${CONTROLLED_HIGHLIGHTED_ITEM})`);
+    expect(opacityRules[4]).toHaveProperty('test', `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
   });
   test('should use group id if highlighted by group', () => {
     const opacityRules: ({ test?: string; signal?: string } & NumericValueRef)[] = [];
     addHoveredItemOpacityRules(opacityRules, getDefaultMarkOptions({ highlightBy: 'dimension' }));
-    expect(opacityRules).toHaveLength(2);
+    expect(opacityRules).toHaveLength(3);
     expect(opacityRules[0].signal).toContain(GROUP_ID);
   });
   test('should add combo sibling names if combo sibling names are provided', () => {
@@ -198,10 +202,11 @@ describe('addHoveredItemOpacityRules()', () => {
     const options = getDefaultMarkOptions();
     options.comboSiblingNames = ['combo0Bar0', 'combo0Line0'];
     addHoveredItemOpacityRules(opacityRules, options);
-    expect(opacityRules).toHaveLength(4);
-    expect(opacityRules[2].test).toContain('combo0Bar0_');
-    expect(opacityRules[2].test).toContain('combo0Line0_');
-    expect(opacityRules[3]).toBe(DEFAULT_OPACITY_RULE);
+    expect(opacityRules).toHaveLength(5);
+    expect(opacityRules[2]).toHaveProperty('test', `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
+    expect(opacityRules[3].test).toContain('combo0Bar0_');
+    expect(opacityRules[3].test).toContain('combo0Line0_');
+    expect(opacityRules[4]).toBe(DEFAULT_OPACITY_RULE);
   });
 });
 
@@ -212,10 +217,11 @@ describe('addHoverdDimenstionAreaOpacityRules()', () => {
     expect(opacityRules).toHaveLength(1);
     expect(opacityRules[0]).toHaveProperty('test', `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
   });
-  test('should not add rules if targets is not dimensionArea', () => {
+  test('should add rules regardless of chartInspect target, as long as the mark has a dimension', () => {
     const opacityRules = [];
     addHoverdDimenstionAreaOpacityRules(opacityRules, getDefaultMarkOptions());
-    expect(opacityRules).toHaveLength(0);
+    expect(opacityRules).toHaveLength(1);
+    expect(opacityRules[0]).toHaveProperty('test', `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
   });
   test('should not add rules if dimension is not provided', () => {
     const opacityRules = [];
@@ -223,13 +229,12 @@ describe('addHoverdDimenstionAreaOpacityRules()', () => {
     addHoverdDimenstionAreaOpacityRules(opacityRules, markOptions as BarSpecOptions);
     expect(opacityRules).toHaveLength(0);
   });
-});
-
-describe('hasInspectWithDimensionAreaTarget()', () => {
-  test('should return true if targets includes dimensionArea', () => {
-    expect(hasInspectWithDimensionAreaTarget([{ targets: ['dimensionArea'] }])).toBe(true);
-  });
-  test('should return false if targets does not include dimensionArea', () => {
-    expect(hasInspectWithDimensionAreaTarget([{ targets: ['item'] }, {}])).toBe(false);
+  test('should not add rules for non-bar mark types even if they have a dimension field', () => {
+    const opacityRules = [];
+    addHoverdDimenstionAreaOpacityRules(opacityRules, {
+      ...getDefaultMarkOptions(),
+      markType: 'scatter',
+    } as unknown as BarSpecOptions);
+    expect(opacityRules).toHaveLength(0);
   });
 });

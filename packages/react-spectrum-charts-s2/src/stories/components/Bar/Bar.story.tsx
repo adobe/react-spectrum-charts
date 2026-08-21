@@ -11,6 +11,7 @@
  */
 import { ReactElement, useState } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { GROUP_DATA } from '@spectrum-charts/constants';
@@ -94,10 +95,10 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} baseline grid title="Downloads" />
-      <Bar {...args} orientation='horizontal'/>
+      <Bar {...args} />
     </Chart>
   );
 };
@@ -192,9 +193,7 @@ const OnClick = bindWithProps(BarStory);
 OnClick.args = {
   dimension: 'browser',
   metric: 'downloads',
-  onClick: (datum) => {
-    console.log('datum:', datum);
-  },
+  onClick: action('onClick'),
 };
 
 const OnMouseInputs = bindWithProps(OnMouseInputsStory);
@@ -227,6 +226,12 @@ AccessibleNavigation.args = {
   ...defaultProps,
 };
 
+// Hovering an axis label highlights the matching bar, same as hovering the bar itself.
+const AxisLabelHighlight = bindWithProps(BarWithInspectStory);
+AxisLabelHighlight.args = {
+  ...defaultProps,
+};
+
 export {
   AccessibleNavigation,
   BarWithUTCDatetimeFormat,
@@ -239,5 +244,6 @@ export {
   Opacity,
   PaddingRatio,
   InspectOnDimensionArea,
+  AxisLabelHighlight,
   WithInspect,
 };

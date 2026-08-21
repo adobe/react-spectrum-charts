@@ -37,8 +37,22 @@ export interface ScSpec extends Spec {
   usermeta: UserMeta;
 }
 
+export type InteractiveMark = {
+  name: string;
+  dimension?: string;
+};
+
+/** A single-series bar mark with `diverging: true`; lets axis building find its dimension/metric without parsing marks or data directly. */
+export type DivergingBarMark = {
+  name: string;
+  dimension: string;
+  metric: string;
+};
+
 export type UserMeta = {
-  interactiveMarks?: string[];
+  animatedMarks?: string[];
+  interactiveMarks?: InteractiveMark[];
+  divergingBarMarks?: DivergingBarMark[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];
@@ -67,7 +81,7 @@ export type Datum = object & {
   [key: string]: any;
 };
 
-export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | string;
+export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | 'percentage' | string;
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 export type ScaleType = 'linear' | 'point' | 'time' | 'band';

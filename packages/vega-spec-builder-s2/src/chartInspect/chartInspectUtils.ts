@@ -231,7 +231,8 @@ export const addHoverdDimenstionAreaOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
   markOptions: InspectParentOptions
 ) => {
-  if (!hasInspectWithDimensionAreaTarget(markOptions.chartInspects) || !('dimension' in markOptions)) return;
+  // scatter also has a `dimension` field but never creates this signal - scope to bar only.
+  if (markOptions.markType !== 'bar' || !('dimension' in markOptions)) return;
   const { name, dimension } = markOptions;
   const hoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
   opacityRules.push({
@@ -240,6 +241,7 @@ export const addHoverdDimenstionAreaOpacityRules = (
   });
 };
 
+/** Whether any inspect on this mark targets the dimension-hover-area rect's own tooltip, rather than just the item mark. */
 export const hasInspectWithDimensionAreaTarget = (chartInspects: ChartInspectOptions[]) => {
   return chartInspects.some(({ targets }) => targets?.includes('dimensionArea'));
 };

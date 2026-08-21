@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/adobe/react-spectrum-charts/planning/specs/schema.json",
+  "title": "Chart Feature Spec",
+  "description": "One spec, either a feature (produced by the generate-chart-spec skill from gathered design tokens/requirements) or a bug (produced by the file-issue skill from an investigation), reviewed via PR, then consumed by the implement-new-* / implement-bug-fix skills. See planning/specs/README.md for the full workflow and field-by-field guidance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "chartType",
+    "kind",
+    "variant",
+    "status",
+    "lastUpdated",
+    "complexity",
+    "summary",
+    "crossCutting",
+    "implementationPlan"
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "feature" } } },
+      "then": { "required": ["requirements", "edgeCases"] }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "bug" } } },
+      "then": { "required": ["symptom", "rootCause"] }
+    }
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Kebab-case slug, matches the filename without extension."
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable feature or bug name."
+    },
+    "chartType": {
+      "type": "string",
+      "enum": ["area", "bar", "bigNumber", "bullet", "combo", "donut", "line", "scatter", "venn", "chart"],
+      "description": "Matches an existing markType, or 'chart' for a chart-level (not mark-specific) feature/bug. Also determines the planning/specs/<chartType>/ directory the file lives in — features at planning/specs/<chartType>/<slug>.json, bugs at planning/specs/<chartType>/issues/<slug>.json. Add an 'implemented/' segment before the filename once status becomes 'implemented' (e.g. planning/specs/<chartType>/implemented/<slug>.json or .../issues/implemented/<slug>.json) — see README.md's Status lifecycle section."
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["feature", "bug"],
+      "description": "'feature' for a not-yet-built capability (requirements/edgeCases required, filed by generate-chart-spec at planning/specs/<chartType>/<slug>.json). 'bug' for a known defect in existing behavior (symptom/rootCause required, filed by file-issue at planning/specs/<chartType>/issues/<slug>.json)."
+    },
+    "variant": {
+      "type": "string",
+      "enum": ["s1", "s2", "both"],
+      "description": "Which package variant this spec's implementationPlan is scoped to: 's1' (vega-spec-builder / react-spectrum-charts), 's2' (vega-spec-builder-s2 / react-spectrum-charts-s2), or 'both' when the plan already covers matching files in each from the outset (e.g. a chart-level feature, or a bug confirmed in both). Distinct from crossCutting.requiresS1S2Parity, which flags whether the *other* variant (not named here) also needs matching work — see README.md."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["approved", "implemented", "needs-revision"],
+      "description": "Defaults to 'approved' — a spec only lands in main once its PR is reviewed, so draft/in-review states are represented by the PR itself, not this field. Move to 'implemented' once the feature/fix PR lands, or 'needs-revision' if the spec is found stale/wrong. For kind: 'bug', 'approved' means the bug is filed and open; 'implemented' means it's fixed. Setting status to 'implemented' also means relocating the file into the 'implemented/' subfolder of its directory in the same PR — see README.md."
+    },
+    "lastUpdated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date (YYYY-MM-DD) of the last substantive edit to this spec. Must be obtained by running `date +%Y-%m-%d` in a shell — never inferred from a model's own sense of the current date, which can be stale or wrong. Update this any time any field in the spec changes, not just on creation. See README.md's 'Stamping lastUpdated' section."
+    },
+    "complexity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "rationale"],
+      "properties": {
+        "score": {
+          "type": "integer",
+          "enum": [1, 2, 3, 5],
+          "description": "Research burden is the primary axis, implementation size secondary, scored as of the spec's current state (not first-report time): 1 no research + basic implementation, 2 no research + multi-file/s1+s2 implementation where every site repeats the same precedented edit, 3 minimal remaining research + at least one site needing new (non-precedented) logic, 5 significant remaining research + multiple sites each needing different, non-precedented reasoning. Breadth (file/package count) alone never raises the score. See README.md rubric."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Short free-text justification for the score."
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "1-3 sentence description of the feature or bug."
+    },
+    "requirements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "kind: 'feature' only. Behavior requirements gathered in phase 1, one per entry."
+    },
+    "symptom": {
+      "type": "string",
+      "description": "kind: 'bug' only. 1-2 sentence description of the observable, user-facing behavior."
+    },
+    "rootCause": {
+      "type": "string",
+      "description": "kind: 'bug' only. Technical explanation with file:line references. If investigation hasn't confirmed a root cause yet, say so explicitly rather than guessing, and use openQuestions for what's left to verify."
+    },
+    "comparison": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["aspect", "expected", "actual"],
+        "properties": {
+          "aspect": { "type": "string", "description": "The specific behavior/encoding being compared." },
+          "expected": { "type": "string", "description": "What correct behavior looks like, e.g. from a comparable working mark." },
+          "actual": { "type": "string", "description": "What the buggy code actually does." }
+        }
+      },
+      "description": "kind: 'bug' only, optional. Side-by-side comparison of correct vs. actual behavior, e.g. a working similar mark's encoding vs. the buggy one."
+    },
+    "designTokens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["token", "value", "usage"],
+        "properties": {
+          "token": { "type": "string" },
+          "value": { "type": "string" },
+          "usage": { "type": "string", "description": "Where/how this token applies." }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "url"],
+        "properties": {
+          "type": { "type": "string", "enum": ["figma", "jira", "other"] },
+          "url": { "type": "string" }
+        }
+      }
+    },
+    "edgeCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case", "expectedBehavior"],
+        "properties": {
+          "case": { "type": "string", "description": "Description of the scenario." },
+          "expectedBehavior": { "type": "string", "description": "What should happen." }
+        }
+      },
+      "description": "kind: 'feature' required, 'bug' optional. See README.md for the standard edge-case checklist (empty data, single point, many series, long labels, breakpoints, light/dark background, S1/S2 parity, accessibility, interaction conflicts)."
+    },
+    "crossCutting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "touchesHoverAnimation",
+        "touchesControlledHighlight",
+        "touchesLegendInteraction",
+        "touchesTooltipOrPopover",
+        "requiresNewSignalOrScale",
+        "requiresS1S2Parity"
+      ],
+      "properties": {
+        "touchesHoverAnimation": {
+          "type": "boolean",
+          "description": "The mouse-hover animation system (isAnimate gate, hoverAnimationUtils.ts, usermeta.animatedMark)."
+        },
+        "touchesControlledHighlight": {
+          "type": "boolean",
+          "description": "The externally-controlled highlight system (CONTROLLED_HIGHLIGHTED_TABLE/SERIES), driven by props/state rather than mouse position."
+        },
+        "touchesLegendInteraction": {
+          "type": "boolean",
+          "description": "Legend hover/click driving mark opacity/highlight (legendHighlightSignals)."
+        },
+        "touchesTooltipOrPopover": {
+          "type": "boolean",
+          "description": "The interactive-mark system (isInteractive, voronoi hover overlay, interactiveMarkName, COMPONENT_NAME popover-content matching)."
+        },
+        "requiresNewSignalOrScale": {
+          "type": "boolean",
+          "description": "A new Vega signal (needs a symmetric set/clear) or a new/extended facet scale (color/lineType/opacity)."
+        },
+        "requiresS1S2Parity": {
+          "type": "boolean",
+          "description": "Whether the mirrored vega-spec-builder <-> vega-spec-builder-s2 file needs the same change (feature) or the same fix / a same-symptom check (bug)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-text elaboration for any flag set to true above."
+        }
+      }
+    },
+    "implementationPlan": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "change"],
+        "properties": {
+          "file": { "type": "string", "description": "Repo-relative path." },
+          "change": { "type": "string", "description": "For kind: 'feature', what changes in this file. For kind: 'bug', the file's role (bug location vs. reference) and a proposed fix direction, not a committed implementation." },
+          "lines": {
+            "type": "string",
+            "description": "Approximate line range at time of authoring, e.g. '88-129'. May drift — re-locate by symbol name if stale."
+          }
+        }
+      }
+    },
+    "openQuestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Anything unresolved that reviewers should weigh in on."
+    },
+    "relatedIssues": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional. IDs of other specs (features or bugs) related to this one — e.g. a narrower/broader variant of the same underlying defect discovered during investigation or implementation, or a follow-up filed as a result of this one."
+    }
+  }
+}
