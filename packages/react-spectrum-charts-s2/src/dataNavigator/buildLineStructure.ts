@@ -14,6 +14,7 @@ import { Edges, NavigationRules, NodeObject, Nodes, Structure } from 'data-navig
 import { DEFAULT_TIME_DIMENSION, NAVIGATION_INDEX_FIELD } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { applyDefaultLabels } from './nodeSemanticsUtils';
 import { segmentId } from './segmentId';
 
 export interface BuildLineStructureOptions {
@@ -123,9 +124,7 @@ export const buildLineStructure = ({
   const nodes: Nodes = {};
   const edges: Edges = {};
 
-  // Pass 1: create every node first. Edges reference nodes by id regardless of which line is
-  // being processed (e.g. a cross-line edge from line A's point needs line B's point to already
-  // exist), so nothing may be wired up until the full node set is in place.
+  // Pass 1: create every node first, since a cross-line edge (e.g. line A's point to line B's point) needs both nodes to already exist.
   nodes[CHART_ROOT_ID] = {
     id: CHART_ROOT_ID,
     edges: [],
@@ -151,10 +150,7 @@ export const buildLineStructure = ({
     // root -> first line only (one-sided; every line gets its own edge back up)
     addOneSidedEdge(edges, nodes, CHART_ROOT_ID, CHART_ROOT_ID, lines[0].divisionId, ['child']);
   }
-  // Note: for exactly 2 elements, "next" and "previous" are the same other element, so both the
-  // forward (i -> i+1) and backward (i+1 -> i) edges below get created once per element — that's
-  // required, not redundant: each element needs its own edge to resolve both up/down (or
-  // left/right) directions, since a single shared edge can only satisfy one direction per side.
+  // Each element needs its own edge to resolve both directions per side, so for exactly 2 elements the forward and backward edges below are both still required, not redundant.
   lines.forEach((line, i) => {
     addOneSidedEdge(edges, nodes, line.divisionId, CHART_ROOT_ID, line.divisionId, ['parent']);
 
@@ -164,11 +160,7 @@ export const buildLineStructure = ({
       addSiblingEdge(edges, nodes, line.divisionId, nextLine.divisionId, ['up', 'down']);
     }
 
-    // line -> its own first point (Enter or the right arrow key) or last point (the left arrow
-    // key) — matches the reference Vega example, where drilling in from the line lands on
-    // whichever end you'd naturally continue from. Every point gets its own edge back up, below.
-    // 'left' resolves via the edge's source (see lineNavigationRules), so its source/target are
-    // reversed relative to 'child'/'right', which resolve via target.
+    // 'left' resolves via the edge's source (see lineNavigationRules), reversed relative to 'child'/'right', which resolve via target — so line -> first point via child/right, line -> last point via left.
     if (line.pointIds.length) {
       addOneSidedEdge(edges, nodes, line.divisionId, line.divisionId, line.pointIds[0], ['child', 'right']);
       addOneSidedEdge(edges, nodes, line.divisionId, line.pointIds[line.pointIds.length - 1], line.divisionId, [
@@ -199,8 +191,7 @@ export const buildLineStructure = ({
 
   const structure: Structure = { nodes, edges, navigationRules: lineNavigationRules };
 
-  // Every node rendered in keyboard mode needs an aria-label.
-  prepareNodeSemantics(structure, dimension, isTimeDimension);
+  applyDefaultLabels(structure, (node) => buildNodeLabel(node, dimension, isTimeDimension));
 
   return { structure, entryPoint: CHART_ROOT_ID };
 };
@@ -244,12 +235,4 @@ export const buildNodeLabel = (node: NodeObject, dimension: string, isTimeDimens
     .filter(([key, value]) => !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function')
     .map(([key, value]) => `${key}: ${key === dimension && isTimeDimension ? formatDateValue(value) : value}`);
   return parts.length > 0 ? `${parts.join('. ')}.` : String(node.id);
-};
-
-export const prepareNodeSemantics = (structure: Structure, dimension: string, isTimeDimension: boolean): void => {
-  for (const node of Object.values(structure.nodes)) {
-    if (!node.semantics?.label) {
-      node.semantics = { ...node.semantics, label: buildNodeLabel(node, dimension, isTimeDimension) };
-    }
-  }
 };

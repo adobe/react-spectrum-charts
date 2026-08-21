@@ -9,10 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ReactElement } from 'react';
+
 import { fireEvent } from '@testing-library/react';
 
 import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
+import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { Chart } from '../../../Chart';
+import { Axis, Bar, ChartPopover, Legend } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
 import {
   findAllMarksByGroupName,
   findChart,
@@ -23,6 +29,7 @@ import {
   within,
 } from '../../../test-utils';
 import { AccessibleNavigation, InspectOnDimensionArea } from './StackedBar.story';
+import { barSeriesData } from './data';
 
 describe('AccessibleNavigation', () => {
   test('keyboard navigation moves focus and updates the corresponding focus ring at each level', async () => {
@@ -54,6 +61,38 @@ describe('AccessibleNavigation', () => {
     const focusedIdBefore = dnNode().id;
     fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' });
     expect(dnNode().id).not.toBe(focusedIdBefore);
+  });
+
+  // Regression test: Enter-to-activate resolves the mark name via RscChart's navResolvedName, not
+  // the raw (usually-absent) name prop — this Bar deliberately omits `name` to prove that path works.
+  test('Enter on a focused segment opens its ChartPopover even when Bar has no explicit name prop', async () => {
+    const UnnamedBarWithPopover = (): ReactElement => {
+      const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600, accessibleNavigation: true });
+      return (
+        <Chart {...chartProps}>
+          <Axis position="bottom" baseline title="Browser" />
+          <Axis position="left" grid title="Downloads" />
+          <Bar dimension="browser" color="operatingSystem">
+            <ChartPopover width="auto">{(datum: Datum) => <div>{String(datum.operatingSystem)}</div>}</ChartPopover>
+          </Bar>
+          <Legend title="Operating system" />
+        </Chart>
+      );
+    };
+    render(<UnnamedBarWithPopover />);
+    const chart = await findChart();
+    const container = chart.closest('.rsc-container') as HTMLElement;
+
+    const entryButton = container.querySelector('button') as HTMLButtonElement;
+    entryButton.click();
+    const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> stack
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // stack -> segment (leaf)
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate -> popover opens
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    expect(screen.getByTestId('rsc-popover-content')).toBeInTheDocument();
   });
 });
 

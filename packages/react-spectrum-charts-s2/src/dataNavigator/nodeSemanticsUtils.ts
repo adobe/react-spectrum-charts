@@ -9,8 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FOCUSED_DIMENSION, FOCUSED_ITEM, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/constants';
+import { NodeObject, Structure } from 'data-navigator';
 
-/** True when a dimension group is focused directly, or a leaf within it is (assumes buildLineStructure's `segmentId(groupValue, index)` leaf id scheme). */
-export const getFocusedGroupOrItemMatchExpr = (matchExpr: string): string =>
-  `${FOCUSED_DIMENSION} === ${matchExpr} || (isValid(${FOCUSED_ITEM}) && indexof(${FOCUSED_ITEM}, ${matchExpr} + "${NAVIGATION_ID_SEPARATOR}") === 0)`;
+/** Every node rendered in keyboard mode needs an aria-label — shared by every chart type's structure builder. */
+export const applyDefaultLabels = (structure: Structure, labelFor: (node: NodeObject) => string): void => {
+  for (const node of Object.values(structure.nodes)) {
+    if (!node.semantics?.label) {
+      node.semantics = { ...node.semantics, label: labelFor(node) };
+    }
+  }
+};

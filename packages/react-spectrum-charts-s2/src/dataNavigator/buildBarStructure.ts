@@ -14,6 +14,7 @@ import dataNavigator, { NavigationRules, NodeObject, Structure, StructureOptions
 import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { applyDefaultLabels } from './nodeSemanticsUtils';
 import { segmentId } from './segmentId';
 
 export interface BuildBarStructureOptions {
@@ -100,8 +101,7 @@ export const buildBarStructure = ({
     }
   }
 
-  // Every node rendered in keyboard mode needs an aria-label.
-  prepareNodeSemantics(structure);
+  applyDefaultLabels(structure, buildNodeLabel);
 
   return { structure, entryPoint };
 };
@@ -134,12 +134,4 @@ export const buildNodeLabel = (node: NodeObject): string => {
     .filter(([key, value]) => !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function')
     .map(([key, value]) => `${key}: ${value}`);
   return parts.length > 0 ? `${parts.join('. ')}.` : String(node.id);
-};
-
-export const prepareNodeSemantics = (structure: Structure): void => {
-  for (const node of Object.values(structure.nodes)) {
-    if (!node.semantics?.label) {
-      node.semantics = { ...node.semantics, label: buildNodeLabel(node) };
-    }
-  }
 };

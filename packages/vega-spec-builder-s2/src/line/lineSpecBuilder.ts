@@ -18,9 +18,6 @@ import {
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
-  FOCUSED_DIMENSION,
-  FOCUSED_ITEM,
-  FOCUSED_REGION,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
@@ -39,6 +36,7 @@ import {
 } from '../chartInspect/chartInspectUtils';
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
+import { addChartFocusRing } from '../marks/chartFocusRingUtils';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
 import {
   getEffectiveMetricField,
@@ -60,10 +58,10 @@ import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '.
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import {
+  addFocusSignals,
   addHoveredItemSignal,
   addInteractionModalitySignal,
   getFirstRscSeriesIdSignal,
-  getGenericValueSignal,
   getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
@@ -78,7 +76,6 @@ import {
   getPrimarySeriesOtherExpr,
 } from './lineDataUtils';
 import {
-  getChartFocusRing,
   getLineFocusRingGap,
   getLineFocusRingOuter,
   getLineGroupZIndexEncoding,
@@ -384,13 +381,7 @@ export const addDualMetricAxisData = (data: Data[], options: LineSpecOptions) =>
 /** Name of the signal holding the per-MARK_ID nav index lookup table for a given line mark. */
 export const getNavIndexSignalName = (name: string): string => `${name}_navIndexByMarkId`;
 
-/**
- * Per-row nav index keyed by MARK_ID, embedded as a signal's value rather than a per-row `formula`
- * literal. MARK_ID is always assigned 1-based in original row order by the `identifier` transform
- * (see specUtils.ts), independent of any user-configurable idKey, so it's a safe join key here — a
- * Vega `window` transform grouped by color would otherwise reorder the whole table, silently
- * reordering every downstream mark (voronoi hit targets, draw order, etc.) for the whole line.
- */
+/** Per-row nav index keyed by MARK_ID (1-based, idKey-independent — see specUtils.ts), avoiding a Vega `window` transform that would reorder the whole table by color. */
 const getNavIndexByMarkIdSignal = ({ color, data, name }: LineSpecOptions): Signal => {
   const perColorCounts: Record<string, number> = {};
   const navIndexByMarkId: Record<number, number> = {};
@@ -415,12 +406,8 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
   }
 
   if (options.accessibleNavigation) {
-    signals.push(
-      getGenericValueSignal(FOCUSED_ITEM),
-      getGenericValueSignal(FOCUSED_REGION),
-      getGenericValueSignal(FOCUSED_DIMENSION),
-      getNavIndexByMarkIdSignal(options)
-    );
+    addFocusSignals(signals);
+    signals.push(getNavIndexByMarkIdSignal(options));
   }
 
   if (!isInteractive(options) && !options.accessibleNavigation) return;
@@ -541,7 +528,8 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   });
 
   if (accessibleNavigation) {
-    marks.push(getPointFocusRing(options), getChartFocusRing(options));
+    marks.push(getPointFocusRing(options));
+    addChartFocusRing(marks, options);
   }
 
   if (staticPoint || isSparkline) {

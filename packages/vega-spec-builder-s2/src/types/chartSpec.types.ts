@@ -103,11 +103,7 @@ export interface ChartOptions {
   idKey?: string;
   /** Width of chart */
   chartWidth?: number;
-  /**
-   * Enables experimental accessible keyboard navigation of the chart via data-navigator.
-   * When enabled, supported marks emit focus signals and render focus rings driven by keyboard navigation.
-   * Currently supports basic Bar and Line charts. Defaults to `false`.
-   */
+  /** Enables experimental accessible keyboard navigation via data-navigator. Currently supports Bar and Line. Defaults to `false`. */
   accessibleNavigation?: boolean;
 
   // children

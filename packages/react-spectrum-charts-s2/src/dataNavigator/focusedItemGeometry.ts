@@ -35,14 +35,7 @@ export interface ClientPosition {
 /** Small fixed hit-radius around a point, since a keyboard-focused datum has no rendered mark bounds to reuse. */
 const FOCUSED_ITEM_RADIUS = 4;
 
-/**
- * Bar's dimension scale is always a band scale, and stacked bars read their position from the
- * cumulative `${metric}1` field rather than the raw metric — mirrors getOrientationProperties /
- * getStackedMetricEncodings in vega-spec-builder-s2/src/bar/barUtils.ts. Dodged (non-stacked)
- * multi-series bars additionally offset each series within its dimension band via a group-local
- * scale that isn't reachable through the top-level View.scale() API, so every series in a group
- * lands at that group's shared band position rather than its own sub-offset.
- */
+/** Mirrors getOrientationProperties/getStackedMetricEncodings in barUtils.ts; dodged multi-series bars fall back to the group's shared band position since their per-series sub-offset isn't reachable via View.scale(). */
 const getBarScaledPoint = (
   view: View,
   datum: SimpleData,
@@ -80,10 +73,7 @@ const getScaledPoint = (
   }
 };
 
-/**
- * Chart-local (pre view.origin()) pixel bounds around a keyboard-focused datum, for anchoring a
- * popover the same way getItemBounds() does for a real click in markClickUtils.ts.
- */
+/** Chart-local (pre view.origin()) pixel bounds around a keyboard-focused datum, anchoring a popover the same way getItemBounds() does for a real click in markClickUtils.ts. */
 export const getFocusedItemBounds = (view: View, datum: SimpleData, fields: FocusedItemFields): MarkBounds => {
   const point = getScaledPoint(view, datum, fields);
   if (!point) return { x1: 0, x2: 0, y1: 0, y2: 0 };

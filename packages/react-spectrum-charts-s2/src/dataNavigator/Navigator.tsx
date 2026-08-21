@@ -88,10 +88,7 @@ export const Navigator = ({
 }: NavigatorProps): null => {
   const handleRef = useRef<AttachDataNavigatorHandle | null>(null);
 
-  // Read fresh on every keydown/mouseout via stable getters/callbacks, rather than as dependencies
-  // of the attach effect below, so a re-render that changes these — opening/closing the popover,
-  // a hover-driven markName/specSignalNames recompute, or the parent recomputing onLeafFocus/
-  // onActivate — doesn't tear down and rebuild the whole nav structure (losing tracked focus state).
+  // Read via stable getters/callbacks rather than as attach-effect dependencies, so a re-render that changes these doesn't tear down and rebuild the whole nav structure (losing tracked focus state).
   const popoverStateRef = useLiveRef({ isPopoverOpen, getPopoverClosedAt });
   const getPopoverInfo = useCallback(
     () => ({
@@ -156,21 +153,12 @@ export const Navigator = ({
     getHoverClearInfo,
   ]);
 
-  // getView is intentionally excluded from the structural attach effect above: the Vega view
-  // resolves asynchronously, so it can become available well after the navigator (and any
-  // in-progress keyboard focus) has already been attached. Tearing down and rebuilding the whole
-  // nav structure at that point would reset `current` and silently lose the tracked focus position
-  // — instead, once the view is ready, just (re-)register the view-dependent listeners in place.
+  // getView is excluded from the attach effect above since the async Vega view can resolve after attach — this just re-registers the view-dependent listeners in place instead of rebuilding the whole nav structure.
   useEffect(() => {
     handleRef.current?.attachViewListeners();
   }, [viewVersion, getView]);
 
-  // Kept out of the attach effect's deps above so opening/closing a popover doesn't tear down and
-  // rebuild the whole nav structure (losing in-progress focus state) — it only needs to restore
-  // focus once the popover closes. React Aria's own FocusScope restores focus via a single rAF
-  // scheduled from a useLayoutEffect cleanup (synchronous, during commit) — a single rAF here would
-  // just be racing that on the same frame with no guaranteed order. A double rAF instead runs on the
-  // frame *after* any single-rAF-deferred work, so this reliably applies last.
+  // Double rAF (not a single one) so this reliably runs after React Aria's own single-rAF focus restore on popover close.
   const wasPopoverOpen = useRef(isPopoverOpen);
   useEffect(() => {
     if (wasPopoverOpen.current && !isPopoverOpen) {

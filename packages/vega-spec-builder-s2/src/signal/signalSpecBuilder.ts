@@ -15,6 +15,9 @@ import {
   COLOR_SCALE,
   FILTERED_TABLE,
   FIRST_RSC_SERIES_ID,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
   GROUP_ID,
   HOVERED_ITEM,
   HOVERED_SERIES,
@@ -27,6 +30,16 @@ import {
  */
 export const hasSignalByName = (signals: Signal[], name: string) => {
   return signals.some((signal) => signal.name === name);
+};
+
+/** Adds the chart-wide focus signals at most once, so a chart with multiple navigable marks doesn't push duplicate-named signals. */
+export const addFocusSignals = (signals: Signal[]): void => {
+  if (hasSignalByName(signals, FOCUSED_ITEM)) return;
+  signals.push(
+    getGenericValueSignal(FOCUSED_ITEM),
+    getGenericValueSignal(FOCUSED_REGION),
+    getGenericValueSignal(FOCUSED_DIMENSION)
+  );
 };
 
 /**

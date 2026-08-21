@@ -24,6 +24,9 @@ import {
   CHART_SIZE_STROKE_WIDTHS,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR,
@@ -475,7 +478,14 @@ describe('Chart spec builder', () => {
       { name: 'opacities', value: [[1]] },
     ];
 
-    const endSignals = defaultSignals;
+    // Always present regardless of accessibleNavigation (see addFocusSignals in getDefaultSignals) — unlike
+    // Bar/Line's own addSignals, which only add these when accessibleNavigation is enabled on that mark.
+    const endSignals = [
+      ...defaultSignals,
+      { name: FOCUSED_ITEM, value: null },
+      { name: FOCUSED_REGION, value: null },
+      { name: FOCUSED_DIMENSION, value: null },
+    ];
 
     test('hiddenSeries is empty when no hidden series', () => {
       expect(getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] })).toStrictEqual([
@@ -521,6 +531,15 @@ describe('Chart spec builder', () => {
       );
     });
 
+    // Regression test: a legend's opacity encoding references these signals whenever the chart-level
+    // accessibleNavigation flag is set (legendUtils.ts), regardless of whether a Bar/Line mark (the
+    // only marks that used to register them) is actually present — so they must always exist here.
+    test('always includes the focus signals, regardless of accessibleNavigation', () => {
+      const signals = getDefaultSignals({ ...defaultSpecOptions, lineTypes: ['dashed'] });
+      expect(signals.find((s) => s.name === FOCUSED_ITEM)).toStrictEqual({ name: FOCUSED_ITEM, value: null });
+      expect(signals.find((s) => s.name === FOCUSED_REGION)).toStrictEqual({ name: FOCUSED_REGION, value: null });
+      expect(signals.find((s) => s.name === FOCUSED_DIMENSION)).toStrictEqual({ name: FOCUSED_DIMENSION, value: null });
+    });
   });
 
   describe('axis label hover (AN-456589)', () => {

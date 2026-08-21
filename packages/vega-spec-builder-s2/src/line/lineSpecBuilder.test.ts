@@ -836,6 +836,18 @@ describe('lineSpecBuilder', () => {
         expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingOuter')).toBeUndefined();
         expect(group?.marks?.find((mark) => mark.name === 'line0_focusRingGap')).toBeUndefined();
       });
+
+      // Regression test: chartFocusRing is chart-wide, not mark-scoped, but addLineMarks runs once
+      // per Line mark on the chart — a second call must not push a second copy of the same-named mark.
+      test('does not add a duplicate chart focus ring when called again for a second line mark', () => {
+        const afterFirstLine = addLineMarks([], { ...defaultLineOptions, accessibleNavigation: true, name: 'line0' });
+        const afterSecondLine = addLineMarks(afterFirstLine, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          name: 'line1',
+        });
+        expect(afterSecondLine.filter((mark) => mark.name === 'chartFocusRing')).toHaveLength(1);
+      });
     });
 
     describe('with annotations', () => {
@@ -1256,6 +1268,25 @@ describe('lineSpecBuilder', () => {
         expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
         expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
         expect(signals.find((signal) => signal.name === FOCUSED_DIMENSION)).toBeUndefined();
+      });
+
+      // Regression test: chartSpecBuilder.ts calls addSignals once per Line mark on the chart, and
+      // FOCUSED_ITEM/FOCUSED_REGION/FOCUSED_DIMENSION are chart-wide, not mark-scoped — a second call
+      // must not push a second copy, which Vega's parser rejects as a duplicate signal name.
+      test('does not add duplicate focus signals when called again for a second line mark', () => {
+        const afterFirstLine = addSignals(defaultSignals, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          name: 'line0',
+        });
+        const afterSecondLine = addSignals(afterFirstLine, {
+          ...defaultLineOptions,
+          accessibleNavigation: true,
+          name: 'line1',
+        });
+        expect(afterSecondLine.filter((signal) => signal.name === FOCUSED_ITEM)).toHaveLength(1);
+        expect(afterSecondLine.filter((signal) => signal.name === FOCUSED_REGION)).toHaveLength(1);
+        expect(afterSecondLine.filter((signal) => signal.name === FOCUSED_DIMENSION)).toHaveLength(1);
       });
 
       test('adds a signal mapping MARK_ID to a per-color row index, when enabled', () => {

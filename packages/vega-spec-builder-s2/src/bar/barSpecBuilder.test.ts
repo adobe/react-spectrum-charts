@@ -376,6 +376,16 @@ describe('barSpecBuilder', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals.find((signal) => signal.name === INTERACTION_MODALITY)).toBeUndefined();
     });
+    // Regression test: chartSpecBuilder.ts calls addSignals once per Bar mark on the chart, and
+    // FOCUSED_ITEM/FOCUSED_REGION/FOCUSED_DIMENSION are chart-wide, not mark-scoped — a second call
+    // must not push a second copy, which Vega's parser rejects as a duplicate signal name.
+    test('does not add duplicate focus signals when called again for a second bar mark', () => {
+      const afterFirstBar = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true, name: 'bar0' });
+      const afterSecondBar = addSignals(afterFirstBar, { ...defaultBarOptions, accessibleNavigation: true, name: 'bar1' });
+      expect(afterSecondBar.filter((signal) => signal.name === FOCUSED_ITEM)).toHaveLength(1);
+      expect(afterSecondBar.filter((signal) => signal.name === FOCUSED_REGION)).toHaveLength(1);
+      expect(afterSecondBar.filter((signal) => signal.name === FOCUSED_DIMENSION)).toHaveLength(1);
+    });
     test('should add hover events if inspect is present', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartInspects: [{}] });
       const hoveredItemSignal = signals.find((signal) => signal.name === 'bar0_hoveredItem');
@@ -935,6 +945,13 @@ describe('barSpecBuilder', () => {
       test('leaves the bar mark non-interactive by default', () => {
         const marks = addMarks([], defaultBarOptions);
         expect(marks.find((mark) => mark.name === 'bar0')).toHaveProperty('interactive', false);
+      });
+      // Regression test: chartFocusRing is chart-wide, not mark-scoped, but addMarks runs once per
+      // Bar mark on the chart — a second call must not push a second copy of the same-named mark.
+      test('does not add a duplicate chart focus ring when called again for a second bar mark', () => {
+        const afterFirstBar = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, name: 'bar0' });
+        const afterSecondBar = addMarks(afterFirstBar, { ...defaultBarOptions, accessibleNavigation: true, name: 'bar1' });
+        expect(afterSecondBar.filter((mark) => mark.name === 'chartFocusRing')).toHaveLength(1);
       });
     });
 

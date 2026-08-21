@@ -19,9 +19,6 @@ import {
   DEFAULT_METRIC,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
-  FOCUSED_DIMENSION,
-  FOCUSED_ITEM,
-  FOCUSED_REGION,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -48,6 +45,7 @@ import {
 } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import {
+  addFocusSignals,
   addHoveredItemSignal,
   addInteractionModalitySignal,
   getFirstRscSeriesIdSignal,
@@ -58,7 +56,7 @@ import { addUserMetaDivergingBarMark, addUserMetaInteractiveMark, getFacetsFromO
 import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ColorScheme, HighlightedItem, ScSpec } from '../types';
-import { getChartFocusRing } from './barFocusRingUtils';
+import { addChartFocusRing } from '../marks/chartFocusRingUtils';
 import {
   getBarPadding,
   getBaseScaleName,
@@ -196,11 +194,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
   if (options.accessibleNavigation) {
-    signals.push(
-      getGenericValueSignal(FOCUSED_ITEM),
-      getGenericValueSignal(FOCUSED_REGION),
-      getGenericValueSignal(FOCUSED_DIMENSION)
-    );
+    addFocusSignals(signals);
     // The bar mark is always interactive when accessibleNavigation is on, so this signal must exist even without any other interactive feature.
     addInteractionModalitySignal(signals, name);
   }
@@ -453,7 +447,7 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
   }
 
   if (options.accessibleNavigation) {
-    marks.push(getChartFocusRing(options));
+    addChartFocusRing(marks, options);
   }
 });
 

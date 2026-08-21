@@ -15,16 +15,16 @@ import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData, workspaceTrendsSixSeriesData } from '../../../stories/data/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
-import { formatTimestamp } from '../../storyUtils';
+import { Chart } from '../../../../Chart';
+import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../../components';
+import useChartProps from '../../../../hooks/useChartProps';
+import { workspaceTrendsData, workspaceTrendsSixSeriesData } from '../../../../stories/data/data';
+import { formatTimestamp } from '../../../../stories/storyUtils';
+import { bindWithProps } from '../../../../test-utils';
+import { ChartProps } from '../../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Features',
+  title: 'React Spectrum Charts 2/Line/Features/AccessibleNavigation',
   component: Line,
 };
 
@@ -57,7 +57,7 @@ const AccessibleNavigationStory: StoryFn<typeof Line> = (args): ReactElement => 
   );
 };
 
-// Left/Right move between lines at the top level; Enter drills into a line so Left/Right then step through its points. Enter on a point opens its ChartPopover, and Escape closes the popover (or dismisses a visible ChartInspect tooltip) before resuming drill-out.
+// Up/Down move between lines at the top level; Enter or Right drills into a line so Left/Right then step through its points. Enter on a point opens its ChartPopover, and Escape closes the popover (or dismisses a visible ChartInspect tooltip) before resuming drill-out.
 const AccessibleNavigationMultiSeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps: ChartProps = {
     data: workspaceTrendsSixSeriesData,

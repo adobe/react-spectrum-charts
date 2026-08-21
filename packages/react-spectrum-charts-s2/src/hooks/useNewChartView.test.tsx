@@ -56,8 +56,8 @@ const baseProps = { idKey: 'rscMarkId' } as unknown as RscChartProps;
 const legendProps: UseLegendProps = { legendHiddenSeries: [], setLegendHiddenSeries: jest.fn() };
 const inspectOptions = {} as TooltipOptions;
 
-const getOnNewView = () => {
-  const { result } = renderHook(() => useNewChartView(baseProps, [], inspectOptions, legendProps));
+const getOnNewView = (props: RscChartProps = baseProps) => {
+  const { result } = renderHook(() => useNewChartView(props, [], inspectOptions, legendProps));
   return result.current;
 };
 
@@ -105,6 +105,7 @@ describe('useNewChartView - axis label click wiring', () => {
 
 describe('useNewChartView - Escape dismisses the vega-tooltip', () => {
   let tooltipEl: HTMLDivElement;
+  const accessibleNavProps = { ...baseProps, accessibleNavigation: true } as RscChartProps;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -130,21 +131,29 @@ describe('useNewChartView - Escape dismisses the vega-tooltip', () => {
     tooltipEl.remove();
   });
 
-  test('removes the visible class on Escape', () => {
-    getOnNewView();
+  test('removes the visible class on Escape when accessibleNavigation is enabled', () => {
+    getOnNewView(accessibleNavProps);
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(tooltipEl.classList.contains('visible')).toBe(false);
   });
 
   test('does nothing on other keys', () => {
-    getOnNewView();
+    getOnNewView(accessibleNavProps);
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     expect(tooltipEl.classList.contains('visible')).toBe(true);
   });
 
   test('does not throw when the tooltip element does not exist', () => {
     tooltipEl.remove();
-    getOnNewView();
+    getOnNewView(accessibleNavProps);
     expect(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))).not.toThrow();
+  });
+
+  // Regression test: this listener changes existing, non-opted-in behavior for every ChartInspect
+  // consumer if it isn't gated — it must stay off unless accessibleNavigation is explicitly enabled.
+  test('does not remove the visible class on Escape by default (accessibleNavigation off)', () => {
+    getOnNewView();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(tooltipEl.classList.contains('visible')).toBe(true);
   });
 });

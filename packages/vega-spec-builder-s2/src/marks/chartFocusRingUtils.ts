@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { RectMark } from 'vega';
+import { Mark, RectMark } from 'vega';
 
 import { FOCUSED_REGION } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
@@ -19,11 +19,14 @@ import { ColorScheme } from '../types';
 export const FOCUS_RING_STROKE_WIDTH = 2;
 export const FOCUS_RING_ROUNDED_RADIUS = 6;
 
+/** Chart-wide, not mark-scoped — a chart with multiple navigable marks must only get one of these. */
+export const CHART_FOCUS_RING_NAME = 'chartFocusRing';
+
 /**
  * Whole-chart focus ring shown while the chart region itself is focused, before drilling into a mark. Shared across mark types — it has no mark-specific geometry.
  */
 export const getChartFocusRing = ({ colorScheme }: { colorScheme: ColorScheme }): RectMark => ({
-  name: 'chartFocusRing',
+  name: CHART_FOCUS_RING_NAME,
   type: 'rect',
   interactive: false,
   encode: {
@@ -42,3 +45,9 @@ export const getChartFocusRing = ({ colorScheme }: { colorScheme: ColorScheme })
     },
   },
 });
+
+/** Adds the chart-wide focus ring at most once, so a chart with multiple navigable marks doesn't push duplicate-named marks. */
+export const addChartFocusRing = (marks: Mark[], options: { colorScheme: ColorScheme }): void => {
+  if (marks.some((mark) => mark.name === CHART_FOCUS_RING_NAME)) return;
+  marks.push(getChartFocusRing(options));
+};

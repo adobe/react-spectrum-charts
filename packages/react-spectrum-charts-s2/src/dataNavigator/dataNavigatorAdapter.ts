@@ -65,11 +65,7 @@ export interface AttachDataNavigatorOptions {
   onActivate?: (datum: SimpleData) => void;
   /** Reads whether the chart's popover is open and, if not, when it last closed (ms, or null) — used to gate/suppress Escape's drill-out around a popover close. */
   getPopoverInfo?: () => { isOpen: boolean; closedAt: number | null };
-  /**
-   * Reads the navigable mark's base name (e.g. `line0`) and the spec's known signal names, used to
-   * clear the mark's hover signals on mouseout. A getter (rather than plain values) so a hover-driven
-   * re-render that recomputes these upstream doesn't tear down and rebuild the whole nav structure.
-   */
+  /** Reads the navigable mark's base name and the spec's known signal names, used to clear the mark's hover signals on mouseout — a getter so a hover-driven re-render doesn't tear down and rebuild the whole nav structure. */
   getHoverClearInfo?: () => { markName?: string; specSignalNames?: ReadonlySet<string> };
 }
 
@@ -78,11 +74,7 @@ export interface AttachDataNavigatorHandle {
   destroy: () => void;
   /** Re-focuses whichever node is currently tracked as focused — used to restore focus after a popover closes. */
   refocusCurrent: () => void;
-  /**
-   * (Re-)registers the click/mouseout listeners onto the current view. Call again once the Vega
-   * view becomes available after attach (it resolves asynchronously) instead of tearing down and
-   * rebuilding the whole navigator, which would reset `current` and lose the tracked focus position.
-   */
+  /** (Re-)registers the click/mouseout listeners onto the current view — call again once the async Vega view resolves, instead of rebuilding the whole navigator and losing the tracked focus position. */
   attachViewListeners: () => void;
 }
 
@@ -95,12 +87,7 @@ interface FocusSignals {
   dimension: string | null; // a dimension group, e.g. a whole stack
 }
 
-/**
- * Maps the focused node to the chart's focus signals by its level:
- *  - leaf (no dimensionLevel) → a single bar/segment (`item` = node id)
- *  - dimension root (level 1) → the chart overview (`region` = 'chart')
- *  - division (level 2)       → a dimension group / stack (`dimension` = the column value)
- */
+/** Maps the focused node to the chart's focus signals by its level: leaf → `item`, dimension root → `region`, division → `dimension`. */
 const nodeFocusSignals = (node: NodeObject): FocusSignals => {
   if (node.dimensionLevel == null) {
     return { item: node.id, region: null, dimension: null };
@@ -131,11 +118,7 @@ const ESCAPE_AFTER_POPOVER_CLOSE_SUPPRESSION_MS = 500;
 /** vega-tooltip's default DOM element id for ChartInspect's rendered tooltip content. */
 const CHART_INSPECT_TOOLTIP_ID = 'vg-tooltip-element';
 
-/**
- * Builds the navigation structure and drives data-navigator's rendering +
- * input modules. The visible focus indicator is drawn on the Vega canvas (focus-ring marks); the
- * elements created here are invisible overlays used only for keyboard focus and assistive tech.
- */
+/** Builds the navigation structure and drives data-navigator's rendering + input modules; the visible focus ring is a separate Vega mark, these elements are invisible overlays for keyboard focus and assistive tech. */
 export const attachDataNavigator = ({
   container,
   chartType,

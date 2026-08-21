@@ -34,7 +34,7 @@ import useMarkOnClickDetails from './useMarkOnClickDetails';
 import usePopovers from './usePopovers';
 
 const useNewChartView = (
-  { idKey }: RscChartProps,
+  { accessibleNavigation, idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
   inspectOptions: TooltipOptions,
   legendProps: UseLegendProps
@@ -42,17 +42,16 @@ const useNewChartView = (
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const popovers = usePopovers(sanitizedChildren);
 
-  // vega-tooltip (ChartInspect) is otherwise purely mouse-driven — hovering away is the only way
-  // to dismiss it. Let Escape dismiss it too, whatever triggered it (mouse hover or a synthesized
-  // keyboard-focus event from dataNavigator).
+  // Only relevant to accessibleNavigation: vega-tooltip (ChartInspect) is otherwise purely mouse-driven, so a synthesized keyboard-focus tooltip has no "hover away" to dismiss it — Escape fills that gap.
   useEffect(() => {
+    if (!accessibleNavigation) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       document.getElementById('vg-tooltip-element')?.classList.remove('visible');
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [accessibleNavigation]);
   const {
     legendHiddenSeries,
     setLegendHiddenSeries,

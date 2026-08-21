@@ -11,10 +11,22 @@
  */
 import { Signal } from 'vega';
 
-import { FILTERED_TABLE, HOVERED_ITEM, INTERACTION_MODALITY } from '@spectrum-charts/constants';
+import {
+  FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
+  HOVERED_ITEM,
+  INTERACTION_MODALITY,
+} from '@spectrum-charts/constants';
 
 import { defaultSignals } from '../specTestUtils';
-import { addHoveredItemSignal, addInteractionModalitySignal, getHighlightSignalUpdateExpression } from './signalSpecBuilder';
+import {
+  addFocusSignals,
+  addHoveredItemSignal,
+  addInteractionModalitySignal,
+  getHighlightSignalUpdateExpression,
+} from './signalSpecBuilder';
 
 describe('signalSpecBuilder', () => {
   let signals: Signal[];
@@ -103,6 +115,22 @@ describe('signalSpecBuilder', () => {
       signals = [];
       addInteractionModalitySignal(signals, 'target0');
       expect(signals[0]?.on?.some((on) => on.events === '@target0:mouseout')).toBe(false);
+    });
+  });
+
+  describe('addFocusSignals()', () => {
+    test('adds the three chart-wide focus signals', () => {
+      signals = [];
+      addFocusSignals(signals);
+      expect(signals.map((signal) => signal.name)).toEqual([FOCUSED_ITEM, FOCUSED_REGION, FOCUSED_DIMENSION]);
+    });
+
+    test('does not add a second copy when called again, e.g. for a second navigable mark', () => {
+      signals = [];
+      addFocusSignals(signals);
+      addFocusSignals(signals);
+      expect(signals.filter((signal) => signal.name === FOCUSED_ITEM)).toHaveLength(1);
+      expect(signals).toHaveLength(3);
     });
   });
 });

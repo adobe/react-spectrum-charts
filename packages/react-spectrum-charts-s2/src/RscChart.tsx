@@ -15,6 +15,7 @@ import { Popover } from '@react-spectrum/s2';
 import { Item, View as VegaView } from 'vega';
 import { Handler } from 'vega-tooltip';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
+import { toCamelCase } from '@spectrum-charts/utils';
 import {
   BarType,
   ChartHandle,
@@ -133,9 +134,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   useChartImperativeHandle(ref, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
 
-  // Bumped once the Vega view actually exists, so Navigator's effect (which needs a live view to
-  // attach its click listener) re-runs even though it may have first mounted before the async
-  // vega-embed() call resolved.
+  // Bumped once the Vega view actually exists, so Navigator's effect re-runs even if it first mounted before the async vega-embed() call resolved.
   const [viewVersion, setViewVersion] = useState(0);
   const handleNewView = useCallback(
     (view: VegaView) => {
@@ -166,6 +165,15 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
   const navIsTimeDimension = (navFields?.scaleType ?? 'time') === 'time';
+  // navFields?.name is often undefined (Bar/Line's own name defaults never run on a render-null component), so this replicates the spec builder's own naming instead.
+  const navResolvedName = useMemo(() => {
+    if (!navChartType || !navChild) return undefined;
+    const sameTypeSiblings = sanitizedChildren.filter(
+      (child) => 'displayName' in child.type && getNavigableChartType(child.type.displayName) === navChartType
+    );
+    const navIndex = sameTypeSiblings.indexOf(navChild);
+    return toCamelCase(navFields?.name || `${navChartType}${navIndex}`);
+  }, [navChartType, navChild, sanitizedChildren, navFields?.name]);
   const navGeometryFields: FocusedItemFields = useMemo(
     () => ({
       dimension: navFields?.dimension,
@@ -181,14 +189,11 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
   const getPopoverClosedAt = useCallback(() => popoverClosedAt.current, [popoverClosedAt]);
 
-  // Enter/Space on a keyboard-focused point opens its popover the same way a click does — shares
-  // handleMarkClick's selectAndOpenPopover (markClickUtils.ts), differing only in how bounds are
-  // computed: a real Vega Item's rendered bounds there vs. scale-projected geometry here, since a
-  // keyboard-focused point has no real Item.
+  // Shares handleMarkClick's selectAndOpenPopover (markClickUtils.ts); only bounds computation differs, since a keyboard-focused point has no real Vega Item.
   const onNavActivate = useCallback(
     (datum: SimpleData) => {
       const view = chartView.current;
-      const markName = navFields?.name;
+      const markName = navResolvedName;
       if (!view || !markName) return;
       selectAndOpenPopover({
         chartId,
@@ -201,16 +206,15 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         trigger: 'click',
       });
     },
-    [chartId, navFields?.name, navGeometryFields, selectedData, selectedDataBounds, selectedDataName]
+    [chartId, navResolvedName, navGeometryFields, selectedData, selectedDataBounds, selectedDataName]
   );
 
-  // Mirrors ChartInspect's mouse-hover tooltip for keyboard focus by calling the same vega-tooltip
-  // Handler this codebase already invokes manually for the delayed-tooltip case (useNewChartView.tsx).
+  // Mirrors ChartInspect's mouse-hover tooltip via the same vega-tooltip Handler useNewChartView.tsx already invokes manually for the delayed-tooltip case.
   const onNavLeafFocus = useCallback(
     (datum: SimpleData | undefined) => {
       const view = chartView.current;
       const container = navContainerRef.current;
-      const markName = navFields?.name;
+      const markName = navResolvedName;
       if (!view || !container || !markName) return;
       if (!datum) {
         // value === null takes vega-tooltip's own hide path; position/item are unused for a hide.
@@ -222,7 +226,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       const syntheticItem = { bounds: getFocusedItemBounds(view, datum, navGeometryFields), mark: {} } as unknown as Item;
       new Handler(inspectOptions).call(view, position as unknown as MouseEvent, syntheticItem, value);
     },
-    [inspectOptions, navFields?.name, navGeometryFields]
+    [inspectOptions, navResolvedName, navGeometryFields]
   );
 
   return (
@@ -265,7 +269,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             onLeafFocus={onNavLeafFocus}
             isPopoverOpen={isPopoverOpen}
             getPopoverClosedAt={getPopoverClosedAt}
-            markName={navFields?.name}
+            markName={navResolvedName}
             specSignalNames={specSignalNames}
           />
         )}

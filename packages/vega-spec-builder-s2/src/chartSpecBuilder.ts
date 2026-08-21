@@ -64,7 +64,7 @@ import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
-import { getGenericValueSignal } from './signal/signalSpecBuilder';
+import { addFocusSignals, getGenericValueSignal } from './signal/signalSpecBuilder';
 import {
   getFacetsFromScales,
   getLineWidthPixelsFromLineWidth,
@@ -312,7 +312,7 @@ export const getDefaultSignals = ({
     update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_LABEL_GAPS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_LABEL_GAPS.M} : ${CHART_SIZE_LABEL_GAPS.L}`,
   };
 
-  return [
+  const signals = [
     getGenericValueSignal(BACKGROUND_COLOR, getS2ColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal(REFERENCE_LINE_LABEL_BACKGROUND_STROKE, referenceLineLabelStroke),
     getGenericValueSignal('colors', getTwoDimensionalColorScheme(colors, colorScheme)),
@@ -331,6 +331,9 @@ export const getDefaultSignals = ({
     chartSizeFontSizeSignal,
     chartSizeLabelGapSignal,
   ];
+  // Always present (like SELECTED_ITEM/SELECTED_SERIES/SELECTED_GROUP above), rather than gated per-mark, so a legend or other reader of these signals doesn't depend on which mark type is on the chart.
+  addFocusSignals(signals);
+  return signals;
 };
 
 export const getTwoDimensionalColorScheme = (colors: ChartColors, colorScheme: ColorScheme): string[][] => {

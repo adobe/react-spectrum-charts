@@ -278,8 +278,8 @@ Set `accessibleNavigation` on `Chart` to enable keyboard navigation of a support
 |-----|----------|
 | `Tab` | Focuses the chart's entry point (Shift+Tab to leave). |
 | `Enter` (on the entry point) | Begins navigation, focusing the mark's outermost group. |
-| `←` / `→` | Moves focus between sibling items at the current level. |
-| `↑` / `↓` | **Line only.** Moves focus between series at the same dimension value. |
+| `←` / `→` | Moves focus between sibling items at the current level. **Multi-series Line, at the line level:** drills into the line's first/last point instead — use `↑`/`↓` to move between lines. |
+| `↑` / `↓` | **Multi-series Line only.** Moves focus between sibling lines (at the line level) or between the same point on adjacent lines (at the point level). |
 | `Enter` (on a group) | Drills into the group's items. |
 | `Enter` / `Space` (on a data point) | Opens that point's `ChartPopover`, anchored to the point. |
 | `Escape` | Closes an open `ChartPopover` or dismisses a visible `ChartInspect` tooltip first; otherwise drills back out one level. At the outermost level, exits keyboard navigation and returns focus to the page's normal tab order. |
@@ -288,4 +288,4 @@ Set `accessibleNavigation` on `Chart` to enable keyboard navigation of a support
 
 - A point's `ChartPopover` opens on `Enter`/`Space` the same way it opens on click, anchored to the focused point's on-screen position.
 - Closing the popover with `Escape` restores keyboard focus to the point that had it, rather than losing focus to the page body.
-- A `ChartInspect` tooltip follows keyboard focus the same way it follows mouse hover, and a fast second `Escape` right after the tooltip or popover closes is treated as part of the same dismissal gesture rather than immediately drilling out.
+- A `ChartInspect` tooltip follows keyboard focus the same way it follows mouse hover. A fast second `Escape` right after the *popover* closes is treated as part of the same dismissal gesture rather than immediately drilling out — this grace window doesn't apply to the tooltip, so a second `Escape` right after dismissing it drills out immediately.

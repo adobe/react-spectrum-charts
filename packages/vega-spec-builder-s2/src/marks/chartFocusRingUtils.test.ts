@@ -9,9 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Mark } from 'vega';
+
 import { FOCUSED_REGION } from '@spectrum-charts/constants';
 
-import { FOCUS_RING_ROUNDED_RADIUS, FOCUS_RING_STROKE_WIDTH, getChartFocusRing } from './chartFocusRingUtils';
+import { addChartFocusRing, CHART_FOCUS_RING_NAME, FOCUS_RING_ROUNDED_RADIUS, FOCUS_RING_STROKE_WIDTH, getChartFocusRing } from './chartFocusRingUtils';
 
 describe('getChartFocusRing()', () => {
   test('covers the full plot area and keys opacity on the chart region, regardless of mark type', () => {
@@ -36,5 +38,21 @@ describe('getChartFocusRing()', () => {
     const barShaped = { colorScheme: 'dark' as const, name: 'bar0', orientation: 'vertical' as const };
     expect(getChartFocusRing(lineShaped)).toHaveProperty('name', 'chartFocusRing');
     expect(getChartFocusRing(barShaped)).toHaveProperty('name', 'chartFocusRing');
+  });
+});
+
+describe('addChartFocusRing()', () => {
+  test('adds the chart focus ring to an empty marks array', () => {
+    const marks: Mark[] = [];
+    addChartFocusRing(marks, { colorScheme: 'light' });
+    expect(marks).toHaveLength(1);
+    expect(marks[0]).toHaveProperty('name', CHART_FOCUS_RING_NAME);
+  });
+
+  test('does not add a second copy when called again, e.g. for a second navigable mark on the same chart', () => {
+    const marks: Mark[] = [];
+    addChartFocusRing(marks, { colorScheme: 'light' });
+    addChartFocusRing(marks, { colorScheme: 'light' });
+    expect(marks.filter((mark) => mark.name === CHART_FOCUS_RING_NAME)).toHaveLength(1);
   });
 });
