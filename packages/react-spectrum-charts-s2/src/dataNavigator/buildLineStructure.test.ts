@@ -11,6 +11,7 @@
  */
 import { NodeObject } from 'data-navigator';
 
+import { move } from './dataNavigatorTestUtils';
 import { segmentId } from './segmentId';
 import { buildChartDescription, buildLineStructure, buildNodeLabel, getLineNodeId } from './buildLineStructure';
 
@@ -26,20 +27,6 @@ const multiLineData = [
   { datetime: 0, value: 20, series: 'B' },
   { datetime: 1, value: 35, series: 'B' },
 ];
-
-/** Follows a chain of edge-tagged moves manually, mirroring how data-navigator's input.move() resolves them. */
-const move = (structure: ReturnType<typeof buildLineStructure>['structure'], from: string, navId: string): string | undefined => {
-  const node = structure.nodes[from];
-  for (const edgeId of node.edges) {
-    const edge = structure.edges[edgeId];
-    if (!edge.navigationRules.includes(navId)) continue;
-    const rule = structure.navigationRules?.[navId];
-    if (!rule) continue;
-    const resolved = rule.direction === 'source' ? edge.source : edge.target;
-    if (typeof resolved === 'string' && resolved !== from) return resolved;
-  }
-  return undefined;
-};
 
 describe('buildLineStructure()', () => {
   test('keys leaf nodes by their per-line index (single line)', () => {

@@ -64,7 +64,7 @@ describe('getFocusedItemBounds()', () => {
   });
 
   describe('bar (orientation set)', () => {
-    const mockBarView = (): View => {
+    const mockBarView = (filteredTableData: Record<string, unknown>[] = []): View => {
       const band = (v: unknown) => (v as number) * 10;
       band.bandwidth = () => 6;
       const linear = (v: unknown) => (v as number) * 2;
@@ -75,6 +75,7 @@ describe('getFocusedItemBounds()', () => {
           if (!scale) throw new Error(`Unrecognized scale: ${name}`);
           return scale;
         },
+        data: () => filteredTableData,
         origin: () => [0, 0],
       } as unknown as View;
     };
@@ -89,14 +90,31 @@ describe('getFocusedItemBounds()', () => {
       expect(bounds).toStrictEqual({ x1: 19, x2: 27, y1: 80, y2: 88 });
     });
 
-    test('reads the cumulative `${metric}1` field for a stacked bar', () => {
+    test('reads the cumulative `${metric}1` field from the matching FILTERED_TABLE row for a stacked bar', () => {
+      // dataNavigator's own datum is the raw (pre-stack-transform) row, so it never has `value1` itself —
+      // that field only exists on the row Vega's stack transform computed for FILTERED_TABLE.
       const bounds = getFocusedItemBounds(
-        mockBarView(),
-        { category: 2, value: 10, value1: 42 },
-        { dimension: 'category', metric: 'value', orientation: 'vertical', type: 'stacked' }
+        mockBarView([
+          { category: 2, color: 'A', value: 10, value1: 15 },
+          { category: 2, color: 'B', value: 10, value1: 42 },
+        ]),
+        { category: 2, color: 'B', value: 10 },
+        { dimension: 'category', metric: 'value', orientation: 'vertical', type: 'stacked', color: 'color' }
       );
-      // y = value1*2 = 84, not value*2 = 20
+      // y = value1*2 = 84 (from the matching color:'B' row), not value*2 = 20
       expect(bounds).toStrictEqual({ x1: 19, x2: 27, y1: 80, y2: 88 });
+    });
+
+    test('falls back to the raw metric when no matching FILTERED_TABLE row is found', () => {
+      const bounds = getFocusedItemBounds(mockBarView([]), { category: 2, color: 'B', value: 10 }, {
+        dimension: 'category',
+        metric: 'value',
+        orientation: 'vertical',
+        type: 'stacked',
+        color: 'color',
+      });
+      // y = value*2 = 20, since no FILTERED_TABLE row matched
+      expect(bounds).toStrictEqual({ x1: 19, x2: 27, y1: 16, y2: 24 });
     });
 
     test('swaps dimension/metric onto y/x for a horizontal bar', () => {

@@ -14,6 +14,7 @@ import { Edges, NavigationRules, NodeObject, Nodes, Structure } from 'data-navig
 import { DEFAULT_TIME_DIMENSION, NAVIGATION_INDEX_FIELD } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { addOneSidedEdge, addSiblingEdge } from './graphEdgeUtils';
 import { applyDefaultLabels } from './nodeSemanticsUtils';
 import { segmentId } from './segmentId';
 
@@ -87,29 +88,6 @@ const groupIntoLines = (data: SimpleData[], color: string | undefined): Line[] =
   }
 
   return lines;
-};
-
-/** Adds a single edge, attached to both nodes, so either end can traverse it in either bound direction. */
-const addSiblingEdge = (edges: Edges, nodes: Nodes, a: string, b: string, navIds: string[]): void => {
-  if (a === b) return;
-  const edgeId = `${a}<->${b}`;
-  edges[edgeId] = { source: a, target: b, navigationRules: [...navIds] };
-  nodes[a]?.edges.push(edgeId);
-  nodes[b]?.edges.push(edgeId);
-};
-
-/** Adds an edge attached to only one side — used for parent/child links, which are inherently one-directional. */
-const addOneSidedEdge = (
-  edges: Edges,
-  nodes: Nodes,
-  attachTo: string,
-  source: string,
-  target: string,
-  navIds: string[]
-): void => {
-  const edgeId = `${source}->${target}:${navIds.join(',')}`;
-  edges[edgeId] = { source, target, navigationRules: [...navIds] };
-  nodes[attachTo]?.edges.push(edgeId);
 };
 
 export const buildLineStructure = ({

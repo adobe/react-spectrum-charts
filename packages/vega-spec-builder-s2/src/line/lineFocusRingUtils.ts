@@ -101,7 +101,7 @@ export const getLineFocusRingGap = (options: LineSpecOptions, dataSource: string
  * of draw order. Stays raised while a point within the line is focused, not just the line itself.
  */
 export const getLineGroupZIndexEncoding = (color: LineSpecOptions['color']): ProductionRule<NumericValueRef> => [
-  { test: getFocusedGroupOrItemMatchExpr(`datum.${color}`), value: 1 },
+  { test: getFocusedGroupOrItemMatchExpr(`datum.${color}`, 'prefix'), value: 1 },
   { value: 0 },
 ];
 

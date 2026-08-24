@@ -40,6 +40,7 @@ import {
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
   HOVERED_SERIES,
+  INTERACTION_MODALITY,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
@@ -182,16 +183,21 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
   return {};
 };
 
+/** A dimension-group focus (e.g. a bar's stack, before drilling into a segment) only maps to one legend color for marks like Line, where the group level is itself keyed by color/series — so FOCUSED_DIMENSION only joins the gate for those; otherwise the legend waits for a specific leaf's focus. */
+const getAccessibleNavLegendFocusTest = (userMeta: UserMeta): string =>
+  userMeta.focusedDimensionIsLegendColor
+    ? `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`
+    : `isValid(${FOCUSED_ITEM})`;
+
 export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> | undefined => {
   const rules: ProductionRule<NumericValueRef> = [];
 
-  // Checked first: the animated ramp rules below only re-tween off signals their `on` triggers
-  // watch for, so they never react to keyboard-driven focus changes. Give focus an instant,
-  // unanimated value that wins while it's active; mouse-driven hover falls through to the ramp.
+  // Gated on keyboard modality so an active mouse hover defers to the animated ramp below (its hoverFractionData already prioritizes hover and reverts to focus once it ends).
   if (options.accessibleNavigation && userMeta.animatedMarks?.length) {
     rules.push({
-      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
-      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value')}) ? 1 : ${FADE_FACTOR}`,
+      test: `${INTERACTION_MODALITY} === 'keyboard' && (${getAccessibleNavLegendFocusTest(userMeta)})`,
+      // animatedMarks is Line-only (only lineSpecBuilder.ts populates it), so this is always Line's own prefix-keyed leaf id convention.
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
     });
   }
 
@@ -264,8 +270,14 @@ export const getOpacityEncoding = (
     });
   }
   for (const { name: markName } of userMeta.interactiveMarks || []) {
+    // Gated the same way as the mark's own hover opacity (chartInspectUtils.ts's
+    // addHoveredItemOpacityRules): keyboard focus should win over a stale hover signal that never
+    // reset (mouse held still over a mark while the user tabbed into keyboard navigation).
+    const hoveredItemTest = accessibleNavigation
+      ? `isValid(${markName}_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`
+      : `isValid(${markName}_${HOVERED_ITEM})`;
     rules.push({
-      test: `isValid(${markName}_${HOVERED_ITEM})`,
+      test: hoveredItemTest,
       signal: `${markName}_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
     });
   }
@@ -273,9 +285,11 @@ export const getOpacityEncoding = (
   // Falls after mark hover rules (above), so hovering a line still wins over keyboard focus while
   // active. Stays in effect whether the line itself or one of its points is focused.
   if (accessibleNavigation) {
+    // Shared by both mark types: Line keys leaves by a color-value prefix, Bar by a color-value suffix.
+    const convention = userMeta.focusedDimensionIsLegendColor ? 'prefix' : 'suffix';
     rules.push({
-      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
-      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value')}) ? 1 : ${FADE_FACTOR}`,
+      test: getAccessibleNavLegendFocusTest(userMeta),
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', convention)}) ? 1 : ${FADE_FACTOR}`,
     });
   }
 

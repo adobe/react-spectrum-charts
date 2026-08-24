@@ -17,6 +17,8 @@ export const ANNOTATION_PADDING = 4;
 export const DEFAULT_AXIS_ANNOTATION_COLOR = 'gray-600';
 export const DEFAULT_AXIS_ANNOTATION_OFFSET = 80;
 export const DEFAULT_BACKGROUND_COLOR = 'transparent';
+export const DEFAULT_BAR_ORIENTATION = 'vertical';
+export const DEFAULT_BAR_TYPE = 'stacked';
 export const DEFAULT_BULLET_DIRECTION = 'column';
 export const DEFAULT_CATEGORICAL_DIMENSION = 'category';
 export const DEFAULT_COLOR = 'series';
@@ -89,6 +91,7 @@ export const CHART_SIZE_LABEL_GAPS = {
 } as const;
 
 export const DEFAULT_LINEAR_DIMENSION = 'x';
+export const DEFAULT_LINE_SCALE_TYPE = 'time';
 export const DEFAULT_LOCALE = 'en-US';
 export const DEFAULT_METRIC = 'value';
 export const DEFAULT_SCALE_TYPE = 'normal';

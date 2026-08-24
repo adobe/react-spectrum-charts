@@ -156,7 +156,10 @@ const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args} />
+      <Bar {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+        <ChartPopover width={200}>{dialogContent}</ChartPopover>
+      </Bar>
       <Legend title="Operating system" />
     </Chart>
   );

@@ -14,7 +14,17 @@ import { CSSProperties, RefObject, Ref, useCallback, useEffect, useMemo, useRef,
 import { Popover } from '@react-spectrum/s2';
 import { Item, View as VegaView } from 'vega';
 import { Handler } from 'vega-tooltip';
-import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
+import {
+  COMPONENT_NAME,
+  DEFAULT_BAR_ORIENTATION,
+  DEFAULT_BAR_TYPE,
+  DEFAULT_CATEGORICAL_DIMENSION,
+  DEFAULT_LINE_SCALE_TYPE,
+  DEFAULT_METRIC,
+  DEFAULT_SYMBOL_SHAPES,
+  DEFAULT_SYMBOL_SIZES,
+  DEFAULT_TIME_DIMENSION,
+} from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 import {
   BarType,
@@ -174,16 +184,27 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     const navIndex = sameTypeSiblings.indexOf(navChild);
     return toCamelCase(navFields?.name || `${navChartType}${navIndex}`);
   }, [navChartType, navChild, sanitizedChildren, navFields?.name]);
+  // Bar/Line's own prop defaults are destructuring defaults on render-null components React never calls here, so they must be reapplied explicitly rather than left to fall through as undefined.
   const navGeometryFields: FocusedItemFields = useMemo(
     () => ({
-      dimension: navFields?.dimension,
-      metric: navFields?.metric,
-      scaleType: navFields?.scaleType,
+      dimension: navFields?.dimension ?? (navChartType === 'bar' ? DEFAULT_CATEGORICAL_DIMENSION : DEFAULT_TIME_DIMENSION),
+      metric: navFields?.metric ?? DEFAULT_METRIC,
+      scaleType: navChartType === 'line' ? navFields?.scaleType ?? DEFAULT_LINE_SCALE_TYPE : undefined,
       metricAxis: navFields?.metricAxis,
-      orientation: navChartType === 'bar' ? navFields?.orientation ?? 'vertical' : undefined,
-      type: navFields?.type,
+      orientation: navChartType === 'bar' ? navFields?.orientation ?? DEFAULT_BAR_ORIENTATION : undefined,
+      type: navChartType === 'bar' ? navFields?.type ?? DEFAULT_BAR_TYPE : undefined,
+      color: navChartType === 'bar' ? navColor : undefined,
     }),
-    [navChartType, navFields?.dimension, navFields?.metric, navFields?.scaleType, navFields?.metricAxis, navFields?.orientation, navFields?.type]
+    [
+      navChartType,
+      navFields?.dimension,
+      navFields?.metric,
+      navFields?.scaleType,
+      navFields?.metricAxis,
+      navFields?.orientation,
+      navFields?.type,
+      navColor,
+    ]
   );
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);

@@ -11,6 +11,7 @@
  */
 import { View } from 'vega';
 
+import { FILTERED_TABLE } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 import { BarType, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -25,6 +26,8 @@ export interface FocusedItemFields {
   orientation?: Orientation;
   /** Bar-only: stacked bars render their end from the cumulative `${metric}1` field, not the raw metric. */
   type?: BarType;
+  /** Bar-only: needed alongside `dimension` to find a stacked segment's own row in the rendered (transformed) data. */
+  color?: string;
 }
 
 export interface ClientPosition {
@@ -35,6 +38,14 @@ export interface ClientPosition {
 /** Small fixed hit-radius around a point, since a keyboard-focused datum has no rendered mark bounds to reuse. */
 const FOCUSED_ITEM_RADIUS = 4;
 
+/** Looks up the matching FILTERED_TABLE row's `${metric}1` (Vega's stack-transform cumulative sum), since the raw datum dataNavigator was built from never has that field. */
+const getStackedMetricValue = (view: View, datum: SimpleData, dimension: string, metric: string, color?: string) => {
+  const transformedRow = (view.data(FILTERED_TABLE) as SimpleData[]).find(
+    (row) => row[dimension] === datum[dimension] && (!color || row[color] === datum[color])
+  );
+  return transformedRow?.[`${metric}1`] ?? datum[metric];
+};
+
 /** Mirrors getOrientationProperties/getStackedMetricEncodings in barUtils.ts; dodged multi-series bars fall back to the group's shared band position since their per-series sub-offset isn't reachable via View.scale(). */
 const getBarScaledPoint = (
   view: View,
@@ -43,13 +54,14 @@ const getBarScaledPoint = (
   metric: string,
   orientation: Orientation,
   metricAxis: string | undefined,
-  type: BarType | undefined
+  type: BarType | undefined,
+  color: string | undefined
 ): { x: number; y: number } => {
   const dimensionScale = view.scale(orientation === 'vertical' ? 'xBand' : 'yBand');
   const metricScale = view.scale(metricAxis || (orientation === 'vertical' ? 'yLinear' : 'xLinear'));
-  const metricField = type === 'stacked' ? `${metric}1` : metric;
+  const metricValue = type === 'stacked' ? getStackedMetricValue(view, datum, dimension, metric, color) : datum[metric];
   const dimensionPos = dimensionScale(datum[dimension]) + dimensionScale.bandwidth() / 2;
-  const metricPos = metricScale(datum[metricField]);
+  const metricPos = metricScale(metricValue);
   return orientation === 'vertical' ? { x: dimensionPos, y: metricPos } : { x: metricPos, y: dimensionPos };
 };
 
@@ -57,11 +69,11 @@ const getBarScaledPoint = (
 const getScaledPoint = (
   view: View,
   datum: SimpleData,
-  { dimension, metric, scaleType, metricAxis, orientation, type }: FocusedItemFields
+  { dimension, metric, scaleType, metricAxis, orientation, type, color }: FocusedItemFields
 ): { x: number; y: number } | undefined => {
   if (!dimension || !metric) return undefined;
   try {
-    if (orientation) return getBarScaledPoint(view, datum, dimension, metric, orientation, metricAxis, type);
+    if (orientation) return getBarScaledPoint(view, datum, dimension, metric, orientation, metricAxis, type, color);
     const xScale = view.scale(toCamelCase(`x ${scaleType ?? 'linear'}`));
     const yScale = view.scale(metricAxis || 'yLinear');
     return { x: xScale(datum[dimension]), y: yScale(datum[metric]) };

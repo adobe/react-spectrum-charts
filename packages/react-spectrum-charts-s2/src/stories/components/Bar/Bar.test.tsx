@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { fireEvent } from '@testing-library/react';
+
 import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Bar } from '../../../components';
@@ -25,6 +27,7 @@ import {
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
+  AccessibleNavigation,
   BarWithUTCDatetimeFormat,
   Basic,
   OnClick,
@@ -246,6 +249,32 @@ describe('Bar', () => {
       inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
       expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();
+    });
+  });
+  describe('AccessibleNavigation', () => {
+    // Regression: a single-series bar has no color facet, so the focus opacity rule (markUtils.ts's
+    // getMarkOpacity) must key on the dimension value alone rather than the stacked dimension+color
+    // composite id — previously this branch was skipped entirely for non-stacked bars.
+    test('keyboard focus dims the other bars and keeps the focused bar at full opacity', async () => {
+      render(<AccessibleNavigation {...AccessibleNavigation.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first bar
+
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.some((bar) => bar.getAttribute('opacity') === '1')).toBe(true);
+      expect(bars.some((bar) => bar.getAttribute('opacity') === `${FADE_FACTOR}`)).toBe(true);
+
+      const focusedId = dnNode().id;
+      fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' });
+      expect(dnNode().id).not.toBe(focusedId);
+      expect(bars.some((bar) => bar.getAttribute('opacity') === '1')).toBe(true);
+      expect(bars.some((bar) => bar.getAttribute('opacity') === `${FADE_FACTOR}`)).toBe(true);
     });
   });
   describe('WithInspect', () => {

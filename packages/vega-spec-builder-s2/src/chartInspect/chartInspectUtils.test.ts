@@ -18,6 +18,7 @@ import {
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
 } from '@spectrum-charts/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
@@ -191,6 +192,16 @@ describe('addHoveredItemOpacityRules()', () => {
     expect(opacityRules[3].test).toContain(`isArray(${CONTROLLED_HIGHLIGHTED_ITEM})`);
     expect(opacityRules[4]).toHaveProperty('test', `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
   });
+  test('should gate the hover rule on interaction modality when accessibleNavigation is enabled', () => {
+    const opacityRules: ({ test?: string } & NumericValueRef)[] = [];
+    addHoveredItemOpacityRules(opacityRules, { ...getDefaultMarkOptions(), accessibleNavigation: true });
+    expect(opacityRules[0].test).toContain(`${INTERACTION_MODALITY} !== 'keyboard'`);
+  });
+  test('should not gate the hover rule on interaction modality when accessibleNavigation is disabled', () => {
+    const opacityRules: ({ test?: string } & NumericValueRef)[] = [];
+    addHoveredItemOpacityRules(opacityRules, getDefaultMarkOptions());
+    expect(opacityRules[0].test).not.toContain(INTERACTION_MODALITY);
+  });
   test('should use group id if highlighted by group', () => {
     const opacityRules: ({ test?: string; signal?: string } & NumericValueRef)[] = [];
     addHoveredItemOpacityRules(opacityRules, getDefaultMarkOptions({ highlightBy: 'dimension' }));
@@ -236,5 +247,15 @@ describe('addHoverdDimenstionAreaOpacityRules()', () => {
       markType: 'scatter',
     } as unknown as BarSpecOptions);
     expect(opacityRules).toHaveLength(0);
+  });
+  test('should gate the rule on interaction modality when accessibleNavigation is enabled', () => {
+    const opacityRules: ({ test?: string } & NumericValueRef)[] = [];
+    addHoverdDimenstionAreaOpacityRules(opacityRules, { ...getDefaultMarkOptions(), accessibleNavigation: true });
+    expect(opacityRules[0].test).toContain(`${INTERACTION_MODALITY} !== 'keyboard'`);
+  });
+  test('should not gate the rule on interaction modality when accessibleNavigation is disabled', () => {
+    const opacityRules: ({ test?: string } & NumericValueRef)[] = [];
+    addHoverdDimenstionAreaOpacityRules(opacityRules, getDefaultMarkOptions());
+    expect(opacityRules[0].test).not.toContain(INTERACTION_MODALITY);
   });
 });

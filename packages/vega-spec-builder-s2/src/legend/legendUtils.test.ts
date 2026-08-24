@@ -19,6 +19,9 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   GROUP_ID,
+  HOVERED_ITEM,
+  INTERACTION_MODALITY,
+  NAVIGATION_ID_SEPARATOR,
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
   VISIBILITY_OFF_PATH,
@@ -253,17 +256,88 @@ describe('getColumns()', () => {
 });
 
 describe('getOpacityEncoding()', () => {
-  test('fades non-focused entries when accessibleNavigation is enabled', () => {
+  test('fades non-focused entries once a leaf is focused when accessibleNavigation is enabled', () => {
     const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, {});
     expect(rules).toContainEqual({
-      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
-      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value')}) ? 1 : ${FADE_FACTOR}`,
+      test: `isValid(${FOCUSED_ITEM})`,
+      // userMeta.focusedDimensionIsLegendColor is unset here, so this is the Bar (suffix) convention.
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', 'suffix')}) ? 1 : ${FADE_FACTOR}`,
     });
   });
 
   test('does not add a focus rule by default', () => {
     const rules = getOpacityEncoding(defaultLegendOptions, {});
     expect(rules).toBeUndefined();
+  });
+
+  // Regression: a bar's dimension-group focus (e.g. a stacked column before drilling into a
+  // segment) has no color of its own, so FOCUSED_DIMENSION being valid must not, by itself, fade
+  // every legend entry — only a specific leaf's focus should narrow the legend.
+  describe('accessibleNavigation focus rule behavior', () => {
+    const opacityRules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, {});
+    const rule = (Array.isArray(opacityRules) ? opacityRules : []).find(
+      (r) => 'test' in r && r.test?.includes(FOCUSED_ITEM)
+    );
+    const evalRule = (datum: Record<string, unknown>, focusedItem: unknown): number => {
+      const isValid = (v: unknown) => v !== null && v !== undefined;
+      const indexof = (str: string, substr: string) => str.indexOf(substr);
+      const length = (str: string) => str.length;
+      const focusedDimension = 'Chrome'; // a bar's dimension value, never equal to a color
+      // eslint-disable-next-line no-new-func
+      const testFn = new Function(
+        'datum',
+        'focusedDimension',
+        'focusedItem',
+        'isValid',
+        'indexof',
+        'length',
+        `return (${rule?.test});`
+      );
+      if (!testFn(datum, focusedDimension, focusedItem, isValid, indexof, length)) return 1;
+      // eslint-disable-next-line no-new-func
+      const signalFn = new Function(
+        'datum',
+        'focusedDimension',
+        'focusedItem',
+        'isValid',
+        'indexof',
+        'length',
+        `return (${(rule as { signal?: string })?.signal});`
+      );
+      return signalFn(datum, focusedDimension, focusedItem, isValid, indexof, length);
+    };
+
+    test('leaves every legend entry at full opacity when only the dimension group (stack) has focus', () => {
+      expect(evalRule({ value: 'Windows' }, null)).toBe(1);
+      expect(evalRule({ value: 'Mac' }, null)).toBe(1);
+    });
+
+    test('narrows to the matching color once a leaf (segment) is focused', () => {
+      expect(evalRule({ value: 'Windows' }, `Chrome${NAVIGATION_ID_SEPARATOR}Windows`)).toBe(1);
+      expect(evalRule({ value: 'Mac' }, `Chrome${NAVIGATION_ID_SEPARATOR}Windows`)).toBe(FADE_FACTOR);
+    });
+  });
+
+  // Regression: a mouse hover that never fired mouseout (e.g. the pointer sat still over a mark
+  // while the user tabbed into keyboard navigation) shouldn't keep out-prioritizing keyboard focus.
+  describe('mark hover rule interaction modality gate', () => {
+    const userMeta = { interactiveMarks: [{ name: 'bar0' }] };
+
+    test('gates the mark hover rule on interaction modality when accessibleNavigation is enabled', () => {
+      const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, userMeta);
+      expect(rules).toContainEqual({
+        test: `isValid(bar0_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`,
+        signal: `bar0_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
+      });
+    });
+
+    test('does not gate the mark hover rule when accessibleNavigation is disabled', () => {
+      const rules = getOpacityEncoding(defaultLegendOptions, userMeta);
+      expect(rules).toContainEqual({
+        test: `isValid(bar0_${HOVERED_ITEM})`,
+        signal: `bar0_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
+      });
+    });
   });
 });
 
@@ -316,10 +390,46 @@ describe('getLegendOpacity()', () => {
   test('adds an instant focus rule ahead of the animated ramp rules when accessibleNavigation is enabled', () => {
     const options = { ...defaultLegendOptions, accessibleNavigation: true };
     const result = getLegendOpacity(options, { animatedMarks: ['line0'] });
+    // animatedMarks is only ever populated by Line, whose dimension-group level is itself keyed by
+    // color/series, so lineSpecBuilder always sets focusedDimensionIsLegendColor in this path —
+    // this test omits it to isolate the rule's placement, which is why the gate here is the
+    // FOCUSED_ITEM-only default; see the `focusedDimensionIsLegendColor` tests below for the flag's effect.
     expect(Array.isArray(result) && result[0]).toStrictEqual({
-      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
-      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value')}) ? 1 : ${FADE_FACTOR}`,
+      test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_ITEM}))`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
     });
+  });
+
+  // Regression: for Line, the line itself (not yet drilled into a point) being focused should still
+  // highlight its matching legend entry, since FOCUSED_DIMENSION is the series/color value there.
+  test('also gates on FOCUSED_DIMENSION when focusedDimensionIsLegendColor is set (Line)', () => {
+    const options = { ...defaultLegendOptions, accessibleNavigation: true };
+    const result = getLegendOpacity(options, { animatedMarks: ['line0'], focusedDimensionIsLegendColor: true });
+    expect(Array.isArray(result) && result[0]).toStrictEqual({
+      test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}))`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  // Regression: once a mouse hover flips interaction modality to 'pointer', this instant rule must
+  // step aside (test → false) so the animated ramp's own hoverFractionData — whose coalesce chain
+  // already prioritizes the active hover and falls back to keyboard focus once hover ends — drives
+  // the legend instead, rather than this rule permanently overriding it while focus stays valid.
+  test('defers to the animated ramp once interaction modality is not keyboard, even while focus is valid', () => {
+    const options = { ...defaultLegendOptions, accessibleNavigation: true };
+    const result = getLegendOpacity(options, { animatedMarks: ['line0'], focusedDimensionIsLegendColor: true });
+    const rule = Array.isArray(result) && (result[0] as { test?: string });
+    const isValid = (v: unknown) => v !== null && v !== undefined;
+    // eslint-disable-next-line no-new-func
+    const testFn = new Function(
+      'interactionModality',
+      'focusedDimension',
+      'focusedItem',
+      'isValid',
+      `return (${rule && rule.test});`
+    );
+    expect(testFn('pointer', 'seriesA', null, isValid)).toBe(false);
+    expect(testFn('keyboard', 'seriesA', null, isValid)).toBe(true);
   });
 
   test('falls back to getOpacityEncoding (which has its own focus rule) when there are no animated marks', () => {

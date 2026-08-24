@@ -367,6 +367,49 @@ describe('Line', () => {
       });
     });
 
+    test('a mouse hover on another line takes over the legend from keyboard focus, and hovering away reverts to the focused line', async () => {
+      render(<AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line (group-level focus, no point)
+
+      // the line itself being focused (no point drilled into) should still highlight its legend entry
+      const symbols = getAllLegendSymbols(chart);
+      const focusedSymbolIndex = await waitFor(() => {
+        const index = symbols.findIndex((s) => s.getAttribute('opacity') === '1');
+        expect(index).toBeGreaterThan(-1);
+        expect(symbols.filter((s) => s.getAttribute('opacity') === '1')).toHaveLength(1);
+        return index;
+      });
+
+      // hovering a different line with the mouse should take over the legend from keyboard focus.
+      // line0_voronoi regions are per-point (not per-series), so the hovered symbol is identified by
+      // its resulting opacity rather than assumed to share an index with the voronoi path list.
+      const hoveredPath = paths[paths.length - 1];
+      fireEvent.mouseOver(hoveredPath);
+      await waitFor(() => {
+        const hoveredSymbolIndex = symbols.findIndex((s) => s.getAttribute('opacity') === '1');
+        expect(hoveredSymbolIndex).toBeGreaterThan(-1);
+        expect(hoveredSymbolIndex).not.toBe(focusedSymbolIndex);
+        expect(symbols.filter((s) => s.getAttribute('opacity') === '1')).toHaveLength(1);
+      });
+
+      // hovering away — landing on the legend itself, a neutral non-data-mark target, matching the
+      // sibling test above — should revert to the keyboard-focused line's legend entry
+      fireEvent.mouseOut(hoveredPath);
+      const legendEntries = getAllLegendEntries(chart);
+      fireEvent.mouseOver(legendEntries[0]);
+      await waitFor(() => {
+        expect(symbols[focusedSymbolIndex]).toHaveAttribute('opacity', '1');
+        expect(symbols.filter((s) => s.getAttribute('opacity') === '1')).toHaveLength(1);
+      });
+    });
+
     test('tabbing past the chart clears the focus styling; shift+Tab back restores it to the same node', async () => {
       render(
         <div>

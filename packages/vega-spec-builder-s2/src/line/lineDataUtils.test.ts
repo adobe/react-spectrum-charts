@@ -199,7 +199,8 @@ describe('getLineHoverRules()', () => {
       expect(rules.at(-1)).toStrictEqual({
         as: 'focusMatch',
         expr: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}) ? (${getFocusedGroupOrItemMatchExpr(
-          'datum.series'
+          'datum.series',
+          'prefix'
         )} ? 1 : 0) : null`,
       });
     });

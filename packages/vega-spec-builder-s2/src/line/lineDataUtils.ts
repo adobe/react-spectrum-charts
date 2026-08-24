@@ -203,7 +203,8 @@ export const getLineHoverRules = (
   // this keeps keyboard focus reflected either way.
   if (accessibleNavigation && typeof color === 'string') {
     const focusMatchExpr = `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}) ? (${getFocusedGroupOrItemMatchExpr(
-      `datum.${color}`
+      `datum.${color}`,
+      'prefix'
     )} ? 1 : 0) : null`;
     rules.push({ as: 'focusMatch', expr: focusMatchExpr });
   }

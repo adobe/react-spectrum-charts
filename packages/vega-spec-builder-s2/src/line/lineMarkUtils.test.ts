@@ -294,7 +294,7 @@ describe('getLineOpacity()', () => {
       expect(opacityRule).toStrictEqual([
         {
           test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}))`,
-          signal: `(${getFocusedGroupOrItemMatchExpr('datum.series')}) ? 1 : ${FADE_FACTOR}`,
+          signal: `(${getFocusedGroupOrItemMatchExpr('datum.series', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
         },
         getLineDeemphasisOpacitySignal('line0'),
       ]);
@@ -339,7 +339,7 @@ describe('getLineOpacityRules()', () => {
     });
     expect(result).toContainEqual({
       test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
-      signal: `(${getFocusedGroupOrItemMatchExpr('datum.series')}) ? 1 : ${FADE_FACTOR}`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.series', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
     });
   });
 
@@ -468,7 +468,7 @@ describe('getLineStrokeWidth()', () => {
       });
       expect(result).toContainEqual({
         test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
-        signal: `(${getFocusedGroupOrItemMatchExpr('datum.series')}) ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+        signal: `(${getFocusedGroupOrItemMatchExpr('datum.series', 'prefix')}) ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
       });
     });
 

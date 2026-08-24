@@ -21,10 +21,13 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   HOVERED_ITEM,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
+  NAVIGATION_ID_SEPARATOR,
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -305,6 +308,41 @@ describe('getMarkOpacity()', () => {
 
     expect(opacity[2].test).toContain(HOVERED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
+  });
+
+  describe('accessibleNavigation', () => {
+    test('adds a focus-based opacity rule for a stacked/dodged bar (string color)', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true });
+      const focusRule = opacity.find((rule) => rule.test?.includes(FOCUSED_ITEM)) as
+        | { test?: string; signal?: string }
+        | undefined;
+      expect(focusRule).toBeDefined();
+      expect(focusRule?.test).toContain(FOCUSED_DIMENSION);
+      expect(focusRule?.signal).toContain(
+        `datum.${defaultBarOptions.dimension} + "${NAVIGATION_ID_SEPARATOR}" + datum.${defaultBarOptions.color}`
+      );
+    });
+
+    test('adds the rule even with no other interactive feature enabled', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true });
+      expect(opacity.length).toBeGreaterThan(1);
+    });
+
+    test('adds a dimension-keyed focus-based opacity rule for a single-series bar (non-string color)', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
+      const focusRule = opacity.find((rule) => rule.test?.includes(FOCUSED_ITEM)) as
+        | { test?: string; signal?: string }
+        | undefined;
+      expect(focusRule).toBeDefined();
+      // No stack level exists for a single-series bar, so the rule must key on the dimension value alone.
+      expect(focusRule?.signal).not.toContain(FOCUSED_DIMENSION);
+      expect(focusRule?.signal).toContain(`${FOCUSED_ITEM} === (datum.${defaultBarOptions.dimension})`);
+    });
+
+    test('does not add a focus-based opacity rule by default', () => {
+      const opacity = getMarkOpacity(defaultBarOptions);
+      expect(opacity.some((rule) => rule.test?.includes(FOCUSED_ITEM))).toBe(false);
+    });
   });
 });
 

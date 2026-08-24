@@ -12,6 +12,7 @@
 import { NodeObject } from 'data-navigator';
 
 import { buildBarStructure, buildChartDescription, buildNodeLabel, getBarNodeId, segmentId } from './buildBarStructure';
+import { move } from './dataNavigatorTestUtils';
 
 const data = [
   { browser: 'Chrome', downloads: 27000 },
@@ -70,6 +71,71 @@ describe('buildBarStructure()', () => {
       const divisions = Object.values(structure.nodes).filter((node) => node.dimensionLevel === 2);
       expect(divisions).toHaveLength(2); // Chrome, Firefox
     });
+
+    describe('keyboard navigation', () => {
+      const build = () => buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+
+      test('drilling in from the chart root reaches the first stack', () => {
+        const { structure, entryPoint } = build();
+        expect(move(structure, entryPoint as string, 'child')).toBe('Chrome');
+      });
+
+      test('left/right move between stacks while at the stack level', () => {
+        const { structure } = build();
+        expect(move(structure, 'Chrome', 'right')).toBe('Firefox');
+        expect(move(structure, 'Firefox', 'right')).toBe('Chrome'); // wraps
+        expect(move(structure, 'Chrome', 'left')).toBe('Firefox'); // wraps the other way
+      });
+
+      test('entering a stack via Enter or the down arrow key focuses its first segment', () => {
+        const { structure } = build();
+        expect(move(structure, 'Chrome', 'child')).toBe(segmentId('Chrome', 'Windows'));
+        expect(move(structure, 'Chrome', 'down')).toBe(segmentId('Chrome', 'Windows'));
+      });
+
+      test('entering a stack via the up arrow key focuses its last segment', () => {
+        const { structure } = build();
+        expect(move(structure, 'Chrome', 'up')).toBe(segmentId('Chrome', 'Mac'));
+      });
+
+      test('up/down move through every segment in the chart, crossing stack boundaries', () => {
+        const { structure } = build();
+        // flattened order across both stacks: Chrome/Windows, Chrome/Mac, Firefox/Windows, Firefox/Mac
+        expect(move(structure, segmentId('Chrome', 'Windows'), 'down')).toBe(segmentId('Chrome', 'Mac'));
+        expect(move(structure, segmentId('Chrome', 'Mac'), 'down')).toBe(segmentId('Firefox', 'Windows')); // crosses into the next stack
+        expect(move(structure, segmentId('Firefox', 'Windows'), 'down')).toBe(segmentId('Firefox', 'Mac'));
+        expect(move(structure, segmentId('Firefox', 'Mac'), 'down')).toBe(segmentId('Chrome', 'Windows')); // wraps to the very first segment
+        expect(move(structure, segmentId('Chrome', 'Windows'), 'up')).toBe(segmentId('Firefox', 'Mac')); // wraps the other way
+      });
+
+      test('left/right move to the same-color segment in the adjacent stack', () => {
+        const { structure } = build();
+        expect(move(structure, segmentId('Chrome', 'Windows'), 'right')).toBe(segmentId('Firefox', 'Windows'));
+        expect(move(structure, segmentId('Firefox', 'Windows'), 'left')).toBe(segmentId('Chrome', 'Windows'));
+        expect(move(structure, segmentId('Chrome', 'Mac'), 'right')).toBe(segmentId('Firefox', 'Mac'));
+      });
+
+      test('left/right at the leaf level does not fall back to the automatic within-stack ordering', () => {
+        // regression guard: left/right must never resolve to a same-stack neighbor
+        const { structure } = build();
+        expect(move(structure, segmentId('Chrome', 'Windows'), 'right')).not.toBe(segmentId('Chrome', 'Mac'));
+      });
+
+      test('escape from a segment returns to its own stack', () => {
+        const { structure } = build();
+        expect(move(structure, segmentId('Firefox', 'Mac'), 'parent')).toBe('Firefox');
+      });
+    });
+
+    test('left/right does not jump to a stack that is missing the same color (sparse data)', () => {
+      const sparseData = [
+        { browser: 'Chrome', os: 'Windows', downloads: 18000 },
+        { browser: 'Chrome', os: 'Mac', downloads: 9000 },
+        { browser: 'Firefox', os: 'Windows', downloads: 5000 },
+      ];
+      const { structure } = buildBarStructure({ data: sparseData, dimension: 'browser', color: 'os' });
+      expect(move(structure, segmentId('Chrome', 'Mac'), 'right')).toBeUndefined();
+    });
   });
 });
 
@@ -90,6 +156,13 @@ describe('buildChartDescription()', () => {
     expect(label).toContain('Stacked bar chart');
     expect(label).toContain('stacked by os');
     expect(label).toContain('2 stacks');
+  });
+
+  // Regression: the up arrow key also drills into a stack (focusing its last segment), matching
+  // stackedBarNavigationRules' ['up'] edge — the aria description must mention it, not just Enter/down.
+  test('mentions the up arrow key as a way to drill into a stack, alongside Enter and down', () => {
+    const label = buildChartDescription(stackedData, 'browser', 'os');
+    expect(label).toContain('Enter, up, or down to drill into');
   });
 });
 

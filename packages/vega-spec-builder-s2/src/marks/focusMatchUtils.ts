@@ -11,6 +11,22 @@
  */
 import { FOCUSED_DIMENSION, FOCUSED_ITEM, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/constants';
 
-/** True when a dimension group is focused directly, or a leaf within it is (assumes buildLineStructure's `segmentId(groupValue, index)` leaf id scheme). */
-export const getFocusedGroupOrItemMatchExpr = (matchExpr: string): string =>
-  `${FOCUSED_DIMENSION} === ${matchExpr} || (isValid(${FOCUSED_ITEM}) && indexof(${FOCUSED_ITEM}, ${matchExpr} + "${NAVIGATION_ID_SEPARATOR}") === 0)`;
+/** Which half of the focused item's composite id (`segmentId(a, b)` = `a+SEP+b`) `matchExpr` should be checked against: Line's leaf scheme keys by the leading value (color), Bar's keys by the trailing value (color). */
+export type FocusMatchConvention = 'prefix' | 'suffix';
+
+/** True when a dimension group is focused directly, or a leaf within it is, per the given id convention. Checking only the caller's own convention (rather than both) avoids a false match when an unrelated value happens to look like the other convention's id fragment. */
+export const getFocusedGroupOrItemMatchExpr = (matchExpr: string, convention: FocusMatchConvention): string => {
+  const itemMatch =
+    convention === 'prefix'
+      ? `indexof(${FOCUSED_ITEM}, (${matchExpr}) + "${NAVIGATION_ID_SEPARATOR}") === 0`
+      : getSuffixMatchExpr(matchExpr);
+  return `${FOCUSED_DIMENSION} === ${matchExpr} || (isValid(${FOCUSED_ITEM}) && (${itemMatch}))`;
+};
+
+const getSuffixMatchExpr = (matchExpr: string): string => {
+  const separatorWith = `"${NAVIGATION_ID_SEPARATOR}" + (${matchExpr})`;
+  const suffixOffset = `length(${FOCUSED_ITEM}) - length(${separatorWith})`;
+  // The explicit `>= 0` rules out indexof's not-found sentinel (-1) coinciding with suffixOffset
+  // when the search string is exactly one character longer than focusedItem (a false "match").
+  return `indexof(${FOCUSED_ITEM}, ${separatorWith}) >= 0 && indexof(${FOCUSED_ITEM}, ${separatorWith}) === ${suffixOffset}`;
+};

@@ -206,6 +206,9 @@ export const addLine = produce<
     lineOptions.isAnimate = usesHoverAnimation(animations, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     if (lineOptions.isAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
+    if (lineOptions.accessibleNavigation && typeof lineOptions.color === 'string') {
+      spec.usermeta = { ...spec.usermeta, focusedDimensionIsLegendColor: true };
+    }
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = setScales(spec.scales ?? [], lineOptions);

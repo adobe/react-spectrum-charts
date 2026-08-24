@@ -19,6 +19,7 @@ import {
   NAVIGATION_INDEX_FIELD,
 } from '@spectrum-charts/constants';
 
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
 import { defaultLineOptions } from './lineTestUtils';
 import {
   getChartFocusRing,
@@ -60,10 +61,7 @@ describe('getLineFocusRingGap()', () => {
 describe('getLineGroupZIndexEncoding()', () => {
   test('raises the focused line above every other line, whether the line or one of its points is focused', () => {
     expect(getLineGroupZIndexEncoding('series')).toEqual([
-      {
-        test: `${FOCUSED_DIMENSION} === datum.series || (isValid(${FOCUSED_ITEM}) && indexof(${FOCUSED_ITEM}, datum.series + "${NAVIGATION_ID_SEPARATOR}") === 0)`,
-        value: 1,
-      },
+      { test: getFocusedGroupOrItemMatchExpr('datum.series', 'prefix'), value: 1 },
       { value: 0 },
     ]);
   });

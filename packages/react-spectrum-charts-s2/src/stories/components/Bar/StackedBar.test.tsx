@@ -22,10 +22,12 @@ import useChartProps from '../../../hooks/useChartProps';
 import {
   findAllMarksByGroupName,
   findChart,
+  getAllLegendSymbols,
   hoverNthElement,
   render,
   screen,
   unhoverNthElement,
+  waitFor,
   within,
 } from '../../../test-utils';
 import { AccessibleNavigation, InspectOnDimensionArea } from './StackedBar.story';
@@ -61,6 +63,108 @@ describe('AccessibleNavigation', () => {
     const focusedIdBefore = dnNode().id;
     fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' });
     expect(dnNode().id).not.toBe(focusedIdBefore);
+  });
+
+  // Feature: once drilled into a segment, up/down move through every segment in the chart
+  // (crossing stack boundaries once the current stack is exhausted), and left/right jump to the
+  // same-color segment in the adjacent stack instead of a same-stack sibling.
+  test('once drilled into a segment, up/down move through the whole chart and left/right jump to the same series in the adjacent stack', async () => {
+    render(<AccessibleNavigation {...AccessibleNavigation.args} />);
+    const chart = await findChart();
+    const container = chart.closest('.rsc-container') as HTMLElement;
+
+    const entryButton = container.querySelector('button') as HTMLButtonElement;
+    entryButton.click();
+    const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first stack (Chrome)
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // stack -> first segment (Chrome/Windows)
+    const chromeWindowsId = dnNode().id;
+
+    fireEvent.keyDown(dnNode(), { key: 'ArrowDown', code: 'ArrowDown' }); // down within Chrome
+    const chromeMacId = dnNode().id;
+    expect(chromeMacId).not.toBe(chromeWindowsId);
+
+    fireEvent.keyDown(dnNode(), { key: 'ArrowUp', code: 'ArrowUp' }); // back up to the first segment
+    expect(dnNode().id).toBe(chromeWindowsId);
+
+    // barSeriesData is Chrome[Windows,Mac,Other] then Firefox[Windows,Mac,Other] then Safari[...] —
+    // three downs from Chrome/Windows exhausts Chrome's own segments and crosses into Firefox.
+    fireEvent.keyDown(dnNode(), { key: 'ArrowDown', code: 'ArrowDown' });
+    fireEvent.keyDown(dnNode(), { key: 'ArrowDown', code: 'ArrowDown' });
+    fireEvent.keyDown(dnNode(), { key: 'ArrowDown', code: 'ArrowDown' });
+    const crossedStackId = dnNode().id;
+    expect(crossedStackId).not.toBe(chromeWindowsId);
+    expect(crossedStackId).not.toBe(chromeMacId);
+    expect(crossedStackId.startsWith('Firefox')).toBe(true);
+
+    fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' }); // same series, adjacent (Safari) stack
+    const rightJumpId = dnNode().id;
+    expect(rightJumpId).not.toBe(crossedStackId);
+
+    fireEvent.keyDown(dnNode(), { key: 'ArrowLeft', code: 'ArrowLeft' }); // back to the same series in the previous stack
+    expect(dnNode().id).toBe(crossedStackId);
+  });
+
+  // Regression test: navGeometryFields (RscChart.tsx) must default dimension/metric/type the same
+  // way Bar itself does, since this story (like most) never sets them explicitly — otherwise the
+  // stacked segment's position is computed from the pre-stack metric field, or not at all.
+  test('focusing and activating a stacked segment dims other segments/legend entries and anchors the popover to real geometry', async () => {
+    render(<AccessibleNavigation {...AccessibleNavigation.args} />);
+    const chart = await findChart();
+    const container = chart.closest('.rsc-container') as HTMLElement;
+
+    const entryButton = container.querySelector('button') as HTMLButtonElement;
+    entryButton.click();
+    const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> stack
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // stack -> segment (leaf)
+
+    const segments = await findAllMarksByGroupName(chart, 'bar0');
+    expect(segments.some((segment) => segment.getAttribute('opacity') === '1')).toBe(true);
+    expect(segments.some((segment) => segment.getAttribute('opacity') === `${FADE_FACTOR}`)).toBe(true);
+
+    const legendSymbols = getAllLegendSymbols(chart);
+    expect(legendSymbols.some((symbol) => symbol.getAttribute('opacity') === '1')).toBe(true);
+    expect(legendSymbols.some((symbol) => symbol.getAttribute('opacity') === `${FADE_FACTOR}`)).toBe(true);
+
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate -> popover opens
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const anchor = screen.getByTestId('rsc-popover-anchor');
+    // Degenerate (pre-fix) geometry collapses to a zeroed box anchored at the chart's own origin.
+    expect(anchor.style.width).not.toBe('0px');
+    expect(anchor.style.height).not.toBe('0px');
+  });
+
+  // Regression test: same navGeometryFields defaulting as above, but for ChartInspect's tooltip
+  // (onNavLeafFocus) rather than ChartPopover's anchor — a separate code path in RscChart.tsx that
+  // relies on the same geometry fix, and previously rendered the tooltip at a fixed/degenerate
+  // position regardless of which segment was focused.
+  test('focusing different stacked segments moves the ChartInspect tooltip to each segment position', async () => {
+    render(<AccessibleNavigation {...AccessibleNavigation.args} />);
+    const chart = await findChart();
+    const container = chart.closest('.rsc-container') as HTMLElement;
+
+    const entryButton = container.querySelector('button') as HTMLButtonElement;
+    entryButton.click();
+    const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> stack
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // stack -> segment (leaf)
+
+    const tooltip = () => document.getElementById('vg-tooltip-element') as HTMLElement;
+    await waitFor(() => expect(tooltip()).toHaveClass('visible'));
+    const firstPosition = { top: tooltip().style.top, left: tooltip().style.left };
+    expect(firstPosition).not.toEqual({ top: '', left: '' });
+
+    fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' }); // move to the sibling segment in the same stack
+
+    await waitFor(() => {
+      const secondPosition = { top: tooltip().style.top, left: tooltip().style.left };
+      expect(secondPosition).not.toEqual(firstPosition);
+    });
   });
 
   // Regression test: Enter-to-activate resolves the mark name via RscChart's navResolvedName, not

@@ -278,8 +278,8 @@ Set `accessibleNavigation` on `Chart` to enable keyboard navigation of a support
 |-----|----------|
 | `Tab` | Focuses the chart's entry point (Shift+Tab to leave). |
 | `Enter` (on the entry point) | Begins navigation, focusing the mark's outermost group. |
-| `←` / `→` | Moves focus between sibling items at the current level. **Multi-series Line, at the line level:** drills into the line's first/last point instead — use `↑`/`↓` to move between lines. |
-| `↑` / `↓` | **Multi-series Line only.** Moves focus between sibling lines (at the line level) or between the same point on adjacent lines (at the point level). |
+| `←` / `→` | Moves focus between sibling items at the current level. **Multi-series Line, at the line level:** drills into the line's first/last point instead — use `↑`/`↓` to move between lines. **Stacked Bar, at the segment level:** jumps to the same-series segment in the adjacent stack instead — use `↑`/`↓` to move between segments. |
+| `↑` / `↓` | **Multi-series Line:** moves focus between sibling lines (at the line level) or between the same point on adjacent lines (at the point level). **Stacked Bar:** moves focus through every segment in the chart, crossing stack boundaries (at the segment level), or drills into the stack's first/last segment (at the stack level). |
 | `Enter` (on a group) | Drills into the group's items. |
 | `Enter` / `Space` (on a data point) | Opens that point's `ChartPopover`, anchored to the point. |
 | `Escape` | Closes an open `ChartPopover` or dismisses a visible `ChartInspect` tooltip first; otherwise drills back out one level. At the outermost level, exits keyboard navigation and returns focus to the page's normal tab order. |

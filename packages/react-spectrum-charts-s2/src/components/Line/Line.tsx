@@ -13,7 +13,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_INTERACTION_MODE, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/constants';
+import {
+  DEFAULT_INTERACTION_MODE,
+  DEFAULT_LINE_SCALE_TYPE,
+  DEFAULT_METRIC,
+  DEFAULT_TIME_DIMENSION,
+} from '@spectrum-charts/constants';
 
 import { LineProps } from '../../types';
 
@@ -25,7 +30,7 @@ const Line: FC<LineProps> = ({
   dualMetricAxis,
   gradient,
   color = { value: 'categorical-100' },
-  scaleType = 'time',
+  scaleType = DEFAULT_LINE_SCALE_TYPE,
   lineType = { value: 'solid' },
   lineCap = 'round',
   padding,

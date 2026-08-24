@@ -18,7 +18,7 @@ import { GROUP_DATA } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect } from '../../../components';
+import { Axis, Bar, ChartInspect, ChartPopover } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -92,13 +92,22 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
+const dialogContent = (datum: Datum) => (
+  <div>
+    <div>{datum.browser}: {datum.downloads}</div>
+  </div>
+);
+
 const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} baseline grid title="Downloads" />
-      <Bar {...args} />
+      <Bar {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+        <ChartPopover width={200}>{dialogContent}</ChartPopover>
+      </Bar>
     </Chart>
   );
 };
