@@ -25,10 +25,8 @@ import { attachInteractionListeners } from './interactionHandlers';
 // true container width. Passing `width` as an argument creates a reactive dependency so the signal
 // re-evaluates on every resize.
 //
-// Guarded to browser-only execution: this used to run unconditionally at module load, which crashed
-// SSR frameworks server-rendering a "use client" component using this library (there is no `window`
-// in Node's module evaluation). jsdom (used by this file's tests) provides `window`, so this still
-// registers under Jest.
+// Guarded to browser-only: `window` doesn't exist during SSR. jsdom (used by this file's tests)
+// provides `window`, so this still registers under Jest.
 if (typeof window !== 'undefined') {
   expressionFunction('rscContainerWidth', function (this: { context: { dataflow: View } }) {
     const view = this.context.dataflow;
@@ -79,8 +77,59 @@ export interface VegaChartControllerHandle {
 }
 
 /**
- * Mounts and manages a Vega view inside `container`, replacing what used to be VegaChart.tsx's
- * two React effects (embed + resize) with plain function calls.
+ * Reads the outgoing view's live `hiddenSeries` value, if the chart has a toggleable legend.
+ * @param view the view about to be finalized, or undefined if there isn't one yet
+ * @param interactionConfig the chart's interaction config, if any
+ * @returns the live value, or undefined if there's no toggleable legend / no outgoing view
+ */
+function getOutgoingHiddenSeries(
+  view: View | undefined,
+  interactionConfig: VegaChartInteractionConfig | undefined
+): string[] | undefined {
+  return interactionConfig?.legend?.isToggleable ? (view?.signal('hiddenSeries') as string[] | undefined) : undefined;
+}
+
+/**
+ * Deep-clones `spec`, injects the real row data, and resolves each declared signal's starting value.
+ * @param spec the raw spec, still holding the builder's empty TABLE placeholder
+ * @param chartData the real row data to inject
+ * @param signals externally-driven signal values (e.g. backgroundColor, selected item/series)
+ * @param interactionConfig the chart's interaction config, if any
+ * @param outgoingHiddenSeries the previous view's live hiddenSeries value, if any
+ * @returns a self-contained spec ready to pass to embed()
+ */
+function prepareSpecForEmbed(
+  spec: Spec,
+  chartData: VegaChartControllerProps['chartData'],
+  signals: Record<string, unknown> | undefined,
+  interactionConfig: VegaChartInteractionConfig | undefined,
+  outgoingHiddenSeries: string[] | undefined
+): Spec {
+  const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
+  const tableData = specCopy.data?.find((d) => d.name === TABLE);
+  if (tableData && 'values' in tableData) {
+    tableData.values = chartData.table ?? [];
+  }
+
+  const mergedSignals: Record<string, unknown> = { ...signals };
+  if (interactionConfig?.legend?.isToggleable) {
+    // No outgoing view means this is the first-ever mount — seed from Legend.defaultHiddenSeries.
+    mergedSignals.hiddenSeries = outgoingHiddenSeries ?? interactionConfig.legend.defaultHiddenSeries ?? [];
+  }
+  if (Object.keys(mergedSignals).length) {
+    specCopy.signals = specCopy.signals?.map((signal) => {
+      if (signal.name in mergedSignals && mergedSignals[signal.name] !== undefined && 'value' in signal) {
+        signal.value = mergedSignals[signal.name];
+      }
+      return signal;
+    });
+  }
+  return specCopy;
+}
+
+/**
+ * Mounts and manages a Vega view inside `container`, driven entirely by plain function calls (no
+ * React effects).
  * @param container the DOM element to embed the chart into
  * @param initialProps the chart's initial props
  * @returns a handle for resizing, updating, reading, and destroying the view
@@ -89,113 +138,100 @@ export function attachVegaChartController(
   container: HTMLElement,
   initialProps: VegaChartControllerProps
 ): VegaChartControllerHandle {
-  let currentProps = initialProps;
-  let view: View | undefined;
-  // Doubles as: (1) "has an embed ever been attempted" (generation === 0 vs not), replacing the old
-  // needsInitEmbed React state, and (2) the Strict Mode cancellation guard — embed() is async, so a
-  // superseded recreate() must not wire up a view that's no longer the authoritative one.
-  let generation = 0;
-  let destroyed = false;
+  const state = {
+    props: initialProps,
+    view: undefined as View | undefined,
+    // Bumped on every embedView() attempt. An in-flight attempt whose generation no longer matches
+    // state.generation by the time its embed() resolves has been superseded — see isStale().
+    generation: 0,
+    destroyed: false,
+  };
 
-  function recreate(props: VegaChartControllerProps): void {
-    currentProps = props;
+  // True once `myGeneration` is no longer the controller's current attempt, or the controller has
+  // been torn down — either way, the attempt's result must not be wired up.
+  const isStale = (myGeneration: number): boolean => state.destroyed || myGeneration !== state.generation;
+
+  // Finishes wiring up a freshly embedded view: interaction listeners, the onNewView callback, and
+  // the resize passes needed to settle layout after the initial render.
+  function wireNewView(newView: View, interactionConfig: VegaChartInteractionConfig | undefined, onNewView: (view: View) => void): void {
+    state.view = newView;
+    if (interactionConfig) {
+      interactionConfig.refs.chartView.current = newView;
+      attachInteractionListeners(newView, interactionConfig, setSignal);
+    }
+    onNewView(newView);
+    newView.resize();
+    newView.runAsync();
+    // One additional render to settle all resize calculations
+    setTimeout(() => newView.runAsync(), 0);
+  }
+
+  // Embeds a fresh view for `props`, finalizing any existing one first. Used both for the first-ever
+  // mount and for later recreates (a spec/data/config change).
+  function embedView(props: VegaChartControllerProps): void {
+    state.props = props;
     const { chartData, config, height, interactionConfig, locale, onNewView, padding, renderer, signals, spec, tooltip, width } =
       props;
-    if (!width || !height || destroyed) return;
+    if (!width || !height || state.destroyed) return;
 
-    // Capture the outgoing view's live hiddenSeries value before finalizing it, so an unrelated
-    // recreate (e.g. a data prop change) doesn't silently reset a legend toggle.
-    const outgoingHiddenSeries = interactionConfig?.legend?.isToggleable
-      ? (view?.signal('hiddenSeries') as string[] | undefined)
-      : undefined;
-
-    if (view) {
-      view.finalize();
-      view = undefined;
+    const outgoingHiddenSeries = getOutgoingHiddenSeries(state.view, interactionConfig);
+    if (state.view) {
+      state.view.finalize();
+      state.view = undefined;
     }
 
-    const myGeneration = ++generation;
-    const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
-    const tableData = specCopy.data?.find((d) => d.name === TABLE);
-    if (tableData && 'values' in tableData) {
-      tableData.values = chartData.table ?? [];
-    }
-    const mergedSignals: Record<string, unknown> = { ...signals };
-    if (interactionConfig?.legend?.isToggleable) {
-      // No outgoing view means this is the first-ever mount — seed from Legend.defaultHiddenSeries
-      // instead, since useLegend no longer holds its own state to do this.
-      mergedSignals.hiddenSeries = outgoingHiddenSeries ?? interactionConfig.legend.defaultHiddenSeries ?? [];
-    }
-    if (Object.keys(mergedSignals).length) {
-      specCopy.signals = specCopy.signals?.map((signal) => {
-        if (signal.name in mergedSignals && mergedSignals[signal.name] !== undefined && 'value' in signal) {
-          signal.value = mergedSignals[signal.name];
-        }
-        return signal;
-      });
-    }
+    const myGeneration = ++state.generation;
+    const specCopy = prepareSpecForEmbed(spec, chartData, signals, interactionConfig, outgoingHiddenSeries);
     const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
     const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
     const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
 
     embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view: newView }) => {
-      // This mount lost the race — either the controller was destroyed, or a newer recreate()
-      // started (e.g. React Strict Mode's synchronous mount→cleanup→mount double-invoke) before
-      // this embed() resolved. Finalize it immediately instead of wiring it up.
-      if (destroyed || myGeneration !== generation) {
+      if (isStale(myGeneration)) {
         newView.finalize();
         return;
       }
-      view = newView;
-      if (interactionConfig) {
-        interactionConfig.refs.chartView.current = newView;
-        attachInteractionListeners(newView, interactionConfig, setSignal);
-      }
-      onNewView(newView);
-      newView.resize();
-      newView.runAsync();
-      // One additional render to settle all resize calculations
-      setTimeout(() => newView.runAsync(), 0);
+      wireNewView(newView, interactionConfig, onNewView);
     });
   }
 
   function resize(width: number, height: number): void {
-    if (destroyed) return;
-    currentProps = { ...currentProps, width, height };
-    if (view) {
-      resizeView(view, width, height);
-    } else if (width && height && generation === 0) {
+    if (state.destroyed) return;
+    state.props = { ...state.props, width, height };
+    if (state.view) {
+      resizeView(state.view, width, height);
+    } else if (width && height && state.generation === 0) {
       // AN-445759: started at 0×0 with no embed ever attempted — do the initial embed now.
-      recreate(currentProps);
+      embedView(state.props);
     }
     // else: an embed is already in flight (generation > 0, view still undefined) — it will pick up
     // the current dimensions via embedOptions when it resolves.
   }
 
   function updateSpec(props: VegaChartControllerProps): void {
-    recreate(props);
+    embedView(props);
   }
 
   function getView(): View | undefined {
-    return view;
+    return state.view;
   }
 
   function setSignal(name: string, value: unknown): void {
-    if (destroyed || !view) return;
-    view.signal(name, value);
-    view.runAsync();
+    if (state.destroyed || !state.view) return;
+    state.view.signal(name, value);
+    state.view.runAsync();
   }
 
   function destroy(): void {
-    destroyed = true;
-    if (view) {
-      view.finalize();
-      view = undefined;
+    state.destroyed = true;
+    if (state.view) {
+      state.view.finalize();
+      state.view = undefined;
     }
   }
 
   if (initialProps.width && initialProps.height) {
-    recreate(initialProps);
+    embedView(initialProps);
   }
 
   return { resize, updateSpec, getView, setSignal, destroy };

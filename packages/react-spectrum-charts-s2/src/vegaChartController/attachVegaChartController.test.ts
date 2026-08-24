@@ -241,8 +241,8 @@ describe('attachVegaChartController', () => {
   });
 
   // Regression test for the same race, but within a single instance: rapid prop updates before the
-  // first embed() resolves should leave only the latest recreate()'s view wired up.
-  test('a superseded recreate() on the same instance finalizes its own late-resolving view', async () => {
+  // first embed() resolves should leave only the latest embedView()'s view wired up.
+  test('a superseded embedView() call on the same instance finalizes its own late-resolving view', async () => {
     const firstView = createMockView();
     const secondView = createMockView();
     mockEmbed
@@ -292,7 +292,7 @@ describe('attachVegaChartController', () => {
     expect(mockSignal).not.toHaveBeenCalled();
   });
 
-  test("recreate() carries the outgoing view's live hiddenSeries value into the new spec's signal patch", async () => {
+  test("embedView() carries the outgoing view's live hiddenSeries value into the new spec's signal patch", async () => {
     const firstView = createMockView();
     const secondView = createMockView();
     mockSignal.mockReturnValue(['seriesA']);
@@ -319,7 +319,7 @@ describe('attachVegaChartController', () => {
     expect(secondEmbedSpec.signals?.find((s) => s.name === 'hiddenSeries')).toMatchObject({ value: ['seriesA'] });
   });
 
-  test('recreate() seeds hiddenSeries from Legend.defaultHiddenSeries on the very first mount', async () => {
+  test('embedView() seeds hiddenSeries from Legend.defaultHiddenSeries on the very first mount', async () => {
     const mockView = createMockView();
     mockEmbed.mockResolvedValue({ view: mockView } as unknown as Awaited<ReturnType<typeof embed>>);
 
