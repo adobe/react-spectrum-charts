@@ -383,7 +383,7 @@ export const isAreaMarkItem = (item: ActionItem): boolean => {
 export const getItemForAreaMark = (item: ActionItem): ActionItem => {
   // for area, we want to use the hovered data not the entire area
   const pointMark = item?.mark.group.items.find((mark) => mark.name.includes('_anchorPoint'));
-  if (pointMark && pointMark.items.length === 1) {
+  if (pointMark?.items.length === 1) {
     const point = pointMark.items[0];
     if (isItemSceneItem(point)) {
       return point;
@@ -463,6 +463,114 @@ export const isScene = (item: unknown): item is Scene => {
 };
 
 /**
+ * Stops the browser's native context menu from appearing over the chart's DOM container.
+ * @param chartId
+ */
+function suppressNativeContextMenu(chartId: string): void {
+  document.querySelector(`#${chartId}`)?.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+
+/**
+ * Registers the mark/legend click listener, and its contextmenu counterpart when any popover is
+ * right-click-triggered.
+ * @param view
+ * @param config
+ * @param setSignal
+ */
+function attachMarkAndLegendClickListeners(
+  view: View,
+  config: VegaChartInteractionConfig,
+  setSignal: (name: string, value: unknown) => void
+): void {
+  const { chartId, idKey, legend, popovers, refs } = config;
+  const { chartView, selectedData, selectedDataBounds, selectedDataName } = refs;
+  if (!popovers.length && !legend.isToggleable && !legend.onClick) return;
+
+  const legendHasPopover = popovers.some((p) => p.attachedToLegend && !p.rightClick);
+  const markHasPopover = popovers.some((p) => !p.attachedToLegend);
+
+  setSelectedSignals({ idKey, selectedData: selectedData.current, view });
+  view.addEventListener(
+    'click',
+    getOnMarkClickCallback({
+      chartView,
+      chartId,
+      selectedData,
+      selectedDataBounds,
+      selectedDataName,
+      setSignal,
+      legendIsToggleable: legend.isToggleable,
+      legendHasPopover,
+      onLegendClick: legend.onClick,
+      trigger: 'click',
+      markHasPopover,
+    })
+  );
+
+  if (popovers.some((p) => p.rightClick)) {
+    const legendHasRightClickPopover = popovers.some((p) => p.attachedToLegend && p.rightClick);
+    suppressNativeContextMenu(chartId);
+    view.addEventListener(
+      'contextmenu',
+      getOnMarkClickCallback({
+        chartView,
+        chartId,
+        selectedData,
+        selectedDataBounds,
+        selectedDataName,
+        setSignal,
+        legendHasPopover: legendHasRightClickPopover,
+        legendIsToggleable: legend.isToggleable,
+        onLegendClick: legend.onClick,
+        trigger: 'contextmenu',
+        markHasPopover,
+      })
+    );
+  }
+}
+
+/**
+ * Registers the contextmenu listener for marks with an `onContextMenu` prop.
+ * @param view
+ * @param config
+ */
+function attachChartMarkContextMenuListener(view: View, config: VegaChartInteractionConfig): void {
+  const { chartId, markClickDetails, refs } = config;
+  if (!markClickDetails.some((d) => d.onContextMenu)) return;
+  suppressNativeContextMenu(chartId);
+  view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(refs.chartView, markClickDetails));
+}
+
+/**
+ * Registers the click listener for marks with an `onClick` prop.
+ * @param view
+ * @param config
+ */
+function attachChartMarkClickListener(view: View, config: VegaChartInteractionConfig): void {
+  view.addEventListener('click', getOnChartMarkClickCallback(config.refs.chartView, config.markClickDetails));
+}
+
+/**
+ * Registers the click listener for axes with an `onClick` prop on their labels.
+ * @param view
+ * @param config
+ */
+function attachAxisLabelClickListener(view: View, config: VegaChartInteractionConfig): void {
+  if (!config.axisLabelOnClickDetails.length) return;
+  view.addEventListener('click', getOnAxisLabelClickCallback(config.axisLabelOnClickDetails));
+}
+
+/**
+ * Registers the legend/mark mouseover and mouseout listeners.
+ * @param view
+ * @param config
+ */
+function attachMouseInputListeners(view: View, config: VegaChartInteractionConfig): void {
+  view.addEventListener('mouseover', getOnMouseInputCallback(config.legend.onMouseOver, config.markMouseInputDetails));
+  view.addEventListener('mouseout', getOnMouseInputCallback(config.legend.onMouseOut, config.markMouseInputDetails));
+}
+
+/**
  * Registers all mark/legend click, contextmenu, and mouseover/mouseout listeners on a freshly
  * embedded view, driven by a plain-data config instead of individually-threaded hook arguments.
  * @param view
@@ -474,66 +582,9 @@ export function attachInteractionListeners(
   config: VegaChartInteractionConfig,
   setSignal: (name: string, value: unknown) => void
 ): void {
-  const { chartId, idKey, markClickDetails, markMouseInputDetails, axisLabelOnClickDetails, legend, popovers, refs } =
-    config;
-  const { chartView, selectedData, selectedDataBounds, selectedDataName } = refs;
-
-  const legendHasPopover = popovers.some((p) => p.attachedToLegend && !p.rightClick);
-  const legendHasRightClickPopover = popovers.some((p) => p.attachedToLegend && p.rightClick);
-  const markHasPopover = popovers.some((p) => !p.attachedToLegend);
-
-  if (popovers.length || legend.isToggleable || legend.onClick) {
-    setSelectedSignals({ idKey, selectedData: selectedData.current, view });
-    view.addEventListener(
-      'click',
-      getOnMarkClickCallback({
-        chartView,
-        chartId,
-        selectedData,
-        selectedDataBounds,
-        selectedDataName,
-        setSignal,
-        legendIsToggleable: legend.isToggleable,
-        legendHasPopover,
-        onLegendClick: legend.onClick,
-        trigger: 'click',
-        markHasPopover,
-      })
-    );
-    if (popovers.some((p) => p.rightClick)) {
-      const chartContainer = document.querySelector(`#${chartId}`);
-      if (chartContainer) {
-        chartContainer.addEventListener('contextmenu', (e) => e.preventDefault());
-      }
-      view.addEventListener(
-        'contextmenu',
-        getOnMarkClickCallback({
-          chartView,
-          chartId,
-          selectedData,
-          selectedDataBounds,
-          selectedDataName,
-          setSignal,
-          legendHasPopover: legendHasRightClickPopover,
-          legendIsToggleable: legend.isToggleable,
-          onLegendClick: legend.onClick,
-          trigger: 'contextmenu',
-          markHasPopover,
-        })
-      );
-    }
-  }
-  if (markClickDetails.some((d) => d.onContextMenu)) {
-    const chartContainer = document.querySelector(`#${chartId}`);
-    if (chartContainer) {
-      chartContainer.addEventListener('contextmenu', (e) => e.preventDefault());
-    }
-    view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(chartView, markClickDetails));
-  }
-  view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
-  if (axisLabelOnClickDetails.length) {
-    view.addEventListener('click', getOnAxisLabelClickCallback(axisLabelOnClickDetails));
-  }
-  view.addEventListener('mouseover', getOnMouseInputCallback(legend.onMouseOver, markMouseInputDetails));
-  view.addEventListener('mouseout', getOnMouseInputCallback(legend.onMouseOut, markMouseInputDetails));
+  attachMarkAndLegendClickListeners(view, config, setSignal);
+  attachChartMarkContextMenuListener(view, config);
+  attachChartMarkClickListener(view, config);
+  attachAxisLabelClickListener(view, config);
+  attachMouseInputListeners(view, config);
 }

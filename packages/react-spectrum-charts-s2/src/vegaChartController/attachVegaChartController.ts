@@ -105,7 +105,8 @@ function prepareSpecForEmbed(
   interactionConfig: VegaChartInteractionConfig | undefined,
   outgoingHiddenSeries: string[] | undefined
 ): Spec {
-  const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
+  // JSON.stringify/parse (not structuredClone) so keys with an undefined value are stripped from the spec.
+  const specCopy = JSON.parse(JSON.stringify(spec)) as Spec; // NOSONAR
   const tableData = specCopy.data?.find((d) => d.name === TABLE);
   if (tableData && 'values' in tableData) {
     tableData.values = chartData.table ?? [];
@@ -113,7 +114,7 @@ function prepareSpecForEmbed(
 
   const mergedSignals: Record<string, unknown> = { ...signals };
   if (interactionConfig?.legend?.isToggleable) {
-    // No outgoing view means this is the first-ever mount — seed from Legend.defaultHiddenSeries.
+    // outgoingHiddenSeries is undefined on the first-ever mount (no previous view to read it from).
     mergedSignals.hiddenSeries = outgoingHiddenSeries ?? interactionConfig.legend.defaultHiddenSeries ?? [];
   }
   if (Object.keys(mergedSignals).length) {
@@ -201,7 +202,7 @@ export function attachVegaChartController(
     if (state.view) {
       resizeView(state.view, width, height);
     } else if (width && height && state.generation === 0) {
-      // AN-445759: started at 0×0 with no embed ever attempted — do the initial embed now.
+      // Started at 0×0 with no embed ever attempted — do the initial embed now.
       embedView(state.props);
     }
     // else: an embed is already in flight (generation > 0, view still undefined) — it will pick up
