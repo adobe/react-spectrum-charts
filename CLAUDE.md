@@ -231,6 +231,7 @@ S2 stories live in `packages/react-spectrum-charts-s2/src/stories/<ComponentName
   - **Single-story files** (one named export): Storybook hoists them flat into the sidebar — no folder node is created. Use for simple prop showcases (e.g. `LineType.story.tsx`).
   - **Multi-story groups** (two or more related stories): Place in a named subdirectory with a matching title segment. Example: `Features/Tooltip/LineTooltip.story.tsx` with `title: 'React Spectrum Charts 2/Line/Features/Tooltip'`. This creates a `Tooltip` folder node in the sidebar.
   - Never put two files with the same `title` and overlapping export names — Storybook will throw a duplicate story ID error.
+- **Pre-alpha components** (any mark exported from `pre-alpha/components/index.ts` — currently Area, Bullet, Combo, Donut, DonutSummary, Scatter, ScatterAnnotation, ScatterPath, SegmentLabel, Trendline, TrendlineAnnotation) get an extra `Pre-Alpha` segment right after `React Spectrum Charts 2/`, e.g. `'React Spectrum Charts 2/Pre-Alpha/Bullet/Features'`. This groups every pre-alpha mark's stories under one `Pre-Alpha` sidebar folder, separate from stable S2 components (Line, Bar, Legend, Axis) which keep the plain `'React Spectrum Charts 2/<ComponentName>/...'` prefix.
 
 ---
 

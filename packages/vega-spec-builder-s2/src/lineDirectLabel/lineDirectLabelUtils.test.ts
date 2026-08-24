@@ -467,8 +467,8 @@ describe('getLineDirectLabelMarks', () => {
 		expect(marks[1].encode?.update).toHaveProperty('opacity');
 	});
 
-	test('foreground mark uses the animated deemphasis-ramp signal when isAnimate is true, background stays opaque', () => {
-		const lineOpts = { ...defaultLineOptions, interactiveMarkName: 'line0', isAnimate: true };
+	test('foreground mark uses the animated deemphasis-ramp signal when isHoverAnimate is true, background stays opaque', () => {
+		const lineOpts = { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true };
 		const marks = getLineDirectLabelMarks('line0', defaultLabelSpecOptions, lineOpts, 'gray-50', 'light');
 		const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
 		expect(marks[1].encode?.update).toHaveProperty('opacity', {

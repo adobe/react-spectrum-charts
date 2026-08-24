@@ -15,6 +15,7 @@ import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSE
 
 import { getGenericUpdateSignal } from '../signal/signalSpecBuilder';
 import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, Position } from '../types';
+import { DivergingBarContext } from './axisUtils';
 
 /**
  * Extracts and processes axis thumbnail options from the main axis options.
@@ -86,11 +87,24 @@ export const addAxisThumbnailSignals = (signals: Signal[], axisThumbnailName: st
  * @returns An array of Vega image marks configured for axis thumbnails
  */
 export const getAxisThumbnailMarks = (
-  axisOptions: AxisSpecOptions,
+  axisOptions: AxisSpecOptions & {
+    opposingScaleType?: string;
+    opposingScaleName?: string;
+    divergingContext?: DivergingBarContext;
+  },
   scaleName: string,
   scaleField: string
 ): ImageMark[] => {
-  const { position } = axisOptions;
+  const { position, opposingScaleType, opposingScaleName, divergingContext } = axisOptions;
+
+  // thumbnails are top-level sibling marks (not in the axis group), so the diverging flip is applied here manually
+  const diverging =
+    divergingContext && opposingScaleType === 'linear' && opposingScaleName
+      ? {
+          zeroLine: `scale('${opposingScaleName}', 0)`,
+          isNegativeBarExpr: `datum['${divergingContext.metric}'] < 0`,
+        }
+      : undefined;
 
   const thumbnails: ImageMark[] = [];
   const axisThumbnails = getAxisThumbnails(axisOptions);
@@ -104,7 +118,7 @@ export const getAxisThumbnailMarks = (
           url: { field: urlKey },
         },
         update: {
-          ...getAxisThumbnailPosition(scaleName, scaleField, position, name),
+          ...getAxisThumbnailPosition(scaleName, scaleField, position, name, diverging),
           width: { signal: `${name}ThumbnailSize` },
           height: { signal: `${name}ThumbnailSize` },
           opacity: [
@@ -130,36 +144,66 @@ export const getAxisThumbnailMarks = (
  * @param scaleField - The data field used for scale domain mapping
  * @param position - The position of the axis (left, right, top, bottom)
  * @param axisThumbnailName - The name of the thumbnail for signal references
+ * @param diverging - When diverging is active: the opposing scale's zero-line position and the expression true for a negative-bar row. Omitted otherwise (thumbnail pinned to the chart edge).
  * @returns An object with x/y coordinate encodings for thumbnail positioning
  */
 export const getAxisThumbnailPosition = (
   scaleName: string,
   scaleField: string,
   position: Position,
-  axisThumbnailName: string
+  axisThumbnailName: string,
+  diverging?: { zeroLine: string; isNegativeBarExpr: string }
 ) => {
   const centerEncoding = { signal: `scale('${scaleName}', datum.${scaleField}) + bandwidth('${scaleName}') / 2` };
+  const thumbnailSize = `${axisThumbnailName}ThumbnailSize`;
+  const zeroLine = diverging?.zeroLine;
+
+  // diverging: a row's thumbnail sits across the zero line from its own bar (mirrors the label align flip); else pinned to the edge
+  const getPositionRule = (edgeExpr: string, farSide: string, nearSide: string) => {
+    if (!diverging) return { signal: edgeExpr };
+    return [
+      { test: diverging.isNegativeBarExpr, signal: nearSide },
+      { signal: farSide },
+    ];
+  };
+
   switch (position) {
     case 'left':
       return {
-        x: { signal: `-${THUMBNAIL_OFFSET} - ${axisThumbnailName}ThumbnailSize` },
+        x: getPositionRule(
+          `-${THUMBNAIL_OFFSET} - ${thumbnailSize}`,
+          `${zeroLine} - ${THUMBNAIL_OFFSET} - ${thumbnailSize}`,
+          `${zeroLine} + ${THUMBNAIL_OFFSET}`
+        ),
         yc: centerEncoding,
       };
     case 'right':
       return {
-        x: { signal: `width + ${THUMBNAIL_OFFSET}` },
+        x: getPositionRule(
+          `width + ${THUMBNAIL_OFFSET}`,
+          `${zeroLine} + ${THUMBNAIL_OFFSET}`,
+          `${zeroLine} - ${THUMBNAIL_OFFSET} - ${thumbnailSize}`
+        ),
         yc: centerEncoding,
       };
     case 'top':
       return {
         xc: centerEncoding,
-        y: { signal: `-${THUMBNAIL_OFFSET} - ${axisThumbnailName}ThumbnailSize` },
+        y: getPositionRule(
+          `-${THUMBNAIL_OFFSET} - ${thumbnailSize}`,
+          `${zeroLine} - ${THUMBNAIL_OFFSET} - ${thumbnailSize}`,
+          `${zeroLine} + ${THUMBNAIL_OFFSET}`
+        ),
       };
     case 'bottom':
     default:
       return {
         xc: centerEncoding,
-        y: { signal: `height + ${THUMBNAIL_OFFSET}` },
+        y: getPositionRule(
+          `height + ${THUMBNAIL_OFFSET}`,
+          `${zeroLine} + ${THUMBNAIL_OFFSET}`,
+          `${zeroLine} - ${THUMBNAIL_OFFSET} - ${thumbnailSize}`
+        ),
       };
   }
 };
@@ -171,29 +215,32 @@ export const getAxisThumbnailPosition = (
  *
  * @param axisThumbnailName - The name of the thumbnail for signal reference
  * @param position - The position of the axis (left, right, top, bottom)
+ * @param isNegativeBarExpr - Expression true when a tick's own bar is negative; flips the label offset per row to match the thumbnail's flip.
  * @returns Text encoding entries for label offset adjustments
  */
-export const getAxisThumbnailLabelOffset = (axisThumbnailName: string, position: Position): TextEncodeEntry => {
+export const getAxisThumbnailLabelOffset = (
+  axisThumbnailName: string,
+  position: Position,
+  isNegativeBarExpr?: string
+): TextEncodeEntry => {
   // if the thumbnail is too small, it will be hidden and we don't want padding
   const hideThumbnailCondition = { test: `${axisThumbnailName}ThumbnailSize < ${MIN_THUMBNAIL_SIZE}`, value: 0 };
+  const thumbnailSize = `${axisThumbnailName}ThumbnailSize`;
+
+  const getOffsetRule = (outward: string, flipped: string) =>
+    isNegativeBarExpr
+      ? [hideThumbnailCondition, { test: isNegativeBarExpr, signal: flipped }, { signal: outward }]
+      : [hideThumbnailCondition, { signal: outward }];
 
   switch (position) {
     case 'left':
-      return {
-        dx: [hideThumbnailCondition, { signal: `-${axisThumbnailName}ThumbnailSize` }],
-      };
+      return { dx: getOffsetRule(`-${thumbnailSize}`, thumbnailSize) };
     case 'right':
-      return {
-        dx: [hideThumbnailCondition, { signal: `${axisThumbnailName}ThumbnailSize` }],
-      };
+      return { dx: getOffsetRule(thumbnailSize, `-${thumbnailSize}`) };
     case 'top':
-      return {
-        dy: [hideThumbnailCondition, { signal: `-${axisThumbnailName}ThumbnailSize` }],
-      };
+      return { dy: getOffsetRule(`-${thumbnailSize}`, thumbnailSize) };
     case 'bottom':
     default:
-      return {
-        dy: [hideThumbnailCondition, { signal: `${axisThumbnailName}ThumbnailSize` }],
-      };
+      return { dy: getOffsetRule(thumbnailSize, `-${thumbnailSize}`) };
   }
 };

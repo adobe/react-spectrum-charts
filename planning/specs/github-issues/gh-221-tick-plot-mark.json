@@ -1,0 +1,59 @@
+{
+  "id": "gh-221-tick-plot-mark",
+  "title": "New Tick Plot mark type (strip/rug plot: short ticks along one axis per data point)",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 5,
+    "rationale": "Confirmed no tick-plot mark exists anywhere in the codebase: an exhaustive grep for tickPlot/tick-plot/TickMark/tickMark across packages/vega-spec-builder/src and packages/react-spectrum-charts/src returned zero matches (deliberately distinguished from Axis's unrelated 'ticks' rendering). This is a wholly new mark type, not an extension — it needs its own types file, spec builder (data/signals/scales/marks), React component, adapter case, and story, following the same multi-file shape as every existing mark (e.g. Scatter: scatterSpecBuilder.ts, scatterMarkUtils.ts, scatter.types.ts, Scatter.tsx, childrenAdapter.ts:213) but with none of the position/encoding logic reusable as-is, since no minimal prop API was given in the source issue and one must be designed from scratch. New mark type + no precedented API + significant open design work => 5."
+  },
+  "summary": "Request for a new 'Tick Plot' mark type — short vertical (or horizontal) tick marks placed along a shared scale, one per data point or category, in the style of a strip/rug plot, often used to show individual data points or distribution density along a single axis. No detailed prop API was given in the source issue, so a minimal reasonable API is proposed here based on conventional tick-plot/strip-plot semantics.",
+  "requirements": [
+    "Define a new TickOptions type (dimension: string for the position field, optionally a color/group facet, tick length/width/opacity styling) analogous in shape to existing mark *Options types (e.g. packages/vega-spec-builder/src/types/marks/scatterSpec.types.ts).",
+    "Support a single categorical or continuous dimension field positioning each tick along one axis (matching the 'along a shared scale' behavior shown in the issue's screenshot), with the other axis unused/collapsed (a 1-D strip), or optionally faceted into rows/lanes by a grouping field for multi-series tick plots.",
+    "Support an optional color facet so ticks can be colored by series/category, consistent with how Line/Bar/Scatter use ColorFacet.",
+    "Support configurable tick length and width (visual styling), analogous to LineWidth/LineType conventions used elsewhere.",
+    "Register the new mark type end-to-end: a new markType value ('tick' or similar) in the chartType/markType enums, a spec builder module (addTick pattern mirroring addScatter in chartSpecBuilder.ts:52,166-168), a React <Tick> component, and a childrenAdapter.ts case (mirroring Scatter.displayName at childrenAdapter.ts:213).",
+    "Support basic hover/tooltip interactivity consistent with other marks (isInteractive, voronoi-style hit-testing appropriate for thin tick marks, which may need a wider invisible hit-target than the visible tick)."
+  ],
+  "edgeCases": [
+    { "case": "Many overlapping data points at the same or very close position values", "expectedBehavior": "Ticks should remain individually distinguishable or clearly convey density (e.g. via opacity/jitter) rather than fully overlapping into a solid block." },
+    { "case": "Single data point", "expectedBehavior": "Renders one tick at the correct position; no special-casing needed if scale domain handles a single value gracefully." },
+    { "case": "Empty/null data", "expectedBehavior": "Renders an empty plot area with axes, consistent with how other marks handle empty data." },
+    { "case": "Long category labels on the shared axis", "expectedBehavior": "Standard axis label truncation/rotation behavior should apply, same as any other categorical axis." },
+    { "case": "Light vs dark background", "expectedBehavior": "Tick color/opacity must resolve via the same BACKGROUND_COLOR-aware and colorScheme-aware helpers used by other marks (getColorProductionRule, etc.), not hardcoded values." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "As a brand-new mark, it does not exist in either package yet; S2 support is a deliberate follow-up, not part of this initial spec (see crossCutting.requiresS1S2Parity)." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": true,
+    "notes": "touchesLegendInteraction: if a color facet is supported, the new mark's ticks should participate in legend hover/click highlighting the same way every other faceted mark does. touchesTooltipOrPopover: basic hover tooltip support is listed as a requirement, and thin tick marks likely need a widened invisible hit-target, which is new (non-precedented) hit-testing logic. requiresNewSignalOrScale: as a new mark with its own position/color facets, it will need its own hover/tooltip signals and will add to the shared color/opacity scale domains the same way other marks do. requiresS1S2Parity: this is a genuinely new mark that doesn't exist in either s1 or s2 today; scoping the initial implementation to s1 only (per this spec's variant) means s2 needs the same mark built as a deliberate, tracked follow-up rather than an afterthought."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder/src/types/marks/tickSpec.types.ts", "change": "New file. Define TickOptions (public contract) and TickSpecOptions (defaults-applied + internal fields), following the LineOptions/LineSpecOptions pattern described in this repo's CLAUDE.md." },
+    { "file": "packages/vega-spec-builder/src/tick/tickSpecBuilder.ts", "change": "New file. addTick() produce-wrapped function: addData/addSignals/setScales/addTickMarks, mirroring addScatter's structure in scatterSpecBuilder.ts." },
+    { "file": "packages/vega-spec-builder/src/tick/tickMarkUtils.ts", "change": "New file. Builds the actual Vega 'rule' or 'rect' mark encode for each tick (position, length, width, color, opacity, hover hit-target)." },
+    { "file": "packages/vega-spec-builder/src/chartSpecBuilder.ts", "change": "Register a new markType case ('tick'), a tickCount accumulator, and call addTick — mirroring the existing scatter registration.", "lines": "52,134,166-168,234" },
+    { "file": "packages/react-spectrum-charts/src/types/marks/tick.types.ts", "change": "New file. TickProps extending TickOptions via Omit, per the mark type pattern." },
+    { "file": "packages/react-spectrum-charts/src/components/Tick/Tick.tsx", "change": "New file. Render-null component holding prop defaults, following Scatter.tsx's pattern." },
+    { "file": "packages/react-spectrum-charts/src/rscToSbAdapter/childrenAdapter.ts", "change": "Add a `case Tick.displayName:` alongside the existing Scatter.displayName case.", "lines": "213" },
+    { "file": "packages/react-spectrum-charts/src/stories/components/Tick/Tick.story.tsx", "change": "New file. Baseline Tick story plus a color-faceted variant, following the storybook pattern described in this repo's CLAUDE.md." },
+    { "file": "planning/specs/schema.json", "change": "The chartType enum has no 'tick'/'tickPlot' value; a real implementation PR would need to add one (this spec cannot add it unilaterally — see openQuestions).", "lines": "43" }
+  ],
+  "openQuestions": [
+    "The source issue included only a screenshot, no explicit prop API — the requirements above (dimension, optional color facet, tick length/width) are a reasonable minimal default based on conventional strip/rug plots, but should be validated against the actual attached screenshot and the legacy 'UDD' dashboard system's tick plot before implementation.",
+    "planning/specs/schema.json's chartType enum (area/bar/bigNumber/bullet/combo/donut/line/scatter/venn/chart) has no value for this new mark; a real implementation PR would need to add one (e.g. 'tick' or 'tickPlot'). This spec uses 'chart' as the closest existing fit in the meantime.",
+    "Should ticks support faceting into multiple lanes/rows (one row per series/category) out of the gate, or should that be a fast-follow once the single-lane case ships?",
+    "Should this mark be oriented vertically or horizontally by default, or configurable via the same 'orientation' convention Bar uses?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/221" }
+  ]
+}

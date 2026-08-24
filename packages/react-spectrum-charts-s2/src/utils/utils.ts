@@ -33,25 +33,45 @@ import {
   ReferenceLine,
   Title,
 } from '../components';
-import { Donut, DonutSummary, SegmentLabel } from '../rc';
 import {
+  Area,
+  Bullet,
+  Combo,
+  Donut,
+  DonutSummary,
+  Scatter,
+  ScatterAnnotation,
+  ScatterPath,
+  SegmentLabel,
+  Trendline,
+  TrendlineAnnotation,
+} from '../pre-alpha';
+import {
+  AreaElement,
   AxisChildElement,
   AxisElement,
   BarAnnotationElement,
   BarElement,
+  BulletElement,
   ChartChildElement,
   ChartElement,
   ChartInspectElement,
   ChartPopoverElement,
   ChildElement,
+  ComboElement,
   DonutElement,
   DonutSummaryElement,
   LegendElement,
   LineForecastElement,
   LineDirectLabelElement,
   LineElement,
+  ScatterAnnotationElement,
+  ScatterElement,
+  ScatterPathElement,
   SegmentLabelElement,
   TitleElement,
+  TrendlineAnnotationElement,
+  TrendlineElement,
 } from '../types';
 
 type MarkChildElement =
@@ -61,24 +81,36 @@ type MarkChildElement =
   | DonutSummaryElement
   | LineForecastElement
   | LineDirectLabelElement
-  | SegmentLabelElement;
+  | ScatterAnnotationElement
+  | ScatterPathElement
+  | SegmentLabelElement
+  | TrendlineAnnotationElement
+  | TrendlineElement;
 type RscElement =
   | MarkChildElement
+  | AreaElement
   | AxisElement
   | BarElement
+  | BulletElement
+  | ComboElement
   | DonutElement
   | LegendElement
   | LineElement
+  | ScatterElement
   | TitleElement;
 
 type MappedElement = { name: string; element: ChartElement | RscElement; parent?: string };
 type ElementCounts = {
+  area: number;
   axis: number;
   axisAnnotation: number;
   bar: number;
+  bullet: number;
+  combo: number;
   donut: number;
   legend: number;
   line: number;
+  scatter: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -103,12 +135,15 @@ export const getElementDisplayName = (element: unknown): string => {
 
 export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkChildElement)[] => {
   const validDisplayNames = new Set([
+    Area.displayName,
     Axis.displayName,
     AxisThumbnail.displayName,
     Bar.displayName,
     BarDirectLabel.displayName,
+    Bullet.displayName,
     ChartInspect.displayName,
     ChartPopover.displayName,
+    Combo.displayName,
     Donut.displayName,
     DonutSummary.displayName,
     Legend.displayName,
@@ -117,8 +152,13 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     LineForecast.displayName,
     LinePointAnnotation.displayName,
     ReferenceLine.displayName,
+    Scatter.displayName,
+    ScatterAnnotation.displayName,
+    ScatterPath.displayName,
     SegmentLabel.displayName,
     Title.displayName,
+    Trendline.displayName,
+    TrendlineAnnotation.displayName,
   ]);
   return toArray(children)
     .flat()
@@ -130,11 +170,15 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
 // removes all non-chart specific elements
 export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[] => {
   const chartChildDisplyNames = new Set([
+    Area.displayName,
     Axis.displayName,
     Bar.displayName,
+    Bullet.displayName,
+    Combo.displayName,
     Donut.displayName,
     Legend.displayName,
     Line.displayName,
+    Scatter.displayName,
     Title.displayName,
   ]);
   return toArray(children)
@@ -150,7 +194,11 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
     DonutSummary.displayName,
     LineForecast.displayName,
     LineDirectLabel.displayName,
+    ScatterAnnotation.displayName,
+    ScatterPath.displayName,
     SegmentLabel.displayName,
+    Trendline.displayName,
+    TrendlineAnnotation.displayName,
   ]);
 
   return toArray(children)
@@ -295,12 +343,21 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     return '';
   // use displayName since it is the olny way to check alpha and beta components
   switch (element.type.displayName) {
+    case Area.displayName:
+      elementCounts.area++;
+      return getComponentName(element as AreaElement, `area${elementCounts.area}`);
     case Axis.displayName:
       elementCounts.axis++;
       return getComponentName(element as AxisElement, `axis${elementCounts.axis}`);
     case Bar.displayName:
       elementCounts.bar++;
       return getComponentName(element as BarElement, `bar${elementCounts.bar}`);
+    case Bullet.displayName:
+      elementCounts.bullet++;
+      return getComponentName(element as BulletElement, `bullet${elementCounts.bullet}`);
+    case Combo.displayName:
+      elementCounts.combo++;
+      return getComponentName(element as ComboElement, `combo${elementCounts.combo}`);
     case Donut.displayName:
       elementCounts.donut++;
       return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
@@ -310,6 +367,11 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Line.displayName:
       elementCounts.line++;
       return getComponentName(element as LineElement, `line${elementCounts.line}`);
+    case Scatter.displayName:
+      elementCounts.scatter++;
+      return getComponentName(element as ScatterElement, `scatter${elementCounts.scatter}`);
+    case Trendline.displayName:
+      return getComponentName(element as TrendlineElement, 'Trendline');
     default:
       return '';
   }
@@ -323,12 +385,16 @@ export const getComponentName = (element: ChildElement<RscElement>, defaultName:
 };
 
 const initElementCounts = (): ElementCounts => ({
+  area: -1,
   axis: -1,
   axisAnnotation: -1,
   bar: -1,
+  bullet: -1,
+  combo: -1,
   donut: -1,
   legend: -1,
   line: -1,
+  scatter: -1,
 });
 
 /**

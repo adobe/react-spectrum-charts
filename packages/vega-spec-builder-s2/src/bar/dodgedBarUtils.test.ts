@@ -236,6 +236,18 @@ describe('dodgedBarUtils', () => {
         },
       ]);
     });
+    test('uses the animated per-bar opacity signal when isHoverAnimate, instead of the instant opacity rules', () => {
+      const options = { ...defaultDodgedOptions, chartInspects: [{}], isHoverAnimate: true };
+      const marks = getDodgedMarks(options) as Mark[];
+      const group = marks.find((m) => m.type === 'group') as GroupMark;
+      const bar = group.marks?.find((m) => m.name === 'bar0');
+      const opacity = bar?.encode?.update?.opacity as { signal?: string };
+      expect(opacity.signal).toContain('bar0_rscBarAnimId');
+      // background bar has no opacity key at all -- it stays permanently opaque
+      const background = group.marks?.find((m) => m.name === 'bar0_background');
+      expect(background?.encode?.update?.opacity).toBeUndefined();
+    });
+
     test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
       expect(getDodgedMarks({ ...defaultDodgedOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toEqual([
         {

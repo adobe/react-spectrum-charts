@@ -1,0 +1,70 @@
+{
+  "id": "gh-482-accessibility-data-navigation",
+  "title": "Rich accessibility + data navigation",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "both",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 5,
+    "rationale": "This is a large, multi-phase, open-research proposal (keyboard equivalents, screen-reader-navigable summaries, and a structured tree-based navigation model), not a scoped feature with a known shape. Even the first-increment slice scoped here requires new, non-precedented interaction logic across multiple hooks (mouse-only hover and click wiring today has no keyboard counterpart anywhere in the codebase), and the larger research question (whether to adopt an external tree/graph navigation model) remains genuinely unresolved."
+  },
+  "summary": "Vega's built-in accessibility is minimal (SVG rendering-order-based, no support at all under canvas rendering, no custom interactivity), so any chart using hover/click interactions today is effectively unusable for assistive-technology users. This spec scopes a first concrete increment — baseline keyboard equivalents for one or two currently mouse-only mark interactions — while leaving the larger structured-navigation research (screen-reader summaries, a tree-based navigation model) as open questions rather than a committed design.",
+  "requirements": [
+    "Provide a keyboard equivalent for triggering the existing mouse-hover/tooltip interaction on one pilot mark (e.g. Line or Bar), building on the existing mouse-driven wiring in react-spectrum-charts-s2/src/hooks/useChartInteractions.tsx and useMarkMouseInputDetails.tsx, without requiring mouse movement.",
+    "Provide a keyboard equivalent for the existing click interaction (ChartPopover) currently wired through react-spectrum-charts-s2/src/hooks/useMarkOnClickDetails.tsx, so a keyboard-only user can open the same popover a mouse click currently opens.",
+    "Make the chart's rendered container keyboard-reachable (standard tab order) when the chart has at least one registered interactive mark; confirmed today that neither packages/react-spectrum-charts-s2/src/VegaChart.tsx (renders a bare <div ref={containerRef} className=\"rsc\"></div>, no tabIndex/role/aria-* at all) nor packages/react-spectrum-charts/src/RscChart.tsx wires any keyboard reachability.",
+    "Ensure the new keyboard-equivalent interaction does not regress existing mouse-driven hover/click/tooltip/popover/legend-highlight behavior for mouse users."
+  ],
+  "edgeCases": [
+    { "case": "chart has no interactive marks configured (no tooltip/popover)", "expectedBehavior": "the container remains non-focusable/decorative; no dead tab stop is introduced for a chart with nothing to interact with" },
+    { "case": "chart has multiple interactive marks or both hover-tooltip and click-popover on the same mark", "expectedBehavior": "keyboard navigation (move focus between data points) and keyboard activation (open a popover) stay distinguishable, mirroring how mouse hover vs. click are already distinguished today" },
+    { "case": "keyboard-driven interaction state colliding with existing mouse-hover or legend-highlight state", "expectedBehavior": "keyboard-driven data-point focus should drive the same signal-based highlight path mouse hover already uses, rather than introducing a second, competing highlight mechanism" },
+    { "case": "S1 vs. S2 parity", "expectedBehavior": "the first increment lands in whichever package the chosen pilot mark ships in first, but the same gap is confirmed in both today (neither RscChart.tsx nor VegaChart.tsx in either package wires any aria/tabIndex/keyboard handling), so the same pattern needs to reach the other package as a fast-follow, not be treated as s1/s2-specific" },
+    { "case": "screen-reader announcement of chart content", "expectedBehavior": "explicitly out of scope for this first increment; deferred pending the larger structured-navigation research captured in openQuestions" }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": true,
+    "notes": "touchesHoverAnimation: a keyboard-driven hover equivalent triggers the same visual hover state mouse hover does today, so it must respect (or intentionally bypass) the existing isAnimate gate in hoverAnimationUtils.ts rather than fighting it. touchesTooltipOrPopover: this is the entire point of the first increment — keyboard equivalents for the existing hover/tooltip and click/popover interactive-mark system. requiresNewSignalOrScale: keyboard focus likely needs its own 'focused item' signal with a symmetric set/clear, distinct from the existing mouse-driven hoveredItem signal, to avoid the two input modes clobbering each other. requiresS1S2Parity: the gap (no aria/tabIndex/keyboard wiring at all) was confirmed identically in both packages/react-spectrum-charts/src/RscChart.tsx and packages/react-spectrum-charts-s2/src/VegaChart.tsx, so whichever package gets the first increment, the other needs the same pattern as a fast-follow."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/react-spectrum-charts-s2/src/VegaChart.tsx",
+      "change": "Currently renders a bare <div ref={containerRef} className=\"rsc\"></div> with no tabIndex/role/aria-* attributes (line 169). Add conditional focusability (tabIndex=0, an appropriate role) when the spec has at least one interactive mark.",
+      "lines": "64-170"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/hooks/useChartInteractions.tsx",
+      "change": "Bug/gap location: current mouse-hover/click interaction wiring has no keyboard counterpart. Add a parallel keyboard-event handler (e.g. onKeyDown for arrow-key data-point navigation) that feeds the same signal-setting logic mouse events currently drive."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/hooks/useMarkMouseInputDetails.tsx",
+      "change": "Currently resolves 'current data point' purely from mouse coordinates. Needs a keyboard-driven counterpart (e.g. a new useMarkKeyboardInputDetails hook) that resolves the same detail shape from keyboard focus state instead."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/hooks/useMarkOnClickDetails.tsx",
+      "change": "Currently only wires mouse click to popover-opening. Needs a keyboard-activation equivalent (Enter/Space) once a data point can be keyboard-focused via the new keyboard input hook."
+    },
+    {
+      "file": "packages/react-spectrum-charts/src/RscChart.tsx",
+      "change": "Confirmed to have the same gap as the s2 VegaChart.tsx (no aria/tabIndex/keyboard wiring). Track as the fast-follow site once the pattern is proven in whichever package lands first."
+    }
+  ],
+  "openQuestions": [
+    "Should react-spectrum-charts adopt the reporter's external 'Data Navigator' tree/graph-based AT navigation model as the long-term architecture, or build a simpler bespoke keyboard-equivalent layer first and revisit later?",
+    "The reporter mentions 'a PR pending with a prototype of data-navigator and RSC' — this could not be verified or accessed during this investigation; its existence, scope, and mergeability are unconfirmed and should not be treated as an available starting point until it is located and reviewed.",
+    "Should rich accessibility be a core, always-on layer of every chart, or an optional/opt-in accessibility mode, given potential bundle-size and interaction-complexity cost?",
+    "Should the pilot mark/package for the first increment be chosen in s1 (larger existing user base) or s2 (newer codebase, likely easier to retrofit cleanly)?",
+    "What's the right granularity for screen-reader-navigable structured summaries/alt-text — per-mark, per-chart, or a configurable prop — and is that even the right first target versus keyboard equivalents?",
+    "Canvas rendering is called out as excluding AT users almost entirely versus SVG's partial rendering-order-based support — does a real fix require restricting 'accessible mode' to the SVG renderer only, or can canvas be made accessible via an ARIA live region describing the currently focused/keyboard-navigated data point?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/482" }
+  ]
+}

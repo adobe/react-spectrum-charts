@@ -1,0 +1,57 @@
+{
+  "id": "gh-346-vega-embed-fast-json-patch",
+  "title": "vega-embed still depends on fast-json-patch (Parcel hoisting issue); RSC still declares an unused vega-lite dependency",
+  "chartType": "chart",
+  "kind": "bug",
+  "variant": "both",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "The minimal fix (drop the unused vega-lite dependency, document the Parcel alias workaround) is trivial, but the reporter's suggested direction — reimplementing the small subset of vega-embed actually used, to drop vega-embed/fast-json-patch entirely — is a genuine open design decision and would require new, non-precedented logic in both VegaChart.tsx files. Which direction to take is still unresolved."
+  },
+  "summary": "vega-embed remains a direct runtime dependency of both @adobe/react-spectrum-charts and react-spectrum-charts-s2, and it still transitively pulls in fast-json-patch, whose ESM/CJS entry points don't hoist correctly under Parcel bundling. Separately, both packages still declare an unused vega-lite dependency that adds significant weight without being imported anywhere in RSC's own source.",
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "Both packages/react-spectrum-charts/package.json and packages/react-spectrum-charts-s2/package.json independently declare vega-embed and vega-lite, and both VegaChart.tsx files independently import 'embed' from vega-embed, so any fix (dependency removal or vega-embed reimplementation) needs the identical change mirrored in both packages."
+  },
+  "symptom": "Consumers bundling @adobe/react-spectrum-charts (or the S2 package) with Parcel hit fast-json-patch's ESM entry point not resolving correctly, requiring a manual alias workaround (index.mjs -> index.js) in the consuming app's own package.json. Consumers also pull in vega-lite (~10MB) despite RSC not importing it anywhere.",
+  "rootCause": "packages/react-spectrum-charts/package.json:87 and packages/react-spectrum-charts-s2/package.json:88 both still declare \"vega-embed\": \">= 7.1.0\", and both packages/react-spectrum-charts/src/VegaChart.tsx:15 and packages/react-spectrum-charts-s2/src/VegaChart.tsx:15 import 'embed' directly from vega-embed, so vega-embed is still the sole chart-rendering entry point in both packages, not stale. yarn.lock resolves vega-embed to 7.1.0, whose own dependency list includes fast-json-patch \"^3.1.1\" (yarn.lock lines 19031-19038, resolving to fast-json-patch 3.1.1 at yarn.lock:10855-10858), so the Parcel/fast-json-patch hoisting issue is still live in the current dependency graph. Separately, vega-embed 7.1.0's own dependency list no longer includes vega-lite (confirmed in yarn.lock) — the vega-lite weight instead comes directly from RSC's own peerDependencies/devDependency declarations (packages/react-spectrum-charts/package.json's peerDependencies, root package.json devDependencies: \"vega-lite\": \"^6.4.2\"), even though no file under packages/*/src imports from 'vega-lite' (confirmed via grep across all packages), making it dead weight declared by RSC itself rather than something pulled in transitively via vega-embed.",
+  "implementationPlan": [
+    {
+      "file": "packages/react-spectrum-charts/package.json",
+      "change": "Bug location: declares an unused vega-lite peerDependency/dependency. Fix direction: confirm no downstream consumer relies on it being auto-satisfied and drop it if so."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/package.json",
+      "change": "Same unused vega-lite peerDependency as the s1 package; same fix direction applies.",
+      "lines": "93-94"
+    },
+    {
+      "file": "packages/react-spectrum-charts/src/VegaChart.tsx",
+      "change": "Bug location: sole call site of vega-embed's embed(). Fix direction: either reimplement the minimal subset of vega-embed actually used (view creation from a spec, resize, config/tooltip wiring) directly against the 'vega' package to drop the vega-embed/fast-json-patch dependency entirely, or leave vega-embed in place and instead document the Parcel alias workaround for consumers.",
+      "lines": "1-30"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/VegaChart.tsx",
+      "change": "Mirrors the s1 VegaChart.tsx fix direction exactly.",
+      "lines": "12-20"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/vegaEmbedUtils.ts",
+      "change": "Reference: builds the options object (getVegaEmbedOptions) passed into vega-embed's embed() call; any reimplementation needs to preserve this options shape or adapt it to a direct 'vega' View API call."
+    }
+  ],
+  "openQuestions": [
+    "Should RSC pursue the reporter's suggested full reimplementation of the vega-embed subset used, or take the smaller fix (drop the unused vega-lite dependency, document the Parcel fast-json-patch alias workaround for consumers)?",
+    "Does removing vega-lite as a declared peerDependency risk breaking any consumer that happens to rely on it being auto-installed, even though RSC's own source never imports it?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/346" }
+  ]
+}

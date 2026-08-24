@@ -73,6 +73,7 @@ jobs:
           yarn workspace @spectrum-charts/themes publish-package
           yarn workspace @spectrum-charts/utils publish-package
           yarn workspace @spectrum-charts/vega-spec-builder publish-package
+          yarn workspace @spectrum-charts/schemas publish-package
         env:
           npm_config_tag: ${{ steps.extract_tag.outputs.npm_tag }}
 

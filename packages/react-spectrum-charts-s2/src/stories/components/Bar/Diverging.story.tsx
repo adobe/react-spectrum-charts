@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, BarDirectLabel, Title } from '../../../components';
+import { Axis, AxisThumbnail, Bar, BarDirectLabel, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -56,6 +56,33 @@ Horizontal.args = {
   ...defaultProps,
 };
 
+const thumbnails = ['/chrome.png', '/firefox.png', '/safari.png', '/edge.png', '/explorer.png'];
+
+const divergingConversionRateDataWithThumbnails = divergingConversionRateData.map((datum, index) => ({
+  ...datum,
+  thumbnail: thumbnails[index % thumbnails.length],
+}));
+
+/** Same as `Horizontal`, but with an `AxisThumbnail` on the dimension axis instead of a `BarDirectLabel` — thumbnails must move to the zero baseline along with the axis. */
+const HorizontalWithThumbnailStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: divergingConversionRateDataWithThumbnails, width: 700, height: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Title text="Single-series horizontal — axis thumbnails follow the axis to the zero line" fontSize={16} />
+      <Axis position="left" baseline>
+        <AxisThumbnail urlKey="thumbnail" />
+      </Axis>
+      <Axis position="bottom" grid labelFormat="percentage" />
+      <Bar {...args} diverging />
+    </Chart>
+  );
+};
+
+const HorizontalWithThumbnail = bindWithProps(HorizontalWithThumbnailStory);
+HorizontalWithThumbnail.args = {
+  ...defaultProps,
+};
+
 /** Single-series diverging, vertical — dimension on the bottom axis (baseline/dy flip). Value labels forced outside via `position="end-outside"`. */
 const VerticalStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: divergingConversionRateData, width: 500, height: 500 });
@@ -73,6 +100,29 @@ const VerticalStory: StoryFn<typeof Bar> = (args): ReactElement => {
 
 const Vertical = bindWithProps(VerticalStory);
 Vertical.args = {
+  dimension: 'channel',
+  metric: 'changeRate',
+  orientation: 'vertical',
+  colorOverride: 'barColor',
+} satisfies BarProps;
+
+/** Same as `Vertical`, but with an `AxisThumbnail` on the dimension axis instead of a `BarDirectLabel` — thumbnails must move to the zero baseline along with the axis. */
+const VerticalWithThumbnailStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: divergingConversionRateDataWithThumbnails, width: 500, height: 500 });
+  return (
+    <Chart {...chartProps}>
+      <Title text="Single-series vertical — axis thumbnails follow the axis to the zero line" fontSize={16} />
+      <Axis position="bottom" baseline>
+        <AxisThumbnail urlKey="thumbnail" />
+      </Axis>
+      <Axis position="left" grid labelFormat="percentage" />
+      <Bar {...args} diverging />
+    </Chart>
+  );
+};
+
+const VerticalWithThumbnail = bindWithProps(VerticalWithThumbnailStory);
+VerticalWithThumbnail.args = {
   dimension: 'channel',
   metric: 'changeRate',
   orientation: 'vertical',
@@ -120,7 +170,9 @@ LongLabels.args = {
 
 export {
   Horizontal,
+  HorizontalWithThumbnail,
   Vertical,
+  VerticalWithThumbnail,
   TimeAxis,
   LongLabels,
 };

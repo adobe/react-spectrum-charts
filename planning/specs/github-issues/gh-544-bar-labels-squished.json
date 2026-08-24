@@ -1,0 +1,55 @@
+{
+  "id": "gh-544-bar-labels-squished",
+  "title": "Bar Labels Are Squished on Small Charts",
+  "chartType": "bar",
+  "kind": "bug",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "The fix direction is understood (compare against the annotation's already-computed rendered width instead of a fixed constant), but whether to hide or truncate a label that doesn't fit is an open design decision, and reworking the vertical-branch visibility test to consume a per-datum signal instead of a plain number is new, non-precedented logic in this file. The s1/s2 duplication is the same edit repeated, not extra complexity."
+  },
+  "summary": "On small vertical bar charts, a bar's value annotation can render wider than its bar's dimension band and visually overlap neighboring bars/labels instead of being hidden, because the check that decides whether to show the annotation compares the band's width against a fixed constant rather than the annotation's actual rendered text width.",
+  "symptom": "On small vertical bar charts (e.g. 450x300px) with several categories, some bar value labels render wider than their bar's band and overlap adjacent bars or labels rather than being cleanly hidden, making them unreadable.",
+  "rootCause": "For vertical bars, the annotation visibility tests in getAnnotationTextMark and getAnnotationBackgroundMark (packages/vega-spec-builder/src/bar/barAnnotationUtils.ts:138, 176-179) gate on `bandwidth('${dimensionScaleName}') > getMinBandwidth(orientation, padding)`, and getMinBandwidth (barAnnotationUtils.ts:192-193) always returns a fixed 48 for vertical orientation regardless of the annotation's actual text. The annotation's true rendered width is computed separately by getAnnotationWidth (barAnnotationUtils.ts:213-222) via the `getLabelWidth(...)` Vega expression, and is used only for background-rect sizing (getAnnotationXEncode, barAnnotationUtils.ts:200-211) and metric-axis offset (getAnnotationPositionOffset, barAnnotationUtils.ts:230-248) - never for the visibility test itself. Whenever a band's width falls between 48px and the label's real computed width (common on narrow/small charts with several categories), the label passes the >48 check and renders, but is wider than its band; since the text is horizontally centered on the band (`band: 0.5`, barAnnotationUtils.ts:130-134) with no truncation applied anywhere in this file, it overflows symmetrically into neighboring bars/labels. Identical logic (same line numbers) exists in packages/vega-spec-builder-s2/src/bar/barAnnotationUtils.ts.",
+  "comparison": [
+    {
+      "aspect": "Basis of the vertical-bar annotation-visibility threshold",
+      "expected": "The visibility check should hide an annotation whenever its own rendered width (already computed via getLabelWidth for sizing/positioning elsewhere in the same file) exceeds the bar's band width.",
+      "actual": "For vertical bars, the check compares the band width against a fixed 48px constant unrelated to the specific label's text length, so longer labels on narrow bands render at full, uncropped width and overlap neighboring content."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "The identical hardcoded 48px threshold and missing width-aware visibility check exist verbatim in vega-spec-builder-s2/src/bar/barAnnotationUtils.ts (same line numbers); the fix must be applied to both files."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/bar/barAnnotationUtils.ts",
+      "change": "Bug location. Rework the vertical-orientation branch of the visibility test in getAnnotationTextMark and getAnnotationBackgroundMark so it compares against the annotation's actual computed width (the signal already produced by getAnnotationWidth) instead of the fixed 48, mirroring how the horizontal branch already compares against a real font-size-based height via getMinBandwidth. Needs a decision on whether an annotation that doesn't fit should be hidden entirely (consistent with today's behavior, just made accurate) or truncated/ellipsized.",
+      "lines": "119-149, 156-222"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barAnnotationUtils.ts",
+      "change": "Apply the identical fix for S2 parity.",
+      "lines": "119-149, 156-222"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/bar/barAnnotationUtils.test.ts",
+      "change": "Add/update tests for getMinBandwidth and the text/background visibility tests covering a narrow vertical band with a long label value, asserting the label is hidden (or truncated, per the chosen direction) instead of overflowing its band.",
+      "lines": "42-48"
+    }
+  ],
+  "openQuestions": [
+    "Should the fix hide the annotation entirely when it doesn't fit its band (consistent with today's UX), or truncate/ellipsize the text to fit? The issue only asks for a 'readable' layout, not a specific mechanism."
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/544" }
+  ]
+}

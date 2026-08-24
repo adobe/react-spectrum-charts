@@ -88,6 +88,7 @@ export const getAreaMark = (
         y2: { scale: 'yLinear', field: metricEnd },
         fill: getColorProductionRule(color, colorScheme),
         tooltip: getInspectEncoding(chartInspects ?? [], name),
+        defined: { signal: `isValid(datum["${metricStart}"]) || isValid(datum["${metricEnd}"])` },
         ...getBorderStrokeEncodings(isStacked, true),
       },
       update: {

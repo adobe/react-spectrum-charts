@@ -1,0 +1,66 @@
+{
+  "id": "donut-benchmark-label",
+  "title": "Donut Benchmark — Label Positioning",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 3,
+    "rationale": "Split out of donut-benchmark at the user's request. The 'always lower-left, top-hanging baseline' anchor rule is genuinely Benchmark-specific (no other donut feature produces a fixed-position, non-hemisphere-mirrored label), but it reuses donut-direct-labels' width-based anchor-offset technique and its shared text-width approximation helper rather than inventing new measurement logic. What keeps this above a 2: the two label formats (single-line vs. two-line) and their fallback rule aren't fully specified, and the extra ~8px safety buffer is an unsourced practical adjustment that needs verifying against real rendering, not just transcribing a formula."
+  },
+  "summary": "The Benchmark line's label - always positioned at the lower-left of the line's outer endpoint - is not yet built. Confirmed via two live Figma examples showing both a two-line format (name + value, e.g. 'Last week' / '54.2%') and a single-line format (just a category name in bold, e.g. 'Target'). Depends on donut-benchmark for the line's outer-endpoint position (the anchor point this label is positioned relative to) and reuses donut-direct-labels' width-based anchor-offset technique and text-measurement helper.",
+  "requirements": [
+    "Benchmark label supports two formats, both confirmed in the reference: a two-line format (a name line in `text-secondary`/gray-700, e.g. 'Last week', plus a value line in `text-primary`/gray-800, e.g. '54.2%') and a single-line format (just a category name in bold `text-primary`, e.g. 'Target').",
+    "Benchmark label position is always at the lower-left of the line's outer endpoint, left-aligned, using the same anchor-offset technique as donut-direct-labels (both lines start-from-the-near-edge/left-aligned to each other; the shared anchor's x = the line's outer-endpoint x minus the rendered block width, not a fixed pixel offset) - reuse donut-direct-labels' text-width approximation helper for the width estimate rather than reimplementing it.",
+    "Unlike donut-direct-labels' hemisphere-mirrored anchor (which flips left/right depending on which side of the ring a segment is on), this label's position is always lower-left regardless of the benchmark line's angle - a fixed rule, not a mirrored one.",
+    "Use a top/hanging vertical baseline (not centered) so the block reads below the endpoint rather than straddling it, plus an additional ~8px safety buffer (not a sourced token, a practical rendering safeguard) subtracted/added on top of the width estimate so the label clears the caret."
+  ],
+  "designTokens": [
+    { "token": "Benchmark label - single-line ('Target' only)", "value": "XS 12(derived)/S 14/M 16/L 20/XL 24(derived) px, weight 700, color text-primary (gray-800)", "usage": "Font size for the single-line label format, keyed to the donut's size tier." },
+    { "token": "Benchmark label - two-line, name part", "value": "same size as Direct label - segment name (per donut-chart-tokens), weight 400, color text-secondary (gray-700)", "usage": "Font size for the name line in the two-line format." },
+    { "token": "Benchmark label - two-line, value part", "value": "same size as Direct label - value (per donut-chart-tokens), weight 700, color text-primary (gray-800)", "usage": "Font size for the value line in the two-line format." },
+    { "token": "Benchmark label safety buffer", "value": "~8px (not a sourced token - a practical rendering safeguard)", "usage": "Subtracted/added on top of the width-estimate anchor offset so the label clears the caret, since the width estimate itself is an approximation, not a real measurement." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-benchmark/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-direct-labels/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54002&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Long benchmark label name (two-line format)", "expectedBehavior": "Not addressed by the donut-benchmark skill - confirm whether it truncates/wraps like direct labels, or is expected to always be short (e.g. 'Last week')." },
+    { "case": "Small donut size (e.g. XS/S tier)", "expectedBehavior": "Since the label is anchored a fixed distance from the cap regardless of donut size, confirm the label doesn't overlap the ring or extend outside the chart bounds at small sizes." },
+    { "case": "Combined with Direct/Advanced labels and/or Emphasize on the same 2-segment donut", "expectedBehavior": "Confirm the benchmark label (always lower-left) doesn't visually collide with a direct/advanced label or an emphasize-grayed segment positioned in the same region." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale is false - this computes a static x/y anchor via an expression, reusing donut-direct-labels' text-width helper; no new signal or scale. requiresS1S2Parity is false: no existing s1 Benchmark implementation to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutBenchmarkUtils.ts (from donut-benchmark)",
+      "change": "Add the two label-format text marks (two-line name+value, or single-line category), using the lower-left anchor-offset math and reusing donut-direct-labels' donutTextMeasureUtils.ts helper for width estimation.",
+      "lines": "N/A - extends the file donut-benchmark creates"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutBenchmarkUtils.test.ts (from donut-benchmark)",
+      "change": "Add tests for both label formats and the lower-left anchor positioning.",
+      "lines": "N/A - extends the file donut-benchmark creates"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/Benchmark/Benchmark.story.tsx (from donut-benchmark)",
+      "change": "Add stories for both label formats matching the Figma reference examples.",
+      "lines": "N/A - extends the file donut-benchmark creates"
+    }
+  ],
+  "openQuestions": [
+    "Is the single-line ('Target'-only) vs. two-line (name+value) label format an explicit prop/variant the API must expose, or does the two-line format simply render whenever both a name and value are supplied, falling back to single-line when only one is given?"
+  ],
+  "relatedIssues": ["donut-benchmark", "donut-direct-labels"]
+}
