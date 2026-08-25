@@ -70,7 +70,13 @@ import {
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder';
-import { addUserMetaAnimatedMark, addUserMetaDivergingBarMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import {
+  addUserMetaAccessibleNavigationMark,
+  addUserMetaAnimatedMark,
+  addUserMetaDivergingBarMark,
+  addUserMetaInteractiveMark,
+  getFacetsFromOptions,
+} from '../specUtils';
 import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types';
@@ -196,6 +202,14 @@ export const addBar = produce<
     );
     if (barOptions.isHoverAnimate) {
       spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, barName);
+    }
+    if (options.accessibleNavigation) {
+      spec.usermeta = addUserMetaAccessibleNavigationMark(
+        spec.usermeta,
+        barName,
+        barOptions.dimension,
+        typeof barOptions.color === 'string' ? barOptions.color : undefined
+      );
     }
 
     // diverging is single-series only: dodged and faceted (multi-row-per-category) bars have no well-defined sign

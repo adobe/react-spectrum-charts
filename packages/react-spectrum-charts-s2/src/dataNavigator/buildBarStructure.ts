@@ -9,10 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import dataNavigator, { NavigationRules, NodeObject, Structure, StructureOptions } from 'data-navigator';
+import dataNavigator, { NodeObject, Structure, StructureOptions } from 'data-navigator';
 
 import { DEFAULT_CATEGORICAL_DIMENSION, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+
+import { baseNavigationRules } from './navigationRules';
 
 export interface BuildBarStructureOptions {
   /** The chart data (plain objects). */
@@ -35,17 +37,6 @@ export interface BarStructure {
   structure: Structure;
   entryPoint: string | undefined;
 }
-
-/**
- * The keyboard navigation rules for a basic bar chart: left/right between bars,
- * Enter to drill in, Escape to drill out (and exit once past the chart root).
- */
-const baseNavigationRules: NavigationRules = {
-  left: { key: 'ArrowLeft', direction: 'source' },
-  right: { key: 'ArrowRight', direction: 'target' },
-  child: { key: 'Enter', direction: 'target' },
-  parent: { key: 'Escape', direction: 'source' },
-};
 
 export const buildBarStructure = ({
   data,

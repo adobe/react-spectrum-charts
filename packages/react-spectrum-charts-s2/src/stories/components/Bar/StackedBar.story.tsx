@@ -107,7 +107,8 @@ const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args} />
-      <Legend title="Operating system" />
+      {/* color must match the bar's own color field so keyboard focus can highlight the matching legend entry */}
+      <Legend title="Operating system" color="operatingSystem" />
     </Chart>
   );
 };

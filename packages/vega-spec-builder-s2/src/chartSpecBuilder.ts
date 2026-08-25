@@ -30,8 +30,10 @@ import {
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR_SCHEME,
+  DEFAULT_LEGEND_LABEL_LIMIT,
   DEFAULT_LINE_TYPES,
   FILTERED_TABLE,
+  FOCUSED_SERIES,
   HIGHLIGHTED_GROUP,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
@@ -61,6 +63,19 @@ import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
 import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
+import { getAxisFocusRingMark, getAxisFocusRingSignals } from './axis/axisFocusRingUtils';
+import {
+  LEGEND_TITLE_RESERVE,
+  LegendPosition,
+  getLegendBandData,
+  getLegendBandGroup,
+  getLegendBandSignals,
+} from './legend/legendBandGroup';
+import {
+  BOTTOM_AXIS_LABEL_RESERVE,
+  BOTTOM_AXIS_TITLE_RESERVE,
+  wrapChartInPlotGroup,
+} from './legend/plotGroupLayout';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
@@ -243,6 +258,76 @@ export function buildSpec({
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);
 
+  // Accessible-navigation charts with a legend: nest the chart in a plot group and render the legend
+  // as our own marks in a reserved band below it, all within the user-defined height (see
+  // plotGroupLayout / planning/research/custom-legend.md).
+  if (accessibleNavigation && legends.length > 0) {
+    // removeUnusedScales (immer produce) froze the spec; unfreeze so setHoverOpacityForMarks can
+    // splice the fade rule into the (frozen) mark opacity arrays.
+    spec = JSON.parse(JSON.stringify(spec));
+    const colorField = typeof legends[0].color === 'string' ? legends[0].color : undefined;
+    const series =
+      colorField && Array.isArray(data)
+        ? [...new Set(data.map((d) => (d as Record<string, unknown>)[colorField]).filter((v) => v != null))].map(String)
+        : [];
+    const legendTitle = typeof legends[0].title === 'string' ? legends[0].title : undefined;
+    const titleReserve = legendTitle ? LEGEND_TITLE_RESERVE : 0;
+    const legendName = legends[0].name ?? 'legend0';
+    const highlight = Boolean(legends[0].highlight);
+    const isToggleable = Boolean(legends[0].isToggleable);
+    const labelLimit = legends[0].labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
+    const align = legends[0].align ?? 'middle';
+    const position = (legends[0].position ?? 'bottom') as LegendPosition;
+    // Entries are clickable for toggle, an onClick callback, or a popover — all reuse the React
+    // click handler that keys on role `legend-symbol` + `datum.value`.
+    const clickable = Boolean(isToggleable || legends[0].hasOnClick || legends[0].chartPopovers?.length);
+    // When highlight is on, addLegend already created `${legendName}_hoveredSeries` and the chart marks
+    // already got their legend-hover fade rule (via legendHighlightSignals). Our legend only supplies
+    // the interactive hit target (named `${legendName}_legendEntry`) that the signal listens to, plus
+    // dimming of its own entries — so no signal/opacity wiring is duplicated here.
+    const legend =
+      series.length > 0
+        ? {
+            group: getLegendBandGroup({
+              colorScheme,
+              title: legendTitle,
+              titleReserve,
+              legendName,
+              highlight,
+              isToggleable,
+              hiddenSeries,
+              descriptions: legends[0].descriptions,
+              clickable,
+              hasMouseInteraction: Boolean(legends[0].hasMouseInteraction),
+              keys: legends[0].keys,
+              labelLimit,
+              titleLimit: legends[0].titleLimit,
+              opacity: legends[0].opacity as never,
+              symbolShape: legends[0].symbolShape as never,
+              lineType: legends[0].lineType as never,
+              lineWidth: legends[0].lineWidth as never,
+              position,
+            }),
+            data: getLegendBandData(legendName, labelLimit),
+            signals: getLegendBandSignals(titleReserve, legendName, labelLimit, align, position, legendTitle),
+          }
+        : undefined;
+    // Reserve room below the plot for the bottom axis's labels/title (the wrapper adds the legend offset).
+    const bottomAxis = axes.find((axis) => axis.position === 'bottom');
+    const bottomAxisReserve = bottomAxis ? BOTTOM_AXIS_LABEL_RESERVE + (bottomAxis.title ? BOTTOM_AXIS_TITLE_RESERVE : 0) : 0;
+    spec = wrapChartInPlotGroup(spec, legend, bottomAxisReserve, position);
+  }
+
+  // Keyboard-focus ring for axis ticks/labels: a top-level signal-driven rect the data-navigator
+  // positions from the focused label's measured scenegraph bounds.
+  if (accessibleNavigation) {
+    spec = {
+      ...spec,
+      marks: [...(spec.marks ?? []), getAxisFocusRingMark(colorScheme)],
+      signals: [...(spec.signals ?? []), ...getAxisFocusRingSignals()],
+    };
+  }
+
   return safeClone(spec);
 }
 
@@ -324,6 +409,7 @@ export const getDefaultSignals = ({
     getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM, formattedHighlightedItem),
     getGenericValueSignal(HIGHLIGHTED_GROUP),
     getGenericValueSignal(CONTROLLED_HIGHLIGHTED_SERIES, highlightedSeries),
+    getGenericValueSignal(FOCUSED_SERIES),
     getGenericValueSignal(SELECTED_ITEM),
     getGenericValueSignal(SELECTED_SERIES),
     getGenericValueSignal(SELECTED_GROUP),

@@ -40,6 +40,7 @@ import { getCursor } from '../marks/markUtils';
 import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import {
+  AccessibleNavigationMark,
   AxisOptions,
   AxisSpecOptions,
   ColorScheme,
@@ -50,6 +51,7 @@ import {
   ScSpec,
   UserMeta,
 } from '../types';
+import { getAxisLabelFocusFontWeight, getMatchingAccessibleNavigationBarDimensionFields } from './axisLabelFocusUtils';
 import {
   addAxisLabelHoverSignalWiring,
   getAxisLabelDimensionFillOpacity,
@@ -509,7 +511,7 @@ function buildStandardAxes(
   const { colorScheme, position, usermeta } = axisOptions;
   const axis = getDefaultAxis(axisOptions, scaleName);
 
-  applyAxisLabelEncodings(axis, axisOptions, usermeta?.interactiveMarks, scaleField);
+  applyAxisLabelEncodings(axis, axisOptions, usermeta?.interactiveMarks, usermeta?.accessibleNavigationMarks, scaleField);
 
   // if sublabels exist, create a new axis for the sub labels
   if (hasSubLabels(axisOptions)) {
@@ -549,6 +551,7 @@ function applyAxisLabelEncodings(
   axis: Axis,
   axisOptions: AxisSpecOptions,
   interactiveMarks: InteractiveMark[] | undefined,
+  accessibleNavigationMarks: AccessibleNavigationMark[] | undefined,
   scaleField?: string
 ): void {
   const { hasOnClick, hideDefaultLabels, labelAlign, labelFontWeight, labelOrientation, name, position, hasTooltip } =
@@ -558,17 +561,21 @@ function applyAxisLabelEncodings(
     ? []
     : getMatchingInteractiveBarDimensionFields(scaleField, interactiveMarks);
   const hasMatchingDimensionBar = matchingBarDimensionFields.length > 0;
+  const hasMatchingAccessibleNavBar = hideDefaultLabels
+    ? false
+    : getMatchingAccessibleNavigationBarDimensionFields(scaleField, accessibleNavigationMarks).length > 0;
   // independent of the bar-dimension-hover match; mirrors hideDefaultLabels gating above
   const isClickable = hasOnClick && !hideDefaultLabels;
   const cursor = getCursor([], isClickable);
 
-  if (hasMatchingDimensionBar || isClickable) {
+  if (hasMatchingDimensionBar || hasMatchingAccessibleNavBar || isClickable) {
     axis.encode = deepmerge(axis.encode ?? {}, {
       labels: {
         name: getAxisLabelMarkName(name),
         interactive: true,
         update: {
           ...(hasMatchingDimensionBar && { fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields) }),
+          ...(hasMatchingAccessibleNavBar && { fontWeight: getAxisLabelFocusFontWeight(labelFontWeight) }),
           ...(cursor && { cursor }),
         },
       },
@@ -591,10 +598,11 @@ function applyAxisLabelEncodings(
       name: getAxisLabelMarkName(name),
       interactive: hasTooltip || hasMatchingDimensionBar || isClickable,
       ...encodingWithOptionalTooltip,
-      ...((hasMatchingDimensionBar || cursor) && {
+      ...((hasMatchingDimensionBar || hasMatchingAccessibleNavBar || cursor) && {
         update: {
           ...encodingWithOptionalTooltip.update,
           ...(hasMatchingDimensionBar && { fillOpacity: getAxisLabelDimensionFillOpacity(matchingBarDimensionFields) }),
+          ...(hasMatchingAccessibleNavBar && { fontWeight: getAxisLabelFocusFontWeight(labelFontWeight) }),
           ...(cursor && { cursor }),
         },
       }),

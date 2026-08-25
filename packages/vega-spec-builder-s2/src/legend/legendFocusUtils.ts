@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { AccessibleNavigationMark } from '../types';
 
-// S2-specific version of vega-spec-builder
-// Only exports modules for components included in react-spectrum-charts-s2
-export * from './chartSpecBuilder';
-export * from './specUtils';
-export * from './types';
-export * from './expressionFunctions';
-export * from './vegaEmbedUtils';
-export * from './legend/legendBandGroup';
-export * from './axis/axisFocusRingUtils';
+/** Filters `usermeta.accessibleNavigationMarks` to entries whose series/color field matches this legend's. */
+export const getMatchingAccessibleNavigationSeriesFields = (
+  scaleField: string | undefined,
+  accessibleNavigationMarks: AccessibleNavigationMark[] = []
+): AccessibleNavigationMark[] => {
+  if (!scaleField) return [];
+  return accessibleNavigationMarks.filter((mark) => mark.color === scaleField);
+};

@@ -19,6 +19,12 @@
   position: absolute;
   top: 0;
   left: 0;
+  /* All children are position: absolute, so without this the wrapper collapses to 0px tall,
+     making every .dn-node (height: 100%) unfocusable in a real browser (jsdom skips layout). */
+  height: 100%;
+  /* The overlay is for keyboard focus / AT only. Without this it captures the mouse across the whole
+     chart, blocking Vega hover/click (e.g. legend highlight). Focus is unaffected by pointer-events. */
+  pointer-events: none;
 }
 .dn-node {
   position: absolute;
@@ -31,13 +37,33 @@
 .dn-node:focus-visible {
   outline: none;
 }
+/* Off-screen until focused (standard skip-link pattern), then shown as a visible affordance
+   INSIDE the chart's top-left so a keyboard user can see where "Enter navigation area" is. */
 .dn-entry-button {
   position: absolute;
+  width: 1px;
   height: 1px;
-  transform: translate(-9999px, -9999px);
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+  /* Re-enable pointer events on the button (the wrapper disables them) so it stays clickable. */
+  pointer-events: auto;
 }
-.dn-entry-button:focus {
+.dn-entry-button:focus,
+.dn-entry-button:focus-visible {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  width: auto;
   height: auto;
-  top: -21px;
-  transform: translate(0, 0);
+  padding: 4px 8px;
+  overflow: visible;
+  clip: auto;
+  background: var(--spectrum-blue-800, #4b75ff);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 12px;
 }

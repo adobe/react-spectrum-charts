@@ -616,6 +616,47 @@ describe('Spec builder, Axis', () => {
       });
     });
 
+    describe('accessible navigation label focus wiring', () => {
+      // a bar named "bar0" with accessible navigation enabled, dimension "category"
+      const accessibleNavigationMarks = [{ name: 'bar0', dimension: 'category' }];
+
+      test('adds a fontWeight rule when an accessibly-navigable bar matches scaleField', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { accessibleNavigationMarks },
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+        expect(axis.encode?.labels?.update?.fontWeight).toStrictEqual([
+          { test: 'isValid(focusedItem) && focusedItem === datum.value', value: 'bold' },
+          { test: 'isValid(focusedDimension) && focusedDimension === datum.value', value: 'bold' },
+          { value: defaultAxisOptions.labelFontWeight },
+        ]);
+      });
+
+      test('does not add a fontWeight rule when no accessibly-navigable bar matches scaleField', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'otherField',
+          usermeta: { accessibleNavigationMarks },
+        })[0];
+        expect(axis.encode?.labels?.update).not.toHaveProperty('fontWeight');
+      });
+
+      test('does not wire when hideDefaultLabels is true, even with a matching bar', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hideDefaultLabels: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { accessibleNavigationMarks },
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+      });
+    });
+
     describe('onClick wiring', () => {
       test('stamps a name, sets interactive true, and adds a pointer cursor when hasOnClick is true', () => {
         const axis = addAxes([], {

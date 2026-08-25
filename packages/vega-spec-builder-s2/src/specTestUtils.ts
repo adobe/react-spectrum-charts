@@ -27,6 +27,7 @@ import {
   DIRECT_LABEL_FONT_SIZE_L,
   DIRECT_LABEL_FONT_SIZE_M,
   DIRECT_LABEL_FONT_SIZE_S,
+  FOCUSED_SERIES,
   HIGHLIGHTED_GROUP,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -38,6 +39,7 @@ import { getGenericValueSignal } from './signal/signalSpecBuilder';
 export const defaultHighlightedItemSignal = getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM);
 export const defaultHighlightedGroupSignal = getGenericValueSignal(HIGHLIGHTED_GROUP);
 export const defaultHighlightedSeriesSignal = getGenericValueSignal(CONTROLLED_HIGHLIGHTED_SERIES);
+export const defaultFocusedSeriesSignal = getGenericValueSignal(FOCUSED_SERIES);
 export const defaultSelectedItemSignal = getGenericValueSignal(SELECTED_ITEM);
 export const defaultSelectedSeriesSignal = getGenericValueSignal(SELECTED_SERIES);
 export const defaultSelectedGroupSignal = getGenericValueSignal(SELECTED_GROUP);
@@ -71,6 +73,7 @@ export const defaultSignals: Signal[] = [
   defaultHighlightedItemSignal,
   defaultHighlightedGroupSignal,
   defaultHighlightedSeriesSignal,
+  defaultFocusedSeriesSignal,
   defaultSelectedItemSignal,
   defaultSelectedSeriesSignal,
   defaultSelectedGroupSignal,

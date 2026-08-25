@@ -18,7 +18,7 @@ import { GROUP_DATA } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect } from '../../../components';
+import { Axis, Bar, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -98,8 +98,68 @@ const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
     <Chart {...chartProps} debug>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} baseline grid title="Downloads" />
-      <Bar {...args} orientation='horizontal'/>
+      {/* color-per-bar (not stacked) so the legend region has entries to test alongside the axis regions */}
+      <Bar {...args} orientation='horizontal' color="browser" />
+      {/* color must match the bar's own color field so keyboard focus can highlight the matching legend entry */}
+      <Legend title="Browser" color="browser" />
     </Chart>
+  );
+};
+
+// Side-by-side harness for legend parity: the button toggles `accessibleNavigation`, which swaps the
+// built-in Vega legend (OLD) for the custom accessible-navigation legend (NEW). Both get the same rich
+// set of legend props so each feature can be checked on both.
+const legendLabels = [
+  { seriesName: 'Chrome', label: 'Google Chrome' },
+  { seriesName: 'Edge', label: 'Microsoft Edge' },
+];
+const legendDescriptions = [
+  { seriesName: 'Chrome', description: 'Chromium-based browser by Google' },
+  { seriesName: 'Firefox', description: 'Browser by Mozilla' },
+];
+
+// Legend props are exposed as Storybook controls so each can be toggled live and compared old vs new.
+interface LegendControls {
+  legendPosition?: 'top' | 'bottom' | 'left' | 'right';
+  highlight?: boolean;
+  isToggleable?: boolean;
+  align?: 'start' | 'middle' | 'end';
+  labelLimit?: number;
+  titleLimit?: number;
+  useLegendLabels?: boolean;
+  useDescriptions?: boolean;
+  useHiddenEntries?: boolean;
+}
+
+const LegendComparisonStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const [useOldLegend, setUseOldLegend] = useState(false);
+  const c = args as unknown as LegendControls;
+  const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: !useOldLegend });
+  return (
+    <div>
+      <button type="button" onClick={() => setUseOldLegend((v) => !v)} style={{ marginBottom: 12, padding: '6px 12px' }}>
+        {useOldLegend ? 'Legend: OLD (built-in) — click for NEW' : 'Legend: NEW (custom) — click for OLD'}
+      </button>
+      {/* In NEW mode, Tab into the chart and use arrow keys to navigate the legend — focus rings appear. */}
+      <Chart {...chartProps}>
+        <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+        <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} baseline grid title="Downloads" />
+        <Bar {...args} color="browser" />
+        <Legend
+          title="Browser"
+          color="browser"
+          position={c.legendPosition}
+          highlight={c.highlight}
+          isToggleable={c.isToggleable}
+          align={c.align}
+          labelLimit={c.labelLimit}
+          titleLimit={c.titleLimit}
+          legendLabels={c.useLegendLabels ? legendLabels : undefined}
+          descriptions={c.useDescriptions ? legendDescriptions : undefined}
+          hiddenEntries={c.useHiddenEntries ? ['Explorer'] : undefined}
+        />
+      </Chart>
+    </div>
   );
 };
 
@@ -232,8 +292,36 @@ AccessibleNavigation.args = {
   ...defaultProps,
 };
 
+// Toggle button swaps built-in (old) vs custom accessible-navigation (new) legend for parity testing.
+// Legend props are Storybook controls so each can be toggled live on both legends.
+const LegendComparison = bindWithProps(LegendComparisonStory);
+LegendComparison.args = {
+  ...defaultProps,
+  orientation: 'horizontal',
+  legendPosition: 'bottom',
+  highlight: true,
+  isToggleable: true,
+  align: 'middle',
+  labelLimit: 184,
+  useLegendLabels: true,
+  useDescriptions: true,
+  useHiddenEntries: true,
+} as unknown as typeof LegendComparison.args;
+LegendComparison.argTypes = {
+  legendPosition: { control: 'select', options: ['top', 'bottom', 'left', 'right'] },
+  align: { control: 'select', options: ['start', 'middle', 'end'] },
+  labelLimit: { control: 'number' },
+  titleLimit: { control: 'number' },
+  highlight: { control: 'boolean' },
+  isToggleable: { control: 'boolean' },
+  useLegendLabels: { control: 'boolean', name: 'legendLabels' },
+  useDescriptions: { control: 'boolean', name: 'descriptions' },
+  useHiddenEntries: { control: 'boolean', name: 'hiddenEntries (Explorer)' },
+} as unknown as typeof LegendComparison.argTypes;
+
 export {
   AccessibleNavigation,
+  LegendComparison,
   BarWithUTCDatetimeFormat,
   Basic,
   HasSquareCorners,

@@ -18,6 +18,9 @@ import { ChartHandle, Datum, SimpleData, SymbolSize, getChartConfig } from '@spe
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
+import { Axis } from './components/Axis';
+import { Legend } from './components/Legend';
+import { AxisRegionOptions, LegendRegionOptions } from './dataNavigator/buildChartStructure';
 import { Navigator } from './dataNavigator/Navigator';
 import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
@@ -129,8 +132,50 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   );
   const navChartType =
     navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
-  const navFields = navChild?.props as { dimension?: string; metric?: string; color?: unknown } | undefined;
+  const navFields = navChild?.props as
+    | { dimension?: string; metric?: string; color?: unknown; orientation?: string }
+    | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
+
+  // Legend-only focus mode: chart-content and axis navigation are disabled while we get the legend
+  // working end-to-end, so the axis-region detection is intentionally omitted for now.
+  const legendChild = sanitizedChildren.find(
+    (child) => 'displayName' in child.type && child.type.displayName === Legend.displayName
+  );
+
+  const legendProps = legendChild?.props as
+    | { title?: string; hiddenEntries?: string[]; highlight?: boolean; name?: string }
+    | undefined;
+  const legend: LegendRegionOptions | undefined =
+    legendChild && navColor
+      ? {
+          field: navColor,
+          title: legendProps?.title,
+          hiddenEntries: legendProps?.hiddenEntries,
+          name: legendProps?.name ?? 'legend0',
+          highlight: Boolean(legendProps?.highlight),
+        }
+      : undefined;
+
+  // Bottom (x) axis region: makes the axis labels keyboard-navigable and drives the axis focus ring.
+  const xAxisChild = sanitizedChildren.find(
+    (child) =>
+      'displayName' in child.type &&
+      child.type.displayName === Axis.displayName &&
+      (child.props as { position?: string }).position === 'bottom'
+  );
+  // The bar's dimension-hover signal, so focusing an axis label activates the same bar highlight as
+  // mouse hover. Defaults to the first bar mark's name (`bar0`).
+  const barName = (navChild?.props as { name?: string })?.name ?? 'bar0';
+  const xAxis: AxisRegionOptions | undefined =
+    xAxisChild && navFields?.dimension
+      ? {
+          field: navFields.dimension,
+          type: 'categorical',
+          title: (xAxisChild.props as { title?: string }).title,
+          dimensionHoverSignal: `${barName}_dimensionHoverArea_hoveredItem`,
+        }
+      : undefined;
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
 
@@ -165,6 +210,9 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             color={navColor}
             metric={navFields?.metric}
             title={title}
+            xAxis={xAxis}
+            legend={legend}
+            content={false}
             containerRef={navContainerRef}
             chartId={chartId}
             getView={getView}

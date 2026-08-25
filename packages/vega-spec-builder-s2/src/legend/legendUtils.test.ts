@@ -28,6 +28,7 @@ import { defaultLegendOptions } from './legendTestUtils';
 import {
   getClickEncodings,
   getColumns,
+  getEncodings,
   getHiddenSeriesColorRule,
   getLegendOpacity,
   getOpacityEncoding,
@@ -131,6 +132,19 @@ describe('getClickEncodings()', () => {
   test('should return entries encodings if chartPopovers', () => {
     const encodings = getClickEncodings({ ...defaultLegendOptions, chartPopovers: [{}] });
     expect(encodings).toHaveProperty('entries');
+  });
+});
+
+describe('getEncodings() keyboard-focus', () => {
+  const accessibleNavigationMarks = [{ name: 'bar0', dimension: 'browser', color: 'os' }];
+
+  test('does not embed a focus ring in the legend encodings (it is an overlay rect mark instead)', () => {
+    // The padded ring can't be an encoding — Vega pins the entry box to content. It is added as a
+    // separate overlay mark (legendFocusRingMark), so getEncodings must not draw a legend/entry ring.
+    const encodings = getEncodings([], { ...defaultLegendOptions, color: 'os' }, { accessibleNavigationMarks });
+    expect(encodings.legend).toBeUndefined();
+    expect(encodings.entries?.update?.stroke).toBeUndefined();
+    expect(encodings.labels?.update).not.toHaveProperty('fontWeight');
   });
 });
 

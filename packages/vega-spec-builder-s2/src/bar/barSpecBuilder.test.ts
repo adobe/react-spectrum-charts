@@ -301,6 +301,23 @@ describe('barSpecBuilder', () => {
         expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: undefined }]);
       });
 
+      test('should add an accessibleNavigationMarks entry when accessibleNavigation is set', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          accessibleNavigation: true,
+          color: 'series',
+        }).usermeta;
+        expect(usermeta.accessibleNavigationMarks).toStrictEqual([
+          { name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION, color: 'series' },
+        ]);
+      });
+
+      test('should not add an accessibleNavigationMarks entry when accessibleNavigation is not set', () => {
+        const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' }).usermeta;
+        expect(usermeta.accessibleNavigationMarks).toBeUndefined();
+      });
+
       test('should add a divergingBarMarks entry for a single-series diverging bar', () => {
         const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', diverging: true }).usermeta;
         expect(usermeta.divergingBarMarks).toStrictEqual([

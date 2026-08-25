@@ -182,6 +182,9 @@ export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: swe
 export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
 export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
 export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
+/** Legend entry focused via keyboard navigation (data-navigator); deliberately separate from
+ *  CONTROLLED_HIGHLIGHTED_SERIES so keyboard focus can't clobber an app-set `highlightedSeries` prop. */
+export const FOCUSED_SERIES = 'focusedSeries';
 /** Separator joining fields into a unique data-navigator node id (e.g. stacked segment = dimension + series). */
 export const NAVIGATION_ID_SEPARATOR = '__rsc__';
 

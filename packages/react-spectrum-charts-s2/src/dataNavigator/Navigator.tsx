@@ -15,7 +15,7 @@ import { View } from 'vega';
 
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { NavigableChartType } from './buildChartStructure';
+import { AxisRegionOptions, LegendRegionOptions, NavigableChartType } from './buildChartStructure';
 import { attachDataNavigator } from './dataNavigatorAdapter';
 
 export interface NavigatorProps {
@@ -31,6 +31,14 @@ export interface NavigatorProps {
   metric?: string;
   /** Optional chart title for the accessible description. */
   title?: string;
+  /** When provided, adds a top-level, sibling-navigable x-axis region alongside chart content. */
+  xAxis?: AxisRegionOptions;
+  /** When provided, adds a top-level, sibling-navigable y-axis region alongside chart content. */
+  yAxis?: AxisRegionOptions;
+  /** When provided, adds a top-level, sibling-navigable legend region alongside chart content. */
+  legend?: LegendRegionOptions;
+  /** When false, the chart-content (bar) region is omitted so only auxiliary regions are navigable. Defaults to true. */
+  content?: boolean;
   /** Ref to the positioned container that wraps the chart. */
   containerRef: RefObject<HTMLElement | null>;
   /** Stable id used to namespace the rendered nav elements. */
@@ -46,6 +54,10 @@ export const Navigator = ({
   color,
   metric,
   title,
+  xAxis,
+  yAxis,
+  legend,
+  content,
   containerRef,
   chartId,
   getView,
@@ -55,8 +67,14 @@ export const Navigator = ({
     if (!container || data.length === 0) {
       return;
     }
-    attachDataNavigator({ container, chartType, data, dimension, color, metric, title, chartId, getView });
-  }, [chartType, data, dimension, color, metric, title, chartId, containerRef, getView]);
+    const attach = () =>
+      attachDataNavigator({ container, chartType, data, dimension, color, metric, title, xAxis, yAxis, legend, content, chartId, getView });
+    attach();
+    // Re-attach on the next frame so the axis visible-label filter reads a laid-out scenegraph (the
+    // first effect tick can run before Vega's async layout settles). attachDataNavigator rebuilds cleanly.
+    const raf = requestAnimationFrame(attach);
+    return () => cancelAnimationFrame(raf);
+  }, [chartType, data, dimension, color, metric, title, xAxis, yAxis, legend, content, chartId, containerRef, getView]);
 
   return null;
 };

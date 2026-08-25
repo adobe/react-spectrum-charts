@@ -49,10 +49,19 @@ export type DivergingBarMark = {
   metric: string;
 };
 
+/** A bar mark with keyboard accessibility enabled; lets axis/legend building highlight the matching label/entry on focus without parsing marks or data directly. */
+export type AccessibleNavigationMark = {
+  name: string;
+  dimension: string;
+  /** The bar's series/color field, when bound to a data field (not a static color value). */
+  color?: string;
+};
+
 export type UserMeta = {
   animatedMarks?: string[];
   interactiveMarks?: InteractiveMark[];
   divergingBarMarks?: DivergingBarMark[];
+  accessibleNavigationMarks?: AccessibleNavigationMark[];
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];

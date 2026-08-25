@@ -109,7 +109,9 @@ export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, 
   const legendLabelsEncodings = getLegendLabelsEncodings(legendOptions.name, legendOptions.legendLabels);
   const showHideEncodings = getShowHideEncodings(legendOptions);
   const clickEncodings = getClickEncodings(legendOptions);
-  // merge the encodings together
+  // The keyboard-focus ring is NOT an encoding here — Vega's built-in legend can't draw a padded
+  // ring (legendEntryLayout pins the entry box to content). It's an overlay rect mark positioned by
+  // the data-navigator adapter instead (legendFocusRingMark). See planning/research/custom-legend.md.
   return mergeLegendEncodings([
     symbolEncodings,
     legendLabelsEncodings,

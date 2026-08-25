@@ -43,4 +43,86 @@ describe('buildChartStructure()', () => {
       Object.keys(direct.structure.nodes).sort()
     );
   });
+
+  describe('with axis and legend regions', () => {
+    const stackedData = [
+      { browser: 'Chrome', os: 'Windows', downloads: 18000 },
+      { browser: 'Chrome', os: 'Mac', downloads: 9000 },
+      { browser: 'Firefox', os: 'Windows', downloads: 5000 },
+      { browser: 'Firefox', os: 'Mac', downloads: 3000 },
+    ];
+
+    test('keeps content as the entry point and content ids untouched', () => {
+      const direct = buildBarStructure({ data, dimension: 'browser' });
+      const composed = buildChartStructure({
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        xAxis: { field: 'browser', type: 'categorical' },
+      });
+
+      expect(composed?.entryPoint).toBe(direct.entryPoint);
+      expect(composed?.structure.nodes.Chrome).toBeDefined();
+    });
+
+    test('adds a namespaced x-axis region alongside content', () => {
+      const composed = buildChartStructure({
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        xAxis: { field: 'browser', type: 'categorical' },
+      });
+
+      const axisNodes = Object.entries(composed?.structure.nodes ?? {}).filter(([id]) => id.startsWith('xAxis::'));
+      expect(axisNodes.length).toBeGreaterThan(0);
+    });
+
+    test('adds a namespaced legend region only when requested', () => {
+      const withoutLegend = buildChartStructure({ chartType: 'bar', data: stackedData, dimension: 'browser', color: 'os' });
+      const withLegend = buildChartStructure({
+        chartType: 'bar',
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        legend: { field: 'os' },
+      });
+
+      expect(Object.keys(withoutLegend?.structure.nodes ?? {}).some((id) => id.startsWith('legend::'))).toBe(false);
+      expect(withLegend?.structure.nodes['legend::Windows']).toBeDefined();
+      expect(withLegend?.structure.nodes['legend::Mac']).toBeDefined();
+    });
+
+    test('content: false builds a legend-only structure whose entry point is the legend root', () => {
+      const composed = buildChartStructure({
+        chartType: 'bar',
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        legend: { field: 'os' },
+        content: false,
+      });
+
+      const ids = Object.keys(composed?.structure.nodes ?? {});
+      expect(ids.every((id) => id.startsWith('legend::'))).toBe(true);
+      expect(composed?.entryPoint).toBe('legend::_os');
+    });
+
+    test('composes content, both axes, and the legend together', () => {
+      const composed = buildChartStructure({
+        chartType: 'bar',
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        title: 'Downloads by browser',
+        xAxis: { field: 'browser', type: 'categorical' },
+        yAxis: { field: 'downloads', type: 'numerical' },
+        legend: { field: 'os' },
+      });
+
+      const regions = new Set(
+        Object.keys(composed?.structure.nodes ?? {}).map((id) => (id.includes('::') ? id.split('::')[0] : 'content'))
+      );
+      expect(regions).toEqual(new Set(['content', 'xAxis', 'yAxis', 'legend']));
+    });
+  });
 });

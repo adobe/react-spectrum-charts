@@ -342,6 +342,18 @@ export const addUserMetaDivergingBarMark = produce<UserMeta, [string, string, st
   }
 );
 
+/**
+ * Adds a keyboard-accessible bar mark to the user meta, so axis building can highlight the
+ * axis label matching the currently keyboard-focused item/dimension without parsing marks or
+ * data directly. Deliberately separate from {@link addUserMetaInteractiveMark} — accessible
+ * navigation shouldn't also wire up mouse-hover axis-label interactivity as a side effect.
+ */
+export const addUserMetaAccessibleNavigationMark = produce<UserMeta, [string, string, string?]>(
+  (usermeta, name, dimension, color) => {
+    usermeta.accessibleNavigationMarks = [...(usermeta.accessibleNavigationMarks ?? []), { name, dimension, color }];
+  }
+);
+
 export const addUserMetaAnimatedMark = produce<UserMeta, [string?]>((usermeta, animatedMarkName) => {
   usermeta.animatedMarks = [
     ...(usermeta.animatedMarks ?? []),
