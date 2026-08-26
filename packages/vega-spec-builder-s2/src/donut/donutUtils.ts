@@ -13,6 +13,8 @@ import { ArcMark, ColorValueRef, ProductionRule, Signal, SourceData, ThresholdSc
 
 import {
   DEFAULT_HOLE_RATIO,
+  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_RING_GAP,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SIZE_TIER_CUTPOINTS,
@@ -74,6 +76,23 @@ const getArcFillEncoding = ({
 };
 
 /**
+ * Gets the donut's outer radius. When a SegmentLabel with direct labels is present (and the donut
+ * isn't boolean, which never renders them), this reserves room for the label's ring-gap and its
+ * (capped) hemisphere pull-back out of the raw available radius, so the ring and its labels always
+ * fit within the given container in a single deterministic pass - the ring never needs a further
+ * reactive shrink, and the container never needs to grow beyond what's given.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+export const getDonutOuterRadiusExpr = ({ isBoolean, segmentLabels }: DonutSpecOptions): string => {
+  // DONUT_RADIUS is already parenthesized; the reserved branch below self-parenthesizes too, so
+  // callers can interpolate this result directly without adding their own wrapping parens
+  if (!segmentLabels.length || isBoolean) return DONUT_RADIUS;
+  // solve R such that R + ringGap + R*capRatio == DONUT_RADIUS (the worst-case label reach)
+  return `((${DONUT_RADIUS} - ${DONUT_LABEL_RING_GAP}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}))`;
+};
+
+/**
  * Gets the threshold scale that snaps a donut's outer diameter to its nearest named size tier's fixed ring width
  * @param donutOptions
  * @returns ThresholdScale
@@ -86,13 +105,14 @@ export const getRingWidthScale = ({ name }: DonutSpecOptions): ThresholdScale =>
 });
 
 /**
- * Gets the signal that resolves a donut's fixed ring width from its outer diameter
+ * Gets the signal that resolves a donut's fixed ring width from its outer diameter (the label-reserved
+ * radius, so the ring width tier stays consistent with the label font-size tier)
  * @param donutOptions
  * @returns Signal
  */
-export const getRingWidthSignal = ({ name }: DonutSpecOptions): Signal => ({
-  name: `${name}_ringWidth`,
-  update: `scale('${name}_ringWidthScale', 2 * ${DONUT_RADIUS})`,
+export const getRingWidthSignal = (options: DonutSpecOptions): Signal => ({
+  name: `${options.name}_ringWidth`,
+  update: `scale('${options.name}_ringWidthScale', 2 * ${getDonutOuterRadiusExpr(options)})`,
 });
 
 /**
@@ -108,23 +128,28 @@ export const getSliceGapScale = ({ name }: DonutSpecOptions): ThresholdScale => 
 });
 
 /**
- * Gets the signal that resolves a donut's fixed segment gap (in px) from its outer diameter
+ * Gets the signal that resolves a donut's fixed segment gap (in px) from its outer diameter (the
+ * label-reserved radius, so the slice gap tier stays consistent with the label font-size tier)
  * @param donutOptions
  * @returns Signal
  */
-export const getSliceGapSignal = ({ name }: DonutSpecOptions): Signal => ({
-  name: `${name}_sliceGap`,
-  update: `scale('${name}_sliceGapScale', 2 * ${DONUT_RADIUS})`,
+export const getSliceGapSignal = (options: DonutSpecOptions): Signal => ({
+  name: `${options.name}_sliceGap`,
+  update: `scale('${options.name}_sliceGapScale', 2 * ${getDonutOuterRadiusExpr(options)})`,
 });
 
 /**
- * Gets the donut's inner radius expression. Uses the fixed per-tier ring width when holeRatio is left at its
- * default, otherwise honors an explicitly customized holeRatio as a proportional ring
+ * Gets the donut's inner radius expression, relative to the label-reserved outer radius. Uses the
+ * fixed per-tier ring width when holeRatio is left at its default, otherwise honors an explicitly
+ * customized holeRatio as a proportional ring.
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutInnerRadiusExpr = ({ holeRatio, name }: DonutSpecOptions): string =>
-  holeRatio === DEFAULT_HOLE_RATIO ? `(${DONUT_RADIUS} - ${name}_ringWidth)` : `${holeRatio} * ${DONUT_RADIUS}`;
+export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
+  const { holeRatio, name } = options;
+  const outerRadius = getDonutOuterRadiusExpr(options);
+  return holeRatio === DEFAULT_HOLE_RATIO ? `(${outerRadius} - ${name}_ringWidth)` : `${holeRatio} * ${outerRadius}`;
+};
 
 /**
  * Gets the padAngle expression for the arc mark. Converts the per-tier fixed px slice gap
@@ -139,14 +164,17 @@ export const getDonutInnerRadiusExpr = ({ holeRatio, name }: DonutSpecOptions): 
  * @param donutOptions
  * @returns vega expression string
  */
-const getPadAngleExpr = ({ name }: DonutSpecOptions): string => {
-  const fixedGapAngle = `${name}_sliceGap / ${DONUT_RADIUS}`;
+const getPadAngleExpr = (options: DonutSpecOptions): string => {
+  const { name } = options;
+  const outerRadius = getDonutOuterRadiusExpr(options);
+  const fixedGapAngle = `${name}_sliceGap / ${outerRadius}`;
   const segmentAngle = `datum['${name}_arcLength']`;
   return `min(${fixedGapAngle}, ${segmentAngle} * ${DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION})`;
 };
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, name } = options;
+  const outerRadius = getDonutOuterRadiusExpr(options);
   return {
     type: 'arc',
     name,
@@ -165,7 +193,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         endAngle: { field: `${name}_endAngle` },
         padAngle: { signal: getPadAngleExpr(options) },
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },
-        outerRadius: { signal: DONUT_RADIUS },
+        outerRadius: { signal: outerRadius },
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
         opacity: [{ test: getDonutEmptyStateTest(name), value: 0 }, ...getMarkOpacity(options)],
         cursor: getCursor(chartPopovers),
@@ -183,6 +211,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
  */
 export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
   const { colorScheme, name } = options;
+  const outerRadius = getDonutOuterRadiusExpr(options);
   return {
     type: 'arc',
     name: `${name}_emptyState`,
@@ -198,7 +227,7 @@ export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
       },
       update: {
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },
-        outerRadius: { signal: DONUT_RADIUS },
+        outerRadius: { signal: outerRadius },
         opacity: [{ test: getDonutEmptyStateTest(name), value: 1 }, { value: 0 }],
       },
     },

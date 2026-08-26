@@ -246,8 +246,8 @@ export const DEFAULT_HOLE_RATIO = 0.85;
  * S2 donut named size-tier (XS/S/M/L/XL) minimum-diameter cutpoints (the S/M/L/XL tiers' own named
  * diameters - 120/160/200/400), keyed off the donut's outer diameter. A diameter is "sticky" at a
  * tier from that tier's own minimum up to (not including) the next tier's minimum - e.g. a diameter
- * of 121px is S and stays S up to 159px, not just at values nearest 120. Shared by ring width,
- * slice gap, donut summary font sizing, and direct/advanced label font sizing.
+ * of 121px is S and stays S up to 159px, not just at values nearest 120. Shared by every donut
+ * feature that scales by size tier (ring width, slice gap, donut summary, direct/advanced labels).
  */
 export const DONUT_SIZE_TIER_CUTPOINTS = [120, 160, 200, 400];
 /** S2 donut fixed ring (hole) width per named size tier (XS/S/M/L/XL), used only when holeRatio is left at DEFAULT_HOLE_RATIO */
@@ -270,6 +270,23 @@ export const DONUT_SUMMARY_MIN_RADIUS_S2 = 40;
 export const DONUT_SUMMARY_VALUE_FONT_SIZES = [18, 20, 22, 36, 50];
 /** S2 donut summary metric label font size per named size tier (XS/S/M/L/XL) */
 export const DONUT_SUMMARY_LABEL_FONT_SIZES = [12, 14, 16, 20, 24];
+/** S2 donut direct-label segment-name font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [9, 10.5, 12, 15, 18];
+/** S2 donut direct-label value font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [12, 14, 16, 20, 24];
+/** Gap (px) between the ring's outer edge and a direct/advanced label's rendered bounding box */
+export const DONUT_LABEL_RING_GAP = 20;
+/** Font weight for donut direct-label segment name text */
+export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
+/** Font weight for donut direct-label value text */
+export const DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT = 700;
+/**
+ * Max fraction of the donut's own radius that a direct label's hemisphere-mirrored pull-back offset may use.
+ * Label text width (a handful of px per character) doesn't shrink with the donut, so an uncapped pull-back
+ * can demand disproportionate space at small sizes, triggering runaway autosize 'fit' shrinkage. Bounding
+ * it as a fraction of the current radius keeps the offset proportionate at every size instead of a fixed px cap.
+ */
+export const DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO = 0.6;
 
 // venn constant
 export const DEFAULT_VENN_COLOR = 'sets';
