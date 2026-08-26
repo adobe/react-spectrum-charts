@@ -42,7 +42,7 @@ import {
   getSliceGapSignal,
   getSumData,
 } from './donutUtils';
-import { getSegmentLabelMarks } from './segmentLabelUtils';
+import { getSegmentLabelMarks, getSegmentLabelScales, getSegmentLabelSignals } from './segmentLabelUtils';
 
 export const addDonut = produce<
   ScSpec,
@@ -164,6 +164,7 @@ export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) 
   }
   scales.push(getSliceGapScale(options));
   scales.push(...getDonutSummaryScales(options));
+  scales.push(...getSegmentLabelScales(options));
 });
 
 export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => {
@@ -182,6 +183,7 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   }
   signals.push(getSliceGapSignal(options));
   signals.push(...getDonutSummarySignals(options));
+  signals.push(...getSegmentLabelSignals(options));
   if (!isInteractive(options)) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
 });

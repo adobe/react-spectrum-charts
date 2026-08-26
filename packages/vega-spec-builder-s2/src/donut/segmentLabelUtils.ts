@@ -9,14 +9,33 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GroupMark, NumericValueRef, ProductionRule, TextEncodeEntry, TextMark, TextValueRef } from 'vega';
+import {
+  GroupMark,
+  NumericValueRef,
+  ProductionRule,
+  Signal,
+  TextEncodeEntry,
+  TextMark,
+  TextValueRef,
+  ThresholdScale,
+} from 'vega';
 
-import { DONUT_RADIUS, DONUT_SEGMENT_LABEL_MIN_ANGLE, FILTERED_TABLE } from '@spectrum-charts/constants';
+import {
+  DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
+  DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT,
+  DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
+  DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT,
+  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_RING_GAP,
+  DONUT_SEGMENT_LABEL_MIN_ANGLE,
+  DONUT_SIZE_TIER_CUTPOINTS,
+  FILTERED_TABLE,
+} from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
-import { getDonutEmptyStateTest } from './donutUtils';
+import { getDonutEmptyStateTest, getDonutOuterRadiusExpr } from './donutUtils';
 
 /**
  * Gets the SegmentLabel component from the children if one exists
@@ -37,7 +56,13 @@ const getSegmentLabel = (options: DonutSpecOptions): SegmentLabelSpecOptions | u
  * @returns SegmentLabelSpecOptions
  */
 const applySegmentLabelPropDefaults = (
-  { percent = false, percentFormat = '.0%', value = false, valueFormat = 'standardNumber', ...options }: SegmentLabelOptions,
+  {
+    percent = false,
+    percentFormat = '.0%',
+    value = false,
+    valueFormat = 'standardNumber',
+    ...options
+  }: SegmentLabelOptions,
   donutOptions: DonutSpecOptions
 ): SegmentLabelSpecOptions => ({
   donutOptions,
@@ -47,6 +72,114 @@ const applySegmentLabelPropDefaults = (
   valueFormat,
   ...options,
 });
+
+/**
+ * Gets the threshold scales that snap a donut's outer diameter to its nearest named size tier's direct-label font sizes
+ * @param donutOptions
+ * @returns ThresholdScale[]
+ */
+export const getSegmentLabelScales = (donutOptions: DonutSpecOptions): ThresholdScale[] => {
+  if (!getSegmentLabel(donutOptions)) return [];
+  const { name } = donutOptions;
+  return [
+    {
+      name: `${name}_segmentLabelNameFontSizeScale`,
+      type: 'threshold',
+      domain: DONUT_SIZE_TIER_CUTPOINTS,
+      range: DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
+    },
+    {
+      name: `${name}_segmentLabelValueFontSizeScale`,
+      type: 'threshold',
+      domain: DONUT_SIZE_TIER_CUTPOINTS,
+      range: DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
+    },
+  ];
+};
+
+/**
+ * Gets the signals that resolve a donut's direct-label font sizes from its outer diameter
+ * @param donutOptions
+ * @returns Signal[]
+ */
+export const getSegmentLabelSignals = (donutOptions: DonutSpecOptions): Signal[] => {
+  if (!getSegmentLabel(donutOptions)) return [];
+  const { name } = donutOptions;
+  const donutDiameter = `2 * ${getDonutOuterRadiusExpr(donutOptions)}`;
+  return [
+    {
+      name: `${name}_segmentLabelNameFontSize`,
+      update: `scale('${name}_segmentLabelNameFontSizeScale', ${donutDiameter})`,
+    },
+    {
+      name: `${name}_segmentLabelValueFontSize`,
+      update: `scale('${name}_segmentLabelValueFontSizeScale', ${donutDiameter})`,
+    },
+  ];
+};
+
+/**
+ * Converts a text production rule into a single Vega expression string, for use inside getLabelWidth()
+ * @param rule
+ * @returns vega expression string
+ */
+const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined): string => {
+  if (rule === undefined) return `''`;
+  const rules = Array.isArray(rule) ? rule : [rule];
+  const getValue = (r: TextValueRef): string => {
+    if ('signal' in r && r.signal) return r.signal;
+    if ('field' in r && r.field) return `datum['${r.field}']`;
+    if ('value' in r && r.value !== undefined) return `'${r.value}'`;
+    return `''`;
+  };
+  let expr = getValue(rules[rules.length - 1]);
+  for (let i = rules.length - 2; i >= 0; i--) {
+    const rule = rules[i] as { test?: string } & TextValueRef;
+    expr = rule.test ? `${rule.test} ? (${getValue(rule)}) : (${expr})` : getValue(rule);
+  }
+  return expr;
+};
+
+/**
+ * Gets the shared anchor radius for a label's name/value lines - always the ring-gap point. The
+ * hemisphere-mirrored pull-back lives entirely in getLabelAnchorDxExpr as a horizontal pixel offset,
+ * not folded into this radial value, since radius+theta positioning has a vertical component for any
+ * label not exactly at the 9/3 o'clock cardinal points - baking the pull-back into radius there would
+ * push the anchor up/down instead of sideways.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+const getLabelAnchorRadiusExpr = (donutOptions: DonutSpecOptions): string =>
+  `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_LABEL_RING_GAP}`;
+
+/**
+ * Gets the shared horizontal pixel offset for a label's name/value lines. Right-hemisphere labels get
+ * no offset (anchor sits at the ring-gap point and grows away from the ring). Left-hemisphere labels
+ * get pulled left by the wider line's real rendered width, so that line's far (right) edge lands
+ * exactly on the ring-gap point while both lines still share the same near (left) edge. This is a pure
+ * horizontal (dx) adjustment, independent of theta, so it never distorts a label's vertical position.
+ * @param segmentLabelOptions
+ * @returns vega expression string
+ */
+const getLabelAnchorDxExpr = (options: SegmentLabelSpecOptions): string => {
+  const { donutOptions, labelKey, percent, value } = options;
+  const { color, name } = donutOptions;
+  const nameTextExpr = `datum['${labelKey ?? color}']`;
+  const nameWidthExpr = `getLabelWidth(${nameTextExpr}, ${DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT}, ${name}_segmentLabelNameFontSize)`;
+  const valueWidthExpr =
+    value || percent
+      ? `getLabelWidth(${getTextRuleExpr(
+          getSegmentLabelValueText(options)
+        )}, ${DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT}, ${name}_segmentLabelValueFontSize)`
+      : '0';
+  const widerWidthExpr = `max(${nameWidthExpr}, ${valueWidthExpr})`;
+  // capped at the same ratio getDonutOuterRadiusExpr already reserved room for, so the worst-case
+  // reach (ring + gap + this cap) exactly matches the space getDonutOuterRadiusExpr solved for
+  const cappedWidthExpr = `min(${widerWidthExpr}, ${getDonutOuterRadiusExpr(
+    donutOptions
+  )} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO})`;
+  return `(datum['${name}_arcTheta'] <= PI ? 0 : -(${cappedWidthExpr}))`;
+};
 
 /**
  * Gets the marks for the segment label. If there isn't a segment label, an empty array is returned.
@@ -76,12 +209,8 @@ export const getSegmentLabelMarks = (donutOptions: DonutSpecOptions): GroupMark[
  * @param segmentLabelOptions
  * @returns TextMark
  */
-export const getSegmentLabelTextMark = ({
-  labelKey,
-  value,
-  percent,
-  donutOptions,
-}: SegmentLabelSpecOptions): TextMark => {
+export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextMark => {
+  const { labelKey, value, percent, donutOptions } = options;
   const { name, color } = donutOptions;
   return {
     type: 'text',
@@ -89,18 +218,23 @@ export const getSegmentLabelTextMark = ({
     from: { data: FILTERED_TABLE },
     encode: {
       enter: {
-        ...getBaseSegmentLabelEnterEncode(name),
         // drop all labels when there isn't any data to display, the empty state ring is shown instead
         text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
+      },
+      update: {
+        ...positionEncodings,
+        ...getSegmentLabelUpdateEncode(options, `${name}_segmentLabelNameFontSize`),
+        // top half: shift up by the value line's own font size so the two lines sit flush (0px gap
+        // token) regardless of size tier - a fixed px shift would leave a mismatched gap at every
+        // tier except the one it was tuned for
         dy:
           value || percent
             ? {
-                signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? -16 : 0`,
+                signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? -${name}_segmentLabelValueFontSize : 0`,
               }
             : undefined,
       },
-      update: positionEncodings,
     },
   };
 };
@@ -113,7 +247,6 @@ export const getSegmentLabelTextMark = ({
 export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): TextMark[] => {
   if (!options.value && !options.percent) return [];
   const { donutOptions } = options;
-  const baseFontSize = 16; // S2 base font size
   const valueText = getSegmentLabelValueText(options) ?? [];
   const valueTextRules = Array.isArray(valueText) ? valueText : [valueText];
 
@@ -124,39 +257,48 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
       from: { data: FILTERED_TABLE },
       encode: {
         enter: {
-          ...getBaseSegmentLabelEnterEncode(donutOptions.name, baseFontSize),
           // drop all labels when there isn't any data to display, the empty state ring is shown instead
           text: [{ test: getDonutEmptyStateTest(donutOptions.name), value: '' }, ...valueTextRules],
           fontWeight: { value: 'bold' },
           fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
+        },
+        update: {
+          ...positionEncodings,
+          ...getSegmentLabelUpdateEncode(options, `${donutOptions.name}_segmentLabelValueFontSize`),
+          // bottom half: shift down by the name line's own font size, mirroring the top-half case
           dy: {
-            signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : 16`,
+            signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : ${donutOptions.name}_segmentLabelNameFontSize`,
           },
         },
-        update: positionEncodings,
       },
     },
   ];
 };
 
 /**
- * Gets all the standard entry encodes for segment label text marks
- * @param name
- * @param baseFontSize - The base font size to use when arc is large enough (default 14)
+ * Gets the standard position/size encodes for segment label text marks. These must live in the
+ * `update` set, not `enter` - Vega only evaluates `enter` once per mark instance at creation, but
+ * radius/dx/fontSize here all derive from `width`/`height`-dependent signals that change on resize.
+ * @param segmentLabelOptions
+ * @param fontSizeSignal - the tier-based font size signal name for this specific line (name or value)
  * @returns TextEncodeEntry
  */
-const getBaseSegmentLabelEnterEncode = (name: string, baseFontSize: number = 14): TextEncodeEntry => ({
-  radius: { signal: `${DONUT_RADIUS} + 6` },
-  theta: { field: `${name}_arcTheta` },
-  fontSize: getSegmentLabelFontSize(name, baseFontSize),
-  align: {
-    signal: `datum['${name}_arcTheta'] <= PI ? 'left' : 'right'`,
-  },
-  baseline: {
-    // if the center of the arc is in the top half of the donut, the text baseline should be bottom, else top
-    signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? 'bottom' : 'top'`,
-  },
-});
+const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeSignal: string): TextEncodeEntry => {
+  const { name } = options.donutOptions;
+  return {
+    radius: { signal: getLabelAnchorRadiusExpr(options.donutOptions) },
+    theta: { field: `${name}_arcTheta` },
+    // pulls left-hemisphere labels back horizontally by the wider line's width - see getLabelAnchorDxExpr
+    dx: { signal: getLabelAnchorDxExpr(options) },
+    fontSize: getSegmentLabelFontSize(name, fontSizeSignal),
+    // both hemispheres anchor at their near (left) edge - only the dx offset differs by hemisphere
+    align: { value: 'left' },
+    baseline: {
+      // if the center of the arc is in the top half of the donut, the text baseline should be bottom, else top
+      signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? 'bottom' : 'top'`,
+    },
+  };
+};
 /**
  * position encodings
  */
@@ -200,10 +342,10 @@ export const getSegmentLabelValueText = ({
  * Gets the font size for the segment label based on the arc length
  * If the arc length is less than 0.3 radians, the font size is 0
  * @param name
- * @param baseFontSize - The base font size to use when arc is large enough (default 14)
+ * @param fontSizeSignal - the tier-based font size signal name for this line (name or value)
  * @returns NumericValueRef
  */
-const getSegmentLabelFontSize = (name: string, baseFontSize: number = 14): ProductionRule<NumericValueRef> => {
+const getSegmentLabelFontSize = (name: string, fontSizeSignal: string): ProductionRule<NumericValueRef> => {
   // need to use radians for this. 0.3 radians is about 17 degrees
   // if we used arc length, then showing a label could shrink the overall donut size which could make the arc to small
   // that would hide the label which would make the arc bigger which would show the label and so on
@@ -211,6 +353,6 @@ const getSegmentLabelFontSize = (name: string, baseFontSize: number = 14): Produ
     // hide all labels when there isn't any data to display, the empty state ring is shown instead
     { test: getDonutEmptyStateTest(name), value: 0 },
     { test: `datum['${name}_arcLength'] < ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`, value: 0 },
-    { value: baseFontSize },
+    { signal: fontSizeSignal },
   ];
 };
