@@ -170,6 +170,23 @@ AccessibleNavigation.args = {
   ...defaultProps,
 };
 
+const AccessibleNavigationNoInspectStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600, accessibleNavigation: true });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args} />
+      <Legend title="Operating system" />
+    </Chart>
+  );
+};
+
+const AccessibleNavigationNoInspect = bindWithProps(AccessibleNavigationNoInspectStory);
+AccessibleNavigationNoInspect.args = {
+  ...defaultProps,
+};
+
 // Hovering an axis label highlights the matching stack, same as hovering the stack itself.
 const AxisLabelHighlight = bindWithProps(StackedBarPopoverStory);
 AxisLabelHighlight.args = {
@@ -178,6 +195,7 @@ AxisLabelHighlight.args = {
 
 export {
   AccessibleNavigation,
+  AccessibleNavigationNoInspect,
   Basic,
   NegativeStack,
   OnClick,

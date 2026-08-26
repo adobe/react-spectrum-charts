@@ -43,7 +43,7 @@ import {
   WithInspect,
 } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
-import { Basic as StackedBasic } from './StackedBar.story';
+import { AccessibleNavigationNoInspect, Basic as StackedBasic } from './StackedBar.story';
 import { barData } from './data';
 
 describe('Bar', () => {
@@ -285,9 +285,9 @@ describe('Bar', () => {
     // Regression: clicking (or keyboard-focusing) a bar moves dataNavigator focus, which calls
     // onNavLeafFocus — without navMarkHasInspect gating that, an unconditional Handler.call falls
     // through to vega-tooltip's own default renderer (a raw table of every field on the datum),
-    // showing an unrequested tooltip even though StackedBasic has no ChartInspect configured.
+    // showing an unrequested tooltip even though AccessibleNavigationNoInspect has no ChartInspect configured.
     test('clicking or keyboard-focusing a bar with no ChartInspect does not show a default tooltip', async () => {
-      render(<StackedBasic {...StackedBasic.args} />);
+      render(<AccessibleNavigationNoInspect {...AccessibleNavigationNoInspect.args} />);
       const chart = await findChart();
       const bars = await findAllMarksByGroupName(chart, 'bar0');
 
@@ -296,17 +296,22 @@ describe('Bar', () => {
       expect(document.getElementById('vg-tooltip-element')).not.toHaveClass('visible');
 
       const container = chart.closest('.rsc-container') as HTMLElement;
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
       const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+      expect(dnNode()).toBeTruthy();
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' });
       fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' });
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       expect(document.getElementById('vg-tooltip-element')).not.toHaveClass('visible');
     });
 
-    // Regression: accessibleNavigation alone (StackedBasic has no ChartInspect/ChartPopover/onClick)
-    // must not introduce mouse-hover opacity dimming — that behavior should only appear when the user
-    // actually configures a hover-driven feature, matching getMarkOpacity's hasRealInteractivity gate.
+    // Regression: accessibleNavigation alone (AccessibleNavigationNoInspect has no ChartInspect/
+    // ChartPopover/onClick) must not introduce mouse-hover opacity dimming — that behavior should only
+    // appear when the user actually configures a hover-driven feature, matching getMarkOpacity's
+    // hasRealInteractivity gate.
     test('mouse hover does not dim other bars when there is no other interactive feature', async () => {
-      render(<StackedBasic {...StackedBasic.args} />);
+      render(<AccessibleNavigationNoInspect {...AccessibleNavigationNoInspect.args} />);
       const chart = await findChart();
       const bars = await findAllMarksByGroupName(chart, 'bar0');
 
@@ -321,7 +326,7 @@ describe('Bar', () => {
     // ChartInspect/ChartPopover/onClick configured, mouse hover doesn't dim anything (see the test
     // above), so keyboard focus shouldn't either; the focus ring alone shows which segment is focused.
     test('keyboard focus does not dim other bars when there is no other interactive feature', async () => {
-      render(<StackedBasic {...StackedBasic.args} />);
+      render(<AccessibleNavigationNoInspect {...AccessibleNavigationNoInspect.args} />);
       const chart = await findChart();
       const container = chart.closest('.rsc-container') as HTMLElement;
 
