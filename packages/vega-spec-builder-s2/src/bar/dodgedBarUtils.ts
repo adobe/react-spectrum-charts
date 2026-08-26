@@ -44,6 +44,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         // background bars
         {
           name: `${name}_background`,
+          description: `${name}_background`,
           from: { data: `${name}_facet` },
           type: 'rect',
           interactive: false,
@@ -60,6 +61,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         // bars
         {
           name,
+          description: name,
           from: { data: `${name}_facet` },
           type: 'rect',
           interactive: isInteractive(options),
@@ -76,9 +78,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         },
         ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
         // visible outline drawn on top of the bars so it is never occluded by adjacent marks
-        ...(showItemSelectionRing
-          ? [getBarItemSelectionRing(options, `${name}_facet`, ringDimensionEncodings)]
-          : []),
+        ...(showItemSelectionRing ? [getBarItemSelectionRing(options, `${name}_facet`, ringDimensionEncodings)] : []),
       ],
     },
   ];
