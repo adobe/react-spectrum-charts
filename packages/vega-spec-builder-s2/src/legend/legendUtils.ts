@@ -283,8 +283,10 @@ export const getOpacityEncoding = (
   }
 
   // Falls after mark hover rules (above), so hovering a line still wins over keyboard focus while
-  // active. Stays in effect whether the line itself or one of its points is focused.
-  if (accessibleNavigation) {
+  // active. Stays in effect whether the line itself or one of its points is focused. Gated on
+  // interactiveMarks (real interactivity), mirroring getMarkOpacity's own gate — a legend shouldn't
+  // dim entries on keyboard focus if the marks themselves wouldn't dim on mouse hover either.
+  if (accessibleNavigation && userMeta.interactiveMarks?.length) {
     // Shared by both mark types: Line keys leaves by a color-value prefix, Bar by a color-value suffix.
     const convention = userMeta.focusedDimensionIsLegendColor ? 'prefix' : 'suffix';
     rules.push({

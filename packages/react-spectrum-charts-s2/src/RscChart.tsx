@@ -43,7 +43,9 @@ import { FocusedItemFields, getFocusedItemBounds, getFocusedItemClientPosition }
 import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
+import useChartInspects from './hooks/useChartInspects';
 import { useChartInteractions } from './hooks/useChartInteractions';
+import useMarkOnClickDetails from './hooks/useMarkOnClickDetails';
 import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
@@ -143,6 +145,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useChartImperativeHandle(ref, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
+  const markOnClickDetails = useMarkOnClickDetails(sanitizedChildren);
+  const inspects = useChartInspects(sanitizedChildren);
 
   // Bumped once the Vega view actually exists, so Navigator's effect re-runs even if it first mounted before the async vega-embed() call resolved.
   const [viewVersion, setViewVersion] = useState(0);
@@ -206,37 +210,76 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       navColor,
     ]
   );
+  // The metric field name (e.g. "downloads") is rarely the display title a user set on its Axis (e.g.
+  // "Downloads") — found by matching the Axis child positioned on the metric's side of the chart.
+  const navMetricAxisTitle = useMemo(() => {
+    const metricAxisPositions =
+      navGeometryFields.orientation === 'horizontal' ? ['bottom', 'top'] : ['left', 'right'];
+    const metricAxisChild = sanitizedChildren.find(
+      (child) =>
+        'displayName' in child.type &&
+        child.type.displayName === 'Axis' &&
+        metricAxisPositions.includes((child.props as { position?: string }).position ?? '')
+    );
+    return (metricAxisChild?.props as { title?: string } | undefined)?.title;
+  }, [sanitizedChildren, navGeometryFields.orientation]);
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
   const getPopoverClosedAt = useCallback(() => popoverClosedAt.current, [popoverClosedAt]);
+  const navMarkHasPopover = useMemo(
+    () => popovers.some((popover) => popover.name === navResolvedName),
+    [popovers, navResolvedName]
+  );
+  const navMarkHasInspect = useMemo(
+    () => inspects.some((inspect) => inspect.name === navResolvedName),
+    [inspects, navResolvedName]
+  );
 
-  // Shares handleMarkClick's selectAndOpenPopover (markClickUtils.ts); only bounds computation differs, since a keyboard-focused point has no real Vega Item.
+  // Mirrors real-click behavior (getOnMarkClickCallback/getOnChartMarkClickCallback in markClickUtils.ts):
+  // selectAndOpenPopover only runs when the focused mark actually declares a ChartPopover — gated the
+  // same way handleMarkClick is gated on markHasPopover — while onClick fires unconditionally, since
+  // there's no real DOM click for Vega's own view listener to pick up from a keyboard activation.
   const onNavActivate = useCallback(
     (datum: SimpleData) => {
       const view = chartView.current;
       const markName = navResolvedName;
       if (!view || !markName) return;
-      selectAndOpenPopover({
-        chartId,
-        itemName: markName,
-        datum: datum as unknown as Datum,
-        bounds: getFocusedItemBounds(view, datum, navGeometryFields),
-        selectedData,
-        selectedDataBounds,
-        selectedDataName,
-        trigger: 'click',
-      });
+      if (navMarkHasPopover) {
+        selectAndOpenPopover({
+          chartId,
+          itemName: markName,
+          datum: datum as unknown as Datum,
+          bounds: getFocusedItemBounds(view, datum, navGeometryFields),
+          selectedData,
+          selectedDataBounds,
+          selectedDataName,
+          trigger: 'click',
+        });
+      }
+      markOnClickDetails.find((detail) => detail.markName === markName)?.onClick?.(datum as unknown as Datum);
     },
-    [chartId, navResolvedName, navGeometryFields, selectedData, selectedDataBounds, selectedDataName]
+    [
+      chartId,
+      navResolvedName,
+      navGeometryFields,
+      selectedData,
+      selectedDataBounds,
+      selectedDataName,
+      markOnClickDetails,
+      navMarkHasPopover,
+    ]
   );
 
-  // Mirrors ChartInspect's mouse-hover tooltip via the same vega-tooltip Handler useNewChartView.tsx already invokes manually for the delayed-tooltip case.
+  // Mirrors ChartInspect's mouse-hover tooltip via the same vega-tooltip Handler useNewChartView.tsx
+  // already invokes manually for the delayed-tooltip case. Gated on navMarkHasInspect — without a
+  // ChartInspect, inspectOptions.formatTooltip is never set (useChartInspectInteractions.tsx), so an
+  // unconditional Handler.call would fall through to vega-tooltip's own default (a raw all-fields table).
   const onNavLeafFocus = useCallback(
     (datum: SimpleData | undefined) => {
       const view = chartView.current;
       const container = navContainerRef.current;
       const markName = navResolvedName;
-      if (!view || !container || !markName) return;
+      if (!view || !container || !markName || !navMarkHasInspect) return;
       if (!datum) {
         // value === null takes vega-tooltip's own hide path; position/item are unused for a hide.
         new Handler(inspectOptions).call(view, { clientX: 0, clientY: 0 } as unknown as MouseEvent, {} as Item, null);
@@ -247,7 +290,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       const syntheticItem = { bounds: getFocusedItemBounds(view, datum, navGeometryFields), mark: {} } as unknown as Item;
       new Handler(inspectOptions).call(view, position as unknown as MouseEvent, syntheticItem, value);
     },
-    [inspectOptions, navResolvedName, navGeometryFields]
+    [inspectOptions, navResolvedName, navGeometryFields, navMarkHasInspect]
   );
 
   return (
@@ -280,6 +323,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             dimension={navFields?.dimension}
             color={navColor}
             metric={navFields?.metric}
+            metricLabel={navMetricAxisTitle}
+            orientation={navGeometryFields.orientation}
             isTimeDimension={navIsTimeDimension}
             title={title}
             containerRef={navContainerRef}

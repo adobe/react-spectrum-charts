@@ -12,7 +12,7 @@
 import { Structure } from 'data-navigator';
 
 import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/constants';
-import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { buildBarStructure, getBarNodeId } from './buildBarStructure';
 import { buildLineStructure, getLineNodeId } from './buildLineStructure';
@@ -30,6 +30,10 @@ export interface ChartStructureOptions {
   color?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
+  /** Display label for the metric total (e.g. the metric axis's title). Bar-only; falls back to the raw metric field name when not given. */
+  metricLabel?: string;
+  /** Chart orientation. Bar-only; swaps arrow-key bindings for a horizontal bar. Defaults to vertical. */
+  orientation?: Orientation;
   /** Whether the dimension field is time-scaled (used by line charts to format dates in labels). */
   isTimeDimension?: boolean;
   /** Optional chart title for the accessible description. */

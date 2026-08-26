@@ -753,6 +753,28 @@ describe('Line', () => {
       expect(onClick).toHaveBeenCalledTimes(1);
       expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
     });
+
+    // Regression: activating a keyboard-focused point (Enter) never dispatches a real DOM click, so
+    // Vega's own view 'click' listener never sees it — onNavActivate must call onClick directly.
+    test('Enter on a keyboard-focused point also fires onClick', async () => {
+      const onClick = jest.fn();
+      render(<AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} onClick={onClick} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> first point (leaf)
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate
+
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onClick).toHaveBeenCalledWith(
+        expect.objectContaining({ series: expect.any(String), datetime: expect.any(Number), value: expect.any(Number) })
+      );
+    });
   });
 
   describe('onContextMenu callback', () => {

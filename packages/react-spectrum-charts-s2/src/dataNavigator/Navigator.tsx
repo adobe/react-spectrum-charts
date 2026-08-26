@@ -13,7 +13,7 @@ import { RefObject, useCallback, useEffect, useRef } from 'react';
 
 import { View } from 'vega';
 
-import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { NavigableChartType } from './buildChartStructure';
 import { AttachDataNavigatorHandle, attachDataNavigator } from './dataNavigatorAdapter';
@@ -36,6 +36,10 @@ export interface NavigatorProps {
   color?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
+  /** Display label for the metric total (e.g. the metric axis's title). Bar-only; falls back to the raw metric field name when not given. */
+  metricLabel?: string;
+  /** Chart orientation. Bar-only; swaps arrow-key bindings for a horizontal bar. Defaults to vertical. */
+  orientation?: Orientation;
   /** Whether the dimension field is time-scaled (line charts only; formats dates in accessible labels). */
   isTimeDimension?: boolean;
   /** Optional chart title for the accessible description. */
@@ -73,6 +77,8 @@ export const Navigator = ({
   dimension,
   color,
   metric,
+  metricLabel,
+  orientation,
   isTimeDimension,
   title,
   containerRef,
@@ -122,6 +128,8 @@ export const Navigator = ({
       dimension,
       color,
       metric,
+      metricLabel,
+      orientation,
       isTimeDimension,
       title,
       chartId,
@@ -143,6 +151,8 @@ export const Navigator = ({
     dimension,
     color,
     metric,
+    metricLabel,
+    orientation,
     isTimeDimension,
     title,
     chartId,

@@ -57,6 +57,29 @@ describe('buildBarStructure()', () => {
     });
   });
 
+  describe('orientation', () => {
+    // Regression: a horizontal bar's categories run top-to-bottom, not left-to-right, so sibling
+    // navigation should bind to Up/Down instead of Left/Right — otherwise the arrow keys feel
+    // rotated 90° from what a sighted user visually expects.
+    test('binds sibling movement to left/right by default (vertical)', () => {
+      const { structure } = buildBarStructure({ data, dimension: 'browser' });
+      expect(structure.navigationRules?.left).toMatchObject({ key: 'ArrowLeft' });
+      expect(structure.navigationRules?.right).toMatchObject({ key: 'ArrowRight' });
+    });
+
+    test('binds sibling movement to up/down for a horizontal bar', () => {
+      const { structure } = buildBarStructure({ data, dimension: 'browser', orientation: 'horizontal' });
+      expect(structure.navigationRules?.left).toMatchObject({ key: 'ArrowUp' });
+      expect(structure.navigationRules?.right).toMatchObject({ key: 'ArrowDown' });
+    });
+
+    test('does not change which nodes are connected, only the key binding', () => {
+      const { structure: vertical } = buildBarStructure({ data, dimension: 'browser' });
+      const { structure: horizontal } = buildBarStructure({ data, dimension: 'browser', orientation: 'horizontal' });
+      expect(move(horizontal, 'Chrome', 'right')).toBe(move(vertical, 'Chrome', 'right'));
+    });
+  });
+
   describe('stacked (color series present)', () => {
     test('keys leaf segments by the dimension + series composite', () => {
       const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
@@ -70,6 +93,54 @@ describe('buildBarStructure()', () => {
       // dimensionLevel === 2 are division (per-stack) nodes; basic bars compress these away
       const divisions = Object.values(structure.nodes).filter((node) => node.dimensionLevel === 2);
       expect(divisions).toHaveLength(2); // Chrome, Firefox
+    });
+
+    test("includes each stack's summed metric total in its aria label, keyed by the raw field name by default", () => {
+      const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', metric: 'downloads' });
+      expect(structure.nodes.Chrome.semantics?.label).toBe('Chrome. Contains 2 bars, 27,000 downloads.');
+      expect(structure.nodes.Firefox.semantics?.label).toBe('Firefox. Contains 2 bars, 8,000 downloads.');
+    });
+
+    // Regression: the raw field name (e.g. "downloads") is often not the axis's display title (e.g.
+    // "Downloads"); metricLabel lets the caller supply that title instead of the field name.
+    test('uses metricLabel instead of the raw metric field name when provided', () => {
+      const { structure } = buildBarStructure({
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        metric: 'downloads',
+        metricLabel: 'Downloads',
+      });
+      expect(structure.nodes.Chrome.semantics?.label).toBe('Chrome. Contains 2 bars, 27,000 Downloads.');
+    });
+
+    test('falls back to the default metric field (value) when metric is not specified', () => {
+      const valueData = [
+        { browser: 'Chrome', os: 'Windows', value: 3 },
+        { browser: 'Chrome', os: 'Mac', value: 2 },
+      ];
+      const { structure } = buildBarStructure({ data: valueData, dimension: 'browser', color: 'os' });
+      expect(structure.nodes.Chrome.semantics?.label).toBe('Chrome. Contains 2 bars, 5 value.');
+    });
+
+    // Generality: an entirely different domain (not browsers/downloads), an uneven segment count per
+    // stack, and a negative value — none of this logic should be coincidentally tied to the fixture data above.
+    test('sums correctly for arbitrary field names, uneven segment counts, and negative values', () => {
+      const salesData = [
+        { region: 'West', product: 'Widgets', revenue: 500 },
+        { region: 'West', product: 'Gadgets', revenue: -120 },
+        { region: 'West', product: 'Gizmos', revenue: 40 },
+        { region: 'East', product: 'Widgets', revenue: 300 },
+      ];
+      const { structure } = buildBarStructure({
+        data: salesData,
+        dimension: 'region',
+        color: 'product',
+        metric: 'revenue',
+        metricLabel: 'Revenue',
+      });
+      expect(structure.nodes.West.semantics?.label).toBe('West. Contains 3 bars, 420 Revenue.');
+      expect(structure.nodes.East.semantics?.label).toBe('East. Contains 1 bar, 300 Revenue.');
     });
 
     describe('keyboard navigation', () => {
@@ -136,6 +207,43 @@ describe('buildBarStructure()', () => {
       const { structure } = buildBarStructure({ data: sparseData, dimension: 'browser', color: 'os' });
       expect(move(structure, segmentId('Chrome', 'Mac'), 'right')).toBeUndefined();
     });
+
+    describe('orientation', () => {
+      // Regression: a horizontal stacked bar's stacks run top-to-bottom and segments run
+      // left-to-right (both axes swapped vs. vertical), so the up/down <-> left/right key
+      // bindings must swap too, while the underlying graph (which nodes connect) stays the same.
+      test('binds stack-level sibling movement to left/right by default (vertical)', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        expect(structure.navigationRules?.left).toMatchObject({ key: 'ArrowLeft' });
+        expect(structure.navigationRules?.right).toMatchObject({ key: 'ArrowRight' });
+        expect(structure.navigationRules?.up).toMatchObject({ key: 'ArrowUp' });
+        expect(structure.navigationRules?.down).toMatchObject({ key: 'ArrowDown' });
+      });
+
+      test('binds stack-level sibling movement to up/down for a horizontal bar', () => {
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          orientation: 'horizontal',
+        });
+        expect(structure.navigationRules?.left).toMatchObject({ key: 'ArrowUp' });
+        expect(structure.navigationRules?.right).toMatchObject({ key: 'ArrowDown' });
+        expect(structure.navigationRules?.up).toMatchObject({ key: 'ArrowRight' });
+        expect(structure.navigationRules?.down).toMatchObject({ key: 'ArrowLeft' });
+      });
+
+      test('does not change which nodes are connected, only the key binding', () => {
+        const build = (orientation?: 'horizontal') =>
+          buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', orientation }).structure;
+        const vertical = build();
+        const horizontal = build('horizontal');
+        expect(move(horizontal, 'Chrome', 'right')).toBe(move(vertical, 'Chrome', 'right'));
+        expect(move(horizontal, segmentId('Chrome', 'Windows'), 'down')).toBe(
+          move(vertical, segmentId('Chrome', 'Windows'), 'down')
+        );
+      });
+    });
   });
 });
 
@@ -164,6 +272,22 @@ describe('buildChartDescription()', () => {
     const label = buildChartDescription(stackedData, 'browser', 'os');
     expect(label).toContain('Enter, up, or down to drill into');
   });
+
+  // Regression: the aria description must match getStackedBarNavigationRules'/getBaseNavigationRules'
+  // actual key bindings for a horizontal bar — sibling/within-stack keys swap relative to vertical.
+  test('describes horizontal sibling movement with up/down instead of left/right', () => {
+    const label = buildChartDescription(data, 'browser', undefined, undefined, 'horizontal');
+    expect(label).toContain('Use the up and down arrow keys to navigate');
+  });
+
+  test('describes horizontal stacked-bar key bindings swapped relative to vertical', () => {
+    const label = buildChartDescription(stackedData, 'browser', 'os', undefined, 'horizontal');
+    expect(label).toContain('Use the up and down arrow keys to move between stacks');
+    expect(label).toContain('Enter, right, or left to drill into');
+    expect(label).toContain('left or Enter focuses the first segment, right focuses the last');
+    expect(label).toContain('left and right move through every segment in the chart');
+    expect(label).toContain('up and down jump to the same segment in the adjacent stack');
+  });
 });
 
 describe('buildNodeLabel()', () => {
@@ -179,6 +303,21 @@ describe('buildNodeLabel()', () => {
   test('describes a division (stack) node by its child bar count', () => {
     const node = { id: 'Chrome', data: { values: { x: {}, y: {}, z: {} } } } as unknown as NodeObject;
     expect(buildNodeLabel(node)).toBe('Chrome. Contains 3 bars.');
+  });
+
+  // Regression: a stack node built with a metric total (see buildStackedBarStructure) reports it
+  // alongside the segment count, so screen-reader users hear the column's overall value.
+  test('appends the metric total when the stack node carries one', () => {
+    const node = {
+      id: 'Chrome',
+      data: { values: { x: {}, y: {} }, _dnMetricLabel: 'downloads', _dnMetricTotal: 27000 },
+    } as unknown as NodeObject;
+    expect(buildNodeLabel(node)).toBe('Chrome. Contains 2 bars, 27,000 downloads.');
+  });
+
+  test('omits the metric total when the stack node has none', () => {
+    const node = { id: 'Chrome', data: { values: { x: {} } } } as unknown as NodeObject;
+    expect(buildNodeLabel(node)).toBe('Chrome. Contains 1 bar.');
   });
 
   test('describes a leaf node by its scalar fields', () => {

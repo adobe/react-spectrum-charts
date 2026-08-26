@@ -11,8 +11,8 @@
  */
 import dataNavigator, { Edges, NavigationRules, NodeObject, Nodes, Structure, StructureOptions } from 'data-navigator';
 
-import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/constants';
-import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { DEFAULT_BAR_ORIENTATION, DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC } from '@spectrum-charts/constants';
+import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { addOneSidedEdge, addSiblingEdge } from './graphEdgeUtils';
 import { applyDefaultLabels } from './nodeSemanticsUtils';
@@ -25,9 +25,19 @@ export interface BuildBarStructureOptions {
   dimension?: string;
   /** The series/color field. When set, the bar is multi-series (each column holds multiple segments). */
   color?: string;
+  /** The metric/value field. When set on a stacked bar, each stack's label includes the summed total across its segments. */
+  metric?: string;
+  /** Display label for the metric total (e.g. the metric axis's title, like "Downloads"). Falls back to the raw metric field name when not given. */
+  metricLabel?: string;
+  /** Chart orientation. Swaps which arrow keys move between stacks/bars vs. within a stack, since a horizontal bar's stacks run top-to-bottom instead of left-to-right. Defaults to vertical. */
+  orientation?: Orientation;
   /** Optional chart title used to open the accessible description. */
   title?: string;
 }
+
+/** Internal-only stack-node data fields carrying the summed metric total, read back by buildNodeLabel. */
+const STACK_METRIC_LABEL_KEY = '_dnMetricLabel';
+const STACK_METRIC_TOTAL_KEY = '_dnMetricTotal';
 
 export { segmentId };
 
@@ -40,28 +50,48 @@ const CHART_ROOT_ID = 'barChartRoot';
 
 /**
  * The keyboard navigation rules for a basic (single-series) bar chart: left/right between bars,
- * Enter to drill in, Escape to drill out (and exit once past the chart root).
+ * Enter to drill in, Escape to drill out (and exit once past the chart root). For a horizontal
+ * bar, bars run top-to-bottom rather than left-to-right, so sibling movement binds to up/down instead.
  */
-export const baseNavigationRules: NavigationRules = {
-  left: { key: 'ArrowLeft', direction: 'source' },
-  right: { key: 'ArrowRight', direction: 'target' },
-  child: { key: 'Enter', direction: 'target' },
-  parent: { key: 'Escape', direction: 'source' },
-};
+export const getBaseNavigationRules = (orientation: Orientation): NavigationRules =>
+  orientation === 'horizontal'
+    ? {
+        left: { key: 'ArrowUp', direction: 'source' },
+        right: { key: 'ArrowDown', direction: 'target' },
+        child: { key: 'Enter', direction: 'target' },
+        parent: { key: 'Escape', direction: 'source' },
+      }
+    : {
+        left: { key: 'ArrowLeft', direction: 'source' },
+        right: { key: 'ArrowRight', direction: 'target' },
+        child: { key: 'Enter', direction: 'target' },
+        parent: { key: 'Escape', direction: 'source' },
+      };
 
 /**
- * At the segment level, Left/Right jump to the same-color segment in the adjacent stack, while
- * Up/Down move through every segment in the chart, crossing stack boundaries. At the stack level
- * (not yet drilled into a segment), Left/Right move between stacks instead.
+ * At the segment level, left/right jump to the same-color segment in the adjacent stack, while
+ * up/down move through every segment in the chart, crossing stack boundaries. At the stack level
+ * (not yet drilled into a segment), left/right move between stacks instead. For a horizontal bar,
+ * stacks run top-to-bottom and segments run left-to-right, so these key bindings swap accordingly.
  */
-const stackedBarNavigationRules: NavigationRules = {
-  up: { key: 'ArrowUp', direction: 'source' },
-  down: { key: 'ArrowDown', direction: 'target' },
-  left: { key: 'ArrowLeft', direction: 'source' },
-  right: { key: 'ArrowRight', direction: 'target' },
-  child: { key: 'Enter', direction: 'target' },
-  parent: { key: 'Escape', direction: 'source' },
-};
+const getStackedBarNavigationRules = (orientation: Orientation): NavigationRules =>
+  orientation === 'horizontal'
+    ? {
+        up: { key: 'ArrowRight', direction: 'source' },
+        down: { key: 'ArrowLeft', direction: 'target' },
+        left: { key: 'ArrowUp', direction: 'source' },
+        right: { key: 'ArrowDown', direction: 'target' },
+        child: { key: 'Enter', direction: 'target' },
+        parent: { key: 'Escape', direction: 'source' },
+      }
+    : {
+        up: { key: 'ArrowUp', direction: 'source' },
+        down: { key: 'ArrowDown', direction: 'target' },
+        left: { key: 'ArrowLeft', direction: 'source' },
+        right: { key: 'ArrowRight', direction: 'target' },
+        child: { key: 'Enter', direction: 'target' },
+        parent: { key: 'Escape', direction: 'source' },
+      };
 
 /** The data-navigator leaf id for a rendered bar/segment's datum — used to move focus on click. */
 export const getBarNodeId = (datum: SimpleData, dimension: string, color?: string): string | undefined => {
@@ -76,6 +106,10 @@ interface Stack {
   segmentIds: string[];
   rows: SimpleData[];
 }
+
+/** Sums a numeric metric field across a stack's rows, for the stack node's aria label. */
+const sumMetric = (rows: SimpleData[], metric: string): number =>
+  rows.reduce((total, row) => total + (Number(row[metric]) || 0), 0);
 
 const groupIntoStacks = (data: SimpleData[], dimension: string, color: string): Stack[] => {
   const stacks: Stack[] = [];
@@ -102,6 +136,9 @@ const buildStackedBarStructure = (
   data: SimpleData[],
   dimension: string,
   color: string,
+  metric: string | undefined,
+  metricLabel: string | undefined,
+  orientation: Orientation,
   title: string | undefined
 ): BarStructure => {
   const stacks = groupIntoStacks(data, dimension, color);
@@ -114,15 +151,22 @@ const buildStackedBarStructure = (
     id: CHART_ROOT_ID,
     edges: [],
     dimensionLevel: 1,
-    semantics: { label: buildChartDescription(data, dimension, color, title) },
+    semantics: { label: buildChartDescription(data, dimension, color, title, orientation) },
   };
   stacks.forEach((stack) => {
+    const metricTotal = metric
+      ? { [STACK_METRIC_LABEL_KEY]: metricLabel ?? metric, [STACK_METRIC_TOTAL_KEY]: sumMetric(stack.rows, metric) }
+      : {};
     nodes[stack.stackId] = {
       id: stack.stackId,
       edges: [],
       dimensionLevel: 2,
       derivedNode: dimension,
-      data: { [dimension]: stack.key, values: Object.fromEntries(stack.segmentIds.map((id) => [id, {}])) },
+      data: {
+        [dimension]: stack.key,
+        values: Object.fromEntries(stack.segmentIds.map((id) => [id, {}])),
+        ...metricTotal,
+      },
     };
     stack.rows.forEach((row, segmentIndex) => {
       const id = stack.segmentIds[segmentIndex];
@@ -144,7 +188,7 @@ const buildStackedBarStructure = (
       addSiblingEdge(edges, nodes, stack.stackId, nextStack.stackId, ['left', 'right']);
     }
 
-    // 'up' resolves via the edge's source (see stackedBarNavigationRules), reversed relative to 'child'/'down', which resolve via target — so stack -> first segment via child/down, stack -> last segment via up.
+    // 'up' resolves via the edge's source (see getStackedBarNavigationRules), reversed relative to 'child'/'down', which resolve via target — so stack -> first segment via child/down, stack -> last segment via up.
     if (stack.segmentIds.length) {
       addOneSidedEdge(edges, nodes, stack.stackId, stack.stackId, stack.segmentIds[0], ['child', 'down']);
       addOneSidedEdge(edges, nodes, stack.stackId, stack.segmentIds[stack.segmentIds.length - 1], stack.stackId, [
@@ -176,7 +220,7 @@ const buildStackedBarStructure = (
     });
   }
 
-  const structure: Structure = { nodes, edges, navigationRules: stackedBarNavigationRules };
+  const structure: Structure = { nodes, edges, navigationRules: getStackedBarNavigationRules(orientation) };
 
   applyDefaultLabels(structure, buildNodeLabel);
 
@@ -187,16 +231,19 @@ export const buildBarStructure = ({
   data,
   dimension = DEFAULT_CATEGORICAL_DIMENSION,
   color,
+  metric = DEFAULT_METRIC,
+  metricLabel,
+  orientation = DEFAULT_BAR_ORIENTATION,
   title,
 }: BuildBarStructureOptions): BarStructure => {
   if (color !== undefined) {
-    return buildStackedBarStructure(data, dimension, color, title);
+    return buildStackedBarStructure(data, dimension, color, metric, metricLabel, orientation, title);
   }
 
   const structureOptions: StructureOptions = {
     data,
     idKey: dimension,
-    navigationRules: baseNavigationRules,
+    navigationRules: getBaseNavigationRules(orientation),
     dimensions: {
       values: [
         {
@@ -222,7 +269,7 @@ export const buildBarStructure = ({
     entryPoint = rootNodeId;
     const rootNode = rootNodeId ? structure.nodes[rootNodeId] : undefined;
     if (rootNode) {
-      rootNode.semantics = { label: buildChartDescription(data, dimension, color, title) };
+      rootNode.semantics = { label: buildChartDescription(data, dimension, color, title, orientation) };
     }
   }
 
@@ -231,15 +278,26 @@ export const buildBarStructure = ({
   return { structure, entryPoint };
 };
 
-export const buildChartDescription = (data: SimpleData[], dimension: string, color?: string, title?: string): string => {
+export const buildChartDescription = (
+  data: SimpleData[],
+  dimension: string,
+  color?: string,
+  title?: string,
+  orientation: Orientation = DEFAULT_BAR_ORIENTATION
+): string => {
   const count = new Set(data.map((d) => d[dimension])).size;
   const opening = title ? `${title}. ` : '';
+  const isHorizontal = orientation === 'horizontal';
+  const siblingKeys = isHorizontal ? 'up and down' : 'left and right';
+  const withinKeys = isHorizontal ? 'left and right' : 'up and down';
+  const firstDrillKey = isHorizontal ? 'left' : 'down';
+  const lastDrillKey = isHorizontal ? 'right' : 'up';
   if (color) {
     return `${opening}Stacked bar chart. ${dimension} along the category axis, stacked by ${color}. Contains ${count} stack${
       count === 1 ? '' : 's'
-    }. Use the left and right arrow keys to move between stacks, and Enter, up, or down to drill into a stack's segments (down or Enter focuses the first segment, up focuses the last); once drilled in, up and down move through every segment in the chart, and left and right jump to the same segment in the adjacent stack.`;
+    }. Use the ${siblingKeys} arrow keys to move between stacks, and Enter, ${lastDrillKey}, or ${firstDrillKey} to drill into a stack's segments (${firstDrillKey} or Enter focuses the first segment, ${lastDrillKey} focuses the last); once drilled in, ${withinKeys} move through every segment in the chart, and ${siblingKeys} jump to the same segment in the adjacent stack.`;
   }
-  return `${opening}Bar chart. ${dimension} along the category axis. Contains ${count} bar${count === 1 ? '' : 's'}. Use the left and right arrow keys to navigate.`;
+  return `${opening}Bar chart. ${dimension} along the category axis. Contains ${count} bar${count === 1 ? '' : 's'}. Use the ${siblingKeys} arrow keys to navigate.`;
 };
 
 export const buildNodeLabel = (node: NodeObject): string => {
@@ -253,7 +311,13 @@ export const buildNodeLabel = (node: NodeObject): string => {
 
   if (data.values != null && typeof data.values === 'object' && !Array.isArray(data.values)) {
     const childCount = Object.keys(data.values).length;
-    return `${String(node.id)}. Contains ${childCount} bar${childCount === 1 ? '' : 's'}.`;
+    const metricLabel = data[STACK_METRIC_LABEL_KEY];
+    const metricTotal = data[STACK_METRIC_TOTAL_KEY];
+    const totalSuffix =
+      typeof metricLabel === 'string' && typeof metricTotal === 'number'
+        ? `, ${metricTotal.toLocaleString()} ${metricLabel}`
+        : '';
+    return `${String(node.id)}. Contains ${childCount} bar${childCount === 1 ? '' : 's'}${totalSuffix}.`;
   }
 
   const parts = Object.entries(data)

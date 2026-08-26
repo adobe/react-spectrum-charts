@@ -443,9 +443,12 @@ export const getMarkOpacity = (
 ): ({ test?: string } & NumericValueRef)[] => {
   const { highlightedItem, idKey, name: markName } = options;
   const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+  const hasRealInteractivity = isInteractive(options) || highlightedItem !== undefined;
 
-  // if there aren't any interactive components, then we don't need to add special opacity rules
-  if (!isInteractive(options) && highlightedItem === undefined && !hasAccessibleNavigation(options)) {
+  // Neither hover- nor focus-driven opacity should appear unless the mark has an actual mouse-hover
+  // feature (click/popover/inspect) — accessibleNavigation alone shouldn't introduce dimming that
+  // wouldn't also happen on mouse hover; the focus ring alone is enough to show keyboard focus then.
+  if (!hasRealInteractivity) {
     return rules;
   }
 

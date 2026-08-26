@@ -65,6 +65,39 @@ describe('AccessibleNavigation', () => {
     expect(dnNode().id).not.toBe(focusedIdBefore);
   });
 
+  // Regression: a stack's aria-label should read the metric axis's title ("Downloads"), not the
+  // raw metric field name ("value") — RscChart.tsx finds the Axis positioned on the metric side.
+  test("a stack's label includes its summed metric total, using the metric axis's title", async () => {
+    render(<AccessibleNavigation {...AccessibleNavigation.args} />);
+    const chart = await findChart();
+    const container = chart.closest('.rsc-container') as HTMLElement;
+
+    const entryButton = container.querySelector('button') as HTMLButtonElement;
+    entryButton.click();
+    const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first stack
+    // data-navigator sets aria-label on a nested `.dn-node-text` child, not on `.dn-node` itself.
+    const label = dnNode().querySelector('.dn-node-text')?.getAttribute('aria-label');
+    expect(label).toMatch(/Contains \d+ bars?, [\d,]+ Downloads\./);
+  });
+
+  // Generality: the metric axis is on 'bottom'/'top' (not 'left'/'right') once orientation flips to
+  // horizontal — RscChart.tsx's Axis lookup must follow, not stay hardcoded to the vertical case.
+  test("still finds the metric axis's title when the bar is horizontal", async () => {
+    render(<AccessibleNavigation {...AccessibleNavigation.args} orientation="horizontal" />);
+    const chart = await findChart();
+    const container = chart.closest('.rsc-container') as HTMLElement;
+
+    const entryButton = container.querySelector('button') as HTMLButtonElement;
+    entryButton.click();
+    const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+    fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first stack
+    const label = dnNode().querySelector('.dn-node-text')?.getAttribute('aria-label');
+    expect(label).toMatch(/Contains \d+ bars?, [\d,]+ Downloads\./);
+  });
+
   // Feature: once drilled into a segment, up/down move through every segment in the chart
   // (crossing stack boundaries once the current stack is exhausted), and left/right jump to the
   // same-color segment in the adjacent stack instead of a same-stack sibling.
@@ -169,14 +202,16 @@ describe('AccessibleNavigation', () => {
 
   // Regression test: Enter-to-activate resolves the mark name via RscChart's navResolvedName, not
   // the raw (usually-absent) name prop — this Bar deliberately omits `name` to prove that path works.
-  test('Enter on a focused segment opens its ChartPopover even when Bar has no explicit name prop', async () => {
+  // Also covers onClick firing alongside the popover, matching a real click's dual-callback behavior.
+  test('Enter on a focused segment opens its ChartPopover and fires onClick, even with no explicit name prop', async () => {
+    const onClick = jest.fn();
     const UnnamedBarWithPopover = (): ReactElement => {
       const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600, accessibleNavigation: true });
       return (
         <Chart {...chartProps}>
           <Axis position="bottom" baseline title="Browser" />
           <Axis position="left" grid title="Downloads" />
-          <Bar dimension="browser" color="operatingSystem">
+          <Bar dimension="browser" color="operatingSystem" onClick={onClick}>
             <ChartPopover width="auto">{(datum: Datum) => <div>{String(datum.operatingSystem)}</div>}</ChartPopover>
           </Bar>
           <Legend title="Operating system" />
@@ -197,6 +232,7 @@ describe('AccessibleNavigation', () => {
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     expect(screen.getByTestId('rsc-popover-content')).toBeInTheDocument();
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 });
 

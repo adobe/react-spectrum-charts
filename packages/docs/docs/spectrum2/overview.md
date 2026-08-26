@@ -284,6 +284,8 @@ Set `accessibleNavigation` on `Chart` to enable keyboard navigation of a support
 | `Enter` / `Space` (on a data point) | Opens that point's `ChartPopover`, anchored to the point. |
 | `Escape` | Closes an open `ChartPopover` or dismisses a visible `ChartInspect` tooltip first; otherwise drills back out one level. At the outermost level, exits keyboard navigation and returns focus to the page's normal tab order. |
 
+The `←`/`→`/`↑`/`↓` bindings above describe a vertical Bar (the default `orientation`). For a horizontal Bar, the sibling and within-stack bindings swap so they still match the visual layout: `↑`/`↓` move between bars/stacks (which now run top-to-bottom) and `←`/`→` move within a stack's segments (which now run left-to-right).
+
 ### Popover and inspect behavior
 
 - A point's `ChartPopover` opens on `Enter`/`Space` the same way it opens on click, anchored to the focused point's on-screen position.

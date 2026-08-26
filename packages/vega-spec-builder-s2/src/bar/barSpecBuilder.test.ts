@@ -376,6 +376,21 @@ describe('barSpecBuilder', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals.find((signal) => signal.name === INTERACTION_MODALITY)).toBeUndefined();
     });
+    // Regression: accessibleNavigation alone must not turn on hover-driven opacity/tooltip behavior —
+    // getMarkOpacity (markUtils.ts) only calls addHoveredItemOpacityRules when there's real
+    // interactivity (click/popover/inspect), so this signal must stay undeclared here too, matching
+    // that gate — otherwise a bar with no ChartInspect/ChartPopover/onClick would still fade on hover.
+    test('does not add the hoveredItem signals for accessibleNavigation alone, with no other interactive feature', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
+      expect(signals.find((signal) => signal.name === `${defaultBarOptions.name}_hoveredItem`)).toBeUndefined();
+      expect(
+        signals.find((signal) => signal.name === `${defaultBarOptions.name}_dimensionHoverArea_hoveredItem`)
+      ).toBeUndefined();
+    });
+    test('does not add the hoveredItem signals by default', () => {
+      const signals = addSignals(defaultSignals, defaultBarOptions);
+      expect(signals.find((signal) => signal.name === `${defaultBarOptions.name}_hoveredItem`)).toBeUndefined();
+    });
     // Regression test: chartSpecBuilder.ts calls addSignals once per Bar mark on the chart, and
     // FOCUSED_ITEM/FOCUSED_REGION/FOCUSED_DIMENSION are chart-wide, not mark-scoped — a second call
     // must not push a second copy, which Vega's parser rejects as a duplicate signal name.

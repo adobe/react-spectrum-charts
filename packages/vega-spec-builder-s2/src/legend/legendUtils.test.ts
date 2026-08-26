@@ -256,8 +256,10 @@ describe('getColumns()', () => {
 });
 
 describe('getOpacityEncoding()', () => {
-  test('fades non-focused entries once a leaf is focused when accessibleNavigation is enabled', () => {
-    const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, {});
+  const withInteractiveMark = { interactiveMarks: [{ name: 'bar0' }] };
+
+  test('fades non-focused entries once a leaf is focused when accessibleNavigation is enabled and a mark is interactive', () => {
+    const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, withInteractiveMark);
     expect(rules).toContainEqual({
       test: `isValid(${FOCUSED_ITEM})`,
       // userMeta.focusedDimensionIsLegendColor is unset here, so this is the Bar (suffix) convention.
@@ -270,11 +272,18 @@ describe('getOpacityEncoding()', () => {
     expect(rules).toBeUndefined();
   });
 
+  // Regression: focus-driven legend dimming should mirror whatever mouse hover would already do —
+  // if no mark on the chart is otherwise interactive, keyboard focus shouldn't dim legend entries.
+  test('does not add a focus rule when accessibleNavigation is enabled but no mark is interactive', () => {
+    const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, {});
+    expect(rules).toBeUndefined();
+  });
+
   // Regression: a bar's dimension-group focus (e.g. a stacked column before drilling into a
   // segment) has no color of its own, so FOCUSED_DIMENSION being valid must not, by itself, fade
   // every legend entry — only a specific leaf's focus should narrow the legend.
   describe('accessibleNavigation focus rule behavior', () => {
-    const opacityRules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, {});
+    const opacityRules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, withInteractiveMark);
     const rule = (Array.isArray(opacityRules) ? opacityRules : []).find(
       (r) => 'test' in r && r.test?.includes(FOCUSED_ITEM)
     );

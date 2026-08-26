@@ -311,8 +311,8 @@ describe('getMarkOpacity()', () => {
   });
 
   describe('accessibleNavigation', () => {
-    test('adds a focus-based opacity rule for a stacked/dodged bar (string color)', () => {
-      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true });
+    test('adds a focus-based opacity rule for a stacked/dodged bar (string color) when a real interactive feature is present', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true, hasOnClick: true });
       const focusRule = opacity.find((rule) => rule.test?.includes(FOCUSED_ITEM)) as
         | { test?: string; signal?: string }
         | undefined;
@@ -323,13 +323,18 @@ describe('getMarkOpacity()', () => {
       );
     });
 
-    test('adds the rule even with no other interactive feature enabled', () => {
-      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true });
+    test('adds the rule when a real interactive feature is also present', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true, hasOnClick: true });
       expect(opacity.length).toBeGreaterThan(1);
     });
 
     test('adds a dimension-keyed focus-based opacity rule for a single-series bar (non-string color)', () => {
-      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
+      const opacity = getMarkOpacity({
+        ...defaultBarOptions,
+        accessibleNavigation: true,
+        hasOnClick: true,
+        color: { value: 'categorical-100' },
+      });
       const focusRule = opacity.find((rule) => rule.test?.includes(FOCUSED_ITEM)) as
         | { test?: string; signal?: string }
         | undefined;
@@ -342,6 +347,28 @@ describe('getMarkOpacity()', () => {
     test('does not add a focus-based opacity rule by default', () => {
       const opacity = getMarkOpacity(defaultBarOptions);
       expect(opacity.some((rule) => rule.test?.includes(FOCUSED_ITEM))).toBe(false);
+    });
+
+    // Regression: accessibleNavigation alone (no ChartInspect/ChartPopover/onClick) must not add a
+    // hover-driven opacity rule — otherwise a bar with no configured hover feature would still fade
+    // other bars on mouse hover, a behavior that shouldn't appear unless the user actually asked for it.
+    test('does not add a hover-based opacity rule when there is no other interactive feature', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true });
+      expect(opacity.some((rule) => rule.test?.includes(HOVERED_ITEM))).toBe(false);
+    });
+
+    test('still adds a hover-based opacity rule when a real interactive feature is also present', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true, hasOnClick: true });
+      expect(opacity.some((rule) => rule.test?.includes(HOVERED_ITEM))).toBe(true);
+    });
+
+    // Regression: focus-driven dimming should mirror whatever mouse hover would already do — if hover
+    // doesn't dim anything (no interactive feature), keyboard focus shouldn't either; the focus ring
+    // alone is enough to show which element is focused.
+    test('does not add a focus-based opacity rule when there is no other interactive feature', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true });
+      expect(opacity.some((rule) => rule.test?.includes(FOCUSED_ITEM))).toBe(false);
+      expect(opacity).toStrictEqual([DEFAULT_OPACITY_RULE]);
     });
   });
 });
