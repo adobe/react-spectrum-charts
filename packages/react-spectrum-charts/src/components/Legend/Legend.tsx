@@ -16,6 +16,7 @@ import { FC } from 'react';
 import { LegendProps } from '../../types';
 
 const Legend: FC<LegendProps> = ({
+  align,
   color,
   defaultHiddenSeries,
   descriptions,
@@ -23,6 +24,8 @@ const Legend: FC<LegendProps> = ({
   highlight = false,
   isToggleable = false,
   legendLabels,
+  _labelWrap,
+  _maxRows,
   titleLimit,
   lineType,
   lineWidth,
@@ -33,6 +36,7 @@ const Legend: FC<LegendProps> = ({
   position = 'bottom',
   symbolShape,
   title,
+  _preferredColumns,
 }) => {
   return null;
 };

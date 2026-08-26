@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Line, LinePointAnnotation } from '../../components';
@@ -26,6 +29,8 @@ import {
   rightClickNthElement,
   screen,
   unhoverNthElement,
+  waitFor,
+  waitForMarksByGroupName,
   within,
 } from '../../test-utils';
 import '../../test-utils/__mocks__/matchMedia.mock';
@@ -33,6 +38,15 @@ import { Basic } from './Features/LineBasic.story';
 import { LineWithAxisAndLegend } from './Features/LineWithAxisAndLegend.story';
 import { LineWithUTCDatetimeFormat } from './Features/LineWithUTCDatetimeFormat.story';
 import { HistoricalCompare } from './Features/LineHistoricalCompare.story';
+import {
+  ControlledHighlight as HoverAnimationControlledHighlight,
+  GroupedLegendHover as HoverAnimationGroupedLegendHover,
+  LegendHover as HoverAnimationLegendHover,
+  OnClick as HoverAnimationOnClick,
+  PointHover as HoverAnimationPointHover,
+  PopoverSelection as HoverAnimationPopoverSelection,
+} from './Features/HoverAnimation/LineHoverAnimation.story';
+import { AccessibleNavigationMultiSeries } from './Features/AccessibleNavigation/LineAccessibleNavigation.story';
 import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story';
 import { LineType } from './Features/LineType.story';
 import { Opacity } from './Features/LineOpacity.story';
@@ -91,7 +105,7 @@ describe('Line', () => {
     expect(lines.length).toEqual(4);
     expect(lines[0].getAttribute('stroke-dasharray')).toEqual('');
     expect(lines[1].getAttribute('stroke-dasharray')).toEqual('7,4');
-    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[3].getAttribute('stroke-dasharray')).toEqual('2,3,7,4');
   });
 
@@ -115,13 +129,13 @@ describe('Line', () => {
     const lines = await findAllMarksByGroupName(chart, 'line0');
     expect(lines.length).toEqual(4);
     // dotted teal line
-    expect(lines[0].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[0].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
     // solid teal line
     expect(lines[1].getAttribute('stroke-dasharray')).toEqual('');
     expect(lines[1].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
     // dotted purple line
-    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[3].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
     // solid purple line
     expect(lines[3].getAttribute('stroke-dasharray')).toEqual('');
@@ -137,28 +151,412 @@ describe('Line', () => {
     expect(entries.length).toEqual(4);
     await hoverNthElement(entries, 0);
 
-    // symbol opacity should be reduced for all but the first symbol
+    // symbol opacity should be reduced for all but the first symbol. Legend opacity is now driven by
+    // the same animated fraction data as the line for animated marks, so it settles asynchronously
+    // rather than flipping instantly — hence the waitFor rather than a direct synchronous assertion.
     let symbols = getAllLegendSymbols(chart);
-    expect(symbols[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    await waitFor(() => {
+      expect(symbols[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
-    // line opacity should be reduced for all but the first line
-    let lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(lines[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    await waitForMarksByGroupName(chart, 'line0', (lines) => {
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
     await unhoverNthElement(entries, 0);
     await hoverNthElement(entries, 3);
 
     // symbol opacity should be reduced for all but the last symbol
     symbols = getAllLegendSymbols(chart);
-    expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(symbols[3]).toHaveAttribute('opacity', '1');
+    await waitFor(() => {
+      expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(symbols[3]).toHaveAttribute('opacity', '1');
+    });
 
     // line opacity should be reduced for all but the last line
-    lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(lines[3]).toHaveAttribute('opacity', '1');
+    await waitForMarksByGroupName(chart, 'line0', (lines) => {
+      expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(lines[3]).toHaveAttribute('opacity', '1');
+    });
+  });
+
+  describe('HoverAnimation', () => {
+    test('hovering a data point emphasizes its series and animates the others down to the faded opacity', async () => {
+      render(<HoverAnimationPointHover {...HoverAnimationPointHover.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('with animations disabled, the fade is applied via the original instant rules instead of the animated signal', async () => {
+      render(<HoverAnimationPointHover {...HoverAnimationPointHover.args} animations={false} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      const lines = await findAllMarksByGroupName(chart, 'line0');
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
+
+    test('hovering a legend entry emphasizes the matching series', async () => {
+      render(<HoverAnimationLegendHover {...HoverAnimationLegendHover.args} />);
+      const chart = await findChart();
+
+      const entries = getAllLegendEntries(chart);
+      await hoverNthElement(entries, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('hovering a grouped legend entry emphasizes every series in that group', async () => {
+      render(<HoverAnimationGroupedLegendHover {...HoverAnimationGroupedLegendHover.args} />);
+      const chart = await findChart();
+
+      const entries = getAllLegendEntries(chart);
+      await hoverNthElement(entries, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        // the two series in the hovered group stay fully opaque; the other group's two series fade
+        const opacities = lines.map((line) => line.getAttribute('opacity'));
+        expect(opacities.filter((o) => o === '1')).toHaveLength(2);
+        expect(opacities.filter((o) => o === `${FADE_FACTOR}`)).toHaveLength(2);
+      });
+    });
+
+    test('selecting a point via popover keeps its series emphasized', async () => {
+      render(<HoverAnimationPopoverSelection {...HoverAnimationPopoverSelection.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await clickNthElement(paths, 0);
+
+      // Not lines[0] specifically — accessibleNavigation raises the focused/selected line's group
+      // z-index above its siblings, which reorders the rendered DOM (SVG has no z-index, so Vega
+      // moves the raised group's markup later in document order) — so the selected line can render
+      // at any position.
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        const opacities = lines.map((line) => line.getAttribute('opacity'));
+        expect(opacities.filter((o) => o === '1')).toHaveLength(1);
+        expect(allElementsHaveAttributeValue(lines.filter((l) => l.getAttribute('opacity') !== '1'), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('Escape closes a keyboard-opened popover and returns focus to the same dataNavigator node', async () => {
+      render(<HoverAnimationPopoverSelection {...HoverAnimationPopoverSelection.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> point (leaf)
+      const focusedNodeId = dnNode().id;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate -> popover opens
+      // let react-aria's rAF-deferred autofocus into the popover settle, as it would in a real browser
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      expect(screen.queryByTestId('rsc-popover')).toBeTruthy();
+
+      // the popover autofocusing into itself blurs this node too, but that must not be mistaken
+      // for "left the navigator" — the focused point's opacity must stay discriminated from the
+      // rest for as long as the popover it opened is showing, not blank out to "everyone full".
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines.filter((l) => l.getAttribute('opacity') === '1')).toHaveLength(1);
+      });
+
+      const popoverContent = screen.getByTestId('rsc-popover-content');
+      fireEvent.keyDown(popoverContent, { key: 'Escape', code: 'Escape' });
+
+      // flush enough frames for both react-aria's own focus restore and our double-rAF fix
+      for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+
+      expect(screen.queryByTestId('rsc-popover')).toBeFalsy();
+      expect(document.activeElement).toBe(dnNode());
+      expect(dnNode().id).toBe(focusedNodeId);
+    });
+
+    test('a fast second Escape right after closing the popover does not also drill out; a later one does', async () => {
+      render(<HoverAnimationPopoverSelection {...HoverAnimationPopoverSelection.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> point (leaf)
+      const focusedNodeId = dnNode().id;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate -> popover opens
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      const popoverContent = screen.getByTestId('rsc-popover-content');
+      fireEvent.keyDown(popoverContent, { key: 'Escape', code: 'Escape' }); // closes the popover
+
+      for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      expect(document.activeElement).toBe(dnNode());
+
+      // pressed immediately — reads as the same "get me out of the dialog" gesture, not a
+      // separate request to drill out
+      fireEvent.keyDown(dnNode(), { key: 'Escape', code: 'Escape' });
+      expect(dnNode().id).toBe(focusedNodeId);
+
+      // once real time has passed, a further Escape is a deliberate, separate press
+      await new Promise((r) => setTimeout(r, 600));
+      fireEvent.keyDown(dnNode(), { key: 'Escape', code: 'Escape' });
+      expect(dnNode().id).not.toBe(focusedNodeId);
+    });
+
+    test('moving the mouse off a hovered line onto the legend restores the focused line to full opacity', async () => {
+      render(<AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+      // lands on a leaf without activating it — a click on the mark would also open its
+      // ChartPopover now that this story has one, which is not what this test is about
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> point (leaf)
+      expect(dnNode()).toBeTruthy();
+
+      // identify the focused line by its stroke color — accessibleNavigation raises the
+      // focused/selected line's group z-index above its siblings, which reorders the rendered
+      // DOM, so its array position can't be relied on after further interaction.
+      const linesAfterFocus = await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines.filter((l) => l.getAttribute('opacity') === '1')).toHaveLength(1);
+      });
+      const focusedStroke = linesAfterFocus.find((l) => l.getAttribute('opacity') === '1')?.getAttribute('stroke');
+
+      // hover a different line, then move straight onto the legend — still inside the chart's own
+      // container the whole time, so neither a container mouseleave nor a "left the whole chart"
+      // mouseout ever fires; only hovering something that isn't one of our own data marks should.
+      fireEvent.mouseOver(paths[paths.length - 1]);
+      fireEvent.mouseOut(paths[paths.length - 1]);
+      const legendEntries = getAllLegendEntries(chart);
+      fireEvent.mouseOver(legendEntries[0]);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        const opacities = lines.map((l) => l.getAttribute('opacity'));
+        expect(opacities.filter((o) => o === '1')).toHaveLength(1);
+        expect(lines.find((l) => l.getAttribute('stroke') === focusedStroke)).toHaveAttribute('opacity', '1');
+      });
+    });
+
+    test('a mouse hover on another line takes over the legend from keyboard focus, and hovering away reverts to the focused line', async () => {
+      render(<AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line (group-level focus, no point)
+
+      // the line itself being focused (no point drilled into) should still highlight its legend entry
+      const symbols = getAllLegendSymbols(chart);
+      const focusedSymbolIndex = await waitFor(() => {
+        const index = symbols.findIndex((s) => s.getAttribute('opacity') === '1');
+        expect(index).toBeGreaterThan(-1);
+        expect(symbols.filter((s) => s.getAttribute('opacity') === '1')).toHaveLength(1);
+        return index;
+      });
+
+      // hovering a different line with the mouse should take over the legend from keyboard focus.
+      // line0_voronoi regions are per-point (not per-series), so the hovered symbol is identified by
+      // its resulting opacity rather than assumed to share an index with the voronoi path list.
+      const hoveredPath = paths[paths.length - 1];
+      fireEvent.mouseOver(hoveredPath);
+      await waitFor(() => {
+        const hoveredSymbolIndex = symbols.findIndex((s) => s.getAttribute('opacity') === '1');
+        expect(hoveredSymbolIndex).toBeGreaterThan(-1);
+        expect(hoveredSymbolIndex).not.toBe(focusedSymbolIndex);
+        expect(symbols.filter((s) => s.getAttribute('opacity') === '1')).toHaveLength(1);
+      });
+
+      // hovering away — landing on the legend itself, a neutral non-data-mark target, matching the
+      // sibling test above — should revert to the keyboard-focused line's legend entry
+      fireEvent.mouseOut(hoveredPath);
+      const legendEntries = getAllLegendEntries(chart);
+      fireEvent.mouseOver(legendEntries[0]);
+      await waitFor(() => {
+        expect(symbols[focusedSymbolIndex]).toHaveAttribute('opacity', '1');
+        expect(symbols.filter((s) => s.getAttribute('opacity') === '1')).toHaveLength(1);
+      });
+    });
+
+    test('tabbing past the chart clears the focus styling; shift+Tab back restores it to the same node', async () => {
+      render(
+        <div>
+          <AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} />
+          <button>after</button>
+        </div>
+      );
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+      // lands on a leaf without activating it — a click on the mark would also open its
+      // ChartPopover now that this story has one, which is not what this test is about
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> point (leaf)
+
+      const linesAfterFocus = await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines.filter((l) => l.getAttribute('opacity') === '1')).toHaveLength(1);
+      });
+      const focusedStroke = linesAfterFocus.find((l) => l.getAttribute('opacity') === '1')?.getAttribute('stroke');
+
+      const nodeBeforeTabOut = dnNode();
+      await userEvent.tab(); // tab past the chart — a genuine "left the navigator" blur
+
+      // the node itself stays put (not removed) so shift+Tab can naturally return to it
+      expect(dnNode()).toBe(nodeBeforeTabOut);
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines.every((l) => l.getAttribute('opacity') === '1')).toBe(true);
+      });
+
+      await userEvent.tab({ shift: true }); // shift+Tab back into the chart
+
+      expect(document.activeElement).toBe(nodeBeforeTabOut);
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines.find((l) => l.getAttribute('stroke') === focusedStroke)).toHaveAttribute('opacity', '1');
+      });
+    });
+
+    test('shift+Tab from a focused node onto the entry button also clears the focus styling', async () => {
+      render(<AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+      // lands on a leaf without activating it — a click on the mark would also open its
+      // ChartPopover now that this story has one, which is not what this test is about
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> point (leaf)
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines.filter((l) => l.getAttribute('opacity') === '1')).toHaveLength(1);
+      });
+
+      // the entry button lives inside the same container as the focused node — landing there
+      // isn't a pointer at any specific node, so it must clear the look too, not be mistaken for
+      // an internal navigation transition just because it's "still inside the chart".
+      await userEvent.tab({ shift: true });
+      expect(document.activeElement).toBe(entryButton);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines.every((l) => l.getAttribute('opacity') === '1')).toBe(true);
+      });
+    });
+
+    test('with a visible ChartInspect tooltip (no popover open): first Escape dismisses it instead of drilling out; second Escape drills out', async () => {
+      render(<AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> point (leaf)
+      const focusedNodeId = dnNode().id;
+
+      // keyboard focus on a leaf drives ChartInspect's tooltip the same way mouse hover does
+      // (RscChart's onNavLeafFocus), so it should be showing here without any mouse involved
+      const tooltipEl = document.getElementById('vg-tooltip-element');
+      expect(tooltipEl).toHaveClass('visible');
+
+      fireEvent.keyDown(dnNode(), { key: 'Escape', code: 'Escape' }); // first Escape
+      expect(tooltipEl).not.toHaveClass('visible');
+      expect(dnNode().id).toBe(focusedNodeId); // did not drill out
+
+      fireEvent.keyDown(dnNode(), { key: 'Escape', code: 'Escape' }); // second Escape
+      expect(dnNode().id).not.toBe(focusedNodeId); // now drills out to the line
+    });
+
+    test('with both ChartInspect and ChartPopover: Enter opens the popover and Escape closes it, restoring focus to the same node', async () => {
+      render(<AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> point (leaf)
+      const focusedNodeId = dnNode().id;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate -> popover opens
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      expect(screen.queryByTestId('rsc-popover')).toBeTruthy();
+
+      const popoverContent = screen.getByTestId('rsc-popover-content');
+      fireEvent.keyDown(popoverContent, { key: 'Escape', code: 'Escape' });
+
+      for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+
+      expect(screen.queryByTestId('rsc-popover')).toBeFalsy();
+      expect(document.activeElement).toBe(dnNode());
+      expect(dnNode().id).toBe(focusedNodeId);
+    });
+
+    test('the controlled highlightedSeries prop emphasizes that series without any hover', async () => {
+      render(<HoverAnimationControlledHighlight {...HoverAnimationControlledHighlight.args} />);
+      const chart = await findChart();
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        const opacities = lines.map((line) => line.getAttribute('opacity'));
+        expect(opacities.filter((o) => o === '1')).toHaveLength(1);
+        expect(opacities.filter((o) => o === `${FADE_FACTOR}`)).toHaveLength(3);
+      });
+    });
+
+    test('an onClick handler alone makes the line interactive, so hovering still animates the emphasis', async () => {
+      render(<HoverAnimationOnClick {...HoverAnimationOnClick.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
   });
 
   test('Trend scale renders', async () => {
@@ -204,8 +602,10 @@ describe('Line', () => {
       // hover and validate all hover components are visible
       await hoverNthElement(paths, 0);
 
-      expect(lines[0]).toHaveAttribute('opacity', '1');
-      expect(lines[1]).toHaveAttribute('opacity', '0.2');
+      await waitFor(() => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(lines[1]).toHaveAttribute('opacity', '0.2');
+      });
     });
   });
 
@@ -352,6 +752,28 @@ describe('Line', () => {
 
       expect(onClick).toHaveBeenCalledTimes(1);
       expect(onClick).toHaveBeenCalledWith(expect.objectContaining(workspaceTrendsData[4]));
+    });
+
+    // Regression: activating a keyboard-focused point (Enter) never dispatches a real DOM click, so
+    // Vega's own view 'click' listener never sees it — onNavActivate must call onClick directly.
+    test('Enter on a keyboard-focused point also fires onClick', async () => {
+      const onClick = jest.fn();
+      render(<AccessibleNavigationMultiSeries {...AccessibleNavigationMultiSeries.args} onClick={onClick} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first line
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // line -> first point (leaf)
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate
+
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onClick).toHaveBeenCalledWith(
+        expect.objectContaining({ series: expect.any(String), datetime: expect.any(Number), value: expect.any(Number) })
+      );
     });
   });
 

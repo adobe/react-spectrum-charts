@@ -34,10 +34,13 @@ import {
   DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
   HOVERED_SERIES,
+  INTERACTION_MODALITY,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
@@ -61,6 +64,8 @@ import {
   SecondaryFacetType,
   UserMeta,
 } from '../types';
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
 
 export interface Facet {
   facetType: FacetType | SecondaryFacetType;
@@ -154,12 +159,12 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
       },
       labels: {
         update: {
-          opacity: getOpacityEncoding(options, userMeta),
+          opacity: getLegendOpacity(options, userMeta),
         },
       },
       symbols: {
         update: {
-          opacity: getOpacityEncoding(options, userMeta),
+          opacity: getLegendOpacity(options, userMeta),
         },
       },
     };
@@ -178,6 +183,47 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
   return {};
 };
 
+/** A dimension-group focus (e.g. a bar's stack, before drilling into a segment) only maps to one legend color for marks like Line, where the group level is itself keyed by color/series — so FOCUSED_DIMENSION only joins the gate for those; otherwise the legend waits for a specific leaf's focus. */
+const getAccessibleNavLegendFocusTest = (userMeta: UserMeta): string =>
+  userMeta.focusedDimensionIsLegendColor
+    ? `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`
+    : `isValid(${FOCUSED_ITEM})`;
+
+export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> | undefined => {
+  const rules: ProductionRule<NumericValueRef> = [];
+
+  // Gated on keyboard modality so an active mouse hover defers to the animated ramp below (its hoverFractionData already prioritizes hover and reverts to focus once it ends).
+  if (options.accessibleNavigation && userMeta.animatedMarks?.length) {
+    rules.push({
+      test: `${INTERACTION_MODALITY} === 'keyboard' && (${getAccessibleNavLegendFocusTest(userMeta)})`,
+      // animatedMarks is Line-only (only lineSpecBuilder.ts populates it), so this is always Line's own prefix-keyed leaf id convention.
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+
+  for (const markName of userMeta.animatedMarks || []) {
+    const isGrouped = !!options.keys?.length;
+    const fractionData = isGrouped ? `data('${markName}_hoverGroupFractionData')` : `data('${markName}_hoverFractionData')`;
+    const lookupField = isGrouped ? `${options.name}_${GROUP_ID}` : SERIES_ID;
+    const seriesLookup = `indexof(pluck(${fractionData}, '${lookupField}'), datum.value)`;
+    // default to the neutral emphasis level when a legend entry has no animation row
+    const fraction = `(${fractionData}[${seriesLookup}] || {fraction: ${FADE_FACTOR}}).fraction`;
+    // fade deemphasized entries to FADE_FACTOR; neutral and emphasized both stay fully opaque
+    const ramp = getDeemphasisRamp(fraction);
+    rules.push({
+      test: `length(${fractionData})`,
+      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+    });
+  }
+
+  if (rules.length) {
+    return [...rules, DEFAULT_OPACITY_RULE];
+  }
+
+  // Fall back to old rules if no animated marks are present (not using hover animation system)
+  return getOpacityEncoding(options, userMeta);
+}
+
 const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefined, name: string) => {
   if (descriptions?.length) {
     return { signal: `merge(datum, {'${COMPONENT_NAME}': '${name}'})` };
@@ -191,7 +237,7 @@ const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefi
  * @returns opactiy encoding
  */
 export const getOpacityEncoding = (
-  { highlight, highlightedItem, highlightedSeries, keys, chartPopovers, name: legendName }: LegendSpecOptions,
+  { accessibleNavigation, highlight, highlightedItem, highlightedSeries, keys, chartPopovers, name: legendName }: LegendSpecOptions,
   userMeta: UserMeta
 ): ProductionRule<NumericValueRef> | undefined => {
   const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : CONTROLLED_HIGHLIGHTED_SERIES;
@@ -223,10 +269,29 @@ export const getOpacityEncoding = (
       signal: `${highlightSignalName} === datum.value ? 1 : ${FADE_FACTOR}`,
     });
   }
-  for (const markName of userMeta.interactiveMarks || []) {
+  for (const { name: markName } of userMeta.interactiveMarks || []) {
+    // Gated the same way as the mark's own hover opacity (chartInspectUtils.ts's
+    // addHoveredItemOpacityRules): keyboard focus should win over a stale hover signal that never
+    // reset (mouse held still over a mark while the user tabbed into keyboard navigation).
+    const hoveredItemTest = accessibleNavigation
+      ? `isValid(${markName}_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`
+      : `isValid(${markName}_${HOVERED_ITEM})`;
     rules.push({
-      test: `isValid(${markName}_${HOVERED_ITEM})`,
+      test: hoveredItemTest,
       signal: `${markName}_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+
+  // Falls after mark hover rules (above), so hovering a line still wins over keyboard focus while
+  // active. Stays in effect whether the line itself or one of its points is focused. Gated on
+  // interactiveMarks (real interactivity), mirroring getMarkOpacity's own gate — a legend shouldn't
+  // dim entries on keyboard focus if the marks themselves wouldn't dim on mouse hover either.
+  if (accessibleNavigation && userMeta.interactiveMarks?.length) {
+    // Shared by both mark types: Line keys leaves by a color-value prefix, Bar by a color-value suffix.
+    const convention = userMeta.focusedDimensionIsLegendColor ? 'prefix' : 'suffix';
+    rules.push({
+      test: getAccessibleNavLegendFocusTest(userMeta),
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', convention)}) ? 1 : ${FADE_FACTOR}`,
     });
   }
 
@@ -237,15 +302,16 @@ export const getOpacityEncoding = (
 };
 
 export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions): LegendEncode => {
-  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme } = options;
+  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme, isToggleable, hiddenSeries, keys } = options;
+  const shapeFacetRef = getSymbolFacetEncoding<string>({
+    facets,
+    facetType: SYMBOL_SHAPE_SCALE,
+    customValue: symbolShape,
+    name,
+  });
   const enter: SymbolEncodeEntry = {
     fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
-    shape: getSymbolFacetEncoding<string>({
-      facets,
-      facetType: SYMBOL_SHAPE_SCALE,
-      customValue: symbolShape,
-      name,
-    }),
+    shape: shapeFacetRef,
     size: getSymbolFacetEncoding<number>({ facets, facetType: SYMBOL_SIZE_SCALE, name }),
     strokeDash: getSymbolFacetEncoding<number[]>({
       facets,
@@ -253,6 +319,7 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
       customValue: lineType,
       name,
     }),
+    // Must stay a single value/signal — Vega's legend-layout sizeExpression breaks on production-rule arrays here.
     strokeWidth: getSymbolFacetEncoding<number>({
       facets,
       facetType: LINE_WIDTH_SCALE,
@@ -260,19 +327,23 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
       name,
     }),
   };
+  const colorRef = getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
+    value: spectrum2Colors[colorScheme]['categorical-100'],
+  };
+  // Hidden entries swap shape to the "eye off" icon, colored to match the legend label text (not the series color).
+  const isHidden = isToggleable || hiddenSeries.length > 0;
+  const hiddenSeriesTest = keys?.length
+    ? `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_${GROUP_ID}'), datum.value) === -1`
+    : 'indexof(hiddenSeries, datum.value) !== -1';
+  const hiddenIconColor = getS2ColorValue(isToggleable ? 'gray-700' : 'gray-500', colorScheme);
+  const hiddenFillRule = { test: hiddenSeriesTest, value: hiddenIconColor };
+  // Transparent, not zero-width: strokeWidth can't be conditional (see note above), and Vega's default 1.5px outline would bold the icon's fine linework.
+  const hiddenStrokeRule = { test: hiddenSeriesTest, value: 'transparent' };
+  const hiddenShapeRule = { test: hiddenSeriesTest, value: getPathFromSymbolShape('visibility-off') };
   const update: SymbolEncodeEntry = {
-    fill: [
-      ...getHiddenSeriesColorRule(options, 'gray-300'),
-      getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-        value: spectrum2Colors[colorScheme]['categorical-100'],
-      },
-    ],
-    stroke: [
-      ...getHiddenSeriesColorRule(options, 'gray-300'),
-      getSymbolFacetEncoding<Color>({ facets, facetType: COLOR_SCALE, customValue: color, name }) ?? {
-        value: spectrum2Colors[colorScheme]['categorical-100'],
-      },
-    ],
+    fill: isHidden ? [hiddenFillRule, colorRef] : [colorRef],
+    stroke: isHidden ? [hiddenStrokeRule, colorRef] : [colorRef],
+    shape: isHidden ? [hiddenShapeRule, shapeFacetRef ?? { value: getPathFromSymbolShape('rounded-square') }] : undefined,
   };
   // Remove undefined values
   const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
@@ -352,16 +423,19 @@ export const getHiddenSeriesColorRule = (
  * @returns
  */
 export const getShowHideEncodings = (options: LegendSpecOptions): LegendEncode => {
-  const { colorScheme } = options;
-  const hiddenSeriesEncode: LegendEncode = {
+  const { colorScheme, isToggleable } = options;
+  // Toggleable legends use the eye-icon overlay UX — labels always stay at full opacity (gray-700).
+  // Controlled hiddenSeries (non-toggleable) preserves the gray-500 gray-out on hidden labels.
+  const labelFillRules = isToggleable
+    ? [{ value: getS2ColorValue('gray-700', colorScheme) }]
+    : [...getHiddenSeriesColorRule(options, 'gray-500'), { value: getS2ColorValue('gray-700', colorScheme) }];
+  return {
     labels: {
       update: {
-        fill: [...getHiddenSeriesColorRule(options, 'gray-500'), { value: getS2ColorValue('gray-700', colorScheme) }],
+        fill: labelFillRules,
       },
     },
   };
-
-  return hiddenSeriesEncode;
 };
 
 /**

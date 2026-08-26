@@ -20,7 +20,15 @@ import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions, Sc
 
 export const addCombo = produce<
   ScSpec,
-  [ComboOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  [
+    ComboOptions & {
+      colorScheme?: ColorScheme;
+      highlightedItem?: HighlightedItem;
+      index?: number;
+      idKey: string;
+      s2?: boolean;
+    }
+  ]
 >(
   (
     spec,
@@ -32,6 +40,7 @@ export const addCombo = produce<
       name,
       marks = [],
       dimension = DEFAULT_TIME_DIMENSION,
+      s2 = false,
     }
   ) => {
     let { barCount, lineCount } = initializeComponentCounts();
@@ -75,6 +84,7 @@ export const addCombo = produce<
             index: barCount,
             name: markName,
             dimension: getDimension(mark, dimension),
+            s2,
           });
         case 'line':
         default:
@@ -89,6 +99,7 @@ export const addCombo = produce<
             index: lineCount,
             name: markName,
             dimension: getDimension(mark, dimension),
+            s2,
           });
       }
     }, spec);

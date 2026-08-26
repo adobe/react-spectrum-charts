@@ -9,31 +9,115 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_LEGEND_COLUMN_PADDING, DEFAULT_LEGEND_LABEL_LIMIT, DEFAULT_LEGEND_SYMBOL_WIDTH, FILTERED_TABLE } from '@spectrum-charts/constants';
+import {
+  DEFAULT_LEGEND_COLUMN_PADDING,
+  DEFAULT_LEGEND_LABEL_LIMIT,
+  DEFAULT_LEGEND_SYMBOL_WIDTH,
+  DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
+  FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  GROUP_ID,
+  HOVERED_ITEM,
+  INTERACTION_MODALITY,
+  NAVIGATION_ID_SEPARATOR,
+  ROUNDED_SQUARE_PATH,
+  SERIES_ID,
+  VISIBILITY_OFF_PATH,
+} from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
 import { defaultLegendOptions } from './legendTestUtils';
 import {
   getClickEncodings,
   getColumns,
   getHiddenSeriesColorRule,
+  getLegendOpacity,
+  getOpacityEncoding,
+  getShowHideEncodings,
   getSymbolEncodings,
   getSymbolType,
   mergeLegendEncodings,
 } from './legendUtils';
 
 describe('getSymbolEncodings()', () => {
-  test('no factes and no custom values, should return all the defaults', () => {
+  test('no facets and no custom values, should return all the defaults', () => {
     expect(getSymbolEncodings([], defaultLegendOptions)).toStrictEqual({
       entries: { name: 'legend0_legendEntry' },
       symbols: {
         enter: {},
         update: {
-        fill: [{ value: spectrum2Colors.light['categorical-100'] }],
-        stroke: [{ value: spectrum2Colors.light['categorical-100'] }],
+          fill: [{ value: spectrum2Colors.light['categorical-100'] }],
+          stroke: [{ value: spectrum2Colors.light['categorical-100'] }],
         },
       },
     });
+  });
+
+  test('isToggleable: true should add a hidden-series shape rule, a gray-700 fill rule, and a transparent stroke rule', () => {
+    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, isToggleable: true });
+    const hiddenTest = 'indexof(hiddenSeries, datum.value) !== -1';
+    expect(encodings.symbols?.update?.fill).toStrictEqual([
+      { test: hiddenTest, value: spectrum2Colors.light['gray-700'] },
+      { value: spectrum2Colors.light['categorical-100'] },
+    ]);
+    // Stroke color (not width, which Vega's legend layout parser requires to stay a single
+    // value) is made transparent so the icon's fine linework isn't outlined/bolded.
+    expect(encodings.symbols?.update?.stroke).toStrictEqual([
+      { test: hiddenTest, value: 'transparent' },
+      { value: spectrum2Colors.light['categorical-100'] },
+    ]);
+    expect(encodings.symbols?.update?.shape).toStrictEqual([
+      { test: hiddenTest, value: VISIBILITY_OFF_PATH },
+      { value: ROUNDED_SQUARE_PATH },
+    ]);
+  });
+
+  test('hiddenSeries non-empty should add a hidden-series shape rule and a gray-500 icon color rule', () => {
+    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, hiddenSeries: ['Windows'] });
+    const hiddenTest = 'indexof(hiddenSeries, datum.value) !== -1';
+    expect(encodings.symbols?.update?.fill?.[0]).toEqual({ test: hiddenTest, value: spectrum2Colors.light['gray-500'] });
+    expect(encodings.symbols?.update?.stroke?.[0]).toEqual({ test: hiddenTest, value: 'transparent' });
+    expect(encodings.symbols?.update?.shape?.[0]).toEqual({ test: hiddenTest, value: VISIBILITY_OFF_PATH });
+  });
+
+  test('isToggleable with keys should use filteredTable rule for the shape and color swap', () => {
+    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, isToggleable: true, keys: ['key1'] });
+    const hiddenShapeRule = encodings.symbols?.update?.shape?.[0] as { test?: string; value?: string };
+    expect(hiddenShapeRule?.test).toContain(FILTERED_TABLE);
+    expect(hiddenShapeRule?.test).toContain(GROUP_ID);
+    expect(hiddenShapeRule?.value).toBe(VISIBILITY_OFF_PATH);
+
+    const hiddenFillRule = encodings.symbols?.update?.fill?.[0] as { test?: string; value?: string };
+    expect(hiddenFillRule?.test).toContain(FILTERED_TABLE);
+    expect(hiddenFillRule?.value).toBe(spectrum2Colors.light['gray-700']);
+
+    const hiddenStrokeRule = encodings.symbols?.update?.stroke?.[0] as { test?: string; value?: string };
+    expect(hiddenStrokeRule?.test).toContain(FILTERED_TABLE);
+    expect(hiddenStrokeRule?.value).toBe('transparent');
+  });
+});
+
+describe('getShowHideEncodings()', () => {
+  test('isToggleable should return gray-700 for all labels with no hidden rule', () => {
+    const encodings = getShowHideEncodings({ ...defaultLegendOptions, isToggleable: true });
+    expect(encodings.labels?.update?.fill).toStrictEqual([{ value: spectrum2Colors.light['gray-700'] }]);
+  });
+
+  test('controlled hiddenSeries (non-toggleable) should gray-out hidden labels to gray-500', () => {
+    const encodings = getShowHideEncodings({ ...defaultLegendOptions, hiddenSeries: ['Mac'] });
+    const fill = encodings.labels?.update?.fill as { test?: string; value?: string }[];
+    expect(fill[0]?.test).toContain('hiddenSeries');
+    expect(fill[0]?.value).toBe(spectrum2Colors.light['gray-500']);
+    expect(fill[1]).toStrictEqual({ value: spectrum2Colors.light['gray-700'] });
+  });
+
+  test('default (no toggle, no hiddenSeries) should return gray-700 with no conditional rule', () => {
+    const encodings = getShowHideEncodings(defaultLegendOptions);
+    expect(encodings.labels?.update?.fill).toStrictEqual([{ value: spectrum2Colors.light['gray-700'] }]);
   });
 });
 
@@ -168,5 +252,197 @@ describe('getColumns()', () => {
 
   test('should use legend name in the data reference', () => {
     expect(getColumns('top', 'myLegend', 100)).toEqual(getExpectedColumnsSignal('myLegend', 100));
+  });
+});
+
+describe('getOpacityEncoding()', () => {
+  const withInteractiveMark = { interactiveMarks: [{ name: 'bar0' }] };
+
+  test('fades non-focused entries once a leaf is focused when accessibleNavigation is enabled and a mark is interactive', () => {
+    const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, withInteractiveMark);
+    expect(rules).toContainEqual({
+      test: `isValid(${FOCUSED_ITEM})`,
+      // userMeta.focusedDimensionIsLegendColor is unset here, so this is the Bar (suffix) convention.
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', 'suffix')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  test('does not add a focus rule by default', () => {
+    const rules = getOpacityEncoding(defaultLegendOptions, {});
+    expect(rules).toBeUndefined();
+  });
+
+  // Regression: focus-driven legend dimming should mirror whatever mouse hover would already do —
+  // if no mark on the chart is otherwise interactive, keyboard focus shouldn't dim legend entries.
+  test('does not add a focus rule when accessibleNavigation is enabled but no mark is interactive', () => {
+    const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, {});
+    expect(rules).toBeUndefined();
+  });
+
+  // Regression: a bar's dimension-group focus (e.g. a stacked column before drilling into a
+  // segment) has no color of its own, so FOCUSED_DIMENSION being valid must not, by itself, fade
+  // every legend entry — only a specific leaf's focus should narrow the legend.
+  describe('accessibleNavigation focus rule behavior', () => {
+    const opacityRules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, withInteractiveMark);
+    const rule = (Array.isArray(opacityRules) ? opacityRules : []).find(
+      (r) => 'test' in r && r.test?.includes(FOCUSED_ITEM)
+    );
+    const evalRule = (datum: Record<string, unknown>, focusedItem: unknown): number => {
+      const isValid = (v: unknown) => v !== null && v !== undefined;
+      const indexof = (str: string, substr: string) => str.indexOf(substr);
+      const length = (str: string) => str.length;
+      const focusedDimension = 'Chrome'; // a bar's dimension value, never equal to a color
+      // eslint-disable-next-line no-new-func
+      const testFn = new Function(
+        'datum',
+        'focusedDimension',
+        'focusedItem',
+        'isValid',
+        'indexof',
+        'length',
+        `return (${rule?.test});`
+      );
+      if (!testFn(datum, focusedDimension, focusedItem, isValid, indexof, length)) return 1;
+      // eslint-disable-next-line no-new-func
+      const signalFn = new Function(
+        'datum',
+        'focusedDimension',
+        'focusedItem',
+        'isValid',
+        'indexof',
+        'length',
+        `return (${(rule as { signal?: string })?.signal});`
+      );
+      return signalFn(datum, focusedDimension, focusedItem, isValid, indexof, length);
+    };
+
+    test('leaves every legend entry at full opacity when only the dimension group (stack) has focus', () => {
+      expect(evalRule({ value: 'Windows' }, null)).toBe(1);
+      expect(evalRule({ value: 'Mac' }, null)).toBe(1);
+    });
+
+    test('narrows to the matching color once a leaf (segment) is focused', () => {
+      expect(evalRule({ value: 'Windows' }, `Chrome${NAVIGATION_ID_SEPARATOR}Windows`)).toBe(1);
+      expect(evalRule({ value: 'Mac' }, `Chrome${NAVIGATION_ID_SEPARATOR}Windows`)).toBe(FADE_FACTOR);
+    });
+  });
+
+  // Regression: a mouse hover that never fired mouseout (e.g. the pointer sat still over a mark
+  // while the user tabbed into keyboard navigation) shouldn't keep out-prioritizing keyboard focus.
+  describe('mark hover rule interaction modality gate', () => {
+    const userMeta = { interactiveMarks: [{ name: 'bar0' }] };
+
+    test('gates the mark hover rule on interaction modality when accessibleNavigation is enabled', () => {
+      const rules = getOpacityEncoding({ ...defaultLegendOptions, accessibleNavigation: true }, userMeta);
+      expect(rules).toContainEqual({
+        test: `isValid(bar0_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`,
+        signal: `bar0_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
+      });
+    });
+
+    test('does not gate the mark hover rule when accessibleNavigation is disabled', () => {
+      const rules = getOpacityEncoding(defaultLegendOptions, userMeta);
+      expect(rules).toContainEqual({
+        test: `isValid(bar0_${HOVERED_ITEM})`,
+        signal: `bar0_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
+      });
+    });
+  });
+});
+
+describe('getLegendOpacity()', () => {
+  test('falls back to getOpacityEncoding when userMeta has no animatedMarks', () => {
+    const options = { ...defaultLegendOptions, highlight: true };
+    expect(getLegendOpacity(options, {})).toStrictEqual(getOpacityEncoding(options, {}));
+  });
+
+  test('falls back to getOpacityEncoding when animatedMarks is empty', () => {
+    const options = { ...defaultLegendOptions, highlight: true };
+    expect(getLegendOpacity(options, { animatedMarks: [] })).toStrictEqual(getOpacityEncoding(options, {}));
+  });
+
+  test('builds a per-series animated rule for an ungrouped legend', () => {
+    const fractionData = `data('line0_hoverFractionData')`;
+    const fraction = `(${fractionData}[indexof(pluck(${fractionData}, '${SERIES_ID}'), datum.value)] || {fraction: ${FADE_FACTOR}}).fraction`;
+    const ramp = getDeemphasisRamp(fraction);
+
+    expect(getLegendOpacity(defaultLegendOptions, { animatedMarks: ['line0'] })).toStrictEqual([
+      {
+        test: `length(${fractionData})`,
+        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+      },
+      DEFAULT_OPACITY_RULE,
+    ]);
+  });
+
+  test('uses the group fraction data and legend group id field when keys are provided', () => {
+    const options = { ...defaultLegendOptions, keys: ['category'] };
+    const fractionData = `data('line0_hoverGroupFractionData')`;
+    const fraction = `(${fractionData}[indexof(pluck(${fractionData}, '${options.name}_${GROUP_ID}'), datum.value)] || {fraction: ${FADE_FACTOR}}).fraction`;
+    const ramp = getDeemphasisRamp(fraction);
+
+    expect(getLegendOpacity(options, { animatedMarks: ['line0'] })).toStrictEqual([
+      {
+        test: `length(${fractionData})`,
+        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+      },
+      DEFAULT_OPACITY_RULE,
+    ]);
+  });
+
+  test('adds one rule per registered animated mark, plus the fallback rule', () => {
+    const result = getLegendOpacity(defaultLegendOptions, { animatedMarks: ['line0', 'line1'] });
+    expect(Array.isArray(result) && result).toHaveLength(3);
+    expect(Array.isArray(result) && result[2]).toEqual(DEFAULT_OPACITY_RULE);
+  });
+
+  test('adds an instant focus rule ahead of the animated ramp rules when accessibleNavigation is enabled', () => {
+    const options = { ...defaultLegendOptions, accessibleNavigation: true };
+    const result = getLegendOpacity(options, { animatedMarks: ['line0'] });
+    // animatedMarks is only ever populated by Line, whose dimension-group level is itself keyed by
+    // color/series, so lineSpecBuilder always sets focusedDimensionIsLegendColor in this path —
+    // this test omits it to isolate the rule's placement, which is why the gate here is the
+    // FOCUSED_ITEM-only default; see the `focusedDimensionIsLegendColor` tests below for the flag's effect.
+    expect(Array.isArray(result) && result[0]).toStrictEqual({
+      test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_ITEM}))`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  // Regression: for Line, the line itself (not yet drilled into a point) being focused should still
+  // highlight its matching legend entry, since FOCUSED_DIMENSION is the series/color value there.
+  test('also gates on FOCUSED_DIMENSION when focusedDimensionIsLegendColor is set (Line)', () => {
+    const options = { ...defaultLegendOptions, accessibleNavigation: true };
+    const result = getLegendOpacity(options, { animatedMarks: ['line0'], focusedDimensionIsLegendColor: true });
+    expect(Array.isArray(result) && result[0]).toStrictEqual({
+      test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}))`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.value', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  // Regression: once a mouse hover flips interaction modality to 'pointer', this instant rule must
+  // step aside (test → false) so the animated ramp's own hoverFractionData — whose coalesce chain
+  // already prioritizes the active hover and falls back to keyboard focus once hover ends — drives
+  // the legend instead, rather than this rule permanently overriding it while focus stays valid.
+  test('defers to the animated ramp once interaction modality is not keyboard, even while focus is valid', () => {
+    const options = { ...defaultLegendOptions, accessibleNavigation: true };
+    const result = getLegendOpacity(options, { animatedMarks: ['line0'], focusedDimensionIsLegendColor: true });
+    const rule = Array.isArray(result) && (result[0] as { test?: string });
+    const isValid = (v: unknown) => v !== null && v !== undefined;
+    // eslint-disable-next-line no-new-func
+    const testFn = new Function(
+      'interactionModality',
+      'focusedDimension',
+      'focusedItem',
+      'isValid',
+      `return (${rule && rule.test});`
+    );
+    expect(testFn('pointer', 'seriesA', null, isValid)).toBe(false);
+    expect(testFn('keyboard', 'seriesA', null, isValid)).toBe(true);
+  });
+
+  test('falls back to getOpacityEncoding (which has its own focus rule) when there are no animated marks', () => {
+    const options = { ...defaultLegendOptions, accessibleNavigation: true };
+    expect(getLegendOpacity(options, {})).toStrictEqual(getOpacityEncoding(options, {}));
   });
 });

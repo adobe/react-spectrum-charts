@@ -50,7 +50,12 @@ import {
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
-import { HoverContext, getSeriesHoverPredicate } from './hoverContext';
+import {
+  HoverContext,
+  getSeriesHoverPredicate,
+  shouldIncludeDimensionHoverClauses,
+  shouldIncludeItemHoverClauses,
+} from './hoverContext';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
@@ -64,6 +69,7 @@ import {
   ChartTooltipOptions,
   ColorFacet,
   ColorScheme,
+  DisplayOnHoverTrigger,
   DonutSpecOptions,
   DualFacet,
   HighlightedItem,
@@ -138,27 +144,32 @@ export type MetricRangeHoverVisibility = 'show' | 'fade';
 
 export const getMetricRangeHoverVisibilityOpacityRules = (
   ctx: HoverContext,
-  visibility: MetricRangeHoverVisibility
+  visibility: MetricRangeHoverVisibility,
+  trigger?: DisplayOnHoverTrigger
 ): ProductionRule<NumericValueRef> => {
   const rules: Array<{ test?: string; signal?: string; value?: number }> = [];
 
   if (visibility === 'show') {
-    const showTest = getSeriesHoverPredicate(ctx);
+    const showTest = getSeriesHoverPredicate(ctx, trigger);
     rules.push({ test: showTest, value: 1 }, { value: 0 });
     return rules;
   }
 
-  for (const prefix of ctx.dimensionPrefixes) {
-    rules.push({ test: `isValid(${prefix}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`, value: 1 });
+  if (shouldIncludeDimensionHoverClauses(trigger)) {
+    for (const prefix of ctx.dimensionPrefixes) {
+      rules.push({ test: `isValid(${prefix}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`, value: 1 });
+    }
   }
-  for (const prefix of ctx.itemPrefixes) {
-    const isHoveredSeries = `${prefix}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
-    const isControlledTableSeries = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
-    const isControlledSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
-    rules.push({
-      test: `isValid(${prefix}_${HOVERED_ITEM})`,
-      signal: `${isHoveredSeries} || ${isControlledTableSeries} || ${isControlledSeries} ? 1 : ${FADE_FACTOR}`,
-    });
+  if (shouldIncludeItemHoverClauses(trigger)) {
+    for (const prefix of ctx.itemPrefixes) {
+      const isHoveredSeries = `${prefix}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+      const isControlledTableSeries = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
+      const isControlledSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
+      rules.push({
+        test: `isValid(${prefix}_${HOVERED_ITEM})`,
+        signal: `${isHoveredSeries} || ${isControlledTableSeries} || ${isControlledSeries} ? 1 : ${FADE_FACTOR}`,
+      });
+    }
   }
   rules.push({
     test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
@@ -222,7 +233,8 @@ export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): 
 export const getColorProductionRule = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+  s2 = false
 ): ColorValueRef => {
   const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
   if (Array.isArray(color)) {
@@ -233,7 +245,7 @@ export const getColorProductionRule = (
   if (typeof color === 'string') {
     return { scale: colorScaleName, field: color };
   }
-  return { value: getColorValue(color.value, colorScheme) };
+  return { value: getColorValue(color.value, colorScheme, s2) };
 };
 
 /**
@@ -246,9 +258,10 @@ export const getColorProductionRule = (
 export const getColorProductionRuleSignalString = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+  s2 = false
 ): string => {
-  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType);
+  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType, s2);
   if ('signal' in colorRule) {
     return colorRule.signal;
   }

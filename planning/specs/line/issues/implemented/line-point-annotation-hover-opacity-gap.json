@@ -1,0 +1,59 @@
+{
+  "id": "line-point-annotation-hover-opacity-gap",
+  "title": "LinePointAnnotation Ignores Legend/Line Hover Opacity",
+  "chartType": "line",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-08-05",
+  "complexity": {
+    "score": 2,
+    "rationale": "No further research needed to start - wire LinePointAnnotation's foreground text mark with a dedicated update.opacity production-rule array, mirroring getLineOpacityRules/getHighlightedSeriesOpacityRules's signal shapes but multiplying against the label-collision transform's own datum.opacity field instead of replacing it. Touches one source file and its test file, but the rule set has several branches (item hover, controlled highlight, popover selection, per-legend hover) that each need their own test."
+  },
+  "summary": "LinePointAnnotation marks did not dim when a legend item is hovered, unlike the line itself and other line-mark children (static points, metric range), which correctly fade to the non-hovered opacity. Fixed in S2 by giving the mark's foreground text an inline, self-contained opacity production rule. The same gap in S1 is tracked separately in line-point-annotation-hover-opacity-gap-s1.json (not fixed here - explicitly scoped to S2 only for this pass).",
+  "symptom": "Hovering a legend item correctly dims the line path and other series-aware marks for non-hovered series, but any LinePointAnnotation marks on the chart stayed at full opacity regardless of legend hover state. Hovering the line mark itself (item hover, via ChartTooltip/ChartPopover) had the same gap. Both are now fixed in S2.",
+  "rootCause": "LinePointAnnotation's mark-building code had no opacity encode tied to hover/highlight state. In s2, `getLinePointAnnotationMarks` (packages/vega-spec-builder-s2/src/line/linePointAnnotation/linePointAnnotationUtils.ts, pre-fix lines 40-59) delegated to `getLabelTransformTextMarks` (packages/vega-spec-builder-s2/src/line/directLabelUtils.ts:132-173), whose foreground `update.opacity` was `{ field: 'opacity' }` - the label-collision-transform's own computed opacity, unrelated to hover/legend/controlled-highlight state. Legend-hover dimming is applied generically as a separate post-processing pass, `setHoverOpacityForMarks` (packages/vega-spec-builder-s2/src/legend/legendHighlightUtils.ts), gated by `markIsSeriesAware()` (checks whether a mark's fill/stroke references the color scale, or matches a hardcoded `Trendline\\d+|MetricRange\\d+_line` name regex escape hatch). LinePointAnnotation fails this gate unconditionally: its foreground `fill` is always a literal value or a copied `datum.fill` field reference (never a `{scale: 'color'}` reference, by design - text fill shouldn't be scale-driven), and its mark name never matches the regex. INVESTIGATION FINDING: retrofitting LinePointAnnotation into that generic pass was rejected as the fix approach, because the generic pass's spliced-in rule (`getHighlightOpacityRule`) always outputs a flat `1` or `FADE_FACTOR`, which would have overwritten (not multiplied against) the collision-computed `datum.opacity` - meaning a label already hidden by collision-avoidance would incorrectly flash back into visibility during an unrelated legend hover. This exact risk was flagged as an open question in the original spec and is why a different approach was used.",
+  "comparison": [
+    {
+      "aspect": "Opacity encode for legend/hover/controlled-highlight dimming",
+      "expected": "Line mark / static points set update.opacity via getLineOpacity(...)/getOpacityProductionRule(...), and setHoverOpacityForMarks's markIsSeriesAware() recognizes them (fill/stroke reference the color scale, or the mark name matches the Trendline/MetricRange regex special-case), so legendHighlightUtils splices in the isValid(legend0_hoveredSeries) fade rule.",
+      "actual": "Pre-fix: LinePointAnnotation's foreground TextMark had only the label-collision-transform's own computed opacity, with no hover/legend/controlled-highlight rule at all, and could never pass markIsSeriesAware given its non-scale-based fill. Post-fix: rather than joining the generic markIsSeriesAware-gated pass, the mark now carries its own self-contained opacity production-rule array (see implementationPlan) built directly from the same signal set getLineOpacityRules/getHighlightedSeriesOpacityRules already use (interactiveMarkName, CONTROLLED_HIGHLIGHTED_TABLE/SERIES, popoverMarkName, legendHighlightSignals), each rule multiplying against datum.opacity so collision-hidden labels stay hidden."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "touchesLegendInteraction is the core symptom (legend0_hoveredSeries-driven fade never reached this mark). touchesControlledHighlight is true because the fix's rule set covers CONTROLLED_HIGHLIGHTED_TABLE/SERIES unconditionally (not gated behind the line's own interactivity, unlike getLineOpacityRules's early-return optimization), since LinePointAnnotation can never rely on the generic legend post-processing pass as a fallback. touchesTooltipOrPopover is true because the fix also covers item-hover (interactiveMarkName) and popover-selection (popoverMarkName/SELECTED_SERIES) fade, matching the line's own getLineOpacityRules coverage. CORRECTION: initially claimed the existing Basic story (Legend highlight, no ChartInspect) was 'sufficient' verification - it never sets interactiveMarkName, so the item-hover branch had zero visual coverage. Added a `WithHoverInteraction` story pairing LinePointAnnotation with `<ChartInspect>` so the non-legend fade path can also be checked in the browser. requiresS1S2Parity is true and INTENTIONALLY NOT ADDRESSED in this pass - the user explicitly scoped this fix to S2 only. The S1 file (packages/vega-spec-builder/src/line/linePointAnnotation/linePointAnnotationUtils.ts) was confirmed to have the same underlying gap (no update.opacity at all, not even a collision-based one, since S1 doesn't use the label-transform/collision system) and is tracked as a separate open issue: line-point-annotation-hover-opacity-gap-s1.json."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/linePointAnnotation/linePointAnnotationUtils.ts",
+      "change": "Implemented: added `getLinePointAnnotationOpacity(lineOptions)`, a new exported helper returning a ProductionRule<NumericValueRef> array. Rules, in priority order: (1) if interactiveMarkName is set, an item-hover fade rule (isHighlightedByGroup-aware, keyed off `${interactiveMarkName}_hoveredItem` or the group's `_highlightedData` set); (2) unconditional CONTROLLED_HIGHLIGHTED_TABLE and CONTROLLED_HIGHLIGHTED_SERIES fade rules; (3) if popoverMarkName is set, a SELECTED_SERIES fade rule; (4) one fade rule per entry in legendHighlightSignals; (5) a final `{ field: 'opacity' }` fallback (the label-collision value, used whenever no highlight source is active). Every non-fallback rule's signal is `<matchExpr> ? datum.opacity : datum.opacity * FADE_FACTOR` rather than a flat `1`/`FADE_FACTOR`, so collision-hidden labels (`datum.opacity === 0`) never get overridden into visibility. `getLinePointAnnotationMarks` now destructures the foreground mark returned by `getLabelTransformTextMarks` and overrides its `encode.update.opacity` with this new rule set; the background halo mark is left unchanged (it never had an opacity encoding to begin with, matching the equivalent hover-value-label background marks elsewhere in the codebase). POST-MERGE FIX: the initial version used `seriesRef = 'datum.datum.${SERIES_ID}'` (two datum hops), which only reaches the static-point mark's own item (no rscSeriesId field there) - always undefined, so every match test failed and ALL labels faded, including the hovered series' own. Confirmed via vega-label's actual transform source (`node_modules/vega-label/build/vega-label.js`: `Label.transform` mutates `t = l.datum` in place rather than wrapping, so the foreground mark - one `from.data` hop further than the background mark - needs three hops (`datum.datum.datum.${SERIES_ID}`) to reach the raw row: foreground->background item->static point item->raw row. Fixed to `datum.datum.datum.${SERIES_ID}` and all seven test expectations in the `getLinePointAnnotationOpacity` describe block updated to match.",
+      "lines": "12-25 (imports), new function ~71-127, getLinePointAnnotationMarks ~129-160"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/linePointAnnotation/linePointAnnotationUtils.test.ts",
+      "change": "Implemented: added a `getLinePointAnnotationOpacity` describe block covering the default (no highlight state) case, the datum.opacity-multiplication behavior, interactiveMarkName (both item-hover and isHighlightedByGroup variants), the always-present controlled-highlight rules, popoverMarkName, and multiple legendHighlightSignals. Updated the pre-existing 'update encodes opacity from label transform output' test, which previously asserted the bare `{ field: 'opacity' }` value, to assert it's now the array's final fallback entry instead (a legitimate behavior change, not a regression) - verified by reverting the source fix and confirming 9 tests fail, then restoring it and confirming all 58 pass.",
+      "lines": "n/a - new/updated test cases"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/legend/legendHighlightUtils.ts",
+      "change": "NOT changed, by design. The original plan proposed extending markIsSeriesAware's regex escape hatch to recognize LinePointAnnotation mark names so the generic setHoverOpacityForMarks pass would pick it up. This was deliberately not done - see rootCause's INVESTIGATION FINDING for why that approach would have broken collision-avoidance opacity.",
+      "lines": "n/a - intentionally untouched"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/line/linePointAnnotation/linePointAnnotationUtils.ts",
+      "change": "NOT changed - out of scope for this pass. See line-point-annotation-hover-opacity-gap-s1.json.",
+      "lines": "n/a - out of scope"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Line/Features/LinePointAnnotation/LinePointAnnotation.story.tsx",
+      "change": "Added a `WithHoverInteraction` story pairing LinePointAnnotation with `<ChartInspect>` (S2's item-hover interactivity, sets interactiveMarkName) alongside `<Legend highlight />`, so the item-hover fade branch has visual coverage in addition to the pre-existing Basic story's legend-hover coverage.",
+      "lines": "new story, end of file"
+    }
+  ]
+}

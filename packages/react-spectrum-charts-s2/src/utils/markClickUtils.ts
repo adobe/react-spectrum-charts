@@ -17,6 +17,7 @@ import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID 
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 import { ContextMenuMode } from '../types/marks/line.types';
 
+import { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails';
 import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
 import { toggleStringArrayValue } from '../utils';
@@ -77,14 +78,57 @@ const handleMarkClick = (
   // this means we don't need to set the signal value since it would just be cleared on rerender
   // instead, the rerender will set the value of the signal to the selectedData
   const itemName = getItemName(item);
-  selectedData.current = { [COMPONENT_NAME]: itemName, ...item.datum };
+  selectAndOpenPopover({
+    chartId,
+    itemName,
+    datum: item.datum as Datum,
+    bounds: getItemBounds(item),
+    selectedData,
+    selectedDataBounds,
+    selectedDataName,
+    trigger,
+  });
+};
+
+export interface SelectAndOpenPopoverArgs {
+  chartId: string;
+  itemName: string | undefined;
+  datum: Datum;
+  bounds: MarkBounds;
+  selectedData: RefObject<Datum | null>;
+  selectedDataBounds: RefObject<MarkBounds | undefined>;
+  selectedDataName: RefObject<string | undefined>;
+  trigger: 'click' | 'contextmenu';
+}
+
+/**
+ * Records the selected datum/bounds/name for the popover about to open, then opens it — shared by a real mark click and a keyboard-focus activation, which differ only in how `bounds` is computed.
+ */
+export const selectAndOpenPopover = ({
+  chartId,
+  itemName,
+  datum,
+  bounds,
+  selectedData,
+  selectedDataBounds,
+  selectedDataName,
+  trigger,
+}: SelectAndOpenPopoverArgs): void => {
+  selectedData.current = { [COMPONENT_NAME]: itemName, ...datum };
   // we need to anchor the popover to a div that we move to the same location as the selected mark
-  selectedDataBounds.current = getItemBounds(item);
+  selectedDataBounds.current = bounds;
   selectedDataName.current = itemName;
   triggerPopover(chartId, itemName, trigger);
 };
 
-const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
+/**
+ * Clicks the hidden trigger button `RscChart.tsx`'s `ChartDialog` renders for the named mark,
+ * opening its popover. `selectedData`/`selectedDataBounds`/`selectedDataName` must already be set.
+ * @param chartId
+ * @param itemName
+ * @param trigger
+ */
+export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
   if (!itemName) return;
   (
     document.querySelector(
@@ -152,6 +196,42 @@ export const getOnChartMarkContextMenuCallback = (
       detail.onContextMenu(nativeEvent, datum);
     }
   };
+};
+
+/**
+ * Callback for the `onClick` prop on an Axis, fired when an axis label is clicked.
+ * Matches via Vega's `axis-label` mark role, not the Bar/Line mark-name convention.
+ * @param axisLabelOnClickDetails - The details for all axes with the onClick prop.
+ * @returns The callback for axis label click events.
+ */
+export const getOnAxisLabelClickCallback = (
+  axisLabelOnClickDetails?: AxisLabelOnClickDetail[]
+): ViewEventCallback => {
+  return (event, item) => {
+    if (!item || !axisLabelOnClickDetails?.length || !isAxisLabelItem(item)) return;
+
+    const itemName = getItemName(item);
+    const datum = item.datum as { value?: string | number | Date; index: number };
+    // Vega's synthetic "extra" boundary tick (binned domains) has index -1 and no value
+    // (vega-encode's AxisTicks) - skip it rather than firing onClick with a bad value/index.
+    if (datum.index < 0 || datum.value === undefined) return;
+
+    const index = getAxisLabelIndex(item, datum.index);
+    const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+    axisLabelOnClickDetails.find((detail) => detail.markName === itemName)?.onClick?.(nativeEvent, datum.value, index);
+  };
+};
+
+const isAxisLabelItem = (item: ActionItem): boolean =>
+  isItemSceneItem(item) && 'role' in item.mark && item.mark.role === 'axis-label';
+
+/**
+ * Vega's tick datum.index is a fraction (`i / (tickCount - 1)`, per vega-encode's AxisTicks),
+ * not a 0-based position. Recovers the real index from the sibling tick count on the mark.
+ */
+const getAxisLabelIndex = (item: NonNullable<ActionItem>, normalizedIndex: number): number => {
+  const tickCount = isItemSceneItem(item) ? item.mark.items.length : 1;
+  return Math.round(normalizedIndex * (tickCount - 1));
 };
 
 const toComparableValue = (val: unknown): string | number => {

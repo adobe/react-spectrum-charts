@@ -243,3 +243,51 @@ Popovers are styled to match the Spectrum 2 elevated surface style (border, box 
         </tr>
     </tbody>
 </table>
+
+---
+
+## Accessible keyboard navigation
+
+:::note Experimental
+Accessible keyboard navigation is an experimental feature and currently supports **Line** and **Bar** only.
+:::
+
+Set `accessibleNavigation` on `Chart` to enable keyboard navigation of a supported mark's data points, driven by [data-navigator](https://www.npmjs.com/package/data-navigator). Focused points render a focus ring, and any `ChartInspect` or `ChartPopover` child on the mark follows keyboard focus the same way it follows mouse hover/click.
+
+```jsx
+<Chart data={data} accessibleNavigation>
+  <Axis position="bottom" labelFormat="time" ticks baseline />
+  <Axis position="left" grid />
+  <Line color="series">
+    <ChartPopover width="auto">
+      {(datum, close) => (
+        <div>
+          <div>Series: {datum.series}</div>
+          <div>Value: {datum.value}</div>
+          <button onClick={close}>Close</button>
+        </div>
+      )}
+    </ChartPopover>
+  </Line>
+</Chart>
+```
+
+### Key bindings
+
+| Key | Behavior |
+|-----|----------|
+| `Tab` | Focuses the chart's entry point (Shift+Tab to leave). |
+| `Enter` (on the entry point) | Begins navigation, focusing the mark's outermost group. |
+| `←` / `→` | Moves focus between sibling items at the current level. **Multi-series Line, at the line level:** drills into the line's first/last point instead — use `↑`/`↓` to move between lines. **Stacked Bar, at the segment level:** jumps to the same-series segment in the adjacent stack instead — use `↑`/`↓` to move between segments. |
+| `↑` / `↓` | **Multi-series Line:** moves focus between sibling lines (at the line level) or between the same point on adjacent lines (at the point level). **Stacked Bar:** moves focus through every segment in the chart, crossing stack boundaries (at the segment level), or drills into the stack's first/last segment (at the stack level). |
+| `Enter` (on a group) | Drills into the group's items. |
+| `Enter` / `Space` (on a data point) | Opens that point's `ChartPopover`, anchored to the point. |
+| `Escape` | Closes an open `ChartPopover` or dismisses a visible `ChartInspect` tooltip first; otherwise drills back out one level. At the outermost level, exits keyboard navigation and returns focus to the page's normal tab order. |
+
+The `←`/`→`/`↑`/`↓` bindings above describe a vertical Bar (the default `orientation`). For a horizontal Bar, the two roles swap: `↑`/`↓` take over the sibling-movement role described above for `←`/`→` (moving between bars/stacks, or jumping to the same segment in the adjacent stack), while `←`/`→` take over the role described above for `↑`/`↓` (moving through every segment in the chart, crossing stack boundaries, or drilling into a stack's first/last segment).
+
+### Popover and inspect behavior
+
+- A point's `ChartPopover` opens on `Enter`/`Space` the same way it opens on click, anchored to the focused point's on-screen position.
+- Closing the popover with `Escape` restores keyboard focus to the point that had it, rather than losing focus to the page body.
+- A `ChartInspect` tooltip follows keyboard focus the same way it follows mouse hover. A fast second `Escape` right after the *popover* closes is treated as part of the same dismissal gesture rather than immediately drilling out — this grace window doesn't apply to the tooltip, so a second `Escape` right after dismissing it drills out immediately.

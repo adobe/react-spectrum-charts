@@ -292,9 +292,13 @@ describe('ChartPopover', () => {
     const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
     await clickNthElement(points, 0);
 
-    // validate the first line is still full opacity, but the other lines are faded
-    expect(lines[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    // validate the first line is still full opacity, but the other lines are faded — the hover-
+    // animation system fades opacity over ~100ms rather than snapping instantly, so this needs to
+    // poll for the settled value instead of asserting synchronously right after the click
+    await waitFor(() => {
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
   });
 
   test('Dodged bar popover opens on mark click and closes when clicking outside', async () => {

@@ -752,6 +752,24 @@ export const workspaceTrendsData = [
   { datetime: 1668409200000, point: 25, value: 6932, users: 3493, series: 'Add Bar viz' },
 ];
 
+export const workspaceTrendsSixSeriesData = [
+  ...workspaceTrendsData,
+  { datetime: 1667890800000, point: 1, value: 520, users: 120, series: 'Add Donut viz' },
+  { datetime: 1667977200000, point: 2, value: 740, users: 145, series: 'Add Donut viz' },
+  { datetime: 1668063600000, point: 3, value: 680, users: 132, series: 'Add Donut viz' },
+  { datetime: 1668150000000, point: 4, value: 910, users: 198, series: 'Add Donut viz' },
+  { datetime: 1668236400000, point: 5, value: 830, users: 175, series: 'Add Donut viz' },
+  { datetime: 1668322800000, point: 8, value: 1020, users: 221, series: 'Add Donut viz' },
+  { datetime: 1668409200000, point: 12, value: 950, users: 207, series: 'Add Donut viz' },
+  { datetime: 1667890800000, point: 1, value: 310, users: 88, series: 'Add Scatter viz' },
+  { datetime: 1667977200000, point: 2, value: 450, users: 102, series: 'Add Scatter viz' },
+  { datetime: 1668063600000, point: 3, value: 390, users: 95, series: 'Add Scatter viz' },
+  { datetime: 1668150000000, point: 4, value: 570, users: 130, series: 'Add Scatter viz' },
+  { datetime: 1668236400000, point: 5, value: 620, users: 143, series: 'Add Scatter viz' },
+  { datetime: 1668322800000, point: 8, value: 480, users: 111, series: 'Add Scatter viz' },
+  { datetime: 1668409200000, point: 12, value: 710, users: 162, series: 'Add Scatter viz' },
+];
+
 export const workspaceTrendsDataWithVisiblePoints = [
   { datetime: 1667890800000, point: 1, value: 3738, users: 477, series: 'Add Fallout' },
   { datetime: 1667977200000, point: 2, value: 2704, users: 481, series: 'Add Fallout', staticPoint: true },

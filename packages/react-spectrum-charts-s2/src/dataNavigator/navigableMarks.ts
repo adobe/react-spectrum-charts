@@ -11,9 +11,11 @@
  */
 
 import { Bar } from '../components/Bar';
+import { Line } from '../components/Line';
 import { NavigableChartType } from './buildChartStructure';
 
 export const getNavigableChartType = (displayName: unknown): NavigableChartType | undefined => {
   if (displayName === Bar.displayName) return 'bar';
+  if (displayName === Line.displayName) return 'line';
   return undefined;
 };

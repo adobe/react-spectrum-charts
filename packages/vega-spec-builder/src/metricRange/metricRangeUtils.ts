@@ -21,7 +21,7 @@ import {
 
 import { AreaMarkOptions, getAreaMark } from '../area/areaUtils';
 import { getFilteredIsValidData } from '../line/lineDataUtils';
-import { getLineMark, getLineYEncoding } from '../line/lineMarkUtils';
+import { getClampedYEncoding, getLineMark } from '../line/lineMarkUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getColorProductionRule, getOpacityProductionRule, getXProductionRule } from '../marks/markUtils';
 import { getHoverContext, getSeriesHoverPredicate } from '../marks/hoverContext';
@@ -123,7 +123,7 @@ export const getMetricRangeHoverPoints = (
   lineMarkOptions: LineSpecOptions,
   metricRangeOptions: MetricRangeSpecOptions
 ): SymbolMark[] => {
-  const { color: lineColor, colorScheme, dimension, scaleType } = lineMarkOptions;
+  const { color: lineColor, colorScheme, dimension, s2, scaleType } = lineMarkOptions;
   const { color: rangeColor, metric, name } = metricRangeOptions;
   const highlightedData = `${name}_hoverPointData`;
   const color = rangeColor ? { value: rangeColor } : lineColor;
@@ -140,7 +140,7 @@ export const getMetricRangeHoverPoints = (
       enter: {
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
-        y: getLineYEncoding(lineMarkOptions, metric),
+        y: getClampedYEncoding(lineMarkOptions, metric),
       },
       update: {
         size: { value: DEFAULT_SYMBOL_SIZE },
@@ -159,13 +159,13 @@ export const getMetricRangeHoverPoints = (
     interactive: false,
     encode: {
       enter: {
-        y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        y: getClampedYEncoding(lineMarkOptions, metric),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
       },
       update: {
         fill: { signal: BACKGROUND_COLOR },
         size: { value: DEFAULT_SYMBOL_SIZE },
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
         strokeOpacity: getOpacityProductionRule(lineMarkOptions.opacity),
         strokeWidth: { value: DEFAULT_SYMBOL_STROKE_WIDTH },
         x: getXProductionRule(scaleType, dimension),
@@ -200,10 +200,12 @@ export const getMetricRangeMark = (
     isMetricRange: true,
     parentName: lineMarkOptions.name,
     displayOnHover: metricRangeOptions.displayOnHover,
+    displayOnHoverTrigger: metricRangeOptions.displayOnHoverTrigger,
     hoverContext,
     interactiveMarkName: lineMarkOptions.interactiveMarkName,
     interactionMode: lineMarkOptions.interactionMode,
     isHighlightedByGroup: lineMarkOptions.isHighlightedByGroup,
+    s2: lineMarkOptions.s2,
   };
   const { interactiveMarkName, ...baseLineMarkOptions } = lineMarkOptions;
   const lineOptions: LineMarkOptions = {
@@ -215,6 +217,7 @@ export const getMetricRangeMark = (
     lineType: { value: metricRangeOptions.lineType },
     lineWidth: { value: metricRangeOptions.lineWidth },
     displayOnHover: metricRangeOptions.displayOnHover,
+    displayOnHoverTrigger: metricRangeOptions.displayOnHoverTrigger,
     opacity: metricRangeOptions.lineOpacity ? metricRangeOptions.lineOpacity : { value: 1 },
     hoverContext,
     interactiveMarkName,
@@ -237,7 +240,7 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
 
   const ctx = getHoverContext(markOptions);
   for (const metricRangeOptions of metricRanges) {
-    const { displayOnHover, hoverPoint, metric, name } = metricRangeOptions;
+    const { displayOnHover, displayOnHoverTrigger, hoverPoint, metric, name } = metricRangeOptions;
     // if hoverPoint is true and the line is interactive, add a filtered data source to rows where the
     // MetricRange metric is valid. This prevents hover marks from being created at NaN y positions
     // for rows where the metric is null.
@@ -249,7 +252,7 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
       data.push({
         name: `${name}_highlightedData`,
         source: FILTERED_TABLE,
-        transform: [{ type: 'filter', expr: getSeriesHoverPredicate(ctx) }],
+        transform: [{ type: 'filter', expr: getSeriesHoverPredicate(ctx, displayOnHoverTrigger) }],
       });
     }
   }

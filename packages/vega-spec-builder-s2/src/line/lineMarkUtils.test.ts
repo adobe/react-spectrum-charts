@@ -10,28 +10,38 @@
  * governing permissions and limitations under the License.
  */
 import {
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
+import { getFocusedGroupOrItemMatchExpr } from '../marks/focusMatchUtils';
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import {
   getAlternateSegmentStrokeDash,
   getHighlightedSeriesOpacityRules,
+  getLineDeemphasisOpacitySignal,
   getLineGradientMark,
   getLineHighlightOverlayGroup,
   getLineHoverMarks,
   getLineMark,
   getLineOpacity,
+  getLineOpacityRules,
+  getLineStrokeWidth,
 } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
@@ -50,12 +60,12 @@ describe('getLineMark()', () => {
           strokeCap: { value: 'round' },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-          strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
           y: [{ field: 'value', scale: 'yLinear' }],
         },
         update: {
           x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
           opacity: [DEFAULT_OPACITY_RULE],
+          strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
         },
       },
     });
@@ -71,7 +81,7 @@ describe('getLineMark()', () => {
 
   test('always uses the chart size signal for strokeWidth regardless of lineWidth', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, lineWidth: undefined }, 'line0_facet');
-    expect(lineMark.encode?.enter?.strokeWidth).toEqual({ signal: CHART_SIZE_STROKE_WIDTH });
+    expect(lineMark.encode?.update?.strokeWidth).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
   });
 
   test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
@@ -101,23 +111,51 @@ describe('getLineMark()', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, lineCap: 'square' }, 'line0_facet');
     expect(lineMark.encode?.enter).toHaveProperty('strokeCap', { value: 'square' });
   });
+
+  test('uses array stroke encoding with exact other-series expression when primarySeries is set', () => {
+    const lineMark = getLineMark({ ...defaultLineMarkOptions, primarySeries: 2 }, 'line0_facet');
+    const stroke = lineMark.encode?.enter?.stroke as { test: string; value: string }[];
+    expect(Array.isArray(stroke)).toBe(true);
+    expect(stroke).toHaveLength(2);
+    expect(stroke[0].test).toBe(`indexof(slice(domain('color'), 0, 2), datum.${SERIES_ID}) < 0`);
+    expect(stroke[1]).toEqual({ field: 'series', scale: COLOR_SCALE });
+  });
+
+  test('isAnimate: false forces the static instant-rule opacity even for an otherwise-interactive line', () => {
+    // this is the override every renamed-mark reuse of getLineMark relies on (highlight overlay,
+    // trendlines, metric-range boundary line) — they all spread an interactive parent's options under
+    // a different mark name, so isAnimate must be forced false or the opacity would reference a
+    // `_hoverFractionData` that only exists for the base line's name
+    const animated = getLineMark(
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isAnimate: true },
+      'line0_facet'
+    );
+    const notAnimated = getLineMark(
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isAnimate: false },
+      'line0_facet'
+    );
+    expect(animated.encode?.update?.opacity).toStrictEqual({
+      signal: expect.stringContaining("data('line0_hoverFractionData')"),
+    });
+    expect(Array.isArray(notAnimated.encode?.update?.opacity)).toBe(true);
+  });
 });
 
 describe('getLineHoverMarks()', () => {
-  test('should return 4 marks by default', () => {
+  test('should return 6 marks by default', () => {
     expect(
       getLineHoverMarks({ ...defaultLineMarkOptions, isHighlightedByDimension: true }, 'line0_facet')
-    ).toHaveLength(4);
+    ).toHaveLength(6);
   });
-  test('should return 3 marks if interactionMode is item', () => {
+  test('should return 5 marks if interactionMode is item', () => {
     expect(
       getLineHoverMarks(
         { ...defaultLineMarkOptions, isHighlightedByDimension: true, interactionMode: 'item' },
         'line0_facet'
       )
-    ).toHaveLength(3);
+    ).toHaveLength(5);
   });
-  test('should return 5 marks if a popover is present', () => {
+  test('should return 7 marks if a popover is present', () => {
     expect(
       getLineHoverMarks(
         {
@@ -127,7 +165,7 @@ describe('getLineHoverMarks()', () => {
         },
         'line0_facet'
       )
-    ).toHaveLength(5);
+    ).toHaveLength(7);
   });
   test('should have opacity of 0 if a selected item exists', () => {
     const marks = getLineHoverMarks(
@@ -210,6 +248,251 @@ describe('getLineOpacity()', () => {
     });
     expect(opacityRule).toHaveLength(4);
     expect(opacityRule[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+  });
+
+  test('should include comboSiblingNames fade rule when comboSiblingNames is set', () => {
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      comboSiblingNames: ['bar0', 'bar1'],
+    }) as { test?: string; value: number }[];
+    const comboRule = opacityRule.find((r) => r.test?.includes('bar0') && r.test?.includes('bar1'));
+    expect(comboRule).toBeDefined();
+    expect(comboRule?.value).toBe(FADE_FACTOR);
+    expect(comboRule?.test).toBe(`isValid(bar0_${HOVERED_ITEM}) || isValid(bar1_${HOVERED_ITEM})`);
+  });
+
+  describe('when isAnimate is true', () => {
+    test('returns the animated deemphasis-ramp signal instead of the instant production rules', () => {
+      const opacityRule = getLineOpacity({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        isAnimate: true,
+      });
+      const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
+      expect(opacityRule).toStrictEqual({ signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` });
+    });
+
+    test('displayOnHover still short-circuits to the default opacity rule, even when animated', () => {
+      const opacityRule = getLineOpacity({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        isAnimate: true,
+        displayOnHover: true,
+      });
+      expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
+    });
+
+    test('adds an instant focus rule ahead of the ramp when accessibleNavigation is enabled with a string color', () => {
+      const opacityRule = getLineOpacity({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        isAnimate: true,
+        accessibleNavigation: true,
+        color: 'series',
+      });
+      expect(opacityRule).toStrictEqual([
+        {
+          test: `${INTERACTION_MODALITY} === 'keyboard' && (isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM}))`,
+          signal: `(${getFocusedGroupOrItemMatchExpr('datum.series', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
+        },
+        getLineDeemphasisOpacitySignal('line0'),
+      ]);
+    });
+
+    test('falls back to the plain ramp when accessibleNavigation is enabled but color is not a string', () => {
+      const opacityRule = getLineOpacity({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        isAnimate: true,
+        accessibleNavigation: true,
+        color: { value: 'categorical-100' },
+      });
+      expect(opacityRule).toStrictEqual(getLineDeemphasisOpacitySignal('line0'));
+    });
+  });
+});
+
+describe('getLineDeemphasisOpacitySignal()', () => {
+  test('returns the shared deemphasis-ramp opacity signal for the given mark name', () => {
+    const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
+    expect(getLineDeemphasisOpacitySignal('line0')).toStrictEqual({
+      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+    });
+  });
+
+  test('uses the given mark name in the fraction lookup, not a hardcoded one', () => {
+    const ramp = getDeemphasisRamp(getHoverFractionSignal('bar0'));
+    expect(getLineDeemphasisOpacitySignal('bar0')).toStrictEqual({
+      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+    });
+  });
+});
+
+describe('getLineOpacityRules()', () => {
+  test('fades non-focused lines when accessibleNavigation is enabled with a string color', () => {
+    const result = getLineOpacityRules({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      accessibleNavigation: true,
+      color: 'series',
+    });
+    expect(result).toContainEqual({
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${getFocusedGroupOrItemMatchExpr('datum.series', 'prefix')}) ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  test('does not add a focus rule for a single-line (non-string color) chart', () => {
+    const result = getLineOpacityRules({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      accessibleNavigation: true,
+      color: { value: 'categorical-100' },
+    });
+    expect(JSON.stringify(result)).not.toContain(FOCUSED_DIMENSION);
+  });
+
+  test('gates the hover rule on interactionModality when accessibleNavigation is enabled', () => {
+    const result = getLineOpacityRules({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      accessibleNavigation: true,
+    });
+    expect(result[0]).toStrictEqual({
+      test: `isValid(line0_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`,
+      signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+
+  test('does not gate the hover rule on interactionModality when accessibleNavigation is disabled', () => {
+    const result = getLineOpacityRules({ ...defaultLineMarkOptions, interactiveMarkName: 'line0' });
+    expect(result[0]).toStrictEqual({
+      test: `isValid(line0_${HOVERED_ITEM})`,
+      signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    });
+  });
+});
+
+describe('getLineStrokeWidth()', () => {
+  test('should return the default stroke width rule when no interactivity', () => {
+    expect(getLineStrokeWidth(defaultLineMarkOptions)).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+  });
+
+  test('should return the default stroke width rule when displayOnHover is true', () => {
+    expect(
+      getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true })
+    ).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+  });
+
+  test('should include hover rules if line has an inspect', () => {
+    const result = getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}] });
+    expect(result).toEqual([
+      {
+        test: `isValid(line0_${HOVERED_ITEM})`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      DEFAULT_STROKE_WIDTH_RULE,
+    ]);
+  });
+
+  test('should include select rules if line has a popover', () => {
+    const result = getLineStrokeWidth({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      popoverMarkName: 'line0',
+      chartPopovers: [{}],
+    });
+    expect(result).toEqual([
+      {
+        test: `isValid(line0_${HOVERED_ITEM})`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      {
+        test: `isValid(${SELECTED_SERIES})`,
+        signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      },
+      DEFAULT_STROKE_WIDTH_RULE,
+    ]);
+  });
+
+  test('should use highlightedData rule when isHighlightedByGroup is true', () => {
+    const result = getLineStrokeWidth({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      chartInspects: [{}],
+      isHighlightedByGroup: true,
+    });
+    expect(result).toHaveLength(4);
+    expect(result[0]).toHaveProperty('test', `length(data('line0_highlightedData'))`);
+    expect((result[0] as { signal: string }).signal).toContain(CHART_SIZE_HOVER_STROKE_WIDTH);
+    expect((result[0] as { signal: string }).signal).toContain(CHART_SIZE_STROKE_WIDTH);
+  });
+
+  test('should use base stroke width when a combo sibling is hovered', () => {
+    const result = getLineStrokeWidth({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      chartInspects: [{}],
+      comboSiblingNames: ['line1'],
+    });
+    expect(result).toContainEqual({
+      test: `isValid(line1_${HOVERED_ITEM})`,
+      signal: CHART_SIZE_STROKE_WIDTH,
+    });
+  });
+
+  describe('accessibleNavigation', () => {
+    test('thickens the focused line when enabled with a string color', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        accessibleNavigation: true,
+        color: 'series',
+      });
+      expect(result).toContainEqual({
+        test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+        signal: `(${getFocusedGroupOrItemMatchExpr('datum.series', 'prefix')}) ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
+    });
+
+    test('does not add a focus rule for a single-line (non-string color) chart', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        accessibleNavigation: true,
+        color: { value: 'categorical-100' },
+      });
+      expect(JSON.stringify(result)).not.toContain(FOCUSED_DIMENSION);
+    });
+
+    test('gates the hover rule on interactionModality', () => {
+      const result = getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        accessibleNavigation: true,
+      });
+      expect(result[0]).toStrictEqual({
+        test: `isValid(line0_${HOVERED_ITEM}) && ${INTERACTION_MODALITY} !== 'keyboard'`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+      });
+    });
   });
 });
 
@@ -370,6 +653,24 @@ describe('getHighlightedSeriesOpacityRules()', () => {
     rules.slice(0, -1).forEach(rule => expect(rule.value).toBe(1));
     expect(rules.at(-1)?.value).toBe(0);
   });
+
+  test('with legendHighlightSignals adds signal-based show conditions before the fallback', () => {
+    const rules = getHighlightedSeriesOpacityRules({
+      legendHighlightSignals: ['legend_hoveredSeries'],
+    }) as { test?: string; value: number }[];
+    const legendRule = rules.find((r) => r.test?.includes('legend_hoveredSeries'));
+    expect(legendRule).toBeDefined();
+    expect(legendRule?.value).toBe(1);
+    expect(legendRule?.test).toBe(`isValid(legend_hoveredSeries) && legend_hoveredSeries === datum.${SERIES_ID}`);
+    expect(rules.at(-1)).toEqual({ value: 0 });
+  });
+
+  test('with multiple legendHighlightSignals adds one rule per signal', () => {
+    const rules = getHighlightedSeriesOpacityRules({
+      legendHighlightSignals: ['sig1', 'sig2'],
+    }) as { test?: string; value: number }[];
+    expect(rules.filter((r) => r.test?.includes('isValid(sig'))).toHaveLength(2);
+  });
 });
 
 
@@ -397,5 +698,18 @@ describe('getLineHighlightOverlayGroup()', () => {
     const opacity = marks[0].encode.update.opacity;
     expect(Array.isArray(opacity)).toBe(true);
     expect((opacity as { value: number }[]).at(-1)).toEqual({ value: 0 });
+  });
+
+  test('overlay opacity always comes from getHighlightedSeriesOpacityRules, even when the parent line is animated', () => {
+    // opacity is always overwritten by opacityRules (below), regardless of isAnimate — the isAnimate:
+    // false passed into the underlying getLineMark call only matters for encodings that AREN'T
+    // subsequently overwritten here (see the getLineMark() tests for where that override is observable)
+    const group = getLineHighlightOverlayGroup(
+      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', isAnimate: true },
+      'filteredTable',
+      [SERIES_ID]
+    );
+    const marks = (group as { marks: { encode: { update: { opacity: unknown } } }[] }).marks;
+    expect(Array.isArray(marks[0].encode.update.opacity)).toBe(true);
   });
 });

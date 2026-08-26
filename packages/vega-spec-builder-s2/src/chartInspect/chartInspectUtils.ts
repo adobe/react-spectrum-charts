@@ -19,12 +19,13 @@ import {
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
   INTERACTION_MODE,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { getFilteredTableData } from '../data/dataUtils';
-import { getHoverMarkNames } from '../marks/markUtils';
+import { getHoverMarkNames, hasAccessibleNavigation } from '../marks/markUtils';
 import {
   AreaSpecOptions,
   BarSpecOptions,
@@ -197,6 +198,12 @@ export const addHoveredItemOpacityRules = (
   const startIndex = opacityRules.findIndex((rule) => rule.test?.includes(HOVERED_ITEM)) + 1;
 
   const hoveredItemSignal = `${markName}_${HOVERED_ITEM}`;
+  // Keyboard focus should win over a stale mouse hover that never fired mouseout (e.g. the pointer
+  // sat still over a mark while the user tabbed into keyboard navigation) — mirrors the same gate
+  // used for Line's hover opacity rule (lineMarkUtils.ts's getLineOpacityRules).
+  const hoveredItemTest = hasAccessibleNavigation(markOptions)
+    ? `isValid(${hoveredItemSignal}) && ${INTERACTION_MODALITY} !== 'keyboard'`
+    : `isValid(${hoveredItemSignal})`;
 
   let key = markOptions.idKey;
   if (isHighlightedByGroup(markOptions)) {
@@ -205,7 +212,7 @@ export const addHoveredItemOpacityRules = (
 
   const rules = [
     {
-      test: `isValid(${hoveredItemSignal})`,
+      test: hoveredItemTest,
       signal: `${hoveredItemSignal}.${key} === datum.${key} ? 1 : ${FADE_FACTOR}`,
     },
     {
@@ -220,7 +227,6 @@ export const addHoveredItemOpacityRules = (
     const test = markOptions.comboSiblingNames
       .map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`)
       .join(' || ');
-    console.log('test', test);
     rules.push({ test, value: FADE_FACTOR });
   }
 
@@ -231,15 +237,23 @@ export const addHoverdDimenstionAreaOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
   markOptions: InspectParentOptions
 ) => {
-  if (!hasInspectWithDimensionAreaTarget(markOptions.chartInspects) || !('dimension' in markOptions)) return;
+  // scatter also has a `dimension` field but never creates this signal - scope to bar only.
+  if (markOptions.markType !== 'bar' || !('dimension' in markOptions)) return;
   const { name, dimension } = markOptions;
   const hoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
+  // Gated the same way as the item hover rule above: this signal spans the whole dimension group
+  // (a whole stack), so a stale value that never reset on mouseout would light up the entire column
+  // instead of just the segment that has keyboard focus.
+  const hoveredItemTest = hasAccessibleNavigation(markOptions)
+    ? `isValid(${hoveredItemSignal}) && ${INTERACTION_MODALITY} !== 'keyboard'`
+    : `isValid(${hoveredItemSignal})`;
   opacityRules.push({
-    test: `isValid(${hoveredItemSignal})`,
+    test: hoveredItemTest,
     signal: `${hoveredItemSignal}.${dimension} === datum.${dimension} ? 1 : ${FADE_FACTOR}`,
   });
 };
 
+/** Whether any inspect on this mark targets the dimension-hover-area rect's own tooltip, rather than just the item mark. */
 export const hasInspectWithDimensionAreaTarget = (chartInspects: ChartInspectOptions[]) => {
   return chartInspects.some(({ targets }) => targets?.includes('dimensionArea'));
 };

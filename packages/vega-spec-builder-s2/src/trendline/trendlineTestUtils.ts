@@ -46,6 +46,8 @@ export const defaultLineOptions: LineSpecOptions = {
   lineCap: 'round',
   interpolate: undefined,
   alternateSegmentLineType: 'dotted',
+  dimensionHover: false,
+  showHoverLabel: true,
 };
 
 export const defaultTrendlineOptions: TrendlineSpecOptions = {

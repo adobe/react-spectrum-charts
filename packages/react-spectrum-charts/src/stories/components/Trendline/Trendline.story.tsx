@@ -10,12 +10,9 @@
  * governing permissions and limitations under the License.
  */
 import { ReactElement } from 'react';
-
 import { StoryFn } from '@storybook/react';
-
 import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder';
-
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line, Scatter, Title, Trendline } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
@@ -24,6 +21,7 @@ import { characterData } from '../../../stories/data/marioKartData';
 import { bindWithProps } from '../../../test-utils/bindWithProps';
 import { ChartProps } from '../../../types';
 import { barSeriesData } from '../Bar/data';
+
 
 export default {
   title: 'RSC/Trendline',
@@ -195,6 +193,39 @@ const BothTooltipsWithDisplayOnHoverStory: StoryFn<typeof Trendline> = (args): R
   );
 };
 
+// Line is in dimension mode (interactionMode="dimension").
+const TrendlineWithDimensionStory: StoryFn<typeof Trendline> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series" interactionMode="dimension">
+        <Trendline {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
+// Trendlines are always displayed (no displayOnHover). Hovering a line point fades the
+// trendlines of the other series via `line0_hoveredItem`. Hovering the matching legend entry
+// is supposed to produce the same fade via `legend0_hoveredSeries`, but currently does not.
+const LegendHoverOpacityStory: StoryFn<typeof Trendline> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series">
+        <ChartTooltip>{(item: Datum) => <div>Line value: {item.value}</div>}</ChartTooltip>
+        <Trendline {...args} />
+      </Line>
+      <Legend lineWidth={{ value: 0 }} highlight />
+    </Chart>
+  );
+};
+
 const ScatterStory: StoryFn<typeof Trendline> = (args): ReactElement => {
   const chartProps = useChartProps({ data: characterData, height: 500, width: 500, lineWidths: [1, 2, 3] });
 
@@ -326,6 +357,25 @@ DisplayOnHoverBothTooltips.args = {
   highlightRawPoint: true,
 };
 
+// Line is in dimension mode (interactionMode="dimension").
+// displayOnHoverTrigger="item" (reveals only when hovering near an actual point).
+const DisplayOnHoverItemTrigger = bindWithProps(TrendlineWithDimensionStory);
+DisplayOnHoverItemTrigger.args = {
+  displayOnHover: true,
+  displayOnHoverTrigger: 'item',
+  method: 'linear',
+  lineType: 'solid',
+  lineWidth: 'S',
+  color: 'gray-600',
+};
+
+const LegendHoverOpacity = bindWithProps(LegendHoverOpacityStory);
+LegendHoverOpacity.args = {
+  method: 'linear',
+  lineType: 'dashed',
+  lineWidth: 'S',
+};
+
 const Orientation = bindWithProps(ScatterStory);
 Orientation.args = {
   orientation: 'vertical',
@@ -369,9 +419,11 @@ export {
   DimensionRange,
   DisplayOnHover,
   DisplayOnHoverBothTooltips,
+  DisplayOnHoverItemTrigger,
   DisplayOnHoverTrendlineOnly,
   ExcludeSeriesFromTrendline,
   HidePartialWindows,
+  LegendHoverOpacity,
   Orientation,
   TooltipAndPopover,
   TooltipAndPopoverOnParentLine,

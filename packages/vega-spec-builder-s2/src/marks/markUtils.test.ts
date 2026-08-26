@@ -12,6 +12,7 @@
 import { SignalRef } from 'vega';
 
 import {
+  CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -20,10 +21,13 @@ import {
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   HOVERED_ITEM,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
+  NAVIGATION_ID_SEPARATOR,
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -36,6 +40,7 @@ import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
   getCursor,
+  getDirectLabelFontSizeProductionRule,
   getHighlightOpacityValue,
   getInteractiveMarkName,
   getLineWidthProductionRule,
@@ -110,7 +115,7 @@ describe('getStrokeDashProductionRule', () => {
   });
 
   test('should return static value and convert preset line type to dash array', () => {
-    expect(getStrokeDashProductionRule({ value: 'dotted' })).toStrictEqual({ value: [2, 3] });
+    expect(getStrokeDashProductionRule({ value: 'dotted' })).toStrictEqual({ value: [0, 4] });
   });
 
   test('should return static value of the dash array provided', () => {
@@ -135,6 +140,15 @@ describe('getSymbolSizeProductionRule()', () => {
   });
   test('should return static value squared if static value supplied', () => {
     expect(getSymbolSizeProductionRule({ value: 5 })).toStrictEqual({ value: 25 });
+  });
+});
+
+describe('getDirectLabelFontSizeProductionRule()', () => {
+  test('should return the chart-size signal when fontSize is not provided', () => {
+    expect(getDirectLabelFontSizeProductionRule()).toStrictEqual({ signal: CHART_SIZE_FONT_SIZE });
+  });
+  test('should return a static value when fontSize is provided', () => {
+    expect(getDirectLabelFontSizeProductionRule(20)).toStrictEqual({ value: 20 });
   });
 });
 
@@ -280,19 +294,82 @@ describe('getMarkOpacity()', () => {
     expect(getMarkOpacity(defaultBarOptions)).toStrictEqual([DEFAULT_OPACITY_RULE]);
   });
   test('Inspect child, should return tests for hover and default to opacity', () => {
+    // defaultBarOptions has a `dimension`, so a dimension-hover-area rule is now always spliced in too
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartInspects: [{}] });
-    expect(opacity).toHaveLength(3);
+    expect(opacity).toHaveLength(4);
     expect(opacity[0].test).toContain(HOVERED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
   });
   test('Popover child, should return tests for hover and select and default to opacity', () => {
     const opacity = getMarkOpacity({ ...defaultBarOptions, chartPopovers: [{}] });
-    expect(opacity).toHaveLength(5);
+    expect(opacity).toHaveLength(6);
     expect(opacity[0].test).toEqual(`isValid(${SELECTED_ITEM})`);
     expect(opacity[1].test).toEqual(`isValid(${SELECTED_GROUP})`);
 
     expect(opacity[2].test).toContain(HOVERED_ITEM);
     expect(opacity.at(-1)).toStrictEqual(DEFAULT_OPACITY_RULE);
+  });
+
+  describe('accessibleNavigation', () => {
+    test('adds a focus-based opacity rule for a stacked/dodged bar (string color) when a real interactive feature is present', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true, hasOnClick: true });
+      const focusRule = opacity.find((rule) => rule.test?.includes(FOCUSED_ITEM)) as
+        | { test?: string; signal?: string }
+        | undefined;
+      expect(focusRule).toBeDefined();
+      expect(focusRule?.test).toContain(FOCUSED_DIMENSION);
+      expect(focusRule?.signal).toContain(
+        `datum.${defaultBarOptions.dimension} + "${NAVIGATION_ID_SEPARATOR}" + datum.${defaultBarOptions.color}`
+      );
+    });
+
+    test('adds the rule when a real interactive feature is also present', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true, hasOnClick: true });
+      expect(opacity.length).toBeGreaterThan(1);
+    });
+
+    test('adds a dimension-keyed focus-based opacity rule for a single-series bar (non-string color)', () => {
+      const opacity = getMarkOpacity({
+        ...defaultBarOptions,
+        accessibleNavigation: true,
+        hasOnClick: true,
+        color: { value: 'categorical-100' },
+      });
+      const focusRule = opacity.find((rule) => rule.test?.includes(FOCUSED_ITEM)) as
+        | { test?: string; signal?: string }
+        | undefined;
+      expect(focusRule).toBeDefined();
+      // No stack level exists for a single-series bar, so the rule must key on the dimension value alone.
+      expect(focusRule?.signal).not.toContain(FOCUSED_DIMENSION);
+      expect(focusRule?.signal).toContain(`${FOCUSED_ITEM} === (datum.${defaultBarOptions.dimension})`);
+    });
+
+    test('does not add a focus-based opacity rule by default', () => {
+      const opacity = getMarkOpacity(defaultBarOptions);
+      expect(opacity.some((rule) => rule.test?.includes(FOCUSED_ITEM))).toBe(false);
+    });
+
+    // Regression: accessibleNavigation alone (no ChartInspect/ChartPopover/onClick) must not add a
+    // hover-driven opacity rule — otherwise a bar with no configured hover feature would still fade
+    // other bars on mouse hover, a behavior that shouldn't appear unless the user actually asked for it.
+    test('does not add a hover-based opacity rule when there is no other interactive feature', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true });
+      expect(opacity.some((rule) => rule.test?.includes(HOVERED_ITEM))).toBe(false);
+    });
+
+    test('still adds a hover-based opacity rule when a real interactive feature is also present', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true, hasOnClick: true });
+      expect(opacity.some((rule) => rule.test?.includes(HOVERED_ITEM))).toBe(true);
+    });
+
+    // Regression: focus-driven dimming should mirror whatever mouse hover would already do — if hover
+    // doesn't dim anything (no interactive feature), keyboard focus shouldn't either; the focus ring
+    // alone is enough to show which element is focused.
+    test('does not add a focus-based opacity rule when there is no other interactive feature', () => {
+      const opacity = getMarkOpacity({ ...defaultBarOptions, accessibleNavigation: true });
+      expect(opacity.some((rule) => rule.test?.includes(FOCUSED_ITEM))).toBe(false);
+      expect(opacity).toStrictEqual([DEFAULT_OPACITY_RULE]);
+    });
   });
 });
 

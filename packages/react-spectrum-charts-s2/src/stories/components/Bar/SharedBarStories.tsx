@@ -21,7 +21,7 @@ import useChartProps from '../../../hooks/useChartProps';
 import { barSeriesData } from './data';
 
 export const DimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
+  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600, accessibleNavigation: true });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />

@@ -191,6 +191,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
           {
             axisThumbnails: [],
             baseline: true,
+            hasOnClick: false,
             position: 'bottom',
             referenceLines: [],
             title: 'Browser',
@@ -198,6 +199,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
           {
             axisThumbnails: [],
             grid: true,
+            hasOnClick: false,
             position: 'left',
             referenceLines: [],
             title: 'Downloads',

@@ -119,4 +119,5 @@ export interface ScatterSpecOptions extends PartiallyRequired<ScatterOptions, Sc
   idKey: string;
   index: number;
   interactiveMarkName: string | undefined;
+  s2?: boolean;
 }

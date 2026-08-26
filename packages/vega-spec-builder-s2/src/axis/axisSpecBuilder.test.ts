@@ -343,7 +343,7 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: { interactiveMarks: ['bar0'] },
+          usermeta: { interactiveMarks: [{ name: 'bar0' }] },
         })[0].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
@@ -376,7 +376,7 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: { interactiveMarks: ['bar0'] },
+          usermeta: { interactiveMarks: [{ name: 'bar0' }] },
         })[0].encode?.title?.update?.fillOpacity;
         expect(titleFillOpacityEncoding).toHaveLength(1);
         expect(titleFillOpacityEncoding?.[0]).toEqual({
@@ -411,7 +411,7 @@ describe('Spec builder, Axis', () => {
           scaleName: 'yLinear',
           scaleType: 'linear',
           subLabels: defaultSubLabels,
-          usermeta: { interactiveMarks: ['bar0'] },
+          usermeta: { interactiveMarks: [{ name: 'bar0' }] },
         })[1].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
@@ -467,7 +467,7 @@ describe('Spec builder, Axis', () => {
           position: 'left',
           scaleName: 'yLinear',
           scaleType: 'linear',
-          usermeta: { metricAxisCount: 1, interactiveMarks: ['bar0'] },
+          usermeta: { metricAxisCount: 1, interactiveMarks: [{ name: 'bar0' }] },
         })[0].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
@@ -498,7 +498,7 @@ describe('Spec builder, Axis', () => {
           scaleName: 'yLinear',
           scaleType: 'linear',
           subLabels: defaultSubLabels,
-          usermeta: { metricAxisCount: 1, interactiveMarks: ['bar0'] },
+          usermeta: { metricAxisCount: 1, interactiveMarks: [{ name: 'bar0' }] },
         })[1].encode?.labels?.update?.fillOpacity;
         expect(labelFillOpacityEncoding).toHaveLength(1);
         expect(labelFillOpacityEncoding?.[0]).toEqual({
@@ -545,6 +545,167 @@ describe('Spec builder, Axis', () => {
           usermeta,
         });
         expect(usermeta).toEqual({});
+      });
+    });
+
+    describe('label hover wiring', () => {
+      // an interactive bar named "bar0" with dimension "category"
+      const interactiveMarks = [{ name: 'bar0', dimension: 'category' }];
+
+      test('stamps a name and sets interactive true when an interactive bar matches scaleField', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { interactiveMarks },
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.fillOpacity).toStrictEqual([
+          {
+            test: 'isValid(bar0_dimensionHoverArea_hoveredItem)',
+            signal: `bar0_dimensionHoverArea_hoveredItem.category === datum.value ? 1 : ${FADE_FACTOR}`,
+          },
+          { value: 1 },
+        ]);
+      });
+
+      test('does not stamp a name or force interactive when no interactive bar matches scaleField', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'otherField',
+          usermeta: { interactiveMarks },
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+        expect(axis.encode?.labels?.update).not.toHaveProperty('fillOpacity');
+      });
+
+      test('does not stamp a name or force interactive when there are no interactive marks at all', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+      });
+
+      test('does not wire when hideDefaultLabels is true, even with a matching bar', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hideDefaultLabels: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { interactiveMarks },
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+      });
+
+      test('a matching bar does not override an existing hasTooltip-driven interactive:true', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasTooltip: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { interactiveMarks },
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+      });
+    });
+
+    describe('onClick wiring', () => {
+      test('stamps a name, sets interactive true, and adds a pointer cursor when hasOnClick is true', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('name', 'axis0_labelHover');
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+      });
+
+      test('is independent of a matching interactive bar - no matching bar is required', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { interactiveMarks: [] },
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+        expect(axis.encode?.labels?.update).not.toHaveProperty('fillOpacity');
+      });
+
+      test('adds both the dimension fillOpacity fade and the pointer cursor when hasOnClick and a matching bar are both present', () => {
+        // an interactive bar named "bar0" with dimension "category"
+        const interactiveMarks = [{ name: 'bar0', dimension: 'category' }];
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: { interactiveMarks },
+        })[0];
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+        expect(axis.encode?.labels?.update).toHaveProperty('fillOpacity');
+      });
+
+      test('does not add a cursor when hasOnClick is false and there is no matching bar', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: false,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels?.update).not.toHaveProperty('cursor');
+      });
+
+      test('does not stamp name/interactive/cursor when hideDefaultLabels is true, even with hasOnClick', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          hideDefaultLabels: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).not.toHaveProperty('name');
+        expect(axis.encode?.labels?.update).not.toHaveProperty('cursor');
+      });
+
+      test('adds interactive and cursor to custom labels when hasOnClick is true', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: true,
+          labels: [1, 2, 3],
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', true);
+        expect(axis.encode?.labels?.update?.cursor).toHaveProperty('value', 'pointer');
+      });
+
+      test('does not add interactive or cursor to custom labels when hasOnClick is false', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasOnClick: false,
+          labels: [1, 2, 3],
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        expect(axis.encode?.labels).toHaveProperty('interactive', false);
+        expect(axis.encode?.labels?.update).not.toHaveProperty('cursor');
       });
     });
 
