@@ -16,6 +16,7 @@ import {
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SIZE_TIER_CUTPOINTS,
+  DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION,
   DONUT_SLICE_GAPS,
   FILTERED_TABLE,
   SELECTED_ITEM,
@@ -125,6 +126,25 @@ export const getSliceGapSignal = ({ name }: DonutSpecOptions): Signal => ({
 export const getDonutInnerRadiusExpr = ({ holeRatio, name }: DonutSpecOptions): string =>
   holeRatio === DEFAULT_HOLE_RATIO ? `(${DONUT_RADIUS} - ${name}_ringWidth)` : `${holeRatio} * ${DONUT_RADIUS}`;
 
+/**
+ * Gets the padAngle expression for the arc mark. Converts the per-tier fixed px slice gap
+ * (chart.donut.size.slice-gap) to an angle at the outer radius, capped to a fraction of this
+ * specific segment's own angular width (`${name}_arcLength`, already computed by the pie
+ * transform) - otherwise a segment much smaller than the fixed gap could have its entire
+ * angular width eaten by it, collapsing to nothing instead of just rendering a smaller gap.
+ * Capping against the segment's own width (rather than the average across all segments) is
+ * what actually prevents collapse for a donut whose segment sizes are highly skewed - an
+ * average gets dragged up by the larger segments and wouldn't meaningfully shrink the gap for
+ * the specific tiny ones that are actually at risk.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+const getPadAngleExpr = ({ name }: DonutSpecOptions): string => {
+  const fixedGapAngle = `${name}_sliceGap / ${DONUT_RADIUS}`;
+  const segmentAngle = `datum['${name}_arcLength']`;
+  return `min(${fixedGapAngle}, ${segmentAngle} * ${DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION})`;
+};
+
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, name } = options;
   return {
@@ -143,8 +163,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
       update: {
         startAngle: { field: `${name}_startAngle` },
         endAngle: { field: `${name}_endAngle` },
-        // converts the per-tier fixed px slice gap (chart.donut.size.slice-gap) to an angle at the outer radius
-        padAngle: { signal: `${name}_sliceGap / ${DONUT_RADIUS}` },
+        padAngle: { signal: getPadAngleExpr(options) },
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },
         outerRadius: { signal: DONUT_RADIUS },
         // hide the segments when there isn't any data to display, the empty state ring is shown instead

@@ -88,10 +88,13 @@ describe('getArcMark()', () => {
     expect(arcMark.encode?.update?.innerRadius).toEqual({ signal: '0.5 * (min(width, height) / 2 - 2)' });
   });
 
-  test('should convert the per-tier fixed slice gap to an angle at the outer radius', () => {
+  test('should convert the per-tier fixed slice gap to an angle at the outer radius, capped to a fraction of this segment\'s own angular width', () => {
     const arcMark = getArcMark(defaultDonutOptions);
+    // capping against this segment's own arcLength (not an average across all segments) is what
+    // actually prevents collapse for a donut whose segment sizes are highly skewed
     expect(arcMark.encode?.update?.padAngle).toEqual({
-      signal: 'testName_sliceGap / (min(width, height) / 2 - 2)',
+      signal:
+        "min(testName_sliceGap / (min(width, height) / 2 - 2), datum['testName_arcLength'] * 0.3333333333333333)",
     });
   });
 });
