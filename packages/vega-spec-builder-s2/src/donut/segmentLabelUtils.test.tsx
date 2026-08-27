@@ -373,4 +373,24 @@ describe('hover behavior', () => {
       { value: '#505050' },
     ]);
   });
+
+  test("value line fill also switches to the segment's own categorical color when a paired Legend's hovered entry matches it", () => {
+    const [mark] = getSegmentLabelValueTextMark({
+      ...interactiveSegmentLabelOptions,
+      donutOptions: { ...interactiveDonutOptions, legendHighlightSignals: ['legend0_hoveredSeries'] },
+    });
+    expect(mark.encode?.update?.fill).toEqual([
+      {
+        test: "isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId",
+        scale: 'color',
+        field: 'testColor',
+      },
+      {
+        test: 'isValid(legend0_hoveredSeries) && legend0_hoveredSeries === datum.rscSeriesId',
+        scale: 'color',
+        field: 'testColor',
+      },
+      { value: '#505050' },
+    ]);
+  });
 });
