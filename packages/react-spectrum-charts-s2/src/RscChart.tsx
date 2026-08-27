@@ -21,7 +21,7 @@ import { VegaChart } from './VegaChart';
 import { useChartContext } from './context/RscChartContext';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import { useChartInteractions } from './hooks/useChartInteractions';
-import usePopovers, { PopoverDetail } from './hooks/usePopovers';
+import { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import { RscChartProps } from './types';
@@ -96,7 +96,10 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, inspectOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
+  const { signals, targetStyle, inspectOptions, onNewView, interactionConfig, popovers } = useChartInteractions(
+    props,
+    sanitizedChildren
+  );
   const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
   const specSignalNames = useMemo(() => new Set(spec.signals?.map((s) => s.name) ?? []), [spec.signals]);
 
@@ -109,7 +112,6 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   }, [isPopoverOpen]);
 
   useChartImperativeHandle(ref, { chartView, title });
-  const popovers = usePopovers(sanitizedChildren);
 
   const handleNewView = useCallback(
     (view: VegaView) => {
@@ -135,6 +137,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         renderer={renderer}
         width={chartWidth}
         height={chartHeight}
+        interactionConfig={interactionConfig}
         locale={locale}
         padding={padding}
         signals={signals}

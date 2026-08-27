@@ -14,9 +14,11 @@ import { Item, View } from 'vega';
 import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA } from '@spectrum-charts/constants';
 
 import { ContextMenuMode } from '../types/marks/line.types';
+import { VegaChartInteractionConfig } from './interactionConfig';
 import {
   ActionItem,
   GetOnMarkClickCallbackArgs,
+  attachInteractionListeners,
   getItemBounds,
   getItemName,
   getLegendItemValue,
@@ -25,16 +27,15 @@ import {
   getOnMarkClickCallback,
   handleLegendItemClick,
   handleLegendItemMouseInput,
-} from './markClickUtils';
+} from './interactionHandlers';
 
 const defaultMarkClickArgs: GetOnMarkClickCallbackArgs = {
-  chartView: { current: true as unknown as View },
+  chartView: { current: { signal: jest.fn().mockReturnValue([]) } as unknown as View },
   selectedData: { current: null },
   selectedDataBounds: { current: undefined },
   selectedDataName: { current: undefined },
   chartId: 'test',
-  hiddenSeries: [],
-  setHiddenSeries: jest.fn(),
+  setSignal: jest.fn(),
   legendHasPopover: false,
   trigger: 'click',
 };
@@ -47,7 +48,7 @@ describe('getItemBounds()', () => {
 });
 
 describe('handleLegendItemClick()', () => {
-  let setHiddenSeries;
+  let setSignal;
   let onLegendClick;
   const item = {
     context: null,
@@ -57,31 +58,36 @@ describe('handleLegendItemClick()', () => {
   } as unknown as Item;
 
   beforeEach(() => {
-    setHiddenSeries = jest.fn();
+    setSignal = jest.fn();
     onLegendClick = jest.fn();
   });
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should call setHiddenSeries if legendItemValue is found', () => {
-    handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendIsToggleable: true });
-    expect(setHiddenSeries).toHaveBeenCalled();
+  test('should call setSignal with the toggled hiddenSeries if legendItemValue is found', () => {
+    handleLegendItemClick(item, { ...defaultMarkClickArgs, setSignal, legendIsToggleable: true });
+    expect(setSignal).toHaveBeenCalledWith('hiddenSeries', ['test']);
   });
-  test('should not call setHiddenSeries if legendItemValue is not found', () => {
-    const item = {} as unknown as Item;
-    handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendIsToggleable: true });
-    expect(setHiddenSeries).not.toHaveBeenCalled();
+  test('should read the current hiddenSeries off the live view rather than a frozen value', () => {
+    const chartView = { current: { signal: jest.fn().mockReturnValue(['other']) } as unknown as View };
+    handleLegendItemClick(item, { ...defaultMarkClickArgs, chartView, setSignal, legendIsToggleable: true });
+    expect(setSignal).toHaveBeenCalledWith('hiddenSeries', ['other', 'test']);
   });
-  test('should not call setHiddenSeries if legendHasPopover is true', () => {
+  test('should not call setSignal if legendItemValue is not found', () => {
     const item = {} as unknown as Item;
-    handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, legendHasPopover: true });
-    expect(setHiddenSeries).not.toHaveBeenCalled();
+    handleLegendItemClick(item, { ...defaultMarkClickArgs, setSignal, legendIsToggleable: true });
+    expect(setSignal).not.toHaveBeenCalled();
   });
-  test('should not call setHiddenSeries if trigger is contextmenu', () => {
+  test('should not call setSignal if legendHasPopover is true', () => {
     const item = {} as unknown as Item;
-    handleLegendItemClick(item, { ...defaultMarkClickArgs, setHiddenSeries, trigger: 'contextmenu' });
-    expect(setHiddenSeries).not.toHaveBeenCalled();
+    handleLegendItemClick(item, { ...defaultMarkClickArgs, setSignal, legendHasPopover: true });
+    expect(setSignal).not.toHaveBeenCalled();
+  });
+  test('should not call setSignal if trigger is contextmenu', () => {
+    const item = {} as unknown as Item;
+    handleLegendItemClick(item, { ...defaultMarkClickArgs, setSignal, trigger: 'contextmenu' });
+    expect(setSignal).not.toHaveBeenCalled();
   });
   test('should call onLegendClick if trigger is click', () => {
     handleLegendItemClick(item, { ...defaultMarkClickArgs, onLegendClick, trigger: 'click' });
@@ -623,5 +629,101 @@ describe('getOnAxisLabelClickCallback()', () => {
     } as unknown as Item;
     callback(fakeClickEvent, extraTickItem);
     expect(onClick).not.toHaveBeenCalled();
+  });
+});
+
+describe('attachInteractionListeners()', () => {
+  const makeConfig = (overrides: Partial<VegaChartInteractionConfig> = {}): VegaChartInteractionConfig => ({
+    chartId: 'test',
+    idKey: 'id',
+    markClickDetails: [],
+    markMouseInputDetails: [],
+    axisLabelOnClickDetails: [],
+    legend: {},
+    popovers: [],
+    refs: {
+      chartView: { current: undefined },
+      selectedData: { current: null },
+      selectedDataName: { current: '' },
+      selectedDataBounds: { current: { x1: 0, x2: 0, y1: 0, y2: 0 } },
+    },
+    ...overrides,
+  });
+
+  const makeView = (): View =>
+    ({
+      addEventListener: jest.fn(),
+      signal: jest.fn(),
+    } as unknown as View);
+
+  test('always attaches the base click/mouseover/mouseout listeners', () => {
+    const view = makeView();
+    attachInteractionListeners(view, makeConfig(), jest.fn());
+
+    expect(view.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(view.addEventListener).toHaveBeenCalledWith('mouseover', expect.any(Function));
+    expect(view.addEventListener).toHaveBeenCalledWith('mouseout', expect.any(Function));
+  });
+
+  test('does not write selected-item signals or add a legend/popover click listener when nothing is interactive', () => {
+    const view = makeView();
+    attachInteractionListeners(view, makeConfig(), jest.fn());
+
+    expect(view.signal).not.toHaveBeenCalled();
+    // Only the one base click listener (getOnChartMarkClickCallback) — no legend/popover click listener.
+    expect((view.addEventListener as jest.Mock).mock.calls.filter(([type]) => type === 'click')).toHaveLength(1);
+  });
+
+  test('writes selected-item signals and adds a legend/popover click listener when popovers exist', () => {
+    const view = makeView();
+    attachInteractionListeners(
+      view,
+      makeConfig({ popovers: [{ name: 'bar0', attachedToLegend: false, rightClick: false }] }),
+      jest.fn()
+    );
+
+    expect(view.signal).toHaveBeenCalled();
+    expect((view.addEventListener as jest.Mock).mock.calls.filter(([type]) => type === 'click')).toHaveLength(2);
+  });
+
+  test('writes selected-item signals and adds a legend/popover click listener when the legend is toggleable', () => {
+    const view = makeView();
+    attachInteractionListeners(view, makeConfig({ legend: { isToggleable: true } }), jest.fn());
+
+    expect(view.signal).toHaveBeenCalled();
+    expect((view.addEventListener as jest.Mock).mock.calls.filter(([type]) => type === 'click')).toHaveLength(2);
+  });
+
+  test('adds a contextmenu listener when a popover is right-click triggered', () => {
+    const view = makeView();
+    attachInteractionListeners(
+      view,
+      makeConfig({ popovers: [{ name: 'bar0', attachedToLegend: false, rightClick: true }] }),
+      jest.fn()
+    );
+
+    expect((view.addEventListener as jest.Mock).mock.calls.filter(([type]) => type === 'contextmenu')).toHaveLength(1);
+  });
+
+  test('adds a contextmenu listener when a mark has onContextMenu configured', () => {
+    const view = makeView();
+    attachInteractionListeners(
+      view,
+      makeConfig({ markClickDetails: [{ markName: 'bar0', onContextMenu: jest.fn() }] }),
+      jest.fn()
+    );
+
+    expect((view.addEventListener as jest.Mock).mock.calls.filter(([type]) => type === 'contextmenu')).toHaveLength(1);
+  });
+
+  test('adds an axis label click listener when axisLabelOnClickDetails is non-empty', () => {
+    const view = makeView();
+    attachInteractionListeners(
+      view,
+      makeConfig({ axisLabelOnClickDetails: [{ markName: 'axis0', onClick: jest.fn() }] }),
+      jest.fn()
+    );
+
+    expect((view.addEventListener as jest.Mock).mock.calls.filter(([type]) => type === 'click')).toHaveLength(2);
   });
 });

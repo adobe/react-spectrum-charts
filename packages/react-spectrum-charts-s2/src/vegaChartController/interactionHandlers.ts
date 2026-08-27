@@ -9,30 +9,33 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { RefObject } from 'react';
-
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
 import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 import { ContextMenuMode } from '../types/marks/line.types';
 
-import { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails';
-import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
-import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
-import { toggleStringArrayValue } from '../utils';
+import {
+  AxisLabelOnClickDetail,
+  MarkMouseInputDetail,
+  MarkOnClickDetail,
+  MutableRef,
+  VegaChartInteractionConfig,
+} from './interactionConfig';
+// Imported from the leaf module directly, not the '../utils' barrel — that barrel pulls in
+// component code (EmptyState, etc.) which is unsafe to load from this SSR-guarded module graph.
+import { setSelectedSignals, toggleStringArrayValue } from '../utils/signalUtils';
 
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;
 
 export interface GetOnMarkClickCallbackArgs {
-  chartView: RefObject<View | undefined>;
-  hiddenSeries: string[];
+  chartView: MutableRef<View | undefined>;
   chartId: string;
-  selectedData: RefObject<Datum | null>;
-  selectedDataBounds: RefObject<MarkBounds | undefined>;
-  selectedDataName: RefObject<string | undefined>;
-  setHiddenSeries: (hiddenSeries: string[]) => void;
+  selectedData: MutableRef<Datum | null>;
+  selectedDataBounds: MutableRef<MarkBounds | undefined>;
+  selectedDataName: MutableRef<string | undefined>;
+  setSignal: (name: string, value: unknown) => void;
   legendIsToggleable?: boolean;
   legendHasPopover?: boolean;
   onLegendClick?: (seriesName: string) => void;
@@ -42,15 +45,7 @@ export interface GetOnMarkClickCallbackArgs {
 
 /**
  * Generates the callback for the mark click handler
- * @param chartView
- * @param hiddenSeries
- * @param chartId
- * @param selectedData
- * @param selectedDataBounds
- * @param selectedDataName
- * @param setHiddenSeries
- * @param legendIsToggleable
- * @param onLegendClick
+ * @param args
  * @returns
  */
 export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEventCallback => {
@@ -101,7 +96,7 @@ const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 
  * @returns The callback to be used for the `onClick` prop on a mark.
  */
 export const getOnChartMarkClickCallback = (
-  chartView: RefObject<View | undefined>,
+  chartView: MutableRef<View | undefined>,
   onClickMarkDetails?: MarkOnClickDetail[]
 ): ViewEventCallback => {
   return (_event, item) => {
@@ -124,7 +119,7 @@ export const getOnChartMarkClickCallback = (
  * @returns The callback for contextmenu events.
  */
 export const getOnChartMarkContextMenuCallback = (
-  chartView: RefObject<View | undefined>,
+  chartView: MutableRef<View | undefined>,
   markClickDetails?: MarkOnClickDetail[]
 ): ViewEventCallback => {
   return (event, item) => {
@@ -248,7 +243,7 @@ const handleMarkMouseInput = (
 };
 
 /**
- * Updates the hidden series when a legend item is clicked
+ * Fires onLegendMouseInput for the hovered legend item, if any
  * @param item
  * @param onLegendMouseInput
  * @returns
@@ -266,7 +261,7 @@ export const handleLegendItemMouseInput = (
 /**
  * Generates the callback for mouse events (both legend and mark hover)
  * @param onLegendMouseInput
- * @param markHoverDetails
+ * @param markMouseInputDetails
  * @returns
  */
 export const getOnMouseInputCallback = (
@@ -294,22 +289,20 @@ export const isLegendItem = (item: Item): boolean => {
 };
 
 /**
- * Updates the hidden series when a legend item is clicked
+ * Toggles the clicked series in the live hiddenSeries signal (or opens its popover)
  * @param item
- * @param hiddenSeries
- * @param setHiddenSeries
+ * @param args
  * @returns
  */
 export const handleLegendItemClick = (
   item: NonNullable<ActionItem>,
   {
     chartView,
-    hiddenSeries,
     chartId,
     selectedData,
     selectedDataBounds,
     selectedDataName,
-    setHiddenSeries,
+    setSignal,
     legendHasPopover,
     legendIsToggleable,
     onLegendClick,
@@ -336,7 +329,10 @@ export const handleLegendItemClick = (
   if (trigger === 'click') {
     onLegendClick?.(legendItemValue);
     if (legendIsToggleable && !legendHasPopover) {
-      setHiddenSeries(toggleStringArrayValue(hiddenSeries, legendItemValue));
+      // Reads the live signal value rather than a value frozen at listener-attach-time — required
+      // now that toggling no longer forces a view recreate per click.
+      const currentHiddenSeries = (chartView.current?.signal('hiddenSeries') as string[] | undefined) ?? [];
+      setSignal('hiddenSeries', toggleStringArrayValue(currentHiddenSeries, legendItemValue));
     }
   }
 };
@@ -387,7 +383,7 @@ export const isAreaMarkItem = (item: ActionItem): boolean => {
 export const getItemForAreaMark = (item: ActionItem): ActionItem => {
   // for area, we want to use the hovered data not the entire area
   const pointMark = item?.mark.group.items.find((mark) => mark.name.includes('_anchorPoint'));
-  if (pointMark && pointMark.items.length === 1) {
+  if (pointMark?.items.length === 1) {
     const point = pointMark.items[0];
     if (isItemSceneItem(point)) {
       return point;
@@ -417,11 +413,9 @@ export const getItemBounds = (item: ActionItem): MarkBounds => {
 };
 
 /**
- * Gets the bounds for an item provided by the click handler.
- * If the item is in a group that has an offset (like for a grouped bar),
- * then the offset is added to the bounds.
+ * Gets the name of the clicked item's mark, stripped of its Vega-internal suffix.
  * @param item
- * @returns MarkBounds
+ * @returns
  */
 export const getItemName = (item: ActionItem): string | undefined => {
   if (isItemSceneItem(item)) {
@@ -467,3 +461,130 @@ export const isScene = (item: unknown): item is Scene => {
   if (typeof item !== 'object' || item === null) return false;
   return 'bounds' in item && 'clip' in item;
 };
+
+/**
+ * Stops the browser's native context menu from appearing over the chart's DOM container.
+ * @param chartId
+ */
+function suppressNativeContextMenu(chartId: string): void {
+  document.querySelector(`#${chartId}`)?.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+
+/**
+ * Registers the mark/legend click listener, and its contextmenu counterpart when any popover is
+ * right-click-triggered.
+ * @param view
+ * @param config
+ * @param setSignal
+ */
+function attachMarkAndLegendClickListeners(
+  view: View,
+  config: VegaChartInteractionConfig,
+  setSignal: (name: string, value: unknown) => void
+): void {
+  const { chartId, idKey, legend, popovers, refs } = config;
+  const { chartView, selectedData, selectedDataBounds, selectedDataName } = refs;
+  if (!popovers.length && !legend.isToggleable && !legend.onClick) return;
+
+  const legendHasPopover = popovers.some((p) => p.attachedToLegend && !p.rightClick);
+  const markHasPopover = popovers.some((p) => !p.attachedToLegend);
+
+  setSelectedSignals({ idKey, selectedData: selectedData.current, view });
+  view.addEventListener(
+    'click',
+    getOnMarkClickCallback({
+      chartView,
+      chartId,
+      selectedData,
+      selectedDataBounds,
+      selectedDataName,
+      setSignal,
+      legendIsToggleable: legend.isToggleable,
+      legendHasPopover,
+      onLegendClick: legend.onClick,
+      trigger: 'click',
+      markHasPopover,
+    })
+  );
+
+  if (popovers.some((p) => p.rightClick)) {
+    const legendHasRightClickPopover = popovers.some((p) => p.attachedToLegend && p.rightClick);
+    suppressNativeContextMenu(chartId);
+    view.addEventListener(
+      'contextmenu',
+      getOnMarkClickCallback({
+        chartView,
+        chartId,
+        selectedData,
+        selectedDataBounds,
+        selectedDataName,
+        setSignal,
+        legendHasPopover: legendHasRightClickPopover,
+        legendIsToggleable: legend.isToggleable,
+        onLegendClick: legend.onClick,
+        trigger: 'contextmenu',
+        markHasPopover,
+      })
+    );
+  }
+}
+
+/**
+ * Registers the contextmenu listener for marks with an `onContextMenu` prop.
+ * @param view
+ * @param config
+ */
+function attachChartMarkContextMenuListener(view: View, config: VegaChartInteractionConfig): void {
+  const { chartId, markClickDetails, refs } = config;
+  if (!markClickDetails.some((d) => d.onContextMenu)) return;
+  suppressNativeContextMenu(chartId);
+  view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(refs.chartView, markClickDetails));
+}
+
+/**
+ * Registers the click listener for marks with an `onClick` prop.
+ * @param view
+ * @param config
+ */
+function attachChartMarkClickListener(view: View, config: VegaChartInteractionConfig): void {
+  view.addEventListener('click', getOnChartMarkClickCallback(config.refs.chartView, config.markClickDetails));
+}
+
+/**
+ * Registers the click listener for axes with an `onClick` prop on their labels.
+ * @param view
+ * @param config
+ */
+function attachAxisLabelClickListener(view: View, config: VegaChartInteractionConfig): void {
+  if (!config.axisLabelOnClickDetails.length) return;
+  view.addEventListener('click', getOnAxisLabelClickCallback(config.axisLabelOnClickDetails));
+}
+
+/**
+ * Registers the legend/mark mouseover and mouseout listeners.
+ * @param view
+ * @param config
+ */
+function attachMouseInputListeners(view: View, config: VegaChartInteractionConfig): void {
+  view.addEventListener('mouseover', getOnMouseInputCallback(config.legend.onMouseOver, config.markMouseInputDetails));
+  view.addEventListener('mouseout', getOnMouseInputCallback(config.legend.onMouseOut, config.markMouseInputDetails));
+}
+
+/**
+ * Registers all mark/legend click, contextmenu, and mouseover/mouseout listeners on a freshly
+ * embedded view, driven by a plain-data config instead of individually-threaded hook arguments.
+ * @param view
+ * @param config
+ * @param setSignal
+ */
+export function attachInteractionListeners(
+  view: View,
+  config: VegaChartInteractionConfig,
+  setSignal: (name: string, value: unknown) => void
+): void {
+  attachMarkAndLegendClickListeners(view, config, setSignal);
+  attachChartMarkContextMenuListener(view, config);
+  attachChartMarkClickListener(view, config);
+  attachAxisLabelClickListener(view, config);
+  attachMouseInputListeners(view, config);
+}

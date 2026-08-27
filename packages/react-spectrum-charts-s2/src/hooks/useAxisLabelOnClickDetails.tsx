@@ -12,15 +12,10 @@
 import { createElement, useMemo } from 'react';
 
 import { Axis, AxisElement, Chart, ChartChildElement } from '../index';
-import { AxisLabelClickCallback } from '../types/util.types';
+import { AxisLabelOnClickDetail } from '../vegaChartController/interactionConfig';
 import { getAllElements } from '../utils';
 
 type MappedAxisElement = { name: string; element: AxisElement };
-
-export type AxisLabelOnClickDetail = {
-  markName?: string;
-  onClick?: AxisLabelClickCallback;
-};
 
 export default function useAxisLabelOnClickDetails(children: ChartChildElement[]): AxisLabelOnClickDetail[] {
   const axisElements = useMemo(() => {

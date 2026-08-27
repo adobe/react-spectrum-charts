@@ -13,17 +13,10 @@ import { Fragment, ReactNode } from 'react';
 
 import { View } from 'vega';
 
-import {
-  DIMENSION_HOVER_AREA,
-  HOVERED_ITEM,
-  HOVERED_SERIES,
-  SELECTED_GROUP,
-  SELECTED_ITEM,
-  SELECTED_SERIES,
-  SERIES_ID,
-} from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, HOVERED_ITEM, HOVERED_SERIES } from '@spectrum-charts/constants';
 import { combineNames, toCamelCase } from '@spectrum-charts/utils';
-import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
+
+export * from './signalUtils';
 
 import {
   Axis,
@@ -223,21 +216,6 @@ export const sanitizeAxisChildren = (children: unknown): AxisChildElement[] => {
     .filter((child): child is AxisChildElement => axisChildDisplayNames.has(getElementDisplayName(child)));
 };
 
-/**
- * IMMUTABLE
- *
- * Adds the value to the target array if it doesn't exist, otherwise removes it
- * @param target
- * @param value
- * @returns
- */
-export const toggleStringArrayValue = (target: string[], value: string): string[] => {
-  if (target.includes(value)) {
-    return target.filter((item) => item !== value);
-  }
-  return [...target, value];
-};
-
 // traverses the children to find the first element instance of the proivded type
 export function getElement(
   element: ReactNode | (() => void),
@@ -431,28 +409,6 @@ export function debugLog(
     console.log(`%c${rainbow} ${title}`, 'color: #2780eb', contents);
   }
 }
-
-/**
- * Sets the values of the selectedId and selectedSeries signals
- * @param param0
- */
-export const setSelectedSignals = ({
-  idKey,
-  selectedData,
-  view,
-}: {
-  idKey: string;
-  selectedData: Datum | null;
-  view: View;
-}) => {
-  view.signal(SELECTED_ITEM, selectedData?.[idKey] ?? null);
-  view.signal(SELECTED_SERIES, selectedData?.[SERIES_ID] ?? null);
-
-  const selectedGroupKey = Object.keys(selectedData ?? {}).find((k) => k.endsWith('_selectedGroupId'));
-
-  // Always write the group signal so it doesn't get "stuck" with a previous value.
-  view.signal(SELECTED_GROUP, selectedGroupKey ? selectedData?.[selectedGroupKey] ?? null : null);
-};
 
 /**
  * Clears hover-related signals for a given mark/component name.

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement, useMemo, useState } from 'react';
+import { createElement, useMemo } from 'react';
 
 import { LegendDescription } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -23,10 +23,9 @@ const ChartContainer = ({ children }: { children: React.ReactNode }) => {
 ChartContainer.displayName = 'ChartContainer';
 
 export type UseLegendProps = {
-  legendHiddenSeries: string[];
-  setLegendHiddenSeries: (legendHiddenSeries: string[]) => void;
   descriptions?: LegendDescription[];
   isToggleable?: boolean;
+  defaultHiddenSeries?: string[];
   onClick?: (seriesName: string) => void;
   onMouseOut?: (seriesName: string) => void;
   onMouseOver?: (seriesName: string) => void;
@@ -36,9 +35,14 @@ export default function useLegend(children: ChartChildElement[]): UseLegendProps
   const legend = useMemo(() => {
     return getElement(createElement(ChartContainer, undefined, children), Legend);
   }, [children]) as LegendElement;
-  const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
 
-  if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };
-  const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
-  return { legendHiddenSeries, setLegendHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
+  // Memoized on the legend element's identity (not recreated unless `children` changes) so
+  // consumers that key their own memoization on this return value (e.g. useChartInteractions's
+  // interactionConfig) don't see a new object — and therefore an unwanted VegaChart recreate —
+  // on every unrelated re-render.
+  return useMemo(() => {
+    if (!legend) return {};
+    const { defaultHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
+    return { defaultHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
+  }, [legend]);
 }

@@ -11,4 +11,3 @@
  */
 
 export * from './utils';
-export * from './markClickUtils';
