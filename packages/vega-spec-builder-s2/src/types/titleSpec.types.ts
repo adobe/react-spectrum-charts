@@ -25,4 +25,6 @@ export interface TitleOptions {
   fontSize?: number;
   /** The location of the title relative to the chart */
   orient?: TitleOrient;
+  /** Pixel offset between the title and the chart plot area */
+  offset?: number;
 }

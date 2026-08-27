@@ -18,6 +18,7 @@ describe('applyTitleOptionsDefaults()', () => {
     expect(titleOptions).toHaveProperty('fontSize', 24);
     expect(titleOptions).toHaveProperty('position', 'start');
     expect(titleOptions).toHaveProperty('orient', 'top');
+    expect(titleOptions).toHaveProperty('offset', 44);
   });
 
   test('should respect custom options', () => {

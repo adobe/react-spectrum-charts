@@ -24,12 +24,13 @@ const baseDefaults: Required<Pick<TitleOptions, TitleOptionsWithDefaults>> = {
   orient: 'top',
 };
 
-type S2OptionDefaults = 'fontWeight' | 'fontSize' | 'position';
+type S2OptionDefaults = 'fontWeight' | 'fontSize' | 'position' | 'offset';
 
 const s2DefaultOptions: Required<Pick<TitleOptions, S2OptionDefaults>> = {
   fontWeight: 700,
   fontSize: 24,
   position: 'start',
+  offset: 44,
 };
 
 export const applyTitleOptionsDefaults = (titleOptions: TitleOptions): TitleOptions => {
@@ -41,7 +42,7 @@ export const applyTitleOptionsDefaults = (titleOptions: TitleOptions): TitleOpti
 };
 
 export const addTitle = produce<ScSpec, [TitleOptions]>((spec, titleOptions) => {
-  const { text, fontWeight, fontSize, position, orient } = applyTitleOptionsDefaults(titleOptions);
+  const { text, fontWeight, fontSize, position, orient, offset } = applyTitleOptionsDefaults(titleOptions);
 
   spec.title = {
     text,
@@ -50,6 +51,7 @@ export const addTitle = produce<ScSpec, [TitleOptions]>((spec, titleOptions) => 
     anchor: position,
     frame: 'group',
     orient,
+    offset,
   };
 
   return spec;

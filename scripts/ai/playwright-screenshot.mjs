@@ -10,21 +10,23 @@
  * governing permissions and limitations under the License.
  */
 /**
- * Starts a temporary Storybook instance, screenshots the chart area of a story, then shuts it down.
+ * Screenshots the chart area of a Storybook story.
  *
  * Usage:
- *   node scripts/ai/playwright-screenshot.mjs <story-id> [output-path] [width] [height]
+ *   node scripts/ai/playwright-screenshot.mjs <story-id> [output-path] [width] [height] [--port <n>]
  *
  * Arguments:
  *   story-id     Storybook story ID. Derived from title + export name, e.g.:
  *                  title:  'React Spectrum Charts 2/Line/Examples' → react-spectrum-charts-2-line-examples
  *                  export: UserRetentionByCohort                   → user-retention-by-cohort
  *                  id:     react-spectrum-charts-2-line-examples--user-retention-by-cohort
- *   output-path  Where to write the PNG. Defaults to scripts/ai/tmp/imgCompare/result.png
+ *   output-path  Where to write the PNG. Defaults to tmp/ai/result.png
  *   width        Viewport width in px. Defaults to 800.
  *   height       Viewport height in px. Defaults to 700.
- *
- * Storybook is started on port 6008 using the S2 config (.storybook-s2) and shut down automatically.
+ *   --port <n>   Port Storybook is (or will be) running on. Defaults to 6008.
+ *                If a server is already listening on this port the script attaches to it
+ *                and does NOT start or stop Storybook. Otherwise it starts Storybook,
+ *                takes the screenshot, and shuts it down.
  *
  * Outputs:
  *   <output-path>               — PNG screenshot clipped to the Vega chart SVG
@@ -37,7 +39,6 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 
-const PORT = 6008;
 const STORYBOOK_CONFIG_DIR = '.storybook-s2';
 const STORYBOOK_READY_POLL_MS = 500;
 const STORYBOOK_READY_TIMEOUT_MS = 120_000;
@@ -51,10 +52,19 @@ const RENDER_TIMEOUT_MS = 10000;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '../..');
 
-const [, , storyId, outputArg, widthArg, heightArg] = process.argv;
+// Parse --port <n> out of argv before assigning positional args
+const rawArgs = process.argv.slice(2);
+const portFlagIdx = rawArgs.indexOf('--port');
+let PORT = 6008;
+if (portFlagIdx !== -1 && rawArgs[portFlagIdx + 1]) {
+  PORT = parseInt(rawArgs[portFlagIdx + 1], 10);
+  rawArgs.splice(portFlagIdx, 2);
+}
+
+const [storyId, outputArg, widthArg, heightArg] = rawArgs;
 
 if (!storyId) {
-  console.error('Usage: node playwright-screenshot.mjs <story-id> [output-path] [width] [height]');
+  console.error('Usage: node playwright-screenshot.mjs <story-id> [output-path] [width] [height] [--port <n>]');
   console.error('');
   console.error('story-id example: react-spectrum-charts-2-line-examples--user-retention-by-cohort');
   process.exit(1);
@@ -70,64 +80,71 @@ const defaultOutputPath = resolve(process.cwd(), 'tmp/ai/result.png');
 const outputPath = outputArg ? resolve(process.cwd(), outputArg) : defaultOutputPath;
 const outputDir = dirname(outputPath);
 const plotBoundsPath = resolve(outputDir, 'plot-bounds.json');
+const resultSvgPath = resolve(outputDir, 'result.svg');
 
 mkdirSync(outputDir, { recursive: true });
 
-// --- Start Storybook ---
+// --- Start Storybook (only if not already running) ---
 
-/**
- * Polls http://localhost:PORT until the server responds or the timeout elapses.
- */
+async function isStorybookRunning() {
+  try {
+    await fetch(`http://localhost:${PORT}`, { signal: AbortSignal.timeout(1000) });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function waitForStorybook() {
   const start = Date.now();
   while (Date.now() - start < STORYBOOK_READY_TIMEOUT_MS) {
-    try {
-      await fetch(`http://localhost:${PORT}`);
-      return; // server is up
-    } catch {
-      await new Promise((r) => setTimeout(r, STORYBOOK_READY_POLL_MS));
-    }
+    if (await isStorybookRunning()) return;
+    await new Promise((r) => setTimeout(r, STORYBOOK_READY_POLL_MS));
   }
   throw new Error(`Storybook did not become ready on port ${PORT} within ${STORYBOOK_READY_TIMEOUT_MS / 1000}s`);
 }
 
-console.error(`Starting Storybook on port ${PORT}...`);
+const alreadyRunning = await isStorybookRunning();
+let storybookProcess = null;
 
-const storybookProcess = spawn(
-  'yarn',
-  ['storybook', 'dev', '-p', String(PORT), '--config-dir', STORYBOOK_CONFIG_DIR, '--ci'],
-  {
-    cwd: repoRoot,
-    env: { ...process.env, NODE_OPTIONS: '--openssl-legacy-provider' },
-    stdio: ['ignore', 'ignore', 'pipe'], // suppress stdout/stdin; pipe stderr so errors surface if needed
+if (alreadyRunning) {
+  console.error(`Storybook already running on port ${PORT} — attaching.`);
+} else {
+  console.error(`Starting Storybook on port ${PORT}...`);
+  storybookProcess = spawn(
+    'yarn',
+    ['storybook', 'dev', '-p', String(PORT), '--config-dir', STORYBOOK_CONFIG_DIR, '--ci'],
+    {
+      cwd: repoRoot,
+      env: { ...process.env, NODE_OPTIONS: '--openssl-legacy-provider' },
+      stdio: ['ignore', 'ignore', 'pipe'],
+    }
+  );
+
+  storybookProcess.stderr.on('data', (chunk) => {
+    const line = chunk.toString();
+    if (line.toLowerCase().includes('error')) {
+      process.stderr.write(`[storybook] ${line}`);
+    }
+  });
+
+  try {
+    await waitForStorybook();
+  } catch (e) {
+    console.error(e.message);
+    storybookProcess.kill('SIGTERM');
+    process.exit(1);
   }
-);
+}
 
-storybookProcess.stderr.on('data', (chunk) => {
-  // Only forward lines that look like errors, not the normal startup noise
-  const line = chunk.toString();
-  if (line.toLowerCase().includes('error')) {
-    process.stderr.write(`[storybook] ${line}`);
-  }
-});
-
-// Ensure storybook is killed when this process exits, even on error
 function shutdown() {
-  if (!storybookProcess.killed) {
+  if (storybookProcess && !storybookProcess.killed) {
     storybookProcess.kill('SIGTERM');
   }
 }
 process.on('exit', shutdown);
 process.on('SIGINT', () => { shutdown(); process.exit(130); });
 process.on('SIGTERM', () => { shutdown(); process.exit(143); });
-
-try {
-  await waitForStorybook();
-} catch (e) {
-  console.error(e.message);
-  shutdown();
-  process.exit(1);
-}
 
 console.error(`Storybook ready at http://localhost:${PORT}`);
 
@@ -215,6 +232,20 @@ if (plotBounds) {
   console.error(`Plot bounds: ${plotBoundsPath}`);
 } else {
   console.error('Warning: could not find plot background element — plot-bounds.json not written');
+}
+
+// --- Extract result SVG ---
+
+const resultSvgContent = await page.evaluate((svgSelector) => {
+  const svg = document.querySelector(svgSelector);
+  return svg ? svg.outerHTML : null;
+}, VEGA_SELECTOR);
+
+if (resultSvgContent) {
+  writeFileSync(resultSvgPath, resultSvgContent);
+  console.error(`Result SVG: ${resultSvgPath}`);
+} else {
+  console.error('Warning: could not extract result SVG — result.svg not written');
 }
 
 // --- Cleanup ---
