@@ -36,6 +36,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         // background bars
         {
           name: `${name}_background`,
+          description: `${name}_background`,
           from: { data: `${name}_facet` },
           type: 'rect',
           interactive: false,
@@ -55,6 +56,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
           from: { data: `${name}_facet` },
           type: 'rect',
           interactive: isInteractive(options),
+          description: name,
           encode: {
             enter: {
               ...getBaseBarEnterEncodings(options),

@@ -68,6 +68,7 @@ const defaultDodgedStackedEnterEncodings: RectEncodeEntry = {
 
 const defaultBackgroundMark: Mark = {
   name: 'bar0_background',
+  description: 'bar0_background',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: false,
@@ -83,6 +84,7 @@ const defaultBackgroundMark: Mark = {
 
 const defaultMark: Mark = {
   name: 'bar0',
+  description: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: false,
@@ -105,6 +107,7 @@ const defaultMark: Mark = {
 
 const defaultMarkWithInspect: Mark = {
   name: 'bar0',
+  description: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: true,
@@ -141,6 +144,7 @@ const defaultMarkWithInspect: Mark = {
 
 const defaultDodgedStackedBackgroundMark: Mark = {
   name: 'bar0_background',
+  description: 'bar0_background',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: false,
@@ -155,6 +159,7 @@ const defaultDodgedStackedBackgroundMark: Mark = {
 
 const defaultDodgedStackedMark: Mark = {
   name: 'bar0',
+  description: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: false,
