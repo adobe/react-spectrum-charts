@@ -13,7 +13,11 @@ import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { DONUT_SIZE_TIER_CUTPOINTS } from '@spectrum-charts/constants';
+import {
+  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_RING_GAP,
+  DONUT_SIZE_TIER_CUTPOINTS,
+} from '@spectrum-charts/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart';
@@ -28,9 +32,28 @@ export default {
   component: SegmentLabel,
 };
 
-const CHART_SIZE = 400;
-const MAX_WIDTH = DONUT_SIZE_TIER_CUTPOINTS[DONUT_SIZE_TIER_CUTPOINTS.length - 1] + 100;
 const THUMB_HEIGHT = 32;
+
+// Mirrors getDonutOuterRadiusExpr's reservation math (donutUtils.ts): since a SegmentLabel is
+// always present here, the donut's actual rendered radius - and therefore its font-size/ring-width
+// size tier - is based on a smaller, label-reserved diameter, not the raw container width.
+const getEffectiveDiameter = (containerWidth: number): number => {
+  const rawRadius = containerWidth / 2 - 2;
+  const reservedRadius = (rawRadius - DONUT_LABEL_RING_GAP) / (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO);
+  return 2 * reservedRadius;
+};
+
+// Inverse of getEffectiveDiameter - the container width at which the effective (label-reserved)
+// diameter reaches a given tier cutpoint, so breakpoint markers land at the right slider position.
+const getContainerWidthForDiameter = (diameter: number): number =>
+  diameter * (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) + 4 + 2 * DONUT_LABEL_RING_GAP;
+
+const MAX_TIER_CUTPOINT = DONUT_SIZE_TIER_CUTPOINTS[DONUT_SIZE_TIER_CUTPOINTS.length - 1];
+// height must be at least as large as the container width needed to reach the XL cutpoint, or
+// min(width, height) caps out at `height` and the donut can never actually reach XL by dragging
+// the width slider alone, no matter how far right the slider goes
+const CHART_SIZE = getContainerWidthForDiameter(MAX_TIER_CUTPOINT) + 50;
+const MAX_WIDTH = CHART_SIZE + 100;
 
 const HANDLE_STYLES = `
   .rsc-dl-size-handle {
@@ -72,9 +95,14 @@ const HANDLE_STYLES = `
 `;
 
 const TIER_LABELS = ['XS', 'S', 'M', 'L', 'XL'];
-const THRESHOLDS = DONUT_SIZE_TIER_CUTPOINTS.map((px, i) => ({ px, label: TIER_LABELS[i + 1] }));
+const THRESHOLDS = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint, i) => ({
+  px: getContainerWidthForDiameter(cutpoint),
+  label: TIER_LABELS[i + 1],
+  diameter: cutpoint,
+}));
 
-const getSizeTier = (diameter: number): string => {
+const getSizeTier = (containerWidth: number): string => {
+  const diameter = getEffectiveDiameter(containerWidth);
   const index = DONUT_SIZE_TIER_CUTPOINTS.findIndex((cutpoint) => diameter < cutpoint);
   return index === -1 ? TIER_LABELS[TIER_LABELS.length - 1] : TIER_LABELS[index];
 };
@@ -86,16 +114,18 @@ const getSizeTier = (diameter: number): string => {
 const ResponsiveDonut = ({ data, args }: { data: ChartData[]; args: SegmentLabelProps }): ReactElement => {
   const [width, setWidth] = useState(300);
   const chartProps = useChartProps({ data });
+  const outerDiameter = getEffectiveDiameter(width);
   const currentSize = getSizeTier(width);
 
   return (
     <div style={{ padding: '16px 0' }}>
       <style>{HANDLE_STYLES}</style>
       <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>
-        Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong>
+        Container Width: <strong>{Math.round(width)}px</strong> — Outer Diameter:{' '}
+        <strong>{Math.round(outerDiameter)}px</strong> — Size tier: <strong>{currentSize}</strong>
       </div>
       <div style={{ position: 'relative', minWidth: MAX_WIDTH }}>
-        {THRESHOLDS.map(({ px, label }) => (
+        {THRESHOLDS.map(({ px, label, diameter }) => (
           <div
             key={label}
             style={{
@@ -120,7 +150,7 @@ const ResponsiveDonut = ({ data, args }: { data: ChartData[]; args: SegmentLabel
                 lineHeight: 1,
               }}
             >
-              {label} ({px}px)
+              {label} ({diameter}px)
             </span>
           </div>
         ))}
