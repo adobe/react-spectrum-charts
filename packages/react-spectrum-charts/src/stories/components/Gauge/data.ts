@@ -10,15 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bigNumber.types';
-export * from './bullet.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './gauge.types';
-export * from './line.types';
-export * from './scatter.types';
-export * from './venn.types';
 
-export * from './supplemental';
+
+export const basicGaugeData = [
+  { graphLabel: 'Customers', currentAmount: 60, target: 80 },
+];
+
+
