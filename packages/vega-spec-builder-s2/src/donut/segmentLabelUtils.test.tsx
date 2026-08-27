@@ -394,3 +394,38 @@ describe('hover behavior', () => {
     ]);
   });
 });
+
+describe('emphasize interaction', () => {
+  // donut-emphasize only touches the arc mark's `fill` (donutUtils.ts) - a non-emphasized segment's
+  // labels must stay fully visible and normally colored, unlike Line's primarySeries which suppresses
+  // non-primary direct labels entirely
+  const emphasizedDonutOptions: DonutSpecOptions = {
+    ...defaultDonutOptionsWithSegmentLabel,
+    segmentLabels: [{ value: true }],
+    emphasizedItems: ['SomeOtherSegment'],
+  };
+  const emphasizedSegmentLabelOptions: SegmentLabelSpecOptions = {
+    ...defaultSegmentLabelOptions,
+    donutOptions: emphasizedDonutOptions,
+    value: true,
+  };
+  const ordinaryDonutOptions: DonutSpecOptions = {
+    ...defaultDonutOptionsWithSegmentLabel,
+    segmentLabels: [{ value: true }],
+  };
+  const unemphasizedSegmentLabelOptions: SegmentLabelSpecOptions = {
+    ...defaultSegmentLabelOptions,
+    donutOptions: ordinaryDonutOptions,
+    value: true,
+  };
+
+  test('a non-emphasized segment renders identical label encodes to an ordinary interactive donut', () => {
+    const emphasizedMark = getSegmentLabelTextMark(emphasizedSegmentLabelOptions);
+    const ordinaryMark = getSegmentLabelTextMark(unemphasizedSegmentLabelOptions);
+    expect(emphasizedMark.encode).toEqual(ordinaryMark.encode);
+
+    const [emphasizedValueMark] = getSegmentLabelValueTextMark(emphasizedSegmentLabelOptions);
+    const [ordinaryValueMark] = getSegmentLabelValueTextMark(unemphasizedSegmentLabelOptions);
+    expect(emphasizedValueMark.encode).toEqual(ordinaryValueMark.encode);
+  });
+});

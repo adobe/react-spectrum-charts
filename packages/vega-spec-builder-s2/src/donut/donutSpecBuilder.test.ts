@@ -85,6 +85,22 @@ describe('addSignals()', () => {
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
   });
+
+  test('should suppress hover entirely (for every segment, not just non-emphasized ones) when emphasizedItems is set', () => {
+    const signals = addSignals(defaultSignals, {
+      ...defaultDonutOptions,
+      chartInspects: [{}],
+      emphasizedItems: ['Chrome'],
+    });
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(true) ? null : datum');
+  });
+
+  test('should not exclude anything from hover when emphasizedItems is not set', () => {
+    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, chartInspects: [{}] });
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', 'datum');
+  });
 });
 
 describe('addMarks()', () => {
