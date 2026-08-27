@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ArcMark, ColorValueRef, ProductionRule, Signal, SourceData, ThresholdScale } from 'vega';
+import { ArcMark, ColorValueRef, NumericValueRef, ProductionRule, Signal, SourceData, ThresholdScale } from 'vega';
 
 import {
   DEFAULT_HOLE_RATIO,
@@ -20,8 +20,10 @@ import {
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION,
   DONUT_SLICE_GAPS,
+  FADE_FACTOR,
   FILTERED_TABLE,
   SELECTED_ITEM,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
@@ -172,8 +174,22 @@ const getPadAngleExpr = (options: DonutSpecOptions): string => {
   return `min(${fixedGapAngle}, ${segmentAngle} * ${DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION})`;
 };
 
+/**
+ * Gets opacity rules that fade a segment when a paired Legend's hovered entry doesn't match it -
+ * the reverse direction of the arc's own hover fading the legend (legendUtils.ts). Each signal
+ * fades non-matching segments and falls through (to getMarkOpacity's own rules) otherwise, mirroring
+ * the CONTROLLED_HIGHLIGHTED_ITEM rule shape in addHoveredItemOpacityRules.
+ * @param legendHighlightSignals
+ * @returns opacity rules
+ */
+const getLegendHighlightOpacityRules = (legendHighlightSignals: string[] = []): ({ test: string } & NumericValueRef)[] =>
+  legendHighlightSignals.map((signal) => ({
+    test: `isValid(${signal}) && ${signal} !== datum.${SERIES_ID}`,
+    value: FADE_FACTOR,
+  }));
+
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { chartPopovers, chartInspects, colorScheme, idKey, name } = options;
+  const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;
   const outerRadius = getDonutOuterRadiusExpr(options);
   return {
     type: 'arc',
@@ -195,7 +211,11 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },
         outerRadius: { signal: outerRadius },
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
-        opacity: [{ test: getDonutEmptyStateTest(name), value: 0 }, ...getMarkOpacity(options)],
+        opacity: [
+          { test: getDonutEmptyStateTest(name), value: 0 },
+          ...getLegendHighlightOpacityRules(legendHighlightSignals),
+          ...getMarkOpacity(options),
+        ],
         cursor: getCursor(chartPopovers),
         strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
       },
