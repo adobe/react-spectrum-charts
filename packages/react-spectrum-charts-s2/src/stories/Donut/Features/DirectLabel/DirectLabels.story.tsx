@@ -48,7 +48,11 @@ const getEffectiveDiameter = (containerWidth: number): number => {
 const getContainerWidthForDiameter = (diameter: number): number =>
   diameter * (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) + 4 + 2 * DONUT_LABEL_RING_GAP;
 
-const MAX_TIER_CUTPOINT = DONUT_SIZE_TIER_CUTPOINTS[DONUT_SIZE_TIER_CUTPOINTS.length - 1];
+const lastCutpoint = DONUT_SIZE_TIER_CUTPOINTS.at(-1);
+if (lastCutpoint === undefined) {
+  throw new Error('DONUT_SIZE_TIER_CUTPOINTS must not be empty');
+}
+const MAX_TIER_CUTPOINT = lastCutpoint;
 // height must be at least as large as the container width needed to reach the XL cutpoint, or
 // min(width, height) caps out at `height` and the donut can never actually reach XL by dragging
 // the width slider alone, no matter how far right the slider goes
@@ -104,7 +108,12 @@ const THRESHOLDS = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint, i) => ({
 const getSizeTier = (containerWidth: number): string => {
   const diameter = getEffectiveDiameter(containerWidth);
   const index = DONUT_SIZE_TIER_CUTPOINTS.findIndex((cutpoint) => diameter < cutpoint);
-  return index === -1 ? TIER_LABELS[TIER_LABELS.length - 1] : TIER_LABELS[index];
+  if (index !== -1) return TIER_LABELS[index];
+  const lastLabel = TIER_LABELS.at(-1);
+  if (lastLabel === undefined) {
+    throw new Error('TIER_LABELS must not be empty');
+  }
+  return lastLabel;
 };
 
 // drag the slider to see the donut scale across size tiers - ring radius, font sizes, and the

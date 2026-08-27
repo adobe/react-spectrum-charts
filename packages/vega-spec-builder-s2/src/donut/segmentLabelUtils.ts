@@ -128,11 +128,15 @@ const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined): string
   const rules = Array.isArray(rule) ? rule : [rule];
   const getValue = (r: TextValueRef): string => {
     if ('signal' in r && r.signal) return r.signal;
-    if ('field' in r && r.field) return `datum['${r.field}']`;
+    if ('field' in r && typeof r.field === 'string') return `datum['${r.field}']`;
     if ('value' in r && r.value !== undefined) return `'${r.value}'`;
     return `''`;
   };
-  let expr = getValue(rules[rules.length - 1]);
+  const lastRule = rules.at(-1);
+  if (lastRule === undefined) {
+    throw new Error('getTextRuleExpr: empty production rule array');
+  }
+  let expr = getValue(lastRule);
   for (let i = rules.length - 2; i >= 0; i--) {
     const rule = rules[i] as { test?: string } & TextValueRef;
     expr = rule.test ? `${rule.test} ? (${getValue(rule)}) : (${expr})` : getValue(rule);
