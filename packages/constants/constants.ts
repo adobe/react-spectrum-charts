@@ -252,6 +252,13 @@ export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 24];
 /** S2 donut gap between adjacent segments per named size tier (XS/S/M/L/XL), per chart.donut.size.slice-gap */
 export const DONUT_SLICE_GAPS = [1, 2, 2, 2, 4];
 /**
+ * Max fraction of a donut's average segment angular width the slice gap (padAngle) may consume.
+ * Without this, a donut with many segments (some much smaller than the average) can have its
+ * smallest segments' entire angular width eaten by the fixed per-tier gap, collapsing them to
+ * nothing. The gap degrades gracefully instead by shrinking below the fixed size when needed.
+ */
+export const DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION = 1 / 3;
+/**
  * S2 min inner radius to display the summary metric, recalibrated against the corrected per-tier ring width
  * (DONUT_SUMMARY_MIN_RADIUS is s1's, kept unchanged since it's paired with s1's proportional ring geometry).
  */
