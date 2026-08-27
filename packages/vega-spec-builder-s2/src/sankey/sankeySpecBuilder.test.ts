@@ -28,7 +28,7 @@ describe('addData', () => {
     expect(nodesData?.values).toHaveLength(5);
     expect(linksData?.values).toHaveLength(sankeyData.length);
 
-    // every link row carries the original edge under table_data, mirroring Venn's lookup-back convention
+    // every link row carries the original edge under table_data (mirrors Venn's lookup-back convention)
     expect(linksData?.values?.[0]).toHaveProperty('table_data');
     expect(linksData?.values?.[0]).toHaveProperty('path');
     expect(linksData?.values?.[0]).toHaveProperty(customSankeyOptions.idKey);
@@ -55,8 +55,7 @@ describe('addData', () => {
     expect(limitById.Search).toBe(limitById.Product);
     expect(limitById.Home).toBeGreaterThan(0);
 
-    // Cart (second-to-last) and Checkout (last) share one gap, growing toward each other, so both
-    // get the smaller, halved limit -- and it really is smaller than the uncontested columns' limit
+    // Cart and Checkout share one gap growing toward each other, so both get the smaller, halved limit
     expect(limitById.Cart).toBe(limitById.Checkout);
     expect(limitById.Cart).toBeGreaterThan(0);
     expect(limitById.Cart).toBeLessThan(limitById.Home);

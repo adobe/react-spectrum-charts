@@ -9,12 +9,28 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { cyclicData, data as sankeyData, sourceAndSinkOnlyData } from './sankeyTestUtils';
+import { cyclicData, customSankeyOptions, data as sankeyData, sourceAndSinkOnlyData } from './sankeyTestUtils';
 import { assignColumns, buildSankeyLayout, getRibbonPath, getSankeyEdges } from './sankeyUtils';
-import { customSankeyOptions } from './sankeyTestUtils';
 
 const toEdges = (rows: { source: string; target: string; value: number }[]) =>
   getSankeyEdges({ ...customSankeyOptions, data: rows });
+
+describe('getSankeyEdges', () => {
+  test('drops rows with a negative, NaN, or non-finite value, keeping well-formed rows', () => {
+    const edges = getSankeyEdges({
+      ...customSankeyOptions,
+      data: [
+        { source: 'A', target: 'B', value: 5 },
+        { source: 'A', target: 'C', value: -1 },
+        { source: 'A', target: 'D', value: NaN },
+        { source: 'A', target: 'E', value: Infinity },
+        { source: 'A', target: 'F', value: 0 },
+      ],
+    });
+
+    expect(edges.map((edge) => edge.target).sort()).toEqual(['B', 'F']);
+  });
+});
 
 describe('assignColumns', () => {
   test('layers a chain by the longest path from a source (a node is one column past its deepest dependency)', () => {
@@ -23,8 +39,7 @@ describe('assignColumns', () => {
 
     expect(columns.get('Home')).toBe(0);
     expect(columns.get('Search')).toBe(1);
-    // Product is reachable directly from Home (column 0) and from Search (column 1) -- it takes the
-    // deeper of the two plus one, not the shallower, so a longer upstream chain doesn't get skipped.
+    // Product is reachable from Home (0) and Search (1) -- takes the deeper path plus one.
     expect(columns.get('Product')).toBe(2);
     expect(columns.get('Cart')).toBe(3);
     expect(columns.get('Checkout')).toBe(4);
@@ -46,7 +61,7 @@ describe('assignColumns', () => {
 
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(columns.size).toBe(3);
-    // every node has a defined, non-negative column -- the layering terminated instead of looping forever
+    // every node has a defined column -- layering terminated instead of looping forever
     expect(columns.get('A')).toBeGreaterThanOrEqual(0);
     expect(columns.get('B')).toBeGreaterThanOrEqual(0);
     expect(columns.get('C')).toBeGreaterThanOrEqual(0);

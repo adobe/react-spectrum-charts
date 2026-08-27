@@ -38,10 +38,8 @@ const defaultChartProps: ChartProps = {
   data: basicSankeyData,
   width: 500,
   height: 350,
-  // `buildSpec`'s own default (`'categorical12'`) resolves to the Spectrum *1* categorical palette
-  // (see packages/themes/src/categoricalColorPalette.ts) -- every S2 mark shares that default today
-  // (e.g. Donut's own stories don't override it either), so this isn't a Sankey-specific issue, but
-  // it's worth pointing this story at the real Spectrum 2 tokens explicitly rather than reproducing it.
+  // `buildSpec`'s default resolves to the Spectrum 1 palette (a shared S2-wide gap, not Sankey-specific)
+  // -- point this story at real Spectrum 2 tokens explicitly instead.
   colors: 's2Categorical12',
 };
 
@@ -62,8 +60,7 @@ const makeSankeyStory = (
     });
     return (
       <Chart {...chartProps}>
-        {/* 14px matches DIRECT_LABEL_FONT_SIZE_S -- reusing Line's direct-label font-size option
-            (getDirectLabelFontSizeProductionRule) rather than a Sankey-specific size. */}
+        {/* 14px matches DIRECT_LABEL_FONT_SIZE_S -- reuses Line's font-size option, not a Sankey-specific size. */}
         <Sankey fontSize={14} {...sankeyProps} />
       </Chart>
     );
@@ -73,8 +70,7 @@ const makeSankeyStory = (
 
 const SankeyStory = makeSankeyStory(basicSankeyData);
 
-// content shared by the node and link inspects/popovers -- branches on the datum shape since both
-// layers share a single set of interactive children (see sankeySpecBuilder.ts for why)
+// shared by node and link inspects/popovers -- branches on datum shape since both layers share one set of children
 const dialogContent = (datum: Datum) => {
   if ('sourceId' in datum) {
     return (
@@ -101,10 +97,8 @@ const interactiveChildren = [
   </ChartPopover>,
 ];
 
-// Right-click is just the `rightClick` prop on the same ChartPopover every other mark uses (see
-// ChartPopover.story.tsx's own `RightClick` story) -- the click/contextmenu event wiring lives in
-// useNewChartView.tsx/usePopovers.tsx, both generic over any mark's children, so Sankey gets it for
-// free with no sankey-specific code. This story only proves that's true for both node and link marks.
+// Right-click is just `rightClick` on the same ChartPopover every mark uses (see ChartPopover.story.tsx) --
+// generic click/contextmenu wiring, no sankey-specific code needed. This proves it for both layers.
 const rightClickChildren = [
   <ChartPopover width="auto" rightClick key={0}>
     {dialogContent}
@@ -124,32 +118,26 @@ RightClickInspect.args = {
   children: rightClickChildren,
 };
 
-// Closest analog to the canonical Kibana/Elastic Sankey example -- a single source column fanning
-// out into a single destination column, no re-branching. Good first story to look at.
+// Closest analog to the canonical Kibana/Elastic Sankey example -- one source column fanning into
+// one destination column, no re-branching.
 const TwoColumnFlow = bindWithProps(makeSankeyStory(twoColumnSankeyData));
 TwoColumnFlow.args = {};
 
-// The simplest possible Sankey: one unbranched path, so it renders as a single band that narrows
-// step to step (100 -> 80 -> 60) with nothing else in any column competing for space.
+// Simplest possible Sankey: one unbranched path, narrowing step to step (100 -> 80 -> 60).
 const SingleChain = bindWithProps(makeSankeyStory(singleChainSankeyData));
 SingleChain.args = {};
 
-// A clean 3-column flow (traffic source -> device -> outcome) where every column has multiple
-// nodes, so it branches and merges at each step rather than narrowing to a single node anywhere.
+// Clean 3-column flow (traffic source -> device -> outcome) that branches and merges at each step.
 const ThreeColumnFlow = bindWithProps(makeSankeyStory(threeColumnSankeyData));
 ThreeColumnFlow.args = {};
 
-// Approximates Analysis Workspace's own Flow visualization look: a "*"-prefixed root node, large
-// comma-formatted path-view counts under each node name, and "+N more" long-tail aggregate nodes.
-// Wider/taller than the other stories since Workspace's real node names run long. Uses the built-in
-// s2Categorical16 palette (a real, designed S2 palette, like the shared s2Categorical12 the other
-// stories use, just the next size up) rather than a hand-picked set of individual hue tokens.
+// Approximates Analysis Workspace's Flow visualization: a "*"-prefixed root node, comma-formatted
+// counts under each name, and "+N more" long-tail nodes. Uses the built-in s2Categorical16 palette
+// (next size up from the other stories' s2Categorical12).
 const workspaceFlowColors: ChartProps['colors'] = 's2Categorical16';
 const WorkspaceFlowExample = bindWithProps(makeSankeyStory(workspaceFlowSankeyData, workspaceFlowColors));
-// Workspace's own Flow chart doesn't fit its data into a fixed height -- it grows the canvas to fit
-// the data and lets the outer viewport scroll instead (CloudViz.js's `_measureChart`/`_sizeChart`).
-// RSC's <Chart> only supports a fixed height, so 650px is an approximation of the room Workspace
-// would actually give this data, rather than the tighter 450px used by the other stories.
+// Workspace grows its canvas to fit the data instead of a fixed height; <Chart> only supports fixed
+// height, so 650px approximates the room Workspace would give this data.
 WorkspaceFlowExample.args = { width: 900, height: 650 };
 
 export {

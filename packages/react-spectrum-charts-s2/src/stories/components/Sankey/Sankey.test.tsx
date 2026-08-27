@@ -40,8 +40,7 @@ describe('Sankey', () => {
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
-    // Home, Ad Campaign, Search, Product, Cart, Wishlist, Checkout, Abandoned -- Vega's SVG renderer
-    // draws rect marks as <path> elements too, so both queries use the default 'path' tagName.
+    // Home, Ad Campaign, Search, Product, Cart, Wishlist, Checkout, Abandoned -- rects render as <path> in Vega's SVG output.
     const nodes = await findAllMarksByGroupName(chart, 'sankey0');
     expect(nodes.length).toEqual(8);
 
@@ -49,9 +48,8 @@ describe('Sankey', () => {
     expect(links.length).toEqual(basicSankeyData.length);
   });
 
-  // Regression test: chartWidth/chartHeight must reach the spec builder as the chart's *actual*
-  // rendered size (500x350 here), not silently fall back to addSankey's internal 100x100 default --
-  // see useSpec.tsx, which used to drop chartWidth/chartHeight before forwarding to buildSpec().
+  // Regression: chartWidth/chartHeight must reach the spec builder as the chart's real size (500x350),
+  // not addSankey's 100x100 fallback -- useSpec.tsx used to drop them before forwarding to buildSpec().
   test('Basic lays nodes out across the full chart width, not a 100px fallback', async () => {
     render(<Basic {...Basic.args} />);
     const chart = await findChart();
@@ -62,8 +60,7 @@ describe('Sankey', () => {
       return match ? parseFloat(match[1]) : NaN;
     });
 
-    // 5 columns spread across a 500px-wide chart (minus the 24px node width) should reach well past
-    // the 100px-wide box addSankey falls back to when chartWidth isn't supplied at all.
+    // 5 columns across a 500px chart should reach well past the 100px fallback box.
     expect(Math.max(...xPositions)).toBeGreaterThan(300);
   });
 
@@ -123,9 +120,8 @@ describe('Sankey', () => {
     const links = await findAllMarksByGroupName(chart, 'sankey0_links');
     expect(links.length).toEqual(workspaceFlowSankeyData.length);
 
-    // each label renders as a background-halo + foreground pair (see getSankeyNodeLabelMarkPair in
-    // sankeyUtils.ts), so every label's text is duplicated in the DOM -- assert presence via
-    // findAllByText rather than findByText, which throws on more than one match.
+    // Each label renders as a halo + foreground pair, so its text is duplicated in the DOM --
+    // use findAllByText, not findByText (which throws on more than one match).
     expect(await screen.findAllByText('* Project Load')).toHaveLength(2);
     expect(await screen.findAllByText('+466 more')).toHaveLength(2);
     expect(await screen.findAllByText('+430 more')).toHaveLength(2);
@@ -133,9 +129,7 @@ describe('Sankey', () => {
     expect(await screen.findAllByText('1,389,000')).toHaveLength(2);
   });
 
-  // Right-click support is generic RSC plumbing (usePopovers.tsx/useNewChartView.tsx walk the child
-  // tree for any ChartPopover regardless of which mark it's nested under), not sankey-specific code --
-  // this just confirms that holds for both the node and link marks.
+  // Right-click support is generic RSC plumbing, not sankey-specific -- confirms it holds for both layers.
   test('RightClickInspect opens the popover on right click (not left click) for both nodes and links', async () => {
     render(<RightClickInspect {...RightClickInspect.args} />);
     const chart = await findChart();

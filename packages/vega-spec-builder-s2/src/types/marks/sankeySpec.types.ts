@@ -30,11 +30,7 @@ export interface SankeyOptions {
   color?: string;
   /** Sets the name of the component. */
   name?: string;
-  /**
-   * Override the node name label's font size in pixels (the value label below it renders 1px
-   * smaller). When omitted, font size scales automatically with chart size, same as Line's direct
-   * labels (see `getDirectLabelFontSizeProductionRule`).
-   */
+  /** Override the name label's font size in pixels (value label renders 1px smaller). Defaults to scaling with chart size. */
   fontSize?: number;
 
   // children
@@ -45,7 +41,6 @@ export interface SankeyOptions {
 type SankeyOptionsWithDefaults = 'chartPopovers' | 'chartInspects' | 'color' | 'name' | 'source' | 'target' | 'value';
 
 export interface SankeySpecOptions extends PartiallyRequired<SankeyOptions, SankeyOptionsWithDefaults> {
-  backgroundColor?: string;
   chartHeight: number;
   chartWidth: number;
   colorScheme: ColorScheme;
