@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { TextValueRef } from 'vega';
+
 import { DONUT_DIRECT_LABEL_NAME_FONT_SIZES, DONUT_DIRECT_LABEL_VALUE_FONT_SIZES, DONUT_SIZE_TIER_CUTPOINTS } from '@spectrum-charts/constants';
 
 import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types';
@@ -21,6 +23,7 @@ import {
   getSegmentLabelTextMark,
   getSegmentLabelValueText,
   getSegmentLabelValueTextMark,
+  getTextRuleExpr,
 } from './segmentLabelUtils';
 
 const defaultDonutOptionsWithSegmentLabel: DonutSpecOptions = {
@@ -118,6 +121,45 @@ describe('getSegmentLabelValueText()', () => {
     expect(rules).toHaveLength(1);
     expect(rules?.[0].signal).toContain('_arcPercent');
     expect(rules?.[0].signal).toContain('testMetric');
+  });
+});
+
+describe('getTextRuleExpr()', () => {
+  test('should return an empty string literal for an undefined rule', () => {
+    expect(getTextRuleExpr(undefined)).toBe(`''`);
+  });
+  test('should resolve a signal rule to the signal itself', () => {
+    expect(getTextRuleExpr({ signal: 'testSignal' })).toBe('testSignal');
+  });
+  test('should resolve a field rule to a datum field access', () => {
+    expect(getTextRuleExpr({ field: 'testField' })).toBe(`datum['testField']`);
+  });
+  test('should resolve a value rule to a quoted literal', () => {
+    expect(getTextRuleExpr({ value: 'testValue' })).toBe(`'testValue'`);
+  });
+  test('should fall back to an empty string literal for a rule with none of signal/field/value', () => {
+    // TextValueRef's real shapes always have one of signal/field/value - this exercises the
+    // defensive fallback for a malformed rule that shouldn't occur through valid typed input
+    expect(getTextRuleExpr({} as TextValueRef)).toBe(`''`);
+  });
+  test('should combine conditional rules into a nested ternary, testing in reverse order', () => {
+    const expr = getTextRuleExpr([
+      { test: 'datum.a', signal: 'signalA' },
+      { test: 'datum.b', field: 'fieldB' },
+      { value: 'fallbackValue' },
+    ]);
+    expect(expr).toBe(`datum.a ? (signalA) : (datum.b ? (datum['fieldB']) : ('fallbackValue'))`);
+  });
+  test('should skip the ternary wrapper for a rule with no test condition', () => {
+    const expr = getTextRuleExpr([
+      { test: 'datum.a', signal: 'signalA' },
+      { field: 'untestedField' },
+      { value: 'fallbackValue' },
+    ]);
+    expect(expr).toBe(`datum.a ? (signalA) : (datum['untestedField'])`);
+  });
+  test('should throw on an empty production-rule array', () => {
+    expect(() => getTextRuleExpr([])).toThrow('getTextRuleExpr: empty production rule array');
   });
 });
 

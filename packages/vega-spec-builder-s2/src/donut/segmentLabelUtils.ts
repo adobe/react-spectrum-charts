@@ -123,7 +123,7 @@ export const getSegmentLabelSignals = (donutOptions: DonutSpecOptions): Signal[]
  * @param rule
  * @returns vega expression string
  */
-const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined): string => {
+export const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined): string => {
   if (rule === undefined) return `''`;
   const rules = Array.isArray(rule) ? rule : [rule];
   const getValue = (r: TextValueRef): string => {
