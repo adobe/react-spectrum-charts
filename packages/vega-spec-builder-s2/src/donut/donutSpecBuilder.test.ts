@@ -45,6 +45,18 @@ describe('addData', () => {
     expect(sumData?.transform?.[0]).toHaveProperty('fields', ['testMetric']);
     expect(sumData?.transform?.[0]).toHaveProperty('ops', ['sum']);
   });
+
+  test('should add a SERIES_ID transform when interactive, so legend hover-highlight can match this donut', () => {
+    const interactiveOptions = { ...defaultDonutOptions, segmentLabels: [{ value: true }] };
+    const data = addData(initializeSpec().data ?? [], interactiveOptions);
+    expect(data[1].transform).toHaveLength(5);
+    expect(data[1].transform?.[4]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
+  });
+
+  test('should not add a SERIES_ID transform when not interactive', () => {
+    const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
+    expect(data[1].transform).toHaveLength(4);
+  });
 });
 
 describe('addSignals()', () => {

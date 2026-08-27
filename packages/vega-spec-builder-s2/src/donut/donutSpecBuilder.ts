@@ -22,6 +22,7 @@ import {
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
+import { getSeriesIdTransform } from '../data/dataUtils';
 import { isInteractive } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
@@ -101,12 +102,19 @@ export const addDonut = produce<
 );
 
 export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
-  const { name, isBoolean } = options;
+  const { color, legendHighlightSignals, name, isBoolean } = options;
   const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
   //set up transform
   data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
   data[filteredTableIndex].transform?.push(...getPieTransforms(options));
+  // Needed for both hover directions with a paired Legend: this mark's own hover highlighting the
+  // legend (generic mark-hover loop in legendUtils.ts) and a legend hover fading this mark's arcs
+  // (getLegendHighlightOpacityRules in donutUtils.ts) - both match on datum[SERIES_ID], which donut's
+  // rows don't otherwise have, unlike Line/Bar.
+  if (isInteractive(options) || legendHighlightSignals?.length) {
+    data[filteredTableIndex].transform?.push(...getSeriesIdTransform([color]));
+  }
 
   if (isBoolean) {
     //select first data point for our boolean value

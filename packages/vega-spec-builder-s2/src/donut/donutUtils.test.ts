@@ -97,6 +97,22 @@ describe('getArcMark()', () => {
         "min(testName_sliceGap / (min(width, height) / 2 - 2), datum['testName_arcLength'] * 0.3333333333333333)",
     });
   });
+
+  test('should fade segments that do not match a hovered Legend entry', () => {
+    const arcMark = getArcMark({ ...defaultDonutOptions, legendHighlightSignals: ['legend0_hoveredSeries'] });
+    const opacity = arcMark.encode?.update?.opacity as { test?: string }[];
+    expect(opacity).toHaveLength(3);
+    expect(opacity[1]).toEqual({
+      test: "isValid(legend0_hoveredSeries) && legend0_hoveredSeries !== datum.rscSeriesId",
+      value: 0.2,
+    });
+  });
+
+  test('should not add any legend-highlight opacity rules when no Legend is paired', () => {
+    const arcMark = getArcMark(defaultDonutOptions);
+    const opacity = arcMark.encode?.update?.opacity as { test?: string }[];
+    expect(opacity.some((rule) => rule.test?.includes('hoveredSeries'))).toBe(false);
+  });
 });
 
 describe('getEmptyStateArcMark()', () => {
