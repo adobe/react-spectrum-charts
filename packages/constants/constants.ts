@@ -248,6 +248,20 @@ export const DEFAULT_VENN_METRIC = 'size';
 /** default key in data for the label inside the venn*/
 export const DEFAULT_VENN_LABEL = 'label';
 
+// sankey constants
+/** default key in data for the source node of a sankey link */
+export const DEFAULT_SANKEY_SOURCE = 'source';
+/** default key in data for the target node of a sankey link */
+export const DEFAULT_SANKEY_TARGET = 'target';
+/** default key in data for the value (thickness) of a sankey link */
+export const DEFAULT_SANKEY_VALUE = 'value';
+/** default key used to color sankey nodes/links, refers to the derived node id */
+export const DEFAULT_SANKEY_COLOR = 'id';
+/** fixed pixel width of a sankey node rect */
+export const SANKEY_NODE_WIDTH = 24;
+/** minimum vertical pixel gap between two nodes in the same column */
+export const SANKEY_NODE_PADDING = 8;
+
 // ratio that each opacity is divded by when hovering or highlighting from legend
 // TODO: invert this ratio so we don't have to do 1 / HIGHLIGHT_CONTRAST_RATIO every time
 /**

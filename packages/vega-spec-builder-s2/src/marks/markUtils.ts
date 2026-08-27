@@ -65,6 +65,7 @@ import {
   MetricRangeOptions,
   OpacityFacet,
   ProductionRuleTests,
+  SankeySpecOptions,
   ScaleType,
   ScatterSpecOptions,
   SymbolSizeFacet,
@@ -432,7 +433,7 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @returns
  */
 export const getMarkOpacity = (
-  options: BarSpecOptions | DonutSpecOptions | VennSpecOptions
+  options: BarSpecOptions | DonutSpecOptions | SankeySpecOptions | VennSpecOptions
 ): ({ test?: string } & NumericValueRef)[] => {
   const { highlightedItem, idKey, name: markName } = options;
   const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];

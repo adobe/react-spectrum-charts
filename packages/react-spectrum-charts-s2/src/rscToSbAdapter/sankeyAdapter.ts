@@ -9,16 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { SankeyOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export * from './Area';
-export * from './Bullet';
-export * from './Combo';
-export * from './Donut';
-export * from './DonutSummary';
-export * from './Sankey';
-export * from './Scatter';
-export * from './ScatterAnnotation';
-export * from './ScatterPath';
-export * from './SegmentLabel';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
+import { SankeyProps } from '../types';
+import { childrenToOptions } from './childrenAdapter';
+
+export const getSankeyOptions = ({ children, ...sankeyProps }: SankeyProps): SankeyOptions => {
+  const { chartInspects, chartPopovers } = childrenToOptions(children);
+  return {
+    ...sankeyProps,
+    chartInspects,
+    chartPopovers,
+    markType: 'sankey',
+  };
+};

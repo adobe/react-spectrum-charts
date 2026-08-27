@@ -23,6 +23,8 @@ export default function useSpec({
   animations,
   animationTypes,
   backgroundColor,
+  chartHeight,
+  chartWidth,
   children,
   colors,
   colorScheme,
@@ -56,6 +58,8 @@ export default function useSpec({
       animations,
       animationTypes,
       backgroundColor,
+      chartHeight,
+      chartWidth,
       children,
       colors,
       colorScheme,
@@ -74,6 +78,14 @@ export default function useSpec({
     });
 
     return buildSpec(chartOptions);
+    // chartHeight/chartWidth are intentionally excluded below (AN-445759): resizing must not rebuild
+    // the spec/re-embed the view (it causes flicker) for the vast majority of marks, which position
+    // themselves via Vega's own responsive width/height signals, not literal JS numbers. They're
+    // still read above so marks that *do* need literal pixel dimensions at spec-build time (Venn,
+    // Sankey) get real values on the initial build, rather than each falling back to its own
+    // internal default -- but a resize alone won't refresh that geometry, same as it wouldn't for
+    // any other mark relying on this pattern.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     UNSAFE_vegaSpec,
     animations,
