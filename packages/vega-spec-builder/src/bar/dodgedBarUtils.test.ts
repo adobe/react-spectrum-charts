@@ -24,6 +24,7 @@ import {
   DEFAULT_SECONDARY_COLOR,
   FADE_FACTOR,
   FILTERED_TABLE,
+  FOCUSED_ITEM,
   HOVERED_ITEM,
   MARK_ID,
 } from '@spectrum-charts/constants';
@@ -125,6 +126,10 @@ const defaultMarkWithTooltip: Mark = {
         },
         {
           test: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`,
+          value: FADE_FACTOR,
+        },
+        {
+          test: `isValid(${FOCUSED_ITEM}) && ${FOCUSED_ITEM} !== datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
           value: FADE_FACTOR,
         },
         DEFAULT_OPACITY_RULE,

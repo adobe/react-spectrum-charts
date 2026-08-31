@@ -14,6 +14,7 @@ import { Signal } from 'vega';
 import {
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
+  FOCUSED_ITEM,
   HIGHLIGHTED_GROUP,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -28,6 +29,7 @@ export const defaultHighlightedSeriesSignal = getGenericValueSignal(CONTROLLED_H
 export const defaultSelectedItemSignal = getGenericValueSignal(SELECTED_ITEM);
 export const defaultSelectedSeriesSignal = getGenericValueSignal(SELECTED_SERIES);
 export const defaultSelectedGroupSignal = getGenericValueSignal(SELECTED_GROUP);
+export const defaultFocusedItemSignal = getGenericValueSignal(FOCUSED_ITEM);
 
 export const defaultSignals: Signal[] = [
   defaultHighlightedItemSignal,
@@ -36,4 +38,5 @@ export const defaultSignals: Signal[] = [
   defaultSelectedItemSignal,
   defaultSelectedSeriesSignal,
   defaultSelectedGroupSignal,
+  defaultFocusedItemSignal,
 ];

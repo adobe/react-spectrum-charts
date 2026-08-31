@@ -16,10 +16,12 @@ import {
   DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   FILTERED_TABLE,
+  FOCUSED_ITEM,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
   INTERACTION_MODE,
+  NAVIGATION_ID_SEPARATOR,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
@@ -226,6 +228,18 @@ export const addHoveredItemOpacityRules = (
     },
   ];
 
+  if (isBarOptions(markOptions)) {
+    const hasSecondaryFacet = Array.isArray(markOptions.color);
+    const focusedSegmentId = hasSecondaryFacet
+      ? `datum.${markOptions.dimension} + "${NAVIGATION_ID_SEPARATOR}" + datum.${markOptions.color[1]}`
+      : `datum.${markOptions.dimension}`;
+
+    rules.push({
+      test: `isValid(${FOCUSED_ITEM}) && ${FOCUSED_ITEM} !== ${focusedSegmentId}`,
+      value: FADE_FACTOR,
+    });
+  }
+
   addHoverdDimenstionAreaOpacityRules(rules, markOptions);
 
   if ('comboSiblingNames' in markOptions && markOptions.comboSiblingNames?.length) {
@@ -278,4 +292,8 @@ export const addAxisThumbnailHoverOpacityRules = (
 
 export const hasTooltipWithDimensionAreaTarget = (chartTooltips: ChartTooltipOptions[]) => {
   return chartTooltips.some(({ targets }) => targets?.includes('dimensionArea'));
+};
+
+const isBarOptions = (options: TooltipParentOptions): options is BarSpecOptions => {
+  return options.markType === 'bar';
 };

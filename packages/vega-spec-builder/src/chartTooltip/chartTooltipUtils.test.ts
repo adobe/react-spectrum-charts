@@ -16,6 +16,7 @@ import {
   DEFAULT_OPACITY_RULE,
   DIMENSION_HOVER_AREA,
   FADE_FACTOR,
+  FOCUSED_ITEM,
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
@@ -196,19 +197,20 @@ describe('addHoveredItemOpacityRules()', () => {
   test('should add hovered item opacity rules', () => {
     const opacityRules = [];
     addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions());
-    expect(opacityRules).toHaveLength(2);
+    expect(opacityRules).toHaveLength(3);
   });
   test('should add hovered item opacity rule at the correct index', () => {
     let opacityRules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
     addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions());
-    expect(opacityRules).toHaveLength(3);
+    expect(opacityRules).toHaveLength(4);
     expect(opacityRules[0].test).toContain(HOVERED_ITEM);
     expect(opacityRules[1].test).toContain(`isArray(${CONTROLLED_HIGHLIGHTED_ITEM})`);
-    expect(opacityRules[2]).toBe(DEFAULT_OPACITY_RULE);
+    expect(opacityRules[2].test).toContain(FOCUSED_ITEM);
+    expect(opacityRules[3]).toBe(DEFAULT_OPACITY_RULE);
 
     opacityRules = [DEFAULT_OPACITY_RULE, { test: `this is a test ${HOVERED_ITEM}` }];
     addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions());
-    expect(opacityRules).toHaveLength(4);
+    expect(opacityRules).toHaveLength(5);
     expect(opacityRules[0]).toBe(DEFAULT_OPACITY_RULE);
     expect(opacityRules[1]).toHaveProperty('test', `this is a test ${HOVERED_ITEM}`);
     expect(opacityRules[2].test).toContain(HOVERED_ITEM);
@@ -216,7 +218,7 @@ describe('addHoveredItemOpacityRules()', () => {
   test('should use group id if highlighted by group', () => {
     const opacityRules: ({ test?: string; signal?: string } & NumericValueRef)[] = [];
     addHoveredItemOpacityRules(opacityRules, getDefautltMarkOptions({ highlightBy: 'dimension' }));
-    expect(opacityRules).toHaveLength(2);
+    expect(opacityRules).toHaveLength(3);
     expect(opacityRules[0].signal).toContain(GROUP_ID);
   });
   test('should add combo sibling names if combo sibling names are provided', () => {
@@ -224,10 +226,10 @@ describe('addHoveredItemOpacityRules()', () => {
     const options = getDefautltMarkOptions();
     options.comboSiblingNames = ['combo0Bar0', 'combo0Line0'];
     addHoveredItemOpacityRules(opacityRules, options);
-    expect(opacityRules).toHaveLength(4);
-    expect(opacityRules[2].test).toContain('combo0Bar0_');
-    expect(opacityRules[2].test).toContain('combo0Line0_');
-    expect(opacityRules[3]).toBe(DEFAULT_OPACITY_RULE);
+    expect(opacityRules).toHaveLength(5);
+    expect(opacityRules[3].test).toContain('combo0Bar0_');
+    expect(opacityRules[3].test).toContain('combo0Line0_');
+    expect(opacityRules[4]).toBe(DEFAULT_OPACITY_RULE);
   });
 });
 

@@ -20,6 +20,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
+  FOCUSED_ITEM,
   FILTERED_TABLE,
   HIGHLIGHTED_GROUP,
   LINEAR_COLOR_SCALE,
@@ -264,6 +265,7 @@ export const getDefaultSignals = ({
     getGenericValueSignal(SELECTED_ITEM),
     getGenericValueSignal(SELECTED_SERIES),
     getGenericValueSignal(SELECTED_GROUP),
+    getGenericValueSignal(FOCUSED_ITEM),
   ];
 };
 
