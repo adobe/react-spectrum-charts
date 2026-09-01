@@ -123,21 +123,30 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
 };
 
 /**
- * Calculates the fraction of the animation for each hoverable item. This is the actual linear interpolation between the startValue and target.
+ * Calculates the fraction of the animation for each hoverable item, easing quadratically in and out of the transition.
  * @param name - the name of the mark
  * @returns SourceData - the source data for the hover fraction data
  */
-export const getHoverFractionData = (name: string): SourceData => ({
-  name: `${name}_${HOVER_FRACTION_DATA}`,
-  source: `${name}_${HOVER_ANIM_STATE_DATA}`,
-  transform: [
-    {
-      type: 'formula',
-      as: 'fraction',
-      expr: `lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1))`,
-    },
-  ],
-});
+export const getHoverFractionData = (name: string): SourceData => {
+  const easedProgress = `datum.progress < 0.5 ? 2 * pow(datum.progress, 2) : 1 - pow(-2 * datum.progress + 2, 2) / 2`;
+
+  return {
+    name: `${name}_${HOVER_FRACTION_DATA}`,
+    source: `${name}_${HOVER_ANIM_STATE_DATA}`,
+    transform: [
+      {
+        type: 'formula',
+        as: 'progress',
+        expr: `datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1)`,
+      },
+      {
+        type: 'formula',
+        as: 'fraction',
+        expr: `lerp([datum.startValue, datum.target], ${easedProgress})`,
+      },
+    ],
+  };
+};
 
 /**
  * Aggregates a mark's `hoverFractionData` up to one row per series (max fraction) for legend use.

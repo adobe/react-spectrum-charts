@@ -214,7 +214,7 @@ export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover'];
 /** Timer signal update interval in ms. Caps timer signal update at ~30fps. */
 export const ANIMATION_THROTTLE = 33;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
-export const ANIMATION_HOVER_SPEED = 100;
+export const ANIMATION_HOVER_SPEED = 250;
 /**
  * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
  * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
