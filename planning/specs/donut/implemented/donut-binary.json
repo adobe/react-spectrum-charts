@@ -4,8 +4,8 @@
   "chartType": "donut",
   "kind": "feature",
   "variant": "s2",
-  "status": "approved",
-  "lastUpdated": "2026-08-19",
+  "status": "implemented",
+  "lastUpdated": "2026-09-01",
   "complexity": {
     "score": 1,
     "rationale": "The 2-segment (isBoolean) donut already exists and mostly works - this corrects one specific, well-documented gap against the donut-binary skill, at a single coordinated site: forcing the secondary segment's fill to secondary-gray (adapting the same test-expression color-swap pattern already speced for donut-emphasize/Line's primarySeries). Revised down from an earlier draft that also proposed changing SegmentLabel's isBoolean early-return - on review, the donut-binary skill's 'Only the primary segment is labeled' bullet refers to the center-hole DonutSummary value (which already correctly shows only the primary segment's value via getBooleanDonutSummaryGroupMark/getSummaryValueText), not the outside-the-ring SegmentLabel component. SegmentLabel remains intentionally fully suppressed for isBoolean donuts, unchanged. No open design questions remain on the one gap left in scope."
