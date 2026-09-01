@@ -4,8 +4,8 @@
   "chartType": "donut",
   "kind": "feature",
   "variant": "s2",
-  "status": "approved",
-  "lastUpdated": "2026-08-18",
+  "status": "implemented",
+  "lastUpdated": "2026-09-01",
   "complexity": {
     "score": 3,
     "rationale": "Most of the underlying machinery already exists and is shared (arc opacity fade already works correctly via the existing getMarkOpacity/addHoveredItemOpacityRules mechanism; extending it to the label text marks and broadening the isInteractive gate both follow an existing precedented pattern used elsewhere for trendlines/metricRanges' displayOnHover). What pushes this to a 3 rather than a 2: the hovered-segment value-line color switch (fill driven by HOVERED_ITEM) has no precedent anywhere in the codebase, and the legend-sync requirement reuses an existing generic mechanism (legendHighlightSignals) that's already computed and passed into donut's options but never consumed - Line/Bar's consumption of it is a real, confirmed precedent for the legend-hover-to-mark-opacity direction, but the reverse direction the user specifically asked about (mark-hover-to-legend-highlight) still needs confirming before treating it as a fully precedented port."
@@ -72,9 +72,14 @@
       "lines": "145-159"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/components/SegmentLabel/SegmentLabel.story.tsx",
-      "change": "Add a hover story matching the Figma reference: SegmentLabel with value/percent, no popover configured, verifying hover fade + color-switch works without any interactive child other than the SegmentLabel itself.",
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Features/Hover/DonutHover.story.tsx",
+      "change": "CORRECTED PATH (originally planned as components/SegmentLabel/SegmentLabel.story.tsx): added a hover story matching the Figma reference - SegmentLabel with value/percent, no popover configured, plus a second story pairing the donut with a Legend to exercise the bidirectional legend-sync.",
       "lines": "N/A - new story"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/marks/markUtils.test.ts, donutSpecBuilder.test.ts, donutUtils.test.ts",
+      "change": "ADDED (not in original plan): companion test coverage for the isInteractive broadening and the SERIES_ID transform/legend-highlight opacity rules, alongside the segmentLabelUtils.test.tsx tests already planned.",
+      "lines": "N/A - new test cases"
     },
     {
       "file": "packages/vega-spec-builder-s2/src/types/marks/donutSpec.types.ts",
@@ -88,10 +93,10 @@
     }
   ],
   "openQuestions": [
-    "Should merely configuring a SegmentLabel with value/percent make the donut interactive-for-hover by default (matching the Figma reference), or should hover behavior remain gated behind an explicit popover/inspect/onClick as it is today - i.e. is this a new default behavior or should it require an opt-in?",
-    "Should the direct-label fade/color-switch also react to CONTROLLED_HIGHLIGHTED_ITEM (externally-driven highlight), matching the arc's existing shared mechanism, or should it be mouse-hover-only even though the underlying getMarkOpacity function doesn't distinguish between the two?",
-    "Confirm 'Emphasize' (the static per-segment property visible in Figma's donut component variants) is fully out of scope here and tracked as its own separate future feature, not partially addressed by this spec.",
-    "Confirm exactly which direction(s) Line/Bar's existing legendHighlightSignals mechanism implements today (research so far confirms legend-hover -> mark-opacity via getHighlightedSeriesOpacityRules/setHoverOpacityForMarks) - the user's ask is specifically the reverse direction (mark-hover -> legend-entry-highlight), which needs its own confirmation of precedent (or lack of one) before 'mirror Line/Bar' can be treated as a fully precedented port rather than partially new work."
+    "RESOLVED: a SegmentLabel configured to show value or percent makes the donut interactive-for-hover by default, no opt-in required - see the `segmentLabels.some((segmentLabel) => segmentLabel.value || segmentLabel.percent)` clause added to isInteractive (markUtils.ts).",
+    "RESOLVED: yes - the label fade reuses getMarkOpacity directly (the same shared mechanism the arc mark already uses), so it automatically reacts to CONTROLLED_HIGHLIGHTED_ITEM as well as real mouse hover, by construction rather than as a separate decision.",
+    "RESOLVED: Emphasize was confirmed out of scope here and built as its own separate spec/feature (donut-emphasize, since implemented) with a static gray-swap mechanism unrelated to this spec's opacity-fade approach.",
+    "RESOLVED: both directions were implemented. Legend-hover -> arc-fade via getLegendHighlightOpacityRules (donutUtils.ts). Arc-hover -> legend-highlight via the existing generic mark-hover loop in legendUtils.ts, which donut now participates in because getSeriesIdTransform (donutSpecBuilder.ts addData) adds the SERIES_ID field donut rows previously lacked - both directions match on datum[SERIES_ID]."
   ],
   "relatedIssues": ["donut-direct-labels", "donut-summary-responsive-sizing"]
 }
