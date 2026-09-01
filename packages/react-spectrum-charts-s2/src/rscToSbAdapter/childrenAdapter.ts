@@ -24,7 +24,6 @@ import {
   LinePointAnnotationOptions,
   MarkOptions,
   ReferenceLineOptions,
-  SankeyOptions,
   ScatterAnnotationOptions,
   ScatterPathOptions,
   SegmentLabelOptions,
