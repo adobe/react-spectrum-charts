@@ -279,7 +279,7 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
           dy: {
             signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : ${donutOptions.name}_segmentLabelNameFontSize`,
           },
-          fill: getSegmentLabelValueFill(donutOptions),
+          fill: getLabelValueFill(donutOptions, 'gray-700'),
           opacity: getMarkOpacity(donutOptions),
         },
       },
@@ -313,14 +313,19 @@ const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeS
 };
 
 /**
- * Gets the fill for the segment label value line - switches to the hovered/highlighted segment's
- * own categorical color (matching the arc's color resolution) when either this donut's own arc is
- * hovered or a paired Legend's hovered entry matches this segment, falling back to gray-700
- * otherwise. The name line never changes color, only this value line does.
+ * Gets the fill for a donut label's value line - switches to the hovered/highlighted segment's own
+ * categorical color (matching the arc's color resolution) when either this donut's own arc is
+ * hovered or a paired Legend's hovered entry matches this segment, falling back to restColor
+ * otherwise. Shared by direct labels (gray-700) and advanced labels (gray-800) - only the name
+ * line's color never changes, this value line always can.
  * @param donutOptions
+ * @param restColor fallback S2 color token when no hover/highlight matches this segment
  * @returns ProductionRule<ColorValueRef>
  */
-const getSegmentLabelValueFill = (donutOptions: DonutSpecOptions): ProductionRule<ColorValueRef> => {
+export const getLabelValueFill = (
+  donutOptions: DonutSpecOptions,
+  restColor: string
+): ProductionRule<ColorValueRef> => {
   const { color, colorScheme, idKey, legendHighlightSignals, name } = donutOptions;
   const hoveredItemSignal = `${name}_${HOVERED_ITEM}`;
   const colorRule = getColorProductionRule(color, colorScheme);
@@ -333,7 +338,7 @@ const getSegmentLabelValueFill = (donutOptions: DonutSpecOptions): ProductionRul
       test: `isValid(${signal}) && ${signal} === datum.${SERIES_ID}`,
       ...colorRule,
     })),
-    { value: getS2ColorValue('gray-700', colorScheme) },
+    { value: getS2ColorValue(restColor, colorScheme) },
   ];
 };
 

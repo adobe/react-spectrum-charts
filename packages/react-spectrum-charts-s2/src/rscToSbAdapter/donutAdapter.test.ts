@@ -15,7 +15,7 @@ import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';
-import { DonutSummary, SegmentLabel } from '../pre-alpha';
+import { AdvancedLabel, DonutSummary, SegmentLabel } from '../pre-alpha';
 import { getDonutOptions } from './donutAdapter';
 
 describe('getDonutOptions()', () => {
@@ -41,6 +41,10 @@ describe('getDonutOptions()', () => {
   it('should convert segment label children to segmentLabels array', () => {
     const options = getDonutOptions({ children: [createElement(SegmentLabel)] });
     expect(options.segmentLabels).toHaveLength(1);
+  });
+  it('should convert advanced label children to advancedLabels array', () => {
+    const options = getDonutOptions({ children: [createElement(AdvancedLabel)] });
+    expect(options.advancedLabels).toHaveLength(1);
   });
   it('should pass through included props', () => {
     const options = getDonutOptions({ color: DEFAULT_COLOR });

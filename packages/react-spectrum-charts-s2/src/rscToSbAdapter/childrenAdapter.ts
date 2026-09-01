@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+  AdvancedLabelOptions,
   AxisOptions,
   AxisThumbnailOptions,
   BarAnnotationOptions,
@@ -46,6 +47,7 @@ import { LinePointAnnotation } from '../components/LinePointAnnotation';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
 import {
+  AdvancedLabel,
   Area,
   Bullet,
   Combo,
@@ -59,6 +61,7 @@ import {
   TrendlineAnnotation,
 } from '../pre-alpha';
 import {
+  AdvancedLabelProps,
   AreaProps,
   AxisProps,
   AxisThumbnailProps,
@@ -101,6 +104,7 @@ import { getTrendlineOptions } from './trendlineAdapter';
 export const childrenToOptions = (
   children: React.ReactNode
 ): {
+  advancedLabels: AdvancedLabelOptions[];
   axes: AxisOptions[];
   axisThumbnails: AxisThumbnailOptions[];
   barAnnotations: BarAnnotationOptions[];
@@ -122,6 +126,7 @@ export const childrenToOptions = (
   trendlineAnnotations: TrendlineAnnotationOptions[];
   trendlines: TrendlineOptions[];
 } => {
+  const advancedLabels: AdvancedLabelOptions[] = [];
   const axes: AxisOptions[] = [];
   const axisThumbnails: AxisThumbnailOptions[] = [];
   const barAnnotations: BarAnnotationOptions[] = [];
@@ -149,6 +154,10 @@ export const childrenToOptions = (
       continue;
     }
     switch (child.type.displayName) {
+      case AdvancedLabel.displayName:
+        advancedLabels.push(child.props as AdvancedLabelProps);
+        break;
+
       case Area.displayName:
         marks.push(getAreaOptions(child.props as AreaProps));
         break;
@@ -252,6 +261,7 @@ export const childrenToOptions = (
   }
 
   return {
+    advancedLabels,
     axes,
     axisThumbnails,
     barAnnotations,

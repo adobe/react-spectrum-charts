@@ -287,6 +287,24 @@ export const DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT = 700;
  * it as a fraction of the current radius keeps the offset proportionate at every size instead of a fixed px cap.
  */
 export const DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO = 0.6;
+/** S2 donut advanced-label value/% font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES = [13.5, 15.75, 18, 22.5, 27];
+/** S2 donut advanced-label detail row ("X out of Y") font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES = [8.25, 9.6, 11, 13.75, 16.5];
+/** Font weight for donut advanced-label segment name text (matches direct-label name weight) */
+export const DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT = 400;
+/** Font weight for donut advanced-label value/% text */
+export const DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT = 800;
+/** Font weight for donut advanced-label detail row text */
+export const DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT = 400;
+/** Advanced-label swatch dimensions (px), shape: roundedSquarePath */
+export const DONUT_ADVANCED_LABEL_SWATCH_SIZE = 16;
+/** Gap (px) between the swatch and the segment name row */
+export const DONUT_ADVANCED_LABEL_SWATCH_GAP = 8;
+/** Gap (px) between the name row and the value/% row */
+export const DONUT_ADVANCED_LABEL_NAME_VALUE_GAP = 4;
+/** Gap (px) between the value/% row and the optional detail row - directly adjacent */
+export const DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP = 0;
 
 // venn constant
 export const DEFAULT_VENN_COLOR = 'sets';
