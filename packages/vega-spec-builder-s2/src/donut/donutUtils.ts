@@ -75,18 +75,22 @@ const getArcFillEncoding = (options: DonutSpecOptions): ColorValueRef | Producti
 };
 
 /**
- * Gets the donut's outer radius. When a SegmentLabel with direct labels is present (and the donut
+ * Gets the donut's outer radius. When a SegmentLabel or AdvancedLabel is present (and the donut
  * isn't boolean, which never renders them), this reserves room for the label's ring-gap and its
- * (capped) hemisphere pull-back out of the raw available radius, so the ring and its labels always
- * fit within the given container in a single deterministic pass - the ring never needs a further
- * reactive shrink, and the container never needs to grow beyond what's given.
+ * capped worst-case horizontal reach out of the raw available radius, so the ring and its labels
+ * always fit within the given container in a single deterministic pass - the ring never needs a
+ * further reactive shrink, and the container never needs to grow beyond what's given.
+ * AdvancedLabel's taller (swatch + up to 3 stacked rows) block also has a vertical reach (for a
+ * segment anchored near the very top/bottom of the ring), but it's capped against this exact same
+ * reserved margin (DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) rather than growing the reservation itself -
+ * see getAdvancedLabelRowDy - so the ring stays the same size as a direct-labels-only donut.
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutOuterRadiusExpr = ({ isBoolean, segmentLabels }: DonutSpecOptions): string => {
+export const getDonutOuterRadiusExpr = ({ isBoolean, segmentLabels, advancedLabels }: DonutSpecOptions): string => {
   // DONUT_RADIUS is already parenthesized; the reserved branch below self-parenthesizes too, so
   // callers can interpolate this result directly without adding their own wrapping parens
-  if (!segmentLabels.length || isBoolean) return DONUT_RADIUS;
+  if (isBoolean || (!segmentLabels.length && !advancedLabels.length)) return DONUT_RADIUS;
   // solve R such that R + ringGap + R*capRatio == DONUT_RADIUS (the worst-case label reach)
   return `((${DONUT_RADIUS} - ${DONUT_LABEL_RING_GAP}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}))`;
 };

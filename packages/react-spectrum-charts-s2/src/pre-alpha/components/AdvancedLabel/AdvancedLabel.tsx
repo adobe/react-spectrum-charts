@@ -10,15 +10,24 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './AdvancedLabel';
-export * from './Area';
-export * from './Bullet';
-export * from './Combo';
-export * from './Donut';
-export * from './DonutSummary';
-export * from './Scatter';
-export * from './ScatterAnnotation';
-export * from './ScatterPath';
-export * from './SegmentLabel';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { FC } from 'react';
+
+import { AdvancedLabelProps } from '../../../types';
+
+// destructure props here and set defaults so that storybook can pick them up
+const AdvancedLabel: FC<AdvancedLabelProps> = ({
+  labelKey,
+  percent = false,
+  percentFormat = '.0%',
+  value = false,
+  valueFormat = 'standardNumber',
+  detail = false,
+}) => {
+  return null;
+};
+
+// displayName is used to validate the component type in the spec builder
+AdvancedLabel.displayName = 'AdvancedLabel';
+
+export { AdvancedLabel };

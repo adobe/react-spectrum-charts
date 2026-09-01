@@ -15,11 +15,16 @@ import { DonutOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartPopoverElement, ChartInspectElement } from '../dialogs';
 import { Children } from '../util.types';
-import { DonutSummaryElement, SegmentLabelElement } from './supplemental';
+import { AdvancedLabelElement, DonutSummaryElement, SegmentLabelElement } from './supplemental';
 
 export interface DonutProps
-  extends Omit<DonutOptions, 'chartPopovers' | 'chartInspects' | 'donutSummaries' | 'markType' | 'segmentLabels'> {
-  children?: Children<ChartPopoverElement | ChartInspectElement | DonutSummaryElement | SegmentLabelElement>;
+  extends Omit<
+    DonutOptions,
+    'chartPopovers' | 'chartInspects' | 'donutSummaries' | 'markType' | 'segmentLabels' | 'advancedLabels'
+  > {
+  children?: Children<
+    ChartPopoverElement | ChartInspectElement | DonutSummaryElement | SegmentLabelElement | AdvancedLabelElement
+  >;
 }
 
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;
