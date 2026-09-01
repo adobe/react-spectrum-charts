@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { EncodeEntry, NumericValueRef, PathMark, ProductionRule, RectMark, TextMark } from 'vega';
+import { EncodeEntry, PathMark, RectMark, TextMark } from 'vega';
 
 import { SANKEY_NODE_PADDING, SANKEY_NODE_WIDTH } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
@@ -18,6 +18,7 @@ import {
   getColorProductionRule,
   getCursor,
   getDirectLabelFontSizeProductionRule,
+  getDirectLabelTextMarkPair,
   getInspectEncoding,
   getMarkOpacity,
 } from '../marks/markUtils';
@@ -265,12 +266,13 @@ export const buildSankeyLayout = (
 /**
  * Assigns x positions from each node's column, ported from `computeNodeBreadths`/`scaleNodeBreadths`.
  * Returns the column spacing so callers can size labels to fit the actual gap between columns.
+ * `node.x` is rounded to a whole pixel to avoid an anti-aliasing seam against touching ribbons.
  */
 const computeNodeBreadths = (nodes: SankeyLayoutNode[], chartWidth: number): number => {
   const numColumns = new Set(nodes.map((node) => node.column)).size;
   const availableWidth = Math.max(chartWidth - SANKEY_NODE_WIDTH, 0);
   const columnSpacing = numColumns > 1 ? availableWidth / (numColumns - 1) : availableWidth;
-  nodes.forEach((node) => (node.x = node.column * columnSpacing));
+  nodes.forEach((node) => (node.x = Math.round(node.column * columnSpacing)));
   return columnSpacing;
 };
 
@@ -439,6 +441,8 @@ export const getSankeyLinkMark = (options: SankeySpecOptions): PathMark => {
       enter: {
         path: { field: 'path' },
         fill: getColorProductionRule('sourceId', colorScheme),
+        // Without this, path marks inherit the theme's default stroke, showing as a seam at each node.
+        stroke: { value: 'transparent' },
         // Keyed by the parent name (not this layer's mark name) so one <ChartInspect>/<ChartPopover>
         // under <Sankey name="..."> covers both layers -- matches Venn's `getInterserctionMark`.
         tooltip: getInspectEncoding(chartInspects, name),
@@ -481,8 +485,6 @@ const NODE_LABEL_NAME_DY = -7;
 const NODE_LABEL_VALUE_DY = 9;
 /** Halo stroke width, scaled down from `DIRECT_LABEL_BACKGROUND_STROKE_WIDTH` (4px) for this mark's smaller text. */
 const NODE_LABEL_HALO_STROKE_WIDTH = 2;
-/** Halo opacity -- softens it to a glow rather than a hard-edged block on plain background. */
-const NODE_LABEL_HALO_OPACITY = 0.65;
 
 /** Shared enter-encode fields for a label's background-halo and foreground text marks (everything except `fill`/`stroke`). */
 const getSankeyNodeLabelBaseEnter = (textField: string, dy: number): EncodeEntry => ({
@@ -510,7 +512,7 @@ const getSankeyNodeLabelMarkPair = (
   textField: string,
   dy: number,
   fillColor: string,
-  fontSizeEncoding: ProductionRule<NumericValueRef>
+  fontSizeEncoding: { signal: string } | { value: number }
 ): TextMark[] => {
   const { name } = options;
   // Unlike Line's direct labels, not derived from colorScheme: these labels sit on arbitrary ribbon
@@ -519,38 +521,23 @@ const getSankeyNodeLabelMarkPair = (
   const resolvedBg = getS2ColorValue('gray-25', 'dark');
   const baseEnter = getSankeyNodeLabelBaseEnter(textField, dy);
 
-  const backgroundTextMark: TextMark = {
-    name: `${name}_${markNameSuffix}_bg`,
-    type: 'text',
-    from: { data: getSankeyNodeDataName(name) },
-    interactive: false,
-    encode: {
+  return getDirectLabelTextMarkPair(
+    `${name}_${markNameSuffix}`,
+    getSankeyNodeDataName(name),
+    {
       enter: {
         ...baseEnter,
-        // `fill` must be explicit -- SVG defaults text fill to solid black, which without this
-        // renders as a stray dark block instead of a halo. fillOpacity/strokeOpacity soften it to a glow.
         fill: { value: resolvedBg },
-        fillOpacity: { value: NODE_LABEL_HALO_OPACITY },
         stroke: { value: resolvedBg },
-        strokeOpacity: { value: NODE_LABEL_HALO_OPACITY },
         strokeWidth: { value: NODE_LABEL_HALO_STROKE_WIDTH },
       },
       update: { fontSize: fontSizeEncoding },
     },
-  };
-
-  const foregroundTextMark: TextMark = {
-    name: `${name}_${markNameSuffix}`,
-    type: 'text',
-    from: { data: getSankeyNodeDataName(name) },
-    interactive: false,
-    encode: {
+    {
       enter: { ...baseEnter, fill: { value: fillColor } },
       update: { fontSize: fontSizeEncoding },
-    },
-  };
-
-  return [backgroundTextMark, foregroundTextMark];
+    }
+  );
 };
 
 // Both fills below force the 'dark' scheme variant regardless of colorScheme -- see getSankeyNodeLabelMarkPair.
@@ -571,7 +558,8 @@ export const getSankeyNodeValueLabelMarks = (options: SankeySpecOptions): TextMa
     'valueLabel',
     'formattedValue',
     NODE_LABEL_VALUE_DY,
-    getS2ColorValue('gray-700', 'dark'),
+    // same fill as the name label -- gray-700 read as a gold-ish tint over saturated ribbons.
+    getS2ColorValue('gray-800', 'dark'),
     // one size smaller than the name label when overridden; otherwise falls back to the same
     // responsive signal as the name label (not worth offsetting a signal expression).
     options.fontSize !== undefined

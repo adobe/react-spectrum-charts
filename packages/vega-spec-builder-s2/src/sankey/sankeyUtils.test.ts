@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { cyclicData, customSankeyOptions, data as sankeyData, sourceAndSinkOnlyData } from './sankeyTestUtils';
-import { assignColumns, buildSankeyLayout, getRibbonPath, getSankeyEdges } from './sankeyUtils';
+import { assignColumns, buildSankeyLayout, getRibbonPath, getSankeyEdges, getSankeyLinkMark } from './sankeyUtils';
 
 const toEdges = (rows: { source: string; target: string; value: number }[]) =>
   getSankeyEdges({ ...customSankeyOptions, data: rows });
@@ -119,6 +119,12 @@ describe('buildSankeyLayout', () => {
     const { nodes } = buildSankeyLayout(edges, 200, 200);
     expect(nodes.map((node) => node.id).sort()).toEqual(['A', 'B']);
   });
+
+  test('rounds node.x to a whole pixel', () => {
+    const edges = toEdges(sankeyData);
+    const { nodes } = buildSankeyLayout(edges, 400, 300);
+    nodes.forEach((node) => expect(Number.isInteger(node.x)).toBe(true));
+  });
 });
 
 describe('getRibbonPath', () => {
@@ -129,5 +135,12 @@ describe('getRibbonPath', () => {
 
     expect(path).toMatch(/^M-?\d+(\.\d+)?,-?\d+(\.\d+)?C/);
     expect(path.endsWith('Z')).toBe(true);
+  });
+});
+
+describe('getSankeyLinkMark', () => {
+  test('forces a transparent stroke', () => {
+    const mark = getSankeyLinkMark(customSankeyOptions);
+    expect(mark.encode?.enter).toHaveProperty('stroke', { value: 'transparent' });
   });
 });
