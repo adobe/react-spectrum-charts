@@ -15,6 +15,8 @@ import {
   DONUT_SUMMARY_VALUE_FONT_SIZES,
 } from '@spectrum-charts/constants';
 
+import { spectrum2Colors } from '@spectrum-charts/themes';
+
 import { DonutSummarySpecOptions } from '../types';
 import {
   getBooleanDonutSummaryGroupMark,
@@ -22,6 +24,9 @@ import {
   getDonutSummaryGroupMark,
   getDonutSummaryScales,
   getDonutSummarySignals,
+  getSummaryDeltaEncode,
+  getSummaryDeltaFill,
+  getSummaryDeltaText,
   getSummaryLabelEncode,
   getSummaryValueBaseline,
   getSummaryValueEncode,
@@ -273,5 +278,129 @@ describe('s2 styles', () => {
 
       expect(encode.update?.fontWeight).toEqual({ value: 700 });
     });
+  });
+});
+
+describe('getSummaryDeltaText()', () => {
+  test('should render an explicit-sign one-decimal percent for a positive delta', () => {
+    expect(getSummaryDeltaText(0.025)).toEqual({ signal: `format(0.025, '+.1%')` });
+  });
+  test('should render an explicit-sign one-decimal percent for a negative delta', () => {
+    expect(getSummaryDeltaText(-0.074)).toEqual({ signal: `format(-0.074, '+.1%')` });
+  });
+});
+
+describe('getSummaryDeltaFill()', () => {
+  test('should use sentiment-positive (green-800) for a positive delta', () => {
+    expect(getSummaryDeltaFill(0.025, 'light')).toEqual({ value: spectrum2Colors.light['green-800'] });
+  });
+  test('should use sentiment-negative (red-800) for a negative delta', () => {
+    expect(getSummaryDeltaFill(-0.074, 'light')).toEqual({ value: spectrum2Colors.light['red-800'] });
+  });
+  test('should default a zero delta to sentiment-positive', () => {
+    expect(getSummaryDeltaFill(0, 'light')).toEqual({ value: spectrum2Colors.light['green-800'] });
+  });
+});
+
+describe('getDonutSummaryGroupMark() with delta', () => {
+  test('should add a third mark when delta is defined', () => {
+    const groupMark = getDonutSummaryGroupMark({ ...defaultDonutSummaryOptions, delta: 0.025 });
+    expect(groupMark.marks).toHaveLength(3);
+    expect(groupMark.marks?.[2].name).toEqual('testName_summaryDelta');
+  });
+
+  test('should not add a delta mark when delta is undefined', () => {
+    const groupMark = getDonutSummaryGroupMark(defaultDonutSummaryOptions);
+    expect(groupMark.marks).toHaveLength(2);
+  });
+});
+
+describe('getBooleanDonutSummaryGroupMark() with delta', () => {
+  test('should add a third mark when delta is defined', () => {
+    const groupMark = getBooleanDonutSummaryGroupMark({ ...defaultDonutSummaryOptions, delta: 0.025 });
+    expect(groupMark.marks).toHaveLength(3);
+    expect(groupMark.marks?.[2].name).toEqual('testName_booleanSummaryDelta');
+  });
+});
+
+describe('getSummaryDeltaEncode() stacking', () => {
+  test('value + label + delta: delta stacks below the label, past the value-to-label gap', () => {
+    const encode = getSummaryDeltaEncode({ ...defaultDonutSummaryOptions, label: 'Visitors', delta: 0.025 });
+    expect(encode.update?.dy).toEqual({
+      signal: 'ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25)',
+    });
+    expect(encode.update?.baseline).toEqual({ value: 'top' });
+  });
+
+  test('value + delta, no label: delta takes over the label\'s usual gap below the value', () => {
+    const encode = getSummaryDeltaEncode({
+      ...defaultDonutSummaryOptions,
+      label: undefined,
+      delta: 0.025,
+    });
+    expect(encode.update?.dy).toEqual({ signal: 'ceil(testName_summaryValueFontSize * 0.25)' });
+    expect(encode.update?.baseline).toEqual({ value: 'top' });
+  });
+
+  test('label + delta, hideValue: delta stacks directly below the label with no value gap', () => {
+    const encode = getSummaryDeltaEncode({
+      ...defaultDonutSummaryOptions,
+      hideValue: true,
+      label: 'Visitors',
+      delta: 0.025,
+    });
+    expect(encode.update?.dy).toEqual({
+      signal: 'testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25)',
+    });
+  });
+
+  test('delta alone (hideValue, no label): centered with no dy offset', () => {
+    const encode = getSummaryDeltaEncode({
+      ...defaultDonutSummaryOptions,
+      hideValue: true,
+      label: undefined,
+      delta: 0.025,
+    });
+    expect(encode.update?.dy).toBeUndefined();
+    expect(encode.update?.baseline).toEqual({ value: 'middle' });
+  });
+
+  test('reuses the label font-size signal directly rather than a separate delta signal', () => {
+    const encode = getSummaryDeltaEncode({ ...defaultDonutSummaryOptions, label: 'Visitors', delta: 0.025 });
+    expect(encode.update?.fontSize).toEqual([
+      { test: '((min(width, height) / 2 - 2) - testName_ringWidth) < 40', value: 0 },
+      { signal: 'testName_summaryLabelFontSize' },
+    ]);
+  });
+
+  test('should always use fontWeight 800', () => {
+    const encode = getSummaryDeltaEncode({ ...defaultDonutSummaryOptions, label: 'Visitors', delta: 0.025 });
+    expect(encode.update?.fontWeight).toEqual({ value: 800 });
+  });
+});
+
+describe('interaction: value/label baseline when delta is present without a label', () => {
+  test('value becomes alphabetic (not middle) when only a delta follows, with no label', () => {
+    const encode = getSummaryValueEncode({ ...defaultDonutSummaryOptions, label: undefined, delta: 0.025 });
+    expect(encode.update?.baseline).toEqual({ value: 'alphabetic' });
+  });
+
+  test('value limit uses full font height when only a delta follows, with no label', () => {
+    const limit = getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: undefined, delta: 0.025 });
+    expect(limit).toEqual({
+      signal:
+        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(testName_summaryValueFontSize, 2))',
+    });
+  });
+
+  test('label becomes the anchor line (alphabetic) when hideValue and a delta follows it', () => {
+    const encode = getSummaryLabelEncode({
+      ...defaultDonutSummaryOptions,
+      hideValue: true,
+      label: 'Visitors',
+      delta: 0.025,
+    });
+    expect(encode.update?.baseline).toEqual({ value: 'alphabetic' });
+    expect(encode.update?.dy).toBeUndefined();
   });
 });
