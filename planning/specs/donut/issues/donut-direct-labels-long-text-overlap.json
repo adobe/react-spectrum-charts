@@ -1,0 +1,62 @@
+{
+  "id": "donut-direct-labels-long-text-overlap",
+  "title": "Donut direct labels can overlap the ring for long segment names/values instead of wrapping",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-09-01",
+  "complexity": {
+    "score": 3,
+    "rationale": "Root cause is fully confirmed (no wrap/truncation logic exists at all), but the fix requires new, non-precedented logic - line-wrapping donut labels around a curved ring has no existing precedent elsewhere in the codebase (unlike a straightforward encode tweak), and the interaction with the existing hemisphere-mirrored anchor offset and hemisphere-based vertical dy stacking (name always above value) needs new reasoning, not a copy of an existing pattern."
+  },
+  "summary": "donut-direct-labels' requirement that a label wrap onto 2 lines rather than overlap the ring was never implemented - long segment names/values can visually overlap the ring instead.",
+  "symptom": "For a segment with a long name or value string, especially on the left hemisphere (where the label's anchor is pulled back by the wider line's width), the label's text can render on top of the donut ring instead of respecting the documented 20px ring gap. There is no visible line-break or truncation - the text just extends further than the reserved space and can overlap.",
+  "rootCause": "getLabelAnchorDxExpr (packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts) caps the left-hemisphere pull-back distance at DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO (0.6) times the outer radius, matching the worst-case reach getDonutOuterRadiusExpr already reserved room for. This cap only bounds the *anchor offset* - it does not bound or wrap the *label text itself*. Neither getSegmentLabelTextMark nor getSegmentLabelValueTextMark (same file) sets a `limit` (truncation) property or splits text across multiple lines, unlike DonutSummary's value/label text marks (donutSummaryUtils.ts), which do set `limit` for exactly this reason. So once a label's real rendered width (measured via the existing getLabelWidth() Vega expression function) exceeds what the capped anchor offset accounts for, the excess simply renders past the ring-gap boundary.",
+  "comparison": [
+    {
+      "aspect": "Guarding against text overflowing its reserved space",
+      "expected": "Per donut-direct-labels' requirement: if the 20px ring-gap would be violated by a label's real rendered width, wrap the label onto 2 lines instead of letting it overlap - mirroring how DonutSummary already truncates (via a `limit` property) when its value/label text would overflow the donut's inner radius.",
+      "actual": "getLabelAnchorDxExpr caps only the anchor's *offset* at a fixed ratio of the outer radius; the label text itself is never wrapped, truncated, or otherwise constrained, so long text can render past the reserved space and overlap the ring."
+    }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-direct-labels/SKILL.md" },
+    { "type": "other", "url": "planning/specs/donut/implemented/donut-direct-labels.json" }
+  ],
+  "edgeCases": [
+    { "case": "Long segment name, right hemisphere (no anchor pull-back)", "expectedBehavior": "Right-hemisphere labels have no offset cap to hide behind at all (dx is always 0) - a long name here would overflow rightward with no bound whatsoever, likely the most visible case of this bug." },
+    { "case": "Long value text combined with a long name on the same label", "expectedBehavior": "Both lines currently measure/anchor independently (max of the two widths) - confirm whether wrapping should apply per-line or should force both lines to wrap together to preserve their shared left-edge alignment." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "requiresS1S2Parity is false: packages/vega-spec-builder (s1) has no per-tier direct-label positioning system to mirror (this whole ring-gap/hemisphere-anchor mechanism is s2-only, per donut-direct-labels), so there is no s1 equivalent to check for the same symptom."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Design and implement 2-line wrapping for a label whose real rendered width (via getLabelWidth()) would exceed the space reserved by the ring-gap/anchor-offset math - likely requires splitting the name and/or value text into two text marks positioned on adjacent lines, or a Vega expression that inserts a line break at the measured midpoint. Needs new reasoning: no existing multi-line wrapped label exists elsewhere in this codebase to copy from.",
+      "lines": "N/A - new logic, exact site depends on chosen approach"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Add regression tests with a long segment name/value asserting the label wraps (or otherwise never renders past the ring-gap boundary) rather than overlapping.",
+      "lines": "N/A - new test cases"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Features/DirectLabel/DirectLabels.story.tsx",
+      "change": "Add a story with an intentionally long segment name/value to visually verify the fix.",
+      "lines": "N/A - new story"
+    }
+  ],
+  "openQuestions": [
+    "Should wrapping split on word boundaries or just at the measured character-width midpoint? donut-chart-tokens/donut-direct-labels skills don't document a wrapping algorithm.",
+    "Right-hemisphere labels have no anchor cap at all today (dx is always 0) - does 'wrap to 2 lines' apply there too, or does the right hemisphere need its own reserved-space cap first (a gap not covered by donut-direct-labels' original spec, which focused on the left-hemisphere pull-back)?"
+  ],
+  "relatedIssues": ["donut-direct-labels"]
+}
