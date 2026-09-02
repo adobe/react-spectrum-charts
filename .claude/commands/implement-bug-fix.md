@@ -1,6 +1,6 @@
 # react-spectrum-charts: Bug Fix
 
-Use this skill when fixing a bug. Read `.claude/architecture.md` first — diagnosing any bug requires understanding the render cycle, signal system, data sources, COMPONENT_NAME, and encoding conventions.
+Use this skill when fixing a bug. Read `.claude/architecture-core.md` first, then use the table in Step 1 below to find which additional architecture file matches your bug's symptom.
 
 ---
 
@@ -36,16 +36,16 @@ hand-written guess. Then `git mv` the file into
 
 ### Step 1: Identify which layer the bug lives in
 
-| Symptom | Layer | Where to look |
-|---|---|---|
-| Chart flickers or disappears on resize | Render cycle | `VegaChart.tsx` dep arrays, `useSpec.tsx` memo deps |
-| Chart redraws when popover opens/closes | Render cycle | State mutations causing spec rebuild |
-| Hover/selection stays stuck after interaction | Signal | `clearHoverSignals`, `setSelectedSignals`, `useNewChartView.tsx` |
-| Popover opens with wrong content or for wrong mark | COMPONENT_NAME | `markClickUtils.ts`, `getTooltip()` in mark utils |
-| Mark has wrong color that doesn't respect backgroundColor | Encoding | Check for hardcoded color vs `{ signal: BACKGROUND_COLOR }` |
-| Mouse events not firing | Interaction wiring | `useNewChartView.tsx`, `isInteractive()`, voronoi mark existence |
-| TypeScript errors after tests pass | Type system | Run `yarn tsc --noEmit` — Jest doesn't type-check |
-| Feature works in S1 but not S2 | S2 parity | Find the S2 equivalent file and apply the same fix |
+| Symptom | Layer | Where to look | Architecture file |
+|---|---|---|---|
+| Chart flickers or disappears on resize | Render cycle | `VegaChart.tsx` dep arrays, `useSpec.tsx` memo deps | `architecture-rendering-and-signals.md` |
+| Chart redraws when popover opens/closes | Render cycle | State mutations causing spec rebuild | `architecture-rendering-and-signals.md` |
+| Hover/selection stays stuck after interaction | Signal | `clearHoverSignals`, `setSelectedSignals`, `useNewChartView.tsx` | `architecture-rendering-and-signals.md` |
+| Popover opens with wrong content or for wrong mark | COMPONENT_NAME | `markClickUtils.ts`, `getTooltip()` in mark utils | `architecture-rendering-and-signals.md` |
+| Mark has wrong color that doesn't respect backgroundColor | Encoding | Check for hardcoded color vs `{ signal: BACKGROUND_COLOR }` | `architecture-encoding-and-props.md` |
+| Mouse events not firing | Interaction wiring | `useNewChartView.tsx`, `isInteractive()`, voronoi mark existence | `architecture-mark-internals.md` |
+| TypeScript errors after tests pass | Type system | Run `yarn tsc --noEmit` — Jest doesn't type-check | — |
+| Feature works in S1 but not S2 | S2 parity | Find the S2 equivalent file and apply the same fix | `architecture-s2-parity.md` |
 
 ### Step 2: Follow the data flow from symptom to root cause
 
@@ -102,4 +102,4 @@ Every bug fix must include a test that would have caught the bug:
 
 **For data bugs**: Test `addData` directly with `initializeSpec()` and assert the transform array. Prefer unit tests on spec builder functions over integration tests for data pipeline issues.
 
-After writing tests, always run `yarn tsc --noEmit`. Test passes do not imply type correctness.
+Once the fix is complete, run `yarn tsc --noEmit` (see CLAUDE.md's Test Completeness Checklist) — test passes do not imply type correctness. Don't run it proactively after every change.

@@ -23,7 +23,9 @@ directory.
 
 ## Step 2 — Investigate
 
-Spawn an Explore subagent to:
+If the environment provides a semantic code-search or navigation tool (e.g. an MCP-based
+code index), prefer it over manual grep/read for locating symbols and tracing call paths —
+it's typically cheaper and more precise. Otherwise, spawn an Explore subagent to:
 - Find the relevant source files for the reported area
 - Read the encoding/logic for the affected behavior
 - Compare against similar working code (e.g. line mark vs. line points, or the S2 sibling

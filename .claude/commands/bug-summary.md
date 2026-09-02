@@ -3,26 +3,33 @@
 Use when asked for a quick status scan of currently open bug issue specs (`/bug-summary`).
 Optional `$ARGUMENTS` narrows to a single `chartType` (e.g. `/bug-summary line`).
 
-## Step 1 — Collect open specs
+## Step 1 — Collect open specs (compact)
 
-Find every `planning/specs/<chartType>/issues/*.json` file, excluding anything under an
-`implemented/` subdirectory — those are closed and out of scope for this summary. If
-`$ARGUMENTS` names a chartType, restrict to `planning/specs/<chartType>/issues/*.json` only.
+Run `node scripts/listOpenIssues.js` (append the chartType as an argument if `$ARGUMENTS`
+names one, e.g. `node scripts/listOpenIssues.js line`). This finds every
+`planning/specs/<chartType>/issues/*.json` file, excluding anything under an `implemented/`
+subdirectory, and prints a JSON array with only the fields the Step 3 report line actually
+uses (`id`, `chartType`, `variant`, `complexityScore` for the bolded header, and `symptom`,
+`rootCause`, `openQuestions` for the summary sentence), plus `title` for human scanning. It
+omits `summary`/`comparison` (redundant with the more detailed `symptom`/`rootCause` fields
+for bugs — read a specific issue's `summary` directly from its full file if it seems
+relevant to confirm something), `status` (near-constant — every open issue here is
+`"approved"`), `lastUpdated`, and the bulky
+`implementationPlan`/`crossCutting`/`edgeCases`/`designTokens`/`references`.
 
-Sort the matched file paths ascending (plain string sort on the relative path, e.g.
-`planning/specs/bar/issues/foo.json` before `planning/specs/line/issues/bar.json`) and
-assign each a sequential id starting at 1, in that sorted order. This ordering must be
-reproducible on a later run over the same spec set — don't number by discovery order,
-read order, or complexity — so that a follow-up command given a bare id (e.g. "spec 3")
-can re-run this same collect-and-sort step to resolve which file it refers to.
+Entries are sorted ascending by file path (e.g. `planning/specs/bar/issues/foo.json` before
+`planning/specs/line/issues/bar.json`) with a sequential `n` assigned in that order. This
+ordering is reproducible on a later run over the same spec set, so a follow-up command given
+a bare id (e.g. "spec 3") can re-run this same script to resolve which file it refers to.
 
 Consult `planning/specs/schema.json` if a field's meaning needs clarifying (e.g.
 `complexity.score`, `variant`, `crossCutting`).
 
-## Step 2 — Read each spec
+## Step 2 — Read a full spec only if genuinely needed
 
-Read every matched file in full — don't rely on `summary`/`rootCause` alone if `symptom` or
-`comparison` adds context needed to describe the bug accurately.
+The compact fields from Step 1 are enough for almost every summary. Only `Read` a specific
+issue's full JSON file (by its `file` path from Step 1's output) if its `symptom`/`rootCause`
+still leave the bug's state genuinely unclear — this should be rare.
 
 ## Step 3 — Report
 
