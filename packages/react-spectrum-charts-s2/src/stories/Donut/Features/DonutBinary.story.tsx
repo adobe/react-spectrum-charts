@@ -32,7 +32,7 @@ const booleanDonutData = [
 const defaultChartProps: ChartProps = { data: booleanDonutData, width: 350, height: 350 };
 
 // only the primary segment's color is set - the secondary segment is always forced to secondary-gray
-const BinaryStory: StoryFn<DonutProps> = (args): ReactElement => {
+const BooleanStory: StoryFn<DonutProps> = (args): ReactElement => {
   const positiveChartProps = useChartProps({ ...defaultChartProps, colors: ['green-800'] });
   const negativeChartProps = useChartProps({
     ...defaultChartProps,
@@ -55,6 +55,30 @@ const BinaryStory: StoryFn<DonutProps> = (args): ReactElement => {
   );
 };
 
+const Boolean = bindWithProps(BooleanStory);
+Boolean.args = {
+  metric: 'value',
+  color: 'id',
+  isBoolean: true,
+};
+
+const satisfiedDonutData = [
+  { id: '1', value: 0.883 },
+  { id: '2', value: 0.117 },
+];
+
+// a single donut with isBoolean, using the normal (default) categorical color scheme - proves the secondary segment is forced to secondary-gray regardless of what the color scale would otherwise assign it
+const BinaryStory: StoryFn<DonutProps> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: satisfiedDonutData, colors: ['categorical-600'] });
+  return (
+    <Chart {...chartProps}>
+      <Donut {...args}>
+        <DonutSummary label="Satisfied" />
+      </Donut>
+    </Chart>
+  );
+};
+
 const Binary = bindWithProps(BinaryStory);
 Binary.args = {
   metric: 'value',
@@ -62,4 +86,4 @@ Binary.args = {
   isBoolean: true,
 };
 
-export { Binary };
+export { Boolean, Binary };
