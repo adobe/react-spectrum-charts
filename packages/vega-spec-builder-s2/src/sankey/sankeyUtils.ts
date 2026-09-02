@@ -354,8 +354,10 @@ const resolveCollisions = (nodesByColumn: SankeyLayoutNode[][], chartHeight: num
     });
 
     const overflow = y0 - SANKEY_NODE_PADDING - chartHeight;
-    if (overflow > 0) {
-      let yBound = (sorted[sorted.length - 1].y -= overflow);
+    const lastNode = sorted.at(-1);
+    if (overflow > 0 && lastNode) {
+      lastNode.y -= overflow;
+      let yBound = lastNode.y;
       for (let i = sorted.length - 2; i >= 0; i--) {
         const node = sorted[i];
         const dy = node.y + node.dy + SANKEY_NODE_PADDING - yBound;
