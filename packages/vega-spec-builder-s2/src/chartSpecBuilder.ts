@@ -63,6 +63,7 @@ import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidth
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
+import { addSankey } from './sankey/sankeySpecBuilder';
 import { addScatter } from './scatter/scatterSpecBuilder';
 import { getGenericValueSignal } from './signal/signalSpecBuilder';
 import {
@@ -151,7 +152,7 @@ export function buildSpec({
   spec.signals = getDefaultSignals(options);
   spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
-  let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
+  let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, sankeyCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const legendHighlightSignals = getLegendHighlightSignals(legends);
   const specOptions = {
@@ -184,6 +185,9 @@ export function buildSpec({
       case 'line':
         lineCount++;
         return addLine(acc, { ...mark, ...specOptions, index: lineCount, data });
+      case 'sankey':
+        sankeyCount++;
+        return addSankey(acc, { ...mark, ...specOptions, index: sankeyCount, data, chartWidth, chartHeight });
       case 'scatter':
         scatterCount++;
         return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
@@ -258,6 +262,7 @@ const initializeComponentCounts = () => {
     donutCount: -1,
     bulletCount: -1,
     lineCount: -1,
+    sankeyCount: -1,
     scatterCount: -1,
     vennCount: -1,
   };

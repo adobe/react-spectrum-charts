@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorValueRef, Mark, TextMark } from 'vega';
+import { ColorValueRef, Mark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -20,7 +20,12 @@ import {
 } from '@spectrum-charts/constants';
 
 import { getOrientationProperties } from '../bar/barUtils';
-import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils';
+import {
+  getColorProductionRule,
+  getDirectLabelFontSizeProductionRule,
+  getDirectLabelTextMarkPair,
+  getMarkOpacity,
+} from '../marks/markUtils';
 import { escapeD3FormatSpecifier, getD3FormatSpecifierFromNumberFormat } from '../specUtils';
 import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types';
 
@@ -209,12 +214,10 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
         fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
       };
 
-  const backgroundMark: TextMark = {
-    name: `${barName}DirectLabel${index}_bg`,
-    type: 'text',
-    from: { data: FILTERED_TABLE },
-    interactive: false,
-    encode: {
+  const [backgroundMark, mainMark] = getDirectLabelTextMarkPair(
+    `${barName}DirectLabel${index}`,
+    FILTERED_TABLE,
+    {
       enter: {
         ...baseEnter,
         stroke: { signal: BACKGROUND_COLOR },
@@ -228,14 +231,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
         fontSize: fontSizeEncoding,
       },
     },
-  };
-
-  const mainMark: TextMark = {
-    name: `${barName}DirectLabel${index}`,
-    type: 'text',
-    from: { data: FILTERED_TABLE },
-    interactive: false,
-    encode: {
+    {
       enter: {
         ...baseEnter,
         fill: seriesFill,
@@ -244,8 +240,8 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
         opacity: getMarkOpacity(barOptions),
         fontSize: fontSizeEncoding,
       },
-    },
-  };
+    }
+  );
 
   // background halo only needed where a label can sit outside the bar: end-outside, or adaptive when it spills
   const hasOutsideLabel = position === 'end-outside' || Boolean(isInsideTest);

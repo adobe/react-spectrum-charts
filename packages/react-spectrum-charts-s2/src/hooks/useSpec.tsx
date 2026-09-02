@@ -23,6 +23,8 @@ export default function useSpec({
   animations,
   animationTypes,
   backgroundColor,
+  chartHeight,
+  chartWidth,
   children,
   colors,
   colorScheme,
@@ -56,6 +58,8 @@ export default function useSpec({
       animations,
       animationTypes,
       backgroundColor,
+      chartHeight,
+      chartWidth,
       children,
       colors,
       colorScheme,
@@ -74,6 +78,9 @@ export default function useSpec({
     });
 
     return buildSpec(chartOptions);
+    // chartHeight/chartWidth intentionally excluded (AN-445759): a resize alone must not re-embed the
+    // view (flicker) -- marks needing literal pixel dims (Venn, Sankey) only get them on initial build.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     UNSAFE_vegaSpec,
     animations,
