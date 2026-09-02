@@ -382,9 +382,10 @@ const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeS
     fontSize: getSegmentLabelFontSize(name, fontSizeSignal),
     // both hemispheres anchor at their near (left) edge - only the dx offset differs by hemisphere
     align: { value: 'left' },
+    // uses the collision-adjusted position, not the ideal arcTheta - collision can push a label
+    // across the vertical midpoint, and baseline must track where it actually ends up
     baseline: {
-      // if the center of the arc is in the top half of the donut, the text baseline should be bottom, else top
-      signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? 'bottom' : 'top'`,
+      signal: `${getIsTopHalfExpr(fieldPrefix)} ? 'bottom' : 'top'`,
     },
   };
 };

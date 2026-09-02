@@ -171,21 +171,29 @@ describe('getAdvancedLabelSignals()', () => {
   });
 });
 
-describe('label anchor radius/dx (hemisphere offset)', () => {
+describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offset)', () => {
   const getNameMark = (donutOptions: DonutSpecOptions): TextMark =>
     getAdvancedLabelMarks(donutOptions)[0].marks?.[1] as TextMark;
 
-  test('radius should always be the constant ring-gap point, regardless of hemisphere', () => {
+  test('y should come from the collision-adjusted field, not a polar radius/theta anchor', () => {
     const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
-    expect(nameMark.encode?.update?.radius).toEqual({
-      signal: '(((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) + 20',
+    expect(nameMark.encode?.update?.y).toEqual({ field: 'testName_advancedLabel_adjustedY' });
+    expect(nameMark.encode?.update?.radius).toBeUndefined();
+    expect(nameMark.encode?.update?.theta).toBeUndefined();
+  });
+
+  test('x should place the anchor at the collision-adjusted ring half-width, mirrored by hemisphere', () => {
+    const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
+    expect(nameMark.encode?.update?.x).toEqual({
+      signal:
+        "datum['testName_advancedLabel_hemisphere'] === 'right' ? width / 2 + datum['testName_advancedLabel_collisionHalfWidth'] : width / 2 - datum['testName_advancedLabel_collisionHalfWidth']",
     });
   });
 
   test('right hemisphere should get no horizontal offset', () => {
     const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
     const dxSignal = (nameMark.encode?.update?.dx as { signal: string }).signal;
-    expect(dxSignal).toContain("datum['testName_arcTheta'] <= PI ? 0 : -(");
+    expect(dxSignal).toContain("datum['testName_advancedLabel_hemisphere'] === 'right' ? 0 : -(");
   });
 
   test('dx should account for the swatch+name width when no value/detail rows are shown', () => {
@@ -237,11 +245,12 @@ describe('label anchor radius/dx (hemisphere offset)', () => {
     expect(nameMark.encode?.update?.align).toEqual({ value: 'left' });
   });
 
-  test('name and value marks should share the exact same radius', () => {
+  test('name and value marks should share the exact same x and y', () => {
     const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
     const marks = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
     const [, nameMark, valueMark] = marks;
-    expect(nameMark.encode?.update?.radius).toEqual(valueMark.encode?.update?.radius);
+    expect(nameMark.encode?.update?.x).toEqual(valueMark.encode?.update?.x);
+    expect(nameMark.encode?.update?.y).toEqual(valueMark.encode?.update?.y);
   });
 });
 
@@ -249,7 +258,7 @@ describe('vertical row-stacking cap (getAdvancedLabelRowDy)', () => {
   test('should not define dy on the name row when value/percent/detail are all false', () => {
     const nameMark = getAdvancedLabelMarks(defaultDonutOptionsWithAdvancedLabel)[0].marks?.[1] as TextMark;
     expect(nameMark.encode?.update?.dy).toEqual({
-      signal: "datum['testName_arcTheta'] <= 0.5 * PI || datum['testName_arcTheta'] >= 1.5 * PI ? (0) : 0",
+      signal: "datum['testName_advancedLabel_adjustedY'] <= height / 2 ? (0) : 0",
     });
   });
 
@@ -297,7 +306,6 @@ describe('getAdvancedLabelSwatchMark()', () => {
     const [swatchMark] = getSwatchAndNameMarks(defaultDonutOptionsWithAdvancedLabel);
     expect(swatchMark.encode?.update?.size).toEqual([
       { test: expect.stringContaining('length'), value: 0 },
-      { test: expect.stringContaining('arcLength'), value: 0 },
       { signal: `${DONUT_ADVANCED_LABEL_SWATCH_SIZE * DONUT_ADVANCED_LABEL_SWATCH_SIZE}` },
     ]);
   });

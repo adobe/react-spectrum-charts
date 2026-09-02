@@ -57,6 +57,10 @@ export const getLabelCollisionTransforms = (
   const runningMaxField = getCollisionField(fieldPrefix, 'collisionRunningMax');
   const adjustedYField = getAdjustedYField(fieldPrefix);
   const halfWidthField = getCollisionHalfWidthField(fieldPrefix);
+  // minGapExpr is a bare additive expression (e.g. "nameFontSize + valueFontSize + 16"), not a
+  // single atomic term - parenthesize before multiplying, or operator precedence silently turns
+  // "idealY - minGapExpr * rank" into "idealY - nameFontSize + valueFontSize + (16 * rank)"
+  const safeMinGapExpr = `(${minGapExpr})`;
 
   return [
     { type: 'formula', as: hemisphereField, expr: `${arcThetaExpr} <= PI ? 'right' : 'left'` },
@@ -72,7 +76,7 @@ export const getLabelCollisionTransforms = (
     },
     // row_number is 1-indexed; the cascade formula's rank is 0-indexed
     { type: 'formula', as: rankField, expr: `datum['${rankField}'] - 1` },
-    { type: 'formula', as: helperField, expr: `datum['${idealYField}'] - ${minGapExpr} * datum['${rankField}']` },
+    { type: 'formula', as: helperField, expr: `datum['${idealYField}'] - ${safeMinGapExpr} * datum['${rankField}']` },
     {
       type: 'window',
       groupby: [hemisphereField],
@@ -85,7 +89,7 @@ export const getLabelCollisionTransforms = (
     {
       type: 'formula',
       as: adjustedYField,
-      expr: `datum['${runningMaxField}'] + ${minGapExpr} * datum['${rankField}']`,
+      expr: `datum['${runningMaxField}'] + ${safeMinGapExpr} * datum['${rankField}']`,
     },
     {
       type: 'formula',
