@@ -10,9 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-// A branching pathing-style flow with multiple nodes per column (2 entry points, 2 columns that
-// narrow through a single hub, then re-branch), so the story actually shows the classic Sankey
-// look of parallel bands rather than a single dominant node per column.
+// A branching pathing-style flow with multiple nodes per column, showing parallel bands rather than one dominant node.
 export const basicSankeyData = [
   { source: 'Home', target: 'Search', value: 8 },
   { source: 'Home', target: 'Product', value: 12 },
@@ -27,10 +25,7 @@ export const basicSankeyData = [
   { source: 'Wishlist', target: 'Checkout', value: 2 },
 ];
 
-// The classic two-column ("two stack") flow, closest to the canonical Kibana/Elastic Sankey example
-// (https://www.elastic.co/blog/sankey-visualization-with-vega-in-kibana): a single source column
-// flowing into a single destination column, no re-branching in between. Good first example to look
-// at since there's only one thing happening -- browsers fanning out into operating systems.
+// The classic two-column ("two stack") flow, closest to the canonical Kibana/Elastic Sankey example.
 export const twoColumnSankeyData = [
   { source: 'Chrome', target: 'Windows', value: 40 },
   { source: 'Chrome', target: 'macOS', value: 25 },
@@ -41,21 +36,14 @@ export const twoColumnSankeyData = [
   { source: 'Firefox', target: 'Linux', value: 10 },
 ];
 
-// The simplest possible Sankey: a single, unbranched path. One node per column by construction, so
-// (as expected -- see the note in sankeyUtils.ts on the global value-to-pixel scale) each node fills
-// its entire column since there's nothing else in that column competing for space.
+// The simplest possible Sankey: a single, unbranched path, one node per column.
 export const singleChainSankeyData = [
   { source: 'Step 1: Visit', target: 'Step 2: Add to cart', value: 100 },
   { source: 'Step 2: Add to cart', target: 'Step 3: Checkout', value: 80 },
   { source: 'Step 3: Checkout', target: 'Step 4: Purchase', value: 60 },
 ];
 
-// Approximates a real Analysis Workspace Flow visualization: a single "*"-prefixed focus/root node
-// (Workspace's own convention for a pinned entry point), large comma-formatted path-view counts, and
-// a "+N more" aggregate node per column standing in for the long tail beyond Workspace's configured
-// "items expanded per column" -- see FlowConfigAdvancedSettings.js in aaui-web-spa, and the research
-// doc at planning/research/sankey-workspace-flow-feasibility/sankey-workspace-flow-feasibility.md.
-// Node/edge values aren't meant to reconcile exactly column to column, just to be Workspace-scale.
+// Approximates a real Analysis Workspace Flow visualization at Workspace-scale values (see planning/research/sankey-workspace-flow-feasibility/).
 export const workspaceFlowSankeyData = [
   { source: '* Project Load', target: 'Project Loaded without Anomaly Detection', value: 524000 },
   { source: '* Project Load', target: 'Project Fully Loaded', value: 200000 },
@@ -89,8 +77,7 @@ export const workspaceFlowSankeyData = [
   { source: '+466 more', target: '+430 more', value: 69000 },
 ];
 
-// A clean 3-column flow with multiple nodes per column throughout (3 -> 2 -> 2), so every column
-// actually branches/merges rather than narrowing to a single node: traffic source -> device -> outcome.
+// A clean 3-column flow (traffic source -> device -> outcome) that branches/merges at every column.
 export const threeColumnSankeyData = [
   { source: 'Organic Search', target: 'Desktop', value: 30 },
   { source: 'Organic Search', target: 'Mobile', value: 20 },

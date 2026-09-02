@@ -24,14 +24,7 @@ import {
 } from '../marks/markUtils';
 import { SankeySpecOptions } from '../types';
 
-/**
- * Layout math ported from Workspace's Sankey renderer (aaui-web-spa `CloudViz.js:25637`,
- * `d3.pathing()`), rewritten dependency-free since Vega has no flow-layout transform. Unlike the
- * source, which gets pre-assigned columns from Workspace's own data model, this also derives columns
- * itself (`assignColumns`) from a flat source/target/value edge list. Workspace's "entry"/"exit" stub
- * links (for partially-loaded windows) don't apply to a fully-specified edge list, so those branches
- * of the original `link()` generator aren't ported.
- */
+/** Layout math ported from Workspace's Sankey renderer (aaui-web-spa `CloudViz.js:25637`, `d3.pathing()`), rewritten dependency-free. */
 
 const CURVATURE = 0.5;
 /** Number of left-right/right-left relaxation passes used to reduce ribbon crossings. */
@@ -72,10 +65,7 @@ export interface SankeyLayoutNode {
   targetLinks: SankeyLayoutLink[];
 }
 
-/**
- * Reads source/target/value edges from the chart data, dropping rows missing a source/target or
- * with a non-finite or negative value (which would corrupt the shared `ky` scale factor).
- */
+/** Reads source/target/value edges, dropping rows with a missing source/target or a non-finite/negative value. */
 export const getSankeyEdges = (options: SankeySpecOptions): SankeyEdgeInput[] => {
   const { data, source, target, value } = options;
   const unsafeData = data as unknown as Record<string, unknown>[];
@@ -97,17 +87,7 @@ export const getSankeyEdges = (options: SankeySpecOptions): SankeyEdgeInput[] =>
     }));
 };
 
-/**
- * Assigns each node to a column via topological layering: a node's column is one past the deepest
- * column of any node flowing into it; nodes with no incoming edges start at column 0.
- *
- * Cycles (A -> B -> A) can't be topologically layered. The closing back-edge is detected via DFS,
- * dropped from layering (so this terminates), and reported via `console.warn` -- the edge is still
- * rendered, it just doesn't affect column assignment.
- *
- * `explicitColumns` overrides the computed column for any node id present in the map -- a hook for a
- * future consumer that already knows column identity and doesn't need topological inference.
- */
+/** Assigns each node to a column via topological layering; cycles are DFS-detected and excluded so this terminates. */
 export const assignColumns = (
   edges: SankeyEdgeInput[],
   explicitColumns?: Record<string, number>
@@ -212,11 +192,7 @@ const computeNodeValue = (node: SankeyLayoutNode): number =>
 
 const sum = <T>(items: T[], accessor: (item: T) => number): number => items.reduce((total, item) => total + accessor(item), 0);
 
-/**
- * Builds the full node/link layout: columns, x/y positions, sizing, and vertical ordering. Positions
- * and sizes are literal pixel values, not Vega scales -- matching Venn's precomputed-geometry
- * convention (`venn/vennUtils.ts`).
- */
+/** Builds the full node/link layout (columns, x/y, sizing) as literal pixel values, matching Venn's precomputed-geometry convention. */
 export const buildSankeyLayout = (
   edges: SankeyEdgeInput[],
   chartWidth: number,
@@ -263,11 +239,7 @@ export const buildSankeyLayout = (
   return { nodes, links, columnSpacing };
 };
 
-/**
- * Assigns x positions from each node's column, ported from `computeNodeBreadths`/`scaleNodeBreadths`.
- * Returns the column spacing so callers can size labels to fit the actual gap between columns.
- * `node.x` is rounded to a whole pixel to avoid an anti-aliasing seam against touching ribbons.
- */
+/** Assigns x positions from each node's column; returns the column spacing so labels can size to the gap. `node.x` is rounded to a whole pixel to avoid an anti-aliasing seam against touching ribbons. */
 const computeNodeBreadths = (nodes: SankeyLayoutNode[], chartWidth: number): number => {
   const numColumns = new Set(nodes.map((node) => node.column)).size;
   const availableWidth = Math.max(chartWidth - SANKEY_NODE_WIDTH, 0);
@@ -276,11 +248,7 @@ const computeNodeBreadths = (nodes: SankeyLayoutNode[], chartWidth: number): num
   return columnSpacing;
 };
 
-/**
- * Assigns y positions and node/link thicknesses, ported from `computeNodeDepths`/`initializeNodeDepth`
- * plus the relaxation/collision passes below. Crossing minimization is kept (unlike the pre-alpha
- * spec's scoped-out plan) since Workspace's tested implementation already handles it cheaply.
- */
+/** Assigns y positions and node/link thicknesses, then runs relaxation/collision passes to reduce crossings. */
 const computeNodeDepths = (nodes: SankeyLayoutNode[], chartHeight: number): void => {
   const nodesByColumn = groupByColumn(nodes);
 
@@ -368,11 +336,7 @@ const resolveCollisions = (nodesByColumn: SankeyLayoutNode[][], chartHeight: num
   });
 };
 
-/**
- * Assigns each link's vertical offset within its source/target node (`sy`/`ty`), ordering the stack
- * by the connected node's position so parallel ribbons don't cross their own siblings unnecessarily.
- * Ported from `computeLinkDepths` (minus the entry/exit-stub bookkeeping -- not applicable here).
- */
+/** Assigns each link's vertical offset within its source/target node (`sy`/`ty`), ordered by connected node position. */
 const computeLinkDepths = (nodes: SankeyLayoutNode[]): void => {
   nodes.forEach((node) => {
     node.sourceLinks.sort((a, b) => a.target.y - b.target.y);
@@ -395,17 +359,7 @@ const computeLinkDepths = (nodes: SankeyLayoutNode[]): void => {
 /** Cap, in pixels, on how much the bottom edge's control points can shift relative to the top edge's. */
 const MAX_CURVE_BOOST = 15;
 
-/**
- * Cubic-bezier ribbon path between a link's source and target edges, ported from `d3.pathing()`'s
- * `link()` generator (the "both ends present" branch only -- see the module comment on stub curves).
- *
- * Departure from the original: `d3.pathing()` only bends the bottom edge (`shortLinkOffset`) below
- * 15px thickness, so a thick ribbon's top and bottom edges run perfectly parallel -- fine in
- * Workspace's chart, which grows the canvas to fit the data instead of a fixed height. Here, fit into
- * a fixed `chartHeight`, a thick link (e.g. a root node's total outflow) would read as a rigid
- * trapezoid. Capping the bend at `MAX_CURVE_BOOST` instead of zeroing it out keeps thin links
- * unchanged while giving thick ones enough independent bend to read as a ribbon.
- */
+/** Cubic-bezier ribbon path between a link's source and target edges, capping the bend at `MAX_CURVE_BOOST` so thick ribbons still read as a ribbon rather than a rigid trapezoid. */
 export const getRibbonPath = (link: SankeyLayoutLink): string => {
   const curveHeight = Math.max(1, link.dy);
   const x0 = link.source.x + link.source.dx;
@@ -435,8 +389,7 @@ export const getSankeyLinkMark = (options: SankeySpecOptions): PathMark => {
 
   return {
     type: 'path',
-    // Mark name and data-source name must differ -- Vega shares one namespace for both, and reusing
-    // a string for each throws "Duplicate data set name" at parse time.
+    // Mark and data-source names must differ -- Vega shares one namespace for both.
     name: getSankeyLinkMarkName(name),
     from: { data: getSankeyLinkDataName(name) },
     encode: {
@@ -445,8 +398,7 @@ export const getSankeyLinkMark = (options: SankeySpecOptions): PathMark => {
         fill: getColorProductionRule('sourceId', colorScheme),
         // Without this, path marks inherit the theme's default stroke, showing as a seam at each node.
         stroke: { value: 'transparent' },
-        // Keyed by the parent name (not this layer's mark name) so one <ChartInspect>/<ChartPopover>
-        // under <Sankey name="..."> covers both layers -- matches Venn's `getInterserctionMark`.
+        // Keyed by the parent name so one <ChartInspect>/<ChartPopover> covers both layers.
         tooltip: getInspectEncoding(chartInspects, name),
       },
       update: {
@@ -490,9 +442,7 @@ const NODE_LABEL_HALO_STROKE_WIDTH = 2;
 
 /** Shared enter-encode fields for a label's background-halo and foreground text marks (everything except `fill`/`stroke`). */
 const getSankeyNodeLabelBaseEnter = (textField: string, dy: number): EncodeEntry => ({
-  // labelX/labelY/labelAlign/labelLimit are precomputed in addData, per this mark's "everything
-  // precomputed in JS" convention. labelAlign flips for the last column (no room to its right);
-  // labelLimit caps each label to the gap between columns so the two flipped-and-facing labels can't collide.
+  // labelX/labelY/labelAlign/labelLimit are precomputed in addData (see that function's comments).
   x: { field: 'labelX' },
   y: { field: 'labelY' },
   dy: { value: dy },
@@ -502,12 +452,7 @@ const getSankeyNodeLabelBaseEnter = (textField: string, dy: number): EncodeEntry
   limit: { field: 'labelLimit' },
 });
 
-/**
- * A background-halo + foreground text mark pair, so labels stay legible over colored ribbons. Same
- * two-mark technique `getLineDirectLabelMarks` uses (lineDirectLabelUtils.ts), reused for consistency.
- * Font size also reuses `getDirectLabelFontSizeProductionRule`: `options.fontSize` overrides it,
- * otherwise it scales with chart width via the shared `CHART_SIZE_FONT_SIZE` signal.
- */
+/** A background-halo + foreground text mark pair, so labels stay legible over colored ribbons -- same technique as `getLineDirectLabelMarks`. */
 const getSankeyNodeLabelMarkPair = (
   options: SankeySpecOptions,
   markNameSuffix: string,
@@ -517,9 +462,7 @@ const getSankeyNodeLabelMarkPair = (
   fontSizeEncoding: { signal: string } | { value: number }
 ): TextMark[] => {
   const { name } = options;
-  // Unlike Line's direct labels, not derived from colorScheme: these labels sit on arbitrary ribbon
-  // colors, not the chart background, where a scheme-matched halo (light or dark) can blend into the
-  // palette. Forcing the 'dark' variant (dark halo + light text) is legible against any color.
+  // Forced 'dark' regardless of colorScheme -- legible against any ribbon color, unlike Line's chart-background-matched halo.
   const resolvedBg = getS2ColorValue('gray-25', 'dark');
   const baseEnter = getSankeyNodeLabelBaseEnter(textField, dy);
 
@@ -562,8 +505,7 @@ export const getSankeyNodeValueLabelMarks = (options: SankeySpecOptions): TextMa
     NODE_LABEL_VALUE_DY,
     // same fill as the name label -- gray-700 read as a gold-ish tint over saturated ribbons.
     getS2ColorValue('gray-800', 'dark'),
-    // one size smaller than the name label when overridden; otherwise falls back to the same
-    // responsive signal as the name label (not worth offsetting a signal expression).
+    // one size smaller than the name label, only when overridden (not worth offsetting a signal).
     options.fontSize !== undefined
       ? { value: options.fontSize - 1 }
       : getDirectLabelFontSizeProductionRule(options.fontSize)

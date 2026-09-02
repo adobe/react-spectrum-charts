@@ -38,13 +38,11 @@ const defaultChartProps: ChartProps = {
   data: basicSankeyData,
   width: 500,
   height: 350,
-  // `buildSpec`'s default resolves to the Spectrum 1 palette (a shared S2-wide gap, not Sankey-specific)
-  // -- point this story at real Spectrum 2 tokens explicitly instead.
+  // buildSpec defaults to the S1 palette (a shared S2-wide gap) -- use real S2 tokens here instead.
   colors: 's2Categorical12',
 };
 
-// factory so each story can point at its own dataset (and, optionally, its own color scale) while
-// sharing the same chart shell/args wiring
+// factory so each story can point at its own dataset (and, optionally, color scale) while sharing the chart shell.
 const makeSankeyStory = (
   data: ChartProps['data'],
   colors?: ChartProps['colors']
@@ -97,8 +95,7 @@ const interactiveChildren = [
   </ChartPopover>,
 ];
 
-// Right-click is just `rightClick` on the same ChartPopover every mark uses (see ChartPopover.story.tsx) --
-// generic click/contextmenu wiring, no sankey-specific code needed. This proves it for both layers.
+// Just `rightClick` on the same ChartPopover every mark uses -- no sankey-specific wiring needed.
 const rightClickChildren = [
   <ChartPopover width="auto" rightClick key={0}>
     {dialogContent}
@@ -118,8 +115,7 @@ RightClickInspect.args = {
   children: rightClickChildren,
 };
 
-// Closest analog to the canonical Kibana/Elastic Sankey example -- one source column fanning into
-// one destination column, no re-branching.
+// Closest analog to the canonical Kibana/Elastic Sankey example -- one source column fanning into one destination.
 const TwoColumnFlow = bindWithProps(makeSankeyStory(twoColumnSankeyData));
 TwoColumnFlow.args = {};
 
@@ -131,13 +127,10 @@ SingleChain.args = {};
 const ThreeColumnFlow = bindWithProps(makeSankeyStory(threeColumnSankeyData));
 ThreeColumnFlow.args = {};
 
-// Approximates Analysis Workspace's Flow visualization: a "*"-prefixed root node, comma-formatted
-// counts under each name, and "+N more" long-tail nodes. Uses the built-in s2Categorical16 palette
-// (next size up from the other stories' s2Categorical12).
+// Approximates Analysis Workspace's Flow visualization: root node, comma-formatted counts, "+N more" nodes.
 const workspaceFlowColors: ChartProps['colors'] = 's2Categorical16';
 const WorkspaceFlowExample = bindWithProps(makeSankeyStory(workspaceFlowSankeyData, workspaceFlowColors));
-// Workspace grows its canvas to fit the data instead of a fixed height; <Chart> only supports fixed
-// height, so 650px approximates the room Workspace would give this data.
+// 650px approximates the canvas height Workspace would grow to fit this data (Chart only supports a fixed height).
 WorkspaceFlowExample.args = { width: 900, height: 650 };
 
 export {

@@ -44,7 +44,7 @@ describe('addData', () => {
     expect(nodesData?.values?.[0]).toHaveProperty(customSankeyOptions.idKey);
   });
 
-  test('halves labelLimit only for the two columns sharing the last-column label flip gap, so neither can grow far enough to collide with the other', () => {
+  test('halves labelLimit only for the two columns sharing the last-column label flip gap', () => {
     const data = addData(initializeSpec({}, { data: sankeyData }).data ?? [], customSankeyOptions);
     const nodesData = data.find((d) => d.name === `${customSankeyOptions.name}_nodes`) as ValuesData | undefined;
     const nodeRows = (nodesData?.values ?? []) as { id: string; labelLimit: number }[];
@@ -61,7 +61,7 @@ describe('addData', () => {
     expect(limitById.Cart).toBeLessThan(limitById.Home);
   });
 
-  test('right-aligns the label to the left of the node for the last column only, so it never gets clipped past the chart edge', () => {
+  test('right-aligns the label to the left of the node for the last column only', () => {
     const data = addData(initializeSpec({}, { data: sankeyData }).data ?? [], customSankeyOptions);
     const nodesData = data.find((d) => d.name === `${customSankeyOptions.name}_nodes`) as ValuesData | undefined;
     const nodeRows = (nodesData?.values ?? []) as { id: string; x: number; labelX: number; labelAlign: string }[];

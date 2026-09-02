@@ -100,11 +100,8 @@ export const addData = produce<Data[], [SankeySpecOptions]>((data, props) => {
   const { chartHeight, chartWidth, idKey, name } = props;
   const edges = getSankeyEdges(props);
   const { nodes, links, columnSpacing } = buildSankeyLayout(edges, chartWidth, chartHeight);
-  // Last-column labels flip to the node's left (standard Sankey convention) so they don't clip past
-  // the chart edge. That makes the last and second-to-last columns' labels grow toward each other
-  // across one shared gap -- every other gap only has one label growing into it. `labelLimit` caps
-  // each label to the room available (Vega truncates with an ellipsis): the full gap normally, half
-  // the gap for the two columns sharing one, so neither can reach the other's text.
+  // Last-column labels flip left so they don't clip past the chart edge; `labelLimit` halves the gap
+  // for the last two columns (now growing toward each other) so neither label reaches the other's.
   const maxColumn = Math.max(0, ...nodes.map((node) => node.column));
   const fullGapLimit = Math.max(0, columnSpacing - SANKEY_NODE_WIDTH - 8);
   const sharedGapLimit = Math.max(0, (columnSpacing - SANKEY_NODE_WIDTH) / 2 - 4);
@@ -135,8 +132,7 @@ export const addData = produce<Data[], [SankeySpecOptions]>((data, props) => {
     targetId: link.target.id,
     value: link.value,
     path: getRibbonPath(link),
-    // original edge row, nested to avoid colliding with the computed fields above -- mirrors Venn's
-    // `table_data` lookup-back convention for tooltip/popover passthrough.
+    // original edge row, nested to avoid colliding with the computed fields above -- mirrors Venn's `table_data`.
     table_data: link.datum,
   }));
 
@@ -144,8 +140,7 @@ export const addData = produce<Data[], [SankeySpecOptions]>((data, props) => {
 });
 
 export const addMarks = produce<Mark[], [SankeySpecOptions]>((marks, props) => {
-  // Links before nodes (ribbons sit under node rects), before both label pairs (name above center,
-  // value below, matching Workspace's Flow). Each label is a halo + foreground pair (getSankeyNodeLabelMarkPair).
+  // Draw order: links under nodes, both label pairs (name, then value) on top.
   marks.push(
     getSankeyLinkMark(props),
     getSankeyNodeMark(props),
@@ -154,9 +149,7 @@ export const addMarks = produce<Mark[], [SankeySpecOptions]>((marks, props) => {
   );
 });
 
-// Unlike Venn (whose `color` field lands on the shared TABLE, so the generic
-// `addFieldToFacetScaleDomain` helper works), a Sankey node's `id` only exists on its own
-// precomputed `${name}_nodes` data -- no 1:1 TABLE row per node. Domain points there directly instead.
+// Domains off `${name}_nodes` directly, not TABLE -- a Sankey node has no 1:1 TABLE row.
 export const addScales = produce<Scale[], [SankeySpecOptions]>((scales, { color, name }) => {
   const index = getScaleIndexByName(scales, COLOR_SCALE);
   scales[index] = { ...scales[index], domain: { data: getSankeyNodeDataName(name), field: color } };
@@ -166,8 +159,7 @@ export const addSignals = produce<Signal[], [SankeySpecOptions]>((signals, props
   const { chartInspects, name } = props;
 
   if (!isInteractive(props)) return;
-  // Both layers write into the same `${name}_hoveredItem` signal -- mirrors Venn's dual
-  // `addHoveredItemSignal` call for `circles`/`intersections`.
+  // Both layers write into the same signal -- mirrors Venn's dual call for `circles`/`intersections`.
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
   addHoveredItemSignal(signals, name, getSankeyLinkMarkName(name), 1, chartInspects[0]?.excludeDataKeys);
 });
