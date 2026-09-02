@@ -15,6 +15,7 @@ import {
   NumericValueRef,
   ProductionRule,
   Signal,
+  SourceData,
   TextEncodeEntry,
   TextMark,
   TextValueRef,
@@ -26,6 +27,7 @@ import {
   DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT,
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT,
+  DONUT_LABEL_COLLISION_MIN_GAP_BUFFER,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAP,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
@@ -39,7 +41,28 @@ import { getS2ColorValue } from '@spectrum-charts/themes';
 import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
+import {
+  getAdjustedYField,
+  getCollisionHalfWidthField,
+  getHemisphereField,
+  getLabelCollisionTransforms,
+} from './donutLabelCollisionUtils';
 import { getDonutEmptyStateTest, getDonutOuterRadiusExpr } from './donutUtils';
+
+/** Unique field/data-source prefix for direct labels' collision fields, distinct from advanced labels' */
+const getSegmentLabelFieldPrefix = (name: string): string => `${name}_segmentLabel`;
+
+/** Name of the derived, collision-adjusted data source direct label marks read from */
+const getSegmentLabelDataName = (name: string): string => `${name}_segmentLabelData`;
+
+/**
+ * Gets the expression testing whether a label's collision-adjusted (not original ideal) position
+ * falls in the top half of the donut - collision can push a label across the vertical midpoint, so
+ * the top/bottom split for dy/baseline must track where the label actually ends up, not its ideal angle
+ * @param fieldPrefix
+ * @returns vega expression string
+ */
+const getIsTopHalfExpr = (fieldPrefix: string): string => `datum['${getAdjustedYField(fieldPrefix)}'] <= height / 2`;
 
 /**
  * Gets the SegmentLabel component from the children if one exists
@@ -123,6 +146,50 @@ export const getSegmentLabelSignals = (donutOptions: DonutSpecOptions): Signal[]
 };
 
 /**
+ * Gets the minimum vertical gap enforced between two colliding direct labels - the rendered
+ * (name + optional value line) block height plus a stacking buffer
+ * @param segmentLabelOptions
+ * @returns vega expression string
+ */
+const getSegmentLabelMinGapExpr = ({ donutOptions, value, percent }: SegmentLabelSpecOptions): string => {
+  const { name } = donutOptions;
+  const valueLineHeight = value || percent ? ` + ${name}_segmentLabelValueFontSize` : '';
+  return `${name}_segmentLabelNameFontSize${valueLineHeight} + ${DONUT_LABEL_COLLISION_MIN_GAP_BUFFER}`;
+};
+
+/**
+ * Gets the derived, collision-adjusted data source direct label marks read from. Excludes segments
+ * below the min-angle threshold entirely (rather than rendering them at fontSize 0) so they don't
+ * consume a collision rank slot and needlessly push visible labels further apart.
+ * @param donutOptions
+ * @returns SourceData[]
+ */
+export const getSegmentLabelData = (donutOptions: DonutSpecOptions): SourceData[] => {
+  const segmentLabel = getSegmentLabel(donutOptions);
+  if (!segmentLabel) return [];
+  const { name } = donutOptions;
+  const arcThetaExpr = `datum['${name}_arcTheta']`;
+  const outerRadiusExpr = getDonutOuterRadiusExpr(donutOptions);
+  return [
+    {
+      name: getSegmentLabelDataName(name),
+      source: FILTERED_TABLE,
+      transform: [
+        { type: 'filter', expr: `datum['${name}_arcLength'] >= ${DONUT_SEGMENT_LABEL_MIN_ANGLE}` },
+        ...getLabelCollisionTransforms(
+          getSegmentLabelFieldPrefix(name),
+          arcThetaExpr,
+          getLabelAnchorRadiusExpr(donutOptions),
+          outerRadiusExpr,
+          `${DONUT_LABEL_RING_GAP}`,
+          getSegmentLabelMinGapExpr(segmentLabel)
+        ),
+      ],
+    },
+  ];
+};
+
+/**
  * Converts a text production rule into a single Vega expression string, for use inside getLabelWidth()
  * @param rule
  * @returns vega expression string
@@ -149,11 +216,10 @@ export const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined):
 };
 
 /**
- * Gets the shared anchor radius for a label's name/value lines - always the ring-gap point. The
- * hemisphere-mirrored pull-back lives entirely in getLabelAnchorDxExpr as a horizontal pixel offset,
- * not folded into this radial value, since radius+theta positioning has a vertical component for any
- * label not exactly at the 9/3 o'clock cardinal points - baking the pull-back into radius there would
- * push the anchor up/down instead of sideways.
+ * Gets a label's pre-collision ideal anchor radius (the ring-gap point) - used only to compute its
+ * ideal Y for the collision cascade (donutLabelCollisionUtils.ts), not as a mark encode field directly,
+ * since the actual rendered position re-anchors horizontally against the ring's real half-width at
+ * whatever Y the label ends up at after collision adjustment.
  * @param donutOptions
  * @returns vega expression string
  */
@@ -186,7 +252,8 @@ const getLabelAnchorDxExpr = (options: SegmentLabelSpecOptions): string => {
   const cappedWidthExpr = `min(${widerWidthExpr}, ${getDonutOuterRadiusExpr(
     donutOptions
   )} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO})`;
-  return `(datum['${name}_arcTheta'] <= PI ? 0 : -(${cappedWidthExpr}))`;
+  const hemisphereField = getHemisphereField(getSegmentLabelFieldPrefix(name));
+  return `(datum['${hemisphereField}'] === 'right' ? 0 : -(${cappedWidthExpr}))`;
 };
 
 /**
@@ -223,7 +290,7 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
   return {
     type: 'text',
     name: `${name}_segmentLabel`,
-    from: { data: FILTERED_TABLE },
+    from: { data: getSegmentLabelDataName(name) },
     encode: {
       enter: {
         // drop all labels when there isn't any data to display, the empty state ring is shown instead
@@ -231,7 +298,6 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
         fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
       },
       update: {
-        ...positionEncodings,
         ...getSegmentLabelUpdateEncode(options, `${name}_segmentLabelNameFontSize`),
         // top half: shift up by the value line's own font size so the two lines sit flush (0px gap
         // token) regardless of size tier - a fixed px shift would leave a mismatched gap at every
@@ -239,7 +305,9 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
         dy:
           value || percent
             ? {
-                signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? -${name}_segmentLabelValueFontSize : 0`,
+                signal: `${getIsTopHalfExpr(
+                  getSegmentLabelFieldPrefix(name)
+                )} ? -${name}_segmentLabelValueFontSize : 0`,
               }
             : undefined,
         // fades in step with the arc's own hover/controlled-highlight fade (getMarkOpacity is the
@@ -265,7 +333,7 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
     {
       type: 'text',
       name: `${donutOptions.name}_segmentLabelValue`,
-      from: { data: FILTERED_TABLE },
+      from: { data: getSegmentLabelDataName(donutOptions.name) },
       encode: {
         enter: {
           // drop all labels when there isn't any data to display, the empty state ring is shown instead
@@ -273,11 +341,12 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
           fontWeight: { value: 'bold' },
         },
         update: {
-          ...positionEncodings,
           ...getSegmentLabelUpdateEncode(options, `${donutOptions.name}_segmentLabelValueFontSize`),
           // bottom half: shift down by the name line's own font size, mirroring the top-half case
           dy: {
-            signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : ${donutOptions.name}_segmentLabelNameFontSize`,
+            signal: `${getIsTopHalfExpr(getSegmentLabelFieldPrefix(donutOptions.name))} ? 0 : ${
+              donutOptions.name
+            }_segmentLabelNameFontSize`,
           },
           fill: getLabelValueFill(donutOptions, 'gray-700'),
           opacity: getMarkOpacity(donutOptions),
@@ -290,16 +359,24 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
 /**
  * Gets the standard position/size encodes for segment label text marks. These must live in the
  * `update` set, not `enter` - Vega only evaluates `enter` once per mark instance at creation, but
- * radius/dx/fontSize here all derive from `width`/`height`-dependent signals that change on resize.
+ * x/y/dx/fontSize here all derive from `width`/`height`-dependent signals that change on resize.
+ * Position is collision-adjusted (see donutLabelCollisionUtils.ts): x/y come from the derived
+ * data source's per-hemisphere cascade fields, not a fixed radius+theta polar anchor, since the
+ * ring's horizontal half-width must be re-measured at each label's (possibly shifted) Y.
  * @param segmentLabelOptions
  * @param fontSizeSignal - the tier-based font size signal name for this specific line (name or value)
  * @returns TextEncodeEntry
  */
 const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeSignal: string): TextEncodeEntry => {
   const { name } = options.donutOptions;
+  const fieldPrefix = getSegmentLabelFieldPrefix(name);
+  const hemisphereField = getHemisphereField(fieldPrefix);
+  const halfWidthField = getCollisionHalfWidthField(fieldPrefix);
   return {
-    radius: { signal: getLabelAnchorRadiusExpr(options.donutOptions) },
-    theta: { field: `${name}_arcTheta` },
+    x: {
+      signal: `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`,
+    },
+    y: { field: getAdjustedYField(fieldPrefix) },
     // pulls left-hemisphere labels back horizontally by the wider line's width - see getLabelAnchorDxExpr
     dx: { signal: getLabelAnchorDxExpr(options) },
     fontSize: getSegmentLabelFontSize(name, fontSizeSignal),
@@ -343,14 +420,6 @@ export const getLabelValueFill = (
 };
 
 /**
- * position encodings
- */
-const positionEncodings: TextEncodeEntry = {
-  x: { signal: 'width / 2' },
-  y: { signal: 'height / 2' },
-};
-
-/**
  * Gets the text value ref for the segment label values (percent and/or value)
  * @param segmentLabelOptions
  * @returns TextValueRef
@@ -389,13 +458,11 @@ export const getSegmentLabelValueText = ({
  * @returns NumericValueRef
  */
 const getSegmentLabelFontSize = (name: string, fontSizeSignal: string): ProductionRule<NumericValueRef> => {
-  // need to use radians for this. 0.3 radians is about 17 degrees
-  // if we used arc length, then showing a label could shrink the overall donut size which could make the arc to small
-  // that would hide the label which would make the arc bigger which would show the label and so on
+  // segments below DONUT_SEGMENT_LABEL_MIN_ANGLE are already excluded from the label data source
+  // (getSegmentLabelData) entirely, so there's no need to zero their font size here too
   return [
     // hide all labels when there isn't any data to display, the empty state ring is shown instead
     { test: getDonutEmptyStateTest(name), value: 0 },
-    { test: `datum['${name}_arcLength'] < ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`, value: 0 },
     { signal: fontSizeSignal },
   ];
 };

@@ -209,13 +209,19 @@ describe('getSegmentLabelSignals()', () => {
   });
 });
 
-describe('label anchor radius/dx (hemisphere offset)', () => {
-  test('radius should always be the constant ring-gap point, regardless of hemisphere', () => {
+describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offset)', () => {
+  test('y should come from the collision-adjusted field, not a polar radius/theta anchor', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
-    // radius must never depend on hemisphere/text width - only dx does, so a label's vertical
-    // position never shifts based on label content (see the autosize-shrink regression this guards against)
-    expect(mark.encode?.update?.radius).toEqual({
-      signal: '(((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) + 20',
+    expect(mark.encode?.update?.y).toEqual({ field: 'testName_segmentLabel_adjustedY' });
+    expect(mark.encode?.update?.radius).toBeUndefined();
+    expect(mark.encode?.update?.theta).toBeUndefined();
+  });
+
+  test('x should place the anchor at the collision-adjusted ring half-width, mirrored by hemisphere', () => {
+    const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
+    expect(mark.encode?.update?.x).toEqual({
+      signal:
+        "datum['testName_segmentLabel_hemisphere'] === 'right' ? width / 2 + datum['testName_segmentLabel_collisionHalfWidth'] : width / 2 - datum['testName_segmentLabel_collisionHalfWidth']",
     });
   });
 
@@ -223,14 +229,14 @@ describe('label anchor radius/dx (hemisphere offset)', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toBe(
-      "(datum['testName_arcTheta'] <= PI ? 0 : -(min(max(getLabelWidth(datum['testColor'], 400, testName_segmentLabelNameFontSize), 0), (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6)))"
+      "(datum['testName_segmentLabel_hemisphere'] === 'right' ? 0 : -(min(max(getLabelWidth(datum['testColor'], 400, testName_segmentLabelNameFontSize), 0), (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6)))"
     );
   });
 
   test('left hemisphere dx offset should account for the wider of name/value widths when value is shown', () => {
     const mark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, value: true });
     const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
-    // the offset branch (used when arcTheta > PI) must compare name width against the real value text's measured width
+    // the offset branch (used for the left hemisphere) must compare name width against the real value text's measured width
     expect(dxSignal).toContain(
       "max(getLabelWidth(datum['testColor'], 400, testName_segmentLabelNameFontSize), getLabelWidth("
     );
@@ -244,14 +250,15 @@ describe('label anchor radius/dx (hemisphere offset)', () => {
     expect(dxSignal).toContain('(((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6');
   });
 
-  test('name and value marks should share the exact same radius and dx expressions', () => {
+  test('name and value marks should share the exact same x, y, and dx expressions', () => {
     const nameMark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, value: true });
     const [valueMark] = getSegmentLabelValueTextMark({ ...defaultSegmentLabelOptions, value: true });
-    expect(nameMark.encode?.update?.radius).toEqual(valueMark.encode?.update?.radius);
+    expect(nameMark.encode?.update?.x).toEqual(valueMark.encode?.update?.x);
+    expect(nameMark.encode?.update?.y).toEqual(valueMark.encode?.update?.y);
     expect(nameMark.encode?.update?.dx).toEqual(valueMark.encode?.update?.dx);
   });
 
-  test('both hemispheres should use left alignment (only dx differs, not align or radius)', () => {
+  test('both hemispheres should use left alignment (only dx differs, not align or y)', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     expect(mark.encode?.update?.align).toEqual({ value: 'left' });
   });
@@ -260,7 +267,7 @@ describe('label anchor radius/dx (hemisphere offset)', () => {
     const mark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, labelKey: 'region' });
     const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toBe(
-      "(datum['testName_arcTheta'] <= PI ? 0 : -(min(max(getLabelWidth(datum['region'], 400, testName_segmentLabelNameFontSize), 0), (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6)))"
+      "(datum['testName_segmentLabel_hemisphere'] === 'right' ? 0 : -(min(max(getLabelWidth(datum['region'], 400, testName_segmentLabelNameFontSize), 0), (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6)))"
     );
   });
 });
@@ -274,18 +281,16 @@ describe('getSegmentLabelTextMark()', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     expect(mark.encode?.update?.dy).toBeUndefined();
   });
-  test('name dy should shift by the value line font size, not a fixed px amount, so the gap stays 0px at every tier', () => {
+  test('name dy should shift up when the collision-adjusted position is in the top half, not a fixed px amount, so the gap stays 0px at every tier', () => {
     const mark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, value: true });
     expect(mark.encode?.update?.dy).toEqual({
-      signal:
-        "datum['testName_arcTheta'] <= 0.5 * PI || datum['testName_arcTheta'] >= 1.5 * PI ? -testName_segmentLabelValueFontSize : 0",
+      signal: "datum['testName_segmentLabel_adjustedY'] <= height / 2 ? -testName_segmentLabelValueFontSize : 0",
     });
   });
   test('should hide labels when the donut is in the empty state', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     expect(mark.encode?.update?.fontSize).toEqual([
       { test: getDonutEmptyStateTest('testName'), value: 0 },
-      { test: `datum['testName_arcLength'] < 0.3`, value: 0 },
       { signal: 'testName_segmentLabelNameFontSize' },
     ]);
   });
@@ -321,11 +326,10 @@ describe('s2 styles', () => {
       ]);
     });
 
-    test('value dy should shift by the name line font size, not a fixed px amount, so the gap stays 0px at every tier', () => {
+    test('value dy should shift down when the collision-adjusted position is in the bottom half, not a fixed px amount, so the gap stays 0px at every tier', () => {
       const [mark] = getSegmentLabelValueTextMark({ ...defaultSegmentLabelOptions, value: true });
       expect(mark.encode?.update?.dy).toEqual({
-        signal:
-          "datum['testName_arcTheta'] <= 0.5 * PI || datum['testName_arcTheta'] >= 1.5 * PI ? 0 : testName_segmentLabelNameFontSize",
+        signal: "datum['testName_segmentLabel_adjustedY'] <= height / 2 ? 0 : testName_segmentLabelNameFontSize",
       });
     });
   });
