@@ -105,14 +105,16 @@ Sizes marked "derived" were computed rather than individually measured. S/L (rel
 | Metric total | `18px` (derived) | `20px` | `22px` | `36px` | `50px` (derived) | `800` | `text-primary` |
 | Metric label | `12px` (derived) | `14px` | `16px` | `20px` | `24px` (derived) | `700` | `text-primary` |
 | Metric delta line | `12px` (derived) | `14px` | `16px` | `20px` | `24px` (derived) | `800` | `sentiment-positive` / `sentiment-negative` |
-| Direct label — segment name | `9px` (derived) | `10.5px` (derived) | `12px` | `15px` (derived) | `18px` (derived) | `400` | `gray-700` |
-| Direct label — value | `12px` (derived) | `14px` (derived) | `16px` | `20px` (derived) | `24px` (derived) | `700` | `gray-700` at rest → segment's own categorical color on hover (see §5) |
+| Direct label — segment name | `7.5px` (derived) | `9px` (derived) | `10.5px` (derived) | `12px` | `15px` (derived) | `400` | `gray-700` |
+| Direct label — value | `10px` (derived) | `12px` (derived) | `14px` (derived) | `16px` | `20px` (derived) | `700` | `gray-700` at rest → segment's own categorical color on hover (see §5) |
 | Advanced label — segment name | same size as Direct label — value | | | | | `400` | `gray-700` |
 | Advanced label — value/% | `13.5px` (derived) | `15.75px` (derived) | `18px` | `22.5px` (derived) | `27px` (derived) | `800` | `gray-800` at rest → segment's own categorical color on hover (see §5) |
 | Advanced label — detail row | `8.25px` (derived) | `9.6px` (derived) | `11px` | `13.75px` (derived) | `16.5px` (derived) | `400` | `gray-700` |
 | Benchmark label — single-line ("Target" only) | `12px` (derived) | `14px` | `16px` | `20px` | `24px` (derived) | `700` | `gray-800` |
 | Benchmark label — two-line, label part | same as Direct label — segment name | | | | | `400` | `gray-700` |
 | Benchmark label — two-line, value part | same size as Direct label — value | | | | | `700` | `gray-800` at rest → segment's own categorical color on hover (see §5) |
+
+**Direct label correction:** the Direct label rows above were originally computed with the generic `×0.875/×1/×1.25`-from-M method described above, which was wrong — confirmed against the actual design tokens, each named tier's Direct label size is one step smaller than that method produced (new tier N = old tier N−1's value; e.g. current M's `12px`/`16px` is the old S value). `XS` is still derived by extending the corrected S→M step one increment further down (`XS = S − (M−S)`).
 
 ---
 

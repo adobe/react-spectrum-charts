@@ -271,9 +271,9 @@ export const DONUT_SUMMARY_VALUE_FONT_SIZES = [18, 20, 22, 36, 50];
 /** S2 donut summary metric label font size per named size tier (XS/S/M/L/XL) */
 export const DONUT_SUMMARY_LABEL_FONT_SIZES = [12, 14, 16, 20, 24];
 /** S2 donut direct-label segment-name font size per named size tier (XS/S/M/L/XL) */
-export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [9, 10.5, 12, 15, 18];
+export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [7.5, 9, 10.5, 12, 15];
 /** S2 donut direct-label value font size per named size tier (XS/S/M/L/XL) */
-export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [12, 14, 16, 20, 24];
+export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [10, 12, 14, 16, 20];
 /** Gap (px) between the ring's outer edge and a direct/advanced label's rendered bounding box */
 export const DONUT_LABEL_RING_GAP = 20;
 /** Font weight for donut direct-label segment name text */
