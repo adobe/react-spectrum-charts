@@ -243,10 +243,13 @@ export const DONUT_SUMMARY_MIN_RADIUS = 45;
 /** Default holeRatio - also acts as the sentinel value that opts a donut into the fixed per-tier ring width below, rather than a proportional ring */
 export const DEFAULT_HOLE_RATIO = 0.85;
 /**
- * S2 donut named size-tier (XS/S/M/L/XL) midpoint cutpoints, keyed off the donut's outer diameter.
- * A diameter snaps to whichever named tier it falls closest to. Shared by ring width and donut summary font sizing.
+ * S2 donut named size-tier (XS/S/M/L/XL) minimum-diameter cutpoints (the S/M/L/XL tiers' own named
+ * diameters - 120/160/200/400), keyed off the donut's outer diameter. A diameter is "sticky" at a
+ * tier from that tier's own minimum up to (not including) the next tier's minimum - e.g. a diameter
+ * of 121px is S and stays S up to 159px, not just at values nearest 120. Shared by ring width,
+ * slice gap, donut summary font sizing, and direct/advanced label font sizing.
  */
-export const DONUT_SIZE_TIER_CUTPOINTS = [90, 140, 180, 300];
+export const DONUT_SIZE_TIER_CUTPOINTS = [120, 160, 200, 400];
 /** S2 donut fixed ring (hole) width per named size tier (XS/S/M/L/XL), used only when holeRatio is left at DEFAULT_HOLE_RATIO */
 export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 24];
 /** S2 donut gap between adjacent segments per named size tier (XS/S/M/L/XL), per chart.donut.size.slice-gap */
