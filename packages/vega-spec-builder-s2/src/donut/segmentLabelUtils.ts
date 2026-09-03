@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+  ColorValueRef,
   GroupMark,
   NumericValueRef,
   ProductionRule,
@@ -30,9 +31,12 @@ import {
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
   DONUT_SIZE_TIER_CUTPOINTS,
   FILTERED_TABLE,
+  HOVERED_ITEM,
+  SERIES_ID,
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
+import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
 import { getDonutEmptyStateTest, getDonutOuterRadiusExpr } from './donutUtils';
@@ -238,6 +242,9 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
                 signal: `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI ? -${name}_segmentLabelValueFontSize : 0`,
               }
             : undefined,
+        // fades in step with the arc's own hover/controlled-highlight fade (getMarkOpacity is the
+        // exact mechanism getArcMark uses) - the name line's color never switches, only its opacity
+        opacity: getMarkOpacity(donutOptions),
       },
     },
   };
@@ -264,7 +271,6 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
           // drop all labels when there isn't any data to display, the empty state ring is shown instead
           text: [{ test: getDonutEmptyStateTest(donutOptions.name), value: '' }, ...valueTextRules],
           fontWeight: { value: 'bold' },
-          fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
         },
         update: {
           ...positionEncodings,
@@ -273,6 +279,8 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
           dy: {
             signal: `datum['${donutOptions.name}_arcTheta'] <= 0.5 * PI || datum['${donutOptions.name}_arcTheta'] >= 1.5 * PI ? 0 : ${donutOptions.name}_segmentLabelNameFontSize`,
           },
+          fill: getSegmentLabelValueFill(donutOptions),
+          opacity: getMarkOpacity(donutOptions),
         },
       },
     },
@@ -303,6 +311,32 @@ const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeS
     },
   };
 };
+
+/**
+ * Gets the fill for the segment label value line - switches to the hovered/highlighted segment's
+ * own categorical color (matching the arc's color resolution) when either this donut's own arc is
+ * hovered or a paired Legend's hovered entry matches this segment, falling back to gray-700
+ * otherwise. The name line never changes color, only this value line does.
+ * @param donutOptions
+ * @returns ProductionRule<ColorValueRef>
+ */
+const getSegmentLabelValueFill = (donutOptions: DonutSpecOptions): ProductionRule<ColorValueRef> => {
+  const { color, colorScheme, idKey, legendHighlightSignals, name } = donutOptions;
+  const hoveredItemSignal = `${name}_${HOVERED_ITEM}`;
+  const colorRule = getColorProductionRule(color, colorScheme);
+  return [
+    {
+      test: `isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`,
+      ...colorRule,
+    },
+    ...(legendHighlightSignals ?? []).map((signal) => ({
+      test: `isValid(${signal}) && ${signal} === datum.${SERIES_ID}`,
+      ...colorRule,
+    })),
+    { value: getS2ColorValue('gray-700', colorScheme) },
+  ];
+};
+
 /**
  * position encodings
  */

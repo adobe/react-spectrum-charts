@@ -302,7 +302,7 @@ describe('s2 styles', () => {
   });
 
   describe('getSegmentLabelValueTextMark()', () => {
-    test('should always add bold fontWeight and gray-700 fill for S2', () => {
+    test('should always add bold fontWeight, and default to gray-700 fill for S2', () => {
       const marks = getSegmentLabelValueTextMark({
         ...defaultSegmentLabelOptions,
         value: true,
@@ -310,7 +310,15 @@ describe('s2 styles', () => {
 
       expect(marks).toHaveLength(1);
       expect(marks[0].encode?.enter?.fontWeight).toEqual({ value: 'bold' });
-      expect(marks[0].encode?.enter?.fill).toEqual({ value: '#505050' });
+      // fill lives in `update` (not `enter`) since it must react to hover state - see 'hover behavior' below
+      expect(marks[0].encode?.update?.fill).toEqual([
+        {
+          test: "isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId",
+          scale: 'color',
+          field: 'testColor',
+        },
+        { value: '#505050' },
+      ]);
     });
 
     test('value dy should shift by the name line font size, not a fixed px amount, so the gap stays 0px at every tier', () => {
@@ -320,5 +328,69 @@ describe('s2 styles', () => {
           "datum['testName_arcTheta'] <= 0.5 * PI || datum['testName_arcTheta'] >= 1.5 * PI ? 0 : testName_segmentLabelNameFontSize",
       });
     });
+  });
+});
+
+describe('hover behavior', () => {
+  // a SegmentLabel showing a value is what makes isInteractive() (and therefore getMarkOpacity()) treat
+  // this donut as interactive - see markUtils.test.ts for the isInteractive() coverage itself
+  const interactiveDonutOptions: DonutSpecOptions = {
+    ...defaultDonutOptionsWithSegmentLabel,
+    segmentLabels: [{ value: true }],
+  };
+  const interactiveSegmentLabelOptions: SegmentLabelSpecOptions = {
+    ...defaultSegmentLabelOptions,
+    donutOptions: interactiveDonutOptions,
+    value: true,
+  };
+
+  test('name line opacity fades with the arc, reusing getMarkOpacity - matches the arc mark exactly', () => {
+    const mark = getSegmentLabelTextMark(interactiveSegmentLabelOptions);
+    const opacity = mark.encode?.update?.opacity as { test?: string }[];
+    expect(opacity.some((rule) => rule.test?.includes('hoveredItem'))).toBe(true);
+  });
+
+  test('name line fill never changes with hover - only the value line does', () => {
+    const mark = getSegmentLabelTextMark(interactiveSegmentLabelOptions);
+    expect(mark.encode?.enter?.fill).toEqual({ value: '#505050' });
+    expect(mark.encode?.update?.fill).toBeUndefined();
+  });
+
+  test('value line opacity fades with the arc, reusing getMarkOpacity', () => {
+    const [mark] = getSegmentLabelValueTextMark(interactiveSegmentLabelOptions);
+    const opacity = mark.encode?.update?.opacity as { test?: string }[];
+    expect(opacity.some((rule) => rule.test?.includes('hoveredItem'))).toBe(true);
+  });
+
+  test("value line fill switches to the segment's own categorical color when that segment is hovered", () => {
+    const [mark] = getSegmentLabelValueTextMark(interactiveSegmentLabelOptions);
+    expect(mark.encode?.update?.fill).toEqual([
+      {
+        test: "isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId",
+        scale: 'color',
+        field: 'testColor',
+      },
+      { value: '#505050' },
+    ]);
+  });
+
+  test("value line fill also switches to the segment's own categorical color when a paired Legend's hovered entry matches it", () => {
+    const [mark] = getSegmentLabelValueTextMark({
+      ...interactiveSegmentLabelOptions,
+      donutOptions: { ...interactiveDonutOptions, legendHighlightSignals: ['legend0_hoveredSeries'] },
+    });
+    expect(mark.encode?.update?.fill).toEqual([
+      {
+        test: "isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId",
+        scale: 'color',
+        field: 'testColor',
+      },
+      {
+        test: 'isValid(legend0_hoveredSeries) && legend0_hoveredSeries === datum.rscSeriesId',
+        scale: 'color',
+        field: 'testColor',
+      },
+      { value: '#505050' },
+    ]);
   });
 });

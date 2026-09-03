@@ -57,5 +57,6 @@ export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutO
   highlightedItem?: HighlightedItem;
   idKey: string;
   index: number;
+  legendHighlightSignals?: string[];
   markType: 'donut';
 }
