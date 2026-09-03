@@ -59,20 +59,17 @@ export const getSumData = ({ metric, name }: DonutSpecOptions): SourceData => ({
 });
 
 /**
- * Gets the arc fill, forcing the secondary segment of a boolean donut to secondary-gray
+ * Gets the arc fill, forcing the secondary segment of a boolean donut to secondary-gray. Boolean
+ * donuts never support emphasizedItems (mirrors segment labels' isBoolean exclusion), so for
+ * non-boolean donuts this defers to getEmphasizeFillEncoding instead.
  * @param options
  * @returns ColorValueRef | ProductionRule<ColorValueRef>
  */
-const getArcFillEncoding = ({
-  color,
-  colorScheme,
-  idKey,
-  isBoolean,
-  name,
-}: DonutSpecOptions): ColorValueRef | ProductionRule<ColorValueRef> => {
-  const normalColor = getColorProductionRule(color, colorScheme);
-  if (!isBoolean) return normalColor;
+const getArcFillEncoding = (options: DonutSpecOptions): ColorValueRef | ProductionRule<ColorValueRef> => {
+  const { color, colorScheme, idKey, isBoolean, name } = options;
+  if (!isBoolean) return getEmphasizeFillEncoding(options);
 
+  const normalColor = getColorProductionRule(color, colorScheme);
   const isPrimaryTest = `datum.${idKey} === data('${name}_booleanData')[0].${idKey}`;
   return [{ test: `!(${isPrimaryTest})`, value: getS2ColorValue('gray-400', colorScheme) }, normalColor];
 };
@@ -187,6 +184,31 @@ const getLegendHighlightOpacityRules = (legendHighlightSignals: string[] = []): 
     test: `isValid(${signal}) && ${signal} !== datum.${SERIES_ID}`,
     value: FADE_FACTOR,
   }));
+
+/**
+ * Builds a Vega expression that evaluates to true for segments NOT in emphasizedItems. Matches
+ * against the segment's own color facet value (not idKey), so users specify category names
+ * directly - mirroring Line's primarySeries `string[]` usage.
+ * @param emphasizedItems
+ * @param color
+ * @returns vega expression string
+ */
+const getEmphasizeOtherExpr = (emphasizedItems: (string | number)[], color: string): string =>
+  `indexof(${JSON.stringify(emphasizedItems)}, datum.${color}) < 0`;
+
+/**
+ * Builds the arc's `fill` encoding, inserting a solid gray color rule (full opacity, not a fade)
+ * for segments not in emphasizedItems
+ * @param options
+ * @returns ColorValueRef | ProductionRule<ColorValueRef>
+ */
+const getEmphasizeFillEncoding = (options: DonutSpecOptions): ColorValueRef | ProductionRule<ColorValueRef> => {
+  const { color, colorScheme, emphasizedItems, otherItemColor } = options;
+  const normalColor = getColorProductionRule(color, colorScheme);
+  if (!emphasizedItems?.length) return normalColor;
+  const grayColor = getS2ColorValue(otherItemColor || 'gray-400', colorScheme);
+  return [{ test: getEmphasizeOtherExpr(emphasizedItems, color), value: grayColor }, normalColor];
+};
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;

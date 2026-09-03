@@ -113,6 +113,48 @@ describe('getArcMark()', () => {
     const opacity = arcMark.encode?.update?.opacity as { test?: string }[];
     expect(opacity.some((rule) => rule.test?.includes('hoveredSeries'))).toBe(false);
   });
+
+  test('should use the normal categorical color when no segments are emphasized', () => {
+    const arcMark = getArcMark(defaultDonutOptions);
+    expect(arcMark.encode?.enter?.fill).toEqual({ scale: 'color', field: 'testColor' });
+  });
+
+  test('should swap non-emphasized segments to solid gray-400, at full opacity (not a fade)', () => {
+    const arcMark = getArcMark({ ...defaultDonutOptions, emphasizedItems: ['Chrome'] });
+    expect(arcMark.encode?.enter?.fill).toEqual([
+      {
+        test: `indexof(["Chrome"], datum.testColor) < 0`,
+        value: spectrum2Colors.light['gray-400'],
+      },
+      { scale: 'color', field: 'testColor' },
+    ]);
+    // the color swap is a static `fill` rule (enter), fully independent from the opacity-based
+    // hover/legend fade rules (update) - it must not add or alter any opacity rule
+    const opacity = arcMark.encode?.update?.opacity as { test?: string }[];
+    expect(opacity).toHaveLength(2);
+  });
+
+  test('should support multiple emphasized segments', () => {
+    const arcMark = getArcMark({ ...defaultDonutOptions, emphasizedItems: ['Chrome', 'Firefox'] });
+    expect(arcMark.encode?.enter?.fill).toEqual([
+      {
+        test: `indexof(["Chrome","Firefox"], datum.testColor) < 0`,
+        value: spectrum2Colors.light['gray-400'],
+      },
+      { scale: 'color', field: 'testColor' },
+    ]);
+  });
+
+  test('should respect a custom otherItemColor override', () => {
+    const arcMark = getArcMark({ ...defaultDonutOptions, emphasizedItems: ['Chrome'], otherItemColor: 'gray-200' });
+    expect(arcMark.encode?.enter?.fill).toEqual([
+      {
+        test: `indexof(["Chrome"], datum.testColor) < 0`,
+        value: spectrum2Colors.light['gray-200'],
+      },
+      { scale: 'color', field: 'testColor' },
+    ]);
+  });
 });
 
 describe('getEmptyStateArcMark()', () => {
