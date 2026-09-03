@@ -9,16 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bigNumber.types';
-export * from './bullet.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './gauge.types';
-export * from './line.types';
-export * from './scatter.types';
-export * from './venn.types';
+import { GaugeOptions } from '@spectrum-charts/vega-spec-builder'; 
 
-export * from './supplemental';
+export interface GaugeProps extends Omit<GaugeOptions, 'markType'> {}
+
+export type GaugeElement = ReactElement<GaugeProps, JSXElementConstructor<GaugeProps>>;
