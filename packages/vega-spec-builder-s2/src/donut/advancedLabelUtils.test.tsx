@@ -220,11 +220,13 @@ describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offs
     expect(dxSignal).toContain('testName_advancedLabelDetailFontSize');
   });
 
-  test('the pull-back should be capped at a fraction of the donut radius', () => {
+  test('the pull-back should be capped at however much room remains before the container edge', () => {
     const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
     const dxSignal = (nameMark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toContain('min(max(');
-    expect(dxSignal).toContain('(((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6');
+    // the cap is per-label (available radius minus this label's own ring half-width at its actual
+    // Y), not a flat ratio of the ring's radius - see getAdvancedLabelWidthExprs
+    expect(dxSignal).toContain("(min(width, height) / 2 - 2) - datum['testName_advancedLabel_collisionHalfWidth']");
   });
 
   test('should use the labelKey field instead of color when provided', () => {
@@ -325,6 +327,56 @@ describe('getAdvancedLabelSwatchMark()', () => {
     const cappedWidthExpr = `16 + 8 + getLabelWidth(datum['testColor'], 400, testName_advancedLabelNameFontSize)`;
     expect(swatchXSignal).toContain(cappedWidthExpr);
     expect(nameDxSignal).toContain(cappedWidthExpr);
+  });
+});
+
+describe('truncation limit', () => {
+  const getNameMark = (donutOptions: DonutSpecOptions): TextMark =>
+    getAdvancedLabelMarks(donutOptions)[0].marks?.[1] as TextMark;
+
+  test('right hemisphere should never be truncated (limit 0, unlimited) regardless of content width', () => {
+    const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
+    const limitSignal = (nameMark.encode?.update?.limit as { signal: string }).signal;
+    expect(limitSignal).toContain("datum['testName_advancedLabel_hemisphere'] === 'right' ||");
+    expect(limitSignal).toMatch(/=== 'right'.*\? 0 :/);
+  });
+
+  test("left hemisphere should only apply a real limit when content exceeds the available reach, not the row's own natural width", () => {
+    const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
+    const limitSignal = (nameMark.encode?.update?.limit as { signal: string }).signal;
+    // guards against the razor's-edge case where limit equals the row's own exact width - see
+    // getAdvancedLabelLimitExpr's doc comment
+    expect(limitSignal).toContain('<= (');
+    expect(limitSignal).toContain('? 0 :');
+  });
+
+  test("name row's limit reserves the swatch + gap, so only the text portion is constrained", () => {
+    const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
+    const limitSignal = (nameMark.encode?.update?.limit as { signal: string }).signal;
+    expect(limitSignal).toContain(`- (${DONUT_ADVANCED_LABEL_SWATCH_SIZE} + ${DONUT_ADVANCED_LABEL_SWATCH_GAP})`);
+  });
+
+  test('value row does not reserve any extra width in its limit (trailing subtraction is 0)', () => {
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
+    const [, , valueMark] = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
+    const limitSignal = (valueMark.encode?.update?.limit as { signal: string }).signal;
+    expect(limitSignal).toContain('? 0 :');
+    // the trailing subtraction (extraReservedWidthExpr) must be 0 for the value row - unlike the
+    // name row, which reserves the swatch + gap out of the shared cap
+    expect(limitSignal.endsWith('- (0)')).toBe(true);
+  });
+
+  test('name and value rows should share the exact same underlying width comparisons in their limit', () => {
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
+    const marks = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
+    const [, nameMark, valueMark] = marks;
+    const nameLimit = (nameMark.encode?.update?.limit as { signal: string }).signal;
+    const valueLimit = (valueMark.encode?.update?.limit as { signal: string }).signal;
+    // both should gate on the identical widerWidth <= maxReach comparison, differing only in the
+    // trailing subtraction (name reserves the swatch+gap, value reserves nothing)
+    const [nameCondition] = nameLimit.split('? 0 :');
+    const [valueCondition] = valueLimit.split('? 0 :');
+    expect(nameCondition).toBe(valueCondition);
   });
 });
 

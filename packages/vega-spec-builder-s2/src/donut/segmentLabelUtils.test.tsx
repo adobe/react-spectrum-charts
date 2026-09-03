@@ -229,7 +229,7 @@ describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offs
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toBe(
-      "(datum['testName_segmentLabel_hemisphere'] === 'right' ? 0 : -(min(max(getLabelWidth(datum['testColor'], 400, testName_segmentLabelNameFontSize), 0), (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6)))"
+      "(datum['testName_segmentLabel_hemisphere'] === 'right' ? 0 : -(min(max(getLabelWidth(datum['testColor'], 400, testName_segmentLabelNameFontSize), 0), (min(width, height) / 2 - 2) - datum['testName_segmentLabel_collisionHalfWidth'])))"
     );
   });
 
@@ -243,11 +243,13 @@ describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offs
     expect(dxSignal).toContain('testName_segmentLabelValueFontSize');
   });
 
-  test('the pull-back should be capped at a fraction of the donut radius', () => {
+  test('the pull-back should be capped at however much room remains before the container edge', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toContain('min(max(getLabelWidth(');
-    expect(dxSignal).toContain('(((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6');
+    // the cap is per-label (available radius minus this label's own ring half-width at its actual
+    // Y), not a flat ratio of the ring's radius - see getWidthExprs
+    expect(dxSignal).toContain("(min(width, height) / 2 - 2) - datum['testName_segmentLabel_collisionHalfWidth']");
   });
 
   test('name and value marks should share the exact same x, y, and dx expressions', () => {
@@ -267,8 +269,33 @@ describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offs
     const mark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, labelKey: 'region' });
     const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toBe(
-      "(datum['testName_segmentLabel_hemisphere'] === 'right' ? 0 : -(min(max(getLabelWidth(datum['region'], 400, testName_segmentLabelNameFontSize), 0), (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6)))"
+      "(datum['testName_segmentLabel_hemisphere'] === 'right' ? 0 : -(min(max(getLabelWidth(datum['region'], 400, testName_segmentLabelNameFontSize), 0), (min(width, height) / 2 - 2) - datum['testName_segmentLabel_collisionHalfWidth'])))"
     );
+  });
+});
+
+describe('truncation limit', () => {
+  test('right hemisphere should never be truncated (limit 0, unlimited) regardless of content width', () => {
+    const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
+    const limitSignal = (mark.encode?.update?.limit as { signal: string }).signal;
+    expect(limitSignal).toContain("datum['testName_segmentLabel_hemisphere'] === 'right' ||");
+    expect(limitSignal).toMatch(/=== 'right'.*\? 0 :/);
+  });
+
+  test('left hemisphere should only apply a real limit when content exceeds the available reach, not the line\'s own natural width', () => {
+    const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
+    const limitSignal = (mark.encode?.update?.limit as { signal: string }).signal;
+    // guards against the razor's-edge case where limit equals the line's own exact width - see
+    // getLimitExpr's doc comment. The comparison must be present so a line that already fits isn't
+    // handed a limit that's numerically identical to its own measured width.
+    expect(limitSignal).toContain('<= (');
+    expect(limitSignal).toContain('? 0 :');
+  });
+
+  test('name and value marks should share the exact same limit expression', () => {
+    const nameMark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, value: true });
+    const [valueMark] = getSegmentLabelValueTextMark({ ...defaultSegmentLabelOptions, value: true });
+    expect(nameMark.encode?.update?.limit).toEqual(valueMark.encode?.update?.limit);
   });
 });
 

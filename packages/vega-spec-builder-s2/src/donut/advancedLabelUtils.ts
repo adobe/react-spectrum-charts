@@ -27,6 +27,7 @@ import {
   DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
   DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT,
   DONUT_ADVANCED_LABEL_NAME_VALUE_GAP,
+  DONUT_ADVANCED_LABEL_RING_GAP,
   DONUT_ADVANCED_LABEL_SWATCH_GAP,
   DONUT_ADVANCED_LABEL_SWATCH_SIZE,
   DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP,
@@ -34,7 +35,7 @@ import {
   DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT,
   DONUT_LABEL_COLLISION_MIN_GAP_BUFFER,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
-  DONUT_LABEL_RING_GAP,
+  DONUT_RADIUS,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
   DONUT_SIZE_TIER_CUTPOINTS,
   FILTERED_TABLE,
@@ -207,7 +208,7 @@ export const getAdvancedLabelData = (donutOptions: DonutSpecOptions): SourceData
           arcThetaExpr,
           getAdvancedLabelAnchorRadiusExpr(donutOptions),
           outerRadiusExpr,
-          `${DONUT_LABEL_RING_GAP}`,
+          `${DONUT_ADVANCED_LABEL_RING_GAP}`,
           getAdvancedLabelMinGapExpr(advancedLabel)
         ),
       ],
@@ -267,16 +268,19 @@ const getAdvancedLabelDetailText = ({ donutOptions, valueFormat }: AdvancedLabel
  * @returns vega expression string
  */
 const getAdvancedLabelAnchorRadiusExpr = (donutOptions: DonutSpecOptions): string =>
-  `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_LABEL_RING_GAP}`;
+  `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_ADVANCED_LABEL_RING_GAP}`;
 
 /**
- * Gets the shared horizontal pixel offset for the whole swatch+text block, mirroring
- * donut-direct-labels' single-line technique but measuring the widest of all rows (swatch+name,
- * value/%, and detail) rather than just two text lines.
+ * Gets the pieces behind the widest-row-capped pixel width shared by the whole swatch+text block:
+ * the real (uncapped) widest-row width, the max horizontal reach available before hitting the
+ * container's edge, and the smaller of the two. Returned separately (not just the final capped
+ * value) so callers can tell whether the cap actually did anything - see getAdvancedLabelLimitExpr.
  * @param advancedLabelOptions
- * @returns vega expression string
+ * @returns vega expression strings for the widest real row width, the max available reach, and the capped result
  */
-const getAdvancedLabelAnchorDxExpr = (options: AdvancedLabelSpecOptions): string => {
+const getAdvancedLabelWidthExprs = (
+  options: AdvancedLabelSpecOptions
+): { widerWidthExpr: string; maxReachExpr: string; cappedWidthExpr: string } => {
   const { donutOptions, labelKey, percent, value, detail } = options;
   const { color, name } = donutOptions;
   const nameTextExpr = `datum['${labelKey ?? color}']`;
@@ -293,11 +297,68 @@ const getAdvancedLabelAnchorDxExpr = (options: AdvancedLabelSpecOptions): string
       )}, ${DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT}, ${name}_advancedLabelDetailFontSize)`
     : '0';
   const widerWidthExpr = `max(${nameWidthExpr}, max(${valueWidthExpr}, ${detailWidthExpr}))`;
-  const cappedWidthExpr = `min(${widerWidthExpr}, ${getDonutOuterRadiusExpr(
-    donutOptions
-  )} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO})`;
+  // the cap is per-label, not a flat outerRadius*ratio - it's however much horizontal room remains
+  // between this label's own anchor point (collisionHalfWidth, which shrinks away from the ring's
+  // equator) and the container's actual edge (DONUT_RADIUS). A flat ratio-based cap matches this
+  // exactly only at the equator (the original worst-case it was derived for); away from the equator
+  // it leaves real, visible unused space between the label and the container edge.
+  const halfWidthField = getCollisionHalfWidthField(getAdvancedLabelFieldPrefix(name));
+  const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
+  return { widerWidthExpr, maxReachExpr, cappedWidthExpr: `min(${widerWidthExpr}, ${maxReachExpr})` };
+};
+
+/**
+ * Gets the widest-row-capped pixel width shared by the whole swatch+text block - the same value
+ * used both to cap the left-hemisphere pull-back (getAdvancedLabelAnchorDxExpr) and as each row's
+ * truncation limit (getAdvancedLabelLimitExpr), so a row's real rendered width can never exceed the
+ * distance it was pulled back by. Without both using this same capped value, a row wider than the
+ * cap would undershoot its pull-back and its near-ring edge would land past the anchor, into the
+ * ring itself - confirmed live (a long detail row overlapping the ring at ~195px outer diameter).
+ * @param advancedLabelOptions
+ * @returns vega expression string
+ */
+const getAdvancedLabelCappedWidthExpr = (options: AdvancedLabelSpecOptions): string =>
+  getAdvancedLabelWidthExprs(options).cappedWidthExpr;
+
+/**
+ * Gets the shared horizontal pixel offset for the whole swatch+text block, mirroring
+ * donut-direct-labels' single-line technique but measuring the widest of all rows (swatch+name,
+ * value/%, and detail) rather than just two text lines.
+ * @param advancedLabelOptions
+ * @returns vega expression string
+ */
+const getAdvancedLabelAnchorDxExpr = (options: AdvancedLabelSpecOptions): string => {
+  const { donutOptions } = options;
+  const { name } = donutOptions;
   const hemisphereField = getHemisphereField(getAdvancedLabelFieldPrefix(name));
-  return `(datum['${hemisphereField}'] === 'right' ? 0 : -(${cappedWidthExpr}))`;
+  return `(datum['${hemisphereField}'] === 'right' ? 0 : -(${getAdvancedLabelCappedWidthExpr(options)}))`;
+};
+
+/**
+ * Gets a row's truncation limit - only the left hemisphere is ever capped (its pull-back is what's
+ * bounded by getAdvancedLabelCappedWidthExpr); the right hemisphere has no pull-back at all (dx is
+ * always 0, growing freely away from the ring) and must not be truncated by that same cap, or every
+ * row - even ones that fit comfortably - gets needlessly cut off. `0` is Vega's "no limit" value.
+ *
+ * Left-hemisphere rows are ALSO only limited when their real width genuinely exceeds the available
+ * reach (widerWidth > maxReach) - when it doesn't, the cap equals the row's own exact natural width
+ * (min(widerWidth, maxReach) picks widerWidth), and setting `limit` to that exact value is a
+ * razor's-edge boundary: our own width estimate and Vega's internal text-measurement can round
+ * against each other by a fraction of a pixel, truncating a character that didn't need to go.
+ * Passing `0` (no limit) whenever nothing was actually capped avoids that boundary entirely -
+ * confirmed live (a "7,045 out of 40,365" detail row losing its last two digits despite its full,
+ * untruncated width measuring under the available margin).
+ * @param advancedLabelOptions
+ * @param extraReservedWidthExpr width already reserved outside the text itself (e.g. the name row's
+ * swatch + gap), subtracted from the cap before truncating
+ * @returns vega expression string
+ */
+const getAdvancedLabelLimitExpr = (options: AdvancedLabelSpecOptions, extraReservedWidthExpr = '0'): string => {
+  const { donutOptions } = options;
+  const { name } = donutOptions;
+  const hemisphereField = getHemisphereField(getAdvancedLabelFieldPrefix(name));
+  const { widerWidthExpr, maxReachExpr, cappedWidthExpr } = getAdvancedLabelWidthExprs(options);
+  return `datum['${hemisphereField}'] === 'right' || (${widerWidthExpr}) <= (${maxReachExpr}) ? 0 : (${cappedWidthExpr}) - (${extraReservedWidthExpr})`;
 };
 
 /**
@@ -476,6 +537,15 @@ const getAdvancedLabelNameTextMark = (options: AdvancedLabelSpecOptions): TextMa
         dx: { signal: `${getAdvancedLabelAnchorDxExpr(options)} + ${DONUT_ADVANCED_LABEL_SWATCH_SIZE} + ${DONUT_ADVANCED_LABEL_SWATCH_GAP}` },
         dy: { signal: rowDy.name },
         fontSize: getAdvancedLabelFontSize(name, `${name}_advancedLabelNameFontSize`),
+        // truncates (ellipsis) if the text alone would push the row past the same cap the pull-back
+        // already assumed - the swatch+gap are already reserved out of the cap, so only the
+        // remainder is available to the text itself
+        limit: {
+          signal: getAdvancedLabelLimitExpr(
+            options,
+            `${DONUT_ADVANCED_LABEL_SWATCH_SIZE} + ${DONUT_ADVANCED_LABEL_SWATCH_GAP}`
+          ),
+        },
         opacity: getMarkOpacity(donutOptions),
       },
     },
@@ -510,6 +580,8 @@ const getAdvancedLabelValueTextMark = (options: AdvancedLabelSpecOptions): TextM
           ...shared,
           dy: { signal: rowDy.value as string },
           fontSize: getAdvancedLabelFontSize(name, `${name}_advancedLabelValueFontSize`),
+          // truncates (ellipsis) if this row alone is what pushed the block past its cap
+          limit: { signal: getAdvancedLabelLimitExpr(options) },
           fill: getLabelValueFill(donutOptions, 'gray-800'),
           opacity: getMarkOpacity(donutOptions),
         },
@@ -543,6 +615,10 @@ const getAdvancedLabelDetailTextMark = (options: AdvancedLabelSpecOptions): Text
           ...shared,
           dy: { signal: rowDy.detail as string },
           fontSize: getAdvancedLabelFontSize(name, `${name}_advancedLabelDetailFontSize`),
+          // truncates (ellipsis) if this row alone is what pushed the block past its cap - fixes
+          // the observed overlap where a long "X out of Y" detail row extended past the pull-back
+          // and into the ring itself
+          limit: { signal: getAdvancedLabelLimitExpr(options) },
           opacity: getMarkOpacity(donutOptions),
         },
       },

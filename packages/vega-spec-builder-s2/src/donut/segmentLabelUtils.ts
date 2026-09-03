@@ -28,8 +28,8 @@ import {
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT,
   DONUT_LABEL_COLLISION_MIN_GAP_BUFFER,
-  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAP,
+  DONUT_RADIUS,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
   DONUT_SIZE_TIER_CUTPOINTS,
   FILTERED_TABLE,
@@ -227,15 +227,16 @@ const getLabelAnchorRadiusExpr = (donutOptions: DonutSpecOptions): string =>
   `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_LABEL_RING_GAP}`;
 
 /**
- * Gets the shared horizontal pixel offset for a label's name/value lines. Right-hemisphere labels get
- * no offset (anchor sits at the ring-gap point and grows away from the ring). Left-hemisphere labels
- * get pulled left by the wider line's real rendered width, so that line's far (right) edge lands
- * exactly on the ring-gap point while both lines still share the same near (left) edge. This is a pure
- * horizontal (dx) adjustment, independent of theta, so it never distorts a label's vertical position.
+ * Gets the pieces behind the widest-line-capped pixel width shared by a label's name/value lines:
+ * the real (uncapped) widest-line width, the max horizontal reach available before hitting the
+ * container's edge, and the smaller of the two. Returned separately (not just the final capped
+ * value) so callers can tell whether the cap actually did anything - see getLimitExpr.
  * @param segmentLabelOptions
- * @returns vega expression string
+ * @returns vega expression strings for the widest real line width, the max available reach, and the capped result
  */
-const getLabelAnchorDxExpr = (options: SegmentLabelSpecOptions): string => {
+const getWidthExprs = (
+  options: SegmentLabelSpecOptions
+): { widerWidthExpr: string; maxReachExpr: string; cappedWidthExpr: string } => {
   const { donutOptions, labelKey, percent, value } = options;
   const { color, name } = donutOptions;
   const nameTextExpr = `datum['${labelKey ?? color}']`;
@@ -247,13 +248,65 @@ const getLabelAnchorDxExpr = (options: SegmentLabelSpecOptions): string => {
         )}, ${DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT}, ${name}_segmentLabelValueFontSize)`
       : '0';
   const widerWidthExpr = `max(${nameWidthExpr}, ${valueWidthExpr})`;
-  // capped at the same ratio getDonutOuterRadiusExpr already reserved room for, so the worst-case
-  // reach (ring + gap + this cap) exactly matches the space getDonutOuterRadiusExpr solved for
-  const cappedWidthExpr = `min(${widerWidthExpr}, ${getDonutOuterRadiusExpr(
-    donutOptions
-  )} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO})`;
+  // the cap is per-label, not a flat outerRadius*ratio - it's however much horizontal room remains
+  // between this label's own anchor point (collisionHalfWidth, which shrinks away from the ring's
+  // equator) and the container's actual edge (DONUT_RADIUS). A flat ratio-based cap matches this
+  // exactly only at the equator (the original worst-case it was derived for); away from the equator
+  // it leaves real, visible unused space between the label and the container edge.
+  const halfWidthField = getCollisionHalfWidthField(getSegmentLabelFieldPrefix(name));
+  const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
+  return { widerWidthExpr, maxReachExpr, cappedWidthExpr: `min(${widerWidthExpr}, ${maxReachExpr})` };
+};
+
+/**
+ * Gets the widest-line-capped pixel width shared by a label's name/value lines - the same value used
+ * both to cap the left-hemisphere pull-back (getLabelAnchorDxExpr) and as each line's truncation
+ * limit (see getSegmentLabelTextMark/getSegmentLabelValueTextMark), so a line's real rendered width
+ * can never exceed the distance it was pulled back by. Without both using this same capped value, a
+ * line wider than the cap would undershoot its pull-back and its near-ring edge would land past the
+ * anchor, into the ring itself.
+ * @param segmentLabelOptions
+ * @returns vega expression string
+ */
+const getCappedWidthExpr = (options: SegmentLabelSpecOptions): string => getWidthExprs(options).cappedWidthExpr;
+
+/**
+ * Gets the shared horizontal pixel offset for a label's name/value lines. Right-hemisphere labels get
+ * no offset (anchor sits at the ring-gap point and grows away from the ring). Left-hemisphere labels
+ * get pulled left by the wider line's real rendered width, so that line's far (right) edge lands
+ * exactly on the ring-gap point while both lines still share the same near (left) edge. This is a pure
+ * horizontal (dx) adjustment, independent of theta, so it never distorts a label's vertical position.
+ * @param segmentLabelOptions
+ * @returns vega expression string
+ */
+const getLabelAnchorDxExpr = (options: SegmentLabelSpecOptions): string => {
+  const { donutOptions } = options;
+  const { name } = donutOptions;
   const hemisphereField = getHemisphereField(getSegmentLabelFieldPrefix(name));
-  return `(datum['${hemisphereField}'] === 'right' ? 0 : -(${cappedWidthExpr}))`;
+  return `(datum['${hemisphereField}'] === 'right' ? 0 : -(${getCappedWidthExpr(options)}))`;
+};
+
+/**
+ * Gets a line's truncation limit - only the left hemisphere is ever capped (its pull-back is what's
+ * bounded by getCappedWidthExpr); the right hemisphere has no pull-back at all (dx is always 0,
+ * growing freely away from the ring) and must not be truncated by that same cap, or every line -
+ * even ones that fit comfortably - gets needlessly cut off. `0` is Vega's "no limit" value.
+ *
+ * Left-hemisphere lines are ALSO only limited when their real width genuinely exceeds the available
+ * reach (widerWidth > maxReach) - when it doesn't, the cap equals the line's own exact natural
+ * width, and setting `limit` to that exact value is a razor's-edge boundary: our own width estimate
+ * and Vega's internal text-measurement can round against each other by a fraction of a pixel,
+ * truncating a character that didn't need to go. Passing `0` (no limit) whenever nothing was
+ * actually capped avoids that boundary entirely.
+ * @param segmentLabelOptions
+ * @returns vega expression string
+ */
+const getLimitExpr = (options: SegmentLabelSpecOptions): string => {
+  const { donutOptions } = options;
+  const { name } = donutOptions;
+  const hemisphereField = getHemisphereField(getSegmentLabelFieldPrefix(name));
+  const { widerWidthExpr, maxReachExpr, cappedWidthExpr } = getWidthExprs(options);
+  return `datum['${hemisphereField}'] === 'right' || (${widerWidthExpr}) <= (${maxReachExpr}) ? 0 : ${cappedWidthExpr}`;
 };
 
 /**
@@ -379,6 +432,9 @@ const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeS
     y: { field: getAdjustedYField(fieldPrefix) },
     // pulls left-hemisphere labels back horizontally by the wider line's width - see getLabelAnchorDxExpr
     dx: { signal: getLabelAnchorDxExpr(options) },
+    // truncates (ellipsis) if this line alone is what pushed the pair past their shared cap, so its
+    // real rendered width can never exceed the distance the pull-back already assumed
+    limit: { signal: getLimitExpr(options) },
     fontSize: getSegmentLabelFontSize(name, fontSizeSignal),
     // both hemispheres anchor at their near (left) edge - only the dx offset differs by hemisphere
     align: { value: 'left' },
