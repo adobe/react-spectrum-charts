@@ -24,7 +24,6 @@ import {
 } from 'vega';
 
 import {
-  DONUT_RADIUS,
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SUMMARY_LABEL_FONT_SIZES,
   DONUT_SUMMARY_MIN_RADIUS_S2,
@@ -34,7 +33,7 @@ import {
 
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
-import { getDonutInnerRadiusExpr } from './donutUtils';
+import { getDonutInnerRadiusExpr, getDonutOuterRadiusExpr } from './donutUtils';
 
 /**
  * Gets the DonutSummary component from the children if one exists
@@ -129,7 +128,7 @@ export const getDonutSummarySignals = (donutOptions: DonutSpecOptions): Signal[]
     return [];
   }
   const { name } = donutOptions;
-  const donutDiameter = `2 * ${DONUT_RADIUS}`;
+  const donutDiameter = `2 * ${getDonutOuterRadiusExpr(donutOptions)}`;
   return [
     {
       name: `${name}_summaryValueFontSize`,
