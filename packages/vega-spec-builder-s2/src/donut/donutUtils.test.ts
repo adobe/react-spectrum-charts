@@ -10,6 +10,9 @@
  * governing permissions and limitations under the License.
  */
 import {
+  DONUT_ADVANCED_LABEL_RING_GAP,
+  DONUT_LABEL_RING_GAP,
+  DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
@@ -22,6 +25,7 @@ import {
   getArcMark,
   getDonutEmptyStateTest,
   getDonutInnerRadiusExpr,
+  getDonutOuterRadiusExpr,
   getEmptyStateArcMark,
   getRingWidthScale,
   getRingWidthSignal,
@@ -34,6 +38,33 @@ describe('getDonutEmptyStateTest()', () => {
   test('should test for empty data and a metric sum of 0', () => {
     const test = getDonutEmptyStateTest('testName');
     expect(test).toBe(`length(data('${FILTERED_TABLE}')) === 0 || !data('testName_sumData')[0]['sum']`);
+  });
+});
+
+describe('getDonutOuterRadiusExpr()', () => {
+  test('should return the raw donut radius when neither SegmentLabel nor AdvancedLabel is present', () => {
+    expect(getDonutOuterRadiusExpr(defaultDonutOptions)).toBe(DONUT_RADIUS);
+  });
+
+  test('should return the raw donut radius for isBoolean donuts, even with labels configured', () => {
+    expect(
+      getDonutOuterRadiusExpr({ ...defaultDonutOptions, isBoolean: true, segmentLabels: [{}], advancedLabels: [{}] })
+    ).toBe(DONUT_RADIUS);
+  });
+
+  test('should reserve room using the direct-label ring gap when only SegmentLabel is present', () => {
+    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{}] });
+    expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_LABEL_RING_GAP}) / (1 + 0.6))`);
+  });
+
+  test('should reserve room using the (larger) advanced-label ring gap when only AdvancedLabel is present', () => {
+    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, advancedLabels: [{}] });
+    expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_ADVANCED_LABEL_RING_GAP}) / (1 + 0.6))`);
+  });
+
+  test('should reserve room using the advanced-label ring gap when both SegmentLabel and AdvancedLabel are present', () => {
+    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{}], advancedLabels: [{}] });
+    expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_ADVANCED_LABEL_RING_GAP}) / (1 + 0.6))`);
   });
 });
 
