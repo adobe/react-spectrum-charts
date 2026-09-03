@@ -13,10 +13,10 @@ import { SymbolMark, TextMark } from 'vega';
 
 import {
   DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES,
+  DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
   DONUT_ADVANCED_LABEL_SWATCH_GAP,
   DONUT_ADVANCED_LABEL_SWATCH_SIZE,
   DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES,
-  DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
   ROUNDED_SQUARE_PATH,
 } from '@spectrum-charts/constants';
@@ -128,7 +128,7 @@ describe('getAdvancedLabelScales()', () => {
         name: 'testName_advancedLabelNameFontSizeScale',
         type: 'threshold',
         domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
+        range: DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
       },
       {
         name: 'testName_advancedLabelValueFontSizeScale',

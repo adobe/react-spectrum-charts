@@ -14,6 +14,7 @@ import { GroupMark, ProductionRule, Signal, SymbolMark, TextEncodeEntry, TextMar
 import {
   DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES,
   DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT,
+  DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
   DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT,
   DONUT_ADVANCED_LABEL_NAME_VALUE_GAP,
   DONUT_ADVANCED_LABEL_SWATCH_GAP,
@@ -21,7 +22,6 @@ import {
   DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP,
   DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES,
   DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT,
-  DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAP,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
@@ -76,9 +76,8 @@ const applyAdvancedLabelPropDefaults = (
 });
 
 /**
- * Gets the threshold scales that snap a donut's outer diameter to its nearest named size tier's
- * advanced-label font sizes. The name row reuses direct-labels' value font-size ramp exactly
- * (same documented px values), so only the value and detail rows need their own scale.
+ * Gets the threshold scales that snap a donut's outer diameter to its named size tier's
+ * advanced-label font sizes.
  * @param donutOptions
  * @returns ThresholdScale[]
  */
@@ -90,7 +89,7 @@ export const getAdvancedLabelScales = (donutOptions: DonutSpecOptions): Threshol
       name: `${name}_advancedLabelNameFontSizeScale`,
       type: 'threshold',
       domain: DONUT_SIZE_TIER_CUTPOINTS,
-      range: DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
+      range: DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
     },
     {
       name: `${name}_advancedLabelValueFontSizeScale`,
