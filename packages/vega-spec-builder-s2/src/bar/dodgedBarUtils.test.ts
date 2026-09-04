@@ -68,6 +68,7 @@ const defaultDodgedStackedEnterEncodings: RectEncodeEntry = {
 
 const defaultBackgroundMark: Mark = {
   name: 'bar0_background',
+  description: 'bar0_background',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: false,
@@ -83,6 +84,7 @@ const defaultBackgroundMark: Mark = {
 
 const defaultMark: Mark = {
   name: 'bar0',
+  description: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: false,
@@ -105,6 +107,7 @@ const defaultMark: Mark = {
 
 const defaultMarkWithInspect: Mark = {
   name: 'bar0',
+  description: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: true,
@@ -141,6 +144,7 @@ const defaultMarkWithInspect: Mark = {
 
 const defaultDodgedStackedBackgroundMark: Mark = {
   name: 'bar0_background',
+  description: 'bar0_background',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: false,
@@ -155,6 +159,7 @@ const defaultDodgedStackedBackgroundMark: Mark = {
 
 const defaultDodgedStackedMark: Mark = {
   name: 'bar0',
+  description: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
   interactive: false,
@@ -236,6 +241,18 @@ describe('dodgedBarUtils', () => {
         },
       ]);
     });
+    test('uses the animated per-bar opacity signal when isHoverAnimate, instead of the instant opacity rules', () => {
+      const options = { ...defaultDodgedOptions, chartInspects: [{}], isHoverAnimate: true };
+      const marks = getDodgedMarks(options) as Mark[];
+      const group = marks.find((m) => m.type === 'group') as GroupMark;
+      const bar = group.marks?.find((m) => m.name === 'bar0');
+      const opacity = bar?.encode?.update?.opacity as { signal?: string };
+      expect(opacity.signal).toContain('bar0_rscBarAnimId');
+      // background bar has no opacity key at all -- it stays permanently opaque
+      const background = group.marks?.find((m) => m.name === 'bar0_background');
+      expect(background?.encode?.update?.opacity).toBeUndefined();
+    });
+
     test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
       expect(getDodgedMarks({ ...defaultDodgedOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toEqual([
         {

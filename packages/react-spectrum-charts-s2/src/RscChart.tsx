@@ -64,6 +64,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const {
     accessibleNavigation,
     animations,
+    animationTypes,
     backgroundColor,
     data,
     chartWidth,
@@ -108,6 +109,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const spec = useSpec({
     accessibleNavigation,
     animations,
+    animationTypes,
     backgroundColor,
     children: sanitizedChildren,
     colors,

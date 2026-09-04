@@ -36,7 +36,9 @@ output directory and which existing code to read next.
 
 ## Step 2 — Explore the relevant code
 
-Read the target mark's `*Options`/`*SpecOptions` types
+If the environment provides a semantic code-search or navigation tool (e.g. an MCP-based
+code index), prefer it for locating the relevant types/functions over reading full files —
+it's typically cheaper and more precise. Otherwise, read the target mark's `*Options`/`*SpecOptions` types
 (`vega-spec-builder/src/types/marks/<mark>Spec.types.ts`) and its spec builder file(s)
 (`vega-spec-builder/src/<mark>/<mark>SpecBuilder.ts` and related `*Utils.ts` files) — the
 same files `implement-new-prop.md` and `implement-new-chart-mark.md` point to. This grounds

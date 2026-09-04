@@ -10,12 +10,16 @@
  * governing permissions and limitations under the License.
  */
 import { ColorScheme } from '../chartSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import { NumberFormat, PartiallyRequired } from '../specUtil.types';
 
 export type ThresholdBackground = { thresholdMin?: number; thresholdMax?: number; fill?: string };
 
 export interface BulletOptions {
   markType: 'bullet';
+
+  /** Chart inspects for the bullet */
+  chartInspects?: ChartInspectOptions[];
 
   /** Key in the data that is used as the color facet */
   color?: string;
@@ -93,7 +97,9 @@ type BulletOptionsWithDefaults =
   | 'thresholdBarColor';
 
 export interface BulletSpecOptions extends PartiallyRequired<BulletOptions, BulletOptionsWithDefaults> {
+  chartInspects: ChartInspectOptions[];
   colorScheme: ColorScheme;
   idKey: string;
   index: number;
+  interactiveMarkName: string | undefined;
 }

@@ -386,6 +386,21 @@ describe('setHoverStrokeWidthForMarks()', () => {
     setHoverStrokeWidthForMarks('legend0', marks, ['category']);
     expect(marks[0].encode.update.strokeWidth[0]).toHaveProperty('test', `isValid(legend0_${HOVERED_SERIES})`);
   });
+
+  test.each(['rect', 'symbol', 'area'])('should not thicken a %s mark on hover -- only line marks do', (type) => {
+    const marks = JSON.parse(JSON.stringify([{ ...markWithStrokeWidth, type }]));
+    setHoverStrokeWidthForMarks('legend0', marks);
+    expect(marks[0].encode.update.strokeWidth).toStrictEqual([DEFAULT_STROKE_WIDTH_RULE]);
+  });
+
+  test.each(['line0Trendline0', 'line0MetricRange0_line', 'line0_highlightOverlayLine'])(
+    'should not thicken a renamed line mark on hover -- %s is not the chart\'s own line',
+    (name) => {
+      const marks = JSON.parse(JSON.stringify([{ ...markWithStrokeWidth, name }]));
+      setHoverStrokeWidthForMarks('legend0', marks);
+      expect(marks[0].encode.update.strokeWidth).toStrictEqual([DEFAULT_STROKE_WIDTH_RULE]);
+    }
+  );
 });
 
 describe('encodingUsesScale()', () => {

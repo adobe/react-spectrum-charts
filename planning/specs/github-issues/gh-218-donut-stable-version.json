@@ -1,0 +1,53 @@
+{
+  "id": "gh-218-donut-stable-version",
+  "title": "Stable version for Donut chart",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "both",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "Investigation confirms Donut is still not stable today — it remains gated behind the package's `/rc` (release candidate) subpath export in both s1 and s2, one maturity step short of the main index. The mechanical export-promotion work is precedented (other marks already live in the stable `components/index.ts`), but deciding whether the current Donut/DonutSummary/SegmentLabel API surface is frozen enough to commit to as stable (a breaking-change/versioning decision, not just a file move) is a genuine open design question that a reviewer, not just an implementer, needs to weigh in on."
+  },
+  "summary": "Contrary to the assumption that this 2024 request is stale, investigation shows Donut has NOT been promoted to stable: packages/docs/docs/api/visualizations/Donut.md:1-3 explicitly states '## RELEASE CANDIDATE — Donut is currently in `rc`... the component, behavior and API are all subject to change,' and Donut/DonutSummary/SegmentLabel/BigNumber are exported only from the package's `/rc` entry point (packages/react-spectrum-charts/src/rc/components/index.ts, packages/react-spectrum-charts-s2/src/rc/components/index.ts), not from the stable `.` export (packages/react-spectrum-charts/src/components/index.ts, packages/react-spectrum-charts-s2/src/components/index.ts). Donut has matured from alpha to `rc` since the issue was filed (per git history: 'chore: promote donut to RC'), but the originally requested promotion to a stable version has not happened.",
+  "requirements": [
+    "Audit the current Donut/DonutSummary/SegmentLabel API surface (packages/vega-spec-builder/src/types/marks/donutSpec.types.ts and supplemental types) for anything still expected to change, to decide whether it's ready to freeze as stable.",
+    "Once approved, move Donut, DonutSummary, and SegmentLabel exports from the `/rc` entry point to the main stable entry point in both react-spectrum-charts and react-spectrum-charts-s2.",
+    "Update packages/docs/docs/api/visualizations/Donut.md to remove the 'RELEASE CANDIDATE' banner and the `/rc` import instructions, replacing them with the standard stable import path.",
+    "Update any internal imports currently pulling from `../rc` (e.g. packages/react-spectrum-charts/src/utils/utils.ts:50, packages/react-spectrum-charts/src/rscToSbAdapter/childrenAdapter.ts:54, related story files) to import from the stable path instead.",
+    "Confirm this is a deliberate semver-relevant decision (likely a major/minor version bump per this project's versioning policy for RC-to-stable promotions) rather than a silent change."
+  ],
+  "edgeCases": [
+    { "case": "Existing consumers importing from '@adobe/react-spectrum-charts/rc'", "expectedBehavior": "Decide whether the `/rc` re-export is kept as a deprecated alias for a transition period, or removed immediately — avoid a silent breaking change for current adopters." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "Both packages/react-spectrum-charts and packages/react-spectrum-charts-s2 currently gate Donut behind `/rc` identically; promotion must happen in both or the maturity levels between s1/s2 will diverge." },
+    { "case": "BigNumber and SegmentLabel share the same rc/components directory", "expectedBehavior": "Confirm whether this promotion is scoped to Donut/DonutSummary/SegmentLabel only, or whether BigNumber (still separately requested in gh-74/gh-702/gh-703) is intentionally left in `/rc`." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "variant is 'both' because both react-spectrum-charts and react-spectrum-charts-s2 currently gate Donut behind their respective `/rc` exports identically, so the promotion plan already covers both packages from the outset."
+  },
+  "implementationPlan": [
+    { "file": "packages/react-spectrum-charts/src/rc/components/index.ts", "change": "Remove Donut/DonutSummary/SegmentLabel exports once promoted (leave BigNumber, unless it's promoted too)." },
+    { "file": "packages/react-spectrum-charts/src/components/index.ts", "change": "Add Donut, DonutSummary, SegmentLabel exports, moving the component directories from src/rc/components/ to src/components/." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Mirror the same export removal for s2." },
+    { "file": "packages/react-spectrum-charts-s2/src/components (new Donut/DonutSummary/SegmentLabel subdirectories)", "change": "Mirror the same component relocation for s2." },
+    { "file": "packages/react-spectrum-charts/src/utils/utils.ts", "change": "Update the `import { BigNumber, Donut, DonutSummary, SegmentLabel } from '../rc'` to import Donut/DonutSummary/SegmentLabel from the new stable location.", "lines": "50" },
+    { "file": "packages/react-spectrum-charts/src/rscToSbAdapter/childrenAdapter.ts", "change": "Update the `import { Donut, DonutSummary, SegmentLabel } from '../rc'` to the new stable import path.", "lines": "54" },
+    { "file": "packages/docs/docs/api/visualizations/Donut.md", "change": "Remove the RELEASE CANDIDATE banner and `/rc` import example; update to the stable import statement.", "lines": "1-7" }
+  ],
+  "openQuestions": [
+    "Is the current Donut/DonutSummary/SegmentLabel API considered feature-complete and frozen enough for a stable commitment, or should open feature requests (e.g. gh-577's DonutSummary value override) land first so they don't require a breaking change post-promotion?",
+    "Should the `/rc` subpath keep re-exporting Donut as a deprecated alias for backward compatibility, and for how long?",
+    "Is BigNumber intentionally excluded from this promotion, or should it be evaluated at the same time given it shares the same rc/components directory?"
+  ],
+  "relatedIssues": ["gh-577-donutsummary-custom-value"],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/218" }
+  ]
+}

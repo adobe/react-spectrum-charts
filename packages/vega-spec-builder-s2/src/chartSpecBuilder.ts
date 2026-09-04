@@ -102,6 +102,7 @@ const isDivergingAxis = (axis: Axis): boolean => {
 export function buildSpec({
   accessibleNavigation = false,
   animations,
+  animationTypes,
   axes = [],
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
   chartHeight,
@@ -157,6 +158,7 @@ export function buildSpec({
   const specOptions = {
     accessibleNavigation,
     animations,
+    animationTypes,
     backgroundColor,
     colorScheme,
     idKey,
@@ -171,7 +173,7 @@ export function buildSpec({
         return addArea(acc, { ...mark, ...specOptions, index: areaCount });
       case 'bar':
         barCount++;
-        return addBar(acc, { ...mark, ...specOptions, index: barCount });
+        return addBar(acc, { ...mark, ...specOptions, index: barCount, data });
       case 'bullet':
         bulletCount++;
         return addBullet(acc, { ...mark, ...specOptions, index: bulletCount });

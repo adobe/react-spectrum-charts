@@ -86,6 +86,16 @@ describe('stackedBarUtils', () => {
       expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
       expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
     });
+    test('uses the animated per-bar opacity signal when isHoverAnimate, instead of the instant opacity rules', () => {
+      const marks = getStackedBarMarks({ ...defaultBarOptions, isHoverAnimate: true });
+      const bar = marks.find((m) => m.name === 'bar0');
+      const opacity = bar?.encode?.update?.opacity as { signal?: string };
+      expect(opacity.signal).toContain('bar0_rscBarAnimId');
+      // background bar has no opacity key at all -- it stays permanently opaque
+      const background = marks.find((m) => m.name === 'bar0_background');
+      expect(background?.encode?.update?.opacity).toBeUndefined();
+    });
+
     test('should add dimension hover area marks if has inspect with dimension area target', () => {
       const marks = getStackedBarMarks({
         ...defaultBarOptions,

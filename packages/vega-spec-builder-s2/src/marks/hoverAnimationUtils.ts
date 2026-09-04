@@ -21,9 +21,10 @@ import {
   HOVER_FRACTION_DATA,
   HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
+  HOVER_SERIES_FRACTION_DATA,
   HOVER_TARGET_DATA,
   HOVER_TARGETS,
-  HOVER_TIMER,
+  ANIMATION_TIMER,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/constants';
@@ -122,19 +123,50 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
 };
 
 /**
- * Calculates the fraction of the animation for each hoverable item. This is the actual linear interpolation between the startValue and target.
+ * Calculates the fraction of the animation for each hoverable item, easing quadratically in and out of the transition.
  * @param name - the name of the mark
  * @returns SourceData - the source data for the hover fraction data
  */
-export const getHoverFractionData = (name: string): SourceData => ({
-  name: `${name}_${HOVER_FRACTION_DATA}`,
-  source: `${name}_${HOVER_ANIM_STATE_DATA}`,
+export const getHoverFractionData = (name: string): SourceData => {
+  const easedProgress = `datum.progress < 0.5 ? 2 * pow(datum.progress, 2) : 1 - pow(-2 * datum.progress + 2, 2) / 2`;
+
+  return {
+    name: `${name}_${HOVER_FRACTION_DATA}`,
+    source: `${name}_${HOVER_ANIM_STATE_DATA}`,
+    transform: [
+      {
+        type: 'formula',
+        as: 'progress',
+        expr: `datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1)`,
+      },
+      {
+        type: 'formula',
+        as: 'fraction',
+        expr: `lerp([datum.startValue, datum.target], ${easedProgress})`,
+      },
+    ],
+  };
+};
+
+/**
+ * Aggregates a mark's `hoverFractionData` up to one row per series (max fraction) for legend use.
+ * @param name - the name of the mark
+ * @param keyField - the identity field `hoverFractionData` is keyed by (defaults to SERIES_ID)
+ * @returns SourceData - the series-aggregated fraction data
+ */
+export const getHoverSeriesFractionData = (name: string, keyField: string = SERIES_ID): SourceData => ({
+  name: `${name}_${HOVER_SERIES_FRACTION_DATA}`,
+  source: `${name}_${HOVER_FRACTION_DATA}`,
   transform: [
     {
-      type: 'formula',
-      as: 'fraction',
-      expr: `lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1))`,
+      type: 'lookup',
+      from: `${name}_${HOVER_TARGET_DATA}`,
+      key: keyField,
+      fields: [keyField],
+      values: [SERIES_ID],
+      as: [SERIES_ID],
     },
+    { type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] },
   ],
 });
 
@@ -204,9 +236,9 @@ export const getEmphasisRamp = (fractionExpr: string): string =>
  * @param name - the name of the mark
  */
 export const addHoverAnimationSignals = (signals: Signal[], name: string): void => {
-  if (!hasSignalByName(signals, HOVER_TIMER)) {
+  if (!hasSignalByName(signals, ANIMATION_TIMER)) {
     signals.push({
-      name: HOVER_TIMER,
+      name: ANIMATION_TIMER,
       value: 0,
       on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
     });
@@ -217,7 +249,7 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
       // + ANIMATION_THROTTLE gives the timer one extra tick of headroom past the nominal
       // duration so a transition is guaranteed to reach its exact resting value before pausing.
       value: false,
-      update: `(${HOVER_TIMER} - data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0].lastChange) < ${
+      update: `(${ANIMATION_TIMER} - data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0].lastChange) < ${
         ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE
       }`,
     });
@@ -229,7 +261,7 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
       // idle tick (still grace), 2+ once fully idle. Capped at 2 since nothing checks higher values.
       // Grace period prevents bug with slow machines skipping the final tick of the animation.
       value: 0,
-      update: `${HOVER_ANIMATING} ? 0 : min(${HOVER_TIMER} - ${HOVER_TIMER} + ${HOVER_IDLE_TICKS} + 1, 2)`,
+      update: `${HOVER_ANIMATING} ? 0 : min(${ANIMATION_TIMER} - ${ANIMATION_TIMER} + ${HOVER_IDLE_TICKS} + 1, 2)`,
     });
   }
   if (!hasSignalByName(signals, HOVER_ACTIVE_TIMER)) {
@@ -239,7 +271,7 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
       // tracks hoverTimer while animating, and for one tick past that (hoverIdleTicks <= 1) so the
       // tick that captures the fraction's clamped resting value can't be skipped by a delayed frame
       // on a slow machine; holds its previous value (self-reference) from the second idle tick on
-      update: `${HOVER_ANIMATING} || ${HOVER_IDLE_TICKS} <= 1 ? ${HOVER_TIMER} : ${HOVER_ACTIVE_TIMER}`,
+      update: `${HOVER_ANIMATING} || ${HOVER_IDLE_TICKS} <= 1 ? ${ANIMATION_TIMER} : ${HOVER_ACTIVE_TIMER}`,
     });
   }
 

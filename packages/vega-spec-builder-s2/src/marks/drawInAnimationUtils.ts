@@ -14,6 +14,7 @@ import { Data, NumericValueRef, ProductionRule, Signal, SourceData, Transforms }
 
 import {
   ANIMATION_THROTTLE,
+  ANIMATION_TIMER,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIM_CUTOFF,
   DRAW_IN_ANIM_T,
@@ -184,19 +185,21 @@ export const getLineDrawInData = (options: LineSpecOptions): Data[] => {
  * `drawInAnimTEased` - the animation progress with easing applied. Current easing formula is in-out quadratic
  */
 export const addDrawInClockSignals = (signals: Signal[]): void => {
+  if (!hasSignalByName(signals, ANIMATION_TIMER)) {
+    signals.push({
+      name: ANIMATION_TIMER,
+      value: 0,
+      on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
+    });
+  }
   if (!hasSignalByName(signals, DRAW_IN_START)) {
     signals.push({ name: DRAW_IN_START, init: 'now()' });
   }
   if (!hasSignalByName(signals, DRAW_IN_ANIM_T)) {
     signals.push({
       name: DRAW_IN_ANIM_T,
-      init: '0',
-      on: [
-        {
-          events: { type: 'timer', throttle: ANIMATION_THROTTLE },
-          update: `clamp((now() - ${DRAW_IN_START}) / ${DRAW_IN_ANIMATION_DURATION_MS}, 0, 1)`,
-        },
-      ],
+      value: 0,
+      update: `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START}) / ${DRAW_IN_ANIMATION_DURATION_MS}, 0, 1)`
     });
   }
   if (!hasSignalByName(signals, DRAW_IN_ANIM_T_EASED)) {

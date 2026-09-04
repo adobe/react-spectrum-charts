@@ -69,7 +69,27 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Spectrum 2 (Alpha)',
       collapsed: false,
-      items: ['spectrum2/overview', 'spectrum2/line', 'spectrum2/bar', 'spectrum2/legend', 'spectrum2/chart-sizing'],
+      items: [
+        'spectrum2/overview',
+        'spectrum2/line',
+        'spectrum2/bar',
+        'spectrum2/legend',
+        'spectrum2/chart-sizing',
+        'spectrum2/react-server-components',
+        {
+          type: 'category',
+          label: 'Pre-Alpha Components',
+          collapsed: true,
+          items: [
+            'spectrum2/pre-alpha',
+            'spectrum2/area',
+            'spectrum2/bullet',
+            'spectrum2/combo',
+            'spectrum2/donut',
+            'spectrum2/scatter',
+          ],
+        },
+      ],
     },
     {
       type: 'category',

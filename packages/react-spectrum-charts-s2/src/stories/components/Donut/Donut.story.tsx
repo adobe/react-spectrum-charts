@@ -18,13 +18,13 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart';
 import { ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary, SegmentLabel } from '../../../rc';
+import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutProps } from '../../../types';
 import { basicDonutData, booleanDonutData, zeroDonutData } from './data';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features',
   component: Donut,
 };
 

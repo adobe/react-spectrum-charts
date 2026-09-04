@@ -1,0 +1,49 @@
+{
+  "id": "gh-220-nominal-both-axes",
+  "title": "Support nominal (categorical) data on both axes for Line/Bar/Area, or a dedicated Heatmap mark",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 5,
+    "rationale": "Confirmed structural: every mark's setScales routes the metric/value axis through addMetricScale (packages/vega-spec-builder/src/scale/scaleSpecBuilder.ts:117-126), which hardcodes `getScaleIndexByType(scales, 'linear', metricAxis, ...)` — the metric axis can never become a 'band'/nominal scale, only the dimension axis can (via addContinuousDimensionScale / Bar's dimensionScaleType: 'band'). The identical hardcoding exists in vega-spec-builder-s2/src/scale/scaleSpecBuilder.ts:124. Making the metric axis nominal would require rethinking position encoding, tooltip/voronoi hover targeting, and axis rendering across Line/Bar/Area simultaneously — or building an entirely new mark type (Heatmap) with grid-cell positioning and value-as-color/size encoding instead of value-as-position. Both paths are unprecedented, multi-site, and mutually exclusive design directions with a genuinely open question of which to pursue => 5."
+  },
+  "summary": "Line, Bar, and Area all force the metric/value axis through a linear scale (addMetricScale in packages/vega-spec-builder/src/scale/scaleSpecBuilder.ts:117-126, hardcoded to type 'linear'); only the dimension axis can be categorical ('band'/'point'/'time'). This is chosen as chartType 'chart' rather than a single mark because the schema's chartType enum has no value that spans all three affected marks (area/bar/line) — see openQuestions for the alternative of a dedicated Heatmap mark instead of extending the existing three.",
+  "requirements": [
+    "Decide between two mutually exclusive directions (captured as an open question, not settled here): (a) extend Line/Bar/Area's metric axis to optionally accept a nominal/band scale, or (b) build a dedicated Heatmap mark type with grid-cell (row/column) positioning and value encoded via color or size instead of position.",
+    "If pursuing (a): modify addMetricScale (packages/vega-spec-builder/src/scale/scaleSpecBuilder.ts:117-126) to accept a nominal scale type for the metric axis, and update every downstream consumer of the metric position (mark position encodes, tooltip/voronoi hover targeting, axis rendering, hover point placement) that currently assumes a continuous numeric position.",
+    "If pursuing (a): apply the identical change to vega-spec-builder-s2/src/scale/scaleSpecBuilder.ts:124, which has the same hardcoded 'linear' metric scale.",
+    "If pursuing (b) instead: treat this as a new-mark-type effort scoped by a separate spec (see openQuestions), not folded into this one."
+  ],
+  "edgeCases": [
+    { "case": "Both axes nominal with a very large number of distinct category values on one or both axes", "expectedBehavior": "Grid/cell sizing must degrade gracefully (e.g. via scroll, truncation, or minimum cell size) rather than compressing labels unreadably." },
+    { "case": "Mixed nominal-metric and continuous-metric marks in the same Chart (e.g. a Line with nominal metric next to a Bar with linear metric)", "expectedBehavior": "Each mark's own scale should resolve independently; a shared metric axis across mixed scale types is likely unsupported and should fail clearly rather than silently mis-render." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "Whichever direction is chosen, vega-spec-builder-s2 has the identical current limitation and needs the same fix." },
+    { "case": "Accessibility (screen reader / keyboard) for a grid-style chart", "expectedBehavior": "Cell-based navigation needs its own accessible description pattern, distinct from the existing point/bar tooltip narration." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": true,
+    "notes": "touchesTooltipOrPopover: a nominal metric axis changes how the voronoi hover overlay and tooltip positioning work today, since both assume a continuous y position for hit-testing. requiresNewSignalOrScale: making the metric axis nominal is precisely a new (currently unsupported) scale configuration — addMetricScale never emits a 'band' scale today. requiresS1S2Parity: the hardcoded 'linear' metric scale is identical in vega-spec-builder-s2/src/scale/scaleSpecBuilder.ts:124."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder/src/scale/scaleSpecBuilder.ts", "change": "addMetricScale currently hardcodes a 'linear' scale type for the metric axis; this is the structural chokepoint that would need to change to support a nominal metric axis.", "lines": "117-126" },
+    { "file": "packages/vega-spec-builder-s2/src/scale/scaleSpecBuilder.ts", "change": "Identical hardcoded 'linear' metric scale as s1; same chokepoint.", "lines": "117-136" },
+    { "file": "packages/vega-spec-builder/src/line/lineSpecBuilder.ts", "change": "setScales calls addMetricScale for the y/metric axis; would need to conditionally route to a band scale.", "lines": "229-254" },
+    { "file": "packages/vega-spec-builder/src/bar/barSpecBuilder.ts", "change": "Bar already uses a 'band' scale for its dimension axis; investigate whether its metric axis could reuse the same band-scale machinery for a nominal metric, or whether Bar's dodge/stack logic assumes a continuous metric.", "lines": "120,341,440" },
+    { "file": "packages/vega-spec-builder/src/area/areaSpecBuilder.ts", "change": "Area's y/y2 encodes (areaSpecBuilder.ts:320,346,410-411) assume a continuous 'yLinear' scale field; would need rework if metric becomes nominal." }
+  ],
+  "openQuestions": [
+    "Should this be solved by extending Line/Bar/Area's metric axis to support a nominal/band scale, or by building a dedicated Heatmap mark type instead (grid-cell position with value-as-color/size)? The issue itself raises the Heatmap alternative as equally legitimate, and it may turn out to be the better-scoped path — that decision should be made before implementation begins, likely via a separate follow-up spec if Heatmap is chosen.",
+    "If a dedicated Heatmap mark is chosen instead, planning/specs/schema.json's chartType enum currently has no 'heatmap' value and would need one added in the implementation PR."
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/220" }
+  ]
+}

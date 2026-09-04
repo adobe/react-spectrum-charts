@@ -1,0 +1,45 @@
+{
+  "id": "gh-74-bignumber-support",
+  "title": "Big Number support",
+  "chartType": "bigNumber",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "The s1 implementation fully satisfies the original request, so no s1 work remains. The open item is a product decision, not a research/implementation task by itself: whether S2 supports BigNumber at all. Scored 3 (not 1) because that decision, once made 'yes', unlocks real implementation work with only a types stub to build from (packages/vega-spec-builder-s2/src/types/marks/bigNumberSpec.types.ts has no matching builder or component yet) — i.e. a genuine open question plus non-trivial follow-on work if it resolves to 'build it'."
+  },
+  "summary": "This 2024 request asked for a BigNumber chart type showing a metric value, metric label, and an optional visual element. That capability is fully implemented in s1: packages/react-spectrum-charts/src/rc/components/BigNumber/BigNumber.tsx, exported from the package's `/rc` entry point, with `dataKey`/`label`/`method`/`numberFormat`/`numberType`/`orientation` props, an optional `icon` element, and an optional sparkline (`<Line>` child) — matching or exceeding the original request. This issue remains relevant, though, because S2 support is still an open product decision: only a types stub (`BigNumberOptions`) exists in vega-spec-builder-s2, with no builder or component — whether S2 will support BigNumber at all still needs to be decided.",
+  "requirements": [
+    "s1: already fully satisfied — see implementationPlan for file:line evidence.",
+    "s2: pending a product decision on whether BigNumber will be supported in S2 at all; if yes, requirements should mirror the s1 API (dataKey, label, method, numberFormat, numberType, orientation, optional icon, optional sparkline) unless S2 design calls for changes."
+  ],
+  "edgeCases": [
+    { "case": "Metric value only, no icon/sparkline (s1)", "expectedBehavior": "Already supported: BigNumberInternal renders label+value with no icon/lineProps branch when neither is supplied (BigNumber.tsx lines 102-111)." },
+    { "case": "Metric value with optional visual element (s1)", "expectedBehavior": "Already supported via `icon` (IconElement prop) and/or sparkline (`<Line>` child), per BigNumber.tsx lines 73-112 and packages/docs/docs/api/visualizations/BigNumber.md." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "s1 has a complete BigNumber implementation; s2 has only a types stub (BigNumberOptions in vega-spec-builder-s2/src/types/marks/bigNumberSpec.types.ts) with no spec builder or React component. Whether s2 gets a matching implementation depends on the pending product decision on S2 BigNumber support, not on a code gap alone."
+  },
+  "implementationPlan": [
+    { "file": "packages/react-spectrum-charts/src/rc/components/BigNumber/BigNumber.tsx", "change": "No change — this is the existing BigNumber/BigNumberInternal implementation satisfying the original request (metric value, metric label, optional icon and/or sparkline)." },
+    { "file": "packages/vega-spec-builder/src/types/marks/bigNumberSpec.types.ts", "change": "No change — BigNumberOptions already defines dataKey, label, orientation, numberFormat, numberType, method, and lines (sparkline children)." },
+    { "file": "packages/react-spectrum-charts/src/types/marks/bigNumber.types.ts", "change": "No change — BigNumberProps already exposes the icon element and Line children on top of BigNumberOptions." },
+    { "file": "packages/docs/docs/api/visualizations/BigNumber.md", "change": "No change — the component is already documented with examples for basic, icon, sparkline, icon+sparkline, and currency-format variants." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/bigNumberSpec.types.ts", "change": "Types-only stub exists (orientation, label, dataKey, numberFormat, numberType, method, lines) but has no matching spec builder or component. Pending: product decision on whether S2 will support BigNumber at all." }
+  ],
+  "openQuestions": [
+    "Will S2 support BigNumber at all? This is a pending product decision, not a technical blocker — the s1 implementation is a ready-made reference if the answer is yes."
+  ],
+  "relatedIssues": ["gh-703-bignumber-delta-trend", "gh-702-bignumber-sparkline-position"],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/74" }
+  ]
+}

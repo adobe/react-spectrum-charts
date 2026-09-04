@@ -11,7 +11,7 @@
  */
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
-import { Donut } from '../../../rc/components/Donut';
+import { Donut } from '../../../pre-alpha/components/Donut';
 import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
 import { Basic, EmptyState } from './Donut.story';
 

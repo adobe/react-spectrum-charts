@@ -15,7 +15,7 @@ import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';
-import { DonutSummary, SegmentLabel } from '../rc';
+import { DonutSummary, SegmentLabel } from '../pre-alpha';
 import { getDonutOptions } from './donutAdapter';
 
 describe('getDonutOptions()', () => {

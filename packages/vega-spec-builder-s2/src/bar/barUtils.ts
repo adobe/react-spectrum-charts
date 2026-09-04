@@ -22,8 +22,14 @@ import {
 
 import {
   BACKGROUND_COLOR,
+  BAR_ANIM_ID,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DIMENSION_HOVER_AREA,
+  FADE_FACTOR,
   FILTERED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -34,6 +40,7 @@ import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
+import { getDeemphasisRamp, getHoverFractionSignal, HoverMatchRule } from '../marks/hoverAnimationUtils';
 import {
   getColorProductionRule,
   getCursor,
@@ -42,11 +49,15 @@ import {
   getStrokeDashProductionRule,
   getInspectEncoding,
   hasPopover,
+  isInteractive,
 } from '../marks/markUtils';
 import { getBandPadding } from '../scale/scaleSpecBuilder';
 import { getLineWidthPixelsFromLineWidth } from '../specUtils';
 import { BarSpecOptions, Orientation } from '../types';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
+
+/** Per-mark-namespaced field name for the composite per-bar hover-animation identity (see `BarSpecOptions.barIds`). */
+export const getBarAnimIdField = (name: string): string => `${name}_${BAR_ANIM_ID}`;
 
 /**
  * checks to see if the bar is faceted in the stacked and dodged dimensions
@@ -298,11 +309,73 @@ export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
 
 export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
   cursor: getCursor(options.chartPopovers, options.hasOnClick),
-  opacity: getMarkOpacity(options),
+  opacity: getBarOpacity(options),
   stroke: getStroke(options),
   strokeDash: getStrokeDash(options),
   strokeWidth: getStrokeWidth(options),
 });
+
+/** Builds the hover-animation engine's match rules for a bar mark (see `getLineHoverRules` for the line analog). */
+export const getBarHoverRules = (options: BarSpecOptions): HoverMatchRule[] => {
+  const { comboSiblingNames, dimension, idKey, interactiveMarkName, isHighlightedByGroup, name, popoverMarkName } =
+    options;
+  const rules: HoverMatchRule[] = [];
+
+  if (interactiveMarkName) {
+    // group-highlighted-by reads the shared highlightedData set (like line), not the direct hover signal
+    const hoveredGroupExpr = `length(data('${interactiveMarkName}_highlightedData')) ? (indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${name}_${GROUP_ID}'), datum.${name}_${GROUP_ID}) !== -1 ? 1 : 0) : null`;
+    const hoveredItemExpr = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) ? (${interactiveMarkName}_${HOVERED_ITEM}.${idKey} === datum.${idKey} ? 1 : 0) : null`;
+    rules.push({ as: 'hoveredMatch', expr: isHighlightedByGroup ? hoveredGroupExpr : hoveredItemExpr });
+  }
+  if (isInteractive(options)) {
+    // also drives axis-label hover (axisLabelHoverUtils.ts); independent of hoveredMatch
+    const dimensionHoveredItemSignal = `${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
+    rules.push({
+      as: 'dimensionHoverMatch',
+      expr: `isValid(${dimensionHoveredItemSignal}) ? (${dimensionHoveredItemSignal}.${dimension} === datum.${dimension} ? 1 : 0) : null`,
+    });
+  }
+  rules.push(
+    {
+      as: 'controlledTableMatch',
+      expr: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) ? (indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${idKey}'), datum.${idKey}) > -1 ? 1 : 0) : null`,
+    },
+    {
+      as: 'controlledSeriesMatch',
+      expr: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`,
+    }
+  );
+  if (popoverMarkName) {
+    // keyed by item, not series like line's popoverMatch
+    rules.push({
+      as: 'popoverMatch',
+      expr: `isValid(${SELECTED_ITEM}) ? (${SELECTED_ITEM} === datum.${idKey} ? 1 : 0) : null`,
+    });
+  }
+  if (comboSiblingNames?.length) {
+    const siblingTest = comboSiblingNames.map((s) => `isValid(${s}_${HOVERED_ITEM})`).join(' || ');
+    rules.push({ as: 'comboSiblingMatch', expr: `(${siblingTest}) ? 1 : 0` });
+  }
+  return rules;
+};
+
+/** Animated deemphasis-opacity signal for a per-item-keyed mark. Mirrors line's `getLineDeemphasisOpacitySignal`. */
+const getBarDeemphasisOpacitySignal = (name: string, keyField: string): ProductionRule<NumericValueRef> => {
+  const ramp = getDeemphasisRamp(getHoverFractionSignal(name, keyField));
+  return { signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` };
+};
+
+/**
+ * Bar's opacity encoding: the animated per-bar fraction when hover-animated, else `getMarkOpacity`.
+ * @param options - the bar spec options
+ * @returns ProductionRule<NumericValueRef>
+ */
+export const getBarOpacity = (options: BarSpecOptions): ProductionRule<NumericValueRef> => {
+  if (options.isHoverAnimate) {
+    return getBarDeemphasisOpacitySignal(options.name, getBarAnimIdField(options.name));
+  }
+  return getMarkOpacity(options);
+};
 
 export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef> => {
   const { name, chartPopovers, colorScheme, idKey } = options;

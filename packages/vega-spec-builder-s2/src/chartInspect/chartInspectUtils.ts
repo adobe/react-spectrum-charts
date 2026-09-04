@@ -29,6 +29,7 @@ import { getHoverMarkNames, hasAccessibleNavigation } from '../marks/markUtils';
 import {
   AreaSpecOptions,
   BarSpecOptions,
+  BulletSpecOptions,
   ChartInspectOptions,
   ChartInspectSpecOptions,
   DonutSpecOptions,
@@ -40,6 +41,7 @@ import {
 type InspectParentOptions =
   | AreaSpecOptions
   | BarSpecOptions
+  | BulletSpecOptions
   | DonutSpecOptions
   | LineSpecOptions
   | ScatterSpecOptions

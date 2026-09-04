@@ -1,0 +1,70 @@
+{
+  "id": "add-funnel-mark",
+  "title": "Add Funnel Chart Mark",
+  "chartType": "funnel",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "multi-consumer",
+  "complexity": {
+    "score": 3,
+    "rationale": "Trapezoid stages have no native Vega mark type — each stage's four corner coordinates must be computed via a formula transform based on stage index and value-to-first-stage ratio, which is new, non-precedented geometry logic in this codebase. Click-to-pin (persisting a highlight past mouseout, toggled by click) is also a new interaction pattern with no existing analog to copy — RSC's current click behavior is ChartPopover-driven, not a pinned-highlight state. The bar-shaped variant reuses Bar's existing rect-mark construction directly (no new geometry), and segment comparison is a bounded extension of that same grouping pattern Bar already supports, so it doesn't add new unknowns on top of the trapezoid/click-to-pin work."
+  },
+  "summary": "A stage/value mark rendering one shape per funnel stage sized proportionally to value, with a legend showing value and percent-of-first-stage, and click-to-pin segment highlighting. Supports two stage shapes: a trapezoid (single funnel) and a bar-shaped stepped variant with per-step fallout %/drop-off and multi-segment comparison.",
+  "requirements": [
+    "Accepts `stage` (category/label) and `value` (quantitative) channels, one row per stage, in the order stages should render top-to-bottom",
+    "By default, each stage renders as a trapezoid whose width is proportional to its value relative to the first (largest) stage",
+    "Also supports an alternative bar-shaped stage rendering (a `shape: 'trapezoid' | 'bar'` option), reusing Bar's existing rect-mark construction, with each step optionally labeled with its fallout percentage (drop-off from the previous stage, not just percent-of-first-stage)",
+    "Supports rendering multiple funnels side by side for segment comparison — an optional `series` channel producing one funnel (trapezoid or bar set) per segment value, reusing the same categorical grouping approach Bar uses for its series channel",
+    "Legend is always shown (not conditional on a color/series channel like Bar/Line, except when segment comparison's series channel is present, in which case it lists segments), displaying each stage's value and its percent of the first stage's value",
+    "Clicking a stage segment pins its highlight state so it persists after the mouse leaves (click-to-pin), independent of hover"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Single stage", "expectedBehavior": "Renders one full-width trapezoid (rectangle) at 100%; percent-of-first-stage is trivially 100%." },
+    { "case": "A stage value greater than the first stage's value", "expectedBehavior": "Percent-of-first-stage exceeds 100% and the trapezoid renders wider than the stage above it — document this as expected (no forced monotonic-decrease clamp)." },
+    { "case": "A stage value of zero", "expectedBehavior": "Renders a zero-width trapezoid (a vertical line) rather than throwing or collapsing the layout." },
+    { "case": "Clicking an already-pinned stage", "expectedBehavior": "Un-pins it (toggle behavior), returning to unhighlighted/hover-only state." },
+    { "case": "Clicking a different stage while one is already pinned", "expectedBehavior": "Only one stage can be pinned at a time; pinning a new stage clears the previous pin." },
+    { "case": "Light vs dark background", "expectedBehavior": "Stage fill colors resolve through the existing colorScheme-aware color scale keyed by stage." },
+    { "case": "shape: 'bar' with a series channel and one segment having a stage value of zero", "expectedBehavior": "Renders a zero-height bar for that segment/stage rather than omitting it, so the comparison grid stays aligned across segments." },
+    { "case": "Fallout percentage when the previous stage's value is zero", "expectedBehavior": "Drop-off percent is undefined/divide-by-zero — render as an explicit '—' or 'N/A' label rather than NaN or Infinity." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesControlledHighlight: click-to-pin is a new externally-visible-looking highlight state, but it's internally click-driven rather than prop-driven — it must be modeled as its own new signal (see requiresNewSignalOrScale) rather than reusing CONTROLLED_HIGHLIGHTED_TABLE/SERIES, though it should follow the same opacity-encode pattern those use so it composes with hover. touchesLegendInteraction: legend hover should highlight the corresponding stage, and clicking a legend entry should pin it the same way clicking the stage does. touchesTooltipOrPopover: reuses ChartTooltip/ChartPopover wiring on the stage mark. requiresNewSignalOrScale: true — a new `pinnedStage` signal (set on click, cleared by clicking the same stage again or a background click) with a symmetric set/clear, plus the color scale keyed by stage (categorical, reusing addFieldToFacetScaleDomain). requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/funnelSpec.types.ts", "change": "Create FunnelOptions/FunnelOptionsWithDefaults/FunnelSpecOptions with required `stage`/`value` fields, a `shape: 'trapezoid' | 'bar'` option (default 'trapezoid'), an optional `series` field for segment comparison, and a `showFalloutPercent` option for per-step drop-off labeling." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Funnel types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add FunnelOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/funnel/funnelTestUtils.ts", "change": "Fully-populated defaultFunnelOptions fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/funnel/funnelDataUtils.ts", "change": "New: addTrapezoidGeometry formula transform computing each stage's percent-of-first-stage and left/right x-offsets from vertical center (shape: 'trapezoid'), addFalloutPercentField computing per-step drop-off from the previous stage with a divide-by-zero guard, and addPinnedStageField deriving a boolean per row from the new pinnedStage signal — no existing util to reuse, this is new geometry logic." },
+    { "file": "packages/vega-spec-builder-s2/src/funnel/funnelMarkUtils.ts", "change": "getFunnelMark branching on `shape`: a Vega `trail` or `path`-type mark driven by the computed corner offsets for 'trapezoid' (evaluate against Vega's mark catalog for the closest-fit primitive), or a reuse of barUtils.ts's rect-mark construction, grouped by `series` when present, for 'bar'." },
+    { "file": "packages/vega-spec-builder-s2/src/funnel/funnelSpecBuilder.ts", "change": "addFunnel, addData (calls the new geometry/fallout helpers), addSignals (add pinnedStage signal with click/clear handlers, plus interactive-mark signals), setScales (categorical color scale keyed by stage, or by series when segment comparison is used)." },
+    { "file": "packages/vega-spec-builder-s2/src/funnel/funnelDataUtils.test.ts", "change": "Unit tests for the geometry transform, including the zero-value and value-exceeds-first-stage edge cases." },
+    { "file": "packages/vega-spec-builder-s2/src/funnel/funnelMarkUtils.test.ts", "change": "Unit tests for getFunnelMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/funnel/funnelSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales, including a test asserting the pinnedStage signal's set/clear handlers." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register funnelCount: -1 in initializeComponentCounts, import addFunnel, add the 'funnel' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/funnel.types.ts", "change": "FunnelProps/FunnelElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Funnel/Funnel.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Funnel/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Funnel'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Funnel from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Funnel to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Funnel/Funnel.story.tsx", "change": "Basic story plus a ClickToPin interaction story." }
+  ],
+  "openQuestions": [
+    "What is the exact trapezoid geometry — do side edges connect linearly stage-to-stage (a continuous funnel silhouette) or does each stage render as an independent centered trapezoid with a gap between stages? This changes the mark type (single path vs. per-stage marks) and needs a design decision.",
+    "Should pinned-state be exposed as a controlled prop (so a consumer can pin a stage externally) in addition to click, similar to how other marks expose CONTROLLED_HIGHLIGHTED_SERIES?",
+    "Confirm the exact segment-comparison layout expected — side-by-side bar groups per stage (like grouped Bar) vs. fully separate funnel panels per segment — before finalizing whether 'series' composes with the bar shape via simple grouping or needs its own layout."
+  ]
+}

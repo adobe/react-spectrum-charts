@@ -72,12 +72,12 @@ const getOpacity = (lineOptions: LineSpecOptions): ProductionRule<NumericValueRe
   const {
     name,
     interactiveMarkName,
-    isAnimate,
+    isHoverAnimate,
     isHighlightedByGroup,
   } = lineOptions;
-  
-  // Animated 
-  if (isAnimate) return getLineDeemphasisOpacitySignal(name);
+
+  // Animated
+  if (isHoverAnimate) return getLineDeemphasisOpacitySignal(name);
   
   // Non-animated
   const opacityRules: ProductionRule<NumericValueRef> = [];

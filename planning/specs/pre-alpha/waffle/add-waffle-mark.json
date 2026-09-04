@@ -1,0 +1,65 @@
+{
+  "id": "add-waffle-mark",
+  "title": "Add Waffle Chart Mark",
+  "chartType": "waffle",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 3,
+    "rationale": "Allocating exactly 100 grid cells proportionally across categories requires the largest-remainder rounding method (assign floor(percent), then distribute leftover cells to the largest fractional remainders) — a well-defined algorithm, but with no existing precedent anywhere in this codebase to copy. Recomputing the full grid when a category is toggled off via the legend is a genuine interaction design decision (redistribute the removed category's cells vs. leave gaps), not a repeat of an existing pattern."
+  },
+  "summary": "A category/value mark allocating a fixed 10×10 grid of cells proportionally across categories using the largest-remainder method, with per-category colors that stay stable across legend toggling and a grid that recomputes when a category is hidden.",
+  "requirements": [
+    "Accepts `category` and `value` channels; allocates a fixed 10×10 (100-cell) grid proportionally by value share using the largest-remainder rounding method so cell counts always sum to exactly 100",
+    "Each category's assigned color must stay the same regardless of which other categories are currently shown/hidden via the legend (no color reassignment on toggle)",
+    "Hiding a category via the legend removes its cells and recomputes the grid allocation across the remaining visible categories so the grid still totals 100 cells",
+    "Cells fill in a defined order (e.g. row-major) so the visual grouping per category is contiguous, not scattered"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Single category", "expectedBehavior": "All 100 cells allocated to that one category." },
+    { "case": "A category with a value share below 1%", "expectedBehavior": "May round to zero allocated cells under floor(percent); largest-remainder distribution should still give it a chance at a leftover cell if its remainder is large relative to others, but a category can legitimately end up with 0 cells — document this as expected, not a bug." },
+    { "case": "All categories hidden via legend", "expectedBehavior": "Render the empty-data state (or an explicit 'nothing to show' variant) rather than an empty grid with no explanation." },
+    { "case": "Toggling a category back on after hiding it", "expectedBehavior": "Grid recomputes again including that category, using its original color (colors are stable, keyed by category identity, not by visibility)." },
+    { "case": "Many categories (color scale overflow)", "expectedBehavior": "Same categorical overflow behavior as Bar/Donut's existing color handling." },
+    { "case": "Light vs dark background", "expectedBehavior": "Cell fill colors resolve through the existing colorScheme-aware color scale." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesLegendInteraction: legend clicking must both hide the category's cells and trigger a full grid recompute (largest-remainder reallocation), which is a new behavior beyond the existing legendHighlightSignals opacity-toggle pattern — this needs a data-level recompute, not just an opacity encode. requiresNewSignalOrScale: true — a `hiddenCategories` signal (set/cleared by legend clicks) feeding the reallocation transform, plus the categorical color scale keyed by category (stable regardless of hiddenCategories, per requirements). requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/waffleSpec.types.ts", "change": "Create WaffleOptions/WaffleOptionsWithDefaults/WaffleSpecOptions with required `category`/`value` fields and a `gridSize` option (default 10x10)." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Waffle types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add WaffleOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/waffle/waffleTestUtils.ts", "change": "Fully-populated defaultWaffleOptions fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/waffle/waffleDataUtils.ts", "change": "New: allocateLargestRemainderCells (pure function computing per-category cell counts from value shares, respecting a hiddenCategories signal input), expandToGridCells (transform expanding per-category counts into 100 individual cell rows with row/col coordinates) — no existing util to reuse." },
+    { "file": "packages/vega-spec-builder-s2/src/waffle/waffleMarkUtils.ts", "change": "getWaffleMark building a rect mark per cell keyed by row/col grid position." },
+    { "file": "packages/vega-spec-builder-s2/src/waffle/waffleSpecBuilder.ts", "change": "addWaffle, addData (calls the new allocation/expansion helpers), addSignals (hiddenCategories signal + interactive-mark signals), setScales (categorical color scale keyed by category)." },
+    { "file": "packages/vega-spec-builder-s2/src/waffle/waffleDataUtils.test.ts", "change": "Unit tests for allocateLargestRemainderCells covering exact-100 totals, zero-allocation categories, and single-category cases." },
+    { "file": "packages/vega-spec-builder-s2/src/waffle/waffleMarkUtils.test.ts", "change": "Unit tests for getWaffleMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/waffle/waffleSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales, including the hiddenCategories recompute path." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register waffleCount: -1 in initializeComponentCounts, import addWaffle, add the 'waffle' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/waffle.types.ts", "change": "WaffleProps/WaffleElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Waffle/Waffle.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Waffle/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Waffle'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Waffle from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Waffle to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Waffle/Waffle.story.tsx", "change": "Basic story plus a LegendToggle interaction story demonstrating grid recompute." }
+  ],
+  "openQuestions": [
+    "Is the 10x10 grid size fixed, or should gridSize be configurable (e.g. for a 5x20 layout)? Confirm before treating gridSize as a real prop vs. an internal constant.",
+    "Cell fill order (row-major left-to-right-top-to-bottom vs. column-major vs. serpentine) isn't specified by the gathered material and needs a design decision."
+  ]
+}

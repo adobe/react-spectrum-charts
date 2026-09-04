@@ -488,7 +488,7 @@ export const addAxes = produce<
     });
   }
 
-  applyAxisThumbnailEncodings(newAxes, axisOptions, position);
+  applyAxisThumbnailEncodings(newAxes, axisOptions, position, divergingContext, opposingScaleType, opposingScaleName);
 
   const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
   for (const axisAnnotation of axisAnnotations) {
@@ -603,12 +603,25 @@ function applyAxisLabelEncodings(
 }
 
 /** Split out of `addAxes` to keep cognitive complexity down. */
-function applyAxisThumbnailEncodings(newAxes: Axis[], axisOptions: AxisSpecOptions, position: Position): void {
+function applyAxisThumbnailEncodings(
+  newAxes: Axis[],
+  axisOptions: AxisSpecOptions,
+  position: Position,
+  divergingContext?: DivergingBarContext,
+  opposingScaleType?: string,
+  opposingScaleName?: string
+): void {
   if (!scaleTypeSupportsThumbnails(axisOptions.scaleType)) return;
+
+  // when diverging, the label's thumbnail-clearance offset flips per row to match the thumbnail's side flip
+  const isNegativeBarExpr =
+    divergingContext && opposingScaleType === 'linear' && opposingScaleName
+      ? getDivergingTickIsNegativeTest(divergingContext)
+      : undefined;
 
   const offsetKey = isVerticalAxis(position) ? 'dx' : 'dy';
   for (const axisThumbnail of getAxisThumbnails(axisOptions)) {
-    const thumbnailOffset = getAxisThumbnailLabelOffset(axisThumbnail.name, position)[offsetKey];
+    const thumbnailOffset = getAxisThumbnailLabelOffset(axisThumbnail.name, position, isNegativeBarExpr)[offsetKey];
 
     // apply encodings to all axes
     for (const axis of newAxes) {

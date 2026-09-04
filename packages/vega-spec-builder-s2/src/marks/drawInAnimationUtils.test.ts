@@ -13,6 +13,7 @@ import { Data, Signal, SourceData, Transforms } from 'vega';
 
 import {
   ANIMATION_THROTTLE,
+  ANIMATION_TIMER,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIMATION_DURATION_MS,
   FILTERED_TABLE,
@@ -201,16 +202,16 @@ describe('addDrawInClockSignals()', () => {
     const signals: Signal[] = [];
     addDrawInClockSignals(signals);
     expect(signals).toStrictEqual([
+      {
+        name: ANIMATION_TIMER,
+        value: 0,
+        on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
+      },
       { name: 'drawInStart', init: 'now()' },
       {
         name: 'drawInAnimT',
-        init: '0',
-        on: [
-          {
-            events: { type: 'timer', throttle: ANIMATION_THROTTLE },
-            update: `clamp((now() - drawInStart) / ${DRAW_IN_ANIMATION_DURATION_MS}, 0, 1)`,
-          },
-        ],
+        value: 0,
+        update: `clamp((${ANIMATION_TIMER} - drawInStart) / ${DRAW_IN_ANIMATION_DURATION_MS}, 0, 1)`,
       },
       {
         name: 'drawInAnimTEased',
@@ -223,7 +224,7 @@ describe('addDrawInClockSignals()', () => {
     const signals: Signal[] = [];
     addDrawInClockSignals(signals);
     addDrawInClockSignals(signals);
-    expect(signals).toHaveLength(3);
+    expect(signals).toHaveLength(4);
   });
 
   test('eases 0 -> 0, 1 -> 1, and the midpoint -> 0.5', () => {
@@ -246,6 +247,7 @@ describe('addLineDrawInAnimationSignals()', () => {
     const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', scaleType: 'time' };
     addLineDrawInAnimationSignals(signals, options);
     expect(signals.map((s) => s.name)).toEqual([
+      ANIMATION_TIMER,
       'drawInStart',
       'drawInAnimT',
       'drawInAnimTEased',
@@ -285,6 +287,7 @@ describe('addLineDrawInAnimationSignals()', () => {
     const signals: Signal[] = [];
     addLineDrawInAnimationSignals(signals, { ...defaultLineOptions, name: 'line0', scaleType: 'time' });
     addLineDrawInAnimationSignals(signals, { ...defaultLineOptions, name: 'line1', scaleType: 'time' });
+    expect(signals.filter((s) => s.name === ANIMATION_TIMER)).toHaveLength(1);
     expect(signals.filter((s) => s.name === 'drawInStart')).toHaveLength(1);
     expect(signals.filter((s) => s.name === 'drawInAnimT')).toHaveLength(1);
     expect(signals.filter((s) => s.name === 'drawInAnimTEased')).toHaveLength(1);

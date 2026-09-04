@@ -15,6 +15,7 @@ import { ComponentProps, ReactElement, useMemo } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { AnimationType } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../../Chart';
@@ -31,7 +32,12 @@ export default {
   argTypes: {
     animations: {
       control: 'boolean',
-      description: 'Chart-level toggle for the animated hover/highlight system.',
+      description: 'Chart-level master kill switch for all animations.',
+    },
+    animationTypes: {
+      control: { type: 'check' },
+      options: ['hover'],
+      description: "Which animation types are enabled (only 'hover' is relevant to this story group).",
     },
     chartCount: {
       control: { type: 'number', min: 1, max: 40, step: 1 },
@@ -46,11 +52,12 @@ export default {
       description: 'Number of data points generated per series.',
     },
   },
-  args: { animations: true, chartCount: 20, seriesPerChart: 30, pointsPerSeries: 10 },
+  args: { animations: true, animationTypes: ['hover'], chartCount: 20, seriesPerChart: 30, pointsPerSeries: 10 },
 };
 
 type DashboardArgs = {
   animations?: boolean;
+  animationTypes?: AnimationType[];
   chartCount: number;
   seriesPerChart: number;
   pointsPerSeries: number;
@@ -78,6 +85,7 @@ const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400
 type DashboardChartProps = {
   data: GeneratedTimeSeriesDatum[];
   animations?: boolean;
+  animationTypes?: AnimationType[];
 };
 
 /**
@@ -85,8 +93,8 @@ type DashboardChartProps = {
  * makes the Line interactive (wires up the voronoi hover overlay + hoveredItem signal), which is
  * what the hover-animation system needs to trigger at all.
  */
-const DashboardChart = ({ data, animations }: DashboardChartProps): ReactElement => {
-  const chartProps: ChartProps = useChartProps({ data, animations, width: 'auto', height: '100%' });
+const DashboardChart = ({ data, animations, animationTypes }: DashboardChartProps): ReactElement => {
+  const chartProps: ChartProps = useChartProps({ data, animations, animationTypes, width: 'auto', height: '100%' });
   return (
     <div style={{ height: CHART_HEIGHT, overflow: 'hidden', border: '1px solid var(--spectrum-gray-300)' }}>
       <Chart {...chartProps}>
@@ -108,6 +116,7 @@ const DashboardChart = ({ data, animations }: DashboardChartProps): ReactElement
  */
 const DashboardStory: StoryFn<DashboardArgs> = ({
   animations,
+  animationTypes,
   chartCount,
   seriesPerChart,
   pointsPerSeries,
@@ -140,22 +149,33 @@ const DashboardStory: StoryFn<DashboardArgs> = ({
       }}
     >
       {chartData.map(({ id, data }) => (
-        <DashboardChart key={id} data={data} animations={animations} />
+        <DashboardChart key={id} data={data} animations={animations} animationTypes={animationTypes} />
       ))}
     </div>
   );
 };
 
-type LargeDatasetArgs = ComponentProps<typeof Line> & { seriesPerChart: number; pointsPerSeries: number; animations?: boolean };
+type LargeDatasetArgs = ComponentProps<typeof Line> & {
+  seriesPerChart: number;
+  pointsPerSeries: number;
+  animations?: boolean;
+  animationTypes?: AnimationType[];
+};
 
 /**
  * Performance stress test — a single chart with a large generated dataset. Hover a legend entry
  * or a data point to watch the hover-animation system fade/emphasize at scale (toggle
  * `animations` to compare).
  */
-const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({ seriesPerChart, pointsPerSeries, animations, ...args }): ReactElement => {
+const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({
+  seriesPerChart,
+  pointsPerSeries,
+  animations,
+  animationTypes,
+  ...args
+}): ReactElement => {
   const data = useMemo(() => generateLargeData(seriesPerChart, pointsPerSeries), [seriesPerChart, pointsPerSeries]);
-  const chartProps = useChartProps({ ...defaultChartProps, data, animations });
+  const chartProps = useChartProps({ ...defaultChartProps, data, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Value" />
@@ -168,7 +188,7 @@ const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({ seriesPerChart, pointsPe
 };
 
 export const Dashboard = bindWithProps(DashboardStory);
-Dashboard.args = { animations: true, chartCount: 20, seriesPerChart: 10, pointsPerSeries: 10 };
+Dashboard.args = { animations: true, animationTypes: ['hover'], chartCount: 20, seriesPerChart: 10, pointsPerSeries: 10 };
 
 export const LargeDataset = bindWithProps(LargeDatasetStory);
 LargeDataset.args = { ...defaultArgs, seriesPerChart: 100, pointsPerSeries: 10 };

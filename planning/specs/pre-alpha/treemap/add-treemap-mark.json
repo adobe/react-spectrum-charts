@@ -1,0 +1,70 @@
+{
+  "id": "add-treemap-mark",
+  "title": "Add Treemap Chart Mark",
+  "chartType": "treemap",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "multi-consumer",
+  "complexity": {
+    "score": 3,
+    "rationale": "The squarified layout itself is a native Vega transform (`stratify` + `treemap`), not custom geometry. Click-to-drill-down (re-rooting the layout at a clicked node, with a back button to return) is new navigation-state logic with no existing analog, and coloring by top-level ancestor branch requires a new per-node ancestor lookup. Both build on the hierarchy-repair groundwork shared with the tree/sunburst specs (add-tree-mark), so the remaining research here is narrow. The second-metric continuous color mode reuses the same sequential-scale approach add-heatmap-mark introduces rather than adding new algorithmic complexity."
+  },
+  "summary": "An id/parent/value/label hierarchy mark rendering a squarified treemap layout (Vega's `stratify` + `treemap` transforms), with click-to-drill-down navigation, a back button, and a choice of coloring modes: categorical color by top-level ancestor branch (suited to deep hierarchies), or an optional second continuous metric driving a sequential color scale (suited to flatter, depth-1 hierarchies).",
+  "requirements": [
+    "Accepts `id`, `parent`, `value` (required) and an optional `label` channel; reuses the same auto-repair-flat-hierarchy groundwork as the Tree mark for malformed data",
+    "Renders a squarified treemap layout via Vega's `stratify` + `treemap` transforms — one rect per leaf (or per node, per an open question below)",
+    "Clicking a node re-roots the layout at that node, drilling down into its subtree and recomputing rect positions/sizes for just that subtree; a back button reverses one level of drill-down",
+    "Supports both deep multi-level hierarchies and flat, depth-1 hierarchies (every node a direct child of the root)",
+    "By default, each rect's color is derived from its top-level ancestor (the direct child of the root), so all descendants of a top-level branch share a color family",
+    "Supports an optional second quantitative `colorMetric` field driving a continuous/sequential color scale per rect, as an alternative to the categorical top-level-ancestor coloring"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Data with no explicit root", "expectedBehavior": "Auto-repair synthesizes a root, reusing the same hierarchyUtils.ts logic as Tree." },
+    { "case": "Clicking a leaf node with no children", "expectedBehavior": "No-op — drill-down only applies to nodes that have descendants." },
+    { "case": "Clicking the back button at the top-level (already at root)", "expectedBehavior": "No-op / button should be disabled or hidden when there's nothing to go back to." },
+    { "case": "A node's value is zero or missing", "expectedBehavior": "Renders as a zero-area rect (invisible but present in the layout) rather than throwing on an invalid treemap input." },
+    { "case": "Deeply nested hierarchies", "expectedBehavior": "Layout renders whatever depth is present at the current drill-down root; deeper descendants beyond the visible rect size may become too small to label — document as an expected visual limitation, not a bug." },
+    { "case": "Light vs dark background", "expectedBehavior": "Rect colors resolve through the existing colorScheme-aware color scale, keyed by top-level ancestor id (categorical mode) or theme-aware sequential range (colorMetric mode)." },
+    { "case": "colorMetric provided on a flat depth-1 hierarchy", "expectedBehavior": "Falls back to a single-level treemap with continuous color, skipping top-level-ancestor color logic entirely — the two coloring modes are mutually exclusive, not layered." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesTooltipOrPopover: rects support ChartTooltip/ChartPopover showing label/value, reusing existing interactive-mark plumbing. requiresNewSignalOrScale: true — a `drillRoot` signal (set on node click, popped by the back button, following a stack so back can unwind multiple levels) driving the treemap transform's root, plus either a categorical color scale keyed by top-level-ancestor id (a new derived field) or, in colorMetric mode, a sequential color scale reusing add-heatmap-mark's addSequentialColorScale helper. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/treemapSpec.types.ts", "change": "Create TreemapOptions/TreemapOptionsWithDefaults/TreemapSpecOptions with required `id`/`parent`/`value` fields, an optional `label` field, and an optional `colorMetric` field (continuous-color mode) that switches off the default top-level-ancestor categorical coloring when present." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Treemap types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add TreemapOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/treemap/treemapTestUtils.ts", "change": "Fully-populated defaultTreemapOptions fixture, reusing the tree mark's malformed-hierarchy fixture pattern." },
+    { "file": "packages/vega-spec-builder-s2/src/treemap/treemapDataUtils.ts", "change": "addTopLevelAncestorField (per-node lookup of its depth-1 ancestor id, for color keying), addStratifyAndTreemapTransforms (Vega `stratify` + `treemap` transform pair scoped to the current drillRoot signal) — reuses tree/hierarchyUtils.ts's repairFlatHierarchy from add-tree-mark rather than duplicating it." },
+    { "file": "packages/vega-spec-builder-s2/src/treemap/treemapMarkUtils.ts", "change": "getTreemapRectMark (rect per node using layout-computed x0/y0/x1/y1)." },
+    { "file": "packages/vega-spec-builder-s2/src/treemap/treemapSpecBuilder.ts", "change": "addTreemap, addData (calls repairFlatHierarchy + the new transform helpers), addSignals (drillRoot stack signal with click/back handlers, plus interactive-mark signals), setScales (branches on colorMetric: categorical color scale keyed by top-level-ancestor field, or add-heatmap-mark's addSequentialColorScale over colorMetric)." },
+    { "file": "packages/vega-spec-builder-s2/src/treemap/treemapDataUtils.test.ts", "change": "Unit tests for addTopLevelAncestorField and the transform helpers, including the drillRoot-scoping behavior." },
+    { "file": "packages/vega-spec-builder-s2/src/treemap/treemapMarkUtils.test.ts", "change": "Unit tests for getTreemapRectMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/treemap/treemapSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register treemapCount: -1 in initializeComponentCounts, import addTreemap, add the 'treemap' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/treemap.types.ts", "change": "TreemapProps/TreemapElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Treemap/Treemap.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Treemap/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Treemap'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Treemap from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Treemap to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Treemap/Treemap.story.tsx", "change": "Basic story plus a DrillDown interaction story showing the back button." }
+  ],
+  "openQuestions": [
+    "Does the back button live inside the chart mark itself (rendered as part of the Treemap group) or is it a chart-level affordance the consumer places separately? Affects whether this needs a chart-level UI element vs. pure spec/signal work.",
+    "When drilled into a subtree, should leaf-only rects render, or should intermediate branch nodes also render as rects (nested treemap) at the current level?",
+    "Confirm the exact data shape expected for the flat-hierarchy case — is it truly always depth-1, or can it have deeper hierarchies too, which would affect whether colorMetric needs to compose with (not just replace) top-level-ancestor coloring?"
+  ],
+  "relatedIssues": ["add-tree-mark", "add-sunburst-mark", "add-heatmap-mark"]
+}

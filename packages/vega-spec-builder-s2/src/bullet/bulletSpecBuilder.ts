@@ -22,6 +22,11 @@ import {
 import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/themes';
 import { toCamelCase } from '@spectrum-charts/utils';
 
+import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
+import { getFilteredInspectData } from '../data/dataUtils';
+import { getInteractiveMarkName, isInteractive } from '../marks/markUtils';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
+import { addUserMetaInteractiveMark } from '../specUtils';
 import { BulletOptions, BulletSpecOptions, ColorScheme, ScSpec } from '../types';
 import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
 import { addAxes, addMarks } from './bulletMarkUtils';
@@ -53,9 +58,11 @@ export const addBullet = produce<
       track = false,
       thresholdBarColor = false,
       metricAxis = false,
+      chartInspects = [],
       ...options
     }
   ) => {
+    const bulletName = toCamelCase(name ?? `bullet${index}`);
     const bulletOptions: BulletSpecOptions = {
       colorScheme: colorScheme,
       index,
@@ -63,7 +70,7 @@ export const addBullet = produce<
       metric: metric ?? 'currentAmount',
       dimension: dimension ?? 'graphLabel',
       target: target ?? 'target',
-      name: toCamelCase(name ?? `bullet${index}`),
+      name: bulletName,
       direction: direction,
       numberFormat: numberFormat ?? '',
       showTarget: showTarget,
@@ -75,9 +82,12 @@ export const addBullet = produce<
       thresholds: thresholds,
       thresholdBarColor: thresholdBarColor,
       metricAxis: metricAxis,
+      chartInspects,
+      interactiveMarkName: getInteractiveMarkName({ chartInspects }, bulletName),
       ...options,
     };
 
+    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, bulletOptions.interactiveMarkName);
     spec.data = addData(spec.data ?? [], bulletOptions);
     spec.marks = addMarks(spec.marks ?? [], bulletOptions);
     spec.scales = addScales(spec.scales ?? [], bulletOptions);
@@ -163,6 +173,10 @@ export const addSignals = produce<Signal[], [BulletSpecOptions]>((signals, optio
       { name: 'bulletChartHeight', update: 'bulletGroupHeight' }
     );
   }
+
+  if (!isInteractive(options)) return;
+  addHoveredItemSignal(signals, options.name, undefined, 1, options.chartInspects[0]?.excludeDataKeys);
+  addInspectSignals(signals, options);
 });
 
 /**
@@ -184,4 +198,9 @@ function getBulletGroupHeightExpression(options: BulletSpecOptions): string {
 export const addData = produce<Data[], [BulletSpecOptions]>((data, options) => {
   const tableData = getBulletTableData(data);
   tableData.transform = getBulletTransforms(options);
+
+  if (isInteractive(options)) {
+    data.push(getFilteredInspectData(options.chartInspects));
+  }
+  addInspectData(data, options);
 });

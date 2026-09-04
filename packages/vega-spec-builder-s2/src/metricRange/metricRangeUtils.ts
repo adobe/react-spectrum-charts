@@ -123,7 +123,7 @@ export const getMetricRangeMark = (
     lineType: { value: metricRangeOptions.lineType },
     lineWidth: { value: metricRangeOptions.lineWidth },
     displayOnHover: metricRangeOptions.displayOnHover,
-    isAnimate: false,
+    isHoverAnimate: false,
   };
 
   const dataSource = `${metricRangeOptions.name}_facet`;

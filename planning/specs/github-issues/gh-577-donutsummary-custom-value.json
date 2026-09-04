@@ -1,0 +1,56 @@
+{
+  "id": "gh-577-donutsummary-custom-value",
+  "title": "Add support for customizing the value of DonutSummary",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "both",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "The two sites (vega-spec-builder and vega-spec-builder-s2's donutSummaryUtils.ts) are near-identical files, so applying the fix to both is a repeated, precedented edit on its own. But there is a genuine open design question — should the override be a static number, or should it be able to reference/select a specific slice's value from the data — and resolving `getSummaryValueText`'s current hardcoded dependence on the `sum` aggregate field (not just swapping a prop) is new, non-precedented logic, which is what pushes this past a 2."
+  },
+  "summary": "DonutSummary's center value always displays the sum of all slices' metric values, computed via an unconditional aggregate transform (packages/vega-spec-builder/src/donut/donutSummaryUtils.ts:69-88 and the identical logic in packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts) with no override. This request adds a way to show an arbitrary or single-slice value instead (e.g. `<DonutSummary value={someValue}/>`), for cases like displaying a score out of 10 rather than a sum.",
+  "requirements": [
+    "Add an optional `value` field to DonutSummaryOptions (packages/vega-spec-builder/src/types/marks/supplemental/dountSummarySpec.types.ts and the s2 mirror) that, when provided, overrides the computed sum.",
+    "When `value` is set, `getSummaryValueText` (donutSummaryUtils.ts) must use it directly instead of the `sum` field from the `${donutOptions.name}_summaryData` aggregate source, while still applying `numberFormat` via the existing getTextNumberFormat helper.",
+    "When `value` is not set, behavior is unchanged (sum of all slice values, as today).",
+    "The override must work identically for both vega-spec-builder (s1) and vega-spec-builder-s2, since DonutSummary's implementation is duplicated near-verbatim between the two packages.",
+    "isBoolean donut summaries (which already compute a percent from a single datum) are unaffected by this change — `value` only applies to the non-boolean summary path."
+  ],
+  "edgeCases": [
+    { "case": "value is 0", "expectedBehavior": "Renders '0' (formatted per numberFormat), not treated as falsy/omitted — distinguish from `value` being undefined." },
+    { "case": "value combined with hideValue=true", "expectedBehavior": "hideValue still takes precedence and no value text mark is added, consistent with existing getDonutSummaryGroupMark logic." },
+    { "case": "value combined with a label", "expectedBehavior": "Layout (baseline, limit, font-size) is unaffected by where the number came from — reuse existing getSummaryValueBaseline/getSummaryValueLimit unchanged." },
+    { "case": "Donut is isBoolean=true", "expectedBehavior": "`value` is ignored (or documented as unsupported) since the boolean path already derives its own percent text from a single datum field." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "Both vega-spec-builder/src/donut/donutSummaryUtils.ts and vega-spec-builder-s2/src/donut/donutSummaryUtils.ts must resolve `value` the same way." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "variant is 'both' because this spec's implementationPlan already covers the identical change in both vega-spec-builder and vega-spec-builder-s2 from the outset, so there is no separate 'other variant' to flag via requiresS1S2Parity."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder/src/types/marks/supplemental/dountSummarySpec.types.ts", "change": "Add optional `value?: number` to DonutSummaryOptions with JSDoc explaining it overrides the computed sum.", "lines": "15-26" },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/supplemental/dountSummarySpec.types.ts", "change": "Mirror the same `value?: number` addition.", "lines": "15-26" },
+    { "file": "packages/vega-spec-builder/src/donut/donutSummaryUtils.ts", "change": "In getSummaryValueText, if options.value is defined, use it as a literal value (via numeric formula/value ref) instead of `{ field: 'sum' }`; leave getSummaryValueEncode/getDonutSummaryData otherwise unchanged.", "lines": "243-251" },
+    { "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts", "change": "Mirror the identical change to getSummaryValueText.", "lines": "243-251" },
+    { "file": "packages/react-spectrum-charts/src/types/marks/supplemental/dountSummary.types.ts", "change": "Passes through automatically via Omit<DonutSummaryOptions, ...> since `value` is a plain value prop; verify no existing Omit conflicts." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/supplemental/dountSummary.types.ts", "change": "Mirror the same verification for the s2 Props type." },
+    { "file": "packages/react-spectrum-charts/src/rc/components/DonutSummary/DonutSummary.tsx", "change": "Destructure `value` alongside numberFormat/hideValue/label so Storybook picks up the new prop default (undefined)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/DonutSummary/DonutSummary.tsx", "change": "Mirror the same destructuring." },
+    { "file": "packages/docs/docs/api/visualizations/Donut.md", "change": "Document the new `value` prop on DonutSummary with the score-out-of-10 example from the issue." },
+    { "file": "packages/react-spectrum-charts/src/stories/components/DonutSummary/DonutSummary.story.tsx", "change": "Add a story showing a custom `value` overriding the sum." }
+  ],
+  "openQuestions": [
+    "Should `value` accept only a static number, or should it also support selecting a specific slice's value from the chart data (e.g. by matching a color/category key), as one of the issue's use cases (\"just one slice's value\") implies?",
+    "Should `value` be validated/typed as ignored when isBoolean=true, or should it throw/warn?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/577" }
+  ]
+}

@@ -22,6 +22,7 @@ import {
   render,
   screen,
   unhoverNthElement,
+  waitFor,
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
@@ -44,10 +45,11 @@ describe('ChartInspect', () => {
     const inspect = await screen.findByTestId('rsc-tooltip');
     expect(inspect).toBeInTheDocument();
     expect(within(inspect).getByText('Operating system: Windows')).toBeInTheDocument();
-    expect(bars[1].getAttribute('opacity')).toEqual(`${FADE_FACTOR}`);
+    // opacity is now animated, so it settles asynchronously -- hence waitFor
+    await waitFor(() => expect(bars[1].getAttribute('opacity')).toEqual(`${FADE_FACTOR}`));
 
     await unhoverNthElement(bars, 0);
-    expect(bars[1].getAttribute('opacity')).toEqual('1');
+    await waitFor(() => expect(bars[1].getAttribute('opacity')).toEqual('1'));
   });
 
   test('Line renders properly and hover works as expected', async () => {
@@ -87,10 +89,13 @@ describe('ChartInspect', () => {
     expect(within(inspect).getByText('Browser: Firefox')).toBeInTheDocument();
     expect(within(inspect).getByText('Users: 3')).toBeInTheDocument();
 
-    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-    expect(bars[4]).toHaveAttribute('opacity', '1');
+    // opacity is now animated, so it settles asynchronously -- hence waitFor
+    await waitFor(() => {
+      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(bars[4]).toHaveAttribute('opacity', '1');
+    });
 
     await unhoverNthElement(bars, 4);
-    expect(allElementsHaveAttributeValue(bars, 'opacity', 1)).toBeTruthy();
+    await waitFor(() => expect(allElementsHaveAttributeValue(bars, 'opacity', 1)).toBeTruthy());
   });
 });

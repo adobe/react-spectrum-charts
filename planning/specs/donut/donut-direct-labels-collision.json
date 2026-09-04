@@ -1,0 +1,66 @@
+{
+  "id": "donut-direct-labels-collision",
+  "title": "Donut Direct Labels — Collision Avoidance",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 2,
+    "rationale": "Split out of donut-direct-labels at the user's request. The donut-label-collision skill gives a fully worked closed-form algorithm (exact formulas for both the Y-cascade and the post-adjustment horizontal re-anchor), so there's no open research question about the approach - just implementing the given math and reusing the text-width helper donut-direct-labels already introduces for block-height calculations. Not a 1 only because the horizontal re-anchor after a Y-adjustment is a real, previously-observed failure mode (labels overlapping the ring) that needs correct handling, not just a literal transcription of the formula."
+  },
+  "summary": "When multiple donut direct labels stack (collide) within the same hemisphere, they must cascade vertically and re-anchor horizontally against the ring's actual shape at each label's adjusted position - not implemented at all today (segmentLabelUtils.ts has no collision-avoidance logic). Depends on donut-direct-labels for the base label positioning/anchor-offset this builds on top of.",
+  "requirements": [
+    "When multiple labels' ideal positions would overlap within the same hemisphere, apply the donut-label-collision algorithm: sort labels by ideal Y, then cascade each one down to at least `minGap` below the previous already-adjusted label (`minGap` = rendered two-line label block height + ~16px buffer) - a single pass, no re-sorting mid-walk, using the closed-form shortcut `adjustedY = runningMax(idealY - minGap*rank) + minGap*rank`.",
+    "After computing each label's adjusted Y, re-anchor it horizontally against the ring's actual half-width at that new Y (`sqrt(outerRadius^2 - (adjustedY - cy)^2)`), not the pre-collision angle-derived anchor - the ring is narrower near the top/bottom and wider near the vertical center, so reusing the original anchor after a Y-shift is an observed failure mode where labels end up overlapping the ring.",
+    "Reuse donut-direct-labels' text-width approximation helper (`characterCount * fontSize * k`) for computing each label's rendered block height/width, rather than duplicating that logic here."
+  ],
+  "designTokens": [
+    { "token": "donut-label-collision minGap buffer", "value": "~16px (not a sourced token - a deliberate default, roughly double the 8-10px inter-element gaps elsewhere)", "usage": "Added to the rendered two-line label block height to compute the minimum vertical spacing enforced between stacked/colliding labels in the same hemisphere." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-label-collision/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-direct-labels/SKILL.md" }
+  ],
+  "edgeCases": [
+    { "case": "Many small adjacent segments clustered near the top or bottom of the ring", "expectedBehavior": "Labels cascade down per the algorithm and re-anchor horizontally at their adjusted Y, rather than overlapping each other or the ring." },
+    { "case": "Only one or two labels in a hemisphere (no actual collision)", "expectedBehavior": "The cascade formula should be a no-op (adjustedY equals idealY) when there's nothing to push down - confirm the closed-form shortcut degrades correctly rather than introducing spurious offsets." },
+    { "case": "Labels colliding across both hemispheres simultaneously", "expectedBehavior": "The algorithm applies independently per hemisphere (per donut-label-collision) - confirm left and right hemisphere cascades don't interfere with each other." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: needs new formula transforms to compute the Y-cascade and horizontal re-anchor declaratively in the Vega spec - not an existing signal/scale. requiresS1S2Parity is false: per project direction, this work is scoped to s2 only."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutLabelCollisionUtils.ts (new file)",
+      "change": "Implement the closed-form cascade (`adjustedY = runningMax(idealY - minGap*rank) + minGap*rank`) and the post-adjustment horizontal re-anchor (`sqrt(outerRadius^2 - (adjustedY - cy)^2)`), reusing donut-direct-labels' text-width helper for block-height/minGap calculations.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Wire the collision-adjusted Y/anchor from donutLabelCollisionUtils.ts into the label marks' position encoding, on top of donut-direct-labels' base anchor-offset positioning.",
+      "lines": "56-217"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutLabelCollisionUtils.test.ts",
+      "change": "New file: unit tests for the cascade formula (including the no-collision no-op case) and the horizontal re-anchor.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/SegmentLabel/SegmentLabel.story.tsx",
+      "change": "Add a story with many small adjacent segments to exercise collision cascading.",
+      "lines": "N/A - new story"
+    }
+  ],
+  "openQuestions": [
+    "Should this collision-avoidance util also be reused by donut-advanced-labels (which documents a different minGap for its taller 3-row block) and possibly Benchmark's two-line labels, or does each feature get its own thin wrapper around a shared core algorithm?"
+  ],
+  "relatedIssues": ["donut-direct-labels", "donut-advanced-labels"]
+}

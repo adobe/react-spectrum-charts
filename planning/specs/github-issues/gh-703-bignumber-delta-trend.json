@@ -1,0 +1,54 @@
+{
+  "id": "gh-703-bignumber-delta-trend",
+  "title": "Add delta/trend support to BigNumber",
+  "chartType": "bigNumber",
+  "kind": "feature",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "The rendering site (BigNumber.tsx) is precedented React presentational code, but the comparison-value semantics are an open design question (is the comparison a second dataKey, a literal prop, or derived from a prior row?), and formatting a signed percentage/absolute delta with directional styling is new, non-precedented logic not present anywhere else in BigNumber today."
+  },
+  "summary": "BigNumber currently supports an optional icon and/or sparkline (packages/react-spectrum-charts/src/rc/components/BigNumber/BigNumber.tsx) but has no way to show a delta/trend indicator (e.g. \"+4.5%\") next to the metric value. This request adds a new opt-in label option to render a computed change alongside the big number.",
+  "requirements": [
+    "Add a new opt-in prop to BigNumberOptions/BigNumberProps that supplies a comparison value for the delta calculation (e.g. a second dataKey to diff against, or an explicit comparison value) — exact shape is an open design question, see openQuestions.",
+    "Compute the delta as a percentage (default) between the current bigNumberValue (from getBigNumberValue in BigNumber.tsx) and the comparison value; support absolute delta as an alternative if the design decision favors it.",
+    "Render the delta text near the formatted value (valueStyle text in BigNumberInternal), styled to indicate direction (e.g. positive/negative sign and color), using formatBigNumber-style locale-aware formatting from bigNumberFormatUtils.ts.",
+    "Delta rendering must work in both 'vertical' and 'horizontal' orientations and alongside the existing icon/sparkline layout without requiring a sparkline to be present.",
+    "Default behavior (prop omitted) must be unchanged — no delta rendered."
+  ],
+  "edgeCases": [
+    { "case": "Comparison value is 0", "expectedBehavior": "Percentage change is undefined (divide by zero); the component should show a defined fallback (e.g. omit the delta or show 'N/A') rather than NaN or Infinity." },
+    { "case": "Comparison dataKey/value is missing from the data", "expectedBehavior": "Delta indicator is omitted entirely; the rest of BigNumber renders as it does today." },
+    { "case": "Delta shown together with icon and sparkline at 'small' bigNumberSize (chartWidth/height <= 100)", "expectedBehavior": "Layout does not overflow or overlap; delta may need to be hidden or abbreviated at the smallest size, matching how label/value font sizes already scale via getFontSize." },
+    { "case": "Delta value is exactly 0% change", "expectedBehavior": "Renders a neutral (non-colored, non-directional) state rather than defaulting to a positive or negative color." },
+    { "case": "Light vs dark chart background", "expectedBehavior": "Positive/negative delta colors must remain readable against both backgrounds, consistent with existing BigNumber.css conventions." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "BigNumber has no react-spectrum-charts-s2/vega-spec-builder-s2 component implementation today — only a type stub exists at packages/vega-spec-builder-s2/src/types/marks/bigNumberSpec.types.ts with no adapter or builder using it. There is nothing to keep in parity with in s2 yet."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder/src/types/marks/bigNumberSpec.types.ts", "change": "Add the new delta/trend field(s) to BigNumberOptions (optional, with JSDoc), following the existing pattern of numberFormat/numberType.", "lines": "18-30" },
+    { "file": "packages/react-spectrum-charts/src/types/marks/bigNumber.types.ts", "change": "BigNumberProps extends BigNumberOptions via Omit — the new field passes through automatically unless it needs to be replaced with a ReactNode/callback.", "lines": "26-30" },
+    { "file": "packages/react-spectrum-charts/src/rc/components/BigNumber/BigNumber.tsx", "change": "In BigNumberInternal, compute the delta from data using a helper alongside getBigNumberValue, format it, and render it near the value text (valueStyle block).", "lines": "35-116, 254-268" },
+    { "file": "packages/react-spectrum-charts/src/rc/components/BigNumber/bigNumberFormatUtils.ts", "change": "Add a formatting helper for the signed delta (percentage or absolute), mirroring formatBigNumber's locale handling.", "lines": "19-41" },
+    { "file": "packages/react-spectrum-charts/src/rc/components/BigNumber/BigNumber.css", "change": "Add classes for positive/negative/neutral delta text color." },
+    { "file": "packages/docs/docs/api/visualizations/BigNumber.md", "change": "Document the new prop in the Props table with an example." },
+    { "file": "packages/react-spectrum-charts/src/stories/components/BigNumber/BigNumber.story.tsx", "change": "Add a story demonstrating the delta/trend indicator, positioned alongside existing icon/sparkline stories." }
+  ],
+  "openQuestions": [
+    "Should the comparison value be supplied as a second dataKey (diffed against the same aggregation method), an explicit numeric prop, or derived automatically (e.g. second-to-last vs last row)?",
+    "Should the delta always render as a percentage, or should it support an absolute-value mode, and if so via what prop?",
+    "Should directional styling use color alone, an arrow glyph, or both — and does this need a new Spectrum icon dependency?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/703" }
+  ]
+}

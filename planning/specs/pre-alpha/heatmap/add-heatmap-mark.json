@@ -1,0 +1,65 @@
+{
+  "id": "add-heatmap-mark",
+  "title": "Add Heatmap Chart Mark",
+  "chartType": "heatmap",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 2,
+    "rationale": "The rect-per-cell rendering directly reuses Bar's existing rect-mark construction pattern, just keyed by two ordinal (row/column) band scales instead of one ordinal + one linear scale. The only new pieces are a sequential color scale (a standard Vega scale type with no existing helper in this codebase yet, but no novel design needed to add one) and a hover scale-up encode (a straightforward size-on-hover transform, not previously used but mechanically simple)."
+  },
+  "summary": "A row/column/value categorical grid mark rendering one rect per cell with a sequential color scale over value, and a hover scale-up (1.08x) effect.",
+  "requirements": [
+    "Accepts `row`, `column` (both categorical/ordinal, required) and `value` (quantitative, required) channels",
+    "Renders one rect per row/column combination using two ordinal band scales",
+    "Cell fill color is driven by a sequential color scale over the value domain",
+    "Hovering a cell scales it up 1.08x in place, in addition to any existing hover/tooltip behavior"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Missing row/column combinations (sparse grid)", "expectedBehavior": "Cells with no corresponding data row simply don't render (no forced zero-value rect), consistent with how other categorical marks handle sparse data." },
+    { "case": "All values identical", "expectedBehavior": "Sequential scale domain collapses to a single value; all cells render the same color rather than dividing by a zero-width domain." },
+    { "case": "Many rows/columns (dense grid)", "expectedBehavior": "Band scale cell size shrinks per existing categorical-scale behavior; no minimum-cell-size enforcement in this spec." },
+    { "case": "Light vs dark background", "expectedBehavior": "Sequential color scale's range should be theme-aware, consistent with how other color scales already resolve against colorScheme." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Interaction conflicts", "expectedBehavior": "Hover scale-up must not visually overlap/obscure adjacent cells' hit-targets in a way that breaks hovering a neighboring cell immediately after." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: the 1.08x hover scale-up is a new encode.update rule gated on the existing hover signal pattern, applied to size/transform rather than opacity/color as most existing hover encodes do. touchesTooltipOrPopover: cells support ChartTooltip/ChartPopover showing row/column/value, reusing existing interactive-mark plumbing. requiresNewSignalOrScale: true — a new sequential color scale type (no existing helper in scaleUtils.ts/scaleSpecBuilder.ts; shared groundwork with add-contour-mark and add-xy-heatmap-mark, though each gets its own scale instance). requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/heatmapSpec.types.ts", "change": "Create HeatmapOptions/HeatmapOptionsWithDefaults/HeatmapSpecOptions with required `row`/`column`/`value` fields." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Heatmap types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add HeatmapOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/heatmap/heatmapTestUtils.ts", "change": "Fully-populated defaultHeatmapOptions fixture, including a sparse-grid variant." },
+    { "file": "packages/vega-spec-builder-s2/src/scale/scaleSpecBuilder.ts", "change": "Add addSequentialColorScale, a new scale-builder helper (Vega 'linear'/'sequential' scale type with a sequential color scheme range) — first sequential-scale helper in this codebase; used by Heatmap, XY Heatmap, and Contour." },
+    { "file": "packages/vega-spec-builder-s2/src/heatmap/heatmapMarkUtils.ts", "change": "getHeatmapCellMark, reusing barUtils.ts's rect-mark construction pattern keyed by two band scales, plus a hover-scale-up encode.update rule." },
+    { "file": "packages/vega-spec-builder-s2/src/heatmap/heatmapSpecBuilder.ts", "change": "addHeatmap, addData, addSignals (reuse interactive-mark signal helpers), setScales (two ordinal band scales for row/column, calls the new addSequentialColorScale for value)." },
+    { "file": "packages/vega-spec-builder-s2/src/scale/scaleSpecBuilder.test.ts", "change": "Unit tests for addSequentialColorScale." },
+    { "file": "packages/vega-spec-builder-s2/src/heatmap/heatmapMarkUtils.test.ts", "change": "Unit tests for getHeatmapCellMark, including the hover scale-up encode, using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/heatmap/heatmapSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register heatmapCount: -1 in initializeComponentCounts, import addHeatmap, add the 'heatmap' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/heatmap.types.ts", "change": "HeatmapProps/HeatmapElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Heatmap/Heatmap.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Heatmap/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Heatmap'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Heatmap from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Heatmap to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Heatmap/Heatmap.story.tsx", "change": "Basic story with a categorical row/column grid dataset." }
+  ],
+  "openQuestions": [
+    "What sequential color palette/token should the value scale use by default — needs a design token confirmation, shared decision with add-contour-mark and add-xy-heatmap-mark.",
+    "Should the hover scale-up be configurable/disableable, or a fixed always-on behavior?"
+  ],
+  "relatedIssues": ["add-xy-heatmap-mark", "add-contour-mark"]
+}

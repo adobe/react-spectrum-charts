@@ -1,0 +1,82 @@
+{
+  "id": "donut-direct-labels",
+  "title": "Donut Direct Labels — Ring Gap, Size-Tier Scaling & Hemisphere Anchor Offset",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 3,
+    "rationale": "Scope narrowed to ring gap, size-tier scaling, and hemisphere anchor offset (collision avoidance is now its own spec, donut-direct-labels-collision, and the value hover-color-switch requirement was removed as a verbatim duplicate already owned by donut-hover). Ring-gap and size-tier scaling are precedented/mechanical (the latter mirrors donut-summary-responsive-sizing's approach exactly). What keeps this at a 3: the hemisphere-mirrored near-edge anchor offset is genuinely new logic, and there's a real unresolved technical question underneath it - Vega's declarative spec format has no native rendered-text-width primitive, so how 'real text measurement' from the direct-labels skill is actually obtained at layout time is still open, not merely a design decision."
+  },
+  "summary": "Donut direct labels (currently implemented as the `SegmentLabel` component/child - segment name + value text placed directly around the ring, no connector line) exist in code today, but the current implementation is a simplified placeholder: it uses a flat 6px ring-anchor gap instead of the documented 20px real-bounding-box gap, hardcodes font sizes (14px name / 16px value) instead of scaling by the donut's size tier, and has no hemisphere-mirrored anchor offset for aligning the name/value lines to each other. (Collision avoidance when multiple labels stack is tracked separately in donut-direct-labels-collision; the value-line hover color switch is owned entirely by donut-hover.)",
+  "requirements": [
+    "Gap from the ring must be 20px (`chart.donut.spacing.label-ring-gap`), measured against the label's actual rendered bounding box - not a fixed anchor-only radius offset like the current `DONUT_RADIUS + 6`. A label must never overlap the ring; if the 20px gap would be violated, wrap the label onto 2 lines instead of letting it overlap.",
+    "Font sizes must scale by the donut's size tier (see designTokens) instead of the current hardcoded 14px (segment name) / 16px (value), neither of which matches any documented tier value for the name line (12px at M) and only coincidentally matches the value line's M-tier size (16px).",
+    "Within a single label, the segment name and value lines must be left-aligned to each other (share the same near edge relative to their anchor), with the anchor itself mirrored by hemisphere: right-hemisphere labels anchor at the ring-gap point and grow rightward (away from the ring); left-hemisphere labels anchor further back (offset by the width of the wider of the two lines) so that line's far edge lands at the ring-gap point while both lines still start from the same near edge. The current implementation does not implement this anchor offset at all - both lines share an identical anchor point with no width-based adjustment.",
+    "Getting the offset in the previous requirement requires the wider line's real rendered width. Use real text measurement where available; where none exists at layout time, approximate width as `characterCount * fontSize * k` (k ~= 0.52 regular weight, ~= 0.6 bold) and treat it explicitly as an approximation, not a sourced token.",
+    "The segment name line must always render above the value line, for every segment regardless of whether its centroid falls in the top or bottom half of the ring - this vertical order must never flip by hemisphere. Confirmed by the user against the reference example (all three labels shown, name above value in every case) and matches the current implementation's existing dy offsets, which already keep name above value in both hemispheres (top-half: name shifts up, value stays put; bottom-half: name stays put, value shifts further down) - this behavior must be explicitly preserved (and regression-tested) through the rest of this feature's changes, not just left as an implicit side effect."
+  ],
+  "designTokens": [
+    { "token": "chart.donut.spacing.label-ring-gap", "value": "20px", "usage": "Minimum gap between the ring's outer edge and a direct label's rendered bounding box (both direct and advanced labels)." },
+    { "token": "chart.donut.spacing.direct-label-name-value-gap", "value": "0px", "usage": "Gap between the segment name line and the value line within one label - tight, not overlapping." },
+    { "token": "Direct label - segment name (XS/S/M/L/XL)", "value": "9(derived) / 10.5(derived) / 12 / 15(derived) / 18(derived) px, weight 400, color text-secondary (gray-700)", "usage": "Font size for the segment-name line, keyed to the donut's size tier." },
+    { "token": "Direct label - value (XS/S/M/L/XL)", "value": "12(derived) / 14(derived) / 16 / 20(derived) / 24(derived) px, weight 700, color text-secondary (gray-700)", "usage": "Font size for the segment-value line, keyed to the donut's size tier - the hover-driven color switch to the segment's own categorical color is owned by donut-hover, not this spec." },
+    { "token": "text-width approximation constant k", "value": "~0.52 (regular weight) / ~0.6 (bold)", "usage": "Fallback multiplier (characterCount * fontSize * k) for estimating rendered text width when no real text-measurement primitive is available at layout time - explicitly not pixel-exact, flagged as an approximation. Also reused by donut-direct-labels-collision for block-height calculations." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-direct-labels/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54192&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Very long segment name or value text", "expectedBehavior": "Wraps the label onto 2 lines rather than overlapping the ring, per the 20px real-bounding-box gap rule." },
+    { "case": "Segment on the exact top/bottom of the donut (arcTheta at or near 0 or PI)", "expectedBehavior": "Hemisphere determination (which side anchors left vs. right) must resolve predictably at the boundary rather than flipping unstably between adjacent renders." },
+    { "case": "Segment centered in the bottom half of the ring", "expectedBehavior": "Name still renders above the value line, exactly as in top-half segments - the vertical name/value stacking order must never flip by hemisphere (confirmed with the user; only the horizontal left/right anchor mirrors by hemisphere, not the vertical order)." },
+    { "case": "Segment arc too small to fit a label (existing DONUT_SEGMENT_LABEL_MIN_ANGLE behavior)", "expectedBehavior": "Label continues to be hidden below the minimum arc angle, unchanged by this feature - confirm the min-angle threshold still makes sense once real label dimensions (not just font size) are being measured." },
+    { "case": "Donut across all five size tiers (XS/S/M/L/XL)", "expectedBehavior": "Name and value font sizes scale per tier; XS and XL values are flagged as derived/unconfirmed in donut-chart-tokens and need verification before being treated as final." },
+    { "case": "S1 (out of scope)", "expectedBehavior": "packages/vega-spec-builder/src/donut/segmentLabelUtils.ts mirrors the same ring-gap (+6), hardcoded font sizes, and static gray-700 fill, but per project direction this work is s2-only - s1 is intentionally left unchanged, not a gap to track here." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "None of the hover/controlled-highlight/legend/tooltip flags apply - this spec is scoped to static layout (ring gap, size-tier font scaling, hemisphere anchor offset), with the hover-driven value color switch owned entirely by donut-hover and collision avoidance owned by donut-direct-labels-collision. requiresNewSignalOrScale is false - this is encode-level production-rule/expression work (test expressions and computed x/y anchors), not new signals or scales. requiresS1S2Parity is false: per project direction, this work is scoped to s2 only - packages/vega-spec-builder/src/donut/segmentLabelUtils.ts (s1) shares the identical gap today, but is intentionally left unchanged, not treated as a parity gap."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/constants/constants.ts",
+      "change": "Add direct-label size-tier constants: outer-diameter breakpoints (shared with the donut summary tiers), per-tier segment-name font sizes (9/10.5/12/15/18), per-tier value font sizes (12/14/16/20/24), and the label-ring-gap (20px).",
+      "lines": "N/A - new constants"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Replace the flat `DONUT_RADIUS + 6` anchor with a real-bounding-box-based 20px gap; replace hardcoded fontSize 14/16 with the new per-tier constants; add the hemisphere-mirrored near-edge anchor offset (using real or approximated text width); add wrap-to-2-lines logic when the gap would be violated.",
+      "lines": "56-217"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTextMeasureUtils.ts (new shared util)",
+      "change": "Implement the shared text-width approximation helper (`characterCount * fontSize * k`), used by this spec's anchor offset and reused by donut-direct-labels-collision's block-height calculations - a single shared location rather than duplicated logic.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Update existing tests that currently assert the old fixed values (fontSize 16, fill '#505050' always, +6 gap) - replace with tests pinning per-tier font sizes, the 20px real-bounding-box gap, and the anchor-offset/wrap behavior.",
+      "lines": "131-159 (existing fixed-value assertions), plus new test cases"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/SegmentLabel/SegmentLabel.story.tsx",
+      "change": "Add stories covering: multiple size tiers, and long segment names/values that trigger 2-line wrapping.",
+      "lines": "N/A - new stories"
+    }
+  ],
+  "openQuestions": [
+    "How is 'real text measurement' actually obtained at Vega-spec layout time? Vega's declarative expression language has no native rendered-text-width primitive - confirm whether a canvas-measurement pass needs to happen in the TS spec-builder before the spec is emitted (using a known font/size, since data-driven text content varies per row), or whether the `characterCount * fontSize * k` approximation is the intended production approach rather than just a documented fallback.",
+    "Confirm the two 'derived' (computed, not individually measured) values at each end of the tier range - segment name XS 9px/S 10.5px/L 15px/XL 18px, and value XS 12px/S 14px/L 20px/XL 24px - donut-chart-tokens explicitly flags these as needing confirmation in Figma."
+  ],
+  "relatedIssues": ["donut-summary-responsive-sizing", "donut-direct-labels-collision", "donut-hover"]
+}

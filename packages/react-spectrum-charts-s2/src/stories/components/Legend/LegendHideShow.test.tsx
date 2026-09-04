@@ -22,6 +22,7 @@ import {
   render,
   rightClickNthElement,
   screen,
+  waitFor,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock';
 import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story';
@@ -117,12 +118,13 @@ test('Hidden series should not highlight any marks', async () => {
   // hovering the second entry should lower the opacity of the first series
   await hoverNthElement(entries, 1);
   let bars = await findAllMarksByGroupName(chart, 'bar0');
-  expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+  // opacity is now animated, so it settles asynchronously -- hence waitFor
+  await waitFor(() => expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`));
 
   // hovering the third entry should not adjust the opcity of any of the bars since it is a hidden series
   await hoverNthElement(entries, 2);
   bars = await findAllMarksByGroupName(chart, 'bar0');
-  expect(bars[0]).toHaveAttribute('opacity', '1');
+  await waitFor(() => expect(bars[0]).toHaveAttribute('opacity', '1'));
 });
 
 test('Right clicking on a legend entry should not hide the series or trigger onClick', async () => {

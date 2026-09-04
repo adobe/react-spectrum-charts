@@ -45,6 +45,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         // background bars
         {
           name: `${name}_background`,
+          description: `${name}_background`,
           from: { data: `${name}_facet` },
           type: 'rect',
           interactive: false,
@@ -61,6 +62,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         // bars
         {
           name,
+          description: name,
           from: { data: `${name}_facet` },
           type: 'rect',
           // interactive when accessibleNavigation is on too, so a click can move keyboard focus to this bar

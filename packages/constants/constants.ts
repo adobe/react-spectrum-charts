@@ -126,6 +126,8 @@ export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData';
 export const HOVER_TARGET_DATA = 'hoverTargetData';
 export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
 export const HOVER_FRACTION_DATA = 'hoverFractionData';
+/** Series-level (max) aggregate of a per-item-animated mark's hoverFractionData, for ungrouped legends that need one fraction per series */
+export const HOVER_SERIES_FRACTION_DATA = 'hoverSeriesFractionData';
 /** Draw-in animation: the already-drawn portion, the single lerping tip point, and their merge (source the line mark renders from) */
 export const DRAW_IN_PREV_DATA = 'drawInPrev'; // suffix: ${name}_drawInPrev
 export const DRAW_IN_TIP_DATA = 'drawInTip'; // suffix: ${name}_drawInTip
@@ -139,6 +141,8 @@ export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
 export const GROUP_ID = 'rscGroupId';
 export const SERIES_ID = 'rscSeriesId';
+/** Composite per-bar hover-animation identity: dimension + series (+ trellis) values joined, since MARK_ID is runtime-assigned and not JS-computable ahead of time */
+export const BAR_ANIM_ID = 'rscBarAnimId';
 export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
@@ -176,6 +180,7 @@ export const INTERACTION_MODALITY = 'interactionModality';
 export const NAVIGATION_ID_SEPARATOR = '__rsc__';
 /** Data field carrying a point's 1-based position within its own line, used to key keyboard-navigation focus. */
 export const NAVIGATION_INDEX_FIELD = '_dnIndex';
+export const ANIMATION_TIMER = 'animationTimer'; // main animation timer signal
 export const HOVER_TIMER = 'hoverTimer'; // hover animation timer signal
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
@@ -212,11 +217,17 @@ export const PADDING_RATIO = 0.4;
 export const LINEAR_PADDING = 0;
 export const TRELLIS_PADDING = 0.2;
 
+// animation constants
+/** Individual animation systems that can be toggled on via the `animationTypes` chart prop. */
+export type AnimationType = 'hover' | 'drawIn';
+/** Default `animationTypes` value: hover animations on, draw-in animations off. */
+export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover'];
+
 // hover animation constants
 /** Timer signal update interval in ms. Caps timer signal update at ~30fps. */
 export const ANIMATION_THROTTLE = 33;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
-export const ANIMATION_HOVER_SPEED = 100;
+export const ANIMATION_HOVER_SPEED = 250;
 /**
  * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
  * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).

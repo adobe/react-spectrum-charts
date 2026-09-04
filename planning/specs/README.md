@@ -25,6 +25,8 @@ planning/specs/
   donut/issues/<slug>.json
   donut/issues/implemented/<slug>.json
   ...
+  pre-alpha/<chartType>/<slug>.json               # not-yet-built mark, kind: "feature", not yet implemented
+  pre-alpha/<chartType>/implemented/<slug>.json   # same, status: "implemented"
 ```
 
 One spec per feature or bug, filed under the directory matching its `chartType`. Chart-level
@@ -32,6 +34,16 @@ One spec per feature or bug, filed under the directory matching its `chartType`.
 of their chart type; features live directly under the chart type directory. Within either of
 those, an `implemented/` subdirectory separates finished work from what's still outstanding
 — see [Status lifecycle](#status-lifecycle) for when a spec moves there.
+
+**`pre-alpha/<chartType>/`** is a separate top-level tree for marks that don't exist in the
+library at all yet — brand-new mark types whose components will ship under
+`packages/react-spectrum-charts-s2/src/rc/components/` (the same rc-status precedent as
+Donut/BigNumber) rather than as a feature on an already-stable, shipped mark. This keeps
+`planning/specs/<chartType>/` reserved for props/features on marks that already exist, and
+groups not-yet-built marks together under `pre-alpha/` so they're easy to scan as a set. Once
+a mark under `pre-alpha/<chartType>/` ships and stabilizes into the public API, its
+`chartType` value should also be added to `schema.json`'s enum outside the pre-alpha set, and
+future specs against it move to the regular `planning/specs/<chartType>/` location.
 
 ## Kinds: feature vs bug
 

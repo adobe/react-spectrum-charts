@@ -1,9 +1,11 @@
 # Line Draw-In Animation — Design & Architecture
 
-A reference for the line mount-animation system: on mount, an animated line "draws in" left to right
-instead of appearing fully formed. Companion to [`hover-animation-system.md`](../hover-animation-system/hover-animation-system.md),
-which documents the animated hover/highlight engine this feature shares an opt-in gate with (`isAnimate`)
-but is otherwise fully independent from.
+A reference for the mount-animation system, currently wired into line only: on mount, an animated line
+"draws in" left to right instead of appearing fully formed. `drawInAnimationUtils.ts` is written
+mark-agnostic (see §7) so other marks can adopt it later. Companion to
+`[hover-animation-system.md](../hover-animation-system/hover-animation-system.md)`, which documents the
+animated hover/highlight engine this feature shares an opt-in gate with (`isHoverAnimate`) but is
+otherwise fully independent from.
 
 ---
 
@@ -15,14 +17,18 @@ The point currently being crossed (the "tip") is smoothly interpolated between i
 next point's position, so the leading edge moves continuously rather than jumping point-to-point.
 
 Draw-in activates when both are true, resolved once as `LineSpecOptions.isDrawInAnimate`:
-- `animations === true` — explicit chart-level opt-in (not `!== false` — draw-in has no other gate like
-  hover-animation's interactivity check, so it must default off)
+
+- `animations !== false` (chart-level master kill switch, default on) **and** `animationTypes` includes
+`'drawIn'` — unlike hover, draw-in is opt-in: `animationTypes` defaults to `['hover']`, so `'drawIn'`
+must be added explicitly
 - the line's `scaleType` is `'time'`, `'linear'`, or `'point'` (§2)
 
 Everything downstream — data sources, signals, the facet-source swap, and the mark's x/y encoding —
 gates on `isDrawInAnimate`.
 
 ---
+
+
 
 ## 2. Scale-type support
 
@@ -40,7 +46,7 @@ value doubles as both the sort key (for cutoff/tween math) and the scale-lookup 
 picks the right one — the raw dimension for `'linear'`, or a numeric-ms proxy for `'time'` (§3a, since
 Vega's time scale domain is Date-typed but the math needs raw numbers).
 
-**`'point'` (ordinal/categorical) needs two separate fields, not one.** A numeric dimension on a point
+`'point'` **(ordinal/categorical) needs two separate fields, not one.** A numeric dimension on a point
 scale happens to work using the same single-field approach as linear (the sort/cutoff math never
 touches the scale's *positions*, only the raw field value) — but a *genuinely categorical* dimension
 (e.g. a `quarter` string field) can't be compared to a numeric cutoff directly. So for `'point'`,
@@ -50,6 +56,8 @@ the rest of the pipeline alongside the *real* category value (still needed, unch
 `scale('xPoint', ...)` position lookups).
 
 ---
+
+
 
 ## 3. The Vega data-flow pipeline
 
@@ -67,11 +75,13 @@ already numeric.
 
 `addDrawInLeadTransform` adds a `window` transform to its source (`filteredTable` for time/linear, the
 point-index source for point scale — §3i):
+
 ```
 { type: 'window', sort: { field: <sortField>, order: 'ascending' }, groupby: [rscSeriesId],
   ops: ['lead', ...], fields: [<sortField>, metric, ...],
   as: ['${name}_drawInNextDimValue', '${name}_drawInNextMetricValue', ...] }
 ```
+
 For `'point'` scale, a third field/lead is added — the next row's real category value
 (`DRAW_IN_NEXT_CATEGORY_FIELD`) — since `<sortField>` (the ordinal index) isn't a valid scale-lookup
 value there (§3i). Vega's `window` transform sorts internally by `sort` regardless of the incoming
@@ -81,11 +91,15 @@ against duplicate insertion.
 
 ### 3c. Derived sources — `getLineDrawInData`
 
-| Source | Built from | Purpose |
-|---|---|---|
-| `${name}_drawInPrev` | `getDrawInDataSourceName`'s source (`filteredTable`, or `${name}_drawInIndexed` for point scale — §3i) filtered to `<sortField> <= cutoff` | the already-drawn portion of the line |
-| `${name}_drawInTip` | same source, filtered per-row (§3e) | each series' currently-active bracketing point, flagged `isDrawInTip: true` |
-| `${name}_drawInLerp` | `source: ['${name}_drawInPrev', '${name}_drawInTip']` | the merged source the line mark actually facets/renders from |
+
+| Source               | Built from                                                                                                                                 | Purpose                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `${name}_drawInPrev` | `getDrawInDataSourceName`'s source (`filteredTable`, or `${name}_drawInIndexed` for point scale — §3i) filtered to `<sortField> <= cutoff` | the already-drawn portion of the line                                       |
+| `${name}_drawInTip`  | same source, filtered per-row (§3e)                                                                                                        | each series' currently-active bracketing point, flagged `isDrawInTip: true` |
+| `${name}_drawInLerp` | `source: ['${name}_drawInPrev', '${name}_drawInTip']`                                                                                      | the merged source the line mark actually facets/renders from                |
+
+
+
 
 ### 3d. Signals — `addLineDrawInAnimationSignals`
 
@@ -96,6 +110,7 @@ drawInAnimTEased          = <shared, quadratic ease-in-out of drawInAnimT>
 ${name}_drawInDomainMin/Max  = extent(domain(<xScaleName>))[0]/[1]     // this mark's own x-domain range
 ${name}_drawInAnimCutoff  = drawInAnimTEased * (max - min) + min       // the sweeping cutoff, in domain units
 ```
+
 `<xScaleName>` is `getScaleName('x', scaleType)` (`xTime`/`xLinear`/`xPoint`), so this generalizes across
 supported scale types. For `'point'` scale, `domain(<xScaleName>)` holds category values, not numbers,
 so domain min/max are instead the ordinal index range `[0, domain length - 1]` — matching the sort field
@@ -115,9 +130,11 @@ computed in §3b — no cross-row or cross-series lookup anywhere.
 ### 3e. Tip identification (in `getLineDrawInData`)
 
 A row is the active tip for its series if:
+
 ```
 datum.<sortField> <= cutoff && isValid(datum.<nextDimField>) && datum.<nextDimField> > cutoff
 ```
+
 i.e. the cutoff has passed this row but not yet its own next row. A series' last point (no next point)
 never qualifies — once past it, that row just stays a normal fully-drawn point via `drawInPrev` alone,
 with nothing left to interpolate toward.
@@ -127,6 +144,7 @@ with nothing left to interpolate toward.
 ```ts
 const tween = `clamp((cutoff - datum.<sortField>) / (datum.<nextDimField> - datum.<sortField>), 0, 1)`;
 ```
+
 Computed inline per-datum in the mark's x/y encoding (not a signal) — purely local to each row, using
 only that row's own sortField and its own lead-computed next value.
 
@@ -136,9 +154,10 @@ only that row's own sortField and its own lead-computed next value.
 x: isValid(datum.isDrawInTip) ? lerp([scale(xScale, datum[dimField]), scale(xScale, datum.<nextLookupField>)], tween) : scale(xScale, datum[dimField])
 y: isValid(datum.isDrawInTip) ? lerp([scale(yScale, datum[metric]), scale(yScale, datum.<nextMetricField>)], tween) : scale(yScale, datum[metric])
 ```
+
 Non-tip rows render at their normal scaled position (same as the static path). `<nextLookupField>` is
 `<nextDimField>` for time/linear, but `DRAW_IN_NEXT_CATEGORY_FIELD` for `'point'` scale — see §3i for why
-those diverge there. `getLineMark` branches on `isDrawInAnimate` (not `isAnimate`): static lines keep `y`
+those diverge there. `getLineMark` branches on `isDrawInAnimate` (not `isHoverAnimate`): static lines keep `y`
 in `encode.enter` (evaluated once); draw-in animated lines move both `x` and `y` into `encode.update`
 (re-evaluated every animation tick). Dual-metric-axis lines branch onto the primary/secondary y-scale via
 the shared `getDualAxisDrawInRule`, matching `getLineYEncoding`'s static equivalent — the metric axis is
@@ -156,7 +175,7 @@ aware (§7) — its leading edge jumps point-to-point rather than tweening smoot
 (`${name}_with_bridges`, used for forecasts/`alternateSegmentKey`) — combining draw-in with either isn't
 handled and hasn't been tested.
 
-The highlight overlay (`getLineHighlightOverlayGroup`) forces `isAnimate: false` **and**
+The highlight overlay (`getLineHighlightOverlayGroup`) forces `isHoverAnimate: false` **and**
 `isDrawInAnimate: false` on its duplicate line mark so it always renders with the static encoding, even
 though it still facets from the same (possibly `${name}_drawInLerp`) source as the base line.
 
@@ -175,7 +194,7 @@ the x scale's domain**.
 }
 ```
 
-This has to live on a data source **downstream of both `filteredTable` and the x scale** — never on
+This has to live on a data source **downstream of both** `filteredTable` **and the x scale** — never on
 `filteredTable` itself. The x scale's domain is derived *from* `filteredTable`, so a formula added to
 `filteredTable` that reads `domain('xPoint')` would create a circular dependency (the scale needs
 `filteredTable` to finish; the formula needs the scale to finish first). `${name}_drawInIndexed` is a
@@ -194,33 +213,44 @@ as the time/linear path does) — `getDrawInDataSourceName` tells `getLineDrawIn
 
 ---
 
+
+
 ## 4. Constants
 
-| Section | Constants |
-|---|---|
-| animation timing | `DRAW_IN_ANIMATION_DURATION_MS` (1000) |
-| vega data source names | `DRAW_IN_PREV_DATA`, `DRAW_IN_TIP_DATA`, `DRAW_IN_LERP_DATA`, `DRAW_IN_POINT_INDEX_DATA` (point scale only, §3i) |
-| vega data field names | `DRAW_IN_TIME_MS_FIELD`, `DRAW_IN_NEXT_DIM_FIELD`, `DRAW_IN_NEXT_METRIC_FIELD`, `DRAW_IN_TIP_FLAG`, `DRAW_IN_POINT_INDEX_FIELD` (point scale only, §3i), `DRAW_IN_NEXT_CATEGORY_FIELD` (point scale only, §3i) |
-| signal names | `DRAW_IN_START`, `DRAW_IN_ANIM_T`, `DRAW_IN_ANIM_T_EASED` (shared), `DRAW_IN_DOMAIN_MIN`, `DRAW_IN_DOMAIN_MAX`, `DRAW_IN_ANIM_CUTOFF` (per-mark) |
+
+| Section                | Constants                                                                                                                                                                                                      |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| animation timing       | `DRAW_IN_ANIMATION_DURATION_MS` (1000)                                                                                                                                                                         |
+| vega data source names | `DRAW_IN_PREV_DATA`, `DRAW_IN_TIP_DATA`, `DRAW_IN_LERP_DATA`, `DRAW_IN_POINT_INDEX_DATA` (point scale only, §3i)                                                                                               |
+| vega data field names  | `DRAW_IN_TIME_MS_FIELD`, `DRAW_IN_NEXT_DIM_FIELD`, `DRAW_IN_NEXT_METRIC_FIELD`, `DRAW_IN_TIP_FLAG`, `DRAW_IN_POINT_INDEX_FIELD` (point scale only, §3i), `DRAW_IN_NEXT_CATEGORY_FIELD` (point scale only, §3i) |
+| signal names           | `DRAW_IN_START`, `DRAW_IN_ANIM_T`, `DRAW_IN_ANIM_T_EASED` (shared), `DRAW_IN_DOMAIN_MIN`, `DRAW_IN_DOMAIN_MAX`, `DRAW_IN_ANIM_CUTOFF` (per-mark)                                                               |
+
 
 ---
+
+
 
 ## 5. Key files
 
-| File | Role |
-|---|---|
-| `packages/constants/constants.ts` | draw-in constants (§4) |
-| `vega-spec-builder-s2/src/marks/drawInAnimationUtils.ts` | everything: `getDrawInSortField`, `getDrawInDataSourceName`, `getLineDrawInPointIndexData` (§3i), `addDrawInTimeMsTransform`, `addDrawInLeadTransform`, `getLineDrawInData`, `addLineDrawInAnimationSignals`, `getDrawInTweenExpr`, `getLineDrawInXEncoding`/`getLineDrawInYEncoding`, `getDualAxisDrawInRule` |
-| `vega-spec-builder-s2/src/line/lineSpecBuilder.ts` | `isLineDrawInSupported` gate, computes `isDrawInAnimate`; wires `addData`/`addSignals`/`addLineMarks` to call into `drawInAnimationUtils.ts` when true |
-| `vega-spec-builder-s2/src/line/lineMarkUtils.ts` | `getLineMark`'s `isDrawInAnimate` branch; highlight-overlay override |
-| `vega-spec-builder-s2/src/types/marks/lineSpec.types.ts`, `vega-spec-builder-s2/src/line/lineUtils.ts` | `isDrawInAnimate` field on `LineSpecOptions`/`LineMarkOptions` |
+
+| File                                                                                                   | Role                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/constants/constants.ts`                                                                      | draw-in constants (§4)                                                                                                                                                                                                                                                                                         |
+| `vega-spec-builder-s2/src/marks/drawInAnimationUtils.ts`                                               | everything: `getDrawInSortField`, `getDrawInDataSourceName`, `getLineDrawInPointIndexData` (§3i), `addDrawInTimeMsTransform`, `addDrawInLeadTransform`, `getLineDrawInData`, `addLineDrawInAnimationSignals`, `getDrawInTweenExpr`, `getLineDrawInXEncoding`/`getLineDrawInYEncoding`, `getDualAxisDrawInRule` |
+| `vega-spec-builder-s2/src/line/lineSpecBuilder.ts`                                                     | `isLineDrawInSupported` gate, computes `isDrawInAnimate`; wires `addData`/`addSignals`/`addLineMarks` to call into `drawInAnimationUtils.ts` when true                                                                                                                                                         |
+| `vega-spec-builder-s2/src/line/lineMarkUtils.ts`                                                       | `getLineMark`'s `isDrawInAnimate` branch; highlight-overlay override                                                                                                                                                                                                                                           |
+| `vega-spec-builder-s2/src/types/marks/lineSpec.types.ts`, `vega-spec-builder-s2/src/line/lineUtils.ts` | `isDrawInAnimate` field on `LineSpecOptions`/`LineMarkOptions`                                                                                                                                                                                                                                                 |
+
 
 ---
+
+
 
 ## 6. Storybook coverage
 
 `packages/react-spectrum-charts-s2/src/stories/Line/Features/DrawInAnimation/LineDrawInAnimation.story.tsx`
-exposes the same `animations` toggle pattern as the hover-animation stories, with stories for: baseline
+exposes `animations` (master switch) and `animationTypes` (a check-control for `'hover'`/`'drawIn'`) as
+direct Storybook controls, with stories for: baseline
 time scale, linear scale, point scale (numeric dimension — uses the same single-field path as linear,
 §2), categorical point scale (a genuine string dimension — the two-field ordinal-index case, §3i; draws
 in correctly), and a "funky data shape" case (unsorted/interleaved rows with a mid-series gap, to
@@ -228,15 +258,40 @@ demonstrate order-independence).
 
 ---
 
+
+
 ## 7. Known gaps / not yet done
 
 - **Gradient mark doesn't tween its tip.** `getLineGradientMark` always uses the static x/y encoding, so
-  during draw-in its leading edge jumps between data points instead of smoothly tracking the line's
-  interpolated tip.
+during draw-in its leading edge jumps between data points instead of smoothly tracking the line's
+interpolated tip.
 - **Alternate segments / forecasts untested with draw-in.** The facet-source swap (§3h) unconditionally
-  overrides `${name}_with_bridges`; combining the two hasn't been exercised.
-- **No unit tests yet** for `drawInAnimationUtils.ts` (mirroring `hoverAnimationUtils.test.ts`'s
-  coverage) or for the `isDrawInAnimate` gate in `lineSpecBuilder.test.ts`.
+overrides `${name}_with_bridges`; combining the two hasn't been exercised.
+- **Fixed:** `drawInAnimT` **signal was invalid Vega** — it declared both `init` and `update`, which Vega
+rejects at parse time ("Signals can not include both init and update expressions"), so the whole spec
+failed to build and the chart rendered blank whenever `'drawIn'` was in `animationTypes`. Fixed by using
+`value: 0` instead of `init: '0'` (`value` is a plain starting number and can coexist with `update`;
+`init` is a one-time expression and cannot). Caught by parsing/running the built spec through real Vega
+(`vega.parse` + `View.runAsync`) rather than only asserting on individual data/signal array shapes —
+worth doing for any future signal-chain change here.
 - **Only line uses this system.** `drawInAnimationUtils.ts` was written to generalize (parameterized by
-  `name`/`dimension`/`metric`/`scaleType`, not line-specific internals) but hasn't been ported to
-  another mark yet.
+`name`/`dimension`/`metric`/`scaleType`, not line-specific internals) but hasn't been ported to
+another mark yet. Currently, most of the functions in `drawInAnimationUtils.ts` are line specific since 
+line's animation is more complicated than just animating one property. The main timer signals are built 
+to be used for other marks.
+- **Wiring to other marks.** In theory, a draw-in animation for most other marks will just mean animating 
+some property from one value to another. For these cases, the signal `DRAW_IN_ANIM_T_EASED` or `DRAW_IN_ANIM_T` 
+can be directly used with scaling and offset math to animate any desired property. For other charts like donut 
+or scatter where we might want marks to draw one-after-another, extra math and/or helper function may be needed.
+- **One-after-another animations.** One idea for allowing this type of animation would be to use the 
+`DRAW_IN_ANIM_T` in the encoding for a desired property to animate (opacity, y positon, etc) and offset its 
+start and end based on the x value. 
+i.e. Say we have a bar chart with 3 bars (bar1, bar2, bar3) and we want the bars to animate their y from 
+0 to their value one-after-another. The meaning of `DRAW_IN_ANIM_T_EASED` stays the same where the 0-1 
+fraction still represents the entire animation's progress. Plugging this directly into y2 (with scaling + 
+offset) would animate nicely, but wouldn't have the one-after-another effect we want. For this we can use 
+the following formula: `t_local(delay, duration) = clamp((t - delay) / duration, 0, 1)` where t is 
+`DRAW_IN_ANIM_T_EASED` and delay + duration <= 1. If we can find a way to compute this delay and duration 
+for each bar, this function would should allow each bar to adjust it's start/end time and create a staggered 
+one-after-another draw-in animation.
+

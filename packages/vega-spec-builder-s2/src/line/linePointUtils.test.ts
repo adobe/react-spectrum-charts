@@ -237,9 +237,9 @@ describe('getLineStaticPoint()', () => {
     ]);
   });
 
-  describe('when isAnimate is true', () => {
+  describe('when isHoverAnimate is true', () => {
     test('returns the animated deemphasis-ramp signal instead of the instant production rules', () => {
-      const mark = getLineStaticPoint({ ...defaultLineOptions, interactiveMarkName: 'line0', isAnimate: true });
+      const mark = getLineStaticPoint({ ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true });
       const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
       expect(mark.encode?.update?.opacity).toStrictEqual({
         signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
@@ -251,7 +251,7 @@ describe('getLineStaticPoint()', () => {
         ...defaultLineOptions,
         interactiveMarkName: 'line0',
         isHighlightedByGroup: true,
-        isAnimate: true,
+        isHoverAnimate: true,
       });
       const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
       expect(mark.encode?.update?.opacity).toStrictEqual({

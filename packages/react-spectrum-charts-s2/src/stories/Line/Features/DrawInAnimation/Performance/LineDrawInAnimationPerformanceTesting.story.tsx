@@ -1,0 +1,287 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/* eslint-disable react/prop-types -- story args are typed via StoryFn generics, not React propTypes */
+import { ComponentProps, ReactElement, useMemo, useState } from 'react';
+
+import { StoryFn } from '@storybook/react';
+
+import { AnimationType, DRAW_IN_ANIMATION_DURATION_MS } from '@spectrum-charts/constants';
+import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
+
+import { Chart } from '../../../../../Chart';
+import { Axis, ChartInspect, Line } from '../../../../../components';
+import useChartProps from '../../../../../hooks/useChartProps';
+import { workspaceTrendsData } from '../../../../data/data';
+import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../storyUtils';
+import { bindWithProps } from '../../../../../test-utils';
+import { ChartProps } from '../../../../../types';
+
+export default {
+  title: 'React Spectrum Charts 2/Line/Features/DrawInAnimation/Performance',
+  component: Line,
+  argTypes: {
+    animations: {
+      control: 'boolean',
+      description: 'Chart-level master kill switch for all animations.',
+    },
+    animationTypes: {
+      control: { type: 'check' },
+      options: ['hover', 'drawIn'],
+      description: 'Which animation types are enabled.',
+    },
+    chartCount: {
+      control: { type: 'number', min: 1, max: 40, step: 1 },
+      description: 'Number of independent line charts to render in the dashboard grid.',
+    },
+    seriesPerChart: {
+      control: { type: 'number', min: 1, max: 50, step: 1 },
+      description: 'Number of series generated per chart.',
+    },
+    pointsPerSeries: {
+      control: { type: 'number', min: 10, max: 5_000, step: 10 },
+      description: 'Number of data points generated per series.',
+    },
+  },
+  args: { animations: true, animationTypes: ['hover', 'drawIn'], chartCount: 20, seriesPerChart: 30, pointsPerSeries: 10 },
+};
+
+type DashboardArgs = {
+  animations?: boolean;
+  animationTypes?: AnimationType[];
+  chartCount: number;
+  seriesPerChart: number;
+  pointsPerSeries: number;
+};
+
+const CHART_HEIGHT = 260;
+
+const defaultArgs = {
+  color: 'series',
+  dimension: 'datetime',
+  metric: 'value',
+  scaleType: 'time' as const,
+};
+
+const dialogContent = (datum: Datum): ReactElement => (
+  <div>
+    <div>{formatTimestamp(datum.datetime as number)}</div>
+    <div>Series: {datum.series}</div>
+    <div>Value: {Number(datum.value).toLocaleString()}</div>
+  </div>
+);
+
+const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
+
+type DashboardChartProps = {
+  data: GeneratedTimeSeriesDatum[];
+  animations?: boolean;
+  animationTypes?: AnimationType[];
+};
+
+/**
+ * A single dashboard tile — its own Chart, sized to fill its grid cell. `ChartInspect` is what
+ * makes the Line interactive (wires up the voronoi hover overlay + hoveredItem signal), which is
+ * what the hover-animation system needs to trigger at all.
+ */
+const DashboardChart = ({ data, animations, animationTypes }: DashboardChartProps): ReactElement => {
+  const chartProps: ChartProps = useChartProps({ data, animations, animationTypes, width: 'auto', height: '100%' });
+  return (
+    <div style={{ height: CHART_HEIGHT, overflow: 'hidden', border: '1px solid var(--spectrum-gray-300)' }}>
+      <Chart {...chartProps}>
+        <Axis position="left" grid />
+        <Axis position="bottom" labelFormat="time" baseline />
+        <Line {...defaultArgs}>
+          <ChartInspect>{dialogContent}</ChartInspect>
+        </Line>
+      </Chart>
+    </div>
+  );
+};
+
+/**
+ * Performance stress test — a resizable dashboard of `chartCount` independently-hovering line
+ * charts, each seeded with its own deterministic dataset (`generateLargeData`). Resize the
+ * container to see how the hover- and draw-in-animation systems hold up under realistic dashboard
+ * layout changes at various chart/series/point counts, not just data volume within a single chart.
+ */
+const DashboardStory: StoryFn<DashboardArgs> = ({
+  animations,
+  animationTypes,
+  chartCount,
+  seriesPerChart,
+  pointsPerSeries,
+}): ReactElement => {
+  const chartData = useMemo(
+    () =>
+      Array.from({ length: chartCount }, (_, i) => ({
+        id: `chart-${i}`,
+        data: generateLargeData(seriesPerChart, pointsPerSeries, i),
+      })),
+    [chartCount, seriesPerChart, pointsPerSeries]
+  );
+
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: 16,
+        width: 1400,
+        minWidth: 600,
+        maxWidth: 2800,
+        height: 900,
+        minHeight: 300,
+        maxHeight: 2400,
+        overflow: 'auto',
+        resize: 'both',
+        border: '2px solid var(--spectrum-gray-400)',
+        padding: 16,
+      }}
+    >
+      {chartData.map(({ id, data }) => (
+        <DashboardChart key={id} data={data} animations={animations} animationTypes={animationTypes} />
+      ))}
+    </div>
+  );
+};
+
+type LargeDatasetArgs = ComponentProps<typeof Line> & {
+  seriesPerChart: number;
+  pointsPerSeries: number;
+  animations?: boolean;
+  animationTypes?: AnimationType[];
+};
+
+/**
+ * Performance stress test — a single chart with a large generated dataset. On mount, watch the
+ * draw-in animation sweep in at scale; hover a legend entry or a data point afterward to watch the
+ * hover-animation system fade/emphasize at scale (toggle `animationTypes` independently to compare).
+ */
+const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({
+  seriesPerChart,
+  pointsPerSeries,
+  animations,
+  animationTypes,
+  ...args
+}): ReactElement => {
+  const data = useMemo(() => generateLargeData(seriesPerChart, pointsPerSeries), [seriesPerChart, pointsPerSeries]);
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data,
+    animations,
+    animationTypes,
+  });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Value" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+      </Line>
+    </Chart>
+  );
+};
+
+type ResizeDuringAnimationArgs = ComponentProps<typeof Line> & {
+  seriesPerChart: number;
+  pointsPerSeries: number;
+  animations?: boolean;
+  animationTypes?: AnimationType[];
+};
+
+/**
+ * Performance stress test — a single resizable chart with draw-in animation enabled. Click "Replay"
+ * then immediately drag the container's resize handle to resize while the line is still drawing in
+ * (draw-in only runs for DRAW_IN_ANIMATION_DURATION_MS after mount), checking that the animated x/y
+ * encoding stays in sync with the container's new dimensions instead of desyncing or jumping.
+ */
+const ResizeDuringAnimationStory: StoryFn<ResizeDuringAnimationArgs> = ({
+  seriesPerChart,
+  pointsPerSeries,
+  animations,
+  animationTypes,
+  ...args
+}): ReactElement => {
+  const [replayKey, setReplayKey] = useState(0);
+  const data = useMemo(() => generateLargeData(seriesPerChart, pointsPerSeries), [seriesPerChart, pointsPerSeries]);
+  const chartProps = useChartProps({
+    data,
+    animations,
+    animationTypes,
+    width: 'auto',
+    height: '100%',
+  });
+
+  return (
+    <div>
+      <button type="button" onClick={() => setReplayKey((key) => key + 1)} style={{ marginBottom: 8 }}>
+        Replay ({DRAW_IN_ANIMATION_DURATION_MS}ms window — start dragging the resize handle right after clicking)
+      </button>
+      <div
+        style={{
+          resize: 'both',
+          overflow: 'auto',
+          width: 700,
+          height: 400,
+          minWidth: 200,
+          minHeight: 200,
+          maxWidth: 1600,
+          maxHeight: 1200,
+          border: '2px solid var(--spectrum-gray-400)',
+          padding: 16,
+        }}
+      >
+        <Chart {...chartProps} key={replayKey}>
+          <Axis position="left" grid title="Value" />
+          <Axis position="bottom" labelFormat="time" baseline ticks />
+          <Line {...args}>
+            <ChartInspect>{dialogContent}</ChartInspect>
+          </Line>
+        </Chart>
+      </div>
+    </div>
+  );
+};
+
+export const Dashboard = bindWithProps(DashboardStory);
+Dashboard.args = {
+  animations: true,
+  animationTypes: ['hover', 'drawIn'],
+  chartCount: 20,
+  seriesPerChart: 10,
+  pointsPerSeries: 10,
+};
+
+export const ManySeriesFewPointsDataset = bindWithProps(LargeDatasetStory);
+ManySeriesFewPointsDataset.args = { ...defaultArgs, seriesPerChart: 100, pointsPerSeries: 10 };
+(ManySeriesFewPointsDataset as unknown as { argTypes: Record<string, { table: { disable: true } }> }).argTypes = {
+  chartCount: { table: { disable: true } },
+};
+
+export const FewSeriesManyPointsDataset = bindWithProps(LargeDatasetStory);
+FewSeriesManyPointsDataset.args = { ...defaultArgs, seriesPerChart: 3, pointsPerSeries: 300 };
+(FewSeriesManyPointsDataset as unknown as { argTypes: Record<string, { table: { disable: true } }> }).argTypes = {
+  chartCount: { table: { disable: true } },
+};
+
+export const ResizeDuringAnimation = bindWithProps(ResizeDuringAnimationStory);
+ResizeDuringAnimation.args = {
+  ...defaultArgs,
+  seriesPerChart: 8,
+  pointsPerSeries: 200,
+  animations: true,
+  animationTypes: ['hover', 'drawIn'],
+};
+(ResizeDuringAnimation as unknown as { argTypes: Record<string, { table: { disable: true } }> }).argTypes = {
+  chartCount: { table: { disable: true } },
+};

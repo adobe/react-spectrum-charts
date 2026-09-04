@@ -107,11 +107,18 @@ type BarOptionsWithDefaults =
 export interface BarSpecOptions extends PartiallyRequired<BarOptions, BarOptionsWithDefaults> {
   /** Experimental: keyboard navigation focus rings/signals are emitted when true. @see ChartOptions.accessibleNavigation */
   accessibleNavigation?: boolean;
+  /** Unique composite hover-animation identity per rendered bar, computed from the real data (not `rscMarkId`). */
+  barIds?: string[];
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];
   dimensionScaleType: 'band';
   highlightedItem?: HighlightedItem;
+  highlightedSeries?: string | number;
   idKey: string;
   index: number;
   interactiveMarkName: string | undefined;
+  isHighlightedByGroup?: boolean;
+  isHoverAnimate?: boolean;
+  legendHighlightSignals?: string[];
+  popoverMarkName?: string;
 }
