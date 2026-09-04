@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+  ColorValueRef,
   EncodeEntryName,
   GroupMark,
   Mark,
@@ -30,6 +31,7 @@ import {
   DONUT_SUMMARY_VALUE_FONT_SIZES,
   FILTERED_TABLE,
 } from '@spectrum-charts/constants';
+import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
@@ -166,7 +168,7 @@ export const getDonutSummaryMarks = (options: DonutSpecOptions): GroupMark[] => 
  * @returns GorupMark
  */
 export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): GroupMark => {
-  const { donutOptions, hideValue, label } = options;
+  const { donutOptions, hideValue, label, delta } = options;
   const groupMark: Mark = {
     type: 'group',
     name: `${donutOptions.name}_summaryGroup`,
@@ -188,6 +190,14 @@ export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): Grou
       encode: getSummaryLabelEncode({ ...options, label }),
     });
   }
+  if (delta !== undefined) {
+    groupMark.marks?.push({
+      type: 'text',
+      name: `${donutOptions.name}_summaryDelta`,
+      from: { data: `${donutOptions.name}_summaryData` },
+      encode: getSummaryDeltaEncode({ ...options, delta }),
+    });
+  }
   return groupMark;
 };
 
@@ -197,7 +207,7 @@ export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): Grou
  * @returns GroupMark
  */
 export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions): GroupMark => {
-  const { donutOptions, hideValue, label } = options;
+  const { donutOptions, hideValue, label, delta } = options;
   const groupMark: Mark = {
     type: 'group',
     name: `${donutOptions.name}_percentText`,
@@ -219,6 +229,14 @@ export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions
       encode: getSummaryLabelEncode({ ...options, label }),
     });
   }
+  if (delta !== undefined) {
+    groupMark.marks?.push({
+      type: 'text',
+      name: `${donutOptions.name}_booleanSummaryDelta`,
+      from: { data: `${donutOptions.name}_booleanData` },
+      encode: getSummaryDeltaEncode({ ...options, delta }),
+    });
+  }
   return groupMark;
 };
 
@@ -230,7 +248,8 @@ export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions
 export const getSummaryValueEncode = (
   options: DonutSummarySpecOptions
 ): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-  const { donutOptions, label } = options;
+  const { donutOptions, label, delta } = options;
+  const hasLineBelow = Boolean(label) || delta !== undefined;
   return {
     update: {
       x: { signal: 'width / 2' },
@@ -242,7 +261,7 @@ export const getSummaryValueEncode = (
       ],
       fontWeight: { value: 800 }, // S2 font weight for value
       align: { value: 'center' },
-      baseline: getSummaryValueBaseline(label),
+      baseline: getSummaryValueBaseline(hasLineBelow),
       limit: getSummaryValueLimit(options),
     },
   };
@@ -265,14 +284,14 @@ export const getSummaryValueText = ({
 
 /**
  * Gets the baseline for the summary value
- * @param label
+ * @param hasLineBelow whether a label or delta line renders below the value
  * @returns TextBaselineValueRef
  */
-export const getSummaryValueBaseline = (label?: string): TextBaselineValueRef => {
-  if (label) {
+export const getSummaryValueBaseline = (hasLineBelow?: string | boolean): TextBaselineValueRef => {
+  if (hasLineBelow) {
     return { value: 'alphabetic' };
   }
-  // If there isn't a label, the text should be vertically centered
+  // If nothing renders below it, the text should be vertically centered
   return { value: 'middle' };
 };
 
@@ -281,10 +300,11 @@ export const getSummaryValueBaseline = (label?: string): TextBaselineValueRef =>
  * @param donutSummaryOptions
  * @returns NumericValueRef
  */
-export const getSummaryValueLimit = ({ donutOptions, label }: DonutSummarySpecOptions): NumericValueRef => {
+export const getSummaryValueLimit = ({ donutOptions, label, delta }: DonutSummarySpecOptions): NumericValueRef => {
   const { name } = donutOptions;
-  // if there isn't a label, the height of the font from the center of the donut is 1/2 the font size
-  const fontHeight = label ? `${name}_summaryValueFontSize` : `${name}_summaryValueFontSize * 0.5`;
+  const hasLineBelow = Boolean(label) || delta !== undefined;
+  // if nothing renders below it, the height of the font from the center of the donut is 1/2 the font size
+  const fontHeight = hasLineBelow ? `${name}_summaryValueFontSize` : `${name}_summaryValueFontSize * 0.5`;
   const donutInnerRadius = getDonutInnerRadiusExpr(donutOptions);
 
   return {
@@ -304,29 +324,118 @@ export const getSummaryLabelEncode = ({
   donutOptions,
   hideValue,
   label,
+  delta,
 }: DonutSummarySpecOptions & { label: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-  // height of the label block from the donut's center: half its own font size when centered alone,
-  // or the value's dy offset plus the label's full font size when stacked below the value
-  const heightFromCenter = hideValue
-    ? `${donutOptions.name}_summaryLabelFontSize * 0.5`
-    : `ceil(${donutOptions.name}_summaryValueFontSize * 0.25) + ${donutOptions.name}_summaryLabelFontSize`;
+  const { name } = donutOptions;
+  const hasValue = !hideValue;
+  const hasDelta = delta !== undefined;
+  // label always continues below the value when it's shown; otherwise it becomes the anchor line
+  // (flush at center) if a delta follows it, or renders centered alone if nothing else is present
+  let baseline: 'top' | 'alphabetic' | 'middle';
+  if (hasValue) {
+    baseline = 'top';
+  } else if (hasDelta) {
+    baseline = 'alphabetic';
+  } else {
+    baseline = 'middle';
+  }
+  // height of the label block from the donut's center, matching its own baseline: half its own font
+  // size when centered alone, its full font size when flush at center with a delta below it, or the
+  // value's dy offset plus the label's full font size when stacked below the value
+  let heightFromCenter: string;
+  if (baseline === 'middle') {
+    heightFromCenter = `${name}_summaryLabelFontSize * 0.5`;
+  } else if (baseline === 'alphabetic') {
+    heightFromCenter = `${name}_summaryLabelFontSize`;
+  } else {
+    heightFromCenter = `ceil(${name}_summaryValueFontSize * 0.25) + ${name}_summaryLabelFontSize`;
+  }
   const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow(${heightFromCenter}, 2))`;
   return {
     update: {
       x: { signal: 'width / 2' },
       y: { signal: 'height / 2' },
-      ...(!hideValue && { dy: { signal: `ceil(${donutOptions.name}_summaryValueFontSize * 0.25)` } }),
+      ...(hasValue && { dy: { signal: `ceil(${name}_summaryValueFontSize * 0.25)` } }),
       text: { value: label },
       fontSize: [
         { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
-        { signal: `${donutOptions.name}_summaryLabelFontSize` },
+        { signal: `${name}_summaryLabelFontSize` },
       ],
       fontWeight: { value: 700 },
       align: { value: 'center' },
-      baseline: { value: hideValue ? 'middle' : 'top' },
+      baseline: { value: baseline },
       limit: {
         signal: limitSignal,
       },
     },
   };
 };
+
+/**
+ * Gets the encode for the sentiment-colored delta line, always the last visible line
+ * @param donutSummaryOptions
+ * @returns encode
+ */
+export const getSummaryDeltaEncode = ({
+  donutOptions,
+  hideValue,
+  label,
+  delta,
+}: DonutSummarySpecOptions & { delta: number }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+  const { name, colorScheme } = donutOptions;
+  const hasValue = !hideValue;
+  const hasLabel = Boolean(label);
+  // delta always renders last: below the label if present, otherwise directly below the value
+  // (taking over the label's usual gap), or centered alone if neither value nor label render
+  const valueGapExpr = hasValue ? `ceil(${name}_summaryValueFontSize * 0.25) + ` : '';
+  let dyExpr: string | undefined;
+  if (hasLabel) {
+    dyExpr = `${valueGapExpr}${name}_summaryLabelFontSize + ceil(${name}_summaryLabelFontSize * 0.25)`;
+  } else if (hasValue) {
+    dyExpr = `ceil(${name}_summaryValueFontSize * 0.25)`;
+  } else {
+    dyExpr = undefined;
+  }
+  const baseline = dyExpr === undefined ? 'middle' : 'top';
+  const heightFromCenter =
+    baseline === 'middle' ? `${name}_summaryLabelFontSize * 0.5` : `${dyExpr} + ${name}_summaryLabelFontSize`;
+  const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow(${heightFromCenter}, 2))`;
+  return {
+    update: {
+      x: { signal: 'width / 2' },
+      y: { signal: 'height / 2' },
+      ...(dyExpr !== undefined && { dy: { signal: dyExpr } }),
+      text: getSummaryDeltaText(delta),
+      fontSize: [
+        { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
+        { signal: `${name}_summaryLabelFontSize` },
+      ],
+      fontWeight: { value: 800 },
+      fill: getSummaryDeltaFill(delta, colorScheme),
+      align: { value: 'center' },
+      baseline: { value: baseline },
+      limit: {
+        signal: limitSignal,
+      },
+    },
+  };
+};
+
+/**
+ * Gets the text value for the delta line, an explicit-sign one-decimal percent (e.g. "+2.5%")
+ * @param delta
+ * @returns TextValueRef
+ */
+export const getSummaryDeltaText = (delta: number): TextValueRef => ({
+  signal: `format(${delta}, '+.1%')`,
+});
+
+/**
+ * Gets the sentiment-based fill for the delta line - green for non-negative, red for negative
+ * @param delta
+ * @param colorScheme
+ * @returns ColorValueRef
+ */
+export const getSummaryDeltaFill = (delta: number, colorScheme: DonutSpecOptions['colorScheme']): ColorValueRef => ({
+  value: getS2ColorValue(delta >= 0 ? 'green-800' : 'red-800', colorScheme),
+});
