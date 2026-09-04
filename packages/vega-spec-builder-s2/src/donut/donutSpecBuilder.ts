@@ -43,8 +43,18 @@ import {
   getSliceGapSignal,
   getSumData,
 } from './donutUtils';
-import { getAdvancedLabelMarks, getAdvancedLabelScales, getAdvancedLabelSignals } from './advancedLabelUtils';
-import { getSegmentLabelMarks, getSegmentLabelScales, getSegmentLabelSignals } from './segmentLabelUtils';
+import {
+  getAdvancedLabelData,
+  getAdvancedLabelMarks,
+  getAdvancedLabelScales,
+  getAdvancedLabelSignals,
+} from './advancedLabelUtils';
+import {
+  getSegmentLabelData,
+  getSegmentLabelMarks,
+  getSegmentLabelScales,
+  getSegmentLabelSignals,
+} from './segmentLabelUtils';
 
 export const addDonut = produce<
   ScSpec,
@@ -138,7 +148,12 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
     });
   }
   // used to detect the empty state (no data or all metric values are 0)
-  data.push(getSumData(options), ...getDonutSummaryData(options));
+  data.push(
+    getSumData(options),
+    ...getDonutSummaryData(options),
+    ...getSegmentLabelData(options),
+    ...getAdvancedLabelData(options)
+  );
 });
 
 const getPieTransforms = ({ startAngle, metric, name }: DonutSpecOptions): (FormulaTransform | PieTransform)[] => [
