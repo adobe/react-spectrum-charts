@@ -1,0 +1,149 @@
+{
+  "id": "donut-advanced-labels",
+  "title": "Donut Advanced Labels — Swatch + Value Block Rendering",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-09-01",
+  "complexity": {
+    "score": 3,
+    "rationale": "Scope narrowed to the swatch+text block's rendering and positioning (connector-line generation is now its own spec, donut-advanced-labels-connector-line, and collision avoidance reuses donut-direct-labels-collision rather than being reimplemented here). A swatch rendered as its own mark inside a donut label has no existing precedent in this codebase, and extending the direct-label hemisphere anchor technique from two text lines to a 4-part block is real new logic - but the value/detail row rendering and data reuse (the existing `_sumData` aggregate) are straightforward. The real-text-measurement question inherited from donut-direct-labels still applies here too, at a larger (4-part) block."
+  },
+  "summary": "Advanced labels are a not-yet-built Donut child component: a label block (color swatch + segment name on one row, value/percent below, an optional exact-value detail row below that), positioned around the ring the same way direct labels are. Confirmed against a live Figma example showing all three documented elements (swatch+name, bold value/%, and a 'X out of Y' detail row). The connector leader line connecting each label to its slice is tracked separately in donut-advanced-labels-connector-line; collision avoidance when labels stack was scoped to reuse donut-direct-labels-collision but was NOT integrated in this implementation - see crossCutting.notes.",
+  "requirements": [
+    "Render a swatch (fixed 16px, using the existing roundedSquarePath SVG shape - reuse it, don't invent a new shape) + segment name on the same row (never stacked), gap 8px between them (`chart.donut.spacing.advanced-label-swatch-gap`).",
+    "Below that row: the value and/or percent, in `text-primary` (gray-800) - confirmed against the Figma example ('60.8%', '32.4%', '6.8%' all render in the darker gray-800, not the gray-700 used by direct labels' value text). Gap between the name row and the value/% row is 4px (`chart.donut.spacing.advanced-label-name-value-gap`).",
+    "Below the value/%, an optional detail row in the format '{segment value} out of {total value}' (confirmed via the Figma example: '440 out of 6,458', '2,092 out of 6,458', '3,926 out of 6,458', where 6,458 is the same aggregated total the DonutSummary/metric-total already computes), rendered in `text-secondary` (gray-700). Gap between the value/% row and the detail row is 0px (`chart.donut.spacing.advanced-label-value-detail-gap`) - directly adjacent.",
+    "The value/% row and the detail row are left-aligned to the swatch's left edge, not to the name (which starts to the right of the swatch, after the 8px gap) - confirmed visually (both rows start at the same x as the swatch, not indented under the name text).",
+    "Swatch is always the leftmost element of the label block on both hemispheres - the 'swatch -> name -> value/% -> detail' reading order never flips. The hemisphere-mirrored anchor-shift technique from donut-direct-labels (move the anchor point per hemisphere, don't flip the alignment property) extends to the whole swatch+text block here, not just text lines - confirmed in the Figma example (swatch is the leftmost element for North America, EMEA, and Others alike, regardless of hemisphere).",
+    "Gap from the ring is 20px (`chart.donut.spacing.label-ring-gap`, shared with direct labels), measured against the whole block's real rendered bounding box (swatch + all text rows together), not an anchor coordinate - the label must never overlap the ring."
+  ],
+  "designTokens": [
+    { "token": "chart.donut.spacing.advanced-label-swatch-gap", "value": "8px", "usage": "Gap between the swatch and the segment name - distinct from the plain legend's 10px swatch gap." },
+    { "token": "chart.donut.spacing.advanced-label-name-value-gap", "value": "4px", "usage": "Gap between the name row and the value/% row." },
+    { "token": "chart.donut.spacing.advanced-label-value-detail-gap", "value": "0px", "usage": "Gap between the value/% row and the detail row - directly adjacent." },
+    { "token": "chart.donut.size.swatch", "value": "16px", "usage": "Swatch dimensions, shape: roundedSquarePath (see design-tokens SVG Paths)." },
+    { "token": "Advanced label - segment name", "value": "same size as Direct label - value (XS 12(derived)/S 14(derived)/M 16/L 20(derived)/XL 24(derived) px), weight 400, color text-secondary (gray-700)", "usage": "Font size for the name row, keyed to the donut's size tier." },
+    { "token": "Advanced label - value/%", "value": "XS 13.5(derived)/S 15.75(derived)/M 18/L 22.5(derived)/XL 27(derived) px, weight 800, color gray-800 at rest -> segment's own categorical color on hover", "usage": "Font size for the value/% row, keyed to the donut's size tier." },
+    { "token": "Advanced label - detail row", "value": "XS 8.25(derived)/S 9.6(derived)/M 11/L 13.75(derived)/XL 16.5(derived) px, weight 400, color text-secondary (gray-700)", "usage": "Font size for the optional detail row, keyed to the donut's size tier." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-advanced-labels/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54224&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Very long segment name, or a detail row whose numbers are unusually wide", "expectedBehavior": "PARTIALLY RESOLVED / DEFERRED: vertically, getAdvancedLabelRowDy caps the row-stacking height at the same DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO-based margin direct labels reserve horizontally (min(1, maxHeight/totalHeight)) - this prevents the block from spilling past its reserved margin, but does so by compressing the gaps between rows, which visibly 'smooshes' name/value/detail together at small sizes when content is oversized. Horizontally, the block has NO equivalent protection - a right-hemisphere block wider than the reserved margin overflows the container's edge outright (confirmed live at container width 338px / 184px outer diameter, L tier). A fix was attempted (mirroring the left hemisphere's pull-back so the far edge stays on-canvas) but was reverted: it kept content on-canvas at the cost of shrinking the fixed 20px ring-gap on oversized right-hemisphere labels, which the user confirmed is not acceptable. Both the horizontal overflow and the vertical smooshing are DEFERRED to donut-direct-labels-collision - a correct fix likely needs a continuous font-size shrink factor applied to the whole block when it doesn't fit, not a position or spacing adjustment (which is what both attempts so far have used, and both traded away a different named-as-correct invariant)." },
+    { "case": "Many small adjacent segments clustered in the same hemisphere", "expectedBehavior": "NOT RESOLVED / DEFERRED: donut-direct-labels-collision's cascade algorithm was not finished (a Safari/Firefox positioning bug was found mid-implementation and the branch was explicitly tabled per user decision) and is not integrated here. Advanced labels have no collision avoidance - at XS/S tiers with several adjacent segments, label blocks can visually overlap each other. Confirmed via manual responsive testing (AdvancedLabel/Features/Advanced Label - WithDetail story); tracked as a known limitation under donut-direct-labels-collision, not unique to this feature." },
+    { "case": "Direct labels and advanced labels combined on the same chart", "expectedBehavior": "NOT VERIFIED - collision integration (see above) was never wired up, so this combined-collision scenario was not exercised. SegmentLabel and AdvancedLabel can both be added as children today and each renders independently, but no shared collision handling exists between them yet." },
+    { "case": "detail row omitted (value/% only, no 'X out of Y' row)", "expectedBehavior": "RESOLVED: getAdvancedLabelRowDy's totalHeightExpr only includes gaps/sizes for visible rows, so the reserved block height (and its vertical-cap scale factor) shrinks accordingly when detail is omitted." },
+    { "case": "isBoolean donut variant", "expectedBehavior": "RESOLVED: advanced labels are restricted for isBoolean donuts, matching SegmentLabel's existing restriction - getAdvancedLabelMarks returns [] when isBoolean is true." },
+    { "case": "Hover interaction (same mechanism as donut-hover)", "expectedBehavior": "RESOLVED: the value/% row's fill switches to the segment's own categorical color on hover via getLabelValueFill (generalized from segmentLabelUtils.ts's segment-label-only getSegmentLabelValueFill to take a restColor param so both direct and advanced labels share it), and all rows fade via getMarkOpacity, matching the arc mark exactly. isInteractive() was extended to treat a value/percent-showing AdvancedLabel as interactive on its own, same as SegmentLabel." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "CORRECTED during implementation: touchesTooltipOrPopover is actually false, not true as originally filed - no dedicated tooltip/popover wiring was added for AdvancedLabel; it participates in the existing generic isInteractive/getMarkOpacity hover mechanism exactly like SegmentLabel, with no new chartPopover/chartInspect data source. requiresNewSignalOrScale remains true - 3 new threshold scales (name/value/detail font size) and 3 corresponding signals were added (advancedLabelUtils.ts's getAdvancedLabelScales/getAdvancedLabelSignals). MAJOR DEVIATION: collision avoidance was NOT integrated. donut-direct-labels-collision's cascade algorithm (donutLabelCollisionUtils.ts) was implemented far enough to find a real sin/cos formula bug, but a deeper Safari/Firefox mispositioning bug surfaced during testing; the user explicitly deferred it ('let's table it and move onto advanced') and that work remains stashed, unintegrated with either direct or advanced labels. This implementation independently solved a related-but-narrower problem - vertical overflow of the taller 3-row advanced-label block for segments anchored near the ring's top/bottom - by reusing the existing horizontal reservation ratio (DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) as a runtime cap on row-stacking height (getAdvancedLabelRowDy). FOLLOW-UP (post-merge live testing): the user found this vertical fix compresses row spacing ('smooshed' labels) at small sizes as a side effect, and separately found the horizontal dimension has no equivalent protection at all - a right-hemisphere block wider than the reserved margin overflows the container edge (reproduced live at 338px container / 184px diameter, L tier). An equivalent horizontal fix (mirroring the left hemisphere's capped pull-back) was attempted and reverted per user decision: it kept content on-canvas but shrunk the fixed 20px ring-gap on oversized labels, which is not acceptable. Per user direction, BOTH the horizontal overflow and the vertical row-compression are explicitly deferred to donut-direct-labels-collision as a single unit of work, since both need the same real solution (shrinking content to fit, likely via a continuous font-size factor) rather than the position/spacing tricks tried so far - see the updated edgeCases entry above. requiresS1S2Parity is false: there is no existing s1 AdvancedLabel implementation at all to mirror, so this is s2-only work by definition."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/supplemental/advancedLabelSpec.types.ts",
+      "change": "New file: AdvancedLabelOptions (labelKey?, value?: boolean, percent?: boolean, valueFormat?, percentFormat?, detail?: boolean) and AdvancedLabelSpecOptions (with defaults applied + donutOptions), following the SegmentLabelOptions/SegmentLabelSpecOptions pattern in segmentLabelSpec.types.ts.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/advancedLabelUtils.ts",
+      "change": "New file: builds the swatch mark (roundedSquarePath, positioned via manually-replicated polar-to-cartesian math since symbol marks have no radius/theta/dx encode channels), the name/value/detail text marks (per-tier font sizes and colors), and the hemisphere-mirrored block anchor offset extending the direct-label technique to the whole block. Reuses the existing `_sumData` aggregate (donutUtils.ts's getSumData) for the detail row's 'out of {total}' value. Does NOT reuse donut-direct-labels-collision - that util was never finished/integrated (see crossCutting.notes); the connector-line path mark is still a separate, not-yet-implemented spec (donut-advanced-labels-connector-line).",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "ADDED (not explicitly called out in original plan): getDonutOuterRadiusExpr's reservation condition was extended from `segmentLabels.length` alone to `segmentLabels.length || advancedLabels.length`, so a donut with only an AdvancedLabel still reserves ring-gap + horizontal-reach margin. The reservation formula/ratio itself was deliberately kept identical to the segment-label-only case (not grown for advanced labels' taller block) after user feedback that the ring must not shrink further - see crossCutting.notes.",
+      "lines": "N/A - modified existing function"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "ADDED (not in original plan): renamed/generalized the segment-label-only getSegmentLabelValueFill to exported getLabelValueFill(donutOptions, restColor), adding a restColor param so both direct labels (gray-700) and advanced labels (gray-800) share the hover-color-switch fill logic instead of duplicating it.",
+      "lines": "N/A - generalized existing function"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/marks/markUtils.ts",
+      "change": "ADDED (not in original plan): isInteractive() extended with an `advancedLabels?: AdvancedLabelOptions[]` param and an `advancedLabels.some(a => a.value || a.percent)` check, mirroring the existing segmentLabels check, so a donut with only an AdvancedLabel showing value/percent is treated as interactive.",
+      "lines": "N/A - modified existing function"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/donutSpec.types.ts",
+      "change": "Added `advancedLabels?: AdvancedLabelOptions[]` to DonutOptions, following the existing `segmentLabels`/`donutSummaries` pattern.",
+      "lines": "19-41"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts",
+      "change": "Destructured `advancedLabels = []` in addDonut's produce callback, added it to the assembled donutOptions object, and wired getAdvancedLabelMarks/getAdvancedLabelScales/getAdvancedLabelSignals into addMarks/addScales/addSignals alongside the SegmentLabel equivalents.",
+      "lines": "38-92, 156-163, 169-206"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/types/marks/supplemental/advancedLabel.types.ts",
+      "change": "New file: AdvancedLabelProps extending AdvancedLabelOptions, following segmentLabel.types.ts's pattern.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/pre-alpha/components/AdvancedLabel/AdvancedLabel.tsx",
+      "change": "New file: render-null component holding prop defaults, `displayName = 'AdvancedLabel'`, following SegmentLabel.tsx's pattern.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts",
+      "change": "Added a `case AdvancedLabel.displayName:` to the shared children-to-options switch, collecting into an `advancedLabels` array, following the existing `segmentLabels`/`donutSummaries` cases.",
+      "lines": "N/A - new case in existing switch"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/donutAdapter.ts",
+      "change": "Destructured `advancedLabels` from `childrenToOptions(children)` and included it in the returned DonutOptions.",
+      "lines": "17-27"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts",
+      "change": "BUG FIX (not in original plan): sanitizeChildren keeps its own independent `validDisplayNames` allowlist, separate from childrenAdapter.ts's switch - AdvancedLabel was silently dropped before ever reaching the switch until AdvancedLabel/AdvancedLabelElement was added to this allowlist and the MarkChildElement type union. Root cause of an initial '0 marks generated' bug.",
+      "lines": "N/A - modified existing allowlist"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/donutAdapter.test.ts",
+      "change": "Added a test passing `createElement(AdvancedLabel)` as a child and asserting the resulting collection has length 1, following the existing segmentLabels/donutSummaries child tests.",
+      "lines": "N/A - new test case"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/advancedLabelUtils.test.tsx",
+      "change": "CORRECTED EXTENSION (originally planned as .test.ts): new file, 41 unit tests covering getAdvancedLabelMarks/getAdvancedLabelScales/getAdvancedLabelSignals/getAdvancedLabelValueText, the hemisphere anchor radius/dx capping, the vertical row-stacking cap, the swatch mark's polar positioning and alignment fix, S2 styling, hover behavior, and empty-state hiding - following segmentLabelUtils.test.tsx's structure.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/marks/markUtils.test.ts",
+      "change": "ADDED (not in original plan): isInteractive() test case for advancedLabels showing value/percent, mirroring the existing segmentLabels test.",
+      "lines": "N/A - new test case"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.test.ts",
+      "change": "ADDED (not in original plan): addMarks/addScales/addSignals test cases asserting the AdvancedLabel group mark, font-size scales, and font-size signals are added when advancedLabels is present.",
+      "lines": "N/A - new test cases"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Features/AdvancedLabel/AdvancedLabel.story.tsx",
+      "change": "CORRECTED PATH (originally planned as stories/components/AdvancedLabel/AdvancedLabel.story.tsx): new file in the newer Donut/Features story location, with Basic, NameOnly, and a responsive WithDetail story (width-slider pattern mirroring DirectLabels.story.tsx, used to visually verify the vertical-overflow fix and the known XS/S-tier collision-overlap limitation across all size tiers). Hover-state color-switching and combining-with-direct-labels stories were not added separately - not yet built pending the collision-avoidance follow-up.",
+      "lines": "N/A - new file"
+    }
+  ],
+  "openQuestions": [
+    "RESOLVED (same as donut-direct-labels): real text measurement is obtained via the existing getLabelWidth() Vega expression function, already used by Legend/Line/Bar/SegmentLabel - reused directly for the swatch+name/value/detail width calculations, no approximation needed.",
+    "RESOLVED: yes, this feature (and donut-hover's isInteractive-gate broadening) extends to AdvancedLabel - isInteractive() was extended with an advancedLabels param/check identical in shape to the existing segmentLabels one.",
+    "RESOLVED: advanced labels are restricted for isBoolean donuts, consistent with the existing SegmentLabel restriction.",
+    "STILL OPEN: the derived (computed, not individually measured) values at each end of each typography row's tier range (name/value/detail at XS and XL) were not re-verified against Figma during this implementation - carried over unconfirmed from donut-chart-tokens.",
+    "NEW OPEN QUESTION (introduced by this implementation): when should donut-direct-labels-collision actually be resumed and integrated with AdvancedLabel? The vertical-overflow fix shipped here (reusing DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO as a row-stacking cap) prevents labels from escaping their reserved margin, but does not prevent adjacent label blocks from overlapping each other at small sizes - true collision avoidance is still pending the stashed donut-direct-labels-collision work.",
+    "NEW OPEN QUESTION (from post-merge live testing): should donut-direct-labels-collision's fix for 'a label block doesn't fit in its available space' use a continuous font-size shrink factor rather than the position/spacing adjustments tried in this spec? Two attempts here (vertical row-compression, horizontal anchor pull-back) each traded away a different invariant (clean row spacing, and the fixed 20px ring-gap respectively) - a font-scale-down approach was proposed as the likely correct direction but not implemented, pending the collision branch's redesign."
+  ],
+  "relatedIssues": ["donut-direct-labels", "donut-direct-labels-collision", "donut-advanced-labels-connector-line", "donut-hover", "donut-summary-responsive-sizing"]
+}

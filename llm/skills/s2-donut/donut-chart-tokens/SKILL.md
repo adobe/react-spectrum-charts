@@ -107,12 +107,14 @@ Sizes marked "derived" were computed rather than individually measured. S/L (rel
 | Metric delta line | `12px` (derived) | `14px` | `16px` | `20px` | `24px` (derived) | `800` | `sentiment-positive` / `sentiment-negative` |
 | Direct label — segment name | `9px` (derived) | `10.5px` (derived) | `12px` | `15px` (derived) | `18px` (derived) | `400` | `gray-700` |
 | Direct label — value | `12px` (derived) | `14px` (derived) | `16px` | `20px` (derived) | `24px` (derived) | `700` | `gray-700` at rest → segment's own categorical color on hover (see §5) |
-| Advanced label — segment name | same size as Direct label — value | | | | | `400` | `gray-700` |
-| Advanced label — value/% | `13.5px` (derived) | `15.75px` (derived) | `18px` | `22.5px` (derived) | `27px` (derived) | `800` | `gray-800` at rest → segment's own categorical color on hover (see §5) |
-| Advanced label — detail row | `8.25px` (derived) | `9.6px` (derived) | `11px` | `13.75px` (derived) | `16.5px` (derived) | `400` | `gray-700` |
+| Advanced label — segment name | `8px` (derived) | `10px` (derived) | `12px` (derived) | `14px` (derived) | `16px` (derived) | `400` | `gray-700` |
+| Advanced label — value/% | `11.25px` (derived) | `13.5px` (derived) | `15.75px` (derived) | `18px` (derived) | `22.5px` (derived) | `800` | `gray-800` at rest → segment's own categorical color on hover (see §5) |
+| Advanced label — detail row | `6.9px` (derived) | `8.25px` (derived) | `9.6px` (derived) | `11px` (derived) | `13.75px` (derived) | `400` | `gray-700` |
 | Benchmark label — single-line ("Target" only) | `12px` (derived) | `14px` | `16px` | `20px` | `24px` (derived) | `700` | `gray-800` |
 | Benchmark label — two-line, label part | same as Direct label — segment name | | | | | `400` | `gray-700` |
 | Benchmark label — two-line, value part | same size as Direct label — value | | | | | `700` | `gray-800` at rest → segment's own categorical color on hover (see §5) |
+
+**Advanced label correction:** the Advanced label rows are no longer "same size as Direct label — X" aliases (that equivalence was wrong). Each has its own dedicated array, with values one tier below what the alias produced — e.g. the segment name's L-tier size (`14px`) equals Direct label — value's own M-tier size, not L's. `XS` for each row is derived by extending its own S→M step one increment further down.
 
 ---
 

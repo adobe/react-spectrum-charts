@@ -101,6 +101,15 @@ describe('addSignals()', () => {
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', 'datum');
   });
+
+  test('should add AdvancedLabel font size signals when advancedLabels is present', () => {
+    const baselineSignals = addSignals(defaultSignals, defaultDonutOptions);
+    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, advancedLabels: [{}] });
+    expect(signals).toHaveLength(baselineSignals.length + 3);
+    expect(signals.find((signal) => signal.name === 'testName_advancedLabelNameFontSize')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_advancedLabelValueFontSize')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_advancedLabelDetailFontSize')).toBeDefined();
+  });
 });
 
 describe('addMarks()', () => {
@@ -111,6 +120,12 @@ describe('addMarks()', () => {
     expect(marks[0]).toHaveProperty('type', 'arc');
     expect(marks[1]).toHaveProperty('name', 'testName');
   });
+
+  test('should add the AdvancedLabel group mark when advancedLabels is present', () => {
+    const marks = addMarks([], { ...defaultDonutOptions, advancedLabels: [{}] });
+    expect(marks).toHaveLength(3);
+    expect(marks[2]).toHaveProperty('name', 'testName_advancedLabelGroup');
+  });
 });
 
 describe('donutSpecBuilder', () => {
@@ -120,6 +135,14 @@ describe('donutSpecBuilder', () => {
     expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
     expect(scales[1]).toHaveProperty('name', 'testName_ringWidthScale');
     expect(scales[2]).toHaveProperty('name', 'testName_sliceGapScale');
+  });
+
+  test('should add AdvancedLabel font size scales when advancedLabels is present', () => {
+    const scales = addScales([], { ...defaultDonutOptions, advancedLabels: [{}] });
+    expect(scales).toHaveLength(6);
+    expect(scales[3]).toHaveProperty('name', 'testName_advancedLabelNameFontSizeScale');
+    expect(scales[4]).toHaveProperty('name', 'testName_advancedLabelValueFontSizeScale');
+    expect(scales[5]).toHaveProperty('name', 'testName_advancedLabelDetailFontSizeScale');
   });
 });
 

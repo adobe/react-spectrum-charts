@@ -9,16 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './AdvancedLabel';
-export * from './Area';
-export * from './Bullet';
-export * from './Combo';
-export * from './Donut';
-export * from './DonutSummary';
-export * from './Scatter';
-export * from './ScatterAnnotation';
-export * from './ScatterPath';
-export * from './SegmentLabel';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
+import { AdvancedLabelOptions } from '@spectrum-charts/vega-spec-builder-s2';
+
+export interface AdvancedLabelProps extends AdvancedLabelOptions {}
+
+export type AdvancedLabelElement = ReactElement<AdvancedLabelProps, JSXElementConstructor<AdvancedLabelProps>>;
