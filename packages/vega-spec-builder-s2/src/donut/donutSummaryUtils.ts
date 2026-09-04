@@ -331,16 +331,25 @@ export const getSummaryLabelEncode = ({
   const hasDelta = delta !== undefined;
   // label always continues below the value when it's shown; otherwise it becomes the anchor line
   // (flush at center) if a delta follows it, or renders centered alone if nothing else is present
-  const baseline = hasValue ? 'top' : hasDelta ? 'alphabetic' : 'middle';
+  let baseline: 'top' | 'alphabetic' | 'middle';
+  if (hasValue) {
+    baseline = 'top';
+  } else if (hasDelta) {
+    baseline = 'alphabetic';
+  } else {
+    baseline = 'middle';
+  }
   // height of the label block from the donut's center, matching its own baseline: half its own font
   // size when centered alone, its full font size when flush at center with a delta below it, or the
   // value's dy offset plus the label's full font size when stacked below the value
-  const heightFromCenter =
-    baseline === 'middle'
-      ? `${name}_summaryLabelFontSize * 0.5`
-      : baseline === 'alphabetic'
-      ? `${name}_summaryLabelFontSize`
-      : `ceil(${name}_summaryValueFontSize * 0.25) + ${name}_summaryLabelFontSize`;
+  let heightFromCenter: string;
+  if (baseline === 'middle') {
+    heightFromCenter = `${name}_summaryLabelFontSize * 0.5`;
+  } else if (baseline === 'alphabetic') {
+    heightFromCenter = `${name}_summaryLabelFontSize`;
+  } else {
+    heightFromCenter = `ceil(${name}_summaryValueFontSize * 0.25) + ${name}_summaryLabelFontSize`;
+  }
   const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow(${heightFromCenter}, 2))`;
   return {
     update: {
@@ -378,11 +387,15 @@ export const getSummaryDeltaEncode = ({
   const hasLabel = Boolean(label);
   // delta always renders last: below the label if present, otherwise directly below the value
   // (taking over the label's usual gap), or centered alone if neither value nor label render
-  const dyExpr = hasLabel
-    ? `${hasValue ? `ceil(${name}_summaryValueFontSize * 0.25) + ` : ''}${name}_summaryLabelFontSize + ceil(${name}_summaryLabelFontSize * 0.25)`
-    : hasValue
-    ? `ceil(${name}_summaryValueFontSize * 0.25)`
-    : undefined;
+  const valueGapExpr = hasValue ? `ceil(${name}_summaryValueFontSize * 0.25) + ` : '';
+  let dyExpr: string | undefined;
+  if (hasLabel) {
+    dyExpr = `${valueGapExpr}${name}_summaryLabelFontSize + ceil(${name}_summaryLabelFontSize * 0.25)`;
+  } else if (hasValue) {
+    dyExpr = `ceil(${name}_summaryValueFontSize * 0.25)`;
+  } else {
+    dyExpr = undefined;
+  }
   const baseline = dyExpr === undefined ? 'middle' : 'top';
   const heightFromCenter =
     baseline === 'middle' ? `${name}_summaryLabelFontSize * 0.5` : `${dyExpr} + ${name}_summaryLabelFontSize`;
