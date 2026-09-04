@@ -149,7 +149,7 @@ export const getAdvancedLabelValueText = ({
     if (percent) {
       return rules.map((rule) => ({
         ...rule,
-        signal: `${percentSignal} + "\\u00a0\\u00a0" + ${rule.signal}`,
+        signal: String.raw`${percentSignal} + "\u00a0\u00a0" + ${rule.signal}`,
       }));
     }
     return rules;
@@ -238,9 +238,9 @@ const getAdvancedLabelRowDy = (
   // (DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO), so a segment anchored near the very top/bottom of the
   // ring never overflows vertically without needing to shrink the ring any further than direct
   // labels already do
-  const totalHeightExpr = `${nameSize}${hasValue ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : ''}${
-    detail ? ` + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${detailSize}` : ''
-  }`;
+  const valueHeightExpr = hasValue ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : '';
+  const detailHeightExpr = detail ? ` + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${detailSize}` : '';
+  const totalHeightExpr = `${nameSize}${valueHeightExpr}${detailHeightExpr}`;
   const maxHeightExpr = `${getDonutOuterRadiusExpr(donutOptions)} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}`;
   const scaleExpr = `min(1, (${maxHeightExpr}) / (${totalHeightExpr}))`;
 
@@ -249,24 +249,33 @@ const getAdvancedLabelRowDy = (
   const bottomValueDy = hasValue
     ? `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`
     : undefined;
-  const bottomDetailDy = !detail
-    ? undefined
-    : hasValue
-    ? `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr})`
-    : `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`;
+  let bottomDetailDy: string | undefined;
+  if (!detail) {
+    bottomDetailDy = undefined;
+  } else if (hasValue) {
+    bottomDetailDy = `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr})`;
+  } else {
+    bottomDetailDy = `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`;
+  }
 
   // top half (baseline 'bottom', grows upward): mirror image - the last visible row anchors at dy 0
   const topDetailDy = detail ? '0' : undefined;
-  const topValueDy = !hasValue
-    ? undefined
-    : detail
-    ? `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr}))`
-    : '0';
-  const topNameDy = detail
-    ? `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`
-    : hasValue
-    ? `-((${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`
-    : '0';
+  let topValueDy: string | undefined;
+  if (!hasValue) {
+    topValueDy = undefined;
+  } else if (detail) {
+    topValueDy = `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr}))`;
+  } else {
+    topValueDy = '0';
+  }
+  let topNameDy: string;
+  if (detail) {
+    topNameDy = `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`;
+  } else if (hasValue) {
+    topNameDy = `-((${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`;
+  } else {
+    topNameDy = '0';
+  }
 
   const isTopHalfExpr = `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI`;
   return {
