@@ -145,11 +145,11 @@ export const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined):
 };
 
 /**
- * Gets the shared anchor radius for a label's name/value lines - always the ring-gap point. The
- * hemisphere-mirrored pull-back lives entirely in getLabelAnchorDxExpr as a horizontal pixel offset,
- * not folded into this radial value, since radius+theta positioning has a vertical component for any
- * label not exactly at the 9/3 o'clock cardinal points - baking the pull-back into radius there would
- * push the anchor up/down instead of sideways.
+ * Gets the anchor radius both hemispheres use for a label's name/value lines - the ring's outer
+ * edge plus the ring-gap. The left-hemisphere horizontal shift is applied separately as a dx offset
+ * (getLabelAnchorDxExpr), not folded into this radius, since radius+theta positioning has a
+ * vertical component for any label off the 9/3 o'clock points - adjusting radius there would push
+ * the anchor up/down instead of sideways.
  * @param donutOptions
  * @returns vega expression string
  */
@@ -157,11 +157,10 @@ const getLabelAnchorRadiusExpr = (donutOptions: DonutSpecOptions): string =>
   `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_LABEL_RING_GAP}`;
 
 /**
- * Gets the shared horizontal pixel offset for a label's name/value lines. Right-hemisphere labels get
- * no offset (anchor sits at the ring-gap point and grows away from the ring). Left-hemisphere labels
- * get pulled left by the wider line's real rendered width, so that line's far (right) edge lands
- * exactly on the ring-gap point while both lines still share the same near (left) edge. This is a pure
- * horizontal (dx) adjustment, independent of theta, so it never distorts a label's vertical position.
+ * Gets each label's horizontal offset (dx). Right-hemisphere labels start right at the ring - no
+ * offset needed. Left-hemisphere labels move left by their own width (capped at a fraction of the
+ * donut's radius - see DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO), so their far end touches the ring
+ * instead of their near end.
  * @param segmentLabelOptions
  * @returns vega expression string
  */
@@ -292,7 +291,7 @@ const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeS
   return {
     radius: { signal: getLabelAnchorRadiusExpr(options.donutOptions) },
     theta: { field: `${name}_arcTheta` },
-    // pulls left-hemisphere labels back horizontally by the wider line's width - see getLabelAnchorDxExpr
+    // shifts left-hemisphere labels left by the wider line's width - see getLabelAnchorDxExpr
     dx: { signal: getLabelAnchorDxExpr(options) },
     fontSize: getSegmentLabelFontSize(name, fontSizeSignal),
     // both hemispheres anchor at their near (left) edge - only the dx offset differs by hemisphere
