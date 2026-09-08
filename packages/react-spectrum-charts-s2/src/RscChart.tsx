@@ -212,19 +212,52 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       navColor,
     ]
   );
-  // The metric field name (e.g. "downloads") is rarely the display title a user set on its Axis (e.g.
-  // "Downloads") — found by matching the Axis child positioned on the metric's side of the chart.
-  const navMetricAxisTitle = useMemo(() => {
-    const metricAxisPositions =
-      navGeometryFields.orientation === 'horizontal' ? ['bottom', 'top'] : ['left', 'right'];
-    const metricAxisChild = sanitizedChildren.find(
-      (child) =>
-        'displayName' in child.type &&
-        child.type.displayName === 'Axis' &&
-        metricAxisPositions.includes((child.props as { position?: string }).position ?? '')
+  // A data field name (e.g. "downloads") is rarely the display title a user set on its Axis (e.g.
+  // "Downloads") — found by matching the Axis child positioned on that field's side of the chart.
+  const findAxisTitle = useCallback(
+    (positions: string[]) => {
+      const axisChild = sanitizedChildren.find(
+        (child) =>
+          'displayName' in child.type &&
+          child.type.displayName === 'Axis' &&
+          positions.includes((child.props as { position?: string }).position ?? '')
+      );
+      return (axisChild?.props as { title?: string } | undefined)?.title;
+    },
+    [sanitizedChildren]
+  );
+  const isHorizontalNav = navGeometryFields.orientation === 'horizontal';
+  const navMetricAxisTitle = useMemo(
+    () => findAxisTitle(isHorizontalNav ? ['bottom', 'top'] : ['left', 'right']),
+    [findAxisTitle, isHorizontalNav]
+  );
+  const navDimensionAxisTitle = useMemo(
+    () => findAxisTitle(isHorizontalNav ? ['left', 'right'] : ['bottom', 'top']),
+    [findAxisTitle, isHorizontalNav]
+  );
+  // The series/color field's display title comes from the Legend child, not an Axis.
+  const navColorTitle = useMemo(() => {
+    const legendChild = sanitizedChildren.find(
+      (child) => 'displayName' in child.type && child.type.displayName === 'Legend'
     );
-    return (metricAxisChild?.props as { title?: string } | undefined)?.title;
-  }, [sanitizedChildren, navGeometryFields.orientation]);
+    return (legendChild?.props as { title?: string } | undefined)?.title;
+  }, [sanitizedChildren]);
+  // Maps each nav field to its display title so the accessible strings read as the chart's axis/legend labels rather than raw data keys.
+  const navFieldLabels = useMemo(() => {
+    const labels: Record<string, string> = {};
+    const { dimension, metric } = navGeometryFields;
+    if (navDimensionAxisTitle && dimension) labels[dimension] = navDimensionAxisTitle;
+    if (navMetricAxisTitle && metric) labels[metric] = navMetricAxisTitle;
+    if (navColorTitle && navColor) labels[navColor] = navColorTitle;
+    return labels;
+  }, [
+    navDimensionAxisTitle,
+    navMetricAxisTitle,
+    navColorTitle,
+    navColor,
+    navGeometryFields.dimension,
+    navGeometryFields.metric,
+  ]);
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
   const getPopoverClosedAt = useCallback(() => popoverClosedAt.current, [popoverClosedAt]);
@@ -329,6 +362,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             orientation={navGeometryFields.orientation}
             isTimeDimension={navIsTimeDimension}
             title={title}
+            fieldLabels={navFieldLabels}
             containerRef={navContainerRef}
             chartId={chartId}
             getView={getView}

@@ -14,6 +14,7 @@ import { Edges, NavigationRules, NodeObject, Nodes, Structure } from 'data-navig
 import { DEFAULT_TIME_DIMENSION, NAVIGATION_INDEX_FIELD } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { DEFAULT_DATA_NAVIGATOR_LOCALE, getDataNavigatorIntl } from './dataNavigatorIntl';
 import { addOneSidedEdge, addSiblingEdge } from './graphEdgeUtils';
 import { applyDefaultLabels } from './nodeSemanticsUtils';
 import { segmentId } from './segmentId';
@@ -29,6 +30,10 @@ export interface BuildLineStructureOptions {
   isTimeDimension?: boolean;
   /** Optional chart title for the accessible description. */
   title?: string;
+  /** BCP-47 locale for the accessible strings (from the surrounding app). Defaults to en-US. */
+  locale?: string;
+  /** Maps a data field name to its display label (axis/legend title), so labels read as the chart's titles rather than raw field keys. */
+  fieldLabels?: Record<string, string>;
 }
 
 export interface LineStructure {
@@ -96,6 +101,8 @@ export const buildLineStructure = ({
   color,
   isTimeDimension = true,
   title,
+  locale = DEFAULT_DATA_NAVIGATOR_LOCALE,
+  fieldLabels = {},
 }: BuildLineStructureOptions): LineStructure => {
   const lines = groupIntoLines(data, color);
 
@@ -107,7 +114,7 @@ export const buildLineStructure = ({
     id: CHART_ROOT_ID,
     edges: [],
     dimensionLevel: 1,
-    semantics: { label: buildChartDescription(data, dimension, color, title) },
+    semantics: { label: buildChartDescription(data, dimension, color, title, locale, fieldLabels) },
   };
   lines.forEach((line) => {
     nodes[line.divisionId] = {
@@ -169,48 +176,71 @@ export const buildLineStructure = ({
 
   const structure: Structure = { nodes, edges, navigationRules: lineNavigationRules };
 
-  applyDefaultLabels(structure, (node) => buildNodeLabel(node, dimension, isTimeDimension));
+  applyDefaultLabels(structure, (node) => buildNodeLabel(node, dimension, isTimeDimension, locale, fieldLabels));
 
   return { structure, entryPoint: CHART_ROOT_ID };
 };
 
-export const buildChartDescription = (data: SimpleData[], dimension: string, color?: string, title?: string): string => {
-  const opening = title ? `${title}. ` : '';
+export const buildChartDescription = (
+  data: SimpleData[],
+  dimension: string,
+  color?: string,
+  title?: string,
+  locale: string = DEFAULT_DATA_NAVIGATOR_LOCALE,
+  fieldLabels: Record<string, string> = {}
+): string => {
+  const { formatMessage } = getDataNavigatorIntl(locale);
+  const hasTitle = title ? 'true' : 'false';
+  const dimensionLabel = fieldLabels[dimension] ?? dimension;
   if (color) {
     const count = new Set(data.map((d) => d[color])).size;
-    return `${opening}Multi-series line chart. ${dimension} along the x-axis, stacked by ${color}. Contains ${count} line${
-      count === 1 ? '' : 's'
-    }. Use the up and down arrow keys to move between lines, and Enter or the right arrow key to drill into a line's points.`;
+    return formatMessage('line.multiDescription', {
+      hasTitle,
+      title: title ?? '',
+      dimension: dimensionLabel,
+      color: fieldLabels[color] ?? color,
+      count,
+    });
   }
-  return `${opening}Line chart. ${dimension} along the x-axis. Contains ${data.length} point${
-    data.length === 1 ? '' : 's'
-  }. Use Enter or the right arrow key to drill into the line's points, then the left and right arrow keys to navigate.`;
+  return formatMessage('line.description', { hasTitle, title: title ?? '', dimension: dimensionLabel, count: data.length });
 };
 
 /** Formats a raw dimension value as a readable date/time, falling back to the raw value if it isn't a valid date. */
-const formatDateValue = (value: unknown): string => {
+const formatDateValue = (value: unknown, locale: string): string => {
   const date = new Date(value as string | number);
   if (Number.isNaN(date.getTime())) return String(value);
   const hasTimeComponent = date.getHours() || date.getMinutes() || date.getSeconds();
-  return hasTimeComponent
-    ? date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
-    : date.toLocaleDateString(undefined, { dateStyle: 'medium' });
+  const options: Intl.DateTimeFormatOptions = hasTimeComponent
+    ? { dateStyle: 'medium', timeStyle: 'short' }
+    : { dateStyle: 'medium' };
+  return getDataNavigatorIntl(locale).formatDate(date, options);
 };
 
-export const buildNodeLabel = (node: NodeObject, dimension: string, isTimeDimension: boolean): string => {
+export const buildNodeLabel = (
+  node: NodeObject,
+  dimension: string,
+  isTimeDimension: boolean,
+  locale: string = DEFAULT_DATA_NAVIGATOR_LOCALE,
+  fieldLabels: Record<string, string> = {}
+): string => {
   const data = node.data as Record<string, unknown> | undefined;
   if (!data) return String(node.id);
 
   if (data.values != null && typeof data.values === 'object' && !Array.isArray(data.values)) {
     const childCount = Object.keys(data.values).length;
-    const pointWord = `point${childCount === 1 ? '' : 's'}`;
-    if (!node.derivedNode) return `Line. Contains ${childCount} ${pointWord}.`;
-    const lineValue = data[node.derivedNode];
-    return `Line ${String(lineValue)}. Contains ${childCount} ${pointWord}.`;
+    const hasValue = Boolean(node.derivedNode);
+    return getDataNavigatorIntl(locale).formatMessage('line.lineNode', {
+      hasValue: hasValue ? 'true' : 'false',
+      value: hasValue ? String(data[node.derivedNode as string]) : '',
+      count: childCount,
+    });
   }
 
   const parts = Object.entries(data)
     .filter(([key, value]) => !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function')
-    .map(([key, value]) => `${key}: ${key === dimension && isTimeDimension ? formatDateValue(value) : value}`);
+    .map(([key, value]) => {
+      const label = fieldLabels[key] ?? key;
+      return `${label}: ${key === dimension && isTimeDimension ? formatDateValue(value, locale) : value}`;
+    });
   return parts.length > 0 ? `${parts.join('. ')}.` : String(node.id);
 };

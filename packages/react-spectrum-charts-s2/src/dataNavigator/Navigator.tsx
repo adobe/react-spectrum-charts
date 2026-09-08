@@ -11,6 +11,7 @@
  */
 import { RefObject, useCallback, useEffect, useRef } from 'react';
 
+import { useLocale } from '@react-spectrum/s2';
 import { View } from 'vega';
 
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
@@ -44,6 +45,8 @@ export interface NavigatorProps {
   isTimeDimension?: boolean;
   /** Optional chart title for the accessible description. */
   title?: string;
+  /** Maps a data field name to its display label (axis/legend title), so labels read as the chart's titles rather than raw field keys. */
+  fieldLabels?: Record<string, string>;
   /** Ref to the positioned container that wraps the chart. */
   containerRef: RefObject<HTMLElement | null>;
   /** Stable id used to namespace the rendered nav elements. */
@@ -81,6 +84,7 @@ export const Navigator = ({
   orientation,
   isTimeDimension,
   title,
+  fieldLabels,
   containerRef,
   chartId,
   getView,
@@ -93,6 +97,8 @@ export const Navigator = ({
   specSignalNames,
 }: NavigatorProps): null => {
   const handleRef = useRef<AttachDataNavigatorHandle | null>(null);
+  // Locale of the surrounding S2 app (set by its Provider) — drives the accessible descriptions' language and number/date formatting.
+  const { locale } = useLocale();
 
   // Read via stable getters/callbacks rather than as attach-effect dependencies, so a re-render that changes these doesn't tear down and rebuild the whole nav structure (losing tracked focus state).
   const popoverStateRef = useLiveRef({ isPopoverOpen, getPopoverClosedAt });
@@ -132,6 +138,8 @@ export const Navigator = ({
       orientation,
       isTimeDimension,
       title,
+      locale,
+      fieldLabels,
       chartId,
       getView,
       onLeafFocus: stableOnLeafFocus,
@@ -155,6 +163,8 @@ export const Navigator = ({
     orientation,
     isTimeDimension,
     title,
+    locale,
+    fieldLabels,
     chartId,
     containerRef,
     stableOnLeafFocus,

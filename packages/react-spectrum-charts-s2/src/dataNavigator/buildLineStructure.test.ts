@@ -79,6 +79,16 @@ describe('buildLineStructure()', () => {
     expect(leaf.semantics?.label).toMatch(/2024/);
   });
 
+  // The date in a leaf label must format for the app's locale — de-DE writes 15.03.2024 where en-US writes Mar 15, 2024.
+  test('formats the time dimension date for the given locale', () => {
+    const { structure } = buildLineStructure({
+      data: [{ datetime: new Date('2024-03-15T00:00:00Z').getTime(), value: 28 }],
+      dimension: 'datetime',
+      locale: 'de-DE',
+    });
+    expect(structure.nodes['1'].semantics?.label).toContain('15.03.2024');
+  });
+
   describe('keyboard navigation (single line)', () => {
     test('drilling in from the chart root reaches the line, then its first point', () => {
       const { structure, entryPoint } = buildLineStructure({ data, dimension: 'datetime', isTimeDimension: false });
@@ -268,5 +278,14 @@ describe('buildNodeLabel()', () => {
   test('falls back to the raw value when the dimension is not a valid date', () => {
     const node = { id: '1', data: { datetime: 'not-a-date', value: 28 } } as unknown as NodeObject;
     expect(buildNodeLabel(node, 'datetime', true)).toContain('datetime: not-a-date');
+  });
+
+  // A leaf point's fields should read as the chart's axis titles, not the raw data keys.
+  test('relabels leaf fields with the provided display labels', () => {
+    const node = { id: '1', data: { datetime: 0, value: 28, _dnIndex: 1 } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, 'datetime', false, 'en-US', { datetime: 'Date', value: 'Downloads' });
+    expect(label).toContain('Date: 0');
+    expect(label).toContain('Downloads: 28');
+    expect(label).not.toContain('value:');
   });
 });

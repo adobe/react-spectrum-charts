@@ -266,6 +266,17 @@ describe('buildChartDescription()', () => {
     expect(label).toContain('2 stacks');
   });
 
+  // The description should read the chart's axis/legend titles, not the raw dimension/series field keys.
+  test('uses the display labels for the dimension and series when provided', () => {
+    const label = buildChartDescription(stackedData, 'browser', 'os', undefined, 'vertical', 'en-US', {
+      browser: 'Browser',
+      os: 'Operating System',
+    });
+    expect(label).toContain('Browser along the category axis');
+    expect(label).toContain('stacked by Operating System');
+    expect(label).not.toContain('stacked by os');
+  });
+
   // Regression: the up arrow key also drills into a stack (focusing its last segment), matching
   // stackedBarNavigationRules' ['up'] edge — the aria description must mention it, not just Enter/down.
   test('mentions the up arrow key as a way to drill into a stack, alongside Enter and down', () => {
@@ -326,6 +337,30 @@ describe('buildNodeLabel()', () => {
     expect(label).toContain('browser: Chrome');
     expect(label).toContain('downloads: 27000');
     expect(label).not.toContain('_dnId');
+  });
+
+  // The catalog only ships en-US prose today, but the metric total must still format for the
+  // app's locale (de-DE groups thousands with '.') so the number reads correctly for the user.
+  test('formats the metric total for the given locale', () => {
+    const node = {
+      id: 'Chrome',
+      data: { values: { x: {}, y: {} }, _dnMetricLabel: 'downloads', _dnMetricTotal: 27000 },
+    } as unknown as NodeObject;
+    expect(buildNodeLabel(node, 'de-DE')).toBe('Chrome. Contains 2 bars, 27.000 downloads.');
+  });
+
+  // A leaf segment's fields should read as the chart's axis/legend titles, not the raw data keys.
+  test('relabels leaf fields with the provided display labels', () => {
+    const node = { id: 'Chrome', data: { browser: 'Chrome', value: 27000 } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, 'en-US', { browser: 'Browser', value: 'Downloads' });
+    expect(label).toContain('Browser: Chrome');
+    expect(label).toContain('Downloads: 27000');
+    expect(label).not.toContain('value:');
+  });
+
+  test('falls back to the raw field name when no display label is provided', () => {
+    const node = { id: 'Chrome', data: { browser: 'Chrome' } } as unknown as NodeObject;
+    expect(buildNodeLabel(node, 'en-US', { value: 'Downloads' })).toContain('browser: Chrome');
   });
 });
 

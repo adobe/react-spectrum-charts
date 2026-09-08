@@ -71,7 +71,9 @@
   "scripts": {
     "prebuild": "echo 'This will run before build'",
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "webpack --config webpack.config.js",
+    "compile:intl": "node scripts/compileIntl.mjs",
+    "verify:intl": "node scripts/compileIntl.mjs && git add -N src/dataNavigator/intl/compiled && git diff --exit-code -- src/dataNavigator/intl/compiled",
+    "build:s2": "yarn compile:intl && webpack --config webpack.config.js",
     "clean": "rm -rf dist",
     "g": "plop component",
     "generate": "plop component",
@@ -85,6 +87,8 @@
     "publish-package": "npm publish --access public --tag alpha --registry https://registry.npmjs.org"
   },
   "dependencies": {
+    "@internationalized/date": "^3.5.2",
+    "@internationalized/string": "^3.2.1",
     "@spectrum-charts/constants": "1.52.0",
     "@spectrum-charts/locales": "1.52.0",
     "@spectrum-charts/schemas": "1.52.0",
@@ -97,6 +101,9 @@
     "immer": ">= 9.0.0",
     "vega-embed": ">= 7.1.0",
     "vega-tooltip": ">= 1.1.0"
+  },
+  "devDependencies": {
+    "@internationalized/string-compiler": "^3.4.1"
   },
   "peerDependencies": {
     "@react-spectrum/s2": ">=1.0.0",

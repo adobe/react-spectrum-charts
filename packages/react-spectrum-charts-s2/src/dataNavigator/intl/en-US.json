@@ -1,0 +1,9 @@
+{
+  "bar.description": "{hasTitle, select, true {{title}. } other {}}Bar chart. {dimension} along the category axis. Contains {count, plural, one {# bar} other {# bars}}. Use the {siblingKeys} arrow keys to navigate.",
+  "bar.stackedDescription": "{hasTitle, select, true {{title}. } other {}}Stacked bar chart. {dimension} along the category axis, stacked by {color}. Contains {count, plural, one {# stack} other {# stacks}}. Use the {siblingKeys} arrow keys to move between stacks, and Enter, {lastDrillKey}, or {firstDrillKey} to drill into a stack''s segments ({firstDrillKey} or Enter focuses the first segment, {lastDrillKey} focuses the last); once drilled in, {withinKeys} move through every segment in the chart, and {siblingKeys} jump to the same segment in the adjacent stack.",
+  "bar.dimensionNode": "{dimensionKey} dimension. Contains {count, plural, one {# division} other {# divisions}}.",
+  "bar.stackNode": "{id}. Contains {count, plural, one {# bar} other {# bars}}{hasTotal, select, true {, {total, number} {metricLabel}} other {}}.",
+  "line.description": "{hasTitle, select, true {{title}. } other {}}Line chart. {dimension} along the x-axis. Contains {count, plural, one {# point} other {# points}}. Use Enter or the right arrow key to drill into the line''s points, then the left and right arrow keys to navigate.",
+  "line.multiDescription": "{hasTitle, select, true {{title}. } other {}}Multi-series line chart. {dimension} along the x-axis, stacked by {color}. Contains {count, plural, one {# line} other {# lines}}. Use the up and down arrow keys to move between lines, and Enter or the right arrow key to drill into a line''s points.",
+  "line.lineNode": "{hasValue, select, true {Line {value}} other {Line}}. Contains {count, plural, one {# point} other {# points}}."
+}

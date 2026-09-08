@@ -59,6 +59,10 @@ export interface AttachDataNavigatorOptions {
   isTimeDimension?: boolean;
   /** Optional chart title for the accessible description. */
   title?: string;
+  /** BCP-47 locale for the accessible strings (from the surrounding app). Defaults to en-US. */
+  locale?: string;
+  /** Maps a data field name to its display label (axis/legend title), so labels read as the chart's titles rather than raw field keys. */
+  fieldLabels?: Record<string, string>;
   /** Stable id used to namespace the rendered nav elements. */
   chartId: string;
   /** Accessor for the live Vega view; focus signals are set on it as the user navigates. */
@@ -134,6 +138,8 @@ export const attachDataNavigator = ({
   orientation,
   isTimeDimension,
   title,
+  locale,
+  fieldLabels,
   chartId,
   getView,
   onLeafFocus,
@@ -156,6 +162,8 @@ export const attachDataNavigator = ({
     orientation,
     isTimeDimension,
     title,
+    locale,
+    fieldLabels,
   });
   if (!built) return noopHandle;
   const { structure, entryPoint } = built;

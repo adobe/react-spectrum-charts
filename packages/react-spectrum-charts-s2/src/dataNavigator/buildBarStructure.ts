@@ -14,6 +14,7 @@ import dataNavigator, { Edges, NavigationRules, NodeObject, Nodes, Structure, St
 import { DEFAULT_BAR_ORIENTATION, DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC } from '@spectrum-charts/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { DEFAULT_DATA_NAVIGATOR_LOCALE, getDataNavigatorIntl } from './dataNavigatorIntl';
 import { addOneSidedEdge, addSiblingEdge } from './graphEdgeUtils';
 import { applyDefaultLabels } from './nodeSemanticsUtils';
 import { segmentId } from './segmentId';
@@ -33,6 +34,10 @@ export interface BuildBarStructureOptions {
   orientation?: Orientation;
   /** Optional chart title used to open the accessible description. */
   title?: string;
+  /** BCP-47 locale for the accessible strings (from the surrounding app). Defaults to en-US. */
+  locale?: string;
+  /** Maps a data field name to its display label (axis/legend title), so labels read as the chart's titles rather than raw field keys. */
+  fieldLabels?: Record<string, string>;
 }
 
 /** Internal-only stack-node data fields carrying the summed metric total, read back by buildNodeLabel. */
@@ -139,7 +144,9 @@ const buildStackedBarStructure = (
   metric: string | undefined,
   metricLabel: string | undefined,
   orientation: Orientation,
-  title: string | undefined
+  title: string | undefined,
+  locale: string,
+  fieldLabels: Record<string, string>
 ): BarStructure => {
   const stacks = groupIntoStacks(data, dimension, color);
 
@@ -151,7 +158,7 @@ const buildStackedBarStructure = (
     id: CHART_ROOT_ID,
     edges: [],
     dimensionLevel: 1,
-    semantics: { label: buildChartDescription(data, dimension, color, title, orientation) },
+    semantics: { label: buildChartDescription(data, dimension, color, title, orientation, locale, fieldLabels) },
   };
   stacks.forEach((stack) => {
     const metricTotal = metric
@@ -222,7 +229,7 @@ const buildStackedBarStructure = (
 
   const structure: Structure = { nodes, edges, navigationRules: getStackedBarNavigationRules(orientation) };
 
-  applyDefaultLabels(structure, buildNodeLabel);
+  applyDefaultLabels(structure, (node) => buildNodeLabel(node, locale, fieldLabels));
 
   return { structure, entryPoint: CHART_ROOT_ID };
 };
@@ -235,9 +242,11 @@ export const buildBarStructure = ({
   metricLabel,
   orientation = DEFAULT_BAR_ORIENTATION,
   title,
+  locale = DEFAULT_DATA_NAVIGATOR_LOCALE,
+  fieldLabels = {},
 }: BuildBarStructureOptions): BarStructure => {
   if (color !== undefined) {
-    return buildStackedBarStructure(data, dimension, color, metric, metricLabel, orientation, title);
+    return buildStackedBarStructure(data, dimension, color, metric, metricLabel, orientation, title, locale, fieldLabels);
   }
 
   const structureOptions: StructureOptions = {
@@ -269,11 +278,11 @@ export const buildBarStructure = ({
     entryPoint = rootNodeId;
     const rootNode = rootNodeId ? structure.nodes[rootNodeId] : undefined;
     if (rootNode) {
-      rootNode.semantics = { label: buildChartDescription(data, dimension, color, title, orientation) };
+      rootNode.semantics = { label: buildChartDescription(data, dimension, color, title, orientation, locale, fieldLabels) };
     }
   }
 
-  applyDefaultLabels(structure, buildNodeLabel);
+  applyDefaultLabels(structure, (node) => buildNodeLabel(node, locale, fieldLabels));
 
   return { structure, entryPoint };
 };
@@ -283,45 +292,72 @@ export const buildChartDescription = (
   dimension: string,
   color?: string,
   title?: string,
-  orientation: Orientation = DEFAULT_BAR_ORIENTATION
+  orientation: Orientation = DEFAULT_BAR_ORIENTATION,
+  locale: string = DEFAULT_DATA_NAVIGATOR_LOCALE,
+  fieldLabels: Record<string, string> = {}
 ): string => {
+  const { formatMessage } = getDataNavigatorIntl(locale);
   const count = new Set(data.map((d) => d[dimension])).size;
-  const opening = title ? `${title}. ` : '';
+  const hasTitle = title ? 'true' : 'false';
   const isHorizontal = orientation === 'horizontal';
   const siblingKeys = isHorizontal ? 'up and down' : 'left and right';
   const withinKeys = isHorizontal ? 'left and right' : 'up and down';
   const firstDrillKey = isHorizontal ? 'left' : 'down';
   const lastDrillKey = isHorizontal ? 'right' : 'up';
   if (color) {
-    return `${opening}Stacked bar chart. ${dimension} along the category axis, stacked by ${color}. Contains ${count} stack${
-      count === 1 ? '' : 's'
-    }. Use the ${siblingKeys} arrow keys to move between stacks, and Enter, ${lastDrillKey}, or ${firstDrillKey} to drill into a stack's segments (${firstDrillKey} or Enter focuses the first segment, ${lastDrillKey} focuses the last); once drilled in, ${withinKeys} move through every segment in the chart, and ${siblingKeys} jump to the same segment in the adjacent stack.`;
+    return formatMessage('bar.stackedDescription', {
+      hasTitle,
+      title: title ?? '',
+      dimension: fieldLabels[dimension] ?? dimension,
+      color: fieldLabels[color] ?? color,
+      count,
+      siblingKeys,
+      withinKeys,
+      firstDrillKey,
+      lastDrillKey,
+    });
   }
-  return `${opening}Bar chart. ${dimension} along the category axis. Contains ${count} bar${count === 1 ? '' : 's'}. Use the ${siblingKeys} arrow keys to navigate.`;
+  return formatMessage('bar.description', {
+    hasTitle,
+    title: title ?? '',
+    dimension: fieldLabels[dimension] ?? dimension,
+    count,
+    siblingKeys,
+  });
 };
 
-export const buildNodeLabel = (node: NodeObject): string => {
+export const buildNodeLabel = (
+  node: NodeObject,
+  locale: string = DEFAULT_DATA_NAVIGATOR_LOCALE,
+  fieldLabels: Record<string, string> = {}
+): string => {
   const data = node.data as Record<string, unknown> | undefined;
   if (!data) return String(node.id);
 
+  const { formatMessage } = getDataNavigatorIntl(locale);
+
   if (typeof data.dimensionKey === 'string' && data.divisions != null) {
     const divisionCount = Object.keys(data.divisions).length;
-    return `${data.dimensionKey} dimension. Contains ${divisionCount} division${divisionCount === 1 ? '' : 's'}.`;
+    const dimensionKey = fieldLabels[data.dimensionKey] ?? data.dimensionKey;
+    return formatMessage('bar.dimensionNode', { dimensionKey, count: divisionCount });
   }
 
   if (data.values != null && typeof data.values === 'object' && !Array.isArray(data.values)) {
     const childCount = Object.keys(data.values).length;
     const metricLabel = data[STACK_METRIC_LABEL_KEY];
     const metricTotal = data[STACK_METRIC_TOTAL_KEY];
-    const totalSuffix =
-      typeof metricLabel === 'string' && typeof metricTotal === 'number'
-        ? `, ${metricTotal.toLocaleString()} ${metricLabel}`
-        : '';
-    return `${String(node.id)}. Contains ${childCount} bar${childCount === 1 ? '' : 's'}${totalSuffix}.`;
+    const hasTotal = typeof metricLabel === 'string' && typeof metricTotal === 'number';
+    return formatMessage('bar.stackNode', {
+      id: String(node.id),
+      count: childCount,
+      hasTotal: hasTotal ? 'true' : 'false',
+      total: hasTotal ? (metricTotal as number) : 0,
+      metricLabel: hasTotal ? (metricLabel as string) : '',
+    });
   }
 
   const parts = Object.entries(data)
     .filter(([key, value]) => !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function')
-    .map(([key, value]) => `${key}: ${value}`);
+    .map(([key, value]) => `${fieldLabels[key] ?? key}: ${value}`);
   return parts.length > 0 ? `${parts.join('. ')}.` : String(node.id);
 };
