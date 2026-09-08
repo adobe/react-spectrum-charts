@@ -160,7 +160,7 @@ export const isInteractive = (options: {
     metricRanges.some((metricRange) => metricRange.displayOnHover) ||
     // a direct/advanced label showing value/percent needs hover feedback even with no popover/inspect configured
     segmentLabels.some((segmentLabel) => segmentLabel.value || segmentLabel.percent) ||
-    advancedLabels.some((advancedLabel) => advancedLabel.value || advancedLabel.percent)
+    advancedLabels.some((advancedLabel) => advancedLabel.percent)
   );
 };
 

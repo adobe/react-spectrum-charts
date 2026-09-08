@@ -260,10 +260,9 @@ describe('isInteractive()', () => {
     expect(isInteractive({ segmentLabels: [] })).toEqual(false);
   });
 
-  test('should return true for a donut AdvancedLabel showing value/percent, even with no popover/inspect', () => {
-    expect(isInteractive({ advancedLabels: [{ value: true }] })).toEqual(true);
+  test('should return true for a donut AdvancedLabel showing percent, even with no popover/inspect', () => {
     expect(isInteractive({ advancedLabels: [{ percent: true }] })).toEqual(true);
-    // an AdvancedLabel that shows neither value nor percent has no hover-reactive content
+    // an AdvancedLabel that shows no percent has no hover-reactive content
     expect(isInteractive({ advancedLabels: [{}] })).toEqual(false);
     expect(isInteractive({ advancedLabels: [] })).toEqual(false);
   });

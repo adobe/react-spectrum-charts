@@ -5,7 +5,7 @@
   "kind": "feature",
   "variant": "s2",
   "status": "implemented",
-  "lastUpdated": "2026-09-01",
+  "lastUpdated": "2026-09-08",
   "complexity": {
     "score": 3,
     "rationale": "Scope narrowed to the swatch+text block's rendering and positioning (connector-line generation is now its own spec, donut-advanced-labels-connector-line, and collision avoidance reuses donut-direct-labels-collision rather than being reimplemented here). A swatch rendered as its own mark inside a donut label has no existing precedent in this codebase, and extending the direct-label hemisphere anchor technique from two text lines to a 4-part block is real new logic - but the value/detail row rendering and data reuse (the existing `_sumData` aggregate) are straightforward. The real-text-measurement question inherited from donut-direct-labels still applies here too, at a larger (4-part) block."
@@ -53,7 +53,7 @@
   "implementationPlan": [
     {
       "file": "packages/vega-spec-builder-s2/src/types/marks/supplemental/advancedLabelSpec.types.ts",
-      "change": "New file: AdvancedLabelOptions (labelKey?, value?: boolean, percent?: boolean, valueFormat?, percentFormat?, detail?: boolean) and AdvancedLabelSpecOptions (with defaults applied + donutOptions), following the SegmentLabelOptions/SegmentLabelSpecOptions pattern in segmentLabelSpec.types.ts.",
+      "change": "New file: AdvancedLabelOptions (labelKey?, percent?: boolean, valueFormat?, percentFormat?, detail?: boolean) and AdvancedLabelSpecOptions (with defaults applied + donutOptions), following the SegmentLabelOptions/SegmentLabelSpecOptions pattern in segmentLabelSpec.types.ts. UPDATED 2026-09-08: the originally-shipped standalone `value?: boolean` option (raw metric value display, independent of/combinable with percent) was removed - not present in the Figma spec and not needed. `valueFormat` was kept, re-scoped to the detail row's number formatting only.",
       "lines": "N/A - new file"
     },
     {
@@ -73,7 +73,7 @@
     },
     {
       "file": "packages/vega-spec-builder-s2/src/marks/markUtils.ts",
-      "change": "ADDED (not in original plan): isInteractive() extended with an `advancedLabels?: AdvancedLabelOptions[]` param and an `advancedLabels.some(a => a.value || a.percent)` check, mirroring the existing segmentLabels check, so a donut with only an AdvancedLabel showing value/percent is treated as interactive.",
+      "change": "ADDED (not in original plan): isInteractive() extended with an `advancedLabels?: AdvancedLabelOptions[]` param and an `advancedLabels.some(a => a.percent)` check, mirroring the existing segmentLabels check, so a donut with only an AdvancedLabel showing percent is treated as interactive. UPDATED 2026-09-08: originally `a.value || a.percent`; the `value` option was removed.",
       "lines": "N/A - modified existing function"
     },
     {

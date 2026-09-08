@@ -34,7 +34,6 @@ const defaultAdvancedLabelOptions: AdvancedLabelSpecOptions = {
   donutOptions: defaultDonutOptionsWithAdvancedLabel,
   percent: false,
   percentFormat: '.0%',
-  value: false,
   valueFormat: 'standardNumber',
   detail: false,
 };
@@ -49,7 +48,7 @@ describe('getAdvancedLabelMarks()', () => {
     expect(getAdvancedLabelMarks(defaultDonutOptions)).toEqual([]);
   });
 
-  test('should return a group with a swatch and a name mark when value/percent/detail are all false', () => {
+  test('should return a group with a swatch and a name mark when percent/detail are all false', () => {
     const marks = getAdvancedLabelMarks(defaultDonutOptionsWithAdvancedLabel);
     expect(marks).toHaveLength(1);
     expect(marks[0].type).toEqual('group');
@@ -58,18 +57,13 @@ describe('getAdvancedLabelMarks()', () => {
     expect(marks[0].marks?.[1].type).toEqual('text');
   });
 
-  test('should add a value text mark when value is true', () => {
-    const marks = getAdvancedLabelMarks({ ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] });
+  test('should add a value text mark when percent is true', () => {
+    const marks = getAdvancedLabelMarks({ ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true }] });
     expect(marks[0].marks).toHaveLength(3);
     expect(marks[0].marks?.[2].type).toEqual('text');
   });
 
-  test('should add a value text mark when percent is true', () => {
-    const marks = getAdvancedLabelMarks({ ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true }] });
-    expect(marks[0].marks).toHaveLength(3);
-  });
-
-  test('should add a detail text mark when detail is true, independent of value/percent', () => {
+  test('should add a detail text mark when detail is true, independent of percent', () => {
     const marks = getAdvancedLabelMarks({ ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ detail: true }] });
     expect(marks[0].marks).toHaveLength(3);
     expect(marks[0].marks?.[2].type).toEqual('text');
@@ -78,18 +72,18 @@ describe('getAdvancedLabelMarks()', () => {
   test('should add both value and detail text marks when both are true', () => {
     const marks = getAdvancedLabelMarks({
       ...defaultDonutOptionsWithAdvancedLabel,
-      advancedLabels: [{ value: true, detail: true }],
+      advancedLabels: [{ percent: true, detail: true }],
     });
     expect(marks[0].marks).toHaveLength(4);
   });
 });
 
 describe('getAdvancedLabelValueText()', () => {
-  test('should return undefined if value and percent are false', () => {
+  test('should return undefined if percent is false', () => {
     expect(getAdvancedLabelValueText(defaultAdvancedLabelOptions)).toBeUndefined();
   });
 
-  test('should return a simple percentSignal if percent is true and value is false', () => {
+  test('should return a simple percentSignal if percent is true', () => {
     expect(getAdvancedLabelValueText({ ...defaultAdvancedLabelOptions, percent: true })).toHaveProperty(
       'signal',
       `format(datum['testName_arcPercent'], '.0%')`
@@ -100,19 +94,6 @@ describe('getAdvancedLabelValueText()', () => {
     expect(
       getAdvancedLabelValueText({ ...defaultAdvancedLabelOptions, percent: true, percentFormat: '.1%' })
     ).toHaveProperty('signal', `format(datum['testName_arcPercent'], '.1%')`);
-  });
-
-  test('should return an array of rules if value is true', () => {
-    const rules = getAdvancedLabelValueText({ ...defaultAdvancedLabelOptions, value: true });
-    expect(rules).toHaveLength(1);
-    expect(rules?.[0]).toHaveProperty('signal', "format(datum['testMetric'], ',')");
-  });
-
-  test('should have percentSignal combined with value signal if value and percent are true', () => {
-    const rules = getAdvancedLabelValueText({ ...defaultAdvancedLabelOptions, value: true, percent: true });
-    expect(rules).toHaveLength(1);
-    expect(rules?.[0].signal).toContain('_arcPercent');
-    expect(rules?.[0].signal).toContain('testMetric');
   });
 });
 
@@ -188,7 +169,7 @@ describe('label anchor radius/dx (hemisphere offset)', () => {
     expect(dxSignal).toContain("datum['testName_arcTheta'] <= PI ? 0 : -(");
   });
 
-  test('dx should account for the swatch+name width when no value/detail rows are shown', () => {
+  test('dx should account for the swatch+name width when no percent/detail rows are shown', () => {
     const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
     const dxSignal = (nameMark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toContain(
@@ -196,11 +177,13 @@ describe('label anchor radius/dx (hemisphere offset)', () => {
     );
   });
 
-  test('dx should account for the value row width when value is shown', () => {
-    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
+  test('dx should account for the value row width when percent is shown', () => {
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true }] };
     const nameMark = getNameMark(donutOptions);
     const dxSignal = (nameMark.encode?.update?.dx as { signal: string }).signal;
-    expect(dxSignal).toContain("getLabelWidth(format(datum['testMetric'], ','), 800, testName_advancedLabelValueFontSize)");
+    expect(dxSignal).toContain(
+      "getLabelWidth(format(datum['testName_arcPercent'], '.0%'), 800, testName_advancedLabelValueFontSize)"
+    );
   });
 
   test('dx should account for the detail row width when detail is shown', () => {
@@ -238,7 +221,7 @@ describe('label anchor radius/dx (hemisphere offset)', () => {
   });
 
   test('name and value marks should share the exact same radius', () => {
-    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true }] };
     const marks = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
     const [, nameMark, valueMark] = marks;
     expect(nameMark.encode?.update?.radius).toEqual(valueMark.encode?.update?.radius);
@@ -246,7 +229,7 @@ describe('label anchor radius/dx (hemisphere offset)', () => {
 });
 
 describe('vertical row-stacking cap (getAdvancedLabelRowDy)', () => {
-  test('should not define dy on the name row when value/percent/detail are all false', () => {
+  test('should not define dy on the name row when percent/detail are all false', () => {
     const nameMark = getAdvancedLabelMarks(defaultDonutOptionsWithAdvancedLabel)[0].marks?.[1] as TextMark;
     expect(nameMark.encode?.update?.dy).toEqual({
       signal: "datum['testName_arcTheta'] <= 0.5 * PI || datum['testName_arcTheta'] >= 1.5 * PI ? (0) : 0",
@@ -254,7 +237,7 @@ describe('vertical row-stacking cap (getAdvancedLabelRowDy)', () => {
   });
 
   test('the value row dy should scale down by the same ratio reserved horizontally, not grow unbounded', () => {
-    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true }] };
     const [, , valueMark] = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
     const dySignal = (valueMark.encode?.update?.dy as { signal: string }).signal;
     // the scale-down factor caps the total block height against the exact same margin
@@ -266,7 +249,7 @@ describe('vertical row-stacking cap (getAdvancedLabelRowDy)', () => {
   });
 
   test('the detail row dy should fold in the value row height when both are shown', () => {
-    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true, detail: true }] };
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true, detail: true }] };
     const marks = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark, TextMark];
     const [, , , detailMark] = marks;
     const dySignal = (detailMark.encode?.update?.dy as { signal: string }).signal;
@@ -275,7 +258,7 @@ describe('vertical row-stacking cap (getAdvancedLabelRowDy)', () => {
     expect(dySignal).toContain('testName_advancedLabelDetailFontSize');
   });
 
-  test('a hidden row is skipped - detail immediately follows name when value/percent are false', () => {
+  test('a hidden row is skipped - detail immediately follows name when percent is false', () => {
     const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ detail: true }] };
     const [, , detailMark] = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
     const dySignal = (detailMark.encode?.update?.dy as { signal: string }).signal;
@@ -328,7 +311,7 @@ describe('s2 styles', () => {
   });
 
   test('value row should always add bold fontWeight, and default to gray-800 fill for S2', () => {
-    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true }] };
     const [, , valueMark] = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
     expect(valueMark.encode?.enter?.fontWeight).toEqual({ value: 800 });
     expect(valueMark.encode?.update?.fill).toEqual([
@@ -349,11 +332,11 @@ describe('s2 styles', () => {
 });
 
 describe('hover behavior', () => {
-  // an AdvancedLabel showing a value is what makes isInteractive() (and therefore getMarkOpacity()) treat
+  // an AdvancedLabel showing a percent is what makes isInteractive() (and therefore getMarkOpacity()) treat
   // this donut as interactive - see markUtils.test.ts for the isInteractive() coverage itself
   const interactiveDonutOptions: DonutSpecOptions = {
     ...defaultDonutOptionsWithAdvancedLabel,
-    advancedLabels: [{ value: true }],
+    advancedLabels: [{ percent: true }],
   };
 
   test('name mark opacity fades with the arc, reusing getMarkOpacity - matches the arc mark exactly', () => {
@@ -383,7 +366,7 @@ describe('hover behavior', () => {
 
 describe('empty state', () => {
   test('name, value, and detail marks should all hide text and fontSize in the empty state', () => {
-    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true, detail: true }] };
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true, detail: true }] };
     const marks = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark, TextMark];
     const [, nameMark, valueMark, detailMark] = marks;
     for (const mark of [nameMark, valueMark, detailMark]) {

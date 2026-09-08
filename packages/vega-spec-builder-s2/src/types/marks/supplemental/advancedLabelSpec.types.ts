@@ -24,21 +24,19 @@ export interface AdvancedLabelOptions {
    * see {@link https://d3js.org/d3-format#locale_format}
    */
   percentFormat?: string;
-  /** Shows the donut segment metric value */
-  value?: boolean;
   /** d3 number format specifier.
-   * Sets the number format for the segment metric value.
+   * Sets the number format for the detail row's segment/total values.
    *
    * @default 'standardNumber'
    *
    * see {@link https://d3js.org/d3-format#locale_format}
    */
   valueFormat?: string;
-  /** Shows an additional "{segment value} out of {total value}" row below the value/percent row */
+  /** Shows an additional "{segment value} out of {total value}" row below the percent row */
   detail?: boolean;
 }
 
-type AdvancedLabelOptionsWithDefaults = 'percent' | 'percentFormat' | 'value' | 'valueFormat' | 'detail';
+type AdvancedLabelOptionsWithDefaults = 'percent' | 'percentFormat' | 'valueFormat' | 'detail';
 
 export interface AdvancedLabelSpecOptions
   extends PartiallyRequired<AdvancedLabelOptions, AdvancedLabelOptionsWithDefaults> {

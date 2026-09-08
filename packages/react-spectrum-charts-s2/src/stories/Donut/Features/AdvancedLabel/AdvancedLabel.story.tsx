@@ -43,7 +43,7 @@ const AdvancedLabelStory: StoryFn<typeof AdvancedLabel> = (args): ReactElement =
 };
 
 const Basic = bindWithProps(AdvancedLabelStory);
-Basic.args = { value: true, percent: true };
+Basic.args = { percent: true };
 
 const NameOnly = bindWithProps(AdvancedLabelStory);
 NameOnly.args = {};
@@ -200,6 +200,6 @@ const ResponsiveAdvancedLabel: StoryFn<typeof AdvancedLabel> = (args): ReactElem
 };
 
 const WithDetail = bindWithProps(ResponsiveAdvancedLabel);
-WithDetail.args = { value: true, percent: true, detail: true };
+WithDetail.args = { percent: true, detail: true };
 
 export { Basic, NameOnly, WithDetail };

@@ -20,7 +20,6 @@ const AdvancedLabel: FC<AdvancedLabelProps> = ({
   labelKey,
   percent = false,
   percentFormat = '.0%',
-  value = false,
   valueFormat = 'standardNumber',
   detail = false,
 }) => {

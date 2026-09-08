@@ -59,7 +59,6 @@ const applyAdvancedLabelPropDefaults = (
   {
     percent = false,
     percentFormat = '.0%',
-    value = false,
     valueFormat = 'standardNumber',
     detail = false,
     ...options
@@ -69,7 +68,6 @@ const applyAdvancedLabelPropDefaults = (
   donutOptions,
   percent,
   percentFormat,
-  value,
   valueFormat,
   detail,
   ...options,
@@ -140,22 +138,9 @@ export const getAdvancedLabelValueText = ({
   donutOptions,
   percent,
   percentFormat,
-  value,
-  valueFormat,
 }: AdvancedLabelSpecOptions): ProductionRule<TextValueRef> | undefined => {
-  const percentSignal = `format(datum['${donutOptions.name}_arcPercent'], '${percentFormat}')`;
-  if (value) {
-    const rules = getTextNumberFormat(valueFormat, donutOptions.metric) as { test?: string; signal: string }[];
-    if (percent) {
-      return rules.map((rule) => ({
-        ...rule,
-        signal: String.raw`${percentSignal} + "\u00a0\u00a0" + ${rule.signal}`,
-      }));
-    }
-    return rules;
-  }
   if (percent) {
-    return { signal: percentSignal };
+    return { signal: `format(datum['${donutOptions.name}_arcPercent'], '${percentFormat}')` };
   }
 };
 
@@ -193,16 +178,15 @@ const getAdvancedLabelAnchorRadiusExpr = (donutOptions: DonutSpecOptions): strin
  * @returns vega expression string
  */
 const getAdvancedLabelAnchorDxExpr = (options: AdvancedLabelSpecOptions): string => {
-  const { donutOptions, labelKey, percent, value, detail } = options;
+  const { donutOptions, labelKey, percent, detail } = options;
   const { color, name } = donutOptions;
   const nameTextExpr = `datum['${labelKey ?? color}']`;
   const nameWidthExpr = `${DONUT_ADVANCED_LABEL_SWATCH_SIZE} + ${DONUT_ADVANCED_LABEL_SWATCH_GAP} + getLabelWidth(${nameTextExpr}, ${DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT}, ${name}_advancedLabelNameFontSize)`;
-  const valueWidthExpr =
-    value || percent
-      ? `getLabelWidth(${getTextRuleExpr(
-          getAdvancedLabelValueText(options)
-        )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${name}_advancedLabelValueFontSize)`
-      : '0';
+  const valueWidthExpr = percent
+    ? `getLabelWidth(${getTextRuleExpr(
+        getAdvancedLabelValueText(options)
+      )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${name}_advancedLabelValueFontSize)`
+    : '0';
   const detailWidthExpr = detail
     ? `getLabelWidth(${getTextRuleExpr(
         getAdvancedLabelDetailText(options)
@@ -226,9 +210,8 @@ const getAdvancedLabelAnchorDxExpr = (options: AdvancedLabelSpecOptions): string
 const getAdvancedLabelRowDy = (
   options: AdvancedLabelSpecOptions
 ): { name: string; value?: string; detail?: string } => {
-  const { donutOptions, value, percent, detail } = options;
+  const { donutOptions, percent, detail } = options;
   const { name } = donutOptions;
-  const hasValue = value || percent;
   const nameSize = `${name}_advancedLabelNameFontSize`;
   const valueSize = `${name}_advancedLabelValueFontSize`;
   const detailSize = `${name}_advancedLabelDetailFontSize`;
@@ -238,7 +221,7 @@ const getAdvancedLabelRowDy = (
   // (DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO), so a segment anchored near the very top/bottom of the
   // ring never overflows vertically without needing to shrink the ring any further than direct
   // labels already do
-  const valueHeightExpr = hasValue ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : '';
+  const valueHeightExpr = percent ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : '';
   const detailHeightExpr = detail ? ` + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${detailSize}` : '';
   const totalHeightExpr = `${nameSize}${valueHeightExpr}${detailHeightExpr}`;
   const maxHeightExpr = `${getDonutOuterRadiusExpr(donutOptions)} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}`;
@@ -246,13 +229,13 @@ const getAdvancedLabelRowDy = (
 
   // bottom half (baseline 'top', grows downward): name anchors at dy 0, each visible row after it
   // stacks below the previous with its token gap
-  const bottomValueDy = hasValue
+  const bottomValueDy = percent
     ? `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`
     : undefined;
   let bottomDetailDy: string | undefined;
   if (!detail) {
     bottomDetailDy = undefined;
-  } else if (hasValue) {
+  } else if (percent) {
     bottomDetailDy = `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr})`;
   } else {
     bottomDetailDy = `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`;
@@ -261,7 +244,7 @@ const getAdvancedLabelRowDy = (
   // top half (baseline 'bottom', grows upward): mirror image - the last visible row anchors at dy 0
   const topDetailDy = detail ? '0' : undefined;
   let topValueDy: string | undefined;
-  if (!hasValue) {
+  if (!percent) {
     topValueDy = undefined;
   } else if (detail) {
     topValueDy = `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr}))`;
@@ -271,7 +254,7 @@ const getAdvancedLabelRowDy = (
   let topNameDy: string;
   if (detail) {
     topNameDy = `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`;
-  } else if (hasValue) {
+  } else if (percent) {
     topNameDy = `-((${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`;
   } else {
     topNameDy = '0';
@@ -280,7 +263,7 @@ const getAdvancedLabelRowDy = (
   const isTopHalfExpr = `datum['${name}_arcTheta'] <= 0.5 * PI || datum['${name}_arcTheta'] >= 1.5 * PI`;
   return {
     name: `${isTopHalfExpr} ? (${topNameDy}) : 0`,
-    value: hasValue ? `${isTopHalfExpr} ? (${topValueDy}) : (${bottomValueDy})` : undefined,
+    value: percent ? `${isTopHalfExpr} ? (${topValueDy}) : (${bottomValueDy})` : undefined,
     detail: detail ? `${isTopHalfExpr} ? (${topDetailDy}) : (${bottomDetailDy})` : undefined,
   };
 };
@@ -403,7 +386,7 @@ const getAdvancedLabelNameTextMark = (options: AdvancedLabelSpecOptions): TextMa
  * @returns TextMark[]
  */
 const getAdvancedLabelValueTextMark = (options: AdvancedLabelSpecOptions): TextMark[] => {
-  if (!options.value && !options.percent) return [];
+  if (!options.percent) return [];
   const { donutOptions } = options;
   const { name } = donutOptions;
   const valueText = getAdvancedLabelValueText(options) ?? [];
