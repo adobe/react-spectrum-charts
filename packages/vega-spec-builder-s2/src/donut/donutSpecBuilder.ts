@@ -108,10 +108,8 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
   //set up transform
   data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
   data[filteredTableIndex].transform?.push(...getPieTransforms(options));
-  // Needed for both hover directions with a paired Legend: this mark's own hover highlighting the
-  // legend (generic mark-hover loop in legendUtils.ts) and a legend hover fading this mark's arcs
-  // (getLegendHighlightOpacityRules in donutUtils.ts) - both match on datum[SERIES_ID], which donut's
-  // rows don't otherwise have, unlike Line/Bar.
+  // Adds SERIES_ID so hovering an arc can highlight its legend entry and hovering a legend entry can
+  // fade this mark's arcs - donut rows don't have SERIES_ID by default like Line/Bar do
   if (isInteractive(options) || legendHighlightSignals?.length) {
     data[filteredTableIndex].transform?.push(...getSeriesIdTransform([color]));
   }
