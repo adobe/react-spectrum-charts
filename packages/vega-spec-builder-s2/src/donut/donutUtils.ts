@@ -127,15 +127,9 @@ export const getDonutInnerRadiusExpr = ({ holeRatio, name }: DonutSpecOptions): 
   holeRatio === DEFAULT_HOLE_RATIO ? `(${DONUT_RADIUS} - ${name}_ringWidth)` : `${holeRatio} * ${DONUT_RADIUS}`;
 
 /**
- * Gets the padAngle expression for the arc mark. Converts the per-tier fixed px slice gap
- * (chart.donut.size.slice-gap) to an angle at the outer radius, capped to a fraction of this
- * specific segment's own angular width (`${name}_arcLength`, already computed by the pie
- * transform) - otherwise a segment much smaller than the fixed gap could have its entire
- * angular width eaten by it, collapsing to nothing instead of just rendering a smaller gap.
- * Capping against the segment's own width (rather than the average across all segments) is
- * what actually prevents collapse for a donut whose segment sizes are highly skewed - an
- * average gets dragged up by the larger segments and wouldn't meaningfully shrink the gap for
- * the specific tiny ones that are actually at risk.
+ * Gets the arc mark's padAngle - the fixed per-tier px slice gap converted to radians, capped to a
+ * fraction of each segment's own angular width so a tiny segment can't collapse under a gap sized
+ * for a larger one.
  * @param donutOptions
  * @returns vega expression string
  */
