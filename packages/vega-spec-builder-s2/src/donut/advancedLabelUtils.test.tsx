@@ -340,7 +340,7 @@ describe('truncation limit', () => {
   });
 
   test('value row does not reserve any extra width in its limit (trailing subtraction is 0)', () => {
-    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true }] };
     const [, , valueMark] = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
     const limitSignal = (valueMark.encode?.update?.limit as { signal: string }).signal;
     expect(limitSignal).toContain('? 0 :');
@@ -350,7 +350,7 @@ describe('truncation limit', () => {
   });
 
   test('name and value rows should share the exact same underlying width comparisons in their limit', () => {
-    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ value: true }] };
+    const donutOptions = { ...defaultDonutOptionsWithAdvancedLabel, advancedLabels: [{ percent: true }] };
     const marks = getAdvancedLabelMarks(donutOptions)[0].marks as [SymbolMark, TextMark, TextMark];
     const [, nameMark, valueMark] = marks;
     const nameLimit = (nameMark.encode?.update?.limit as { signal: string }).signal;
