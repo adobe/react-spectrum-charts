@@ -67,6 +67,8 @@ const makeFakeView = () =>
     addEventListener: jest.fn(),
   } as unknown as View);
 
+const mockSetHoveredAxisLabel = jest.fn();
+
 describe('useNewChartView - axis label click wiring', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -76,6 +78,7 @@ describe('useNewChartView - axis label click wiring', () => {
       selectedDataBounds: { current: undefined },
       selectedDataName: { current: undefined },
       chartId: 'test-chart',
+      setHoveredAxisLabel: mockSetHoveredAxisLabel,
     } as unknown as ReturnType<typeof useChartContext>);
     mockUsePopovers.mockReturnValue([]);
     mockUseMarkOnClickDetails.mockReturnValue([]);
@@ -100,5 +103,53 @@ describe('useNewChartView - axis label click wiring', () => {
       ([eventName]) => eventName === 'click'
     ).length;
     expect(clickListenerCount).toBe(1);
+  });
+});
+
+describe('useNewChartView - axis label tooltip wiring', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseChartContext.mockReturnValue({
+      chartView: { current: undefined },
+      selectedData: { current: null },
+      selectedDataBounds: { current: undefined },
+      selectedDataName: { current: undefined },
+      chartId: 'test-chart',
+      setHoveredAxisLabel: mockSetHoveredAxisLabel,
+    } as unknown as ReturnType<typeof useChartContext>);
+    mockUsePopovers.mockReturnValue([]);
+    mockUseMarkOnClickDetails.mockReturnValue([]);
+    mockUseMarkMouseInputDetails.mockReturnValue([]);
+    mockUseAxisLabelOnClickDetails.mockReturnValue([]);
+  });
+
+  const axisLabelItem = {
+    mark: { role: 'axis-label', group: {} },
+    bounds: { x1: 0, x2: 10, y1: 0, y2: 20 },
+    datum: {},
+  };
+
+  test('hovering an axis label sets hoveredAxisLabel with the item bounds and tooltip content', () => {
+    const view = makeFakeView();
+    getOnNewView()(view);
+    const tooltipCallback = (view.tooltip as jest.Mock).mock.calls[0][0];
+
+    tooltipCallback(view, { type: 'pointermove' }, axisLabelItem, 'Category A');
+
+    expect(mockSetHoveredAxisLabel).toHaveBeenCalledWith({
+      bounds: { x1: 0, x2: 10, y1: 0, y2: 20 },
+      content: 'Category A',
+    });
+  });
+
+  test('hovering a non-axis-label item clears hoveredAxisLabel', () => {
+    const view = makeFakeView();
+    getOnNewView()(view);
+    const tooltipCallback = (view.tooltip as jest.Mock).mock.calls[0][0];
+    const barItem = { mark: { name: 'bar0' }, bounds: { x1: 0, x2: 0, y1: 0, y2: 0 }, datum: {} };
+
+    tooltipCallback(view, { type: 'mouseout' }, barItem, 'value');
+
+    expect(mockSetHoveredAxisLabel).toHaveBeenCalledWith(null);
   });
 });
