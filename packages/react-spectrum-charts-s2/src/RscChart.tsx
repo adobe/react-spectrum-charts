@@ -146,6 +146,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             data-testid="rsc-axis-label-tooltip-anchor"
             ref={axisLabelTooltipAnchorRef}
             style={axisLabelTooltipAnchorStyle}
+            tabIndex={-1}
           />
         </Focusable>
         <Tooltip>{hoveredAxisLabel?.content ?? lastAxisLabelContentRef.current}</Tooltip>
