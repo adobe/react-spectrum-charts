@@ -292,10 +292,10 @@ const getAdvancedLabelWidthExprs = (
 
 /**
  * Gets the widest-row-capped pixel width shared by the whole swatch+text block - the same value
- * used both to cap the left-hemisphere pull-back (getAdvancedLabelAnchorDxExpr) and as each row's
+ * used both to cap the left-hemisphere shift (getAdvancedLabelAnchorDxExpr) and as each row's
  * truncation limit (getAdvancedLabelLimitExpr), so a row's real rendered width can never exceed the
- * distance it was pulled back by. Without both using this same capped value, a row wider than the
- * cap would undershoot its pull-back and its near-ring edge would land past the anchor, into the
+ * distance it was shifted by. Without both using this same capped value, a row wider than the
+ * cap would undershoot its shift and its near-ring edge would land past the anchor, into the
  * ring itself - confirmed live (a long detail row overlapping the ring at ~195px outer diameter).
  * @param advancedLabelOptions
  * @returns vega expression string
@@ -318,8 +318,8 @@ const getAdvancedLabelAnchorDxExpr = (options: AdvancedLabelSpecOptions): string
 };
 
 /**
- * Gets a row's truncation limit - only the left hemisphere is ever capped (its pull-back is what's
- * bounded by getAdvancedLabelCappedWidthExpr); the right hemisphere has no pull-back at all (dx is
+ * Gets a row's truncation limit - only the left hemisphere is ever capped (its shift is what's
+ * bounded by getAdvancedLabelCappedWidthExpr); the right hemisphere has no shift at all (dx is
  * always 0, growing freely away from the ring) and must not be truncated by that same cap, or every
  * row - even ones that fit comfortably - gets needlessly cut off. `0` is Vega's "no limit" value.
  *
@@ -528,7 +528,7 @@ const getAdvancedLabelNameTextMark = (options: AdvancedLabelSpecOptions): TextMa
         dx: { signal: `${getAdvancedLabelAnchorDxExpr(options)} + ${DONUT_ADVANCED_LABEL_SWATCH_SIZE} + ${DONUT_ADVANCED_LABEL_SWATCH_GAP}` },
         dy: { signal: rowDy.name },
         fontSize: getAdvancedLabelFontSize(name, `${name}_advancedLabelNameFontSize`),
-        // truncates (ellipsis) if the text alone would push the row past the same cap the pull-back
+        // truncates (ellipsis) if the text alone would push the row past the same cap the shift
         // already assumed - the swatch+gap are already reserved out of the cap, so only the
         // remainder is available to the text itself
         limit: {
@@ -607,7 +607,7 @@ const getAdvancedLabelDetailTextMark = (options: AdvancedLabelSpecOptions): Text
           dy: { signal: rowDy.detail as string },
           fontSize: getAdvancedLabelFontSize(name, `${name}_advancedLabelDetailFontSize`),
           // truncates (ellipsis) if this row alone is what pushed the block past its cap - fixes
-          // the observed overlap where a long "X out of Y" detail row extended past the pull-back
+          // the observed overlap where a long "X out of Y" detail row extended past the shift
           // and into the ring itself
           limit: { signal: getAdvancedLabelLimitExpr(options) },
           opacity: getMarkOpacity(donutOptions),

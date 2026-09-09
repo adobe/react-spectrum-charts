@@ -243,7 +243,7 @@ describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offs
     expect(dxSignal).toContain('testName_segmentLabelValueFontSize');
   });
 
-  test('the pull-back should be capped at however much room remains before the container edge', () => {
+  test('the shift should be capped at however much room remains before the container edge', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toContain('min(max(getLabelWidth(');

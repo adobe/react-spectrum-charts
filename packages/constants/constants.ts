@@ -286,8 +286,8 @@ export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
 /** Font weight for donut direct-label value text */
 export const DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT = 700;
 /**
- * Max fraction of the donut's own radius that a direct label's hemisphere-mirrored pull-back offset may use.
- * Label text width (a handful of px per character) doesn't shrink with the donut, so an uncapped pull-back
+ * Max fraction of the donut's own radius that a direct label's hemisphere-mirrored shift offset may use.
+ * Label text width (a handful of px per character) doesn't shrink with the donut, so an uncapped shift
  * can demand disproportionate space at small sizes, triggering runaway autosize 'fit' shrinkage. Bounding
  * it as a fraction of the current radius keeps the offset proportionate at every size instead of a fixed px cap.
  */

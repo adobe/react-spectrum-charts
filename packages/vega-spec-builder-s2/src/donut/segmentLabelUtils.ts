@@ -260,10 +260,10 @@ const getWidthExprs = (
 
 /**
  * Gets the widest-line-capped pixel width shared by a label's name/value lines - the same value used
- * both to cap the left-hemisphere pull-back (getLabelAnchorDxExpr) and as each line's truncation
+ * both to cap the left-hemisphere shift (getLabelAnchorDxExpr) and as each line's truncation
  * limit (see getSegmentLabelTextMark/getSegmentLabelValueTextMark), so a line's real rendered width
- * can never exceed the distance it was pulled back by. Without both using this same capped value, a
- * line wider than the cap would undershoot its pull-back and its near-ring edge would land past the
+ * can never exceed the distance it was shifted by. Without both using this same capped value, a
+ * line wider than the cap would undershoot its shift and its near-ring edge would land past the
  * anchor, into the ring itself.
  * @param segmentLabelOptions
  * @returns vega expression string
@@ -273,7 +273,7 @@ const getCappedWidthExpr = (options: SegmentLabelSpecOptions): string => getWidt
 /**
  * Gets the shared horizontal pixel offset for a label's name/value lines. Right-hemisphere labels get
  * no offset (anchor sits at the ring-gap point and grows away from the ring). Left-hemisphere labels
- * get pulled left by the wider line's real rendered width, so that line's far (right) edge lands
+ * shift left by the wider line's real rendered width, so that line's far (right) edge lands
  * exactly on the ring-gap point while both lines still share the same near (left) edge. This is a pure
  * horizontal (dx) adjustment, independent of theta, so it never distorts a label's vertical position.
  * @param segmentLabelOptions
@@ -287,8 +287,8 @@ const getLabelAnchorDxExpr = (options: SegmentLabelSpecOptions): string => {
 };
 
 /**
- * Gets a line's truncation limit - only the left hemisphere is ever capped (its pull-back is what's
- * bounded by getCappedWidthExpr); the right hemisphere has no pull-back at all (dx is always 0,
+ * Gets a line's truncation limit - only the left hemisphere is ever capped (its shift is what's
+ * bounded by getCappedWidthExpr); the right hemisphere has no shift at all (dx is always 0,
  * growing freely away from the ring) and must not be truncated by that same cap, or every line -
  * even ones that fit comfortably - gets needlessly cut off. `0` is Vega's "no limit" value.
  *
@@ -433,7 +433,7 @@ const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeS
     // shifts left-hemisphere labels left by the wider line's width - see getLabelAnchorDxExpr
     dx: { signal: getLabelAnchorDxExpr(options) },
     // truncates (ellipsis) if this line alone is what pushed the pair past their shared cap, so its
-    // real rendered width can never exceed the distance the pull-back already assumed
+    // real rendered width can never exceed the distance the shift already assumed
     limit: { signal: getLimitExpr(options) },
     fontSize: getSegmentLabelFontSize(name, fontSizeSignal),
     // both hemispheres anchor at their near (left) edge - only the dx offset differs by hemisphere

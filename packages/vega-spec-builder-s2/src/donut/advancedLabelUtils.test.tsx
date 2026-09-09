@@ -203,7 +203,7 @@ describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offs
     expect(dxSignal).toContain('testName_advancedLabelDetailFontSize');
   });
 
-  test('the pull-back should be capped at however much room remains before the container edge', () => {
+  test('the shift should be capped at however much room remains before the container edge', () => {
     const nameMark = getNameMark(defaultDonutOptionsWithAdvancedLabel);
     const dxSignal = (nameMark.encode?.update?.dx as { signal: string }).signal;
     expect(dxSignal).toContain('min(max(');
@@ -301,7 +301,7 @@ describe('getAdvancedLabelSwatchMark()', () => {
     expect(xSignal.endsWith(`+ ${DONUT_ADVANCED_LABEL_SWATCH_SIZE / 2}`)).toBe(true);
   });
 
-  test('swatch and name row should share the exact same underlying hemisphere pull-back (dx) expression', () => {
+  test('swatch and name row should share the exact same underlying hemisphere shift (dx) expression', () => {
     const [swatchMark, nameMark] = getSwatchAndNameMarks(defaultDonutOptionsWithAdvancedLabel);
     const swatchXSignal = (swatchMark.encode?.update?.x as { signal: string }).signal;
     const nameDxSignal = (nameMark.encode?.update?.dx as { signal: string }).signal;
