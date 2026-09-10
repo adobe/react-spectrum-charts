@@ -2,7 +2,7 @@
 
 Use this skill when adding a new prop to an existing chart mark or component (e.g., `blend` on Scatter, `labelLimit` on Axis, `onMouseOver` on Bar).
 
-Read `.claude/architecture.md` for the three-type system (Options / SpecOptions / Props), OptionsWithDefaults, what the adapter does and when it needs to change, and encoding conventions.
+Read `.claude/architecture-core.md` (covers Options / SpecOptions / Props and OptionsWithDefaults), plus `.claude/architecture-encoding-and-props.md` (encoding conventions, and — if the prop is a callback — callback/boolean-flag conventions). If it exists in S2, also read `.claude/architecture-s2-parity.md`.
 
 ---
 
@@ -196,7 +196,7 @@ Check whether the mark exists in S2 (`packages/vega-spec-builder-s2/src/` and `p
 
 **Callback converted to flag incorrectly** — Marks split callbacks into separate boolean flags. Line uses `hasOnClick: Boolean(onClick)` and a separate `hasMouseInteraction: Boolean(onMouseOut || onMouseOver)`. Do not assume one flag covers all callbacks — always read the existing adapter for the mark you are modifying before adding new flag logic.
 
-**Failing TypeScript but not failing tests** — `yarn test` does not type-check. Always run `yarn tsc --noEmit` after writing test files.
+**Failing TypeScript but not failing tests** — `yarn test` does not type-check. Run `yarn tsc --noEmit` once at task completion (see CLAUDE.md's Test Completeness Checklist) — not proactively after every file.
 
 **Type literals widened with `| string`** — When a prop takes a fixed set of values, define it as a string literal union (`'left' | 'right' | 'center'`). Do not add `| string` to widen it — restrict to known valid values only. ESLint and TypeScript will not catch this, but SonarQube will flag it as a code smell.
 

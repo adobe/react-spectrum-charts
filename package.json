@@ -88,6 +88,7 @@
     "storybook:s2": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6010 --config-dir .storybook-s2",
     "build:storybook:s2": "storybook build --config-dir .storybook-s2 -o ./dist-storybook-s2 --quiet",
     "test": "cross-env TZ=UTC BABEL_ENV=test jest",
+    "test:quiet": "cross-env TZ=UTC BABEL_ENV=test jest --coverage=false",
     "watch": "cross-env TZ=UTC BABEL_ENV=test jest --watch",
     "skulk": "yarn watch --silent",
     "version:s2": "node ./scripts/updateS2Versions.js",

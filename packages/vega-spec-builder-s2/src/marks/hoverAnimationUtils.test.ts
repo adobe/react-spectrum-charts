@@ -129,17 +129,21 @@ describe('getHoverAnimStateData()', () => {
 });
 
 describe('getHoverFractionData()', () => {
-  test('lerps startValue -> target over the animation duration, driven by the gated active timer', () => {
-    expect(getHoverFractionData('line0')).toStrictEqual({
-      name: 'line0_hoverFractionData',
-      source: 'line0_hoverAnimStateData',
-      transform: [
-        {
-          type: 'formula',
-          as: 'fraction',
-          expr: `lerp([datum.startValue, datum.target], datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1))`,
-        },
-      ],
+  test('computes progress over the animation duration, driven by the gated active timer', () => {
+    const result = getHoverFractionData('line0');
+    expect(result.transform?.[0]).toStrictEqual({
+      type: 'formula',
+      as: 'progress',
+      expr: `datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1)`,
+    });
+  });
+
+  test('eases progress quadratically in and out before lerping startValue -> target', () => {
+    const result = getHoverFractionData('line0');
+    expect(result.transform?.[1]).toStrictEqual({
+      type: 'formula',
+      as: 'fraction',
+      expr: `lerp([datum.startValue, datum.target], datum.progress < 0.5 ? 2 * pow(datum.progress, 2) : 1 - pow(-2 * datum.progress + 2, 2) / 2)`,
     });
   });
 });

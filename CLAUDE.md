@@ -28,7 +28,17 @@ The two packages touched for most feature work:
 
 ## Architecture Reference
 
-For deep architecture context — the VegaChart rendering cycle, signal system, data sources, scale system, interactive mark wiring, COMPONENT_NAME, sanitize gate, encoding conventions, and S2 parity rules — read `.claude/architecture.md`.
+Architecture context lives in `.claude/architecture-*.md`, split by topic so you only read what your task needs:
+
+- `architecture-core.md` — the pipeline diagram and the three-type system. **Always read this one.**
+- `architecture-mark-internals.md` — the four spec builder functions, data sources, scale system, interactive mark system
+- `architecture-rendering-and-signals.md` — VegaChart's two render effects, signal architecture, COMPONENT_NAME, `safeClone`
+- `architecture-child-dispatch.md` — the child component dispatch pipeline and sanitize gate
+- `architecture-encoding-and-props.md` — encoding conventions, callback props, alpha vs stable
+- `architecture-s2-parity.md` — s1/s2 mirroring rules
+- `architecture-file-creation.md` — copyright header, import conventions, `ScSpec`, type literals
+
+The relevant skill file for your change type (see "Before Implementing Any Feature or Bug Fix" below) names which of these apply — you don't need to read all of them.
 
 ---
 
@@ -138,6 +148,7 @@ Always implement in this order:
 - `initializeSpec()` from `specUtils.ts` creates a minimal starting spec for tests
 - `defaultSignals` from `specTestUtils.ts` is the baseline signal array all specs start with
 - Run timezone-normalized: `cross-env TZ=UTC` is set in all test scripts
+- Default to `yarn test:quiet --testPathPattern=<pattern>` for a targeted, coverage-free run during development — never `yarn workspace ... test` (not a valid command in this monorepo) or a bare `npx jest`. Reserve the full `yarn test` (collects coverage, feeds Sonar) for CI or an explicit "run all"/final-validation request. A broad run isn't needed to catch unrelated regressions — the pipeline catches those.
 
 ---
 
@@ -154,24 +165,23 @@ Always use `yarn` for all package management and script execution — never `npm
 # If `cross-env: command not found` appears, run `yarn install` first, then retry.
 yarn install
 
-# Run all tests
+# Run tests, targeted (default for agents/dev — no coverage, quiet)
+yarn test:quiet --testPathPattern=line
+
+# Full suite with coverage — CI/Sonar only, or when the user explicitly asks (e.g. "run all")
 yarn test
 
 # Watch mode
 yarn watch
 
-# Run tests for a specific package
-yarn workspace @spectrum-charts/vega-spec-builder test
-yarn workspace @adobe/react-spectrum-charts test
+# Lint — append --quiet yourself for a quieter run (errors only); leave the
+# shared script as-is so CI and other developers still see warnings by default
+yarn lint --quiet
 
-# Run tests matching a pattern
-yarn test --testPathPattern=line
-
-# Lint
-yarn lint
-
-# TypeScript check (no emit)
-yarn tsc
+# TypeScript check (no emit) — append --pretty false yourself for compact,
+# uncolored output; don't bake this into the shared script (humans want the
+# colorized code-frame in their own terminal)
+yarn tsc --pretty false
 
 # Storybook (port 6009)
 yarn storybook
@@ -295,7 +305,7 @@ When adding a new mark, verify its encodings follow the same conventions as comp
 - Cross-check against one or two similar existing marks (e.g. `barAnnotationUtils.ts`, `linePointUtils.ts`) to catch any other conventions
 
 ### 6. TypeScript
-After writing or modifying test files, run `yarn tsc --noEmit` and confirm no errors before reporting the work done. `yarn test` passing does not imply the files are type-correct.
+Run `yarn tsc --noEmit` once, when the whole task is complete — not proactively after every file or every test written. `yarn test` passing does not imply the files are type-correct. For iterative/multi-step work, defer this to task completion or let CI catch it rather than re-running it after each change.
 
 ---
 
@@ -321,7 +331,7 @@ When fixing a bug or refactoring behavior in an s1 package file, always check wh
 
 Before writing any code, always:
 
-1. Read `.claude/architecture.md` for system context
+1. Read `.claude/architecture-core.md` — every task needs it regardless of type.
 2. If a Jira ticket is associated with the work, check it for explicit spec values (line widths, pixel dimensions, thresholds, token names) **before** fetching Figma images or doing web research. Ticket descriptions for this project routinely contain the exact implementation values needed.
 3. Classify the change type and read the corresponding skill file:
    - Unexpected or broken behavior → `.claude/commands/implement-bug-fix.md`
@@ -372,12 +382,6 @@ Bugs: investigate and file via the `file-issue` skill
 (`.claude/commands/file-issue.md`), submit as a PR, then `implement-bug-fix` checks for one
 first. Full field-by-field guidance, the complexity rubric, and the `crossCutting` flag
 definitions are in `planning/specs/README.md`.
-
----
-
-## AI Workflow Skills
-
-The `figma-example-story` pipeline and its sub-skills (`analyze-chart-design`, `generate-chart-story`, `verify-chart-story`) live in `.claude/commands/`. When a new rule or refinement is discovered for this workflow, update the relevant skill file directly. Do not save workflow rules to session memory — the skill files are the transferable source of truth.
 
 ---
 
