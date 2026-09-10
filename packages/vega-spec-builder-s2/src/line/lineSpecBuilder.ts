@@ -580,6 +580,7 @@ const getLineFacetContext = (
     : options;
 
   return { facetData, facetGroupby, markOptions };
+};
 
 const addLineForecastBoundaryMarks = (
   marks: Mark[],
@@ -610,7 +611,7 @@ const addLineGroupMark = (
       },
     },
     // raises the focused line's whole group (halo + line) above every other line, regardless of draw order
-    ...(hasLineFocusRing ? { encode: { update: { zindex: getLineGroupZIndexEncoding(color) } } } : {}),
+    ...(hasLineFocusRing ? { encode: { update: { zindex: getLineGroupZIndexEncoding(markOptions.color) } } } : {}),
     marks: [
       // two-layer focus halo for keyboard navigation, drawn behind the real line: an outer accent
       // ring, then a background-colored gap on top of it so the accent doesn't bleed into the line

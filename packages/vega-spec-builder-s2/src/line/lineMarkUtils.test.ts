@@ -304,7 +304,7 @@ describe('getLineOpacity()', () => {
       const opacityRule = getLineOpacity({
         ...defaultLineMarkOptions,
         interactiveMarkName: 'line0',
-        isAnimate: true,
+        isHoverAnimate: true,
         accessibleNavigation: true,
         color: 'series',
       });
@@ -321,7 +321,7 @@ describe('getLineOpacity()', () => {
       const opacityRule = getLineOpacity({
         ...defaultLineMarkOptions,
         interactiveMarkName: 'line0',
-        isAnimate: true,
+        isHoverAnimate: true,
         accessibleNavigation: true,
         color: { value: 'categorical-100' },
       });
