@@ -64,6 +64,15 @@ function makeContext(
 ) {
   return {
     chartView: { current: { signal: mockSignal, data: mockData } },
+    chartId: 'test-chart',
+    selectedData: { current: null },
+    selectedDataName: { current: '' },
+    selectedDataBounds: { current: { x1: 0, x2: 0, y1: 0, y2: 0 } },
+    isPopoverOpen: false,
+    setIsPopoverOpen: jest.fn(),
+    popoverAnchorRef: { current: null },
+    hoveredAxisLabel: null,
+    setHoveredAxisLabel: jest.fn(),
     controlledHoveredIdSignal: { current: idSignal },
     controlledHoveredGroupSignal: { current: groupSignal },
   };
@@ -81,21 +90,21 @@ describe('useChartInspectInteractions - controlledHoveredIdSignal', () => {
   });
 
   test('calls signal with the idKey value when controlledHoveredIdSignal is set', () => {
-    mockUseChartContext.mockReturnValue(makeContext({ name: 'line0_controlledHoveredId' }) as ReturnType<typeof useChartContext>);
+    mockUseChartContext.mockReturnValue(makeContext({ name: 'line0_controlledHoveredId' }) as unknown as ReturnType<typeof useChartContext>);
     const formatTooltip = getFormatTooltip();
     formatTooltip?.({ ...baseValue });
     expect(mockSignal).toHaveBeenCalledWith('line0_controlledHoveredId', 'item-1');
   });
 
   test('calls signal with null when idKey is absent from value', () => {
-    mockUseChartContext.mockReturnValue(makeContext({ name: 'line0_controlledHoveredId' }) as ReturnType<typeof useChartContext>);
+    mockUseChartContext.mockReturnValue(makeContext({ name: 'line0_controlledHoveredId' }) as unknown as ReturnType<typeof useChartContext>);
     const formatTooltip = getFormatTooltip();
     formatTooltip?.({ [COMPONENT_NAME]: 'line0' });
     expect(mockSignal).toHaveBeenCalledWith('line0_controlledHoveredId', null);
   });
 
   test('does not call signal when controlledHoveredIdSignal is not set', () => {
-    mockUseChartContext.mockReturnValue(makeContext() as ReturnType<typeof useChartContext>);
+    mockUseChartContext.mockReturnValue(makeContext() as unknown as ReturnType<typeof useChartContext>);
     const formatTooltip = getFormatTooltip();
     formatTooltip?.({ ...baseValue });
     expect(mockSignal).not.toHaveBeenCalled();
@@ -111,21 +120,21 @@ describe('useChartInspectInteractions - controlledHoveredGroupSignal', () => {
   });
 
   test('calls group signal when value contains a key ending in GROUP_ID', () => {
-    mockUseChartContext.mockReturnValue(makeContext(undefined, { name: 'line0_controlledHoveredGroup' }) as ReturnType<typeof useChartContext>);
+    mockUseChartContext.mockReturnValue(makeContext(undefined, { name: 'line0_controlledHoveredGroup' }) as unknown as ReturnType<typeof useChartContext>);
     const formatTooltip = getFormatTooltip();
     formatTooltip?.({ ...baseValue, [groupKey]: 'group-a' });
     expect(mockSignal).toHaveBeenCalledWith('line0_controlledHoveredGroup', 'group-a');
   });
 
   test('does not call group signal when no GROUP_ID key exists in value', () => {
-    mockUseChartContext.mockReturnValue(makeContext(undefined, { name: 'line0_controlledHoveredGroup' }) as ReturnType<typeof useChartContext>);
+    mockUseChartContext.mockReturnValue(makeContext(undefined, { name: 'line0_controlledHoveredGroup' }) as unknown as ReturnType<typeof useChartContext>);
     const formatTooltip = getFormatTooltip();
     formatTooltip?.({ ...baseValue }); // no key ending in GROUP_ID
     expect(mockSignal).not.toHaveBeenCalled();
   });
 
   test('does not call group signal when controlledHoveredGroupSignal is not set', () => {
-    mockUseChartContext.mockReturnValue(makeContext() as ReturnType<typeof useChartContext>);
+    mockUseChartContext.mockReturnValue(makeContext() as unknown as ReturnType<typeof useChartContext>);
     const formatTooltip = getFormatTooltip();
     formatTooltip?.({ ...baseValue, [groupKey]: 'group-a' });
     expect(mockSignal).not.toHaveBeenCalled();
@@ -142,7 +151,7 @@ describe('useChartInspectInteractions - highlightBy GROUP_DATA population', () =
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseChartContext.mockReturnValue(makeContext() as ReturnType<typeof useChartContext>);
+    mockUseChartContext.mockReturnValue(makeContext() as unknown as ReturnType<typeof useChartContext>);
     mockData.mockReturnValue(tableData);
   });
 

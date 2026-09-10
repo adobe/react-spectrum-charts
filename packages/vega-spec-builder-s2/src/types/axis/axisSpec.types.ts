@@ -51,6 +51,13 @@ export type SubLabel = {
   fontWeight?: FontWeight;
 };
 
+export type AxisTooltip = {
+  /** The axis value that this tooltip is anchored to */
+  value: string | number;
+  /** Custom tooltip text; `null` suppresses it. */
+  text: string | null;
+};
+
 export interface AxisOptions {
   /** Sets the name of the component. */
   name?: string;
@@ -118,6 +125,8 @@ export interface AxisOptions {
   ticks?: boolean;
   /** Enables hover tooltips on axis labels for this axis. */
   hasTooltip?: boolean;
+  /** Per-value tooltip text overrides. Unlisted values use the default; `text: null` suppresses. */
+  tooltipText?: AxisTooltip[];
   /** Whether the axis has an onClick callback set. */
   hasOnClick?: boolean;
   /**

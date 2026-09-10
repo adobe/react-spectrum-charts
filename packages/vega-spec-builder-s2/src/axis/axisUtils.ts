@@ -16,6 +16,7 @@ import { FILTERED_TABLE } from '@spectrum-charts/constants';
 import { AxisSpecOptions, DivergingBarMark, Granularity, Orientation, Position } from '../types';
 import {
   getAxisLabelsEncoding,
+  getAxisLabelTooltipRule,
   getLabelAnchorValues,
   getLabelAngle,
   getLabelFormat,
@@ -37,6 +38,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     labelFontWeight,
     labelLimit,
     labelOrientation,
+    name,
     tickCountLimit,
     tickCountMinimum,
     position,
@@ -70,7 +72,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
         interactive: Boolean(hasTooltip),
         update: {
           text: getLabelFormat(axisOptions, scaleName),
-          ...(hasTooltip ? { tooltip: { signal: 'datum.value' } } : {}),
+          ...(hasTooltip ? { tooltip: getAxisLabelTooltipRule(name) } : {}),
         },
       },
     },

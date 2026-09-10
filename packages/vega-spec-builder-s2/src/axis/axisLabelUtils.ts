@@ -17,6 +17,7 @@ import {
   GuideEncodeEntry,
   NumberValue,
   ProductionRule,
+  StringValueRef,
   TextEncodeEntry,
   TextValueRef,
   TickCount,
@@ -261,6 +262,21 @@ export const getLabelFormat = (
     ...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
       ? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
       : [{ signal: 'datum.value' }]),
+  ];
+};
+
+/**
+ * Tooltip production rule: per-value override, suppress, or the label's raw value.
+ * @param name axis name
+ * @returns tooltip production rule
+ */
+export const getAxisLabelTooltipRule = (name: string): ProductionRule<StringValueRef> => {
+  const signalName = `${name}_tooltipText`;
+  const matchIndex = `indexof(pluck(${signalName}, 'value'), datum.value)`;
+  return [
+    { test: `${matchIndex} > -1 && ${signalName}[${matchIndex}].text === null`, signal: 'null' },
+    { test: `${matchIndex} > -1`, signal: `${signalName}[${matchIndex}].text` },
+    { signal: 'datum.value' },
   ];
 };
 

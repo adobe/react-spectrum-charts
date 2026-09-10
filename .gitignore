@@ -37,3 +37,4 @@ tmp/
 
 .agents/
 .scout/
+.claude/rules/

@@ -28,6 +28,7 @@ const Axis: FC<AxisProps> = ({
   baselineOffset = 0,
   granularity = DEFAULT_GRANULARITY,
   grid = false,
+  hasTooltip = false,
   hideDefaultLabels = false,
   labelAlign = DEFAULT_LABEL_ALIGN,
   labelFontWeight = DEFAULT_LABEL_FONT_WEIGHT,
@@ -43,6 +44,7 @@ const Axis: FC<AxisProps> = ({
   tickCountMinimum = undefined,
   tickMinStep = undefined,
   title = undefined,
+  tooltipText = undefined,
 }) => {
   return null;
 };

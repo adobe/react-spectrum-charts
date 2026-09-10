@@ -614,6 +614,22 @@ describe('Spec builder, Axis', () => {
         })[0];
         expect(axis.encode?.labels).toHaveProperty('interactive', true);
       });
+
+      test('tooltip is a lookup production rule over the axis0_tooltipText signal', () => {
+        const axis = addAxes([], {
+          ...defaultAxisOptions,
+          hasTooltip: true,
+          scaleName: 'xBand',
+          scaleField: 'category',
+          usermeta: {},
+        })[0];
+        const matchIndex = "indexof(pluck(axis0_tooltipText, 'value'), datum.value)";
+        expect(axis.encode?.labels?.update?.tooltip).toStrictEqual([
+          { test: `${matchIndex} > -1 && axis0_tooltipText[${matchIndex}].text === null`, signal: 'null' },
+          { test: `${matchIndex} > -1`, signal: `axis0_tooltipText[${matchIndex}].text` },
+          { signal: 'datum.value' },
+        ]);
+      });
     });
 
     describe('onClick wiring', () => {
@@ -1136,6 +1152,43 @@ describe('Spec builder, Axis', () => {
       expect(signals[0]).toHaveProperty('value', [
         { value: 1, subLabel: 'one', align: 'left', baseline: 'top' },
         { value: 2, subLabel: 'two', align: 'right', baseline: 'top' },
+      ]);
+    });
+
+    test('should add an empty tooltipText signal when hasTooltip is true with no overrides', () => {
+      const signals = addAxisSignals([], { ...defaultAxisOptions, hasTooltip: true }, 'xLinear');
+      expect(signals).toHaveLength(1);
+      expect(signals[0]).toHaveProperty('name', 'axis0_tooltipText');
+      expect(signals[0]).toHaveProperty('value', []);
+    });
+
+    test('should not add a tooltipText signal when hasTooltip is false', () => {
+      const signals = addAxisSignals(
+        [],
+        { ...defaultAxisOptions, tooltipText: [{ value: 'Mac Safari', text: null }] },
+        'xLinear'
+      );
+      expect(signals).toHaveLength(0);
+    });
+
+    test('should add tooltipText signal with per-value overrides, including suppression', () => {
+      const signals = addAxisSignals(
+        [],
+        {
+          ...defaultAxisOptions,
+          hasTooltip: true,
+          tooltipText: [
+            { value: 'Microsoft Explorer', text: 'Clicking Other may expand the chart' },
+            { value: 'Mac Safari', text: null },
+          ],
+        },
+        'xLinear'
+      );
+      expect(signals).toHaveLength(1);
+      expect(signals[0]).toHaveProperty('name', 'axis0_tooltipText');
+      expect(signals[0]).toHaveProperty('value', [
+        { value: 'Microsoft Explorer', text: 'Clicking Other may expand the chart' },
+        { value: 'Mac Safari', text: null },
       ]);
     });
 
