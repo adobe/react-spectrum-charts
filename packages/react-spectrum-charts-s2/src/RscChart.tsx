@@ -243,21 +243,14 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     return (legendChild?.props as { title?: string } | undefined)?.title;
   }, [sanitizedChildren]);
   // Maps each nav field to its display title so the accessible strings read as the chart's axis/legend labels rather than raw data keys.
+  const { dimension: navDimensionField, metric: navMetricField } = navGeometryFields;
   const navFieldLabels = useMemo(() => {
     const labels: Record<string, string> = {};
-    const { dimension, metric } = navGeometryFields;
-    if (navDimensionAxisTitle && dimension) labels[dimension] = navDimensionAxisTitle;
-    if (navMetricAxisTitle && metric) labels[metric] = navMetricAxisTitle;
+    if (navDimensionAxisTitle && navDimensionField) labels[navDimensionField] = navDimensionAxisTitle;
+    if (navMetricAxisTitle && navMetricField) labels[navMetricField] = navMetricAxisTitle;
     if (navColorTitle && navColor) labels[navColor] = navColorTitle;
     return labels;
-  }, [
-    navDimensionAxisTitle,
-    navMetricAxisTitle,
-    navColorTitle,
-    navColor,
-    navGeometryFields.dimension,
-    navGeometryFields.metric,
-  ]);
+  }, [navDimensionAxisTitle, navMetricAxisTitle, navColorTitle, navColor, navDimensionField, navMetricField]);
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
   const getPopoverClosedAt = useCallback(() => popoverClosedAt.current, [popoverClosedAt]);
@@ -294,6 +287,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       markOnClickDetails.find((detail) => detail.markName === markName)?.onClick?.(datum as unknown as Datum);
     },
     [
+      chartView,
       chartId,
       navResolvedName,
       navGeometryFields,
@@ -325,7 +319,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       const syntheticItem = { bounds: getFocusedItemBounds(view, datum, navGeometryFields), mark: {} } as unknown as Item;
       new Handler(inspectOptions).call(view, position as unknown as MouseEvent, syntheticItem, value);
     },
-    [inspectOptions, navResolvedName, navGeometryFields, navMarkHasInspect]
+    [chartView, inspectOptions, navResolvedName, navGeometryFields, navMarkHasInspect]
   );
 
   return (
