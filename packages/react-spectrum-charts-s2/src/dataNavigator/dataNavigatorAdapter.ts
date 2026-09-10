@@ -17,7 +17,12 @@ import { FOCUSED_DIMENSION, FOCUSED_ITEM, FOCUSED_REGION, FOCUSED_SERIES, HOVERE
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisRegionOptions, LegendRegionOptions, NavigableChartType, buildChartStructure } from './buildChartStructure';
-import { clearAxisFocusRing, getVisibleAxisLabelColumns, setAxisFocusRing } from './axisLabelGeometry';
+import {
+  clearAxisFocusRing,
+  getAxisTitleBounds,
+  getVisibleAxisLabelColumns,
+  setAxisFocusRing,
+} from './axisLabelGeometry';
 import { getNodeRegion, stripRegionPrefix } from './composeRegions';
 import './dataNavigator.css';
 
@@ -83,20 +88,20 @@ const CLEARED_FOCUS: FocusSignals = { item: null, region: null, dimension: null,
  *  - content, leaf (no dimensionLevel) → a single bar/segment (`item` = node id)
  *  - content, dimension root (level 1) → the chart overview (`region` = 'chart')
  *  - content, division (level 2)       → a dimension group / stack (`dimension` = the column value)
- *  - xAxis, leaf tick                  → reuses the same content signal a matching bar/stack would
- *    set (`item` for a plain bar, `dimension` for a stacked one), so browsing ticks highlights
- *    the corresponding chart content without a chart having to be multi-series aware.
+ *  - xAxis, leaf tick                  → uses the axis hover signal separately to highlight the
+ *    corresponding chart content without activating its focus ring.
  *  - legend (root or entry)             → sets `region` = 'legend' so a ring is drawn around the whole
  *    legend the entire time it's focused; a leaf entry also sets a dedicated `series` signal (kept
  *    separate from the externally-controlled highlightedSeries signal so keyboard focus can't clobber it)
  *  - yAxis root                         → descriptive only; no visual signal
  */
-const nodeFocusSignals = (node: NodeObject, hasSeries: boolean): FocusSignals => {
+const nodeFocusSignals = (node: NodeObject): FocusSignals => {
   const region = getNodeRegion(node);
 
   if (region === 'xAxis') {
-    if (node.dimensionLevel === 1) return CLEARED_FOCUS;
-    return hasSeries ? { ...CLEARED_FOCUS, dimension: node.id } : { ...CLEARED_FOCUS, item: node.id };
+    // Axis labels use the separate hover signal for chart highlighting; they must not activate
+    // the bar or stack focus rings.
+    return CLEARED_FOCUS;
   }
   if (region === 'legend') {
     // `region: 'legend'` draws the ring around the whole legend the entire time it's focused (root
@@ -153,16 +158,22 @@ interface AxisHover {
   dimension: string;
 }
 
-const applyAxisFocusRing = (view: View | undefined, node: NodeObject, axisHover?: AxisHover): void => {
+const applyAxisFocusRing = (
+  view: View | undefined,
+  focusRing: HTMLElement,
+  node: NodeObject,
+  axisHover?: AxisHover
+): void => {
   if (!view) return;
   const clearHover = (): void => {
-    if (axisHover) view.signal(axisHover.signal, null);
+    if (axisHover) {
+      view.signal(axisHover.signal, null);
+      view.runAsync();
+    }
   };
   if (getNodeRegion(node) === 'xAxis') {
     const columns = getVisibleAxisLabelColumns(view, 'bottom');
     if (columns.length) {
-      // The union of all visible labels is the axis's real horizontal content extent (labels overflow
-      // the data rect); clamp every ring to it so rings wrap the full labels without resizing the chart.
       const union = columns.reduce(
         (acc, c) => ({
           x1: Math.min(acc.x1, c.bounds.x1),
@@ -172,9 +183,16 @@ const applyAxisFocusRing = (view: View | undefined, node: NodeObject, axisHover?
         }),
         columns[0].bounds
       );
+      const titleBounds = getAxisTitleBounds(view, 'bottom');
+      const clamp = {
+        minX: union.x1,
+        maxX: union.x2,
+        minY: -Infinity,
+        maxY: titleBounds ? Math.max(union.y2, titleBounds.y2) : union.y2,
+      };
       if (node.dimensionLevel === 1) {
         // Axis-level focus: ring around the whole axis (the union); no single series to highlight.
-        setAxisFocusRing(view, union, union.x1, union.x2);
+        setAxisFocusRing(focusRing, union, clamp);
         clearHover();
         return;
       }
@@ -182,13 +200,17 @@ const applyAxisFocusRing = (view: View | undefined, node: NodeObject, axisHover?
       const column = columns.find((c) => c.value === value);
       if (column) {
         // Highlight the focused label's bar, matching mouse hover.
-        if (axisHover) view.signal(axisHover.signal, { [axisHover.dimension]: value });
-        setAxisFocusRing(view, column.bounds, union.x1, union.x2);
+        if (axisHover) {
+          const hoverPayload = { [axisHover.dimension]: value };
+          view.signal(axisHover.signal, hoverPayload);
+          view.runAsync();
+        }
+        setAxisFocusRing(focusRing, column.bounds, clamp);
         return;
       }
     }
   }
-  clearAxisFocusRing(view);
+  clearAxisFocusRing(focusRing);
   clearHover();
 };
 
@@ -223,7 +245,6 @@ export const attachDataNavigator = ({
   const built = buildChartStructure({ chartType, data, dimension, color, metric, title, xAxis: xAxisRegion, yAxis, legend, content });
   if (!built) return;
   const { structure, entryPoint } = built;
-  const hasSeries = color !== undefined;
   // When the legend has highlight enabled, focusing an entry drives its hover signal so the same
   // dimming as hover activates. Undefined otherwise (no hover signal exists in the spec).
   const legendHoverSignal = legend?.highlight ? `${legend.name ?? 'legend0'}_${HOVERED_SERIES}` : undefined;
@@ -236,6 +257,7 @@ export const attachDataNavigator = ({
   }
 
   container.querySelectorAll('.dn-wrapper, .dn-exit-position, .dn-exit').forEach((node) => node.remove());
+  container.querySelectorAll('.dn-axis-focus-ring').forEach((node) => node.remove());
 
   let current: string | null = null;
   const width = container.clientWidth || 400;
@@ -261,6 +283,10 @@ export const attachDataNavigator = ({
   });
 
   rendering.initialize();
+  const focusRing = document.createElement('div');
+  focusRing.className = 'dn-axis-focus-ring';
+  focusRing.setAttribute('aria-hidden', 'true');
+  container.appendChild(focusRing);
 
   const input: DataNavigatorInput = dataNavigator.input({
     structure,
@@ -308,8 +334,8 @@ export const attachDataNavigator = ({
     });
 
     el.addEventListener('focus', () => {
-      applyFocusSignals(getView(), nodeFocusSignals(node, hasSeries), legendHoverSignal);
-      applyAxisFocusRing(getView(), node, axisHover);
+      applyFocusSignals(getView(), nodeFocusSignals(node), legendHoverSignal);
+      applyAxisFocusRing(getView(), focusRing, node, axisHover);
     });
 
     input.focus(renderId);
@@ -327,7 +353,7 @@ export const attachDataNavigator = ({
     applyFocusSignals(getView(), CLEARED_FOCUS, legendHoverSignal);
     const view = getView();
     if (axisHover && view) view.signal(axisHover.signal, null);
-    clearAxisFocusRing(view);
+    clearAxisFocusRing(focusRing);
   };
 
   // When focus leaves the navigator entirely (Tab away or a mouse click elsewhere), clear the Vega
