@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/axis",
+  "title": "Axis (S2)",
+  "description": "The Axis component in the S2 package supports nearly all props from the base Axis component plus S2-exclusive features: axis label hover tooltips and axis label click callbacks.",
+  "source": "@site/docs/spectrum2/axis.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/axis",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/axis",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/axis.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Bar (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/bar"
+  },
+  "next": {
+    "title": "Legend (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/legend"
+  }
+}
