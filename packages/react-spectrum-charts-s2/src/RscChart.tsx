@@ -11,7 +11,8 @@
  */
 import { CSSProperties, RefObject, Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Popover } from '@react-spectrum/s2';
+import { Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
+import { Focusable } from 'react-aria-components';
 import { Item, View as VegaView } from 'vega';
 import { Handler } from 'vega-tooltip';
 import {
@@ -97,11 +98,19 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     popoverAnchorRef,
     isPopoverOpen,
     setIsPopoverOpen,
+    hoveredAxisLabel,
     popoverClosedAt,
     selectedData,
     selectedDataBounds,
     selectedDataName,
   } = useChartContext();
+
+  const axisLabelTooltipAnchorRef = useRef<HTMLDivElement>(null);
+  // Retained through the Tooltip's exit animation so it doesn't fade out empty.
+  const lastAxisLabelContentRef = useRef<string | undefined>(undefined);
+  if (hoveredAxisLabel) {
+    lastAxisLabelContentRef.current = hoveredAxisLabel.content;
+  }
 
   const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
 
@@ -133,15 +142,18 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, inspectOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
+  const { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView } = useChartInteractions(
+    props,
+    sanitizedChildren
+  );
   const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
   const specSignalNames = useMemo(() => new Set(spec.signals?.map((s) => s.name) ?? []), [spec.signals]);
 
   useEffect(() => {
     const inspectElement = document.getElementById('vg-tooltip-element');
     if (inspectElement) {
-    // Hide the vega inspect panel on all charts when a popover is open
-    inspectElement.hidden = isPopoverOpen;
+      // Hide the vega inspect panel on all charts when a popover is open
+      inspectElement.hidden = isPopoverOpen;
     }
   }, [isPopoverOpen]);
 
@@ -331,6 +343,19 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         style={targetStyle}
       />
       <div id={`${chartId}-dn-root`} ref={navContainerRef} style={{ position: 'relative' }}>
+        <TooltipTrigger isOpen={Boolean(hoveredAxisLabel)}>
+          {/* Focusable forwards TooltipTrigger's FocusableContext ref onto our plain div. */}
+          <Focusable>
+            <div
+              id={`${chartId}-axis-label-tooltip-anchor`}
+              data-testid="rsc-axis-label-tooltip-anchor"
+              ref={axisLabelTooltipAnchorRef}
+              style={axisLabelTooltipAnchorStyle}
+              tabIndex={-1}
+            />
+          </Focusable>
+          <Tooltip>{hoveredAxisLabel?.content ?? lastAxisLabelContentRef.current}</Tooltip>
+        </TooltipTrigger>
         <VegaChart
           spec={spec}
           config={chartConfig}

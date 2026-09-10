@@ -20,6 +20,7 @@ import { Legend } from '../components';
 import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
 import {
+  getItemBounds,
   getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
@@ -39,7 +40,8 @@ const useNewChartView = (
   inspectOptions: TooltipOptions,
   legendProps: UseLegendProps
 ) => {
-  const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
+  const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId, setHoveredAxisLabel } =
+    useChartContext();
   const popovers = usePopovers(sanitizedChildren);
 
   // Only relevant to accessibleNavigation: vega-tooltip (ChartInspect) is otherwise purely mouse-driven, so a synthesized keyboard-focus tooltip has no "hover away" to dismiss it — Escape fills that gap.
@@ -89,7 +91,13 @@ const useNewChartView = (
           clearTimeout(inspectTimeout);
           inspectTimeout = undefined;
         }
-        if (event?.type === 'pointermove' && (itemIsLegendItem(item) || itemIsAxisLabel(item)) && 'tooltip' in item) {
+        // Axis labels use a real Tooltip, not vega-tooltip's popup.
+        if (item && itemIsAxisLabel(item) && value !== undefined && value !== null) {
+          setHoveredAxisLabel({ bounds: getItemBounds(item), content: String(value) });
+          return;
+        }
+        setHoveredAxisLabel(null);
+        if (event?.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
           inspectTimeout = setTimeout(() => {
             inspectHandler.call(viewRef, event, item, value);
             inspectTimeout = undefined;
@@ -181,6 +189,7 @@ const useNewChartView = (
       selectedData,
       selectedDataBounds,
       selectedDataName,
+      setHoveredAxisLabel,
       setLegendHiddenSeries,
       inspectOptions,
     ]
