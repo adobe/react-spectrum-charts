@@ -12,8 +12,8 @@
 
 /*
   data-navigator keyboard navigation elements.
-  The visible focus indicator is drawn on the Vega canvas (focus-ring marks), so these DOM
-  elements are invisible overlays that exist only for keyboard focus and assistive technology.
+  The visible focus indicator is a DOM overlay, so these elements provide keyboard focus and
+  assistive technology without affecting Vega's autosize layout.
 */
 .dn-wrapper {
   position: absolute;
@@ -36,6 +36,15 @@
 .dn-node:focus,
 .dn-node:focus-visible {
   outline: none;
+}
+.dn-axis-focus-ring {
+  position: absolute;
+  display: none;
+  z-index: 2;
+  box-sizing: border-box;
+  border: 2px solid var(--spectrum-blue-800, #4b75ff);
+  border-radius: 6px;
+  pointer-events: none;
 }
 /* Off-screen until focused (standard skip-link pattern), then shown as a visible affordance
    INSIDE the chart's top-left so a keyboard user can see where "Enter navigation area" is. */

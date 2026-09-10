@@ -15,7 +15,7 @@ export const barData = [
   { browser: 'Firefox', downloads: 8000, percentLabel: '15.7%', share: 0.157 },
   { browser: 'Safari', downloads: 7750, percentLabel: '15.2%', share: 0.152 },
   { browser: 'Edge', downloads: 7600, percentLabel: '14.9%', share: 0.149 },
-  { browser: 'Explorer', downloads: 500, percentLabel: '1.0%', share: 0.01 },
+  { browser: 'Internet Explorer Long Label', downloads: 500, percentLabel: '1.0%', share: 0.01 },
 ];
 
 export const barDataLongLabels = [

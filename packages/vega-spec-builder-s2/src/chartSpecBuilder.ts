@@ -63,7 +63,6 @@ import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
 import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
-import { getAxisFocusRingMark, getAxisFocusRingSignals } from './axis/axisFocusRingUtils';
 import {
   LEGEND_TITLE_RESERVE,
   LegendPosition,
@@ -316,16 +315,6 @@ export function buildSpec({
     const bottomAxis = axes.find((axis) => axis.position === 'bottom');
     const bottomAxisReserve = bottomAxis ? BOTTOM_AXIS_LABEL_RESERVE + (bottomAxis.title ? BOTTOM_AXIS_TITLE_RESERVE : 0) : 0;
     spec = wrapChartInPlotGroup(spec, legend, bottomAxisReserve, position);
-  }
-
-  // Keyboard-focus ring for axis ticks/labels: a top-level signal-driven rect the data-navigator
-  // positions from the focused label's measured scenegraph bounds.
-  if (accessibleNavigation) {
-    spec = {
-      ...spec,
-      marks: [...(spec.marks ?? []), getAxisFocusRingMark(colorScheme)],
-      signals: [...(spec.signals ?? []), ...getAxisFocusRingSignals()],
-    };
   }
 
   return safeClone(spec);

@@ -207,13 +207,13 @@ describe('attachDataNavigator()', () => {
 
       signal.mockClear();
       fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
-      // the x-axis region root is descriptive only: every focus signal clears to null
-      expect(signal.mock.calls.every(([, v]) => v === null)).toBe(true);
+      // Right moves to the whole-axis focus state without highlighting a bar.
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_ITEM && v !== null)).toBe(false);
 
-      // Left goes back to content, still 'chart'
       signal.mockClear();
-      fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
-      expect(signaledWith(FOCUSED_REGION, 'chart')).toBe(true);
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      // Enter from the whole-axis state enters the first visible axis label.
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_ITEM && v !== null)).toBe(false);
     });
 
     test('the y-axis region is also descriptive only', () => {
@@ -238,17 +238,18 @@ describe('attachDataNavigator()', () => {
       expect(signaledWith(FOCUSED_REGION, null)).toBe(true);
     });
 
-    test('drilling into the x-axis and arrowing focuses matching content via FOCUSED_ITEM (no series)', () => {
+    test('drilling into the x-axis highlights matching content without focusing the bar', () => {
       attachWithRegions();
       entryButton().click();
       fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' }); // x-axis root
 
       signal.mockClear();
       fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // first tick
-      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_ITEM && v !== null)).toBe(true);
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_ITEM && v !== null)).toBe(false);
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_DIMENSION && v !== null)).toBe(false);
     });
 
-    test('drilling into the x-axis focuses matching content via FOCUSED_DIMENSION when a series is present', () => {
+    test('drilling into the x-axis does not focus a matching stack when a series is present', () => {
       attachDataNavigator({
         container,
         chartType: 'bar',
@@ -264,7 +265,7 @@ describe('attachDataNavigator()', () => {
 
       signal.mockClear();
       fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // first tick
-      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_DIMENSION && v !== null)).toBe(true);
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_DIMENSION && v !== null)).toBe(false);
       expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_ITEM && v !== null)).toBe(false);
     });
 

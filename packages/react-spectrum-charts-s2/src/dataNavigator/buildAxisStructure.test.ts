@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { setAxisFocusRing } from './axisLabelGeometry';
 import { buildAxisDescription, buildAxisStructure } from './buildAxisStructure';
 
 const data = [
@@ -50,6 +51,7 @@ describe('buildAxisStructure()', () => {
         expect(node.semantics?.label).toBeTruthy();
       });
     });
+
   });
 
   describe('numerical', () => {
@@ -96,5 +98,23 @@ describe('buildAxisDescription()', () => {
     expect(buildAxisDescription(1, 'browser', 'Browser')).toBe(
       'Browser axis. Contains 1 tick value. Use the left and right arrow keys to browse.'
     );
+  });
+});
+
+describe('setAxisFocusRing()', () => {
+  test('keeps an overflowing long label inside the chart viewport instead of growing the ring past it', () => {
+    const element = document.createElement('div');
+
+    setAxisFocusRing(element, { x1: 350, y1: 20, x2: 620, y2: 40 }, {
+      minX: 100,
+      maxX: 500,
+      minY: -Infinity,
+      maxY: 100,
+    });
+
+    expect(element.style.display).toBe('block');
+    expect(element.style.left).toBe('344px');
+    expect(element.style.width).toBe('156px');
+    expect(element.style.height).toBe('32px');
   });
 });
