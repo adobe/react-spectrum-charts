@@ -9,9 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ArcMark, SourceData } from 'vega';
+import { ArcMark, ColorValueRef, NumericValueRef, ProductionRule, Signal, SourceData, ThresholdScale } from 'vega';
 
-import { DONUT_RADIUS, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
+import {
+  DEFAULT_HOLE_RATIO,
+  DONUT_ADVANCED_LABEL_RING_GAP,
+  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_RING_GAP,
+  DONUT_RADIUS,
+  DONUT_RING_WIDTHS,
+  DONUT_SIZE_TIER_CUTPOINTS,
+  DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION,
+  DONUT_SLICE_GAPS,
+  FADE_FACTOR,
+  FILTERED_TABLE,
+  SELECTED_ITEM,
+  SERIES_ID,
+} from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getColorProductionRule, getCursor, getMarkOpacity, getInspectEncoding } from '../marks/markUtils';
@@ -45,8 +59,164 @@ export const getSumData = ({ metric, name }: DonutSpecOptions): SourceData => ({
   ],
 });
 
+/**
+ * Gets the arc fill, forcing the secondary segment of a boolean donut to secondary-gray. Boolean
+ * donuts never support emphasizedItems (mirrors segment labels' isBoolean exclusion), so for
+ * non-boolean donuts this defers to getEmphasizeFillEncoding instead.
+ * @param options
+ * @returns ColorValueRef | ProductionRule<ColorValueRef>
+ */
+const getArcFillEncoding = (options: DonutSpecOptions): ColorValueRef | ProductionRule<ColorValueRef> => {
+  const { color, colorScheme, idKey, isBoolean, name } = options;
+  if (!isBoolean) return getEmphasizeFillEncoding(options);
+
+  const normalColor = getColorProductionRule(color, colorScheme);
+  const isPrimaryTest = `datum.${idKey} === data('${name}_booleanData')[0].${idKey}`;
+  return [{ test: `!(${isPrimaryTest})`, value: getS2ColorValue('gray-400', colorScheme) }, normalColor];
+};
+
+/**
+ * Gets the donut's outer radius. When a SegmentLabel or AdvancedLabel is present (and the donut
+ * isn't boolean, which never renders them), this reserves room for the label's ring-gap and its
+ * capped worst-case horizontal reach out of the raw available radius, so the ring and its labels
+ * always fit within the given container in a single deterministic pass - the ring never needs a
+ * further reactive shrink, and the container never needs to grow beyond what's given.
+ * AdvancedLabel's taller (swatch + up to 3 stacked rows) block also has a vertical reach (for a
+ * segment anchored near the very top/bottom of the ring), but it's capped against this exact same
+ * reserved margin (DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) rather than growing the reservation itself -
+ * see getAdvancedLabelRowDy. AdvancedLabel does use a larger ring-gap than direct labels
+ * (DONUT_ADVANCED_LABEL_RING_GAP, 40px vs 20px) to give its bulkier block more breathing room, so a
+ * donut with an AdvancedLabel reserves slightly more radius (a slightly smaller ring) than one with
+ * only a SegmentLabel - a deliberate tradeoff, not a bug. When both are present on the same donut,
+ * the larger (advanced) gap is reserved, since that's the actual worst-case requirement.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+export const getDonutOuterRadiusExpr = ({ isBoolean, segmentLabels, advancedLabels }: DonutSpecOptions): string => {
+  // DONUT_RADIUS is already parenthesized; the reserved branch below self-parenthesizes too, so
+  // callers can interpolate this result directly without adding their own wrapping parens
+  if (isBoolean || (!segmentLabels.length && !advancedLabels.length)) return DONUT_RADIUS;
+  const ringGap = advancedLabels.length ? DONUT_ADVANCED_LABEL_RING_GAP : DONUT_LABEL_RING_GAP;
+  // solve R such that R + ringGap + R*capRatio == DONUT_RADIUS (the worst-case label reach)
+  return `((${DONUT_RADIUS} - ${ringGap}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}))`;
+};
+
+/**
+ * Gets the threshold scale that snaps a donut's outer diameter to its nearest named size tier's fixed ring width
+ * @param donutOptions
+ * @returns ThresholdScale
+ */
+export const getRingWidthScale = ({ name }: DonutSpecOptions): ThresholdScale => ({
+  name: `${name}_ringWidthScale`,
+  type: 'threshold',
+  domain: DONUT_SIZE_TIER_CUTPOINTS,
+  range: DONUT_RING_WIDTHS,
+});
+
+/**
+ * Gets the signal that resolves a donut's fixed ring width from its outer diameter (the label-reserved
+ * radius, so the ring width tier stays consistent with the label font-size tier)
+ * @param donutOptions
+ * @returns Signal
+ */
+export const getRingWidthSignal = (options: DonutSpecOptions): Signal => ({
+  name: `${options.name}_ringWidth`,
+  update: `scale('${options.name}_ringWidthScale', 2 * ${getDonutOuterRadiusExpr(options)})`,
+});
+
+/**
+ * Gets the threshold scale that snaps a donut's outer diameter to its nearest named size tier's fixed slice gap
+ * @param donutOptions
+ * @returns ThresholdScale
+ */
+export const getSliceGapScale = ({ name }: DonutSpecOptions): ThresholdScale => ({
+  name: `${name}_sliceGapScale`,
+  type: 'threshold',
+  domain: DONUT_SIZE_TIER_CUTPOINTS,
+  range: DONUT_SLICE_GAPS,
+});
+
+/**
+ * Gets the signal that resolves a donut's fixed segment gap (in px) from its outer diameter (the
+ * label-reserved radius, so the slice gap tier stays consistent with the label font-size tier)
+ * @param donutOptions
+ * @returns Signal
+ */
+export const getSliceGapSignal = (options: DonutSpecOptions): Signal => ({
+  name: `${options.name}_sliceGap`,
+  update: `scale('${options.name}_sliceGapScale', 2 * ${getDonutOuterRadiusExpr(options)})`,
+});
+
+/**
+ * Gets the donut's inner radius expression, relative to the label-reserved outer radius. Uses the
+ * fixed per-tier ring width when holeRatio is left at its default, otherwise honors an explicitly
+ * customized holeRatio as a proportional ring.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
+  const { holeRatio, name } = options;
+  const outerRadius = getDonutOuterRadiusExpr(options);
+  return holeRatio === DEFAULT_HOLE_RATIO ? `(${outerRadius} - ${name}_ringWidth)` : `${holeRatio} * ${outerRadius}`;
+};
+
+/**
+ * Gets the arc mark's padAngle - the fixed per-tier px slice gap converted to radians, capped to a
+ * fraction of each segment's own angular width so a tiny segment can't collapse under a gap sized
+ * for a larger one.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+const getPadAngleExpr = (options: DonutSpecOptions): string => {
+  const { name } = options;
+  const outerRadius = getDonutOuterRadiusExpr(options);
+  const fixedGapAngle = `${name}_sliceGap / ${outerRadius}`;
+  const segmentAngle = `datum['${name}_arcLength']`;
+  return `min(${fixedGapAngle}, ${segmentAngle} * ${DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION})`;
+};
+
+/**
+ * Gets opacity rules that fade a segment when a paired Legend's hovered entry doesn't match it -
+ * the reverse direction of the arc's own hover fading the legend (legendUtils.ts). Each signal
+ * fades non-matching segments and falls through (to getMarkOpacity's own rules) otherwise, mirroring
+ * the CONTROLLED_HIGHLIGHTED_ITEM rule shape in addHoveredItemOpacityRules.
+ * @param legendHighlightSignals
+ * @returns opacity rules
+ */
+const getLegendHighlightOpacityRules = (legendHighlightSignals: string[] = []): ({ test: string } & NumericValueRef)[] =>
+  legendHighlightSignals.map((signal) => ({
+    test: `isValid(${signal}) && ${signal} !== datum.${SERIES_ID}`,
+    value: FADE_FACTOR,
+  }));
+
+/**
+ * Builds a Vega expression that evaluates to true for segments NOT in emphasizedItems. Matches
+ * against the segment's own color facet value (not idKey), so users specify category names
+ * directly - mirroring Line's primarySeries `string[]` usage.
+ * @param emphasizedItems
+ * @param color
+ * @returns vega expression string
+ */
+const getEmphasizeOtherExpr = (emphasizedItems: (string | number)[], color: string): string =>
+  `indexof(${JSON.stringify(emphasizedItems)}, datum.${color}) < 0`;
+
+/**
+ * Builds the arc's `fill` encoding, inserting a solid gray color rule (full opacity, not a fade)
+ * for segments not in emphasizedItems
+ * @param options
+ * @returns ColorValueRef | ProductionRule<ColorValueRef>
+ */
+const getEmphasizeFillEncoding = (options: DonutSpecOptions): ColorValueRef | ProductionRule<ColorValueRef> => {
+  const { color, colorScheme, emphasizedItems, otherItemColor } = options;
+  const normalColor = getColorProductionRule(color, colorScheme);
+  if (!emphasizedItems?.length) return normalColor;
+  const grayColor = getS2ColorValue(otherItemColor || 'gray-400', colorScheme);
+  return [{ test: getEmphasizeOtherExpr(emphasizedItems, color), value: grayColor }, normalColor];
+};
+
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { chartPopovers, chartInspects, color, colorScheme, holeRatio, idKey, name } = options;
+  const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;
+  const outerRadius = getDonutOuterRadiusExpr(options);
   return {
     type: 'arc',
     name,
@@ -54,7 +224,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
     from: { data: FILTERED_TABLE },
     encode: {
       enter: {
-        fill: getColorProductionRule(color, colorScheme),
+        fill: getArcFillEncoding(options),
         x: { signal: 'width / 2' },
         y: { signal: 'height / 2' },
         tooltip: getInspectEncoding(chartInspects, name),
@@ -63,11 +233,15 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
       update: {
         startAngle: { field: `${name}_startAngle` },
         endAngle: { field: `${name}_endAngle` },
-        padAngle: { value: 0.01 },
-        innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` },
-        outerRadius: { signal: DONUT_RADIUS },
+        padAngle: { signal: getPadAngleExpr(options) },
+        innerRadius: { signal: getDonutInnerRadiusExpr(options) },
+        outerRadius: { signal: outerRadius },
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
-        opacity: [{ test: getDonutEmptyStateTest(name), value: 0 }, ...getMarkOpacity(options)],
+        opacity: [
+          { test: getDonutEmptyStateTest(name), value: 0 },
+          ...getLegendHighlightOpacityRules(legendHighlightSignals),
+          ...getMarkOpacity(options),
+        ],
         cursor: getCursor(chartPopovers),
         strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
       },
@@ -82,7 +256,8 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
  * @returns ArcMark
  */
 export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { colorScheme, holeRatio, name } = options;
+  const { colorScheme, name } = options;
+  const outerRadius = getDonutOuterRadiusExpr(options);
   return {
     type: 'arc',
     name: `${name}_emptyState`,
@@ -97,8 +272,8 @@ export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
         endAngle: { signal: '2 * PI' },
       },
       update: {
-        innerRadius: { signal: `${holeRatio} * ${DONUT_RADIUS}` },
-        outerRadius: { signal: DONUT_RADIUS },
+        innerRadius: { signal: getDonutInnerRadiusExpr(options) },
+        outerRadius: { signal: outerRadius },
         opacity: [{ test: getDonutEmptyStateTest(name), value: 1 }, { value: 0 }],
       },
     },

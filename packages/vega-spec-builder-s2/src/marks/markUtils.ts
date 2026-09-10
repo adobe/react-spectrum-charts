@@ -52,6 +52,7 @@ import {
   getVegaSymbolSizeFromRscSymbolSize,
 } from '../specUtils';
 import {
+  AdvancedLabelOptions,
   BarSpecOptions,
   ChartPopoverOptions,
   ChartInspectOptions,
@@ -67,6 +68,7 @@ import {
   ProductionRuleTests,
   ScaleType,
   ScatterSpecOptions,
+  SegmentLabelOptions,
   SymbolSizeFacet,
   TrendlineOptions,
   VennSpecOptions,
@@ -138,11 +140,15 @@ export const isInteractive = (options: {
   hasOnClick?: boolean;
   hasOnContextMenu?: boolean;
   metricRanges?: MetricRangeOptions[];
+  segmentLabels?: SegmentLabelOptions[];
+  advancedLabels?: AdvancedLabelOptions[];
   trendlines?: TrendlineOptions[];
 }): boolean => {
   const hasOnClick = 'hasOnClick' in options && options.hasOnClick;
   const hasOnContextMenu = 'hasOnContextMenu' in options && options.hasOnContextMenu;
   const metricRanges = ('metricRanges' in options && options.metricRanges) || [];
+  const segmentLabels = ('segmentLabels' in options && options.segmentLabels) || [];
+  const advancedLabels = ('advancedLabels' in options && options.advancedLabels) || [];
   const trendlines = ('trendlines' in options && options.trendlines) || [];
 
   return (
@@ -151,7 +157,10 @@ export const isInteractive = (options: {
     hasPopover(options) ||
     hasInspect(options) ||
     trendlines.some((trendline) => trendline.displayOnHover) ||
-    metricRanges.some((metricRange) => metricRange.displayOnHover)
+    metricRanges.some((metricRange) => metricRange.displayOnHover) ||
+    // a direct/advanced label showing value/percent needs hover feedback even with no popover/inspect configured
+    segmentLabels.some((segmentLabel) => segmentLabel.value || segmentLabel.percent) ||
+    advancedLabels.some((advancedLabel) => advancedLabel.percent)
   );
 };
 

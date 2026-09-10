@@ -45,6 +45,18 @@ describe('addData', () => {
     expect(sumData?.transform?.[0]).toHaveProperty('fields', ['testMetric']);
     expect(sumData?.transform?.[0]).toHaveProperty('ops', ['sum']);
   });
+
+  test('should add a SERIES_ID transform when interactive, so legend hover-highlight can match this donut', () => {
+    const interactiveOptions = { ...defaultDonutOptions, segmentLabels: [{ value: true }] };
+    const data = addData(initializeSpec().data ?? [], interactiveOptions);
+    expect(data[1].transform).toHaveLength(5);
+    expect(data[1].transform?.[4]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
+  });
+
+  test('should not add a SERIES_ID transform when not interactive', () => {
+    const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
+    expect(data[1].transform).toHaveLength(4);
+  });
 });
 
 describe('addSignals()', () => {
@@ -63,7 +75,7 @@ describe('addSignals()', () => {
       ...defaultDonutOptions,
       chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
     });
-    expect(signals).toHaveLength(defaultSignals.length + 1);
+    expect(signals).toHaveLength(defaultSignals.length + 3);
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
@@ -72,6 +84,31 @@ describe('addSignals()', () => {
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
+  });
+
+  test('should suppress hover entirely (for every segment, not just non-emphasized ones) when emphasizedItems is set', () => {
+    const signals = addSignals(defaultSignals, {
+      ...defaultDonutOptions,
+      chartInspects: [{}],
+      emphasizedItems: ['Chrome'],
+    });
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(true) ? null : datum');
+  });
+
+  test('should not exclude anything from hover when emphasizedItems is not set', () => {
+    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, chartInspects: [{}] });
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', 'datum');
+  });
+
+  test('should add AdvancedLabel font size signals when advancedLabels is present', () => {
+    const baselineSignals = addSignals(defaultSignals, defaultDonutOptions);
+    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, advancedLabels: [{}] });
+    expect(signals).toHaveLength(baselineSignals.length + 3);
+    expect(signals.find((signal) => signal.name === 'testName_advancedLabelNameFontSize')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_advancedLabelValueFontSize')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_advancedLabelDetailFontSize')).toBeDefined();
   });
 });
 
@@ -83,13 +120,29 @@ describe('addMarks()', () => {
     expect(marks[0]).toHaveProperty('type', 'arc');
     expect(marks[1]).toHaveProperty('name', 'testName');
   });
+
+  test('should add the AdvancedLabel group mark when advancedLabels is present', () => {
+    const marks = addMarks([], { ...defaultDonutOptions, advancedLabels: [{}] });
+    expect(marks).toHaveLength(3);
+    expect(marks[2]).toHaveProperty('name', 'testName_advancedLabelGroup');
+  });
 });
 
 describe('donutSpecBuilder', () => {
   test('should add scales correctly', () => {
     const scales = addScales([], defaultDonutOptions);
-    expect(scales).toHaveLength(1);
+    expect(scales).toHaveLength(3);
     expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
+    expect(scales[1]).toHaveProperty('name', 'testName_ringWidthScale');
+    expect(scales[2]).toHaveProperty('name', 'testName_sliceGapScale');
+  });
+
+  test('should add AdvancedLabel font size scales when advancedLabels is present', () => {
+    const scales = addScales([], { ...defaultDonutOptions, advancedLabels: [{}] });
+    expect(scales).toHaveLength(6);
+    expect(scales[3]).toHaveProperty('name', 'testName_advancedLabelNameFontSizeScale');
+    expect(scales[4]).toHaveProperty('name', 'testName_advancedLabelValueFontSizeScale');
+    expect(scales[5]).toHaveProperty('name', 'testName_advancedLabelDetailFontSizeScale');
   });
 });
 

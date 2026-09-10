@@ -41,6 +41,7 @@ import {
   Title,
 } from '../components';
 import {
+  AdvancedLabel,
   Area,
   Bullet,
   Combo,
@@ -54,6 +55,7 @@ import {
   TrendlineAnnotation,
 } from '../pre-alpha';
 import {
+  AdvancedLabelElement,
   AreaElement,
   AxisChildElement,
   AxisElement,
@@ -82,6 +84,7 @@ import {
 } from '../types';
 
 type MarkChildElement =
+  | AdvancedLabelElement
   | BarAnnotationElement
   | ChartInspectElement
   | ChartPopoverElement
@@ -142,6 +145,7 @@ export const getElementDisplayName = (element: unknown): string => {
 
 export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkChildElement)[] => {
   const validDisplayNames = new Set([
+    AdvancedLabel.displayName,
     Area.displayName,
     Axis.displayName,
     AxisThumbnail.displayName,

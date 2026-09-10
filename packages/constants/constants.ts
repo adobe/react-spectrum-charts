@@ -240,6 +240,85 @@ export const DONUT_SUMMARY_MAX_FONT_SIZE = 60;
 export const DONUT_SUMMARY_FONT_SIZE_RATIO = 0.35;
 /** Min inner radius to display the summary metric. If the inner radius is less than this, the summary metric is hidden. */
 export const DONUT_SUMMARY_MIN_RADIUS = 45;
+/** Default holeRatio - also acts as the sentinel value that opts a donut into the fixed per-tier ring width below, rather than a proportional ring */
+export const DEFAULT_HOLE_RATIO = 0.85;
+/**
+ * S2 donut named size-tier (XS/S/M/L/XL) minimum-diameter cutpoints (the S/M/L/XL tiers' own named
+ * diameters - 120/160/200/400), keyed off the donut's outer diameter. A diameter is "sticky" at a
+ * tier from that tier's own minimum up to (not including) the next tier's minimum - e.g. a diameter
+ * of 121px is S and stays S up to 159px, not just at values nearest 120. Shared by every donut
+ * feature that scales by size tier (ring width, slice gap, donut summary, direct/advanced labels).
+ */
+export const DONUT_SIZE_TIER_CUTPOINTS = [120, 160, 200, 400];
+/** S2 donut fixed ring (hole) width per named size tier (XS/S/M/L/XL), used only when holeRatio is left at DEFAULT_HOLE_RATIO */
+export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 24];
+/** S2 donut gap between adjacent segments per named size tier (XS/S/M/L/XL), per chart.donut.size.slice-gap */
+export const DONUT_SLICE_GAPS = [1, 2, 2, 2, 4];
+/**
+ * Max fraction of a donut's average segment angular width the slice gap (padAngle) may consume.
+ * Without this, a donut with many segments (some much smaller than the average) can have its
+ * smallest segments' entire angular width eaten by the fixed per-tier gap, collapsing them to
+ * nothing. The gap degrades gracefully instead by shrinking below the fixed size when needed.
+ */
+export const DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION = 1 / 3;
+/**
+ * S2 min inner radius to display the summary metric, recalibrated against the corrected per-tier ring width
+ * (DONUT_SUMMARY_MIN_RADIUS is s1's, kept unchanged since it's paired with s1's proportional ring geometry).
+ */
+export const DONUT_SUMMARY_MIN_RADIUS_S2 = 40;
+/** S2 donut summary metric value font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_SUMMARY_VALUE_FONT_SIZES = [18, 20, 22, 36, 50];
+/** S2 donut summary metric label font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_SUMMARY_LABEL_FONT_SIZES = [12, 14, 16, 20, 24];
+/** S2 donut direct-label segment-name font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [7.5, 9, 10.5, 12, 15];
+/** S2 donut direct-label value font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [10, 12, 14, 16, 20];
+/** Gap (px) between the ring's outer edge and a direct label's rendered bounding box */
+export const DONUT_LABEL_RING_GAP = 20;
+/**
+ * Gap (px) between the ring's outer edge and an advanced label's rendered bounding box - larger
+ * than the direct-label ring gap since the taller swatch+multi-row block needs more breathing room.
+ */
+export const DONUT_ADVANCED_LABEL_RING_GAP = 20;
+/** Font weight for donut direct-label segment name text */
+export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
+/** Font weight for donut direct-label value text */
+export const DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT = 700;
+/**
+ * Max fraction of the donut's own radius that a direct label's hemisphere-mirrored shift offset may use.
+ * Label text width (a handful of px per character) doesn't shrink with the donut, so an uncapped shift
+ * can demand disproportionate space at small sizes, triggering runaway autosize 'fit' shrinkage. Bounding
+ * it as a fraction of the current radius keeps the offset proportionate at every size instead of a fixed px cap.
+ */
+export const DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO = 0.6;
+/** S2 donut advanced-label segment-name font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_ADVANCED_LABEL_NAME_FONT_SIZES = [8, 10, 12, 14, 16];
+/** S2 donut advanced-label value/% font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES = [11.25, 13.5, 15.75, 18, 22.5];
+/** S2 donut advanced-label detail row ("X out of Y") font size per named size tier (XS/S/M/L/XL) */
+export const DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES = [6.9, 8.25, 9.6, 11, 13.75];
+/** Font weight for donut advanced-label segment name text (matches direct-label name weight) */
+export const DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT = 400;
+/** Font weight for donut advanced-label value/% text */
+export const DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT = 800;
+/** Font weight for donut advanced-label detail row text */
+export const DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT = 400;
+/** Advanced-label swatch dimensions (px), shape: roundedSquarePath */
+export const DONUT_ADVANCED_LABEL_SWATCH_SIZE = 16;
+/** Gap (px) between the swatch and the segment name row */
+export const DONUT_ADVANCED_LABEL_SWATCH_GAP = 8;
+/** Gap (px) between the name row and the value/% row */
+export const DONUT_ADVANCED_LABEL_NAME_VALUE_GAP = 4;
+/** Gap (px) between the value/% row and the optional detail row - directly adjacent */
+export const DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP = 0;
+/**
+ * Buffer (px) added to a label block's own rendered height to compute the minimum vertical gap
+ * enforced between two labels stacked/colliding in the same hemisphere. Not a sourced token -
+ * roughly double the 8-10px inter-element gaps used elsewhere, chosen so adjacent labels get
+ * breathing room instead of touching edge-to-edge.
+ */
+export const DONUT_LABEL_COLLISION_MIN_GAP_BUFFER = 16;
 
 // venn constant
 export const DEFAULT_VENN_COLOR = 'sets';
