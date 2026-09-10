@@ -1,0 +1,64 @@
+{
+  "id": "line-forecast-hover-label-top-of-chart",
+  "title": "S2 Line Forecast Point Hover Labels Render at Top of Chart",
+  "chartType": "line",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-08-05",
+  "complexity": {
+    "score": 1,
+    "rationale": "No research remaining - root cause and the exact fix design (getEffectiveMetricField shared utility, three call sites, line numbers) are fully locked in. Every edit is a small, mechanical, low-risk substitution of already-correct logic for a function call - basic implementation complexity."
+  },
+  "summary": "For an S2 Line with a forecast segment, hovering a data point within the forecast portion renders its hover label at the top of the chart (y=0) instead of at the point's actual location, unlike hovering a non-forecast point on the same line.",
+  "symptom": "On an S2 Line chart configured with `forecasts`, hovering a point that falls within the forecast (forward-projected) portion of the line shows its hover label pinned to the top of the chart. Hovering a point in the non-forecast (historical) portion of the same line correctly shows the label at the point's own (x,y) location.",
+  "rootCause": "The forecast feature (`forecasts?: LineForecastOptions[]` on `LineSpecOptions`) exists only in vega-spec-builder-s2 - there is no forecast-related code in vega-spec-builder (s1) or in either package's trendline directory. packages/vega-spec-builder-s2/src/line/lineSpecBuilder.ts:425-431 builds a local `markOptions` for the marks pipeline that overrides `metric` to `${name}_effectiveValue` whenever `hasForecast` is true, and this correctly-overridden `markOptions` is passed into `getLineHoverMarks` (lineSpecBuilder.ts:493), so the hover-label mark's own y encode (lineMarkUtils.ts:464) resolves the right field. However, the hover-label *data source* is built separately in the data pipeline: `addLineHoverData(data, options)` is called at lineSpecBuilder.ts:234 with the original, unmodified `options` (not `markOptions`), so `getHoverLabelData` (lineDataUtils.ts:91-100, called from lineSpecBuilder.ts:300) destructures the raw historical `metric` field (e.g. `value`) instead of the forecast-aware `effectiveValue` field. For a forecast-portion row, the raw historical metric field is null, so `getCascadeTransforms(yScaleName, metric, 'hover')` (lineDataUtils.ts:98, transforms in directLabelUtils.ts:37-67) computes `_hover_scaledY = scale(yScaleName, datum.value)` as NaN (directLabelUtils.ts:56), which propagates through `_hover_adjustedY` and the windowed `_hover_cumMaxAdjusted` (lines 57-65). That NaN flows into the label mark's `cascadeOffset` (lineMarkUtils.ts:455) and then the final y encode (lineMarkUtils.ts:464, `scale(yScaleName, effectiveValue) + NaN`), which Vega/SVG renders as y=0 - the top of the chart. Normal and forecast points share the same `${name}_hoverLabel`/`${name}_hoverLabelBg` marks and the same `${name}_hoverLabelData` source; the gap is only that the data source's cascade calculation was never updated to use the same forecast-aware `effectiveValue` field the marks pipeline already uses. CORRECTION during implementation: the originally-cited 'third call site' was misattributed - lineSpecBuilder.ts:502-505 is actually the local `getMetricKeys` helper (used for the y-scale domain), which already re-derived the same `hasForecast ? \\`${name}_effectiveValue\\` : metric` logic correctly, confirming addLineHoverData was the one duplicate-pattern site that never got it. Separately, `getLineDirectLabelSpecOptions` (packages/vega-spec-builder-s2/src/lineDirectLabel/lineDirectLabelUtils.ts:221-239) was found to have NO forecast-awareness at all - it passed through the raw `lineOptions.metric` unconditionally - a related but previously-undetected gap in the same bug class (line direct labels combined with forecasts), fixed as part of this same centralization since it's a one-line, zero-risk substitution using the same new helper.",
+  "comparison": [
+    {
+      "aspect": "Metric field used to compute hover-label cascade position",
+      "expected": "Should resolve to the forecast-aware `${name}_effectiveValue` field when `hasForecast` is true, matching what the marks pipeline already does via its local markOptions override (lineSpecBuilder.ts:425-431).",
+      "actual": "addLineHoverData/getHoverLabelData (lineSpecBuilder.ts:234, 295-302) receives the original unmodified `options`, so getHoverLabelData (lineDataUtils.ts:91-100) reads the raw historical `metric` field, which is null for forecast-portion rows, producing NaN cascade values that render the label at y=0."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesTooltipOrPopover is true because this is the hover-label mark/data system (getLineHoverMarks, ${name}_hoverLabelData), which is part of the interactive-mark hover pipeline. requiresS1S2Parity is false because the forecast feature (LineForecastOptions) doesn't exist in vega-spec-builder (s1) at all - confirmed via grep, no forecast-related code exists there - so there is no s1 equivalent to check or port."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/lineForecast/lineForecastUtils.ts",
+      "change": "Add a new exported `getEffectiveMetricField({ alternateSegmentKey, forecasts, metric, name })` helper that returns `${name}_effectiveValue` when `!alternateSegmentKey && forecasts.length > 0`, else the raw `metric` - centralizing the hasForecast/field-name derivation next to `getForecastEffectiveValueTransform`, which writes the field this reads. Export it from this module's `index.ts` alongside the existing forecast exports.",
+      "lines": "new function, after line 29 (getForecastEffectiveValueTransform)"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/lineSpecBuilder.ts",
+      "change": "In addLineMarks's local `markOptions` (~425-431), replaced the inline hasForecast check and metric templating with `metric: getEffectiveMetricField(options)`; left the separate `alternateSegmentKey` override untouched. In `getMetricKeys` (~501-505, the actual location previously mislabeled as getLineDirectLabelSpecOptions), replaced its independent hasForecast/metricKeys derivation with the same call. Neither call site's behavior changes - this is a pure de-duplication of already-correct logic.",
+      "lines": "425-431, 501-505"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/lineDataUtils.ts",
+      "change": "This is the actual fix: getHoverLabelData (91-100) calls getEffectiveMetricField(options) instead of destructuring the raw `metric` field, so forecast-portion rows resolve to `${name}_effectiveValue` and the cascade transform no longer computes NaN.",
+      "lines": "91-100"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/lineDirectLabel/lineDirectLabelUtils.ts",
+      "change": "Additional fix found during implementation (not in the original plan): getLineDirectLabelSpecOptions (221-239) had no forecast-awareness at all - `metric: lineOptions.metric` was an unconditional pass-through. Replaced with `metric: getEffectiveMetricField(lineOptions)` so line direct labels combined with forecasts also resolve to the effective-value field instead of the raw (possibly-null) historical metric.",
+      "lines": "233"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/lineForecast/lineForecastUtils.test.ts",
+      "change": "Add unit tests for getEffectiveMetricField: returns the raw metric when forecasts is empty or alternateSegmentKey is set, returns `${name}_effectiveValue` when hasForecast.",
+      "lines": "n/a - new test cases"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/lineDataUtils.test.ts",
+      "change": "Add a regression test with a forecast option asserting getHoverLabelData's cascade transform references `${name}_effectiveValue`, not the raw metric, when hasForecast is true - this is the test that would have caught the original bug.",
+      "lines": "n/a - new test case"
+    }
+  ]
+}

@@ -9,10 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { View } from '@adobe/react-spectrum';
+import { Button, Flex, Text, View } from '@adobe/react-spectrum';
 import { StoryFn } from '@storybook/react';
+import { View as VegaView } from 'vega';
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartPopover, Legend, Line } from '../../../components';
@@ -26,8 +27,14 @@ const WEEK_DATETIMES = [
   1780639200000, 1780725600000, 1780812000000,
 ];
 
-// Story 1: 5 series, all short similar-sized labels
-const fiveSeriesNames = ['CJA Users', 'Accounts', 'Events', 'Page Views', 'Sessions'];
+// Story 1: 5 series, mix of short labels and long labels that wrap
+const fiveSeriesNames = [
+  'CJA Users',
+  'Accounts',
+  'Events About Total Website Page Views And Engagement',
+  'Page Views',
+  'Total Unique Session Duration And Conversion Rate',
+];
 const legendColumns5SeriesData = fiveSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 180, series }))
 );
@@ -40,6 +47,18 @@ const longLabelSeriesNames = [
 ];
 const legendColumnsLongLabelData = longLabelSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 1200 + di * 150, series }))
+);
+
+// 5 series, three short + two long labels — exercises per-column (align: 'each') sizing
+const longLabel5SeriesNames = [
+  'Conversion Rate From All Marketing Channel Sources',
+  'Users',
+  'Events',
+  'Sessions',
+  'Average Revenue Per Paying Customer Account',
+];
+const legendColumnsLongLabel5Data = longLabel5SeriesNames.flatMap((series, si) =>
+  WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 150, series }))
 );
 
 // Story 3: 20 series of varying label lengths
@@ -139,6 +158,14 @@ Labels.args = { legendLabels, highlight: true, ...defaultProps };
 const LabelLimit = bindWithProps(LegendBarStory);
 LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
 
+const LabelWrapLimit = bindWithProps(LegendBarStory);
+LabelWrapLimit.args = {
+  legendLabels: truncatedLegendLabels,
+  labelLimit: 150,
+  _labelWrap: 2,
+  ...defaultProps,
+};
+
 const TitleLimit = bindWithProps(LegendBarStory);
 TitleLimit.args = {
   title: 'Very long legend title that should be truncated',
@@ -180,6 +207,7 @@ const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesDa
 const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
 LegendColumnsExtended.args = {
   labelLimit: 200,
+  _labelWrap: 2,
   highlight: true,
 };
 
@@ -197,12 +225,131 @@ LegendColumns20Series.args = {
   highlight: true,
 };
 
+// _preferredColumns: pick the largest listed column count whose labels fit without truncation.
+// Resize the container to watch the layout step down 5 -> 3, then truncate at 3 when nothing fits.
+const PreferredColumns5or3 = bindWithProps(ResizableWith5Series);
+PreferredColumns5or3.args = {
+  _preferredColumns: [5, 3],
+  highlight: true,
+};
+
+// A longer candidate ladder over the 20-series data.
+const ResizableWith20SeriesPreferred = makeResizableLegendLineStory(legendColumns20SeriesData);
+const PreferredColumnsLadder = bindWithProps(ResizableWith20SeriesPreferred);
+PreferredColumnsLadder.args = {
+  _preferredColumns: [5, 4, 3, 2],
+  highlight: true,
+};
+
+// 5 items with two long labels: at 5 columns only the two long labels widen their own columns
+// (align: 'each'), so 5 can still fit in a wide container; narrowing steps down to 3.
+const ResizableWithLongLabelPreferred = makeResizableLegendLineStory(legendColumnsLongLabel5Data);
+const PreferredColumnsLongLabel = bindWithProps(ResizableWithLongLabelPreferred);
+PreferredColumnsLongLabel.args = {
+  _preferredColumns: [5, 3],
+  align: 'start',
+  highlight: true,
+};
+
+// Combined _preferredColumns + _labelWrap: at each candidate, labels wrap (up to _labelWrap lines)
+// to keep that column count before stepping down. Resize wide->narrow to watch 5 full -> 5 wrapped
+// -> 3 wrapped -> 3 truncated.
+const PreferredColumnsWithWrap = bindWithProps(ResizableWithLongLabelPreferred);
+PreferredColumnsWithWrap.args = {
+  _preferredColumns: [5, 3],
+  _labelWrap: 3,
+  align: 'start',
+  highlight: true,
+};
+
+type LegendPage = { columns: number; start: number; end: number };
+
+const arePagesEqual = (a: LegendPage[], b: LegendPage[]): boolean =>
+  a.length === b.length && a.every((p, i) => p.columns === b[i].columns && p.start === b[i].start && p.end === b[i].end);
+
+const PreferredColumnsWithPaginationStory: StoryFn<typeof Legend> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: legendColumns20SeriesData, width: 700, height: 300 });
+  const [pages, setPages] = useState<LegendPage[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
+
+  // A ref lets us attach the listener without ever triggering a render just because a view became ready.
+  const viewRef = useRef<VegaView | undefined>(undefined);
+  const listenerRef = useRef<(() => void) | undefined>(undefined);
+
+  const handleVegaViewReady = useCallback((newView: VegaView) => {
+    if (viewRef.current && listenerRef.current) {
+      viewRef.current.removeSignalListener('legend0_pages', listenerRef.current);
+    }
+    viewRef.current = newView;
+
+    const updatePages = () => {
+      const next: LegendPage[] = newView.signal('legend0_pages') ?? [];
+      // Only update state when the content actually changed, so once the page plan settles React
+      // can bail out of rendering entirely rather than cascading into another spec rebuild.
+      setPages((prev) => (arePagesEqual(prev, next) ? prev : next));
+    };
+    listenerRef.current = updatePages;
+    updatePages();
+    newView.addSignalListener('legend0_pages', updatePages);
+  }, []);
+
+  useEffect(() => {
+    if (pageIndex > pages.length - 1) setPageIndex(0);
+  }, [pages, pageIndex]);
+
+  const hiddenEntries = useMemo(() => {
+    const page = pages[pageIndex];
+    if (!page) return [];
+    const visibleSeries = twentySeriesNames.slice(page.start, page.end + 1);
+    return twentySeriesNames.filter((series) => !visibleSeries.includes(series));
+  }, [pages, pageIndex]);
+
+  return (
+    <Flex direction="column" gap="size-100">
+      <Chart {...chartProps} onVegaViewReady={handleVegaViewReady}>
+        <Axis position="left" grid />
+        <Axis position="bottom" labelFormat="time" baseline ticks />
+        <Line color="series" dimension="datetime" metric="value" scaleType="time" />
+        <Legend {...args} hiddenEntries={hiddenEntries} />
+      </Chart>
+      <Flex gap="size-100" alignItems="center">
+        <Button
+          variant="secondary"
+          onPress={() => setPageIndex((i) => Math.max(0, i - 1))}
+          isDisabled={pageIndex === 0}
+        >
+          Previous
+        </Button>
+        <Text>
+          Page {pages.length ? pageIndex + 1 : 0} of {pages.length}
+        </Text>
+        <Button
+          variant="secondary"
+          onPress={() => setPageIndex((i) => Math.min(pages.length - 1, i + 1))}
+          isDisabled={pageIndex >= pages.length - 1}
+        >
+          Next
+        </Button>
+      </Flex>
+    </Flex>
+  );
+};
+
+const PreferredColumnsWithPagination = bindWithProps(PreferredColumnsWithPaginationStory);
+PreferredColumnsWithPagination.args = {
+  _preferredColumns: [5, 3],
+  _maxRows: 2,
+  _labelWrap: 2,
+  highlight: true,
+};
+
 export {
   Basic,
   Descriptions,
   Disconnected,
   Labels,
   LabelLimit,
+  LabelWrapLimit,
   TitleLimit,
   OnClick,
   Popover,
@@ -213,4 +360,9 @@ export {
   LegendColumnsExtended,
   LegendColumnsLongLabel,
   LegendColumns20Series,
+  PreferredColumns5or3,
+  PreferredColumnsLadder,
+  PreferredColumnsLongLabel,
+  PreferredColumnsWithWrap,
+  PreferredColumnsWithPagination,
 };

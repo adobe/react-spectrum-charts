@@ -28,7 +28,7 @@ import {
   hasPopover,
 } from '../marks/markUtils';
 import { LineSpecOptions, ProductionRuleTests } from '../types';
-import { getLineYEncoding } from './lineMarkUtils';
+import { getLineOpacity, getLineYEncoding } from './lineMarkUtils';
 import { staticPointTestExpr, LineMarkOptions } from './lineUtils';
 
 const getSelectedTest = (name: string, idKey: string) =>
@@ -42,10 +42,10 @@ const getSelectedTest = (name: string, idKey: string) =>
 const staticPointHollowTest = (staticPoint: string) => `datum.${staticPoint} === 'hollow'`;
 
 function getStaticPointFillEncode(
-  lineOptions: Pick<LineSpecOptions, 'color' | 'colorScheme' | 'isSparkline' | 'staticPoint'>
+  lineOptions: Pick<LineSpecOptions, 'color' | 'colorScheme' | 'isSparkline' | 's2' | 'staticPoint'>
 ) {
-  const { color, colorScheme, isSparkline, staticPoint } = lineOptions;
-  const solidFill = getColorProductionRule(color, colorScheme);
+  const { color, colorScheme, isSparkline, s2, staticPoint } = lineOptions;
+  const solidFill = getColorProductionRule(color, colorScheme, undefined, s2);
   // Sparkline static points use the same outline look as datum[field] === 'hollow'
   if (isSparkline) {
     return { signal: BACKGROUND_COLOR };
@@ -57,15 +57,18 @@ function getStaticPointFillEncode(
 }
 
 function getStaticPointStrokeEncode(
-  lineOptions: Pick<LineSpecOptions, 'color' | 'colorScheme' | 'isSparkline' | 'staticPoint'>
+  lineOptions: Pick<LineSpecOptions, 'color' | 'colorScheme' | 'isSparkline' | 's2' | 'staticPoint'>
 ) {
-  const { color, colorScheme, isSparkline, staticPoint } = lineOptions;
+  const { color, colorScheme, isSparkline, s2, staticPoint } = lineOptions;
   const solidStroke = { signal: BACKGROUND_COLOR };
   if (isSparkline) {
-    return getColorProductionRule(color, colorScheme);
+    return getColorProductionRule(color, colorScheme, undefined, s2);
   }
   if (staticPoint) {
-    return [{ test: staticPointHollowTest(staticPoint), ...getColorProductionRule(color, colorScheme) }, solidStroke];
+    return [
+      { test: staticPointHollowTest(staticPoint), ...getColorProductionRule(color, colorScheme, undefined, s2) },
+      solidStroke,
+    ];
   }
   return solidStroke;
 }
@@ -79,12 +82,14 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     scaleType,
     dimension,
     isSparkline,
+    s2,
     staticPoint,
     pointSize = 125,
+    opacity,
   } = lineOptions;
 
-  const fillEncode = getStaticPointFillEncode({ color, colorScheme, isSparkline, staticPoint });
-  const strokeEncode = getStaticPointStrokeEncode({ color, colorScheme, isSparkline, staticPoint });
+  const fillEncode = getStaticPointFillEncode({ color, colorScheme, isSparkline, s2, staticPoint });
+  const strokeEncode = getStaticPointStrokeEncode({ color, colorScheme, isSparkline, s2, staticPoint });
 
   return {
     name: `${name}_staticPoints`,
@@ -96,7 +101,36 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
       enter: {
         size: { value: pointSize },
         fill: fillEncode,
+        fillOpacity: getOpacityProductionRule(opacity),
         stroke: strokeEncode,
+        y: getLineYEncoding(lineOptions, metric),
+      },
+      update: {
+        x: getXProductionRule(scaleType, dimension),
+        opacity: getLineOpacity(lineOptions),
+      },
+    },
+  };
+};
+
+/**
+ * Gets a background to static points to prevent opacity from revealing the line behind the point.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): SymbolMark => {
+  const { name, metric, scaleType, dimension, pointSize = 125 } = lineOptions;
+  return {
+    name: `${name}_staticPointBackground`,
+    description: `${name}_staticPointBackground`,
+    type: 'symbol',
+    from: { data: `${name}_staticPointData` },
+    interactive: false,
+    encode: {
+      enter: {
+        size: { value: pointSize },
+        fill: { signal: BACKGROUND_COLOR },
+        stroke: { signal: BACKGROUND_COLOR },
         y: getLineYEncoding(lineOptions, metric),
       },
       update: {
@@ -141,7 +175,7 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
 };
 
 const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlightedData = true): SymbolMark => {
-  const { color, colorScheme, dimension, metric, metricRanges, name, scaleType } = lineOptions;
+  const { color, colorScheme, dimension, metric, metricRanges, name, s2, scaleType } = lineOptions;
   const dataSource = useHighlightedData ? getHighlightedDataSource(name, metricRanges) : `${name}_selectedData`;
   return {
     name: `${name}_point_${useHighlightedData ? 'highlight' : 'select'}`,
@@ -152,7 +186,7 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
     encode: {
       enter: {
         y: getLineYEncoding(lineOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
       },
       update: {
         fill: getHighlightPointFill(lineOptions),
@@ -194,7 +228,7 @@ export const getSecondaryHighlightPoint = (
   lineOptions: LineMarkOptions,
   secondaryHighlightedMetric: string
 ): SymbolMark => {
-  const { color, colorScheme, dimension, name, scaleType } = lineOptions;
+  const { color, colorScheme, dimension, name, s2, scaleType } = lineOptions;
   return {
     name: `${name}_secondaryPoint`,
     description: `${name}_secondaryPoint`,
@@ -205,7 +239,7 @@ export const getSecondaryHighlightPoint = (
       enter: {
         y: getLineYEncoding(lineOptions, secondaryHighlightedMetric),
         fill: { signal: BACKGROUND_COLOR },
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
       },
       update: {
         x: getXProductionRule(scaleType, dimension),
@@ -220,15 +254,18 @@ export const getSecondaryHighlightPoint = (
  * @returns fill rule
  */
 export const getHighlightPointFill = (markOptions: LineMarkOptions): ProductionRuleTests<ColorValueRef> => {
-  const { color, colorScheme, idKey, name, staticPoint } = markOptions;
+  const { color, colorScheme, idKey, name, s2, staticPoint } = markOptions;
   const fillRules: ProductionRuleTests<ColorValueRef> = [];
   const selectedTest = getSelectedTest(name, idKey);
 
   if (staticPoint) {
-    fillRules.push({ test: staticPointTestExpr(staticPoint), ...getColorProductionRule(color, colorScheme) });
+    fillRules.push({
+      test: staticPointTestExpr(staticPoint),
+      ...getColorProductionRule(color, colorScheme, undefined, s2),
+    });
   }
   if (hasPopover(markOptions)) {
-    fillRules.push({ test: selectedTest, ...getColorProductionRule(color, colorScheme) });
+    fillRules.push({ test: selectedTest, ...getColorProductionRule(color, colorScheme, undefined, s2) });
   }
   return [...fillRules, { signal: BACKGROUND_COLOR }];
 };
@@ -239,18 +276,21 @@ export const getHighlightPointFill = (markOptions: LineMarkOptions): ProductionR
  * @returns stroke rule
  */
 export const getHighlightPointStroke = (markOptions: LineMarkOptions): ProductionRuleTests<ColorValueRef> => {
-  const { color, colorScheme, idKey, name, staticPoint } = markOptions;
+  const { color, colorScheme, idKey, name, s2, staticPoint } = markOptions;
   const strokeRules: ProductionRuleTests<ColorValueRef> = [];
   const selectedTest = getSelectedTest(name, idKey);
 
   if (staticPoint) {
-    strokeRules.push({ test: staticPointTestExpr(staticPoint), ...getColorProductionRule(color, colorScheme) });
+    strokeRules.push({
+      test: staticPointTestExpr(staticPoint),
+      ...getColorProductionRule(color, colorScheme, undefined, s2),
+    });
   }
   if (hasPopover(markOptions)) {
     strokeRules.push({ test: selectedTest, signal: BACKGROUND_COLOR });
   }
 
-  return [...strokeRules, getColorProductionRule(color, colorScheme)];
+  return [...strokeRules, getColorProductionRule(color, colorScheme, undefined, s2)];
 };
 
 /**
@@ -315,7 +355,7 @@ export const getHighlightPointStrokeWidth = ({
  * @returns SymbolMark
  */
 export const getSelectRingPoint = (lineOptions: LineMarkOptions): SymbolMark => {
-  const { colorScheme, dimension, idKey, metric, name, scaleType } = lineOptions;
+  const { colorScheme, dimension, idKey, metric, name, s2, scaleType } = lineOptions;
   const selectedTest = getSelectedTest(name, idKey);
 
   return {
@@ -328,7 +368,7 @@ export const getSelectRingPoint = (lineOptions: LineMarkOptions): SymbolMark => 
       enter: {
         y: getLineYEncoding(lineOptions, metric),
         fill: { signal: BACKGROUND_COLOR },
-        stroke: { value: getColorValue('static-blue', colorScheme) },
+        stroke: { value: getColorValue('static-blue', colorScheme, s2) },
       },
       update: {
         size: [{ test: selectedTest, value: 196 }, { value: 0 }],

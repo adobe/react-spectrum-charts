@@ -170,3 +170,4 @@ describe('getColumns()', () => {
     expect(getColumns('top', 'myLegend', 100)).toEqual(getExpectedColumnsSignal('myLegend', 100));
   });
 });
+

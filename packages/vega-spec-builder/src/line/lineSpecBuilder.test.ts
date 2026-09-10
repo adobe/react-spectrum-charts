@@ -262,8 +262,40 @@ const metricRangeGroupMark = {
 
 const metricRangeMarks = [line0_groupMark, metricRangeGroupMark];
 
+const staticPointBackgroundMark = {
+  name: 'line0_staticPointBackground',
+  description: 'line0_staticPointBackground',
+  type: 'symbol',
+  from: {
+    data: 'line0_staticPointData',
+  },
+  interactive: false,
+  encode: {
+    enter: {
+      y: [
+        {
+          scale: 'yLinear',
+          field: 'value',
+        },
+      ],
+      size: {
+        value: 125,
+      },
+      fill: { signal: BACKGROUND_COLOR },
+      stroke: { signal: BACKGROUND_COLOR },
+    },
+    update: {
+      x: {
+        scale: 'xTime',
+        field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+      },
+    },
+  },
+};
+
 const metricRangeWithDisplayPointMarks = [
   line0_groupMark,
+  staticPointBackgroundMark,
   {
     name: 'line0_staticPoints',
     description: 'line0_staticPoints',
@@ -287,6 +319,7 @@ const metricRangeWithDisplayPointMarks = [
           { test: "datum.staticPoint === 'hollow'", signal: BACKGROUND_COLOR },
           { scale: COLOR_SCALE, field: 'series' },
         ],
+        fillOpacity: { value: 1 },
         stroke: [
           { test: "datum.staticPoint === 'hollow'", scale: COLOR_SCALE, field: 'series' },
           { signal: BACKGROUND_COLOR },
@@ -297,6 +330,7 @@ const metricRangeWithDisplayPointMarks = [
           scale: 'xTime',
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
+        opacity: [{ value: 1 }],
       },
     },
   },
@@ -305,6 +339,7 @@ const metricRangeWithDisplayPointMarks = [
 
 const displayPointMarks = [
   line0_groupMark,
+  staticPointBackgroundMark,
   {
     name: 'line0_staticPoints',
     description: 'line0_staticPoints',
@@ -328,6 +363,7 @@ const displayPointMarks = [
           { test: "datum.staticPoint === 'hollow'", signal: BACKGROUND_COLOR },
           { scale: COLOR_SCALE, field: 'series' },
         ],
+        fillOpacity: { value: 1 },
         stroke: [
           { test: "datum.staticPoint === 'hollow'", scale: COLOR_SCALE, field: 'series' },
           { signal: BACKGROUND_COLOR },
@@ -338,6 +374,7 @@ const displayPointMarks = [
           scale: 'xTime',
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
+        opacity: [{ value: 1 }],
       },
     },
   },

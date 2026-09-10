@@ -11,6 +11,7 @@
  */
 import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types';
 import { defaultDonutOptions } from './donutTestUtils';
+import { getDonutEmptyStateTest } from './donutUtils';
 import {
   getSegmentLabelMarks,
   getSegmentLabelTextMark,
@@ -124,6 +125,14 @@ describe('getSegmentLabelTextMark()', () => {
   test('should not define dy if value and percent are false', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     expect(mark.encode?.enter?.dy).toBeUndefined();
+  });
+  test('should hide labels when the donut is in the empty state', () => {
+    const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
+    expect(mark.encode?.enter?.fontSize).toEqual([
+      { test: getDonutEmptyStateTest('testName'), value: 0 },
+      { test: `datum['testName_arcLength'] < 0.3`, value: 0 },
+      { value: 14 },
+    ]);
   });
 });
 

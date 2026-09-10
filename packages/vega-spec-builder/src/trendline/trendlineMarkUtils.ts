@@ -93,7 +93,7 @@ export const getTrendlineRuleMark = (
   markOptions: TrendlineParentOptions,
   trendlineOptions: TrendlineSpecOptions
 ): RuleMark => {
-  const { colorScheme } = markOptions;
+  const { colorScheme, s2 } = markOptions;
   const {
     dimensionExtent,
     dimensionScaleType,
@@ -119,7 +119,7 @@ export const getTrendlineRuleMark = (
     encode: {
       enter: {
         ...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
-        stroke: getColorProductionRule(trendlineColor, colorScheme),
+        stroke: getColorProductionRule(trendlineColor, colorScheme, undefined, s2),
         strokeDash: getStrokeDashProductionRule({ value: lineType }),
         strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
         strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
@@ -237,7 +237,7 @@ export const getTrendlineLineMark = (
   markOptions: TrendlineParentOptions,
   trendlineOptions: TrendlineSpecOptions
 ): LineMark => {
-  const { colorScheme } = markOptions;
+  const { colorScheme, s2 } = markOptions;
   const {
     dimensionScaleType,
     isDimensionNormalized,
@@ -257,7 +257,7 @@ export const getTrendlineLineMark = (
     encode: {
       enter: {
         y: getLineYProductionRule(trendlineDimension, orientation),
-        stroke: getColorProductionRule(trendlineColor, colorScheme),
+        stroke: getColorProductionRule(trendlineColor, colorScheme, undefined, s2),
         strokeDash: getStrokeDashProductionRule({ value: lineType }),
         strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
         strokeWidth: getLineWidthProductionRule({ value: lineWidth }),

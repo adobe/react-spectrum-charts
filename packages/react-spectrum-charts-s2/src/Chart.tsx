@@ -9,9 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, Ref, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, Ref, useEffect, useId, useMemo, useRef, useState } from 'react';
 
-import { v4 as uuid } from 'uuid';
 import { View } from 'vega';
 
 import { Provider } from '@react-spectrum/s2';
@@ -57,8 +56,8 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
     ...otherProps
   } = applyChartPropsDefaults(props);
 
-  // uuid is used to make a unique id so there aren't duplicate ids if there is more than one Chart component in the document
-  const chartId = useRef<string>(`rsc-${uuid()}`);
+  // useId is stable across server and client renders; colons are stripped since chartId is used in unescaped CSS id selectors elsewhere
+  const chartId = `rsc-${useId().replace(/:/g, '')}`;
   // The view returned by vega. This is above RscChart so it can be used for downloading and copying to clipboard.
   const chartView = useRef<View | undefined>(undefined);
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -117,12 +116,12 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
       colorScheme={colorScheme}
       UNSAFE_style={{ backgroundColor: 'transparent', height: '100%' }}
     >
-      <div ref={containerRef} id={chartId.current} data-testid={dataTestId} className="rsc-container">
+      <div ref={containerRef} id={chartId} data-testid={dataTestId} className="rsc-container">
         <div style={{ backgroundColor: getColorValue(backgroundColor, colorScheme) }}>
           {showPlaceholderContent ? (
             <PlaceholderContent loading={loading} data={data} height={chartHeight} emptyStateText={emptyStateText} />
           ) : (
-            <ChartProvider chartId={chartId.current} chartView={chartView}>
+            <ChartProvider chartId={chartId} chartView={chartView}>
               {chartContent}
             </ChartProvider>
           )}

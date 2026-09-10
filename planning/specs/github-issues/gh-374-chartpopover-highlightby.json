@@ -1,0 +1,57 @@
+{
+  "id": "gh-374-chartpopover-highlightby",
+  "title": "Finish per-mark select-highlight support for ChartPopover's highlightBy option",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 5,
+    "rationale": "ChartPopover already has an undocumented UNSAFE_highlightBy prop ('item' | 'dimension' | 'series' | string[]) and the underlying SELECTED_GROUP signal/groupId data plumbing (chartPopoverUtils.ts). Bar, Donut, and Venn already get group-aware opacity for free via the shared getMarkOpacity() (markUtils.ts:496-525), and Line has its own inline group-aware test (linePointUtils.ts:34-35). But Area's highlight expression (areaSpecBuilder.ts:170-199) and Scatter's opacity signal (scatterMarkUtils.ts:140-142) only ever check SELECTED_ITEM and would need genuinely different integration work (Area drives a filtered data source that also interleaves CONTROLLED_HIGHLIGHTED_ITEM and tooltip-hover precedence; Scatter has no groupId formula in its data pipeline at all). Plus real open design questions remain (Donut's deliberate 'dimension' exclusion, Combo cross-mark behavior, string[] scoping). Multiple sites needing different, non-precedented reasoning plus open questions => 5."
+  },
+  "summary": "ChartPopover's UNSAFE_highlightBy prop ('item' default, 'dimension', 'series', or string[] custom group keys) already exists and already drives popover content selection via a shared groupId transform, but only Line, Bar, Donut, and Venn actually respect the resulting group in their own mark highlight/opacity encodings — Area and Scatter still only respond to single-item selection, and Donut deliberately disables 'dimension' mode. This spec covers closing those gaps and promoting the prop out of its UNSAFE_/incomplete state.",
+  "requirements": [
+    "Extend Area's highlight-driven data filter (getAreaHighlightedData in packages/vega-spec-builder/src/area/areaSpecBuilder.ts:170-199) to add a SELECTED_GROUP/_selectedGroupId branch when UNSAFE_highlightBy is 'dimension'/'series'/string[], slotted into the existing OR-chain alongside CONTROLLED_HIGHLIGHTED_ITEM and tooltip-hover checks without changing their precedence.",
+    "Extend Scatter's opacity encode (packages/vega-spec-builder/src/scatter/scatterMarkUtils.ts:140-142) and its selectedData source (scatterSpecBuilder.ts:127-133) to check group membership via a new _selectedGroupId formula, mirroring the pattern already used by getMarkOpacity for Bar/Donut/Venn.",
+    "Decide Donut's real behavior for 'dimension' mode, which packages/vega-spec-builder/src/chartPopover/chartPopoverUtils.ts:69 currently forces off entirely (`UNSAFE_highlightBy === 'dimension' && markOptions.markType !== 'donut'`) — confirm whether this exclusion is intentionally permanent (donut's dimension is already unique per segment, so 'dimension' grouping would be equivalent to 'item') and document it, or give it real per-mark meaning.",
+    "Remove the UNSAFE_ prefix and \"This feature is incomplete\" JSDoc from ChartPopoverOptions (packages/vega-spec-builder/src/types/dialogs/chartPopoverSpec.types.ts:33-34 and its S2 mirror) once all mark types have parity.",
+    "Document the prop in packages/docs/docs/api/interactivity/ChartPopover.md, which currently has no mention of highlightBy at all.",
+    "Verify how Combo charts (which host one ChartPopover across multiple constituent mark types) resolve highlightBy, since the option currently has no combo-specific handling."
+  ],
+  "edgeCases": [
+    { "case": "highlightBy: 'series' on a chart with only one series", "expectedBehavior": "Behaves like grouping all points of that single series; visually similar to 'item' mode only if the series has one point." },
+    { "case": "highlightBy: string[] naming a field absent from the data", "expectedBehavior": "getGroupIdTransform's formula (chartPopoverUtils.ts:91-97) evaluates datum.undefined for that key; should not throw, but currently has no defined fallback or validation." },
+    { "case": "Donut with highlightBy: 'dimension'", "expectedBehavior": "Currently silently forced to item-level grouping (chartPopoverUtils.ts:69) instead of the requested mode; needs an explicit, documented decision rather than silent divergence." },
+    { "case": "Popover group-selection active while legend hover highlighting is also active", "expectedBehavior": "The two systems use separate signal families (SELECTED_GROUP vs CONTROLLED_HIGHLIGHTED_SERIES/TABLE) and are not currently merged into one opacity expression outside of getMarkOpacity's own rule list; behavior should stay predictable, not flicker between the two." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "Area and Scatter fixes must be mirrored into vega-spec-builder-s2, which has the identical gap today." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "touchesControlledHighlight: Area's getAreaHighlightedData (areaSpecBuilder.ts:170-199) already interleaves CONTROLLED_HIGHLIGHTED_ITEM with SELECTED_ITEM in one OR-chain expression; the new SELECTED_GROUP branch must be inserted into that same expression without reordering existing precedence. touchesTooltipOrPopover: this feature is entirely about ChartPopover's interactive-selection system (isInteractive, hasPopover, groupId data sources). requiresS1S2Parity: vega-spec-builder-s2's area/areaSpecBuilder.ts and scatter/scatterMarkUtils.ts have the identical SELECTED_ITEM-only gap and need the same fix. requiresNewSignalOrScale is false because SELECTED_GROUP and the _selectedGroupId field pattern already exist and are reused, not introduced."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder/src/area/areaSpecBuilder.ts", "change": "Add a SELECTED_GROUP/_selectedGroupId OR-branch to getAreaHighlightedData, positioned relative to the existing CONTROLLED_HIGHLIGHTED_ITEM and tooltip-hover checks.", "lines": "170-199" },
+    { "file": "packages/vega-spec-builder/src/scatter/scatterSpecBuilder.ts", "change": "Add a groupId formula transform to the scatter data pipeline (mirroring chartPopoverUtils.ts's getGroupIdTransform) so scatter has a _selectedGroupId field to test against.", "lines": "120-135" },
+    { "file": "packages/vega-spec-builder/src/scatter/scatterMarkUtils.ts", "change": "Extend the opacity signal to also test SELECTED_GROUP membership, not just SELECTED_ITEM.", "lines": "140-142" },
+    { "file": "packages/vega-spec-builder/src/chartPopover/chartPopoverUtils.ts", "change": "Resolve and document Donut's 'dimension' exclusion (currently forced off); adjust or clarify getGroupIdTransform usage accordingly.", "lines": "64-97" },
+    { "file": "packages/vega-spec-builder/src/types/dialogs/chartPopoverSpec.types.ts", "change": "Drop the UNSAFE_ prefix and incomplete-feature JSDoc once parity is reached across all mark types.", "lines": "33-34" },
+    { "file": "packages/docs/docs/api/interactivity/ChartPopover.md", "change": "Add highlightBy to the props table; currently undocumented entirely.", "lines": "22-89" },
+    { "file": "packages/vega-spec-builder-s2/src/area/areaSpecBuilder.ts", "change": "Mirror the s1 Area fix for S2 parity." },
+    { "file": "packages/vega-spec-builder-s2/src/scatter/scatterMarkUtils.ts", "change": "Mirror the s1 Scatter fix for S2 parity." },
+    { "file": "packages/vega-spec-builder-s2/src/types/dialogs/chartPopoverSpec.types.ts", "change": "Mirror the UNSAFE_ prefix removal once s2 also reaches parity.", "lines": "33-34" }
+  ],
+  "openQuestions": [
+    "Should Donut's forced exclusion of 'dimension' mode (chartPopoverUtils.ts:69) remain permanent and just be documented, given a donut segment's dimension value is already unique per row?",
+    "Should string[] custom-group-key mode be supported identically on every mark type, or scoped only to marks where grouped selection makes semantic sense (e.g. dodged/stacked bars)?",
+    "How should Combo charts (multiple mark types sharing one ChartPopover) resolve highlightBy — per-constituent-mark, or disabled/no-op for Combo entirely?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/374" }
+  ]
+}

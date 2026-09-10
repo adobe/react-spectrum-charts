@@ -27,12 +27,19 @@ import { ChartProps } from './types';
 // `view._viewWidth` is the container width minus spec-level padding; adding padding back gives the
 // true container width. Passing `width` as an argument creates a reactive dependency so the signal
 // re-evaluates on every resize.
-expressionFunction('rscContainerWidth', function (this: { context: { dataflow: View } }) {
-  const view = this.context.dataflow;
-  const p = view.padding() as { left?: number; right?: number };
-  const viewWidth = (view as unknown as { _viewWidth?: number })._viewWidth ?? 0;
-  return viewWidth + (p.left ?? 0) + (p.right ?? 0);
-});
+//
+// Guarded to browser-only execution: this used to run unconditionally at module load, which crashed
+// SSR frameworks server-rendering a "use client" component using this library (there is no `window`
+// in Node's module evaluation). jsdom (used by this file's tests) provides `window`, so this still
+// registers under Jest.
+if (typeof window !== 'undefined') {
+  expressionFunction('rscContainerWidth', function (this: { context: { dataflow: View } }) {
+    const view = this.context.dataflow;
+    const p = view.padding() as { left?: number; right?: number };
+    const viewWidth = (view as unknown as { _viewWidth?: number })._viewWidth ?? 0;
+    return viewWidth + (p.left ?? 0) + (p.right ?? 0);
+  });
+}
 
 /**
  * Resizes an existing Vega view without recreating it.

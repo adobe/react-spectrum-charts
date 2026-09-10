@@ -17,6 +17,38 @@ import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale } from '@spectr
 import { getExpressionFunctions } from './expressionFunctions';
 import { getChartConfig } from './specUtils';
 
+/**
+ * WARNING: This is a last-resort escape hatch for working around gaps in Vega's functionality.
+ * It must NOT be used as a general config customization pattern. Each patch is deep-merged into
+ * the embed config before Vega sees it, bypassing Vega's own mergeConfig (which has known bugs
+ * with nested objects like legend.layout.*). Patches introduce unstructured state that is hard
+ * to trace and reason about — if Vega supports the use case directly, use that instead.
+ */
+export const applyUserMetaConfigPatches = (patches: Partial<Config>[] | undefined, config: Config): Config => {
+  if (!patches?.length) return config;
+  return patches.reduce(
+    (acc, patch) => deepMerge(acc as Record<string, unknown>, patch as Record<string, unknown>) as Config,
+    config
+  );
+};
+
+const deepMerge = (base: Record<string, unknown>, patch: Record<string, unknown>): Record<string, unknown> => {
+  const result = { ...base };
+  for (const [key, patchVal] of Object.entries(patch)) {
+    const baseVal = base[key];
+    const patchIsPlainObject =
+      patchVal !== null && typeof patchVal === 'object' && !Array.isArray(patchVal) && !('signal' in patchVal);
+    const baseIsPlainObject =
+      baseVal !== null && typeof baseVal === 'object' && !Array.isArray(baseVal) && !('signal' in baseVal);
+    if (patchIsPlainObject && baseIsPlainObject) {
+      result[key] = deepMerge(baseVal as Record<string, unknown>, patchVal as Record<string, unknown>);
+    } else {
+      result[key] = patchVal;
+    }
+  }
+  return result;
+};
+
 export const getVegaEmbedOptions = ({
   locale = 'en-US',
   height = 400,

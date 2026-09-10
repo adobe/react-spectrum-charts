@@ -1,0 +1,72 @@
+{
+  "id": "add-geographic-mark",
+  "title": "Add Geographic Chart Mark",
+  "chartType": "geographic",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "multi-consumer",
+  "complexity": {
+    "score": 3,
+    "rationale": "Vega has first-class support for geo projections and geoshape/geopoint marks, so the basemap + point-projection rendering itself is a well-documented, native capability, not custom geometry. The genuinely new pieces are: lazy-loading a TopoJSON world-atlas asset (a bundling/code-splitting concern with no existing data-asset precedent in this codebase, distinct from the component-level lazy() splitting used elsewhere), click-to-zoom-to-a-point animating the projection's scale/translate (a new but well-understood signal-expression technique), zoom/pan (reusing add-network-mark's shared infra if available), and a region-fill (choropleth) mode joining data to basemap features by region id — also a native Vega pattern (`lookup` transform + `geoshape`), not new geometry. Each is bounded in scope with no deep open unknowns."
+  },
+  "summary": "A geographic mark using a natural-earth geo projection over a lazy-loaded world-atlas TopoJSON basemap, with zoom/pan and click-to-zoom-to-point. Supports two modes: point map (`latitude`/`longitude` per row) and region-fill/choropleth (a region identifier joined to basemap features, colored by value).",
+  "requirements": [
+    "Point-map mode: accepts `latitude`, `longitude` (required) and an optional `label` channel; each row renders as a point on the map",
+    "Region-fill (choropleth) mode: accepts a `region` identifier (matching a basemap feature id at a configurable granularity — country/state/etc.) and a `value` field, coloring each matched region via a sequential color scale instead of plotting points",
+    "Renders a world basemap from a lazily-loaded TopoJSON asset (not bundled eagerly with the mark) under a natural-earth (or equivalent) geo projection",
+    "Supports zoom and pan over the map",
+    "In point-map mode, clicking a point animates the projection to center and zoom in 4x on that point",
+    "Supports region drill-down in choropleth mode (clicking a region can re-scope to a finer-grained basemap for that region, e.g. country to state)"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState (basemap may still render, or be suppressed — needs a decision, see openQuestions)." },
+    { "case": "Invalid or out-of-range latitude/longitude values", "expectedBehavior": "Excluded from the point layer (off-map coordinates should not throw a projection error or render at an undefined position)." },
+    { "case": "Two points at nearly identical coordinates", "expectedBehavior": "Both render, potentially overlapping — no automatic clustering/jitter in this spec." },
+    { "case": "Clicking a point while already zoomed into a different point", "expectedBehavior": "Re-centers and re-zooms to the newly clicked point from the current zoom state, rather than requiring a manual zoom-out first." },
+    { "case": "TopoJSON asset fails to load", "expectedBehavior": "Render the point layer without a basemap (or an explicit error state) rather than leaving the whole mark blank — needs a decision on which fallback." },
+    { "case": "Choropleth mode: a region id with no matching basemap feature", "expectedBehavior": "That row is excluded from the fill join rather than throwing on a failed lookup." },
+    { "case": "Choropleth mode: a basemap feature with no matching data row", "expectedBehavior": "Renders with a neutral/unfilled default color rather than an undefined or transparent fill." },
+    { "case": "Light vs dark background", "expectedBehavior": "Basemap and point colors resolve through the existing colorScheme-aware color scale / theme-aware landmass fill." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Narrow/responsive breakpoints", "expectedBehavior": "Projection scale/translate recompute against container size via the existing responsive sizing hook." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesTooltipOrPopover: points/regions support ChartTooltip/ChartPopover, reusing existing interactive-mark plumbing. requiresNewSignalOrScale: true — reuses (or, if not yet built, duplicates) add-network-mark's zoomPanUtils.ts zoom/pan signals, a new click-to-zoom signal pair animating the Vega projection's scale/translate/center properties (a new signal target not used by any existing mark), a region-drill signal for choropleth mode, and add-heatmap-mark's sequential color scale for choropleth fill values. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/geographicSpec.types.ts", "change": "Create GeographicOptions/GeographicOptionsWithDefaults/GeographicSpecOptions with a `mode: 'point' | 'choropleth'` discriminant, point-mode `latitude`/`longitude`/`label` fields, and choropleth-mode `region`/`value` fields." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Geographic types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add GeographicOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/geographic/geographicTestUtils.ts", "change": "Fully-populated defaultGeographicOptions fixture, including an out-of-range-coordinate variant." },
+    { "file": "packages/vega-spec-builder-s2/src/geographic/geographicDataUtils.ts", "change": "addTopoJsonBasemapData (lazy-loaded world-atlas source registration + `feature`/`mesh` transforms), addGeoPointTransform (Vega `geopoint` transform projecting latitude/longitude to x/y under the chosen projection, point mode), addChoroplethLookupTransform (Vega `lookup` transform joining `region` values onto basemap features by id, choropleth mode) — new to this codebase, though all use native Vega geo/lookup transforms rather than custom math." },
+    { "file": "packages/vega-spec-builder-s2/src/geographic/geographicMarkUtils.ts", "change": "getBasemapMark (geoshape mark for landmass, plain fill in point mode), getGeographicPointMark (symbol per data point at projected x/y, point mode), getChoroplethRegionMark (geoshape mark colored via a sequential scale off the joined value, choropleth mode, reusing add-heatmap-mark's addSequentialColorScale)." },
+    { "file": "packages/vega-spec-builder-s2/src/geographic/geographicSpecBuilder.ts", "change": "addGeographic, addData (branches on `mode`: calls addTopoJsonBasemapData + addGeoPointTransform for point mode, or addTopoJsonBasemapData + addChoroplethLookupTransform for choropleth mode), addSignals (click-to-zoom projection signals in point mode, a region-drill signal in choropleth mode, plus zoom/pan signals reusing marks/zoomPanUtils.ts from add-network-mark if it exists by implementation time, plus interactive-mark signals), setScales/projection (natural-earth projection object with signal-bound scale/translate/center, plus the sequential color scale in choropleth mode)." },
+    { "file": "packages/vega-spec-builder-s2/src/geographic/geographicDataUtils.test.ts", "change": "Unit tests for addTopoJsonBasemapData, addGeoPointTransform, and addChoroplethLookupTransform, including the invalid-coordinate and unmatched-region-id cases." },
+    { "file": "packages/vega-spec-builder-s2/src/geographic/geographicMarkUtils.test.ts", "change": "Unit tests for getBasemapMark/getGeographicPointMark/getChoroplethRegionMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/geographic/geographicSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales, including the click-to-zoom signal behavior." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register geographicCount: -1 in initializeComponentCounts, import addGeographic, add the 'geographic' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/geographic.types.ts", "change": "GeographicProps/GeographicElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Geographic/Geographic.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Geographic/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Geographic'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Geographic from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Geographic to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Geographic/Geographic.story.tsx", "change": "Basic story plus a ClickToZoom interaction story." }
+  ],
+  "openQuestions": [
+    "Where does the TopoJSON world-atlas asset ship from — bundled in the package (bundle-size impact) or fetched from a CDN at runtime (network dependency, CSP implications given ast: true / credentials: 'omit' conventions used elsewhere)?",
+    "Should the basemap render (with no points/regions) or be suppressed entirely when data is empty?",
+    "Exact fallback behavior if the basemap asset fails to load.",
+    "What region granularities does choropleth mode need to support (country only, or country/state/city with drill-down between them), and does that require multiple TopoJSON assets loaded on demand per granularity?"
+  ],
+  "relatedIssues": ["add-network-mark", "add-voronoi-mark", "add-contour-mark", "add-heatmap-mark"]
+}

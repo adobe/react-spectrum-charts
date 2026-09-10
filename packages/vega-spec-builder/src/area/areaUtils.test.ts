@@ -305,6 +305,44 @@ describe('getAreaOpacity', () => {
     expect(opacity).toHaveLength(5);
   });
 
+  test('displayOnHoverTrigger "item" excludes the dimension rule in fade mode (displayOnHover: true)', () => {
+    const opacity = getAreaOpacity({
+      ...baseMetricRangeOptions,
+      displayOnHover: true,
+      displayOnHoverTrigger: 'item',
+      interactionMode: 'dimension',
+      hoverContext: getHoverContext(interactiveDimLineOpts),
+    });
+    // no dimension rule up front; first rule is now the item-hover fade rule
+    expect(JSON.stringify(opacity)).not.toContain('dimensionHoverArea');
+    expect(JSON.stringify(opacity?.[0])).toContain(`line0_${HOVERED_ITEM}`);
+  });
+
+  test('displayOnHoverTrigger "item" excludes dimension from the combined show-mode test (displayOnHover: "range")', () => {
+    const opacity = getAreaOpacity({
+      ...baseMetricRangeOptions,
+      displayOnHover: 'range',
+      displayOnHoverTrigger: 'item',
+      interactionMode: 'dimension',
+      hoverContext: getHoverContext(interactiveDimLineOpts),
+    });
+    expect(JSON.stringify(opacity?.[0])).not.toContain('dimensionHoverArea');
+    expect(JSON.stringify(opacity?.[0])).toContain(`line0_${HOVERED_ITEM}`);
+  });
+
+  test('displayOnHoverTrigger "dimension" excludes item-series-match rule (displayOnHover: "range")', () => {
+    const opacity = getAreaOpacity({
+      ...baseMetricRangeOptions,
+      displayOnHover: 'range',
+      displayOnHoverTrigger: 'dimension',
+      interactionMode: 'dimension',
+      hoverContext: getHoverContext(interactiveDimLineOpts),
+    });
+    const test = (opacity?.[0] as { test?: string })?.test;
+    expect(test).toContain('dimensionHoverArea');
+    expect(test).not.toContain(`line0_${HOVERED_ITEM}.`);
+  });
+
   test('returns default opacity rule when displayOnHover is false for a metric range', () => {
     const opacity = getAreaOpacity({ ...baseMetricRangeOptions, displayOnHover: false });
     expect(opacity).toEqual([DEFAULT_OPACITY_RULE]);

@@ -10,4 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export { getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, getLineForecastBoundaryMark, getLineForecastLabelMarks, getLineForecastSpecOptions } from './lineForecastUtils';
+export { getEffectiveMetricField, getForecastAlternateFlagTransform, getForecastEffectiveValueTransform, getLineForecastBoundaryMark, getLineForecastLabelMarks, getLineForecastSpecOptions } from './lineForecastUtils';

@@ -14,6 +14,8 @@
 import { FC } from 'react';
 
 import {
+  DEFAULT_BAR_ORIENTATION,
+  DEFAULT_BAR_TYPE,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_METRIC,
   PADDING_RATIO,
@@ -27,10 +29,10 @@ const Bar: FC<BarProps> = ({
   color = { value: 'categorical-100' },
   metric = DEFAULT_METRIC,
   metricAxis,
-  type = 'stacked',
+  type = DEFAULT_BAR_TYPE,
   opacity = { value: 1 },
   lineType = { value: 'solid' },
-  orientation = 'vertical',
+  orientation = DEFAULT_BAR_ORIENTATION,
   trellisOrientation = 'horizontal',
   trellisPadding = TRELLIS_PADDING,
   paddingRatio = PADDING_RATIO,

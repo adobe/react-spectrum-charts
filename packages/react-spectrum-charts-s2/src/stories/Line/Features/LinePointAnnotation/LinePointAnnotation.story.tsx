@@ -14,9 +14,10 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, Legend, Line, LinePointAnnotation } from '../../../../components';
+import { Axis, ChartInspect, Legend, Line, LinePointAnnotation } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { workspaceTrendsDataWithAnnotations } from '../../../../stories/data/data';
+import { formatTimestamp } from '../../../../stories/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
@@ -69,4 +70,33 @@ MultipleAnchors.args = {
   anchor: ['top', 'right', 'bottom', 'left'],
 };
 
-export { Basic, MatchLineColor, AnchorLeft, MultipleAnchors };
+// Uses ChartInspect (item hover) instead of legend hover, to exercise the non-legend fade path.
+const HoverInteractionStory: StoryFn<typeof LinePointAnnotation> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps} debug={true}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line color="series" dimension="datetime" metric="value" scaleType="time" staticPoint="staticPoint">
+        <LinePointAnnotation {...args} />
+        <ChartInspect>
+          {(datum) => (
+            <div>
+              <div>{formatTimestamp(datum.datetime as number)}</div>
+              <div>Event: {datum.series as string}</div>
+              <div>Users: {Number(datum.value).toLocaleString()}</div>
+            </div>
+          )}
+        </ChartInspect>
+      </Line>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const WithHoverInteraction = bindWithProps(HoverInteractionStory);
+WithHoverInteraction.args = {
+  textKey: 'label',
+};
+
+export { Basic, MatchLineColor, AnchorLeft, MultipleAnchors, WithHoverInteraction };

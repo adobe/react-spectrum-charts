@@ -15,6 +15,11 @@ import { Signal, View } from 'vega';
 
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
+interface HoveredAxisLabel {
+  bounds: MarkBounds;
+  content: string;
+}
+
 interface ChartContextValue {
   // Chart view state
   chartView: RefObject<View | undefined>;
@@ -29,6 +34,12 @@ interface ChartContextValue {
   isPopoverOpen: boolean;
   setIsPopoverOpen: (isOpen: boolean) => void;
   popoverAnchorRef: RefObject<HTMLDivElement | null>;
+  /** Timestamp (ms) the popover last closed, set synchronously by the same call that closes it. */
+  popoverClosedAt: RefObject<number | null>;
+
+  // Axis label tooltip state
+  hoveredAxisLabel: HoveredAxisLabel | null;
+  setHoveredAxisLabel: (hoveredAxisLabel: HoveredAxisLabel | null) => void;
 
   // Spec state
   controlledHoveredIdSignal: RefObject<Signal | undefined>;
@@ -47,11 +58,13 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
   const controlledHoveredIdSignal = useRef<Signal | undefined>(undefined);
   const controlledHoveredGroupSignal = useRef<Signal | undefined>(undefined);
   const popoverAnchorRef = useRef<HTMLDivElement | null>(null);
+  const popoverClosedAt = useRef<number | null>(null);
   const selectedData = useRef<Datum | null>(null);
   const selectedDataName = useRef<string>('');
   const selectedDataBounds = useRef<MarkBounds>({ x1: 0, x2: 0, y1: 0, y2: 0 });
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [hoveredAxisLabel, setHoveredAxisLabel] = useState<HoveredAxisLabel | null>(null);
 
   const value: ChartContextValue = useMemo(
     () => ({
@@ -65,8 +78,11 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
       isPopoverOpen,
       setIsPopoverOpen,
       popoverAnchorRef,
+      popoverClosedAt,
+      hoveredAxisLabel,
+      setHoveredAxisLabel,
     }),
-    [chartId, chartView, isPopoverOpen]
+    [chartId, chartView, isPopoverOpen, hoveredAxisLabel]
   );
 
   return <ChartContext.Provider value={value}>{children}</ChartContext.Provider>;

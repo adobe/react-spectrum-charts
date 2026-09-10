@@ -32,7 +32,7 @@ import {
   getDonutSummaryScales,
   getDonutSummarySignals,
 } from './donutSummaryUtils';
-import { getArcMark } from './donutUtils';
+import { getArcMark, getEmptyStateArcMark, getSumData } from './donutUtils';
 import { getSegmentLabelMarks } from './segmentLabelUtils';
 
 export const addDonut = produce<
@@ -120,6 +120,8 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
       ],
     });
   }
+  // used to detect the empty state (no data or all metric values are 0)
+  data.push(getSumData(options));
   data.push(...getDonutSummaryData(options));
 });
 
@@ -155,7 +157,12 @@ export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) 
 });
 
 export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => {
-  marks.push(getArcMark(options), ...getDonutSummaryMarks(options), ...getSegmentLabelMarks(options));
+  marks.push(
+    getEmptyStateArcMark(options),
+    getArcMark(options),
+    ...getDonutSummaryMarks(options),
+    ...getSegmentLabelMarks(options)
+  );
 });
 
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {

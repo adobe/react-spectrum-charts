@@ -35,6 +35,7 @@ import {
   ChartTooltipOptions,
   ColorFacet,
   ColorScheme,
+  DisplayOnHoverTrigger,
   HighlightedItem,
   InteractionMode,
   ScaleType,
@@ -45,6 +46,8 @@ export interface AreaMarkOptions {
   colorScheme: ColorScheme;
   dimension: string;
   displayOnHover?: boolean | 'metric' | 'range';
+  /** Restricts which hover trigger reveals `displayOnHover` content. Undefined matches any active hover (legacy behavior). */
+  displayOnHoverTrigger?: DisplayOnHoverTrigger;
   highlightedItem?: HighlightedItem;
   /** Resolved hover context — required when isMetricRange && displayOnHover is set. */
   hoverContext?: HoverContext;
@@ -58,6 +61,7 @@ export interface AreaMarkOptions {
   name: string;
   opacity: number;
   parentName?: string; // Optional name of mark that this area is a child of. Used for metric ranges.
+  s2?: boolean;
   scaleType: ScaleType;
 
   chartPopovers?: ChartPopoverOptions[];
@@ -80,6 +84,7 @@ export const getAreaMark = (
     scaleType,
     dimension,
     opacity,
+    s2,
   } = areaOptions;
   return {
     name,
@@ -91,7 +96,7 @@ export const getAreaMark = (
       enter: {
         y: { scale: 'yLinear', field: metricStart },
         y2: { scale: 'yLinear', field: metricEnd },
-        fill: getColorProductionRule(color, colorScheme),
+        fill: getColorProductionRule(color, colorScheme, undefined, s2),
         tooltip: getTooltip(chartTooltips ?? [], name),
         ...getBorderStrokeEncodings(isStacked, true),
         defined: { signal: `isValid(datum["${metricStart}"]) || isValid(datum["${metricEnd}"])` },
@@ -113,16 +118,17 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     chartPopovers,
     displayOnHover,
     hoverContext,
+    displayOnHoverTrigger,
     isHighlightedByGroup,
     isMetricRange,
     highlightedItem,
     name,
   } = areaOptions;
   if (isMetricRange && displayOnHover === 'range' && hoverContext) {
-    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show');
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show', displayOnHoverTrigger);
   }
   if (isMetricRange && (displayOnHover === true || displayOnHover === 'metric') && hoverContext) {
-    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'fade');
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'fade', displayOnHoverTrigger);
   }
 
   if (!isInteractive(areaOptions) && !highlightedItem) {

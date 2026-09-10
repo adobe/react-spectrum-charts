@@ -11,6 +11,7 @@
  */
 import React, { ReactElement } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
@@ -254,6 +255,14 @@ TruncateLabels.args = {
   title: 'Browser',
 };
 
+const OnClick = bindWithProps(SubLabelStory);
+OnClick.args = {
+  position: 'bottom',
+  baseline: true,
+  title: 'Browser',
+  onClick: action('onClick'),
+};
+
 const TickMinStep = bindWithProps(LinearAxisStory);
 TickMinStep.args = {
   position: 'bottom',
@@ -394,6 +403,7 @@ export {
   MultilineTitle,
   NonLinearAxis,
   NumberFormat,
+  OnClick,
   SecondGranularity,
   SecondGranularityLine,
   SubLabels,

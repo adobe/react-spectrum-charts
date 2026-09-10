@@ -1,0 +1,63 @@
+{
+  "id": "add-voronoi-mark",
+  "title": "Add Voronoi Chart Mark",
+  "chartType": "voronoi",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 2,
+    "rationale": "This codebase already builds Vega `voronoi`-transform paths internally as invisible hover hit-targets for Scatter/Line (packages/vega-spec-builder-s2/src/marks/markUtils.ts, ~lines 362-424: the point-collection and voronoi-path-mark helpers used for tooltips/popovers). Making a standalone Voronoi mark is largely reusing that exact transform and mark-construction logic, just rendering the cell paths visibly (stroked, not aria-hidden) instead of as invisible hit targets, with the underlying site points promoted to the primary accessible/keyboard unit instead of the cells."
+  },
+  "summary": "An x/y/label mark rendering a Voronoi tessellation as the primary visualization — reusing this codebase's existing internal voronoi-transform hit-target logic (markUtils.ts) but making the cells visible strokes and the site points the accessible unit (distinct from RSC's existing internal voronoi hover overlays on other marks).",
+  "requirements": [
+    "Accepts `x`, `y` (required) and an optional `label` channel; one Voronoi cell and one site point per row",
+    "Builds the tessellation via the same Vega `voronoi` transform this codebase already uses internally for hover hit-targets (markUtils.ts), reused rather than reimplemented",
+    "Cell polygons render as visible stroked paths and are `aria-hidden` (cells are hit-targets/visual only, not the accessible unit)",
+    "Site markers (the underlying points) are the keyboard-focusable, screen-reader-exposed, and tooltip-triggering elements — not the cells"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Single data point", "expectedBehavior": "The Vega voronoi transform degenerates to one cell spanning the full plot bounds; render it without error." },
+    { "case": "Duplicate x/y coordinates across rows", "expectedBehavior": "Degenerate (zero-area) cells are possible for exact duplicates — document as expected rather than a bug, consistent with how the existing internal voronoi hit-target usage already handles duplicate points." },
+    { "case": "Hovering near a cell boundary", "expectedBehavior": "Hover/tooltip targets the site point whose cell contains the cursor, reusing the same interaction behavior as the existing internal voronoi hover overlays." },
+    { "case": "Light vs dark background", "expectedBehavior": "Cell stroke and site point fill resolve through the existing colorScheme-aware color scale." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Accessibility", "expectedBehavior": "Screen readers and keyboard navigation must never land on a cell path (aria-hidden), only on site points, per requirements." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesTooltipOrPopover: site points support ChartTooltip/ChartPopover, and hover detection reuses the exact voronoi-transform + hover-signal wiring markUtils.ts already provides for Scatter/Line — this mark is closer to 'exposing existing internal machinery as a first-class visual' than building new interaction plumbing. requiresNewSignalOrScale: false — no new scale type; x/y are plain continuous scales like Scatter. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/voronoiSpec.types.ts", "change": "Create VoronoiOptions/VoronoiOptionsWithDefaults/VoronoiSpecOptions with required `x`/`y` fields and an optional `label` field." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Voronoi types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add VoronoiOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/voronoi/voronoiTestUtils.ts", "change": "Fully-populated defaultVoronoiOptions fixture, including a duplicate-coordinate variant." },
+    { "file": "packages/vega-spec-builder-s2/src/marks/markUtils.ts", "change": "Generalize the existing voronoi-points and voronoi-path helpers (~lines 362-424) so they can be called for a visible/primary mark, not only an invisible hit-target overlay — e.g. an `aria-hidden`/stroke-visibility parameter instead of assuming hidden-overlay defaults." },
+    { "file": "packages/vega-spec-builder-s2/src/voronoi/voronoiMarkUtils.ts", "change": "getVoronoiCellMark (visible stroked path, aria-hidden, built via the generalized markUtils.ts helper), getVoronoiSitePointMark (the accessible/keyboard-focusable symbol per row)." },
+    { "file": "packages/vega-spec-builder-s2/src/voronoi/voronoiSpecBuilder.ts", "change": "addVoronoi, addData (reuses the existing point-collection helper from markUtils.ts), addSignals (reuses existing hover/tooltip signal helpers), setScales (plain continuous x/y scales, reusing addContinuousDimensionScale/addMetricScale)." },
+    { "file": "packages/vega-spec-builder-s2/src/voronoi/voronoiMarkUtils.test.ts", "change": "Unit tests for getVoronoiCellMark/getVoronoiSitePointMark using the fixture, asserting aria-hidden on cells and accessible attributes on site points." },
+    { "file": "packages/vega-spec-builder-s2/src/voronoi/voronoiSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register voronoiCount: -1 in initializeComponentCounts, import addVoronoi, add the 'voronoi' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/voronoi.types.ts", "change": "VoronoiProps/VoronoiElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Voronoi/Voronoi.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Voronoi/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Voronoi'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Voronoi from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Voronoi to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Voronoi/Voronoi.story.tsx", "change": "Basic story showing visible cell strokes and site points." }
+  ],
+  "openQuestions": [
+    "Confirm the existing markUtils.ts voronoi helpers can be safely generalized without changing behavior for their current Scatter/Line hover-overlay callers — may warrant a small refactor PR of its own before this mark is built.",
+    "Should cell stroke color be a fixed neutral tone or theme/data-driven (e.g. colored by an implicit category)?"
+  ]
+}

@@ -55,7 +55,7 @@ describe('getTrendlineMarks()', () => {
     expect(marks).toHaveLength(2);
     expect(marks[1]).toHaveProperty('type', 'group');
     const trendlineMarks = (marks[1] as GroupMark).marks as Mark[];
-    // line mark
+    // no hover label text marks: showHoverLabel is forced false for this merged hover group
     expect(trendlineMarks).toHaveLength(4);
     expect(trendlineMarks[0]).toHaveProperty('type', 'rule');
     expect(trendlineMarks[1]).toHaveProperty('type', 'symbol'); // highlight point
@@ -102,6 +102,17 @@ describe('getTrendlineRuleMark()', () => {
       method: 'median',
     });
     expect(mark.encode?.enter?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
+  });
+
+  test('opacity stays the static instant-rule array even when the parent line is animated', () => {
+    // the trendline renders under its own mark name (`${parentName}Trendline${index}`), which has no
+    // `_hoverFractionData` of its own — getLineMarkOptions forces isHoverAnimate: false for exactly this
+    // reason, otherwise this would reference a data source that was only created for the parent's name
+    const mark = getTrendlineRuleMark(
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
+      { ...defaultTrendlineOptions, method: 'median' }
+    );
+    expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);
   });
 });
 
@@ -192,6 +203,14 @@ describe('getTrendlineLineMark()', () => {
       trendlineColor: { value: 'gray-500' },
     });
     expect(mark.encode?.enter?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
+  });
+
+  test('opacity stays the static instant-rule array even when the parent line is animated', () => {
+    const mark = getTrendlineLineMark(
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
+      defaultTrendlineOptions
+    );
+    expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);
   });
 });
 

@@ -1,0 +1,66 @@
+{
+  "id": "add-box-plot-mark",
+  "title": "Add Box Plot Chart Mark",
+  "chartType": "boxPlot",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 3,
+    "rationale": "The five-number-summary statistics (min/q1/median/q3/max) are computable via Vega's built-in aggregate transform quantile ops, and outlier detection is the well-known Tukey 1.5×IQR method — no deep algorithmic unknowns. But 'auto-detect raw observations vs. precomputed summary' is a genuine, non-precedented design decision (inspecting the incoming data shape to choose a code path) with no existing analog elsewhere in this codebase, and outliers must be rendered as a separate, non-interactive data source layered against the same category scale."
+  },
+  "summary": "A category-to-distribution mark rendering a box (q1–q3), whiskers (min/max within 1.5×IQR), a median line, and separately-rendered non-interactive outlier points. Accepts either raw per-category observations (aggregated internally) or a precomputed five-number summary per category.",
+  "requirements": [
+    "Accepts a `category` channel plus either: (a) a raw `value` field with many rows per category, aggregated internally into min/q1/median/q3/max, or (b) precomputed `min`/`q1`/`median`/`q3`/`max` fields, one row per category",
+    "Auto-detects which mode the incoming data is in without requiring an explicit prop — based on whether the precomputed summary fields are present on the data",
+    "Renders a box for the q1–q3 interquartile range, a median line, and whiskers extending to the most extreme in-range values (Tukey 1.5×IQR rule)",
+    "Outliers (values beyond 1.5×IQR from the box) render as separate points, non-interactive (no hover/tooltip on individual outlier points)",
+    "One box per category value along the dimension axis"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "A category with a single raw observation", "expectedBehavior": "q1/median/q3 collapse to that single value; box renders as a degenerate zero-height rect rather than throwing on a divide-by-zero IQR." },
+    { "case": "IQR of zero (all values in a category identical)", "expectedBehavior": "No outliers should be flagged even though 1.5×0 = 0, since every value equals the median — avoid a false-positive outlier flood from floating point noise." },
+    { "case": "Data ambiguously matches both raw and precomputed shapes", "expectedBehavior": "Precomputed fields take precedence if present, documented explicitly as the tie-break rule for the auto-detection logic." },
+    { "case": "Many categories (dimension scale overflow)", "expectedBehavior": "Category (x) scale band-width shrinks per existing categorical-scale behavior; no new overflow handling needed." },
+    { "case": "Light vs dark background", "expectedBehavior": "Box fill/outlier point color resolve through the existing colorScheme-aware static color value." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Interaction conflicts", "expectedBehavior": "Hover/tooltip targets the box (summary) mark only; outlier points must not intercept hover events meant for the box beneath them." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: box/whisker marks reuse the standard isAnimate-gated enter transition already used by rect/rule marks elsewhere. touchesTooltipOrPopover: the box mark should support ChartTooltip/ChartPopover showing the five-number summary, reusing the existing interactive-mark plumbing; outlier points are explicitly excluded from this (isInteractive: false on that layer). requiresNewSignalOrScale: false — uses a standard categorical x scale and linear y scale, same helpers as Bar. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/boxPlotSpec.types.ts", "change": "Create BoxPlotOptions/BoxPlotOptionsWithDefaults/BoxPlotSpecOptions supporting both raw (`category`, `value`) and precomputed (`category`, `min`, `q1`, `median`, `q3`, `max`) field sets as optional/mutually-informing options." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Box Plot types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add BoxPlotOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/boxPlot/boxPlotTestUtils.ts", "change": "Two fixtures: defaultBoxPlotOptions (raw-observation mode) and a precomputed-summary variant, for use across both data-shape test paths." },
+    { "file": "packages/vega-spec-builder-s2/src/boxPlot/boxPlotDataUtils.ts", "change": "New: detectSummaryMode (inspects options for precomputed field names vs raw value field), addSummaryAggregate (Vega aggregate transform with q1/median/q3/min/max ops for raw mode), addIqrOutlierFlags (formula transform computing 1.5×IQR bounds, then a filter/derived field splitting in-range vs outlier rows) — no existing util to reuse, this is new logic." },
+    { "file": "packages/vega-spec-builder-s2/src/boxPlot/boxPlotMarkUtils.ts", "change": "getBoxMark (rect for q1–q3), getWhiskerMarks (rule marks to min/max-within-range), getMedianMark (tick/rule), getOutlierMarks (non-interactive symbol layer)." },
+    { "file": "packages/vega-spec-builder-s2/src/boxPlot/boxPlotSpecBuilder.ts", "change": "addBoxPlot, addData (branches on detectSummaryMode), addSignals (interactive-mark signals for the box layer only), setScales (categorical dimension scale + linear value scale, reusing addMetricScale)." },
+    { "file": "packages/vega-spec-builder-s2/src/boxPlot/boxPlotDataUtils.test.ts", "change": "Unit tests for detectSummaryMode, addSummaryAggregate, addIqrOutlierFlags covering both data shapes." },
+    { "file": "packages/vega-spec-builder-s2/src/boxPlot/boxPlotMarkUtils.test.ts", "change": "Unit tests for each mark-factory function using both fixtures." },
+    { "file": "packages/vega-spec-builder-s2/src/boxPlot/boxPlotSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register boxPlotCount: -1 in initializeComponentCounts, import addBoxPlot, add the 'boxPlot' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/boxPlot.types.ts", "change": "BoxPlotProps/BoxPlotElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/BoxPlot/BoxPlot.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/BoxPlot/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './BoxPlot'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import BoxPlot from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add BoxPlot to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/BoxPlot/BoxPlot.story.tsx", "change": "Two stories: RawObservations and PrecomputedSummary, exercising both auto-detected data shapes." }
+  ],
+  "openQuestions": [
+    "Exact field-presence rule for auto-detecting precomputed-summary mode — e.g. is it 'all five of min/q1/median/q3/max are present as top-level keys on every row', or a separate explicit marker field?",
+    "Should outlier points support their own tooltip in a future iteration, or is non-interactivity a permanent constraint of this mark?"
+  ]
+}

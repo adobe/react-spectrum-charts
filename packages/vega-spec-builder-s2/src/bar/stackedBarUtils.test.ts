@@ -86,6 +86,16 @@ describe('stackedBarUtils', () => {
       expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
       expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
     });
+    test('uses the animated per-bar opacity signal when isHoverAnimate, instead of the instant opacity rules', () => {
+      const marks = getStackedBarMarks({ ...defaultBarOptions, isHoverAnimate: true });
+      const bar = marks.find((m) => m.name === 'bar0');
+      const opacity = bar?.encode?.update?.opacity as { signal?: string };
+      expect(opacity.signal).toContain('bar0_rscBarAnimId');
+      // background bar has no opacity key at all -- it stays permanently opaque
+      const background = marks.find((m) => m.name === 'bar0_background');
+      expect(background?.encode?.update?.opacity).toBeUndefined();
+    });
+
     test('should add dimension hover area marks if has inspect with dimension area target', () => {
       const marks = getStackedBarMarks({
         ...defaultBarOptions,
@@ -95,6 +105,52 @@ describe('stackedBarUtils', () => {
       expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
       expect(marks[1].name).toEqual('bar0_background');
       expect(marks[2].name).toEqual('bar0');
+    });
+    test('adds the selection backdrop under the bars and the outline ring on top when an item popover exists', () => {
+      const marks = getStackedBarMarks({
+        ...defaultBarOptions,
+        chartPopovers: [{}],
+      });
+      expect(marks).toHaveLength(5);
+      // dimension hover area first, backdrop underneath, outline ring on top
+      expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
+      expect(marks[1].name).toEqual('bar0_itemSelectionBackdrop');
+      expect(marks[2].name).toEqual('bar0_background');
+      expect(marks[3].name).toEqual('bar0');
+      expect(marks[4].name).toEqual('bar0_itemSelectionRing');
+    });
+
+    test('adds the dimension hover area mark whenever the bar is interactive, regardless of chartInspect target', () => {
+      const marks = getStackedBarMarks({
+        ...defaultBarOptions,
+        chartPopovers: [{}],
+      });
+      expect(marks.find((mark) => mark.name === 'bar0_dimensionHoverArea')).toBeDefined();
+    });
+
+    test('does not add the dimension hover area mark if the bar is not interactive', () => {
+      const marks = getStackedBarMarks(defaultBarOptions);
+      expect(marks.find((mark) => mark.name === 'bar0_dimensionHoverArea')).toBeUndefined();
+    });
+    test('does not add the item selection marks when the popover highlights by dimension', () => {
+      const marks = getStackedBarMarks({
+        ...defaultBarOptions,
+        chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }],
+      });
+      const names = marks.map((mark) => mark.name);
+      expect(names).not.toContain('bar0_itemSelectionBackdrop');
+      expect(names).not.toContain('bar0_itemSelectionRing');
+    });
+    test('sources the item selection marks from the trellis facet when trellised', () => {
+      const marks = getStackedBarMarks({
+        ...defaultBarOptions,
+        trellis: 'event',
+        chartPopovers: [{}],
+      });
+      const backdrop = marks.find((mark) => mark.name === 'bar0_itemSelectionBackdrop');
+      const ring = marks.find((mark) => mark.name === 'bar0_itemSelectionRing');
+      expect(backdrop?.from).toStrictEqual({ data: 'bar0_trellis' });
+      expect(ring?.from).toStrictEqual({ data: 'bar0_trellis' });
     });
   });
 
@@ -108,6 +164,20 @@ describe('stackedBarUtils', () => {
       expect(mark.marks).toHaveLength(2);
       expect(mark.marks?.[0].name).toEqual('bar0_background');
       expect(mark.marks?.[1].name).toEqual('bar0');
+    });
+
+    test('adds the selection backdrop under the bars and the outline ring on top when an item popover exists', () => {
+      const mark = getDodgedAndStackedBarMark({
+        ...defaultBarOptions,
+        chartPopovers: [{}],
+      });
+
+      expect(mark.marks).toHaveLength(4);
+      // backdrop underneath, outline ring on top
+      expect(mark.marks?.[0].name).toEqual('bar0_itemSelectionBackdrop');
+      expect(mark.marks?.[1].name).toEqual('bar0_background');
+      expect(mark.marks?.[2].name).toEqual('bar0');
+      expect(mark.marks?.[3].name).toEqual('bar0_itemSelectionRing');
     });
 
     test('should return mark with dodged and stacked marks, with annotation', () => {

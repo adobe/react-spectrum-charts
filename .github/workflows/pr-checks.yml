@@ -31,6 +31,9 @@ jobs:
       - name: Lint 🧼
         run: yarn lint
 
+      - name: Verify intl is up to date 🌐
+        run: yarn workspace @spectrum-charts/react-spectrum-charts-s2 verify:intl
+
       - name: Test 🧪
         run: yarn test
 

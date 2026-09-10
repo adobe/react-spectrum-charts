@@ -1,0 +1,55 @@
+{
+  "id": "donut-trellis-hover-value-callout",
+  "title": "Donut Trellis — Per-Panel Hover Value Callout",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "complexity": {
+    "score": 2,
+    "rationale": "Deliberately scoped narrow (split out at the user's request). Once donut-trellis-cross-panel-hover's shared hover signal exists, this is a single new text mark per panel, reusing existing color-resolution helpers (getColorProductionRule) and gated on an existing (soon-to-exist) signal - no new cross-cutting mechanism of its own, just one additional precedented-shape mark applied to each panel."
+  },
+  "summary": "When a category is hovered anywhere in a donut-trellis chart (via donut-trellis-cross-panel-hover's shared signal), each panel must display a new bold, categorically-colored percentage value above its own donut ring, reflecting that panel's own value for the hovered category. Confirmed via a live Figma reference: hovering 'Phone' shows a different bold purple percentage above each of the 5 region panels (65.2%/44.6%/67.9%/50.0%/55.6%), each computed independently from that panel's own data. This is a brand-new label mark (not persistent - only visible during hover) and depends on donut-trellis-cross-panel-hover's shared signal and donut-trellis's panel structure.",
+  "requirements": [
+    "Add a new text mark positioned above each trellis panel's donut ring, showing that panel's own percentage value for whichever category is currently hovered (per donut-trellis-cross-panel-hover's shared signal) - bold weight, colored in that category's own categorical color (confirmed: the value renders in the same purple as the hovered Phone segment).",
+    "Only visible while a category is actively hovered somewhere in the trellis - hidden by default when nothing is hovered.",
+    "Each panel computes its own percentage independently (that panel's own total), not a chart-wide aggregate - confirmed by the differing values per region (65.2%/44.6%/67.9%/50.0%/55.6%) for the same hovered category (Phone)."
+  ],
+  "designTokens": [],
+  "references": [
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54457&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Hovered category has 0% share in a given panel", "expectedBehavior": "Undocumented - confirm whether that panel shows '0%' or hides the callout for that panel specifically." },
+    { "case": "Very long/wide value text in a tightly-packed grid", "expectedBehavior": "Confirm the callout doesn't overlap neighboring panels at small panel sizes or narrow grid gutters." },
+    { "case": "Small panel size tier (XS/S)", "expectedBehavior": "Confirm the callout's font size follows the same per-tier model as other donut typography (donut-summary-responsive-sizing) rather than a separate fixed size." },
+    { "case": "Panel also shows a persistent DonutSummary in its center", "expectedBehavior": "Confirm the callout (above the ring) and the summary (inside the hole) don't visually collide, especially at small panel sizes." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale is false - this reuses the shared hover signal donut-trellis-cross-panel-hover introduces, rather than adding another one; it only adds a new text mark reacting to that existing signal. requiresS1S2Parity is false: no existing s1 Donut trellis to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisUtils.ts (from donut-trellis / donut-trellis-cross-panel-hover)",
+      "change": "Add a new text mark per panel, positioned above that panel's ring, gated on donut-trellis-cross-panel-hover's shared signal being non-null, computing that panel's own percentage for the hovered category and coloring it via getColorProductionRule to match.",
+      "lines": "N/A - extends the file donut-trellis creates"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisUtils.test.ts",
+      "change": "Add tests for the callout's visibility gating and per-panel value computation.",
+      "lines": "N/A - extends the file donut-trellis creates"
+    }
+  ],
+  "openQuestions": [
+    "What is the exact vertical gap between the callout and the ring's outer edge? No numeric token is documented for this specific position.",
+    "Is the value always a percentage, or should it follow the same numberFormat conventions as DonutSummary/SegmentLabel?"
+  ],
+  "relatedIssues": ["donut-trellis", "donut-trellis-cross-panel-hover"]
+}

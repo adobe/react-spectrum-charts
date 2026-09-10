@@ -1,0 +1,47 @@
+{
+  "id": "line-point-annotation-hover-opacity-gap-s1",
+  "title": "LinePointAnnotation Ignores Legend/Line Hover Opacity (S1)",
+  "chartType": "line",
+  "kind": "bug",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-05",
+  "complexity": {
+    "score": 2,
+    "rationale": "Same shape of fix as the merged S2 fix (line-point-annotation-hover-opacity-gap.json, implemented) - add a dedicated update.opacity production-rule array to the mark, built from the line's own hover/controlled-highlight/legend signal set. S1's mark has no label-collision system, so the fallback is a flat DEFAULT_OPACITY_RULE-style value instead of a `{field: 'opacity'}` field reference, which is actually simpler than the S2 case. Single file, no new abstractions needed."
+  },
+  "summary": "LinePointAnnotation marks in S1 do not dim when a legend item is hovered or when the line itself is hovered, the same gap identified and fixed for S2 in line-point-annotation-hover-opacity-gap.json. This issue tracks the S1 side, which was explicitly left unaddressed when the S2 fix was implemented (user requested S2-only scope for that pass).",
+  "symptom": "Hovering a legend item, or hovering the line itself (when it has ChartTooltip/ChartPopover), correctly dims the S1 line path and other series-aware marks, but LinePointAnnotation marks stay at full opacity regardless.",
+  "rootCause": "packages/vega-spec-builder/src/line/linePointAnnotation/linePointAnnotationUtils.ts's `getLinePointAnnotationMarks` (lines 34-64) builds a single TextMark whose `encode.enter` only sets `text` and optionally `fill` - there is no `encode.update` block at all, so there is no opacity encoding of any kind (not even a static one). This mark also fails S1's equivalent of `markIsSeriesAware` in packages/vega-spec-builder/src/legend/legendHighlightUtils.ts for the same reason as S2: its fill is a literal or a copied `datum.fill` field reference, never a color-scale reference, and its mark name doesn't match the Trendline/MetricRange regex escape hatch. Root cause is confirmed by direct code inspection (same investigation session as the S2 fix) but the exact fix has not been implemented or tested for S1.",
+  "comparison": [
+    {
+      "aspect": "Opacity encode for legend/hover/controlled-highlight dimming",
+      "expected": "Same as S2 (now implemented there): a self-contained update.opacity production-rule array built from interactiveMarkName, CONTROLLED_HIGHLIGHTED_TABLE/SERIES, popoverMarkName, and legendHighlightSignals - not the generic markIsSeriesAware-gated pass, per the S2 fix's rootCause investigation finding.",
+      "actual": "S1's LinePointAnnotation TextMark has no update block and no opacity encoding whatsoever - a strict subset of S2's pre-fix gap (S2 at least had the label-collision transform's `field: 'opacity'`)."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "requiresS1S2Parity is false here because this issue IS the S1 side of the parity gap - the S2 fix (line-point-annotation-hover-opacity-gap.json) is the reference implementation to port the same rule-building approach from, adapted for S1's simpler single-mark structure (no label-collision transform, so no datum.opacity to multiply against - the fallback can be a flat DEFAULT_OPACITY_RULE-equivalent instead). touchesControlledHighlight/touchesLegendInteraction/touchesTooltipOrPopover mirror the S2 issue's reasoning exactly."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/line/linePointAnnotation/linePointAnnotationUtils.ts",
+      "change": "Port the S2 fix's approach: add a `getLinePointAnnotationOpacity`-equivalent helper covering interactiveMarkName (item-hover, isHighlightedByGroup-aware), CONTROLLED_HIGHLIGHTED_TABLE/SERIES (unconditional), popoverMarkName (SELECTED_SERIES), and one rule per legendHighlightSignals entry, ending in a flat full-opacity fallback (e.g. DEFAULT_OPACITY_RULE, since S1 has no per-datum collision opacity field to preserve). Add `encode.update.opacity` to the mark using this helper's output. WARNING - datum-nesting depth differs from S2, do not copy the S2 depth verbatim: S2's fix initially shipped with the wrong depth (`datum.datum.${SERIES_ID}`, 2 hops) which caused every label to fade including the hovered series, because S2 has a background+foreground mark split (foreground reads from background reads from staticPoints reads from raw row = 3 hops needed: `datum.datum.datum.${SERIES_ID}`). S1's mark is a SINGLE TextMark reading directly `from: { data: '${lineOptions.name}_staticPoints' }` (no bg/fg split, confirmed in rootCause) - so only ONE hop separates it from the static point mark's own item, meaning it needs `datum.datum.${SERIES_ID}` (2 hops: mark item -> static point item -> raw row) to reach the raw row, NOT the 3-hop expression S2 uses. Verify by tracing `from.data` chains before implementing, don't assume parity in nesting depth just because the rule-building logic is shared.",
+      "lines": "34-64 (getLinePointAnnotationMarks), reference packages/vega-spec-builder-s2/src/line/linePointAnnotation/linePointAnnotationUtils.ts for the exact rule shapes to adapt"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/line/linePointAnnotation/linePointAnnotationUtils.test.ts",
+      "change": "Add tests mirroring the S2 test suite's `getLinePointAnnotationOpacity` describe block (default/no-highlight case, interactiveMarkName variants, controlled-highlight rules, popoverMarkName, legendHighlightSignals) adapted for S1's flat-fallback shape.",
+      "lines": "n/a - new test cases"
+    }
+  ],
+  "openQuestions": [
+    "S1's LinePointAnnotation has no label-transform/collision-avoidance system at all (confirmed: no `transform` array, no background halo mark) - confirm this is still accurate at implementation time, since it simplifies the fix (no datum.opacity multiplication needed, unlike S2)."
+  ]
+}

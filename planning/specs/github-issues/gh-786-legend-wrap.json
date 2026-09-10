@@ -1,0 +1,84 @@
+{
+  "id": "gh-786-legend-wrap",
+  "title": "Legend Wrap",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "s1's `_labelWrap` is an internal, underscore-prefixed prototype rather than a finalized public API, so porting it to S2 isn't a pure mechanical copy: a design review is needed to decide the final S2 API/UX for legend label wrapping before implementation, and that decision could also affect whether s1's internal prop gets promoted/renamed to match. One open design decision plus a non-trivial (but precedented) build is a 3, not a 2."
+  },
+  "summary": "s1's Legend already supports word-boundary wrapping and final-line ellipsis truncation via the `_labelWrap` prop, `wrapLabelText` expression function, and their wiring into the legend label encode — satisfying the wrap + truncation behavior this issue requested, but only as an internal, underscore-prefixed feature, not a finalized public API. S2 has no equivalent at all. This spec is pending a design review to decide the final S2 implementation (and possibly the final public-facing shape of the s1 API) before work proceeds.",
+  "requirements": [
+    "Legend labels that exceed the configured width should wrap onto multiple lines instead of being truncated immediately.",
+    "Wrapping must break on word boundaries only, never mid-word.",
+    "If a label still doesn't fit after wrapping to the maximum number of lines, the final line should be truncated with an ellipsis rather than overflowing.",
+    "Different use cases should be able to choose different truncation/wrap behavior."
+  ],
+  "edgeCases": [
+    {
+      "case": "A single word longer than the wrap width",
+      "expectedBehavior": "`wrapLabelText`'s `fitLine` falls back to `truncateText` for that line since there's no earlier word boundary to break on (packages/vega-spec-builder/src/expressionFunctions/expressionFunctions.ts:315-316)."
+    },
+    {
+      "case": "`_labelWrap` used together with `legendLabels` custom label overrides",
+      "expectedBehavior": "The wrap expression resolves the custom label via the same `_labels` lookup used elsewhere before wrapping (packages/vega-spec-builder/src/legend/legendUtils.ts:233-234)."
+    },
+    {
+      "case": "`_labelWrap` on a vertical (left/right) legend",
+      "expectedBehavior": "Not guaranteed by the current implementation — the JSDoc explicitly scopes verified behavior to horizontal legends combined with `_preferredColumns` (packages/vega-spec-builder/src/types/legendSpec.types.ts:63-66)."
+    },
+    {
+      "case": "S2 chart using `_labelWrap`",
+      "expectedBehavior": "Currently unsupported — the prop and its supporting expression functions don't exist anywhere in vega-spec-builder-s2 or react-spectrum-charts-s2."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "s1 (vega-spec-builder + react-spectrum-charts) has full wrap+truncation support via `_labelWrap`/`wrapLabelText`, but only as an internal, underscore-prefixed prop — not a reviewed public API. vega-spec-builder-s2 and react-spectrum-charts-s2 have no equivalent at all (no `_labelWrap`, `_preferredColumns`, or `wrapLabelText` anywhere in either package's src). A design review is needed to decide the final S2 API/UX before building it; that decision may also prompt finalizing/renaming s1's internal prop to match."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/types/legendSpec.types.ts",
+      "change": "Reference precedent only — already defines `_labelWrap?: number` (max lines before truncation) on `LegendOptions`; this is the pattern the S2 design should be evaluated against, not necessarily copied as-is.",
+      "lines": "58-68"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/expressionFunctions/expressionFunctions.ts",
+      "change": "Reference precedent only — already implements `wrapLabelText`, which splits text on whitespace (never mid-word) and wraps up to `_labelWrap` lines, truncating only the final line with an ellipsis when it still overflows.",
+      "lines": "302-344"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendUtils.ts",
+      "change": "Reference precedent only — already wires `_labelWrap` into the legend `labels` encode (`getLegendLabelsEncodings`), invoking `wrapLabelText` and vertically re-centering the symbol via `dy`.",
+      "lines": "224-249"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendSpecBuilder.ts",
+      "change": "Reference precedent only — already sets `legend.gridAlign = 'none'` when `_labelWrap > 1` so wrapped multi-line labels don't get auto-centered.",
+      "lines": "222-225"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/legendSpec.types.ts",
+      "change": "Not yet built. Once design review lands on a final API, add the equivalent wrap/truncation option here — pending the design decision on naming and whether it should be public from the start (unlike s1's underscore-prefixed prop)."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/legend/legendUtils.ts",
+      "change": "Not yet built. Once design review lands, port the wrap-expression wiring into the S2 legend label encode, following the s1 precedent above as a starting point, not a required exact match."
+    }
+  ],
+  "openQuestions": [
+    "What is the final public-facing API for legend label wrapping in S2 — a new prop name/shape, or should s1's internal `_labelWrap` be promoted to a public prop and mirrored as-is? Needs design review before implementation.",
+    "Should wrapping remain scoped to horizontal legends only (as s1's current implementation is), or does S2 design want it supported for vertical (left/right) legends too?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/786" }
+  ]
+}

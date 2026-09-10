@@ -15,17 +15,21 @@ import {
   DEFAULT_COLOR,
   DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
+  HOVERED_ITEM,
   MS_PER_DAY,
   SERIES_ID,
   TRENDLINE_VALUE,
 } from '@spectrum-charts/constants';
 
+import { getHoverContext } from '../marks/hoverContext';
 import { baseData } from '../specUtils';
+import { LineSpecOptions } from '../types';
 import {
   addTableDataTransforms,
   addTrendlineData,
   getAggregateTrendlineData,
   getRegressionTrendlineData,
+  getTrendlineDisplayOnHoverData,
   getTrendlineStatisticalTransforms,
 } from './trendlineDataUtils';
 import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
@@ -278,6 +282,62 @@ describe('addTrendlineData()', () => {
     const powData = getDefaultData();
     addTrendlineData(powData, { ...defaultLineOptions, trendlines: [{ method: 'power' }] });
     expect(powData[2].transform?.[0]).toStrictEqual({ type: 'filter', expr: 'isValid(datum["value"])' });
+  });
+
+  test('displayOnHoverTrigger on a trendline restricts its _highlightedData filter to that hover scope', () => {
+    const dimensionOptions: LineSpecOptions = {
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+      trendlines: [{ method: 'linear', chartTooltips: [{}], displayOnHover: true, displayOnHoverTrigger: 'item' }],
+    };
+    const trendlineData = getDefaultData();
+    addTrendlineData(trendlineData, dimensionOptions);
+    const highlighted = trendlineData.find((d) => d.name === 'line0Trendline0_highlightedData');
+    const expr = (highlighted?.transform?.[0] as { expr: string }).expr;
+    expect(expr).toContain(`line0_${HOVERED_ITEM}`);
+    expect(expr).not.toContain('dimensionHoverArea');
+  });
+});
+
+describe('getTrendlineDisplayOnHoverData()', () => {
+  const dimensionOptions: LineSpecOptions = {
+    ...defaultLineOptions,
+    chartTooltips: [{}],
+    interactiveMarkName: 'line0',
+    interactionMode: 'dimension',
+    trendlines: [{ method: 'linear', chartTooltips: [{}] }],
+  };
+  const ctx = getHoverContext(dimensionOptions);
+
+  test('defaults (no trigger) reference both item and dimension hover signals', () => {
+    const data = getTrendlineDisplayOnHoverData('line0Trendline0', 'linear', ctx);
+    const expr = (data.transform?.[0] as { expr: string }).expr;
+    expect(expr).toContain(`line0_${HOVERED_ITEM}`);
+    expect(expr).toContain('dimensionHoverArea');
+  });
+
+  test('trigger "item" excludes dimension hover signals', () => {
+    const data = getTrendlineDisplayOnHoverData('line0Trendline0', 'linear', ctx, 'item');
+    const expr = (data.transform?.[0] as { expr: string }).expr;
+    expect(expr).toContain(`line0_${HOVERED_ITEM}`);
+    expect(expr).not.toContain('dimensionHoverArea');
+  });
+
+  test('trigger "dimension" excludes item-series-match signals', () => {
+    const data = getTrendlineDisplayOnHoverData('line0Trendline0', 'linear', ctx, 'dimension');
+    const expr = (data.transform?.[0] as { expr: string }).expr;
+    expect(expr).toContain('dimensionHoverArea');
+    expect(expr).not.toContain(`line0_${HOVERED_ITEM}.`);
+  });
+
+  test('uses _data as source for window methods, _highResolutionData otherwise', () => {
+    const windowData = getTrendlineDisplayOnHoverData('line0Trendline0', 'movingAverage-3', ctx);
+    expect(windowData.source).toBe('line0Trendline0_data');
+
+    const regressionData = getTrendlineDisplayOnHoverData('line0Trendline0', 'linear', ctx);
+    expect(regressionData.source).toBe('line0Trendline0_highResolutionData');
   });
 });
 

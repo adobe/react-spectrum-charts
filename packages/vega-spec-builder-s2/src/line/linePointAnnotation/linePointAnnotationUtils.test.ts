@@ -9,12 +9,25 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, LINE_POINT_ANNOTATION_OFFSET } from '@spectrum-charts/constants';
+import {
+	BACKGROUND_COLOR,
+	CHART_SIZE_FONT_SIZE,
+	CONTROLLED_HIGHLIGHTED_SERIES,
+	CONTROLLED_HIGHLIGHTED_TABLE,
+	DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
+	DIRECT_LABEL_FONT_WEIGHT,
+	FADE_FACTOR,
+	HOVERED_ITEM,
+	LINE_POINT_ANNOTATION_OFFSET,
+	SELECTED_SERIES,
+	SERIES_ID,
+} from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { defaultLineOptions } from '../lineTestUtils';
 import {
 	getLinePointAnnotationMarks,
+	getLinePointAnnotationOpacity,
 	getLinePointAnnotationSpecOptions,
 } from './linePointAnnotationUtils';
 
@@ -139,6 +152,10 @@ describe('getLinePointAnnotationMarks', () => {
 			expect(getBackgroundMark().encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
 		});
 
+		test('uses chart size font size signal', () => {
+			expect(getBackgroundMark().encode?.enter).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
+		});
+
 		test('has label transform', () => {
 			const transform = getBackgroundMark().transform;
 			expect(transform).toHaveLength(1);
@@ -230,12 +247,32 @@ describe('getLinePointAnnotationMarks', () => {
 			expect(getForegroundMark().encode?.update).toHaveProperty('baseline', { field: 'baseline' });
 		});
 
-		test('update encodes opacity from label transform output (0 when label cannot be placed)', () => {
-			expect(getForegroundMark().encode?.update).toHaveProperty('opacity', { field: 'opacity' });
+		test('update encodes opacity falling back to label transform output (0 when label cannot be placed)', () => {
+			const opacity = getForegroundMark().encode?.update?.opacity as { field: string }[];
+			expect(opacity.at(-1)).toEqual({ field: 'opacity' });
 		});
 
 		test('applies font weight in update encoding', () => {
 			expect(getForegroundMark().encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
+		});
+
+		test('uses chart size font size signal', () => {
+			expect(getForegroundMark().encode?.enter).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
+		});
+	});
+
+	describe('background and foreground alignment', () => {
+		// The foreground mark renders the visible text; the background mark renders the halo and
+		// runs the label transform that positions both. If their fontSize or fontWeight ever drift
+		// apart, the halo stops matching the glyph size and visibly misaligns from the text.
+		test('background and foreground share the same fontSize', () => {
+			const [backgroundMark, foregroundMark] = getLinePointAnnotationMarks(lineOptionsWithAnnotations);
+			expect(backgroundMark.encode?.enter?.fontSize).toEqual(foregroundMark.encode?.enter?.fontSize);
+		});
+
+		test('background and foreground share the same fontWeight', () => {
+			const [backgroundMark, foregroundMark] = getLinePointAnnotationMarks(lineOptionsWithAnnotations);
+			expect(backgroundMark.encode?.update?.fontWeight).toEqual(foregroundMark.encode?.update?.fontWeight);
 		});
 	});
 
@@ -266,5 +303,88 @@ describe('getLinePointAnnotationMarks', () => {
 			expect(marks[2].name).toBe('line0Annotation1_bg');
 			expect(marks[3].name).toBe('line0Annotation1');
 		});
+	});
+});
+
+describe('getLinePointAnnotationOpacity', () => {
+	test('with no hover/highlight sources configured, only the controlled-highlight fallback rules are present', () => {
+		const opacity = getLinePointAnnotationOpacity(defaultLineOptions) as { field?: string }[];
+		expect(opacity).toHaveLength(3);
+		expect(opacity.at(-1)).toEqual({ field: 'opacity' });
+	});
+
+	test('multiplies against datum.opacity rather than replacing it, so collision-hidden labels stay hidden', () => {
+		const opacity = getLinePointAnnotationOpacity({
+			...defaultLineOptions,
+			interactiveMarkName: 'line0',
+		});
+		const rule = opacity[0] as { signal: string };
+		expect(rule.signal).toContain('datum.opacity');
+		expect(rule.signal).not.toMatch(/:\s*1\b/);
+	});
+
+	test('with interactiveMarkName adds an item-hover fade rule keyed off the hovered-item signal', () => {
+		const opacity = getLinePointAnnotationOpacity({ ...defaultLineOptions, interactiveMarkName: 'line0' });
+		expect(opacity[0]).toEqual({
+			test: `isValid(line0_${HOVERED_ITEM})`,
+			signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.datum.datum.${SERIES_ID} ? datum.opacity : datum.opacity * ${FADE_FACTOR}`,
+		});
+	});
+
+	test('with interactiveMarkName and isHighlightedByGroup, checks the highlightedData set instead', () => {
+		const opacity = getLinePointAnnotationOpacity({
+			...defaultLineOptions,
+			interactiveMarkName: 'line0',
+			isHighlightedByGroup: true,
+		});
+		expect(opacity[0]).toEqual({
+			test: `length(data('line0_highlightedData'))`,
+			signal: `indexof(pluck(data('line0_highlightedData'), '${SERIES_ID}'), datum.datum.datum.${SERIES_ID}) !== -1 ? datum.opacity : datum.opacity * ${FADE_FACTOR}`,
+		});
+	});
+
+	test('always includes controlled-highlighted-table and controlled-highlighted-series fade rules', () => {
+		const opacity = getLinePointAnnotationOpacity(defaultLineOptions);
+		expect(opacity).toContainEqual({
+			test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+			signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.datum.datum.${SERIES_ID}) > -1 ? datum.opacity : datum.opacity * ${FADE_FACTOR}`,
+		});
+		expect(opacity).toContainEqual({
+			test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+			signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.datum.datum.${SERIES_ID} ? datum.opacity : datum.opacity * ${FADE_FACTOR}`,
+		});
+	});
+
+	test('with popoverMarkName adds a selected-series fade rule', () => {
+		const opacity = getLinePointAnnotationOpacity({ ...defaultLineOptions, popoverMarkName: 'line0' });
+		expect(opacity).toContainEqual({
+			test: `isValid(${SELECTED_SERIES})`,
+			signal: `${SELECTED_SERIES} === datum.datum.datum.${SERIES_ID} ? datum.opacity : datum.opacity * ${FADE_FACTOR}`,
+		});
+	});
+
+	test('adds one fade rule per legend highlight signal', () => {
+		const opacity = getLinePointAnnotationOpacity({
+			...defaultLineOptions,
+			legendHighlightSignals: ['legend0_hoveredSeries', 'legend1_hoveredSeries'],
+		});
+		expect(opacity).toContainEqual({
+			test: `isValid(legend0_hoveredSeries)`,
+			signal: `legend0_hoveredSeries === datum.datum.datum.${SERIES_ID} ? datum.opacity : datum.opacity * ${FADE_FACTOR}`,
+		});
+		expect(opacity).toContainEqual({
+			test: `isValid(legend1_hoveredSeries)`,
+			signal: `legend1_hoveredSeries === datum.datum.datum.${SERIES_ID} ? datum.opacity : datum.opacity * ${FADE_FACTOR}`,
+		});
+	});
+
+	test('always ends with the label-transform collision opacity as the fallback', () => {
+		const opacity = getLinePointAnnotationOpacity({
+			...defaultLineOptions,
+			interactiveMarkName: 'line0',
+			popoverMarkName: 'line0',
+			legendHighlightSignals: ['legend0_hoveredSeries'],
+		}) as { field?: string }[];
+		expect(opacity.at(-1)).toEqual({ field: 'opacity' });
 	});
 });

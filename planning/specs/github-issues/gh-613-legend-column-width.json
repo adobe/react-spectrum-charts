@@ -1,0 +1,55 @@
+{
+  "id": "gh-613-legend-column-width",
+  "title": "Legend item wrapping size should be more dynamic",
+  "chartType": "chart",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 2,
+    "rationale": "The measured-max-label-width column calculation is already ported and working identically in vega-spec-builder-s2/src/legend/legendUtils.ts:76-84 (confirmed by direct comparison against the s1 file) — this was an internal fix, not a reviewed design decision, so nothing new needs to be built. Only a design review sign-off is outstanding, not implementation work; scored 2 rather than 1 since that review could still come back asking for a different column-count strategy for S2's legend design language."
+  },
+  "summary": "Legend items used to render in fewer columns than available horizontal space allowed because column count was computed from a fixed 220px-per-item divisor that ignored actual label content and the configured `labelLimit`. The measured-max-label-width fix already exists identically in both s1 and s2 code — but it was applied as an internal bug fix, not vetted through a design review for S2's legend behavior specifically. This spec is pending that design review before the S2 behavior can be considered finalized.",
+  "symptom": "Legend items sometimes rendered in a single column despite horizontal space and `direction: \"horizontal\"` being available, because the column-count calculation used a fixed per-item width divisor unrelated to the real label content.",
+  "rootCause": "`getColumns` (packages/vega-spec-builder/src/legend/legendUtils.ts:76-84, identically in packages/vega-spec-builder-s2/src/legend/legendUtils.ts:76-84) no longer divides available width by a fixed 220px constant. It reads a measured max label width from a dedicated `${name}_maxLabelWidth` data source added in `addData` (packages/vega-spec-builder/src/legend/legendSpecBuilder.ts:307-330), which runs `getLabelWidth(datum.displayLabel, 'normal', 14)` over every aggregated legend entry and takes the max. Columns are then `floor(width / (min(maxLabelWidth, labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT) + symbolAndSpacingWidth))`, where `DEFAULT_LEGEND_LABEL_LIMIT` is 184px (packages/constants/constants.ts:115) — the same default the issue references — used only as a fallback when no measured width exists. The original hardcoded-220 defect was fixed by commit 6d353ab10 (\"fix: legend columns account for actual label size rather than just using labelLimit\") and further built on by the later `_preferredColumns` dynamic column-layout feature.",
+  "comparison": [
+    {
+      "aspect": "Column count computation for horizontal legends",
+      "expected": "Column count reflects actual label content and the configured `labelLimit`, not a fixed per-item width.",
+      "actual": "Current code does this via the `${name}_maxLabelWidth` measured-width data source; the fixed `floor(width / 220)` divisor described in the issue no longer exists in either package."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "s2 already carries the identical measured-max-label-width fix as s1 (verified byte-for-byte equivalent logic in packages/vega-spec-builder-s2/src/legend/legendUtils.ts:76-84), but this was ported as an internal bug fix rather than reviewed as the intended S2 legend column-layout design. Pending design review to confirm this is the final behavior for S2 (vs. a different column-count strategy that fits S2's design language)."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendUtils.ts",
+      "change": "Reference precedent only — `getColumns` computes columns from the measured max label width (`${name}_maxLabelWidth`) capped at `labelLimit`, not a fixed 220px divisor.",
+      "lines": "76-84"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendSpecBuilder.ts",
+      "change": "Reference precedent only — adds the `${name}_maxLabelWidth` data source that `getColumns` reads from.",
+      "lines": "307-330"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/legend/legendUtils.ts",
+      "change": "Already carries the identical measured-width fix. Pending: design review sign-off that this is the intended final S2 behavior. If review requests a different approach, this is the file to change.",
+      "lines": "76-84"
+    }
+  ],
+  "openQuestions": [
+    "Is the measured-max-label-width column calculation (already ported from s1) the design-approved final behavior for S2 legends, or does S2's legend design call for a different column-count strategy? Needs design review sign-off before this can move to implemented."
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/613" }
+  ]
+}

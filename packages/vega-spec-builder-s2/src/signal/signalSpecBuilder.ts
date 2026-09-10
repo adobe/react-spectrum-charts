@@ -15,9 +15,13 @@ import {
   COLOR_SCALE,
   FILTERED_TABLE,
   FIRST_RSC_SERIES_ID,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
   GROUP_ID,
   HOVERED_ITEM,
   HOVERED_SERIES,
+  INTERACTION_MODALITY,
   LAST_RSC_SERIES_ID,
 } from '@spectrum-charts/constants';
 
@@ -26,6 +30,16 @@ import {
  */
 export const hasSignalByName = (signals: Signal[], name: string) => {
   return signals.some((signal) => signal.name === name);
+};
+
+/** Adds the chart-wide focus signals at most once, so a chart with multiple navigable marks doesn't push duplicate-named signals. */
+export const addFocusSignals = (signals: Signal[]): void => {
+  if (hasSignalByName(signals, FOCUSED_ITEM)) return;
+  signals.push(
+    getGenericValueSignal(FOCUSED_ITEM),
+    getGenericValueSignal(FOCUSED_REGION),
+    getGenericValueSignal(FOCUSED_DIMENSION)
+  );
 };
 
 /**
@@ -134,7 +148,8 @@ export const addHoveredItemSignal = (
   markName: string,
   targetName?: string,
   datumOrder = 1,
-  excludeDataKeys?: string[]
+  excludeDataKeys?: string[],
+  excludeCondition?: string
 ): void => {
   targetName = targetName || markName;
   const signalName = `${markName}_${HOVERED_ITEM}`;
@@ -158,7 +173,31 @@ export const addHoveredItemSignal = (
 
   const excludeDataKeysCondition = excludeDataKeys?.map((excludeDataKey) => `${datum}.${excludeDataKey}`).join(' || ');
 
-  const update = excludeDataKeysCondition ? `(${excludeDataKeysCondition}) ? null : ${datum}` : datum;
+  const combinedExcludeCondition = [excludeDataKeysCondition, excludeCondition].filter(Boolean).join(' || ');
+  const update = combinedExcludeCondition ? `(${combinedExcludeCondition}) ? null : ${datum}` : datum;
 
   signal.on.push({ events: `@${targetName}:mouseover`, update }, { events: `@${targetName}:mouseout`, update: 'null' });
+};
+
+/**
+ * Marks pointer as the most recently used input modality whenever the given mark is hovered.
+ * No mouseout trigger: moving from one interactive mark to another must not reset modality.
+ */
+export const addInteractionModalitySignal = (signals: Signal[], targetName: string): void => {
+  let signal = signals.find((signal) => signal.name === INTERACTION_MODALITY);
+  if (!signal) {
+    signal = {
+      description: 'Tracks whether pointer or keyboard was used most recently',
+      name: INTERACTION_MODALITY,
+      value: null,
+      on: [],
+    };
+    signals.push(signal);
+  }
+
+  if (signal.on === undefined) {
+    signal.on = [];
+  }
+
+  signal.on.push({ events: `@${targetName}:mouseover`, update: `'pointer'` });
 };

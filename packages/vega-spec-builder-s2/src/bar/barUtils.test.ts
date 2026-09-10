@@ -12,15 +12,24 @@
 import { RectEncodeEntry } from 'vega';
 
 import {
+  BACKGROUND_COLOR,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
+  DIMENSION_HOVER_AREA,
+  FADE_FACTOR,
   FILTERED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
+  LAST_RSC_SERIES_ID,
   MARK_ID,
   PADDING_RATIO,
   SELECTED_GROUP,
   SELECTED_ITEM,
+  SERIES_ID,
   STACK_ID,
 } from '@spectrum-charts/constants';
 
@@ -35,9 +44,14 @@ import {
   defaultStackedYEncodings,
 } from './barTestUtils';
 import {
+  getBarAnimIdField,
   getBarDimensionAreaPositionEncodings,
   getBarDimensionHoverArea,
   getBarFillEncoding,
+  getBarHoverRules,
+  getBarItemSelectionBackdrop,
+  getBarItemSelectionRing,
+  getBarOpacity,
   getBarPadding,
   getBaseBarEnterEncodings,
   getBaseScaleName,
@@ -52,6 +66,7 @@ import {
   getStroke,
   getStrokeDash,
   getStrokeWidth,
+  shouldShowItemSelectionRing,
 } from './barUtils';
 
 const defaultDodgedXEncodings: RectEncodeEntry = {
@@ -504,6 +519,222 @@ describe('barUtils', () => {
     });
   });
 
+  describe('shouldShowItemSelectionRing()', () => {
+    test('returns false when there are no popovers', () => {
+      expect(shouldShowItemSelectionRing(defaultBarOptions)).toBe(false);
+    });
+    test('returns true for a default (item) popover', () => {
+      expect(shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{}] })).toBe(true);
+    });
+    test('returns false when the popover highlights by dimension', () => {
+      expect(
+        shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }] })
+      ).toBe(false);
+    });
+    test('returns true for a series popover', () => {
+      expect(
+        shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{ UNSAFE_highlightBy: 'series' }] })
+      ).toBe(true);
+    });
+    test('returns true for an array (custom keys) popover', () => {
+      expect(
+        shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{ UNSAFE_highlightBy: ['operatingSystem'] }] })
+      ).toBe(true);
+    });
+    test('returns false when any popover highlights by dimension', () => {
+      expect(
+        shouldShowItemSelectionRing({
+          ...defaultBarOptions,
+          chartPopovers: [{}, { UNSAFE_highlightBy: 'dimension' }],
+        })
+      ).toBe(false);
+    });
+  });
+
+  describe('getBarItemSelectionBackdrop()', () => {
+    test('returns an opaque, stroke-less rect outset from the bar to fill the selection gap', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const backdrop = getBarItemSelectionBackdrop(options, FILTERED_TABLE, dimensionEncodings);
+      expect(backdrop).toStrictEqual({
+        name: 'bar0_itemSelectionBackdrop',
+        type: 'rect',
+        from: { data: FILTERED_TABLE },
+        interactive: false,
+        encode: {
+          enter: {
+            cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            fill: { signal: BACKGROUND_COLOR },
+          },
+          update: {
+            y: { signal: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) - 3` },
+            y2: { signal: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) + 3` },
+            x: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
+            width: { signal: `bandwidth('bar0_position') * 1 + 6` },
+            opacity: [
+              { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
+              { value: 0 },
+            ],
+          },
+        },
+      });
+    });
+  });
+
+  describe('getBarItemSelectionRing()', () => {
+    test('returns a stroke-only rect (transparent fill) outset from the bar with a concentric corner radius', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      expect(ring).toStrictEqual({
+        name: 'bar0_itemSelectionRing',
+        type: 'rect',
+        from: { data: FILTERED_TABLE },
+        interactive: false,
+        encode: {
+          enter: {
+            cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            fill: { value: 'transparent' },
+            stroke: { value: '#4B75FF' },
+            strokeWidth: { value: 2 },
+          },
+          update: {
+            y: { signal: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) - 3` },
+            y2: { signal: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) + 3` },
+            x: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
+            width: { signal: `bandwidth('bar0_position') * 1 + 6` },
+            opacity: [
+              { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
+              { value: 0 },
+            ],
+          },
+        },
+      });
+    });
+
+    test('outsets along the metric (x) and dimension (y) axes when the bar is horizontal', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged', orientation: 'horizontal' };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      // metric axis is x for a horizontal bar; the ring outsets x/x2 and the dimension band on y
+      expect(ring.encode?.update).toStrictEqual({
+        x: { signal: `min(scale('xLinear', 0), scale('xLinear', datum.${DEFAULT_METRIC})) - 3` },
+        x2: { signal: `max(scale('xLinear', 0), scale('xLinear', datum.${DEFAULT_METRIC})) + 3` },
+        y: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
+        height: { signal: `bandwidth('bar0_position') * 1 + 6` },
+        opacity: [
+          { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${MARK_ID}`, value: 1 },
+          { value: 0 },
+        ],
+      });
+    });
+
+    test('flattens the stacked bar metric production rule (test/signal branches) into a ternary', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'stacked' };
+      const dimensionEncodings: RectEncodeEntry = {
+        x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
+        width: { scale: 'xBand', band: 1 },
+      };
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      const update = ring.encode?.update as { y: { signal: string }; y2: { signal: string } } & RectEncodeEntry;
+
+      // dimension axis (x) collapses the band-scale encodings, outset by the ring padding
+      expect(update.x).toStrictEqual({ signal: `scale('xBand', datum.${DEFAULT_CATEGORICAL_DIMENSION}) - 3` });
+      expect(update.width).toStrictEqual({ signal: `bandwidth('xBand') * 1 + 6` });
+      // metric axis (y) flattens the 3-branch stacked rule into a nested ternary, then outsets by padding
+      expect(update.y.signal).toMatch(/^min\(/);
+      expect(update.y.signal).toContain(' ? ');
+      expect(update.y.signal).toContain(`max(scale('yLinear', datum.${DEFAULT_METRIC}0) - 1.5`);
+      expect(update.y.signal).toContain(`min(scale('yLinear', datum.${DEFAULT_METRIC}0) + 1.5`);
+      expect(update.y.signal.endsWith(' - 3')).toBe(true);
+      expect(update.y2.signal.startsWith('max(')).toBe(true);
+      expect(update.y2.signal.endsWith(' + 3')).toBe(true);
+    });
+
+    test('flattens the dual-metric-axis metric production rule (series-id branches) without throwing', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged', dualMetricAxis: true };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      const update = ring.encode?.update as { y: { signal: string }; y2: { signal: string } };
+
+      // the dual-axis metric rules branch on SERIES_ID and reference the primary + secondary scales
+      expect(update.y.signal).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
+      expect(update.y.signal).toContain(`scale('yLinearSecondary', 0)`);
+      expect(update.y.signal).toContain(`scale('yLinearPrimary', 0)`);
+      expect(update.y2.signal).toContain(`scale('yLinearSecondary', datum.${DEFAULT_METRIC})`);
+      expect(update.y2.signal).toContain(`scale('yLinearPrimary', datum.${DEFAULT_METRIC})`);
+    });
+
+    test('widens the stacked bar per-corner radius rules by the gap', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'stacked' };
+      const dimensionEncodings: RectEncodeEntry = {
+        x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
+        width: { scale: 'xBand', band: 1 },
+      };
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      const enter = ring.encode?.enter as RectEncodeEntry;
+
+      // the ring reuses the bar's stacked corner-radius production rules (including the
+      // data('..._stacks') test strings), each branch's value widened by the 2px gap
+      const barCorners = getStackedCornerRadiusEncodings(options);
+      const widenBranches = (rule: RectEncodeEntry['cornerRadiusTopLeft']) =>
+        (rule as { test?: string; value: number }[]).map((branch) => ({ ...branch, value: branch.value + 2 }));
+      expect(enter.cornerRadiusTopLeft).toStrictEqual(widenBranches(barCorners.cornerRadiusTopLeft));
+      expect(enter.cornerRadiusBottomRight).toStrictEqual(widenBranches(barCorners.cornerRadiusBottomRight));
+    });
+
+    test('backdrop and outline ring share identical position and corner-radius encodings', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      const dimensionEncodings = getDodgedDimensionEncodings(options);
+      const backdrop = getBarItemSelectionBackdrop(options, FILTERED_TABLE, dimensionEncodings);
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
+      const backdropEnter = backdrop.encode?.enter as RectEncodeEntry;
+      const ringEnter = ring.encode?.enter as RectEncodeEntry;
+
+      // the two marks must stay geometrically aligned — they differ only in fill/stroke
+      expect(backdrop.encode?.update).toStrictEqual(ring.encode?.update);
+      expect(backdropEnter.cornerRadiusTopLeft).toStrictEqual(ringEnter.cornerRadiusTopLeft);
+      expect(backdropEnter.cornerRadiusBottomRight).toStrictEqual(ringEnter.cornerRadiusBottomRight);
+    });
+
+    test('serializes a plain value-ref dimension encoding into a numeric outset expression', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      // a value-based (non-scaled) dimension encoding still resolves to a numeric outset
+      const ring = getBarItemSelectionRing(options, FILTERED_TABLE, { x: { value: 7 }, width: { value: 20 } });
+      const update = ring.encode?.update as RectEncodeEntry;
+      expect(update.x).toStrictEqual({ signal: '7 - 3' });
+      expect(update.width).toStrictEqual({ signal: '20 + 6' });
+    });
+
+    test('throws on unsupported value-ref shapes rather than emitting invalid Vega', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      // no signal/scale/value at all
+      expect(() => getBarItemSelectionRing(options, FILTERED_TABLE, { x: {}, width: { value: 20 } })).toThrow(
+        'unsupported numeric production rule'
+      );
+      // a scale ref with no field/band/value to resolve
+      expect(() =>
+        getBarItemSelectionRing(options, FILTERED_TABLE, {
+          x: { scale: 'xBand' },
+          width: { value: 20 },
+        } as RectEncodeEntry)
+      ).toThrow('unsupported numeric production rule');
+    });
+
+    test('throws on an empty production-rule array', () => {
+      const options: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
+      expect(() => getBarItemSelectionRing(options, FILTERED_TABLE, { x: [], width: { value: 20 } })).toThrow(
+        'empty production rule array'
+      );
+    });
+  });
+
   describe('getStrokeDash()', () => {
     test('should return production rule with one item in array if there is not a popover', () => {
       const strokeRule = getStrokeDash(defaultBarOptions);
@@ -660,6 +891,19 @@ describe('getBarDimensionHoverArea()', () => {
       'bar0_groups'
     );
   });
+
+  test('should not set a tooltip when no inspect targets dimensionArea', () => {
+    const mark = getBarDimensionHoverArea({ ...defaultBarOptions, chartInspects: [{ targets: ['item'] }] }, 'stacked');
+    expect(mark.encode?.enter).toHaveProperty('tooltip', undefined);
+  });
+
+  test('should set a tooltip when an inspect targets dimensionArea', () => {
+    const mark = getBarDimensionHoverArea(
+      { ...defaultBarOptions, chartInspects: [{ targets: ['dimensionArea'] }] },
+      'stacked'
+    );
+    expect(mark.encode?.enter?.tooltip).toBeDefined();
+  });
 });
 
 describe('getBarDimensionAreaPositionEncodings()', () => {
@@ -673,5 +917,108 @@ describe('getBarDimensionAreaPositionEncodings()', () => {
       orientation: 'horizontal',
     });
     expect(Object.keys(positionsEncodings)).toEqual(['x', 'x2', 'y', 'height']);
+  });
+});
+
+describe('getBarHoverRules()', () => {
+  test('without interactiveMarkName or popoverMarkName only includes the controlled rules', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: undefined });
+    expect(rules).toStrictEqual([
+      {
+        as: 'controlledTableMatch',
+        expr: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) ? (indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${MARK_ID}'), datum.${MARK_ID}) > -1 ? 1 : 0) : null`,
+      },
+      {
+        as: 'controlledSeriesMatch',
+        expr: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`,
+      },
+    ]);
+  });
+
+  test('with interactiveMarkName adds a hoveredMatch rule keyed off the hovered-item signal by idKey', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: 'bar0' });
+    expect(rules[0]).toStrictEqual({
+      as: 'hoveredMatch',
+      expr: `isValid(bar0_${HOVERED_ITEM}) ? (bar0_${HOVERED_ITEM}.${MARK_ID} === datum.${MARK_ID} ? 1 : 0) : null`,
+    });
+  });
+
+  test('with interactiveMarkName and isHighlightedByGroup, hoveredMatch reads the shared highlightedData set instead of the direct hover signal', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: 'bar0', isHighlightedByGroup: true });
+    expect(rules[0]).toStrictEqual({
+      as: 'hoveredMatch',
+      expr: `length(data('bar0_highlightedData')) ? (indexof(pluck(data('bar0_highlightedData'), 'bar0_${GROUP_ID}'), datum.bar0_${GROUP_ID}) !== -1 ? 1 : 0) : null`,
+    });
+  });
+
+  test('when isInteractive, adds a dimensionHoverMatch rule keyed off the dimension-hover-area signal (drives both dimension-area hover and axis-label hover)', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: undefined, chartInspects: [{}] });
+    const dimensionHoverRule = rules.find((r) => r.as === 'dimensionHoverMatch');
+    expect(dimensionHoverRule).toStrictEqual({
+      as: 'dimensionHoverMatch',
+      expr: `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}) ? (bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}.${DEFAULT_CATEGORICAL_DIMENSION} === datum.${DEFAULT_CATEGORICAL_DIMENSION} ? 1 : 0) : null`,
+    });
+  });
+
+  test('when not isInteractive, does not add a dimensionHoverMatch rule', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, interactiveMarkName: undefined });
+    expect(rules.find((r) => r.as === 'dimensionHoverMatch')).toBeUndefined();
+  });
+
+  test('with popoverMarkName adds a popoverMatch rule keyed off the selected item', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, popoverMarkName: 'bar0' });
+    const popoverRule = rules.find((r) => r.as === 'popoverMatch');
+    expect(popoverRule).toStrictEqual({
+      as: 'popoverMatch',
+      expr: `isValid(${SELECTED_ITEM}) ? (${SELECTED_ITEM} === datum.${MARK_ID} ? 1 : 0) : null`,
+    });
+  });
+
+  test('with comboSiblingNames adds a comboSiblingMatch rule checking every sibling hovered-item signal', () => {
+    const rules = getBarHoverRules({ ...defaultBarOptions, comboSiblingNames: ['line0'] });
+    const comboRule = rules.find((r) => r.as === 'comboSiblingMatch');
+    expect(comboRule).toStrictEqual({
+      as: 'comboSiblingMatch',
+      expr: `(isValid(line0_${HOVERED_ITEM})) ? 1 : 0`,
+    });
+  });
+
+  test('composes all rules together in order when every condition applies', () => {
+    const rules = getBarHoverRules({
+      ...defaultBarOptions,
+      interactiveMarkName: 'bar0',
+      chartInspects: [{}],
+      popoverMarkName: 'bar0',
+      comboSiblingNames: ['line0'],
+    });
+    expect(rules.map((r) => r.as)).toStrictEqual([
+      'hoveredMatch',
+      'dimensionHoverMatch',
+      'controlledTableMatch',
+      'controlledSeriesMatch',
+      'popoverMatch',
+      'comboSiblingMatch',
+    ]);
+  });
+});
+
+describe('getBarAnimIdField()', () => {
+  test('namespaces the composite hover-animation identity field by mark name', () => {
+    expect(getBarAnimIdField('bar0')).toBe('bar0_rscBarAnimId');
+  });
+});
+
+describe('getBarOpacity()', () => {
+  test('returns the animated deemphasis signal when isHoverAnimate', () => {
+    const opacity = getBarOpacity({ ...defaultBarOptions, isHoverAnimate: true });
+    expect(opacity).toStrictEqual({
+      signal: expect.stringContaining(`${FADE_FACTOR} + (1 - ${FADE_FACTOR}) *`),
+    });
+    expect((opacity as { signal: string }).signal).toContain('bar0_rscBarAnimId');
+  });
+
+  test('falls back to the instant getMarkOpacity rules when not isHoverAnimate', () => {
+    const opacity = getBarOpacity(defaultBarOptions);
+    expect(opacity).toStrictEqual([{ value: 1 }]);
   });
 });

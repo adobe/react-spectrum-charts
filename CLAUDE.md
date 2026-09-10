@@ -28,7 +28,17 @@ The two packages touched for most feature work:
 
 ## Architecture Reference
 
-For deep architecture context — the VegaChart rendering cycle, signal system, data sources, scale system, interactive mark wiring, COMPONENT_NAME, sanitize gate, encoding conventions, and S2 parity rules — read `.claude/architecture.md`.
+Architecture context lives in `.claude/architecture-*.md`, split by topic so you only read what your task needs:
+
+- `architecture-core.md` — the pipeline diagram and the three-type system. **Always read this one.**
+- `architecture-mark-internals.md` — the four spec builder functions, data sources, scale system, interactive mark system
+- `architecture-rendering-and-signals.md` — VegaChart's two render effects, signal architecture, COMPONENT_NAME, `safeClone`
+- `architecture-child-dispatch.md` — the child component dispatch pipeline and sanitize gate
+- `architecture-encoding-and-props.md` — encoding conventions, callback props, alpha vs stable
+- `architecture-s2-parity.md` — s1/s2 mirroring rules
+- `architecture-file-creation.md` — copyright header, import conventions, `ScSpec`, type literals
+
+The relevant skill file for your change type (see "Before Implementing Any Feature or Bug Fix" below) names which of these apply — you don't need to read all of them.
 
 ---
 
@@ -138,6 +148,7 @@ Always implement in this order:
 - `initializeSpec()` from `specUtils.ts` creates a minimal starting spec for tests
 - `defaultSignals` from `specTestUtils.ts` is the baseline signal array all specs start with
 - Run timezone-normalized: `cross-env TZ=UTC` is set in all test scripts
+- Default to `yarn test:quiet --testPathPattern=<pattern>` for a targeted, coverage-free run during development — never `yarn workspace ... test` (not a valid command in this monorepo) or a bare `npx jest`. Reserve the full `yarn test` (collects coverage, feeds Sonar) for CI or an explicit "run all"/final-validation request. A broad run isn't needed to catch unrelated regressions — the pipeline catches those.
 
 ---
 
@@ -154,24 +165,23 @@ Always use `yarn` for all package management and script execution — never `npm
 # If `cross-env: command not found` appears, run `yarn install` first, then retry.
 yarn install
 
-# Run all tests
+# Run tests, targeted (default for agents/dev — no coverage, quiet)
+yarn test:quiet --testPathPattern=line
+
+# Full suite with coverage — CI/Sonar only, or when the user explicitly asks (e.g. "run all")
 yarn test
 
 # Watch mode
 yarn watch
 
-# Run tests for a specific package
-yarn workspace @spectrum-charts/vega-spec-builder test
-yarn workspace @adobe/react-spectrum-charts test
+# Lint — append --quiet yourself for a quieter run (errors only); leave the
+# shared script as-is so CI and other developers still see warnings by default
+yarn lint --quiet
 
-# Run tests matching a pattern
-yarn test --testPathPattern=line
-
-# Lint
-yarn lint
-
-# TypeScript check (no emit)
-yarn tsc
+# TypeScript check (no emit) — append --pretty false yourself for compact,
+# uncolored output; don't bake this into the shared script (humans want the
+# colorized code-frame in their own terminal)
+yarn tsc --pretty false
 
 # Storybook (port 6009)
 yarn storybook
@@ -231,6 +241,7 @@ S2 stories live in `packages/react-spectrum-charts-s2/src/stories/<ComponentName
   - **Single-story files** (one named export): Storybook hoists them flat into the sidebar — no folder node is created. Use for simple prop showcases (e.g. `LineType.story.tsx`).
   - **Multi-story groups** (two or more related stories): Place in a named subdirectory with a matching title segment. Example: `Features/Tooltip/LineTooltip.story.tsx` with `title: 'React Spectrum Charts 2/Line/Features/Tooltip'`. This creates a `Tooltip` folder node in the sidebar.
   - Never put two files with the same `title` and overlapping export names — Storybook will throw a duplicate story ID error.
+- **Pre-alpha components** (any mark exported from `pre-alpha/components/index.ts` — currently Area, Bullet, Combo, Donut, DonutSummary, Scatter, ScatterAnnotation, ScatterPath, SegmentLabel, Trendline, TrendlineAnnotation) get an extra `Pre-Alpha` segment right after `React Spectrum Charts 2/`, e.g. `'React Spectrum Charts 2/Pre-Alpha/Bullet/Features'`. This groups every pre-alpha mark's stories under one `Pre-Alpha` sidebar folder, separate from stable S2 components (Line, Bar, Legend, Axis) which keep the plain `'React Spectrum Charts 2/<ComponentName>/...'` prefix.
 
 ---
 
@@ -246,6 +257,31 @@ S2 stories live in `packages/react-spectrum-charts-s2/src/stories/<ComponentName
 const inner = condition ? 'inner_a' : 'inner_b';
 `outer ${inner} rest`
 ```
+
+- **JSDoc is one description line, plus `@param`/`@returns` — never a multi-line rationale.** Existing functions in this codebase (e.g. `getHighlightBackgroundPoint` in `linePointUtils.ts`) already follow this; match that length, don't expand it. The same one-line-max rule applies to inline `//` comments on call sites. If a function's behavior genuinely needs more than one line to explain, that explanation belongs in the PR description or a `planning/` doc, not the docstring — it will rot in place as the code evolves around it.
+
+```ts
+// Bad — restates the fix instead of documenting the function
+/**
+ * Gets a background mark for static points to prevent opacity from revealing the line behind
+ * the point. This mark stays fully opaque (no opacity rules) so it always covers the line
+ * underneath — needed because a hollow static point's own fill is BACKGROUND_COLOR, and
+ * dimming that fill's opacity would otherwise let the line bleed through what's supposed to
+ * look like a clean punched-out hole.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+
+// Good
+/**
+ * Gets a background to static points to prevent opacity from revealing the line behind the point.
+ * @param lineOptions
+ * @returns SymbolMark
+ */
+```
+
+- **Storybook stories get a one-line comment at most**, stating only what a reviewer/tester wouldn't otherwise infer from the story's args (e.g. why a particular prop combination is being isolated). Don't narrate the investigation that led to the story.
+
 ## Test Completeness Checklist
 
 After any feature implementation, verify all of the following before considering the work done:
@@ -269,7 +305,7 @@ When adding a new mark, verify its encodings follow the same conventions as comp
 - Cross-check against one or two similar existing marks (e.g. `barAnnotationUtils.ts`, `linePointUtils.ts`) to catch any other conventions
 
 ### 6. TypeScript
-After writing or modifying test files, run `yarn tsc --noEmit` and confirm no errors before reporting the work done. `yarn test` passing does not imply the files are type-correct.
+Run `yarn tsc --noEmit` once, when the whole task is complete — not proactively after every file or every test written. `yarn test` passing does not imply the files are type-correct. For iterative/multi-step work, defer this to task completion or let CI catch it rather than re-running it after each change.
 
 ---
 
@@ -295,14 +331,15 @@ When fixing a bug or refactoring behavior in an s1 package file, always check wh
 
 Before writing any code, always:
 
-1. Read `.claude/architecture.md` for system context
+1. Read `.claude/architecture-core.md` — every task needs it regardless of type.
 2. If a Jira ticket is associated with the work, check it for explicit spec values (line widths, pixel dimensions, thresholds, token names) **before** fetching Figma images or doing web research. Ticket descriptions for this project routinely contain the exact implementation values needed.
 3. Classify the change type and read the corresponding skill file:
    - Unexpected or broken behavior → `.claude/commands/implement-bug-fix.md`
    - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
    - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
    - New prop on an existing component → `.claude/commands/implement-new-prop.md`
-4. Follow the steps in the matched skill file
+4. Check for an approved spec matching the work — features at `planning/specs/<chartType>/`, bugs at `planning/specs/<chartType>/issues/` — if one exists, the matched skill file's Step 0 has you read it and treat it as authoritative
+5. Follow the steps in the matched skill file
 
 ---
 
@@ -325,20 +362,26 @@ Chart-level props (on `<Chart>` itself, not a mark) follow a different file path
 
 ## Issue Tracking
 
-Known bugs that are not being acted on immediately go in `planning/issues/` as markdown files. Each doc should include:
-- **Status** — Open / In Progress
-- **Symptom** — 1-2 sentence description of the observable behavior
-- **Root cause** — Technical explanation with `file:line` references
-- **Relevant files** — Table of files and their role
-- **Proposed fix** — Direction, not full implementation
-
-When the user describes a bug or observation and says they want to note it for later, create a doc there without being asked for the format.
+Known bugs that are not being acted on immediately go in
+`planning/specs/<chartType>/issues/<slug>.json` as a `kind: "bug"` spec, validated against
+`planning/specs/schema.json`. When the user describes a bug or observation and says they
+want to note it for later, use the `file-issue` skill (`.claude/commands/file-issue.md`) —
+it investigates the root cause and writes the spec without being asked for the exact format.
 
 ---
 
-## AI Workflow Skills
+## Chart Feature & Bug Spec System
 
-The `figma-example-story` pipeline and its sub-skills (`analyze-chart-design`, `generate-chart-story`, `verify-chart-story`) live in `.claude/commands/`. When a new rule or refinement is discovered for this workflow, update the relevant skill file directly. Do not save workflow rules to session memory — the skill files are the transferable source of truth.
+Specs live in `planning/specs/<chartType>/<slug>.json` (features) or
+`planning/specs/<chartType>/issues/<slug>.json` (bugs), one JSON file per feature/bug,
+validated against `planning/specs/schema.json`. Features: gather design tokens/requirements
+informally, convert them into a spec via the `generate-chart-spec` skill
+(`.claude/commands/generate-chart-spec.md`), submit the spec as a PR for review, then
+implement against the approved spec — the `implement-new-*` skills check for one first.
+Bugs: investigate and file via the `file-issue` skill
+(`.claude/commands/file-issue.md`), submit as a PR, then `implement-bug-fix` checks for one
+first. Full field-by-field guidance, the complexity rubric, and the `crossCutting` flag
+definitions are in `planning/specs/README.md`.
 
 ---
 

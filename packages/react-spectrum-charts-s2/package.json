@@ -1,34 +1,40 @@
 {
   "name": "@spectrum-charts/react-spectrum-charts-s2",
-  "version": "0.2.0",
+  "version": "0.7.0",
   "description": "Declarative library for composing Spectrum 2 visualizations in React.",
   "browser": "./dist/index.js",
   "module": "./dist/index.js",
   "main": "./dist/index.js",
   "exports": {
     ".": {
+      "types": "./dist/@types/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
-      "types": "./dist/@types/index.d.ts",
       "default": "./dist/index.js"
     },
     "./alpha": {
+      "types": "./dist/@types/alpha/index.d.ts",
       "import": "./dist/alpha.js",
       "require": "./dist/alpha.js",
-      "types": "./dist/@types/alpha/index.d.ts",
       "default": "./dist/alpha.js"
     },
     "./beta": {
+      "types": "./dist/@types/beta/index.d.ts",
       "import": "./dist/beta.js",
       "require": "./dist/beta.js",
-      "types": "./dist/@types/beta/index.d.ts",
       "default": "./dist/beta.js"
     },
-    "./rc": {
-      "import": "./dist/rc.js",
-      "require": "./dist/rc.js",
-      "types": "./dist/@types/rc/index.d.ts",
-      "default": "./dist/rc.js"
+    "./pre-alpha": {
+      "types": "./dist/@types/pre-alpha/index.d.ts",
+      "import": "./dist/pre-alpha.js",
+      "require": "./dist/pre-alpha.js",
+      "default": "./dist/pre-alpha.js"
+    },
+    "./ai-catalog": {
+      "types": "./dist/@types/src/ai-catalog/index.d.ts",
+      "import": "./dist/ai-catalog.js",
+      "require": "./dist/ai-catalog.js",
+      "default": "./dist/ai-catalog.js"
     }
   },
   "typesVersions": {
@@ -42,8 +48,11 @@
       "beta": [
         "./dist/@types/beta/index.d.ts"
       ],
-      "rc": [
-        "./dist/@types/rc/index.d.ts"
+      "pre-alpha": [
+        "./dist/@types/pre-alpha/index.d.ts"
+      ],
+      "ai-catalog": [
+        "./dist/@types/src/ai-catalog/index.d.ts"
       ]
     }
   },
@@ -62,7 +71,9 @@
   "scripts": {
     "prebuild": "echo 'This will run before build'",
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "webpack --config webpack.config.js",
+    "compile:intl": "node scripts/compileIntl.mjs",
+    "verify:intl": "node scripts/compileIntl.mjs && git add -N src/dataNavigator/intl/compiled && git diff --exit-code -- src/dataNavigator/intl/compiled",
+    "build:s2": "yarn compile:intl && webpack --config webpack.config.js",
     "clean": "rm -rf dist",
     "g": "plop component",
     "generate": "plop component",
@@ -76,18 +87,23 @@
     "publish-package": "npm publish --access public --tag alpha --registry https://registry.npmjs.org"
   },
   "dependencies": {
-    "@spectrum-charts/constants": "1.43.0",
-    "@spectrum-charts/locales": "1.43.0",
-    "@spectrum-charts/themes": "1.43.0",
-    "@spectrum-charts/utils": "1.43.0",
-    "@spectrum-charts/vega-spec-builder-s2": "0.2.0",
+    "@internationalized/date": "^3.5.2",
+    "@internationalized/string": "^3.2.1",
+    "@spectrum-charts/constants": "1.52.0",
+    "@spectrum-charts/locales": "1.52.0",
+    "@spectrum-charts/schemas": "1.52.0",
+    "@spectrum-charts/themes": "1.52.0",
+    "@spectrum-charts/utils": "1.52.0",
+    "@spectrum-charts/vega-spec-builder-s2": "0.7.0",
     "d3-format": "^3.1.0",
     "data-navigator": "^2.4.1",
     "deepmerge": ">= 4.0.0",
     "immer": ">= 9.0.0",
-    "uuid": ">= 9.0.0",
     "vega-embed": ">= 7.1.0",
     "vega-tooltip": ">= 1.1.0"
+  },
+  "devDependencies": {
+    "@internationalized/string-compiler": "^3.4.1"
   },
   "peerDependencies": {
     "@react-spectrum/s2": ">=1.0.0",

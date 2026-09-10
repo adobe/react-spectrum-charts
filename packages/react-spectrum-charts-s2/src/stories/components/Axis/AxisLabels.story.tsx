@@ -19,6 +19,7 @@ import { Axis, Bar } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Chart } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
+import { barDataLongLabels } from '../Bar/data';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Labels',
@@ -87,6 +88,41 @@ LabelWithTooltip.args = {
   hasTooltip: true,
 };
 
+const TruncatedLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barDataLongLabels, width: 450 });
+  return (
+    <Chart {...chartProps}>
+      <Axis {...args} />
+      <Bar dimension="browser" metric="downloads" />
+    </Chart>
+  );
+};
+
+// Truncated so the tooltip's full text differs visibly from what's shown.
+const TruncatedLabelWithTooltip = bindWithProps(TruncatedLabelStory);
+TruncatedLabelWithTooltip.args = {
+  truncateLabels: true,
+  position: 'bottom',
+  baseline: true,
+  title: 'Browser',
+  hasTooltip: true,
+};
+
+// Per-value overrides: custom text, suppressed, and default.
+const CustomTooltipText = bindWithProps(TruncatedLabelStory);
+CustomTooltipText.args = {
+  truncateLabels: true,
+  position: 'bottom',
+  baseline: true,
+  title: 'Browser',
+  hasTooltip: true,
+  tooltipText: [
+    { value: 'Microsoft Explorer', text: 'Microsoft Explorer is the most widely used browser' },
+    { value: 'Mozilla Firefox', text: null },
+    { value: 'Google Chrome', text: 'Chrome is the most popular browser' },
+  ],
+};
+
 const LabelLimitStory: StoryFn<typeof Axis> = (args): ReactElement => {
   const longLabelData = [
     { browser: 'Chrome with Very Long Browser Name That Exceeds Normal Limits', downloads: 100 },
@@ -111,4 +147,12 @@ LabelLimit.args = {
   labelLimit: 60,
 };
 
-export { Basic, LabelAlign, LabelOrientation, LabelLimit, LabelWithTooltip };
+export {
+  Basic,
+  LabelAlign,
+  LabelOrientation,
+  LabelLimit,
+  LabelWithTooltip,
+  TruncatedLabelWithTooltip,
+  CustomTooltipText,
+};

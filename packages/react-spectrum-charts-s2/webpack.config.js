@@ -18,11 +18,15 @@ const { name, version } = require('./package.json');
 const banner = `${name}@v${version}`;
 
 module.exports = {
-  entry: './index.ts',
+  entry: {
+    index: './index.ts',
+    'ai-catalog': './src/ai-catalog/index.ts',
+    'pre-alpha': './pre-alpha/index.ts',
+  },
   mode: 'production',
 
   output: {
-    filename: 'index.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
     library: 'spectrumChartsReactSpectrumChartsS2',
     libraryTarget: 'umd',
@@ -54,6 +58,7 @@ module.exports = {
       '@spectrum-charts/locales': '@spectrum-charts/locales',
       '@spectrum-charts/vega-spec-builder': '@spectrum-charts/vega-spec-builder',
       '@spectrum-charts/vega-spec-builder-s2': '@spectrum-charts/vega-spec-builder-s2',
+      '@spectrum-charts/schemas': '@spectrum-charts/schemas',
       '@adobe/react-spectrum': '@adobe/react-spectrum',
       'react': 'react',
       'react-dom': 'react-dom',

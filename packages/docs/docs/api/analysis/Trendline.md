@@ -112,6 +112,12 @@ For this example, the granularity of the data would be in days.
             <td>Whether the trendline should only be visible when hovering over the parent line.</td>
         </tr>
         <tr>
+            <td>displayOnHoverTrigger</td>
+            <td>'nearest' | 'item' | 'dimension'</td>
+            <td>–</td>
+            <td>Restricts which hover interaction reveals the trendline when <code>displayOnHover</code> is set, independent of the parent <code>Line</code>'s <code>interactionMode</code>. For example, a line using <code>interactionMode="dimension"</code> can still set <code>displayOnHoverTrigger="item"</code> on its trendline so it only appears when hovering near an actual point, not anywhere along the dimension strip. Has no effect unless <code>displayOnHover</code> is set; if undefined, the trendline reveals on any active hover.</td>
+        </tr>
+        <tr>
             <td>excludeDataKeys</td>
             <td>string[]</td>
             <td>-</td>

@@ -1,0 +1,47 @@
+{
+  "id": "gh-601-react19-reactcurrentowner",
+  "title": "Unconfirmed React 19 / Next.js 15 SSR incompatibility (ReactCurrentOwner)",
+  "chartType": "chart",
+  "kind": "bug",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "Root cause is unconfirmed and requires a live Next.js 15 + React 19 SSR repro to identify the offending transitive dependency, which is genuine remaining research. At least one concrete site (the peerDependencies range, and/or a version bump of whichever dependency is found responsible) would need a real, not-yet-precedented decision once identified, but the overall shape of the fix isn't yet known to require multiple diverging sites."
+  },
+  "summary": "A user reported a TypeError reading 'ReactCurrentOwner' when mounting a chart under Next.js 15.3.4 with React 19 SSR, which they worked around by downgrading Next.js. The declared React peer dependency range has not changed since filing and still permits React 19; no reference to ReactCurrentOwner or other removed React internals exists in RSC's own source, so the root cause remains unconfirmed.",
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "react-spectrum-charts-s2's own package.json peerDependencies already mandate react >= 19.0.0 unconditionally (packages/react-spectrum-charts-s2/package.json:93-94), so if this incompatibility is real it would affect every s2 consumer by default, unlike s1 where React 19 is merely permitted, not required. Worth an explicit s2 check once the s1 root cause (if any) is confirmed."
+  },
+  "symptom": "Under React 19 + Next.js 15.3.4 with SSR, mounting a chart from @adobe/react-spectrum-charts@1.18.1 threw \"TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')\"; downgrading to Next.js 14.2.25 avoided the crash for the reporter.",
+  "rootCause": "packages/react-spectrum-charts/package.json's peerDependencies declare \"react\": \">= 17.0.2\" and \"react-dom\": \">= 17.0.2\" — confirmed via `git log -p` to be unchanged across the package's entire history — an open-ended range that has always permitted React 19 to satisfy the peer dependency. This range was never tightened to exclude React 19, so it was never the gating mechanism for this bug either way. No reference to ReactCurrentOwner or other legacy React internals exists anywhere under packages/*/src (confirmed via grep), so the removed-API read is not coming from RSC's own code; it must originate in a transitive dependency (vega-embed, vega-tooltip, or a react-is/prop-types build pulled in by @adobe/react-spectrum or another peer) that has not been identified, since confirming it requires a live React 19 + Next.js 15 SSR environment that wasn't available during this investigation. The root cause is therefore unconfirmed as of this writing, and no code change addressing it was found in the current codebase.",
+  "implementationPlan": [
+    {
+      "file": "packages/react-spectrum-charts/package.json",
+      "change": "Bug location (candidate): declares the permissive peerDependencies react/react-dom range. Fix direction: once the offending transitive dependency is identified via a live repro, either bump/pin that dependency or adjust the peer range to communicate the actual supported floor more precisely."
+    },
+    {
+      "file": "packages/react-spectrum-charts/src/VegaChart.tsx",
+      "change": "Reference: the integration point where vega-embed/vega-tooltip render into the DOM during the component's SSR/hydration lifecycle; worth checking once the offending dependency is identified for whether the crash surfaces here specifically."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/package.json",
+      "change": "Reference: s2 already mandates react >= 19.0.0 unconditionally; re-check against the s2 build once the s1 root cause is confirmed, since s2 consumers can't avoid React 19 the way the s1 reporter avoided it by downgrading Next.js/React."
+    }
+  ],
+  "openQuestions": [
+    "Which specific transitive dependency reads ReactCurrentOwner? This needs a live Next.js 15 + React 19 SSR repro to confirm — it could not be identified from static package.json/grep investigation alone.",
+    "Has this been reported against react-spectrum-charts-s2 (which mandates React >= 19 unconditionally), or only against the s1 package?",
+    "Is this actually fixable within RSC, or is it purely a Next.js/webpack module-resolution interop problem outside RSC's control?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/601" }
+  ]
+}

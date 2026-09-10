@@ -80,6 +80,34 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
   return [{ scale: metricAxis || 'yLinear', field: metric }];
 };
 
+const getClampedScaleSignal = (yScale: string, metric: string): string =>
+  `clamp(scale('${yScale}', datum['${metric}']), 0, height)`;
+
+/**
+ * Gets a Y encoding clamped to [0, height], for hover marks whose metric may fall outside the y domain.
+ * @param lineMarkOptions - Line mark options including metricAxis and dualMetricAxis
+ * @param metric - The metric field name
+ * @returns Clamped Y encoding with conditional scale selection for dual metric axis
+ */
+export const getClampedYEncoding = (lineMarkOptions: LineMarkOptions, metric: string): ProductionRule<NumericValueRef> => {
+  const { metricAxis } = lineMarkOptions;
+
+  if (isDualMetricAxis(lineMarkOptions)) {
+    const baseScaleName = metricAxis || 'yLinear';
+    const scaleNames = getDualAxisScaleNames(baseScaleName);
+
+    return [
+      {
+        test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
+        signal: getClampedScaleSignal(scaleNames.secondaryScale, metric),
+      },
+      { signal: getClampedScaleSignal(scaleNames.primaryScale, metric) },
+    ];
+  }
+
+  return [{ signal: getClampedScaleSignal(metricAxis || 'yLinear', metric) }];
+};
+
 /**
  * generates a line mark
  * @param lineOptions
@@ -97,6 +125,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     metric,
     name,
     opacity,
+    s2,
     scaleType,
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
@@ -113,7 +142,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     encode: {
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
         strokeWidth: getLineWidthProductionRule(lineWidth),
@@ -133,6 +162,7 @@ export const getLineOpacity = ({
   displayOnHover,
   comboSiblingNames,
   hoverContext,
+  displayOnHoverTrigger,
   interactiveMarkName,
   interactionMode,
   isMetricRange,
@@ -148,7 +178,7 @@ export const getLineOpacity = ({
     hoverContext &&
     highlightedItem === undefined
   ) {
-    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show');
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show', displayOnHoverTrigger);
   }
 
   if ((!interactiveMarkName || displayOnHover === true) && highlightedItem === undefined) {
@@ -322,7 +352,7 @@ export const getVoronoiYEncoding = (lineOptions: LineMarkOptions, metric: string
     // voronoi cell that dominates the visible chart area and causes hover flicker.
     ...hoverPointMetrics.map(mrMetric => ({
       test: `isValid(datum["${mrMetric}"])`,
-      signal: `clamp(scale('${yScale}', datum['${mrMetric}']), 0, height)`,
+      signal: getClampedScaleSignal(yScale, mrMetric),
     })),
     { scale: yScale, field: metric },
   ];

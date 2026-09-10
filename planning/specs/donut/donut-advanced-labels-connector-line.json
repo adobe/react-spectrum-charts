@@ -1,0 +1,71 @@
+{
+  "id": "donut-advanced-labels-connector-line",
+  "title": "Donut Advanced Labels — Connector Line",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 5,
+    "rationale": "Split out of donut-advanced-labels at the user's request. Unlike donut-direct-labels-collision (which has a fully worked closed-form algorithm to implement), this has no given precedent at all: path generation for two fixed shapes (straight vs. bent-corner) is new geometry work, and - the harder problem - the skill gives no numeric threshold for choosing between them ('use [bent] for smaller segments positioned at top or bottom' is qualitative guidance, not a formula). The attachment point also depends on donut-advanced-labels' hemisphere anchor-offset outcome (which side of the block the connector lands on), adding a real cross-spec dependency, not just an isolated drawing problem."
+  },
+  "summary": "The connector leader line that visually links an Advanced Label to its donut slice - not yet built at all. Confirmed via a live Figma example exercising both documented shapes: a 40px straight line for labels positioned beside their slice (the two large side segments), and a 108px bent-corner shape (horizontal run + fixed-radius corner + vertical drop) for a small segment near the top whose label sits off to the side. Depends on donut-advanced-labels for the label block's position/anchor (which determines where the connector's label-side endpoint lands).",
+  "requirements": [
+    "Connect each Advanced Label to its slice with a thin leader line: 1.5px stroke, gray-700 (#505050), round line cap - the line must never cross the ring, routed entirely outside its outer edge.",
+    "Two fixed shapes only, no free-form curves: a 40px-wide straight line (the default, used whenever the label sits beside its slice - confirmed as the shape used for both large side segments, North America and EMEA, in the Figma example), or a 108px-wide x 17px-tall bent shape (horizontal run into a fixed-radius corner, then a vertical drop - confirmed as the shape used for the small top segment, Others, whose label sits off to the side rather than directly beside the slice).",
+    "Gap between the connector line and the swatch is 10px (`chart.donut.spacing.advanced-label-line-swatch-gap`).",
+    "The connector's ring-side and label-side endpoints must be derived from donut-advanced-labels' hemisphere anchor-offset outcome (which element - swatch or text block - ends up nearest the ring depends on hemisphere), not computed independently - per the skill, on one hemisphere the swatch is nearest the ring and the connector lands on it; on the other, the text block's near edge is nearest the ring instead, with the swatch riding outward beyond the text."
+  ],
+  "designTokens": [
+    { "token": "Connector line - straight", "value": "40px wide, 1.5px stroke, gray-700 (#505050), round line cap", "usage": "Default connector shape, used whenever the label sits beside its slice." },
+    { "token": "Connector line - longer (bent)", "value": "108px wide x 17px tall, horizontal run + fixed-radius corner + vertical drop, same stroke", "usage": "Used only for smaller segments positioned at the top or bottom of the donut, where a side-positioned label needs to reach a slice that isn't beside it." },
+    { "token": "chart.donut.spacing.advanced-label-line-swatch-gap", "value": "10px", "usage": "Gap between the connector line and the swatch." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-advanced-labels/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54224&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Segment too small for a label to fit beside it (e.g. the top-positioned 'Others' example)", "expectedBehavior": "Use the 108px bent connector shape to route the label from its side position down to the slice, rather than overlapping the ring or another label - confirmed as the shape used in the Figma example for this exact case." },
+    { "case": "A segment right at the boundary between 'beside its slice' and 'needs the bent shape'", "expectedBehavior": "Undefined today given the unresolved threshold (see openQuestions) - flag as needing an explicit decision before implementation, not an inferred cutoff." },
+    { "case": "Collision-avoidance Y-adjustment (donut-direct-labels-collision) shifts a label after its connector shape was already chosen", "expectedBehavior": "Confirm whether the connector shape choice is re-evaluated after collision adjustment, or fixed based on the label's pre-collision ideal position - a Y-shift could change whether a straight or bent connector is appropriate." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: needs new path-generation logic for both connector shapes plus the shape-selection expression - no existing donut mark generates a path like this. requiresS1S2Parity is false: no existing s1 implementation to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/advancedLabelConnectorUtils.ts (new file)",
+      "change": "Build the connector-line path mark: straight (40px) and bent-corner (108x17px) path generators, the shape-selection expression (pending the openQuestion below), and endpoint derivation from donut-advanced-labels' hemisphere anchor-offset outcome.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/advancedLabelUtils.ts (from donut-advanced-labels)",
+      "change": "Call the new connector-line mark builder alongside the swatch/text block marks, passing through the anchor-offset result so the connector's endpoints match.",
+      "lines": "N/A - extends the file donut-advanced-labels creates"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/advancedLabelConnectorUtils.test.ts",
+      "change": "New file: unit tests for both path shapes and the shape-selection logic once the threshold question is resolved.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/AdvancedLabel/AdvancedLabel.story.tsx (from donut-advanced-labels)",
+      "change": "Add stories covering the straight-connector case (label beside its slice) and the bent-connector case (small top/bottom segment).",
+      "lines": "N/A - extends the file donut-advanced-labels creates"
+    }
+  ],
+  "openQuestions": [
+    "What is the exact numeric threshold for choosing the straight (40px) vs. bent (108px) connector shape? The skill only says 'use [bent] for smaller segments positioned at top or bottom' - confirm whether this is driven by arc angle, by whether the label's ideal position collides with the ring at that angle, or by a fixed angular range.",
+    "Is the connector shape chosen before or after donut-direct-labels-collision's Y-adjustment cascade runs? See edgeCases."
+  ],
+  "relatedIssues": ["donut-advanced-labels", "donut-direct-labels-collision"]
+}

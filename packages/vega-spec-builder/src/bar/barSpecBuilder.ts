@@ -79,6 +79,7 @@ export const addBar = produce<
       index?: number;
       idKey: string;
       comboSiblingNames?: string[];
+      s2?: boolean;
     }
   ]
 >(

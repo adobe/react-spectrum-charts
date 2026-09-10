@@ -23,12 +23,14 @@ import {
 import { flattenMarks } from '../marks/markUtils';
 
 /**
- * Adds opacity tests for the fill and stroke of marks that use the color scale to set the fill or stroke value.
+ * Adds opacity tests for marks whose fill/stroke is driven by the color scale, and for marks
+ * that are already per-series (e.g. trendlines, which facet by series regardless of their own
+ * color encoding — a trendline with an overridden literal color still needs to fade on legend hover).
  */
 export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?: string[], controlled = false) => {
   if (!marks.length) return;
   const flatMarks = flattenMarks(marks);
-  flatMarks.filter(markUsesSeriesColorScale).forEach((mark) => applyLegendOpacityToMark(mark, legendName, keys, controlled));
+  flatMarks.filter(markIsSeriesAware).forEach((mark) => applyLegendOpacityToMark(mark, legendName, keys, controlled));
 };
 
 const applyLegendOpacityToMark = (mark: Mark, legendName: string, keys?: string[], controlled = false) => {
@@ -103,12 +105,39 @@ export const markUsesSeriesColorScale = (mark: Mark): boolean => {
 };
 
 /**
- * Determines if the supplied encoding uses a scale to set the value
+ * Determines if the supplied mark is the trendline's own line/rule mark, or the metric range's
+ * own line mark. These are always per-series (faceted by series regardless of their own color
+ * encoding), so an overridden literal color still needs to fade on legend hover. Anchored to
+ * these two exact name shapes — `<parent>Trendline<index>` and `<parent>MetricRange<index>_line`
+ * — so it doesn't also match hover-support marks that share the same name prefix (e.g.
+ * `<parent>Trendline_hoverRule`, `_pointBackground`, `_point_highlight`, `_secondaryPoint`).
+ * Those marks are already scoped to a single active item via their (pre-filtered) data source,
+ * not via opacity, and some carry non-series opacity logic of their own that a broader match
+ * would clobber.
+ * @param mark
+ * @returns boolean
+ */
+const isTrendlineOrMetricRangeLineMark = (mark: Mark): boolean =>
+  Boolean(mark.name) && /(Trendline\d+|MetricRange\d+_line)$/.test(mark.name as string);
+
+/**
+ * Determines if a mark should receive a legend-hover opacity rule — either because its own
+ * fill/stroke uses the color scale, or because it's a trendline/metric range mark.
+ * @param mark
+ * @returns boolean
+ */
+export const markIsSeriesAware = (mark: Mark): boolean =>
+  markUsesSeriesColorScale(mark) || isTrendlineOrMetricRangeLineMark(mark);
+
+/**
+ * Determines if the supplied encoding uses a scale to set the value, recursing into arrays.
  * @param encoding
  * @returns boolean
  */
 export const encodingUsesScale = <T>(encoding?: ProductionRule<T>): boolean => {
-  if (!encoding || typeof encoding !== 'object') return false;
+  if (!encoding) return false;
+  if (Array.isArray(encoding)) return encoding.some((rule) => encodingUsesScale(rule));
+  if (typeof encoding !== 'object') return false;
   if ('scale' in encoding) return true;
   if ('signal' in encoding && typeof encoding.signal === 'string' && encoding.signal.includes('scale(')) {
     return true;

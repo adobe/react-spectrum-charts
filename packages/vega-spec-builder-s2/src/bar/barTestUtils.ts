@@ -37,6 +37,7 @@ export const defaultBarOptions: BarSpecOptions = {
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimension: DEFAULT_CATEGORICAL_DIMENSION,
   dimensionScaleType: 'band',
+  diverging: false,
   hasOnClick: false,
   hasSquareCorners: false,
   idKey: MARK_ID,

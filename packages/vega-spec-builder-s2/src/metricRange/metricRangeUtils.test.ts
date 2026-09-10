@@ -10,12 +10,12 @@
  * governing permissions and limitations under the License.
  */
 import {
-  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
@@ -76,6 +76,8 @@ const defaultLineOptions: LineSpecOptions = {
   trendlines: [],
   lineCap: 'round',
   interpolate: undefined,
+  dimensionHover: false,
+  showHoverLabel: true,
 };
 
 const basicMetricRangeMarks = [
@@ -94,7 +96,6 @@ const basicMetricRangeMarks = [
         strokeCap: { value: 'round' },
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
-        strokeWidth: { signal: CHART_SIZE_STROKE_WIDTH },
       },
       update: {
         x: {
@@ -102,6 +103,7 @@ const basicMetricRangeMarks = [
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
         opacity: [DEFAULT_OPACITY_RULE],
+        strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
       },
     },
   },
@@ -119,6 +121,7 @@ const basicMetricRangeMarks = [
         y: { scale: 'yLinear', field: 'metricStart' },
         y2: { scale: 'yLinear', field: 'metricEnd' },
         fill: { scale: COLOR_SCALE, field: 'series' },
+        defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
       },
       update: {
         cursor: undefined,
@@ -176,6 +179,19 @@ describe('applyMetricRangePropDefaults', () => {
 describe('getMetricRangeMark', () => {
   test('creates MetricRange mark from basic input', () => {
     expect(getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions)).toEqual(basicMetricRangeMarks);
+  });
+
+  test('boundary line opacity stays the static instant-rule array even when the parent line is animated', () => {
+    // the boundary line renders under `${metricRangeName}_line`, which has no `_hoverFractionData` of
+    // its own — getMetricRangeMark forces isHoverAnimate: false for exactly this reason, otherwise this
+    // would reference a data source that was only ever created for the parent line's name
+    const [lineMark] = getMetricRangeMark(
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
+      defaultMetricRangeSpecOptions
+    );
+    expect(Array.isArray((lineMark as { encode: { update: { opacity: unknown } } }).encode.update.opacity)).toBe(
+      true
+    );
   });
 });
 

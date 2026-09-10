@@ -109,7 +109,7 @@ export const addArea = produce<
       areaOptions.metricStart = undefined;
     }
 
-    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta ?? [], areaOptions.interactiveMarkName);
+    spec.usermeta = addUserMetaInteractiveMark(spec.usermeta ?? {}, areaOptions.interactiveMarkName);
 
     spec.data = addData(spec.data ?? [], areaOptions);
     spec.signals = addSignals(spec.signals ?? [], areaOptions);

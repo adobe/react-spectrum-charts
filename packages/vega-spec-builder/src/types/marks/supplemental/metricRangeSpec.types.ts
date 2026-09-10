@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { ChartTooltipOptions } from '../../dialogs/chartTooltipSpec.types';
-import { LineType, LineWidth, PartiallyRequired, OpacityFacet } from '../../specUtil.types';
+import { DisplayOnHoverTrigger, LineType, LineWidth, PartiallyRequired, OpacityFacet } from '../../specUtil.types';
 import { SpectrumColor } from '../../spectrumVizColor.types';
 
 export interface MetricRangeOptions {
@@ -38,6 +38,13 @@ export interface MetricRangeOptions {
    * - `false` (default): both are always visible
    */
   displayOnHover?: boolean | 'metric' | 'range';
+  /**
+   * Restricts which hover trigger reveals `displayOnHover` content. Independent of the parent line's `interactionMode`.
+   * e.g. a line with `interactionMode="dimension"` can still have a metric range with `displayOnHoverTrigger="item"`,
+   * so it only appears when hovering near an actual point, not anywhere along the dimension strip.
+   * Has no effect unless `displayOnHover` is set. Undefined (default) matches any active hover signal (legacy behavior).
+   */
+  displayOnHoverTrigger?: DisplayOnHoverTrigger;
   /** Whether to show a hover point on the metric range line when the parent line is interactive */
   hoverPoint?: boolean;
   /** Boolean indicating whether or not the y-axis should expand to include the entire metric range (if necessary). */

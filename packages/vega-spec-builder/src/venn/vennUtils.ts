@@ -79,7 +79,7 @@ export const mapDataForVennHelper = (options: VennSpecOptions): VennHelperProps[
 };
 
 export const getCircleMark = (options: VennSpecOptions): SymbolMark => {
-  const { name, colorScheme, chartTooltips, chartPopovers } = options;
+  const { name, colorScheme, chartTooltips, chartPopovers, s2 } = options;
 
   return {
     type: 'symbol',
@@ -92,7 +92,7 @@ export const getCircleMark = (options: VennSpecOptions): SymbolMark => {
         tooltip: getTooltip(chartTooltips, name),
         size: { field: 'size' },
         shape: { value: 'circle' },
-        fill: getColorProductionRule('set_id', colorScheme),
+        fill: getColorProductionRule('set_id', colorScheme, undefined, s2),
         stroke: { signal: 'chartBackgroundColor' },
         strokeWidth: { value: 2 },
       },
@@ -127,7 +127,7 @@ export const getTextMark = (options: VennSpecOptions, dataSource: 'circles' | 'i
 };
 
 export const getIntersectionStrokeMark = (options: VennSpecOptions): PathMark => {
-  const { name, idKey, colorScheme } = options;
+  const { name, idKey, colorScheme, s2 } = options;
 
   return {
     type: 'path',
@@ -139,7 +139,7 @@ export const getIntersectionStrokeMark = (options: VennSpecOptions): PathMark =>
         path: { field: 'path' },
         strokeWidth: { value: 6 },
         strokeCap: { value: 'round' },
-        stroke: { value: getColorValue('static-blue', colorScheme) },
+        stroke: { value: getColorValue('static-blue', colorScheme, s2) },
       },
 
       update: {
@@ -150,7 +150,7 @@ export const getIntersectionStrokeMark = (options: VennSpecOptions): PathMark =>
 };
 
 export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
-  const { name, chartTooltips, colorScheme, chartPopovers } = options;
+  const { name, chartTooltips, colorScheme, chartPopovers, s2 } = options;
 
   return {
     type: 'path',
@@ -159,7 +159,7 @@ export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
     encode: {
       enter: {
         path: { field: 'path' },
-        fill: getColorProductionRule('set_id', colorScheme),
+        fill: getColorProductionRule('set_id', colorScheme, undefined, s2),
         strokeWidth: { value: 2 },
         stroke: { signal: 'chartBackgroundColor' },
         strokeCap: { value: 'square' },
@@ -175,7 +175,7 @@ export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
 };
 
 export const getCircleStrokeMark = (options: VennSpecOptions): SymbolMark => {
-  const { colorScheme, idKey } = options;
+  const { colorScheme, idKey, s2 } = options;
   return {
     type: 'symbol',
     name: `${options.name}_circle_strokes`,
@@ -187,7 +187,7 @@ export const getCircleStrokeMark = (options: VennSpecOptions): SymbolMark => {
         y: { field: 'y' },
         size: { field: 'size' },
         shape: { value: 'circle' },
-        stroke: { value: getColorValue('static-blue', colorScheme) },
+        stroke: { value: getColorValue('static-blue', colorScheme, s2) },
         strokeWidth: { value: 6 },
       },
       update: {

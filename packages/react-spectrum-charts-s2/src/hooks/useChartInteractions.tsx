@@ -16,6 +16,7 @@ import { getColorValue } from '@spectrum-charts/themes';
 
 import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
+import useAxisLabelTooltipAnchorStyle from './useAxisLabelTooltipAnchorStyle';
 import useLegend from './useLegend';
 import useNewChartView from './useNewChartView';
 import usePopoverAnchorStyle from './usePopoverAnchorStyle';
@@ -24,8 +25,10 @@ import useChartInspectInteractions from './useChartInspectInteractions';
 export const useChartInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { selectedData } = useChartContext();
   const { inspectOptions } = useChartInspectInteractions(props, sanitizedChildren);
-  const { legendHiddenSeries, isToggleable: legendIsToggleable } = useLegend(sanitizedChildren);
+  const legendProps = useLegend(sanitizedChildren);
+  const { legendHiddenSeries, isToggleable: legendIsToggleable } = legendProps;
   const targetStyle = usePopoverAnchorStyle(props.padding);
+  const axisLabelTooltipAnchorStyle = useAxisLabelTooltipAnchorStyle(props.padding);
 
   const signals = useMemo(() => {
     const signals: Record<string, unknown> = {
@@ -40,7 +43,7 @@ export const useChartInteractions = (props: RscChartProps, sanitizedChildren: Ch
     return signals;
   }, [legendHiddenSeries, legendIsToggleable, props.colorScheme, props.idKey, selectedData]);
 
-  const onNewView = useNewChartView(props, sanitizedChildren, inspectOptions);
+  const onNewView = useNewChartView(props, sanitizedChildren, inspectOptions, legendProps);
 
-  return { signals, targetStyle, inspectOptions, onNewView };
+  return { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView };
 };

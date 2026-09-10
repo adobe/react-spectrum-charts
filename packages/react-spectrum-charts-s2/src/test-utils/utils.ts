@@ -9,8 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
+import { findAllMarksByGroupName } from './customQueries';
 
 export const findChart = async () => {
   return screen.findByRole('graphics-document');
@@ -45,3 +47,20 @@ export const rightClickNthElement = async (elements: HTMLElement[], index: numbe
 
 export const allElementsHaveAttributeValue = (elements: HTMLElement[], attribute: string, value: number | string) =>
   elements.every((element) => element.getAttribute(attribute) === value.toString());
+
+/**
+ * Finds marks by group name, then polls `assertion` against them via `waitFor` until it passes.
+ * Use this instead of pairing `findAllMarksByGroupName` + `waitFor` by hand — needed for any mark
+ * attribute that settles asynchronously (e.g. the hover-animation system's timer-driven opacity/
+ * stroke-width ramps), where the DOM doesn't reflect the final value on the same tick as the event.
+ */
+export const waitForMarksByGroupName = async (
+  chart: HTMLElement,
+  groupName: string,
+  assertion: (marks: HTMLElement[]) => void,
+  tagName?: string
+): Promise<HTMLElement[]> => {
+  const marks = await findAllMarksByGroupName(chart, groupName, tagName);
+  await waitFor(() => assertion(marks));
+  return marks;
+};

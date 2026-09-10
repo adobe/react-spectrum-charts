@@ -1,0 +1,69 @@
+{
+  "id": "add-tree-mark",
+  "title": "Add Tree Chart Mark",
+  "chartType": "tree",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 3,
+    "rationale": "The tidy-tree layout itself is a native Vega transform pipeline (`stratify` + `tree`), not custom geometry to design. But click/Enter collapse-expand of subtrees requires a new signal tracking a set of collapsed node ids and a data-level filter keyed off that set, and ancestor-chain hover highlighting requires walking each node's parent chain to determine highlight membership — both are genuinely new interaction logic with no existing analog in this codebase, though each is a well-understood, single-purpose piece once designed."
+  },
+  "summary": "An id/parent/label hierarchy mark rendering a tidy tree layout (Vega's `stratify` + `tree` transforms), with click/Enter collapse-expand of subtrees and ancestor-chain hover highlighting.",
+  "requirements": [
+    "Accepts `id`, `parent` (required) and an optional `label` channel; auto-repairs flat data with missing parents/root by synthesizing them before stratification, so malformed hierarchies don't hard-fail",
+    "Renders a tidy tree layout via Vega's `stratify` + `tree` transforms — node symbols plus link paths between parent/child",
+    "Clicking or pressing Enter on a node collapses or expands its subtree (hides/shows descendant nodes and links)",
+    "Hovering a node highlights its full ancestor chain back to the root, not just the hovered node itself"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Data with no explicit root (all rows have a non-null parent)", "expectedBehavior": "Auto-repair synthesizes a root node so `stratify` doesn't fail, per the auto-repair requirement." },
+    { "case": "Data with multiple disconnected root candidates", "expectedBehavior": "Auto-repair synthesizes a single synthetic root parenting all otherwise-orphaned nodes, so the layout renders one tree rather than throwing on multiple roots." },
+    { "case": "Single node (no children)", "expectedBehavior": "Renders one node with no links; collapse/expand is a no-op since there's nothing to collapse." },
+    { "case": "Collapsing the root node", "expectedBehavior": "Hides the entire tree except the root itself, which remains visible and expandable." },
+    { "case": "Very deep hierarchies (many levels)", "expectedBehavior": "Tidy tree layout scales node spacing to depth automatically via the Vega `tree` transform; no special-case handling needed beyond what the transform already provides." },
+    { "case": "Light vs dark background", "expectedBehavior": "Node and link colors resolve through the existing colorScheme-aware color scale." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Accessibility", "expectedBehavior": "Collapse/expand must be keyboard-reachable (Enter key), not click-only, per the stated requirement." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesControlledHighlight: ancestor-chain highlighting on hover is a new highlight-membership computation (walking the parent chain), not a reuse of CONTROLLED_HIGHLIGHTED_TABLE/SERIES, though it should follow the same opacity-encode convention those use. touchesTooltipOrPopover: node hover/click can show a ChartTooltip/ChartPopover with label/id, reusing existing interactive-mark plumbing. requiresNewSignalOrScale: true — a `collapsedNodes` signal (set/cleared by click/Enter) driving a visibility filter transform, plus a `hoveredNode` signal driving ancestor-chain computation. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/treeSpec.types.ts", "change": "Create TreeOptions/TreeOptionsWithDefaults/TreeSpecOptions with required `id`/`parent` fields and an optional `label` field." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Tree types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add TreeOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/treeTestUtils.ts", "change": "Fully-populated defaultTreeOptions fixture, including a malformed-hierarchy variant (missing root) for auto-repair tests." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/hierarchyUtils.ts", "change": "New: repairFlatHierarchy (synthesizes missing parents/root before stratification, shared groundwork for tree/treemap/sunburst)." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/treeDataUtils.ts", "change": "addStratifyAndTreeTransforms (Vega `stratify` + `tree` transform pair), addCollapsedNodesFilter (filters descendants of any id in the collapsedNodes signal), addAncestorChainField (derives ancestor-id array per node for hover-highlight lookups)." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/treeMarkUtils.ts", "change": "getTreeNodeMark (symbol per node), getTreeLinkMark (path/rule between parent/child using layout-computed x/y)." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/treeSpecBuilder.ts", "change": "addTree, addData (calls repairFlatHierarchy + the new transform helpers), addSignals (collapsedNodes, hoveredNode, plus interactive-mark signals), setScales (color scale if used, otherwise none required)." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/hierarchyUtils.test.ts", "change": "Unit tests for repairFlatHierarchy covering missing-root and multiple-orphan cases." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/treeDataUtils.test.ts", "change": "Unit tests for the transform/filter/ancestor-chain helpers." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/treeMarkUtils.test.ts", "change": "Unit tests for getTreeNodeMark/getTreeLinkMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/tree/treeSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register treeCount: -1 in initializeComponentCounts, import addTree, add the 'tree' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/tree.types.ts", "change": "TreeProps/TreeElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Tree/Tree.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Tree/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Tree'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Tree from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Tree to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Tree/Tree.story.tsx", "change": "Basic story plus a CollapseExpand interaction story." }
+  ],
+  "openQuestions": [
+    "Should collapsedNodes be exposed as a controlled prop (consumer-driven initial collapse state) in addition to click/Enter, or purely internal signal state for v1?",
+    "What visual treatment distinguishes an ancestor-chain highlight from a regular hover — dimmed non-ancestors, bolded links, or both?"
+  ],
+  "relatedIssues": ["add-treemap-mark", "add-sunburst-mark"]
+}

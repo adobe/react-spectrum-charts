@@ -12,6 +12,7 @@
 import {
   AggregateTransform,
   Data,
+  FormulaTransform,
   GroupMark,
   Mark,
   RectMark,
@@ -35,10 +36,13 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   FOCUSED_REGION,
+  GROUP_ID,
   HOVERED_ITEM,
+  INTERACTION_MODALITY,
   LINE_TYPE_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  SERIES_ID,
   STACK_ID,
   TABLE,
 } from '@spectrum-charts/constants';
@@ -70,6 +74,14 @@ import { defaultDodgedMark } from './dodgedBarUtils.test';
 
 const startingSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
+});
+
+// addInspectSignals() (chartInspectUtils.ts) looks up the chart-level HIGHLIGHTED_GROUP signal by
+// name and expects it to already exist -- normally added by chartSpecBuilder before any mark builder
+// runs, so group-highlighted-by tests need to seed it explicitly since they call addBar() in isolation.
+const startingSpecWithHighlightSignals = initializeSpec({
+  scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
+  signals: defaultSignals,
 });
 
 const defaultMetricScaleDomain: ScaleData = { data: FILTERED_TABLE, fields: ['value1'] };
@@ -270,6 +282,266 @@ describe('barSpecBuilder', () => {
           addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', orientation: 'horizontal' }).usermeta
         ).toHaveProperty('chartOrientation', 'horizontal');
       });
+
+      test('should attach the dimension to the interactive mark entry when the bar is interactive', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartPopovers: [{}],
+        }).usermeta;
+        expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION }]);
+      });
+
+      test('should not attach a dimension for a bar that is only interactive via highlightedItem', () => {
+        // highlightedItem alone isn't "interactive" per isInteractive()
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          highlightedItem: 'someValue',
+        }).usermeta;
+        expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: undefined }]);
+      });
+
+      test('should add a divergingBarMarks entry for a single-series diverging bar', () => {
+        const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', diverging: true }).usermeta;
+        expect(usermeta.divergingBarMarks).toStrictEqual([
+          { name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION, metric: DEFAULT_METRIC },
+        ]);
+      });
+
+      test('should not add a divergingBarMarks entry when diverging is not set', () => {
+        const usermeta = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry when the bar has a color facet, even if diverging is set', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          color: 'series',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry for a dodged bar, even with no facet set', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          type: 'dodged',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry when dodged by a lineType facet (not color)', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          type: 'dodged',
+          lineType: 'period',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+
+      test('should not add a divergingBarMarks entry for a stacked bar faceted by opacity (not color)', () => {
+        const usermeta = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          diverging: true,
+          opacity: 'tier',
+        }).usermeta;
+        expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+    });
+
+    describe('isHoverAnimate gate', () => {
+      test('an interactive bar does not animate by default -- animations must be explicitly opted into', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+        });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
+      });
+
+      test('an interactive bar with animations explicitly true resolves isHoverAnimate true, registers usermeta.animatedMarks, and creates hover-animation data', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: true,
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['bar0']);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(true);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverAnimStateData')).toBe(true);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverFractionData')).toBe(true);
+        // series-level aggregate needed so an ungrouped legend can read one fraction per series
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverSeriesFractionData')).toBe(true);
+      });
+
+      test('a non-interactive bar does not animate', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
+      });
+
+      test('an animationTypes list without "hover" disables animation even for an interactive, animations:true bar', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: true,
+          animationTypes: [],
+        });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
+      });
+
+      test('the chart-level animations: false master switch disables animation even for an interactive bar', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: false,
+        });
+        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
+        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
+      });
+
+      test('a chart-level highlightedSeries alone (no other bar interactivity) resolves isHoverAnimate true when animations is opted into', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          highlightedSeries: 'seriesA',
+          animations: true,
+        });
+        expect(spec.usermeta?.animatedMarks).toStrictEqual(['bar0']);
+      });
+
+      test('computes the composite per-bar identity field from the real data and uses it as the hoverTargetData groupby / hoverAnimStateData keyField', () => {
+        const data = [
+          { [DEFAULT_CATEGORICAL_DIMENSION]: 'A', [DEFAULT_METRIC]: 1 },
+          { [DEFAULT_CATEGORICAL_DIMENSION]: 'B', [DEFAULT_METRIC]: 2 },
+        ];
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: true,
+          data,
+        });
+        const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as
+          | SourceData
+          | undefined;
+        const aggregateTransform = hoverTargetData?.transform?.find(
+          (t): t is AggregateTransform => t.type === 'aggregate'
+        );
+        expect(aggregateTransform?.groupby).toStrictEqual([
+          'bar0_rscBarAnimId',
+          MARK_ID,
+          SERIES_ID,
+          DEFAULT_CATEGORICAL_DIMENSION,
+        ]);
+
+        const hoverAnimStateData = spec.data?.find((d) => d.name === 'bar0_hoverAnimStateData') as
+          | ValuesData
+          | undefined;
+        expect(hoverAnimStateData?.values).toStrictEqual([
+          { bar0_rscBarAnimId: 'A', startTime: 0, startValue: 1, target: 1 },
+          { bar0_rscBarAnimId: 'B', startTime: 0, startValue: 1, target: 1 },
+        ]);
+      });
+
+      test('includes the secondary facet in the composite identity for dodged-and-stacked bars, so segments sharing a dimension + primary-facet value stay unique', () => {
+        // regression: the composite id previously omitted the secondary facet, colliding here
+        const data = [
+          { [DEFAULT_CATEGORICAL_DIMENSION]: 'A', primaryColor: 'X', secondaryColor: 'Y1', [DEFAULT_METRIC]: 1 },
+          { [DEFAULT_CATEGORICAL_DIMENSION]: 'A', primaryColor: 'X', secondaryColor: 'Y2', [DEFAULT_METRIC]: 2 },
+        ];
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          chartInspects: [{}],
+          animations: true,
+          color: ['primaryColor', 'secondaryColor'],
+          data,
+        });
+        const hoverAnimStateData = spec.data?.find((d) => d.name === 'bar0_hoverAnimStateData') as
+          | ValuesData
+          | undefined;
+        const ids = (hoverAnimStateData?.values as { bar0_rscBarAnimId: string }[] | undefined)?.map(
+          (v) => v.bar0_rscBarAnimId
+        );
+        expect(ids).toHaveLength(2);
+        expect(new Set(ids)).toHaveProperty('size', 2);
+      });
+
+      describe('group-highlighted-by', () => {
+        test('highlightBy: "dimension" adds a groupId transform keyed by the dimension and includes it in the hoverTargetData groupby', () => {
+          const spec = addBar(startingSpecWithHighlightSignals, {
+            idKey: MARK_ID,
+            markType: 'bar',
+            chartInspects: [{ highlightBy: 'dimension' }],
+            animations: true,
+          });
+          const tableData = spec.data?.find((d) => d.name === TABLE);
+          expect(tableData?.transform).toContainEqual({
+            type: 'formula',
+            as: `bar0_${GROUP_ID}`,
+            expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
+          });
+          const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as
+            | SourceData
+            | undefined;
+          const aggregateTransform = hoverTargetData?.transform?.find(
+            (t): t is AggregateTransform => t.type === 'aggregate'
+          );
+          expect(aggregateTransform?.groupby).toContain(`bar0_${GROUP_ID}`);
+        });
+
+        test('highlightBy: "series" adds a groupId transform keyed by the series id', () => {
+          const spec = addBar(startingSpecWithHighlightSignals, {
+            idKey: MARK_ID,
+            markType: 'bar',
+            chartInspects: [{ highlightBy: 'series' }],
+            animations: true,
+          });
+          const tableData = spec.data?.find((d) => d.name === TABLE);
+          expect(tableData?.transform).toContainEqual({
+            type: 'formula',
+            as: `bar0_${GROUP_ID}`,
+            expr: `datum.${SERIES_ID}`,
+          });
+        });
+
+        test('highlightBy: [fields] adds a groupId transform joining the supplied fields', () => {
+          const spec = addBar(startingSpecWithHighlightSignals, {
+            idKey: MARK_ID,
+            markType: 'bar',
+            chartInspects: [{ highlightBy: ['fieldA', 'fieldB'] }],
+            animations: true,
+          });
+          const tableData = spec.data?.find((d) => d.name === TABLE);
+          const groupIdTransform = tableData?.transform?.find(
+            (t): t is FormulaTransform => 'as' in t && t.as === `bar0_${GROUP_ID}`
+          );
+          expect(groupIdTransform?.expr).toBe('datum.fieldA + " | " + datum.fieldB');
+        });
+
+        test('highlightBy: "item" does not add a groupId transform', () => {
+          const spec = addBar(startingSpec, {
+            idKey: MARK_ID,
+            markType: 'bar',
+            chartInspects: [{ highlightBy: 'item' }],
+            animations: true,
+          });
+          const tableData = spec.data?.find((d) => d.name === TABLE);
+          expect(tableData?.transform?.some((t) => 'as' in t && t.as === `bar0_${GROUP_ID}`)).toBe(false);
+        });
+      });
     });
   });
 
@@ -290,21 +562,61 @@ describe('barSpecBuilder', () => {
       expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
       expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
     });
+    // Regression test: applyFocusSignals (dataNavigatorAdapter.ts) writes to this signal on every
+    // keyboard focus move, unconditionally — if it isn't defined, that write throws on a real Vega
+    // View and keyboard navigation breaks entirely for a bar with no other interactive feature.
+    test('adds the interactionModality signal even with no other interactive feature enabled', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
+      const modalitySignal = signals.find((signal) => signal.name === INTERACTION_MODALITY);
+      expect(modalitySignal).toBeDefined();
+      expect(modalitySignal?.on?.some((on) => on.events === `@${defaultBarOptions.name}:mouseover`)).toBe(true);
+    });
+    test('does not add the interactionModality signal by default', () => {
+      const signals = addSignals(defaultSignals, defaultBarOptions);
+      expect(signals.find((signal) => signal.name === INTERACTION_MODALITY)).toBeUndefined();
+    });
+    // Regression: accessibleNavigation alone must not turn on hover-driven opacity/tooltip behavior —
+    // getMarkOpacity (markUtils.ts) only calls addHoveredItemOpacityRules when there's real
+    // interactivity (click/popover/inspect), so this signal must stay undeclared here too, matching
+    // that gate — otherwise a bar with no ChartInspect/ChartPopover/onClick would still fade on hover.
+    test('does not add the hoveredItem signals for accessibleNavigation alone, with no other interactive feature', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
+      expect(signals.find((signal) => signal.name === `${defaultBarOptions.name}_hoveredItem`)).toBeUndefined();
+      expect(
+        signals.find((signal) => signal.name === `${defaultBarOptions.name}_dimensionHoverArea_hoveredItem`)
+      ).toBeUndefined();
+    });
+    test('does not add the hoveredItem signals by default', () => {
+      const signals = addSignals(defaultSignals, defaultBarOptions);
+      expect(signals.find((signal) => signal.name === `${defaultBarOptions.name}_hoveredItem`)).toBeUndefined();
+    });
+    // Regression test: chartSpecBuilder.ts calls addSignals once per Bar mark on the chart, and
+    // FOCUSED_ITEM/FOCUSED_REGION/FOCUSED_DIMENSION are chart-wide, not mark-scoped — a second call
+    // must not push a second copy, which Vega's parser rejects as a duplicate signal name.
+    test('does not add duplicate focus signals when called again for a second bar mark', () => {
+      const afterFirstBar = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true, name: 'bar0' });
+      const afterSecondBar = addSignals(afterFirstBar, { ...defaultBarOptions, accessibleNavigation: true, name: 'bar1' });
+      expect(afterSecondBar.filter((signal) => signal.name === FOCUSED_ITEM)).toHaveLength(1);
+      expect(afterSecondBar.filter((signal) => signal.name === FOCUSED_REGION)).toHaveLength(1);
+      expect(afterSecondBar.filter((signal) => signal.name === FOCUSED_DIMENSION)).toHaveLength(1);
+    });
     test('should add hover events if inspect is present', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartInspects: [{}] });
-      expect(signals.at(-1)).toHaveProperty('on');
-      expect(signals.at(-1)?.on).toHaveLength(2);
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      const hoveredItemSignal = signals.find((signal) => signal.name === 'bar0_hoveredItem');
+      expect(hoveredItemSignal).toHaveProperty('on');
+      expect(hoveredItemSignal?.on).toHaveLength(2);
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
     });
     test('should exclude data with key from update if inspect has excludeDataKey', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultBarOptions,
         chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
       });
-      expect(signals.at(-1)).toHaveProperty('on');
-      expect(signals.at(-1)?.on).toHaveLength(2);
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
-      expect(signals.at(-1)?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
+      const hoveredItemSignal = signals.find((signal) => signal.name === 'bar0_hoveredItem');
+      expect(hoveredItemSignal).toHaveProperty('on');
+      expect(hoveredItemSignal?.on).toHaveLength(2);
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@bar0:mouseover');
+      expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     });
 
     describe('dualMetricAxis signals', () => {
@@ -496,6 +808,54 @@ describe('barSpecBuilder', () => {
         expect(
           signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
         ).toBeDefined();
+      });
+
+      test('should add dimension hover area signal whenever the bar is interactive, regardless of chartInspect target', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          chartPopovers: [{}],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeDefined();
+      });
+
+      test('should wire the bar mark itself onto the dimension hover area signal, not just the hover area rect', () => {
+        const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartPopovers: [{}] });
+        const signal = signals.find(
+          (signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
+        );
+        expect(signal?.on).toContainEqual(
+          expect.objectContaining({ events: `@${defaultBarOptions.name}:mouseover` })
+        );
+      });
+
+      test('should not add dimension hover area signal if the bar is not interactive', () => {
+        const signals = addSignals(defaultSignals, defaultBarOptions);
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
+      });
+
+      test('should not add dimension hover area signal for a bar that is only interactive via barAnnotations', () => {
+        // barAnnotations alone isn't "interactive" per isInteractive()
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          barAnnotations: [{ textKey: 'textLabel' }],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
+      });
+
+      test('should not add dimension hover area signal for a bar with only a non-displayOnHover trendline', () => {
+        const signals = addSignals(defaultSignals, {
+          ...defaultBarOptions,
+          trendlines: [{ displayOnHover: false }],
+        });
+        expect(
+          signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+        ).toBeUndefined();
       });
     });
   });
@@ -792,6 +1152,21 @@ describe('barSpecBuilder', () => {
         const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
         expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
       });
+      test('makes the bar mark itself interactive, so a click can move keyboard focus', () => {
+        const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true });
+        expect(marks.find((mark) => mark.name === 'bar0')).toHaveProperty('interactive', true);
+      });
+      test('leaves the bar mark non-interactive by default', () => {
+        const marks = addMarks([], defaultBarOptions);
+        expect(marks.find((mark) => mark.name === 'bar0')).toHaveProperty('interactive', false);
+      });
+      // Regression test: chartFocusRing is chart-wide, not mark-scoped, but addMarks runs once per
+      // Bar mark on the chart — a second call must not push a second copy of the same-named mark.
+      test('does not add a duplicate chart focus ring when called again for a second bar mark', () => {
+        const afterFirstBar = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, name: 'bar0' });
+        const afterSecondBar = addMarks(afterFirstBar, { ...defaultBarOptions, accessibleNavigation: true, name: 'bar1' });
+        expect(afterSecondBar.filter((mark) => mark.name === 'chartFocusRing')).toHaveLength(1);
+      });
     });
 
     describe('with annotations', () => {
@@ -840,9 +1215,11 @@ describe('barSpecBuilder', () => {
         ...defaultBarOptions,
         chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }],
       });
-      expect(marks).toHaveLength(3);
+      // the bar is interactive (has a popover), so the dimension hover area mark is also prepended
+      expect(marks).toHaveLength(4);
+      expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
 
-      const selectionRingMark = marks[2] as RectMark;
+      const selectionRingMark = marks[3] as RectMark;
       expect(selectionRingMark.type).toEqual('rect');
       expect(selectionRingMark.name).toEqual('bar0_selectionRing');
     });

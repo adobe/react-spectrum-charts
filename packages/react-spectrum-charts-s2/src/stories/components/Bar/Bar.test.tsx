@@ -9,9 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
+import { ReactElement } from 'react';
 
-import { Bar } from '../../../components';
+import { fireEvent } from '@testing-library/react';
+
+import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
+import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
+
+import { Chart } from '../../../Chart';
+import { Axis, Bar } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
 import {
   clickNthElement,
   findAllMarksByGroupName,
@@ -21,10 +28,12 @@ import {
   rightClickNthElement,
   screen,
   unhoverNthElement,
+  waitForMarksByGroupName,
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
+  AccessibleNavigation,
   BarWithUTCDatetimeFormat,
   Basic,
   OnClick,
@@ -35,7 +44,7 @@ import {
   WithInspect,
 } from './Bar.story';
 import { Color, DodgedStacked } from './DodgedBar.story';
-import { Basic as StackedBasic } from './StackedBar.story';
+import { AccessibleNavigationNoInspect, Basic as StackedBasic } from './StackedBar.story';
 import { barData } from './data';
 
 describe('Bar', () => {
@@ -234,18 +243,194 @@ describe('Bar', () => {
       let inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
       expect(within(inspect).getByText('Chrome: 27000')).toBeInTheDocument();
-      expect(bars[0]).toHaveAttribute('opacity', `1`);
-      expect(bars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      // opacity is now animated, so it settles asynchronously -- hence waitForMarksByGroupName
+      await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
+        expect(updatedBars[0]).toHaveAttribute('opacity', `1`);
+        expect(updatedBars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      });
 
       await unhoverNthElement(dimensionAreas, 0);
 
       // hovering bar should do normal stuff
       await hoverNthElement(bars, 4);
-      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      expect(bars[4]).toHaveAttribute('opacity', `1`);
+      await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
+        expect(updatedBars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+        expect(updatedBars[4]).toHaveAttribute('opacity', `1`);
+      });
       inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
       expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();
+    });
+  });
+  describe('AccessibleNavigation', () => {
+    // Regression: a single-series bar has no color facet, so the focus opacity rule (markUtils.ts's
+    // getMarkOpacity) must key on the dimension value alone rather than the stacked dimension+color
+    // composite id — previously this branch was skipped entirely for non-stacked bars.
+    test('keyboard focus dims the other bars and keeps the focused bar at full opacity', async () => {
+      render(<AccessibleNavigation {...AccessibleNavigation.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first bar
+
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.some((bar) => bar.getAttribute('opacity') === '1')).toBe(true);
+      expect(bars.some((bar) => bar.getAttribute('opacity') === `${FADE_FACTOR}`)).toBe(true);
+
+      const focusedId = dnNode().id;
+      fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' });
+      expect(dnNode().id).not.toBe(focusedId);
+      expect(bars.some((bar) => bar.getAttribute('opacity') === '1')).toBe(true);
+      expect(bars.some((bar) => bar.getAttribute('opacity') === `${FADE_FACTOR}`)).toBe(true);
+    });
+
+    // Regression: clicking (or keyboard-focusing) a bar moves dataNavigator focus, which calls
+    // onNavLeafFocus — without navMarkHasInspect gating that, an unconditional Handler.call falls
+    // through to vega-tooltip's own default renderer (a raw table of every field on the datum),
+    // showing an unrequested tooltip even though AccessibleNavigationNoInspect has no ChartInspect configured.
+    test('clicking or keyboard-focusing a bar with no ChartInspect does not show a default tooltip', async () => {
+      render(<AccessibleNavigationNoInspect {...AccessibleNavigationNoInspect.args} />);
+      const chart = await findChart();
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+
+      await clickNthElement(bars, 0);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      expect(document.getElementById('vg-tooltip-element')).not.toHaveClass('visible');
+
+      const container = chart.closest('.rsc-container') as HTMLElement;
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+      expect(dnNode()).toBeTruthy();
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' });
+      fireEvent.keyDown(dnNode(), { key: 'ArrowRight', code: 'ArrowRight' });
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      expect(document.getElementById('vg-tooltip-element')).not.toHaveClass('visible');
+    });
+
+    // Regression: accessibleNavigation alone (AccessibleNavigationNoInspect has no ChartInspect/
+    // ChartPopover/onClick) must not introduce mouse-hover opacity dimming — that behavior should only
+    // appear when the user actually configures a hover-driven feature, matching getMarkOpacity's
+    // hasRealInteractivity gate.
+    test('mouse hover does not dim other bars when there is no other interactive feature', async () => {
+      render(<AccessibleNavigationNoInspect {...AccessibleNavigationNoInspect.args} />);
+      const chart = await findChart();
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+
+      await hoverNthElement(bars, 0);
+      expect(bars.every((bar) => bar.getAttribute('opacity') === '1')).toBe(true);
+
+      await unhoverNthElement(bars, 0);
+      expect(bars.every((bar) => bar.getAttribute('opacity') === '1')).toBe(true);
+    });
+
+    // Regression: keyboard focus should mirror whatever mouse hover would already do — with no
+    // ChartInspect/ChartPopover/onClick configured, mouse hover doesn't dim anything (see the test
+    // above), so keyboard focus shouldn't either; the focus ring alone shows which segment is focused.
+    test('keyboard focus does not dim other bars when there is no other interactive feature', async () => {
+      render(<AccessibleNavigationNoInspect {...AccessibleNavigationNoInspect.args} />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first stack
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // stack -> first segment (leaf)
+
+      const bars = await findAllMarksByGroupName(chart, 'bar0');
+      expect(bars.every((bar) => bar.getAttribute('opacity') === '1')).toBe(true);
+    });
+
+    // Regression: activating a keyboard-focused mark (Enter/Space) never dispatches a real DOM click,
+    // so Vega's own view 'click' listener (getOnChartMarkClickCallback) never sees it — onNavActivate
+    // must call the mark's onClick directly instead of relying on that listener.
+    test('Enter on a focused bar fires onClick with the focused datum, even with no popover', async () => {
+      const onClick = jest.fn();
+      const BarWithOnClick = (): ReactElement => {
+        const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
+        return (
+          <Chart {...chartProps}>
+            <Axis position="bottom" baseline title="Browser" />
+            <Axis position="left" grid title="Downloads" />
+            <Bar dimension="browser" metric="downloads" onClick={onClick} />
+          </Chart>
+        );
+      };
+      render(<BarWithOnClick />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first bar (leaf)
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate
+
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onClick).toHaveBeenCalledWith(expect.objectContaining({ browser: 'Chrome' } as Partial<Datum>));
+    });
+
+    // Regression: onNavActivate previously called selectAndOpenPopover unconditionally, regardless of
+    // whether the mark actually declared a ChartPopover — it must only fire selection/popover logic
+    // when one is present, mirroring getOnMarkClickCallback's own markHasPopover gate for real clicks.
+    test('Enter on a focused bar with no ChartPopover does not open a popover', async () => {
+      const BarWithNoPopover = (): ReactElement => {
+        const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
+        return (
+          <Chart {...chartProps}>
+            <Axis position="bottom" baseline title="Browser" />
+            <Axis position="left" grid title="Downloads" />
+            <Bar dimension="browser" metric="downloads" />
+          </Chart>
+        );
+      };
+      render(<BarWithNoPopover />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first bar (leaf)
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // activate
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      expect(screen.queryByTestId('rsc-popover-content')).not.toBeInTheDocument();
+      expect(document.querySelector('[id$="-popover-button"]')).not.toBeInTheDocument();
+    });
+
+    test('Space on a focused bar also fires onClick', async () => {
+      const onClick = jest.fn();
+      const BarWithOnClick = (): ReactElement => {
+        const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
+        return (
+          <Chart {...chartProps}>
+            <Axis position="bottom" baseline title="Browser" />
+            <Axis position="left" grid title="Downloads" />
+            <Bar dimension="browser" metric="downloads" onClick={onClick} />
+          </Chart>
+        );
+      };
+      render(<BarWithOnClick />);
+      const chart = await findChart();
+      const container = chart.closest('.rsc-container') as HTMLElement;
+
+      const entryButton = container.querySelector('button') as HTMLButtonElement;
+      entryButton.click();
+      const dnNode = () => container.querySelector('.dn-node') as HTMLElement;
+
+      fireEvent.keyDown(dnNode(), { key: 'Enter', code: 'Enter' }); // root -> first bar (leaf)
+      fireEvent.keyDown(dnNode(), { key: ' ', code: 'Space' }); // activate
+
+      expect(onClick).toHaveBeenCalledTimes(1);
     });
   });
   describe('WithInspect', () => {
@@ -258,8 +443,11 @@ describe('Bar', () => {
 
       // hovering bar should do normal stuff
       await hoverNthElement(bars, 4);
-      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      expect(bars[4]).toHaveAttribute('opacity', `1`);
+      // opacity is now animated, so it settles asynchronously -- hence waitForMarksByGroupName
+      await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
+        expect(updatedBars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+        expect(updatedBars[4]).toHaveAttribute('opacity', `1`);
+      });
       const inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
       expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();

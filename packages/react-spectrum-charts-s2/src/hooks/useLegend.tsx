@@ -22,7 +22,7 @@ const ChartContainer = ({ children }: { children: React.ReactNode }) => {
 };
 ChartContainer.displayName = 'ChartContainer';
 
-interface UseLegendProps {
+export type UseLegendProps = {
   legendHiddenSeries: string[];
   setLegendHiddenSeries: (legendHiddenSeries: string[]) => void;
   descriptions?: LegendDescription[];
@@ -30,7 +30,7 @@ interface UseLegendProps {
   onClick?: (seriesName: string) => void;
   onMouseOut?: (seriesName: string) => void;
   onMouseOver?: (seriesName: string) => void;
-}
+};
 
 export default function useLegend(children: ChartChildElement[]): UseLegendProps {
   const legend = useMemo(() => {

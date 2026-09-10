@@ -1,0 +1,33 @@
+{
+  "id": "vegachart-ssr-expressionfunction-crash",
+  "title": "VegaChart.tsx crashes under SSR due to module-scope expressionFunction registration",
+  "chartType": "chart",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-08-17",
+  "complexity": {
+    "score": 1,
+    "rationale": "Root cause is fully confirmed, single file, single site, and the fix (guard the registration to browser-only execution) is a well-understood, small change with no remaining research."
+  },
+  "summary": "VegaChart.tsx registers a Vega expression function at module load time, which throws when any SSR framework server-renders the initial HTML for a chart component — even as an ordinary client component, unrelated to whether the consumer is using React Server Components at all.",
+  "symptom": "Any SSR framework (confirmed with Next.js App Router) throws 'expressionFunction is not a function' when server-rendering the initial HTML for a page using this library's Chart component, even when it's used as a completely ordinary \"use client\" component with no RSC-specific usage. Consumers must wrap the chart in next/dynamic({ ssr: false }) (or equivalent) to avoid this, but have no way to know that until they hit the crash.",
+  "rootCause": "packages/react-spectrum-charts-s2/src/VegaChart.tsx registers the rscContainerWidth Vega expression function via a module-scope call to expressionFunction(...) (line 30) — a side effect evaluated during Node's server-side module evaluation, not gated to browser-only execution. Confirmed s1 has no equivalent: packages/react-spectrum-charts/src/VegaChart.tsx has no expressionFunction call anywhere, and packages/vega-spec-builder/src doesn't reference rscContainerWidth or CHART_SIZE_BREAKPOINTS at all — the responsive chart-size-breakpoint feature this expression function supports is s2-only, so this bug is s2-only too.",
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "requiresS1S2Parity is false — confirmed directly, not assumed: s1's VegaChart.tsx has no expressionFunction call, and vega-spec-builder doesn't use rscContainerWidth/CHART_SIZE_BREAKPOINTS anywhere. This is purely an s2 chart-size-responsiveness feature and its associated bug."
+  },
+  "implementationPlan": [
+    { "file": "packages/react-spectrum-charts-s2/src/VegaChart.tsx", "change": "Fixed. Wrapped the expressionFunction('rscContainerWidth', ...) registration in `if (typeof window !== 'undefined') { ... }`. jsdom (used by this file's tests) provides `window`, so the function still registers under Jest.", "lines": "26-40" },
+    { "file": "packages/react-spectrum-charts-s2/src/VegaChart.test.tsx", "change": "No test changes required — existing `rscContainerWidth expression function` tests continue to pass unmodified since jsdom provides `window`. A Jest-level 'require with no window' regression test was attempted and dropped: VegaChart.tsx's own import chain (useDebugSpec -> the '../utils' barrel -> the '../components' barrel -> EmptyState -> @react-aria/utils) hits an unrelated, pre-existing `window` reference at import time in a plain Node require, independent of this fix and present on main today. The real verification is the Next.js diagnostic below, since a bundler resolves this differently than a raw Jest require() would." }
+  ],
+  "openQuestions": [
+    "A second, unrelated SSR hazard exists in the same file's import chain (VegaChart.tsx -> useDebugSpec -> '../utils' barrel -> '../components' barrel -> EmptyState -> @react-aria/utils's window reference at import time). Not fixed here — confirmed not to affect the real Next.js SSR pattern (bundler resolution differs from a raw Node require), but would affect any consumer trying to require() this module outside a bundler. Worth its own follow-up if that scenario matters to a consumer."
+  ],
+  "relatedIssues": []
+}

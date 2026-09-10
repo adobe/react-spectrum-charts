@@ -24,17 +24,21 @@ import {
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
   COMPONENT_NAME,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
   HOVER_SHAPE,
   HOVER_SHAPE_COUNT,
   HOVER_SIZE,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
+  NAVIGATION_ID_SEPARATOR,
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -160,6 +164,10 @@ export const hasPopover = (options: { chartPopovers?: ChartPopoverOptions[] }): 
 export const hasInspect = (options: { chartInspects?: ChartInspectOptions[] }): boolean =>
   Boolean('chartInspects' in options && options.chartInspects?.length);
 
+/** True when accessibleNavigation is on — options may be any mark-options union member, so the `in` check is a runtime guard rather than relying on the field being declared on every member. */
+export const hasAccessibleNavigation = (options: object): boolean =>
+  'accessibleNavigation' in options && Boolean((options as { accessibleNavigation?: boolean }).accessibleNavigation);
+
 /**
  * Gets the color encoding
  * @param color
@@ -259,6 +267,9 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
   }
   return { value: getStrokeDashFromLineType(lineType.value) };
 };
+
+export const getDirectLabelFontSizeProductionRule = (fontSize?: number): { signal: string } | { value: number } =>
+  fontSize == null ? { signal: CHART_SIZE_FONT_SIZE } : { value: fontSize };
 
 export const getHighlightOpacityValue = (
   opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE
@@ -432,13 +443,35 @@ export const getMarkOpacity = (
 ): ({ test?: string } & NumericValueRef)[] => {
   const { highlightedItem, idKey, name: markName } = options;
   const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
+  const hasRealInteractivity = isInteractive(options) || highlightedItem !== undefined;
 
-  // if there aren't any interactive components, then we don't need to add special opacity rules
-  if (!isInteractive(options) && highlightedItem === undefined) {
+  // Neither hover- nor focus-driven opacity should appear unless the mark has an actual mouse-hover
+  // feature (click/popover/inspect) — accessibleNavigation alone shouldn't introduce dimming that
+  // wouldn't also happen on mouse hover; the focus ring alone is enough to show keyboard focus then.
+  if (!hasRealInteractivity) {
     return rules;
   }
 
   addHoveredItemOpacityRules(rules, options);
+
+  // Falls after the hover rule above, matching the focus ring's own exact-segment/whole-stack matching (barFocusRingUtils.ts) so the segment(s) that light up with a ring also stay opaque.
+  // Vega's production-rule compiler requires the untested DEFAULT_OPACITY_RULE to stay last in the array, so this
+  // is spliced in before it rather than pushed to the end (addHoveredItemOpacityRules always leaves it last).
+  if (hasAccessibleNavigation(options) && 'dimension' in options) {
+    const { color, dimension } = options;
+    // Stacked/multi-series bars key a segment by dimension+color and can also have a whole-stack
+    // (dimension-only) focus level; a single-series bar has no stack level, so a bar is keyed by
+    // its dimension value alone (mirrors getBarFocusRing's own focusedItemId in barFocusRingUtils.ts).
+    const isStacked = typeof color === 'string';
+    const focusedItemId = isStacked
+      ? `datum.${dimension} + "${NAVIGATION_ID_SEPARATOR}" + datum.${color}`
+      : `datum.${dimension}`;
+    const dimensionMatch = isStacked ? `${FOCUSED_DIMENSION} === datum.${dimension} || ` : '';
+    rules.splice(rules.length - 1, 0, {
+      test: `isValid(${FOCUSED_DIMENSION}) || isValid(${FOCUSED_ITEM})`,
+      signal: `(${dimensionMatch}${FOCUSED_ITEM} === (${focusedItemId})) ? 1 : ${FADE_FACTOR}`,
+    });
+  }
 
   // if a bar is hovered/selected, all other bars should have reduced opacity
   if (hasPopover(options)) {

@@ -1,0 +1,54 @@
+{
+  "id": "gh-628-metricrange-step-interpolation",
+  "title": "Option to render MetricRange transitions as a rectangle instead of an interpolated shape",
+  "chartType": "line",
+  "kind": "feature",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "A repo-wide search for `interpolate` across vega-spec-builder/src turns up zero usages on any mark — no Area or Line mark in this codebase configures Vega's `interpolate` field today, so there is no existing pattern to copy for the new option; it is genuinely new, unprecedented logic at its single site (getAreaMark). One open design decision also remains (which Vega interpolate value, and whether it should be a boolean toggle or a full enum). One real site + one open decision => 3, not higher, since the change itself (adding one conditional encode field) is small and scoped to a single mark builder function."
+  },
+  "summary": "MetricRange is a Line child (MetricRangeParentOptions = LineSpecOptions in metricRangeUtils.ts:31) whose range is rendered by getAreaMark (packages/vega-spec-builder/src/area/areaUtils.ts:71-114). That function never sets Vega's `interpolate` field on the area mark, so it renders with Vega's AreaMark default ('linear'), independently interpolating the metricStart and metricEnd boundary fields between points; when adjacent points' ranges cross through zero this produces a diamond/rhombus shape instead of the rectangle the reporter wants for 'this range started here and ended here' semantics. There is currently no prop to opt into a step-style render, so this is a missing feature, not a regression in existing behavior.",
+  "requirements": [
+    "Add a new option to MetricRangeOptions (packages/vega-spec-builder/src/types/marks/supplemental/metricRangeSpec.types.ts) controlling the range area's interpolation — e.g. `interpolate?: 'linear' | 'step-after'` (or a simpler boolean such as `smoothTransitions?: boolean`, defaulting to true/current behavior).",
+    "Thread the resolved value through AreaMarkOptions (packages/vega-spec-builder/src/area/areaUtils.ts:44-69) and set Vega's `interpolate` on the returned AreaMark in getAreaMark (currently entirely unset, lines 89-113).",
+    "Apply the same resolved value to the paired metric line mark built in getMetricRangeMark (packages/vega-spec-builder/src/metricRange/metricRangeUtils.ts:185-231) so the line and its range stay visually consistent across the same transition.",
+    "Determine which Vega interpolate value best matches 'started here, ended here' — most likely 'step-after' so the range holds its value until the next data point rather than stepping early — and document the choice.",
+    "Default to current ('linear') behavior so existing MetricRange usages are visually unaffected; the new mode must be opt-in."
+  ],
+  "edgeCases": [
+    { "case": "Only one metric range point (no adjacent segment to interpolate across)", "expectedBehavior": "No visible difference between modes — interpolation only affects rendering between two or more points." },
+    { "case": "Metric range with metricStart === metricEnd for every point", "expectedBehavior": "Renders as a degenerate flat line regardless of interpolate mode; not specific to this feature." },
+    { "case": "displayOnHover metric ranges", "expectedBehavior": "The chosen interpolate mode applies identically whether the range is always visible or only shown on hover, since it's set on the same area mark either way." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "Same option, default, and resolved Vega interpolate value in vega-spec-builder-s2/src/metricRange and area/areaUtils.ts, which have the identical current gap." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "requiresS1S2Parity: vega-spec-builder-s2/src/area/areaUtils.ts and vega-spec-builder-s2/src/metricRange/metricRangeUtils.ts mirror the s1 files exactly and have the identical missing-interpolate gap (confirmed via grep — no `interpolate` usage in either package)."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder/src/types/marks/supplemental/metricRangeSpec.types.ts", "change": "Add the new interpolate/smoothTransitions option to MetricRangeOptions, with a runtime default preserving current behavior.", "lines": "16-55" },
+    { "file": "packages/vega-spec-builder/src/area/areaUtils.ts", "change": "Add an `interpolate` field to AreaMarkOptions and set it on the AreaMark returned from getAreaMark.", "lines": "44-114" },
+    { "file": "packages/vega-spec-builder/src/metricRange/metricRangeUtils.ts", "change": "Thread the new option from MetricRangeSpecOptions into AreaMarkOptions (and the paired LineMarkOptions) in getMetricRangeMark.", "lines": "39-62,185-231" },
+    { "file": "packages/react-spectrum-charts/src/types/marks/supplemental/metricRange.types.ts", "change": "Expose the new prop at the React boundary." },
+    { "file": "packages/react-spectrum-charts/src/components/MetricRange/MetricRange.tsx", "change": "Thread through the default value for the new prop." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/supplemental/metricRangeSpec.types.ts", "change": "Mirror the new option for S2 parity." },
+    { "file": "packages/vega-spec-builder-s2/src/area/areaUtils.ts", "change": "Mirror the interpolate field addition for S2 parity." },
+    { "file": "packages/vega-spec-builder-s2/src/metricRange/metricRangeUtils.ts", "change": "Mirror the option threading for S2 parity." },
+    { "file": "packages/react-spectrum-charts/src/stories/components/MetricRange/MetricRange.story.tsx", "change": "Add a story demonstrating the new mode across a zero-to-X transition, following existing story ordering/grouping." }
+  ],
+  "openQuestions": [
+    "Should the new option be a simple boolean (e.g. smoothTransitions / disableSmoothTransitions) or expose the full Vega interpolate enum for future flexibility?",
+    "Should 'step-after' become the new default for MetricRange going forward (a breaking visual change) or remain strictly opt-in?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/628" }
+  ]
+}

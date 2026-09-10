@@ -11,6 +11,8 @@
  */
 import { Data, Spec } from 'vega';
 
+import { AnimationType } from '@spectrum-charts/constants';
+
 import { AxisOptions } from './axis';
 import { LegendOptions } from './legendSpec.types';
 import {
@@ -66,6 +68,11 @@ export type MarkOptions =
 // Notice that things like data and width/height are not included here
 // This is intentional as we don't want to have to rebuild the entire spec anytime data updates or the width/height change
 export interface ChartOptions {
+  /** Master kill switch for all chart animations. Defaults to `true`; set to `false` to disable every
+   * animation type regardless of `animationTypes` (e.g. to honor `prefers-reduced-motion`). */
+  animations?: boolean;
+  /** Which animation types are enabled. Defaults to `['hover']`. */
+  animationTypes?: AnimationType[];
   /** Background color of the chart. */
   backgroundColor?: string;
   /** Color scale. Defaults to the `categorical16' color scale. */
@@ -101,11 +108,7 @@ export interface ChartOptions {
   idKey?: string;
   /** Width of chart */
   chartWidth?: number;
-  /**
-   * Enables experimental accessible keyboard navigation of the chart via data-navigator.
-   * When enabled, supported marks emit focus signals and render focus rings driven by keyboard navigation.
-   * Currently only basic bar charts are supported. Defaults to `false`.
-   */
+  /** Enables experimental accessible keyboard navigation via data-navigator. Currently supports Bar and Line. Defaults to `false`. */
   accessibleNavigation?: boolean;
 
   // children

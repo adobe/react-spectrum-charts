@@ -286,11 +286,11 @@ export const getBaseBarEnterEncodings = (options: BarSpecOptions): EncodeEntry =
  * Otherwise fill is from the color scale via {@link getColorProductionRule} using {@link BarSpecOptions.color}.
  */
 export const getBarFillEncoding = (options: BarSpecOptions): ColorValueRef => {
-  const { colorOverride, color, colorScheme } = options;
+  const { colorOverride, color, colorScheme, s2 } = options;
   if (colorOverride) {
     return { signal: `datum[${JSON.stringify(colorOverride)}]` };
   }
-  return getColorProductionRule(color, colorScheme);
+  return getColorProductionRule(color, colorScheme, undefined, s2);
 };
 
 export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
@@ -308,7 +308,7 @@ export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => (
 });
 
 export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef> => {
-  const { name, chartPopovers, colorScheme, idKey } = options;
+  const { name, chartPopovers, colorScheme, idKey, s2 } = options;
   const defaultProductionRule = getBarFillEncoding(options);
   if (!hasPopover({ chartPopovers })) {
     return [defaultProductionRule];
@@ -317,14 +317,14 @@ export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef
   return [
     {
       test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,
-      value: getColorValue('static-blue', colorScheme),
+      value: getColorValue('static-blue', colorScheme, s2),
     },
     defaultProductionRule,
   ];
 };
 
 export const getDimensionSelectionRing = (options: BarSpecOptions): RectMark => {
-  const { name, colorScheme, paddingRatio, orientation } = options;
+  const { name, colorScheme, paddingRatio, orientation, s2 } = options;
 
   const update =
     orientation === 'vertical'
@@ -352,7 +352,7 @@ export const getDimensionSelectionRing = (options: BarSpecOptions): RectMark => 
       enter: {
         fill: { value: 'transparent' },
         strokeWidth: { value: 2 },
-        stroke: { value: getColorValue('static-blue', colorScheme) },
+        stroke: { value: getColorValue('static-blue', colorScheme, s2) },
         cornerRadius: { value: 6 },
       },
       update,

@@ -34,7 +34,14 @@ import { MARK_ID } from '@spectrum-charts/constants';
 
 import { defaultLineOptions } from '../trendline/trendlineTestUtils';
 import { LineSpecOptions } from '../types';
-import { HoverContext, getHoverContext, getItemHoverPredicate, getSeriesHoverPredicate } from './hoverContext';
+import {
+  HoverContext,
+  getHoverContext,
+  getItemHoverPredicate,
+  getSeriesHoverPredicate,
+  shouldIncludeDimensionHoverClauses,
+  shouldIncludeItemHoverClauses,
+} from './hoverContext';
 
 type Cell = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 
@@ -379,5 +386,59 @@ describe('getHoverContext — empty (no interactivity)', () => {
     expect(expr).not.toContain('hoveredItem');
     expect(expr).toContain('controlledHighlightedTable');
     expect(expr).toContain('controlledHighlightedSeries');
+  });
+});
+
+describe('getSeriesHoverPredicate — displayOnHoverTrigger scoping', () => {
+  // Cell D has both item and dimension prefixes for both the parent and the trendline,
+  // so it's the only cell where trigger-based scoping is actually observable.
+  const ctx = buildCtx('D');
+
+  test('trigger undefined (legacy) includes both item and dimension clauses', () => {
+    const expr = getSeriesHoverPredicate(ctx);
+    expect(expr).toContain('line0_hoveredItem');
+    expect(expr).toContain('line0Trendline_hoveredItem');
+    expect(expr).toContain('line0_dimensionHoverArea_hoveredItem');
+    expect(expr).toContain('line0Trendline_dimensionHoverArea_hoveredItem');
+  });
+
+  test('trigger "item" includes only item clauses, excludes dimension clauses', () => {
+    const expr = getSeriesHoverPredicate(ctx, 'item');
+    expect(expr).toContain('line0_hoveredItem');
+    expect(expr).toContain('line0Trendline_hoveredItem');
+    expect(expr).not.toContain('dimensionHoverArea');
+  });
+
+  test('trigger "nearest" behaves identically to "item"', () => {
+    expect(getSeriesHoverPredicate(ctx, 'nearest')).toBe(getSeriesHoverPredicate(ctx, 'item'));
+  });
+
+  test('trigger "dimension" includes only dimension clauses, excludes item-series-match clauses', () => {
+    const expr = getSeriesHoverPredicate(ctx, 'dimension');
+    expect(expr).toContain('line0_dimensionHoverArea_hoveredItem');
+    expect(expr).toContain('line0Trendline_dimensionHoverArea_hoveredItem');
+    expect(expr).not.toContain('line0_hoveredItem.rscSeriesId');
+    expect(expr).not.toContain('line0Trendline_hoveredItem.rscSeriesId');
+  });
+
+  test('controlled/selection clauses are present regardless of trigger', () => {
+    for (const trigger of [undefined, 'nearest', 'item', 'dimension'] as const) {
+      const expr = getSeriesHoverPredicate(ctx, trigger);
+      expect(expr).toContain('selectedSeries');
+      expect(expr).toContain('controlledHighlightedTable');
+      expect(expr).toContain('controlledHighlightedSeries');
+    }
+  });
+});
+
+describe('shouldIncludeItemHoverClauses / shouldIncludeDimensionHoverClauses', () => {
+  test.each([
+    [undefined, true, true],
+    ['nearest', true, false],
+    ['item', true, false],
+    ['dimension', false, true],
+  ] as const)('trigger=%s → includeItem=%s, includeDimension=%s', (trigger, includeItem, includeDimension) => {
+    expect(shouldIncludeItemHoverClauses(trigger)).toBe(includeItem);
+    expect(shouldIncludeDimensionHoverClauses(trigger)).toBe(includeDimension);
   });
 });

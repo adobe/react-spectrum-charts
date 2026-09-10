@@ -11,13 +11,14 @@
  */
 import { ReactElement, useState } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { GROUP_DATA } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect } from '../../../components';
+import { Axis, Bar, ChartInspect, ChartPopover } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -91,13 +92,22 @@ const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
+const dialogContent = (datum: Datum) => (
+  <div>
+    <div>{datum.browser}: {datum.downloads}</div>
+  </div>
+);
+
 const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} baseline grid title="Downloads" />
-      <Bar {...args} orientation='horizontal'/>
+      <Bar {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+        <ChartPopover width={200}>{dialogContent}</ChartPopover>
+      </Bar>
     </Chart>
   );
 };
@@ -192,9 +202,7 @@ const OnClick = bindWithProps(BarStory);
 OnClick.args = {
   dimension: 'browser',
   metric: 'downloads',
-  onClick: (datum) => {
-    console.log('datum:', datum);
-  },
+  onClick: action('onClick'),
 };
 
 const OnMouseInputs = bindWithProps(OnMouseInputsStory);
@@ -227,6 +235,12 @@ AccessibleNavigation.args = {
   ...defaultProps,
 };
 
+// Hovering an axis label highlights the matching bar, same as hovering the bar itself.
+const AxisLabelHighlight = bindWithProps(BarWithInspectStory);
+AxisLabelHighlight.args = {
+  ...defaultProps,
+};
+
 export {
   AccessibleNavigation,
   BarWithUTCDatetimeFormat,
@@ -239,5 +253,6 @@ export {
   Opacity,
   PaddingRatio,
   InspectOnDimensionArea,
+  AxisLabelHighlight,
   WithInspect,
 };

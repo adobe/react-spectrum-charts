@@ -1,0 +1,50 @@
+{
+  "id": "gh-670-referenceline-label-overlap",
+  "title": "Longer ReferenceLine labels have unexpected positioning",
+  "chartType": "chart",
+  "kind": "bug",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "The fix location is well understood (getEncodedLabelBaselineAlign / getReferenceLineLabelsEncoding in axisReferenceLineUtils.ts), but deciding the correct align value per position (and whether the fixed pixel offset should also become label-width-aware) is a real design decision rather than copying an existing pattern, since standard Vega axis labels get their non-overlap guarantee from the built-in axis guide's automatic layout, which ReferenceLine's custom text mark doesn't have access to."
+  },
+  "summary": "ReferenceLine text marks are positioned with a fixed pixel offset from the axis and, for left/right-positioned axes, no explicit horizontal `align` is set, so the default left-align causes long labels to extend back toward (and overlap) the axis line and plot area instead of staying clear of it the way native axis tick labels do.",
+  "symptom": "When a ReferenceLine's label is longer than the chart's other y-axis tick labels, the ReferenceLine label overlaps the y-axis line and sits too close to the reference line itself, instead of respecting the same visual boundary that ordinary axis labels respect.",
+  "rootCause": "getReferenceLineTextMark/getReferenceLineLabelsEncoding (packages/vega-spec-builder/src/axis/axisReferenceLineUtils.ts:232-314) position the reference line's label text mark using a fixed pixel offset from calculateReferenceLineOffsets (axisReferenceLineUtils.ts:258-279: verticalOffset=40 for a vertical axis, used as the horizontal `x` offset for left/right-positioned axes at axisReferenceLineUtils.ts:174-181's `left`/`right` branches of getAdditiveMarkPositionOptions). For a left-positioned axis this anchors the text at `x: -40`, but getEncodedLabelBaselineAlign (axisReferenceLineUtils.ts:324-337) only sets `baseline` for left/right positions and never sets `align`, so Vega's default `align: 'left'` is used — meaning the text extends rightward from x=-40 toward and potentially past x=0 (the plot area / axis line). Standard y-axis tick labels never have this problem because they're rendered by Vega's native `axis` guide, whose label layout (padding calculation and automatic space reservation) accounts for the actual rendered text width; ReferenceLine's custom text mark has no equivalent width-aware positioning, so any label wider than ~40px overlaps the axis. The overlap-avoidance mechanism that does exist (axisSpecBuilder.ts:459-472) only hides ordinary axis tick labels that fall near the reference line's *value* position along the scale axis — it does nothing about the reference line label's own width extending across the perpendicular axis boundary, so it doesn't help this case.",
+  "comparison": [
+    {
+      "aspect": "How the label avoids overlapping the axis line/plot area for a left-positioned axis",
+      "expected": "Native y-axis tick labels: Vega's axis guide reserves layout space based on the actual measured width of the widest rendered label, so labels never bleed into the plot area regardless of length.",
+      "actual": "ReferenceLine label: anchored at a fixed x = -40 with no `align` set (defaults to 'left'), so the text renders growing rightward from that anchor — a label wider than ~40px overlaps x=0 (the axis line/plot area) regardless of how long it is."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "S2's ReferenceLine implementation (packages/vega-spec-builder-s2/src/axis/axisReferenceLineUtils.ts:247-295) is a structurally different, horizontal-only design: the label is always anchored at x='width' (the right edge of the chart) with an explicit `align: 'right'` already set (line 259), and reference lines are only emitted for vertical axes (getReferenceLineMarks:64-70 returns [] otherwise) — there is no left-axis / y-axis-adjacent label positioning at all in S2, so this specific overlap cannot reproduce there. No S2 code change is needed; this note exists to record that the symptom and its cause are s1-specific by design, not an oversight."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/axis/axisReferenceLineUtils.ts",
+      "change": "Bug location. In getEncodedLabelBaselineAlign, set an explicit `align` for the 'left' and 'right' cases (e.g. 'right' for 'left'-positioned axes so text grows leftward, away from the plot area) mirroring how 'top'/'bottom' already set an explicit `align`. Separately evaluate whether calculateReferenceLineOffsets' fixed offsets should also account for the label's own rendered width (via a getLabelWidth-style Vega expression, similar to how bar annotations size themselves) so labels of any length clear the axis, not just get their overflow direction reversed.",
+      "lines": "258-337"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/axis/axisReferenceLineUtils.test.ts",
+      "change": "Add a test asserting the `align` value returned for left/right positions once set, and a longer-label regression case verifying the label's bounding box no longer crosses x=0 for a left-positioned axis.",
+      "lines": "423-455"
+    }
+  ],
+  "openQuestions": [
+    "Should the fix be limited to correcting the text `align` (cheap, fixes overlap for most realistic label lengths), or should it also make the offset itself width-aware so extremely long labels still can't reach the axis? The issue's screenshot/Slack context (unavailable to this investigation) may clarify how long labels are expected to get in practice."
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/670" }
+  ]
+}

@@ -9,9 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Transforms } from 'vega';
+
 import { DEFAULT_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION, TABLE } from '@spectrum-charts/constants';
 
-import { addTimeTransform, getSeriesIdTransform, getTableData } from './dataUtils';
+import { addTimeTransform, getSeriesIdTransform, getTableData, hasTransformByAs } from './dataUtils';
 
 describe('addTimeTransform()', () => {
   test('should return the time transforms', () => {
@@ -50,5 +52,21 @@ describe('getSeriesIdTransform()', () => {
   });
   test('should return facets joined as expression', () => {
     expect(getSeriesIdTransform(['facet1', 'facet2'])[0]).toHaveProperty('expr', 'datum.facet1 + " | " + datum.facet2');
+  });
+});
+
+describe('hasTransformByAs()', () => {
+  test('returns true when a transform with the given as field exists', () => {
+    const transforms: Transforms[] = [{ type: 'formula', expr: 'toNumber(datum.datetime)', as: 'rscDrawInTimeMs' }];
+    expect(hasTransformByAs(transforms, 'rscDrawInTimeMs')).toBe(true);
+  });
+
+  test('returns false when no transform has the given as field', () => {
+    const transforms: Transforms[] = [{ type: 'formula', expr: 'toNumber(datum.datetime)', as: 'rscDrawInTimeMs' }];
+    expect(hasTransformByAs(transforms, 'somethingElse')).toBe(false);
+  });
+
+  test('returns false for an empty array', () => {
+    expect(hasTransformByAs([], 'rscDrawInTimeMs')).toBe(false);
   });
 });

@@ -1,0 +1,38 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+import { createElement } from 'react';
+
+import { ChartInspect } from '../components/ChartInspect';
+import { getBulletOptions } from './bulletAdapter';
+
+describe('getBulletOptions()', () => {
+  it('should return all basic options', () => {
+    const options = getBulletOptions({});
+    expect(options.markType).toBe('bullet');
+    expect(options.chartInspects).toHaveLength(0);
+  });
+
+  it('should convert ChartInspect children to chartInspects array', () => {
+    const options = getBulletOptions({ children: [createElement(ChartInspect)] });
+    expect(options.chartInspects).toHaveLength(1);
+  });
+
+  it('should pass through included props', () => {
+    const options = getBulletOptions({ metric: 'revenue' });
+    expect(options).toHaveProperty('metric', 'revenue');
+  });
+
+  it('should not add props that are not provided', () => {
+    const options = getBulletOptions({});
+    expect(options).not.toHaveProperty('metric');
+  });
+});

@@ -1,0 +1,64 @@
+{
+  "id": "add-sparkline-mark",
+  "title": "Add Sparkline Chart Mark",
+  "chartType": "sparkline",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 2,
+    "rationale": "No open design questions — layout and path drawing directly reuse Line's existing spec builder (continuous dimension/metric scales, path mark, hover-animation enter transition). The only non-precedented piece is a static last-point marker, which follows the same symbol-mark pattern already used by LinePointAnnotation."
+  },
+  "summary": "A minimal single-series line mark with no axes, legend, or interactivity — for compact inline trend indicators. Reuses Line's path construction and enter animation, adding only a static highlighted marker on the last data point.",
+  "requirements": [
+    "Accepts only x and y (metric/dimension) channels — no color or series facet; a Sparkline renders exactly one series",
+    "Renders with no Axis, no Legend, and no keyboard/roving-tabindex navigation, regardless of what's nested under <Chart>",
+    "No hover tooltip or ChartPopover support — Sparkline is non-interactive by design",
+    "Reuses Line's path-draw enter animation (stroke-dash sweep) rather than introducing a new animation",
+    "Renders a static, always-visible marker highlighting the last point in the series",
+    "Fully responsive to its container's width/height, no fixed pixel dimensions"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render nothing; do not throw. No axes exist to host an empty-state message." },
+    { "case": "Single data point", "expectedBehavior": "Render only the last-point marker; no path segment (matches a zero-length line)." },
+    { "case": "Data includes a color/series field", "expectedBehavior": "Ignored — Sparkline has no color/series channel, so any such field has no effect on rendering." },
+    { "case": "Narrow/responsive breakpoints", "expectedBehavior": "Scales recompute against container size via the existing responsive sizing hook; no minimum-width fallback." },
+    { "case": "Light vs dark background", "expectedBehavior": "Stroke and last-point marker colors resolve through the existing colorScheme-aware static color value, matching Line's background-aware defaults." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Accessibility", "expectedBehavior": "SVG root still receives a localized aria-label even though there is no keyboard-focusable content, since the mark is non-interactive by design." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: reuses Line's isAnimate-gated path-draw enter transition from lineMarkUtils.ts — must confirm it still fires correctly with the hover/tooltip signals Sparkline intentionally omits. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark (packages/react-spectrum-charts-s2/src/rc/components/), matching how Donut/BigNumber were introduced before any S2 port; revisit once the mark is promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/sparklineSpec.types.ts", "change": "Create SparklineOptions/SparklineOptionsWithDefaults/SparklineSpecOptions, modeled on lineSpec.types.ts's LineOptions but omitting color/series, axis, legend, and tooltip/popover child fields entirely." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Sparkline types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add SparklineOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/sparkline/sparklineTestUtils.ts", "change": "Fully-populated defaultSparklineOptions fixture, modeled on lineTestUtils.ts's defaultLineOptions." },
+    { "file": "packages/vega-spec-builder-s2/src/sparkline/sparklineMarkUtils.ts", "change": "getSparklineMark, reusing the path-mark construction and enter-animation encode from lineMarkUtils.ts's getLineMark; add getLastPointMark for the static highlighted end marker (symbol mark, similar shape to a LinePointAnnotation point)." },
+    { "file": "packages/vega-spec-builder-s2/src/sparkline/sparklineSpecBuilder.ts", "change": "addSparkline, addData, addSignals (no-op — no interactive signals), setScales (reuse addContinuousDimensionScale/addMetricScale), modeled on lineSpecBuilder.ts's addLine with axis/legend/tooltip options removed." },
+    { "file": "packages/vega-spec-builder-s2/src/sparkline/sparklineMarkUtils.test.ts", "change": "Unit tests for getSparklineMark and getLastPointMark using the new fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/sparkline/sparklineSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales using initializeSpec() and the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register sparklineCount: -1 in initializeComponentCounts, import addSparkline, add the 'sparkline' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/sparkline.types.ts", "change": "SparklineProps/SparklineElement, Omit-ing only fields replaced at the React boundary." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Sparkline/Sparkline.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Sparkline/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Sparkline'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Sparkline from '../rc' and add its displayName dispatch case, following the Donut case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Sparkline to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Sparkline/Sparkline.story.tsx", "change": "Basic story showing a Sparkline with no Axis/Legend siblings." }
+  ],
+  "openQuestions": [
+    "Should Sparkline accept a color/style override prop for the last-point marker, or always derive it from the same static color as the line stroke?",
+    "Does 'highlights last point' mean the marker is always visible, or only appears on chart mount as part of the enter animation and then persists — needs a design decision if product wants a fade-in-then-static behavior distinct from Line's own point rendering."
+  ]
+}

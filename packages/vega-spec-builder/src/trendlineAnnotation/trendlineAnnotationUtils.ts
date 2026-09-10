@@ -41,6 +41,7 @@ export const getTrendlineAnnotationSpecOptions = (
     displayOnHover,
     lineWidth,
     orientation,
+    s2,
     trendlineColor,
     trendlineDimension,
     name: trendlineName,
@@ -55,6 +56,7 @@ export const getTrendlineAnnotationSpecOptions = (
   name: `${trendlineName}Annotation${index}`,
   numberFormat,
   prefix,
+  s2,
   trendlineColor,
   trendlineDimension,
   trendlineDimensionExtent: dimensionExtent,
@@ -222,6 +224,7 @@ export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSp
 export const getTextFill = ({
   badge,
   colorScheme,
+  s2,
   trendlineColor,
 }: TrendlineAnnotationSpecOptions): ProductionRule<ColorValueRef> | undefined => {
   if (!badge) {
@@ -229,8 +232,8 @@ export const getTextFill = ({
     return undefined;
   }
   const color = getColorKey(trendlineColor);
-  const colorString = getColorProductionRuleSignalString(color, colorScheme);
-  const textColors = [getColorValue('gray-50', colorScheme), getColorValue('gray-900', colorScheme)];
+  const colorString = getColorProductionRuleSignalString(color, colorScheme, undefined, s2);
+  const textColors = [getColorValue('gray-50', colorScheme, s2), getColorValue('gray-900', colorScheme, s2)];
   return [
     { test: `contrast(${colorString}, '${textColors[0]}') >= 4.5`, value: textColors[0] },
     { value: textColors[1] },
@@ -241,6 +244,7 @@ export const getTrendlineAnnotationBadgeMark = ({
   badge,
   colorScheme,
   name,
+  s2,
   trendlineColor,
 }: TrendlineAnnotationSpecOptions): RectMark[] => {
   if (!badge) {
@@ -257,7 +261,7 @@ export const getTrendlineAnnotationBadgeMark = ({
       encode: {
         enter: {
           cornerRadius: { value: 2 },
-          fill: getColorProductionRule(color, colorScheme),
+          fill: getColorProductionRule(color, colorScheme, undefined, s2),
           opacity: { field: 'opacity' },
           x: { signal: 'datum.bounds.x1 - 3' },
           x2: { signal: 'datum.bounds.x2 + 3' },

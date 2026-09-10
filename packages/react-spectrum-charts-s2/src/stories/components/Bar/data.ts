@@ -11,11 +11,11 @@
  */
 
 export const barData = [
-  { browser: 'Chrome', downloads: 27000, percentLabel: '53.1%' },
-  { browser: 'Firefox', downloads: 8000, percentLabel: '15.7%' },
-  { browser: 'Safari', downloads: 7750, percentLabel: '15.2%' },
-  { browser: 'Edge', downloads: 7600, percentLabel: '14.9%' },
-  { browser: 'Explorer', downloads: 500, percentLabel: '1.0%' },
+  { browser: 'Chrome', downloads: 27000, percentLabel: '53.1%', share: 0.531 },
+  { browser: 'Firefox', downloads: 8000, percentLabel: '15.7%', share: 0.157 },
+  { browser: 'Safari', downloads: 7750, percentLabel: '15.2%', share: 0.152 },
+  { browser: 'Edge', downloads: 7600, percentLabel: '14.9%', share: 0.149 },
+  { browser: 'Explorer', downloads: 500, percentLabel: '1.0%', share: 0.01 },
 ];
 
 export const barDataLongLabels = [
@@ -98,6 +98,34 @@ export const mixedBarData = [
   { browser: 'Safari', downloads: -7750 },
   { browser: 'Edge', downloads: -7600 },
   { browser: 'Explorer', downloads: -500 },
+];
+
+/** Diverging conversion-rate-change data matching the Figma reference ("FB Stories" negative row renamed to "FB Post" for a unique band-scale value). */
+export const divergingConversionRateData = [
+  { channel: 'IG Stories', changeRate: 0.131, barColor: '#2d7d46' },
+  { channel: 'IG Reels', changeRate: 0.082, barColor: '#2d7d46' },
+  { channel: 'FB Stories', changeRate: 0.013, barColor: '#2d7d46' },
+  { channel: 'FB Video', changeRate: 0.008, barColor: '#2d7d46' },
+  { channel: 'FB Post', changeRate: -0.01, barColor: '#d7373f' },
+  { channel: 'FB Reels', changeRate: -0.07, barColor: '#d7373f' },
+];
+
+/** Same values as divergingConversionRateData, with long category names to check label truncation/collision. */
+export const divergingConversionRateDataLongLabels = [
+  { channel: 'Instagram Stories Advertisement Campaign', changeRate: 0.131, barColor: '#2d7d46' },
+  { channel: 'Instagram Reels Sponsored Content', changeRate: 0.082, barColor: '#2d7d46' },
+  { channel: 'Facebook Stories Organic Posts', changeRate: 0.013, barColor: '#2d7d46' },
+  { channel: 'Facebook Video Advertisement Placement', changeRate: 0.008, barColor: '#2d7d46' },
+  { channel: 'Facebook Post Boosted Content', changeRate: -0.01, barColor: '#d7373f' },
+  { channel: 'Facebook Reels Sponsored Video Content', changeRate: -0.029, barColor: '#d7373f' },
+];
+
+/** Verifies `labelFormat="time"` + `diverging` (mixed sign, monthly granularity): primary/secondary time axes share the same offset and flip encode via a static `dy`, not `labelPadding`. */
+export const timeAxisDivergingData = [
+  { day: '2024-11-15 00:00:00.0', changeRate: 0.131 },
+  { day: '2024-12-20 00:00:00.0', changeRate: 0.082 },
+  { day: '2025-01-10 00:00:00.0', changeRate: -0.01 },
+  { day: '2025-02-05 00:00:00.0', changeRate: -0.05 },
 ];
 
 export const barDataTwoSeries = [
@@ -209,7 +237,7 @@ interface GenerateMockDataForTrellisArgs {
   randomizeSteps?: boolean;
 }
 
-// Helper to calculate order based on the orderBy parameter
+// Order by whichever property matches orderBy
 const getOrder = (
   p1i: number,
   p2i: number,

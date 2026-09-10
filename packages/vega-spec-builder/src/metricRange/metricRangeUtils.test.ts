@@ -258,6 +258,26 @@ describe('getMetricRangeMark', () => {
         `isValid(line0_dimensionHoverArea_${HOVERED_ITEM})`
       );
     });
+
+    test('displayOnHoverTrigger "item" excludes dimension hover signals even in dimension mode', () => {
+      const [lineMark, areaMark] = getMetricRangeMark(
+        { ...interactiveLineOptions, interactionMode: 'dimension' },
+        { ...defaultMetricRangeSpecOptions, displayOnHover: true, displayOnHoverTrigger: 'item' }
+      );
+      expect(JSON.stringify(lineMark.encode?.update?.opacity?.[0])).not.toContain('dimensionHoverArea');
+      expect(JSON.stringify(lineMark.encode?.update?.opacity?.[0])).toContain(`line0_${HOVERED_ITEM}`);
+      expect(JSON.stringify(areaMark.encode?.update?.opacity)).not.toContain('dimensionHoverArea');
+    });
+
+    test('displayOnHoverTrigger "dimension" excludes item-series-match signals even though item hover is active', () => {
+      const [lineMark] = getMetricRangeMark(
+        { ...interactiveLineOptions, interactionMode: 'dimension' },
+        { ...defaultMetricRangeSpecOptions, displayOnHover: true, displayOnHoverTrigger: 'dimension' }
+      );
+      const test = (lineMark.encode?.update?.opacity?.[0] as { test?: string })?.test;
+      expect(test).toContain('dimensionHoverArea');
+      expect(test).not.toContain(`line0_${HOVERED_ITEM}.`);
+    });
   });
 
   describe('defined encoding (creates gaps when metric values are null/undefined)', () => {
@@ -396,6 +416,13 @@ describe('getMetricRangeHoverPoints', () => {
     expect(bg.encode?.update?.opacity).toEqual(expectedOpacity);
     expect(highlight.encode?.update?.opacity).toEqual(expectedOpacity);
   });
+
+  test('both marks clamp the y position to [0, height] so out-of-domain metrics do not overflow the plot', () => {
+    const [bg, highlight] = getMetricRangeHoverPoints(interactiveLineOptions, defaultMetricRangeSpecOptions);
+    const expectedSignal = `clamp(scale('yLinear', datum['${defaultMetricRangeSpecOptions.metric}']), 0, height)`;
+    expect(bg.encode?.enter?.y).toEqual([{ signal: expectedSignal }]);
+    expect(highlight.encode?.enter?.y).toEqual([{ signal: expectedSignal }]);
+  });
 });
 
 describe('getMetricRangeData', () => {
@@ -406,6 +433,32 @@ describe('getMetricRangeData', () => {
     });
     expect(data).toHaveLength(1);
     expect(data[0]).toHaveProperty('name', 'line0MetricRange0_highlightedData');
+  });
+
+  test('_highlightedData filter honors displayOnHoverTrigger "item" in dimension mode (excludes dimension signal)', () => {
+    const data = getMetricRangeData({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+      metricRanges: [{ ...defaultMetricRangeOptions, displayOnHover: true, displayOnHoverTrigger: 'item' }],
+    });
+    const expr = (data[0].transform?.[0] as { expr: string }).expr;
+    expect(expr).toContain(`line0_${HOVERED_ITEM}`);
+    expect(expr).not.toContain('dimensionHoverArea');
+  });
+
+  test('_highlightedData filter honors displayOnHoverTrigger "dimension" in dimension mode (excludes item-series-match signal)', () => {
+    const data = getMetricRangeData({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+      metricRanges: [{ ...defaultMetricRangeOptions, displayOnHover: true, displayOnHoverTrigger: 'dimension' }],
+    });
+    const expr = (data[0].transform?.[0] as { expr: string }).expr;
+    expect(expr).toContain('dimensionHoverArea');
+    expect(expr).not.toContain(`line0_${HOVERED_ITEM}.`);
   });
 
   test('does not create _highlightedData when displayOnHover is "metric"', () => {
