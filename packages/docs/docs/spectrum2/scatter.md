@@ -346,13 +346,13 @@ The S2 `Scatter` component does not yet support `ChartTooltip`, `onClick`, `onCo
         <tr>
             <td>color</td>
             <td>string | &#123;value: string&#125;</td>
-            <td>'series'</td>
+            <td>&#123;value: 'categorical-100'&#125;</td>
             <td>Key in the data used to map each point to a color, or a fixed color value object. Also sets the stroke color unless <code>stroke</code> is provided.</td>
         </tr>
         <tr>
             <td>colorScaleType</td>
             <td>'linear' | 'ordinal'</td>
-            <td>'linear'</td>
+            <td>'ordinal'</td>
             <td>Use <code>'ordinal'</code> when <code>color</code> maps to string values, or <code>'linear'</code> when it maps to numeric values.</td>
         </tr>
         <tr>
@@ -393,8 +393,8 @@ The S2 `Scatter` component does not yet support `ChartTooltip`, `onClick`, `onCo
         </tr>
         <tr>
             <td>size</td>
-            <td>string | &#123;value: number&#125;</td>
-            <td>&#123;value: 100&#125;</td>
+            <td>string | &#123;value: 'XS' | 'S' | 'M' | 'L' | 'XL' | number&#125;</td>
+            <td>&#123;value: 'M'&#125;</td>
             <td>Key in the data for point size faceting, or a fixed size value.</td>
         </tr>
         <tr>

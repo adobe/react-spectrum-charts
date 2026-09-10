@@ -259,7 +259,7 @@ Set `onClick` to run a callback when an axis label is clicked. The callback rece
         <tr>
             <td>numberFormat</td>
             <td>string</td>
-            <td>–</td>
+            <td>'shortNumber'</td>
             <td>d3 number format specifier. Only valid if <code>labelFormat</code> is <code>'linear'</code> or unset.</td>
         </tr>
         <tr>

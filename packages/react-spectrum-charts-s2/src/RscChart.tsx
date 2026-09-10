@@ -17,31 +17,17 @@ import { Item, View as VegaView } from 'vega';
 import { Handler } from 'vega-tooltip';
 import {
   COMPONENT_NAME,
-  DEFAULT_BAR_ORIENTATION,
-  DEFAULT_BAR_TYPE,
-  DEFAULT_CATEGORICAL_DIMENSION,
-  DEFAULT_LINE_SCALE_TYPE,
-  DEFAULT_METRIC,
   DEFAULT_SYMBOL_SHAPES,
   DEFAULT_SYMBOL_SIZES,
-  DEFAULT_TIME_DIMENSION,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
-import {
-  BarType,
-  ChartHandle,
-  Datum,
-  Orientation,
-  SimpleData,
-  SymbolSize,
-  getChartConfig,
-} from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartHandle, Datum, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
 import { Navigator } from './dataNavigator/Navigator';
-import { FocusedItemFields, getFocusedItemBounds, getFocusedItemClientPosition } from './dataNavigator/focusedItemGeometry';
-import { getNavigableChartType } from './dataNavigator/navigableMarks';
+import { getFocusedItemBounds, getFocusedItemClientPosition } from './dataNavigator/focusedItemGeometry';
+import { NavMarkFields, getNavigableChartType, resolveNavGeometryFields } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import useChartInspects from './hooks/useChartInspects';
@@ -179,18 +165,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   );
   const navChartType =
     navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
-  const navFields = navChild?.props as
-    | {
-        name?: string;
-        dimension?: string;
-        metric?: string;
-        color?: unknown;
-        scaleType?: string;
-        metricAxis?: string;
-        orientation?: Orientation;
-        type?: BarType;
-      }
-    | undefined;
+  const navFields = navChild?.props as NavMarkFields | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
   const navIsTimeDimension = (navFields?.scaleType ?? 'time') === 'time';
   // navFields?.name is often undefined (Bar/Line's own name defaults never run on a render-null component), so this replicates the spec builder's own naming instead.
@@ -202,27 +177,9 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     const navIndex = sameTypeSiblings.indexOf(navChild);
     return toCamelCase(navFields?.name || `${navChartType}${navIndex}`);
   }, [navChartType, navChild, sanitizedChildren, navFields?.name]);
-  // Bar/Line's own prop defaults are destructuring defaults on render-null components React never calls here, so they must be reapplied explicitly rather than left to fall through as undefined.
-  const navGeometryFields: FocusedItemFields = useMemo(
-    () => ({
-      dimension: navFields?.dimension ?? (navChartType === 'bar' ? DEFAULT_CATEGORICAL_DIMENSION : DEFAULT_TIME_DIMENSION),
-      metric: navFields?.metric ?? DEFAULT_METRIC,
-      scaleType: navChartType === 'line' ? navFields?.scaleType ?? DEFAULT_LINE_SCALE_TYPE : undefined,
-      metricAxis: navFields?.metricAxis,
-      orientation: navChartType === 'bar' ? navFields?.orientation ?? DEFAULT_BAR_ORIENTATION : undefined,
-      type: navChartType === 'bar' ? navFields?.type ?? DEFAULT_BAR_TYPE : undefined,
-      color: navChartType === 'bar' ? navColor : undefined,
-    }),
-    [
-      navChartType,
-      navFields?.dimension,
-      navFields?.metric,
-      navFields?.scaleType,
-      navFields?.metricAxis,
-      navFields?.orientation,
-      navFields?.type,
-      navColor,
-    ]
+  const navGeometryFields = useMemo(
+    () => resolveNavGeometryFields(navChartType, navFields, navColor),
+    [navChartType, navFields, navColor]
   );
   // A data field name (e.g. "downloads") is rarely the display title a user set on its Axis (e.g.
   // "Downloads") — found by matching the Axis child positioned on that field's side of the chart.

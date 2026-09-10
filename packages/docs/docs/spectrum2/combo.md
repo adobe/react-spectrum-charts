@@ -98,13 +98,13 @@ or `ChartPopover` the same way you would outside of a `Combo`:
         <tr>
             <td>dimension</td>
             <td>string</td>
-            <td>–</td>
+            <td>'datetime'</td>
             <td>Data field that the metrics are trended against (x-axis for horizontal orientation). Used as a fallback for any child mark that doesn't specify its own <code>dimension</code>.</td>
         </tr>
         <tr>
             <td>name</td>
             <td>string</td>
-            <td>–</td>
+            <td>'combo0'</td>
             <td>Name of the combo component. Used as the prefix for auto-generated child mark names (e.g. <code>combo0Bar0</code>).</td>
         </tr>
     </tbody>

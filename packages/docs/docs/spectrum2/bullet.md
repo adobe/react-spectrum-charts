@@ -92,7 +92,7 @@ and `track` are mutually exclusive — `thresholds` takes precedence when both a
         <tr>
             <td>color</td>
             <td>string</td>
-            <td>'blue-900'</td>
+            <td>'series'</td>
             <td>The color of the metric bar. Accepts a CSS color value or a Spectrum color name.</td>
         </tr>
         <tr>
