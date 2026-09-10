@@ -6,13 +6,6 @@ sidebar_position: 4
 
 The `Axis` component in the S2 package supports nearly all props from the [base Axis component](/docs/api/components/Axis) plus S2-exclusive features: axis label hover tooltips and axis label click callbacks.
 
-:::note
-The S2 `Axis` component does not yet support:
-- `chartTooltips` (rich per-tooltip JSX content via a `ChartTooltip` child) — use `hasTooltip`/`tooltipText` instead, which show plain text.
-- `hasPopover` (triggering a `ChartPopover` from an `AxisThumbnail` click).
-- `AxisAnnotation` as a child component.
-:::
-
 ```jsx
 import { Chart, Axis } from '@spectrum-charts/react-spectrum-charts-s2';
 ```
