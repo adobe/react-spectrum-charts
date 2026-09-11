@@ -12,6 +12,7 @@
 import { ArcMark, ColorValueRef, NumericValueRef, ProductionRule, Signal, SourceData, ThresholdScale } from 'vega';
 
 import {
+  BACKGROUND_COLOR,
   DEFAULT_HOLE_RATIO,
   DONUT_ADVANCED_LABEL_RING_GAP,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
@@ -19,7 +20,6 @@ import {
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SIZE_TIER_CUTPOINTS,
-  DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION,
   DONUT_SLICE_GAPS,
   FADE_FACTOR,
   FILTERED_TABLE,
@@ -161,21 +161,6 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
 };
 
 /**
- * Gets the arc mark's padAngle - the fixed per-tier px slice gap converted to radians, capped to a
- * fraction of each segment's own angular width so a tiny segment can't collapse under a gap sized
- * for a larger one.
- * @param donutOptions
- * @returns vega expression string
- */
-const getPadAngleExpr = (options: DonutSpecOptions): string => {
-  const { name } = options;
-  const outerRadius = getDonutOuterRadiusExpr(options);
-  const fixedGapAngle = `${name}_sliceGap / ${outerRadius}`;
-  const segmentAngle = `datum['${name}_arcLength']`;
-  return `min(${fixedGapAngle}, ${segmentAngle} * ${DONUT_SLICE_GAP_MAX_SEGMENT_FRACTION})`;
-};
-
-/**
  * Gets opacity rules that fade a segment when a paired Legend's hovered entry doesn't match it -
  * the reverse direction of the arc's own hover fading the legend (legendUtils.ts). Each signal
  * fades non-matching segments and falls through (to getMarkOpacity's own rules) otherwise, mirroring
@@ -228,14 +213,16 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         x: { signal: 'width / 2' },
         y: { signal: 'height / 2' },
         tooltip: getInspectEncoding(chartInspects, name),
-        stroke: { value: getS2ColorValue('static-blue', colorScheme) },
       },
       update: {
         startAngle: { field: `${name}_startAngle` },
         endAngle: { field: `${name}_endAngle` },
-        padAngle: { signal: getPadAngleExpr(options) },
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },
         outerRadius: { signal: outerRadius },
+        stroke: [
+          { test: `${SELECTED_ITEM} === datum.${idKey}`, value: getS2ColorValue('static-blue', colorScheme) },
+          { signal: BACKGROUND_COLOR },
+        ],
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
         opacity: [
           { test: getDonutEmptyStateTest(name), value: 0 },
@@ -243,7 +230,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
           ...getMarkOpacity(options),
         ],
         cursor: getCursor(chartPopovers),
-        strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { value: 0 }],
+        strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { signal: `${name}_sliceGap` }],
       },
     },
   };
