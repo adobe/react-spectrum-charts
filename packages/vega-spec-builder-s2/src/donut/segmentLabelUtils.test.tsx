@@ -35,8 +35,11 @@ const defaultSegmentLabelOptions: SegmentLabelSpecOptions = {
   donutOptions: defaultDonutOptionsWithSegmentLabel,
   percent: false,
   percentFormat: '.0%',
+  swatch: false,
   value: false,
   valueFormat: 'standardNumber',
+  showValueRow: false,
+  showTotal: false,
 };
 
 describe('getSegmentLabelMarks()', () => {
@@ -59,7 +62,7 @@ describe('getSegmentLabelMarks()', () => {
     });
     expect(marks).toHaveLength(1);
     expect(marks[0].type).toEqual('group');
-    expect(marks[0].marks).toHaveLength(1);
+    expect(marks[0].marks).toHaveLength(2);
     expect(marks[0].marks?.[0].type).toEqual('text');
   });
 });
@@ -225,52 +228,26 @@ describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offs
     });
   });
 
-  test('right hemisphere should get no horizontal offset', () => {
-    const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
-    const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
-    expect(dxSignal).toBe(
-      "(datum['testName_segmentLabel_hemisphere'] === 'right' ? 0 : -(min(max(getLabelWidth(datum['testColor'], 400, testName_segmentLabelNameFontSize), 0), (min(width, height) / 2 - 2) - datum['testName_segmentLabel_collisionHalfWidth'])))"
-    );
-  });
-
-  test('left hemisphere dx offset should account for the wider of name/value widths when value is shown', () => {
-    const mark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, value: true });
-    const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
-    // the offset branch (used for the left hemisphere) must compare name width against the real value text's measured width
-    expect(dxSignal).toContain(
-      "max(getLabelWidth(datum['testColor'], 400, testName_segmentLabelNameFontSize), getLabelWidth("
-    );
-    expect(dxSignal).toContain('testName_segmentLabelValueFontSize');
-  });
-
-  test('the shift should be capped at however much room remains before the container edge', () => {
-    const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
-    const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
-    expect(dxSignal).toContain('min(max(getLabelWidth(');
-    // the cap is per-label (available radius minus this label's own ring half-width at its actual
-    // Y), not a flat ratio of the ring's radius - see getWidthExprs
-    expect(dxSignal).toContain("(min(width, height) / 2 - 2) - datum['testName_segmentLabel_collisionHalfWidth']");
-  });
-
-  test('name and value marks should share the exact same x, y, and dx expressions', () => {
+  test('name and value marks should share the exact same x and y expressions', () => {
     const nameMark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, value: true });
     const [valueMark] = getSegmentLabelValueTextMark({ ...defaultSegmentLabelOptions, value: true });
     expect(nameMark.encode?.update?.x).toEqual(valueMark.encode?.update?.x);
     expect(nameMark.encode?.update?.y).toEqual(valueMark.encode?.update?.y);
-    expect(nameMark.encode?.update?.dx).toEqual(valueMark.encode?.update?.dx);
+    expect(nameMark.encode?.update?.align).toEqual(valueMark.encode?.update?.align);
   });
 
-  test('both hemispheres should use left alignment (only dx differs, not align or y)', () => {
+  test('should align labels toward the donut center', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
-    expect(mark.encode?.update?.align).toEqual({ value: 'left' });
+    expect(mark.encode?.update?.align).toEqual({
+      signal: "datum['testName_segmentLabel_hemisphere'] === 'right' ? 'left' : 'right'",
+    });
+
   });
 
-  test('should use the labelKey field instead of color when provided', () => {
+  test('should use the labelKey field for width calculations when provided', () => {
     const mark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, labelKey: 'region' });
-    const dxSignal = (mark.encode?.update?.dx as { signal: string }).signal;
-    expect(dxSignal).toBe(
-      "(datum['testName_segmentLabel_hemisphere'] === 'right' ? 0 : -(min(max(getLabelWidth(datum['region'], 400, testName_segmentLabelNameFontSize), 0), (min(width, height) / 2 - 2) - datum['testName_segmentLabel_collisionHalfWidth'])))"
-    );
+    const limitSignal = (mark.encode?.update?.limit as { signal: string }).signal;
+    expect(limitSignal).toContain("getLabelWidth(datum['region']");
   });
 });
 
@@ -317,7 +294,10 @@ describe('getSegmentLabelTextMark()', () => {
   test('should hide labels when the donut is in the empty state', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     expect(mark.encode?.update?.fontSize).toEqual([
-      { test: getDonutEmptyStateTest('testName'), value: 0 },
+      {
+        test: `${getDonutEmptyStateTest('testName')} || 2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) < 120`,
+        value: 0,
+      },
       { signal: 'testName_segmentLabelNameFontSize' },
     ]);
   });

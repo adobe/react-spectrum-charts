@@ -101,7 +101,7 @@ and/or metric value.
 
 ```jsx
 <Donut metric="count" color="browser">
-  <SegmentLabel percent value />
+  <SegmentLabel percent />
 </Donut>
 ```
 
@@ -117,6 +117,18 @@ and/or metric value.
         </tr>
     </thead>
     <tbody>
+        <tr>
+            <td>showValueRow</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Shows an additional segment value row.</td>
+        </tr>
+        <tr>
+            <td>showTotal</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Appends <code>/ total</code> to the segment value row.</td>
+        </tr>
         <tr>
             <td>labelKey</td>
             <td>string</td>
@@ -136,9 +148,15 @@ and/or metric value.
             <td>A <a href="https://d3js.org/d3-format#locale_format">d3-format</a> specifier for the percentage value.</td>
         </tr>
         <tr>
-            <td>value</td>
+            <td>swatch</td>
             <td>boolean</td>
             <td>false</td>
+            <td>Shows a color swatch before the segment label.</td>
+        </tr>
+        <tr>
+            <td>value</td>
+            <td>boolean</td>
+            <td>true</td>
             <td>Shows the donut segment's metric value.</td>
         </tr>
         <tr>
