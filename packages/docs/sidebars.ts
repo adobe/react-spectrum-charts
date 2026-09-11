@@ -75,6 +75,7 @@ const sidebars: SidebarsConfig = {
         'spectrum2/bar',
         'spectrum2/legend',
         'spectrum2/chart-sizing',
+        'spectrum2/keyboard-navigation',
         'spectrum2/react-server-components',
         {
           type: 'category',
