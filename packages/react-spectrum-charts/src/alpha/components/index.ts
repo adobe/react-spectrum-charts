@@ -13,3 +13,4 @@
 export * from './Bullet';
 export * from './Combo';
 export * from './Venn';
+export * from './Gauge/Gauge';
