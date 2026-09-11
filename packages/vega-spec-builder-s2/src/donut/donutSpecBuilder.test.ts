@@ -57,6 +57,7 @@ describe('addData', () => {
     const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
     expect(data[1].transform).toHaveLength(4);
   });
+
 });
 
 describe('addSignals()', () => {
@@ -102,13 +103,13 @@ describe('addSignals()', () => {
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', 'datum');
   });
 
-  test('should add AdvancedLabel font size signals when advancedLabels is present', () => {
+  test('should add rich SegmentLabel font size signals when swatch is enabled', () => {
     const baselineSignals = addSignals(defaultSignals, defaultDonutOptions);
-    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, advancedLabels: [{}] });
-    expect(signals).toHaveLength(baselineSignals.length + 3);
-    expect(signals.find((signal) => signal.name === 'testName_advancedLabelNameFontSize')).toBeDefined();
-    expect(signals.find((signal) => signal.name === 'testName_advancedLabelValueFontSize')).toBeDefined();
-    expect(signals.find((signal) => signal.name === 'testName_advancedLabelDetailFontSize')).toBeDefined();
+    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
+    expect(signals).toHaveLength(baselineSignals.length + 4);
+    expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelNameFontSize')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelValueFontSize')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelDetailFontSize')).toBeDefined();
   });
 });
 
@@ -121,10 +122,10 @@ describe('addMarks()', () => {
     expect(marks[1]).toHaveProperty('name', 'testName');
   });
 
-  test('should add the AdvancedLabel group mark when advancedLabels is present', () => {
-    const marks = addMarks([], { ...defaultDonutOptions, advancedLabels: [{}] });
+  test('should add the rich SegmentLabel group mark when swatch is enabled', () => {
+    const marks = addMarks([], { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
     expect(marks).toHaveLength(3);
-    expect(marks[2]).toHaveProperty('name', 'testName_advancedLabelGroup');
+    expect(marks[2]).toHaveProperty('name', 'testName_richSegmentLabelGroup');
   });
 });
 
@@ -137,12 +138,12 @@ describe('donutSpecBuilder', () => {
     expect(scales[2]).toHaveProperty('name', 'testName_sliceGapScale');
   });
 
-  test('should add AdvancedLabel font size scales when advancedLabels is present', () => {
-    const scales = addScales([], { ...defaultDonutOptions, advancedLabels: [{}] });
+  test('should add rich SegmentLabel font size scales when swatch is enabled', () => {
+    const scales = addScales([], { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
     expect(scales).toHaveLength(6);
-    expect(scales[3]).toHaveProperty('name', 'testName_advancedLabelNameFontSizeScale');
-    expect(scales[4]).toHaveProperty('name', 'testName_advancedLabelValueFontSizeScale');
-    expect(scales[5]).toHaveProperty('name', 'testName_advancedLabelDetailFontSizeScale');
+    expect(scales[3]).toHaveProperty('name', 'testName_richSegmentLabelNameFontSizeScale');
+    expect(scales[4]).toHaveProperty('name', 'testName_richSegmentLabelValueFontSizeScale');
+    expect(scales[5]).toHaveProperty('name', 'testName_richSegmentLabelDetailFontSizeScale');
   });
 });
 

@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './AdvancedLabel';
 export * from './Area';
 export * from './Bullet';
 export * from './Combo';

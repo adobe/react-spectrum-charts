@@ -13,7 +13,6 @@ import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import { PartiallyRequired } from '../specUtil.types';
-import { AdvancedLabelOptions } from './supplemental/advancedLabelSpec.types';
 import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types';
 import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types';
 
@@ -51,11 +50,9 @@ export interface DonutOptions {
   chartInspects?: ChartInspectOptions[];
   donutSummaries?: DonutSummaryOptions[];
   segmentLabels?: SegmentLabelOptions[];
-  advancedLabels?: AdvancedLabelOptions[];
 }
 
 type DonutOptionsWithDefaults =
-  | 'advancedLabels'
   | 'chartPopovers'
   | 'chartInspects'
   | 'color'
