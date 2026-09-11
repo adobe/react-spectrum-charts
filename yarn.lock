@@ -2589,6 +2589,11 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
+"@discoveryjs/json-ext@^0.6.3":
+  version "0.6.3"
+  resolved "https://registry.npmjs.org/@discoveryjs/json-ext/-/json-ext-0.6.3.tgz#f13c7c205915eb91ae54c557f5e92bddd8be0e83"
+  integrity sha512-4B4OijXeVNOPZlYA2oEwWOTkzyltLao+xbotHQeqN++Rv27Y6s818+n2Qkp8q+Fxhn0t/5lA5X1Mxktud8eayQ==
+
 "@docsearch/css@3.9.0":
   version "3.9.0"
   resolved "https://registry.yarnpkg.com/@docsearch/css/-/css-3.9.0.tgz#3bc29c96bf024350d73b0cfb7c2a7b71bf251cd5"
@@ -3316,6 +3321,13 @@
   dependencies:
     "@swc/helpers" "^0.5.0"
 
+"@internationalized/date@^3.12.4":
+  version "3.12.4"
+  resolved "https://registry.npmjs.org/@internationalized/date/-/date-3.12.4.tgz#a391e01d54ca80b3cb4c3d5040d46a0b26c3f20f"
+  integrity sha512-M1dEn4c1U1HsSlaVR8upZtSqvXrTkHDfv18H01uCSJyjVLDxnBR38v/fMxecmlwXKR4i9HeZcmgQAPE6A+aGJQ==
+  dependencies:
+    "@swc/helpers" "^0.5.0"
+
 "@internationalized/date@^3.5.2":
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.5.2.tgz#d760ace32bb47e869b8c607a4a786c8b208aacc2"
@@ -3345,10 +3357,24 @@
   dependencies:
     "@swc/helpers" "^0.5.0"
 
+"@internationalized/number@^3.6.8":
+  version "3.6.8"
+  resolved "https://registry.npmjs.org/@internationalized/number/-/number-3.6.8.tgz#aaa3e16fb9d64a8d7f130ccf848c626914dfdf9e"
+  integrity sha512-8UmMFia46DUt+k97zKd9fKWXcWHR+k8ae3eYzILETuT2KbIvLyOfac7zesw+sJdRAAZ7Q9pM1Mk22aXp2LD0Ig==
+  dependencies:
+    "@swc/helpers" "^0.5.0"
+
 "@internationalized/string@^3.2.1":
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/@internationalized/string/-/string-3.2.1.tgz#9059a580956b0af882ab05409efa276a42e2d960"
   integrity sha512-vWQOvRIauvFMzOO+h7QrdsJmtN1AXAFVcaLWP9AseRN2o7iHceZ6bIXhBD4teZl8i91A3gxKnWBlGgjCwU6MFQ==
+  dependencies:
+    "@swc/helpers" "^0.5.0"
+
+"@internationalized/string@^3.2.10":
+  version "3.2.10"
+  resolved "https://registry.npmjs.org/@internationalized/string/-/string-3.2.10.tgz#c38bd59a69509a41bf7422f1b2fc3af7468e4322"
+  integrity sha512-PDx6//vHSpRnHfxqMqto11zQvhsaU74O3mKv2F/0eicGZcl9NLjQmGlbHz/LsJh5tLKp4A4L7ZVTzN1/MmMTvA==
   dependencies:
     "@swc/helpers" "^0.5.0"
 
@@ -4943,6 +4969,19 @@
     "@react-types/shared" "^3.22.1"
     "@swc/helpers" "^0.5.0"
 
+"@react-spectrum/s2@>=1.0.0":
+  version "1.7.1"
+  resolved "https://registry.npmjs.org/@react-spectrum/s2/-/s2-1.7.1.tgz#04e4a52a34837b42094f8b6d3af60c10e9d7e26f"
+  integrity sha512-MMuEtebNabzzglLiGGSyXkg/yEig1cLqmq/JSKlYS+9cKzQoxwUIWtbdZLFFE9Ju0MPH9zNfpHXma1q9+hC+Yg==
+  dependencies:
+    "@internationalized/date" "^3.12.4"
+    "@internationalized/number" "^3.6.8"
+    "@parcel/macros" "^2.16.3"
+    "@react-types/shared" "^3.36.1"
+    react-aria "3.52.1"
+    react-aria-components "1.21.1"
+    react-stately "3.50.0"
+
 "@react-spectrum/s2@^1.3.1":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@react-spectrum/s2/-/s2-1.3.1.tgz#7a112f96dd9e6b6442f7322939f2d4756e49aa34"
@@ -5704,6 +5743,11 @@
   version "3.34.0"
   resolved "https://registry.yarnpkg.com/@react-types/shared/-/shared-3.34.0.tgz#f9688443fdf8e29f7a06b499598a930be96a2f65"
   integrity sha512-gp6xo/s2lX54AlTjOiqwDnxA7UW79BNvI9dB9pr3LZTzRKCd1ZA+ZbgKw/ReIiWuvvVw/8QFJpnqeeFyLocMcQ==
+
+"@react-types/shared@^3.36.1":
+  version "3.36.1"
+  resolved "https://registry.npmjs.org/@react-types/shared/-/shared-3.36.1.tgz#edb8081e3872ae68a4eb4a65e62233d0754ec186"
+  integrity sha512-AzsuD9OfxTOZMMvTRhlN3oHBwOmFN7tDh27LzqmHt4+uOgPhJT7ZM7/kVs/8/o0WxayMUIk3hBmCFRHv1FUoag==
 
 "@react-types/slider@^3.7.1":
   version "3.7.1"
@@ -8696,6 +8740,11 @@ commander@^10.0.0, commander@^10.0.1:
   version "10.0.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-10.0.1.tgz#881ee46b4f77d1c1dccc5823433aa39b022cbe06"
   integrity sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==
+
+commander@^14.0.2:
+  version "14.0.3"
+  resolved "https://registry.npmjs.org/commander/-/commander-14.0.3.tgz#425d79b48f9af82fcd9e4fc1ea8af6c5ec07bbc2"
+  integrity sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==
 
 commander@^5.1.0:
   version "5.1.0"
@@ -11863,6 +11912,11 @@ html-escaper@^2.0.0, html-escaper@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
   integrity sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==
+
+html-escaper@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.npmjs.org/html-escaper/-/html-escaper-3.0.3.tgz#4d336674652beb1dcbc29ef6b6ba7f6be6fdfed6"
+  integrity sha512-RuMffC89BOWQoY0WKGpIhn5gX3iI54O6nRA0yC124NYVtzjmFWBIiFd8M0x+ZdX0P9R4lADg1mgP8C7PxGOWuQ==
 
 html-minifier-terser@^6.0.2:
   version "6.1.0"
@@ -16333,6 +16387,19 @@ react-aria-components@1.17.0:
     react-aria "3.48.0"
     react-stately "3.46.0"
 
+react-aria-components@1.21.1:
+  version "1.21.1"
+  resolved "https://registry.npmjs.org/react-aria-components/-/react-aria-components-1.21.1.tgz#95f50ecd9a13ab4c9e9a1c550d0fe98aa5095064"
+  integrity sha512-J88WflYY0z+EhLX0ce+GjFlQ3ag3ubIgfUTjpKSrBQBu92Xtl4Ub9o118HItUddtbk1Ido0jzyPy94/klZy1hg==
+  dependencies:
+    "@internationalized/date" "^3.12.4"
+    "@internationalized/string" "^3.2.10"
+    "@react-types/shared" "^3.36.1"
+    "@swc/helpers" "^0.5.0"
+    client-only "^0.0.1"
+    react-aria "3.52.1"
+    react-stately "3.50.0"
+
 react-aria@3.48.0:
   version "3.48.0"
   resolved "https://registry.yarnpkg.com/react-aria/-/react-aria-3.48.0.tgz#ede91d3b247d34ea35216e246f0cb7de074303bd"
@@ -16346,6 +16413,21 @@ react-aria@3.48.0:
     aria-hidden "^1.2.3"
     clsx "^2.0.0"
     react-stately "3.46.0"
+    use-sync-external-store "^1.6.0"
+
+react-aria@3.52.1:
+  version "3.52.1"
+  resolved "https://registry.npmjs.org/react-aria/-/react-aria-3.52.1.tgz#2dfc540b1f97c56c7ba5c47a7ff56ba5646ef589"
+  integrity sha512-fdZZruC9/x/joCg0mhKGs5aHpwrXLCSZ4GOJmhhYyiE0ffyEsk9MLFt9LCOCF9tn8ErTD+UDQP4oDUSlZkmpCg==
+  dependencies:
+    "@internationalized/date" "^3.12.4"
+    "@internationalized/number" "^3.6.8"
+    "@internationalized/string" "^3.2.10"
+    "@react-types/shared" "^3.36.1"
+    "@swc/helpers" "^0.5.0"
+    aria-hidden "^1.2.3"
+    clsx "^2.0.0"
+    react-stately "3.50.0"
     use-sync-external-store "^1.6.0"
 
 react-docgen-typescript-loader@^3.7.2:
@@ -16505,6 +16587,18 @@ react-stately@3.46.0:
     "@internationalized/number" "^3.6.6"
     "@internationalized/string" "^3.2.8"
     "@react-types/shared" "^3.34.0"
+    "@swc/helpers" "^0.5.0"
+    use-sync-external-store "^1.6.0"
+
+react-stately@3.50.0:
+  version "3.50.0"
+  resolved "https://registry.npmjs.org/react-stately/-/react-stately-3.50.0.tgz#e94058a2ada3f1d5e2f0591818d18df26129af67"
+  integrity sha512-TnckvpDQGU0672wEaLZqdzvhuSeXWjgW6vijMWxiKOxc8CosQUfPGISdcZyfHqjX3XMjEtRxj4w9HumvX4h4mw==
+  dependencies:
+    "@internationalized/date" "^3.12.4"
+    "@internationalized/number" "^3.6.8"
+    "@internationalized/string" "^3.2.10"
+    "@react-types/shared" "^3.36.1"
     "@swc/helpers" "^0.5.0"
     use-sync-external-store "^1.6.0"
 
@@ -17587,6 +17681,15 @@ sirv@^2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/sirv/-/sirv-2.0.4.tgz#5dd9a725c578e34e449f332703eb2a74e46a29b0"
   integrity sha512-94Bdh3cC2PKrbgSOUqTiGPWVZeSiXfKOVZNJniWoqrWrRkB1CJzBU3NEbiTsPcYy1lDsANA/THzS+9WBiy5nfQ==
+  dependencies:
+    "@polka/url" "^1.0.0-next.24"
+    mrmime "^2.0.0"
+    totalist "^3.0.0"
+
+sirv@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.npmjs.org/sirv/-/sirv-3.0.2.tgz#f775fccf10e22a40832684848d636346f41cd970"
+  integrity sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==
   dependencies:
     "@polka/url" "^1.0.0-next.24"
     mrmime "^2.0.0"
@@ -19262,16 +19365,9 @@ vega-time@^3.1.0, vega-time@~3.1.0:
     d3-time "^3.1.0"
     vega-util "^2.1.0"
 
-vega-tooltip@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/vega-tooltip/-/vega-tooltip-1.0.0.tgz#c6829c9bcdf5be853850307665c9f21321083ff2"
-  integrity sha512-P1R0JP29v0qnTuwzCQ0SPJlkjAzr6qeyj+H4VgUFSykHmHc1OBxda//XBaFDl/bZgIscEMvjKSjZpXd84x3aZQ==
-  dependencies:
-    vega-util "^2.0.0"
-
-"vega-tooltip@>= 1.1.0":
+vega-tooltip@1.0.0, vega-tooltip@1.1.0, "vega-tooltip@>= 1.1.0":
   version "1.1.0"
-  resolved "https://registry.yarnpkg.com/vega-tooltip/-/vega-tooltip-1.1.0.tgz#d5b29e1be9fb696b3ecae42105dd324c5746499a"
+  resolved "https://registry.npmjs.org/vega-tooltip/-/vega-tooltip-1.1.0.tgz#d5b29e1be9fb696b3ecae42105dd324c5746499a"
   integrity sha512-PP4CxC8gX//SBUtlcJkwffmvdZBvzAsqS0EANBKvImJ9PxV/KtJkcs7RCqp+A7nh2cjWdVzyOBWAvqKhXJStTQ==
   dependencies:
     vega-util "^2.1.0"
@@ -19296,11 +19392,6 @@ vega-typings@~2.1.0:
     vega-event-selector "^4.0.0"
     vega-expression "^6.1.0"
     vega-util "^2.1.0"
-
-vega-util@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/vega-util/-/vega-util-2.0.0.tgz#6ecb6e3e2fe017921e36d0aa9abf15dc4e4f0a99"
-  integrity sha512-/ayLYX3VVqfkKJB1mG+xkOKiBVlfFZ9BfUB5vf7eVyIRork24sABXdeH4x+XeWuqDKnLBTDedotA+1a5MxlV2Q==
 
 vega-util@^2.1.0, vega-util@~2.1.0:
   version "2.1.0"
@@ -19477,6 +19568,22 @@ webpack-bundle-analyzer@^4.10.2:
     picocolors "^1.0.0"
     sirv "^2.0.3"
     ws "^7.3.1"
+
+webpack-bundle-analyzer@^5.3.3:
+  version "5.3.3"
+  resolved "https://registry.npmjs.org/webpack-bundle-analyzer/-/webpack-bundle-analyzer-5.3.3.tgz#38f97c927d990b6e476395c97271ef8ff924e103"
+  integrity sha512-kr/bzg3sORg1xAnxpg1uaIPGDDNwaRIsClOv22HzCIMX9X64FbvIBNjP2ulPdfCgZw7ekrv7JGAPc30W+0b7rA==
+  dependencies:
+    "@discoveryjs/json-ext" "^0.6.3"
+    acorn "^8.0.4"
+    acorn-walk "^8.0.0"
+    commander "^14.0.2"
+    escape-string-regexp "^5.0.0"
+    html-escaper "^3.0.3"
+    opener "^1.5.2"
+    picocolors "^1.0.0"
+    sirv "^3.0.2"
+    ws "^8.19.0"
 
 webpack-cli@^5.0.1:
   version "5.1.4"
@@ -19984,6 +20091,11 @@ ws@^8.11.0, ws@^8.13.0, ws@^8.2.3:
   version "8.15.1"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.15.1.tgz#271ba33a45ca0cc477940f7f200cd7fba7ee1997"
   integrity sha512-W5OZiCjXEmk0yZ66ZN82beM5Sz7l7coYxpRkzS+p9PP+ToQry8szKh+61eNktr7EA9DOwvFGhfC605jDHbP6QQ==
+
+ws@^8.19.0:
+  version "8.21.3"
+  resolved "https://registry.npmjs.org/ws/-/ws-8.21.3.tgz#660b4faddb6a3e575c86e078126919961f4de4fc"
+  integrity sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==
 
 xdg-basedir@^5.0.1, xdg-basedir@^5.1.0:
   version "5.1.0"

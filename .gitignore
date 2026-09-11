@@ -9,6 +9,7 @@ local.json
 # build
 dist
 dist-storybook
+dist-shared-react
 *.tgz
 
 # coverage reports
