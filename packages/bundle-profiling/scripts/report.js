@@ -15,21 +15,34 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const distDir = path.resolve(__dirname, '..', process.argv[2] || 'dist');
+function measure(distDir) {
+  return fs
+    .readdirSync(distDir)
+    .filter((file) => file.endsWith('.js'))
+    .map((file) => {
+      const raw = fs.readFileSync(path.join(distDir, file));
+      const gzip = zlib.gzipSync(raw, { level: 9 });
+      return { fixture: file.replace(/\.js$/, ''), gzipKB: +(gzip.length / 1024).toFixed(1) };
+    })
+    .sort((a, b) => b.gzipKB - a.gzipKB);
+}
 
-const rows = fs
-  .readdirSync(distDir)
-  .filter((file) => file.endsWith('.js'))
-  .map((file) => {
-    const raw = fs.readFileSync(path.join(distDir, file));
-    const gzip = zlib.gzipSync(raw, { level: 9 });
-    return {
-      fixture: file.replace(/\.js$/, ''),
-      'raw KB': +(raw.length / 1024).toFixed(1),
-      'gzip KB': +(gzip.length / 1024).toFixed(1),
-    };
-  })
-  .sort((a, b) => b['gzip KB'] - a['gzip KB']);
+// Exported so scripts/benchmark.js can reuse the same measurement without a subprocess.
+module.exports = { measure };
 
-console.log('\nCold-consumer bundle cost (peer dependencies included, per fixture, standalone):\n');
-console.table(rows);
+if (require.main === module) {
+  const full = process.argv.includes('--full');
+  const distArg = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : 'dist';
+  const rows = measure(path.resolve(__dirname, '..', distArg));
+
+  if (full) {
+    console.table(rows);
+  } else {
+    // Compact by default: per-mark fixtures are consistently within ~1 KB gzip of each
+    // other (proven repeatedly), so only the min (single-mark floor) and max (upper
+    // bound, "everything") carry information. Keep this small — it gets run often.
+    const min = rows[rows.length - 1];
+    const max = rows[0];
+    console.log(`${distArg}: min ${min.fixture}=${min.gzipKB}KB max ${max.fixture}=${max.gzipKB}KB (gzip)`);
+  }
+}

@@ -59,4 +59,8 @@ module.exports = {
   // Each fixture is a standalone entry, so its output size is that fixture's full
   // transitive cost in isolation, not shared with the other fixtures.
   devtool: false,
+
+  // Keep CLI output minimal — scripts/report.js is the source of truth for size,
+  // and this harness gets re-run frequently during the bundle-optimization work.
+  stats: 'errors-only',
 };
