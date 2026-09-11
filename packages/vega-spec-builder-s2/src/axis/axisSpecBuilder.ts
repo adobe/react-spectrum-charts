@@ -56,7 +56,12 @@ import {
   getAxisLabelMarkName,
   getMatchingInteractiveBarDimensionFields,
 } from './axisLabelHoverUtils';
-import { getAxisLabelsEncoding, getControlledLabelAnchorValues, getLabelValue } from './axisLabelUtils';
+import {
+  getAxisLabelsEncoding,
+  getAxisLabelTooltipRule,
+  getControlledLabelAnchorValues,
+  getLabelValue,
+} from './axisLabelUtils';
 import { getReferenceLineMarks, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import {
   addAxisThumbnailSignals,
@@ -243,10 +248,14 @@ export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: Scale
 });
 
 export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string]>((signals, options, scaleName) => {
-  const { name, labels, position, subLabels, labelOrientation } = options;
+  const { name, hasTooltip, labels, position, subLabels, labelOrientation, tooltipText } = options;
   if (labels?.length) {
     // add all the label properties to a signal so that the axis encoding can use it to style each label correctly
     signals.push(getGenericValueSignal(`${name}_labels`, getLabelSignalValue(labels, position, labelOrientation)));
+  }
+  if (hasTooltip) {
+    // signal must exist since the rule always references it
+    signals.push(getGenericValueSignal(`${name}_tooltipText`, tooltipText ?? []));
   }
   if (hasSubLabels(options)) {
     // add all the sublabel properties to a signal so that the axis encoding can use it to style each sublabel correctly
@@ -583,7 +592,7 @@ function applyAxisLabelEncodings(
   axis.values = labels.map((label) => getLabelValue(label));
   const baseEncoding = getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', labelOrientation, position, signalName);
   const encodingWithOptionalTooltip = hasTooltip
-    ? { ...baseEncoding, update: { ...baseEncoding.update, tooltip: { signal: 'datum.value' } } }
+    ? { ...baseEncoding, update: { ...baseEncoding.update, tooltip: getAxisLabelTooltipRule(name) } }
     : baseEncoding;
 
   axis.encode = {

@@ -73,6 +73,7 @@ const sidebars: SidebarsConfig = {
         'spectrum2/overview',
         'spectrum2/line',
         'spectrum2/bar',
+        'spectrum2/axis',
         'spectrum2/legend',
         'spectrum2/chart-sizing',
         'spectrum2/keyboard-navigation',
