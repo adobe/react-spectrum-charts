@@ -15,10 +15,12 @@ import { Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
 import { Focusable } from 'react-aria-components';
 import { View as VegaView } from 'vega';
 import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
-import { ChartHandle, Datum, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartHandle, Datum, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
+import { Navigator } from './dataNavigator/Navigator';
+import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import { useChartInteractions } from './hooks/useChartInteractions';
@@ -26,7 +28,7 @@ import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import { RscChartProps } from './types';
-import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals } from './utils';
+import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils';
 
 interface ChartDialogProps {
   targetElement: RefObject<HTMLElement | null>;
@@ -40,6 +42,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const {
     animations,
     animationTypes,
+    accessibleNavigation,
     backgroundColor,
     data,
     chartWidth,
@@ -66,8 +69,18 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     idKey,
   } = props;
 
-  const { chartView, chartId, popoverAnchorRef, isPopoverOpen, setIsPopoverOpen, hoveredAxisLabel } =
-    useChartContext();
+  const {
+    chartView,
+    chartId,
+    popoverAnchorRef,
+    isPopoverOpen,
+    setIsPopoverOpen,
+    selectedData,
+    selectedDataBounds,
+    selectedDataName,
+    keyboardPopoverComponentName,
+    hoveredAxisLabel,
+  } = useChartContext();
   const axisLabelTooltipAnchorRef = useRef<HTMLDivElement>(null);
   // Retained through the Tooltip's exit animation so it doesn't fade out empty.
   const lastAxisLabelContentRef = useRef<string | undefined>(undefined);
@@ -81,6 +94,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const spec = useSpec({
     animations,
     animationTypes,
+    accessibleNavigation,
     backgroundColor,
     children: sanitizedChildren,
     colors,
@@ -130,6 +144,19 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     [onNewView, onVegaViewReady]
   );
 
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const navChild = sanitizedChildren.find(
+    (child) => 'displayName' in child.type && getNavigableChartType(child.type.displayName)
+  );
+  const navChartType =
+    navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
+  const navFields = navChild?.props as { dimension?: string; metric?: string; color?: unknown; name?: string } | undefined;
+  const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
+  // The bar's own mark name, so keyboard focus can drive the same hover signals real mouse hover drives, for exact parity.
+  const markName = navFields?.name ?? 'bar0';
+
+  const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
+
   return (
     <>
       <div
@@ -151,20 +178,40 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         </Focusable>
         <Tooltip>{hoveredAxisLabel?.content ?? lastAxisLabelContentRef.current}</Tooltip>
       </TooltipTrigger>
-      <VegaChart
-        spec={spec}
-        config={chartConfig}
-        data={data}
-        debug={debug}
-        renderer={renderer}
-        width={chartWidth}
-        height={chartHeight}
-        locale={locale}
-        padding={padding}
-        signals={signals}
-        tooltip={inspectOptions} // legend show/hide relies on this
-        onNewView={handleNewView}
-      />
+      <div id={`${chartId}-dn-root`} ref={navContainerRef} style={{ position: 'relative' }}>
+        <VegaChart
+          spec={spec}
+          config={chartConfig}
+          data={data}
+          debug={debug}
+          renderer={renderer}
+          width={chartWidth}
+          height={chartHeight}
+          locale={locale}
+          padding={padding}
+          signals={signals}
+          tooltip={inspectOptions} // legend show/hide relies on this
+          onNewView={handleNewView}
+        />
+        {accessibleNavigation && navChartType && (
+          <Navigator
+            chartType={navChartType}
+            data={data as SimpleData[]}
+            dimension={navFields?.dimension}
+            color={navColor}
+            metric={navFields?.metric}
+            markName={markName}
+            title={title}
+            containerRef={navContainerRef}
+            chartId={chartId}
+            getView={getView}
+            selectedData={selectedData}
+            selectedDataBounds={selectedDataBounds}
+            selectedDataName={selectedDataName}
+            keyboardPopoverComponentName={keyboardPopoverComponentName}
+          />
+        )}
+      </div>
       {popovers.map((popover) => (
         <ChartDialog
           key={popover.key}
@@ -181,7 +228,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 RscChart.displayName = 'RscChart';
 
 const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSignalNames }: ChartDialogProps) => {
-  const { chartView, selectedData, selectedDataName } = useChartContext();
+  const { chartView, selectedData, selectedDataName, keyboardPopoverComponentName } = useChartContext();
   const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const { chartPopoverProps, name } = popover;
@@ -198,9 +245,11 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
           setRenderDatum(selectedData.current);
         } else {
           const componentName = selectedDataName.current;
+          const keyboardComponentName = keyboardPopoverComponentName.current;
+          keyboardPopoverComponentName.current = null;
           selectedData.current = null;
           selectedDataName.current = '';
-          if (componentName) {
+          if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
             clearHoverSignals(chartView.current, componentName, specSignalNames);
           }
         }
@@ -208,7 +257,16 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
         chartView.current.run();
       }
     },
-    [chartView, idKey, onOpenChange, selectedData, selectedDataName, setIsPopoverOpen, specSignalNames]
+    [
+      chartView,
+      keyboardPopoverComponentName,
+      idKey,
+      onOpenChange,
+      selectedData,
+      selectedDataName,
+      setIsPopoverOpen,
+      specSignalNames,
+    ]
   );
 
   const close = useCallback(() => handleOpenChange(false), [handleOpenChange]);

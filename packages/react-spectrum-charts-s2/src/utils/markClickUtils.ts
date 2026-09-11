@@ -85,13 +85,14 @@ const handleMarkClick = (
   triggerPopover(chartId, itemName, trigger);
 };
 
-const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
-  if (!itemName) return;
-  (
-    document.querySelector(
-      `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
-    ) as HTMLButtonElement
-  )?.click();
+/** @returns whether a matching popover button was actually found and clicked. */
+export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu'): boolean => {
+  if (!itemName) return false;
+  const button = document.querySelector(
+    `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
+  ) as HTMLButtonElement | null;
+  button?.click();
+  return button != null;
 };
 
 /**

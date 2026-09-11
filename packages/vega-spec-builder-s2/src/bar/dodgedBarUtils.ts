@@ -15,6 +15,7 @@ import { BACKGROUND_COLOR } from '@spectrum-charts/constants';
 
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
+import { getBarFocusRing } from './barFocusRingUtils';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
   getBarDimensionHoverArea,
@@ -44,7 +45,6 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         // background bars
         {
           name: `${name}_background`,
-          description: `${name}_background`,
           from: { data: `${name}_facet` },
           type: 'rect',
           interactive: false,
@@ -61,7 +61,6 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         // bars
         {
           name,
-          description: name,
           from: { data: `${name}_facet` },
           type: 'rect',
           interactive: isInteractive(options),
@@ -78,7 +77,11 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         },
         ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
         // visible outline drawn on top of the bars so it is never occluded by adjacent marks
-        ...(showItemSelectionRing ? [getBarItemSelectionRing(options, `${name}_facet`, ringDimensionEncodings)] : []),
+        ...(showItemSelectionRing
+          ? [getBarItemSelectionRing(options, `${name}_facet`, ringDimensionEncodings)]
+          : []),
+        // focus ring for keyboard navigation (experimental); inside the group so it can read the bar mark bounds
+        ...(options.accessibleNavigation ? [getBarFocusRing(options)] : []),
       ],
     },
   ];
