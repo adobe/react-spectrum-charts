@@ -27,7 +27,7 @@ import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import { RscChartProps } from './types';
-import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals } from './utils';
+import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils';
 
 interface ChartDialogProps {
   targetElement: RefObject<HTMLElement | null>;
@@ -225,9 +225,7 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
           keyboardPopoverComponentName.current = null;
           selectedData.current = null;
           selectedDataName.current = '';
-          // A keyboard-opened popover's hover-parity is still owned by keyboard focus, which never
-          // left — clearing it here would just get reapplied moments later, causing a visible flash.
-          if (componentName && keyboardComponentName !== componentName) {
+          if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
             clearHoverSignals(chartView.current, componentName, specSignalNames);
           }
         }

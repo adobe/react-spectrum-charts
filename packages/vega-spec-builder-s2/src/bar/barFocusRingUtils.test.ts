@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FOCUSED_DIMENSION, FOCUSED_REGION, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/constants';
+import { FOCUSED_DIMENSION, FOCUSED_REGION, NAVIGATION_ID_SEPARATOR, SELECTED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils';
 import { getBarFocusRing, getChartFocusRing, getStackFocusRing } from './barFocusRingUtils';
@@ -50,6 +50,11 @@ describe('getBarFocusRing()', () => {
     const ring = getBarFocusRing({ ...defaultBarOptions, hasSquareCorners: true });
     // the "rounded" arm of each corner rule collapses to the flat radius (2)
     expect(ring.encode?.enter?.cornerRadiusTopLeft).toEqual([{ test: expect.any(String), value: 2 }, { value: 2 }]);
+  });
+
+  test('suppresses opacity when this item is also the selected/popover-open one', () => {
+    const opacity = JSON.stringify(getBarFocusRing(defaultBarOptions).encode?.update?.opacity);
+    expect(opacity).toContain(`${SELECTED_ITEM} === datum.datum.${defaultBarOptions.idKey}`);
   });
 });
 

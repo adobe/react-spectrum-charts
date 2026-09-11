@@ -13,7 +13,12 @@ import { View } from 'vega';
 
 import { MARK_ID } from '@spectrum-charts/constants';
 
-import { findFocusedBarSceneItem, hideFocusedItemTooltip, showFocusedItemTooltip } from './focusedItemTooltip';
+import {
+  findFocusedBarSceneItem,
+  findFocusedDimensionAreaSceneItem,
+  hideFocusedItemTooltip,
+  showFocusedItemTooltip,
+} from './focusedItemTooltip';
 
 const MARK_NAME = 'bar0';
 const RING_NAME = `${MARK_NAME}_focusRing`;
@@ -128,5 +133,27 @@ describe('findFocusedBarSceneItem()', () => {
     const view = mockBarView([{ datum: { browser: 'Chrome', [MARK_ID]: 0 } }]);
 
     expect(findFocusedBarSceneItem(view, MARK_NAME, 99)).toBeUndefined();
+  });
+});
+
+describe('findFocusedDimensionAreaSceneItem()', () => {
+  const DIMENSION_AREA_NAME = `${MARK_NAME}_dimensionHoverArea`;
+
+  const mockDimensionAreaView = (items: { datum: Record<string, unknown> }[]) =>
+    ({
+      scenegraph: () => ({ root: { items: [{ marktype: 'rect', name: DIMENSION_AREA_NAME, items }] } }),
+    }) as unknown as View;
+
+  test('finds the rendered dimension-area item whose datum carries the given dimension value', () => {
+    const match = { datum: { browser: 'Chrome' } };
+    const view = mockDimensionAreaView([{ datum: { browser: 'Firefox' } }, match]);
+
+    expect(findFocusedDimensionAreaSceneItem(view, MARK_NAME, 'browser', 'Chrome')).toBe(match);
+  });
+
+  test('returns undefined when no rendered item matches the given dimension value', () => {
+    const view = mockDimensionAreaView([{ datum: { browser: 'Firefox' } }]);
+
+    expect(findFocusedDimensionAreaSceneItem(view, MARK_NAME, 'browser', 'Chrome')).toBeUndefined();
   });
 });

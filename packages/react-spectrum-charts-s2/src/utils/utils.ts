@@ -473,6 +473,10 @@ export const clearHoverSignals = (
   safeClear(`${componentName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`);
 };
 
+/** False when a closing popover's hover-parity is still owned by an active keyboard focus on the same component — clearing it would just get reapplied moments later, causing a visible flash. */
+export const shouldClearHoverSignalsOnClose = (componentName: string, keyboardComponentName: string | null): boolean =>
+  !!componentName && keyboardComponentName !== componentName;
+
 /**
  * Return true if chart has a child with the corresponding displayName
  * @param0

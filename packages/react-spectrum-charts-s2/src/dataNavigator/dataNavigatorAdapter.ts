@@ -365,8 +365,11 @@ export const attachDataNavigator = ({
         });
     });
 
-    input.focus(renderId);
+    // Set before input.focus(): it synchronously fires the 'focus' listener above, which can
+    // synchronously flush signal listeners (e.g. the mouse-hover guard) — current must already
+    // reflect this node or a listener firing mid-transition reapplies the previous node's values.
     current = node.id;
+    input.focus(renderId);
 
     // Remove the previous node AFTER moving focus, so its focusout carries the new node as
     // relatedTarget — keeping the focusout handler below from treating this as leaving the widget.

@@ -59,6 +59,11 @@ let stackRingItem: { opacity: number; bounds?: { x1: number; y1: number; x2: num
 // The rendered `bar0` rect items themselves (not their focus ring) — Space-triggered popovers
 // anchor to these, matched by MARK_ID, the same as a real click would.
 let barItems: { datum: Record<string, unknown> }[];
+// The rendered `bar0_dimensionHoverArea` rect items — Space-triggered stack popovers anchor to these, matched by dimension value.
+let dimensionAreaItems: { datum: Record<string, unknown> }[];
+// Handlers registered via addSignalListener, keyed by signal name — lets tests simulate a real
+// mouseout (which drives these signals directly, bypassing `signal()`) by invoking them directly.
+let signalListeners: Record<string, ((name: string, value: unknown) => void)[]>;
 
 const mockView = () => {
   const values: Record<string, unknown> = {};
@@ -69,10 +74,19 @@ const mockView = () => {
   ringItem = { opacity: 0 };
   stackRingItem = { opacity: 0 };
   barItems = [];
+  dimensionAreaItems = [];
+  signalListeners = {};
   tooltipCallback = jest.fn();
-  return {
+  const viewMock = {
     signal,
     runAsync: jest.fn().mockResolvedValue(undefined),
+    runAfter: jest.fn((callback: (v: View) => void) => callback(viewMock)),
+    addSignalListener: jest.fn((name: string, handler: (name: string, value: unknown) => void) => {
+      (signalListeners[name] ??= []).push(handler);
+    }),
+    removeSignalListener: jest.fn((name: string, handler: (name: string, value: unknown) => void) => {
+      signalListeners[name] = (signalListeners[name] ?? []).filter((h) => h !== handler);
+    }),
     origin: jest.fn().mockReturnValue([0, 0]),
     data: jest.fn().mockReturnValue([]),
     // Real vega-view's tooltip() is a getter when called with no args — see focusedItemTooltip.ts.
@@ -83,16 +97,29 @@ const mockView = () => {
           { marktype: 'rect', name: 'bar0_focusRing', items: [ringItem] },
           { marktype: 'rect', name: 'bar0_stackFocusRing', items: [stackRingItem] },
           { marktype: 'rect', name: 'bar0', items: barItems },
+          { marktype: 'rect', name: 'bar0_dimensionHoverArea', items: dimensionAreaItems },
         ],
       },
     }),
   } as unknown as View;
+  return viewMock;
+};
+
+/** Simulates real mouse mouseout nulling a hover signal directly (bypassing `signal()`, same as Vega's own `on:` trigger would). */
+const simulateMouseoutClear = (signalName: string): void => {
+  signalListeners[signalName]?.forEach((handler) => handler(signalName, null));
 };
 
 /** Populates the fake `bar0` rect mark's rendered items for `findFocusedBarSceneItem` to match against. */
 const setBarItems = (rows: Record<string, unknown>[]): void => {
   barItems.length = 0;
   barItems.push(...rows.map((datum) => ({ datum })));
+};
+
+/** Populates the fake `bar0_dimensionHoverArea` rect mark's rendered items for `findFocusedDimensionAreaSceneItem` to match against. */
+const setDimensionAreaItems = (rows: Record<string, unknown>[]): void => {
+  dimensionAreaItems.length = 0;
+  dimensionAreaItems.push(...rows.map((datum) => ({ datum })));
 };
 
 /** The last non-null value the fake tooltip callback was triggered with, if any. */
@@ -383,6 +410,59 @@ describe('attachDataNavigator()', () => {
         dimension: 'browser',
       });
     });
+
+    describe('drilling from a segment back to its stack via Escape', () => {
+      const segmentRows = [
+        { browser: 'Chrome', os: 'Windows', downloads: 18000 },
+        { browser: 'Chrome', os: 'Mac', downloads: 9000 },
+      ];
+      const stackAggregateRows = [{ browser: 'Chrome', min_value1: 0, max_value1: 27000 }];
+
+      const attachAndDrillToSegment = async () => {
+        (view.data as jest.Mock).mockImplementation((name: string) => (name === 'bar0_stacks' ? stackAggregateRows : segmentRows));
+        setStackRingBounds({ x1: 0, y1: 0, x2: 10, y2: 10 });
+        attachDataNavigator({
+          container,
+          chartType: 'bar',
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          markName: 'bar0',
+          chartId: 'stacked-escape-chart',
+          getView: () => view,
+        });
+        entryButton().click();
+        fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // root -> stack
+        fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // stack -> segment
+        await Promise.resolve();
+      };
+
+      // Regression: the mouse-hover guard used to reapply the segment's own (stale) hover-parity
+      // right after Escape correctly nulled it, because `current` wasn't updated until after the
+      // synchronous focus event that triggers the guard's signal listener.
+      test('does not revert bar0_hoveredItem back to the segment it left', async () => {
+        await attachAndDrillToSegment();
+
+        fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' }); // segment -> back to the stack
+        await Promise.resolve();
+
+        const lastItemCall = [...signal.mock.calls].reverse().find(([n]) => n === 'bar0_hoveredItem');
+        expect(lastItemCall).toEqual(['bar0_hoveredItem', null]);
+      });
+
+      test('shows the stack tooltip, not the segment it left', async () => {
+        await attachAndDrillToSegment();
+        tooltipCallback.mockClear();
+
+        fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' });
+        await Promise.resolve();
+
+        expect(lastTooltipValue()).toMatchObject({
+          browser: 'Chrome',
+          [COMPONENT_NAME]: `bar0_${DIMENSION_HOVER_AREA}`,
+        });
+      });
+    });
   });
 
   describe('mouse-hover parity (markName provided)', () => {
@@ -435,6 +515,69 @@ describe('attachDataNavigator()', () => {
 
       expect(signal).toHaveBeenCalledWith('bar0_hoveredItem', null);
       expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', null);
+    });
+  });
+
+  describe('guarding hover-parity against real mouse mouseout clobbering keyboard focus', () => {
+    const rows = [
+      { browser: 'Chrome', downloads: 27000 },
+      { browser: 'Firefox', downloads: 8000 },
+    ];
+
+    const attachWithMarkName = () => {
+      (view.data as jest.Mock).mockReturnValue(rows);
+      return attachDataNavigator({
+        container,
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        markName: 'bar0',
+        chartId: 'hover-guard-chart',
+        getView: () => view,
+      });
+    };
+
+    test('reapplies the keyboard-focused row when a real mouseout nulls the shared hover signal', () => {
+      attachWithMarkName();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // focuses the first bar
+      signal.mockClear();
+
+      simulateMouseoutClear('bar0_hoveredItem');
+
+      expect(signal).toHaveBeenCalledWith('bar0_hoveredItem', rows[0]);
+      expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', rows[0]);
+    });
+
+    test('re-shows the tooltip when reapplying after a mouseout clear', () => {
+      attachWithMarkName();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      setRingBounds({ x1: 10, y1: 20, x2: 30, y2: 40 });
+      tooltipCallback.mockClear();
+
+      simulateMouseoutClear('bar0_dimensionHoverArea_hoveredItem');
+
+      expect(lastTooltipValue()).not.toBeUndefined();
+    });
+
+    test('does nothing when no node is keyboard-focused', () => {
+      attachWithMarkName();
+      signal.mockClear();
+
+      expect(() => simulateMouseoutClear('bar0_hoveredItem')).not.toThrow();
+      expect(signal.mock.calls.some(([n]) => n === 'bar0_hoveredItem')).toBe(false);
+    });
+
+    test('ignores a real (non-null) hover value — only reapplies on a clobbering clear', () => {
+      attachWithMarkName();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      signal.mockClear();
+
+      signalListeners['bar0_hoveredItem']?.forEach((handler) => handler('bar0_hoveredItem', rows[1]));
+
+      expect(signal.mock.calls.some(([n]) => n === 'bar0_hoveredItem')).toBe(false);
     });
   });
 
@@ -591,16 +734,17 @@ describe('attachDataNavigator()', () => {
       });
     });
 
-    describe('stacked bars', () => {
-      const stackRows = [
-        { browser: 'Chrome', os: 'Windows', downloads: 18000, [MARK_ID]: 0 },
-        { browser: 'Chrome', os: 'Mac', downloads: 9000, [MARK_ID]: 1 },
+    describe('Space on a whole stack (dimension area)', () => {
+      const stackAggregateRows = [
+        { browser: 'Chrome', min_value1: 0, max_value1: 27000 },
+        { browser: 'Firefox', min_value1: 0, max_value1: 13000 },
       ];
 
-      test('does not open a popover while focused on a whole stack (not yet a segment)', () => {
-        (view.data as jest.Mock).mockReturnValue(stackRows);
-        setBarItems(stackRows);
+      const attachStackedWithPopoverRefs = (chartId = 'stacked-popover-chart') => {
+        (view.data as jest.Mock).mockImplementation((name: string) => (name === 'bar0_stacks' ? stackAggregateRows : []));
         const selectedData: RefObject<Datum | null> = { current: null };
+        const selectedDataBounds: RefObject<MarkBounds> = { current: { x1: 0, y1: 0, x2: 0, y2: 0 } };
+        const selectedDataName: RefObject<string> = { current: '' };
         attachDataNavigator({
           container,
           chartType: 'bar',
@@ -608,15 +752,34 @@ describe('attachDataNavigator()', () => {
           dimension: 'browser',
           color: 'os',
           markName: 'bar0',
-          chartId: 'stacked-popover-chart',
+          chartId,
           getView: () => view,
           selectedData,
-          selectedDataBounds: { current: { x1: 0, y1: 0, x2: 0, y2: 0 } },
-          selectedDataName: { current: '' },
+          selectedDataBounds,
+          selectedDataName,
         });
+        return { selectedData, selectedDataBounds, selectedDataName };
+      };
 
+      test('opens a popover with the stack\'s aggregate row, anchored to the dimension-hover-area bounds', () => {
+        setDimensionAreaItems(stackAggregateRows);
+        const { selectedData, selectedDataName } = attachStackedWithPopoverRefs();
         entryButton().click();
         fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // drill into the first stack (not a segment)
+
+        fireEvent.keyDown(focused(), { key: ' ', code: 'Space' });
+
+        expect(selectedData.current).toMatchObject({ browser: 'Chrome', [COMPONENT_NAME]: 'bar0' });
+        expect(selectedDataName.current).toBe('bar0');
+        expect(triggerPopover).toHaveBeenCalledWith('stacked-popover-chart', 'bar0', 'click');
+        expect(getItemBounds).toHaveBeenCalledWith(dimensionAreaItems[0]);
+      });
+
+      test('does not open a popover when the dimension-hover-area mark has no rendered item for the focused stack', () => {
+        // dimensionAreaItems left empty — no rendered item to anchor to.
+        attachStackedWithPopoverRefs('stacked-popover-chart-empty');
+        entryButton().click();
+        fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
 
         fireEvent.keyDown(focused(), { key: ' ', code: 'Space' });
 

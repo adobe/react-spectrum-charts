@@ -25,6 +25,7 @@ import {
   getOnMarkClickCallback,
   handleLegendItemClick,
   handleLegendItemMouseInput,
+  triggerPopover,
 } from './markClickUtils';
 
 const defaultMarkClickArgs: GetOnMarkClickCallbackArgs = {
@@ -43,6 +44,30 @@ describe('getItemBounds()', () => {
   test('should return default bounds if null or undefined', () => {
     expect(getItemBounds(null)).toStrictEqual({ x1: 0, x2: 0, y1: 0, y2: 0 });
     expect(getItemBounds(undefined)).toStrictEqual({ x1: 0, x2: 0, y1: 0, y2: 0 });
+  });
+});
+
+describe('triggerPopover()', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  test('clicks the matching button and returns true when one exists', () => {
+    document.body.innerHTML = '<div id="test-chart"><div><button id="bar0-popover-button"></button></div></div>';
+    const button = document.getElementById('bar0-popover-button') as HTMLButtonElement;
+    const onClick = jest.fn();
+    button.addEventListener('click', onClick);
+
+    expect(triggerPopover('test-chart', 'bar0', 'click')).toBe(true);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('returns false without clicking anything when no matching button exists', () => {
+    expect(triggerPopover('test-chart', 'bar0', 'click')).toBe(false);
+  });
+
+  test('returns false when itemName is undefined', () => {
+    expect(triggerPopover('test-chart', undefined, 'click')).toBe(false);
   });
 });
 
