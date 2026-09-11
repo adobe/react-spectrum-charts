@@ -21,6 +21,9 @@ import {
   DEFAULT_METRIC,
   DIMENSION_HOVER_AREA,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
   GROUP_ID,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
@@ -67,10 +70,16 @@ import {
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder';
-import { addUserMetaAnimatedMark, addUserMetaDivergingBarMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import {
+  addUserMetaAnimatedMark,
+  addUserMetaDivergingBarMark,
+  addUserMetaInteractiveMark,
+  getFacetsFromOptions,
+} from '../specUtils';
 import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types';
+import { getChartFocusRing } from './barFocusRingUtils';
 import {
   getBarAnimIdField,
   getBarHoverRules,
@@ -92,6 +101,7 @@ export const addBar = produce<
     BarOptions & {
       animations?: boolean;
       animationTypes?: AnimationType[];
+      accessibleNavigation?: boolean;
       colorScheme?: ColorScheme;
       data?: ChartData[];
       highlightedItem?: HighlightedItem;
@@ -255,6 +265,10 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   // We use this value to calculate ReferenceLine positions.
   const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
   signals.push(getGenericValueSignal('paddingInner', paddingInner));
+
+  if (options.accessibleNavigation) {
+    signals.push(getGenericValueSignal(FOCUSED_ITEM), getGenericValueSignal(FOCUSED_REGION), getGenericValueSignal(FOCUSED_DIMENSION));
+  }
 
   if (isDualMetricAxis(options)) {
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
@@ -553,6 +567,10 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
 
   for (const [i, label] of options.barDirectLabels.entries()) {
     marks.push(...getBarDirectLabelMarks(getBarDirectLabelSpecOptions(label, i, options), options));
+  }
+
+  if (options.accessibleNavigation) {
+    marks.push(getChartFocusRing(options));
   }
 });
 

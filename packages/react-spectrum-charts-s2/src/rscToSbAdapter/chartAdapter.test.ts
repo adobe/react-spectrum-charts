@@ -55,6 +55,17 @@ describe('rscPropsToSpecBuilderOptions()', () => {
     });
   });
 
+  describe('accessibleNavigation', () => {
+    test('should pass accessibleNavigation through to the spec builder options', () => {
+      const options = rscPropsToSpecBuilderOptions({ ...chartProps, accessibleNavigation: true });
+      expect(options).toHaveProperty('accessibleNavigation', true);
+    });
+    test('should be omitted when not provided', () => {
+      const options = rscPropsToSpecBuilderOptions(chartProps);
+      expect(options.accessibleNavigation).toBeUndefined();
+    });
+  });
+
   describe('marks', () => {
     test('should return provided marks in the marks array', () => {
       const options = rscPropsToSpecBuilderOptions({
