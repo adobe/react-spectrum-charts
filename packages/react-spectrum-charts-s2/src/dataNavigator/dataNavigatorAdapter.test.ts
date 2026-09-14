@@ -61,6 +61,13 @@ let stackRingItem: { opacity: number; bounds?: { x1: number; y1: number; x2: num
 let barItems: { datum: Record<string, unknown> }[];
 // The rendered `bar0_dimensionHoverArea` rect items — Space-triggered stack popovers anchor to these, matched by dimension value.
 let dimensionAreaItems: { datum: Record<string, unknown> }[];
+// The rendered bottom-axis label scenegraph items, read by getVisibleAxisLabelColumns().
+let axisLabelItems: {
+  opacity: number;
+  datum: { value: string };
+  bounds: { x1: number; y1: number; x2: number; y2: number };
+  mark: { group: { orient: string } };
+}[];
 // Handlers registered via addSignalListener, keyed by signal name — lets tests simulate a real
 // mouseout (which drives these signals directly, bypassing `signal()`) by invoking them directly.
 let signalListeners: Record<string, ((name: string, value: unknown) => void)[]>;
@@ -75,6 +82,7 @@ const mockView = () => {
   stackRingItem = { opacity: 0 };
   barItems = [];
   dimensionAreaItems = [];
+  axisLabelItems = [];
   signalListeners = {};
   tooltipCallback = jest.fn();
   const viewMock = {
@@ -98,11 +106,23 @@ const mockView = () => {
           { marktype: 'rect', name: 'bar0_stackFocusRing', items: [stackRingItem] },
           { marktype: 'rect', name: 'bar0', items: barItems },
           { marktype: 'rect', name: 'bar0_dimensionHoverArea', items: dimensionAreaItems },
+          { marktype: 'text', role: 'axis-label', items: axisLabelItems },
         ],
       },
     }),
   } as unknown as View;
   return viewMock;
+};
+
+/**
+ * Populates the fake bottom-axis label scenegraph items getVisibleAxisLabelColumns() reads bounds
+ * from directly (view-relative, no owning group offset), one per value, left-to-right.
+ */
+const setAxisLabelItems = (values: string[], boundsFor: (index: number) => { x1: number; y1: number; x2: number; y2: number }): void => {
+  axisLabelItems.length = 0;
+  values.forEach((value, index) => {
+    axisLabelItems.push({ opacity: 1, datum: { value }, bounds: boundsFor(index), mark: { group: { orient: 'bottom' } } });
+  });
 };
 
 /** Simulates real mouse mouseout nulling a hover signal directly (bypassing `signal()`, same as Vega's own `on:` trigger would). */
@@ -580,6 +600,14 @@ describe('attachDataNavigator()', () => {
 
       expect(signal.mock.calls.some(([n]) => n === 'bar0_hoveredItem')).toBe(false);
     });
+
+    test('removes the stale previous listener when re-attached on the same view (e.g. a data/prop change)', () => {
+      attachWithMarkName();
+      attachWithMarkName(); // re-attach on the same view, same as Navigator re-running its effect
+
+      expect(signalListeners['bar0_hoveredItem']).toHaveLength(1);
+      expect(signalListeners['bar0_dimensionHoverArea_hoveredItem']).toHaveLength(1);
+    });
   });
 
   describe('Space opens a popover on a focused leaf bar', () => {
@@ -786,6 +814,160 @@ describe('attachDataNavigator()', () => {
 
         expect(triggerPopover).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('x-axis region', () => {
+    const focusRing = (): HTMLElement => container.querySelector('.dn-axis-focus-ring') as HTMLElement;
+
+    const attachWithAxis = () => {
+      (view.data as jest.Mock).mockReturnValue(data);
+      setAxisLabelItems(['Chrome', 'Firefox', 'Safari'], (index) => ({
+        x1: index * 50,
+        y1: 100,
+        x2: index * 50 + 40,
+        y2: 120,
+      }));
+      return attachDataNavigator({
+        container,
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        markName: 'bar0',
+        xAxis: { field: 'browser', type: 'categorical' },
+        chartId: 'axis-chart',
+        getView: () => view,
+      });
+    };
+
+    const enterAxisRegion = () => {
+      attachWithAxis();
+      entryButton().click(); // chart root
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' }); // chart root -> axis root
+    };
+
+    test('Right from the chart root clears the chart-region focus signal', () => {
+      enterAxisRegion();
+      expect(signaledWith(FOCUSED_REGION, null)).toBe(true);
+    });
+
+    test('Right from the chart root shows the axis focus ring', () => {
+      enterAxisRegion();
+      expect(focusRing().style.display).toBe('block');
+    });
+
+    test('the axis-root ring spans the union of every visible label column', () => {
+      enterAxisRegion();
+      expect(focusRing().style).toMatchObject({ left: '-6px', top: '94px', width: '152px', height: '32px' });
+    });
+
+    test('Entering a tick label does not activate the bar focus ring', () => {
+      enterAxisRegion();
+      signal.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // axis root -> first tick
+
+      expect(signaledWith(FOCUSED_ITEM, null)).toBe(true);
+    });
+
+    test('a focused tick label drives the dimension-hover-area signal for the matching row', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+
+      expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', data[0]);
+    });
+
+    test('a focused tick label does not drive the single-item hover signal', () => {
+      enterAxisRegion();
+      signal.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+
+      expect(signal.mock.calls.some(([n, v]) => n === 'bar0_hoveredItem' && v != null)).toBe(false);
+    });
+
+    test('a focused tick label does not show the chart tooltip', async () => {
+      enterAxisRegion();
+      tooltipCallback.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      await Promise.resolve();
+
+      expect(lastTooltipValue()).toBeUndefined();
+    });
+
+    test('a focused tick label ring matches its own column, not the whole axis', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // first tick: x 0-40
+
+      expect(focusRing().style).toMatchObject({ left: '-6px', top: '94px', width: '52px', height: '32px' });
+    });
+
+    test('Space on a focused tick label does not open a popover', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+
+      fireEvent.keyDown(focused(), { key: ' ', code: 'Space' });
+
+      expect(triggerPopover).not.toHaveBeenCalled();
+    });
+
+    test('Escape from a tick label returns to the axis root ring', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // to the first tick (a narrower ring)
+
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' }); // back to the axis root
+
+      expect(focusRing().style).toMatchObject({ left: '-6px', top: '94px', width: '152px', height: '32px' });
+    });
+
+    test('Left from the axis root returns to the chart region', () => {
+      enterAxisRegion();
+      signal.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
+
+      expect(signaledWith(FOCUSED_REGION, 'chart')).toBe(true);
+    });
+
+    test('Left from the axis root clears the axis focus ring', () => {
+      enterAxisRegion();
+
+      fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
+
+      expect(focusRing().style.display).toBe('none');
+    });
+
+    test('clears the ring when no axis labels are currently visible', () => {
+      attachWithAxis();
+      axisLabelItems.length = 0; // no labels rendered, e.g. an empty/zero-width axis
+      entryButton().click();
+
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+
+      expect(focusRing().style.display).toBe('none');
+    });
+
+    test('clears the ring when the focused tick no longer matches a visible column', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // to the first tick ('Chrome')
+      // Labels changed since the structure was built (e.g. a resize) — 'Chrome' no longer among them.
+      setAxisLabelItems(['Firefox', 'Safari'], (index) => ({ x1: index * 50, y1: 100, x2: index * 50 + 40, y2: 120 }));
+
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' }); // axis root
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // back into the (now-missing) 'Chrome' tick
+
+      expect(focusRing().style.display).toBe('none');
+    });
+
+    test('reapplies the focused tick\'s dimension row when a real mouseout clobbers the shared hover signal', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // focuses the 'Chrome' tick
+      signal.mockClear();
+
+      simulateMouseoutClear('bar0_dimensionHoverArea_hoveredItem');
+
+      expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', data[0]);
     });
   });
 });

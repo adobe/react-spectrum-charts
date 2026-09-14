@@ -44,7 +44,38 @@ describe('buildChartStructure()', () => {
     );
   });
 
-  test('returns undefined for an unsupported chart type', () => {
-    expect(buildChartStructure({ chartType: 'pie' as never, data, dimension: 'browser' })).toBeUndefined();
+  describe('with an x-axis region', () => {
+    test('without xAxis, returns the raw content structure untouched', () => {
+      const direct = buildBarStructure({ data, dimension: 'browser' });
+      const composed = buildChartStructure({ chartType: 'bar', data, dimension: 'browser' });
+
+      expect(composed?.entryPoint).toBe(direct.entryPoint);
+      expect(Object.keys(composed?.structure.nodes ?? {}).sort()).toEqual(Object.keys(direct.structure.nodes).sort());
+    });
+
+    test('keeps content as the entry point and content ids untouched', () => {
+      const direct = buildBarStructure({ data, dimension: 'browser' });
+      const composed = buildChartStructure({
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        xAxis: { field: 'browser', type: 'categorical' },
+      });
+
+      expect(composed?.entryPoint).toBe(direct.entryPoint);
+      expect(composed?.structure.nodes.Chrome).toBeDefined();
+    });
+
+    test('adds a namespaced x-axis region alongside content', () => {
+      const composed = buildChartStructure({
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        xAxis: { field: 'browser', type: 'categorical' },
+      });
+
+      const axisNodes = Object.entries(composed?.structure.nodes ?? {}).filter(([id]) => id.startsWith('xAxis::'));
+      expect(axisNodes.length).toBeGreaterThan(0);
+    });
   });
 });

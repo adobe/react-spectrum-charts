@@ -64,6 +64,16 @@ describe('applyHoverParitySignals()', () => {
     expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', null);
   });
 
+  test('a structurally-leaf node sets only dimensionHoverArea_hoveredItem when dimensionOnly is true', () => {
+    const { view, signal } = mockView();
+    const node = { id: 'Chrome', data: { browser: 'Chrome' } } as unknown as NodeObject;
+
+    applyHoverParitySignals(view, { markName: 'bar0', dimension: 'browser' }, node, true);
+
+    expect(signal).toHaveBeenCalledWith('bar0_hoveredItem', null);
+    expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', rows[0]);
+  });
+
   test('works for a basic (non-stacked) bar with no color field', () => {
     const { view, signal } = mockView();
     const basicRows = [{ browser: 'Firefox', value: 5000 }];

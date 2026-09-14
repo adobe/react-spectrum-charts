@@ -19,6 +19,8 @@ import { ChartHandle, Datum, SimpleData, SymbolSize, getChartConfig } from '@spe
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
+import { Axis } from './components/Axis';
+import { AxisRegionOptions } from './dataNavigator/buildChartStructure';
 import { Navigator } from './dataNavigator/Navigator';
 import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
@@ -150,10 +152,29 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   );
   const navChartType =
     navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
-  const navFields = navChild?.props as { dimension?: string; metric?: string; color?: unknown; name?: string } | undefined;
+  const navFields = navChild?.props as
+    | { dimension?: string; metric?: string; color?: unknown; order?: string; name?: string }
+    | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
-  // The bar's own mark name, so keyboard focus can drive the same hover signals real mouse hover drives, for exact parity.
-  const markName = navFields?.name ?? 'bar0';
+  const markName = navFields?.name ?? (navChartType ? `${navChartType}0` : undefined);
+
+  // Bottom (x) axis region: makes the axis labels keyboard-navigable, one level above chart content.
+  const xAxisChild = sanitizedChildren.find(
+    (child) =>
+      'displayName' in child.type &&
+      child.type.displayName === Axis.displayName &&
+      (child.props as { position?: string }).position === 'bottom'
+  );
+  // Memoized: Navigator's effect depends on this object by reference, and RscChart re-renders on
+  // every popover open/close (isPopoverOpen), which would otherwise tear down and rebuild the whole
+  // navigator mid-interaction, discarding its in-progress keyboard-focus state.
+  const xAxis: AxisRegionOptions | undefined = useMemo(
+    () =>
+      xAxisChild && navFields?.dimension
+        ? { field: navFields.dimension, type: 'categorical', title: (xAxisChild.props as { title?: string }).title }
+        : undefined,
+    [xAxisChild, navFields?.dimension]
+  );
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
 
@@ -200,8 +221,10 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             dimension={navFields?.dimension}
             color={navColor}
             metric={navFields?.metric}
+            order={navFields?.order}
             markName={markName}
             title={title}
+            xAxis={xAxis}
             containerRef={navContainerRef}
             chartId={chartId}
             getView={getView}

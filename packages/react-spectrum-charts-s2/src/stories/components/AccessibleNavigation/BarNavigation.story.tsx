@@ -18,19 +18,32 @@ import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { barSeriesData } from '../Bar/data';
+import { barData, barSeriesData } from '../Bar/data';
 
 export default {
-  title: 'React Spectrum Charts 2/NavigationPrototype/Features/Bar Navigation',
+  title: 'React Spectrum Charts 2/Accessible Navigation/Bar Navigation',
+};
+
+/** Non-interactive bar (no popover/inspect/onClick) keyboard navigation: Tab to "Enter navigation area", then arrow keys move between bars. */
+const NonInteractiveBarNavigationStory: StoryFn = (): ReactElement => {
+  const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" baseline grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads" />
+    </Chart>
+  );
 };
 
 /** Stacked bar keyboard navigation: Tab to "Enter navigation area", then arrow keys move between bars/segments. */
-const BarNavigationStory: StoryFn = (): ReactElement => {
+const StackedBarNavigationStory: StoryFn = (): ReactElement => {
   const chartProps = useChartProps({
     data: barSeriesData,
     width: 800,
     height: 600,
     accessibleNavigation: true,
+    renderer: 'canvas',
   });
   return (
     <>
@@ -96,4 +109,5 @@ const BarNavigationStory: StoryFn = (): ReactElement => {
   );
 };
 
-export const BarNavigation = BarNavigationStory.bind({});
+export const NonInteractiveBarNavigation = NonInteractiveBarNavigationStory.bind({});
+export const StackedBarNavigation = StackedBarNavigationStory.bind({});

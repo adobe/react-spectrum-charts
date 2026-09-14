@@ -561,6 +561,22 @@ describe('barSpecBuilder', () => {
       expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
       expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
     });
+    test('should add hoveredItem signals when accessibleNavigation is enabled, even with no other interactivity', () => {
+      // keyboard hover-parity (dataNavigatorAdapter's guardHoverParityAgainstMouseClear) always registers
+      // listeners on these signals, so they must exist even for a bar with no popover/inspect/onClick.
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
+      expect(signals.find((signal) => signal.name === 'bar0_hoveredItem')).toBeDefined();
+      expect(
+        signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+      ).toBeDefined();
+    });
+    test('should not add hoveredItem signals by default with no interactivity and no accessibleNavigation', () => {
+      const signals = addSignals(defaultSignals, defaultBarOptions);
+      expect(signals.find((signal) => signal.name === 'bar0_hoveredItem')).toBeUndefined();
+      expect(
+        signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+      ).toBeUndefined();
+    });
     test('should add hover events if inspect is present', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, chartInspects: [{}] });
       const hoveredItemSignal = signals.find((signal) => signal.name === 'bar0_hoveredItem');

@@ -16,6 +16,24 @@ import { buildBarStructure, buildNodeLabel, segmentId } from './buildBarStructur
 const hasEdgeBetween = (structure: Structure, a: string, b: string): boolean =>
   Object.values(structure.edges).some((edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a));
 
+/** The segment Enter reaches first from a division (stack) node — the edge where the division is the source, not the target. */
+const firstSegmentOf = (structure: Structure, divisionId: string): string | undefined => {
+  const division = structure.nodes[divisionId];
+  const edgeId = division.edges.find((id) => structure.edges[id].source === divisionId && structure.edges[id].navigationRules.includes('child'));
+  return edgeId ? (structure.edges[edgeId].target as string) : undefined;
+};
+
+/** The library keys a division (stack) node by an internal composite, not the raw dimension value — look it up by the value each of its segments actually carries. */
+const divisionIdFor = (structure: Structure, dimensionKey: string, value: string): string => {
+  const divisions = structure.dimensions?.[dimensionKey]?.divisions ?? {};
+  const match = Object.values(divisions).find((division) =>
+    Object.values((division as unknown as { values: Record<string, Record<string, unknown>> }).values).some(
+      (leaf) => leaf[dimensionKey] === value
+    )
+  );
+  return (match as unknown as { id: string }).id;
+};
+
 const data = [
   { browser: 'Chrome', downloads: 27000 },
   { browser: 'Firefox', downloads: 8000 },
@@ -110,6 +128,43 @@ describe('buildBarStructure()', () => {
       // dimensionLevel === 2 are division (per-stack) nodes; basic bars compress these away
       const divisions = Object.values(structure.nodes).filter((node) => node.dimensionLevel === 2);
       expect(divisions).toHaveLength(2); // Chrome, Firefox
+    });
+
+    describe('segment order (matches Vega\'s real stack, not raw data-array order)', () => {
+      // Vega's stack transform accumulates bottom-up, so without an explicit sort, the LAST row in the
+      // array ends up visually on top (verified against the real transform) — Enter should reach that one.
+      test('reaches the last-listed segment first when no order field is given', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        const chrome = divisionIdFor(structure, 'browser', 'Chrome');
+        expect(firstSegmentOf(structure, chrome)).toBe(segmentId('Chrome', 'Mac'));
+      });
+
+      test('reaches the segment with the highest order value first, even when it is listed first in the array', () => {
+        const orderedData = [
+          { browser: 'Chrome', os: 'Windows', downloads: 18000, order: 2 },
+          { browser: 'Chrome', os: 'Mac', downloads: 9000, order: 1 },
+        ];
+        const { structure } = buildBarStructure({ data: orderedData, dimension: 'browser', color: 'os', order: 'order' });
+        const chrome = divisionIdFor(structure, 'browser', 'Chrome');
+        expect(firstSegmentOf(structure, chrome)).toBe(segmentId('Chrome', 'Windows'));
+      });
+
+      test('reaches the segment with the highest order value first, even when it is listed last in the array', () => {
+        const orderedData = [
+          { browser: 'Chrome', os: 'Windows', downloads: 18000, order: 1 },
+          { browser: 'Chrome', os: 'Mac', downloads: 9000, order: 2 },
+        ];
+        const { structure } = buildBarStructure({ data: orderedData, dimension: 'browser', color: 'os', order: 'order' });
+        const chrome = divisionIdFor(structure, 'browser', 'Chrome');
+        expect(firstSegmentOf(structure, chrome)).toBe(segmentId('Chrome', 'Mac'));
+      });
+
+      test('does not change the overall column (dimension) order — only the segments within each stack', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        const chrome = divisionIdFor(structure, 'browser', 'Chrome');
+        const firefox = divisionIdFor(structure, 'browser', 'Firefox');
+        expect(hasEdgeBetween(structure, chrome, firefox)).toBe(true);
+      });
     });
   });
 

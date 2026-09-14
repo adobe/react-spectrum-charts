@@ -51,8 +51,18 @@ export const findFocusedStackRow = (view: View, node: NodeObject, dimension: str
   return rows.find((row) => row[dimension] === dimensionValue);
 };
 
-/** Drives the same hover signals real mouse hover drives (see `addHoveredItemSignal`), so every existing hover rule gives keyboard focus exact parity for free. */
-export const applyHoverParitySignals = (view: View, options: BarHoverParityOptions, node: NodeObject | null): void => {
+/**
+ * Drives the same hover signals real mouse hover drives (see `addHoveredItemSignal`), so every existing
+ * hover rule gives keyboard focus exact parity for free. `dimensionOnly` forces the whole-stack behavior
+ * (dimension signal only, item signal cleared) even for a node that is structurally a leaf — used for
+ * x-axis tick nodes, which represent a whole category, not a single bar/segment.
+ */
+export const applyHoverParitySignals = (
+  view: View,
+  options: BarHoverParityOptions,
+  node: NodeObject | null,
+  dimensionOnly = false
+): void => {
   const { markName, dimension, color } = options;
   const itemSignal = `${markName}_${HOVERED_ITEM}`;
   const dimensionSignal = `${markName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
@@ -64,8 +74,8 @@ export const applyHoverParitySignals = (view: View, options: BarHoverParityOptio
     return;
   }
 
-  const isLeaf = node?.dimensionLevel == null;
-  // A division (whole stack) only matches the dimension-wide target — no single bar is hovered.
+  const isLeaf = !dimensionOnly && node?.dimensionLevel == null;
+  // A division (whole stack) or an axis tick only matches the dimension-wide target — no single bar is hovered.
   view.signal(itemSignal, isLeaf ? row : null);
   view.signal(dimensionSignal, row);
 };
