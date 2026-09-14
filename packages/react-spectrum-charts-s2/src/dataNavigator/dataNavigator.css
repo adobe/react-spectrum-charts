@@ -62,8 +62,8 @@
   padding: 4px 8px;
   overflow: visible;
   clip: auto;
-  background: var(--spectrum-blue-800, #4b75ff);
-  color: #fff;
+  background: var(--spectrum-blue-900, #0469e3);
+  color: var(--spectrum-global-color-static-white, #fff);
   border-radius: 4px;
   font-size: 12px;
 }
