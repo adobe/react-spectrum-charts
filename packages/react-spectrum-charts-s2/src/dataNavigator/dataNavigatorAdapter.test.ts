@@ -62,9 +62,12 @@ let barItems: { datum: Record<string, unknown> }[];
 // The rendered `bar0_dimensionHoverArea` rect items — Space-triggered stack popovers anchor to these, matched by dimension value.
 let dimensionAreaItems: { datum: Record<string, unknown> }[];
 // The rendered bottom-axis label scenegraph items, read by getVisibleAxisLabelColumns().
-let axisLabelItems: { opacity: number; datum: { value: string }; mark: { group: { orient: string } } }[];
-// The real DOM `<text>` elements getVisibleAxisLabelColumns() cross-references against axisLabelItems.
-let axisLabelContainer: HTMLElement;
+let axisLabelItems: {
+  opacity: number;
+  datum: { value: string };
+  bounds: { x1: number; y1: number; x2: number; y2: number };
+  mark: { group: { orient: string } };
+}[];
 // Handlers registered via addSignalListener, keyed by signal name — lets tests simulate a real
 // mouseout (which drives these signals directly, bypassing `signal()`) by invoking them directly.
 let signalListeners: Record<string, ((name: string, value: unknown) => void)[]>;
@@ -80,7 +83,6 @@ const mockView = () => {
   barItems = [];
   dimensionAreaItems = [];
   axisLabelItems = [];
-  axisLabelContainer = document.createElement('div');
   signalListeners = {};
   tooltipCallback = jest.fn();
   const viewMock = {
@@ -97,7 +99,6 @@ const mockView = () => {
     data: jest.fn().mockReturnValue([]),
     // Real vega-view's tooltip() is a getter when called with no args — see focusedItemTooltip.ts.
     tooltip: jest.fn().mockReturnValue(tooltipCallback),
-    container: jest.fn(() => axisLabelContainer),
     scenegraph: () => ({
       root: {
         items: [
@@ -114,34 +115,13 @@ const mockView = () => {
 };
 
 /**
- * Populates the fake bottom-axis label scenegraph items + matching real DOM `<text>` elements
- * getVisibleAxisLabelColumns() reads bounds from, one per value, left-to-right at the given bounds.
+ * Populates the fake bottom-axis label scenegraph items getVisibleAxisLabelColumns() reads bounds
+ * from directly (view-relative, no owning group offset), one per value, left-to-right.
  */
 const setAxisLabelItems = (values: string[], boundsFor: (index: number) => { x1: number; y1: number; x2: number; y2: number }): void => {
   axisLabelItems.length = 0;
   values.forEach((value, index) => {
-    axisLabelItems.push({ opacity: 1, datum: { value }, mark: { group: { orient: 'bottom' } } });
-    const group = document.createElement('g');
-    group.setAttribute('class', 'role-axis-label');
-    const text = document.createElement('text');
-    text.textContent = value;
-    const b = boundsFor(index);
-    text.getBoundingClientRect = jest.fn(
-      () =>
-        ({
-          left: b.x1,
-          top: b.y1,
-          right: b.x2,
-          bottom: b.y2,
-          width: b.x2 - b.x1,
-          height: b.y2 - b.y1,
-          x: b.x1,
-          y: b.y1,
-          toJSON: () => ({}),
-        }) as DOMRect
-    );
-    group.appendChild(text);
-    axisLabelContainer.appendChild(group);
+    axisLabelItems.push({ opacity: 1, datum: { value }, bounds: boundsFor(index), mark: { group: { orient: 'bottom' } } });
   });
 };
 

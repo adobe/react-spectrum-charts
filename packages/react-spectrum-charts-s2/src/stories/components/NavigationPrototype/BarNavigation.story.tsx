@@ -31,6 +31,7 @@ const BarNavigationStory: StoryFn = (): ReactElement => {
     width: 800,
     height: 600,
     accessibleNavigation: true,
+    renderer: 'canvas',
   });
   return (
     <>

@@ -44,11 +44,6 @@ type SceneNode = {
   mark?: { role?: string; group?: SceneNode };
 };
 
-const getDomBounds = (element: Element): Bounds => {
-  const rect = element.getBoundingClientRect();
-  return { x1: rect.left, y1: rect.top, x2: rect.right, y2: rect.bottom };
-};
-
 const union = (a: Bounds, b: Bounds): Bounds => ({
   x1: Math.min(a.x1, b.x1),
   y1: Math.min(a.y1, b.y1),
@@ -76,28 +71,54 @@ const collectAxisLabelItems = (view: View, orient: AxisOrient): SceneNode[] => {
 };
 
 /**
+ * A scene item's `bounds` are relative to its owning group; walk up the `mark.group` chain to make
+ * them view-relative — the same technique `focusedItemTooltip.ts` uses for bar/segment items. Read
+ * from the scenegraph (Vega's own layout model) rather than the DOM, so this works identically under
+ * both the `svg` and `canvas` renderers.
+ */
+const viewRelativeBounds = (item: SceneNode): Bounds | undefined => {
+  const b = item.bounds;
+  if (!b) return undefined;
+  let dx = 0;
+  let dy = 0;
+  let group = item.mark?.group;
+  while (group) {
+    dx += group.x ?? 0;
+    dy += group.y ?? 0;
+    group = group.mark?.group;
+  }
+  return { x1: b.x1 + dx, y1: b.y1 + dy, x2: b.x2 + dx, y2: b.y2 + dy };
+};
+
+/**
  * The visible label "columns" for one axis: only labels Vega actually painted (`opacity > 0` — overlap-
  * hidden labels stay in the scenegraph at opacity 0), grouped by tick so a primary label and its
  * sublabel(s) at the same tick are ONE unit, using each item's real rendered bounds (which already
  * account for rotation/multiline). Grouped along the axis (by x for bottom/top, by y for left/right)
- * and returned in axis order.
+ * and returned in axis order, as absolute page coordinates (matching `container`'s own position).
  */
-export const getVisibleAxisLabelColumns = (view: View, orient: AxisOrient = 'bottom'): AxisLabelColumn[] => {
+export const getVisibleAxisLabelColumns = (
+  view: View,
+  container: HTMLElement,
+  orient: AxisOrient = 'bottom'
+): AxisLabelColumn[] => {
   const horizontal = orient === 'bottom' || orient === 'top';
+  const [originX, originY] = view.origin();
+  const containerRect = container.getBoundingClientRect();
+  const toPageBounds = (b: Bounds): Bounds => ({
+    x1: containerRect.left + originX + b.x1,
+    y1: containerRect.top + originY + b.y1,
+    x2: containerRect.left + originX + b.x2,
+    y2: containerRect.top + originY + b.y2,
+  });
+
   const byTick = new Map<number, { value: string; primary: number; bounds: Bounds }>();
-  const container = typeof view.container === 'function' ? view.container() : undefined;
-  if (!container) return [];
-  const labelElements = [...container.querySelectorAll('g.role-axis-label > text')];
-  const usedElements = new Set<Element>();
   for (const item of collectAxisLabelItems(view, orient)) {
     if ((item.opacity ?? 1) <= 0) continue;
+    const localBounds = viewRelativeBounds(item);
+    if (!localBounds) continue;
     const value = item.datum?.value != null ? String(item.datum.value) : '';
-    const element = labelElements.find(
-      (candidate) => !usedElements.has(candidate) && candidate.textContent?.trim() === value
-    );
-    if (!element) continue;
-    usedElements.add(element);
-    const bounds = getDomBounds(element);
+    const bounds = toPageBounds(localBounds);
     // Group ticks along the axis; union the rows perpendicular to it (primary + sublabel).
     const key = horizontal ? Math.round((bounds.x1 + bounds.x2) / 2) : Math.round((bounds.y1 + bounds.y2) / 2);
     const existing = byTick.get(key);

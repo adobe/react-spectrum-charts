@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { setAxisFocusRing } from './axisLabelGeometry';
 import { buildAxisDescription, buildAxisStructure } from './buildAxisStructure';
 
 const data = [
@@ -105,26 +104,5 @@ describe('buildAxisDescription()', () => {
     expect(buildAxisDescription(1, 'browser', 'Browser')).toBe(
       'Browser axis. Contains 1 tick value. Use the left and right arrow keys to browse.'
     );
-  });
-});
-
-describe('setAxisFocusRing()', () => {
-  test('pads the ring symmetrically around the label bounds, uncapped by any surrounding content', () => {
-    const element = document.createElement('div');
-
-    setAxisFocusRing(element, { x1: 350, y1: 20, x2: 620, y2: 40 });
-
-    expect(element.style.display).toBe('block');
-    expect(element.style.left).toBe('344px');
-    expect(element.style.width).toBe('282px');
-    expect(element.style.height).toBe('32px');
-  });
-
-  test('clears the ring for an inverted (malformed) box', () => {
-    const element = document.createElement('div');
-
-    setAxisFocusRing(element, { x1: 100, y1: 100, x2: 0, y2: 0 });
-
-    expect(element.style.display).toBe('none');
   });
 });

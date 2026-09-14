@@ -225,7 +225,7 @@ export const attachDataNavigator = ({
   const initialView = getView();
   const xAxisRegion =
     xAxis && initialView
-      ? { ...xAxis, visibleValues: getVisibleAxisLabelColumns(initialView, 'bottom').map((column) => column.value) }
+      ? { ...xAxis, visibleValues: getVisibleAxisLabelColumns(initialView, container, 'bottom').map((column) => column.value) }
       : xAxis;
 
   const built = buildChartStructure({ chartType, data, dimension, color, metric, title, xAxis: xAxisRegion });
@@ -304,7 +304,7 @@ export const attachDataNavigator = ({
       clearAxisFocusRing(focusRing);
       return;
     }
-    const columns = getVisibleAxisLabelColumns(view, 'bottom');
+    const columns = getVisibleAxisLabelColumns(view, container, 'bottom');
     if (!columns.length) {
       clearAxisFocusRing(focusRing);
       applyHoverParitySignals(view, { markName, dimension, color }, null, true);
