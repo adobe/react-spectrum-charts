@@ -15,7 +15,7 @@ import { View } from 'vega';
 
 import { Datum, MarkBounds, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { NavigableChartType } from './buildChartStructure';
+import { AxisRegionOptions, NavigableChartType } from './buildChartStructure';
 import { attachDataNavigator } from './dataNavigatorAdapter';
 
 export interface NavigatorProps {
@@ -33,6 +33,8 @@ export interface NavigatorProps {
   markName?: string;
   /** Optional chart title for the accessible description. */
   title?: string;
+  /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
+  xAxis?: AxisRegionOptions;
   /** Ref to the positioned container that wraps the chart. */
   containerRef: RefObject<HTMLElement | null>;
   /** Stable id used to namespace the rendered nav elements. */
@@ -55,6 +57,7 @@ export const Navigator = ({
   metric,
   markName,
   title,
+  xAxis,
   containerRef,
   chartId,
   getView,
@@ -78,6 +81,7 @@ export const Navigator = ({
         metric,
         markName,
         title,
+        xAxis,
         chartId,
         getView,
         selectedData,
@@ -98,6 +102,7 @@ export const Navigator = ({
     metric,
     markName,
     title,
+    xAxis,
     chartId,
     containerRef,
     getView,

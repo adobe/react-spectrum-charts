@@ -13,9 +13,22 @@ import { Structure } from 'data-navigator';
 
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { AxisFieldType, buildAxisStructure } from './buildAxisStructure';
 import { buildBarStructure } from './buildBarStructure';
+import { composeRegions, NamedRegion } from './composeRegions';
 
 export type NavigableChartType = 'bar';
+
+export interface AxisRegionOptions {
+  /** The field this axis represents — the dimension for a categorical x-axis. */
+  field: string;
+  /** Whether the axis's tick nodes are discrete category values or generated numerical steps. */
+  type: AxisFieldType;
+  /** Optional axis title (falls back to the field name in generated labels). */
+  title?: string;
+  /** The rendered (non-overlap-hidden) tick values from the scenegraph; navigation is restricted to these. */
+  visibleValues?: string[];
+}
 
 export interface ChartStructureOptions {
   /** The chart type to build a navigation structure for. */
@@ -30,6 +43,8 @@ export interface ChartStructureOptions {
   metric?: string;
   /** Optional chart title for the accessible description. */
   title?: string;
+  /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
+  xAxis?: AxisRegionOptions;
 }
 
 export interface ChartStructure {
@@ -44,5 +59,14 @@ const contentStructureBuilders: Record<NavigableChartType, (options: ChartStruct
 export const buildChartStructure = (options: ChartStructureOptions): ChartStructure | undefined => {
   const buildContent = contentStructureBuilders[options.chartType];
   if (!buildContent) return undefined;
-  return buildContent(options);
+  const content = buildContent(options);
+
+  if (!options.xAxis) return content;
+
+  const xAxis = buildAxisStructure({ data: options.data, ...options.xAxis });
+  const regions: NamedRegion[] = [
+    { name: 'content', structure: content.structure, entryPoint: content.entryPoint, namespace: false },
+    { name: 'xAxis', structure: xAxis.structure, entryPoint: xAxis.entryPoint },
+  ];
+  return composeRegions(regions);
 };

@@ -27,8 +27,10 @@ import {
 import { Datum, MarkBounds, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils';
+import { clearAxisFocusRing, getVisibleAxisLabelColumns, setAxisFocusRing } from './axisLabelGeometry';
 import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, Row } from './barHoverParity';
-import { NavigableChartType, buildChartStructure } from './buildChartStructure';
+import { AxisRegionOptions, NavigableChartType, buildChartStructure } from './buildChartStructure';
+import { getNodeRegion, stripRegionPrefix } from './composeRegions';
 import {
   findFocusedBarSceneItem,
   findFocusedDimensionAreaSceneItem,
@@ -73,6 +75,8 @@ export interface AttachDataNavigatorOptions {
   markName?: string;
   /** Optional chart title for the accessible description. */
   title?: string;
+  /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
+  xAxis?: AxisRegionOptions;
   /** Stable id used to namespace the rendered nav elements. */
   chartId: string;
   /** Accessor for the live Vega view; focus signals are set on it as the user navigates. */
@@ -95,11 +99,16 @@ const CLEARED_FOCUS: FocusSignals = { item: null, region: null, dimension: null 
 
 /**
  * Maps the focused node to the chart's focus signals:
+ *  - x-axis region             → drives its own DOM ring + dimension-hover parity; must not also
+ *    activate the bar/stack focus ring
  *  - leaf (no dimensionLevel)   → a single bar/segment (`item` = node id)
  *  - dimension root (level 1)   → the chart overview (`region` = 'chart')
  *  - division (level 2)         → a dimension group / stack (`dimension` = the column value)
  */
 const nodeFocusSignals = (node: NodeObject): FocusSignals => {
+  if (getNodeRegion(node) === 'xAxis') {
+    return CLEARED_FOCUS;
+  }
   if (node.dimensionLevel == null) {
     return { ...CLEARED_FOCUS, item: node.id };
   }
@@ -171,8 +180,15 @@ const guardHoverParityAgainstMouseClear = (
   const handler: SignalListenerHandler = (_name, value) => {
     if (value != null) return;
     const node = getFocusedNode();
-    if (!node) return;
-    applyHoverParitySignals(view, { markName, dimension, color }, node);
+    // The chart root and axis root have no specific row to restore — nothing to guard.
+    if (!node || node.dimensionLevel === 1) return;
+    const isAxisNode = getNodeRegion(node) === 'xAxis';
+    applyHoverParitySignals(view, { markName, dimension, color }, node, isAxisNode);
+    // Axis ticks don't drive the chart tooltip (matching real axis-label hover), only the bar/stack does.
+    if (isAxisNode) {
+      view.runAfter((v) => v.runAsync());
+      return;
+    }
     view.runAfter((v) => {
       v.runAsync().then(() => showTooltipForFocusedNode(container, v, node, markName, dimension, color));
     });
@@ -196,6 +212,7 @@ export const attachDataNavigator = ({
   metric,
   markName,
   title,
+  xAxis,
   chartId,
   getView,
   selectedData,
@@ -203,7 +220,15 @@ export const attachDataNavigator = ({
   selectedDataName,
   keyboardPopoverComponentName,
 }: AttachDataNavigatorOptions): void => {
-  const built = buildChartStructure({ chartType, data, dimension, color, metric, title });
+  // Restrict x-axis navigation to labels Vega actually painted, so overlap-hidden ticks are skipped
+  // (their focus ring wouldn't render). Read from the live, laid-out scenegraph.
+  const initialView = getView();
+  const xAxisRegion =
+    xAxis && initialView
+      ? { ...xAxis, visibleValues: getVisibleAxisLabelColumns(initialView, 'bottom').map((column) => column.value) }
+      : xAxis;
+
+  const built = buildChartStructure({ chartType, data, dimension, color, metric, title, xAxis: xAxisRegion });
   if (!built) return;
   const { structure, entryPoint } = built;
 
@@ -212,6 +237,7 @@ export const attachDataNavigator = ({
   }
 
   container.querySelectorAll('.dn-wrapper, .dn-exit-position, .dn-exit').forEach((node) => node.remove());
+  container.querySelectorAll('.dn-axis-focus-ring').forEach((node) => node.remove());
 
   let current: string | null = null;
   // Set when Space opens a popover: moving focus into it fires a focusout that looks identical to
@@ -246,6 +272,13 @@ export const attachDataNavigator = ({
 
   rendering.initialize();
 
+  // Invisible DOM overlay for the axis focus ring, so it can extend past the plot's clipped bounds
+  // for overflowing/long axis labels — unlike the bar/stack ring, which is drawn on the Vega canvas.
+  const focusRing = document.createElement('div');
+  focusRing.className = 'dn-axis-focus-ring';
+  focusRing.setAttribute('aria-hidden', 'true');
+  container.appendChild(focusRing);
+
   const input: DataNavigatorInput = dataNavigator.input({
     structure,
     navigationRules: structure.navigationRules ?? {},
@@ -258,6 +291,50 @@ export const attachDataNavigator = ({
     if (node) {
       navigate(node);
     }
+  }
+
+  /**
+   * Draws the axis focus ring around the focused x-axis label's real rendered bounds, and drives
+   * dimension-only hover parity so the corresponding bar highlights like real axis-label hover does.
+   * The whole-axis root node rings the full label row with no single dimension value to highlight.
+   */
+  function applyAxisFocus(node: NodeObject) {
+    const view = getView();
+    if (!view || !markName || !dimension) {
+      clearAxisFocusRing(focusRing);
+      return;
+    }
+    const columns = getVisibleAxisLabelColumns(view, 'bottom');
+    if (!columns.length) {
+      clearAxisFocusRing(focusRing);
+      applyHoverParitySignals(view, { markName, dimension, color }, null, true);
+      return;
+    }
+    const union = columns.reduce(
+      (acc, c) => ({
+        x1: Math.min(acc.x1, c.bounds.x1),
+        y1: Math.min(acc.y1, c.bounds.y1),
+        x2: Math.max(acc.x2, c.bounds.x2),
+        y2: Math.max(acc.y2, c.bounds.y2),
+      }),
+      columns[0].bounds
+    );
+    if (node.dimensionLevel === 1) {
+      // Axis-level focus: ring around the whole axis; no single tick value to highlight.
+      setAxisFocusRing(focusRing, union);
+      applyHoverParitySignals(view, { markName, dimension, color }, null, true);
+      return;
+    }
+
+    const value = stripRegionPrefix(node);
+    const column = columns.find((c) => c.value === value);
+    if (!column) {
+      clearAxisFocusRing(focusRing);
+      applyHoverParitySignals(view, { markName, dimension, color }, null, true);
+      return;
+    }
+    setAxisFocusRing(focusRing, column.bounds);
+    applyHoverParitySignals(view, { markName, dimension, color }, node, true);
   }
 
   /** Sets the shared context refs and triggers the popover through the same DOM-button-click a real click uses. */
@@ -322,13 +399,15 @@ export const attachDataNavigator = ({
 
     el.addEventListener('keydown', (event) => {
       // Space opens a popover, mirroring a real click on the bar/segment or the stack's padding —
-      // no equivalent at the chart-root level.
+      // no equivalent at the chart-root level, and axis labels have no popover at all.
       if (event.code === 'Space') {
         event.preventDefault();
-        if (node.dimensionLevel == null) {
-          openBarPopover(node);
-        } else if (node.dimensionLevel === 2) {
-          openStackPopover(node);
+        if (getNodeRegion(node) !== 'xAxis') {
+          if (node.dimensionLevel == null) {
+            openBarPopover(node);
+          } else if (node.dimensionLevel === 2) {
+            openStackPopover(node);
+          }
         }
         return;
       }
@@ -349,14 +428,20 @@ export const attachDataNavigator = ({
 
     el.addEventListener('focus', () => {
       const view = getView();
+      const isAxisNode = getNodeRegion(node) === 'xAxis';
       // Set before applyFocusSignals's runAsync() so both flush together in one dataflow pulse.
-      if (view && markName && dimension) {
-        applyHoverParitySignals(view, { markName, dimension, color }, node);
+      if (isAxisNode) {
+        applyAxisFocus(node);
+      } else {
+        clearAxisFocusRing(focusRing);
+        if (view && markName && dimension) {
+          applyHoverParitySignals(view, { markName, dimension, color }, node);
+        }
       }
       const signals = nodeFocusSignals(node);
       applyFocusSignals(view, signals)
         ?.then(() => {
-          if (!view) return;
+          if (!view || isAxisNode) return;
           if (!markName || !dimension) {
             showFocusedItemTooltip(container, view, `${markName ?? 'bar0'}_focusRing`, null);
             return;
@@ -387,6 +472,7 @@ export const attachDataNavigator = ({
     if (view && markName && dimension) {
       applyHoverParitySignals(view, { markName, dimension, color }, null);
     }
+    clearAxisFocusRing(focusRing);
     applyFocusSignals(view, CLEARED_FOCUS);
   };
 

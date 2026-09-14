@@ -61,6 +61,10 @@ let stackRingItem: { opacity: number; bounds?: { x1: number; y1: number; x2: num
 let barItems: { datum: Record<string, unknown> }[];
 // The rendered `bar0_dimensionHoverArea` rect items — Space-triggered stack popovers anchor to these, matched by dimension value.
 let dimensionAreaItems: { datum: Record<string, unknown> }[];
+// The rendered bottom-axis label scenegraph items, read by getVisibleAxisLabelColumns().
+let axisLabelItems: { opacity: number; datum: { value: string }; mark: { group: { orient: string } } }[];
+// The real DOM `<text>` elements getVisibleAxisLabelColumns() cross-references against axisLabelItems.
+let axisLabelContainer: HTMLElement;
 // Handlers registered via addSignalListener, keyed by signal name — lets tests simulate a real
 // mouseout (which drives these signals directly, bypassing `signal()`) by invoking them directly.
 let signalListeners: Record<string, ((name: string, value: unknown) => void)[]>;
@@ -75,6 +79,8 @@ const mockView = () => {
   stackRingItem = { opacity: 0 };
   barItems = [];
   dimensionAreaItems = [];
+  axisLabelItems = [];
+  axisLabelContainer = document.createElement('div');
   signalListeners = {};
   tooltipCallback = jest.fn();
   const viewMock = {
@@ -91,6 +97,7 @@ const mockView = () => {
     data: jest.fn().mockReturnValue([]),
     // Real vega-view's tooltip() is a getter when called with no args — see focusedItemTooltip.ts.
     tooltip: jest.fn().mockReturnValue(tooltipCallback),
+    container: jest.fn(() => axisLabelContainer),
     scenegraph: () => ({
       root: {
         items: [
@@ -98,11 +105,44 @@ const mockView = () => {
           { marktype: 'rect', name: 'bar0_stackFocusRing', items: [stackRingItem] },
           { marktype: 'rect', name: 'bar0', items: barItems },
           { marktype: 'rect', name: 'bar0_dimensionHoverArea', items: dimensionAreaItems },
+          { marktype: 'text', role: 'axis-label', items: axisLabelItems },
         ],
       },
     }),
   } as unknown as View;
   return viewMock;
+};
+
+/**
+ * Populates the fake bottom-axis label scenegraph items + matching real DOM `<text>` elements
+ * getVisibleAxisLabelColumns() reads bounds from, one per value, left-to-right at the given bounds.
+ */
+const setAxisLabelItems = (values: string[], boundsFor: (index: number) => { x1: number; y1: number; x2: number; y2: number }): void => {
+  axisLabelItems.length = 0;
+  values.forEach((value, index) => {
+    axisLabelItems.push({ opacity: 1, datum: { value }, mark: { group: { orient: 'bottom' } } });
+    const group = document.createElement('g');
+    group.setAttribute('class', 'role-axis-label');
+    const text = document.createElement('text');
+    text.textContent = value;
+    const b = boundsFor(index);
+    text.getBoundingClientRect = jest.fn(
+      () =>
+        ({
+          left: b.x1,
+          top: b.y1,
+          right: b.x2,
+          bottom: b.y2,
+          width: b.x2 - b.x1,
+          height: b.y2 - b.y1,
+          x: b.x1,
+          y: b.y1,
+          toJSON: () => ({}),
+        }) as DOMRect
+    );
+    group.appendChild(text);
+    axisLabelContainer.appendChild(group);
+  });
 };
 
 /** Simulates real mouse mouseout nulling a hover signal directly (bypassing `signal()`, same as Vega's own `on:` trigger would). */
@@ -786,6 +826,128 @@ describe('attachDataNavigator()', () => {
 
         expect(triggerPopover).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('x-axis region', () => {
+    const focusRing = (): HTMLElement => container.querySelector('.dn-axis-focus-ring') as HTMLElement;
+
+    const attachWithAxis = () => {
+      (view.data as jest.Mock).mockReturnValue(data);
+      setAxisLabelItems(['Chrome', 'Firefox', 'Safari'], (index) => ({
+        x1: index * 50,
+        y1: 100,
+        x2: index * 50 + 40,
+        y2: 120,
+      }));
+      return attachDataNavigator({
+        container,
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        markName: 'bar0',
+        xAxis: { field: 'browser', type: 'categorical' },
+        chartId: 'axis-chart',
+        getView: () => view,
+      });
+    };
+
+    const enterAxisRegion = () => {
+      attachWithAxis();
+      entryButton().click(); // chart root
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' }); // chart root -> axis root
+    };
+
+    test('Right from the chart root clears the chart-region focus signal', () => {
+      enterAxisRegion();
+      expect(signaledWith(FOCUSED_REGION, null)).toBe(true);
+    });
+
+    test('Right from the chart root shows the axis focus ring', () => {
+      enterAxisRegion();
+      expect(focusRing().style.display).toBe('block');
+    });
+
+    test('the axis-root ring spans the union of every visible label column', () => {
+      enterAxisRegion();
+      expect(focusRing().style).toMatchObject({ left: '-6px', top: '94px', width: '152px', height: '32px' });
+    });
+
+    test('Entering a tick label does not activate the bar focus ring', () => {
+      enterAxisRegion();
+      signal.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // axis root -> first tick
+
+      expect(signaledWith(FOCUSED_ITEM, null)).toBe(true);
+    });
+
+    test('a focused tick label drives the dimension-hover-area signal for the matching row', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+
+      expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', data[0]);
+    });
+
+    test('a focused tick label does not drive the single-item hover signal', () => {
+      enterAxisRegion();
+      signal.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+
+      expect(signal.mock.calls.some(([n, v]) => n === 'bar0_hoveredItem' && v != null)).toBe(false);
+    });
+
+    test('a focused tick label does not show the chart tooltip', async () => {
+      enterAxisRegion();
+      tooltipCallback.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      await Promise.resolve();
+
+      expect(lastTooltipValue()).toBeUndefined();
+    });
+
+    test('a focused tick label ring matches its own column, not the whole axis', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // first tick: x 0-40
+
+      expect(focusRing().style).toMatchObject({ left: '-6px', top: '94px', width: '52px', height: '32px' });
+    });
+
+    test('Space on a focused tick label does not open a popover', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+
+      fireEvent.keyDown(focused(), { key: ' ', code: 'Space' });
+
+      expect(triggerPopover).not.toHaveBeenCalled();
+    });
+
+    test('Escape from a tick label returns to the axis root ring', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // to the first tick (a narrower ring)
+
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' }); // back to the axis root
+
+      expect(focusRing().style).toMatchObject({ left: '-6px', top: '94px', width: '152px', height: '32px' });
+    });
+
+    test('Left from the axis root returns to the chart region', () => {
+      enterAxisRegion();
+      signal.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
+
+      expect(signaledWith(FOCUSED_REGION, 'chart')).toBe(true);
+    });
+
+    test('Left from the axis root clears the axis focus ring', () => {
+      enterAxisRegion();
+
+      fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
+
+      expect(focusRing().style.display).toBe('none');
     });
   });
 });
