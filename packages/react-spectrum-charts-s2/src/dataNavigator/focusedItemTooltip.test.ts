@@ -58,13 +58,13 @@ describe('showFocusedItemTooltip()', () => {
 
   test('hides when no ring item is currently visible, even with a real value', () => {
     const view = mockView([]);
-    showFocusedItemTooltip(container, view, MARK_NAME, { value: 1 });
+    showFocusedItemTooltip(container, view, RING_NAME, { value: 1 });
     expect(tooltipCallback).toHaveBeenCalledWith(undefined, undefined, undefined, null);
   });
 
   test('hides when every ring item has zero opacity', () => {
     const view = mockView([{ opacity: 0, bounds: { x1: 0, y1: 0, x2: 10, y2: 10 } }]);
-    showFocusedItemTooltip(container, view, MARK_NAME, { value: 1 });
+    showFocusedItemTooltip(container, view, RING_NAME, { value: 1 });
     expect(tooltipCallback).toHaveBeenCalledWith(undefined, undefined, undefined, null);
   });
 
@@ -72,13 +72,15 @@ describe('showFocusedItemTooltip()', () => {
     const ringItem = { opacity: 1, bounds: { x1: 10, y1: 20, x2: 30, y2: 40 } };
     const view = mockView([ringItem]);
     const value = { browser: 'Chrome', rscComponentName: MARK_NAME };
-    showFocusedItemTooltip(container, view, MARK_NAME, value);
+    showFocusedItemTooltip(container, view, RING_NAME, value);
 
     expect(tooltipCallback).toHaveBeenCalledTimes(1);
     const [handler, event, item, calledValue] = tooltipCallback.mock.calls[0];
     expect(calledValue).toBe(value);
     expect(item).toBe(ringItem);
-    expect(handler).toMatchObject({ _el: container, _origin: [0, 0] });
+    // toMatchObject would deep-traverse the real `container` DOM node and overflow the call stack.
+    expect((handler as { _el: unknown })._el).toBe(container);
+    expect((handler as { _origin: unknown })._origin).toEqual([0, 0]);
     expect(event).toMatchObject({ clientX: 20, clientY: 20 });
   });
 
@@ -86,7 +88,7 @@ describe('showFocusedItemTooltip()', () => {
     const ringItem = { opacity: 1, bounds: { x1: 10, y1: 20, x2: 30, y2: 40 } };
     const view = mockView([ringItem], [5, 6]);
     jest.spyOn(container, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 200 } as DOMRect);
-    showFocusedItemTooltip(container, view, MARK_NAME, { value: 1 });
+    showFocusedItemTooltip(container, view, RING_NAME, { value: 1 });
 
     const [, event] = tooltipCallback.mock.calls[0];
     expect(event).toMatchObject({ clientX: 100 + 5 + 20, clientY: 200 + 6 + 20 });
@@ -95,7 +97,7 @@ describe('showFocusedItemTooltip()', () => {
   test('adds the owning group\'s offset to the ring item\'s own (group-relative) bounds', () => {
     const ringItem = { opacity: 1, bounds: { x1: 10, y1: 20, x2: 30, y2: 40 }, mark: { group: { x: 100, y: 200 } } };
     const view = mockView([ringItem]);
-    showFocusedItemTooltip(container, view, MARK_NAME, { value: 1 });
+    showFocusedItemTooltip(container, view, RING_NAME, { value: 1 });
 
     // group-relative bounds {x1:10,y1:20,x2:30,y2:40} + group offset {x:100,y:200} = {x1:110,y1:220,x2:130,y2:240};
     // containerRect/origin are both zero in this test, so clientX/clientY are just those bounds.

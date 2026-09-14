@@ -549,7 +549,7 @@ describe('attachDataNavigator()', () => {
       expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', rows[0]);
     });
 
-    test('re-shows the tooltip when reapplying after a mouseout clear', () => {
+    test('re-shows the tooltip when reapplying after a mouseout clear', async () => {
       attachWithMarkName();
       entryButton().click();
       fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
@@ -557,6 +557,7 @@ describe('attachDataNavigator()', () => {
       tooltipCallback.mockClear();
 
       simulateMouseoutClear('bar0_dimensionHoverArea_hoveredItem');
+      await Promise.resolve(); // flush the .then() chained after runAfter's runAsync()
 
       expect(lastTooltipValue()).not.toBeUndefined();
     });
@@ -633,7 +634,7 @@ describe('attachDataNavigator()', () => {
       expect(triggerPopover).toHaveBeenCalledWith('popover-chart', 'bar0', 'click');
     });
 
-    test('hides the keyboard focus ring so it does not double up with the popover selection ring', () => {
+    test('leaves FOCUSED_ITEM untouched — getBarFocusRing hides the ring via SELECTED_ITEM matching instead', () => {
       attachWithPopoverRefs();
       entryButton().click();
       fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
@@ -641,7 +642,7 @@ describe('attachDataNavigator()', () => {
 
       fireEvent.keyDown(focused(), { key: ' ', code: 'Space' });
 
-      expect(signaledWith(FOCUSED_ITEM, null)).toBe(true);
+      expect(signal.mock.calls.some(([n]) => n === FOCUSED_ITEM)).toBe(false);
     });
 
     test('leaves the hover-parity dimming signal active (mirrors a real click happening mid-hover)', () => {
