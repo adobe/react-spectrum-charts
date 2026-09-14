@@ -10,6 +10,8 @@ The `Bar` component in the S2 package supports nearly all props from the [base B
 The S2 `Bar` component does not yet support `Trendline` as a child component.
 :::
 
+See [Keyboard Navigation](/docs/spectrum2/keyboard-navigation) for the `accessibleNavigation` chart prop, currently supported only for `Bar`.
+
 ```jsx
 import { Chart, Axis, Bar } from '@spectrum-charts/react-spectrum-charts-s2';
 ```

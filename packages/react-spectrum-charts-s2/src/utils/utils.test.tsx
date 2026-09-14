@@ -18,10 +18,29 @@ import {
   debugLog,
   getAllElements,
   getComponentName,
+  shouldClearHoverSignalsOnClose,
   toggleStringArrayValue,
 } from './utils';
 
 describe('utils', () => {
+  describe('shouldClearHoverSignalsOnClose()', () => {
+    test('true for a real (mouse-opened) popover close', () => {
+      expect(shouldClearHoverSignalsOnClose('bar0', null)).toBe(true);
+    });
+
+    test('false when this exact component is still owned by an active keyboard focus', () => {
+      expect(shouldClearHoverSignalsOnClose('bar0', 'bar0')).toBe(false);
+    });
+
+    test('true when the keyboard-focused component is a different one', () => {
+      expect(shouldClearHoverSignalsOnClose('bar0', 'line0')).toBe(true);
+    });
+
+    test('false when there is no component to clear', () => {
+      expect(shouldClearHoverSignalsOnClose('', null)).toBe(false);
+    });
+  });
+
   describe('toggleStringArrayValue()', () => {
     test('should add value to target if it does not exist', () => {
       expect(toggleStringArrayValue(['a', 'b'], 'c')).toStrictEqual(['a', 'b', 'c']);

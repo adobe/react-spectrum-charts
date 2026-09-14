@@ -30,6 +30,9 @@ interface ChartContextValue {
   selectedDataName: RefObject<string>;
   selectedDataBounds: RefObject<MarkBounds>;
 
+  // Set when Space opens a popover, so its close handler can skip clearing hover-parity signals keyboard focus still owns.
+  keyboardPopoverComponentName: RefObject<string | null>;
+
   // Popover state
   isPopoverOpen: boolean;
   setIsPopoverOpen: (isOpen: boolean) => void;
@@ -59,6 +62,7 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
   const selectedData = useRef<Datum | null>(null);
   const selectedDataName = useRef<string>('');
   const selectedDataBounds = useRef<MarkBounds>({ x1: 0, x2: 0, y1: 0, y2: 0 });
+  const keyboardPopoverComponentName = useRef<string | null>(null);
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [hoveredAxisLabel, setHoveredAxisLabel] = useState<HoveredAxisLabel | null>(null);
@@ -70,6 +74,7 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
       selectedData,
       selectedDataName,
       selectedDataBounds,
+      keyboardPopoverComponentName,
       controlledHoveredIdSignal,
       controlledHoveredGroupSignal,
       isPopoverOpen,

@@ -179,6 +179,11 @@ export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-o
 export const DRAW_IN_DOMAIN_MIN = 'drawInDomainMin'; // draw-in animation: dimension scale domain min, captured once at mount
 export const DRAW_IN_DOMAIN_MAX = 'drawInDomainMax'; // draw-in animation: dimension scale domain max, captured once at mount
 export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
+export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
+export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
+export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
+/** Separator joining fields into a unique data-navigator node id (e.g. stacked segment = dimension + series). */
+export const NAVIGATION_ID_SEPARATOR = '__rsc__';
 
 // scale names
 export const COLOR_SCALE = 'color';

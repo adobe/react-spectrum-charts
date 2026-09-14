@@ -102,6 +102,7 @@ const isDivergingAxis = (axis: Axis): boolean => {
 export function buildSpec({
   animations,
   animationTypes,
+  accessibleNavigation = false,
   axes = [],
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
   chartHeight,
@@ -157,6 +158,7 @@ export function buildSpec({
   const specOptions = {
     animations,
     animationTypes,
+    accessibleNavigation,
     backgroundColor,
     colorScheme,
     idKey,

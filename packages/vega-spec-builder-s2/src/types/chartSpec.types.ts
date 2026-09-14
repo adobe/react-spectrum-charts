@@ -108,6 +108,8 @@ export interface ChartOptions {
   idKey?: string;
   /** Width of chart */
   chartWidth?: number;
+  /** Enables experimental keyboard navigation via data-navigator. Only basic bar charts are currently supported. Defaults to `false`. */
+  accessibleNavigation?: boolean;
 
   // children
   marks: MarkOptions[];
