@@ -152,7 +152,9 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   );
   const navChartType =
     navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
-  const navFields = navChild?.props as { dimension?: string; metric?: string; color?: unknown; name?: string } | undefined;
+  const navFields = navChild?.props as
+    | { dimension?: string; metric?: string; color?: unknown; order?: string; name?: string }
+    | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
   const markName = navFields?.name ?? (navChartType ? `${navChartType}0` : undefined);
 
@@ -219,6 +221,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             dimension={navFields?.dimension}
             color={navColor}
             metric={navFields?.metric}
+            order={navFields?.order}
             markName={markName}
             title={title}
             xAxis={xAxis}

@@ -71,6 +71,8 @@ export interface AttachDataNavigatorOptions {
   color?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
+  /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
+  order?: string;
   /** The mark's own name (e.g. `bar0`) — drives its real hover signals for mouse-hover parity. */
   markName?: string;
   /** Optional chart title for the accessible description. */
@@ -210,6 +212,7 @@ export const attachDataNavigator = ({
   dimension,
   color,
   metric,
+  order,
   markName,
   title,
   xAxis,
@@ -228,7 +231,7 @@ export const attachDataNavigator = ({
       ? { ...xAxis, visibleValues: getVisibleAxisLabelColumns(initialView, container, 'bottom').map((column) => column.value) }
       : xAxis;
 
-  const built = buildChartStructure({ chartType, data, dimension, color, metric, title, xAxis: xAxisRegion });
+  const built = buildChartStructure({ chartType, data, dimension, color, metric, order, title, xAxis: xAxisRegion });
   if (!built) return;
   const { structure, entryPoint } = built;
 

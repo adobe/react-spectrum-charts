@@ -41,6 +41,8 @@ export interface ChartStructureOptions {
   color?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
+  /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
+  order?: string;
   /** Optional chart title for the accessible description. */
   title?: string;
   /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */

@@ -278,12 +278,20 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     addHoverAnimationSignals(signals, name);
   }
 
-  if (!barAnnotations.length && !chartPopovers.length && !chartInspects.length && !trendlines.length && !hasOnClick) {
+  if (
+    !barAnnotations.length &&
+    !chartPopovers.length &&
+    !chartInspects.length &&
+    !trendlines.length &&
+    !hasOnClick &&
+    !options.accessibleNavigation
+  ) {
     return;
   }
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
-  // gated by isInteractive() to match the rect mark and opacity rule that consume this signal
-  if (isInteractive(options)) {
+  // gated by isInteractive() to match the rect mark and opacity rule that consume this signal — also
+  // forced on for accessibleNavigation, since keyboard hover-parity always registers listeners on these.
+  if (isInteractive(options) || options.accessibleNavigation) {
     addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`);
     // the bar mark sits on top of the dimensionHoverArea rect and occludes it, so also wire the bar's
     // own hover directly onto this signal - otherwise hovering a bar (rather than the padding around it)

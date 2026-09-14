@@ -29,6 +29,8 @@ export interface NavigatorProps {
   color?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
+  /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
+  order?: string;
   /** The mark's own name (e.g. `bar0`) — drives its real hover signals and focus ring, so keyboard focus matches mouse hover exactly. */
   markName?: string;
   /** Optional chart title for the accessible description. */
@@ -55,6 +57,7 @@ export const Navigator = ({
   dimension,
   color,
   metric,
+  order,
   markName,
   title,
   xAxis,
@@ -79,6 +82,7 @@ export const Navigator = ({
         dimension,
         color,
         metric,
+        order,
         markName,
         title,
         xAxis,
@@ -100,6 +104,7 @@ export const Navigator = ({
     dimension,
     color,
     metric,
+    order,
     markName,
     title,
     xAxis,

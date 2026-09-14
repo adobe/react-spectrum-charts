@@ -25,6 +25,8 @@ export interface BuildBarStructureOptions {
   color?: string;
   /** The bar's metric field. Rows with a value of exactly 0 are excluded from navigation — they render invisibly, so a mouse could never reach them either. */
   metric?: string;
+  /** The stack sort field (matches the `order` prop on `<Bar>`) — determines which segment is reached first within a stack, mirroring Vega's own stack sort. */
+  order?: string;
   /** Already-localized label for the chart-root node, read verbatim from the consumer's `Chart.title` — this module never constructs narration strings itself. */
   title?: string;
 }
@@ -40,20 +42,47 @@ export interface BarStructure {
   entryPoint: string | undefined;
 }
 
+/**
+ * Vega's stack transform stacks the first-encountered row (per dimension group) at the bottom,
+ * accumulating upward — the opposite of "reach the topmost segment first". Reorders each stack's own
+ * rows (never the overall column order — a Map preserves first-seen key order) to put the visually
+ * topmost segment first: sorted by `order` descending when provided (a higher value ends up higher in
+ * Vega's own stack, confirmed against the real stack transform), or reversed encounter order otherwise.
+ */
+const orderSegmentsTopFirst = (data: SimpleData[], dimension: string, order?: string): SimpleData[] => {
+  const groups = new Map<unknown, SimpleData[]>();
+  for (const row of data) {
+    const key = row[dimension];
+    const group = groups.get(key);
+    if (group) {
+      group.push(row);
+    } else {
+      groups.set(key, [row]);
+    }
+  }
+  const result: SimpleData[] = [];
+  for (const rows of groups.values()) {
+    result.push(...(order ? [...rows].sort((a, b) => Number(b[order]) - Number(a[order])) : [...rows].reverse()));
+  }
+  return result;
+};
+
 export const buildBarStructure = ({
   data,
   dimension = DEFAULT_CATEGORICAL_DIMENSION,
   color,
   metric = DEFAULT_METRIC,
+  order,
   title,
 }: BuildBarStructureOptions): BarStructure => {
   const isMultiSeries = color !== undefined;
   const idKey = isMultiSeries ? SEGMENT_ID_KEY : dimension;
   // Excluded so a zero-value row never gets a leaf node here — it's invisible, so a mouse can't reach it either.
   const visibleData = data.filter((d) => Number(d[metric]) !== 0);
+  const orderedData = isMultiSeries ? orderSegmentsTopFirst(visibleData, dimension, order) : visibleData;
   const structureData = color
-    ? visibleData.map((d) => ({ ...d, [SEGMENT_ID_KEY]: segmentId(d[dimension], d[color]) }))
-    : visibleData;
+    ? orderedData.map((d) => ({ ...d, [SEGMENT_ID_KEY]: segmentId(d[dimension], d[color]) }))
+    : orderedData;
 
   const structureOptions: StructureOptions = {
     data: structureData,

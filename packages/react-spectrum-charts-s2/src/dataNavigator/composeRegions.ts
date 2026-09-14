@@ -37,13 +37,12 @@ export interface ComposedStructure {
 
 const prefixed = (name: string, id: string): string => `${name}${REGION_SEPARATOR}${id}`;
 
-const namespaceRegion = (region: NamedRegion): { nodes: Nodes; edges: Edges; entryPoint: string } => {
-  const { name, structure, entryPoint, namespace = true } = region;
-  if (!entryPoint) {
-    throw new Error(`composeRegions: region "${name}" has no entry point.`);
-  }
-  const toId = namespace ? (id: string) => prefixed(name, id) : (id: string) => id;
-
+const namespaceNodes = (
+  structure: Structure,
+  name: string,
+  namespace: boolean,
+  toId: (id: string) => string
+): Nodes => {
   const nodes: Nodes = {};
   for (const [id, node] of Object.entries(structure.nodes)) {
     const newId = toId(id);
@@ -52,7 +51,10 @@ const namespaceRegion = (region: NamedRegion): { nodes: Nodes; edges: Edges; ent
     const renderId = namespace ? newId : node.renderId;
     nodes[newId] = { ...node, id: newId, renderId, edges: node.edges.map(toId), region: name };
   }
+  return nodes;
+};
 
+const namespaceEdges = (structure: Structure, toId: (id: string) => string): Edges => {
   const edges: Edges = {};
   for (const [edgeId, edge] of Object.entries(structure.edges)) {
     edges[toId(edgeId)] = {
@@ -61,8 +63,21 @@ const namespaceRegion = (region: NamedRegion): { nodes: Nodes; edges: Edges; ent
       target: typeof edge.target === 'string' ? toId(edge.target) : edge.target,
     };
   }
+  return edges;
+};
 
-  return { nodes, edges, entryPoint: toId(entryPoint) };
+const namespaceRegion = (region: NamedRegion): { nodes: Nodes; edges: Edges; entryPoint: string } => {
+  const { name, structure, entryPoint, namespace = true } = region;
+  if (!entryPoint) {
+    throw new Error(`composeRegions: region "${name}" has no entry point.`);
+  }
+  const toId = namespace ? (id: string) => prefixed(name, id) : (id: string) => id;
+
+  return {
+    nodes: namespaceNodes(structure, name, namespace, toId),
+    edges: namespaceEdges(structure, toId),
+    entryPoint: toId(entryPoint),
+  };
 };
 
 /** Chains each region's entry point to the next, in order, via a new sibling edge (no wraparound). */
