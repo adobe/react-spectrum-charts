@@ -691,6 +691,7 @@ const getRichSegmentLabelDetailTextParts = ({
   const segmentRules = getTextNumberFormat(valueFormat, metric) as { test?: string; signal: string }[];
   const totalRules = getTextNumberFormat(valueFormat, 'sum') as { test?: string; signal: string }[];
   const totalExpr = getTextRuleExpr(totalRules).replace(/datum\[/g, `data('${name}_sumData')[0][`);
+  //TODO: Review "/" with localization updates
   return {
     value: segmentRules,
     suffix: showTotal ? { signal: `" / " + ${totalExpr}` } : undefined,
