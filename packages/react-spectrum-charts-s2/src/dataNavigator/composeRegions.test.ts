@@ -118,4 +118,12 @@ describe('composeRegions()', () => {
     expect(composed.entryPoint).toBeUndefined();
     expect(composed.structure.nodes).toEqual({});
   });
+
+  test('throws when a region has no entry point', () => {
+    const content = buildBarStructure({ data, dimension: 'browser' });
+
+    expect(() =>
+      composeRegions([{ name: 'content', structure: content.structure, entryPoint: undefined, namespace: false }])
+    ).toThrow('composeRegions: region "content" has no entry point.');
+  });
 });

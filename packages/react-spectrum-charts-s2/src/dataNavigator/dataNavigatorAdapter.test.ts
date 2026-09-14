@@ -600,6 +600,14 @@ describe('attachDataNavigator()', () => {
 
       expect(signal.mock.calls.some(([n]) => n === 'bar0_hoveredItem')).toBe(false);
     });
+
+    test('removes the stale previous listener when re-attached on the same view (e.g. a data/prop change)', () => {
+      attachWithMarkName();
+      attachWithMarkName(); // re-attach on the same view, same as Navigator re-running its effect
+
+      expect(signalListeners['bar0_hoveredItem']).toHaveLength(1);
+      expect(signalListeners['bar0_dimensionHoverArea_hoveredItem']).toHaveLength(1);
+    });
   });
 
   describe('Space opens a popover on a focused leaf bar', () => {
@@ -928,6 +936,38 @@ describe('attachDataNavigator()', () => {
       fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
 
       expect(focusRing().style.display).toBe('none');
+    });
+
+    test('clears the ring when no axis labels are currently visible', () => {
+      attachWithAxis();
+      axisLabelItems.length = 0; // no labels rendered, e.g. an empty/zero-width axis
+      entryButton().click();
+
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+
+      expect(focusRing().style.display).toBe('none');
+    });
+
+    test('clears the ring when the focused tick no longer matches a visible column', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // to the first tick ('Chrome')
+      // Labels changed since the structure was built (e.g. a resize) — 'Chrome' no longer among them.
+      setAxisLabelItems(['Firefox', 'Safari'], (index) => ({ x1: index * 50, y1: 100, x2: index * 50 + 40, y2: 120 }));
+
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' }); // axis root
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // back into the (now-missing) 'Chrome' tick
+
+      expect(focusRing().style.display).toBe('none');
+    });
+
+    test('reapplies the focused tick\'s dimension row when a real mouseout clobbers the shared hover signal', () => {
+      enterAxisRegion();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // focuses the 'Chrome' tick
+      signal.mockClear();
+
+      simulateMouseoutClear('bar0_dimensionHoverArea_hoveredItem');
+
+      expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', data[0]);
     });
   });
 });

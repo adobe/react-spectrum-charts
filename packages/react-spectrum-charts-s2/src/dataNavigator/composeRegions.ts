@@ -65,6 +65,19 @@ const namespaceRegion = (region: NamedRegion): { nodes: Nodes; edges: Edges; ent
   return { nodes, edges, entryPoint: toId(entryPoint) };
 };
 
+/** Chains each region's entry point to the next, in order, via a new sibling edge (no wraparound). */
+const chainRegionEntryPoints = (nodes: Nodes, edges: Edges, rootIds: string[]): void => {
+  for (let index = 0; index < rootIds.length - 1; index++) {
+    const rootId = rootIds[index];
+    const nextId = rootIds[index + 1];
+    const edgeId = `region${REGION_SEPARATOR}${rootId}->${nextId}`;
+    if (rootId === nextId || edges[edgeId]) continue;
+    edges[edgeId] = { source: rootId, target: nextId, navigationRules: ['left', 'right', 'up', 'down'] };
+    nodes[rootId].edges.push(edgeId);
+    nodes[nextId].edges.push(edgeId);
+  }
+};
+
 /**
  * Merges independently-built region structures (chart content, axes) into one composite structure:
  * each region keeps its own internal navigation untouched, and new sibling edges chain the regions'
@@ -82,23 +95,13 @@ export const composeRegions = (regions: NamedRegion[]): ComposedStructure => {
   const edges: Edges = {};
   const rootIds: string[] = [];
 
-  regions.forEach((region) => {
+  for (const region of regions) {
     const namespaced = namespaceRegion(region);
     Object.assign(nodes, namespaced.nodes);
     Object.assign(edges, namespaced.edges);
     rootIds.push(namespaced.entryPoint);
-  });
-
-  for (let index = 0; index < rootIds.length - 1; index++) {
-    const rootId = rootIds[index];
-    const nextId = rootIds[index + 1];
-    if (rootId === nextId) continue;
-    const edgeId = `region${REGION_SEPARATOR}${rootId}->${nextId}`;
-    if (edges[edgeId]) continue;
-    edges[edgeId] = { source: rootId, target: nextId, navigationRules: ['left', 'right', 'up', 'down'] };
-    nodes[rootId].edges.push(edgeId);
-    nodes[nextId].edges.push(edgeId);
   }
+  chainRegionEntryPoints(nodes, edges, rootIds);
 
   return { structure: { nodes, edges, navigationRules: baseNavigationRules }, entryPoint: rootIds[0] };
 };

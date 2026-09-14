@@ -113,6 +113,21 @@ describe('getVisibleAxisLabelColumns()', () => {
     expect(columns).toEqual([{ value: 'Jan', bounds: { x1: 0, y1: 0, x2: 20, y2: 25 } }]);
   });
 
+  test('adopts a later-seen row as the primary value when it starts higher up than the first-seen row', () => {
+    // Sublabel scanned first this time — the primary row is only discovered on the second pass.
+    const view = mockView([
+      axisLabelNode('bottom', [
+        { datum: { value: '2024' }, bounds: { x1: 2, y1: 15, x2: 18, y2: 25 } },
+        { datum: { value: 'Jan' }, bounds: { x1: 0, y1: 0, x2: 20, y2: 10 } },
+      ]),
+    ]);
+    const container = mockContainer({ left: 0, top: 0 });
+
+    const columns = getVisibleAxisLabelColumns(view, container, 'bottom');
+
+    expect(columns).toEqual([{ value: 'Jan', bounds: { x1: 0, y1: 0, x2: 20, y2: 25 } }]);
+  });
+
   test('groups by y (not x) for a vertical (left/right) orient', () => {
     const view = mockView([
       axisLabelNode('left', [

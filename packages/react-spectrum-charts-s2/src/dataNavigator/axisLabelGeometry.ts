@@ -90,6 +90,34 @@ const viewRelativeBounds = (item: SceneNode): Bounds | undefined => {
   return { x1: b.x1 + dx, y1: b.y1 + dy, x2: b.x2 + dx, y2: b.y2 + dy };
 };
 
+/** A tick's datum value is always a primitive (categorical/numerical axis value); never let an unexpected object fall through to `Object.prototype.toString`. */
+const axisLabelValue = (item: SceneNode): string => {
+  const value = item.datum?.value;
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '';
+};
+
+/** Merges one visible label's bounds into the running per-tick map, grouped/unioned along the axis. */
+const recordColumn = (
+  byTick: Map<number, { value: string; primary: number; bounds: Bounds }>,
+  bounds: Bounds,
+  value: string,
+  horizontal: boolean
+): void => {
+  const key = horizontal ? Math.round((bounds.x1 + bounds.x2) / 2) : Math.round((bounds.y1 + bounds.y2) / 2);
+  const rowStart = horizontal ? bounds.y1 : bounds.x1;
+  const existing = byTick.get(key);
+  if (!existing) {
+    byTick.set(key, { value, primary: rowStart, bounds });
+    return;
+  }
+  existing.bounds = union(existing.bounds, bounds);
+  // Keep the primary row's value (topmost for a bottom axis; outermost for a side axis).
+  if (rowStart < existing.primary) {
+    existing.primary = rowStart;
+    existing.value = value;
+  }
+};
+
 /**
  * The visible label "columns" for one axis: only labels Vega actually painted (`opacity > 0` — overlap-
  * hidden labels stay in the scenegraph at opacity 0), grouped by tick so a primary label and its
@@ -117,27 +145,11 @@ export const getVisibleAxisLabelColumns = (
     if ((item.opacity ?? 1) <= 0) continue;
     const localBounds = viewRelativeBounds(item);
     if (!localBounds) continue;
-    const value = item.datum?.value != null ? String(item.datum.value) : '';
-    const bounds = toPageBounds(localBounds);
-    // Group ticks along the axis; union the rows perpendicular to it (primary + sublabel).
-    const key = horizontal ? Math.round((bounds.x1 + bounds.x2) / 2) : Math.round((bounds.y1 + bounds.y2) / 2);
-    const existing = byTick.get(key);
-    if (!existing) {
-      byTick.set(key, { value, primary: horizontal ? bounds.y1 : bounds.x1, bounds });
-      continue;
-    }
-    existing.bounds = union(existing.bounds, bounds);
-    // Keep the primary row's value (topmost for a bottom axis; outermost for a side axis).
-    const rowStart = horizontal ? bounds.y1 : bounds.x1;
-    if (rowStart < existing.primary) {
-      existing.primary = rowStart;
-      existing.value = value;
-    }
+    recordColumn(byTick, toPageBounds(localBounds), axisLabelValue(item), horizontal);
   }
-  const columns = [...byTick.entries()]
+  return [...byTick.entries()]
     .sort((a, b) => a[0] - b[0])
     .map(([, col]) => ({ value: col.value, bounds: col.bounds }));
-  return columns;
 };
 
 /**

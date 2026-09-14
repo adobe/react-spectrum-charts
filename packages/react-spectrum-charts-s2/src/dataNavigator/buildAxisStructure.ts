@@ -55,11 +55,12 @@ const uniqueCategoricalValues = (data: SimpleData[], field: string): (string | n
   const values: (string | number)[] = [];
   for (const datum of data) {
     const value = datum[field];
-    if (value == null) continue;
+    // Narrowed (not just null-checked) so String() below never risks Object's default stringification.
+    if (typeof value !== 'string' && typeof value !== 'number') continue;
     const key = String(value);
     if (seen.has(key)) continue;
     seen.add(key);
-    values.push(value as string | number);
+    values.push(value);
   }
   return values;
 };
