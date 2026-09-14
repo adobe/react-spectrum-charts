@@ -11,13 +11,19 @@
  */
 import { ReactElement } from 'react';
 
+
+
 import { StoryFn } from '@storybook/react';
+
+
 
 import { Chart } from '../../../../Chart';
 import useChartProps from '../../../../hooks/useChartProps';
 import { Donut, SegmentLabel } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
 import { basicDonutData } from '../../../components/Donut/data';
+import { ResponsiveDonut } from '../DirectLabel/DirectLabels.story';
+
 
 export default {
   title: 'React Spectrum Charts 2/Donut/Features/Emphasize',
@@ -45,4 +51,24 @@ Basic.args = { emphasizedItems: ['Chrome'] };
 const Multi = bindWithProps(BasicStory);
 Multi.args = { emphasizedItems: ['Chrome', 'Firefox'] };
 
-export { Basic, Multi };
+const AdvancedAndDirectStory: StoryFn<typeof Donut> = (args): ReactElement => (
+  <ResponsiveDonut data={basicDonutData} donutProps={args} initialWidth={500}>
+    <SegmentLabel labelMode="emphasized" swatch showValueRow showTotal percent value={false} />
+    <SegmentLabel labelMode="deemphasized" value={false} percent valueFormat="shortNumber" />
+  </ResponsiveDonut>
+);
+
+const AdvancedAndDirect = bindWithProps(AdvancedAndDirectStory);
+AdvancedAndDirect.args = { emphasizedItems: ['Chrome'], hideDeemphasizedLabels: false };
+
+const AdvancedOnlyStory: StoryFn<typeof Donut> = (args): ReactElement => (
+  <ResponsiveDonut data={basicDonutData} donutProps={args} initialWidth={500}>
+    <SegmentLabel labelMode="emphasized" swatch showValueRow showTotal value={false} percent valueFormat="shortNumber" />
+    <SegmentLabel labelMode="deemphasized" value valueFormat="shortNumber" />
+  </ResponsiveDonut>
+);
+
+const AdvancedOnly = bindWithProps(AdvancedOnlyStory);
+AdvancedOnly.args = { emphasizedItems: ['Chrome'], hideDeemphasizedLabels: true };
+
+export { Basic, Multi, AdvancedAndDirect, AdvancedOnly };

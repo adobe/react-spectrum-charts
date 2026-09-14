@@ -16,4 +16,3 @@ import { SegmentLabelOptions } from '@spectrum-charts/vega-spec-builder-s2';
 export interface SegmentLabelProps extends SegmentLabelOptions {}
 
 export type SegmentLabelElement = ReactElement<SegmentLabelProps, JSXElementConstructor<SegmentLabelProps>>;
-

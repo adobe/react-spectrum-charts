@@ -17,6 +17,7 @@ import { SegmentLabelProps } from '../../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const SegmentLabel: FC<SegmentLabelProps> = ({
+  labelMode,
   labelKey,
   percent = false,
   percentFormat = '.0%',

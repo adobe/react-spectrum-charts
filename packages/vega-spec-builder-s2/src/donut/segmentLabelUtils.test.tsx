@@ -11,12 +11,18 @@
  */
 import { TextValueRef } from 'vega';
 
-import { DONUT_DIRECT_LABEL_NAME_FONT_SIZES, DONUT_DIRECT_LABEL_VALUE_FONT_SIZES, DONUT_SIZE_TIER_CUTPOINTS } from '@spectrum-charts/constants';
+import {
+  DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
+  DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
+  DONUT_SIZE_TIER_CUTPOINTS,
+} from '@spectrum-charts/constants';
 
 import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types';
 import { defaultDonutOptions } from './donutTestUtils';
 import { getDonutEmptyStateTest } from './donutUtils';
 import {
+  getRichSegmentLabelData,
+  getSegmentLabelData,
   getSegmentLabelMarks,
   getSegmentLabelScales,
   getSegmentLabelSignals,
@@ -188,6 +194,48 @@ describe('getSegmentLabelScales()', () => {
       },
     ]);
   });
+
+  test('should create separate direct and rich labels for emphasized and de-emphasized segments', () => {
+    const donutOptions = {
+      ...defaultDonutOptions,
+      emphasizedItems: ['Chrome'],
+      segmentLabels: [
+        { labelMode: 'emphasized' as const, swatch: true },
+        { labelMode: 'deemphasized' as const, value: true },
+      ],
+    };
+    const data = [...getSegmentLabelData(donutOptions), ...getRichSegmentLabelData(donutOptions)];
+    expect(data.map(({ name }) => name)).toEqual([
+      'testName_deemphasizedSegmentLabelData',
+      'testName_emphasizedRichSegmentLabelData',
+    ]);
+    expect(data[0].transform?.[1]).toHaveProperty('expr', 'indexof(["Chrome"], datum.testColor) < 0');
+    expect(data[1].transform?.[1]).toHaveProperty('expr', 'indexof(["Chrome"], datum.testColor) >= 0');
+  });
+
+  test('should omit de-emphasized labels when hideDeemphasizedLabels is true', () => {
+    const data = [
+      ...getSegmentLabelData({
+        ...defaultDonutOptions,
+        emphasizedItems: ['Chrome'],
+        hideDeemphasizedLabels: true,
+        segmentLabels: [
+          { labelMode: 'emphasized' as const, swatch: true },
+          { labelMode: 'deemphasized' as const, value: true },
+        ],
+      }),
+      ...getRichSegmentLabelData({
+        ...defaultDonutOptions,
+        emphasizedItems: ['Chrome'],
+        hideDeemphasizedLabels: true,
+        segmentLabels: [
+          { labelMode: 'emphasized' as const, swatch: true },
+          { labelMode: 'deemphasized' as const, value: true },
+        ],
+      }),
+    ];
+    expect(data.map(({ name }) => name)).toEqual(['testName_emphasizedRichSegmentLabelData']);
+  });
 });
 
 describe('getSegmentLabelSignals()', () => {
@@ -241,7 +289,6 @@ describe('label anchor x/y (collision-aware positioning) and dx (hemisphere offs
     expect(mark.encode?.update?.align).toEqual({
       signal: "datum['testName_segmentLabel_hemisphere'] === 'right' ? 'left' : 'right'",
     });
-
   });
 
   test('should use the labelKey field for width calculations when provided', () => {
@@ -259,7 +306,7 @@ describe('truncation limit', () => {
     expect(limitSignal).toMatch(/=== 'right'.*\? 0 :/);
   });
 
-  test('left hemisphere should only apply a real limit when content exceeds the available reach, not the line\'s own natural width', () => {
+  test("left hemisphere should only apply a real limit when content exceeds the available reach, not the line's own natural width", () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     const limitSignal = (mark.encode?.update?.limit as { signal: string }).signal;
     // guards against the razor's-edge case where limit equals the line's own exact width - see
@@ -325,7 +372,7 @@ describe('s2 styles', () => {
       // fill lives in `update` (not `enter`) since it must react to hover state - see 'hover behavior' below
       expect(marks[0].encode?.update?.fill).toEqual([
         {
-          test: "isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId",
+          test: 'isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId',
           scale: 'color',
           field: 'testColor',
         },
@@ -377,7 +424,7 @@ describe('hover behavior', () => {
     const [mark] = getSegmentLabelValueTextMark(interactiveSegmentLabelOptions);
     expect(mark.encode?.update?.fill).toEqual([
       {
-        test: "isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId",
+        test: 'isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId',
         scale: 'color',
         field: 'testColor',
       },
@@ -392,7 +439,7 @@ describe('hover behavior', () => {
     });
     expect(mark.encode?.update?.fill).toEqual([
       {
-        test: "isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId",
+        test: 'isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId',
         scale: 'color',
         field: 'testColor',
       },

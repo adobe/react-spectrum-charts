@@ -200,7 +200,7 @@ export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => 
 });
 
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {
-  const { chartInspects, emphasizedItems, holeRatio, name } = options;
+  const { chartInspects, holeRatio, name } = options;
   if (holeRatio === DEFAULT_HOLE_RATIO) {
     signals.push(getRingWidthSignal(options));
   }
@@ -211,7 +211,5 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
     ...getRichSegmentLabelSignals(options)
   );
   if (!isInteractive(options)) return;
-  // emphasize is currently a static state, mouse hover shouldn't fade/legend-sync/color-switch. excludeCondition makes HOVERED_ITEM stay null unconditionally.
-  const excludeCondition = emphasizedItems?.length ? 'true' : undefined;
-  addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys, excludeCondition);
+  addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
 });
