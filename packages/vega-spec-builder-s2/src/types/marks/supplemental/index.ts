@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './advancedLabelSpec.types';
 export * from './barAnnotationSpec.types';
 export * from './barDirectLabelSpec.types';
 export * from './dountSummarySpec.types';

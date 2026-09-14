@@ -42,13 +42,13 @@ describe('getDonutEmptyStateTest()', () => {
 });
 
 describe('getDonutOuterRadiusExpr()', () => {
-  test('should return the raw donut radius when neither SegmentLabel nor AdvancedLabel is present', () => {
+  test('should return the raw donut radius when no labels are present', () => {
     expect(getDonutOuterRadiusExpr(defaultDonutOptions)).toBe(DONUT_RADIUS);
   });
 
   test('should return the raw donut radius for isBoolean donuts, even with labels configured', () => {
     expect(
-      getDonutOuterRadiusExpr({ ...defaultDonutOptions, isBoolean: true, segmentLabels: [{}], advancedLabels: [{}] })
+      getDonutOuterRadiusExpr({ ...defaultDonutOptions, isBoolean: true, segmentLabels: [{ swatch: true }] })
     ).toBe(DONUT_RADIUS);
   });
 
@@ -57,13 +57,13 @@ describe('getDonutOuterRadiusExpr()', () => {
     expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_LABEL_RING_GAP}) / (1 + 0.6))`);
   });
 
-  test('should reserve room using the (larger) advanced-label ring gap when only AdvancedLabel is present', () => {
-    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, advancedLabels: [{}] });
+  test('should reserve room using the rich SegmentLabel ring gap when swatch is enabled', () => {
+    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
     expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_ADVANCED_LABEL_RING_GAP}) / (1 + 0.6))`);
   });
 
-  test('should reserve room using the advanced-label ring gap when both SegmentLabel and AdvancedLabel are present', () => {
-    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{}], advancedLabels: [{}] });
+  test('should reserve room using the rich SegmentLabel ring gap when enabled', () => {
+    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
     expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_ADVANCED_LABEL_RING_GAP}) / (1 + 0.6))`);
   });
 });

@@ -20,8 +20,11 @@ const SegmentLabel: FC<SegmentLabelProps> = ({
   labelKey,
   percent = false,
   percentFormat = '.0%',
-  value = false,
+  swatch = false,
+  value = true,
   valueFormat = 'standardNumber',
+  showValueRow = false,
+  showTotal = false,
 }) => {
   return null;
 };
@@ -30,4 +33,3 @@ const SegmentLabel: FC<SegmentLabelProps> = ({
 SegmentLabel.displayName = 'SegmentLabel';
 
 export { SegmentLabel };
-
