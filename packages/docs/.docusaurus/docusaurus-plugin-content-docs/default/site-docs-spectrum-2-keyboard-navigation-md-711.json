@@ -1,0 +1,27 @@
+{
+  "id": "spectrum2/keyboard-navigation",
+  "title": "Keyboard Navigation (S2)",
+  "description": "Keyboard navigation is an early, work-in-progress feature. It does not yet provide full chart accessibility or screen reader support — treat it as a keyboard-only enhancement, not a complete accessibility solution.",
+  "source": "@site/docs/spectrum2/keyboard-navigation.md",
+  "sourceDirName": "spectrum2",
+  "slug": "/spectrum2/keyboard-navigation",
+  "permalink": "/react-spectrum-charts/docs/docs/spectrum2/keyboard-navigation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/adobe/react-spectrum-charts/tree/main/packages/docs/docs/spectrum2/keyboard-navigation.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5
+  },
+  "sidebar": "sidebar",
+  "previous": {
+    "title": "Chart Sizing (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/chart-sizing"
+  },
+  "next": {
+    "title": "React Server Components (S2)",
+    "permalink": "/react-spectrum-charts/docs/docs/spectrum2/react-server-components"
+  }
+}
