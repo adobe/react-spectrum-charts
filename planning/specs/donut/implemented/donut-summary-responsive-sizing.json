@@ -1,0 +1,87 @@
+{
+  "id": "donut-summary-responsive-sizing",
+  "title": "Donut Summary Metric Value & Label Calibrated Responsive Sizing",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-08-19",
+  "complexity": {
+    "score": 3,
+    "rationale": "S/M/L target font sizes were confirmed exact (not approximated) via the donut-chart-tokens skill. Two real design decisions were resolved during implementation rather than being purely mechanical: (1) diameters between named tiers snap to the nearest tier via midpoint cutpoints, not the old threshold scale's snap-down behavior, since truncation now protects against overflow regardless of which tier is picked; (2) the text truncation/fit-based visibility gate deliberately keeps using the real holeRatio-derived inner radius rather than the tier's fixed ring-width token, because getArcMark's actual rendered ring geometry is untouched by this spec and still holeRatio-based - using the tier's assumed ring width there would compute truncation against a hole that isn't actually rendered. That ring-geometry mismatch itself is filed separately as donut-ring-width-holeratio-mismatch."
+  },
+  "summary": "The Donut Summary (metric value + metric label centered in the donut) previously sized its text using a placeholder ratio (donutRadius * holeRatio * a fixed ratio constant) snapped through a single threshold scale, with the label always forced to exactly half the value's font size. The donut-chart-tokens skill documents the actual S2 design system: five named size tiers (XS/S/M/L/XL, fixed outer diameters) each with an independently-specified metric-value and metric-label font size. Implemented as two independent threshold scales (value, label) keyed off the donut's outer diameter, snapping to the nearest named tier via midpoint cutpoints. Text truncation/fit-based visibility intentionally continues to use the real holeRatio-derived inner radius (not the tier's ring-width token), since the actual ring geometry is a separate, currently-mismatched concern (see donut-ring-width-holeratio-mismatch). Confirmed with the user: which lines are shown (value, label, and the separately-tracked delta line in donut-summary-delta-line) is controlled by which optional props are supplied, not by the donut's size tier - every size tier can show any combination of lines.",
+  "requirements": [
+    "Metric value ('metric total') font size must follow the exact per-size-tier px values confirmed in Figma's component-set variants: S (120px diameter) = 20px, M (160px) = 22px, L (200px) = 36px - all fontWeight 800, color gray-800/text-primary.",
+    "Metric label font size must follow the exact per-size-tier px values confirmed in Figma: S (120px) = 14px, M (160px) = 16px, L (200px) = 20px - all fontWeight 700, color gray-800/text-primary. Label font size is now looked up independently per tier, not derived as half the value's font size.",
+    "XS (60px diameter) and XL (400px diameter) use the donut-chart-tokens skill's derived values (metric total 18px/50px, metric label 12px/24px) as a starting point; these remain flagged as computed-not-measured and should be confirmed in Figma before being treated as final. Note: at the default holeRatio, XS's own font size is never actually observable, since its inner radius can never clear DONUT_SUMMARY_MIN_RADIUS (see donut-ring-width-holeratio-mismatch).",
+    "Font size must be keyed directly to the donut's outer diameter (2 * DONUT_RADIUS) against the five named size tiers, snapping to whichever tier's diameter is numerically closest (via midpoint cutpoints), not derived through the old holeRatio-based ratio formula.",
+    "Which lines render (value, label) is controlled by the props supplied (e.g. hideValue, whether a label is passed) at every size tier - not gated by the donut's size. The existing MIN_RADIUS-based fit fallback is unchanged (still keyed off the real holeRatio-derived inner radius) - it continues to hide text that's too small to render legibly, independent of the tier-based font-size lookup.",
+    "Long metric label text must continue to truncate (ellipsis) within the donut's inner hole radius at every size tier. The truncation limit continues to be computed from the real holeRatio-derived inner radius (unchanged basis) - not the tier's fixed ring-width token - since the actual rendered ring is still holeRatio-based (see donut-ring-width-holeratio-mismatch for the separate gap that creates)."
+  ],
+  "designTokens": [
+    { "token": "chart.donut.size.diameter (XS/S/M/L/XL)", "value": "60 / 120 / 160 / 200 / 400 (px)", "usage": "Outer donut diameter per named size tier. Only S/M/L are true Figma component-set variants ('Donut (S)/(M)/(L)'); XS/XL are scaled instances, not their own variant sets." },
+    { "token": "chart.donut.typography.metric-total (XS/S/M/L/XL)", "value": "18(derived) / 20 / 22 / 36 / 50(derived) px, weight 800, color text-primary (gray-800)", "usage": "Font size for the metric value text centered in the donut hole, keyed directly to the size tier's outer diameter." },
+    { "token": "chart.donut.typography.metric-label (XS/S/M/L/XL)", "value": "12(derived) / 14 / 16 / 20 / 24(derived) px, weight 700, color text-primary (gray-800)", "usage": "Font size for the metric label text centered in the donut hole, keyed directly to the size tier's outer diameter, independent of the value's font size." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=4395-47102&m=dev" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6062-36341&m=dev" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-55705&m=dev" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-56026&m=dev" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-56358&m=dev" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54106&m=dev" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54042&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "XS size tier (60px diameter) with a label supplied", "expectedBehavior": "The label is hidden at the default holeRatio because its inner radius can never clear DONUT_SUMMARY_MIN_RADIUS at that diameter - not a hard suppression by design, but an inherent consequence of the current (mismatched) ring geometry. See donut-ring-width-holeratio-mismatch." },
+    { "case": "Donut diameter between named tiers (e.g. ~150px, between S=120 and M=160)", "expectedBehavior": "Resolved: snaps to the nearest tier via a midpoint cutpoint (140 between S and M), so 150px gets M's font sizes, not S's." },
+    { "case": "Donut diameter above XL (400px)", "expectedBehavior": "Resolved: the XL threshold-scale bucket has no upper bound, so any diameter >= the S/M midpoint... i.e. >= the L/XL cutpoint (300) uses XL's fixed font sizes - it does not continue scaling past XL." },
+    { "case": "Very long metric label text", "expectedBehavior": "Truncates with an ellipsis inside the real (holeRatio-derived) inner radius at every size tier, not overflowing the hole or overlapping the arc." },
+    { "case": "hideValue=true (label only, no value shown)", "expectedBehavior": "Label sizing follows its own independent per-tier font size regardless of hideValue; the limit formula's height-from-center calculation switches to half the label's own font size (no value/dy offset to account for) when hideValue is true." },
+    { "case": "isBoolean donut (percent summary variant)", "expectedBehavior": "The boolean/percent summary value uses the same corrected per-tier sizing as the standard aggregated sum value." },
+    { "case": "User-supplied custom holeRatio (not matching any named size tier)", "expectedBehavior": "Font size is unaffected by holeRatio (purely diameter-tier-based). Truncation/fit-based visibility remain holeRatio-derived as before, so a custom holeRatio changes how much text fits, exactly as it did pre-fix - no new interaction introduced by this spec." },
+    { "case": "S1 (out of scope)", "expectedBehavior": "s1's vega-spec-builder donutSummaryUtils.ts shares the identical placeholder formula/constants, but per project direction this work is s2-only - s1 is intentionally left unchanged, not a gap to track here." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: the single '_summaryFontSizeScale'/'_summaryFontSize' scale+signal (packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts) were replaced with two independent pairs - '_summaryValueFontSizeScale'/'_summaryValueFontSize' and '_summaryLabelFontSizeScale'/'_summaryLabelFontSize' - each keyed off outer diameter against the five named tiers via shared midpoint cutpoints. requiresS1S2Parity is false: per project direction, this work is scoped to s2 only - packages/vega-spec-builder (s1) shares the identical placeholder formula today, but is intentionally left unchanged, not treated as a parity gap. Confirmed per the donut-chart-tokens skill (§5 Behavior tokens): hover/emphasize color changes apply to direct-label/advanced-label/benchmark-two-line values, not the plain center Metric total/label this spec covers - so touchesHoverAnimation and touchesLegendInteraction are correctly false here."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/constants/constants.ts",
+      "change": "Added (not replaced, since DONUT_SUMMARY_FONT_SIZE_RATIO/DONUT_SUMMARY_MIN_RADIUS are shared with s1 and must stay untouched) DONUT_SUMMARY_SIZE_TIER_CUTPOINTS (midpoint cutpoints [90,140,180,300]), DONUT_SUMMARY_VALUE_FONT_SIZES ([18,20,22,36,50]), and DONUT_SUMMARY_LABEL_FONT_SIZES ([12,14,16,20,24]).",
+      "lines": "242-249"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts",
+      "change": "getDonutSummaryScales/getDonutSummarySignals now produce two independent scale+signal pairs (value, label) keyed off 2 * DONUT_RADIUS against the shared tier cutpoints, replacing the single ratio-based scale/signal. getSummaryValueEncode/getSummaryValueLimit reference the new '_summaryValueFontSize' signal (formula basis unchanged - still holeRatio-derived for the limit). getSummaryLabelEncode now uses '_summaryLabelFontSize' directly (no longer ceil(value*0.5)) and recomputes its limit's height-from-center as labelFontSize*0.5 (hideValue) or dy-offset+labelFontSize (otherwise) - an exact algebraic generalization of the old multiplier-based formula once label size is independent.",
+      "lines": "26-33, 97-142, 217-249, 279-296, 298-332"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.test.tsx",
+      "change": "Updated scale/signal-name assertions for the two-scale/two-signal split; added assertions pinning the value/label font-size arrays and cutpoints directly, plus new getSummaryLabelEncode tests for the independent fontSize and the two limit-formula branches.",
+      "lines": "N/A - updated and new test cases"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/DonutSummary/DonutSummary.test.tsx",
+      "change": "Updated the integration render tests that hardcoded the old ratio-derived font sizes at specific widths - replaced the 'snap based on inner radius' describe block with tests pinning S/M/L/XL tiers by outer diameter (XS omitted - never observable through the MIN_RADIUS fit gate at default holeRatio) plus a nearest-tier-snapping case.",
+      "lines": "36-42, 56-112"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Features/DonutSummary/DonutSummarySizeTiers.story.tsx",
+      "change": "New story (in the non-pre-alpha Donut story location used for new s2 donut feature work going forward) rendering all five named size tiers side by side so the corrected per-tier sizing is visually verifiable in Storybook.",
+      "lines": "N/A - new story"
+    }
+  ],
+  "openQuestions": [
+    "The two 'derived' (computed, not individually measured) values are still unconfirmed in Figma: XS metric-total 18px/metric-label 12px, and XL metric-total 50px/metric-label 24px. Used as documented in the interim."
+  ],
+  "relatedIssues": ["donut-summary-delta-line", "donut-ring-width-holeratio-mismatch"]
+}

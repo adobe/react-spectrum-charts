@@ -101,7 +101,17 @@ and/or metric value.
 
 ```jsx
 <Donut metric="count" color="browser">
-  <SegmentLabel percent value />
+  <SegmentLabel percent />
+</Donut>
+```
+
+When `emphasizedItems` is set, two `SegmentLabel` children can provide different label
+treatments for emphasized and de-emphasized segments:
+
+```jsx
+<Donut metric="count" color="browser" emphasizedItems={['Chrome']}>
+  <SegmentLabel labelMode="emphasized" swatch showValueRow />
+  <SegmentLabel labelMode="deemphasized" value />
 </Donut>
 ```
 
@@ -117,6 +127,24 @@ and/or metric value.
         </tr>
     </thead>
     <tbody>
+        <tr>
+            <td>labelMode</td>
+            <td>'emphasized' | 'deemphasized'</td>
+            <td>–</td>
+            <td>Selects which emphasized segment group receives this label. Omit for uniform single-label behavior.</td>
+        </tr>
+        <tr>
+            <td>showValueRow</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Shows an additional segment value row.</td>
+        </tr>
+        <tr>
+            <td>showTotal</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Appends <code>/ total</code> to the segment value row.</td>
+        </tr>
         <tr>
             <td>labelKey</td>
             <td>string</td>
@@ -136,9 +164,15 @@ and/or metric value.
             <td>A <a href="https://d3js.org/d3-format#locale_format">d3-format</a> specifier for the percentage value.</td>
         </tr>
         <tr>
-            <td>value</td>
+            <td>swatch</td>
             <td>boolean</td>
             <td>false</td>
+            <td>Shows a color swatch before the segment label.</td>
+        </tr>
+        <tr>
+            <td>value</td>
+            <td>boolean</td>
+            <td>true</td>
             <td>Shows the donut segment's metric value.</td>
         </tr>
         <tr>
@@ -188,6 +222,24 @@ point is displayed as a percent of the whole (e.g. a success/failure rate):
             <td>string</td>
             <td>'series'</td>
             <td>Key in the data used to map each segment to a color.</td>
+        </tr>
+        <tr>
+            <td>emphasizedItems</td>
+            <td>(string | number)[]</td>
+            <td>–</td>
+            <td>Segments whose categorical colors remain emphasized.</td>
+        </tr>
+        <tr>
+            <td>hideDeemphasizedLabels</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Hides labels for segments outside <code>emphasizedItems</code>.</td>
+        </tr>
+        <tr>
+            <td>otherItemColor</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Color token or CSS color used for segments outside <code>emphasizedItems</code>.</td>
         </tr>
         <tr>
             <td>holeRatio</td>

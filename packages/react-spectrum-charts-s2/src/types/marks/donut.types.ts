@@ -13,7 +13,7 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { DonutOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartPopoverElement, ChartInspectElement } from '../dialogs';
+import { ChartInspectElement, ChartPopoverElement } from '../dialogs';
 import { Children } from '../util.types';
 import { DonutSummaryElement, SegmentLabelElement } from './supplemental';
 

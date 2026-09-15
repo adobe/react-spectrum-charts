@@ -45,6 +45,19 @@ describe('addData', () => {
     expect(sumData?.transform?.[0]).toHaveProperty('fields', ['testMetric']);
     expect(sumData?.transform?.[0]).toHaveProperty('ops', ['sum']);
   });
+
+  test('should add a SERIES_ID transform when interactive, so legend hover-highlight can match this donut', () => {
+    const interactiveOptions = { ...defaultDonutOptions, segmentLabels: [{ value: true }] };
+    const data = addData(initializeSpec().data ?? [], interactiveOptions);
+    expect(data[1].transform).toHaveLength(5);
+    expect(data[1].transform?.[4]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
+  });
+
+  test('should not add a SERIES_ID transform when not interactive', () => {
+    const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
+    expect(data[1].transform).toHaveLength(4);
+  });
+
 });
 
 describe('addSignals()', () => {
@@ -63,7 +76,7 @@ describe('addSignals()', () => {
       ...defaultDonutOptions,
       chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
     });
-    expect(signals).toHaveLength(defaultSignals.length + 1);
+    expect(signals).toHaveLength(defaultSignals.length + 3);
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
@@ -72,6 +85,31 @@ describe('addSignals()', () => {
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
+  });
+
+  test('should preserve normal hover behavior when emphasizedItems is set', () => {
+    const signals = addSignals(defaultSignals, {
+      ...defaultDonutOptions,
+      chartInspects: [{}],
+      emphasizedItems: ['Chrome'],
+    });
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', 'datum');
+  });
+
+  test('should not exclude anything from hover when emphasizedItems is not set', () => {
+    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, chartInspects: [{}] });
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', 'datum');
+  });
+
+  test('should add rich SegmentLabel font size signals when swatch is enabled', () => {
+    const baselineSignals = addSignals(defaultSignals, defaultDonutOptions);
+    const signals = addSignals(defaultSignals, { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
+    expect(signals).toHaveLength(baselineSignals.length + 4);
+    expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelNameFontSize')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelValueFontSize')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelDetailFontSize')).toBeDefined();
   });
 });
 
@@ -83,13 +121,29 @@ describe('addMarks()', () => {
     expect(marks[0]).toHaveProperty('type', 'arc');
     expect(marks[1]).toHaveProperty('name', 'testName');
   });
+
+  test('should add the rich SegmentLabel group mark when swatch is enabled', () => {
+    const marks = addMarks([], { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
+    expect(marks).toHaveLength(3);
+    expect(marks[2]).toHaveProperty('name', 'testName_richSegmentLabelGroup');
+  });
 });
 
 describe('donutSpecBuilder', () => {
   test('should add scales correctly', () => {
     const scales = addScales([], defaultDonutOptions);
-    expect(scales).toHaveLength(1);
+    expect(scales).toHaveLength(3);
     expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
+    expect(scales[1]).toHaveProperty('name', 'testName_ringWidthScale');
+    expect(scales[2]).toHaveProperty('name', 'testName_sliceGapScale');
+  });
+
+  test('should add rich SegmentLabel font size scales when swatch is enabled', () => {
+    const scales = addScales([], { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
+    expect(scales).toHaveLength(6);
+    expect(scales[3]).toHaveProperty('name', 'testName_richSegmentLabelNameFontSizeScale');
+    expect(scales[4]).toHaveProperty('name', 'testName_richSegmentLabelValueFontSizeScale');
+    expect(scales[5]).toHaveProperty('name', 'testName_richSegmentLabelDetailFontSizeScale');
   });
 });
 

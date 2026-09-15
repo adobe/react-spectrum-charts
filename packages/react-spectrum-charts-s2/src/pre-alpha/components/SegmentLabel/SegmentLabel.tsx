@@ -17,11 +17,15 @@ import { SegmentLabelProps } from '../../../types';
 
 // destructure props here and set defaults so that storybook can pick them up
 const SegmentLabel: FC<SegmentLabelProps> = ({
+  labelMode,
   labelKey,
   percent = false,
   percentFormat = '.0%',
-  value = false,
+  swatch = false,
+  value = true,
   valueFormat = 'standardNumber',
+  showValueRow = false,
+  showTotal = false,
 }) => {
   return null;
 };
@@ -30,4 +34,3 @@ const SegmentLabel: FC<SegmentLabelProps> = ({
 SegmentLabel.displayName = 'SegmentLabel';
 
 export { SegmentLabel };
-
