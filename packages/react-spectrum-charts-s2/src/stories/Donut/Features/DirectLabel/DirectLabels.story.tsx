@@ -28,7 +28,7 @@ import { SegmentLabelProps } from '../../../../types';
 import { basicDonutData, sliveredDonutData } from '../../../components/Donut/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Direct Label',
+  title: 'React Spectrum Charts 2/Donut/Features/Segment Label',
   component: SegmentLabel,
 };
 
@@ -120,8 +120,16 @@ const getSizeTier = (containerWidth: number): string => {
 // hemisphere anchor offset should all stay proportionally correct at every size. Height is fixed
 // larger than the widest slider value so width (via min(width, height)) is always the limiting
 // dimension, matching Line's DirectLabelSizeScaling story pattern.
-const ResponsiveDonut = ({ data, args }: { data: ChartData[]; args: SegmentLabelProps }): ReactElement => {
-  const [width, setWidth] = useState(300);
+const ResponsiveDonut = ({
+  data,
+  args,
+  initialWidth = 300,
+}: {
+  data: ChartData[];
+  args: SegmentLabelProps;
+  initialWidth?: number;
+}): ReactElement => {
+  const [width, setWidth] = useState(initialWidth);
   const chartProps = useChartProps({ data });
   const outerDiameter = getEffectiveDiameter(width);
   const currentSize = getSizeTier(width);
@@ -189,6 +197,10 @@ const ResponsiveStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => (
   <ResponsiveDonut data={basicDonutData} args={args} />
 );
 
+const AdvancedStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => (
+  <ResponsiveDonut data={basicDonutData} args={args} initialWidth={500} />
+);
+
 // sliveredDonutData has 15 segments (vs. basicDonutData's 7) - a denser stress test for label
 // crowding as the donut shrinks toward the XS/S tiers
 const ManySegmentsResponsiveStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => (
@@ -198,7 +210,10 @@ const ManySegmentsResponsiveStory: StoryFn<typeof SegmentLabel> = (args): ReactE
 const Responsive = bindWithProps(ResponsiveStory);
 Responsive.args = { value: true, valueFormat: 'shortNumber' };
 
+const Advanced = bindWithProps(AdvancedStory);
+Advanced.args = { percent: true, value: false, swatch: true, showValueRow: true };
+
 const ManySegmentsResponsive = bindWithProps(ManySegmentsResponsiveStory);
 ManySegmentsResponsive.args = { value: true, valueFormat: 'shortNumber' };
 
-export { Responsive, ManySegmentsResponsive };
+export { Responsive, Advanced, ManySegmentsResponsive };

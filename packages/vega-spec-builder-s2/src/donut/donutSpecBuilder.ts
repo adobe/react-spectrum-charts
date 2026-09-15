@@ -44,16 +44,14 @@ import {
   getSumData,
 } from './donutUtils';
 import {
-  getAdvancedLabelData,
-  getAdvancedLabelMarks,
-  getAdvancedLabelScales,
-  getAdvancedLabelSignals,
-} from './advancedLabelUtils';
-import {
   getSegmentLabelData,
   getSegmentLabelMarks,
   getSegmentLabelScales,
   getSegmentLabelSignals,
+  getRichSegmentLabelData,
+  getRichSegmentLabelMarks,
+  getRichSegmentLabelScales,
+  getRichSegmentLabelSignals,
 } from './segmentLabelUtils';
 
 export const addDonut = produce<
@@ -82,7 +80,6 @@ export const addDonut = produce<
       holeRatio = DEFAULT_HOLE_RATIO,
       isBoolean = false,
       segmentLabels = [],
-      advancedLabels = [],
       ...options
     }
   ) => {
@@ -99,7 +96,6 @@ export const addDonut = produce<
       metric,
       name: toCamelCase(name ?? `donut${index}`),
       segmentLabels,
-      advancedLabels,
       startAngle,
       ...options,
     };
@@ -150,7 +146,7 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
     getSumData(options),
     ...getDonutSummaryData(options),
     ...getSegmentLabelData(options),
-    ...getAdvancedLabelData(options)
+    ...getRichSegmentLabelData(options)
   );
 });
 
@@ -189,7 +185,7 @@ export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) 
     getSliceGapScale(options),
     ...getDonutSummaryScales(options),
     ...getSegmentLabelScales(options),
-    ...getAdvancedLabelScales(options)
+    ...getRichSegmentLabelScales(options)
   );
 });
 
@@ -199,7 +195,7 @@ export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => 
     getArcMark(options),
     ...getDonutSummaryMarks(options),
     ...getSegmentLabelMarks(options),
-    ...getAdvancedLabelMarks(options)
+    ...getRichSegmentLabelMarks(options)
   );
 });
 
@@ -212,7 +208,7 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
     getSliceGapSignal(options),
     ...getDonutSummarySignals(options),
     ...getSegmentLabelSignals(options),
-    ...getAdvancedLabelSignals(options)
+    ...getRichSegmentLabelSignals(options)
   );
   if (!isInteractive(options)) return;
   // emphasize is currently a static state, mouse hover shouldn't fade/legend-sync/color-switch. excludeCondition makes HOVERED_ITEM stay null unconditionally.

@@ -15,7 +15,7 @@ import { DonutProps } from '../types';
 import { childrenToOptions } from './childrenAdapter';
 
 export const getDonutOptions = ({ children, ...donutProps }: DonutProps): DonutOptions => {
-  const { chartInspects, chartPopovers, donutSummaries, segmentLabels, advancedLabels } = childrenToOptions(children);
+  const { chartInspects, chartPopovers, donutSummaries, segmentLabels } = childrenToOptions(children);
   return {
     ...donutProps,
     chartInspects,
@@ -23,6 +23,5 @@ export const getDonutOptions = ({ children, ...donutProps }: DonutProps): DonutO
     donutSummaries,
     markType: 'donut',
     segmentLabels,
-    advancedLabels,
   };
 };
