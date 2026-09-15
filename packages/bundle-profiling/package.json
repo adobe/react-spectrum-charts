@@ -4,6 +4,7 @@
   "private": true,
   "description": "Internal tooling for measuring the true cold-consumer bundle cost of @spectrum-charts/react-spectrum-charts-s2, including its peer dependencies. Not published.",
   "scripts": {
+    "build": "echo 'no build step for @spectrum-charts/bundle-profiling'",
     "benchmark": "node scripts/benchmark.js",
     "profile": "webpack --config webpack.profile.config.js && node scripts/report.js",
     "profile:shared-react": "webpack --config webpack.profile-shared-react.config.js && node scripts/report.js dist-shared-react",
