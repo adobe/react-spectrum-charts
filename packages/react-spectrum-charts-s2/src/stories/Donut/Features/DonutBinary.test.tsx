@@ -12,12 +12,12 @@
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
 import { findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
-import { Binary, Boolean } from './DonutBinary.story';
+import { Binary, BooleanProp } from './DonutBinary.story';
 
 describe('DonutBinary', () => {
   // Boolean renders two charts: positive (green primary) and negative (red primary, reversed data)
   test('Boolean renders each chart\'s primary segment with its own explicit color', async () => {
-    render(<Boolean {...Boolean.args} />);
+    render(<BooleanProp {...BooleanProp.args} />);
     const [positiveChart, negativeChart] = await screen.findAllByRole('graphics-document');
     const positiveSegments = await findAllMarksByGroupName(positiveChart, 'donut0');
     const negativeSegments = await findAllMarksByGroupName(negativeChart, 'donut0');
@@ -26,7 +26,7 @@ describe('DonutBinary', () => {
   });
 
   test('Boolean forces the secondary segment to secondary-gray in both charts', async () => {
-    render(<Boolean {...Boolean.args} />);
+    render(<BooleanProp {...BooleanProp.args} />);
     const [positiveChart, negativeChart] = await screen.findAllByRole('graphics-document');
     const positiveSegments = await findAllMarksByGroupName(positiveChart, 'donut0');
     const negativeSegments = await findAllMarksByGroupName(negativeChart, 'donut0');
