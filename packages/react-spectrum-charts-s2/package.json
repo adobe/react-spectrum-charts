@@ -5,9 +5,6 @@
   "browser": "./dist/index.js",
   "module": "./dist/index.js",
   "main": "./dist/index.js",
-  "sideEffects": [
-    "*.css"
-  ],
   "exports": {
     ".": {
       "types": "./dist/@types/index.d.ts",
