@@ -12,6 +12,9 @@
 import { TextValueRef } from 'vega';
 
 import {
+  DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES,
+  DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
+  DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
@@ -22,6 +25,10 @@ import { defaultDonutOptions } from './donutTestUtils';
 import { getDonutEmptyStateTest } from './donutUtils';
 import {
   getRichSegmentLabelData,
+  getRichSegmentLabelMarks,
+  getRichSegmentLabelScales,
+  getRichSegmentLabelSignals,
+  getRichSegmentLabelValueText,
   getSegmentLabelData,
   getSegmentLabelMarks,
   getSegmentLabelScales,
@@ -46,6 +53,35 @@ const defaultSegmentLabelOptions: SegmentLabelSpecOptions = {
   valueFormat: 'standardNumber',
   showValueRow: false,
   showTotal: false,
+};
+
+const richDonutOptions: DonutSpecOptions = {
+  ...defaultDonutOptions,
+  segmentLabels: [{ percent: true, showTotal: true, showValueRow: true, swatch: true, value: true }],
+};
+
+const richSegmentLabelOptions: SegmentLabelSpecOptions = {
+  ...defaultSegmentLabelOptions,
+  donutOptions: richDonutOptions,
+  percent: true,
+  showTotal: true,
+  showValueRow: true,
+  swatch: true,
+  value: true,
+};
+
+const getOnlyRichLabelGroup = (options: DonutSpecOptions) => {
+  const groups = getRichSegmentLabelMarks(options);
+  expect(groups).toHaveLength(1);
+  const [group] = groups;
+  if (!group) throw new Error('Expected one rich SegmentLabel group');
+  return group;
+};
+
+const getRequiredGroupMarks = (group: ReturnType<typeof getOnlyRichLabelGroup>) => {
+  expect(group.marks).toBeDefined();
+  if (!group.marks) throw new Error('Expected the rich SegmentLabel group to contain marks');
+  return group.marks;
 };
 
 describe('getSegmentLabelMarks()', () => {
@@ -274,6 +310,194 @@ describe('getSegmentLabelSignals()', () => {
           "scale('testName_segmentLabelValueFontSizeScale', 2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)))",
       },
     ]);
+  });
+});
+
+describe('rich SegmentLabel', () => {
+  test('should create font scales and signals for each rich label row', () => {
+    expect(getRichSegmentLabelScales(richDonutOptions)).toEqual([
+      {
+        name: 'testName_richSegmentLabelNameFontSizeScale',
+        type: 'threshold',
+        domain: DONUT_SIZE_TIER_CUTPOINTS,
+        range: DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
+      },
+      {
+        name: 'testName_richSegmentLabelValueFontSizeScale',
+        type: 'threshold',
+        domain: DONUT_SIZE_TIER_CUTPOINTS,
+        range: DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES,
+      },
+      {
+        name: 'testName_richSegmentLabelDetailFontSizeScale',
+        type: 'threshold',
+        domain: DONUT_SIZE_TIER_CUTPOINTS,
+        range: DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES,
+      },
+    ]);
+    const donutDiameter = `2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6))`;
+    expect(getRichSegmentLabelSignals(richDonutOptions)).toEqual([
+      {
+        name: 'testName_richSegmentLabelNameFontSize',
+        update: `scale('testName_richSegmentLabelNameFontSizeScale', ${donutDiameter})`,
+      },
+      {
+        name: 'testName_richSegmentLabelValueFontSize',
+        update: `scale('testName_richSegmentLabelValueFontSizeScale', ${donutDiameter})`,
+      },
+      {
+        name: 'testName_richSegmentLabelDetailFontSize',
+        update: `scale('testName_richSegmentLabelDetailFontSizeScale', ${donutDiameter})`,
+      },
+    ]);
+  });
+
+  test('should create collision data for rich labels', () => {
+    const dataSources = getRichSegmentLabelData(richDonutOptions);
+    expect(dataSources).toHaveLength(1);
+    const [data] = dataSources;
+    if (!data) throw new Error('Expected one rich SegmentLabel data source');
+    expect(data).toEqual({
+      name: 'testName_richSegmentLabelData',
+      source: 'filteredTable',
+      transform: [
+        { type: 'filter', expr: "datum['testName_arcLength'] >= 0.3" },
+        {
+          type: 'formula',
+          as: 'testName_richSegmentLabel_hemisphere',
+          expr: "datum['testName_arcTheta'] <= PI ? 'right' : 'left'",
+        },
+        {
+          type: 'formula',
+          as: 'testName_richSegmentLabel_idealY',
+          expr: "height / 2 - ((((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) + 20) * cos(datum['testName_arcTheta'])",
+        },
+        {
+          type: 'window',
+          groupby: ['testName_richSegmentLabel_hemisphere'],
+          sort: { field: 'testName_richSegmentLabel_idealY', order: 'ascending' },
+          ops: ['row_number'],
+          as: ['testName_richSegmentLabel_collisionRank'],
+        },
+        {
+          type: 'formula',
+          as: 'testName_richSegmentLabel_collisionRank',
+          expr: "datum['testName_richSegmentLabel_collisionRank'] - 1",
+        },
+        {
+          type: 'formula',
+          as: 'testName_richSegmentLabel_collisionHelper',
+          expr: "datum['testName_richSegmentLabel_idealY'] - (testName_richSegmentLabelNameFontSize + 4 + testName_richSegmentLabelValueFontSize + 0 + testName_richSegmentLabelDetailFontSize + 16) * datum['testName_richSegmentLabel_collisionRank']",
+        },
+        {
+          type: 'window',
+          groupby: ['testName_richSegmentLabel_hemisphere'],
+          sort: { field: 'testName_richSegmentLabel_idealY', order: 'ascending' },
+          ops: ['max'],
+          fields: ['testName_richSegmentLabel_collisionHelper'],
+          frame: [null, 0],
+          as: ['testName_richSegmentLabel_collisionRunningMax'],
+        },
+        {
+          type: 'formula',
+          as: 'testName_richSegmentLabel_adjustedY',
+          expr: "datum['testName_richSegmentLabel_collisionRunningMax'] + (testName_richSegmentLabelNameFontSize + 4 + testName_richSegmentLabelValueFontSize + 0 + testName_richSegmentLabelDetailFontSize + 16) * datum['testName_richSegmentLabel_collisionRank']",
+        },
+        {
+          type: 'formula',
+          as: 'testName_richSegmentLabel_collisionHalfWidth',
+          expr: "sqrt(max(0, pow((((min(width, height) / 2 - 2) - 20) / (1 + 0.6)), 2) - pow(datum['testName_richSegmentLabel_adjustedY'] - height / 2, 2))) + (20)",
+        },
+      ],
+    });
+  });
+
+  test('should create swatch, name, value, detail value, and total suffix marks', () => {
+    const group = getOnlyRichLabelGroup(richDonutOptions);
+    expect(group.name).toBe('testName_richSegmentLabelGroup');
+    const marks = getRequiredGroupMarks(group);
+    expect(marks.map(({ name }) => name)).toEqual([
+      'testName_richSegmentLabelSwatch',
+      'testName_richSegmentLabelName',
+      'testName_richSegmentLabelValue',
+      'testName_richSegmentLabelDetailValue',
+      'testName_richSegmentLabelDetailSuffix',
+    ]);
+
+    const [swatch, name, value, detail, suffix] = marks;
+    if (!swatch || !name || !value || !detail || !suffix) {
+      throw new Error('Expected all five rich SegmentLabel marks');
+    }
+    expect(swatch.encode?.update?.size).toEqual([
+      {
+        test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum'] || 2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) < 160",
+        value: 0,
+      },
+      { signal: '256' },
+    ]);
+    expect(name.encode?.update?.dx).toEqual({
+      signal:
+        "(datum['testName_richSegmentLabel_hemisphere'] === 'right' ? 1 : -1) * (2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) >= 160 ? 24 : 0)",
+    });
+    expect(value.encode?.update?.dy).toEqual({
+      signal:
+        "datum['testName_richSegmentLabel_adjustedY'] <= height / 2 ? (-((testName_richSegmentLabelDetailFontSize + 0) * (min(1, ((((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6) / (testName_richSegmentLabelNameFontSize + 4 + testName_richSegmentLabelValueFontSize + 0 + testName_richSegmentLabelDetailFontSize))))) : ((testName_richSegmentLabelNameFontSize + 4) * (min(1, ((((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6) / (testName_richSegmentLabelNameFontSize + 4 + testName_richSegmentLabelValueFontSize + 0 + testName_richSegmentLabelDetailFontSize))))",
+    });
+    expect(detail.encode?.enter?.text).toEqual([
+      { test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum']", value: '' },
+      { test: "isNumber(datum['testMetric'])", signal: "format(datum['testMetric'], ',')" },
+    ]);
+    expect(suffix.encode?.enter?.text).toEqual([
+      { test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum']", value: '' },
+      {
+        signal: `" / " + format(data('testName_sumData')[0]['sum'], ',')`,
+      },
+    ]);
+  });
+
+  test('should omit optional rich rows and offsets when they are disabled', () => {
+    const swatchOnlyOptions: DonutSpecOptions = {
+      ...defaultDonutOptions,
+      segmentLabels: [{ swatch: true, value: false }],
+    };
+    const marks = getRequiredGroupMarks(getOnlyRichLabelGroup(swatchOnlyOptions));
+    expect(marks.map(({ name }) => name)).toEqual(['testName_richSegmentLabelSwatch', 'testName_richSegmentLabelName']);
+    expect(marks[1]?.encode?.update?.dy).toEqual({
+      signal: "datum['testName_richSegmentLabel_adjustedY'] <= height / 2 ? (0) : 0",
+    });
+  });
+
+  test('should create a detail value without a total suffix or primary value row', () => {
+    const detailOnlyOptions: DonutSpecOptions = {
+      ...defaultDonutOptions,
+      segmentLabels: [{ showValueRow: true, value: false }],
+    };
+    const marks = getRequiredGroupMarks(getOnlyRichLabelGroup(detailOnlyOptions));
+    expect(marks.map(({ name }) => name)).toEqual([
+      'testName_richSegmentLabelName',
+      'testName_richSegmentLabelDetailValue',
+    ]);
+    expect(marks[1]?.encode?.update?.dy).toEqual({
+      signal:
+        "datum['testName_richSegmentLabel_adjustedY'] <= height / 2 ? (0) : ((testName_richSegmentLabelNameFontSize + 4) * (min(1, ((((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) * 0.6) / (testName_richSegmentLabelNameFontSize + 0 + testName_richSegmentLabelDetailFontSize))))",
+    });
+  });
+
+  test('should reuse the standard value and percent formatting rules', () => {
+    expect(getRichSegmentLabelValueText(richSegmentLabelOptions)).toEqual([
+      {
+        test: "isNumber(datum['testMetric'])",
+        signal: `format(datum['testName_arcPercent'], '.0%') + "\\u00a0\\u00a0" + format(datum['testMetric'], ',')`,
+      },
+    ]);
+    expect(getRichSegmentLabelValueText({ ...richSegmentLabelOptions, percent: false, value: false })).toBeUndefined();
+  });
+
+  test('should not create rich content for direct labels or boolean donuts', () => {
+    expect(getRichSegmentLabelScales(defaultDonutOptionsWithSegmentLabel)).toEqual([]);
+    expect(getRichSegmentLabelSignals(defaultDonutOptionsWithSegmentLabel)).toEqual([]);
+    expect(getRichSegmentLabelData(defaultDonutOptionsWithSegmentLabel)).toEqual([]);
+    expect(getRichSegmentLabelMarks({ ...richDonutOptions, isBoolean: true })).toEqual([]);
   });
 });
 
