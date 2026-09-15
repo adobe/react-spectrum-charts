@@ -77,5 +77,20 @@ describe('buildChartStructure()', () => {
       const axisNodes = Object.entries(composed?.structure.nodes ?? {}).filter(([id]) => id.startsWith('xAxis::'));
       expect(axisNodes.length).toBeGreaterThan(0);
     });
+
+    test('skips the axis region (no throw) when none of its values are currently visible', () => {
+      const direct = buildBarStructure({ data, dimension: 'browser' });
+      // visibleValues share nothing with the axis's real values — e.g. a region wired to the wrong axis.
+      const composed = buildChartStructure({
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        xAxis: { field: 'browser', type: 'categorical', visibleValues: ['not-a-browser'] },
+      });
+
+      expect(composed?.entryPoint).toBe(direct.entryPoint);
+      const axisNodes = Object.keys(composed?.structure.nodes ?? {}).filter((id) => id.startsWith('xAxis::'));
+      expect(axisNodes).toHaveLength(0);
+    });
   });
 });

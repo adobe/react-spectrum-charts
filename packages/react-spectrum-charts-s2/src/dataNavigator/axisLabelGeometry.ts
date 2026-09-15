@@ -152,6 +152,15 @@ export const getVisibleAxisLabelColumns = (
     .map(([, col]) => ({ value: col.value, bounds: col.bounds }));
 };
 
+/** The raw rendered `axis-label` scene item for a tick value on the given axis (skipping overlap-hidden ones), for driving the axis-label tooltip on keyboard focus through the same path mouse hover uses. */
+export const findAxisLabelItem = (view: View, value: string, orient: AxisOrient = 'bottom'): unknown => {
+  for (const item of collectAxisLabelItems(view, orient)) {
+    if ((item.opacity ?? 1) <= 0) continue;
+    if (axisLabelValue(item) === value) return item;
+  }
+  return undefined;
+};
+
 /**
  * Draw the focus ring around a box, padded evenly on all sides. A plain DOM overlay (unlike a Vega
  * mark) doesn't participate in autosize, so it can center over an edge label without being clamped

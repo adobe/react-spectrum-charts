@@ -14,6 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
+import { Orientation } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
@@ -22,22 +23,35 @@ import { barData, barSeriesData } from '../Bar/data';
 
 export default {
   title: 'React Spectrum Charts 2/Accessible Navigation/Bar Navigation',
+  argTypes: {
+    // Inline radio so a tester can flip orientation and confirm arrow keys follow the bars' layout.
+    orientation: { control: 'inline-radio', options: ['vertical', 'horizontal'] },
+  },
 };
 
+interface BarNavigationArgs {
+  /** Toggles the chart between vertical and horizontal so arrow-key navigation can be tested in both. */
+  orientation: Orientation;
+}
+
 /** Non-interactive bar (no popover/inspect/onClick) keyboard navigation: Tab to "Enter navigation area", then arrow keys move between bars. */
-const NonInteractiveBarNavigationStory: StoryFn = (): ReactElement => {
+const NonInteractiveBarNavigationStory: StoryFn<BarNavigationArgs> = (args): ReactElement => {
+  const { orientation } = args;
+  const isHorizontal = orientation === 'horizontal';
   const chartProps = useChartProps({ data: barData, width: 600, height: 600, accessibleNavigation: true });
   return (
     <Chart {...chartProps}>
-      <Axis position="bottom" baseline title="Browser" />
-      <Axis position="left" baseline grid title="Downloads" />
-      <Bar dimension="browser" metric="downloads" />
+      <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads" orientation={orientation} />
     </Chart>
   );
 };
 
 /** Stacked bar keyboard navigation: Tab to "Enter navigation area", then arrow keys move between bars/segments. */
-const StackedBarNavigationStory: StoryFn = (): ReactElement => {
+const StackedBarNavigationStory: StoryFn<BarNavigationArgs> = (args): ReactElement => {
+  const { orientation } = args;
+  const isHorizontal = orientation === 'horizontal';
   const chartProps = useChartProps({
     data: barSeriesData,
     width: 800,
@@ -50,9 +64,9 @@ const StackedBarNavigationStory: StoryFn = (): ReactElement => {
       {/* Real page elements before/after the chart, so Tab/Shift+Tab in and out of the widget is observable. */}
       <button type="button">Prev element</button>
       <Chart {...chartProps}>
-        <Axis position="bottom" baseline title="Browser" />
-        <Axis position="left" grid title="Downloads" />
-        <Bar dimension="browser" order="order" color="operatingSystem">
+        <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Browser" />
+        <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Downloads" />
+        <Bar dimension="browser" order="order" color="operatingSystem" orientation={orientation}>
           <ChartInspect>
             {(datum) => (
               <div>
@@ -110,4 +124,7 @@ const StackedBarNavigationStory: StoryFn = (): ReactElement => {
 };
 
 export const NonInteractiveBarNavigation = NonInteractiveBarNavigationStory.bind({});
+NonInteractiveBarNavigation.args = { orientation: 'vertical' };
+
 export const StackedBarNavigation = StackedBarNavigationStory.bind({});
+StackedBarNavigation.args = { orientation: 'vertical' };

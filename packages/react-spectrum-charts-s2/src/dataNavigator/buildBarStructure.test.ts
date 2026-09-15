@@ -16,6 +16,9 @@ import { buildBarStructure, buildNodeLabel, segmentId } from './buildBarStructur
 const hasEdgeBetween = (structure: Structure, a: string, b: string): boolean =>
   Object.values(structure.edges).some((edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a));
 
+const edgeBetween = (structure: Structure, a: string, b: string) =>
+  Object.values(structure.edges).find((edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a));
+
 /** The segment Enter reaches first from a division (stack) node — the edge where the division is the source, not the target. */
 const firstSegmentOf = (structure: Structure, divisionId: string): string | undefined => {
   const division = structure.nodes[divisionId];
@@ -166,6 +169,110 @@ describe('buildBarStructure()', () => {
         expect(hasEdgeBetween(structure, chrome, firefox)).toBe(true);
       });
     });
+
+    describe('segment Left/Right crosses to the same series in the adjacent stack', () => {
+      const threeStackData = [
+        { browser: 'Chrome', os: 'Windows', downloads: 18000 },
+        { browser: 'Chrome', os: 'Mac', downloads: 9000 },
+        { browser: 'Firefox', os: 'Windows', downloads: 5000 },
+        { browser: 'Firefox', os: 'Mac', downloads: 3000 },
+        { browser: 'Safari', os: 'Windows', downloads: 4000 },
+        { browser: 'Safari', os: 'Mac', downloads: 2000 },
+      ];
+
+      test('links a segment to the same-series segment one stack over', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(true);
+      });
+
+      test('never links segments of different series across stacks', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Mac'))).toBe(false);
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Windows'))).toBe(false);
+      });
+
+      test('the cross-stack edge navigates on Left/Right, not Up/Down', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
+        expect(edge?.navigationRules).toEqual(['left', 'right']);
+      });
+
+      test('within-stack segment edges keep Up/Down and no longer use Left/Right', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Chrome', 'Mac'));
+        expect(edge).toBeDefined();
+        expect(edge?.navigationRules).toContain('up');
+        expect(edge?.navigationRules).toContain('down');
+        expect(edge?.navigationRules).not.toContain('left');
+        expect(edge?.navigationRules).not.toContain('right');
+      });
+
+      test('does not wrap the last stack back to the first', () => {
+        const { structure } = buildBarStructure({ data: threeStackData, dimension: 'browser', color: 'os' });
+        expect(hasEdgeBetween(structure, segmentId('Safari', 'Windows'), segmentId('Chrome', 'Windows'))).toBe(false);
+      });
+
+      test('skips a series missing from the neighbouring stack (e.g. its segment is zero-value)', () => {
+        const sparseData = [
+          { browser: 'Chrome', os: 'Windows', downloads: 18000 },
+          { browser: 'Chrome', os: 'Mac', downloads: 9000 },
+          { browser: 'Firefox', os: 'Windows', downloads: 5000 },
+          { browser: 'Firefox', os: 'Mac', downloads: 0 },
+        ];
+        const { structure } = buildBarStructure({ data: sparseData, dimension: 'browser', color: 'os', metric: 'downloads' });
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
+        expect(structure.nodes[segmentId('Firefox', 'Mac')]).toBeUndefined();
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(false);
+      });
+    });
+
+    describe('orientation', () => {
+      test('vertical (default) keys the stack axis on Left/Right and the segment axis on Up/Down', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        expect(structure.navigationRules?.left?.key).toBe('ArrowLeft');
+        expect(structure.navigationRules?.up?.key).toBe('ArrowUp');
+      });
+
+      test('horizontal rotates the key mapping onto the same graph (stack axis on Up/Down, segment axis on Left/Right)', () => {
+        const vertical = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' }).structure;
+        const horizontal = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          orientation: 'horizontal',
+        }).structure;
+
+        // The graph is identical — the cross-stack edge is still keyed on the logical left/right ids...
+        const verticalEdge = edgeBetween(vertical, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
+        const horizontalEdge = edgeBetween(horizontal, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
+        expect(horizontalEdge?.navigationRules).toEqual(['left', 'right']);
+        expect(horizontalEdge?.navigationRules).toEqual(verticalEdge?.navigationRules);
+
+        // ...only the physical keys that drive each axis rotate.
+        expect(horizontal.navigationRules?.left?.key).toBe('ArrowUp');
+        expect(horizontal.navigationRules?.right?.key).toBe('ArrowDown');
+        expect(horizontal.navigationRules?.up?.key).toBe('ArrowLeft');
+        expect(horizontal.navigationRules?.down?.key).toBe('ArrowRight');
+      });
+
+      test('horizontal reaches the origin (lowest-order) segment first, matching left-to-right reading order', () => {
+        const orderedData = [
+          { browser: 'Chrome', os: 'Windows', downloads: 18000, order: 2 },
+          { browser: 'Chrome', os: 'Mac', downloads: 9000, order: 1 },
+        ];
+        const { structure } = buildBarStructure({
+          data: orderedData,
+          dimension: 'browser',
+          color: 'os',
+          order: 'order',
+          orientation: 'horizontal',
+        });
+        const chrome = divisionIdFor(structure, 'browser', 'Chrome');
+        // Vertical reaches the highest-order segment first (see the segment-order tests); horizontal flips to the origin.
+        expect(firstSegmentOf(structure, chrome)).toBe(segmentId('Chrome', 'Mac'));
+      });
+    });
   });
 
   describe('no wraparound (matches real mouse hover: navigation stays within its own level)', () => {
@@ -211,5 +318,29 @@ describe('buildNodeLabel()', () => {
     expect(label).toContain('browser: Chrome');
     expect(label).toContain('downloads: 27000');
     expect(label).not.toContain('_dnId');
+  });
+
+  test('limits a leaf label to the fieldLabels fields, labeled by their axis/legend titles', () => {
+    const node = {
+      id: 'Chrome',
+      data: { browser: 'Chrome', downloads: 27000, percentLabel: '53.1%', share: 0.531 },
+    } as unknown as NodeObject;
+    const label = buildNodeLabel(node, { browser: 'Browser', downloads: 'Downloads' });
+    expect(label).toBe('Browser: Chrome. Downloads: 27000.');
+    expect(label).not.toContain('percentLabel');
+    expect(label).not.toContain('share');
+  });
+});
+
+describe('buildBarStructure() fieldLabels', () => {
+  test('a leaf accessible name reads as the axis titles, dropping unrelated columns', () => {
+    const richData = [{ browser: 'Chrome', downloads: 27000, percentLabel: '53.1%', share: 0.531 }];
+    const { structure } = buildBarStructure({
+      data: richData,
+      dimension: 'browser',
+      metric: 'downloads',
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(structure.nodes.Chrome.semantics?.label).toBe('Browser: Chrome. Downloads: 27000.');
   });
 });

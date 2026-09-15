@@ -68,14 +68,13 @@ export const applyHoverParitySignals = (
   const dimensionSignal = `${markName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
 
   const row = node ? findFocusedRow(view, node, dimension, color) ?? null : null;
-  if (!row) {
-    view.signal(itemSignal, null);
-    view.signal(dimensionSignal, null);
-    return;
-  }
-
   const isLeaf = !dimensionOnly && node?.dimensionLevel == null;
-  // A division (whole stack) or an axis tick only matches the dimension-wide target — no single bar is hovered.
-  view.signal(itemSignal, isLeaf ? row : null);
-  view.signal(dimensionSignal, row);
+  try {
+    // A division (whole stack) or an axis tick only matches the dimension-wide target — no single bar is hovered.
+    view.signal(itemSignal, row && isLeaf ? row : null);
+    view.signal(dimensionSignal, row ?? null);
+  } catch {
+    // These signals only exist when the chart has hover interactions; a non-interactive (or rebuilding)
+    // view won't expose them — skip parity, keyboard focus still drives the focus ring.
+  }
 };
