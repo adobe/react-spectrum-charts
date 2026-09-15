@@ -13,7 +13,7 @@ import { RefObject, useEffect } from 'react';
 
 import { View } from 'vega';
 
-import { Datum, MarkBounds, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisRegionOptions, NavigableChartType } from './buildChartStructure';
 import { attachDataNavigator } from './dataNavigatorAdapter';
@@ -31,6 +31,12 @@ export interface NavigatorProps {
   metric?: string;
   /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
   order?: string;
+  /** Chart orientation. Swaps which arrow keys move between stacks vs. within a stack. Defaults to vertical. */
+  orientation?: Orientation;
+  /** Maps a data field to its axis/legend title — drives the focused leaf's accessible name and a clean focus tooltip for bars without a ChartInspect. */
+  fieldLabels?: Record<string, string>;
+  /** Whether the mark has a ChartInspect (keeps the full-datum tooltip); otherwise the focus tooltip lists only the `fieldLabels` fields. */
+  hasChartInspect?: boolean;
   /** The mark's own name (e.g. `bar0`) — drives its real hover signals and focus ring, so keyboard focus matches mouse hover exactly. */
   markName?: string;
   /** Optional chart title for the accessible description. */
@@ -49,6 +55,10 @@ export interface NavigatorProps {
   selectedDataName?: RefObject<string>;
   /** Lets the popover's own close handler know it doesn't need to clear hover-parity signals — keyboard focus still owns them. */
   keyboardPopoverComponentName?: RefObject<string | null>;
+  /** Fires the focused mark's `onClick` on Enter/Space, mirroring a real click. */
+  onNodeClick?: (datum: Datum) => void;
+  /** Whether the mark has a ChartPopover — so a click that focuses a node retains focus through the popover it opens. */
+  hasChartPopover?: boolean;
 }
 
 export const Navigator = ({
@@ -58,6 +68,9 @@ export const Navigator = ({
   color,
   metric,
   order,
+  orientation,
+  fieldLabels,
+  hasChartInspect,
   markName,
   title,
   xAxis,
@@ -68,6 +81,8 @@ export const Navigator = ({
   selectedDataBounds,
   selectedDataName,
   keyboardPopoverComponentName,
+  onNodeClick,
+  hasChartPopover,
 }: NavigatorProps): null => {
   useEffect(() => {
     const container = containerRef.current;
@@ -83,6 +98,9 @@ export const Navigator = ({
         color,
         metric,
         order,
+        orientation,
+        fieldLabels,
+        hasChartInspect,
         markName,
         title,
         xAxis,
@@ -92,6 +110,8 @@ export const Navigator = ({
         selectedDataBounds,
         selectedDataName,
         keyboardPopoverComponentName,
+        onNodeClick,
+        hasChartPopover,
       });
     attach();
     // Re-attach on the next frame so a fresh render reads a laid-out scenegraph (the first effect
@@ -105,6 +125,9 @@ export const Navigator = ({
     color,
     metric,
     order,
+    orientation,
+    fieldLabels,
+    hasChartInspect,
     markName,
     title,
     xAxis,
@@ -115,6 +138,8 @@ export const Navigator = ({
     selectedDataBounds,
     selectedDataName,
     keyboardPopoverComponentName,
+    onNodeClick,
+    hasChartPopover,
   ]);
 
   return null;

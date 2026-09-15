@@ -24,17 +24,18 @@ import {
   HOVERED_ITEM,
   MARK_ID,
 } from '@spectrum-charts/constants';
-import { Datum, MarkBounds, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils';
 import { clearAxisFocusRing, getVisibleAxisLabelColumns, setAxisFocusRing } from './axisLabelGeometry';
 import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, Row } from './barHoverParity';
-import { AxisRegionOptions, NavigableChartType, buildChartStructure } from './buildChartStructure';
+import { AxisRegionOptions, NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure';
 import { getNodeRegion, stripRegionPrefix } from './composeRegions';
 import {
   findFocusedBarSceneItem,
   findFocusedDimensionAreaSceneItem,
   hideFocusedItemTooltip,
+  showAxisLabelTooltip,
   showFocusedItemTooltip,
 } from './focusedItemTooltip';
 import './dataNavigator.css';
@@ -73,6 +74,12 @@ export interface AttachDataNavigatorOptions {
   metric?: string;
   /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
   order?: string;
+  /** Chart orientation. Swaps which arrow keys move between stacks vs. within a stack. Defaults to vertical. */
+  orientation?: Orientation;
+  /** Maps a data field to its axis/legend title. Drives the focused leaf's accessible name and, for bars without a ChartInspect, a clean focus tooltip listing only these fields. */
+  fieldLabels?: Record<string, string>;
+  /** Whether the mark has a ChartInspect. When true the focus tooltip keeps the full datum (ChartInspect renders it); when false it shows only the `fieldLabels` fields. */
+  hasChartInspect?: boolean;
   /** The mark's own name (e.g. `bar0`) — drives its real hover signals for mouse-hover parity. */
   markName?: string;
   /** Optional chart title for the accessible description. */
@@ -89,6 +96,10 @@ export interface AttachDataNavigatorOptions {
   selectedDataName?: RefObject<string>;
   /** Lets the popover's own close handler know it doesn't need to clear hover-parity signals — keyboard focus still owns them. */
   keyboardPopoverComponentName?: RefObject<string | null>;
+  /** Fires the focused mark's `onClick` (if it declares one) on Enter/Space, mirroring a real click, which runs onClick alongside opening any popover. */
+  onNodeClick?: (datum: Datum) => void;
+  /** Whether the mark has a ChartPopover — a click that focuses a node also opens it, so focus must be retained through the popover. */
+  hasChartPopover?: boolean;
 }
 
 interface FocusSignals {
@@ -98,6 +109,9 @@ interface FocusSignals {
 }
 
 const CLEARED_FOCUS: FocusSignals = { item: null, region: null, dimension: null };
+
+/** vega-tooltip's default DOM element id — it toggles the `visible` class on this single shared element. */
+const CHART_INSPECT_TOOLTIP_ID = 'vg-tooltip-element';
 
 /**
  * Maps the focused node to the chart's focus signals:
@@ -124,11 +138,35 @@ const nodeFocusSignals = (node: NodeObject): FocusSignals => {
 
 const applyFocusSignals = (view: View | undefined, { item, region, dimension }: FocusSignals): Promise<unknown> | undefined => {
   if (!view) return undefined;
+  try {
+    view.signal(FOCUSED_ITEM, item);
+    view.signal(FOCUSED_REGION, region);
+    view.signal(FOCUSED_DIMENSION, dimension);
+    return view.runAsync();
+  } catch {
+    // FOCUSED_* only exist with accessibleNavigation and can be absent on a rebuilding/finalized view.
+    return undefined;
+  }
+};
 
-  view.signal(FOCUSED_ITEM, item);
-  view.signal(FOCUSED_REGION, region);
-  view.signal(FOCUSED_DIMENSION, dimension);
-  return view.runAsync();
+/**
+ * Builds the focus tooltip value for a leaf. With a ChartInspect, the full datum is kept (its
+ * `formatTooltip` renders it). Without one, vega-tooltip's default table would dump every field, so
+ * instead emit only the dimension/color/metric fields, keyed by their axis/legend titles.
+ */
+const buildLeafTooltipValue = (
+  row: Row,
+  markName: string,
+  hasChartInspect: boolean,
+  fieldLabels: Record<string, string>,
+  fields: (string | undefined)[]
+): Row => {
+  if (hasChartInspect) return { ...row, [COMPONENT_NAME]: markName };
+  const clean: Row = {};
+  for (const field of fields) {
+    if (field && field in row) clean[fieldLabels[field] ?? field] = row[field];
+  }
+  return clean;
 };
 
 /** Shows the tooltip matching a focused node (leaf, stack, or none) — shared by the `focus` handler and the mouse-hover guard below. */
@@ -138,13 +176,16 @@ const showTooltipForFocusedNode = (
   node: NodeObject,
   markName: string,
   dimension: string,
-  color: string | undefined
+  color: string | undefined,
+  metric: string | undefined,
+  fieldLabels: Record<string, string>,
+  hasChartInspect: boolean
 ): void => {
   const signals = nodeFocusSignals(node);
   if (signals.item != null) {
-    // Leaf: same value shape its own tooltip encoding produces.
+    // Leaf: full datum for ChartInspect, otherwise a clean axis-titled subset.
     const row = findFocusedRow(view, node, dimension, color);
-    const value = row ? { ...row, [COMPONENT_NAME]: markName } : null;
+    const value = row ? buildLeafTooltipValue(row, markName, hasChartInspect, fieldLabels, [dimension, color, metric]) : null;
     showFocusedItemTooltip(container, view, `${markName}_focusRing`, value);
   } else if (signals.dimension != null) {
     // Division (whole stack): empty unless a dimensionArea-targeted ChartInspect exists, matching real hover.
@@ -159,6 +200,12 @@ const showTooltipForFocusedNode = (
 /** One guard handler per view (re-registering on every attach would leak stale closures/duplicate listeners). */
 const hoverGuardHandlers = new WeakMap<View, SignalListenerHandler>();
 
+/** Vega view event callback shape (`(event, item) => void`); the item is the scene item under the pointer, if any. */
+type ViewEventHandler = (event: unknown, item: { datum?: Row } | null | undefined) => void;
+
+/** One click-to-focus handler per view, so a re-attach replaces rather than stacks the listener. */
+const clickToFocusHandlers = new WeakMap<View, ViewEventHandler>();
+
 /**
  * Real mouse mouseout unconditionally nulls the shared `${markName}_hoveredItem` signals (see
  * `addHoveredItemSignal`), clobbering whatever the keyboard-focused item set. Reapplies that
@@ -170,6 +217,9 @@ const guardHoverParityAgainstMouseClear = (
   markName: string,
   dimension: string,
   color: string | undefined,
+  metric: string | undefined,
+  fieldLabels: Record<string, string>,
+  hasChartInspect: boolean,
   getFocusedNode: () => NodeObject | undefined
 ): void => {
   const itemSignal = `${markName}_${HOVERED_ITEM}`;
@@ -192,12 +242,17 @@ const guardHoverParityAgainstMouseClear = (
       return;
     }
     view.runAfter((v) => {
-      v.runAsync().then(() => showTooltipForFocusedNode(container, v, node, markName, dimension, color));
+      v.runAsync().then(() => showTooltipForFocusedNode(container, v, node, markName, dimension, color, metric, fieldLabels, hasChartInspect));
     });
   };
-  view.addSignalListener(itemSignal, handler);
-  view.addSignalListener(dimensionSignal, handler);
-  hoverGuardHandlers.set(view, handler);
+  try {
+    view.addSignalListener(itemSignal, handler);
+    view.addSignalListener(dimensionSignal, handler);
+    hoverGuardHandlers.set(view, handler);
+  } catch {
+    // The view can be mid-rebuild (e.g. orientation just changed) or finalized and not expose these
+    // signals yet; skip wiring rather than throwing — the next re-attach registers on the ready view.
+  }
 };
 
 /**
@@ -213,6 +268,9 @@ export const attachDataNavigator = ({
   color,
   metric,
   order,
+  orientation,
+  fieldLabels,
+  hasChartInspect,
   markName,
   title,
   xAxis,
@@ -222,6 +280,8 @@ export const attachDataNavigator = ({
   selectedDataBounds,
   selectedDataName,
   keyboardPopoverComponentName,
+  onNodeClick,
+  hasChartPopover,
 }: AttachDataNavigatorOptions): void => {
   // Restrict x-axis navigation to labels Vega actually painted, so overlap-hidden ticks are skipped
   // (their focus ring wouldn't render). Read from the live, laid-out scenegraph.
@@ -231,7 +291,7 @@ export const attachDataNavigator = ({
       ? { ...xAxis, visibleValues: getVisibleAxisLabelColumns(initialView, container, 'bottom').map((column) => column.value) }
       : xAxis;
 
-  const built = buildChartStructure({ chartType, data, dimension, color, metric, order, title, xAxis: xAxisRegion });
+  const built = buildChartStructure({ chartType, data, dimension, color, metric, order, orientation, title, fieldLabels, xAxis: xAxisRegion });
   if (!built) return;
   const { structure, entryPoint } = built;
 
@@ -251,7 +311,9 @@ export const attachDataNavigator = ({
 
   const view = getView();
   if (view && markName && dimension) {
-    guardHoverParityAgainstMouseClear(container, view, markName, dimension, color, () => (current ? structure.nodes[current] : undefined));
+    guardHoverParityAgainstMouseClear(container, view, markName, dimension, color, metric, fieldLabels ?? {}, hasChartInspect ?? false, () =>
+      current ? structure.nodes[current] : undefined
+    );
   }
 
   const rendering: DataNavigatorRenderer = dataNavigator.rendering({
@@ -338,6 +400,9 @@ export const attachDataNavigator = ({
     }
     setAxisFocusRing(focusRing, column.bounds);
     applyHoverParitySignals(view, { markName, dimension, color }, node, true);
+    // Show the label's tooltip on focus, matching mouse hover. React Spectrum's TooltipTrigger dismisses
+    // it on Escape (via onOpenChange in RscChart) without moving focus — WCAG 2.2 SC 1.4.13.
+    showAxisLabelTooltip(view, value);
   }
 
   /** Sets the shared context refs and triggers the popover through the same DOM-button-click a real click uses. */
@@ -355,15 +420,15 @@ export const attachDataNavigator = ({
     }
   }
 
-  /** Opens the focused leaf bar/segment's popover — same mechanism `handleMarkClick` uses on a real click. */
-  function openBarPopover(node: NodeObject) {
+  /** Activates the focused leaf bar/segment — opens its popover (if any) and fires its `onClick` (if any), the same pair a real click runs. */
+  function activateBar(node: NodeObject) {
     const view = getView();
     if (!view || !markName || !dimension) return;
     const row = findFocusedRow(view, node, dimension, color);
     if (!row) return;
     const sceneItem = findFocusedBarSceneItem(view, markName, row[MARK_ID]);
-    if (!sceneItem) return;
-    triggerBarPopover(row, sceneItem);
+    if (sceneItem) triggerBarPopover(row, sceneItem);
+    onNodeClick?.(row as unknown as Datum);
   }
 
   /** Opens the focused whole-stack (dimension area) popover — same one a real click on the stack's exposed padding already opens. */
@@ -401,18 +466,33 @@ export const attachDataNavigator = ({
     el.style.left = '0';
 
     el.addEventListener('keydown', (event) => {
-      // Space opens a popover, mirroring a real click on the bar/segment or the stack's padding —
-      // no equivalent at the chart-root level, and axis labels have no popover at all.
+      const isChartNode = getNodeRegion(node) !== 'xAxis';
+      // Enter/Space activate a focused leaf bar/segment — open its popover and fire its onClick, the
+      // same as a real click. Enter still drills into non-leaves (they own a 'child' edge); leaves don't.
+      if ((event.code === 'Enter' || event.code === 'Space') && isChartNode && node.dimensionLevel == null) {
+        event.preventDefault();
+        activateBar(node);
+        return;
+      }
+      // Space on a whole stack opens its dimension-area popover (Enter keeps drilling into segments);
+      // axis labels have no popover at all.
       if (event.code === 'Space') {
         event.preventDefault();
-        if (getNodeRegion(node) !== 'xAxis') {
-          if (node.dimensionLevel == null) {
-            openBarPopover(node);
-          } else if (node.dimensionLevel === 2) {
-            openStackPopover(node);
-          }
+        if (isChartNode && node.dimensionLevel === 2) {
+          openStackPopover(node);
         }
         return;
+      }
+      // WCAG 2.2 SC 1.4.13: content shown on focus must be dismissible without moving focus. The first
+      // Escape dismisses a visible inspect/focus tooltip and keeps focus here; a later Escape then drills
+      // out. (The React Spectrum axis-label tooltip dismisses itself on Escape via onOpenChange.)
+      if (event.code === 'Escape') {
+        const tooltipEl = document.getElementById(CHART_INSPECT_TOOLTIP_ID);
+        if (tooltipEl?.classList.contains('visible')) {
+          tooltipEl.classList.remove('visible');
+          event.preventDefault();
+          return;
+        }
       }
       const direction = input.keydownValidator(event);
       if (!direction) return;
@@ -449,7 +529,7 @@ export const attachDataNavigator = ({
             showFocusedItemTooltip(container, view, `${markName ?? 'bar0'}_focusRing`, null);
             return;
           }
-          showTooltipForFocusedNode(container, view, node, markName, dimension, color);
+          showTooltipForFocusedNode(container, view, node, markName, dimension, color, metric, fieldLabels ?? {}, hasChartInspect ?? false);
         });
     });
 
@@ -493,5 +573,36 @@ export const attachDataNavigator = ({
 
   if (rendering.exitElement) {
     rendering.exitElement.addEventListener('focus', clearFocusState);
+  }
+
+  // Clicking a mark moves keyboard focus to the matching node (hover never does). On mousedown, so the
+  // node is focused before a click opens its popover — popover focus-restore then returns here on close.
+  if (view) {
+    const previous = clickToFocusHandlers.get(view);
+    if (previous) view.removeEventListener('mousedown', previous);
+    const handleMousedown: ViewEventHandler = (event, item) => {
+      const datum = item?.datum;
+      if (!datum) return;
+      // Overlay marks (e.g. a voronoi cell) wrap the real datum one level deeper.
+      const nested = (datum as { datum?: Row }).datum;
+      const nodeId =
+        getNodeIdForDatum(chartType, datum as SimpleData, { dimension, color }) ??
+        (nested ? getNodeIdForDatum(chartType, nested as SimpleData, { dimension, color }) : undefined);
+      if (!nodeId || nodeId === current) return;
+      const node = structure.nodes[nodeId];
+      if (!node) return;
+      // Prevent the browser's default mousedown focus, which would otherwise move focus off the node we
+      // focus below (to the chart element or <body>) and immediately tear this focus state back down.
+      (event as { preventDefault?: () => void })?.preventDefault?.();
+      navigate(node);
+      // The ensuing click opens this mark's popover, pulling focus into it. Suppress the resulting
+      // focusout (as the keyboard path does) so the node survives for React Spectrum's focus-restore on close.
+      if (hasChartPopover) {
+        suppressNextLeave = true;
+        if (keyboardPopoverComponentName && markName) keyboardPopoverComponentName.current = markName;
+      }
+    };
+    view.addEventListener('mousedown', handleMousedown);
+    clickToFocusHandlers.set(view, handleMousedown);
   }
 };

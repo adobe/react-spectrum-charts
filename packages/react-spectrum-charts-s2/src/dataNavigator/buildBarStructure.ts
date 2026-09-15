@@ -12,9 +12,9 @@
 import dataNavigator, { NodeObject, Structure, StructureOptions } from 'data-navigator';
 
 import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/constants';
-import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { addSiblingKeySynonyms, baseNavigationRules } from './navigationRules';
+import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules';
 
 export interface BuildBarStructureOptions {
   /** The chart data (plain objects). */
@@ -27,8 +27,12 @@ export interface BuildBarStructureOptions {
   metric?: string;
   /** The stack sort field (matches the `order` prop on `<Bar>`) — determines which segment is reached first within a stack, mirroring Vega's own stack sort. */
   order?: string;
+  /** Chart orientation. Swaps which arrow keys move between stacks vs. within a stack, since a horizontal bar's stacks run top-to-bottom. Defaults to vertical. */
+  orientation?: Orientation;
   /** Already-localized label for the chart-root node, read verbatim from the consumer's `Chart.title` — this module never constructs narration strings itself. */
   title?: string;
+  /** Maps a data field to its display label (axis/legend title). When set, a leaf's accessible name lists only these fields, labeled by their titles, instead of every raw field. */
+  fieldLabels?: Record<string, string>;
 }
 
 /** Data field that carries the composite leaf id for multi-series (stacked/dodged) bars. */
@@ -42,14 +46,13 @@ export interface BarStructure {
   entryPoint: string | undefined;
 }
 
-/**
- * Vega's stack transform stacks the first-encountered row (per dimension group) at the bottom,
- * accumulating upward — the opposite of "reach the topmost segment first". Reorders each stack's own
- * rows (never the overall column order — a Map preserves first-seen key order) to put the visually
- * topmost segment first: sorted by `order` descending when provided (a higher value ends up higher in
- * Vega's own stack, confirmed against the real stack transform), or reversed encounter order otherwise.
- */
-const orderSegmentsTopFirst = (data: SimpleData[], dimension: string, order?: string): SimpleData[] => {
+/** Orders each stack's own segments (never the column order) so Enter reaches the reading-order-first one: the topmost segment for a vertical bar, the leftmost/origin segment for a horizontal bar. */
+const orderStackSegments = (
+  data: SimpleData[],
+  dimension: string,
+  orientation: Orientation,
+  order?: string
+): SimpleData[] => {
   const groups = new Map<unknown, SimpleData[]>();
   for (const row of data) {
     const key = row[dimension];
@@ -60,11 +63,71 @@ const orderSegmentsTopFirst = (data: SimpleData[], dimension: string, order?: st
       groups.set(key, [row]);
     }
   }
+  const isHorizontal = orientation === 'horizontal';
   const result: SimpleData[] = [];
   for (const rows of groups.values()) {
-    result.push(...(order ? [...rows].sort((a, b) => Number(b[order]) - Number(a[order])) : [...rows].reverse()));
+    let ordered: SimpleData[];
+    if (order) {
+      // Vega stacks a higher `order` further from the baseline; vertical reads from that (top) end, horizontal from the origin (left).
+      ordered = [...rows].sort((a, b) =>
+        isHorizontal ? Number(a[order]) - Number(b[order]) : Number(b[order]) - Number(a[order])
+      );
+    } else {
+      // No order field: Vega stacks the last-encountered row furthest out — reverse for vertical's top-first, keep as-is for horizontal's origin-first.
+      ordered = isHorizontal ? [...rows] : [...rows].reverse();
+    }
+    result.push(...ordered);
   }
   return result;
+};
+
+/** Links a segment to the matching-series segment in the neighbouring stack via a Left/Right sibling edge attached to both nodes. */
+const addSameSeriesStackEdge = (structure: Structure, a: string, b: string): void => {
+  const edgeId = `${a}<->${b}`;
+  if (a === b || structure.edges[edgeId]) return;
+  structure.edges[edgeId] = { source: a, target: b, navigationRules: ['left', 'right'] };
+  structure.nodes[a]?.edges.push(edgeId);
+  structure.nodes[b]?.edges.push(edgeId);
+};
+
+/** Rebinds segment-level Left/Right to cross into the same series in the adjacent stack, leaving Up/Down to move within the stack. */
+const wireSameSeriesStackNavigation = (
+  structure: Structure,
+  orderedData: SimpleData[],
+  dimension: string,
+  color: string
+): void => {
+  // Up/Down already cover within-stack movement (addSiblingKeySynonyms added them), so free Left/Right
+  // from the library's within-stack segment sibling edges for cross-stack use below.
+  for (const edge of Object.values(structure.edges)) {
+    const source = typeof edge.source === 'string' ? structure.nodes[edge.source] : undefined;
+    const target = typeof edge.target === 'string' ? structure.nodes[edge.target] : undefined;
+    const isSegmentSibling =
+      source?.dimensionLevel == null && !!source?.data && target?.dimensionLevel == null && !!target?.data;
+    if (isSegmentSibling && edge.navigationRules.includes('left')) {
+      edge.navigationRules = edge.navigationRules.filter((rule) => rule !== 'left' && rule !== 'right');
+    }
+  }
+
+  // Stacks in first-seen (column) order, each mapping its series value to that segment's node id.
+  const columns = new Map<unknown, Map<unknown, string>>();
+  for (const row of orderedData) {
+    const columnKey = row[dimension];
+    const seriesToSegment = columns.get(columnKey) ?? new Map<unknown, string>();
+    seriesToSegment.set(row[color], segmentId(columnKey, row[color]));
+    columns.set(columnKey, seriesToSegment);
+  }
+
+  // Adjacent columns only (no wraparound): connect each series to its counterpart one column over.
+  const columnList = [...columns.values()];
+  for (let index = 0; index < columnList.length - 1; index++) {
+    for (const [series, segId] of columnList[index]) {
+      const neighbourSegId = columnList[index + 1].get(series);
+      if (neighbourSegId && structure.nodes[segId] && structure.nodes[neighbourSegId]) {
+        addSameSeriesStackEdge(structure, segId, neighbourSegId);
+      }
+    }
+  }
 };
 
 export const buildBarStructure = ({
@@ -73,27 +136,30 @@ export const buildBarStructure = ({
   color,
   metric = DEFAULT_METRIC,
   order,
+  orientation = 'vertical',
   title,
+  fieldLabels = {},
 }: BuildBarStructureOptions): BarStructure => {
   const isMultiSeries = color !== undefined;
   const idKey = isMultiSeries ? SEGMENT_ID_KEY : dimension;
   // Excluded so a zero-value row never gets a leaf node here — it's invisible, so a mouse can't reach it either.
   const visibleData = data.filter((d) => Number(d[metric]) !== 0);
-  const orderedData = isMultiSeries ? orderSegmentsTopFirst(visibleData, dimension, order) : visibleData;
+  const orderedData = isMultiSeries ? orderStackSegments(visibleData, dimension, orientation, order) : visibleData;
   const structureData = color
     ? orderedData.map((d) => ({ ...d, [SEGMENT_ID_KEY]: segmentId(d[dimension], d[color]) }))
     : orderedData;
 
+  const navigationRules = getBaseNavigationRules(orientation);
   const structureOptions: StructureOptions = {
     data: structureData,
     idKey,
-    navigationRules: baseNavigationRules,
+    navigationRules,
     dimensions: {
       values: [
         {
           dimensionKey: dimension,
           type: 'categorical',
-          // 'terminal': no wraparound at the first/last stack, and segments stay within their own stack.
+          // 'terminal': no wraparound; segment Left/Right is rebound to cross stacks in wireSameSeriesStackNavigation.
           behavior: { extents: 'terminal' },
           operations: { compressSparseDivisions: !isMultiSeries },
           navigationRules: {
@@ -106,7 +172,13 @@ export const buildBarStructure = ({
   };
 
   const structure = dataNavigator.structure(structureOptions);
+  // Carry the oriented key mapping on the structure itself — the adapter reads it for keydown handling
+  // and the no-axis path returns this structure directly (composeRegions overrides for the axis path).
+  structure.navigationRules = navigationRules;
   addSiblingKeySynonyms(structure);
+  if (isMultiSeries && color) {
+    wireSameSeriesStackNavigation(structure, orderedData, dimension, color);
+  }
 
   let entryPoint: string | undefined;
   if (structure.dimensions) {
@@ -120,28 +192,32 @@ export const buildBarStructure = ({
   }
 
   // Every node rendered in keyboard mode needs an aria-label.
-  prepareNodeSemantics(structure);
+  prepareNodeSemantics(structure, fieldLabels);
 
   return { structure, entryPoint };
 };
 
-/** Fallback label for a node with no consumer-supplied semantics: a leaf's own `field: value` pairs, or the bare node id for a structural (dimension/division) node. */
-export const buildNodeLabel = (node: NodeObject): string => {
+/** Fallback label for a node with no consumer-supplied semantics: a leaf's `field: value` pairs (limited to `fieldLabels` and labeled by them when provided), or the bare node id for a structural (dimension/division) node. */
+export const buildNodeLabel = (node: NodeObject, fieldLabels: Record<string, string> = {}): string => {
   if (node.dimensionLevel != null) return String(node.id);
 
   const data = node.data as Record<string, unknown> | undefined;
   if (!data) return String(node.id);
 
-  const parts = Object.entries(data)
-    .filter(([key, value]) => !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function')
-    .map(([key, value]) => `${key}: ${value}`);
+  const labeledFields = Object.keys(fieldLabels);
+  const entries: [string, unknown][] = labeledFields.length
+    ? labeledFields.filter((field) => data[field] != null).map((field) => [fieldLabels[field], data[field]])
+    : Object.entries(data).filter(
+        ([key, value]) => !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function'
+      );
+  const parts = entries.map(([key, value]) => `${key}: ${value}`);
   return parts.length > 0 ? `${parts.join('. ')}.` : String(node.id);
 };
 
-export const prepareNodeSemantics = (structure: Structure): void => {
+export const prepareNodeSemantics = (structure: Structure, fieldLabels: Record<string, string> = {}): void => {
   for (const node of Object.values(structure.nodes)) {
     if (!node.semantics?.label) {
-      node.semantics = { ...node.semantics, label: buildNodeLabel(node) };
+      node.semantics = { ...node.semantics, label: buildNodeLabel(node, fieldLabels) };
     }
   }
 };

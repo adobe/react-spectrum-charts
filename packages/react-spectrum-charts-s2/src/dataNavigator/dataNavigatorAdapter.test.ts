@@ -20,11 +20,13 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   FOCUSED_REGION,
+  HOVERED_ITEM,
   MARK_ID,
 } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { getItemBounds, triggerPopover } from '../utils/markClickUtils';
+import { segmentId } from './buildBarStructure';
 import { NavigableChartType } from './buildChartStructure';
 import { attachDataNavigator } from './dataNavigatorAdapter';
 
@@ -71,6 +73,8 @@ let axisLabelItems: {
 // Handlers registered via addSignalListener, keyed by signal name — lets tests simulate a real
 // mouseout (which drives these signals directly, bypassing `signal()`) by invoking them directly.
 let signalListeners: Record<string, ((name: string, value: unknown) => void)[]>;
+// Handlers registered via view.addEventListener (view events like 'mousedown'), keyed by event type.
+let eventListeners: Record<string, ((event: unknown, item: unknown) => void)[]>;
 
 const mockView = () => {
   const values: Record<string, unknown> = {};
@@ -84,6 +88,7 @@ const mockView = () => {
   dimensionAreaItems = [];
   axisLabelItems = [];
   signalListeners = {};
+  eventListeners = {};
   tooltipCallback = jest.fn();
   const viewMock = {
     signal,
@@ -94,6 +99,12 @@ const mockView = () => {
     }),
     removeSignalListener: jest.fn((name: string, handler: (name: string, value: unknown) => void) => {
       signalListeners[name] = (signalListeners[name] ?? []).filter((h) => h !== handler);
+    }),
+    addEventListener: jest.fn((type: string, handler: (event: unknown, item: unknown) => void) => {
+      (eventListeners[type] ??= []).push(handler);
+    }),
+    removeEventListener: jest.fn((type: string, handler: (event: unknown, item: unknown) => void) => {
+      eventListeners[type] = (eventListeners[type] ?? []).filter((h) => h !== handler);
     }),
     origin: jest.fn().mockReturnValue([0, 0]),
     data: jest.fn().mockReturnValue([]),
@@ -128,6 +139,11 @@ const setAxisLabelItems = (values: string[], boundsFor: (index: number) => { x1:
 /** Simulates real mouse mouseout nulling a hover signal directly (bypassing `signal()`, same as Vega's own `on:` trigger would). */
 const simulateMouseoutClear = (signalName: string): void => {
   signalListeners[signalName]?.forEach((handler) => handler(signalName, null));
+};
+
+/** Fires a Vega view event (e.g. 'mousedown') to registered view listeners, with the scene item under the pointer. */
+const fireViewEvent = (type: string, item: unknown): void => {
+  eventListeners[type]?.forEach((handler) => handler({ type }, item));
 };
 
 /** Populates the fake `bar0` rect mark's rendered items for `findFocusedBarSceneItem` to match against. */
@@ -223,6 +239,26 @@ describe('attachDataNavigator()', () => {
     expect(() => entryButton().click()).not.toThrow();
   });
 
+  test('does not throw when the view is missing its signals (mid-rebuild, e.g. orientation change)', () => {
+    // Real Vega throws "Unrecognized signal name" from addSignalListener on a rebuilding/finalized view.
+    const rebuildingView = {
+      signal: jest.fn(),
+      addSignalListener: jest.fn((name: string) => {
+        if (name.includes(HOVERED_ITEM)) throw new Error(`Unrecognized signal name: "${name}"`);
+      }),
+      removeSignalListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      runAsync: jest.fn().mockResolvedValue(undefined),
+      runAfter: jest.fn(),
+      data: jest.fn().mockReturnValue([]),
+      origin: jest.fn().mockReturnValue([0, 0]),
+      scenegraph: () => ({ root: { items: [] } }),
+    } as unknown as View;
+
+    expect(() => attach({ markName: 'bar0', getView: () => rebuildingView })).not.toThrow();
+  });
+
   test('drilling in and arrowing focuses individual bars', () => {
     attach();
     entryButton().click();
@@ -246,6 +282,30 @@ describe('attachDataNavigator()', () => {
     await Promise.resolve(); // flush the .then() chained after view.runAsync()
 
     expect(lastTooltipValue()).not.toBeUndefined();
+  });
+
+  test('shows a clean axis-titled tooltip (only dimension + metric) for a bar without a ChartInspect', async () => {
+    (view.data as jest.Mock).mockReturnValue(data);
+    attach({ markName: 'bar0', metric: 'downloads', fieldLabels: { browser: 'Browser', downloads: 'Downloads' }, hasChartInspect: false });
+    setRingBounds({ x1: 10, y1: 20, x2: 30, y2: 40 });
+    entryButton().click();
+    fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+    await Promise.resolve();
+
+    expect(lastTooltipValue()).toEqual({ Browser: 'Chrome', Downloads: 27000 });
+  });
+
+  test('keeps the full-datum tooltip (for ChartInspect to render) when the bar has a ChartInspect', async () => {
+    (view.data as jest.Mock).mockReturnValue(data);
+    attach({ markName: 'bar0', metric: 'downloads', fieldLabels: { browser: 'Browser', downloads: 'Downloads' }, hasChartInspect: true });
+    setRingBounds({ x1: 10, y1: 20, x2: 30, y2: 40 });
+    entryButton().click();
+    fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+    await Promise.resolve();
+
+    const value = lastTooltipValue() as Record<string, unknown>;
+    expect(value).toMatchObject({ browser: 'Chrome', downloads: 27000 });
+    expect(value[COMPONENT_NAME]).toBe('bar0');
   });
 
   test('does not trigger the tooltip while focused on the chart root (not a leaf)', async () => {
@@ -401,6 +461,63 @@ describe('attachDataNavigator()', () => {
       expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_ITEM && v !== null)).toBe(true);
     });
 
+    // No `order` field, so Vega stacks the last-listed row on top — Enter reaches Chrome's Mac segment first.
+    const drillToTopSegment = () => {
+      attachStacked();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // root -> Chrome stack
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // stack -> Chrome|Mac (top segment)
+      expect(signal.mock.calls.find(([n, v]) => n === FOCUSED_ITEM && v !== null)?.[1]).toBe(segmentId('Chrome', 'Mac'));
+    };
+
+    test('ArrowRight from a segment moves to the same series in the adjacent stack', () => {
+      drillToTopSegment();
+      signal.mockClear();
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+      expect(signal.mock.calls.find(([n, v]) => n === FOCUSED_ITEM && v !== null)?.[1]).toBe(segmentId('Firefox', 'Mac'));
+    });
+
+    test('ArrowDown from a segment moves within the stack to the next segment', () => {
+      drillToTopSegment();
+      signal.mockClear();
+      fireEvent.keyDown(focused(), { key: 'ArrowDown', code: 'ArrowDown' });
+      expect(signal.mock.calls.find(([n, v]) => n === FOCUSED_ITEM && v !== null)?.[1]).toBe(segmentId('Chrome', 'Windows'));
+    });
+
+    describe('horizontal orientation rotates the arrow-key axes', () => {
+      // No order field, so segments keep data order — Enter reaches Chrome's origin (leftmost) segment, Windows.
+      const drillToOriginSegmentHorizontal = () => {
+        attachDataNavigator({
+          container,
+          chartType: 'bar',
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          orientation: 'horizontal',
+          chartId: 'stacked-horizontal-chart',
+          getView: () => view,
+        });
+        entryButton().click();
+        fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // root -> Chrome stack
+        fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // stack -> Chrome|Windows (origin segment)
+        expect(signal.mock.calls.find(([n, v]) => n === FOCUSED_ITEM && v !== null)?.[1]).toBe(segmentId('Chrome', 'Windows'));
+      };
+
+      test('ArrowDown moves to the same series in the adjacent stack (stacks run top-to-bottom)', () => {
+        drillToOriginSegmentHorizontal();
+        signal.mockClear();
+        fireEvent.keyDown(focused(), { key: 'ArrowDown', code: 'ArrowDown' });
+        expect(signal.mock.calls.find(([n, v]) => n === FOCUSED_ITEM && v !== null)?.[1]).toBe(segmentId('Firefox', 'Windows'));
+      });
+
+      test('ArrowRight moves within the stack to the next segment (segments run left-to-right)', () => {
+        drillToOriginSegmentHorizontal();
+        signal.mockClear();
+        fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+        expect(signal.mock.calls.find(([n, v]) => n === FOCUSED_ITEM && v !== null)?.[1]).toBe(segmentId('Chrome', 'Mac'));
+      });
+    });
+
     test('drilling into a stack (not yet a segment) triggers the dimension-area tooltip', async () => {
       const stackRows = [
         { browser: 'Chrome', min_value1: 0, max_value1: 27000 },
@@ -482,6 +599,46 @@ describe('attachDataNavigator()', () => {
           [COMPONENT_NAME]: `bar0_${DIMENSION_HOVER_AREA}`,
         });
       });
+    });
+  });
+
+  describe('Escape dismisses a visible focus tooltip before drilling out (WCAG 2.2 SC 1.4.13)', () => {
+    let tooltipEl: HTMLElement;
+    beforeEach(() => {
+      tooltipEl = document.createElement('div');
+      tooltipEl.id = 'vg-tooltip-element';
+      document.body.appendChild(tooltipEl);
+    });
+    afterEach(() => tooltipEl.remove());
+
+    const drillToBar = () => {
+      (view.data as jest.Mock).mockReturnValue(data);
+      attach({ markName: 'bar0' });
+      setRingBounds({ x1: 10, y1: 20, x2: 30, y2: 40 });
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // root -> first bar (a leaf)
+    };
+
+    test('the first Escape dismisses the tooltip and keeps focus (does not drill out)', () => {
+      drillToBar();
+      tooltipEl.classList.add('visible');
+      signal.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' });
+
+      expect(tooltipEl.classList.contains('visible')).toBe(false);
+      expect(signaledWith(FOCUSED_REGION, 'chart')).toBe(false); // focus stayed on the bar
+    });
+
+    test('a later Escape (tooltip already dismissed) drills out to the parent', () => {
+      drillToBar();
+      tooltipEl.classList.add('visible');
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' }); // dismiss the tooltip
+      signal.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' }); // now drill out
+
+      expect(signaledWith(FOCUSED_REGION, 'chart')).toBe(true);
     });
   });
 
@@ -662,6 +819,29 @@ describe('attachDataNavigator()', () => {
       expect(triggerPopover).toHaveBeenCalledWith('popover-chart', 'bar0', 'click');
     });
 
+    test('Enter also opens the popover on a focused leaf bar (not only Space)', () => {
+      attachWithPopoverRefs();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // root -> first bar (a leaf)
+      (triggerPopover as jest.Mock).mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // activate the leaf
+
+      expect(triggerPopover).toHaveBeenCalledWith('popover-chart', 'bar0', 'click');
+    });
+
+    test('fires the mark onClick with the focused row on activation (Enter)', () => {
+      const onNodeClick = jest.fn();
+      attachWithPopoverRefs({ onNodeClick });
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // root -> first bar
+      onNodeClick.mockClear();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // activate the leaf
+
+      expect(onNodeClick).toHaveBeenCalledWith(expect.objectContaining({ browser: 'Chrome', downloads: 27000 }));
+    });
+
     test('leaves FOCUSED_ITEM untouched — getBarFocusRing hides the ring via SELECTED_ITEM matching instead', () => {
       attachWithPopoverRefs();
       entryButton().click();
@@ -817,6 +997,74 @@ describe('attachDataNavigator()', () => {
     });
   });
 
+  describe('clicking a mark moves keyboard focus to that node (mousedown)', () => {
+    test('focuses the clicked bar, entering the navigator without the entry button', () => {
+      (view.data as jest.Mock).mockReturnValue(data);
+      attach({ markName: 'bar0' });
+
+      fireViewEvent('mousedown', { datum: { browser: 'Firefox' } });
+
+      expect(signaledWith(FOCUSED_ITEM, 'Firefox')).toBe(true);
+    });
+
+    test('does nothing when the clicked datum has no matching node', () => {
+      attach({ markName: 'bar0' });
+
+      fireViewEvent('mousedown', { datum: { browser: 'Nonexistent' } });
+
+      expect(focused()).toBeFalsy();
+    });
+
+    test('unwraps an overlay mark that nests the real datum one level deeper', () => {
+      (view.data as jest.Mock).mockReturnValue(data);
+      attach({ markName: 'bar0' });
+
+      fireViewEvent('mousedown', { datum: { datum: { browser: 'Safari' } } });
+
+      expect(signaledWith(FOCUSED_ITEM, 'Safari')).toBe(true);
+    });
+
+    test('ignores a click on the already-focused node', () => {
+      (view.data as jest.Mock).mockReturnValue(data);
+      attach({ markName: 'bar0' });
+      fireViewEvent('mousedown', { datum: { browser: 'Chrome' } });
+      signal.mockClear();
+
+      fireViewEvent('mousedown', { datum: { browser: 'Chrome' } });
+
+      expect(signal.mock.calls.some(([n]) => n === FOCUSED_ITEM)).toBe(false);
+    });
+
+    test('a click on a popover mark retains focus through the popover it opens', () => {
+      (view.data as jest.Mock).mockReturnValue(data);
+      attach({ markName: 'bar0', hasChartPopover: true });
+      fireViewEvent('mousedown', { datum: { browser: 'Chrome' } }); // focuses Chrome, arms suppressNextLeave
+      // The ensuing click opens the popover, moving focus into it (focusout to a target outside the container).
+      fireEvent.focusOut(focused(), { relatedTarget: document.body });
+
+      expect(focused()).not.toBeNull(); // node kept for React Spectrum's focus-restore on close
+      expect(signaledWith(FOCUSED_ITEM, null)).toBe(false);
+    });
+
+    test('focuses the clicked segment in a stacked bar', () => {
+      (view.data as jest.Mock).mockReturnValue(stackedData);
+      attachDataNavigator({
+        container,
+        chartType: 'bar',
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        markName: 'bar0',
+        chartId: 'click-stacked-chart',
+        getView: () => view,
+      });
+
+      fireViewEvent('mousedown', { datum: { browser: 'Firefox', os: 'Mac' } });
+
+      expect(signaledWith(FOCUSED_ITEM, segmentId('Firefox', 'Mac'))).toBe(true);
+    });
+  });
+
   describe('x-axis region', () => {
     const focusRing = (): HTMLElement => container.querySelector('.dn-axis-focus-ring') as HTMLElement;
 
@@ -886,14 +1134,15 @@ describe('attachDataNavigator()', () => {
       expect(signal.mock.calls.some(([n, v]) => n === 'bar0_hoveredItem' && v != null)).toBe(false);
     });
 
-    test('a focused tick label does not show the chart tooltip', async () => {
+    test('a focused tick label shows its axis-label tooltip through the shared tooltip callback', async () => {
       enterAxisRegion();
       tooltipCallback.mockClear();
 
-      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // axis root -> first tick ('Chrome')
       await Promise.resolve();
 
-      expect(lastTooltipValue()).toBeUndefined();
+      // Routed through the same callback mouse hover uses, with the tick's own value (not a bar datum).
+      expect(tooltipCallback).toHaveBeenCalledWith(undefined, undefined, expect.anything(), 'Chrome');
     });
 
     test('a focused tick label ring matches its own column, not the whole axis', () => {
@@ -912,6 +1161,8 @@ describe('attachDataNavigator()', () => {
       expect(triggerPopover).not.toHaveBeenCalled();
     });
 
+    // The axis-label tooltip's own Escape-to-dismiss is React Spectrum's (via onOpenChange in RscChart),
+    // not the adapter's, so it isn't exercised here — this covers the adapter's drill-out on Escape.
     test('Escape from a tick label returns to the axis root ring', () => {
       enterAxisRegion();
       fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // to the first tick (a narrower ring)

@@ -11,9 +11,36 @@
  */
 import { Structure } from 'data-navigator';
 
-import { addSiblingKeySynonyms } from './navigationRules';
+import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules';
 
 const structureWith = (edges: Structure['edges']): Structure => ({ nodes: {}, edges });
+
+describe('getBaseNavigationRules()', () => {
+  test('vertical (default) maps each arrow key to its literal direction', () => {
+    const rules = getBaseNavigationRules('vertical');
+    expect(rules.left?.key).toBe('ArrowLeft');
+    expect(rules.right?.key).toBe('ArrowRight');
+    expect(rules.up?.key).toBe('ArrowUp');
+    expect(rules.down?.key).toBe('ArrowDown');
+    expect(getBaseNavigationRules().left?.key).toBe('ArrowLeft');
+  });
+
+  test('horizontal drives the stack axis (left/right) with Up/Down and the segment axis (up/down) with Left/Right in reading order', () => {
+    const rules = getBaseNavigationRules('horizontal');
+    expect(rules.left?.key).toBe('ArrowUp');
+    expect(rules.right?.key).toBe('ArrowDown');
+    expect(rules.up?.key).toBe('ArrowLeft');
+    expect(rules.down?.key).toBe('ArrowRight');
+  });
+
+  test('keeps Enter/Escape as drill in/out in both orientations', () => {
+    for (const orientation of ['vertical', 'horizontal'] as const) {
+      const rules = getBaseNavigationRules(orientation);
+      expect(rules.child?.key).toBe('Enter');
+      expect(rules.parent?.key).toBe('Escape');
+    }
+  });
+});
 
 describe('addSiblingKeySynonyms()', () => {
   test('adds up alongside left and down alongside right', () => {

@@ -13,6 +13,7 @@ import { View } from 'vega';
 
 import { DIMENSION_HOVER_AREA, MARK_ID } from '@spectrum-charts/constants';
 
+import { findAxisLabelItem } from './axisLabelGeometry';
 import { Row } from './barHoverParity';
 
 interface Bounds {
@@ -100,6 +101,15 @@ const absoluteBounds = (item: SceneNode): Bounds | undefined => {
 export const hideFocusedItemTooltip = (view: View | undefined): void => {
   const tooltipCallback = view && getRegisteredTooltipCallback(view);
   tooltipCallback?.(undefined, undefined, undefined, null);
+};
+
+/** Shows the React Spectrum axis-label tooltip for a focused tick by routing its real scene item through the registered tooltip callback (the same path mouse hover uses, so positioning matches). Returns whether a tooltip was shown. */
+export const showAxisLabelTooltip = (view: View, value: string): boolean => {
+  const tooltipCallback = getRegisteredTooltipCallback(view);
+  const item = findAxisLabelItem(view, value);
+  if (!tooltipCallback || !item) return false;
+  tooltipCallback(undefined, undefined, item, value);
+  return true;
 };
 
 /**

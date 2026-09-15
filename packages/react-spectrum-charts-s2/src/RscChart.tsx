@@ -14,23 +14,26 @@ import { CSSProperties, RefObject, Ref, useCallback, useEffect, useMemo, useRef,
 import { Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
 import { Focusable } from 'react-aria-components';
 import { View as VegaView } from 'vega';
-import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
-import { ChartHandle, Datum, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
+import { COMPONENT_NAME, DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
+import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
 import { Axis } from './components/Axis';
+import { ChartInspect } from './components/ChartInspect';
+import { Legend } from './components/Legend';
 import { AxisRegionOptions } from './dataNavigator/buildChartStructure';
 import { Navigator } from './dataNavigator/Navigator';
 import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import { useChartInteractions } from './hooks/useChartInteractions';
+import useMarkOnClickDetails from './hooks/useMarkOnClickDetails';
 import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import { RscChartProps } from './types';
-import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils';
+import { clearHoverSignals, sanitizeMarkChildren, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils';
 
 interface ChartDialogProps {
   targetElement: RefObject<HTMLElement | null>;
@@ -82,6 +85,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     selectedDataName,
     keyboardPopoverComponentName,
     hoveredAxisLabel,
+    setHoveredAxisLabel,
   } = useChartContext();
   const axisLabelTooltipAnchorRef = useRef<HTMLDivElement>(null);
   // Retained through the Tooltip's exit animation so it doesn't fade out empty.
@@ -153,10 +157,60 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const navChartType =
     navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
   const navFields = navChild?.props as
-    | { dimension?: string; metric?: string; color?: unknown; order?: string; name?: string }
+    | { dimension?: string; metric?: string; color?: unknown; order?: string; name?: string; orientation?: Orientation }
     | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
+  const navOrientation: Orientation = navFields?.orientation === 'horizontal' ? 'horizontal' : 'vertical';
   const markName = navFields?.name ?? (navChartType ? `${navChartType}0` : undefined);
+
+  // Axis/legend titles keyed by the field they represent, so a focused bar's accessible name and
+  // (for bars without a ChartInspect) its focus tooltip read as the chart's own titles rather than
+  // raw field names or every data column. Insertion order (dimension, series, metric) sets read order.
+  const legendTitle = (
+    sanitizedChildren.find((child) => 'displayName' in child.type && child.type.displayName === Legend.displayName)?.props as
+      | { title?: string }
+      | undefined
+  )?.title;
+  const fieldLabels = useMemo(() => {
+    const titleAt = (position: 'bottom' | 'left') =>
+      (
+        sanitizedChildren.find(
+          (child) =>
+            'displayName' in child.type &&
+            child.type.displayName === Axis.displayName &&
+            (child.props as { position?: string }).position === position
+        )?.props as { title?: string } | undefined
+      )?.title;
+    const isHorizontal = navOrientation === 'horizontal';
+    const dimensionTitle = titleAt(isHorizontal ? 'left' : 'bottom');
+    const metricTitle = titleAt(isHorizontal ? 'bottom' : 'left');
+    const labels: Record<string, string> = {};
+    if (dimensionTitle) labels[navFields?.dimension ?? DEFAULT_CATEGORICAL_DIMENSION] = dimensionTitle;
+    if (navColor && legendTitle) labels[navColor] = legendTitle;
+    if (metricTitle) labels[navFields?.metric ?? DEFAULT_METRIC] = metricTitle;
+    return labels;
+  }, [sanitizedChildren, navOrientation, navFields?.dimension, navFields?.metric, navColor, legendTitle]);
+
+  const hasChartInspect = useMemo(
+    () =>
+      sanitizeMarkChildren((navChild?.props as { children?: unknown } | undefined)?.children).some(
+        (child) => 'displayName' in child.type && child.type.displayName === ChartInspect.displayName
+      ),
+    [navChild]
+  );
+
+  // Fires the focused mark's own onClick on Enter/Space, the same as a real click (which runs onClick
+  // alongside opening any popover). Stable identity so toggling the popover doesn't rebuild the navigator.
+  const markOnClickDetails = useMarkOnClickDetails(sanitizedChildren);
+  const onNavNodeClick = useCallback(
+    (datum: Datum) => {
+      markOnClickDetails.find((detail) => detail.markName === markName)?.onClick?.(datum);
+    },
+    [markOnClickDetails, markName]
+  );
+  // Whether the nav mark has a ChartPopover — a click that focuses a node will also open it, so the
+  // navigator must retain focus through the popover (see suppressNextLeave in the adapter).
+  const navMarkHasPopover = useMemo(() => popovers.some((popover) => popover.name === markName), [popovers, markName]);
 
   // Bottom (x) axis region: makes the axis labels keyboard-navigable, one level above chart content.
   const xAxisChild = sanitizedChildren.find(
@@ -168,12 +222,14 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   // Memoized: Navigator's effect depends on this object by reference, and RscChart re-renders on
   // every popover open/close (isPopoverOpen), which would otherwise tear down and rebuild the whole
   // navigator mid-interaction, discarding its in-progress keyboard-focus state.
+  // Only for vertical bars: the bottom axis carries the categorical dimension. A horizontal bar's
+  // categorical axis is the left axis, so its bottom-axis region would not be the dimension one.
   const xAxis: AxisRegionOptions | undefined = useMemo(
     () =>
-      xAxisChild && navFields?.dimension
+      xAxisChild && navFields?.dimension && navOrientation === 'vertical'
         ? { field: navFields.dimension, type: 'categorical', title: (xAxisChild.props as { title?: string }).title }
         : undefined,
-    [xAxisChild, navFields?.dimension]
+    [xAxisChild, navFields?.dimension, navOrientation]
   );
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
@@ -186,7 +242,14 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         ref={popoverAnchorRef}
         style={targetStyle}
       />
-      <TooltipTrigger isOpen={Boolean(hoveredAxisLabel)}>
+      {/* onOpenChange lets React Spectrum dismiss the tooltip on Escape (WCAG 2.2 SC 1.4.13) while keyboard
+          focus stays on the axis tick; a later Escape then drills out of the navigator. */}
+      <TooltipTrigger
+        isOpen={Boolean(hoveredAxisLabel)}
+        onOpenChange={(open) => {
+          if (!open) setHoveredAxisLabel(null);
+        }}
+      >
         {/* Focusable forwards TooltipTrigger's FocusableContext ref onto our plain div. */}
         <Focusable>
           <div
@@ -222,6 +285,9 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             color={navColor}
             metric={navFields?.metric}
             order={navFields?.order}
+            orientation={navOrientation}
+            fieldLabels={fieldLabels}
+            hasChartInspect={hasChartInspect}
             markName={markName}
             title={title}
             xAxis={xAxis}
@@ -232,6 +298,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             selectedDataBounds={selectedDataBounds}
             selectedDataName={selectedDataName}
             keyboardPopoverComponentName={keyboardPopoverComponentName}
+            onNodeClick={onNavNodeClick}
+            hasChartPopover={navMarkHasPopover}
           />
         )}
       </div>
