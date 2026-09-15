@@ -51,6 +51,7 @@ import {
   Combo,
   Donut,
   DonutSummary,
+  Sankey,
   Scatter,
   ScatterAnnotation,
   ScatterPath,
@@ -76,6 +77,7 @@ import {
   LinePointAnnotationProps,
   LineProps,
   ReferenceLineProps,
+  SankeyProps,
   ScatterAnnotationProps,
   ScatterPathProps,
   ScatterProps,
@@ -95,6 +97,7 @@ import { getComboOptions } from './comboAdapter';
 import { getDonutOptions } from './donutAdapter';
 import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
+import { getSankeyOptions } from './sankeyAdapter';
 import { getScatterOptions } from './scatterAdapter';
 import { getTrendlineOptions } from './trendlineAdapter';
 
@@ -216,6 +219,10 @@ export const childrenToOptions = (
 
       case ReferenceLine.displayName:
         referenceLines.push(child.props as ReferenceLineProps);
+        break;
+
+      case Sankey.displayName:
+        marks.push(getSankeyOptions(child.props as SankeyProps));
         break;
 
       case Scatter.displayName:

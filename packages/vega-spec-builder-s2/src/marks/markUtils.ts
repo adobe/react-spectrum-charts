@@ -20,6 +20,7 @@ import {
   ProductionRule,
   SignalRef,
   SymbolMark,
+  TextMark,
 } from 'vega';
 
 import {
@@ -65,6 +66,7 @@ import {
   MetricRangeOptions,
   OpacityFacet,
   ProductionRuleTests,
+  SankeySpecOptions,
   ScaleType,
   ScatterSpecOptions,
   SymbolSizeFacet,
@@ -264,6 +266,39 @@ export const getStrokeDashProductionRule = (lineType: LineTypeFacet | DualFacet)
 export const getDirectLabelFontSizeProductionRule = (fontSize?: number): { signal: string } | { value: number } =>
   fontSize == null ? { signal: CHART_SIZE_FONT_SIZE } : { value: fontSize };
 
+/**
+ * Builds a background-halo + foreground text mark pair, deduping the shared mark envelope.
+ * @param name foreground mark name; background mark is named `${name}_bg`
+ * @param dataSource `from.data` shared by both marks
+ * @param background enter/update encode for the halo mark
+ * @param foreground enter/update encode for the foreground mark
+ * @returns [backgroundMark, foregroundMark]
+ */
+export const getDirectLabelTextMarkPair = (
+  name: string,
+  dataSource: string,
+  background: { enter: EncodeEntry; update?: EncodeEntry },
+  foreground: { enter: EncodeEntry; update?: EncodeEntry }
+): [TextMark, TextMark] => {
+  const backgroundMark: TextMark = {
+    name: `${name}_bg`,
+    type: 'text',
+    from: { data: dataSource },
+    interactive: false,
+    encode: background,
+  };
+
+  const foregroundMark: TextMark = {
+    name,
+    type: 'text',
+    from: { data: dataSource },
+    interactive: false,
+    encode: foreground,
+  };
+
+  return [backgroundMark, foregroundMark];
+};
+
 export const getHighlightOpacityValue = (
   opacityValue: { signal: string } | { value: number } = DEFAULT_OPACITY_RULE
 ): NumericValueRef => {
@@ -432,7 +467,7 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
  * @returns
  */
 export const getMarkOpacity = (
-  options: BarSpecOptions | DonutSpecOptions | VennSpecOptions
+  options: BarSpecOptions | DonutSpecOptions | SankeySpecOptions | VennSpecOptions
 ): ({ test?: string } & NumericValueRef)[] => {
   const { highlightedItem, idKey, name: markName } = options;
   const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
