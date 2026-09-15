@@ -131,7 +131,7 @@ treatments for emphasized and de-emphasized segments:
             <td>labelMode</td>
             <td>'emphasized' | 'deemphasized'</td>
             <td>–</td>
-            <td>Selects which emphasized segment group receives this label. Omit it for the legacy single-label behavior.</td>
+            <td>Selects which emphasized segment group receives this label. Omit for uniform single-label behavior.</td>
         </tr>
         <tr>
             <td>showValueRow</td>
