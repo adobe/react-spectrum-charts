@@ -734,17 +734,17 @@ const getRichSegmentLabelWidthExprs = (
         )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}ValueFontSize)`
       : '0';
   const detailParts = showValueRow ? getRichSegmentLabelDetailTextParts(options) : undefined;
-  const detailWidthExpr = detailParts
-    ? `getLabelWidth(${getTextRuleExpr(
-        detailParts.value
-      )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}DetailFontSize)${
-        detailParts.suffix
-          ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + getLabelWidth(${getTextRuleExpr(
-              detailParts.suffix
-            )}, ${DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT}, ${labelName}DetailFontSize)`
-          : ''
-      }`
-    : '0';
+  let detailWidthExpr = '0';
+  if (detailParts) {
+    const suffixWidthExpr = detailParts.suffix
+      ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + getLabelWidth(${getTextRuleExpr(
+          detailParts.suffix
+        )}, ${DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT}, ${labelName}DetailFontSize)`
+      : '';
+    detailWidthExpr = `getLabelWidth(${getTextRuleExpr(
+      detailParts.value
+    )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}DetailFontSize)${suffixWidthExpr}`;
+  }
   const widerWidthExpr = `max(${nameWidthExpr}, max(${valueWidthExpr}, ${detailWidthExpr}))`;
   const halfWidthField = getCollisionHalfWidthField(labelName);
   const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
@@ -763,6 +763,39 @@ const getRichSegmentLabelLimitExpr = (options: SegmentLabelSpecOptions, extraRes
   return `datum['${hemisphereField}'] === 'right' || (${widerWidthExpr}) <= (${maxReachExpr}) ? 0 : (${cappedWidthExpr}) - (${extraReservedWidthExpr})`;
 };
 
+const getRichSegmentLabelBottomDetailDy = (
+  showValueRow: boolean,
+  hasValue: boolean,
+  nameSize: string,
+  valueSize: string,
+  scaleExpr: string
+): string | undefined => {
+  if (!showValueRow) return;
+  if (hasValue) {
+    return `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr})`;
+  }
+  return `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`;
+};
+
+const getRichSegmentLabelTopRowDy = (
+  showValueRow: boolean,
+  hasValue: boolean,
+  valueSize: string,
+  detailSize: string,
+  scaleExpr: string
+): { name: string; value?: string } => {
+  if (showValueRow) {
+    return {
+      name: `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`,
+      value: hasValue ? `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr}))` : undefined,
+    };
+  }
+  return {
+    name: hasValue ? `-((${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))` : '0',
+    value: hasValue ? '0' : undefined,
+  };
+};
+
 /**
  * Gets row-stacking dy offsets for rich SegmentLabel name, value, and detail rows
  * @param options
@@ -776,45 +809,30 @@ const getRichSegmentLabelRowDy = (
   const nameSize = `${labelName}NameFontSize`;
   const valueSize = `${labelName}ValueFontSize`;
   const detailSize = `${labelName}DetailFontSize`;
-  const valueHeightExpr = value || percent ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : '';
+  const hasValue = value || percent;
+  const valueHeightExpr = hasValue ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : '';
   const detailHeightExpr = showValueRow ? ` + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${detailSize}` : '';
   const totalHeightExpr = `${nameSize}${valueHeightExpr}${detailHeightExpr}`;
   const maxHeightExpr = `${getDonutOuterRadiusExpr(donutOptions)} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}`;
   const scaleExpr = `min(1, (${maxHeightExpr}) / (${totalHeightExpr}))`;
 
-  const bottomValueDy =
-    value || percent ? `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})` : undefined;
-  let bottomDetailDy: string | undefined;
-  if (!showValueRow) {
-    bottomDetailDy = undefined;
-  } else if (value || percent) {
-    bottomDetailDy = `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr})`;
-  } else {
-    bottomDetailDy = `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`;
-  }
-
+  const bottomValueDy = hasValue
+    ? `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`
+    : undefined;
+  const bottomDetailDy = getRichSegmentLabelBottomDetailDy(showValueRow, hasValue, nameSize, valueSize, scaleExpr);
   const topDetailDy = showValueRow ? '0' : undefined;
-  let topValueDy: string | undefined;
-  if (!value && !percent) {
-    topValueDy = undefined;
-  } else if (showValueRow) {
-    topValueDy = `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr}))`;
-  } else {
-    topValueDy = '0';
-  }
-  let topNameDy: string;
-  if (showValueRow) {
-    topNameDy = `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`;
-  } else if (value || percent) {
-    topNameDy = `-((${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`;
-  } else {
-    topNameDy = '0';
-  }
+  const { name: topNameDy, value: topValueDy } = getRichSegmentLabelTopRowDy(
+    showValueRow,
+    hasValue,
+    valueSize,
+    detailSize,
+    scaleExpr
+  );
 
   const isTopHalfExpr = getIsTopHalfExpr(labelName);
   return {
     name: `${isTopHalfExpr} ? (${topNameDy}) : 0`,
-    value: value || percent ? `${isTopHalfExpr} ? (${topValueDy}) : (${bottomValueDy})` : undefined,
+    value: hasValue ? `${isTopHalfExpr} ? (${topValueDy}) : (${bottomValueDy})` : undefined,
     detail: showValueRow ? `${isTopHalfExpr} ? (${topDetailDy}) : (${bottomDetailDy})` : undefined,
   };
 };
