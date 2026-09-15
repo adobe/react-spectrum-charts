@@ -60,7 +60,7 @@ module.exports = {
   // transitive cost in isolation, not shared with the other fixtures.
   devtool: false,
 
-  // Keep CLI output minimal — scripts/report.js is the source of truth for size,
-  // and this harness gets re-run frequently during the bundle-optimization work.
+  // Keep CLI output minimal — scripts/report.js and scripts/attribution.js read the
+  // emitted .js files directly, not this stats output.
   stats: 'errors-only',
 };

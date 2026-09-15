@@ -3321,13 +3321,6 @@
   dependencies:
     "@swc/helpers" "^0.5.0"
 
-"@internationalized/date@^3.12.4":
-  version "3.12.4"
-  resolved "https://registry.npmjs.org/@internationalized/date/-/date-3.12.4.tgz#a391e01d54ca80b3cb4c3d5040d46a0b26c3f20f"
-  integrity sha512-M1dEn4c1U1HsSlaVR8upZtSqvXrTkHDfv18H01uCSJyjVLDxnBR38v/fMxecmlwXKR4i9HeZcmgQAPE6A+aGJQ==
-  dependencies:
-    "@swc/helpers" "^0.5.0"
-
 "@internationalized/date@^3.5.2":
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.5.2.tgz#d760ace32bb47e869b8c607a4a786c8b208aacc2"
@@ -3357,24 +3350,10 @@
   dependencies:
     "@swc/helpers" "^0.5.0"
 
-"@internationalized/number@^3.6.8":
-  version "3.6.8"
-  resolved "https://registry.npmjs.org/@internationalized/number/-/number-3.6.8.tgz#aaa3e16fb9d64a8d7f130ccf848c626914dfdf9e"
-  integrity sha512-8UmMFia46DUt+k97zKd9fKWXcWHR+k8ae3eYzILETuT2KbIvLyOfac7zesw+sJdRAAZ7Q9pM1Mk22aXp2LD0Ig==
-  dependencies:
-    "@swc/helpers" "^0.5.0"
-
 "@internationalized/string@^3.2.1":
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/@internationalized/string/-/string-3.2.1.tgz#9059a580956b0af882ab05409efa276a42e2d960"
   integrity sha512-vWQOvRIauvFMzOO+h7QrdsJmtN1AXAFVcaLWP9AseRN2o7iHceZ6bIXhBD4teZl8i91A3gxKnWBlGgjCwU6MFQ==
-  dependencies:
-    "@swc/helpers" "^0.5.0"
-
-"@internationalized/string@^3.2.10":
-  version "3.2.10"
-  resolved "https://registry.npmjs.org/@internationalized/string/-/string-3.2.10.tgz#c38bd59a69509a41bf7422f1b2fc3af7468e4322"
-  integrity sha512-PDx6//vHSpRnHfxqMqto11zQvhsaU74O3mKv2F/0eicGZcl9NLjQmGlbHz/LsJh5tLKp4A4L7ZVTzN1/MmMTvA==
   dependencies:
     "@swc/helpers" "^0.5.0"
 
@@ -4969,20 +4948,7 @@
     "@react-types/shared" "^3.22.1"
     "@swc/helpers" "^0.5.0"
 
-"@react-spectrum/s2@>=1.0.0":
-  version "1.7.1"
-  resolved "https://registry.npmjs.org/@react-spectrum/s2/-/s2-1.7.1.tgz#04e4a52a34837b42094f8b6d3af60c10e9d7e26f"
-  integrity sha512-MMuEtebNabzzglLiGGSyXkg/yEig1cLqmq/JSKlYS+9cKzQoxwUIWtbdZLFFE9Ju0MPH9zNfpHXma1q9+hC+Yg==
-  dependencies:
-    "@internationalized/date" "^3.12.4"
-    "@internationalized/number" "^3.6.8"
-    "@parcel/macros" "^2.16.3"
-    "@react-types/shared" "^3.36.1"
-    react-aria "3.52.1"
-    react-aria-components "1.21.1"
-    react-stately "3.50.0"
-
-"@react-spectrum/s2@^1.3.1":
+"@react-spectrum/s2@1.3.1", "@react-spectrum/s2@^1.3.1":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@react-spectrum/s2/-/s2-1.3.1.tgz#7a112f96dd9e6b6442f7322939f2d4756e49aa34"
   integrity sha512-92mgn8WOcYxvNSTKX7txt5V5FPS/CwSasKyaKHBwhGFB3KL78lGvZ8tvlz6j9H5oifyWejTc+PdtlEENGcK4AA==
@@ -5743,11 +5709,6 @@
   version "3.34.0"
   resolved "https://registry.yarnpkg.com/@react-types/shared/-/shared-3.34.0.tgz#f9688443fdf8e29f7a06b499598a930be96a2f65"
   integrity sha512-gp6xo/s2lX54AlTjOiqwDnxA7UW79BNvI9dB9pr3LZTzRKCd1ZA+ZbgKw/ReIiWuvvVw/8QFJpnqeeFyLocMcQ==
-
-"@react-types/shared@^3.36.1":
-  version "3.36.1"
-  resolved "https://registry.npmjs.org/@react-types/shared/-/shared-3.36.1.tgz#edb8081e3872ae68a4eb4a65e62233d0754ec186"
-  integrity sha512-AzsuD9OfxTOZMMvTRhlN3oHBwOmFN7tDh27LzqmHt4+uOgPhJT7ZM7/kVs/8/o0WxayMUIk3hBmCFRHv1FUoag==
 
 "@react-types/slider@^3.7.1":
   version "3.7.1"
@@ -16387,19 +16348,6 @@ react-aria-components@1.17.0:
     react-aria "3.48.0"
     react-stately "3.46.0"
 
-react-aria-components@1.21.1:
-  version "1.21.1"
-  resolved "https://registry.npmjs.org/react-aria-components/-/react-aria-components-1.21.1.tgz#95f50ecd9a13ab4c9e9a1c550d0fe98aa5095064"
-  integrity sha512-J88WflYY0z+EhLX0ce+GjFlQ3ag3ubIgfUTjpKSrBQBu92Xtl4Ub9o118HItUddtbk1Ido0jzyPy94/klZy1hg==
-  dependencies:
-    "@internationalized/date" "^3.12.4"
-    "@internationalized/string" "^3.2.10"
-    "@react-types/shared" "^3.36.1"
-    "@swc/helpers" "^0.5.0"
-    client-only "^0.0.1"
-    react-aria "3.52.1"
-    react-stately "3.50.0"
-
 react-aria@3.48.0:
   version "3.48.0"
   resolved "https://registry.yarnpkg.com/react-aria/-/react-aria-3.48.0.tgz#ede91d3b247d34ea35216e246f0cb7de074303bd"
@@ -16413,21 +16361,6 @@ react-aria@3.48.0:
     aria-hidden "^1.2.3"
     clsx "^2.0.0"
     react-stately "3.46.0"
-    use-sync-external-store "^1.6.0"
-
-react-aria@3.52.1:
-  version "3.52.1"
-  resolved "https://registry.npmjs.org/react-aria/-/react-aria-3.52.1.tgz#2dfc540b1f97c56c7ba5c47a7ff56ba5646ef589"
-  integrity sha512-fdZZruC9/x/joCg0mhKGs5aHpwrXLCSZ4GOJmhhYyiE0ffyEsk9MLFt9LCOCF9tn8ErTD+UDQP4oDUSlZkmpCg==
-  dependencies:
-    "@internationalized/date" "^3.12.4"
-    "@internationalized/number" "^3.6.8"
-    "@internationalized/string" "^3.2.10"
-    "@react-types/shared" "^3.36.1"
-    "@swc/helpers" "^0.5.0"
-    aria-hidden "^1.2.3"
-    clsx "^2.0.0"
-    react-stately "3.50.0"
     use-sync-external-store "^1.6.0"
 
 react-docgen-typescript-loader@^3.7.2:
@@ -16465,6 +16398,13 @@ react-docgen@^7.0.0:
     resolve "^1.22.1"
     strip-indent "^4.0.0"
 
+react-dom@19.2.5, react-dom@^19.0.0:
+  version "19.2.5"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.2.5.tgz#b8768b10837d0b8e9ca5b9e2d58dff3d880ea25e"
+  integrity sha512-J5bAZz+DXMMwW/wV3xzKke59Af6CHY7G4uYLN1OvBcKEsWOs4pQExj86BBKamxl/Ik5bx9whOrvBlSDfWzgSag==
+  dependencies:
+    scheduler "^0.27.0"
+
 "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0":
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"
@@ -16480,13 +16420,6 @@ react-dom@^18.0.0:
   dependencies:
     loose-envify "^1.1.0"
     scheduler "^0.23.2"
-
-react-dom@^19.0.0:
-  version "19.2.5"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.2.5.tgz#b8768b10837d0b8e9ca5b9e2d58dff3d880ea25e"
-  integrity sha512-J5bAZz+DXMMwW/wV3xzKke59Af6CHY7G4uYLN1OvBcKEsWOs4pQExj86BBKamxl/Ik5bx9whOrvBlSDfWzgSag==
-  dependencies:
-    scheduler "^0.27.0"
 
 react-fast-compare@^3.2.0:
   version "3.2.2"
@@ -16590,18 +16523,6 @@ react-stately@3.46.0:
     "@swc/helpers" "^0.5.0"
     use-sync-external-store "^1.6.0"
 
-react-stately@3.50.0:
-  version "3.50.0"
-  resolved "https://registry.npmjs.org/react-stately/-/react-stately-3.50.0.tgz#e94058a2ada3f1d5e2f0591818d18df26129af67"
-  integrity sha512-TnckvpDQGU0672wEaLZqdzvhuSeXWjgW6vijMWxiKOxc8CosQUfPGISdcZyfHqjX3XMjEtRxj4w9HumvX4h4mw==
-  dependencies:
-    "@internationalized/date" "^3.12.4"
-    "@internationalized/number" "^3.6.8"
-    "@internationalized/string" "^3.2.10"
-    "@react-types/shared" "^3.36.1"
-    "@swc/helpers" "^0.5.0"
-    use-sync-external-store "^1.6.0"
-
 react-transition-group@^4.4.5:
   version "4.4.5"
   resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-4.4.5.tgz#e53d4e3f3344da8521489fbef8f2581d42becdd1"
@@ -16611,6 +16532,11 @@ react-transition-group@^4.4.5:
     dom-helpers "^5.0.1"
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
+
+react@19.2.5, react@^19.0.0:
+  version "19.2.5"
+  resolved "https://registry.yarnpkg.com/react/-/react-19.2.5.tgz#c888ab8b8ef33e2597fae8bdb2d77edbdb42858b"
+  integrity sha512-llUJLzz1zTUBrskt2pwZgLq59AemifIftw4aB7JxOqf1HY2FDaGDxgwpAPVzHU1kdWabH7FauP4i1oEeer2WCA==
 
 "react@^16.8.0 || ^17.0.0 || ^18.0.0":
   version "18.2.0"
@@ -16625,11 +16551,6 @@ react@^18.0.0:
   integrity sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==
   dependencies:
     loose-envify "^1.1.0"
-
-react@^19.0.0:
-  version "19.2.5"
-  resolved "https://registry.yarnpkg.com/react/-/react-19.2.5.tgz#c888ab8b8ef33e2597fae8bdb2d77edbdb42858b"
-  integrity sha512-llUJLzz1zTUBrskt2pwZgLq59AemifIftw4aB7JxOqf1HY2FDaGDxgwpAPVzHU1kdWabH7FauP4i1oEeer2WCA==
 
 readable-stream@^2.0.1:
   version "2.3.8"
@@ -19246,7 +19167,7 @@ vega-label@~2.1.0:
     vega-scenegraph "^5.1.0"
     vega-util "^2.1.0"
 
-vega-lite@^6.4.2:
+vega-lite@6.4.2, vega-lite@^6.4.2:
   version "6.4.2"
   resolved "https://registry.yarnpkg.com/vega-lite/-/vega-lite-6.4.2.tgz#80558d3815ff924b5669043f6d3bedf732a008d5"
   integrity sha512-Mv2PaRIpijz256LM0NdOJd9Md8cqyrXina54xW6Qp865YfY502zlXGUst+W/XznVwISGfatt0yLZuDqCUbBDuw==
@@ -19441,7 +19362,7 @@ vega-wordcloud@~5.1.0:
     vega-statistics "^2.0.0"
     vega-util "^2.1.0"
 
-vega@^6.2.0:
+vega@6.2.0, vega@^6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/vega/-/vega-6.2.0.tgz#34c2de83b00e701e040029738b26f1ec992f327f"
   integrity sha512-BIwalIcEGysJdQDjeVUmMWB3e50jPDNAMfLJscjEvpunU9bSt7X1OYnQxkg3uBwuRRI4nWfFZO9uIW910nLeGw==
