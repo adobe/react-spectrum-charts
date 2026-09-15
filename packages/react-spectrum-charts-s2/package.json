@@ -12,18 +12,6 @@
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./alpha": {
-      "types": "./dist/@types/alpha/index.d.ts",
-      "import": "./dist/alpha.js",
-      "require": "./dist/alpha.js",
-      "default": "./dist/alpha.js"
-    },
-    "./beta": {
-      "types": "./dist/@types/beta/index.d.ts",
-      "import": "./dist/beta.js",
-      "require": "./dist/beta.js",
-      "default": "./dist/beta.js"
-    },
     "./pre-alpha": {
       "types": "./dist/@types/pre-alpha/index.d.ts",
       "import": "./dist/pre-alpha.js",
@@ -41,12 +29,6 @@
     "*": {
       "*": [
         "./dist/@types/index.d.ts"
-      ],
-      "alpha": [
-        "./dist/@types/alpha/index.d.ts"
-      ],
-      "beta": [
-        "./dist/@types/beta/index.d.ts"
       ],
       "pre-alpha": [
         "./dist/@types/pre-alpha/index.d.ts"
