@@ -97,12 +97,16 @@ const getSegmentLabels = (options: DonutSpecOptions): SegmentLabelSpecOptions[] 
   if (!options.segmentLabels.length) {
     return [];
   }
-  const hasLabelModes = options.segmentLabels.some((label) => label.labelMode !== undefined);
+  const hasLabelModes =
+    Boolean(options.emphasizedItems?.length) && options.segmentLabels.some((label) => label.labelMode !== undefined);
   const labels = hasLabelModes
     ? options.segmentLabels.filter((label) => label.labelMode !== undefined)
     : options.segmentLabels.slice(0, 1);
   return labels
-    .filter(({ labelMode }) => !(options.hideDeemphasizedLabels && labelMode === 'deemphasized'))
+    .filter(
+      ({ labelMode }) =>
+        !(options.emphasizedItems?.length && options.hideDeemphasizedLabels && labelMode === 'deemphasized')
+    )
     .map((label) => applySegmentLabelPropDefaults(label, options));
 };
 
@@ -139,9 +143,8 @@ const applySegmentLabelPropDefaults = (
 });
 
 const getLabelModeFilter = ({ donutOptions, labelMode }: SegmentLabelSpecOptions): string | undefined => {
-  const { emphasizedItems, color, hideDeemphasizedLabels } = donutOptions;
-  if (!labelMode && !(hideDeemphasizedLabels && emphasizedItems?.length)) return;
-  if (!emphasizedItems?.length) return labelMode === 'emphasized' ? 'false' : 'true';
+  const { emphasizedItems, color } = donutOptions;
+  if (!labelMode || !emphasizedItems?.length) return;
   const items = JSON.stringify(emphasizedItems);
   return `indexof(${items}, datum.${color}) ${labelMode === 'deemphasized' ? '< 0' : '>= 0'}`;
 };

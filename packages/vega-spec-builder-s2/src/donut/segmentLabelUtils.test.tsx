@@ -236,6 +236,23 @@ describe('getSegmentLabelScales()', () => {
     ];
     expect(data.map(({ name }) => name)).toEqual(['testName_emphasizedRichSegmentLabelData']);
   });
+
+  test('labelMode and hideDeemphasizedLabels should have no effect when emphasizedItems is not set', () => {
+    const donutOptions = {
+      ...defaultDonutOptions,
+      hideDeemphasizedLabels: true,
+      segmentLabels: [
+        { labelMode: 'emphasized' as const, swatch: true },
+        { labelMode: 'deemphasized' as const, value: true },
+      ],
+    };
+    const data = [...getSegmentLabelData(donutOptions), ...getRichSegmentLabelData(donutOptions)];
+    // falls back to the legacy single-label behavior: only the first SegmentLabel is used, unfiltered
+    expect(data.map(({ name }) => name)).toEqual(['testName_emphasizedRichSegmentLabelData']);
+    expect(data[0].transform?.some((t) => t.type === 'filter' && 'expr' in t && t.expr.includes('indexof'))).toBe(
+      false
+    );
+  });
 });
 
 describe('getSegmentLabelSignals()', () => {

@@ -90,11 +90,12 @@ export const getDonutOuterRadiusExpr = ({
   isBoolean,
   segmentLabels,
   hideDeemphasizedLabels,
+  emphasizedItems,
 }: DonutSpecOptions): string => {
   // DONUT_RADIUS is already parenthesized; the reserved branch below self-parenthesizes too, so
   // callers can interpolate this result directly without adding their own wrapping parens
   const visibleLabels = segmentLabels.filter(
-    ({ labelMode }) => !(hideDeemphasizedLabels && labelMode === 'deemphasized')
+    ({ labelMode }) => !(emphasizedItems?.length && hideDeemphasizedLabels && labelMode === 'deemphasized')
   );
   if (isBoolean || !visibleLabels.length) return DONUT_RADIUS;
   const ringGap = visibleLabels.some(({ swatch, showValueRow }) => swatch || showValueRow)
