@@ -189,6 +189,22 @@ describe('getArcMark()', () => {
       { scale: 'color', field: 'testColor' },
     ]);
   });
+
+  test('should restore categorical fill for the hovered emphasized segment', () => {
+    const arcMark = getArcMark({ ...defaultDonutOptions, emphasizedItems: ['Chrome'], chartInspects: [{}] });
+    expect(arcMark.encode?.update?.fill).toEqual([
+      {
+        test: 'isValid(testName_hoveredItem) && testName_hoveredItem.rscMarkId === datum.rscMarkId',
+        scale: 'color',
+        field: 'testColor',
+      },
+      {
+        test: 'indexof(["Chrome"], datum.testColor) < 0',
+        value: spectrum2Colors.light['gray-400'],
+      },
+      { scale: 'color', field: 'testColor' },
+    ]);
+  });
 });
 
 describe('getEmptyStateArcMark()', () => {

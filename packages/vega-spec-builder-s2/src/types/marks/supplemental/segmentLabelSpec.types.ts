@@ -13,6 +13,8 @@ import { PartiallyRequired } from '../../specUtil.types';
 import { DonutSpecOptions } from '../donutSpec.types';
 
 export interface SegmentLabelOptions {
+  /** Selects whether the label applies to emphasized or de-emphasized segments. */
+  labelMode?: 'emphasized' | 'deemphasized';
   /** Sets the key in the data that has the segment label. Defaults to the `color` key set on the `Donut` is undefined. */
   labelKey?: string;
   /** Shows the donut segment percentage */

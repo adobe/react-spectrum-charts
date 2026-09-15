@@ -24,7 +24,7 @@ import { Chart } from '../../../../Chart';
 import useChartProps from '../../../../hooks/useChartProps';
 import { Donut, SegmentLabel } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
-import { SegmentLabelProps } from '../../../../types';
+import { DonutProps } from '../../../../types';
 import { basicDonutData, sliveredDonutData } from '../../../components/Donut/data';
 
 export default {
@@ -122,11 +122,13 @@ const getSizeTier = (containerWidth: number): string => {
 // dimension, matching Line's DirectLabelSizeScaling story pattern.
 const ResponsiveDonut = ({
   data,
-  args,
+  donutProps,
+  children,
   initialWidth = 300,
 }: {
   data: ChartData[];
-  args: SegmentLabelProps;
+  donutProps?: Partial<DonutProps>;
+  children: DonutProps['children'];
   initialWidth?: number;
 }): ReactElement => {
   const [width, setWidth] = useState(initialWidth);
@@ -173,8 +175,8 @@ const ResponsiveDonut = ({
         ))}
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <Chart {...chartProps} width={width} height={CHART_SIZE}>
-            <Donut metric="count" color="browser">
-              <SegmentLabel {...args} />
+            <Donut metric="count" color="browser" {...donutProps}>
+              {children}
             </Donut>
           </Chart>
           <input
@@ -194,17 +196,23 @@ const ResponsiveDonut = ({
 };
 
 const ResponsiveStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => (
-  <ResponsiveDonut data={basicDonutData} args={args} />
+  <ResponsiveDonut data={basicDonutData}>
+    <SegmentLabel {...args} />
+  </ResponsiveDonut>
 );
 
 const AdvancedStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => (
-  <ResponsiveDonut data={basicDonutData} args={args} initialWidth={500} />
+  <ResponsiveDonut data={basicDonutData} initialWidth={500}>
+    <SegmentLabel {...args} />
+  </ResponsiveDonut>
 );
 
 // sliveredDonutData has 15 segments (vs. basicDonutData's 7) - a denser stress test for label
 // crowding as the donut shrinks toward the XS/S tiers
 const ManySegmentsResponsiveStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => (
-  <ResponsiveDonut data={sliveredDonutData} args={args} />
+  <ResponsiveDonut data={sliveredDonutData}>
+    <SegmentLabel {...args} />
+  </ResponsiveDonut>
 );
 
 const Responsive = bindWithProps(ResponsiveStory);
@@ -216,4 +224,4 @@ Advanced.args = { percent: true, value: false, swatch: true, showValueRow: true 
 const ManySegmentsResponsive = bindWithProps(ManySegmentsResponsiveStory);
 ManySegmentsResponsive.args = { value: true, valueFormat: 'shortNumber' };
 
-export { Responsive, Advanced, ManySegmentsResponsive };
+export { Responsive, Advanced, ManySegmentsResponsive, ResponsiveDonut };

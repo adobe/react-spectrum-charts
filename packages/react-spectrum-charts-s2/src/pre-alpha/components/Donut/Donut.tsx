@@ -22,6 +22,7 @@ const Donut: FC<DonutProps> = ({
   children,
   color = DEFAULT_COLOR,
   holeRatio = 0.85,
+  hideDeemphasizedLabels = false,
   isBoolean = false,
   metric = DEFAULT_METRIC,
   name,

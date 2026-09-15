@@ -42,6 +42,18 @@ describe('getDonutOptions()', () => {
     const options = getDonutOptions({ children: [createElement(SegmentLabel)] });
     expect(options.segmentLabels).toHaveLength(1);
   });
+  it('should preserve two mode-specific segment label children', () => {
+    const options = getDonutOptions({
+      children: [
+        createElement(SegmentLabel, { labelMode: 'emphasized' }),
+        createElement(SegmentLabel, { labelMode: 'deemphasized' }),
+      ],
+    });
+    expect(options.segmentLabels).toEqual([
+      { labelMode: 'emphasized' },
+      { labelMode: 'deemphasized' },
+    ]);
+  });
   it('should pass through included props', () => {
     const options = getDonutOptions({ color: DEFAULT_COLOR });
     expect(options).toHaveProperty('color', DEFAULT_COLOR);

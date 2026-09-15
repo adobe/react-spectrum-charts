@@ -55,8 +55,8 @@ const BooleanStory: StoryFn<DonutProps> = (args): ReactElement => {
   );
 };
 
-const Boolean = bindWithProps(BooleanStory);
-Boolean.args = {
+const BooleanProp = bindWithProps(BooleanStory);
+BooleanProp.args = {
   metric: 'value',
   color: 'id',
   isBoolean: true,
@@ -86,4 +86,4 @@ Binary.args = {
   isBoolean: true,
 };
 
-export { Boolean, Binary };
+export { BooleanProp, Binary };

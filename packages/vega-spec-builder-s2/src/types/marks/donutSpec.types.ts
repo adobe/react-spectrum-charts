@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { PartiallyRequired } from '../specUtil.types';
 import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types';
 import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types';
@@ -44,6 +44,8 @@ export interface DonutOptions {
    * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
    */
   otherItemColor?: string;
+  /** Hides labels for segments not in `emphasizedItems`. */
+  hideDeemphasizedLabels?: boolean;
 
   // children
   chartPopovers?: ChartPopoverOptions[];

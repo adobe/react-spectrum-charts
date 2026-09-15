@@ -28,7 +28,13 @@ import {
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
-import { getColorProductionRule, getCursor, getMarkOpacity, getInspectEncoding } from '../marks/markUtils';
+import {
+  getColorProductionRule,
+  getCursor,
+  getInspectEncoding,
+  getMarkOpacity,
+  isInteractive,
+} from '../marks/markUtils';
 import { DonutSpecOptions } from '../types';
 
 /**
@@ -80,12 +86,21 @@ const getArcFillEncoding = (options: DonutSpecOptions): ColorValueRef | Producti
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutOuterRadiusExpr = ({ isBoolean, segmentLabels }: DonutSpecOptions): string => {
+export const getDonutOuterRadiusExpr = ({
+  isBoolean,
+  segmentLabels,
+  hideDeemphasizedLabels,
+  emphasizedItems,
+}: DonutSpecOptions): string => {
   // DONUT_RADIUS is already parenthesized; the reserved branch below self-parenthesizes too, so
   // callers can interpolate this result directly without adding their own wrapping parens
-  if (isBoolean || !segmentLabels.length) return DONUT_RADIUS;
-  const ringGap =
-    segmentLabels[0].swatch || segmentLabels[0].showValueRow ? DONUT_ADVANCED_LABEL_RING_GAP : DONUT_LABEL_RING_GAP;
+  const visibleLabels = segmentLabels.filter(
+    ({ labelMode }) => !(emphasizedItems?.length && hideDeemphasizedLabels && labelMode === 'deemphasized')
+  );
+  if (isBoolean || !visibleLabels.length) return DONUT_RADIUS;
+  const ringGap = visibleLabels.some(({ swatch, showValueRow }) => swatch || showValueRow)
+    ? DONUT_ADVANCED_LABEL_RING_GAP
+    : DONUT_LABEL_RING_GAP;
   // solve R such that R + ringGap + R*capRatio == DONUT_RADIUS (the worst-case label reach)
   return `((${DONUT_RADIUS} - ${ringGap}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}))`;
 };
@@ -157,7 +172,9 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
  * @param legendHighlightSignals
  * @returns opacity rules
  */
-const getLegendHighlightOpacityRules = (legendHighlightSignals: string[] = []): ({ test: string } & NumericValueRef)[] =>
+const getLegendHighlightOpacityRules = (
+  legendHighlightSignals: string[] = []
+): ({ test: string } & NumericValueRef)[] =>
   legendHighlightSignals.map((signal) => ({
     test: `isValid(${signal}) && ${signal} !== datum.${SERIES_ID}`,
     value: FADE_FACTOR,
@@ -188,9 +205,27 @@ const getEmphasizeFillEncoding = (options: DonutSpecOptions): ColorValueRef | Pr
   return [{ test: getEmphasizeOtherExpr(emphasizedItems, color), value: grayColor }, normalColor];
 };
 
+const getHoveredArcFillEncoding = (
+  options: DonutSpecOptions
+): ColorValueRef | ProductionRule<ColorValueRef> | undefined => {
+  const { color, colorScheme, emphasizedItems, idKey, name } = options;
+  if (!emphasizedItems?.length || !isInteractive(options)) return;
+  const normalColor = getColorProductionRule(color, colorScheme);
+  const grayColor = getS2ColorValue(options.otherItemColor || 'gray-400', colorScheme);
+  return [
+    {
+      test: `isValid(${name}_hoveredItem) && ${name}_hoveredItem.${idKey} === datum.${idKey}`,
+      ...normalColor,
+    },
+    { test: getEmphasizeOtherExpr(emphasizedItems, color), value: grayColor },
+    normalColor,
+  ];
+};
+
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;
   const outerRadius = getDonutOuterRadiusExpr(options);
+  const hoveredArcFillEncoding = getHoveredArcFillEncoding(options);
   return {
     type: 'arc',
     name,
@@ -204,6 +239,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         tooltip: getInspectEncoding(chartInspects, name),
       },
       update: {
+        ...(hoveredArcFillEncoding ? { fill: hoveredArcFillEncoding } : {}),
         startAngle: { field: `${name}_startAngle` },
         endAngle: { field: `${name}_endAngle` },
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },
