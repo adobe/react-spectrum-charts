@@ -1,0 +1,23 @@
+{
+  "name": "@spectrum-charts/bundle-profiling",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal tooling for measuring the true cold-consumer bundle cost of @spectrum-charts/react-spectrum-charts-s2, including its peer dependencies. Not published.",
+  "scripts": {
+    "build": "echo 'no build step for @spectrum-charts/bundle-profiling'",
+    "benchmark": "node scripts/benchmark.js",
+    "profile": "webpack --config webpack.profile.config.js && node scripts/report.js",
+    "profile:shared-react": "webpack --config webpack.profile-shared-react.config.js && node scripts/report.js dist-shared-react",
+    "profile:packed": "webpack --config webpack.profile-packed.config.js && node scripts/report.js dist-packed",
+    "attribution": "node scripts/attribution.js",
+    "analyze": "webpack --config webpack.profile.config.js --json=dist/stats.json --stats=normal && webpack-bundle-analyzer dist/stats.json dist"
+  },
+  "dependencies": {
+    "@react-spectrum/s2": "1.3.1",
+    "@spectrum-charts/react-spectrum-charts-s2": "0.7.0",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "vega": "6.2.0",
+    "vega-lite": "6.4.2"
+  }
+}

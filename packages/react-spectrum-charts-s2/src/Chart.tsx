@@ -20,7 +20,7 @@ import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 import './Chart.css';
 import { RscChart } from './RscChart';
 import { applyChartPropsDefaults } from './chartUtils';
-import { EmptyState } from './components';
+import { EmptyState } from './components/EmptyState';
 import { LoadingState } from './components/LoadingState';
 import { ChartProvider } from './context/RscChartContext';
 import useChartHeight from './hooks/useChartHeight';
