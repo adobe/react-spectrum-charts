@@ -43,6 +43,12 @@ export interface TrendlineOptions {
    */
   dimensionExtent?: [number | 'domain' | null, number | 'domain' | null];
   /**
+   * If true, renders arrowhead caps at both endpoints of aggregate trendlines (average/median).
+   * Only applies to aggregate methods — regression and window methods are not supported.
+   * @default false
+   */
+  showEndCaps?: boolean;
+  /**
    * The dimension range that the statistical transform should be calculated for. If undefined, the value will default to [null, null]
    *
    * If the start or end values are null, then the dimension range will not be bounded for the start or end respectively.
@@ -88,6 +94,7 @@ type TrendlineOptionsWithDefaults =
   | 'method'
   | 'opacity'
   | 'orientation'
+  | 'showEndCaps'
   | 'trendlineAnnotations';
 
 export interface TrendlineSpecOptions extends PartiallyRequired<TrendlineOptions, TrendlineOptionsWithDefaults> {

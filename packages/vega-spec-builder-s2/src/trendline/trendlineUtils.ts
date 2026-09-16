@@ -64,6 +64,7 @@ export const applyTrendlinePropDefaults = (
     method = 'linear',
     opacity = 1,
     orientation = 'horizontal',
+    showEndCaps = false,
     trendlineAnnotations = [],
     ...opts
   }: TrendlineOptions,
@@ -96,6 +97,7 @@ export const applyTrendlinePropDefaults = (
     name: `${markOptions.name}Trendline${index}`,
     opacity,
     orientation,
+    showEndCaps,
     trendlineAnnotations,
     trendlineColor,
     trendlineDimension,

@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
+import { EncodeEntry, GroupMark, LineMark, NumericValueRef, PathMark, RuleMark } from 'vega';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { REFERENCE_LINE_END_CAP_PATH, REFERENCE_LINE_START_CAP_PATH, TRENDLINE_VALUE } from '@spectrum-charts/constants';
 
 import { getLineHoverMarks, getLineOpacity } from '../line/lineMarkUtils';
 import { LineMarkOptions } from '../line/lineUtils';
@@ -35,17 +35,23 @@ import {
   isRegressionMethod,
 } from './trendlineUtils';
 
-export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMark | RuleMark)[] => {
+export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMark | PathMark | RuleMark)[] => {
   const { color, lineType } = markOptions;
   const { facets } = getFacetsFromOptions({ color, lineType });
 
-  const marks: (GroupMark | RuleMark)[] = [];
+  const marks: (GroupMark | PathMark | RuleMark)[] = [];
   const trendlines = getTrendlines(markOptions);
   for (const trendlineOptions of trendlines) {
-    const { displayOnHover, method, name } = trendlineOptions;
+    const { displayOnHover, method, name, showEndCaps } = trendlineOptions;
 
     if (isAggregateMethod(method)) {
       marks.push(getTrendlineRuleMark(markOptions, trendlineOptions));
+      if (showEndCaps) {
+        marks.push(
+          getTrendlineStartCapMark(markOptions, trendlineOptions),
+          getTrendlineEndCapMark(markOptions, trendlineOptions)
+        );
+      }
     } else {
       const data = getDataSourceName(name, method, displayOnHover);
       marks.push({
@@ -126,6 +132,80 @@ export const getTrendlineRuleMark = (
       },
       update: {
         ...getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation),
+        opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
+      },
+    },
+  };
+};
+
+/**
+ * Gets the left-pointing arrowhead cap path mark for an aggregate trendline.
+ * Only supported for horizontal orientation.
+ * @param markOptions
+ * @param trendlineOptions
+ * @returns path mark
+ */
+export const getTrendlineStartCapMark = (
+  markOptions: TrendlineParentOptions,
+  trendlineOptions: TrendlineSpecOptions
+): PathMark => {
+  const { colorScheme } = markOptions;
+  const { dimensionExtent, dimensionScaleType, displayOnHover, name, orientation, trendlineColor, trendlineDimension } =
+    trendlineOptions;
+  const data = displayOnHover ? `${name}_highlightedData` : `${name}_highResolutionData`;
+  const xEncodings = getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation);
+
+  return {
+    name: `${name}_startCap`,
+    type: 'path',
+    clip: true,
+    from: { data },
+    interactive: false,
+    encode: {
+      enter: {
+        path: { value: REFERENCE_LINE_START_CAP_PATH },
+        fill: getColorProductionRule(trendlineColor, colorScheme),
+        y: { scale: 'yLinear', field: TRENDLINE_VALUE },
+      },
+      update: {
+        x: xEncodings.x as NumericValueRef,
+        opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
+      },
+    },
+  };
+};
+
+/**
+ * Gets the right-pointing arrowhead cap path mark for an aggregate trendline.
+ * Only supported for horizontal orientation.
+ * @param markOptions
+ * @param trendlineOptions
+ * @returns path mark
+ */
+export const getTrendlineEndCapMark = (
+  markOptions: TrendlineParentOptions,
+  trendlineOptions: TrendlineSpecOptions
+): PathMark => {
+  const { colorScheme } = markOptions;
+  const { dimensionExtent, dimensionScaleType, displayOnHover, name, orientation, trendlineColor, trendlineDimension } =
+    trendlineOptions;
+  const data = displayOnHover ? `${name}_highlightedData` : `${name}_highResolutionData`;
+  const xEncodings = getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation);
+
+  return {
+    name: `${name}_endCap`,
+    type: 'path',
+    clip: true,
+    from: { data },
+    interactive: false,
+    encode: {
+      enter: {
+        path: { value: REFERENCE_LINE_END_CAP_PATH },
+        fill: getColorProductionRule(trendlineColor, colorScheme),
+        y: { scale: 'yLinear', field: TRENDLINE_VALUE },
+      },
+      update: {
+        ...(xEncodings.x2 ? { x: xEncodings.x2 as NumericValueRef } : {}),
         opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
       },
     },

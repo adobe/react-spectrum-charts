@@ -67,6 +67,7 @@ export const defaultTrendlineOptions: TrendlineSpecOptions = {
   name: 'line0Trendline0',
   opacity: 1,
   orientation: 'horizontal',
+  showEndCaps: false,
   trendlineAnnotations: [],
   trendlineColor: DEFAULT_COLOR,
   trendlineDimension: DEFAULT_TIME_DIMENSION,
