@@ -1,0 +1,42 @@
+{
+  "id": "gauge-range-labels",
+  "title": "Gauge: min/max range labels",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-09-16",
+  "complexity": {
+    "score": 1,
+    "rationale": "Pure static text placed at the arc's two existing endpoint angles, using values and geometry that already exist on Gauge - no new signals, scales, or design decisions."
+  },
+  "summary": "Adds an optional showRangeLabels flag to Gauge that displays the scale's minimum and maximum values as text at the two ends of the arc.",
+  "requirements": [
+    "Accept a showRangeLabels boolean, default false.",
+    "When true, display minScaleValue as text at the arc's start end and maxScaleValue as text at the arc's end end.",
+    "Range labels render outside the arc's outer edge and do not overlap the track, needle, fill, ticks, or center text."
+  ],
+  "edgeCases": [
+    { "case": "minScaleValue or maxScaleValue has many digits", "expectedBehavior": "truncate with an ellipsis rather than overlapping neighboring content" },
+    { "case": "small rendered size", "expectedBehavior": "label font size scales down proportionally with the rendered arc, consistent with the existing center value/label text" },
+    { "case": "light vs. dark background", "expectedBehavior": "label color remains a fixed neutral token legible against both" }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": ""
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/gaugeSpec.types.ts", "change": "Add a showRangeLabels boolean field (with a default) to the public Gauge contract." },
+    { "file": "packages/vega-spec-builder-s2/src/gauge/gaugeMarkUtils.ts", "change": "When showRangeLabels is true, render minScaleValue and maxScaleValue as text at the arc's two endpoint angles." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/gauge.types.ts", "change": "Expose showRangeLabels on the public GaugeProps." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/Gauge/Features/GaugeBasic.story.tsx", "change": "Add a story with range labels enabled." }
+  ],
+  "openQuestions": [
+    "planning/specs/schema.json's chartType enum has no 'gauge' value; this spec uses the 'chart' fallback until 'gauge' is added (ideally to the pre-alpha list), at which point this file should move to planning/specs/pre-alpha/gauge/."
+  ]
+}
