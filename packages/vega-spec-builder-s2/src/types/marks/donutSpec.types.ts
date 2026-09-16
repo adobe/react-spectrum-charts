@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { PartiallyRequired } from '../specUtil.types';
 import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types';
 import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types';
@@ -32,6 +32,20 @@ export interface DonutOptions {
   name?: string;
   /** Start angle of the donut in radians (0 is top dead center, and default) */
   startAngle?: number;
+  /**
+   * Designates which segments (by their `color` facet value) render with full categorical color.
+   * Remaining segments render as a solid color swap to gray at full opacity. Their
+   * labels stay fully visible and normally colored, unlike Line's `primarySeries` which suppresses
+   * non-primary direct labels entirely.
+   */
+  emphasizedItems?: (string | number)[];
+  /**
+   * Overrides the default gray color used for segments not in `emphasizedItems`.
+   * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
+   */
+  otherItemColor?: string;
+  /** Hides labels for segments not in `emphasizedItems`. */
+  hideDeemphasizedLabels?: boolean;
 
   // children
   chartPopovers?: ChartPopoverOptions[];
@@ -57,5 +71,6 @@ export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutO
   highlightedItem?: HighlightedItem;
   idKey: string;
   index: number;
+  legendHighlightSignals?: string[];
   markType: 'donut';
 }

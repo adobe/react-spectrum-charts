@@ -251,6 +251,17 @@ describe('isInteractive()', () => {
   test('should return true if hasOnClick', () => {
     expect(isInteractive({ hasOnClick: true })).toEqual(true);
   });
+
+  test('should return true for a donut SegmentLabel showing value/percent, even with no popover/inspect', () => {
+    expect(isInteractive({ segmentLabels: [{ value: true }] })).toEqual(true);
+    expect(isInteractive({ segmentLabels: [{ percent: true }] })).toEqual(true);
+    expect(isInteractive({ segmentLabels: [{}] })).toEqual(true);
+    expect(isInteractive({ segmentLabels: [] })).toEqual(false);
+  });
+
+  test('should return true for a rich SegmentLabel showing percent', () => {
+    expect(isInteractive({ segmentLabels: [{ percent: true, swatch: true }] })).toEqual(true);
+  });
 });
 
 describe('getCursor()', () => {

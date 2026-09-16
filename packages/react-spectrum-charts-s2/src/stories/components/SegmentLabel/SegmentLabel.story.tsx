@@ -62,7 +62,7 @@ const LabelKey = bindWithProps(SegmentLabelStory);
 LabelKey.args = { labelKey: 'browser' };
 
 const Percent = bindWithProps(SegmentLabelStory);
-Percent.args = { percent: true };
+Percent.args = { percent: true, value: false };
 
 const Value = bindWithProps(SegmentLabelStory);
 Value.args = { value: true };
@@ -70,11 +70,16 @@ Value.args = { value: true };
 const ValueFormat = bindWithProps(SegmentLabelStory);
 ValueFormat.args = { value: true, valueFormat: 'shortNumber' };
 
+const Swatch = bindWithProps(SegmentLabelStory);
+Swatch.args = { swatch: true };
+
+const ValueRow = bindWithProps(SegmentLabelStory);
+ValueRow.args = { showValueRow: true };
+
 const Supreme = bindWithProps(SegmentLabelStory);
 Supreme.args = { labelKey: 'browser', percent: true, value: true, valueFormat: 'shortNumber' };
 
 const Slivers = bindWithProps(SliverStory);
 Slivers.args = { percent: true, value: true };
 
-export { Basic, LabelKey, Percent, Value, ValueFormat, Supreme, Slivers };
-
+export { Basic, LabelKey, Percent, Value, ValueFormat, Swatch, ValueRow, Supreme, Slivers };

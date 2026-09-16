@@ -16,11 +16,13 @@ import {
   COLOR_SCALE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
+  DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
   FILTERED_TABLE,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
+import { getSeriesIdTransform } from '../data/dataUtils';
 import { isInteractive } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
@@ -32,8 +34,25 @@ import {
   getDonutSummaryScales,
   getDonutSummarySignals,
 } from './donutSummaryUtils';
-import { getArcMark, getEmptyStateArcMark, getSumData } from './donutUtils';
-import { getSegmentLabelMarks } from './segmentLabelUtils';
+import {
+  getArcMark,
+  getEmptyStateArcMark,
+  getRingWidthScale,
+  getRingWidthSignal,
+  getSliceGapScale,
+  getSliceGapSignal,
+  getSumData,
+} from './donutUtils';
+import {
+  getSegmentLabelData,
+  getSegmentLabelMarks,
+  getSegmentLabelScales,
+  getSegmentLabelSignals,
+  getRichSegmentLabelData,
+  getRichSegmentLabelMarks,
+  getRichSegmentLabelScales,
+  getRichSegmentLabelSignals,
+} from './segmentLabelUtils';
 
 export const addDonut = produce<
   ScSpec,
@@ -58,7 +77,7 @@ export const addDonut = produce<
       metric = DEFAULT_METRIC,
       name,
       startAngle = 0,
-      holeRatio = 0.85,
+      holeRatio = DEFAULT_HOLE_RATIO,
       isBoolean = false,
       segmentLabels = [],
       ...options
@@ -92,12 +111,17 @@ export const addDonut = produce<
 );
 
 export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
-  const { name, isBoolean } = options;
+  const { color, legendHighlightSignals, name, isBoolean } = options;
   const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
   //set up transform
   data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
   data[filteredTableIndex].transform?.push(...getPieTransforms(options));
+  // Adds SERIES_ID so hovering an arc can highlight its legend entry and hovering a legend entry can
+  // fade this mark's arcs - donut rows don't have SERIES_ID by default like Line/Bar do
+  if (isInteractive(options) || legendHighlightSignals?.length) {
+    data[filteredTableIndex].transform?.push(...getSeriesIdTransform([color]));
+  }
 
   if (isBoolean) {
     //select first data point for our boolean value
@@ -118,8 +142,12 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
     });
   }
   // used to detect the empty state (no data or all metric values are 0)
-  data.push(getSumData(options));
-  data.push(...getDonutSummaryData(options));
+  data.push(
+    getSumData(options),
+    ...getDonutSummaryData(options),
+    ...getSegmentLabelData(options),
+    ...getRichSegmentLabelData(options)
+  );
 });
 
 const getPieTransforms = ({ startAngle, metric, name }: DonutSpecOptions): (FormulaTransform | PieTransform)[] => [
@@ -148,9 +176,17 @@ const getPieTransforms = ({ startAngle, metric, name }: DonutSpecOptions): (Form
 ];
 
 export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) => {
-  const { color } = options;
+  const { color, holeRatio } = options;
   addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-  scales.push(...getDonutSummaryScales(options));
+  if (holeRatio === DEFAULT_HOLE_RATIO) {
+    scales.push(getRingWidthScale(options));
+  }
+  scales.push(
+    getSliceGapScale(options),
+    ...getDonutSummaryScales(options),
+    ...getSegmentLabelScales(options),
+    ...getRichSegmentLabelScales(options)
+  );
 });
 
 export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => {
@@ -158,13 +194,22 @@ export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => 
     getEmptyStateArcMark(options),
     getArcMark(options),
     ...getDonutSummaryMarks(options),
-    ...getSegmentLabelMarks(options)
+    ...getSegmentLabelMarks(options),
+    ...getRichSegmentLabelMarks(options)
   );
 });
 
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {
-  const { chartInspects, name } = options;
-  signals.push(...getDonutSummarySignals(options));
+  const { chartInspects, holeRatio, name } = options;
+  if (holeRatio === DEFAULT_HOLE_RATIO) {
+    signals.push(getRingWidthSignal(options));
+  }
+  signals.push(
+    getSliceGapSignal(options),
+    ...getDonutSummarySignals(options),
+    ...getSegmentLabelSignals(options),
+    ...getRichSegmentLabelSignals(options)
+  );
   if (!isInteractive(options)) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
 });

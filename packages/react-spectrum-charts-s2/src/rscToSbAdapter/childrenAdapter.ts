@@ -149,6 +149,7 @@ export const childrenToOptions = (
       continue;
     }
     switch (child.type.displayName) {
+
       case Area.displayName:
         marks.push(getAreaOptions(child.props as AreaProps));
         break;
