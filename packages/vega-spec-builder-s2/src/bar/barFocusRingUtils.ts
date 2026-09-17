@@ -173,3 +173,54 @@ export const getStackFocusRing = (options: BarSpecOptions): RectMark => {
     },
   };
 };
+
+/**
+ * Focus ring around a whole dodge group (a category's cluster of side-by-side bars) when that group
+ * is focused. Named the same as `getStackFocusRing`'s mark so the adapter's ring lookups work
+ * unchanged for either bar type.
+ */
+export const getDodgedGroupFocusRing = (options: BarSpecOptions): RectMark => {
+  const { colorScheme, dimension, metric, name, orientation } = options;
+  const { dimensionScaleKey } = getOrientationProperties(orientation);
+  const dimStart = `scale('${dimensionScaleKey}', datum.${dimension}) - ${FOCUS_RING_OFFSET}`;
+  const dimEnd = `scale('${dimensionScaleKey}', datum.${dimension}) + bandwidth('${dimensionScaleKey}') + ${FOCUS_RING_OFFSET}`;
+  // Already pixel-space and baseline-inclusive (see getDodgedGroupAggregateData), resolved per-row
+  // against whichever scale that row's own bar renders on — correct even when the group mixes
+  // primary- and secondary-axis bars (a dual-metric-axis dodged bar). min_*_ringTop is always the
+  // numerically smaller pixel coordinate and max_*_ringBottom the larger, regardless of orientation,
+  // since both scale directions (inverted for vertical, not for horizontal) are already baked in.
+  const groupTop = `datum.min_${metric}_ringTop`;
+  const groupBottom = `datum.max_${metric}_ringBottom`;
+  const update: RectEncodeEntry =
+    orientation === 'vertical'
+      ? {
+          x: { signal: dimStart },
+          x2: { signal: dimEnd },
+          y: { signal: `${groupTop} - ${FOCUS_RING_OFFSET}` },
+          y2: { signal: `${groupBottom} + ${FOCUS_RING_OFFSET}` },
+        }
+      : {
+          y: { signal: dimStart },
+          y2: { signal: dimEnd },
+          x: { signal: `${groupTop} - ${FOCUS_RING_OFFSET}` },
+          x2: { signal: `${groupBottom} + ${FOCUS_RING_OFFSET}` },
+        };
+  return {
+    name: `${name}_stackFocusRing`,
+    type: 'rect',
+    from: { data: `${name}_groups` },
+    interactive: false,
+    encode: {
+      enter: {
+        fill: { value: 'transparent' },
+        strokeWidth: { value: FOCUS_RING_STROKE_WIDTH },
+        stroke: { value: getS2ColorValue('blue-800', colorScheme) },
+        ...getStaticFocusRingCorners(options),
+      },
+      update: {
+        ...update,
+        opacity: [{ test: `${FOCUSED_DIMENSION} === datum.${dimension}`, value: 1 }, { value: 0 }],
+      },
+    },
+  };
+};

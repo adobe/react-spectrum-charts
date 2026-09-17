@@ -12,7 +12,7 @@
 import { FOCUSED_DIMENSION, FOCUSED_REGION, NAVIGATION_ID_SEPARATOR, SELECTED_ITEM } from '@spectrum-charts/constants';
 
 import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils';
-import { getBarFocusRing, getChartFocusRing, getStackFocusRing } from './barFocusRingUtils';
+import { getBarFocusRing, getChartFocusRing, getDodgedGroupFocusRing, getStackFocusRing } from './barFocusRingUtils';
 
 const { dimension, metric } = defaultBarOptions;
 
@@ -103,5 +103,38 @@ describe('getStackFocusRing()', () => {
   test('rounds the trailing corner for a horizontal stack', () => {
     const ring = getStackFocusRing({ ...defaultBarOptions, orientation: 'horizontal' });
     expect(ring.encode?.enter?.cornerRadiusTopRight).toEqual({ value: 6 });
+  });
+});
+
+describe('getDodgedGroupFocusRing()', () => {
+  test('sources from the per-group data (not per-stack) and keys opacity on the focused dimension, named the same as the stack ring', () => {
+    const ring = getDodgedGroupFocusRing(defaultBarOptions);
+    expect(ring).toHaveProperty('name', 'bar0_stackFocusRing');
+    expect(ring.from).toEqual({ data: 'bar0_groups' });
+    expect(ring.encode?.update?.opacity).toEqual([
+      { test: `${FOCUSED_DIMENSION} === datum.${dimension}`, value: 1 },
+      { value: 0 },
+    ]);
+  });
+
+  test('positions a vertical group ring along the y axis using the pre-scaled, baseline-inclusive per-row extent', () => {
+    const ring = getDodgedGroupFocusRing(defaultBarOptions);
+    // top/bottom edges read the already-scaled pixel extent computed per row in getDodgedGroupAggregateData
+    // (correct even for a mixed-scale dual-metric-axis group), not a raw metric value re-scaled here.
+    expect(JSON.stringify(ring.encode?.update?.y)).toContain(`datum.min_${metric}_ringTop`);
+    expect(JSON.stringify(ring.encode?.update?.y2)).toContain(`datum.max_${metric}_ringBottom`);
+  });
+
+  test('positions a horizontal group ring along the x axis using the pre-scaled, baseline-inclusive per-row extent', () => {
+    const ring = getDodgedGroupFocusRing({ ...defaultBarOptions, orientation: 'horizontal' });
+    expect(JSON.stringify(ring.encode?.update?.x)).toContain(`datum.min_${metric}_ringTop`);
+    expect(JSON.stringify(ring.encode?.update?.x2)).toContain(`datum.max_${metric}_ringBottom`);
+  });
+
+  test('rounds the metric-end corners unless square corners are requested', () => {
+    expect(getDodgedGroupFocusRing(defaultBarOptions).encode?.enter?.cornerRadiusTopLeft).toEqual({ value: 6 });
+    expect(
+      getDodgedGroupFocusRing({ ...defaultBarOptions, hasSquareCorners: true }).encode?.enter?.cornerRadiusTopLeft
+    ).toEqual({ value: 2 });
   });
 });

@@ -38,6 +38,7 @@ import {
   FOCUSED_REGION,
   GROUP_ID,
   HOVERED_ITEM,
+  LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   MARK_ID,
   OPACITY_SCALE,
@@ -57,6 +58,7 @@ import {
   addScales,
   addSecondaryScales,
   addSignals,
+  getDodgedGroupAggregateData,
   getDodgeGroupTransform,
   getRepeatedScale,
   getStackAggregateData,
@@ -1129,6 +1131,22 @@ describe('barSpecBuilder', () => {
         const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
         expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
       });
+      test('should add the per-group focus ring when enabled on a dodged bar', () => {
+        const marks = addMarks([], { ...defaultBarOptions, type: 'dodged', accessibleNavigation: true, color: 'series' });
+        const ring = marks.find((mark) => mark.name === 'bar0_stackFocusRing');
+        expect(ring).toBeDefined();
+        expect(ring?.from).toEqual({ data: 'bar0_groups' });
+      });
+      test('should not add the group focus ring on a basic (single-series) dodged bar', () => {
+        // a static {value} color (no series field) → single-series, so no per-group ring
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          type: 'dodged',
+          accessibleNavigation: true,
+          color: { value: 'categorical-100' },
+        });
+        expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
+      });
     });
 
     describe('with annotations', () => {
@@ -1377,7 +1395,24 @@ describe('barSpecBuilder', () => {
         {
           name: 'bar0_groups',
           source: FILTERED_TABLE,
-          transform: [{ type: 'aggregate', groupby: [DEFAULT_CATEGORICAL_DIMENSION] }],
+          transform: [
+            {
+              type: 'formula',
+              as: `${DEFAULT_METRIC}_ringTop`,
+              expr: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
+            },
+            {
+              type: 'formula',
+              as: `${DEFAULT_METRIC}_ringBottom`,
+              expr: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
+            },
+            {
+              type: 'aggregate',
+              groupby: [DEFAULT_CATEGORICAL_DIMENSION],
+              fields: [`${DEFAULT_METRIC}_ringTop`, `${DEFAULT_METRIC}_ringBottom`],
+              ops: ['min', 'max'],
+            },
+          ],
         },
       ]);
     });
@@ -1427,8 +1462,20 @@ describe('barSpecBuilder', () => {
           source: FILTERED_TABLE,
           transform: [
             {
+              type: 'formula',
+              as: `${DEFAULT_METRIC}_ringTop`,
+              expr: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
+            },
+            {
+              type: 'formula',
+              as: `${DEFAULT_METRIC}_ringBottom`,
+              expr: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
+            },
+            {
               type: 'aggregate',
               groupby: [DEFAULT_CATEGORICAL_DIMENSION],
+              fields: [`${DEFAULT_METRIC}_ringTop`, `${DEFAULT_METRIC}_ringBottom`],
+              ops: ['min', 'max'],
             },
           ],
         },
@@ -1547,6 +1594,40 @@ describe('barSpecBuilder', () => {
       const { groupby } = getStackAggregateData({ ...defaultBarOptions, type: 'dodged' })
         .transform?.[0] as AggregateTransform;
       expect(groupby).toStrictEqual([DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR]);
+    });
+  });
+
+  describe('getDodgedGroupAggregateData()', () => {
+    test('resolves each row against the single metric scale for a non-dual-metric-axis bar', () => {
+      const data = getDodgedGroupAggregateData({ ...defaultBarOptions, type: 'dodged' });
+      expect(data.name).toBe('bar0_groups');
+      const [ringTop, ringBottom, aggregate] = data.transform as [FormulaTransform, FormulaTransform, AggregateTransform];
+      expect(ringTop).toStrictEqual({
+        type: 'formula',
+        as: `${DEFAULT_METRIC}_ringTop`,
+        expr: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
+      });
+      expect(ringBottom).toStrictEqual({
+        type: 'formula',
+        as: `${DEFAULT_METRIC}_ringBottom`,
+        expr: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
+      });
+      expect(aggregate).toStrictEqual({
+        type: 'aggregate',
+        groupby: [DEFAULT_CATEGORICAL_DIMENSION],
+        fields: [`${DEFAULT_METRIC}_ringTop`, `${DEFAULT_METRIC}_ringBottom`],
+        ops: ['min', 'max'],
+      });
+    });
+
+    // Regression: a dual-metric-axis bar's last series renders on a secondary scale with its own
+    // domain (see getMetricEncodings) — a group's ring must resolve each row against its own scale,
+    // not just the primary one, or it undershoots a group whose secondary-axis bar is actually taller.
+    test('resolves each row against its own primary/secondary scale for a dual-metric-axis bar', () => {
+      const data = getDodgedGroupAggregateData({ ...defaultBarOptions, type: 'dodged', dualMetricAxis: true });
+      const [ringTop] = data.transform as [FormulaTransform];
+      const expectedScaleExpr = `(datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? 'yLinearSecondary' : 'yLinearPrimary')`;
+      expect(ringTop.expr).toBe(`min(scale(${expectedScaleExpr}, 0), scale(${expectedScaleExpr}, datum.${DEFAULT_METRIC}))`);
     });
   });
 
