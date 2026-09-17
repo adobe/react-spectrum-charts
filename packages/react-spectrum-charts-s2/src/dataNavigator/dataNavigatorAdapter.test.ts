@@ -603,6 +603,45 @@ describe('attachDataNavigator()', () => {
     });
   });
 
+  describe('dodged bars (no `${markName}_stacks` data source, unlike a stacked bar)', () => {
+    // Regression: resolving a division node's focus bounds used to read `${markName}_stacks` via
+    // findFocusedStackRow, which only exists for a stacked bar — real Vega throws "Unrecognized data
+    // set" for an unknown name, which aborted navigate() before it reached input.focus(), breaking
+    // drill-in/Escape entirely for a dodged (or dual-metric-axis) bar.
+    const attachDodged = () => {
+      (view.data as jest.Mock).mockImplementation((name: string) => {
+        if (name === 'bar0_stacks') throw new Error(`Unrecognized data set: ${name}`);
+        return [];
+      });
+      attachDataNavigator({
+        container,
+        chartType: 'bar',
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        markName: 'bar0',
+        chartId: 'dodged-chart',
+        getView: () => view,
+      });
+    };
+
+    test('drilling in from the root to the dimension group does not throw', () => {
+      attachDodged();
+      entryButton().click();
+      expect(() => fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' })).not.toThrow();
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_DIMENSION && v !== null)).toBe(true);
+    });
+
+    test('Escape from the dimension group back to the root still works', () => {
+      attachDodged();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // root -> group
+      signal.mockClear();
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' });
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_REGION && v === 'chart')).toBe(true);
+    });
+  });
+
   describe('Escape dismisses a visible focus tooltip before drilling out (WCAG 2.2 SC 1.4.13)', () => {
     let tooltipEl: HTMLElement;
     beforeEach(() => {

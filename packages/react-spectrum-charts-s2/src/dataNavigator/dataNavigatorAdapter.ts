@@ -28,14 +28,15 @@ import {
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils';
-import { clearAxisFocusRing, getVisibleAxisLabelColumns, setAxisFocusRing } from './axisLabelGeometry';
-import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, Row } from './barHoverParity';
+import { clearAxisFocusRing, getVisibleAxisLabelColumns, padAxisBounds, positionOverlayAtBounds, setAxisFocusRing } from './axisLabelGeometry';
+import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, getNodeFieldValues, Row } from './barHoverParity';
 import { AxisRegionOptions, NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure';
 import { getNodeRegion, stripRegionPrefix } from './composeRegions';
 import {
   findFocusedBarSceneItem,
   findFocusedDimensionAreaSceneItem,
   hideFocusedItemTooltip,
+  pageBoundsForItem,
   showAxisLabelTooltip,
   showFocusedItemTooltip,
 } from './focusedItemTooltip';
@@ -116,6 +117,43 @@ interface FocusSignals {
 }
 
 const CLEARED_FOCUS: FocusSignals = { item: null, region: null, dimension: null };
+
+interface Bounds {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+/**
+ * Page-absolute bounds of the real mark a focused content node represents — a leaf's own bar/segment
+ * rect, or a division's whole-stack hover-area rect — so `.dn-node` can be sized/positioned to it
+ * instead of overlaying the whole container (letting a screen magnifier center on the actual focused
+ * region). `undefined` for the dimension-root (whole-chart) node, which has no single mark to bound,
+ * or when no matching mark is found; callers fall back to the full container.
+ */
+const resolveContentFocusBounds = (
+  view: View,
+  container: HTMLElement,
+  node: NodeObject,
+  markName: string,
+  dimension: string,
+  color: string | undefined
+): Bounds | undefined => {
+  if (node.dimensionLevel === 1) return undefined;
+
+  if (node.dimensionLevel == null) {
+    const row = findFocusedRow(view, node, dimension, color);
+    const item = row ? findFocusedBarSceneItem(view, markName, row[MARK_ID]) : undefined;
+    return item ? pageBoundsForItem(view, container, item) : undefined;
+  }
+
+  // Read the dimension value directly off the node rather than via findFocusedStackRow, which reads
+  // a `${markName}_stacks` data source that only exists for a stacked (not dodged) bar and would throw.
+  const { dimensionValue } = getNodeFieldValues(node, dimension);
+  const item = dimensionValue != null ? findFocusedDimensionAreaSceneItem(view, markName, dimension, dimensionValue) : undefined;
+  return item ? pageBoundsForItem(view, container, item) : undefined;
+};
 
 /** vega-tooltip's default DOM element id — it toggles the `visible` class on this single shared element. */
 const CHART_INSPECT_TOOLTIP_ID = 'vg-tooltip-element';
@@ -369,11 +407,13 @@ export const attachDataNavigator = ({
   }
 
   /**
-   * Draws the axis focus ring around the focused x-axis label's real rendered bounds, and drives
-   * dimension-only hover parity so the corresponding bar highlights like real axis-label hover does.
-   * The whole-axis root node rings the full label row with no single dimension value to highlight.
+   * Draws the axis focus ring around the focused x-axis label's real rendered bounds, sizes the
+   * focused `.dn-node` to the same bounds (so a screen magnifier centers on the actual label instead
+   * of the whole chart), and drives dimension-only hover parity so the corresponding bar highlights
+   * like real axis-label hover does. The whole-axis root node rings the full label row with no single
+   * dimension value to highlight.
    */
-  function applyAxisFocus(node: NodeObject) {
+  function applyAxisFocus(node: NodeObject, el: HTMLElement) {
     const view = getView();
     if (!view || !markName || !dimension) {
       clearAxisFocusRing(focusRing);
@@ -397,6 +437,8 @@ export const attachDataNavigator = ({
     if (node.dimensionLevel === 1) {
       // Axis-level focus: ring around the whole axis; no single tick value to highlight.
       setAxisFocusRing(focusRing, union);
+      const bounds = padAxisBounds(union);
+      if (bounds) positionOverlayAtBounds(el, bounds);
       applyHoverParitySignals(view, { markName, dimension, color }, null, true);
       return;
     }
@@ -409,6 +451,8 @@ export const attachDataNavigator = ({
       return;
     }
     setAxisFocusRing(focusRing, column.bounds);
+    const bounds = padAxisBounds(column.bounds);
+    if (bounds) positionOverlayAtBounds(el, bounds);
     applyHoverParitySignals(view, { markName, dimension, color }, node, true);
     // Show the label's tooltip on focus, matching mouse hover. React Spectrum's TooltipTrigger dismisses
     // it on Escape (via onOpenChange in RscChart) without moving focus — WCAG 2.2 SC 1.4.13.
@@ -475,11 +519,23 @@ export const attachDataNavigator = ({
     const el = rendering.render({ renderId, datum: node });
     if (!el) return;
 
-    // Visual focus comes from the Vega ring, so overlay the element across the whole container.
-    el.style.width = '100%';
-    el.style.height = '100%';
-    el.style.top = '0';
-    el.style.left = '0';
+    // Size/position .dn-node to the real focused mark so a screen magnifier centers on it, not the
+    // whole chart. An x-axis node gets its bounds from applyAxisFocus below (its own scenegraph read);
+    // the dimension-root (whole-chart) node has no single mark, so it keeps the full-container default.
+    const isAxisNode = getNodeRegion(node) === 'xAxis';
+    const view = getView();
+    const contentBounds =
+      !isAxisNode && view && markName && dimension
+        ? resolveContentFocusBounds(view, container, node, markName, dimension, color)
+        : undefined;
+    if (contentBounds) {
+      positionOverlayAtBounds(el, contentBounds);
+    } else {
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.top = '0';
+      el.style.left = '0';
+    }
     el.style.outline = 'none';
     el.style.boxShadow = 'none';
 
@@ -532,7 +588,7 @@ export const attachDataNavigator = ({
       const isAxisNode = getNodeRegion(node) === 'xAxis';
       // Set before applyFocusSignals's runAsync() so both flush together in one dataflow pulse.
       if (isAxisNode) {
-        applyAxisFocus(node);
+        applyAxisFocus(node, el);
       } else {
         clearAxisFocusRing(focusRing);
         if (view && markName && dimension) {
