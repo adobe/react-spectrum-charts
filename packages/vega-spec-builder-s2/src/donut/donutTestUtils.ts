@@ -27,5 +27,7 @@ export const defaultDonutOptions: DonutSpecOptions = {
   markType: 'donut',
   metric: 'testMetric',
   segmentLabels: [],
+  sortOrder: 'valueDescending',
   startAngle: 0,
+  variant: 'circle',
 };

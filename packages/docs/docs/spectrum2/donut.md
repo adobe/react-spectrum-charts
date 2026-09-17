@@ -199,6 +199,34 @@ point is displayed as a percent of the whole (e.g. a success/failure rate):
 
 ---
 
+## Semicircle donuts
+
+Setting `variant="semicircle"` renders a top-half arc instead of a full
+circle. By default, data is sorted descending by `metric`, so the largest segment renders
+leftmost. Set `sortOrder="data"` to preserve source order for ordinal categories.
+`startAngle` defaults to
+`-Math.PI / 2` for this variant (a 9 o'clock start, sweeping clockwise through 12 to 3
+o'clock), but an explicit `startAngle` still overrides it.
+
+```jsx
+<Donut metric="count" color="browser" variant="semicircle">
+  <DonutSummary label="Visitors" />
+</Donut>
+```
+
+```jsx
+<Donut metric="count" color="response" variant="semicircle" sortOrder="data">
+  <DonutSummary label="Responses" />
+</Donut>
+```
+
+:::note Segment labels unsupported
+`SegmentLabel` children are not supported for `variant="semicircle"` and are silently
+omitted. `DonutSummary` and `isBoolean` both continue to work normally.
+:::
+
+---
+
 ## Donut props (S2)
 
 <table>
@@ -266,10 +294,22 @@ point is displayed as a percent of the whole (e.g. a success/failure rate):
             <td>Name of the donut component. Useful when referencing the donut marks programmatically.</td>
         </tr>
         <tr>
+            <td>sortOrder</td>
+            <td>'valueDescending' | 'data'</td>
+            <td>'valueDescending'</td>
+            <td>Controls semicircle segment ordering. <code>'data'</code> preserves source order for ordinal categories.</td>
+        </tr>
+        <tr>
             <td>startAngle</td>
             <td>number</td>
             <td>0</td>
-            <td>Start angle of the donut in radians. <code>0</code> is top dead center.</td>
+            <td>Start angle of the donut in radians. <code>0</code> is top dead center. Defaults to <code>-Math.PI / 2</code> when <code>variant="semicircle"</code>.</td>
+        </tr>
+        <tr>
+            <td>variant</td>
+            <td>'circle' | 'semicircle'</td>
+            <td>'circle'</td>
+            <td>Renders a top-half ("gauge style") arc instead of a full circle. <code>SegmentLabel</code> children are not supported with this variant.</td>
         </tr>
     </tbody>
 </table>
