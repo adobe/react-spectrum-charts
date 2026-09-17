@@ -222,7 +222,7 @@ o'clock), but an explicit `startAngle` still overrides it.
 
 :::note Segment labels unsupported
 `SegmentLabel` children are not supported for `variant="semicircle"` and are silently
-omitted. `DonutSummary` and `isBoolean` both continue to work normally.
+omitted.
 :::
 
 ---
@@ -309,7 +309,7 @@ omitted. `DonutSummary` and `isBoolean` both continue to work normally.
             <td>variant</td>
             <td>'circle' | 'semicircle'</td>
             <td>'circle'</td>
-            <td>Renders a top-half ("gauge style") arc instead of a full circle. <code>SegmentLabel</code> children are not supported with this variant.</td>
+            <td>Renders a top-half arc instead of a full circle. <code>SegmentLabel</code> children are not supported with this variant.</td>
         </tr>
     </tbody>
 </table>
