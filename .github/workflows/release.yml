@@ -34,6 +34,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Determine release pull request title
+        id: release-title
+        run: echo "title=$(node ./scripts/getReleasePrTitle.js)" >> "$GITHUB_OUTPUT"
+
       - name: Create release pull request or publish packages
         id: changesets
         uses: changesets/action@v1
@@ -41,7 +45,7 @@ jobs:
           version: yarn changeset version
           publish: yarn release
           commit: 'chore: version packages'
-          title: 'chore: version packages'
+          title: ${{ steps.release-title.outputs.title }}
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
