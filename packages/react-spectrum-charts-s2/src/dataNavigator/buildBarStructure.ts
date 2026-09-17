@@ -209,6 +209,8 @@ export const buildBarStructure = ({
 
   // Every node rendered in keyboard mode needs an aria-label.
   prepareNodeSemantics(structure, {
+    dimension,
+    data: orderedData,
     fieldLabels,
     colorOverride,
     order,
@@ -229,6 +231,10 @@ const getAccessibleColorName = (value: unknown, locale: string): string => {
 };
 
 export interface NodeLabelOptions {
+  /** The bar's category field. Needed to look up a division (stack/group) node's own rows and to exclude it from each segment's own field list, since it's already stated once in the group's own label. */
+  dimension?: string;
+  /** The chart's visible, ordered rows. Needed to build a division (stack/group) node's itemized segment summary — a division's own `node.data` is data-navigator's internal bookkeeping, not the real rows. */
+  data?: SimpleData[];
   /** Maps a data field to its display label. When set, a leaf's accessible name lists only these fields, labeled by their titles, instead of every raw field. */
   fieldLabels?: Record<string, string>;
   /** A per-datum color override field whose values are raw color strings, rendered via a locale-aware accessible color name instead of the raw value. */
@@ -241,22 +247,23 @@ export interface NodeLabelOptions {
   locale?: string;
 }
 
-/** Fallback label for a node with no consumer-supplied semantics: a leaf's `field: value` pairs (limited to `fieldLabels` and labeled by them when provided), or the bare node id for a structural (dimension/division) node. */
-export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {}): string => {
-  const { fieldLabels = {}, colorOverride, order, metricSeriesLabel, locale = 'en-US' } = options;
-  if (node.dimensionLevel != null) return String(node.id);
-
-  const data = node.data as Record<string, unknown> | undefined;
-  if (!data) return String(node.id);
-
-  const labeledFields = Object.keys(fieldLabels);
-  const includedFields = [...new Set([...labeledFields, colorOverride, metricSeriesLabel?.metric].filter((field): field is string => field != null))];
+/** A row's `field: value` parts, limited to `fieldLabels` (and labeled by them) when provided, with color/metric-series overrides applied. `excludeFields` drops fields already stated elsewhere (e.g. a division's own dimension value). */
+const buildFieldValueParts = (
+  data: Record<string, unknown>,
+  { fieldLabels = {}, colorOverride, order, metricSeriesLabel, locale = 'en-US' }: NodeLabelOptions,
+  excludeFields: string[] = []
+): string[] => {
+  const labeledFields = Object.keys(fieldLabels).filter((field) => !excludeFields.includes(field));
+  const includedFields = [
+    ...new Set([...labeledFields, colorOverride, metricSeriesLabel?.metric].filter((field): field is string => field != null)),
+  ].filter((field) => !excludeFields.includes(field));
   const entries: [string, unknown][] = labeledFields.length
     ? includedFields.filter((field) => data[field] != null).map((field) => [field, data[field]])
     : Object.entries(data).filter(
-        ([key, value]) => !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function'
+        ([key, value]) =>
+          !excludeFields.includes(key) && !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function'
       );
-  const parts = entries
+  return entries
     .filter(([key]) => key !== order)
     .map(([key, value]) => {
       if (key === colorOverride) return `${fieldLabels[key] ?? 'Color'}: ${getAccessibleColorName(value, locale)}`;
@@ -266,6 +273,35 @@ export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {})
       }
       return `${fieldLabels[key] ?? key}: ${value}`;
     });
+};
+
+/**
+ * Fallback label for a node with no consumer-supplied semantics: a leaf's `field: value` pairs, a
+ * division's dimension value plus an itemized summary of its own segments, or the bare node id for
+ * the whole-chart root (no synthesized narration).
+ */
+export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {}): string => {
+  if (node.dimensionLevel === 1) return String(node.id);
+
+  if (node.dimensionLevel != null) {
+    const { dimension, data: rows, fieldLabels = {} } = options;
+    if (!dimension || !rows) return String(node.id);
+    // The division's own id is a data-navigator-internal composite, not the dimension value itself.
+    const dimensionValue = node.derivedNode ? (node.data as Record<string, unknown> | undefined)?.[node.derivedNode] : undefined;
+    if (dimensionValue == null) return String(node.id);
+    const groupRows = rows.filter((row) => String(row[dimension]) === String(dimensionValue));
+    if (groupRows.length === 0) return String(node.id);
+    const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionValue}.`;
+    const segments = groupRows
+      .map((row) => buildFieldValueParts(row as Record<string, unknown>, options, [dimension]))
+      .filter((parts) => parts.length > 0)
+      .map((parts) => `${parts.join(', ')}.`);
+    return segments.length > 0 ? `${header} ${segments.join(' ')}` : header;
+  }
+
+  const data = node.data as Record<string, unknown> | undefined;
+  if (!data) return String(node.id);
+  const parts = buildFieldValueParts(data, options);
   return parts.length > 0 ? `${parts.join('. ')}.` : String(node.id);
 };
 

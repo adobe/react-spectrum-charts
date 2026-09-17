@@ -307,9 +307,54 @@ describe('buildNodeLabel()', () => {
     expect(buildNodeLabel(node)).toBe('_browser');
   });
 
-  test('falls back to the node id for a division (stack) node — no synthesized narration', () => {
+  test('falls back to the node id for a division (stack) node when no dimension/data is supplied', () => {
     const node = { id: 'Chrome', dimensionLevel: 2, data: { values: { x: {}, y: {}, z: {} } } } as unknown as NodeObject;
     expect(buildNodeLabel(node)).toBe('Chrome');
+  });
+
+  test('describes a division (stack/group) node by its dimension value plus an itemized summary of its own segments', () => {
+    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Chrome' } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      data: [
+        { browser: 'Chrome', operatingSystem: 'Windows', downloads: 5 },
+        { browser: 'Chrome', operatingSystem: 'Mac', downloads: 3 },
+        { browser: 'Chrome', operatingSystem: 'Other', downloads: 2 },
+        { browser: 'Firefox', operatingSystem: 'Windows', downloads: 8 },
+      ],
+      fieldLabels: { browser: 'Browser', operatingSystem: 'Operating system', downloads: 'Downloads' },
+    });
+    expect(label).toBe(
+      'Browser: Chrome. Operating system: Windows, Downloads: 5. Operating system: Mac, Downloads: 3. Operating system: Other, Downloads: 2.'
+    );
+  });
+
+  test('uses the metric title mapped to each segment\'s own series in a division (stack/group) summary', () => {
+    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Chrome' } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      data: [
+        { browser: 'Chrome', operatingSystem: 'Windows', value: 5 },
+        { browser: 'Chrome', operatingSystem: 'Mac', value: 3 },
+      ],
+      fieldLabels: { browser: 'Browser', operatingSystem: 'Operating system' },
+      metricSeriesLabel: {
+        metric: 'value',
+        color: 'operatingSystem',
+        titleBySeries: { Windows: 'Windows Downloads', Mac: 'Mac Downloads' },
+      },
+    });
+    expect(label).toBe('Browser: Chrome. Operating system: Windows, Windows Downloads: 5. Operating system: Mac, Mac Downloads: 3.');
+  });
+
+  test('falls back to the node id for a division node whose dimension value matches no rows', () => {
+    const node = { id: 'Safari', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Safari' } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      data: [{ browser: 'Chrome', downloads: 5 }],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(label).toBe('Safari');
   });
 
   test('describes a leaf node by its own scalar fields (consumer-owned field names, not translatable prose)', () => {
@@ -374,5 +419,18 @@ describe('buildBarStructure() fieldLabels', () => {
       fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
     });
     expect(structure.nodes.Chrome.semantics?.label).toBe('Browser: Chrome. Downloads: 27000.');
+  });
+
+  test('a division (stack/group) accessible name itemizes its own segments, for stacked and dodged bars alike', () => {
+    const groupData = [
+      { browser: 'Chrome', operatingSystem: 'Windows', downloads: 5, order: 2 },
+      { browser: 'Chrome', operatingSystem: 'Mac', downloads: 3, order: 1 },
+    ];
+    const expectedLabel = 'Browser: Chrome. Operating system: Windows, Downloads: 5. Operating system: Mac, Downloads: 3.';
+    const fieldLabels = { browser: 'Browser', operatingSystem: 'Operating system', downloads: 'Downloads' };
+
+    const { structure } = buildBarStructure({ data: groupData, dimension: 'browser', color: 'operatingSystem', order: 'order', fieldLabels });
+    const chromeDivisionId = divisionIdFor(structure, 'browser', 'Chrome');
+    expect(structure.nodes[chromeDivisionId].semantics?.label).toBe(expectedLabel);
   });
 });
