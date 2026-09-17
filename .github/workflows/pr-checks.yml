@@ -26,7 +26,11 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies 📦
-        run: yarn install
+        run: yarn install --frozen-lockfile
+
+      - name: Verify changeset
+        if: ${{ !startsWith(github.head_ref, 'changeset-release/') }}
+        run: yarn changeset status --since=${{ github.event.pull_request.base.sha }}
 
       - name: Lint 🧼
         run: yarn lint
