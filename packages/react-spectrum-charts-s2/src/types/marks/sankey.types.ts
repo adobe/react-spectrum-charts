@@ -9,16 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { JSXElementConstructor, ReactElement } from 'react';
 
-export * from './Area';
-export * from './Bullet';
-export * from './Combo';
-export * from './Donut';
-export * from './DonutSummary';
-export * from './Sankey';
-export * from './Scatter';
-export * from './ScatterAnnotation';
-export * from './ScatterPath';
-export * from './SegmentLabel';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
+import { SankeyOptions } from '@spectrum-charts/vega-spec-builder-s2';
+
+import { ChartPopoverElement, ChartInspectElement } from '../dialogs';
+import { Children } from '../util.types';
+
+export interface SankeyProps extends Omit<SankeyOptions, 'chartPopovers' | 'chartInspects' | 'markType'> {
+  children?: Children<ChartPopoverElement | ChartInspectElement>;
+}
+
+export type SankeyElement = ReactElement<SankeyProps, JSXElementConstructor<SankeyProps>>;

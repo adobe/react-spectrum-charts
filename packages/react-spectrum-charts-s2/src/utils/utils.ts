@@ -46,6 +46,7 @@ import {
   Combo,
   Donut,
   DonutSummary,
+  Sankey,
   Scatter,
   ScatterAnnotation,
   ScatterPath,
@@ -72,6 +73,7 @@ import {
   LineForecastElement,
   LineDirectLabelElement,
   LineElement,
+  SankeyElement,
   ScatterAnnotationElement,
   ScatterElement,
   ScatterPathElement,
@@ -103,6 +105,7 @@ type RscElement =
   | DonutElement
   | LegendElement
   | LineElement
+  | SankeyElement
   | ScatterElement
   | TitleElement;
 
@@ -117,6 +120,7 @@ type ElementCounts = {
   donut: number;
   legend: number;
   line: number;
+  sankey: number;
   scatter: number;
 };
 
@@ -159,6 +163,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     LineForecast.displayName,
     LinePointAnnotation.displayName,
     ReferenceLine.displayName,
+    Sankey.displayName,
     Scatter.displayName,
     ScatterAnnotation.displayName,
     ScatterPath.displayName,
@@ -185,6 +190,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
     Donut.displayName,
     Legend.displayName,
     Line.displayName,
+    Sankey.displayName,
     Scatter.displayName,
     Title.displayName,
   ]);
@@ -389,6 +395,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Line.displayName:
       elementCounts.line++;
       return getComponentName(element as LineElement, `line${elementCounts.line}`);
+    case Sankey.displayName:
+      elementCounts.sankey++;
+      return getComponentName(element as SankeyElement, `sankey${elementCounts.sankey}`);
     case Scatter.displayName:
       elementCounts.scatter++;
       return getComponentName(element as ScatterElement, `scatter${elementCounts.scatter}`);
@@ -416,6 +425,7 @@ const initElementCounts = (): ElementCounts => ({
   donut: -1,
   legend: -1,
   line: -1,
+  sankey: -1,
   scatter: -1,
 });
 

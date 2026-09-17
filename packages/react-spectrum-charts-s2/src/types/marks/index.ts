@@ -16,6 +16,7 @@ export * from './bullet.types';
 export * from './combo.types';
 export * from './donut.types';
 export * from './line.types';
+export * from './sankey.types';
 export * from './scatter.types';
 
 export * from './supplemental';
