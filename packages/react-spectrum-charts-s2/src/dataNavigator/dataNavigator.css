@@ -33,9 +33,14 @@
   overflow: visible;
   pointer-events: none;
 }
+.dn-node,
 .dn-node:focus,
-.dn-node:focus-visible {
-  outline: none;
+.dn-node:focus-visible,
+.dn-node-text,
+.dn-node-text:focus,
+.dn-node-text:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 .dn-axis-focus-ring {
   position: absolute;

@@ -52,9 +52,9 @@ describe('getBarFocusRing()', () => {
     expect(ring.encode?.enter?.cornerRadiusTopLeft).toEqual([{ test: expect.any(String), value: 2 }, { value: 2 }]);
   });
 
-  test('suppresses opacity when this item is also the selected/popover-open one', () => {
+  test('suppresses opacity whenever any item is selected/popover-open', () => {
     const opacity = JSON.stringify(getBarFocusRing(defaultBarOptions).encode?.update?.opacity);
-    expect(opacity).toContain(`${SELECTED_ITEM} === datum.datum.${defaultBarOptions.idKey}`);
+    expect(opacity).toContain(`!(isValid(${SELECTED_ITEM}))`);
   });
 });
 

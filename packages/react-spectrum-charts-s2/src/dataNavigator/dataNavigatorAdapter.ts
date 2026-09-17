@@ -23,6 +23,7 @@ import {
   FOCUSED_REGION,
   HOVERED_ITEM,
   MARK_ID,
+  SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -70,6 +71,10 @@ export interface AttachDataNavigatorOptions {
   dimension?: string;
   /** Series / color field (set for stacked bars). */
   color?: string;
+  /** Per-datum color override field used in accessible bar labels. */
+  colorOverride?: string;
+  /** Locale used for accessible color names. */
+  locale?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
   /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
@@ -78,6 +83,8 @@ export interface AttachDataNavigatorOptions {
   orientation?: Orientation;
   /** Maps a data field to its axis/legend title. Drives the focused leaf's accessible name and, for bars without a ChartInspect, a clean focus tooltip listing only these fields. */
   fieldLabels?: Record<string, string>;
+  /** Per-series metric-axis titles for dual-metric-axis bars. */
+  metricTitleBySeries?: Record<string, string>;
   /** Whether the mark has a ChartInspect. When true the focus tooltip keeps the full datum (ChartInspect renders it); when false it shows only the `fieldLabels` fields. */
   hasChartInspect?: boolean;
   /** The mark's own name (e.g. `bar0`) — drives its real hover signals for mouse-hover parity. */
@@ -266,10 +273,13 @@ export const attachDataNavigator = ({
   data,
   dimension,
   color,
+  colorOverride,
+  locale,
   metric,
   order,
   orientation,
   fieldLabels,
+  metricTitleBySeries,
   hasChartInspect,
   markName,
   title,
@@ -291,7 +301,7 @@ export const attachDataNavigator = ({
       ? { ...xAxis, visibleValues: getVisibleAxisLabelColumns(initialView, container, 'bottom').map((column) => column.value) }
       : xAxis;
 
-  const built = buildChartStructure({ chartType, data, dimension, color, metric, order, orientation, title, fieldLabels, xAxis: xAxisRegion });
+  const built = buildChartStructure({ chartType, data, dimension, color, colorOverride, locale, metric, order, orientation, title, fieldLabels, metricTitleBySeries, xAxis: xAxisRegion });
   if (!built) return;
   const { structure, entryPoint } = built;
 
@@ -411,12 +421,18 @@ export const attachDataNavigator = ({
     selectedData.current = { ...row, [COMPONENT_NAME]: markName } as unknown as Datum;
     selectedDataBounds.current = getItemBounds(sceneItem as ActionItem);
     selectedDataName.current = markName;
+    if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = markName;
     if (triggerPopover(chartId, markName, 'click')) {
       suppressNextLeave = true;
-      // FOCUSED_ITEM stays untouched — getBarFocusRing already hides the ring when SELECTED_ITEM
-      // matches. Tells the popover's close handler this component's hover-parity is still owned by
-      // keyboard focus (see keyboardPopoverComponentName's doc).
-      if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = markName;
+      const view = getView();
+      if (view) {
+        view.signal(SELECTED_ITEM, row[MARK_ID] ?? null);
+      }
+      // Tells the popover's close handler hover-parity is still owned by keyboard focus (see keyboardPopoverComponentName's doc).
+    } else if (keyboardPopoverComponentName) {
+      keyboardPopoverComponentName.current = null;
+      selectedData.current = null;
+      selectedDataName.current = '';
     }
   }
 
@@ -464,6 +480,8 @@ export const attachDataNavigator = ({
     el.style.height = '100%';
     el.style.top = '0';
     el.style.left = '0';
+    el.style.outline = 'none';
+    el.style.boxShadow = 'none';
 
     el.addEventListener('keydown', (event) => {
       const isChartNode = getNodeRegion(node) !== 'xAxis';

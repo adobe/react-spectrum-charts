@@ -14,7 +14,16 @@ import { CSSProperties, RefObject, Ref, useCallback, useEffect, useMemo, useRef,
 import { Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
 import { Focusable } from 'react-aria-components';
 import { View as VegaView } from 'vega';
-import { COMPONENT_NAME, DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
+import {
+  COMPONENT_NAME,
+  DEFAULT_CATEGORICAL_DIMENSION,
+  DEFAULT_METRIC,
+  DEFAULT_SYMBOL_SHAPES,
+  DEFAULT_SYMBOL_SIZES,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
+} from '@spectrum-charts/constants';
 import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
@@ -157,9 +166,23 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const navChartType =
     navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
   const navFields = navChild?.props as
-    | { dimension?: string; metric?: string; color?: unknown; order?: string; name?: string; orientation?: Orientation }
+    | {
+        dimension?: string;
+        metric?: string;
+        color?: unknown;
+        colorOverride?: unknown;
+        order?: string;
+        dualMetricAxis?: boolean;
+        lineType?: unknown;
+        opacity?: unknown;
+        type?: 'dodged' | 'stacked';
+        trellis?: boolean;
+        name?: string;
+        orientation?: Orientation;
+      }
     | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
+  const navColorOverride = typeof navFields?.colorOverride === 'string' ? navFields.colorOverride : undefined;
   const navOrientation: Orientation = navFields?.orientation === 'horizontal' ? 'horizontal' : 'vertical';
   const markName = navFields?.name ?? (navChartType ? `${navChartType}0` : undefined);
 
@@ -190,6 +213,49 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     if (metricTitle) labels[navFields?.metric ?? DEFAULT_METRIC] = metricTitle;
     return labels;
   }, [sanitizedChildren, navOrientation, navFields?.dimension, navFields?.metric, navColor, legendTitle]);
+
+  const navMetricTitleBySeries = useMemo(() => {
+    // Mirrors vega-spec-builder-s2's isDualMetricAxis (barUtils.ts) — keep the two in sync.
+    const isDodgedAndStacked = [navFields?.color, navFields?.lineType, navFields?.opacity].some(
+      (facet) => Array.isArray(facet) && facet.length === 2
+    );
+    const isDualMetricAxis =
+      navFields?.dualMetricAxis && !navFields.trellis && navFields.type === 'dodged' && !isDodgedAndStacked;
+    if (!isDualMetricAxis || !navColor) return undefined;
+    const positions = navOrientation === 'horizontal' ? ['bottom', 'top'] : ['left', 'right'];
+    const titleAtPosition = (position: string) =>
+      (
+        sanitizedChildren.find(
+          (child) =>
+            'displayName' in child.type &&
+            child.type.displayName === Axis.displayName &&
+            (child.props as { position?: string }).position === position
+        )?.props as { title?: string } | undefined
+      )?.title;
+    const primaryTitle = titleAtPosition(positions[0]);
+    const secondaryTitle = titleAtPosition(positions[1]);
+    if (!primaryTitle && !secondaryTitle) return undefined;
+    const seriesOrder = [...new Set((data as SimpleData[]).map((datum) => String(datum[navColor])))];
+    if (seriesOrder.length === 0) return undefined;
+    const secondarySeries = seriesOrder[seriesOrder.length - 1];
+    const labels: Record<string, string> = {};
+    for (const series of seriesOrder) {
+      const axisTitle = series === secondarySeries ? secondaryTitle : primaryTitle;
+      if (axisTitle) labels[series] = axisTitle;
+    }
+    return Object.keys(labels).length > 0 ? labels : undefined;
+  }, [
+    data,
+    navColor,
+    navFields?.color,
+    navFields?.dualMetricAxis,
+    navFields?.lineType,
+    navFields?.opacity,
+    navFields?.trellis,
+    navFields?.type,
+    navOrientation,
+    sanitizedChildren,
+  ]);
 
   const hasChartInspect = useMemo(
     () =>
@@ -283,10 +349,13 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             data={data as SimpleData[]}
             dimension={navFields?.dimension}
             color={navColor}
+            colorOverride={navColorOverride}
+            locale={locale == null ? undefined : String(locale)}
             metric={navFields?.metric}
             order={navFields?.order}
             orientation={navOrientation}
             fieldLabels={fieldLabels}
+            metricTitleBySeries={navMetricTitleBySeries}
             hasChartInspect={hasChartInspect}
             markName={markName}
             title={title}
@@ -322,6 +391,7 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
   const { chartView, selectedData, selectedDataName, keyboardPopoverComponentName } = useChartContext();
   const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const closeFrame = useRef<number | null>(null);
   const { chartPopoverProps, name } = popover;
   const { children, onOpenChange, containerPadding, contentMargin, rightClick, UNSAFE_highlightBy: _highlightBy, ...sizingProps } = chartPopoverProps;
 
@@ -333,25 +403,45 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
 
       if (chartView.current) {
         if (open) {
+          if (closeFrame.current !== null) {
+            cancelAnimationFrame(closeFrame.current);
+            closeFrame.current = null;
+          }
           setRenderDatum(selectedData.current);
+          if (keyboardPopoverComponentName.current === name) {
+            // The popover owns the selected item's outline while open; keep the navigator node mounted but remove its Vega ring.
+            chartView.current.signal(FOCUSED_ITEM, null);
+            chartView.current.signal(FOCUSED_DIMENSION, null);
+            chartView.current.signal(FOCUSED_REGION, null);
+          }
         } else {
           const componentName = selectedDataName.current;
           const keyboardComponentName = keyboardPopoverComponentName.current;
           keyboardPopoverComponentName.current = null;
-          selectedData.current = null;
-          selectedDataName.current = '';
-          if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
-            clearHoverSignals(chartView.current, componentName, specSignalNames);
-          }
+          // Keep the selected outline visible until focus restores to the navigator node; clearing it immediately creates a blank frame.
+          closeFrame.current = requestAnimationFrame(() => {
+            closeFrame.current = null;
+            if (!chartView.current) return;
+            selectedData.current = null;
+            selectedDataName.current = '';
+            if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
+              clearHoverSignals(chartView.current, componentName, specSignalNames);
+            }
+            setSelectedSignals({ idKey, selectedData: null, view: chartView.current });
+            chartView.current.run();
+          });
         }
-        setSelectedSignals({ idKey, selectedData: selectedData.current, view: chartView.current });
-        chartView.current.run();
+        if (open) {
+          setSelectedSignals({ idKey, selectedData: selectedData.current, view: chartView.current });
+          chartView.current.run();
+        }
       }
     },
     [
       chartView,
       keyboardPopoverComponentName,
       idKey,
+      name,
       onOpenChange,
       selectedData,
       selectedDataName,

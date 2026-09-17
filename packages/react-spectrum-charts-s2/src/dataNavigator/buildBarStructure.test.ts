@@ -325,10 +325,42 @@ describe('buildNodeLabel()', () => {
       id: 'Chrome',
       data: { browser: 'Chrome', downloads: 27000, percentLabel: '53.1%', share: 0.531 },
     } as unknown as NodeObject;
-    const label = buildNodeLabel(node, { browser: 'Browser', downloads: 'Downloads' });
+    const label = buildNodeLabel(node, { fieldLabels: { browser: 'Browser', downloads: 'Downloads' } });
     expect(label).toBe('Browser: Chrome. Downloads: 27000.');
     expect(label).not.toContain('percentLabel');
     expect(label).not.toContain('share');
+  });
+
+  test('uses a human-readable color name for colorOverride and omits order', () => {
+    const node = {
+      id: 'Chrome',
+      data: { browser: 'Chrome', downloads: 27, barColor: '#2d7d46', order: 1 },
+    } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+      colorOverride: 'barColor',
+      order: 'order',
+    });
+    expect(label).toContain('Color: dark green');
+    expect(label).toContain('Downloads: 27');
+    expect(label).not.toContain('#2d7d46');
+    expect(label).not.toContain('order');
+  });
+
+  test('uses the metric title mapped to a leaf series', () => {
+    const node = {
+      id: 'Chrome::Mac',
+      data: { browser: 'Chrome', operatingSystem: 'Mac', value: 5 },
+    } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      fieldLabels: { browser: 'Browser', operatingSystem: 'Operating system' },
+      metricSeriesLabel: {
+        metric: 'value',
+        color: 'operatingSystem',
+        titleBySeries: { Windows: 'Windows Downloads', Mac: 'Mac Downloads' },
+      },
+    });
+    expect(label).toContain('Mac Downloads: 5');
   });
 });
 

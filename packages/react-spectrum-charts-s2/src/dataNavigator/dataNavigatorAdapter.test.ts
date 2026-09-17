@@ -22,6 +22,7 @@ import {
   FOCUSED_REGION,
   HOVERED_ITEM,
   MARK_ID,
+  SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -935,6 +936,7 @@ describe('attachDataNavigator()', () => {
         fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
 
         fireEvent.keyDown(focused(), { key: ' ', code: 'Space' }); // no button found, nothing opened
+        expect(signal.mock.calls.some(([name, value]) => name === SELECTED_ITEM && value != null)).toBe(false);
         signal.mockClear();
         focusOutToPopover();
 

@@ -75,13 +75,13 @@ const getDynamicFocusRingCorners = (options: BarSpecOptions): RectEncodeEntry =>
 };
 
 export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
-  const { color, colorScheme, dimension, idKey, name } = options;
+  const { color, colorScheme, dimension, name } = options;
   const focusedItemId =
     typeof color === 'string'
       ? `datum.datum.${dimension} + "${NAVIGATION_ID_SEPARATOR}" + datum.datum.${color}`
       : `datum.datum.${dimension}`;
-  // Suppressed when a popover is open on this same item, so it doesn't double up with the selection ring.
-  const isSelected = `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.datum.${idKey}`;
+  // Suppressed whenever any item is selected, since only one bar can be selected and its own selection ring shows instead.
+  const isSelected = `isValid(${SELECTED_ITEM})`;
   return {
     name: `${name}_focusRing`,
     type: 'rect',
