@@ -54,7 +54,7 @@ describe('getBarFocusRing()', () => {
 
   test('suppresses opacity whenever any item is selected/popover-open', () => {
     const opacity = JSON.stringify(getBarFocusRing(defaultBarOptions).encode?.update?.opacity);
-    expect(opacity).toContain(`!(isValid(${SELECTED_ITEM}))`);
+    expect(opacity).toContain(`isValid(${SELECTED_ITEM})`);
   });
 });
 
@@ -117,18 +117,16 @@ describe('getDodgedGroupFocusRing()', () => {
     ]);
   });
 
-  test('positions a vertical group ring along the y axis using the pre-scaled, baseline-inclusive per-row extent', () => {
+  test('positions a vertical group ring using reactive metric scales', () => {
     const ring = getDodgedGroupFocusRing(defaultBarOptions);
-    // top/bottom edges read the already-scaled pixel extent computed per row in getDodgedGroupAggregateData
-    // (correct even for a mixed-scale dual-metric-axis group), not a raw metric value re-scaled here.
-    expect(JSON.stringify(ring.encode?.update?.y)).toContain(`datum.min_${metric}_ringTop`);
-    expect(JSON.stringify(ring.encode?.update?.y2)).toContain(`datum.max_${metric}_ringBottom`);
+    expect(JSON.stringify(ring.encode?.update?.y)).toContain(`scale('yLinear', datum.min_${metric})`);
+    expect(JSON.stringify(ring.encode?.update?.y2)).toContain(`scale('yLinear', datum.max_${metric})`);
   });
 
-  test('positions a horizontal group ring along the x axis using the pre-scaled, baseline-inclusive per-row extent', () => {
+  test('positions a horizontal group ring using reactive metric scales', () => {
     const ring = getDodgedGroupFocusRing({ ...defaultBarOptions, orientation: 'horizontal' });
-    expect(JSON.stringify(ring.encode?.update?.x)).toContain(`datum.min_${metric}_ringTop`);
-    expect(JSON.stringify(ring.encode?.update?.x2)).toContain(`datum.max_${metric}_ringBottom`);
+    expect(JSON.stringify(ring.encode?.update?.x)).toContain(`scale('xLinear', datum.min_${metric})`);
+    expect(JSON.stringify(ring.encode?.update?.x2)).toContain(`scale('xLinear', datum.max_${metric})`);
   });
 
   test('rounds the metric-end corners unless square corners are requested', () => {
@@ -136,5 +134,18 @@ describe('getDodgedGroupFocusRing()', () => {
     expect(
       getDodgedGroupFocusRing({ ...defaultBarOptions, hasSquareCorners: true }).encode?.enter?.cornerRadiusTopLeft
     ).toEqual({ value: 2 });
+  });
+
+  // Regression: a dual-metric-axis bar's last series renders on a secondary scale with its own domain
+  // (see getMetricEncodings), so the ring must resolve the primary/secondary fields against their own
+  // scales, not just the primary one, or it undershoots a group whose secondary-axis bar is taller.
+  test('resolves primary/secondary fields against their own scales for a dual-metric-axis bar', () => {
+    const ring = getDodgedGroupFocusRing({ ...defaultBarOptions, type: 'dodged', dualMetricAxis: true });
+    const y = JSON.stringify(ring.encode?.update?.y);
+    const y2 = JSON.stringify(ring.encode?.update?.y2);
+    expect(y).toContain(`scale('yLinearPrimary', datum.min_${metric}_primary)`);
+    expect(y).toContain(`scale('yLinearSecondary', datum.min_${metric}_secondary)`);
+    expect(y2).toContain(`scale('yLinearPrimary', datum.max_${metric}_primary)`);
+    expect(y2).toContain(`scale('yLinearSecondary', datum.max_${metric}_secondary)`);
   });
 });

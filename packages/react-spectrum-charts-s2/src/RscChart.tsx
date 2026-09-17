@@ -392,6 +392,15 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
   const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const closeFrame = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (closeFrame.current !== null) {
+        cancelAnimationFrame(closeFrame.current);
+        closeFrame.current = null;
+      }
+    },
+    []
+  );
   const { chartPopoverProps, name } = popover;
   const { children, onOpenChange, containerPadding, contentMargin, rightClick, UNSAFE_highlightBy: _highlightBy, ...sizingProps } = chartPopoverProps;
 
@@ -409,7 +418,7 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
           }
           setRenderDatum(selectedData.current);
           if (keyboardPopoverComponentName.current === name) {
-            // The popover owns the selected item's outline while open; keep the navigator node mounted but remove its Vega ring.
+            // The popover owns the selected item's outline while open.
             chartView.current.signal(FOCUSED_ITEM, null);
             chartView.current.signal(FOCUSED_DIMENSION, null);
             chartView.current.signal(FOCUSED_REGION, null);

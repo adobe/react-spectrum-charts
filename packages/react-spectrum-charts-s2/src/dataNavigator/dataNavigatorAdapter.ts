@@ -126,11 +126,9 @@ interface Bounds {
 }
 
 /**
- * Page-absolute bounds of the real mark a focused content node represents — a leaf's own bar/segment
- * rect, or a division's whole-stack hover-area rect — so `.dn-node` can be sized/positioned to it
- * instead of overlaying the whole container (letting a screen magnifier center on the actual focused
- * region). `undefined` for the dimension-root (whole-chart) node, which has no single mark to bound,
- * or when no matching mark is found; callers fall back to the full container.
+ * Resolves page-absolute bounds for the mark a focused content node represents, so `.dn-node` can be
+ * sized to it for screen-magnifier support.
+ * @returns `undefined` for the dimension-root (whole-chart) node or when no matching mark is found — callers fall back to the full container.
  */
 const resolveContentFocusBounds = (
   view: View,
@@ -148,8 +146,7 @@ const resolveContentFocusBounds = (
     return item ? pageBoundsForItem(view, container, item) : undefined;
   }
 
-  // Read the dimension value directly off the node rather than via findFocusedStackRow, which reads
-  // a `${markName}_stacks` data source that only exists for a stacked (not dodged) bar and would throw.
+  // Resolve the dimension directly rather than via findFocusedStackRow, which reads a stacked-only data source and would throw for a dodged bar.
   const { dimensionValue } = getNodeFieldValues(node, dimension);
   const item = dimensionValue != null ? findFocusedDimensionAreaSceneItem(view, markName, dimension, dimensionValue) : undefined;
   return item ? pageBoundsForItem(view, container, item) : undefined;

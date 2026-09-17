@@ -23,7 +23,8 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { BarSpecOptions } from '../types';
-import { getOrientationProperties, isDodgedAndStacked, rotateRectClockwiseIfNeeded } from './barUtils';
+import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { getOrientationProperties, isDodgedAndStacked, isDualMetricAxis, rotateRectClockwiseIfNeeded } from './barUtils';
 
 const FOCUS_RING_STROKE_WIDTH = 2;
 const FOCUS_RING_ROUNDED_RADIUS = 6;
@@ -181,16 +182,35 @@ export const getStackFocusRing = (options: BarSpecOptions): RectMark => {
  */
 export const getDodgedGroupFocusRing = (options: BarSpecOptions): RectMark => {
   const { colorScheme, dimension, metric, name, orientation } = options;
-  const { dimensionScaleKey } = getOrientationProperties(orientation);
+  const { dimensionScaleKey, metricScaleKey } = getOrientationProperties(orientation);
   const dimStart = `scale('${dimensionScaleKey}', datum.${dimension}) - ${FOCUS_RING_OFFSET}`;
   const dimEnd = `scale('${dimensionScaleKey}', datum.${dimension}) + bandwidth('${dimensionScaleKey}') + ${FOCUS_RING_OFFSET}`;
-  // Already pixel-space and baseline-inclusive (see getDodgedGroupAggregateData), resolved per-row
-  // against whichever scale that row's own bar renders on — correct even when the group mixes
-  // primary- and secondary-axis bars (a dual-metric-axis dodged bar). min_*_ringTop is always the
-  // numerically smaller pixel coordinate and max_*_ringBottom the larger, regardless of orientation,
-  // since both scale directions (inverted for vertical, not for horizontal) are already baked in.
-  const groupTop = `datum.min_${metric}_ringTop`;
-  const groupBottom = `datum.max_${metric}_ringBottom`;
+  // A dual-metric-axis bar's last series renders on a secondary scale with its own domain (see
+  // getMetricEncodings), so the ring must resolve each of the 4 primary/secondary min/max fields
+  // getDodgedGroupAggregateData produces against its own scale — keep the field names here in sync
+  // with that function. The trailing baseline term keeps a one-sided (all-positive/all-negative)
+  // group's ring anchored to the axis baseline, same as a real bar.
+  const getScaledExtent = (bound: 'min' | 'max'): string => {
+    const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleKey);
+    const fields = isDualMetricAxis(options)
+      ? [
+          { scale: primaryScale, field: `min_${metric}_primary` },
+          { scale: primaryScale, field: `max_${metric}_primary` },
+          { scale: secondaryScale, field: `min_${metric}_secondary` },
+          { scale: secondaryScale, field: `max_${metric}_secondary` },
+        ]
+      : [
+          { scale: metricScaleKey, field: `min_${metric}` },
+          { scale: metricScaleKey, field: `max_${metric}` },
+        ];
+    const expressions = fields.map(
+      ({ scale, field }) => `isValid(datum.${field}) ? scale('${scale}', datum.${field}) : scale('${scale}', 0)`
+    );
+    expressions.push(`scale('${metricScaleKey}', 0)`);
+    return `${bound}(${expressions.join(', ')})`;
+  };
+  const groupTop = getScaledExtent('min');
+  const groupBottom = getScaledExtent('max');
   const update: RectEncodeEntry =
     orientation === 'vertical'
       ? {

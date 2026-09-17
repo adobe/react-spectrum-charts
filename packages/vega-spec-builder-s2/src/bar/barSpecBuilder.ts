@@ -427,42 +427,38 @@ const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: 
 };
 
 export const getDodgedGroupAggregateData = (options: BarSpecOptions): Data => {
-  const { dimension, metric, name, orientation } = options;
-  const { metricScaleKey } = getOrientationProperties(orientation);
-  // A dual-metric-axis bar's last series renders against a different scale than the rest (see
-  // getMetricEncodings) — resolve each row's own scale (Vega supports a dynamic scale name here) before
-  // aggregating, so a mixed-scale group's ring reflects whichever bar is actually tallest on screen,
-  // not just the primary scale's view of the raw metric.
-  const scaleForRow = isDualMetricAxis(options)
-    ? (() => {
-        const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleKey);
-        return `(datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? '${secondaryScale}' : '${primaryScale}')`;
-      })()
-    : `'${metricScaleKey}'`;
+  const { dimension, metric, name } = options;
+  const dualMetricAxis = isDualMetricAxis(options);
+  // A dual-metric-axis bar's last series renders against a secondary scale with its own domain (see
+  // getMetricEncodings), so its metric can't be aggregated together with the rest — null out whichever
+  // side a row doesn't belong to and aggregate both fields, so getDodgedGroupFocusRing can resolve each
+  // one against its own scale (keep the field names here in sync with that function).
+  const transforms = dualMetricAxis
+    ? [
+        {
+          type: 'formula' as const,
+          as: `${metric}_primary`,
+          expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? null : datum.${metric}`,
+        },
+        {
+          type: 'formula' as const,
+          as: `${metric}_secondary`,
+          expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? datum.${metric} : null`,
+        },
+      ]
+    : [];
   return {
     name: `${name}_groups`,
     source: FILTERED_TABLE,
     transform: [
-      {
-        type: 'formula',
-        as: `${metric}_ringTop`,
-        // Includes the baseline (scaled 0) so a group with only positive (or only negative) bars still
-        // ranges to it, matching a real bar's own baseline-anchored extent.
-        expr: `min(scale(${scaleForRow}, 0), scale(${scaleForRow}, datum.${metric}))`,
-      },
-      {
-        type: 'formula',
-        as: `${metric}_ringBottom`,
-        expr: `max(scale(${scaleForRow}, 0), scale(${scaleForRow}, datum.${metric}))`,
-      },
+      ...transforms,
       {
         type: 'aggregate',
         groupby: [dimension],
-        // min/max of the already-scaled (pixel-space) per-row extent — a dodge group has no stack
-        // accumulation to lean on the way getStackAggregateData does, so this is computed directly
-        // from each bar's own rendered position instead.
-        fields: [`${metric}_ringTop`, `${metric}_ringBottom`],
-        ops: ['min', 'max'],
+        fields: dualMetricAxis
+          ? [`${metric}_primary`, `${metric}_primary`, `${metric}_secondary`, `${metric}_secondary`]
+          : [metric, metric],
+        ops: dualMetricAxis ? ['min', 'max', 'min', 'max'] : ['min', 'max'],
       },
     ],
   };

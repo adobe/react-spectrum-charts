@@ -1397,19 +1397,9 @@ describe('barSpecBuilder', () => {
           source: FILTERED_TABLE,
           transform: [
             {
-              type: 'formula',
-              as: `${DEFAULT_METRIC}_ringTop`,
-              expr: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
-            },
-            {
-              type: 'formula',
-              as: `${DEFAULT_METRIC}_ringBottom`,
-              expr: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
-            },
-            {
               type: 'aggregate',
               groupby: [DEFAULT_CATEGORICAL_DIMENSION],
-              fields: [`${DEFAULT_METRIC}_ringTop`, `${DEFAULT_METRIC}_ringBottom`],
+              fields: [DEFAULT_METRIC, DEFAULT_METRIC],
               ops: ['min', 'max'],
             },
           ],
@@ -1462,19 +1452,9 @@ describe('barSpecBuilder', () => {
           source: FILTERED_TABLE,
           transform: [
             {
-              type: 'formula',
-              as: `${DEFAULT_METRIC}_ringTop`,
-              expr: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
-            },
-            {
-              type: 'formula',
-              as: `${DEFAULT_METRIC}_ringBottom`,
-              expr: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
-            },
-            {
               type: 'aggregate',
               groupby: [DEFAULT_CATEGORICAL_DIMENSION],
-              fields: [`${DEFAULT_METRIC}_ringTop`, `${DEFAULT_METRIC}_ringBottom`],
+              fields: [DEFAULT_METRIC, DEFAULT_METRIC],
               ops: ['min', 'max'],
             },
           ],
@@ -1598,36 +1578,33 @@ describe('barSpecBuilder', () => {
   });
 
   describe('getDodgedGroupAggregateData()', () => {
-    test('resolves each row against the single metric scale for a non-dual-metric-axis bar', () => {
+    test('aggregates raw metric extrema for a non-dual-metric-axis bar', () => {
       const data = getDodgedGroupAggregateData({ ...defaultBarOptions, type: 'dodged' });
       expect(data.name).toBe('bar0_groups');
-      const [ringTop, ringBottom, aggregate] = data.transform as [FormulaTransform, FormulaTransform, AggregateTransform];
-      expect(ringTop).toStrictEqual({
-        type: 'formula',
-        as: `${DEFAULT_METRIC}_ringTop`,
-        expr: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
-      });
-      expect(ringBottom).toStrictEqual({
-        type: 'formula',
-        as: `${DEFAULT_METRIC}_ringBottom`,
-        expr: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC}))`,
-      });
+      const [aggregate] = data.transform as [AggregateTransform];
       expect(aggregate).toStrictEqual({
         type: 'aggregate',
         groupby: [DEFAULT_CATEGORICAL_DIMENSION],
-        fields: [`${DEFAULT_METRIC}_ringTop`, `${DEFAULT_METRIC}_ringBottom`],
+        fields: [DEFAULT_METRIC, DEFAULT_METRIC],
         ops: ['min', 'max'],
       });
     });
 
     // Regression: a dual-metric-axis bar's last series renders on a secondary scale with its own
-    // domain (see getMetricEncodings) — a group's ring must resolve each row against its own scale,
-    // not just the primary one, or it undershoots a group whose secondary-axis bar is actually taller.
-    test('resolves each row against its own primary/secondary scale for a dual-metric-axis bar', () => {
+    // domain — a group's ring must resolve each series against its own scale, not just the primary
+    // one, or it undershoots a group whose secondary-axis bar is actually taller.
+    test('aggregates separate raw extrema for dual-metric-axis series', () => {
       const data = getDodgedGroupAggregateData({ ...defaultBarOptions, type: 'dodged', dualMetricAxis: true });
-      const [ringTop] = data.transform as [FormulaTransform];
-      const expectedScaleExpr = `(datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? 'yLinearSecondary' : 'yLinearPrimary')`;
-      expect(ringTop.expr).toBe(`min(scale(${expectedScaleExpr}, 0), scale(${expectedScaleExpr}, datum.${DEFAULT_METRIC}))`);
+      const [primary, secondary, aggregate] = data.transform as [FormulaTransform, FormulaTransform, AggregateTransform];
+      expect(primary.expr).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
+      expect(secondary.expr).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
+      expect(aggregate.fields).toEqual([
+        `${DEFAULT_METRIC}_primary`,
+        `${DEFAULT_METRIC}_primary`,
+        `${DEFAULT_METRIC}_secondary`,
+        `${DEFAULT_METRIC}_secondary`,
+      ]);
+      expect(aggregate.ops).toEqual(['min', 'max', 'min', 'max']);
     });
   });
 
