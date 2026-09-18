@@ -32,6 +32,7 @@ import { Axis } from './components/Axis';
 import { ChartInspect } from './components/ChartInspect';
 import { Legend } from './components/Legend';
 import { AxisRegionOptions } from './dataNavigator/buildChartStructure';
+import { isDualMetricAxisNavigation } from './dataNavigator/buildBarStructure';
 import { Navigator } from './dataNavigator/Navigator';
 import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
@@ -216,12 +217,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   const navMetricTitleBySeries = useMemo(() => {
     // Mirrors vega-spec-builder-s2's isDualMetricAxis (barUtils.ts) — keep the two in sync.
-    const isDodgedAndStacked = [navFields?.color, navFields?.lineType, navFields?.opacity].some(
-      (facet) => Array.isArray(facet) && facet.length === 2
-    );
-    const isDualMetricAxis =
-      navFields?.dualMetricAxis && !navFields.trellis && navFields.type === 'dodged' && !isDodgedAndStacked;
-    if (!isDualMetricAxis || !navColor) return undefined;
+    if (!isDualMetricAxisNavigation(navFields ?? {}) || !navColor) return undefined;
     const positions = navOrientation === 'horizontal' ? ['bottom', 'top'] : ['left', 'right'];
     const titleAtPosition = (position: string) =>
       (
@@ -255,6 +251,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     navFields?.type,
     navOrientation,
     sanitizedChildren,
+    navFields,
   ]);
 
   const hasChartInspect = useMemo(

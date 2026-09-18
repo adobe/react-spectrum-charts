@@ -213,6 +213,13 @@ export const buildBarStructure = ({
     metric,
     color,
     data: orderedData,
+    rowsByDimension: orderedData.reduce((groups, row) => {
+      const key = String(row[dimension]);
+      const group = groups.get(key) ?? [];
+      group.push(row);
+      groups.set(key, group);
+      return groups;
+    }, new Map<string, SimpleData[]>()),
     fieldLabels,
     colorOverride,
     order,
@@ -241,6 +248,8 @@ export interface NodeLabelOptions {
   color?: string;
   /** The chart's visible, ordered rows. Needed to build a division (stack/group) node's itemized segment summary, and to count bars/groups for the whole-chart root — a division's own `node.data` is data-navigator's internal bookkeeping, not the real rows. */
   data?: SimpleData[];
+  /** Rows grouped by dimension value for division labels. */
+  rowsByDimension?: Map<string, SimpleData[]>;
   /** Maps a data field to its display label. When set, a leaf's accessible name lists only these fields, labeled by their titles, instead of every raw field. */
   fieldLabels?: Record<string, string>;
   /** A per-datum color override field whose values are raw color strings, rendered via a locale-aware accessible color name instead of the raw value. */
@@ -299,12 +308,12 @@ export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {})
   }
 
   if (node.dimensionLevel != null) {
-    const { dimension, data: rows, fieldLabels = {} } = options;
+    const { dimension, data: rows, rowsByDimension, fieldLabels = {} } = options;
     if (!dimension || !rows) return String(node.id);
     // The division's own id is a data-navigator-internal composite, not the dimension value itself.
     const dimensionValue = node.derivedNode ? (node.data as Record<string, unknown> | undefined)?.[node.derivedNode] : undefined;
     if (dimensionValue == null) return String(node.id);
-    const groupRows = rows.filter((row) => String(row[dimension]) === String(dimensionValue));
+    const groupRows = rowsByDimension?.get(String(dimensionValue)) ?? rows.filter((row) => String(row[dimension]) === String(dimensionValue));
     if (groupRows.length === 0) return String(node.id);
     const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionValue}.`;
     const segments = groupRows
@@ -326,4 +335,18 @@ export const prepareNodeSemantics = (structure: Structure, options: NodeLabelOpt
       node.semantics = { ...node.semantics, label: buildNodeLabel(node, options) };
     }
   }
+};
+
+export const isDualMetricAxisNavigation = (fields: {
+  color?: unknown;
+  lineType?: unknown;
+  opacity?: unknown;
+  dualMetricAxis?: boolean;
+  trellis?: unknown;
+  type?: string;
+}): boolean => {
+  const isDodgedAndStacked = [fields.color, fields.lineType, fields.opacity].some(
+    (facet) => Array.isArray(facet) && facet.length === 2
+  );
+  return Boolean(fields.dualMetricAxis && !fields.trellis && fields.type === 'dodged' && !isDodgedAndStacked);
 };
