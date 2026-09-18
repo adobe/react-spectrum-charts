@@ -466,6 +466,18 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
 
   const close = useCallback(() => handleOpenChange(false), [handleOpenChange]);
 
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+    };
+    document.addEventListener('keydown', handleEscape, true);
+    return () => document.removeEventListener('keydown', handleEscape, true);
+  }, [close, isOpen]);
+
   const popoverStyle: CSSProperties = {
     minWidth: toPx(sizingProps.minWidth ?? 0),
     ...(sizingProps.maxWidth != null && { maxWidth: toPx(sizingProps.maxWidth) }),
