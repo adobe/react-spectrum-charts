@@ -32,6 +32,8 @@ export interface DonutOptions {
   name?: string;
   /** Start angle of the donut in radians (0 is top dead center, and default) */
   startAngle?: number;
+  /** Segment ordering for semicircle donuts. Use `data` to preserve ordinal source order. */
+  sortOrder?: 'valueDescending' | 'data';
   /**
    * Designates which segments (by their `color` facet value) render with full categorical color.
    * Remaining segments render as a solid color swap to gray at full opacity. Their
@@ -46,6 +48,12 @@ export interface DonutOptions {
   otherItemColor?: string;
   /** Hides labels for segments not in `emphasizedItems`. */
   hideDeemphasizedLabels?: boolean;
+  /**
+   * Renders a top-half arc instead of a full circle. Data is automatically sorted
+   * descending by `metric` so the largest segment always renders leftmost. `segmentLabels` are not
+   * supported and are silently omitted when set to `'semicircle'`.
+   */
+  variant?: 'circle' | 'semicircle';
 
   // children
   chartPopovers?: ChartPopoverOptions[];
@@ -64,7 +72,9 @@ type DonutOptionsWithDefaults =
   | 'metric'
   | 'name'
   | 'segmentLabels'
-  | 'startAngle';
+  | 'sortOrder'
+  | 'startAngle'
+  | 'variant';
 
 export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutOptionsWithDefaults> {
   colorScheme: ColorScheme;
