@@ -348,6 +348,10 @@ export const attachDataNavigator = ({
   container.querySelectorAll('.dn-axis-focus-ring').forEach((node) => node.remove());
 
   let current: string | null = null;
+  // The persisted node stays in the DOM after focus leaves the widget (so Shift+Tab returns to it), so
+  // `current` alone can't tell whether focus is actually inside; this tracks that so the hover guard
+  // below doesn't re-apply the focused node's dimming once focus has left the chart.
+  let focusInsideWidget = false;
   // Set when Space opens a popover: moving focus into it fires a focusout that looks identical to
   // leaving the widget. Consumed by the next focusout so the node survives for focus-restore on close.
   let suppressNextLeave = false;
@@ -357,7 +361,7 @@ export const attachDataNavigator = ({
   const view = getView();
   if (view && markName && dimension) {
     guardHoverParityAgainstMouseClear(container, view, markName, dimension, color, metric, fieldLabels ?? {}, hasChartInspect ?? false, () =>
-      current ? structure.nodes[current] : undefined
+      focusInsideWidget && current ? structure.nodes[current] : undefined
     );
   }
 
@@ -581,6 +585,7 @@ export const attachDataNavigator = ({
     });
 
     el.addEventListener('focus', () => {
+      focusInsideWidget = true;
       const view = getView();
       const isAxisNode = getNodeRegion(node) === 'xAxis';
       // Set before applyFocusSignals's runAsync() so both flush together in one dataflow pulse.
@@ -615,12 +620,12 @@ export const attachDataNavigator = ({
     if (previous && previous !== node.id) rendering.remove(previous);
   }
 
-  const clearFocusState = () => {
-    if (current) rendering.remove(current);
-    current = null;
-    if (rendering.entryButton) {
-      (rendering.entryButton as HTMLButtonElement).tabIndex = 0;
-    }
+  // Clears only the visual focus indicators (Vega ring, hover parity, tooltip, axis ring), leaving the
+  // focused node and `current` intact so Shift+Tab back into the widget restores focus to it.
+  const clearFocusVisuals = () => {
+    // Clear before nulling the hover signal: the guard keys off this to know focus has left, so it
+    // won't re-apply the persisted node's dimming when it sees the signal go null.
+    focusInsideWidget = false;
     const view = getView();
     hideFocusedItemTooltip(view);
     if (view && markName && dimension) {
@@ -630,8 +635,20 @@ export const attachDataNavigator = ({
     applyFocusSignals(view, CLEARED_FOCUS);
   };
 
-  // Clear focus state when it leaves the navigator entirely. Moves within the widget (node→node,
-  // node→exit) keep a relatedTarget inside the container and are ignored.
+  // Full teardown: removes the focused node, restores the entry button to tab order, and clears the
+  // visual indicators. Only for an explicit drill-out (the exit element), not a plain tab/click away.
+  const clearFocusState = () => {
+    if (current) rendering.remove(current);
+    current = null;
+    if (rendering.entryButton) {
+      (rendering.entryButton as HTMLButtonElement).tabIndex = 0;
+    }
+    clearFocusVisuals();
+  };
+
+  // Focus leaving the navigator entirely (tab/click away) clears only the visual indicators; the node
+  // persists so Shift+Tab back returns to it (its `focus` listener re-applies the ring/signals). Moves
+  // within the widget (node→node, node→exit) keep a relatedTarget inside the container and are ignored.
   rendering.wrapper?.addEventListener('focusout', (event) => {
     if (suppressNextLeave) {
       suppressNextLeave = false;
@@ -639,7 +656,7 @@ export const attachDataNavigator = ({
     }
     const next = event.relatedTarget;
     if (next instanceof Node && container.contains(next)) return;
-    clearFocusState();
+    clearFocusVisuals();
   });
 
   if (rendering.exitElement) {
