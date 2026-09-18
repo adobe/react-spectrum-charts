@@ -427,8 +427,7 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
           const componentName = selectedDataName.current;
           const keyboardComponentName = keyboardPopoverComponentName.current;
           keyboardPopoverComponentName.current = null;
-          // Keep the selected outline visible until focus restores to the navigator node; clearing it immediately creates a blank frame.
-          closeFrame.current = requestAnimationFrame(() => {
+          const clearSelection = () => {
             closeFrame.current = null;
             if (!chartView.current) return;
             selectedData.current = null;
@@ -438,7 +437,13 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
             }
             setSelectedSignals({ idKey, selectedData: null, view: chartView.current });
             chartView.current.run();
-          });
+          };
+          // Keyboard navigation needs one frame for focus restoration; mouse popovers retain synchronous cleanup.
+          if (keyboardComponentName === name) {
+            closeFrame.current = requestAnimationFrame(clearSelection);
+          } else {
+            clearSelection();
+          }
         }
         if (open) {
           setSelectedSignals({ idKey, selectedData: selectedData.current, view: chartView.current });
