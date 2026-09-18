@@ -96,6 +96,7 @@
     "data-navigator": "^2.4.1",
     "deepmerge": ">= 4.0.0",
     "immer": ">= 9.0.0",
+    "react-stately": "^3.46.0",
     "vega-embed": ">= 7.1.0",
     "vega-tooltip": ">= 1.1.0"
   },

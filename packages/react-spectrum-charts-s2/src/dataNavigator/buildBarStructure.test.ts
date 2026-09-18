@@ -72,9 +72,14 @@ describe('buildBarStructure()', () => {
     expect(structure.nodes[entryPoint as string].semantics?.label).toBe('Browser downloads');
   });
 
-  test('falls back to the node id (no synthesized narration) when no title is supplied', () => {
-    const { structure, entryPoint } = buildBarStructure({ data, dimension: 'browser' });
-    expect(structure.nodes[entryPoint as string].semantics?.label).toBe(entryPoint);
+  test('falls back to a "metric by dimension" summary with a bar count when no title is supplied', () => {
+    const { structure, entryPoint } = buildBarStructure({ data, dimension: 'browser', metric: 'downloads' });
+    expect(structure.nodes[entryPoint as string].semantics?.label).toBe('downloads by browser chart. 3 bars.');
+  });
+
+  test('counts groups instead of bars, and names the series field, when a color series is present', () => {
+    const { structure, entryPoint } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', metric: 'downloads' });
+    expect(structure.nodes[entryPoint as string].semantics?.label).toBe('downloads by browser chart, grouped by os. 2 groups.');
   });
 
   test('ensures every node has a semantics label', () => {
@@ -298,7 +303,7 @@ describe('buildNodeLabel()', () => {
     expect(buildNodeLabel({ id: 'lonely' } as NodeObject)).toBe('lonely');
   });
 
-  test('falls back to the node id for a dimension (root) node — no synthesized narration', () => {
+  test('falls back to the node id for a dimension (root) node when no dimension/metric is supplied', () => {
     const node = {
       id: '_browser',
       dimensionLevel: 1,
@@ -307,9 +312,105 @@ describe('buildNodeLabel()', () => {
     expect(buildNodeLabel(node)).toBe('_browser');
   });
 
-  test('falls back to the node id for a division (stack) node — no synthesized narration', () => {
+  test('describes a dimension (root) node as "metric by dimension", labeled by their axis titles, with no count when no data is supplied', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(label).toBe('Downloads by Browser chart.');
+  });
+
+  test('counts distinct dimension values as bars when data is supplied and there is no color series', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      data: [
+        { browser: 'Chrome', downloads: 27000 },
+        { browser: 'Firefox', downloads: 8000 },
+      ],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(label).toBe('Downloads by Browser chart. 2 bars.');
+  });
+
+  test('uses singular "bar" for a single-category chart', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      data: [{ browser: 'Chrome', downloads: 27000 }],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(label).toBe('Downloads by Browser chart. 1 bar.');
+  });
+
+  test('counts groups and names the series field when a color series is present', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      color: 'operatingSystem',
+      data: [
+        { browser: 'Chrome', operatingSystem: 'Windows', downloads: 5 },
+        { browser: 'Chrome', operatingSystem: 'Mac', downloads: 3 },
+        { browser: 'Firefox', operatingSystem: 'Windows', downloads: 8 },
+      ],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads', operatingSystem: 'Operating system' },
+    });
+    expect(label).toBe('Downloads by Browser chart, grouped by Operating system. 2 groups.');
+  });
+
+  test('falls back to the node id for a division (stack) node when no dimension/data is supplied', () => {
     const node = { id: 'Chrome', dimensionLevel: 2, data: { values: { x: {}, y: {}, z: {} } } } as unknown as NodeObject;
     expect(buildNodeLabel(node)).toBe('Chrome');
+  });
+
+  test('describes a division (stack/group) node by its dimension value plus an itemized summary of its own segments', () => {
+    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Chrome' } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      data: [
+        { browser: 'Chrome', operatingSystem: 'Windows', downloads: 5 },
+        { browser: 'Chrome', operatingSystem: 'Mac', downloads: 3 },
+        { browser: 'Chrome', operatingSystem: 'Other', downloads: 2 },
+        { browser: 'Firefox', operatingSystem: 'Windows', downloads: 8 },
+      ],
+      fieldLabels: { browser: 'Browser', operatingSystem: 'Operating system', downloads: 'Downloads' },
+    });
+    expect(label).toBe(
+      'Browser: Chrome. Operating system: Windows, Downloads: 5. Operating system: Mac, Downloads: 3. Operating system: Other, Downloads: 2.'
+    );
+  });
+
+  test('uses the metric title mapped to each segment\'s own series in a division (stack/group) summary', () => {
+    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Chrome' } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      data: [
+        { browser: 'Chrome', operatingSystem: 'Windows', value: 5 },
+        { browser: 'Chrome', operatingSystem: 'Mac', value: 3 },
+      ],
+      fieldLabels: { browser: 'Browser', operatingSystem: 'Operating system' },
+      metricSeriesLabel: {
+        metric: 'value',
+        color: 'operatingSystem',
+        titleBySeries: { Windows: 'Windows Downloads', Mac: 'Mac Downloads' },
+      },
+    });
+    expect(label).toBe('Browser: Chrome. Operating system: Windows, Windows Downloads: 5. Operating system: Mac, Mac Downloads: 3.');
+  });
+
+  test('falls back to the node id for a division node whose dimension value matches no rows', () => {
+    const node = { id: 'Safari', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Safari' } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      data: [{ browser: 'Chrome', downloads: 5 }],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(label).toBe('Safari');
   });
 
   test('describes a leaf node by its own scalar fields (consumer-owned field names, not translatable prose)', () => {
@@ -325,10 +426,42 @@ describe('buildNodeLabel()', () => {
       id: 'Chrome',
       data: { browser: 'Chrome', downloads: 27000, percentLabel: '53.1%', share: 0.531 },
     } as unknown as NodeObject;
-    const label = buildNodeLabel(node, { browser: 'Browser', downloads: 'Downloads' });
+    const label = buildNodeLabel(node, { fieldLabels: { browser: 'Browser', downloads: 'Downloads' } });
     expect(label).toBe('Browser: Chrome. Downloads: 27000.');
     expect(label).not.toContain('percentLabel');
     expect(label).not.toContain('share');
+  });
+
+  test('uses a human-readable color name for colorOverride and omits order', () => {
+    const node = {
+      id: 'Chrome',
+      data: { browser: 'Chrome', downloads: 27, barColor: '#2d7d46', order: 1 },
+    } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+      colorOverride: 'barColor',
+      order: 'order',
+    });
+    expect(label).toContain('Color: dark green');
+    expect(label).toContain('Downloads: 27');
+    expect(label).not.toContain('#2d7d46');
+    expect(label).not.toContain('order');
+  });
+
+  test('uses the metric title mapped to a leaf series', () => {
+    const node = {
+      id: 'Chrome::Mac',
+      data: { browser: 'Chrome', operatingSystem: 'Mac', value: 5 },
+    } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      fieldLabels: { browser: 'Browser', operatingSystem: 'Operating system' },
+      metricSeriesLabel: {
+        metric: 'value',
+        color: 'operatingSystem',
+        titleBySeries: { Windows: 'Windows Downloads', Mac: 'Mac Downloads' },
+      },
+    });
+    expect(label).toContain('Mac Downloads: 5');
   });
 });
 
@@ -342,5 +475,18 @@ describe('buildBarStructure() fieldLabels', () => {
       fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
     });
     expect(structure.nodes.Chrome.semantics?.label).toBe('Browser: Chrome. Downloads: 27000.');
+  });
+
+  test('a division (stack/group) accessible name itemizes its own segments, for stacked and dodged bars alike', () => {
+    const groupData = [
+      { browser: 'Chrome', operatingSystem: 'Windows', downloads: 5, order: 2 },
+      { browser: 'Chrome', operatingSystem: 'Mac', downloads: 3, order: 1 },
+    ];
+    const expectedLabel = 'Browser: Chrome. Operating system: Windows, Downloads: 5. Operating system: Mac, Downloads: 3.';
+    const fieldLabels = { browser: 'Browser', operatingSystem: 'Operating system', downloads: 'Downloads' };
+
+    const { structure } = buildBarStructure({ data: groupData, dimension: 'browser', color: 'operatingSystem', order: 'order', fieldLabels });
+    const chromeDivisionId = divisionIdFor(structure, 'browser', 'Chrome');
+    expect(structure.nodes[chromeDivisionId].semantics?.label).toBe(expectedLabel);
   });
 });

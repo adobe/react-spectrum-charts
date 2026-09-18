@@ -15,7 +15,7 @@ import { BACKGROUND_COLOR } from '@spectrum-charts/constants';
 
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
-import { getBarFocusRing } from './barFocusRingUtils';
+import { getBarFocusRing, getDodgedGroupFocusRing } from './barFocusRingUtils';
 import { getAnnotationMarks } from './barAnnotationUtils';
 import {
   getBarDimensionHoverArea,
@@ -88,6 +88,12 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
 
   if (isInteractive(options)) {
     marks.unshift(getBarDimensionHoverArea(options, 'dodged'));
+  }
+
+  // A per-group ring, so keyboard/screen-magnifier focus on a whole dodge group has a visible outline
+  // (the per-segment ring above only rings a single bar). Only meaningful with more than one bar per group.
+  if (options.accessibleNavigation && typeof options.color === 'string') {
+    marks.push(getDodgedGroupFocusRing(options));
   }
 
   return marks;

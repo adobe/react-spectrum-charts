@@ -26,7 +26,7 @@ export interface BarHoverParityOptions {
 export type Row = Record<string, unknown>;
 
 /** The raw dimension/color value(s) a focused node represents: a leaf's `node.data`, or a division's dimension value via `derivedNode`. */
-const getNodeFieldValues = (node: NodeObject, dimension: string, color?: string): { dimensionValue: unknown; colorValue?: unknown } => {
+export const getNodeFieldValues = (node: NodeObject, dimension: string, color?: string): { dimensionValue: unknown; colorValue?: unknown } => {
   const data = node.data as Row | undefined;
   if (node.dimensionLevel == null) {
     return { dimensionValue: data?.[dimension], colorValue: color ? data?.[color] : undefined };
@@ -43,12 +43,21 @@ export const findFocusedRow = (view: View, node: NodeObject, dimension: string, 
   return rows.find((row) => row[dimension] === dimensionValue && (colorValue === undefined || (color && row[color] === colorValue)));
 };
 
-/** The `${markName}_stacks` aggregate row for a focused division node — only meaningful for a division; a leaf's own row already has everything `formatTooltip` needs. */
+/**
+ * The `${markName}_stacks` aggregate row for a focused division node — only meaningful for a division;
+ * a leaf's own row already has everything `formatTooltip` needs. `${markName}_stacks` only exists for a
+ * stacked bar (a dodged bar has no stack aggregate at all), and Vega's `view.data()` throws for a data
+ * set name that isn't in the runtime, so a dodged bar's division falls through to `undefined` here.
+ */
 export const findFocusedStackRow = (view: View, node: NodeObject, dimension: string, markName: string): Row | undefined => {
   const { dimensionValue } = getNodeFieldValues(node, dimension);
   if (dimensionValue == null) return undefined;
-  const rows = (view.data(`${markName}_stacks`) ?? []) as Row[];
-  return rows.find((row) => row[dimension] === dimensionValue);
+  try {
+    const rows = (view.data(`${markName}_stacks`) ?? []) as Row[];
+    return rows.find((row) => row[dimension] === dimensionValue);
+  } catch {
+    return undefined;
+  }
 };
 
 /**

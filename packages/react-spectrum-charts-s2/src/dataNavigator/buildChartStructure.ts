@@ -41,6 +41,10 @@ export interface ChartStructureOptions {
   dimension?: string;
   /** Series / color field. When set on a bar, the chart is stacked. */
   color?: string;
+  /** Per-datum color override field used in accessible bar labels. */
+  colorOverride?: string;
+  /** Locale used for accessible color names. */
+  locale?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
   /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
@@ -51,6 +55,8 @@ export interface ChartStructureOptions {
   title?: string;
   /** Maps a data field to its axis/legend title, so a focused leaf's accessible name reads as the chart's titles. */
   fieldLabels?: Record<string, string>;
+  /** Per-series metric-axis titles for dual-metric-axis bars. */
+  metricTitleBySeries?: Record<string, string>;
   /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
   xAxis?: AxisRegionOptions;
 }

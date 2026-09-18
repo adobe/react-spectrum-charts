@@ -23,7 +23,8 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { BarSpecOptions } from '../types';
-import { getOrientationProperties, isDodgedAndStacked, rotateRectClockwiseIfNeeded } from './barUtils';
+import { getDualAxisScaleNames } from '../scale/scaleUtils';
+import { getOrientationProperties, isDodgedAndStacked, isDualMetricAxis, rotateRectClockwiseIfNeeded } from './barUtils';
 
 const FOCUS_RING_STROKE_WIDTH = 2;
 const FOCUS_RING_ROUNDED_RADIUS = 6;
@@ -75,13 +76,13 @@ const getDynamicFocusRingCorners = (options: BarSpecOptions): RectEncodeEntry =>
 };
 
 export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
-  const { color, colorScheme, dimension, idKey, name } = options;
+  const { color, colorScheme, dimension, name } = options;
   const focusedItemId =
     typeof color === 'string'
       ? `datum.datum.${dimension} + "${NAVIGATION_ID_SEPARATOR}" + datum.datum.${color}`
       : `datum.datum.${dimension}`;
-  // Suppressed when a popover is open on this same item, so it doesn't double up with the selection ring.
-  const isSelected = `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.datum.${idKey}`;
+  // Suppressed whenever any item is selected, since only one bar can be selected and its own selection ring shows instead.
+  const isSelected = `isValid(${SELECTED_ITEM})`;
   return {
     name: `${name}_focusRing`,
     type: 'rect',
@@ -158,6 +159,76 @@ export const getStackFocusRing = (options: BarSpecOptions): RectMark => {
     name: `${name}_stackFocusRing`,
     type: 'rect',
     from: { data: `${name}_stacks` },
+    interactive: false,
+    encode: {
+      enter: {
+        fill: { value: 'transparent' },
+        strokeWidth: { value: FOCUS_RING_STROKE_WIDTH },
+        stroke: { value: getS2ColorValue('blue-800', colorScheme) },
+        ...getStaticFocusRingCorners(options),
+      },
+      update: {
+        ...update,
+        opacity: [{ test: `${FOCUSED_DIMENSION} === datum.${dimension}`, value: 1 }, { value: 0 }],
+      },
+    },
+  };
+};
+
+/**
+ * Focus ring around a whole dodge group (a category's cluster of side-by-side bars) when that group
+ * is focused. Named the same as `getStackFocusRing`'s mark so the adapter's ring lookups work
+ * unchanged for either bar type.
+ */
+export const getDodgedGroupFocusRing = (options: BarSpecOptions): RectMark => {
+  const { colorScheme, dimension, metric, name, orientation } = options;
+  const { dimensionScaleKey, metricScaleKey } = getOrientationProperties(orientation);
+  const dimStart = `scale('${dimensionScaleKey}', datum.${dimension}) - ${FOCUS_RING_OFFSET}`;
+  const dimEnd = `scale('${dimensionScaleKey}', datum.${dimension}) + bandwidth('${dimensionScaleKey}') + ${FOCUS_RING_OFFSET}`;
+  // A dual-metric-axis bar's last series renders on a secondary scale with its own domain (see
+  // getMetricEncodings), so the ring must resolve each of the 4 primary/secondary min/max fields
+  // getDodgedGroupAggregateData produces against its own scale — keep the field names here in sync
+  // with that function. The trailing baseline term keeps a one-sided (all-positive/all-negative)
+  // group's ring anchored to the axis baseline, same as a real bar.
+  const getScaledExtent = (bound: 'min' | 'max'): string => {
+    const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleKey);
+    const fields = isDualMetricAxis(options)
+      ? [
+          { scale: primaryScale, field: `min_${metric}_primary` },
+          { scale: primaryScale, field: `max_${metric}_primary` },
+          { scale: secondaryScale, field: `min_${metric}_secondary` },
+          { scale: secondaryScale, field: `max_${metric}_secondary` },
+        ]
+      : [
+          { scale: metricScaleKey, field: `min_${metric}` },
+          { scale: metricScaleKey, field: `max_${metric}` },
+        ];
+    const expressions = fields.map(
+      ({ scale, field }) => `isValid(datum.${field}) ? scale('${scale}', datum.${field}) : scale('${scale}', 0)`
+    );
+    expressions.push(`scale('${metricScaleKey}', 0)`);
+    return `${bound}(${expressions.join(', ')})`;
+  };
+  const groupTop = getScaledExtent('min');
+  const groupBottom = getScaledExtent('max');
+  const update: RectEncodeEntry =
+    orientation === 'vertical'
+      ? {
+          x: { signal: dimStart },
+          x2: { signal: dimEnd },
+          y: { signal: `${groupTop} - ${FOCUS_RING_OFFSET}` },
+          y2: { signal: `${groupBottom} + ${FOCUS_RING_OFFSET}` },
+        }
+      : {
+          y: { signal: dimStart },
+          y2: { signal: dimEnd },
+          x: { signal: `${groupTop} - ${FOCUS_RING_OFFSET}` },
+          x2: { signal: `${groupBottom} + ${FOCUS_RING_OFFSET}` },
+        };
+  return {
+    name: `${name}_stackFocusRing`,
+    type: 'rect',
+    from: { data: `${name}_groups` },
     interactive: false,
     encode: {
       enter: {

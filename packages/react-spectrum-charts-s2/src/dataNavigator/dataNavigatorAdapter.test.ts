@@ -22,6 +22,7 @@ import {
   FOCUSED_REGION,
   HOVERED_ITEM,
   MARK_ID,
+  SELECTED_ITEM,
 } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -374,16 +375,18 @@ describe('attachDataNavigator()', () => {
     expect(signaledWith(FOCUSED_ITEM, null)).toBe(true);
   });
 
-  test('focus leaving the widget (tab/click away) clears focus and removes the node', () => {
+  test('focus leaving the widget (tab/click away) clears the visual focus but keeps the node for return', () => {
     attach();
     entryButton().click();
-    expect(focused()).toBeTruthy();
+    const node = focused();
+    expect(node).toBeTruthy();
 
     signal.mockClear();
     // relatedTarget outside the container === focus left the navigator entirely.
-    fireEvent.focusOut(focused(), { relatedTarget: document.body });
+    fireEvent.focusOut(node, { relatedTarget: document.body });
 
-    expect(focused()).toBeNull();
+    // The node persists so Shift+Tab back returns to it, but the visual focus signals are cleared.
+    expect(focused()).toBe(node);
     expect(signaledWith(FOCUSED_REGION, null)).toBe(true);
   });
 
@@ -401,7 +404,7 @@ describe('attachDataNavigator()', () => {
     expect(signaledWith(FOCUSED_ITEM, null)).toBe(false);
   });
 
-  describe('entry button tab order (Shift+Tab should leave the widget, not land back on it)', () => {
+  describe('entry button tab order (a persisted node keeps Shift+Tab returning to it, not the entry button)', () => {
     test('removes the entry button from tab order once a bar is focused', () => {
       attach();
       entryButton().click();
@@ -410,18 +413,18 @@ describe('attachDataNavigator()', () => {
       expect(entryButton().tabIndex).toBe(-1);
     });
 
-    test('restores the entry button to tab order once focus leaves the widget', () => {
+    test('keeps the entry button out of tab order after focus leaves the widget (Shift+Tab returns to the node)', () => {
       attach();
       entryButton().click();
       fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
 
-      // relatedTarget outside the container === focus left the navigator entirely (e.g. Shift+Tab).
+      // relatedTarget outside the container === focus left the navigator entirely (e.g. Tab away).
       fireEvent.focusOut(focused(), { relatedTarget: document.body });
 
-      expect(entryButton().tabIndex).toBe(0);
+      expect(entryButton().tabIndex).toBe(-1);
     });
 
-    test('leaves the entry button tabbable while focus stays inside (an internal move)', () => {
+    test('keeps the entry button out of tab order while focus stays inside (an internal move)', () => {
       attach();
       entryButton().click();
       fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
@@ -430,6 +433,16 @@ describe('attachDataNavigator()', () => {
       fireEvent.focusOut(focused(), { relatedTarget: insideTarget });
 
       expect(entryButton().tabIndex).toBe(-1);
+    });
+
+    test('restores the entry button to tab order on an explicit drill-out (exit)', () => {
+      attach();
+      entryButton().click();
+      // Escape at the chart root drills out through the exit element, tearing the node down.
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' });
+
+      expect(focused()).toBeNull();
+      expect(entryButton().tabIndex).toBe(0);
     });
   });
 
@@ -602,6 +615,45 @@ describe('attachDataNavigator()', () => {
     });
   });
 
+  describe('dodged bars (no `${markName}_stacks` data source, unlike a stacked bar)', () => {
+    // Regression: resolving a division node's focus bounds used to read `${markName}_stacks` via
+    // findFocusedStackRow, which only exists for a stacked bar — real Vega throws "Unrecognized data
+    // set" for an unknown name, which aborted navigate() before it reached input.focus(), breaking
+    // drill-in/Escape entirely for a dodged (or dual-metric-axis) bar.
+    const attachDodged = () => {
+      (view.data as jest.Mock).mockImplementation((name: string) => {
+        if (name === 'bar0_stacks') throw new Error(`Unrecognized data set: ${name}`);
+        return [];
+      });
+      attachDataNavigator({
+        container,
+        chartType: 'bar',
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        markName: 'bar0',
+        chartId: 'dodged-chart',
+        getView: () => view,
+      });
+    };
+
+    test('drilling in from the root to the dimension group does not throw', () => {
+      attachDodged();
+      entryButton().click();
+      expect(() => fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' })).not.toThrow();
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_DIMENSION && v !== null)).toBe(true);
+    });
+
+    test('Escape from the dimension group back to the root still works', () => {
+      attachDodged();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // root -> group
+      signal.mockClear();
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' });
+      expect(signal.mock.calls.some(([n, v]) => n === FOCUSED_REGION && v === 'chart')).toBe(true);
+    });
+  });
+
   describe('Escape dismisses a visible focus tooltip before drilling out (WCAG 2.2 SC 1.4.13)', () => {
     let tooltipEl: HTMLElement;
     beforeEach(() => {
@@ -745,6 +797,20 @@ describe('attachDataNavigator()', () => {
 
       expect(() => simulateMouseoutClear('bar0_hoveredItem')).not.toThrow();
       expect(signal.mock.calls.some(([n]) => n === 'bar0_hoveredItem')).toBe(false);
+    });
+
+    test('stops reapplying once focus leaves the widget, so the non-focused bars un-dim', () => {
+      attachWithMarkName();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' }); // focuses the first bar
+
+      // Focus leaves the widget: the node persists for return, but the dimming must revert.
+      fireEvent.focusOut(focused(), { relatedTarget: document.body });
+      signal.mockClear();
+
+      // A later mouseout-clear must NOT re-apply the persisted node's hover look.
+      simulateMouseoutClear('bar0_hoveredItem');
+      expect(signal.mock.calls.some(([n, v]) => n === 'bar0_hoveredItem' && v != null)).toBe(false);
     });
 
     test('ignores a real (non-null) hover value — only reapplies on a clobbering clear', () => {
@@ -913,7 +979,7 @@ describe('attachDataNavigator()', () => {
         expect(signaledWith(FOCUSED_ITEM, null)).toBe(false);
       });
 
-      test('clears focus normally the next time focus actually leaves the widget', () => {
+      test('clears the visual focus normally the next time focus actually leaves the widget', () => {
         attachWithPopoverRefs();
         entryButton().click();
         fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
@@ -924,7 +990,8 @@ describe('attachDataNavigator()', () => {
         signal.mockClear();
         focusOutToPopover(); // a second, genuine leave — not suppressed this time
 
-        expect(focused()).toBeNull();
+        // The node persists (Shift+Tab returns to it); only the visual focus signals are cleared.
+        expect(focused()).not.toBeNull();
         expect(signaledWith(FOCUSED_REGION, null)).toBe(true);
       });
 
@@ -935,10 +1002,12 @@ describe('attachDataNavigator()', () => {
         fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
 
         fireEvent.keyDown(focused(), { key: ' ', code: 'Space' }); // no button found, nothing opened
+        expect(signal.mock.calls.some(([name, value]) => name === SELECTED_ITEM && value != null)).toBe(false);
         signal.mockClear();
         focusOutToPopover();
 
-        expect(focused()).toBeNull();
+        // Not suppressed: the visual focus signals clear, though the node itself persists for return.
+        expect(focused()).not.toBeNull();
         expect(signaledWith(FOCUSED_REGION, null)).toBe(true);
       });
     });

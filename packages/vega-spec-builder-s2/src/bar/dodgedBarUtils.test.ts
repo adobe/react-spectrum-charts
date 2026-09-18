@@ -302,5 +302,23 @@ describe('dodgedBarUtils', () => {
       const marks = getDodgedMarks(defaultDodgedOptions);
       expect(marks.find((mark) => mark.name === 'bar0_dimensionHoverArea')).toBeUndefined();
     });
+
+    test('adds a group focus ring when accessible navigation is on and a color series is present', () => {
+      const marks = getDodgedMarks({ ...defaultDodgedOptions, accessibleNavigation: true });
+      const ring = marks.find((mark) => mark.name === 'bar0_stackFocusRing');
+      expect(ring).toBeDefined();
+      expect(ring?.from).toEqual({ data: 'bar0_groups' });
+    });
+
+    test('does not add a group focus ring when accessible navigation is off', () => {
+      const marks = getDodgedMarks(defaultDodgedOptions);
+      expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
+    });
+
+    test('does not add a group focus ring for a single-series (no color field) dodged bar', () => {
+      // a static {value} color (no series field) → single-series, so no per-group ring
+      const marks = getDodgedMarks({ ...defaultDodgedOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
+      expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
+    });
   });
 });

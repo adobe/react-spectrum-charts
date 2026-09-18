@@ -384,6 +384,11 @@ export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef
     return [defaultProductionRule];
   }
 
+  // The item-selection ring supplies the popover outline; avoid adding a second outline directly to the selected bar.
+  if (shouldShowItemSelectionRing(options)) {
+    return [defaultProductionRule];
+  }
+
   return [
     {
       test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.${name}_selectedGroupId)`,

@@ -38,6 +38,7 @@ import {
   FOCUSED_REGION,
   GROUP_ID,
   HOVERED_ITEM,
+  LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   MARK_ID,
   OPACITY_SCALE,
@@ -57,6 +58,7 @@ import {
   addScales,
   addSecondaryScales,
   addSignals,
+  getDodgedGroupAggregateData,
   getDodgeGroupTransform,
   getRepeatedScale,
   getStackAggregateData,
@@ -1129,6 +1131,22 @@ describe('barSpecBuilder', () => {
         const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
         expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
       });
+      test('should add the per-group focus ring when enabled on a dodged bar', () => {
+        const marks = addMarks([], { ...defaultBarOptions, type: 'dodged', accessibleNavigation: true, color: 'series' });
+        const ring = marks.find((mark) => mark.name === 'bar0_stackFocusRing');
+        expect(ring).toBeDefined();
+        expect(ring?.from).toEqual({ data: 'bar0_groups' });
+      });
+      test('should not add the group focus ring on a basic (single-series) dodged bar', () => {
+        // a static {value} color (no series field) → single-series, so no per-group ring
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          type: 'dodged',
+          accessibleNavigation: true,
+          color: { value: 'categorical-100' },
+        });
+        expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
+      });
     });
 
     describe('with annotations', () => {
@@ -1377,7 +1395,14 @@ describe('barSpecBuilder', () => {
         {
           name: 'bar0_groups',
           source: FILTERED_TABLE,
-          transform: [{ type: 'aggregate', groupby: [DEFAULT_CATEGORICAL_DIMENSION] }],
+          transform: [
+            {
+              type: 'aggregate',
+              groupby: [DEFAULT_CATEGORICAL_DIMENSION],
+              fields: [DEFAULT_METRIC, DEFAULT_METRIC],
+              ops: ['min', 'max'],
+            },
+          ],
         },
       ]);
     });
@@ -1429,6 +1454,8 @@ describe('barSpecBuilder', () => {
             {
               type: 'aggregate',
               groupby: [DEFAULT_CATEGORICAL_DIMENSION],
+              fields: [DEFAULT_METRIC, DEFAULT_METRIC],
+              ops: ['min', 'max'],
             },
           ],
         },
@@ -1547,6 +1574,37 @@ describe('barSpecBuilder', () => {
       const { groupby } = getStackAggregateData({ ...defaultBarOptions, type: 'dodged' })
         .transform?.[0] as AggregateTransform;
       expect(groupby).toStrictEqual([DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR]);
+    });
+  });
+
+  describe('getDodgedGroupAggregateData()', () => {
+    test('aggregates raw metric extrema for a non-dual-metric-axis bar', () => {
+      const data = getDodgedGroupAggregateData({ ...defaultBarOptions, type: 'dodged' });
+      expect(data.name).toBe('bar0_groups');
+      const [aggregate] = data.transform as [AggregateTransform];
+      expect(aggregate).toStrictEqual({
+        type: 'aggregate',
+        groupby: [DEFAULT_CATEGORICAL_DIMENSION],
+        fields: [DEFAULT_METRIC, DEFAULT_METRIC],
+        ops: ['min', 'max'],
+      });
+    });
+
+    // Regression: a dual-metric-axis bar's last series renders on a secondary scale with its own
+    // domain — a group's ring must resolve each series against its own scale, not just the primary
+    // one, or it undershoots a group whose secondary-axis bar is actually taller.
+    test('aggregates separate raw extrema for dual-metric-axis series', () => {
+      const data = getDodgedGroupAggregateData({ ...defaultBarOptions, type: 'dodged', dualMetricAxis: true });
+      const [primary, secondary, aggregate] = data.transform as [FormulaTransform, FormulaTransform, AggregateTransform];
+      expect(primary.expr).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
+      expect(secondary.expr).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
+      expect(aggregate.fields).toEqual([
+        `${DEFAULT_METRIC}_primary`,
+        `${DEFAULT_METRIC}_primary`,
+        `${DEFAULT_METRIC}_secondary`,
+        `${DEFAULT_METRIC}_secondary`,
+      ]);
+      expect(aggregate.ops).toEqual(['min', 'max', 'min', 'max']);
     });
   });
 
