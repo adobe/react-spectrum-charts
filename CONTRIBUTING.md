@@ -41,7 +41,7 @@ A few things to keep in mind before submitting a pull request:
 - Add/update stories in storybook for your changes
   - Any change that adds or modifies a prop must have stories to represent that change and tests written that validate the new behavior
 - Update documentation
-- Add a changeset or explicitly record that no package release is required
+- Add a required changeset, or an empty changeset when no package release is required
 - Remember that all submissions require review, please be patient.
 
 The team will review all pull requests and do one of the following:
@@ -55,6 +55,9 @@ Read GitHub's [pull request documentation](https://help.github.com/articles/abou
 Lastly, please follow the pull request template when submitting a pull request!
 
 ### Changesets
+
+**Every pull request must include a changeset.** This is enforced by the pull
+request checks.
 
 We use [Changesets](https://github.com/changesets/changesets) to decide which
 packages are released, apply semantic version bumps, and generate changelogs.
@@ -80,8 +83,8 @@ package, run:
 yarn changeset:empty
 ```
 
-Pull request checks require one of these records. For work split across several
-pull requests, each pull request should add its own changeset. Changesets
+For work split across several pull requests, each pull request must add its own
+changeset. Changesets
 accumulate on the target branch and are combined when the work becomes ready
 for release.
 
