@@ -184,6 +184,11 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     | undefined;
   const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
   const navColorOverride = typeof navFields?.colorOverride === 'string' ? navFields.colorOverride : undefined;
+  const navLineType = navFields?.lineType;
+  const navOpacity = navFields?.opacity;
+  const navTrellis = navFields?.trellis;
+  const navType = navFields?.type;
+  const navDualMetricAxis = navFields?.dualMetricAxis;
   const navOrientation: Orientation = navFields?.orientation === 'horizontal' ? 'horizontal' : 'vertical';
   const markName = navFields?.name ?? (navChartType ? `${navChartType}0` : undefined);
 
@@ -217,7 +222,19 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   const navMetricTitleBySeries = useMemo(() => {
     // Mirrors vega-spec-builder-s2's isDualMetricAxis (barUtils.ts) — keep the two in sync.
-    if (!isDualMetricAxisNavigation(navFields ?? {}) || !navColor) return undefined;
+    if (
+      !isDualMetricAxisNavigation({
+        color: navColor,
+        lineType: navLineType,
+        opacity: navOpacity,
+        trellis: navTrellis,
+        type: navType,
+        dualMetricAxis: navDualMetricAxis,
+      }) ||
+      !navColor
+    ) {
+      return undefined;
+    }
     const positions = navOrientation === 'horizontal' ? ['bottom', 'top'] : ['left', 'right'];
     const titleAtPosition = (position: string) =>
       (
@@ -243,15 +260,13 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   }, [
     data,
     navColor,
-    navFields?.color,
-    navFields?.dualMetricAxis,
-    navFields?.lineType,
-    navFields?.opacity,
-    navFields?.trellis,
-    navFields?.type,
+    navDualMetricAxis,
+    navLineType,
+    navOpacity,
     navOrientation,
     sanitizedChildren,
-    navFields,
+    navTrellis,
+    navType,
   ]);
 
   const hasChartInspect = useMemo(
