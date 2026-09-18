@@ -13,9 +13,10 @@ import React, { ReactElement } from 'react';
 
 import { render } from '@testing-library/react';
 
-import { Provider, defaultTheme } from '@adobe/react-spectrum';
-import { ColorScheme } from '@react-types/provider';
+import { Provider } from '@react-spectrum/s2';
 import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
+
+type ColorScheme = 'light' | 'dark';
 
 export function spectrumRender(
   element: ReactElement,
@@ -24,7 +25,7 @@ export function spectrumRender(
   }
 ) {
   return render(
-    <Provider theme={defaultTheme} colorScheme={options?.colorScheme ?? DEFAULT_COLOR_SCHEME}>
+    <Provider colorScheme={options?.colorScheme ?? DEFAULT_COLOR_SCHEME}>
       {element}
     </Provider>
   );

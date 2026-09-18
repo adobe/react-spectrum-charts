@@ -14,7 +14,7 @@ import { ReactElement, useRef, useState } from 'react';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
-import { ActionButton, Content, Flex } from '@adobe/react-spectrum';
+import { ActionButton } from '@react-spectrum/s2';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../Chart';
@@ -47,19 +47,19 @@ const HandleStory = ({ variant }: { variant: 'copy' | 'download' | 'getBase64Png
   };
 
   return (
-    <Content>
+    <div>
       <Chart {...props} ref={ref} loading={loading}>
         <Axis position="bottom" baseline ticks />
         <Axis position="left" grid />
         <Line dimension="x" metric="y" color="series" scaleType="linear" />
       </Chart>
-      <Flex direction="row" gap="size-100">
+      <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
         <ActionButton onPress={onPressHandler} data-testid={variant}>
           {buttonText[variant]}
         </ActionButton>
         <ActionButton onPress={() => setLoading(!loading)}>Toggle loading</ActionButton>
-      </Flex>
-    </Content>
+      </div>
+    </div>
   );
 };
 

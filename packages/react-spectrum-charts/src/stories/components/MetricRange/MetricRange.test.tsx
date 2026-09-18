@@ -24,7 +24,7 @@ import {
   unhoverNthElement,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, DisplayOnHover, WithPopover } from './MetricRange.story';
+import { Basic, DisplayOnHover, DisplayOnHoverTrendlineDimension, WithPopover } from './MetricRange.story';
 
 const colors = spectrumColors.light;
 
@@ -91,6 +91,12 @@ describe('MetricRange', () => {
     expect(line).toHaveAttribute('stroke', colors['categorical-100']);
     expect(line).toHaveAttribute('stroke-dasharray', '3,4');
     expect(line).toHaveAttribute('stroke-width', '1.5');
+  });
+
+  test('DisplayOnHoverTrendlineDimension renders properly', async () => {
+    render(<DisplayOnHoverTrendlineDimension {...DisplayOnHoverTrendlineDimension.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
   });
 
   test('Hovered range stays active with popover', async () => {

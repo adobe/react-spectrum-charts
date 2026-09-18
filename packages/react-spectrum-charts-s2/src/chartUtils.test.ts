@@ -32,7 +32,6 @@ describe('applyChartPropsDefaults', () => {
     expect(props.maxWidth).toBeDefined();
     expect(props.padding).toBeDefined();
     expect(props.renderer).toBeDefined();
-    expect(props.theme).toBeDefined();
     expect(props.tooltipAnchor).toBeDefined();
     expect(props.tooltipPlacement).toBeDefined();
     expect(props.width).toBeDefined();

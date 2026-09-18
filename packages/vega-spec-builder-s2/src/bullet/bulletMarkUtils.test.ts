@@ -14,6 +14,7 @@ import { GroupMark } from 'vega';
 import {
   addAxes,
   addMarks,
+  getBulletHoverArea,
   getBulletMarkLabel,
   getBulletMarkRect,
   getBulletMarkTarget,
@@ -23,7 +24,7 @@ import {
   getBulletTrack,
   getBulletValueText,
 } from './bulletMarkUtils';
-import { sampleOptionsColumn, sampleOptionsRow } from './bulletTestUtils';
+import { sampleOptionsColumn, sampleOptionsRow, sampleOptionsWithInspect } from './bulletTestUtils';
 
 describe('getBulletMarks', () => {
   test('Should return the correct marks object for column mode', () => {
@@ -494,6 +495,74 @@ describe('getBulletMarkTrack', () => {
   });
 });
 
+describe('ChartInspect support', () => {
+  test('getBulletMarkRect and getBulletMarkTarget are interactive with a tooltip encoding when chartInspects exist', () => {
+    const rectMark = getBulletMarkRect(sampleOptionsWithInspect);
+    const targetMark = getBulletMarkTarget(sampleOptionsWithInspect);
+    expect(rectMark.interactive).toBe(true);
+    expect(rectMark.encode?.enter?.tooltip).toBeDefined();
+    expect(targetMark.interactive).toBe(true);
+    expect(targetMark.encode?.enter?.tooltip).toBeDefined();
+  });
+
+  test('addMarks includes a hover area mark when chartInspects and track are both present', () => {
+    const marksGroup = addMarks([], sampleOptionsWithInspect)[0] as GroupMark;
+    const hoverAreaMark = marksGroup.marks?.find((mark) => mark.name?.includes('HoverArea'));
+    expect(hoverAreaMark).toBeDefined();
+    expect(hoverAreaMark?.interactive).toBe(true);
+  });
+
+  test('addMarks does not include a hover area mark when chartInspects are empty', () => {
+    const marksGroup = addMarks([], { ...sampleOptionsWithInspect, chartInspects: [] })[0] as GroupMark;
+    const hoverAreaMark = marksGroup.marks?.find((mark) => mark.name?.includes('HoverArea'));
+    expect(hoverAreaMark).toBeUndefined();
+  });
+
+  test('getBulletHoverArea uses the target height when thresholds are present and showTarget is true', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsWithInspect,
+      showTarget: true,
+      track: false,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+    });
+    expect(hoverArea.encode?.update?.height).toStrictEqual({ signal: 'targetHeight' });
+  });
+
+  test('getBulletHoverArea uses the threshold height when thresholds are present and showTarget is false', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsWithInspect,
+      showTarget: false,
+      track: false,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+    });
+    expect(hoverArea.encode?.update?.height).toStrictEqual({ signal: 'bulletThresholdHeight' });
+    expect(hoverArea.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - bulletThresholdHeight' });
+  });
+
+  test('getBulletHoverArea offsets for the target value label when track is present', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsWithInspect,
+      thresholds: [],
+      track: true,
+      showTarget: true,
+      showTargetValue: true,
+    });
+    expect(hoverArea.encode?.update?.height).toStrictEqual({ signal: 'bulletHeight' });
+    expect(hoverArea.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - 2 * bulletHeight - 20' });
+  });
+
+  test('getBulletHoverArea omits the target value label offset when track is present and showTargetValue is false', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsWithInspect,
+      thresholds: [],
+      track: true,
+      showTarget: true,
+      showTargetValue: false,
+    });
+    expect(hoverArea.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - 2 * bulletHeight' });
+  });
+});
+
 describe('getBulletValueText', () => {
   test('Should return production rules for shortNumber format', () => {
     const result = getBulletValueText('shortNumber', 'currentAmount');
@@ -507,7 +576,7 @@ describe('getBulletValueText', () => {
     expect(result).toHaveLength(2);
     expect(result[0]).toHaveProperty('test', "isNumber(datum['currentAmount']) && abs(datum['currentAmount']) >= 1000");
     if ('signal' in result[0]) {
-      expect(result[0].signal).toContain('upper(replace(format(datum[\'currentAmount\'], \'$.3~s\')');
+      expect(result[0].signal).toContain("upper(replace(format(datum['currentAmount'], '$.3~s')");
     }
     expect(result[1]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
     expect(result[1]).toHaveProperty('signal', "format(datum['currentAmount'], '$')");
@@ -539,10 +608,10 @@ describe('Number format integration in marks', () => {
   test('Value label should use shortNumber format correctly', () => {
     const options = { ...sampleOptionsColumn, numberFormat: 'shortNumber' };
     const valueLabelMark = getBulletMarkValueLabel(options);
-    
+
     const textEncode = valueLabelMark.encode?.enter?.text;
     expect(textEncode).toBeDefined();
-    
+
     if (Array.isArray(textEncode)) {
       expect(textEncode[0]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
       expect(textEncode[0]).toHaveProperty('signal', "formatShortNumber(datum['currentAmount'])");
@@ -552,10 +621,10 @@ describe('Number format integration in marks', () => {
   test('Value label should use currency format correctly', () => {
     const options = { ...sampleOptionsColumn, numberFormat: 'currency' };
     const valueLabelMark = getBulletMarkValueLabel(options);
-    
+
     const textEncode = valueLabelMark.encode?.enter?.text;
     expect(textEncode).toBeDefined();
-    
+
     if (Array.isArray(textEncode)) {
       expect(textEncode[0]).toHaveProperty('test', "isNumber(datum['currentAmount'])");
       expect(textEncode[0]).toHaveProperty('signal', "format(datum['currentAmount'], '$,.2f')");
@@ -563,16 +632,16 @@ describe('Number format integration in marks', () => {
   });
 
   test('Target value label should format with shortNumber', () => {
-    const options = { 
-      ...sampleOptionsColumn, 
+    const options = {
+      ...sampleOptionsColumn,
       showTargetValue: true,
-      numberFormat: 'shortNumber' 
+      numberFormat: 'shortNumber',
     };
     const targetLabelMark = getBulletMarkTargetValueLabel(options);
-    
+
     const textEncode = targetLabelMark.encode?.enter?.text;
     expect(textEncode).toBeDefined();
-    
+
     if (typeof textEncode === 'object' && 'signal' in textEncode) {
       expect(textEncode.signal).toContain('formatShortNumber(datum.target)');
       expect(textEncode.signal).toContain('Target: ');
@@ -580,16 +649,16 @@ describe('Number format integration in marks', () => {
   });
 
   test('Target value label should format with currency', () => {
-    const options = { 
-      ...sampleOptionsColumn, 
+    const options = {
+      ...sampleOptionsColumn,
       showTargetValue: true,
-      numberFormat: 'currency' 
+      numberFormat: 'currency',
     };
     const targetLabelMark = getBulletMarkTargetValueLabel(options);
-    
+
     const textEncode = targetLabelMark.encode?.enter?.text;
     expect(textEncode).toBeDefined();
-    
+
     if (typeof textEncode === 'object' && 'signal' in textEncode) {
       expect(textEncode.signal).toContain("format(datum.target, '$,.2f')");
       expect(textEncode.signal).toContain('Target: ');
@@ -597,16 +666,16 @@ describe('Number format integration in marks', () => {
   });
 
   test('Target value label should format with custom D3 format', () => {
-    const options = { 
-      ...sampleOptionsColumn, 
+    const options = {
+      ...sampleOptionsColumn,
       showTargetValue: true,
-      numberFormat: '.2f' 
+      numberFormat: '.2f',
     };
     const targetLabelMark = getBulletMarkTargetValueLabel(options);
-    
+
     const textEncode = targetLabelMark.encode?.enter?.text;
     expect(textEncode).toBeDefined();
-    
+
     if (typeof textEncode === 'object' && 'signal' in textEncode) {
       expect(textEncode.signal).toContain("format(datum.target, '.2f')");
     }
@@ -615,82 +684,82 @@ describe('Number format integration in marks', () => {
 
 describe('Number format integration in axes', () => {
   test('Side axis (right) should format labels with shortNumber', () => {
-    const options = { 
-      ...sampleOptionsColumn, 
+    const options = {
+      ...sampleOptionsColumn,
       labelPosition: 'side' as const,
-      numberFormat: 'shortNumber' 
+      numberFormat: 'shortNumber',
     };
     const axes = addAxes([], options);
-    
-    const rightAxis = axes.find(axis => axis.orient === 'right');
+
+    const rightAxis = axes.find((axis) => axis.orient === 'right');
     expect(rightAxis).toBeDefined();
     expect(rightAxis?.encode?.labels?.update?.text).toMatchObject({
-      signal: expect.stringContaining('formatShortNumber')
+      signal: expect.stringContaining('formatShortNumber'),
     });
   });
 
   test('Side axis (right) should format labels with currency', () => {
-    const options = { 
-      ...sampleOptionsColumn, 
+    const options = {
+      ...sampleOptionsColumn,
       labelPosition: 'side' as const,
-      numberFormat: 'currency' 
+      numberFormat: 'currency',
     };
     const axes = addAxes([], options);
-    
-    const rightAxis = axes.find(axis => axis.orient === 'right');
+
+    const rightAxis = axes.find((axis) => axis.orient === 'right');
     expect(rightAxis).toBeDefined();
     expect(rightAxis?.encode?.labels?.update?.text).toMatchObject({
-      signal: expect.stringContaining("'$,.2f'")
+      signal: expect.stringContaining("'$,.2f'"),
     });
   });
 
   test('Metric axis should format labels with shortNumber', () => {
-    const options = { 
-      ...sampleOptionsColumn, 
+    const options = {
+      ...sampleOptionsColumn,
       metricAxis: true,
-      numberFormat: 'shortNumber' 
+      numberFormat: 'shortNumber',
     };
     const axes = addAxes([], options);
-    
-    const metricAxis = axes.find(axis => axis.orient === 'bottom');
+
+    const metricAxis = axes.find((axis) => axis.orient === 'bottom');
     expect(metricAxis).toBeDefined();
     expect(metricAxis?.encode?.labels?.update?.text).toMatchObject({
-      signal: expect.stringContaining('formatShortNumber(datum.value)')
+      signal: expect.stringContaining('formatShortNumber(datum.value)'),
     });
   });
 
   test('Metric axis should format labels with shortCurrency', () => {
-    const options = { 
-      ...sampleOptionsColumn, 
+    const options = {
+      ...sampleOptionsColumn,
       metricAxis: true,
-      numberFormat: 'shortCurrency' 
+      numberFormat: 'shortCurrency',
     };
     const axes = addAxes([], options);
-    
-    const metricAxis = axes.find(axis => axis.orient === 'bottom');
+
+    const metricAxis = axes.find((axis) => axis.orient === 'bottom');
     expect(metricAxis).toBeDefined();
     expect(metricAxis?.encode?.labels?.update?.text).toMatchObject({
-      signal: expect.stringMatching(/abs\(datum\.value\) >= 1000.*upper\(replace\(format\(datum\.value/)
+      signal: expect.stringMatching(/abs\(datum\.value\) >= 1000.*upper\(replace\(format\(datum\.value/),
     });
   });
 
   test('Both side and metric axes should use the same numberFormat', () => {
-    const options = { 
-      ...sampleOptionsColumn, 
+    const options = {
+      ...sampleOptionsColumn,
       labelPosition: 'side' as const,
       metricAxis: true,
-      numberFormat: 'shortNumber' 
+      numberFormat: 'shortNumber',
     };
     const axes = addAxes([], options);
-    
-    const metricAxis = axes.find(axis => axis.orient === 'bottom');
-    const rightAxis = axes.find(axis => axis.orient === 'right');
-    
+
+    const metricAxis = axes.find((axis) => axis.orient === 'bottom');
+    const rightAxis = axes.find((axis) => axis.orient === 'right');
+
     expect(metricAxis?.encode?.labels?.update?.text).toMatchObject({
-      signal: expect.stringContaining('formatShortNumber')
+      signal: expect.stringContaining('formatShortNumber'),
     });
     expect(rightAxis?.encode?.labels?.update?.text).toMatchObject({
-      signal: expect.stringContaining('formatShortNumber')
+      signal: expect.stringContaining('formatShortNumber'),
     });
   });
 });

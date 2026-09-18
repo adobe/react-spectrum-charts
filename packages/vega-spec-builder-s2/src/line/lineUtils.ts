@@ -13,12 +13,13 @@ import {
   BarAnnotationOptions,
   ChartActionBarOptions,
   ChartPopoverOptions,
-  ChartTooltipOptions,
+  ChartInspectOptions,
   ColorFacet,
   ColorScheme,
   DonutSummaryOptions,
   HighlightedItem,
   InteractionMode,
+  LineType,
   LineTypeFacet,
   LineWidthFacet,
   MetricRangeOptions,
@@ -28,6 +29,7 @@ import {
   SegmentLabelOptions,
   TrendlineOptions,
   InterpolationType,
+  LineCap,
 } from '../types';
 
 export const getPopoverMarkName = (
@@ -53,7 +55,7 @@ export interface LineMarkOptions {
   barAnnotations?: BarAnnotationOptions[];
   chartActionBars?: ChartActionBarOptions[];
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   color: ColorFacet;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];
@@ -69,6 +71,7 @@ export interface LineMarkOptions {
   interactionMode?: InteractionMode;
   isHighlightedByDimension?: boolean;
   isHighlightedByGroup?: boolean;
+  lineCap?: LineCap;
   lineType: LineTypeFacet;
   lineWidth?: LineWidthFacet;
   metric: string;
@@ -81,7 +84,17 @@ export interface LineMarkOptions {
   scaleType: ScaleType;
   scatterPaths?: ScatterPathOptions[];
   segmentLabels?: SegmentLabelOptions[];
+  dimensionHover?: boolean;
+  hoverLabelKey?: string;
+  showHoverLabel?: boolean;
   staticPoint?: string;
   trendlines?: TrendlineOptions[];
   interpolate?: InterpolationType;
+  alternateSegmentKey?: string;
+  alternateSegmentLineType?: LineType;
+  alternateSegmentLabel?: string;
+  primarySeries?: number | string[];
+  otherSeriesColor?: string;
+  isHoverAnimate?: boolean;
+  isDrawInAnimate?: boolean;
 }

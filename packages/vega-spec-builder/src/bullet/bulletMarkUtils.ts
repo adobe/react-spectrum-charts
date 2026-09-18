@@ -123,7 +123,7 @@ export function getBulletMarkRect(bulletOptions: BulletSpecOptions): Mark {
 }
 
 export function getBulletMarkTarget(bulletOptions: BulletSpecOptions): Mark {
-  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
+  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme, bulletOptions.s2);
 
   //When the target value label is shown, we must subtract the height of the target value label
   //to make sure that the target line is not drawn over the target value label
@@ -160,7 +160,7 @@ export function getBulletMarkTarget(bulletOptions: BulletSpecOptions): Mark {
 }
 
 export function getBulletMarkLabel(bulletOptions: BulletSpecOptions): Mark {
-  const barLabelColor = getColorValue('gray-600', bulletOptions.colorScheme);
+  const barLabelColor = getColorValue('gray-600', bulletOptions.colorScheme, bulletOptions.s2);
 
   const bulletMarkLabel: Mark = {
     name: `${bulletOptions.name}Label`,
@@ -194,8 +194,8 @@ export function getBulletValueText(
 }
 
 export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark {
-  const defaultColor = getColorValue(bulletOptions.color, bulletOptions.colorScheme);
-  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
+  const defaultColor = getColorValue(bulletOptions.color, bulletOptions.colorScheme, bulletOptions.s2);
+  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme, bulletOptions.s2);
   const encodeUpdateSignalWidth = bulletOptions.direction === 'column' ? 'width' : 'bulletGroupWidth';
   const fillExpr =
     bulletOptions.thresholdBarColor && (bulletOptions.thresholds?.length ?? 0) > 0
@@ -227,7 +227,7 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
 }
 
 export function getBulletMarkTargetValueLabel(bulletOptions: BulletSpecOptions): Mark {
-  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme);
+  const solidColor = getColorValue('gray-900', bulletOptions.colorScheme, bulletOptions.s2);
   const valueExpr = `datum.${bulletOptions.target}`;
 
   // Use targetLabel field if provided, otherwise format the target value
@@ -363,7 +363,7 @@ export function getBulletHoverArea(bulletOptions: BulletSpecOptions): Mark {
 }
 
 export function getBulletTrack(bulletOptions: BulletSpecOptions): Mark {
-  const trackColor = getColorValue('gray-200', bulletOptions.colorScheme);
+  const trackColor = getColorValue('gray-200', bulletOptions.colorScheme, bulletOptions.s2);
   const trackWidth = bulletOptions.direction === 'column' ? 'width' : 'bulletGroupWidth';
   // Subtracting 20 accounts for the space used by the target value label
   const trackY =

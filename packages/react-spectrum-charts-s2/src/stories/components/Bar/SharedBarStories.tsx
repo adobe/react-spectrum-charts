@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartTooltip, Legend } from '../../../components';
+import { Axis, Bar, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { barSeriesData } from './data';
 
@@ -27,7 +27,7 @@ export const DimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args}>
-        <ChartTooltip>
+        <ChartInspect>
           {(datum) => {
             return (
               <>
@@ -37,8 +37,8 @@ export const DimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
               </>
             );
           }}
-        </ChartTooltip>
-        <ChartTooltip targets={['dimensionArea']}>
+        </ChartInspect>
+        <ChartInspect targets={['dimensionArea']}>
           {(datum) => {
             return (
               <>
@@ -51,7 +51,7 @@ export const DimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
               </>
             );
           }}
-        </ChartTooltip>
+        </ChartInspect>
       </Bar>
       <Legend title="Operating system" highlight />
     </Chart>

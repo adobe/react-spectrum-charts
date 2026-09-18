@@ -47,21 +47,20 @@ describe('getTrendlineMarks()', () => {
     expect(groupMark.marks).toHaveLength(1);
     expect(groupMark.marks?.[0]).toHaveProperty('type', 'line');
   });
-  test('should add hover marks if ChartTooltip exists on Trendline', () => {
+  test('should add hover marks if ChartInspect exists on Trendline', () => {
     const marks = getTrendlineMarks({
       ...defaultLineOptions,
-      trendlines: [{ chartTooltips: [{}] }],
+      trendlines: [{ chartInspects: [{}] }],
     });
     expect(marks).toHaveLength(2);
     expect(marks[1]).toHaveProperty('type', 'group');
     const trendlineMarks = (marks[1] as GroupMark).marks as Mark[];
-    // line mark
-    expect(trendlineMarks).toHaveLength(5);
+    // no hover label text marks: showHoverLabel is forced false for this merged hover group
+    expect(trendlineMarks).toHaveLength(4);
     expect(trendlineMarks[0]).toHaveProperty('type', 'rule');
-    expect(trendlineMarks[1]).toHaveProperty('type', 'symbol');
-    expect(trendlineMarks[2]).toHaveProperty('type', 'symbol');
-    expect(trendlineMarks[3]).toHaveProperty('type', 'symbol'); // highlight point background
-    expect(trendlineMarks[4]).toHaveProperty('type', 'path');
+    expect(trendlineMarks[1]).toHaveProperty('type', 'symbol'); // highlight point
+    expect(trendlineMarks[2]).toHaveProperty('type', 'symbol'); // voronoi points
+    expect(trendlineMarks[3]).toHaveProperty('type', 'path'); // voronoi path
   });
   test('should reference _data for window method', () => {
     const marks = getTrendlineMarks({
@@ -103,6 +102,17 @@ describe('getTrendlineRuleMark()', () => {
       method: 'median',
     });
     expect(mark.encode?.enter?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
+  });
+
+  test('opacity stays the static instant-rule array even when the parent line is animated', () => {
+    // the trendline renders under its own mark name (`${parentName}Trendline${index}`), which has no
+    // `_hoverFractionData` of its own — getLineMarkOptions forces isHoverAnimate: false for exactly this
+    // reason, otherwise this would reference a data source that was only created for the parent's name
+    const mark = getTrendlineRuleMark(
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
+      { ...defaultTrendlineOptions, method: 'median' }
+    );
+    expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);
   });
 });
 
@@ -193,6 +203,14 @@ describe('getTrendlineLineMark()', () => {
       trendlineColor: { value: 'gray-500' },
     });
     expect(mark.encode?.enter?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
+  });
+
+  test('opacity stays the static instant-rule array even when the parent line is animated', () => {
+    const mark = getTrendlineLineMark(
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
+      defaultTrendlineOptions
+    );
+    expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);
   });
 });
 

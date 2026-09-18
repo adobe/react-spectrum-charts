@@ -15,7 +15,7 @@ import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, ChartPopover, ChartTooltip, Legend, Line } from '../../../../components';
+import { Axis, ChartPopover, ChartInspect, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
 import { formatTimestamp } from '../../../../stories/storyUtils';
@@ -35,8 +35,8 @@ const defaultArgs = {
   onClick: undefined,
 };
 
-const generateCallback = (variant: 'popover' | 'tooltip') => {
-  const actionName = { popover: 'ChartPopover', tooltip: 'ChartTooltip' };
+const generateCallback = (variant: 'popover' | 'inspect') => {
+  const actionName = { popover: 'ChartPopover', inspect: 'ChartInspect' };
   const callback = (datum) => {
     action(`${actionName[variant]}:callback`)(datum);
     return (
@@ -81,15 +81,15 @@ OnClick.args = {
   onClick: action('onClick'),
 };
 
-const OnClickWithTooltip = bindWithProps(BasicLineStory);
-OnClickWithTooltip.args = {
+const OnClickWithInspect = bindWithProps(BasicLineStory);
+OnClickWithInspect.args = {
   ...defaultArgs,
   dimension: 'datetime',
   metric: 'value',
   scaleType: 'time',
   onClick: action('onClick'),
   children: (
-    <ChartTooltip>
+    <ChartInspect>
       {(datum) => (
         <div className="bar-tooltip">
           <div>{formatTimestamp(datum.datetime as number)}</div>
@@ -97,7 +97,7 @@ OnClickWithTooltip.args = {
           <div>Users: {Number(datum.value).toLocaleString()}</div>
         </div>
       )}
-    </ChartTooltip>
+    </ChartInspect>
   ),
 };
 
@@ -117,9 +117,9 @@ WithStaticPointsAndDialogs.args = {
   scaleType: 'time',
   staticPoint: 'staticPoint',
   children: [
-    <ChartTooltip key={0}>{generateCallback('tooltip')}</ChartTooltip>,
+    <ChartInspect key={0}>{generateCallback('inspect')}</ChartInspect>,
     <ChartPopover width="auto" key={1}>{generateCallback('popover')}</ChartPopover>,
   ],
 };
 
-export { OnClick, OnClickWithTooltip, WithStaticPoints, WithStaticPointsAndDialogs };
+export { OnClick, OnClickWithInspect, WithStaticPoints, WithStaticPointsAndDialogs };

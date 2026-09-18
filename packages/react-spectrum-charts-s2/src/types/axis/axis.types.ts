@@ -13,15 +13,17 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { AxisOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Children } from '../util.types';
+import { AxisLabelClickCallback, Children } from '../util.types';
 import { AxisThumbnailElement } from './axisThumbnail.types';
 import { ReferenceLineElement } from './referenceLine.types';
 
 export type AxisChildElement = AxisThumbnailElement | ReferenceLineElement;
 
-export interface AxisProps extends Omit<AxisOptions, 'axisThumbnails' | 'referenceLines'> {
+export interface AxisProps extends Omit<AxisOptions, 'axisThumbnails' | 'referenceLines' | 'hasOnClick'> {
   /** Child components that add supplemental content to the axis */
   children?: Children<AxisChildElement>;
+  /** Callback that will be run when an axis label is clicked */
+  onClick?: AxisLabelClickCallback;
 }
 
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;

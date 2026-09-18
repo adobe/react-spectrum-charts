@@ -96,6 +96,7 @@ export const applyTrendlinePropDefaults = (
     name: `${markOptions.name}Trendline${index}`,
     opacity,
     orientation,
+    s2: markOptions.s2,
     trendlineAnnotations,
     trendlineColor,
     trendlineDimension,

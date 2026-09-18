@@ -51,6 +51,13 @@ export type SubLabel = {
   fontWeight?: FontWeight;
 };
 
+export type AxisTooltip = {
+  /** The axis value that this tooltip is anchored to */
+  value: string | number;
+  /** Custom tooltip text; `null` suppresses it. */
+  text: string | null;
+};
+
 export interface AxisOptions {
   /** Sets the name of the component. */
   name?: string;
@@ -64,7 +71,6 @@ export interface AxisOptions {
    * If baseline is drawn relative to a categorical axis, this prop is ignored
    */
   baselineOffset?: number;
-
   /** Sets the granularity of the primary axis labels for time axis. If this axis is not for a time axis, this prop is ignored. */
   granularity?: Granularity;
   /** Displays gridlines at each tick location */
@@ -119,6 +125,10 @@ export interface AxisOptions {
   ticks?: boolean;
   /** Enables hover tooltips on axis labels for this axis. */
   hasTooltip?: boolean;
+  /** Per-value tooltip text overrides. Unlisted values use the default; `text: null` suppresses. */
+  tooltipText?: AxisTooltip[];
+  /** Whether the axis has an onClick callback set. */
+  hasOnClick?: boolean;
   /**
    * The minimum desired step between axis ticks, in terms of scale domain values.
    * For example, a value of 1 indicates that ticks should not be less than 1 unit apart.
@@ -166,6 +176,7 @@ type AxisOptionsWithDefaults =
   | 'baselineOffset'
   | 'granularity'
   | 'grid'
+  | 'hasOnClick'
   | 'hideDefaultLabels'
   | 'labelAlign'
   | 'labelFontWeight'

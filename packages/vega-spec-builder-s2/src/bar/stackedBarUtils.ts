@@ -13,27 +13,39 @@ import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/constants';
 
-import { hasTooltipWithDimensionAreaTarget } from '../chartTooltip/chartTooltipUtils';
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';
 import { getAnnotationMarks } from './barAnnotationUtils';
+import { getBarFocusRing, getStackFocusRing } from './barFocusRingUtils';
 import {
   getBarDimensionHoverArea,
   getBarEnterEncodings,
+  getBarItemSelectionBackdrop,
+  getBarItemSelectionRing,
   getBarUpdateEncodings,
   getBaseBarEnterEncodings,
   getDodgedDimensionEncodings,
   getDodgedGroupMark,
   getOrientationProperties,
   isDodgedAndStacked,
+  shouldShowItemSelectionRing,
 } from './barUtils';
 import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
 
 export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
   const marks: Mark[] = [];
 
-  if (hasTooltipWithDimensionAreaTarget(options.chartTooltips)) {
+  if (isInteractive(options)) {
     marks.push(getBarDimensionHoverArea(options, 'stacked'));
+  }
+
+  const showItemSelectionRing = shouldShowItemSelectionRing(options);
+  const ringDataSource = getBaseDataSourceName(options);
+  const ringDimensionEncodings = getStackedDimensionEncodings(options);
+
+  // opaque backdrop drawn underneath the bar so the gap around the selected bar reads as an opaque halo
+  if (showItemSelectionRing) {
+    marks.push(getBarItemSelectionBackdrop(options, ringDataSource, ringDimensionEncodings));
   }
 
   marks.push(
@@ -51,11 +63,32 @@ export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
     )
   );
 
+  // visible outline drawn on top of the bars so it is never occluded (e.g. by adjacent stack segments)
+  if (showItemSelectionRing) {
+    marks.push(getBarItemSelectionRing(options, ringDataSource, ringDimensionEncodings));
+  }
+
+  // Per-segment ring always, plus a per-stack ring when actually stacked (a color field is present).
+  if (options.accessibleNavigation) {
+    marks.push(getBarFocusRing(options));
+    if (typeof options.color === 'string') {
+      marks.push(getStackFocusRing(options));
+    }
+  }
+
   return marks;
 };
 
 export const getDodgedAndStackedBarMark = (options: BarSpecOptions): GroupMark => {
   const marks: Mark[] = [];
+  const showItemSelectionRing = shouldShowItemSelectionRing(options);
+  const ringDataSource = `${options.name}_facet`;
+  const ringDimensionEncodings = getStackedDimensionEncodings(options);
+
+  if (showItemSelectionRing) {
+    marks.push(getBarItemSelectionBackdrop(options, ringDataSource, ringDimensionEncodings));
+  }
+
   marks.push(
     // add background marks
     getStackedBackgroundBar(options),
@@ -64,6 +97,10 @@ export const getDodgedAndStackedBarMark = (options: BarSpecOptions): GroupMark =
     // add annotation marks
     ...getAnnotationMarks(options, `${options.name}_facet`, `${options.name}_position`, `${options.name}_dodgeGroup`)
   );
+
+  if (showItemSelectionRing) {
+    marks.push(getBarItemSelectionRing(options, ringDataSource, ringDimensionEncodings));
+  }
 
   return { ...getDodgedGroupMark(options), marks };
 };

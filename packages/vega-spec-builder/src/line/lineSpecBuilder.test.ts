@@ -262,8 +262,40 @@ const metricRangeGroupMark = {
 
 const metricRangeMarks = [line0_groupMark, metricRangeGroupMark];
 
+const staticPointBackgroundMark = {
+  name: 'line0_staticPointBackground',
+  description: 'line0_staticPointBackground',
+  type: 'symbol',
+  from: {
+    data: 'line0_staticPointData',
+  },
+  interactive: false,
+  encode: {
+    enter: {
+      y: [
+        {
+          scale: 'yLinear',
+          field: 'value',
+        },
+      ],
+      size: {
+        value: 125,
+      },
+      fill: { signal: BACKGROUND_COLOR },
+      stroke: { signal: BACKGROUND_COLOR },
+    },
+    update: {
+      x: {
+        scale: 'xTime',
+        field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
+      },
+    },
+  },
+};
+
 const metricRangeWithDisplayPointMarks = [
   line0_groupMark,
+  staticPointBackgroundMark,
   {
     name: 'line0_staticPoints',
     description: 'line0_staticPoints',
@@ -287,6 +319,7 @@ const metricRangeWithDisplayPointMarks = [
           { test: "datum.staticPoint === 'hollow'", signal: BACKGROUND_COLOR },
           { scale: COLOR_SCALE, field: 'series' },
         ],
+        fillOpacity: { value: 1 },
         stroke: [
           { test: "datum.staticPoint === 'hollow'", scale: COLOR_SCALE, field: 'series' },
           { signal: BACKGROUND_COLOR },
@@ -297,6 +330,7 @@ const metricRangeWithDisplayPointMarks = [
           scale: 'xTime',
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
+        opacity: [{ value: 1 }],
       },
     },
   },
@@ -305,6 +339,7 @@ const metricRangeWithDisplayPointMarks = [
 
 const displayPointMarks = [
   line0_groupMark,
+  staticPointBackgroundMark,
   {
     name: 'line0_staticPoints',
     description: 'line0_staticPoints',
@@ -328,6 +363,7 @@ const displayPointMarks = [
           { test: "datum.staticPoint === 'hollow'", signal: BACKGROUND_COLOR },
           { scale: COLOR_SCALE, field: 'series' },
         ],
+        fillOpacity: { value: 1 },
         stroke: [
           { test: "datum.staticPoint === 'hollow'", scale: COLOR_SCALE, field: 'series' },
           { signal: BACKGROUND_COLOR },
@@ -338,6 +374,7 @@ const displayPointMarks = [
           scale: 'xTime',
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
+        opacity: [{ value: 1 }],
       },
     },
   },
@@ -375,6 +412,7 @@ describe('lineSpecBuilder', () => {
           trendlines: [{ method: 'average' }],
         }, undefined)[2].transform
       ).toStrictEqual([
+        { type: 'filter', expr: `isValid(datum["${DEFAULT_METRIC}"])` },
         {
           as: [TRENDLINE_VALUE, `${DEFAULT_TIME_DIMENSION}Min`, `${DEFAULT_TIME_DIMENSION}Max`],
           fields: [DEFAULT_METRIC, DEFAULT_TIME_DIMENSION, DEFAULT_TIME_DIMENSION],
@@ -422,7 +460,10 @@ describe('lineSpecBuilder', () => {
       expect(resultData.find((d) => d.name === 'line0_uniqueXValues')).toStrictEqual({
         name: 'line0_uniqueXValues',
         source: FILTERED_TABLE,
-        transform: [{ type: 'aggregate', groupby: [DEFAULT_TRANSFORMED_TIME_DIMENSION] }],
+        transform: [
+          { type: 'aggregate', groupby: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
+          { type: 'formula', expr: `"${DEFAULT_TRANSFORMED_TIME_DIMENSION}"`, as: 'rscDimensionField' },
+        ],
       });
     });
   });
@@ -620,5 +661,60 @@ describe('lineSpecBuilder', () => {
       expect(pointHoverSignal).toBeDefined();
       expect(pointHoverSignal?.on).toHaveLength(6);
     });
+  });
+});
+
+/**
+ * Cell D integration: both parent tooltip + trendline tooltip, dimension mode, MetricRange displayOnHover.
+ * Verifies that addLine produces a self-consistent spec — every data source referenced by a mark
+ * exists in spec.data, and every signal referenced in mark encodings exists in spec.signals.
+ * This exercises the full pipeline: addData → addSignals → setScales → addLineMarks.
+ */
+describe('Cell D integration: MetricRange + Trendline both interactive, dimension mode', () => {
+  const cellDOptions = {
+    ...defaultLineOptions,
+    chartTooltips: [{}],
+    interactionMode: 'dimension' as const,
+    interactiveMarkName: 'line0',
+    metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'metric', displayOnHover: true as const }],
+    trendlines: [{ method: 'linear' as const, chartTooltips: [{}] }],
+  };
+
+  test('addData includes metric range highlightedData and trendline data sources', () => {
+    // addData requires TABLE to already exist; use startingSpec.data as the base.
+    const data = addData(startingSpec.data ?? [], cellDOptions, {});
+    const dataNames = data.map((d) => d.name);
+    expect(dataNames).toContain('line0MetricRange0_highlightedData');
+    expect(dataNames).toContain('line0Trendline_highlightedData');
+  });
+
+  test('addSignals includes all four hover signals for Cell D', () => {
+    const signals = addSignals(defaultSignals, cellDOptions);
+    const signalNames = signals.map((s) => s.name);
+    expect(signalNames).toContain(`line0_${HOVERED_ITEM}`);
+    expect(signalNames).toContain(`line0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`);
+    expect(signalNames).toContain(`line0Trendline_${HOVERED_ITEM}`);
+    expect(signalNames).toContain(`line0Trendline_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`);
+  });
+
+  test('addLine does not throw', () => {
+    expect(() => addLine(startingSpec, cellDOptions)).not.toThrow();
+  });
+
+  test('produced spec contains all expected top-level data sources', () => {
+    const spec = addLine(startingSpec, cellDOptions);
+    const dataNames = (spec.data ?? []).map((d: Data) => d.name);
+
+    // MetricRange displayOnHover=true → highlightedData must exist
+    expect(dataNames).toContain('line0MetricRange0_highlightedData');
+    // Trendline with tooltip → highlightedData for hover marks
+    expect(dataNames).toContain('line0Trendline_highlightedData');
+    // Trendline linear regression
+    expect(dataNames).toContain('line0Trendline0_highResolutionData');
+    // Dimension mode → uniqueXValues for xAxisVoronoi
+    expect(dataNames).toContain('line0_uniqueXValues');
+    expect(dataNames).toContain('line0Trendline_uniqueXValues');
+    // Parent highlight data
+    expect(dataNames).toContain('line0_highlightedData');
   });
 });

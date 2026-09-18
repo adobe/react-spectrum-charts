@@ -16,6 +16,7 @@ import { FC } from 'react';
 import { LegendProps } from '../../types';
 
 const Legend: FC<LegendProps> = ({
+  align,
   color,
   defaultHiddenSeries,
   descriptions,

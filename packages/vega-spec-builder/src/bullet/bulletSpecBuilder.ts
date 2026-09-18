@@ -33,7 +33,7 @@ const DEFAULT_COLOR = spectrumColors.light['static-blue'];
 
 export const addBullet = produce<
   ScSpec,
-  [BulletOptions & { colorScheme?: ColorScheme; index?: number; idKey: string }]
+  [BulletOptions & { colorScheme?: ColorScheme; index?: number; idKey: string; s2?: boolean }]
 >(
   (
     spec,
@@ -57,6 +57,7 @@ export const addBullet = produce<
       thresholdBarColor = false,
       metricAxis = false,
       chartTooltips = [],
+      s2 = false,
       ...options
     }
   ) => {
@@ -64,7 +65,8 @@ export const addBullet = produce<
     const bulletOptions: BulletSpecOptions = {
       colorScheme: colorScheme,
       index,
-      color: getColorValue(color, colorScheme),
+      color: getColorValue(color, colorScheme, s2),
+      s2,
       metric: metric ?? 'currentAmount',
       dimension: dimension ?? 'graphLabel',
       target: target ?? 'target',

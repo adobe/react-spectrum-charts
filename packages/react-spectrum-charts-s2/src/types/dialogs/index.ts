@@ -11,5 +11,5 @@
  */
 
 export * from './chartActionBar.types';
+export * from './chartInspect.types';
 export * from './chartPopover.types';
-export * from './chartTooltip.types';

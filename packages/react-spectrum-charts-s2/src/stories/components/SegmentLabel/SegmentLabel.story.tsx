@@ -15,13 +15,13 @@ import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, SegmentLabel } from '../../../rc';
+import { Donut, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { basicDonutData, sliveredDonutData } from '../Donut/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Segment Label',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Segment Label',
   component: SegmentLabel,
 };
 
@@ -62,7 +62,7 @@ const LabelKey = bindWithProps(SegmentLabelStory);
 LabelKey.args = { labelKey: 'browser' };
 
 const Percent = bindWithProps(SegmentLabelStory);
-Percent.args = { percent: true };
+Percent.args = { percent: true, value: false };
 
 const Value = bindWithProps(SegmentLabelStory);
 Value.args = { value: true };
@@ -70,11 +70,16 @@ Value.args = { value: true };
 const ValueFormat = bindWithProps(SegmentLabelStory);
 ValueFormat.args = { value: true, valueFormat: 'shortNumber' };
 
+const Swatch = bindWithProps(SegmentLabelStory);
+Swatch.args = { swatch: true };
+
+const ValueRow = bindWithProps(SegmentLabelStory);
+ValueRow.args = { showValueRow: true };
+
 const Supreme = bindWithProps(SegmentLabelStory);
 Supreme.args = { labelKey: 'browser', percent: true, value: true, valueFormat: 'shortNumber' };
 
 const Slivers = bindWithProps(SliverStory);
 Slivers.args = { percent: true, value: true };
 
-export { Basic, LabelKey, Percent, Value, ValueFormat, Supreme, Slivers };
-
+export { Basic, LabelKey, Percent, Value, ValueFormat, Swatch, ValueRow, Supreme, Slivers };

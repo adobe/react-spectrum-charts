@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
-import { ActionButton, ActionGroup, Content, Divider, Flex, Item, Text } from '@adobe/react-spectrum';
+import { ActionButton, Divider } from '@react-spectrum/s2';
 import Close from '@spectrum-icons/workflow/Close';
 import Download from '@spectrum-icons/workflow/Download';
 import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
@@ -23,7 +23,7 @@ import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
 
 import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '@spectrum-charts/vega-spec-builder-s2';
 import useChartProps from '../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartPopover, ChartTooltip, Legend, Line, s2Categorical16 } from '../index';
+import { Axis, Bar, Chart, ChartPopover, ChartInspect, Legend, Line, s2Categorical16 } from '../index';
 import { bindWithProps } from '../test-utils';
 import {
   funnelConversionData,
@@ -86,7 +86,7 @@ const UserGrowthBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
       <Axis position="bottom" baseline />
       <Axis position="left" grid title="Users" />
       <Bar dimension="x" metric="y" color="series" order="order">
-        <ChartTooltip>{generateCallback('tooltip')}</ChartTooltip>
+        <ChartInspect>{generateCallback('inspect')}</ChartInspect>
         <ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
       </Bar>
       <Legend highlight descriptions={userGrowthDescriptions} />
@@ -111,7 +111,7 @@ const UserGrowthBarTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactEle
         paddingRatio={0.3}
         groupedPadding={0.12}
       >
-        <ChartTooltip>{generateCallback('tooltip')}</ChartTooltip>
+        <ChartInspect>{generateCallback('inspect')}</ChartInspect>
         <ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
       </Bar>
       <Legend highlight descriptions={userGrowthDescriptions} />
@@ -120,18 +120,18 @@ const UserGrowthBarTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactEle
 };
 
 /** Generates identical return callbacks but each has a custom Storybook Action Name for a better dev experience. */
-const generateCallback = (variant: 'popover' | 'tooltip') => {
+const generateCallback = (variant: 'popover' | 'inspect') => {
   const actionName = {
     popover: 'ChartPopover',
-    tooltip: 'ChartTooltip',
+    inspect: 'ChartInspect',
   };
 
   const callback = (datum: Datum, close?: () => void) => {
     action(`${actionName[variant]}:callback`)(datum);
     return (
-      <Content UNSAFE_className="userGrowth-dialog">
-        <Flex direction="column">
-          <Flex direction="row" justifyContent="space-between">
+      <div className="userGrowth-dialog">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
             <div>
               <div>{datum.x}</div>
               <div>{datum.series}</div>
@@ -142,32 +142,32 @@ const generateCallback = (variant: 'popover' | 'tooltip') => {
                 <Close />
               </ActionButton>
             )}
-          </Flex>
+          </div>
           {close !== undefined && (
             <>
               <Divider />
-              <ActionGroup isQuiet onAction={close} orientation="vertical" UNSAFE_className="dialog-actions">
-                <Item key="create-segment">
+              <div className="dialog-actions" style={{ display: 'flex', flexDirection: 'column' }}>
+                <ActionButton isQuiet onPress={close}>
                   <UsersAdd />
-                  <Text>Create segment</Text>
-                </Item>
-                <Item key="user-paths">
+                  Create segment
+                </ActionButton>
+                <ActionButton isQuiet onPress={close}>
                   <GraphPathing />
-                  <Text>Show user paths</Text>
-                </Item>
-                <Item key="view-users">
+                  Show user paths
+                </ActionButton>
+                <ActionButton isQuiet onPress={close}>
                   <ViewDetail />
-                  <Text>View users</Text>
-                </Item>
-                <Item key="download-users">
+                  View users
+                </ActionButton>
+                <ActionButton isQuiet onPress={close}>
                   <Download />
-                  <Text>Download users</Text>
-                </Item>
-              </ActionGroup>
+                  Download users
+                </ActionButton>
+              </div>
             </>
           )}
-        </Flex>
-      </Content>
+        </div>
+      </div>
     );
   };
   return callback;
@@ -200,7 +200,7 @@ const FunnelTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactElement =>
         lineType="period"
         lineWidth={1.5}
       >
-        <ChartTooltip />
+        <ChartInspect />
       </Bar>
       <Legend
         highlight

@@ -14,8 +14,8 @@ import { createElement } from 'react';
 import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
 import { ChartPopover } from '../components/ChartPopover';
-import { ChartTooltip } from '../components/ChartTooltip';
-import { DonutSummary, SegmentLabel } from '../rc';
+import { ChartInspect } from '../components/ChartInspect';
+import { DonutSummary, SegmentLabel } from '../pre-alpha';
 import { getDonutOptions } from './donutAdapter';
 
 describe('getDonutOptions()', () => {
@@ -23,16 +23,16 @@ describe('getDonutOptions()', () => {
     const options = getDonutOptions({});
     expect(options.markType).toBe('donut');
     expect(options.chartPopovers).toHaveLength(0);
-    expect(options.chartTooltips).toHaveLength(0);
+    expect(options.chartInspects).toHaveLength(0);
     expect(options.donutSummaries).toHaveLength(0);
   });
   it('should convert popover children to chartPopovers array', () => {
     const options = getDonutOptions({ children: [createElement(ChartPopover)] });
     expect(options.chartPopovers).toHaveLength(1);
   });
-  it('should convert tooltip children to chartTooltips array', () => {
-    const options = getDonutOptions({ children: [createElement(ChartTooltip)] });
-    expect(options.chartTooltips).toHaveLength(1);
+  it('should convert ChartInspect children to chartInspects array', () => {
+    const options = getDonutOptions({ children: [createElement(ChartInspect)] });
+    expect(options.chartInspects).toHaveLength(1);
   });
   it('should convert donnut summary children to donutSummaries array', () => {
     const options = getDonutOptions({ children: [createElement(DonutSummary)] });
@@ -41,6 +41,18 @@ describe('getDonutOptions()', () => {
   it('should convert segment label children to segmentLabels array', () => {
     const options = getDonutOptions({ children: [createElement(SegmentLabel)] });
     expect(options.segmentLabels).toHaveLength(1);
+  });
+  it('should preserve two mode-specific segment label children', () => {
+    const options = getDonutOptions({
+      children: [
+        createElement(SegmentLabel, { labelMode: 'emphasized' }),
+        createElement(SegmentLabel, { labelMode: 'deemphasized' }),
+      ],
+    });
+    expect(options.segmentLabels).toEqual([
+      { labelMode: 'emphasized' },
+      { labelMode: 'deemphasized' },
+    ]);
   });
   it('should pass through included props', () => {
     const options = getDonutOptions({ color: DEFAULT_COLOR });

@@ -11,24 +11,44 @@
  */
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Config, Padding, Renderers, Spec, View } from 'vega';
+import { Config, Padding, Renderers, Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
 import { getLocale } from '@spectrum-charts/locales';
-import { ChartData, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
 import { ChartProps } from './types';
+
+// Register a custom expression function that returns the full container width (including axis space).
+// `view._viewWidth` is the container width minus spec-level padding; adding padding back gives the
+// true container width. Passing `width` as an argument creates a reactive dependency so the signal
+// re-evaluates on every resize.
+//
+// Guarded to browser-only execution: this used to run unconditionally at module load, which crashed
+// SSR frameworks server-rendering a "use client" component using this library (there is no `window`
+// in Node's module evaluation). jsdom (used by this file's tests) provides `window`, so this still
+// registers under Jest.
+if (typeof window !== 'undefined') {
+  expressionFunction('rscContainerWidth', function (this: { context: { dataflow: View } }) {
+    const view = this.context.dataflow;
+    const p = view.padding() as { left?: number; right?: number };
+    const viewWidth = (view as unknown as { _viewWidth?: number })._viewWidth ?? 0;
+    return viewWidth + (p.left ?? 0) + (p.right ?? 0);
+  });
+}
 
 /**
  * Resizes an existing Vega view without recreating it.
  */
 export const resizeView = (view: View | undefined, width: number, height: number): void => {
   if (view && width && height) {
-    view.width(width).height(height).resize().runAsync();
+    // Two passes: first updates width/height signals; second lets Vega re-settle layout
+    // after dependent changes (e.g. legend column count → legend height → plot area height).
+    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
   }
 };
 
@@ -116,18 +136,11 @@ export const VegaChart: FC<VegaChartProps> = ({
           return signal;
         });
       }
-      embed(containerRef.current, specCopy, {
-        // Note: getVegaEmbedOptions from vega-spec-builder-s2 always uses S2 configuration
-        ...getVegaEmbedOptions({
-          locale,
-          height,
-          width,
-          padding,
-          renderer,
-          config,
-        }),
-        tooltip,
-      }).then(({ view }) => {
+      const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
+      const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
+      const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
+
+      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
         chartView.current = view;
         onNewView(view);
         view.resize();

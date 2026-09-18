@@ -15,6 +15,7 @@ import {
   ChartTooltipOptions,
   ColorFacet,
   ColorScheme,
+  DisplayOnHoverTrigger,
   DonutSummaryOptions,
   HighlightedItem,
   InteractionMode,
@@ -27,6 +28,7 @@ import {
   SegmentLabelOptions,
   TrendlineOptions,
 } from '../types';
+import type { HoverContext } from '../marks/hoverContext';
 
 export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineName: string): string | undefined => {
   // if the line has a popover, this line is the target for the popover
@@ -54,6 +56,8 @@ export const staticPointTestExpr = (fieldName: string): string =>
 
 export interface LineMarkOptions {
   barAnnotations?: BarAnnotationOptions[];
+  /** Resolved hover context — required when isMetricRange && displayOnHover is set. */
+  hoverContext?: HoverContext;
   chartPopovers?: ChartPopoverOptions[];
   chartTooltips?: ChartTooltipOptions[];
   color: ColorFacet;
@@ -61,6 +65,8 @@ export interface LineMarkOptions {
   comboSiblingNames?: string[];
   dimension: string;
   displayOnHover?: boolean | 'metric' | 'range';
+  /** Restricts which hover trigger reveals `displayOnHover` content. Undefined matches any active hover (legacy behavior). */
+  displayOnHoverTrigger?: DisplayOnHoverTrigger;
   donutSummaries?: DonutSummaryOptions[];
   dualMetricAxis?: boolean;
   hasOnClick?: boolean;
@@ -68,6 +74,7 @@ export interface LineMarkOptions {
   idKey: string;
   interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
   interactionMode?: InteractionMode;
+  isMetricRange?: boolean;
   isHighlightedByDimension?: boolean;
   isHighlightedByGroup?: boolean;
   lineType: LineTypeFacet;
@@ -78,6 +85,7 @@ export interface LineMarkOptions {
   name: string;
   opacity: OpacityFacet;
   popoverMarkName?: string;
+  s2?: boolean;
   scaleType: ScaleType;
   scatterPaths?: ScatterPathOptions[];
   segmentLabels?: SegmentLabelOptions[];

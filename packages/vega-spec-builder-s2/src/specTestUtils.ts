@@ -12,8 +12,21 @@
 import { Signal } from 'vega';
 
 import {
+  CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_FONT_SIZE,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_HOVER_STROKE_WIDTHS,
+  CHART_SIZE_LABEL_GAP,
+  CHART_SIZE_LABEL_GAPS,
+  CHART_SIZE_POINT_SIZE,
+  CHART_SIZE_POINT_SIZES,
+  CHART_SIZE_STROKE_WIDTH,
+  CHART_SIZE_STROKE_WIDTHS,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
+  DIRECT_LABEL_FONT_SIZE_L,
+  DIRECT_LABEL_FONT_SIZE_M,
+  DIRECT_LABEL_FONT_SIZE_S,
   HIGHLIGHTED_GROUP,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -29,6 +42,31 @@ export const defaultSelectedItemSignal = getGenericValueSignal(SELECTED_ITEM);
 export const defaultSelectedSeriesSignal = getGenericValueSignal(SELECTED_SERIES);
 export const defaultSelectedGroupSignal = getGenericValueSignal(SELECTED_GROUP);
 
+export const defaultChartSizeStrokeWidthSignal = {
+  name: CHART_SIZE_STROKE_WIDTH,
+  update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_STROKE_WIDTHS.M} : ${CHART_SIZE_STROKE_WIDTHS.L}`,
+};
+
+export const defaultChartSizeHoverStrokeWidthSignal = {
+  name: CHART_SIZE_HOVER_STROKE_WIDTH,
+  update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.M} : ${CHART_SIZE_HOVER_STROKE_WIDTHS.L}`,
+};
+
+export const defaultChartSizePointSizeSignal = {
+  name: CHART_SIZE_POINT_SIZE,
+  update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_POINT_SIZES.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_POINT_SIZES.M} : ${CHART_SIZE_POINT_SIZES.L}`,
+};
+
+export const defaultChartSizeFontSizeSignal = {
+  name: CHART_SIZE_FONT_SIZE,
+  update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`,
+};
+
+export const defaultChartSizeLabelGapSignal = {
+  name: CHART_SIZE_LABEL_GAP,
+  update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_LABEL_GAPS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_LABEL_GAPS.M} : ${CHART_SIZE_LABEL_GAPS.L}`,
+};
+
 export const defaultSignals: Signal[] = [
   defaultHighlightedItemSignal,
   defaultHighlightedGroupSignal,
@@ -36,4 +74,9 @@ export const defaultSignals: Signal[] = [
   defaultSelectedItemSignal,
   defaultSelectedSeriesSignal,
   defaultSelectedGroupSignal,
+  defaultChartSizeStrokeWidthSignal,
+  defaultChartSizeHoverStrokeWidthSignal,
+  defaultChartSizePointSizeSignal,
+  defaultChartSizeFontSizeSignal,
+  defaultChartSizeLabelGapSignal,
 ];

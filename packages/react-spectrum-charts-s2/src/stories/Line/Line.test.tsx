@@ -11,7 +11,7 @@
  */
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
-import { Line } from '../../components';
+import { Line, LinePointAnnotation } from '../../components';
 import { workspaceTrendsData } from '../../stories/data/data';
 import {
   allElementsHaveAttributeValue,
@@ -26,6 +26,8 @@ import {
   rightClickNthElement,
   screen,
   unhoverNthElement,
+  waitFor,
+  waitForMarksByGroupName,
   within,
 } from '../../test-utils';
 import '../../test-utils/__mocks__/matchMedia.mock';
@@ -33,11 +35,26 @@ import { Basic } from './Features/LineBasic.story';
 import { LineWithAxisAndLegend } from './Features/LineWithAxisAndLegend.story';
 import { LineWithUTCDatetimeFormat } from './Features/LineWithUTCDatetimeFormat.story';
 import { HistoricalCompare } from './Features/LineHistoricalCompare.story';
+import {
+  ControlledHighlight as HoverAnimationControlledHighlight,
+  GroupedLegendHover as HoverAnimationGroupedLegendHover,
+  LegendHover as HoverAnimationLegendHover,
+  OnClick as HoverAnimationOnClick,
+  PointHover as HoverAnimationPointHover,
+  PopoverSelection as HoverAnimationPopoverSelection,
+} from './Features/HoverAnimation/LineHoverAnimation.story';
 import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story';
 import { LineType } from './Features/LineType.story';
 import { Opacity } from './Features/LineOpacity.story';
-import { ItemTooltip, Tooltip } from './Features/Tooltip/LineTooltip.story';
+import { ItemInspect, Inspect } from './Features/Inspect/LineInspect.story';
 import { TrendScale, LinearTrendScale } from './Features/TrendScale/LineTrendScale.story';
+
+describe('LinePointAnnotation', () => {
+  // LinePointAnnotation is not a real React component. This test provides coverage for sonarqube
+  test('LinePointAnnotation pseudo element', () => {
+    render(<LinePointAnnotation />);
+  });
+});
 
 describe('Line', () => {
   // Line is not a real React component. This is test just provides test coverage for sonarqube
@@ -84,7 +101,7 @@ describe('Line', () => {
     expect(lines.length).toEqual(4);
     expect(lines[0].getAttribute('stroke-dasharray')).toEqual('');
     expect(lines[1].getAttribute('stroke-dasharray')).toEqual('7,4');
-    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[3].getAttribute('stroke-dasharray')).toEqual('2,3,7,4');
   });
 
@@ -108,13 +125,13 @@ describe('Line', () => {
     const lines = await findAllMarksByGroupName(chart, 'line0');
     expect(lines.length).toEqual(4);
     // dotted teal line
-    expect(lines[0].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[0].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
     // solid teal line
     expect(lines[1].getAttribute('stroke-dasharray')).toEqual('');
     expect(lines[1].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
     // dotted purple line
-    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('2,3');
+    expect(lines[2].getAttribute('stroke-dasharray')).toEqual('0,4');
     expect(lines[3].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
     // solid purple line
     expect(lines[3].getAttribute('stroke-dasharray')).toEqual('');
@@ -130,28 +147,127 @@ describe('Line', () => {
     expect(entries.length).toEqual(4);
     await hoverNthElement(entries, 0);
 
-    // symbol opacity should be reduced for all but the first symbol
+    // symbol opacity should be reduced for all but the first symbol. Legend opacity is now driven by
+    // the same animated fraction data as the line for animated marks, so it settles asynchronously
+    // rather than flipping instantly — hence the waitFor rather than a direct synchronous assertion.
     let symbols = getAllLegendSymbols(chart);
-    expect(symbols[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    await waitFor(() => {
+      expect(symbols[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(symbols.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
-    // line opacity should be reduced for all but the first line
-    let lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(lines[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    await waitForMarksByGroupName(chart, 'line0', (lines) => {
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
 
     await unhoverNthElement(entries, 0);
     await hoverNthElement(entries, 3);
 
     // symbol opacity should be reduced for all but the last symbol
     symbols = getAllLegendSymbols(chart);
-    expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(symbols[3]).toHaveAttribute('opacity', '1');
+    await waitFor(() => {
+      expect(allElementsHaveAttributeValue(symbols.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(symbols[3]).toHaveAttribute('opacity', '1');
+    });
 
     // line opacity should be reduced for all but the last line
-    lines = await findAllMarksByGroupName(chart, 'line0');
-    expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
-    expect(lines[3]).toHaveAttribute('opacity', '1');
+    await waitForMarksByGroupName(chart, 'line0', (lines) => {
+      expect(allElementsHaveAttributeValue(lines.slice(0, 3), 'opacity', FADE_FACTOR)).toBeTruthy();
+      expect(lines[3]).toHaveAttribute('opacity', '1');
+    });
+  });
+
+  describe('HoverAnimation', () => {
+    test('hovering a data point emphasizes its series and animates the others down to the faded opacity', async () => {
+      render(<HoverAnimationPointHover {...HoverAnimationPointHover.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('with animations disabled, the fade is applied via the original instant rules instead of the animated signal', async () => {
+      render(<HoverAnimationPointHover {...HoverAnimationPointHover.args} animations={false} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      const lines = await findAllMarksByGroupName(chart, 'line0');
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
+
+    test('hovering a legend entry emphasizes the matching series', async () => {
+      render(<HoverAnimationLegendHover {...HoverAnimationLegendHover.args} />);
+      const chart = await findChart();
+
+      const entries = getAllLegendEntries(chart);
+      await hoverNthElement(entries, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('hovering a grouped legend entry emphasizes every series in that group', async () => {
+      render(<HoverAnimationGroupedLegendHover {...HoverAnimationGroupedLegendHover.args} />);
+      const chart = await findChart();
+
+      const entries = getAllLegendEntries(chart);
+      await hoverNthElement(entries, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        // the two series in the hovered group stay fully opaque; the other group's two series fade
+        const opacities = lines.map((line) => line.getAttribute('opacity'));
+        expect(opacities.filter((o) => o === '1')).toHaveLength(2);
+        expect(opacities.filter((o) => o === `${FADE_FACTOR}`)).toHaveLength(2);
+      });
+    });
+
+    test('selecting a point via popover keeps its series emphasized', async () => {
+      render(<HoverAnimationPopoverSelection {...HoverAnimationPopoverSelection.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await clickNthElement(paths, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
+
+    test('the controlled highlightedSeries prop emphasizes that series without any hover', async () => {
+      render(<HoverAnimationControlledHighlight {...HoverAnimationControlledHighlight.args} />);
+      const chart = await findChart();
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        const opacities = lines.map((line) => line.getAttribute('opacity'));
+        expect(opacities.filter((o) => o === '1')).toHaveLength(1);
+        expect(opacities.filter((o) => o === `${FADE_FACTOR}`)).toHaveLength(3);
+      });
+    });
+
+    test('an onClick handler alone makes the line interactive, so hovering still animates the emphasis', async () => {
+      render(<HoverAnimationOnClick {...HoverAnimationOnClick.args} />);
+      const chart = await findChart();
+
+      const paths = await findAllMarksByGroupName(chart, 'line0_voronoi');
+      await hoverNthElement(paths, 0);
+
+      await waitForMarksByGroupName(chart, 'line0', (lines) => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+      });
+    });
   });
 
   test('Trend scale renders', async () => {
@@ -166,9 +282,9 @@ describe('Line', () => {
     expect(await screen.findByText('14')).toBeInTheDocument();
   });
 
-  describe('Tooltip', () => {
-    test('Tooltip should show on hover', async () => {
-      render(<Tooltip {...Tooltip.args} />);
+  describe('Inspect', () => {
+    test('Inspect should show on hover', async () => {
+      render(<Inspect {...Inspect.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 
@@ -177,12 +293,12 @@ describe('Line', () => {
 
       // hover and validate all hover components are visible
       await hoverNthElement(paths, 0);
-      const tooltip = await screen.findByTestId('rsc-tooltip');
-      expect(tooltip).toBeInTheDocument();
-      expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+      const inspect = await screen.findByTestId('rsc-tooltip');
+      expect(inspect).toBeInTheDocument();
+      expect(within(inspect).getByText('Nov 8')).toBeInTheDocument();
     });
     test('should fade the opacity of non-hovered lines', async () => {
-      render(<Tooltip {...Tooltip.args} />);
+      render(<Inspect {...Inspect.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 
@@ -197,13 +313,15 @@ describe('Line', () => {
       // hover and validate all hover components are visible
       await hoverNthElement(paths, 0);
 
-      expect(lines[0]).toHaveAttribute('opacity', '1');
-      expect(lines[1]).toHaveAttribute('opacity', '0.2');
+      await waitFor(() => {
+        expect(lines[0]).toHaveAttribute('opacity', '1');
+        expect(lines[1]).toHaveAttribute('opacity', '0.2');
+      });
     });
   });
 
-  test('Item tooltip renders', async () => {
-    render(<ItemTooltip {...ItemTooltip.args} />);
+  test('Item inspect renders', async () => {
+    render(<ItemInspect {...ItemInspect.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -212,9 +330,9 @@ describe('Line', () => {
 
     // hover and validate all hover components are visible
     await hoverNthElement(hoverGroup, 0);
-    const tooltip = await screen.findByTestId('rsc-tooltip');
-    expect(tooltip).toBeInTheDocument();
-    expect(within(tooltip).getByText('Nov 8')).toBeInTheDocument();
+    const inspect = await screen.findByTestId('rsc-tooltip');
+    expect(inspect).toBeInTheDocument();
+    expect(within(inspect).getByText('Nov 8')).toBeInTheDocument();
   });
 
   test('Static points render', async () => {
@@ -225,19 +343,12 @@ describe('Line', () => {
     const points = await findAllMarksByGroupName(chart, 'line0_staticPoints');
     expect(points.length).toEqual(6);
 
-    expect(points[0].getAttribute('fill')).toEqual('white');
-    expect(points[1].getAttribute('fill')).toEqual('white');
-    expect(points[2].getAttribute('fill')).toEqual('white');
-    expect(points[3].getAttribute('fill')).toEqual('white');
-    expect(points[4].getAttribute('fill')).toEqual('white');
-    expect(points[5].getAttribute('fill')).toEqual('white');
-
-    expect(points[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-    expect(points[1].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-    expect(points[2].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-    expect(points[3].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
-    expect(points[4].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
-    expect(points[5].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
+    expect(points[0].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
+    expect(points[1].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
+    expect(points[2].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
+    expect(points[3].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
+    expect(points[4].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
+    expect(points[5].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
 
     expect(points[0].getAttribute('stroke-opacity')).toBeNull();
     expect(points[1].getAttribute('stroke-opacity')).toBeNull();
@@ -257,19 +368,11 @@ describe('Line', () => {
       // hover a place on the line without a static point
       await hoverNthElement(paths, 0);
 
-      const backgroundPoints = await findAllMarksByGroupName(chart, 'line0_pointBackground');
-      expect(backgroundPoints.length).toBe(1);
-      expect(backgroundPoints[0].getAttribute('fill')).toEqual('white');
-      expect(backgroundPoints[0].getAttribute('stroke')).toEqual('white');
-      expect(backgroundPoints[0]).toHaveAttribute('stroke-width', '2');
-      expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
-      expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
-
       const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point_highlight');
       expect(hoverPoints.length).toBe(1);
       expect(hoverPoints[0].getAttribute('fill')).toEqual('white');
       expect(hoverPoints[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
+      expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2.5');
       expect(hoverPoints[0].getAttribute('stroke-opacity')).toBeNull();
       expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
     });
@@ -282,19 +385,12 @@ describe('Line', () => {
       const points = await findAllMarksByGroupName(chart, 'line0_staticPoints');
       expect(points.length).toEqual(6);
 
-      expect(points[0].getAttribute('fill')).toEqual('white');
-      expect(points[1].getAttribute('fill')).toEqual('white');
-      expect(points[2].getAttribute('fill')).toEqual('white');
-      expect(points[3].getAttribute('fill')).toEqual('white');
-      expect(points[4].getAttribute('fill')).toEqual('white');
-      expect(points[5].getAttribute('fill')).toEqual('white');
-
-      expect(points[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(points[1].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(points[2].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(points[3].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
-      expect(points[4].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
-      expect(points[5].getAttribute('stroke')).toEqual('#D92361'); // S2 categorical-200
+      expect(points[0].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
+      expect(points[1].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
+      expect(points[2].getAttribute('fill')).toEqual('#5424DB'); // S2 categorical-100
+      expect(points[3].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
+      expect(points[4].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
+      expect(points[5].getAttribute('fill')).toEqual('#D92361'); // S2 categorical-200
 
       expect(points[0].getAttribute('stroke-opacity')).toBeNull();
       expect(points[1].getAttribute('stroke-opacity')).toBeNull();
@@ -307,19 +403,11 @@ describe('Line', () => {
       // hover a static point
       await hoverNthElement(paths, 1);
 
-      const backgroundPoints = await findAllMarksByGroupName(chart, 'line0_pointBackground');
-      expect(backgroundPoints.length).toBe(1);
-      expect(backgroundPoints[0].getAttribute('fill')).toEqual('white');
-      expect(backgroundPoints[0].getAttribute('stroke')).toEqual('white');
-      expect(backgroundPoints[0]).toHaveAttribute('stroke-width', '2');
-      expect(backgroundPoints[0]).not.toHaveAttribute('fill-opacity');
-      expect(backgroundPoints[0]).not.toHaveAttribute('stroke-opacity');
-
       const hoverPoints = await findAllMarksByGroupName(chart, 'line0_point_highlight');
       expect(hoverPoints.length).toBe(1);
       expect(hoverPoints[0].getAttribute('fill')).toEqual('white');
       expect(hoverPoints[0].getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2');
+      expect(hoverPoints[0]).toHaveAttribute('stroke-width', '2.5');
       expect(hoverPoints[0].getAttribute('stroke-opacity')).toBeNull();
       expect(hoverPoints[0]).not.toHaveAttribute('fill-opacity');
     });
@@ -339,7 +427,7 @@ describe('Line', () => {
       expect(point).toBeInTheDocument();
 
       expect(point.getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
-      expect(point.getAttribute('stroke-width')).toEqual('2');
+      expect(point.getAttribute('stroke-width')).toEqual('2.5');
     });
 
     test('standard points should have series color border and background color fill when selected', async () => {
@@ -356,7 +444,7 @@ describe('Line', () => {
       expect(point.getAttribute('fill')).toEqual('white');
       expect(point.getAttribute('stroke')).toEqual('#5424DB'); // S2 categorical-100
       expect(point.getAttribute('stroke-opacity')).toBeNull();
-      expect(point.getAttribute('stroke-width')).toEqual('2');
+      expect(point.getAttribute('stroke-width')).toEqual('2.5');
     });
 
 

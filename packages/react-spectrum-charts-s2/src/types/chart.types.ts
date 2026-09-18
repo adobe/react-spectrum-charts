@@ -13,7 +13,6 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { Config, Locale, NumberLocale, Padding, TimeLocale, View } from 'vega';
 
-import { Theme } from '@react-types/provider';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '@spectrum-charts/locales';
 import {
   ChartData,
@@ -26,14 +25,34 @@ import {
 } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisElement } from './axis';
-import { ChartPopoverElement, ChartTooltipElement } from './dialogs';
+import { ChartInspectElement, ChartPopoverElement } from './dialogs';
 import { LegendElement } from './legend.types';
-import { BarAnnotationElement, BarElement, DonutElement, DonutSummaryElement, LineElement } from './marks';
+import {
+  AreaElement,
+  BarAnnotationElement,
+  BarElement,
+  BulletElement,
+  ComboElement,
+  DonutElement,
+  DonutSummaryElement,
+  LineElement,
+} from './marks';
+import { ScatterElement } from './marks/scatter.types';
 import { TitleElement } from './title.types';
 import { Children } from './util.types';
 
-export type ChartChildElement = AxisElement | BarElement | DonutElement | LegendElement | LineElement | TitleElement;
-export type MarkChildElement = BarAnnotationElement | ChartPopoverElement | ChartTooltipElement | DonutSummaryElement;
+export type ChartChildElement =
+  | AreaElement
+  | AxisElement
+  | BarElement
+  | BulletElement
+  | ComboElement
+  | DonutElement
+  | LegendElement
+  | LineElement
+  | ScatterElement
+  | TitleElement;
+export type MarkChildElement = BarAnnotationElement | ChartInspectElement | ChartPopoverElement | DonutSummaryElement;
 
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {
   // children is optional because it is a pain to make this required with how children get defined in stories
@@ -44,7 +63,7 @@ export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' 
   config?: Config;
   /** Chart data array. */
   data: ChartData[];
-  /** Enables debug mode which will console log things like the generated vega spec and the datums for tooltips. */
+  /** Enables debug mode which will console log things like the generated vega spec and the datums for inspects. */
   debug?: boolean;
   /** Number and time locales to use */
   locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
@@ -115,8 +134,6 @@ export interface ChartProps extends SharedChartProps {
   maxHeight?: number;
   /** Minimum height of the chart */
   minHeight?: number;
-  /** react-spectrum theme. This sets the react-spectrum theming on tooltips and popovers. */
-  theme?: Theme;
   /** Chart width */
   width?: Width;
 }

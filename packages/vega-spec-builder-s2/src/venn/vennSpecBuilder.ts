@@ -65,7 +65,7 @@ export const addVenn = produce<
     spec,
     {
       chartPopovers = [],
-      chartTooltips = [],
+      chartInspects = [],
       color = DEFAULT_VENN_COLOR,
       colorScheme = DEFAULT_COLOR_SCHEME,
       index = 0,
@@ -81,7 +81,7 @@ export const addVenn = produce<
   ) => {
     const vennProps: VennSpecOptions = {
       chartPopovers,
-      chartTooltips,
+      chartInspects,
       chartWidth,
       chartHeight,
       data,
@@ -193,9 +193,9 @@ export const getHiddenIntersectionTransforms = (): (
 };
 
 export const addSignals = produce<Signal[], [VennSpecOptions]>((signals, props) => {
-  const { chartTooltips, name } = props;
+  const { chartInspects, name } = props;
 
   if (!isInteractive(props)) return;
-  addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
-  addHoveredItemSignal(signals, name, `${name}_intersections`, 1, chartTooltips[0]?.excludeDataKeys);
+  addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
+  addHoveredItemSignal(signals, name, `${name}_intersections`, 1, chartInspects[0]?.excludeDataKeys);
 });

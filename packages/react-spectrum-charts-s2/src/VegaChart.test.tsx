@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { render, waitFor } from '@testing-library/react';
-import { Spec, View } from 'vega';
+import { Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 
 import { VegaChart, VegaChartProps, resizeView } from './VegaChart';
@@ -54,15 +54,16 @@ describe('resizeView', () => {
 		jest.clearAllMocks();
 	});
 
-	test('calls width, height, resize, and runAsync when view exists and dimensions are valid', () => {
+	test('calls width, height, resize, and runAsync twice when view exists and dimensions are valid', async () => {
 		const mockView = createMockView();
 
 		resizeView(mockView, 800, 600);
+		await Promise.resolve();
 
 		expect(mockWidth).toHaveBeenCalledWith(800);
 		expect(mockHeight).toHaveBeenCalledWith(600);
 		expect(mockResize).toHaveBeenCalled();
-		expect(mockRunAsync).toHaveBeenCalled();
+		expect(mockRunAsync).toHaveBeenCalledTimes(2);
 	});
 
 	test('does not call view methods when view is undefined', () => {
@@ -88,6 +89,27 @@ describe('resizeView', () => {
 		resizeView(mockView, 800, 0);
 
 		expect(mockWidth).not.toHaveBeenCalled();
+	});
+});
+
+describe('rscContainerWidth expression function', () => {
+	// The function is registered at module load time when VegaChart.tsx is imported above.
+	const fn = expressionFunction('rscContainerWidth') as (this: unknown) => number;
+
+	const makeCtx = (viewWidth: number | undefined, padding: unknown) => ({
+		context: { dataflow: { padding: () => padding, _viewWidth: viewWidth } },
+	});
+
+	test('returns _viewWidth plus left and right padding', () => {
+		expect(fn.call(makeCtx(380, { left: 10, right: 10, top: 5, bottom: 5 }))).toBe(400);
+	});
+
+	test('returns _viewWidth when padding has no left or right keys', () => {
+		expect(fn.call(makeCtx(400, { top: 5, bottom: 5 }))).toBe(400);
+	});
+
+	test('returns padding sum when _viewWidth is undefined', () => {
+		expect(fn.call(makeCtx(undefined, { left: 20, right: 20 }))).toBe(40);
 	});
 });
 

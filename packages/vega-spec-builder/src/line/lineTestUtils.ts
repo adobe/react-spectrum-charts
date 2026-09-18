@@ -39,6 +39,7 @@ export const defaultLineOptions: LineSpecOptions = {
   name: 'line0',
   dimension: DEFAULT_TIME_DIMENSION,
   hasOnClick: false,
+  hasOnContextMenu: false,
   linePointAnnotations: [],
   idKey: MARK_ID,
   index: 0,

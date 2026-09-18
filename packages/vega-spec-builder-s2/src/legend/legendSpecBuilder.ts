@@ -44,7 +44,7 @@ import {
   UserMeta,
 } from '../types';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
-import { setHoverOpacityForMarks } from './legendHighlightUtils';
+import { injectLegendHoverIntoData, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
 
 export const addLegend = produce<
@@ -62,6 +62,7 @@ export const addLegend = produce<
   (
     spec,
     {
+      align,
       color,
       hasMouseInteraction = false,
       hasOnClick = false,
@@ -90,6 +91,7 @@ export const addLegend = produce<
 
     // put options back together now that all defaults are set
     const legendOptions: LegendSpecOptions = {
+      align,
       color: formattedColor,
       hasMouseInteraction,
       hasOnClick,
@@ -106,6 +108,12 @@ export const addLegend = produce<
       colorScheme,
       ...options,
     };
+
+    if (align !== undefined) {
+      if (!spec.usermeta) spec.usermeta = {};
+      if (!spec.usermeta.patches) spec.usermeta.patches = [];
+      spec.usermeta.patches.push({ legend: { layout: { [position]: { anchor: align } } } });
+    }
 
     // Order matters here. Facets rely on the scales being set up.
     spec.scales = addScales(spec.scales ?? [], legendOptions);
@@ -211,7 +219,7 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
     orient: position,
     title,
     encode: getEncodings(facets, options, userMeta),
-    columns: getColumns(position, labelLimit),
+    columns: getColumns(position, name, labelLimit),
     labelLimit,
   };
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
@@ -267,6 +275,7 @@ const addScales = produce<Scale[], [LegendSpecOptions]>((scales, { color, lineTy
 const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys, name }) => {
   if (highlight) {
     setHoverOpacityForMarks(name, marks, keys);
+    setHoverStrokeWidthForMarks(name, marks, keys);
   }
 });
 
@@ -276,7 +285,7 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-  (data, { facets, hiddenEntries, keys, name }) => {
+  (data, { facets, hiddenEntries, highlight, keys, name }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
     data.push({
@@ -293,6 +302,31 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
           expr,
         },
         ...getHiddenEntriesFilter(hiddenEntries, name),
+      ],
+    });
+
+    // Measure the actual max display label width so getColumns can compute an accurate column count.
+    const labelLookupExpr = `indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries)].label : datum.${name}Entries`;
+    data.push({
+      name: `${name}_maxLabelWidth`,
+      source: `${name}Aggregate`,
+      transform: [
+        {
+          type: 'formula',
+          as: 'displayLabel',
+          expr: labelLookupExpr,
+        },
+        {
+          type: 'formula',
+          as: 'labelWidth',
+          expr: "getLabelWidth(datum.displayLabel, 'normal', 14)",
+        },
+        {
+          type: 'aggregate',
+          fields: ['labelWidth'],
+          ops: ['max'],
+          as: ['maxLabelWidth'],
+        },
       ],
     });
 
@@ -315,6 +349,10 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
         data.transform[0].expr += ` || datum.${SERIES_ID} === ${name}_${HOVERED_SERIES}`;
       }
     }
+
+    if (highlight) {
+      injectLegendHoverIntoData(name, data, keys);
+    }
   }
 );
 
@@ -324,8 +362,8 @@ export const addSignals = produce<Signal[], [LegendSpecOptions]>(
       addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
     }
 
-    if (legendLabels) {
-      signals.push(getGenericValueSignal(`${name}_labels`, legendLabels));
-    }
+    // Always emit _labels so the _maxLabelWidth data transform can safely reference it.
+    // Defaults to [] when no legendLabels prop is set; the lookup falls through to datum.${name}Entries.
+    signals.push(getGenericValueSignal(`${name}_labels`, legendLabels ?? []));
   }
 );

@@ -12,22 +12,17 @@
 import { produce } from 'immer';
 import { Data, SourceData, Transforms } from 'vega';
 
-import {
-  CONTROLLED_HIGHLIGHTED_ITEM,
-  CONTROLLED_HIGHLIGHTED_SERIES,
-  FILTERED_TABLE,
-  HOVERED_ITEM,
-  SELECTED_ITEM,
-  SELECTED_SERIES,
-  SERIES_ID,
-} from '@spectrum-charts/constants';
+import { FILTERED_TABLE, INTERACTION_MODE, SELECTED_ITEM, TRENDLINE_VALUE } from '@spectrum-charts/constants';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils';
+import { getUniqueDimensionData } from '../line/lineDataUtils';
 import { isInteractive } from '../marks/markUtils';
+import { HoverContext, getHoverContext, getItemHoverPredicate, getSeriesHoverPredicate } from '../marks/hoverContext';
 import { getFacetsFromOptions } from '../specUtils';
-import { TrendlineMethod, TrendlineSpecOptions } from '../types';
+import { DisplayOnHoverTrigger, LineSpecOptions, TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
   getAggregateTransform,
+  getMetricFilterTransform,
   getNormalizedDimensionTransform,
   getPartialWindowFilterTransforms,
   getRegressionExtentTransform,
@@ -68,16 +63,27 @@ export const addTrendlineData = (data: Data[], markOptions: TrendlineParentOptio
  */
 export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceData[] => {
   const data: SourceData[] = [];
-  const { color, idKey, lineType, name: markName, interactiveMarkName } = markOptions;
+  const { color, idKey, lineType, name: markName } = markOptions;
   const trendlines = getTrendlines(markOptions);
+  // Only LineSpecOptions supports the full hover context (Scatter/Bar don't use dimension interactivity);
+  // cast is safe because getDimensionField gracefully handles missing scaleType.
+  const ctx = getHoverContext(markOptions as LineSpecOptions);
 
   const concatenatedTrendlineData: { name: string; source: string[] } = {
     name: `${markName}_allTrendlineData`,
     source: [],
   };
 
+  if (
+    'interactionMode' in markOptions &&
+    markOptions.interactionMode === INTERACTION_MODE.DIMENSION &&
+    trendlines.some((trendline) => isInteractive(trendline))
+  ) {
+    data.push(getUniqueDimensionData(`${markName}Trendline`, markOptions.scaleType, markOptions.dimension));
+  }
+
   for (const trendlineOptions of trendlines) {
-    const { displayOnHover, method, name } = trendlineOptions;
+    const { displayOnHover, displayOnHoverTrigger, method, name } = trendlineOptions;
     const { facets } = getFacetsFromOptions({ color, lineType });
 
     if (isRegressionMethod(method)) {
@@ -88,7 +94,7 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
       data.push(getWindowTrendlineData(markOptions, trendlineOptions));
     }
     if (displayOnHover) {
-      data.push(getTrendlineDisplayOnHoverData(name, method, interactiveMarkName));
+      data.push(getTrendlineDisplayOnHoverData(name, method, ctx, displayOnHoverTrigger));
     }
     if (isInteractive(trendlineOptions)) {
       concatenatedTrendlineData.source.push(`${name}_data`);
@@ -96,7 +102,7 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
   }
 
   if (trendlines.some((trendline) => isInteractive(trendline))) {
-    data.push(concatenatedTrendlineData, getHighlightTrendlineData(markName, idKey));
+    data.push(concatenatedTrendlineData, getHighlightTrendlineData(ctx, markName, idKey));
   }
 
   return data;
@@ -115,7 +121,7 @@ export const getAggregateTrendlineData = (
   facets: string[]
 ) => {
   const data: SourceData[] = [];
-  const { dimensionRange, name, trendlineDimension } = trendlineOptions;
+  const { dimensionRange, name, trendlineDimension, trendlineMetric } = trendlineOptions;
   const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(trendlineDimension, dimensionRange);
   // high resolution data used for drawing the rule marks
   data.push({
@@ -123,6 +129,7 @@ export const getAggregateTrendlineData = (
     source: FILTERED_TABLE,
     transform: [
       ...getExcludeDataKeyTransforms(trendlineOptions.excludeDataKeys),
+      getMetricFilterTransform(trendlineMetric),
       ...dimensionRangeTransforms,
       ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, true),
       ...getSeriesIdTransform(facets),
@@ -134,6 +141,7 @@ export const getAggregateTrendlineData = (
       name: `${name}_data`,
       source: FILTERED_TABLE,
       transform: [
+        getMetricFilterTransform(trendlineMetric),
         ...dimensionRangeTransforms,
         ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, false),
       ],
@@ -156,7 +164,7 @@ export const getRegressionTrendlineData = (
 ) => {
   const data: SourceData[] = [];
   const { dimension, metric } = markOptions;
-  const { dimensionRange, method, name, orientation, trendlineDimension } = trendlineOptions;
+  const { dimensionRange, method, name, orientation, trendlineDimension, trendlineMetric } = trendlineOptions;
   const { trendlineDimension: standardTrendlineDimension } = getTrendlineDimensionMetric(
     dimension,
     metric,
@@ -170,8 +178,10 @@ export const getRegressionTrendlineData = (
     source: FILTERED_TABLE,
     transform: [
       ...getExcludeDataKeyTransforms(trendlineOptions.excludeDataKeys),
+      getMetricFilterTransform(trendlineMetric),
       ...dimensionRangeTransforms,
       ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, true),
+      getMetricFilterTransform(TRENDLINE_VALUE),
       ...getSeriesIdTransform(facets),
     ],
   });
@@ -183,6 +193,7 @@ export const getRegressionTrendlineData = (
         name: `${name}_params`,
         source: FILTERED_TABLE,
         transform: [
+          getMetricFilterTransform(trendlineMetric),
           ...dimensionRangeTransforms,
           ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, false),
         ],
@@ -216,18 +227,25 @@ const getWindowTrendlineData = (
   transform: [
     ...getExcludeDataKeyTransforms(trendlineOptions.excludeDataKeys),
     ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, false),
+    getMetricFilterTransform(TRENDLINE_VALUE),
     ...getTrendlineDimensionRangeTransforms(markOptions.dimension, trendlineOptions.dimensionRange),
   ],
 });
 
 /**
  * gets the data source and transforms for highlighting trendlines
+ * @param ctx
  * @param markName
- * @param trendlines
+ * @param idKey
  * @returns Data
  */
-const getHighlightTrendlineData = (markName: string, idKey: string): SourceData => {
-  const expr = `${SELECTED_ITEM} === datum.${idKey} || !isValid(${SELECTED_ITEM}) && (isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) || isValid(${markName}Trendline_${HOVERED_ITEM}) && ${markName}Trendline_${HOVERED_ITEM}.${idKey} === datum.${idKey})`;
+const getHighlightTrendlineData = (ctx: HoverContext, markName: string, idKey: string): SourceData => {
+  // Build the predicate from the resolved context (covers all active hover namespaces).
+  // Gate on SELECTED_ITEM for trendlines unless the parent popover already handles the gate.
+  const innerExpr = getItemHoverPredicate(ctx, idKey);
+  const expr = ctx.hasPopoverInteractivity
+    ? innerExpr
+    : `${SELECTED_ITEM} === datum.${idKey} || !isValid(${SELECTED_ITEM}) && (${innerExpr})`;
   return {
     name: `${markName}Trendline_highlightedData`,
     source: `${markName}_allTrendlineData`,
@@ -306,25 +324,29 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentOpti
 });
 
 /**
- * Gets the data source and transforms for displaying the trendline on hover
+ * Gets the data source and transforms for displaying the trendline on hover.
+ * Uses HoverContext so all active signal namespaces (parent + trendline, item + dimension)
+ * are included in the filter expression, unless restricted by `displayOnHoverTrigger`.
  * @param trendlineName
  * @param method
+ * @param ctx
+ * @param displayOnHoverTrigger restricts the filter to a specific hover scope (see `TrendlineOptions.displayOnHoverTrigger`)
  * @returns SourceData
  */
 export const getTrendlineDisplayOnHoverData = (
   trendlineName: string,
   method: TrendlineMethod,
-  interactiveMarkName?: string
+  ctx: HoverContext,
+  displayOnHoverTrigger?: DisplayOnHoverTrigger
 ): SourceData => {
   const source = isWindowMethod(method) ? `${trendlineName}_data` : `${trendlineName}_highResolutionData`;
-  const hoveredItemSignal = `${interactiveMarkName ?? trendlineName}_${HOVERED_ITEM}`;
   return {
     name: `${trendlineName}_highlightedData`,
     source,
     transform: [
       {
         type: 'filter',
-        expr: `datum.${SERIES_ID} === ${CONTROLLED_HIGHLIGHTED_SERIES} || datum.${SERIES_ID} === ${SELECTED_SERIES} || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${SERIES_ID} === datum.${SERIES_ID}`,
+        expr: getSeriesHoverPredicate(ctx, displayOnHoverTrigger),
       },
     ],
   };

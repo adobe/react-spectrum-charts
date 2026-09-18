@@ -1,0 +1,67 @@
+{
+  "id": "add-histogram-mark",
+  "title": "Add Histogram Chart Mark",
+  "chartType": "histogram",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "multi-consumer",
+  "complexity": {
+    "score": 2,
+    "rationale": "The rect-mark rendering reuses Bar's existing mark construction directly. The only non-precedented piece is the data layer: binning a single continuous `value` field via Vega's built-in `bin` transform plus a `count` aggregate — a standard, fully-documented Vega transform with a known API (extent/explicit range + maxbins), not a bespoke algorithm to design. Supporting an explicit bin count/range override is the same `bin` transform with different input parameters, not new logic."
+  },
+  "summary": "A single-series bar-like mark over a continuous `value` field, binned into equal-width buckets via Vega's `bin` transform and rendered with Bar's existing rect-mark construction. No color/series channel, no legend.",
+  "requirements": [
+    "Accepts a single required `value` (continuous/quantitative) channel — no dimension, color, or series channel",
+    "Auto-bins `value` into equal-width buckets using Vega's `bin` transform by default, then aggregates a `count` per bucket",
+    "Also supports an explicit bin count and/or explicit min/max range override, passed through to the same `bin` transform's `maxbins`/`extent` parameters instead of the auto-computed values",
+    "Renders one rect per bucket using Bar's existing rect-mark construction (single static color, no grouping/stacking)",
+    "No legend — Histogram never has a color/series facet to key one off of",
+    "X-axis domain reflects bin boundaries, not discrete category labels"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState, matching Bar's current empty-data behavior." },
+    { "case": "Single data point", "expectedBehavior": "Render a single bin containing that one value; bin transform must not divide-by-zero when extent min equals max." },
+    { "case": "All values identical", "expectedBehavior": "Degenerate extent (min === max) — bin transform must fall back to a single bucket rather than producing NaN bin boundaries." },
+    { "case": "Non-numeric or null values in the value field", "expectedBehavior": "Excluded from binning, consistent with how other continuous-scale marks in this codebase already drop null/non-numeric values before scale domain calculation." },
+    { "case": "An explicit min/max range narrower than the data's actual extent", "expectedBehavior": "Values outside the explicit range are excluded from binning (clipped), not clamped into the edge buckets, rather than silently expanding the range back to the data extent." },
+    { "case": "Narrow/responsive breakpoints", "expectedBehavior": "Bin count/width does not change with container width in this initial version — only bar width shrinks, matching Bar's existing responsive behavior; document this as an intentional v1 limitation rather than dynamic re-binning." },
+    { "case": "Light vs dark background", "expectedBehavior": "Rect fill resolves through the same static-color-value pattern Bar already uses for single-series bars." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Accessibility", "expectedBehavior": "SVG root aria-label should describe the value range/bin count, not per-category labels, since bins aren't discrete categories." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: reuses Bar's existing hover-animation gate on rect marks. touchesTooltipOrPopover: reuses Bar's existing ChartTooltip/ChartPopover wiring so hovering a bucket can show its count — no new interactive-mark plumbing needed, just applied to a bucketed data source instead of a categorical one. requiresNewSignalOrScale: false — the x scale is a plain continuous/linear scale over bin boundaries, using the same scale-building helpers Bar/Scatter already share; no new scale type. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/histogramSpec.types.ts", "change": "Create HistogramOptions/HistogramOptionsWithDefaults/HistogramSpecOptions with a required `value` field, an optional `maxBins` option (default provided, auto-binning), and optional `binMin`/`binMax` overrides passed to the bin transform's `extent`." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Histogram types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add HistogramOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/histogram/histogramTestUtils.ts", "change": "Fully-populated defaultHistogramOptions fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/histogram/histogramDataUtils.ts", "change": "New addBinTransform helper building a Vega `bin` transform (extent + maxbins, with extent overridable via binMin/binMax) on `value` followed by an `aggregate` transform producing `count` per bin — no existing bar util to reuse here, this is new data-layer logic." },
+    { "file": "packages/vega-spec-builder-s2/src/histogram/histogramMarkUtils.ts", "change": "getHistogramMark, reusing barUtils.ts's/barSpecBuilder.ts's rect-mark construction pattern (getBarMark-equivalent) but keyed off bin0/bin1 fields instead of a categorical dimension." },
+    { "file": "packages/vega-spec-builder-s2/src/histogram/histogramSpecBuilder.ts", "change": "addHistogram, addData (calls the new bin/aggregate helper), addSignals (reuse bar's interactive-mark signal helpers), setScales (linear scale over bin boundaries + linear count scale), modeled on barSpecBuilder.ts's addBar with dimension/color/stacking options removed." },
+    { "file": "packages/vega-spec-builder-s2/src/histogram/histogramMarkUtils.test.ts", "change": "Unit tests for getHistogramMark using the new fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/histogram/histogramSpecBuilder.test.ts", "change": "Per-function tests for addData (asserting the bin/aggregate transform shape), addSignals, setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register histogramCount: -1 in initializeComponentCounts, import addHistogram, add the 'histogram' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/histogram.types.ts", "change": "HistogramProps/HistogramElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Histogram/Histogram.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Histogram/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Histogram'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Histogram from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Histogram to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Histogram/Histogram.story.tsx", "change": "Basic story with a raw continuous-value dataset." }
+  ],
+  "openQuestions": [
+    "What is the default maxBins value when no explicit binMin/binMax/maxBins is given (auto-binning path)?",
+    "Should Histogram support a pre-binned data shape (caller supplies bin0/bin1/count directly) as an alternative to raw-value auto-binning, similar to Box Plot's raw-vs-precomputed dual mode?"
+  ]
+}

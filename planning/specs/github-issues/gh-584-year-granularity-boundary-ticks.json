@@ -1,0 +1,60 @@
+{
+  "id": "gh-584-year-granularity-boundary-ticks",
+  "title": "Include earliest and latest year in time axis with year granularity",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 3,
+    "rationale": "The reporter's stated blocker (axisSpecBuilder lacking the dimension field name) is already resolved in the current codebase — scaleField is already threaded through addAxis into addAxesMarks/addAxisSignals and used by axisThumbnailUtils, so there's precedent for a mark/axis function to know the field name. What's still genuinely open is a design decision: how to force-include the domain's boundary years in tick generation (explicit tickValues expression vs. a floor transform) without breaking Vega's own tick-count-driven layout for the non-boundary years — that's new, non-precedented logic in this file, not a copy of an existing pattern."
+  },
+  "summary": "With `granularity=\"year\"` on a linear/time-scaled Axis, the earliest (and potentially latest) calendar year in the data doesn't reliably get its own axis tick, even when a data point falls exactly on Jan 1 of that year, because tick generation for year granularity is delegated entirely to Vega's built-in interval-based tick algorithm operating on the plain data-derived scale domain, with no explicit guarantee that either domain boundary produces a tick.",
+  "requirements": [
+    "When an Axis has scaleType 'linear' or 'time' and granularity is 'year', the axis should always render a tick (and label) for the earliest year present in the data.",
+    "The axis should also always render a tick for the latest year present in the data, for the same visual-context reasoning as the earliest year.",
+    "The fix must not regress the existing interior-year tick spacing/behavior for typical multi-year datasets (i.e. this is additive: ensure boundary ticks exist, don't change how interior ticks are chosen)."
+  ],
+  "edgeCases": [
+    { "case": "Single year of data", "expectedBehavior": "Only one tick (that year) should render; boundary-inclusion logic must not duplicate it or produce a stray adjacent-year tick." },
+    { "case": "Earliest data point falls mid-year, not on Jan 1", "expectedBehavior": "The nearest/that year should still get a tick per current 'year' tickCount behavior — this feature is specifically about the case where a point already falls exactly on a year boundary and is still dropped." },
+    { "case": "Many years of data (long range)", "expectedBehavior": "Boundary-inclusion must not cause tick crowding/label overlap at typical chart widths; may need to interact with tickCountLimit/tickCountMinimum (axisSpec.types.ts:95,106)." },
+    { "case": "Non-year granularities (day/week/month/quarter)", "expectedBehavior": "Unaffected — this feature is scoped to granularity: 'year' only, per the reported issue." },
+    { "case": "S1/S2 parity", "expectedBehavior": "Not required for initial scope — see crossCutting.requiresS1S2Parity; S2's axis/time-label code should be checked separately before porting." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "requiresS1S2Parity is true only as a follow-up check, not a same-PR requirement: vega-spec-builder-s2/src/axis/axisLabelUtils.ts should be checked for the same getTimeLabelFormats/tickCount('year') pattern before deciding whether to port this fix; S2's axis and time-formatting code is not identical to s1's (S2 has its own axisLabelHoverUtils.ts for a different, categorical-axis-fade concern) so this hasn't been assumed to reproduce there."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/axis/axisUtils.ts",
+      "change": "getSecondaryTimeAxis (lines 96-132) and getPrimaryTimeAxis (lines 176-223) resolve `tickCount` to the string 'year' (via getTimeLabelFormats, axisLabelUtils.ts:64-65) and hand it directly to Vega's Axis.tickCount, relying entirely on Vega/d3's built-in interval-based tick algorithm over the scale's raw domain. To guarantee boundary years, tickCount likely needs to become an explicit computed tick-values expression (Vega `tickValues` as a signal) that unions the interval-generated ticks with the domain's own min/max years, rather than passing the bare interval name through.",
+      "lines": "96-132, 176-223"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/axis/axisSpecBuilder.ts",
+      "change": "addAxis (lines 65-171) already computes `scaleField = getScaleField(scale)` (line 98) and threads it into addAxesMarks/addAxisSignals — this resolves the reporter's concern that axisSpecBuilder lacks access to the dimension field name. If the chosen fix needs the dimension field's raw min/max at the axis level (rather than depending on Vega's scale.domain expression alone), scaleField is already available here to build a Vega expression referencing the field's actual data extent.",
+      "lines": "65-171"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/axis/axisUtils.test.ts",
+      "change": "Add tests for granularity: 'year' with a domain whose min falls exactly on Jan 1 and one whose max falls exactly on Jan 1 of the following year (the reporter's exact repro condition), asserting both boundary ticks are present alongside the existing interior ticks.",
+      "lines": "n/a — new test cases"
+    }
+  ],
+  "openQuestions": [
+    "The reporter's suggested approach (add a data transform that floors the datetime dimension, then use that for the axis scale/ticks) would couple axisSpecBuilder to the dimension field name — but scaleField is already threaded through addAxis (axisSpecBuilder.ts:98), so this coupling concern may already be moot. Is a floor-transform approach still the right direction, or is an explicit `tickValues` expression (union of Vega's interval ticks with the domain's actual min/max) a lower-risk fix that avoids adding a new data transform entirely?",
+    "Should 'latest year' inclusion be in scope for this fix too (the issue title mentions both earliest and latest), or should latest-year be filed as a separate, narrower follow-up if the underlying tick-generation mechanism turns out to need different handling for each boundary?",
+    "How should boundary-tick forcing interact with tickCountLimit/tickCountMinimum (axisSpec.types.ts:95,106) on very long multi-year ranges, where forcing both boundaries plus Vega's own interior ticks could exceed a configured limit?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/584" }
+  ]
+}

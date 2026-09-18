@@ -1,0 +1,106 @@
+{
+  "id": "gh-214-continuous-legend-line-bar-area",
+  "title": "Support continuous (quantitative) color legend for Line, Bar, and Area charts",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 5,
+    "rationale": "The legend's continuous-legend rendering (`getContinuousLegend`) is already generic and mark-agnostic — the gap is entirely in Bar/Area/Line's own scale wiring, which currently only routes color into the ordinal `COLOR_SCALE` (no `colorScaleType` option, unlike Scatter). Extending it isn't one precedented copy applied three times: Bar's stack/dodge transforms group by color categorically (`getStackFields`/`getDodgeGroupTransform`, packages/vega-spec-builder/src/bar/barSpecBuilder.ts:257-311) and Area's mark-building groups by color similarly (`groupby: color`, packages/vega-spec-builder/src/area/areaSpecBuilder.ts:277) — a continuous field can't group/stack into discrete segments the same way, so each of Bar and Area needs its own new, unresolved design decision about what continuous-color grouping even means, while Line (no stacking) is comparatively closer to Scatter's existing precedent. Multiple sites, each requiring different non-precedented reasoning, plus real open design questions."
+  },
+  "summary": "Line, Bar, and Area only support categorical (ordinal) color legends today — a quantitative color field gets bucketed into the same ordinal `COLOR_SCALE` used for categorical data, so it renders as a nominal legend instead of a continuous gradient. Scatter already supports this via a `colorScaleType: 'linear' | 'ordinal'` option that legend rendering (`getContinuousLegend`) already handles generically; Line, Bar, and Area have no equivalent option.",
+  "requirements": [
+    "Add a `colorScaleType?: 'linear' | 'ordinal'` option to Line, Bar, and Area (mirroring Scatter's existing `ScatterOptions.colorScaleType`, packages/vega-spec-builder/src/types/marks/scatterSpec.types.ts:49), defaulting to `'ordinal'` for backward compatibility.",
+    "When `colorScaleType: 'linear'`, route the color facet into `LINEAR_COLOR_SCALE` instead of `COLOR_SCALE` (mirroring `setScales` in packages/vega-spec-builder/src/scatter/scatterSpecBuilder.ts:170-176), so the existing generic `getContinuousLegend` legend rendering picks it up automatically.",
+    "Decide and implement what continuous color means for Bar's stack/dodge grouping (currently grouped by color categorically via `getStackFields`/`getDodgeGroupTransform`, packages/vega-spec-builder/src/bar/barSpecBuilder.ts:257-311) and Area's per-series color grouping (packages/vega-spec-builder/src/area/areaSpecBuilder.ts:277) — a continuous field can't group into discrete stack/dodge segments or discrete area series the same way.",
+    "For Line (no stacking), verify the existing per-series color-to-stroke encoding can accept a continuous scale reference directly, closer to Scatter's precedent."
+  ],
+  "edgeCases": [
+    {
+      "case": "Bar chart with `type=\"stacked\"` and `colorScaleType: \"linear\"`",
+      "expectedBehavior": "To be decided during implementation — stacking assumes discrete groups; needs a defined behavior (e.g. disallow the combination, or handle it some other explicit way)."
+    },
+    {
+      "case": "Area chart with `colorScaleType: \"linear\"`",
+      "expectedBehavior": "To be decided — Area's series grouping currently assumes discrete color values (packages/vega-spec-builder/src/area/areaSpecBuilder.ts:277)."
+    },
+    {
+      "case": "Line chart with `colorScaleType: \"linear\"`",
+      "expectedBehavior": "Each line's stroke should resolve through the linear color scale the same way Scatter's point fill already does."
+    },
+    {
+      "case": "Null/undefined color field values with a linear scale",
+      "expectedBehavior": "Should fall back to a default color, consistent with existing ordinal-scale null handling."
+    },
+    {
+      "case": "S1/S2 parity",
+      "expectedBehavior": "vega-spec-builder-s2's bar/area/line builders would need the identical option once the s1 design is settled."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": true,
+    "notes": "Adds usage of the existing `LINEAR_COLOR_SCALE` facet scale (already defined generically and used by Scatter) to Bar, Area, and Line, which currently only ever populate the ordinal `COLOR_SCALE`. Also requires the same new option and scale wiring in vega-spec-builder-s2's bar/area/line builders for parity once the s1 design is settled."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/types/marks/barSpec.types.ts",
+      "change": "Add `colorScaleType?: 'linear' | 'ordinal'` to `BarOptions`, mirroring `ScatterOptions.colorScaleType`."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/types/marks/areaSpec.types.ts",
+      "change": "Add `colorScaleType?: 'linear' | 'ordinal'` to `AreaOptions`, mirroring `ScatterOptions.colorScaleType`."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/types/marks/lineSpec.types.ts",
+      "change": "Add `colorScaleType?: 'linear' | 'ordinal'` to `LineOptions`, mirroring `ScatterOptions.colorScaleType`."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/bar/barSpecBuilder.ts",
+      "change": "Branch the color scale wiring on `colorScaleType` (route to `LINEAR_COLOR_SCALE` vs `COLOR_SCALE`), and resolve how `getStackFields`/`getDodgeGroupTransform` (currently group by color categorically) should behave for a continuous field.",
+      "lines": "257-311, 330"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/area/areaSpecBuilder.ts",
+      "change": "Branch the color scale wiring on `colorScaleType`, and resolve the `groupby: color` mark-grouping behavior for a continuous field.",
+      "lines": "237, 277"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/line/lineSpecBuilder.ts",
+      "change": "Branch the color scale wiring on `colorScaleType`, following Scatter's precedent (comparatively mechanical since Line doesn't stack/group by color the same way).",
+      "lines": "234"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendFacetUtils.ts",
+      "change": "No change expected — `getFacets` already generically classifies any `LINEAR_COLOR_SCALE` facet as continuous regardless of which mark populated it; verify during implementation.",
+      "lines": "49-70"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendSpecBuilder.ts",
+      "change": "No change expected — `getContinuousLegend` already renders any continuous facet generically; verify during implementation.",
+      "lines": "236-251"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/bar/barSpecBuilder.test.ts, area/areaSpecBuilder.test.ts, line/lineSpecBuilder.test.ts",
+      "change": "Add a `colorScaleType: 'linear'` fixture per mark and assert the resulting scale/stack/group behavior once the design decisions above are resolved."
+    },
+    {
+      "file": "Storybook stories for Bar, Area, and Line",
+      "change": "Add a continuous-color story for each mark once the design is settled."
+    }
+  ],
+  "openQuestions": [
+    "Does a continuous-color stacked/dodged Bar chart make sense as a concept, or should the combination be disallowed/documented as unsupported?",
+    "Same question for Area's per-series color grouping.",
+    "Should `colorScaleType` be extracted into a single shared type (e.g. in @spectrum-charts/constants) rather than redefined per mark, since it will now exist on four mark options types instead of just Scatter's?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/214" }
+  ]
+}

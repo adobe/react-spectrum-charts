@@ -41,6 +41,7 @@ import {
   Size,
   StackedBarChart,
   Svg,
+  WithCloseCallback,
 } from './ChartPopover.story';
 
 describe('ChartPopover', () => {
@@ -113,8 +114,8 @@ describe('ChartPopover', () => {
     expect(bars[0]).toHaveAttribute('opacity', '1');
     expect(bars[0]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
     expect(bars[0]).toHaveAttribute('stroke-width', '2');
-    // all other bars should be faded
-    expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    // all other bars should be faded -- opacity is now animated, so it settles asynchronously
+    await waitFor(() => expect(allElementsHaveAttributeValue(bars.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy());
   });
 
   test('Popover should be corrrect size', async () => {
@@ -193,6 +194,34 @@ describe('ChartPopover', () => {
     });
   });
 
+  test('close callback passed to children closes the popover', async () => {
+    render(<WithCloseCallback {...WithCloseCallback.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+    const bars = getAllMarksByGroupName(chart, 'bar0');
+
+    await clickNthElement(bars, 0);
+    const popover = await screen.findByTestId('rsc-popover');
+    await waitFor(() => expect(popover).toBeInTheDocument());
+
+    await userEvent.click(screen.getByTestId('popover-close-button'));
+    await waitFor(() => expect(popover).not.toBeInTheDocument());
+  });
+
+  test('popover content div has rsc-popover-content class', async () => {
+    render(<StackedBarChart {...StackedBarChart.args} />);
+
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+    const bars = getAllMarksByGroupName(chart, 'bar0');
+
+    await clickNthElement(bars, 0);
+    await screen.findByTestId('rsc-popover');
+
+    expect(screen.getByTestId('rsc-popover-content')).toHaveClass('rsc-popover-content');
+  });
+
   test('Popover opens on right click, not left click', async () => {
     render(<RightClick {...RightClick.args} />);
 
@@ -263,9 +292,13 @@ describe('ChartPopover', () => {
     const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
     await clickNthElement(points, 0);
 
-    // validate the first line is still full opacity, but the other lines are faded
-    expect(lines[0]).toHaveAttribute('opacity', '1');
-    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    // validate the first line is still full opacity, but the other lines are faded — the hover-
+    // animation system fades opacity over ~100ms rather than snapping instantly, so this needs to
+    // poll for the settled value instead of asserting synchronously right after the click
+    await waitFor(() => {
+      expect(lines[0]).toHaveAttribute('opacity', '1');
+      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
+    });
   });
 
   test('Dodged bar popover opens on mark click and closes when clicking outside', async () => {
@@ -287,9 +320,11 @@ describe('ChartPopover', () => {
 
     bars = getAllMarksByGroupName(chart, 'bar0');
 
-    // validate the highlight visuals are present
-    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-    expect(bars[4]).toHaveAttribute('opacity', '1');
+    // validate the highlight visuals are present -- opacity is now animated, so it settles asynchronously
+    await waitFor(() => {
+      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(bars[4]).toHaveAttribute('opacity', '1');
+    });
     expect(bars[4]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
     expect(bars[4]).toHaveAttribute('stroke-width', '2');
   });
@@ -313,9 +348,11 @@ describe('ChartPopover', () => {
 
     bars = getAllMarksByGroupName(chart, 'bar0');
 
-    // validate the highlight visuals are present
-    expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-    expect(bars[4]).toHaveAttribute('opacity', '1');
+    // validate the highlight visuals are present -- opacity is now animated, so it settles asynchronously
+    await waitFor(() => {
+      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(bars[4]).toHaveAttribute('opacity', '1');
+    });
 
     const selectionRingMarks = getAllMarksByGroupName(chart, 'bar0_selectionRing');
 

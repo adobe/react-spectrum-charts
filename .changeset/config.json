@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@adobe/react-spectrum-charts",
+      "@spectrum-charts/vega-spec-builder"
+    ],
+    [
+      "@spectrum-charts/react-spectrum-charts-s2",
+      "@spectrum-charts/vega-spec-builder-s2"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}

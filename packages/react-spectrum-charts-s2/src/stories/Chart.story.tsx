@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import useChartProps from '../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartTooltip, Legend, Line } from '../index';
+import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../index';
 import { bindWithProps } from '../test-utils';
 import './Chart.story.css';
 import { ChartBarStory } from './ChartBarStory';
@@ -48,21 +48,21 @@ const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
   );
 };
 
-const ChartBarTooltipStory: StoryFn<typeof Chart> = (args): ReactElement => {
+const ChartBarInspectStory: StoryFn<typeof Chart> = (args): ReactElement => {
   const props = useChartProps(args);
   return (
     <Chart {...props}>
       <Axis position="bottom" baseline />
       <Axis position="left" grid />
       <Bar dimension="x" metric="y" color="series">
-        <ChartTooltip>
+        <ChartInspect>
           {(datum) => (
             <div className="bar-tooltip">
               <div>x: {datum.x}</div>
               <div>y: {datum.y}</div>
             </div>
           )}
-        </ChartTooltip>
+        </ChartInspect>
       </Bar>
       <Legend />
     </Chart>
@@ -111,14 +111,14 @@ Height.args = {
   data,
 };
 
-const TooltipAnchor = bindWithProps(ChartBarTooltipStory);
+const TooltipAnchor = bindWithProps(ChartBarInspectStory);
 TooltipAnchor.args = {
   tooltipAnchor: 'mark',
   tooltipPlacement: 'top',
   data,
 };
 
-const HighlightedItem = bindWithProps(ChartBarTooltipStory);
+const HighlightedItem = bindWithProps(ChartBarInspectStory);
 HighlightedItem.args = {
   highlightedItem: 15,
   data,

@@ -11,12 +11,13 @@
  */
 import { ReactElement } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend } from '../../../components';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -76,6 +77,29 @@ const NegativeBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   );
 };
 
+const dialogContent = (datum) => (
+  <div>
+    <div>Operating system: {datum.operatingSystem}</div>
+    <div>Browser: {datum.browser}</div>
+    <div>Downloads: {datum.value}</div>
+  </div>
+);
+
+const StackedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar {...args}>
+        <ChartInspect>{dialogContent}</ChartInspect>
+        <ChartPopover width={200}>{dialogContent}</ChartPopover>
+      </Bar>
+      <Legend title="Operating system" />
+    </Chart>
+  );
+};
+
 const defaultProps: BarProps = {
   dimension: 'browser',
   order: 'order',
@@ -85,6 +109,11 @@ const defaultProps: BarProps = {
 
 const Basic = bindWithProps(BarStory);
 Basic.args = {
+  ...defaultProps,
+};
+
+const Popover = bindWithProps(StackedBarPopoverStory);
+Popover.args = {
   ...defaultProps,
 };
 
@@ -104,9 +133,7 @@ OnClick.args = {
   dimension: 'browser',
   order: 'order',
   color: 'operatingSystem',
-  onClick: (datum) => {
-    console.log('datum:', datum);
-  },
+  onClick: action('onClick'),
 };
 
 const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);
@@ -118,9 +145,24 @@ StackedBarWithUTCDatetimeFormat.args = {
   dimensionDataType: 'time',
 };
 
-const TooltipOnDimensionArea = bindWithProps(DimensionAreaStory);
-TooltipOnDimensionArea.args = {
+const InspectOnDimensionArea = bindWithProps(DimensionAreaStory);
+InspectOnDimensionArea.args = {
   ...defaultProps,
 };
 
-export { Basic, NegativeStack, OnClick, StackedBarWithUTCDatetimeFormat, TooltipOnDimensionArea, WithBarLabels };
+// Hovering an axis label highlights the matching stack, same as hovering the stack itself.
+const AxisLabelHighlight = bindWithProps(StackedBarPopoverStory);
+AxisLabelHighlight.args = {
+  ...defaultProps,
+};
+
+export {
+  Basic,
+  NegativeStack,
+  OnClick,
+  Popover,
+  StackedBarWithUTCDatetimeFormat,
+  InspectOnDimensionArea,
+  AxisLabelHighlight,
+  WithBarLabels,
+};

@@ -1,0 +1,371 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "2D series faceting spike — color encodes browser (primary), lineType encodes year (secondary, derived from datetime). Secondary (dashed) lines are gray by default; toggle matchColor to use browser color instead.",
+  "width": 500,
+  "height": 300,
+  "padding": 5,
+  "config": {
+    "axis": {
+      "bandPosition": 0.5,
+      "domain": false,
+      "domainWidth": 1,
+      "domainColor": "#292929",
+      "gridColor": "#DADADA",
+      "labelFont": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+      "labelFontSize": 14,
+      "labelFontWeight": "normal",
+      "labelPadding": 8,
+      "labelOverlap": true,
+      "labelColor": "#505050",
+      "ticks": false,
+      "tickColor": "#DADADA",
+      "tickRound": true,
+      "tickSize": 8,
+      "tickCap": "round",
+      "tickWidth": 1,
+      "titleAnchor": "middle",
+      "titleColor": "#505050",
+      "titleFont": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+      "titleFontSize": 14,
+      "titleFontWeight": "normal",
+      "titlePadding": 16
+    },
+    "range": {
+      "category": [
+        "rgb(15, 181, 174)", "rgb(64, 70, 202)", "rgb(246, 133, 17)",
+        "rgb(222, 61, 130)", "rgb(126, 132, 250)", "rgb(114, 224, 106)",
+        "rgb(20, 122, 243)", "rgb(115, 38, 211)", "rgb(232, 198, 0)",
+        "rgb(203, 93, 0)", "rgb(0, 143, 93)", "rgb(188, 233, 49)",
+        "rgb(90, 169, 250)", "rgb(192, 56, 204)", "rgb(245, 107, 183)",
+        "rgb(255, 226, 46)"
+      ],
+      "diverging": [
+        "rgb(88, 0, 0)", "rgb(121, 38, 11)", "rgb(156, 69, 17)",
+        "rgb(189, 101, 26)", "rgb(221, 134, 41)", "rgb(245, 173, 82)",
+        "rgb(254, 214, 147)", "rgb(255, 255, 224)", "rgb(187, 228, 209)",
+        "rgb(118, 199, 190)", "rgb(62, 168, 166)", "rgb(32, 130, 136)",
+        "rgb(7, 103, 105)", "rgb(0, 73, 75)", "rgb(0, 44, 45)"
+      ],
+      "ordinal": [
+        "rgb(15, 181, 174)", "rgb(64, 70, 202)", "rgb(246, 133, 17)",
+        "rgb(222, 61, 130)", "rgb(126, 132, 250)", "rgb(114, 224, 106)",
+        "rgb(20, 122, 243)", "rgb(115, 38, 211)", "rgb(232, 198, 0)",
+        "rgb(203, 93, 0)", "rgb(0, 143, 93)", "rgb(188, 233, 49)",
+        "rgb(90, 169, 250)", "rgb(192, 56, 204)", "rgb(245, 107, 183)",
+        "rgb(255, 226, 46)"
+      ],
+      "ramp": [
+        "rgb(253, 231, 37)", "rgb(210, 226, 27)", "rgb(165, 219, 54)",
+        "rgb(122, 209, 81)", "rgb(84, 197, 104)", "rgb(53, 183, 121)",
+        "rgb(34, 168, 132)", "rgb(31, 152, 139)", "rgb(35, 136, 142)",
+        "rgb(42, 120, 142)", "rgb(49, 104, 142)", "rgb(57, 86, 140)",
+        "rgb(65, 68, 135)", "rgb(71, 47, 125)", "rgb(72, 26, 108)",
+        "rgb(68, 1, 84)"
+      ]
+    },
+    "background": "transparent",
+    "legend": {
+      "columnPadding": 20,
+      "labelColor": "#292929",
+      "labelFont": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+      "labelFontSize": 14,
+      "labelFontWeight": "normal",
+      "labelLimit": 184,
+      "layout": {
+        "bottom": { "anchor": "middle", "direction": "horizontal", "center": true, "offset": 24, "bounds": "full", "margin": 48 },
+        "top":    { "anchor": "middle", "direction": "horizontal", "center": true, "offset": 24, "bounds": "full", "margin": 48 },
+        "left":   { "anchor": "middle", "direction": "vertical",   "center": false, "offset": 24, "bounds": "full", "margin": 24 },
+        "right":  { "anchor": "middle", "direction": "vertical",   "center": false, "offset": 24, "bounds": "full", "margin": 24 }
+      },
+      "rowPadding": 8,
+      "symbolSize": 250,
+      "symbolType": "M -0.55 -1 h 1.1 a 0.45 0.45 0 0 1 0.45 0.45 v 1.1 a 0.45 0.45 0 0 1 -0.45 0.45 h -1.1 a 0.45 0.45 0 0 1 -0.45 -0.45 v -1.1 a 0.45 0.45 0 0 1 0.45 -0.45 z",
+      "symbolStrokeColor": "#505050",
+      "titleColor": "#292929",
+      "titleFont": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+      "titleFontSize": 14,
+      "titlePadding": 8
+    },
+    "arc":    { "fill": "#5424DB" },
+    "area":   { "fill": "#5424DB", "opacity": 0.8 },
+    "line":   { "strokeWidth": 2.5, "stroke": "#5424DB" },
+    "path":   { "stroke": "#5424DB" },
+    "rect":   { "strokeWidth": 0, "stroke": "#ACCFFD", "fill": "#5424DB" },
+    "rule":   { "stroke": "#292929", "strokeWidth": 1 },
+    "shape":  { "stroke": "#5424DB" },
+    "symbol": { "strokeWidth": 2, "size": 100, "fill": "#5424DB" },
+    "text": {
+      "fill": "#292929",
+      "font": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+      "fontSize": 14
+    },
+    "title": {
+      "offset": 10,
+      "font": "adobe-clean, 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Trebuchet MS', 'Lucida Grande', sans-serif",
+      "fontSize": 22,
+      "color": "#292929",
+      "anchor": "start",
+      "frame": "group"
+    },
+    "autosize": { "type": "fit", "contains": "padding", "resize": true }
+  },
+  "usermeta": {
+    "interactiveMarks": []
+  },
+  "background": "transparent",
+  "data": [
+    {
+      "name": "table",
+      "values": [
+        { "datetime": 1704067200000, "value": 13500, "browser": "Chrome" },
+        { "datetime": 1704672000000, "value": 13100, "browser": "Chrome" },
+        { "datetime": 1705276800000, "value": 14200, "browser": "Chrome" },
+        { "datetime": 1705881600000, "value": 14900, "browser": "Chrome" },
+        { "datetime": 1706486400000, "value": 14600, "browser": "Chrome" },
+        { "datetime": 1707091200000, "value": 15800, "browser": "Chrome" },
+        { "datetime": 1707696000000, "value": 16200, "browser": "Chrome" },
+        { "datetime": 1708300800000, "value": 15700, "browser": "Chrome" },
+        { "datetime": 1672617600000, "value": 11200, "browser": "Chrome" },
+        { "datetime": 1673222400000, "value": 10800, "browser": "Chrome" },
+        { "datetime": 1673827200000, "value": 11500, "browser": "Chrome" },
+        { "datetime": 1674432000000, "value": 12200, "browser": "Chrome" },
+        { "datetime": 1675036800000, "value": 11900, "browser": "Chrome" },
+        { "datetime": 1675641600000, "value": 12800, "browser": "Chrome" },
+        { "datetime": 1676246400000, "value": 13100, "browser": "Chrome" },
+        { "datetime": 1676851200000, "value": 12600, "browser": "Chrome" },
+        { "datetime": 1704067200000, "value": 5700,  "browser": "Safari" },
+        { "datetime": 1704672000000, "value": 5400,  "browser": "Safari" },
+        { "datetime": 1705276800000, "value": 6000,  "browser": "Safari" },
+        { "datetime": 1705881600000, "value": 6400,  "browser": "Safari" },
+        { "datetime": 1706486400000, "value": 6200,  "browser": "Safari" },
+        { "datetime": 1707091200000, "value": 6800,  "browser": "Safari" },
+        { "datetime": 1707696000000, "value": 7100,  "browser": "Safari" },
+        { "datetime": 1708300800000, "value": 6800,  "browser": "Safari" },
+        { "datetime": 1672617600000, "value": 4900,  "browser": "Safari" },
+        { "datetime": 1673222400000, "value": 4600,  "browser": "Safari" },
+        { "datetime": 1673827200000, "value": 5100,  "browser": "Safari" },
+        { "datetime": 1674432000000, "value": 5400,  "browser": "Safari" },
+        { "datetime": 1675036800000, "value": 5200,  "browser": "Safari" },
+        { "datetime": 1675641600000, "value": 5700,  "browser": "Safari" },
+        { "datetime": 1676246400000, "value": 5900,  "browser": "Safari" },
+        { "datetime": 1676851200000, "value": 5600,  "browser": "Safari" }
+      ],
+      "transform": [
+        { "type": "identifier", "as": "rscMarkId" },
+        { "type": "formula", "expr": "toDate(datum['datetime'])", "as": "datetime" },
+        { "type": "formula", "expr": "toString(utcyear(datum.datetime))", "as": "period" },
+        { "type": "formula", "expr": "datum.datetime + (2024 - utcyear(datum.datetime)) * 31536000000", "as": "normalizedDatetime" },
+        {
+          "type": "timeunit",
+          "field": "normalizedDatetime",
+          "units": ["year", "month", "date"],
+          "utc": true,
+          "as": ["datetime0", "datetime1"]
+        },
+        { "type": "formula", "as": "rscSeriesId", "expr": "datum.browser + ' | ' + datum.period" }
+      ]
+    },
+    {
+      "name": "filteredTable",
+      "source": "table",
+      "transform": [
+        { "type": "filter", "expr": "indexof(hiddenSeries, datum.rscSeriesId) === -1" }
+      ]
+    }
+  ],
+  "signals": [
+    { "name": "chartBackgroundColor", "value": "white" },
+    { "name": "referenceLineLabelBackgroundStroke", "value": "white" },
+    {
+      "name": "colors",
+      "value": [
+        ["#5424DB"], ["#D92361"], ["#E86A00"], ["#5D89FF"], ["#9A47E2"],
+        ["#F24CB8"], ["#0BA286"], ["#9C28AF"], ["#036E45"], ["#52A119"],
+        ["#FF513D"], ["#046691"], ["#424242"], ["#056B74"], ["#C67E58"],
+        ["#865500"], ["#274DEA"], ["#056C5C"], ["#FF94DB"], ["#811B0E"]
+      ]
+    },
+    { "name": "lineTypes",  "value": [[[]], [[7, 4]], [[2, 3]], [[2, 3, 7, 4]], [[11, 4]], [[5, 2, 11, 2]]] },
+    { "name": "opacities",  "value": [[1]] },
+    { "name": "hiddenSeries",                "value": [] },
+    { "name": "controlledHighlightedItem",   "value": null },
+    { "name": "highlightedGroup",            "value": null },
+    { "name": "controlledHighlightedSeries", "value": null },
+    { "name": "selectedItem",                "value": null },
+    { "name": "selectedSeries",              "value": null },
+    { "name": "selectedGroup",               "value": null },
+    {
+      "name": "matchColor",
+      "description": "Toggle: false = secondary (dashed) lines are gray; true = secondary lines use the browser's color",
+      "value": false
+    }
+  ],
+  "scales": [
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": { "data": "table", "fields": ["browser"] },
+      "range": ["#5424DB", "#D92361"]
+    },
+    {
+      "name": "lineType",
+      "type": "ordinal",
+      "domain": { "data": "table", "fields": ["period"], "sort": { "order": "descending" } },
+      "range": [[], [7, 4]]
+    },
+    {
+      "name": "xTime",
+      "type": "time",
+      "range": "width",
+      "domain": { "data": "filteredTable", "fields": ["datetime0"] }
+    },
+    {
+      "name": "yLinear",
+      "type": "linear",
+      "range": "height",
+      "domain": { "data": "filteredTable", "fields": ["value"] },
+      "nice": true,
+      "zero": true
+    }
+  ],
+  "marks": [
+    {
+      "name": "line0_group",
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "line0_facet",
+          "data": "filteredTable",
+          "groupby": ["browser", "period"]
+        }
+      },
+      "marks": [
+        {
+          "name": "line0",
+          "description": "line0",
+          "type": "line",
+          "from": { "data": "line0_facet" },
+          "interactive": false,
+          "encode": {
+            "enter": {
+              "y": { "scale": "yLinear", "field": "value" },
+              "stroke": [
+                {
+                  "test": "!matchColor && length(scale('lineType', datum.period)) > 0",
+                  "value": "#6E6E6E"
+                },
+                { "scale": "color", "field": "browser" }
+              ],
+              "strokeDash": { "scale": "lineType", "field": "period" },
+              "strokeOpacity": { "value": 1 },
+              "strokeWidth": { "value": 2.5 }
+            },
+            "update": {
+              "x": { "scale": "xTime", "field": "datetime0" },
+              "opacity": [{ "value": 1 }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "xBaseline",
+      "description": "xBaseline",
+      "type": "rule",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": { "value": 0 },
+          "x2": { "signal": "width" },
+          "y": { "scale": "yLinear", "value": 0 }
+        }
+      }
+    }
+  ],
+  "axes": [
+    {
+      "scale": "xTime",
+      "orient": "bottom",
+      "grid": false,
+      "ticks": true,
+      "tickCount": "week",
+      "formatType": "time",
+      "format": "%-d",
+      "labelAngle": 0,
+      "labelSeparation": 12,
+      "labelAlign": "center",
+      "labelBaseline": "top"
+    },
+    {
+      "scale": "xTime",
+      "orient": "bottom",
+      "format": "%b",
+      "tickCount": "month",
+      "formatType": "time",
+      "labelOverlap": "greedy",
+      "labelFontWeight": "normal",
+      "labelAngle": 0,
+      "labelAlign": "center",
+      "labelBaseline": "top",
+      "encode": {
+        "labels": {
+          "interactive": false,
+          "enter": { "dy": { "value": 28 } },
+          "update": { "text": { "signal": "datum.value" } }
+        }
+      }
+    },
+    {
+      "scale": "yLinear",
+      "orient": "left",
+      "grid": true,
+      "ticks": false,
+      "tickCount": { "signal": "clamp(ceil(height/100), 2, 10)" },
+      "labelAngle": 0,
+      "labelFontWeight": "normal",
+      "labels": true,
+      "labelAlign": "right",
+      "labelBaseline": "middle",
+      "encode": {
+        "labels": {
+          "interactive": false,
+          "update": {
+            "text": [
+              { "test": "isNumber(datum['value'])", "signal": "format(datum['value'], ',.0f')" },
+              { "signal": "datum.value" }
+            ]
+          }
+        }
+      },
+      "domain": false,
+      "domainWidth": 2
+    }
+  ],
+  "legends": [
+    {
+      "title": "Browser",
+      "stroke": "color",
+      "symbolType": "stroke",
+      "encode": {
+        "symbols": {
+          "update": {
+            "strokeWidth": { "value": 2.5 },
+            "strokeDash": { "value": [] }
+          }
+        }
+      }
+    },
+    {
+      "title": "Period",
+      "strokeDash": "lineType",
+      "encode": {
+        "symbols": {
+          "update": {
+            "stroke": { "value": "#292929" },
+            "strokeWidth": { "value": 2.5 }
+          }
+        }
+      }
+    }
+  ]
+}

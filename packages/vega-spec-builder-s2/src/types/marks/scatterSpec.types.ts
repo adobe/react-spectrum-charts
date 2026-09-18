@@ -13,7 +13,7 @@ import { Blend } from 'vega';
 
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
   ColorFacet,
   LineTypeFacet,
@@ -76,7 +76,7 @@ export interface ScatterOptions {
 
   //children
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   scatterAnnotations?: ScatterAnnotationOptions[];
   scatterPaths?: ScatterPathOptions[];
   trendlines?: TrendlineOptions[];
@@ -98,7 +98,7 @@ export interface ScatterOptions {
 
 type ScatterOptionsWithDefaults =
   | 'chartPopovers'
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'color'
   | 'colorScaleType'
   | 'dimension'

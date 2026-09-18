@@ -25,6 +25,7 @@ import {
   SENTIMENT_NEUTRAL_PATH,
   SENTIMENT_POSITIVE_PATH,
   TABLE,
+  VISIBILITY_OFF_PATH,
 } from '@spectrum-charts/constants';
 import { getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
 
@@ -117,7 +118,7 @@ export const getStrokeDashFromLineType = (lineType: LineType): number[] => {
     case 'dashed':
       return [7, 4];
     case 'dotted':
-      return [2, 3];
+      return [0, 4];
     case 'dotDash':
       return [2, 3, 7, 4];
     case 'shortDash':
@@ -164,6 +165,7 @@ export const getLineWidthPixelsFromLineWidth = (lineWidth: LineWidth): number =>
  */
 export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string => {
   if (symbolShape === 'rounded-square') return ROUNDED_SQUARE_PATH;
+  if (symbolShape === 'visibility-off') return VISIBILITY_OFF_PATH;
   return symbolShape;
 };
 
@@ -281,16 +283,22 @@ export const getDimensionField = (dimension: string, scaleType?: ScaleType) => {
  * @param numberFormat
  * @returns
  */
-export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat | string): string => {
+export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat): string => {
   switch (numberFormat) {
     case 'currency':
       return '$,.2f'; // currency format
     case 'standardNumber':
       return ','; // standard number format
+    case 'percentage':
+      return '~%'; // percentage format
     default:
       return numberFormat;
   }
 };
+
+/** Backslashes must be escaped before quotes — otherwise a trailing backslash-quote can terminate the outer Vega expression string early. */
+export const escapeD3FormatSpecifier = (formatSpec: string): string =>
+  formatSpec.replaceAll('\\', String.raw`\\`).replaceAll('"', String.raw`\"`);
 
 /**
  * Merges the provided config with the Spectrum Vega config
@@ -311,11 +319,32 @@ export function getChartConfig(config: Config | undefined, colorScheme: ColorSch
  * Adds an interactive mark to the user meta
  * @param usermeta
  * @param interactiveMarkName
+ * @param dimension the mark's dimension field, if it needs to be discoverable by other builders
  * @returns
  */
-export const addUserMetaInteractiveMark = produce<UserMeta, [string?]>((usermeta, interactiveMarkName) => {
-  usermeta.interactiveMarks = [
-    ...(usermeta.interactiveMarks ?? []),
-    ...(interactiveMarkName ? [interactiveMarkName] : []),
+export const addUserMetaInteractiveMark = produce<UserMeta, [string?, string?]>(
+  (usermeta, interactiveMarkName, dimension) => {
+    usermeta.interactiveMarks = [
+      ...(usermeta.interactiveMarks ?? []),
+      ...(interactiveMarkName ? [{ name: interactiveMarkName, dimension }] : []),
+    ];
+  }
+);
+
+/**
+ * Adds a diverging bar mark to the user meta, so axis building can find its dimension/metric
+ * without parsing marks or data directly. Only called for single-series bars (see {@link addBar}) —
+ * a category with more than one row per bar has no single well-defined sign.
+ */
+export const addUserMetaDivergingBarMark = produce<UserMeta, [string, string, string]>(
+  (usermeta, name, dimension, metric) => {
+    usermeta.divergingBarMarks = [...(usermeta.divergingBarMarks ?? []), { name, dimension, metric }];
+  }
+);
+
+export const addUserMetaAnimatedMark = produce<UserMeta, [string?]>((usermeta, animatedMarkName) => {
+  usermeta.animatedMarks = [
+    ...(usermeta.animatedMarks ?? []),
+    ...(animatedMarkName ? [animatedMarkName] : []),
   ];
 });

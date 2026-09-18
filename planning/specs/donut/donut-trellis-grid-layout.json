@@ -1,0 +1,66 @@
+{
+  "id": "donut-trellis-grid-layout",
+  "title": "Donut Trellis — Panel Grid Layout",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 5,
+    "rationale": "Split out of donut-trellis and donut-trellis-subset-mode as their one genuinely shared, hardest concern. Bar's existing trellis (trellisedBarUtils.ts/axisTrellisUtils.ts) positions panels via a repeated band scale on an x/y axis, but Donut has no axis/scale system at all - so this needs genuinely new (non-precedented) grid math, not a port of Bar's approach. On top of that, there's no numeric layout spec anywhere in the design-token skills (no documented column count or gutter) - real unresolved research, not just an implementation gap."
+  },
+  "summary": "The row/column grid that positions N donut panels - shared foundational mechanism for both donut-trellis (category mode) and donut-trellis-subset-mode (subset mode), since Donut has no axis/scale system to hang panel positions off of the way Bar's trellis does. Not yet built at all. Includes the generic below-panel title/label mechanism (each mode supplies its own text content) and responsive reflow.",
+  "requirements": [
+    "Compute a grid layout for N panels - not a single-row band scale like Bar's trellis, since Donut has no x/y axis/scale to hang panel positions off of. New grid math, not reusable from trellisedBarUtils.ts/axisTrellisUtils.ts's axis-band-scale approach.",
+    "Provide a generic below-panel title/label text mark mechanism - each consuming mode supplies its own content (the trellis field's value for category mode, the category name for subset mode), but the positioning/spacing relative to each panel is shared, single logic.",
+    "The grid must reflow responsively (fewer/more columns) as the chart container resizes, consistent with the existing Responsive DonutSummary story's behavior for a single donut.",
+    "Both donut-trellis and donut-trellis-subset-mode consume this same layout mechanism rather than each implementing their own grid math - a shared utility, not duplicated logic."
+  ],
+  "designTokens": [
+    { "token": "Small multiple donut (S/M/L) component set", "value": "named component set in the Figma library (per donut-chart-tokens §7)", "usage": "Uses this shared grid layout, with category mode's per-panel content." },
+    { "token": "Small multiple binary donut (S/M/L) component set", "value": "named component set in the Figma library (per donut-chart-tokens §7)", "usage": "Uses this shared grid layout, with subset mode's per-panel content." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-53951&m=dev" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-53949&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Many panels (e.g. 20+)", "expectedBehavior": "Undocumented - confirm how the grid handles overflow (scroll, cap, reflow, or something else)." },
+    { "case": "A panel with very little or no data", "expectedBehavior": "Confirm whether that individual panel shows its own empty-state gray ring (mirroring the existing whole-chart empty-state behavior in donutUtils.ts's getEmptyStateArcMark) independently of the other panels." },
+    { "case": "Combined with Direct/Advanced Labels, Benchmark, Emphasize, or Hover inside a trellis panel", "expectedBehavior": "Confirm these per-segment features (calibrated against a single full-size donut) still work correctly at the smaller trellis panel size - e.g. Advanced Labels' connector-line/collision math may behave differently at a much smaller radius." },
+    { "case": "Responsive container resize", "expectedBehavior": "The grid must reflow (fewer/more columns) as the chart container resizes." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: needs new grid-layout position signals (row/column per panel) - no existing donut or reference-line mechanism computes this. requiresS1S2Parity is false: no existing s1 Donut trellis at all to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisGridUtils.ts (new file)",
+      "change": "Implement the row/column grid-position math and the generic below-panel title/label mark builder (content supplied by the caller), consumed by donutTrellisUtils.ts (built by donut-trellis and extended by donut-trellis-subset-mode).",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/trellisedBarUtils.ts and axisTrellisUtils.ts",
+      "change": "Reference only - the closest existing precedent for a faceted small-multiples pattern in this codebase, though its axis-band-scale positioning approach isn't directly reusable for a non-axis mark type.",
+      "lines": "1-60 (trellisedBarUtils.ts)"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisGridUtils.test.ts",
+      "change": "New file: unit tests for the grid-position math (including reflow) and the title-label mark builder.",
+      "lines": "N/A - new file"
+    }
+  ],
+  "openQuestions": [
+    "What is the exact grid-layout algorithm (rows/columns, panel gutter)? No numeric layout spec is documented anywhere in the design-token skills - only the component-set names are confirmed.",
+    "How much of Bar's existing trellis code is genuinely reusable/shareable (e.g. a common faceting helper) versus needing wholly new grid-layout logic specific to Donut?"
+  ],
+  "relatedIssues": ["donut-trellis", "donut-trellis-subset-mode"]
+}

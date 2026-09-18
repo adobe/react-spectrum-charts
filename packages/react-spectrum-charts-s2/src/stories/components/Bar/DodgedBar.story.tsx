@@ -11,13 +11,13 @@
  */
 import { ReactElement } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
 import { s2Categorical6 } from '@spectrum-charts/themes';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -51,11 +51,11 @@ const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const dialogContent = (datum) => (
-  <Content>
+  <div>
     <div>Operating system: {datum.operatingSystem}</div>
     <div>Browser: {datum.browser}</div>
     <div>Users: {datum.value}</div>
-  </Content>
+  </div>
 );
 
 const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
@@ -65,7 +65,7 @@ const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args}>
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover width={200}>{dialogContent}</ChartPopover>
       </Bar>
       <Legend title="Operating system" highlight />
@@ -141,15 +141,30 @@ OnClick.args = {
   dimension: 'browser',
   order: 'order',
   color: 'operatingSystem',
-  onClick: (datum) => {
-    console.log('datum:', datum);
-  },
+  onClick: action('onClick'),
 };
 
-const TooltipOnDimensionArea = bindWithProps(DimensionAreaStory);
-TooltipOnDimensionArea.args = {
+const InspectOnDimensionArea = bindWithProps(DimensionAreaStory);
+InspectOnDimensionArea.args = {
   ...defaultProps,
   color: 'operatingSystem',
 };
 
-export { Color, DodgedStacked, DodgedStackedWithLabels, LineType, OnClick, Opacity, Popover, TooltipOnDimensionArea };
+// Hovering an axis label highlights the matching dodged group, same as hovering the group itself.
+const AxisLabelHighlight = bindWithProps(DodgedBarPopoverStory);
+AxisLabelHighlight.args = {
+  ...defaultProps,
+  color: 'operatingSystem',
+};
+
+export {
+  Color,
+  DodgedStacked,
+  DodgedStackedWithLabels,
+  LineType,
+  OnClick,
+  Opacity,
+  Popover,
+  InspectOnDimensionArea,
+  AxisLabelHighlight,
+};

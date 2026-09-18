@@ -32,7 +32,7 @@ export const data = [
 ];
 
 export const customVennOptions: VennSpecOptions = {
-  chartTooltips: [],
+  chartInspects: [],
   chartPopovers: [],
   data,
   colorScheme: 'light',
@@ -57,7 +57,7 @@ export const defaultVennOptions: VennSpecOptions = {
   index: 0,
   markType: 'venn',
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   color: DEFAULT_VENN_COLOR,
   label: DEFAULT_VENN_LABEL,
   metric: DEFAULT_VENN_METRIC,

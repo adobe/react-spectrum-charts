@@ -37,7 +37,7 @@ export const getMetricRanges = (markOptions: MetricRangeParentOptions): MetricRa
 
 export const applyMetricRangeOptionDefaults = (
   {
-    chartTooltips = [],
+    chartInspects = [],
     lineType = 'dashed',
     lineWidth = 'S',
     rangeOpacity = 0.2,
@@ -48,7 +48,7 @@ export const applyMetricRangeOptionDefaults = (
   markName: string,
   index: number
 ): MetricRangeSpecOptions => ({
-  chartTooltips,
+  chartInspects,
   lineType,
   lineWidth,
   name: `${markName}MetricRange${index}`,
@@ -108,7 +108,7 @@ export const getMetricRangeMark = (
     metricStart: metricRangeOptions.metricStart,
     metricEnd: metricRangeOptions.metricEnd,
     isStacked: false,
-    scaleType: 'time',
+    scaleType: lineMarkOptions.scaleType,
     dimension: lineMarkOptions.dimension,
     isMetricRange: true,
     parentName: lineMarkOptions.name,
@@ -123,6 +123,7 @@ export const getMetricRangeMark = (
     lineType: { value: metricRangeOptions.lineType },
     lineWidth: { value: metricRangeOptions.lineWidth },
     displayOnHover: metricRangeOptions.displayOnHover,
+    isHoverAnimate: false,
   };
 
   const dataSource = `${metricRangeOptions.name}_facet`;

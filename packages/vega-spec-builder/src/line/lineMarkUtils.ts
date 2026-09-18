@@ -31,6 +31,7 @@ import {
   getColorProductionRule,
   getItemHoverArea,
   getLineWidthProductionRule,
+  getMetricRangeHoverVisibilityOpacityRules,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
   getVoronoiPath,
@@ -79,6 +80,34 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
   return [{ scale: metricAxis || 'yLinear', field: metric }];
 };
 
+const getClampedScaleSignal = (yScale: string, metric: string): string =>
+  `clamp(scale('${yScale}', datum['${metric}']), 0, height)`;
+
+/**
+ * Gets a Y encoding clamped to [0, height], for hover marks whose metric may fall outside the y domain.
+ * @param lineMarkOptions - Line mark options including metricAxis and dualMetricAxis
+ * @param metric - The metric field name
+ * @returns Clamped Y encoding with conditional scale selection for dual metric axis
+ */
+export const getClampedYEncoding = (lineMarkOptions: LineMarkOptions, metric: string): ProductionRule<NumericValueRef> => {
+  const { metricAxis } = lineMarkOptions;
+
+  if (isDualMetricAxis(lineMarkOptions)) {
+    const baseScaleName = metricAxis || 'yLinear';
+    const scaleNames = getDualAxisScaleNames(baseScaleName);
+
+    return [
+      {
+        test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
+        signal: getClampedScaleSignal(scaleNames.secondaryScale, metric),
+      },
+      { signal: getClampedScaleSignal(scaleNames.primaryScale, metric) },
+    ];
+  }
+
+  return [{ signal: getClampedScaleSignal(metricAxis || 'yLinear', metric) }];
+};
+
 /**
  * generates a line mark
  * @param lineOptions
@@ -96,6 +125,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     metric,
     name,
     opacity,
+    s2,
     scaleType,
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
@@ -112,7 +142,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     encode: {
       enter: {
         y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
         strokeWidth: getLineWidthProductionRule(lineWidth),
@@ -131,33 +161,33 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
 export const getLineOpacity = ({
   displayOnHover,
   comboSiblingNames,
+  hoverContext,
+  displayOnHoverTrigger,
   interactiveMarkName,
   interactionMode,
+  isMetricRange,
   popoverMarkName,
   isHighlightedByGroup,
   highlightedItem,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  if ((!interactiveMarkName || displayOnHover === true) && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
+  if (!interactiveMarkName && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
+
+  if (
+    isMetricRange &&
+    (displayOnHover === 'metric' || displayOnHover === true) &&
+    hoverContext &&
+    highlightedItem === undefined
+  ) {
+    return getMetricRangeHoverVisibilityOpacityRules(hoverContext, 'show', displayOnHoverTrigger);
+  }
+
+  if ((!interactiveMarkName || displayOnHover === true) && highlightedItem === undefined) {
+    return [DEFAULT_OPACITY_RULE];
+  }
+
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
-    if (displayOnHover === 'metric') {
-      const hoveredSeriesTest = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
-      const selectedSeriesTest = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
-      const controlledHighlightedTableTest = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
-      const controlledHighlightedSeriesTest = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
-      
-      strokeOpacityRules.push(
-        { test: hoveredSeriesTest, value: 1 },
-        { test: selectedSeriesTest, value: 1 },
-        { test: controlledHighlightedTableTest, value: 1 },
-        { test: controlledHighlightedSeriesTest, value: 1 },
-        { value: 0 },
-      );
-
-      return strokeOpacityRules;
-    }
-    
     if (interactionMode === INTERACTION_MODE.DIMENSION) {
       const dimensionHoverSignal = `${interactiveMarkName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
       strokeOpacityRules.push(
@@ -176,9 +206,12 @@ export const getLineOpacity = ({
         signal: `indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
       });
     } else {
+      const isHoveredSeries = `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+      const isControlledTableSeries = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
+      const isControlledSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
       strokeOpacityRules.push({
         test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        signal: `${isHoveredSeries} || ${isControlledTableSeries} || ${isControlledSeries} ? 1 : ${FADE_FACTOR}`,
       });
     }
   }
@@ -209,7 +242,6 @@ export const getLineOpacity = ({
     });
   }
 
-  // This allows us to only show the metric range when hovering over the parent line component.
   strokeOpacityRules.push(DEFAULT_OPACITY_RULE);
 
   return strokeOpacityRules;
@@ -315,7 +347,13 @@ export const getVoronoiYEncoding = (lineOptions: LineMarkOptions, metric: string
   const yScale = metricAxis || 'yLinear';
   return [
     { test: `isValid(datum["${metric}"])`, scale: yScale, field: metric },
-    ...hoverPointMetrics.map(mrMetric => ({ test: `isValid(datum["${mrMetric}"])`, scale: yScale, field: mrMetric })),
+    // Clamp metric range y positions to [0, height] so out-of-domain values don't produce
+    // negative y-coordinates. An unclamped out-of-domain point creates an abnormally large
+    // voronoi cell that dominates the visible chart area and causes hover flicker.
+    ...hoverPointMetrics.map(mrMetric => ({
+      test: `isValid(datum["${mrMetric}"])`,
+      signal: getClampedScaleSignal(yScale, mrMetric),
+    })),
     { scale: yScale, field: metric },
   ];
 };

@@ -23,6 +23,7 @@ import {
   getAxisThumbnails,
   scaleTypeSupportsThumbnails,
 } from './axisThumbnailUtils';
+import { DivergingBarContext } from './axisUtils';
 
 describe('axisThumbnailUtils', () => {
   describe('getAxisThumbnails', () => {
@@ -208,6 +209,77 @@ describe('axisThumbnailUtils', () => {
       expect(result[1]).toHaveProperty('type', 'image');
       expect(result[1]).toHaveProperty('name', 'testAxisAxisThumbnail1');
     });
+
+    const divergingContext: DivergingBarContext = { dataName: 'table', dimension: 'category', metric: 'value' };
+
+    test('should flip the thumbnail to the opposite side of the zero line per row when diverging is active', () => {
+      const thumbnailOptions: AxisThumbnailOptions = { urlKey: 'customThumbnail' };
+      const axisOptions: AxisSpecOptions & {
+        opposingScaleType?: string;
+        opposingScaleName?: string;
+        divergingContext?: DivergingBarContext;
+      } = {
+        ...defaultAxisOptions,
+        name: 'testAxis',
+        position: 'left',
+        axisThumbnails: [thumbnailOptions],
+        opposingScaleType: 'linear',
+        opposingScaleName: 'yLinear',
+        divergingContext,
+      };
+
+      const result = getAxisThumbnailMarks(axisOptions, 'xScale', 'category');
+
+      expect(result[0].encode?.update).toHaveProperty('x', [
+        { test: "datum['value'] < 0", signal: `scale('yLinear', 0) + ${THUMBNAIL_OFFSET}` },
+        { signal: `scale('yLinear', 0) - ${THUMBNAIL_OFFSET} - testAxisAxisThumbnail0ThumbnailSize` },
+      ]);
+    });
+
+    test('should not flip the thumbnail when opposingScaleType is not linear', () => {
+      const thumbnailOptions: AxisThumbnailOptions = { urlKey: 'customThumbnail' };
+      const axisOptions: AxisSpecOptions & {
+        opposingScaleType?: string;
+        opposingScaleName?: string;
+        divergingContext?: DivergingBarContext;
+      } = {
+        ...defaultAxisOptions,
+        name: 'testAxis',
+        position: 'left',
+        axisThumbnails: [thumbnailOptions],
+        opposingScaleType: 'band',
+        opposingScaleName: 'yBand',
+        divergingContext,
+      };
+
+      const result = getAxisThumbnailMarks(axisOptions, 'xScale', 'category');
+
+      expect(result[0].encode?.update).toHaveProperty('x', {
+        signal: `-${THUMBNAIL_OFFSET} - testAxisAxisThumbnail0ThumbnailSize`,
+      });
+    });
+
+    test('should not flip the thumbnail when divergingContext is absent', () => {
+      const thumbnailOptions: AxisThumbnailOptions = { urlKey: 'customThumbnail' };
+      const axisOptions: AxisSpecOptions & {
+        opposingScaleType?: string;
+        opposingScaleName?: string;
+        divergingContext?: DivergingBarContext;
+      } = {
+        ...defaultAxisOptions,
+        name: 'testAxis',
+        position: 'left',
+        axisThumbnails: [thumbnailOptions],
+        opposingScaleType: 'linear',
+        opposingScaleName: 'yLinear',
+      };
+
+      const result = getAxisThumbnailMarks(axisOptions, 'xScale', 'category');
+
+      expect(result[0].encode?.update).toHaveProperty('x', {
+        signal: `-${THUMBNAIL_OFFSET} - testAxisAxisThumbnail0ThumbnailSize`,
+      });
+    });
   });
 
   describe('getAxisThumbnailPosition', () => {
@@ -244,6 +316,62 @@ describe('axisThumbnailUtils', () => {
       expect(result).toEqual({
         xc: { signal: "scale('xScale', datum.category) + bandwidth('xScale') / 2" },
         y: { signal: `height + ${THUMBNAIL_OFFSET}` },
+      });
+    });
+
+    test('should place a positive-row thumbnail outward and flip a negative-row thumbnail for left axis', () => {
+      const zeroLine = "scale('yLinear', 0)";
+      const isNegativeBarExpr = "datum['value'] < 0";
+      const result = getAxisThumbnailPosition('xScale', 'category', 'left', 'testThumbnail', { zeroLine, isNegativeBarExpr });
+
+      expect(result).toEqual({
+        x: [
+          { test: isNegativeBarExpr, signal: `${zeroLine} + ${THUMBNAIL_OFFSET}` },
+          { signal: `${zeroLine} - ${THUMBNAIL_OFFSET} - testThumbnailThumbnailSize` },
+        ],
+        yc: { signal: "scale('xScale', datum.category) + bandwidth('xScale') / 2" },
+      });
+    });
+
+    test('should place a positive-row thumbnail outward and flip a negative-row thumbnail for right axis', () => {
+      const zeroLine = "scale('yLinear', 0)";
+      const isNegativeBarExpr = "datum['value'] < 0";
+      const result = getAxisThumbnailPosition('yScale', 'value', 'right', 'testThumbnail', { zeroLine, isNegativeBarExpr });
+
+      expect(result).toEqual({
+        x: [
+          { test: isNegativeBarExpr, signal: `${zeroLine} - ${THUMBNAIL_OFFSET} - testThumbnailThumbnailSize` },
+          { signal: `${zeroLine} + ${THUMBNAIL_OFFSET}` },
+        ],
+        yc: { signal: "scale('yScale', datum.value) + bandwidth('yScale') / 2" },
+      });
+    });
+
+    test('should place a positive-row thumbnail outward and flip a negative-row thumbnail for top axis', () => {
+      const zeroLine = "scale('xLinear', 0)";
+      const isNegativeBarExpr = "datum['value'] < 0";
+      const result = getAxisThumbnailPosition('xScale', 'category', 'top', 'testThumbnail', { zeroLine, isNegativeBarExpr });
+
+      expect(result).toEqual({
+        xc: { signal: "scale('xScale', datum.category) + bandwidth('xScale') / 2" },
+        y: [
+          { test: isNegativeBarExpr, signal: `${zeroLine} + ${THUMBNAIL_OFFSET}` },
+          { signal: `${zeroLine} - ${THUMBNAIL_OFFSET} - testThumbnailThumbnailSize` },
+        ],
+      });
+    });
+
+    test('should place a positive-row thumbnail outward and flip a negative-row thumbnail for bottom axis', () => {
+      const zeroLine = "scale('xLinear', 0)";
+      const isNegativeBarExpr = "datum['value'] < 0";
+      const result = getAxisThumbnailPosition('xScale', 'category', 'bottom', 'testThumbnail', { zeroLine, isNegativeBarExpr });
+
+      expect(result).toEqual({
+        xc: { signal: "scale('xScale', datum.category) + bandwidth('xScale') / 2" },
+        y: [
+          { test: isNegativeBarExpr, signal: `${zeroLine} - ${THUMBNAIL_OFFSET} - testThumbnailThumbnailSize` },
+          { signal: `${zeroLine} + ${THUMBNAIL_OFFSET}` },
+        ],
       });
     });
   });
@@ -288,6 +416,32 @@ describe('axisThumbnailUtils', () => {
       expect(result).toEqual({
         dy: [
           { test: `testThumbnailThumbnailSize < ${MIN_THUMBNAIL_SIZE}`, value: 0 },
+          { signal: 'testThumbnailThumbnailSize' },
+        ],
+      });
+    });
+
+    test('should flip the label offset per row when diverging is active for a vertical axis', () => {
+      const isNegativeBarExpr = "datum['value'] < 0";
+      const result = getAxisThumbnailLabelOffset('testThumbnail', 'left', isNegativeBarExpr);
+
+      expect(result).toEqual({
+        dx: [
+          { test: `testThumbnailThumbnailSize < ${MIN_THUMBNAIL_SIZE}`, value: 0 },
+          { test: isNegativeBarExpr, signal: 'testThumbnailThumbnailSize' },
+          { signal: '-testThumbnailThumbnailSize' },
+        ],
+      });
+    });
+
+    test('should flip the label offset per row when diverging is active for a horizontal axis', () => {
+      const isNegativeBarExpr = "datum['value'] < 0";
+      const result = getAxisThumbnailLabelOffset('testThumbnail', 'bottom', isNegativeBarExpr);
+
+      expect(result).toEqual({
+        dy: [
+          { test: `testThumbnailThumbnailSize < ${MIN_THUMBNAIL_SIZE}`, value: 0 },
+          { test: isNegativeBarExpr, signal: '-testThumbnailThumbnailSize' },
           { signal: 'testThumbnailThumbnailSize' },
         ],
       });

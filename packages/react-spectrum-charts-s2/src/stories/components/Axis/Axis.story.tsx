@@ -11,12 +11,13 @@
  */
 import React, { ReactElement } from 'react';
 
+import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
 
 import useChartProps from '../../../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartTooltip, Line } from '../../../index';
+import { Axis, Bar, Chart, ChartInspect, Line } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
 import { stockPriceData, workspaceTrendsData } from '../../data/data';
 import { barData, barDataLongLabels } from '../Bar/data';
@@ -161,7 +162,7 @@ const SparkLineStory: StoryFn<typeof Axis> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Axis {...args} />
       <Line dimension="timestamp" metric="price" scaleType="point" padding={0}>
-        <ChartTooltip>
+        <ChartInspect>
           {(item) => (
             <>
               <div>{item.stock}</div>
@@ -169,7 +170,7 @@ const SparkLineStory: StoryFn<typeof Axis> = (args): ReactElement => {
               <div>{item.date}</div>
             </>
           )}
-        </ChartTooltip>
+        </ChartInspect>
       </Line>
     </Chart>
   );
@@ -252,6 +253,14 @@ TruncateLabels.args = {
   position: 'bottom',
   baseline: true,
   title: 'Browser',
+};
+
+const OnClick = bindWithProps(SubLabelStory);
+OnClick.args = {
+  position: 'bottom',
+  baseline: true,
+  title: 'Browser',
+  onClick: action('onClick'),
 };
 
 const TickMinStep = bindWithProps(LinearAxisStory);
@@ -394,6 +403,7 @@ export {
   MultilineTitle,
   NonLinearAxis,
   NumberFormat,
+  OnClick,
   SecondGranularity,
   SecondGranularityLine,
   SubLabels,

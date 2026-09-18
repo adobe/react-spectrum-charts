@@ -10,6 +10,8 @@ The `Bar` component in the S2 package supports nearly all props from the [base B
 The S2 `Bar` component does not yet support `Trendline` as a child component.
 :::
 
+See [Keyboard Navigation](/docs/spectrum2/keyboard-navigation) for the `accessibleNavigation` chart prop, currently supported only for `Bar`.
+
 ```jsx
 import { Chart, Axis, Bar } from '@spectrum-charts/react-spectrum-charts-s2';
 ```
@@ -52,7 +54,7 @@ The same component works for horizontal bar charts. Labels appear to the right o
 
 ### BarDirectLabel props
 
-`BarDirectLabel` is intentionally minimal for v1 — additional options (custom format, prefix, etc.) will be added in future releases.
+The label text is derived automatically from the parent Bar's metric, dimension, and orientation.
 
 <table>
     <thead>
@@ -65,10 +67,39 @@ The same component works for horizontal bar charts. Labels appear to the right o
     </thead>
     <tbody>
         <tr>
-            <td colspan="4"><em>No props in v1. The label text and placement are derived automatically from the parent Bar's metric, dimension, and orientation.</em></td>
+            <td>position</td>
+            <td>'start' | 'middle' | 'end' | 'end-outside'</td>
+            <td>'end-outside'</td>
+            <td>Where to place the label relative to the bar. <code>'end-outside'</code> places it outside the bar tip; <code>'end'</code> places it inside the bar, 8px from the tip; <code>'middle'</code> centers it within the bar; <code>'start'</code> places it inside the bar, 8px from the baseline edge.</td>
+        </tr>
+        <tr>
+            <td>format</td>
+            <td>'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | 'percentage' | string</td>
+            <td>',.2~f'</td>
+            <td>Number format for the label value. Accepts a named preset or a custom d3-format specifier string (e.g. <code>'.1f'</code>).</td>
         </tr>
     </tbody>
 </table>
+
+---
+
+## Diverging bars
+
+Set `diverging` on `Bar` for a metric that spans positive and negative values (e.g. percent change). It moves the categorical axis to the zero baseline and flips each axis label to the side opposite its bar, so labels never overlap the bars.
+
+```jsx
+<Chart data={data}>
+  <Axis position="left" baseline />
+  <Axis position="bottom" grid labelFormat="percentage" />
+  <Bar dimension="channel" metric="changeRate" orientation="horizontal" diverging>
+    <BarDirectLabel position="start" format="percentage" />
+  </Bar>
+</Chart>
+```
+
+:::note Single-series only
+`diverging` only supports a single-series bar (no `color`, `lineType`, or `opacity` facet, and not `type="dodged"`) that is the only bar mark on the chart. It is also a no-op on a trellised chart or when the axis has `subLabels`. In any of these cases the axis stays at its normal position and `diverging` has no effect.
+:::
 
 ---
 
@@ -86,7 +117,7 @@ The same component works for horizontal bar charts. Labels appear to the right o
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartTooltip | ChartPopover | BarAnnotation | BarDirectLabel</td>
+            <td>ChartInspect | ChartPopover | BarAnnotation | BarDirectLabel</td>
             <td>–</td>
             <td>Optional child components for tooltips, popovers, annotations, and inline direct labels.</td>
         </tr>
@@ -101,6 +132,12 @@ The same component works for horizontal bar charts. Labels appear to the right o
             <td>string</td>
             <td>'category'</td>
             <td>Key in the data used for the categorical axis.</td>
+        </tr>
+        <tr>
+            <td>diverging</td>
+            <td>boolean</td>
+            <td>–</td>
+            <td>Moves the categorical axis to the zero baseline and flips each label to the opposite side of its bar. Single-series bars only — see the note above.</td>
         </tr>
         <tr>
             <td>metric</td>

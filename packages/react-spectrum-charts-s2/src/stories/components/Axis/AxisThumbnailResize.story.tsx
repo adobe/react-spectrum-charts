@@ -13,8 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { View } from '@adobe/react-spectrum';
-
 import { Chart } from '../../../Chart';
 import { Axis, AxisThumbnail, Bar } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
@@ -38,27 +36,14 @@ const ResizableStory: StoryFn<AxisThumbnailProps> = (args): ReactElement => {
 	const chartProps = useChartProps({ data, width: 'auto', height: '100%', padding: 2 });
 
 	return (
-		<View
-			backgroundColor="gray-50"
-			overflow="hidden"
-			width={800}
-			minWidth={200}
-			maxWidth={1400}
-			height={400}
-			minHeight={200}
-			maxHeight={800}
-			borderColor="gray-400"
-			borderWidth="thick"
-			padding={16}
-			UNSAFE_style={{ resize: 'both' }}
-		>
+		<div style={{ overflow: 'hidden', width: 800, minWidth: 200, maxWidth: 1400, height: 400, minHeight: 200, maxHeight: 800, border: '2px solid var(--spectrum-gray-400)', padding: 16, resize: 'both' }}>
 			<Chart {...chartProps}>
 				<Bar dimension="browser" metric="downloads" />
 				<Axis position="bottom" baseline>
 					<AxisThumbnail {...args} />
 				</Axis>
 			</Chart>
-		</View>
+		</div>
 	);
 };
 

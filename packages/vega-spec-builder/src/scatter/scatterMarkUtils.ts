@@ -13,7 +13,7 @@ import { produce } from 'immer';
 import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
 import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
-import { spectrumColors } from '@spectrum-charts/themes';
+import { getColorValue } from '@spectrum-charts/themes';
 
 import { addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
 import {
@@ -89,6 +89,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
     metric,
     name,
     opacity,
+    s2,
     size,
     stroke,
   } = options;
@@ -105,13 +106,13 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
     encode: {
       enter: {
         ...(blendEncoding && { blend: blendEncoding }),
-        fill: getColorProductionRule(color, colorScheme, colorScaleType),
+        fill: getColorProductionRule(color, colorScheme, colorScaleType, s2),
         fillOpacity: getOpacityProductionRule(opacity),
         shape: { value: 'circle' },
         size: getSymbolSizeProductionRule(size),
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeWidth: getLineWidthProductionRule(lineWidth),
-        stroke: getColorProductionRule(stroke ?? color, colorScheme, colorScaleType),
+        stroke: getColorProductionRule(stroke ?? color, colorScheme, colorScaleType, s2),
       },
       update: {
         opacity: getOpacity(options),
@@ -163,7 +164,7 @@ export const getScatterHoverMarks = (scatterOptions: ScatterSpecOptions): Mark[]
 };
 
 const getScatterSelectMarks = (scatterOptions: ScatterSpecOptions): SymbolMark[] => {
-  const { dimension, dimensionScaleType, metric, name, size } = scatterOptions;
+  const { colorScheme, dimension, dimensionScaleType, metric, name, s2, size } = scatterOptions;
   if (!hasPopover(scatterOptions)) {
     return [];
   }
@@ -181,7 +182,7 @@ const getScatterSelectMarks = (scatterOptions: ScatterSpecOptions): SymbolMark[]
           shape: { value: 'circle' },
           size: getSelectRingSize(size),
           strokeWidth: { value: 2 },
-          stroke: { value: spectrumColors.light['static-blue'] },
+          stroke: { value: getColorValue('static-blue', colorScheme, s2) },
         },
         update: {
           x: getXProductionRule(dimensionScaleType, dimension),

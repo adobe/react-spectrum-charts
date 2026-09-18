@@ -79,7 +79,10 @@ describe('getUniqueDimensionData()', () => {
     expect(data).toEqual({
       name: 'line0_uniqueXValues',
       source: FILTERED_TABLE,
-      transform: [{ type: 'aggregate', groupby: [DEFAULT_TRANSFORMED_TIME_DIMENSION] }],
+      transform: [
+        { type: 'aggregate', groupby: [DEFAULT_TRANSFORMED_TIME_DIMENSION] },
+        { type: 'formula', expr: `"${DEFAULT_TRANSFORMED_TIME_DIMENSION}"`, as: 'rscDimensionField' },
+      ],
     });
   });
 });

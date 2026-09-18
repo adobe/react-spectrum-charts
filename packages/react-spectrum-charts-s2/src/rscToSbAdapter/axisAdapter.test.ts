@@ -22,6 +22,11 @@ describe('getAxisOptions()', () => {
     const options = getAxisOptions(basicAxisProps);
     expect(options.referenceLines).toHaveLength(0);
     expect(options.position).toBe('bottom');
+    expect(options.hasOnClick).toBe(false);
+  });
+  it('should set hasOnClick to true if onClick prop exists and is not undefined', () => {
+    expect(getAxisOptions({ ...basicAxisProps, onClick: () => {} }).hasOnClick).toBe(true);
+    expect(getAxisOptions({ ...basicAxisProps, onClick: undefined }).hasOnClick).toBe(false);
   });
   it('should convert ReferenceLine children to referenceLines array', () => {
     const options = getAxisOptions({ ...basicAxisProps, children: [createElement(ReferenceLine)] });

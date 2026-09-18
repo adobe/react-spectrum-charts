@@ -17,7 +17,12 @@ import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
 import { getLocale } from '@spectrum-charts/locales';
-import { ChartData, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder';
+import {
+  ChartData,
+  UserMeta,
+  applyUserMetaConfigPatches,
+  getVegaEmbedOptions,
+} from '@spectrum-charts/vega-spec-builder';
 
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
@@ -28,7 +33,9 @@ import { ChartProps } from './types';
  */
 export const resizeView = (view: View | undefined, width: number, height: number): void => {
   if (view && width && height) {
-    view.width(width).height(height).resize().runAsync();
+    // Two passes: first updates width/height signals; second lets Vega re-settle layout
+    // after dependent changes (e.g. legend column count → legend height → plot area height).
+    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
   }
 };
 
@@ -118,18 +125,11 @@ export const VegaChart: FC<VegaChartProps> = ({
           return signal;
         });
       }
-      embed(containerRef.current, specCopy, {
-        ...getVegaEmbedOptions({
-          s2,
-          locale,
-          height,
-          width,
-          padding,
-          renderer,
-          config,
-        }),
-        tooltip,
-      }).then(({ view }) => {
+      const embedOptions = getVegaEmbedOptions({ s2, locale, height, width, padding, renderer, config });
+      const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
+      const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
+
+      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
         chartView.current = view;
         onNewView(view);
         view.resize();

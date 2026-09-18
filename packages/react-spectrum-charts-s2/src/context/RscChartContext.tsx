@@ -15,6 +15,11 @@ import { Signal, View } from 'vega';
 
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
+interface HoveredAxisLabel {
+  bounds: MarkBounds;
+  content: string;
+}
+
 interface ChartContextValue {
   // Chart view state
   chartView: RefObject<View | undefined>;
@@ -25,10 +30,17 @@ interface ChartContextValue {
   selectedDataName: RefObject<string>;
   selectedDataBounds: RefObject<MarkBounds>;
 
+  // Set when Space opens a popover, so its close handler can skip clearing hover-parity signals keyboard focus still owns.
+  keyboardPopoverComponentName: RefObject<string | null>;
+
   // Popover state
   isPopoverOpen: boolean;
   setIsPopoverOpen: (isOpen: boolean) => void;
   popoverAnchorRef: RefObject<HTMLDivElement | null>;
+
+  // Axis label tooltip state
+  hoveredAxisLabel: HoveredAxisLabel | null;
+  setHoveredAxisLabel: (hoveredAxisLabel: HoveredAxisLabel | null) => void;
 
   // Spec state
   controlledHoveredIdSignal: RefObject<Signal | undefined>;
@@ -50,8 +62,10 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
   const selectedData = useRef<Datum | null>(null);
   const selectedDataName = useRef<string>('');
   const selectedDataBounds = useRef<MarkBounds>({ x1: 0, x2: 0, y1: 0, y2: 0 });
+  const keyboardPopoverComponentName = useRef<string | null>(null);
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [hoveredAxisLabel, setHoveredAxisLabel] = useState<HoveredAxisLabel | null>(null);
 
   const value: ChartContextValue = useMemo(
     () => ({
@@ -60,13 +74,16 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
       selectedData,
       selectedDataName,
       selectedDataBounds,
+      keyboardPopoverComponentName,
       controlledHoveredIdSignal,
       controlledHoveredGroupSignal,
       isPopoverOpen,
       setIsPopoverOpen,
       popoverAnchorRef,
+      hoveredAxisLabel,
+      setHoveredAxisLabel,
     }),
-    [chartId, chartView, isPopoverOpen]
+    [chartId, chartView, isPopoverOpen, hoveredAxisLabel]
   );
 
   return <ChartContext.Provider value={value}>{children}</ChartContext.Provider>;

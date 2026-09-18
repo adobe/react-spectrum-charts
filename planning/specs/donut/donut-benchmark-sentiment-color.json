@@ -1,0 +1,63 @@
+{
+  "id": "donut-benchmark-sentiment-color",
+  "title": "Donut Benchmark — Sentiment Color Override",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 2,
+    "rationale": "Split out of donut-benchmark at the user's request. This reuses the same test-expression color-swap pattern donut-emphasize already establishes (adapted from Line's primarySeries/otherSeriesColor) - a single coordinated site on the arc's fill encode, gated on Benchmark+Semantic being present. No open design questions once the gating rule (sentimentRequiresBenchmark) is applied consistently."
+  },
+  "summary": "When a Benchmark child is present on a 2-segment donut and its `semantic` prop is set, the primary segment's arc color switches to a sentiment color (green for positive, red for negative) instead of its normal categorical color - not implemented at all today. Confirmed against two live Figma examples (a red arc for a below-benchmark case, a green arc for an above-benchmark case). Depends on donut-benchmark for the Benchmark child component and its `semantic` prop existing.",
+  "requirements": [
+    "When a Benchmark is configured with `semantic=\"positive\"`, the donut's primary segment arc renders `chart.donut.color.sentiment-positive` (#079355/green-800) instead of its normal categorical color - confirmed exact hex match against the green arc in the positive Figma example.",
+    "When a Benchmark is configured with `semantic=\"negative\"`, the primary segment arc renders `chart.donut.color.sentiment-negative` (#F03823/red-800) instead - confirmed exact hex match against the red arc in the negative Figma example.",
+    "Sentiment coloring applies only when a Benchmark is present AND its `semantic` prop is set - per donut-chart-tokens' `sentimentRequiresBenchmark: true`, a `semantic` value has no effect without a Benchmark (there's no other prop path that would even expose `semantic` without one, since it lives on the Benchmark child component).",
+    "When Benchmark is present but `semantic` is omitted, the segment keeps its normal/default categorical color - sentiment coloring is opt-in, not automatic just because a Benchmark exists."
+  ],
+  "designTokens": [
+    { "token": "chart.donut.color.sentiment-positive", "value": "#079355 (green-800)", "usage": "Segment color when the actual value is above the benchmark and semantic=\"positive\" - confirmed exact match against the green arc in the positive Figma example." },
+    { "token": "chart.donut.color.sentiment-negative", "value": "#F03823 (red-800)", "usage": "Segment color when the actual value is below the benchmark and semantic=\"negative\" - confirmed exact match against the red arc in the negative Figma example." },
+    { "token": "sentimentRequiresBenchmark", "value": "true", "usage": "Sentiment colors are gated on a Benchmark being present - since `semantic` is a prop on the Benchmark child itself, this is naturally enforced by the API shape, not a separate validation to write." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-benchmark/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54002&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Benchmark present with no `semantic` set", "expectedBehavior": "Segment keeps its normal/default categorical color; only the line, cap, and label render - sentiment coloring is opt-in via `semantic`, not automatic." },
+    { "case": "Combined with donut-binary's secondary-gray override", "expectedBehavior": "The secondary segment still renders secondary-gray regardless of the primary segment's sentiment color - the two overrides target different segments and shouldn't interact." },
+    { "case": "Combined with donut-emphasize", "expectedBehavior": "If the primary segment is also the emphasized one, confirm which color wins (sentiment vs. emphasize's own-color-unchanged rule) - likely compatible since emphasize only touches non-designated segments, but worth an explicit test." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale is false - a static test-expression color-swap on the existing fill encode, not a new signal or scale, mirroring the pattern donut-emphasize already establishes. requiresS1S2Parity is false: no existing s1 Benchmark implementation to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "Extend getArcMark's fill production rule to switch to the sentiment color when a Benchmark with a `semantic` value is configured on the primary segment, gated on isBoolean/binary - distinct from and in addition to the existing getColorProductionRule call and donut-binary's secondary-gray override.",
+      "lines": "48-76"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.test.ts",
+      "change": "Add tests for the sentiment-color override (both positive and negative) and confirm it doesn't apply when `semantic` is omitted.",
+      "lines": "N/A - new test cases"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/Benchmark/Benchmark.story.tsx (from donut-benchmark)",
+      "change": "Add positive and negative sentiment-color story variants.",
+      "lines": "N/A - extends the file donut-benchmark creates"
+    }
+  ],
+  "openQuestions": [],
+  "relatedIssues": ["donut-benchmark", "donut-binary", "donut-emphasize"]
+}

@@ -44,7 +44,7 @@ const startingSpec: ScSpec = initializeSpec({
 
 const defaultAreaOptions: AreaSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   colorScheme: DEFAULT_COLOR_SCHEME,
   color: DEFAULT_COLOR,
   dimension: DEFAULT_TIME_DIMENSION,
@@ -107,6 +107,7 @@ const defaultSpec = initializeSpec({
               strokeWidth: { value: 1.5 },
               strokeJoin: { value: 'round' },
               tooltip: undefined,
+              defined: { signal: 'isValid(datum["value0"]) || isValid(datum["value1"])' },
             },
             update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
@@ -211,22 +212,22 @@ describe('areaSpecBuilder', () => {
     });
 
     test('children: should add signals', () => {
-      const signals = addSignals(defaultSignals, { ...defaultAreaOptions, chartTooltips: [{}] });
+      const signals = addSignals(defaultSignals, { ...defaultAreaOptions, chartInspects: [{}] });
       expect(signals).toHaveLength(defaultSignals.length + 2);
       expect(signals[0]).toHaveProperty('name', CONTROLLED_HIGHLIGHTED_ITEM);
       expect(signals[2]).toHaveProperty('name', CONTROLLED_HIGHLIGHTED_SERIES);
       expect(signals[3]).toHaveProperty('name', SELECTED_ITEM);
       expect(signals[4]).toHaveProperty('name', SELECTED_SERIES);
       expect(signals[5]).toHaveProperty('name', SELECTED_GROUP);
-      expect(signals[6]).toHaveProperty('name', `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
-      expect(signals[6].on).toHaveLength(2);
-      expect(signals[7]).toHaveProperty('name', `${defaultAreaOptions.name}_controlledHoveredId`);
+      expect(signals[11]).toHaveProperty('name', `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
+      expect(signals[11].on).toHaveLength(2);
+      expect(signals[12]).toHaveProperty('name', `${defaultAreaOptions.name}_controlledHoveredId`);
     });
 
-    test('should exclude data with key from update if tooltip has excludeDataKey', () => {
+    test('should exclude data with key from update if inspect has excludeDataKey', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultAreaOptions,
-        chartTooltips: [{ excludeDataKeys: ['excludeFromTooltip'] }],
+        chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
       });
       expect(signals).toHaveLength(defaultSignals.length + 2);
       const hoverSignal = signals.find((signal) => signal.name === `${defaultAreaOptions.name}_${HOVERED_ITEM}`);
@@ -235,10 +236,10 @@ describe('areaSpecBuilder', () => {
       expect(hoverSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     });
 
-    test('should add on event to CONTROLLED_HIGHLIGHTED_ITEM signal if highlightedItem is defined and there is a tooltip on the area', () => {
+    test('should add on event to CONTROLLED_HIGHLIGHTED_ITEM signal if highlightedItem is defined and there is an inspect on the area', () => {
       const signals = addSignals(defaultSignals, {
         ...defaultAreaOptions,
-        chartTooltips: [{}],
+        chartInspects: [{}],
         highlightedItem: 'highlightedItem',
       });
       expect(signals).toHaveLength(defaultSignals.length + 2);

@@ -9,15 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Mark, TextMark, Transforms } from 'vega';
+import { Data, Mark, NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
 import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
+import { getCascadeTransforms, MIN_LABEL_GAP } from '../line/directLabelUtils';
+
+import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils';
 import { getLineOpacity } from '../line/lineMarkUtils';
-import { getColorProductionRule } from '../marks/markUtils';
+import { getEffectiveMetricField } from '../lineForecast';
+import { getColorProductionRule, getDirectLabelFontSizeProductionRule } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getDimensionField, getFacetsFromOptions } from '../specUtils';
+import { escapeD3FormatSpecifier, getDimensionField, getFacetsFromOptions } from '../specUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
 
 /**
@@ -31,6 +35,7 @@ export const getLineDirectLabelData = (
 	const { color, dimension, excludeSeries, metric, position, scaleType, value } = labelOptions;
 	const dimField = getDimensionField(dimension, scaleType);
 	const isStart = position === 'start';
+	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const { facets } = getFacetsFromOptions({
 		color: lineOptions.color,
@@ -72,18 +77,15 @@ export const getLineDirectLabelData = (
 					},
 				]
 			: []),
-		{
-			type: 'joinaggregate' as const,
-			fields: [metric],
-			ops: ['count' as const],
-			as: ['_seriesCount'],
-		},
-		{
-			type: 'window' as const,
-			sort: { field: [metric], order: ['descending' as const] },
-			ops: ['rank' as const],
-			as: ['_metricRank'],
-		},
+		...(lineOptions.primarySeries
+			? [
+					{
+						type: 'filter' as const,
+						expr: `!(${getPrimarySeriesOtherExpr(lineOptions.primarySeries, 'datum')})`,
+					},
+				]
+			: []),
+		...getCascadeTransforms(yScaleName, metric, ''),
 	];
 
 	return {
@@ -97,7 +99,7 @@ const DEFAULT_NUMBER_FORMAT = ',.2~f';
 
 function getEscapedFormat(formatSpec?: string): string {
 	const resolved = formatSpec || DEFAULT_NUMBER_FORMAT;
-	return '"' + resolved.replaceAll('"', String.raw`\"`) + '"';
+	return '"' + escapeD3FormatSpecifier(resolved) + '"';
 }
 
 function getLabelValueExpr(value: LabelValue, metric: string, colorField?: string, formatSpec?: string): string {
@@ -120,7 +122,8 @@ export const getLineDirectLabelMarks = (
 	labelOptions: LineDirectLabelSpecOptions,
 	lineOptions: LineSpecOptions,
 	backgroundColor: string | undefined,
-	colorScheme: 'light' | 'dark'
+	colorScheme: 'light' | 'dark',
+	fgOpacityRules?: ProductionRule<NumericValueRef>
 ): Mark[] => {
 	const resolvedBg = getS2ColorValue(
 		backgroundColor === 'transparent' || !backgroundColor ? 'gray-25' : backgroundColor,
@@ -138,6 +141,10 @@ export const getLineDirectLabelMarks = (
 	const yScaleName = lineOptions.metricAxis || 'yLinear';
 
 	const opacityRules = getLineOpacity(lineOptions);
+  	const fontSizeEncoding = getDirectLabelFontSizeProductionRule(labelOptions.fontSize);
+
+	// Combined logic for direct label offset given 1, 2, or 3+ series
+	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${MIN_LABEL_GAP} - 12 - datum._scaledY)`
 
 	const baseEnter = {
 		text: { signal: textExpr },
@@ -151,7 +158,7 @@ export const getLineDirectLabelMarks = (
 		y: {
 			scale: yScaleName,
 			field: metric,
-			offset: { signal: 'datum._seriesCount === 2 && datum._metricRank === 2 ? 22 : -12' },
+			offset: { signal: offsetSignal },
 		},
 	};
 
@@ -165,9 +172,13 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				stroke: { value: resolvedBg },
 				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
-				fill: { value: 'transparent' },
+				fill: { value: resolvedBg },
 			},
-			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
+			update: {
+				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+				fontSize: fontSizeEncoding,
+				opacity: { value: 1 }
+			},
 		},
 	};
 
@@ -181,11 +192,28 @@ export const getLineDirectLabelMarks = (
 				...baseEnter,
 				fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
 			},
-			update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT }, opacity: opacityRules },
+			update: {
+				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+				fontSize: fontSizeEncoding,
+				opacity: opacityRules,
+			},
 		},
 	};
 
-	return [backgroundTextMark, mainTextMark];
+	const marks: Mark[] = [backgroundTextMark, mainTextMark];
+
+	if (!fgOpacityRules) {
+		return marks;
+	}
+	
+	// this is only returned when the line has a highlight state, so the labels always render on top of the overlay lines
+	const fgMarks = marks.map(mark => ({
+		...mark,
+		name: `${mark.name}_fg`,
+		encode: { ...mark.encode, update: { ...mark.encode?.update, opacity: fgOpacityRules } }
+	} as unknown as Mark));
+
+	return fgMarks;
 };
 
 /**
@@ -203,9 +231,10 @@ export const getLineDirectLabelSpecOptions = (
 	format: labelOptions.format ?? '',
 	index,
 	lineName: lineOptions.name,
-	metric: lineOptions.metric,
+	metric: getEffectiveMetricField(lineOptions),
 	position: labelOptions.position ?? 'end',
 	prefix: labelOptions.prefix ?? '',
 	scaleType: lineOptions.scaleType,
 	value: labelOptions.value ?? 'last',
+	fontSize: labelOptions.fontSize,
 });

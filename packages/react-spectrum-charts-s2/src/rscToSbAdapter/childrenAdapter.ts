@@ -15,16 +15,22 @@ import {
   BarAnnotationOptions,
   BarDirectLabelOptions,
   ChartActionBarOptions,
+  ChartInspectOptions,
   ChartPopoverOptions,
-  ChartTooltipOptions,
   DonutSummaryOptions,
   LegendOptions,
+  LineForecastOptions,
   LineDirectLabelOptions,
   LineOptions,
+  LinePointAnnotationOptions,
   MarkOptions,
   ReferenceLineOptions,
+  ScatterAnnotationOptions,
+  ScatterPathOptions,
   SegmentLabelOptions,
   TitleOptions,
+  TrendlineAnnotationOptions,
+  TrendlineOptions,
 } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Axis } from '../components/Axis';
@@ -32,40 +38,69 @@ import { AxisThumbnail } from '../components/AxisThumbnail';
 import { Bar } from '../components/Bar';
 import { BarDirectLabel } from '../components/BarDirectLabel';
 import { ChartActionBar } from '../components/ChartActionBar';
+import { ChartInspect } from '../components/ChartInspect';
 import { ChartPopover } from '../components/ChartPopover';
-import { ChartTooltip } from '../components/ChartTooltip';
 import { Legend } from '../components/Legend';
 import { Line } from '../components/Line';
 import { LineDirectLabel } from '../components/LineDirectLabel';
+import { LineForecast } from '../components/LineForecast';
+import { LinePointAnnotation } from '../components/LinePointAnnotation';
 import { ReferenceLine } from '../components/ReferenceLine';
 import { Title } from '../components/Title';
-import { Donut, DonutSummary, SegmentLabel } from '../rc';
 import {
+  Area,
+  Bullet,
+  Combo,
+  Donut,
+  DonutSummary,
+  Scatter,
+  ScatterAnnotation,
+  ScatterPath,
+  SegmentLabel,
+  Trendline,
+  TrendlineAnnotation,
+} from '../pre-alpha';
+import {
+  AreaProps,
   AxisProps,
   AxisThumbnailProps,
   BarDirectLabelProps,
   BarProps,
+  BulletProps,
   ChartActionBarProps,
+  ChartInspectProps,
   ChartPopoverProps,
-  ChartTooltipProps,
+  ComboProps,
   DonutProps,
   DonutSummaryProps,
   LegendProps,
+  LineForecastProps,
   LineDirectLabelProps,
+  LinePointAnnotationProps,
   LineProps,
   ReferenceLineProps,
+  ScatterAnnotationProps,
+  ScatterPathProps,
+  ScatterProps,
   SegmentLabelProps,
   TitleProps,
+  TrendlineAnnotationProps,
+  TrendlineProps,
 } from '../types';
 import { sanitizeChildren } from '../utils';
+import { getAreaOptions } from './areaAdapter';
 import { getAxisOptions } from './axisAdapter';
 import { getBarOptions } from './barAdapter';
+import { getBulletOptions } from './bulletAdapter';
 import { getChartActionBarOptions } from './chartActionBarAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
-import { getChartTooltipOptions } from './chartTooltipAdapter';
+import { getChartInspectOptions } from './chartInspectAdapter';
+import { getComboOptions } from './comboAdapter';
 import { getDonutOptions } from './donutAdapter';
 import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
+import { getScatterOptions } from './scatterAdapter';
+import { getTrendlineOptions } from './trendlineAdapter';
 
 export const childrenToOptions = (
   children: React.ReactNode
@@ -75,33 +110,45 @@ export const childrenToOptions = (
   barAnnotations: BarAnnotationOptions[];
   barDirectLabels: BarDirectLabelOptions[];
   chartActionBars: ChartActionBarOptions[];
+  chartInspects: ChartInspectOptions[];
   chartPopovers: ChartPopoverOptions[];
-  chartTooltips: ChartTooltipOptions[];
   donutSummaries: DonutSummaryOptions[];
+  forecasts: LineForecastOptions[];
   legends: LegendOptions[];
   lineDirectLabels: LineDirectLabelOptions[];
+  linePointAnnotations: LinePointAnnotationOptions[];
   lines: LineOptions[];
   marks: MarkOptions[];
   referenceLines: ReferenceLineOptions[];
+  scatterAnnotations: ScatterAnnotationOptions[];
+  scatterPaths: ScatterPathOptions[];
   segmentLabels: SegmentLabelOptions[];
   titles: TitleOptions[];
+  trendlineAnnotations: TrendlineAnnotationOptions[];
+  trendlines: TrendlineOptions[];
 } => {
   const axes: AxisOptions[] = [];
   const axisThumbnails: AxisThumbnailOptions[] = [];
   const barAnnotations: BarAnnotationOptions[] = [];
   const barDirectLabels: BarDirectLabelOptions[] = [];
   const chartActionBars: ChartActionBarOptions[] = [];
+  const chartInspects: ChartInspectOptions[] = [];
   const chartPopovers: ChartPopoverOptions[] = [];
   let hasRightClickPopover = false;
-  const chartTooltips: ChartTooltipOptions[] = [];
   const donutSummaries: DonutSummaryOptions[] = [];
+  const forecasts: LineForecastOptions[] = [];
   const legends: LegendOptions[] = [];
   const lineDirectLabels: LineDirectLabelOptions[] = [];
+  const linePointAnnotations: LinePointAnnotationOptions[] = [];
   const lines: LineOptions[] = [];
   const marks: MarkOptions[] = [];
   const referenceLines: ReferenceLineOptions[] = [];
+  const scatterAnnotations: ScatterAnnotationOptions[] = [];
+  const scatterPaths: ScatterPathOptions[] = [];
   const segmentLabels: SegmentLabelOptions[] = [];
   const titles: TitleOptions[] = [];
+  const trendlineAnnotations: TrendlineAnnotationOptions[] = [];
+  const trendlines: TrendlineOptions[] = [];
 
   for (const child of sanitizeChildren(children)) {
     if (!('displayName' in child.type)) {
@@ -109,6 +156,11 @@ export const childrenToOptions = (
       continue;
     }
     switch (child.type.displayName) {
+
+      case Area.displayName:
+        marks.push(getAreaOptions(child.props as AreaProps));
+        break;
+
       case Axis.displayName:
         axes.push(getAxisOptions(child.props as AxisProps));
         break;
@@ -125,6 +177,10 @@ export const childrenToOptions = (
         barDirectLabels.push(child.props as BarDirectLabelProps);
         break;
 
+      case Bullet.displayName:
+        marks.push(getBulletOptions(child.props as BulletProps));
+        break;
+
       case ChartActionBar.displayName:
         chartActionBars.push(getChartActionBarOptions(child.props as ChartActionBarProps));
         break;
@@ -136,8 +192,12 @@ export const childrenToOptions = (
         break;
       }
 
-      case ChartTooltip.displayName:
-        chartTooltips.push(getChartTooltipOptions(child.props as ChartTooltipProps));
+      case ChartInspect.displayName:
+        chartInspects.push(getChartInspectOptions(child.props as ChartInspectProps));
+        break;
+
+      case Combo.displayName:
+        marks.push(getComboOptions(child.props as ComboProps));
         break;
 
       case Donut.displayName:
@@ -152,8 +212,16 @@ export const childrenToOptions = (
         legends.push(getLegendOptions(child.props as LegendProps));
         break;
 
+      case LineForecast.displayName:
+        forecasts.push(child.props as LineForecastProps);
+        break;
+
       case LineDirectLabel.displayName:
         lineDirectLabels.push(child.props as LineDirectLabelProps);
+        break;
+
+      case LinePointAnnotation.displayName:
+        linePointAnnotations.push(child.props as LinePointAnnotationProps);
         break;
 
       case Line.displayName:
@@ -165,12 +233,32 @@ export const childrenToOptions = (
         referenceLines.push(child.props as ReferenceLineProps);
         break;
 
+      case Scatter.displayName:
+        marks.push(getScatterOptions(child.props as ScatterProps));
+        break;
+
+      case ScatterAnnotation.displayName:
+        scatterAnnotations.push(child.props as ScatterAnnotationProps);
+        break;
+
+      case ScatterPath.displayName:
+        scatterPaths.push(child.props as ScatterPathProps);
+        break;
+
       case SegmentLabel.displayName:
         segmentLabels.push(child.props as SegmentLabelProps);
         break;
 
       case Title.displayName:
         titles.push(child.props as TitleProps);
+        break;
+
+      case Trendline.displayName:
+        trendlines.push(getTrendlineOptions(child.props as TrendlineProps));
+        break;
+
+      case TrendlineAnnotation.displayName:
+        trendlineAnnotations.push(child.props as TrendlineAnnotationProps);
         break;
 
       default:
@@ -191,15 +279,21 @@ export const childrenToOptions = (
     barAnnotations,
     barDirectLabels,
     chartActionBars,
+    chartInspects,
     chartPopovers,
-    chartTooltips,
     donutSummaries,
+    forecasts,
     legends,
     lineDirectLabels,
+    linePointAnnotations,
     lines,
     marks,
     referenceLines,
+    scatterAnnotations,
+    scatterPaths,
     segmentLabels,
     titles,
+    trendlineAnnotations,
+    trendlines,
   };
 };

@@ -13,13 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartTooltip, Legend, Line } from '../../../components';
+import { Axis, Bar, ChartPopover, ChartInspect, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary } from '../../../rc';
+import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { browserData as data } from '../../data/data';
@@ -39,11 +38,20 @@ export default {
 };
 
 const dialogContent = (datum: Datum) => (
-  <Content>
+  <div>
     <div>Operating system: {datum.series}</div>
     <div>Browser: {datum.category}</div>
     <div>Users: {datum.value}</div>
-  </Content>
+  </div>
+);
+
+const dialogContentWithClose = (datum: Datum, close?: () => void) => (
+  <div>
+    <div>Operating system: {datum.series}</div>
+    <div>Browser: {datum.category}</div>
+    <div>Users: {datum.value}</div>
+    {close && <button data-testid="popover-close-button" onClick={close}>Close</button>}
+  </div>
 );
 
 const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
@@ -53,7 +61,7 @@ const ChartPopoverCanvasStory: StoryFn<typeof ChartPopover> = (args): ReactEleme
   return (
     <Chart {...chartProps}>
       <Bar color="series">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
     </Chart>
@@ -65,7 +73,7 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
   return (
     <Chart {...chartProps}>
       <Bar color="series">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
     </Chart>
@@ -77,7 +85,7 @@ const ChartPopoverDodgedBarStory: StoryFn<typeof ChartPopover> = (args): ReactEl
   return (
     <Chart {...chartProps}>
       <Bar color="series" type="dodged">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
     </Chart>
@@ -91,7 +99,7 @@ const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
       <Axis position="bottom" baseline />
       <Axis position="left" grid />
       <Line scaleType="point" dimension="category" color="series">
-        <ChartTooltip>{dialogContent}</ChartTooltip>
+        <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Line>
       <Legend />
@@ -102,10 +110,10 @@ const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
 // content for tooltip and popover
 const donutDialogContent = (datum: Datum) => {
   return (
-    <Content>
+    <div>
       <div>Browser: {datum.browser}</div>
       <div>Visitors: {datum.count}</div>
-    </Content>
+    </div>
   );
 };
 
@@ -115,7 +123,7 @@ const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Donut metric="count" color="browser">
         <DonutSummary label="Visitors" />
-        <ChartTooltip>{donutDialogContent}</ChartTooltip>
+        <ChartInspect>{donutDialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Donut>
     </Chart>
@@ -155,6 +163,9 @@ Svg.args = { children: dialogContent, width: 'auto' };
 const ContentMargin = bindWithProps(ChartPopoverSvgStory);
 ContentMargin.args = { children: dialogContent, width: 'auto', contentMargin: 24 };
 
+const WithCloseCallback = bindWithProps(ChartPopoverSvgStory);
+WithCloseCallback.args = { children: dialogContentWithClose, width: 'auto' };
+
 export {
   Canvas,
   ContentMargin,
@@ -167,4 +178,5 @@ export {
   Size,
   StackedBarChart,
   Svg,
+  WithCloseCallback,
 };

@@ -9,24 +9,44 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, PointerEvent, RefObject, Ref, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  CSSProperties,
+  FC,
+  PointerEvent,
+  Ref,
+  RefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import { ActionButton, Dialog, DialogTrigger, View as SpectrumView } from '@adobe/react-spectrum';
+import { ActionButton, Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
+import { Focusable } from 'react-aria-components';
 import { View as VegaView } from 'vega';
-import { COMPONENT_NAME, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
-import { ChartHandle, Datum, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
+import { COMPONENT_NAME, DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SHAPES, DEFAULT_SYMBOL_SIZES } from '@spectrum-charts/constants';
+import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
+import { Axis } from './components/Axis';
+import { ChartInspect } from './components/ChartInspect';
+import { Legend } from './components/Legend';
+import { AxisRegionOptions } from './dataNavigator/buildChartStructure';
+import { Navigator } from './dataNavigator/Navigator';
+import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
 import useActionBars, { ActionBarDetail } from './hooks/useActionBars';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import { useChartInteractions } from './hooks/useChartInteractions';
+import useMarkOnClickDetails from './hooks/useMarkOnClickDetails';
 import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import { RscChartProps } from './types';
-import { clearHoverSignals, sanitizeRscChartChildren, setSelectedSignals } from './utils';
+import { clearHoverSignals, sanitizeMarkChildren, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils';
 
 interface ChartDialogProps {
   targetElement: RefObject<HTMLElement | null>;
@@ -46,6 +66,9 @@ interface ChartActionBarDialogProps {
 
 export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHandle> }) => {
   const {
+    animations,
+    animationTypes,
+    accessibleNavigation,
     backgroundColor,
     data,
     chartWidth,
@@ -72,12 +95,33 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     idKey,
   } = props;
 
-  const { chartView, chartId, popoverAnchorRef, isPopoverOpen, setIsPopoverOpen } = useChartContext();
+  const {
+    chartView,
+    chartId,
+    popoverAnchorRef,
+    isPopoverOpen,
+    setIsPopoverOpen,
+    selectedData,
+    selectedDataBounds,
+    selectedDataName,
+    keyboardPopoverComponentName,
+    hoveredAxisLabel,
+    setHoveredAxisLabel,
+  } = useChartContext();
+  const axisLabelTooltipAnchorRef = useRef<HTMLDivElement>(null);
+  // Retained through the Tooltip's exit animation so it doesn't fade out empty.
+  const lastAxisLabelContentRef = useRef<string | undefined>(undefined);
+  if (hoveredAxisLabel) {
+    lastAxisLabelContentRef.current = hoveredAxisLabel.content;
+  }
 
   const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
 
   // THE MAGIC, builds our spec
   const spec = useSpec({
+    animations,
+    animationTypes,
+    accessibleNavigation,
     backgroundColor,
     children: sanitizedChildren,
     colors,
@@ -101,15 +145,18 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, tooltipOptions, onNewView } = useChartInteractions(props, sanitizedChildren);
+  const { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView } = useChartInteractions(
+    props,
+    sanitizedChildren
+  );
   const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
   const specSignalNames = useMemo(() => new Set(spec.signals?.map((s) => s.name) ?? []), [spec.signals]);
 
   useEffect(() => {
-    const tooltipElement = document.getElementById('vg-tooltip-element');
-    if (tooltipElement) {
-    // Hide tooltips on all charts when a popover is open
-    tooltipElement.hidden = isPopoverOpen;
+    const inspectElement = document.getElementById('vg-tooltip-element');
+    if (inspectElement) {
+    // Hide the vega inspect panel on all charts when a popover is open
+    inspectElement.hidden = isPopoverOpen;
     }
   }, [isPopoverOpen]);
 
@@ -125,6 +172,90 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     [onNewView, onVegaViewReady]
   );
 
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const navChild = sanitizedChildren.find(
+    (child) => 'displayName' in child.type && getNavigableChartType(child.type.displayName)
+  );
+  const navChartType =
+    navChild && 'displayName' in navChild.type ? getNavigableChartType(navChild.type.displayName) : undefined;
+  const navFields = navChild?.props as
+    | { dimension?: string; metric?: string; color?: unknown; order?: string; name?: string; orientation?: Orientation }
+    | undefined;
+  const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
+  const navOrientation: Orientation = navFields?.orientation === 'horizontal' ? 'horizontal' : 'vertical';
+  const markName = navFields?.name ?? (navChartType ? `${navChartType}0` : undefined);
+
+  // Axis/legend titles keyed by the field they represent, so a focused bar's accessible name and
+  // (for bars without a ChartInspect) its focus tooltip read as the chart's own titles rather than
+  // raw field names or every data column. Insertion order (dimension, series, metric) sets read order.
+  const legendTitle = (
+    sanitizedChildren.find((child) => 'displayName' in child.type && child.type.displayName === Legend.displayName)?.props as
+      | { title?: string }
+      | undefined
+  )?.title;
+  const fieldLabels = useMemo(() => {
+    const titleAt = (position: 'bottom' | 'left') =>
+      (
+        sanitizedChildren.find(
+          (child) =>
+            'displayName' in child.type &&
+            child.type.displayName === Axis.displayName &&
+            (child.props as { position?: string }).position === position
+        )?.props as { title?: string } | undefined
+      )?.title;
+    const isHorizontal = navOrientation === 'horizontal';
+    const dimensionTitle = titleAt(isHorizontal ? 'left' : 'bottom');
+    const metricTitle = titleAt(isHorizontal ? 'bottom' : 'left');
+    const labels: Record<string, string> = {};
+    if (dimensionTitle) labels[navFields?.dimension ?? DEFAULT_CATEGORICAL_DIMENSION] = dimensionTitle;
+    if (navColor && legendTitle) labels[navColor] = legendTitle;
+    if (metricTitle) labels[navFields?.metric ?? DEFAULT_METRIC] = metricTitle;
+    return labels;
+  }, [sanitizedChildren, navOrientation, navFields?.dimension, navFields?.metric, navColor, legendTitle]);
+
+  const hasChartInspect = useMemo(
+    () =>
+      sanitizeMarkChildren((navChild?.props as { children?: unknown } | undefined)?.children).some(
+        (child) => 'displayName' in child.type && child.type.displayName === ChartInspect.displayName
+      ),
+    [navChild]
+  );
+
+  // Fires the focused mark's own onClick on Enter/Space, the same as a real click (which runs onClick
+  // alongside opening any popover). Stable identity so toggling the popover doesn't rebuild the navigator.
+  const markOnClickDetails = useMarkOnClickDetails(sanitizedChildren);
+  const onNavNodeClick = useCallback(
+    (datum: Datum) => {
+      markOnClickDetails.find((detail) => detail.markName === markName)?.onClick?.(datum);
+    },
+    [markOnClickDetails, markName]
+  );
+  // Whether the nav mark has a ChartPopover — a click that focuses a node will also open it, so the
+  // navigator must retain focus through the popover (see suppressNextLeave in the adapter).
+  const navMarkHasPopover = useMemo(() => popovers.some((popover) => popover.name === markName), [popovers, markName]);
+
+  // Bottom (x) axis region: makes the axis labels keyboard-navigable, one level above chart content.
+  const xAxisChild = sanitizedChildren.find(
+    (child) =>
+      'displayName' in child.type &&
+      child.type.displayName === Axis.displayName &&
+      (child.props as { position?: string }).position === 'bottom'
+  );
+  // Memoized: Navigator's effect depends on this object by reference, and RscChart re-renders on
+  // every popover open/close (isPopoverOpen), which would otherwise tear down and rebuild the whole
+  // navigator mid-interaction, discarding its in-progress keyboard-focus state.
+  // Only for vertical bars: the bottom axis carries the categorical dimension. A horizontal bar's
+  // categorical axis is the left axis, so its bottom-axis region would not be the dimension one.
+  const xAxis: AxisRegionOptions | undefined = useMemo(
+    () =>
+      xAxisChild && navFields?.dimension && navOrientation === 'vertical'
+        ? { field: navFields.dimension, type: 'categorical', title: (xAxisChild.props as { title?: string }).title }
+        : undefined,
+    [xAxisChild, navFields?.dimension, navOrientation]
+  );
+
+  const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
+
   return (
     <>
       <div
@@ -133,20 +264,67 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         ref={popoverAnchorRef}
         style={targetStyle}
       />
-      <VegaChart
-        spec={spec}
-        config={chartConfig}
-        data={data}
-        debug={debug}
-        renderer={renderer}
-        width={chartWidth}
-        height={chartHeight}
-        locale={locale}
-        padding={padding}
-        signals={signals}
-        tooltip={tooltipOptions} // legend show/hide relies on this
-        onNewView={handleNewView}
-      />
+      {/* onOpenChange lets React Spectrum dismiss the tooltip on Escape (WCAG 2.2 SC 1.4.13) while keyboard
+          focus stays on the axis tick; a later Escape then drills out of the navigator. */}
+      <TooltipTrigger
+        isOpen={Boolean(hoveredAxisLabel)}
+        onOpenChange={(open) => {
+          if (!open) setHoveredAxisLabel(null);
+        }}
+      >
+        {/* Focusable forwards TooltipTrigger's FocusableContext ref onto our plain div. */}
+        <Focusable>
+          <div
+            id={`${chartId}-axis-label-tooltip-anchor`}
+            data-testid="rsc-axis-label-tooltip-anchor"
+            ref={axisLabelTooltipAnchorRef}
+            style={axisLabelTooltipAnchorStyle}
+            tabIndex={-1}
+          />
+        </Focusable>
+        <Tooltip>{hoveredAxisLabel?.content ?? lastAxisLabelContentRef.current}</Tooltip>
+      </TooltipTrigger>
+      <div id={`${chartId}-dn-root`} ref={navContainerRef} style={{ position: 'relative' }}>
+        <VegaChart
+          spec={spec}
+          config={chartConfig}
+          data={data}
+          debug={debug}
+          renderer={renderer}
+          width={chartWidth}
+          height={chartHeight}
+          locale={locale}
+          padding={padding}
+          signals={signals}
+          tooltip={inspectOptions} // legend show/hide relies on this
+          onNewView={handleNewView}
+        />
+        {accessibleNavigation && navChartType && (
+          <Navigator
+            chartType={navChartType}
+            data={data as SimpleData[]}
+            dimension={navFields?.dimension}
+            color={navColor}
+            metric={navFields?.metric}
+            order={navFields?.order}
+            orientation={navOrientation}
+            fieldLabels={fieldLabels}
+            hasChartInspect={hasChartInspect}
+            markName={markName}
+            title={title}
+            xAxis={xAxis}
+            containerRef={navContainerRef}
+            chartId={chartId}
+            getView={getView}
+            selectedData={selectedData}
+            selectedDataBounds={selectedDataBounds}
+            selectedDataName={selectedDataName}
+            keyboardPopoverComponentName={keyboardPopoverComponentName}
+            onNodeClick={onNavNodeClick}
+            hasChartPopover={navMarkHasPopover}
+          />
+        )}
+      </div>
       {popovers.map((popover) => (
         <ChartDialog
           key={popover.key}
@@ -331,58 +509,86 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
 };
 
 const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSignalNames }: ChartDialogProps) => {
-  const { chartView, selectedData, selectedDataName } = useChartContext();
+  const { chartView, selectedData, selectedDataName, keyboardPopoverComponentName } = useChartContext();
   const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const { chartPopoverProps, name } = popover;
-  const { children, onOpenChange, containerPadding, contentMargin, rightClick, ...dialogProps } = chartPopoverProps;
-  const minWidth = dialogProps.minWidth ?? 0;
+  const { children, onOpenChange, containerPadding, contentMargin, rightClick, UNSAFE_highlightBy: _highlightBy, ...sizingProps } = chartPopoverProps;
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      setIsOpen(open);
+      onOpenChange?.(open);
+      setIsPopoverOpen(open);
+
+      if (chartView.current) {
+        if (open) {
+          setRenderDatum(selectedData.current);
+        } else {
+          const componentName = selectedDataName.current;
+          const keyboardComponentName = keyboardPopoverComponentName.current;
+          keyboardPopoverComponentName.current = null;
+          selectedData.current = null;
+          selectedDataName.current = '';
+          if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
+            clearHoverSignals(chartView.current, componentName, specSignalNames);
+          }
+        }
+        setSelectedSignals({ idKey, selectedData: selectedData.current, view: chartView.current });
+        chartView.current.run();
+      }
+    },
+    [
+      chartView,
+      keyboardPopoverComponentName,
+      idKey,
+      onOpenChange,
+      selectedData,
+      selectedDataName,
+      setIsPopoverOpen,
+      specSignalNames,
+    ]
+  );
+
+  const close = useCallback(() => handleOpenChange(false), [handleOpenChange]);
+
+  const popoverStyle: CSSProperties = {
+    minWidth: toPx(sizingProps.minWidth ?? 0),
+    ...(sizingProps.maxWidth != null && { maxWidth: toPx(sizingProps.maxWidth) }),
+    ...(sizingProps.width != null && { width: toPx(sizingProps.width) }),
+    ...(sizingProps.height != null && { height: toPx(sizingProps.height) }),
+    ...(sizingProps.minHeight != null && { minHeight: toPx(sizingProps.minHeight) }),
+    ...(sizingProps.maxHeight != null && { maxHeight: toPx(sizingProps.maxHeight) }),
+  };
 
   return (
-    <DialogTrigger
-      type="popover"
-      mobileType="tray"
-      targetRef={targetElement as RefObject<HTMLElement>}
-      onOpenChange={(isOpen) => {
-        onOpenChange?.(isOpen);
-        setIsPopoverOpen(isOpen);
-
-        if (chartView.current) {
-          if (isOpen) {
-            // Cache render data so there isn't a flicker between view renders.
-            setRenderDatum(selectedData.current);
-          }
-          if (!isOpen) {
-            const componentName = selectedDataName.current;
-            selectedData.current = null;
-            selectedDataName.current = '';
-            // Clear hover signals so hover rules don't keep marks highlighted after the popover closes.
-            if (componentName) {
-              clearHoverSignals(chartView.current, componentName, specSignalNames);
-            }
-          }
-          setSelectedSignals({
-            idKey,
-            selectedData: selectedData.current,
-            view: chartView.current,
-          });
-
-          chartView.current.run();
-        }
-      }}
-      placement="top"
-      hideArrow
-      containerPadding={containerPadding}
-    >
-      <ActionButton id={`${name}-${rightClick ? 'contextmenu' : 'popover'}-button`} UNSAFE_style={{ display: 'none' }}>
-        {rightClick ? 'launch chart context menu' : 'launch chart popover'}
-      </ActionButton>
-      {(close) => (
-        <Dialog data-testid="rsc-popover" UNSAFE_className="rsc-popover" {...dialogProps} minWidth={minWidth}>
-          <SpectrumView data-testid="rsc-popover-content" gridColumn="1/-1" gridRow="1/-1" margin={contentMargin ?? 12}>
+    <>
+      <button
+        type="button"
+        id={`${name}-${rightClick ? 'contextmenu' : 'popover'}-button`}
+        aria-hidden="true"
+        tabIndex={-1}
+        style={{ display: 'none' }}
+        onClick={() => handleOpenChange(true)}
+      />
+      <Popover
+        triggerRef={targetElement}
+        isOpen={isOpen}
+        onOpenChange={handleOpenChange}
+        placement="top"
+        hideArrow
+        padding="none"
+        containerPadding={containerPadding}
+        UNSAFE_className="rsc-popover"
+      >
+        <div data-testid="rsc-popover" style={popoverStyle}>
+          <div data-testid="rsc-popover-content" className="rsc-popover-content" style={{ margin: contentMargin ?? 12 }}>
             {renderDatum && renderDatum[COMPONENT_NAME] === name && children?.(renderDatum, close)}
-          </SpectrumView>
-        </Dialog>
-      )}
-    </DialogTrigger>
+          </div>
+        </div>
+      </Popover>
+    </>
   );
 };
+
+const toPx = (value: number | 'auto'): string | number => (typeof value === 'number' ? `${value}px` : value);

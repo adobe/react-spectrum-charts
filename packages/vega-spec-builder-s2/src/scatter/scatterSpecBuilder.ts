@@ -28,8 +28,8 @@ import {
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
-import { addTooltipData, addTooltipSignals } from '../chartTooltip/chartTooltipUtils';
-import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
+import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
+import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
 import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { setScatterPathScales } from '../scatterPath';
@@ -52,7 +52,7 @@ export const addScatter = produce<
     spec,
     {
       chartPopovers = [],
-      chartTooltips = [],
+      chartInspects = [],
       color = { value: 'categorical-100' },
       colorScaleType = 'ordinal',
       colorScheme = DEFAULT_COLOR_SCHEME,
@@ -79,7 +79,7 @@ export const addScatter = produce<
     const scatterOptions: ScatterSpecOptions = {
       blend,
       chartPopovers,
-      chartTooltips,
+      chartInspects,
       color,
       colorScaleType,
       colorScheme,
@@ -87,7 +87,7 @@ export const addScatter = produce<
       dimensionScaleType,
       index,
       interactiveMarkName: getInteractiveMarkName(
-        { chartPopovers, chartTooltips, highlightedItem: options.highlightedItem, trendlines },
+        { chartPopovers, chartInspects, highlightedItem: options.highlightedItem, trendlines },
         scatterName
       ),
       lineType,
@@ -112,14 +112,14 @@ export const addScatter = produce<
 );
 
 export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptions) => {
-  const { chartTooltips, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;
+  const { chartInspects, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;
   if (dimensionScaleType === 'time') {
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
 
   if (isInteractive(scatterOptions) || highlightedItem !== undefined) {
-    data.push(getFilteredTooltipData(chartTooltips));
+    data.push(getFilteredInspectData(chartInspects));
   }
 
   if (hasPopover(scatterOptions)) {
@@ -134,7 +134,7 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
       ],
     });
   }
-  addTooltipData(data, scatterOptions);
+  addInspectData(data, scatterOptions);
   addTrendlineData(data, scatterOptions);
 });
 
@@ -151,7 +151,7 @@ export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scat
   if (!isInteractive(scatterOptions)) return;
   // interactive signals
   addHoveredItemSignal(signals, scatterName, `${scatterName}_voronoi`, 2);
-  addTooltipSignals(signals, scatterOptions);
+  addInspectSignals(signals, scatterOptions);
 });
 
 /**

@@ -1,0 +1,73 @@
+{
+  "id": "donut-trellis",
+  "title": "Donut Trellis — Category Mode (Small Multiples by Data Field)",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 2,
+    "rationale": "Scope narrowed to the trellis prop, per-facet data derivation, and the shared color-scale domain (panel grid layout - the genuinely hardest, undocumented part - is now donut-trellis-grid-layout's concern, consumed here rather than built here). Faceting by a field and reusing the existing per-donut pie-transform logic per facet is a mechanical, precedented pattern; computing a color-scale domain from the full dataset instead of per-facet is a standard Vega scale-domain technique. This spans a few coordinated sites (prop addition, faceting, color domain) but each is the same kind of already-precedented edit, not new reasoning."
+  },
+  "summary": "Donut Trellis is a single not-yet-built feature (one `trellis` prop family) that supports two modes, confirmed by the user: 'category' mode (this spec) and 'subset' mode (donut-trellis-subset-mode). In category mode, the full donut shape (all its segments, one shared color scale/legend) repeats once per unique value of a trellis data field. Confirmed via a live Figma reference showing 5 region panels (North America/EMEA/APAC/LATAM/Others), each an identical 2-segment Mobile/Desktop donut, sharing one legend and color scale across all five. Conceptually close to Bar's existing `trellis`/`trellisOrientation`/`trellisPadding` feature. The panel grid layout itself (positioning N panels in a wrapping grid, since Donut has no axis to position against) is shared infrastructure tracked in donut-trellis-grid-layout, consumed by this spec rather than built here.",
+  "requirements": [
+    "Add a `trellis?: string` prop to Donut (mirroring Bar's existing naming: `trellis`, `trellisOrientation`, `trellisPadding`) naming a data field. In category mode (the default, or however the two modes end up being selected - see openQuestions), the donut facets into one panel per unique value of that field, each panel computing its own independent pie/arc angles from just that value's data subset - reusing the existing per-donut pie-transform logic (getPieTransforms in donutSpecBuilder.ts), applied once per facet rather than once for the whole dataset.",
+    "All panels share one color scale/legend across the entire trellis - confirmed visually (Mobile=purple, Desktop=pink stay consistent across all 5 region panels, with a single shared legend rendered once at the top). The color scale's domain must be computed from the full dataset, not per-panel, so the same category always maps to the same color everywhere.",
+    "Each panel's title/label (below it, per donut-trellis-grid-layout's shared mechanism) shows the trellis field's value (e.g. 'North America') - confirmed visually.",
+    "Category mode and subset mode (donut-trellis-subset-mode) are both part of the same `trellis` feature/prop family, per the user - not two unrelated features that happen to share a name. Category mode facets by an independent field and repeats the same full multi-segment donut shape per value; subset mode decomposes the donut's own existing color/segmentation field into N generated binary panels. They need genuinely different per-panel data-derivation logic, but share the same grid-layout mechanism (donut-trellis-grid-layout) and ideally the same prop namespace (see openQuestions in both specs)."
+  ],
+  "designTokens": [
+    { "token": "Small multiple donut (S/M/L) component set", "value": "named component set in the Figma library (per donut-chart-tokens §7)", "usage": "The design-system name for this classic small-multiples pattern, distinct from 'Small multiple binary donut'." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-53951&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "A trellis value whose data subset is empty or all-zero", "expectedBehavior": "Confirm this facet's pie-transform doesn't error (mirrors the existing whole-chart empty-state handling in getDonutEmptyStateTest/getEmptyStateArcMark, applied per facet)." },
+    { "case": "Per-panel child components (DonutSummary, SegmentLabel, Benchmark, etc.)", "expectedBehavior": "Confirm whether these are expected to render inside each small panel - the reference doesn't show a metric summary inside these particular panels, but nothing indicates it's disallowed; if supported, sizing should follow the corrected per-tier model from donut-summary-responsive-sizing." },
+    { "case": "S1 parity", "expectedBehavior": "No existing s1 Donut trellis implementation exists to mirror (Bar's trellis exists in both packages, but that's a different mark type) - this is s2-only new work, not a parity gap." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesLegendInteraction: true because a single shared legend now needs to drive highlight/fade across every panel simultaneously when a legend entry is hovered (per the donut-hover spec's legend-sync work) - this is a new consideration beyond the single-donut case, since one legend entry now corresponds to matching segments across N independent arc marks rather than one. requiresNewSignalOrScale: true - needs a new faceting/grouping mechanism and a shared color-scale domain computed across the whole dataset rather than per facet (grid-layout position signals are donut-trellis-grid-layout's concern). requiresS1S2Parity is false: s1 has no Donut trellis at all to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/donutSpec.types.ts",
+      "change": "Add `trellis?: string`, `trellisOrientation?: Orientation`, `trellisPadding?: number` to DonutOptions, mirroring BarOptions' equivalent fields (barSpec.types.ts:64-69).",
+      "lines": "19-41"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisUtils.ts",
+      "change": "New file: facet FILTERED_TABLE by the trellis field and emit one donut group mark per facet value reusing the existing arc-mark/pie-transform logic per facet. Compute the color scale's domain from the full (unfaceted) dataset so colors stay consistent across all panels. Calls donut-trellis-grid-layout's donutTrellisGridUtils.ts for panel positioning rather than implementing grid math here.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts",
+      "change": "Branch addDonut/addMarks to build the trellis panel structure when `trellis` is set, instead of (or alongside) the single-donut path.",
+      "lines": "38-92, 156-163"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisUtils.test.ts",
+      "change": "New file: unit tests for the faceting logic and shared color-scale domain (grid-layout tests live in donut-trellis-grid-layout).",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/Donut (Trellis) story files",
+      "change": "Add a story matching the Figma reference: 5 region panels, shared legend, 2-segment donuts.",
+      "lines": "N/A - new story"
+    }
+  ],
+  "openQuestions": [
+    "Should Bar's exact trellis prop names (`trellis`/`trellisOrientation`/`trellisPadding`) be reused verbatim for API consistency, even though Donut's 'orientation' concept differs (Bar orients along a single axis; Donut wraps into a 2D grid, per donut-trellis-grid-layout)?",
+    "Confirmed both modes belong to one `trellis` feature - but the exact mechanism for selecting between category and subset mode is still unresolved (a `trellisType`/`trellisMode` prop? subset mode triggered automatically when `trellis` is set to the same field as `color`? see donut-trellis-subset-mode's openQuestions for the same question from the other side)."
+  ],
+  "relatedIssues": ["donut-trellis-grid-layout", "donut-trellis-subset-mode", "donut-trellis-cross-panel-hover", "donut-trellis-hover-value-callout", "donut-hover", "donut-summary-responsive-sizing"]
+}

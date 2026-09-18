@@ -13,17 +13,15 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { View } from '@adobe/react-spectrum';
-
 import { Chart } from '../../../Chart';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary } from '../../../rc';
+import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutSummaryProps } from '../../../types';
 import { basicDonutData } from '../Donut/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Donut Summary',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Donut Summary',
   component: DonutSummary,
 };
 
@@ -48,24 +46,13 @@ const DonutStory: StoryFn<DonutSummaryProps & { width?: number; height?: number 
 const ResponsiveStory: StoryFn<typeof DonutSummary> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, width: '100%', height: '100%' });
   return (
-    <View
-      backgroundColor="gray-50"
-      padding="size-600"
-      overflow="auto"
-      minHeight={50}
-      maxHeight={600}
-      width={600}
-      height={200}
-      UNSAFE_style={{
-        resize: 'vertical',
-      }}
-    >
+    <div style={{ overflow: 'auto', minHeight: 50, maxHeight: 600, width: 600, height: 200, resize: 'vertical' }}>
       <Chart {...chartProps} minHeight={50}>
         <Donut metric="count" color="browser">
           <DonutSummary {...args} />
         </Donut>
       </Chart>
-    </View>
+    </div>
   );
 };
 

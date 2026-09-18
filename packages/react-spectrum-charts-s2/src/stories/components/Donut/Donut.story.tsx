@@ -13,19 +13,18 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Content } from '@adobe/react-spectrum';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { ChartPopover, ChartTooltip, Legend } from '../../../components';
+import { ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary } from '../../../rc';
+import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutProps } from '../../../types';
-import { basicDonutData, booleanDonutData } from './data';
+import { basicDonutData, booleanDonutData, zeroDonutData } from './data';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features',
   component: Donut,
 };
 
@@ -47,6 +46,16 @@ const DonutStory: StoryFn<DonutProps & { width?: number; height?: number }> = (a
 
 const DonutLegendStory: StoryFn<typeof Donut> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Donut {...args} />
+      <Legend title="Browsers" position={'right'} highlight isToggleable />
+    </Chart>
+  );
+};
+
+const EmptyStateStory: StoryFn<typeof Donut> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, data: zeroDonutData, width: 400 });
   return (
     <Chart {...chartProps}>
       <Donut {...args} />
@@ -86,16 +95,16 @@ const BooleanStory: StoryFn<typeof Donut> = (args): ReactElement => {
 // content for tooltip and popover
 const dialogContent = (datum: Datum) => {
   return (
-    <Content>
+    <div>
       <div>Browser: {datum.browser}</div>
       <div>Visitors: {datum.count}</div>
-    </Content>
+    </div>
   );
 };
 
 // tooltip and popover
 const interactiveChildren = [
-  <ChartTooltip key={0}>{dialogContent}</ChartTooltip>,
+  <ChartInspect key={0}>{dialogContent}</ChartInspect>,
   <ChartPopover width="auto" key={1}>
     {dialogContent}
   </ChartPopover>,
@@ -127,6 +136,15 @@ BooleanDonut.args = {
   isBoolean: true,
 };
 
+// all metric values are 0, so the donut renders the empty state ring with 0 displayed in the center
+const EmptyState = bindWithProps(EmptyStateStory);
+EmptyState.args = {
+  metric: 'count',
+  color: 'browser',
+  holeRatio: 0.8,
+  children: [<DonutSummary label="Visitors" key={0} />, <SegmentLabel percent value key={1} />],
+};
+
 const Supreme = bindWithProps(DonutLegendStory);
 Supreme.args = {
   metric: 'count',
@@ -135,4 +153,4 @@ Supreme.args = {
   children: [...interactiveChildren, <DonutSummary label="Visitors" key={0} />],
 };
 
-export { Basic, BooleanDonut, Supreme, WithLegend, WithPopover };
+export { Basic, BooleanDonut, EmptyState, Supreme, WithLegend, WithPopover };

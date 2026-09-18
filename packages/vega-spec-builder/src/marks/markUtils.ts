@@ -27,23 +27,35 @@ import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
   COMPONENT_NAME,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   HOVER_SHAPE,
   HOVER_SHAPE_COUNT,
   HOVER_SIZE,
+  HOVERED_ITEM,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
+  SELECTED_SERIES,
+  SERIES_ID,
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { addHoveredItemOpacityRules } from '../chartTooltip/chartTooltipUtils';
+import {
+  HoverContext,
+  getSeriesHoverPredicate,
+  shouldIncludeDimensionHoverClauses,
+  shouldIncludeItemHoverClauses,
+} from './hoverContext';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import {
@@ -57,6 +69,7 @@ import {
   ChartTooltipOptions,
   ColorFacet,
   ColorScheme,
+  DisplayOnHoverTrigger,
   DonutSpecOptions,
   DualFacet,
   HighlightedItem,
@@ -127,6 +140,52 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
   return {};
 };
 
+export type MetricRangeHoverVisibility = 'show' | 'fade';
+
+export const getMetricRangeHoverVisibilityOpacityRules = (
+  ctx: HoverContext,
+  visibility: MetricRangeHoverVisibility,
+  trigger?: DisplayOnHoverTrigger
+): ProductionRule<NumericValueRef> => {
+  const rules: Array<{ test?: string; signal?: string; value?: number }> = [];
+
+  if (visibility === 'show') {
+    const showTest = getSeriesHoverPredicate(ctx, trigger);
+    rules.push({ test: showTest, value: 1 }, { value: 0 });
+    return rules;
+  }
+
+  if (shouldIncludeDimensionHoverClauses(trigger)) {
+    for (const prefix of ctx.dimensionPrefixes) {
+      rules.push({ test: `isValid(${prefix}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`, value: 1 });
+    }
+  }
+  if (shouldIncludeItemHoverClauses(trigger)) {
+    for (const prefix of ctx.itemPrefixes) {
+      const isHoveredSeries = `${prefix}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+      const isControlledTableSeries = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
+      const isControlledSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
+      rules.push({
+        test: `isValid(${prefix}_${HOVERED_ITEM})`,
+        signal: `${isHoveredSeries} || ${isControlledTableSeries} || ${isControlledSeries} ? 1 : ${FADE_FACTOR}`,
+      });
+    }
+  }
+  rules.push({
+    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+  });
+  if (ctx.hasSelection) {
+    rules.push({
+      test: `isValid(${SELECTED_SERIES})`,
+      signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+  rules.push({ value: 1 });
+
+  return rules;
+};
+
 /**
  * Checks if there are any tooltips or popovers on the mark
  * @param children
@@ -136,17 +195,20 @@ export const isInteractive = (options: {
   chartPopovers?: ChartPopoverOptions[];
   chartTooltips?: ChartTooltipOptions[];
   hasOnClick?: boolean;
+  hasOnContextMenu?: boolean;
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
   hasMouseInteraction?: boolean;
 }): boolean => {
   const hasOnClick = 'hasOnClick' in options && options.hasOnClick;
+  const hasOnContextMenu = 'hasOnContextMenu' in options && options.hasOnContextMenu;
   const hasMouseInteraction = 'hasMouseInteraction' in options && options.hasMouseInteraction;
   const metricRanges = ('metricRanges' in options && options.metricRanges) || [];
   const trendlines = ('trendlines' in options && options.trendlines) || [];
 
   return (
     hasOnClick ||
+    hasOnContextMenu ||
     hasMouseInteraction ||
     hasPopover(options) ||
     hasTooltip(options) ||
@@ -171,7 +233,8 @@ export const hasTooltip = (options: { chartTooltips?: ChartTooltipOptions[] }): 
 export const getColorProductionRule = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+  s2 = false
 ): ColorValueRef => {
   const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
   if (Array.isArray(color)) {
@@ -182,7 +245,7 @@ export const getColorProductionRule = (
   if (typeof color === 'string') {
     return { scale: colorScaleName, field: color };
   }
-  return { value: getColorValue(color.value, colorScheme) };
+  return { value: getColorValue(color.value, colorScheme, s2) };
 };
 
 /**
@@ -195,9 +258,10 @@ export const getColorProductionRule = (
 export const getColorProductionRuleSignalString = (
   color: ColorFacet | DualFacet,
   colorScheme: ColorScheme,
-  colorScaleType: 'linear' | 'ordinal' = 'ordinal'
+  colorScaleType: 'linear' | 'ordinal' = 'ordinal',
+  s2 = false
 ): string => {
-  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType);
+  const colorRule = getColorProductionRule(color, colorScheme, colorScaleType, s2);
   if ('signal' in colorRule) {
     return colorRule.signal;
   }
@@ -465,6 +529,7 @@ export const getInteractiveMarkName = (
     chartPopovers?: ChartPopoverOptions[];
     chartTooltips?: ChartTooltipOptions[];
     hasOnClick?: boolean;
+    hasOnContextMenu?: boolean;
     hasMouseInteraction?: boolean;
     highlightedItem?: HighlightedItem;
     metricRanges?: MetricRangeOptions[];

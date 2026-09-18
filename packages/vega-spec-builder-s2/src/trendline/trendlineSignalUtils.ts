@@ -11,7 +11,7 @@
  */
 import { Signal } from 'vega';
 
-import { hasTooltip } from '../marks/markUtils';
+import { hasInspect } from '../marks/markUtils';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
 import { TrendlineParentOptions, getTrendlines } from './trendlineUtils';
 
@@ -19,7 +19,7 @@ export const setTrendlineSignals = (signals: Signal[], markOptions: TrendlinePar
   const { name: markName } = markOptions;
   const trendlines = getTrendlines(markOptions);
 
-  if (trendlines.some((trendline) => hasTooltip(trendline))) {
+  if (trendlines.some((trendline) => hasInspect(trendline))) {
     addHoveredItemSignal(signals, `${markName}Trendline`, `${markName}Trendline_voronoi`, 2);
   }
 };

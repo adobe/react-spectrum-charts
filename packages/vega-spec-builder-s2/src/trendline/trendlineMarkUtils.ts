@@ -20,7 +20,7 @@ import {
   getLineWidthProductionRule,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
-  hasTooltip,
+  hasInspect,
 } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
@@ -43,6 +43,7 @@ export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMa
   const trendlines = getTrendlines(markOptions);
   for (const trendlineOptions of trendlines) {
     const { displayOnHover, method, name } = trendlineOptions;
+
     if (isAggregateMethod(method)) {
       marks.push(getTrendlineRuleMark(markOptions, trendlineOptions));
     } else {
@@ -64,7 +65,7 @@ export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMa
     marks.push(...getTrendlineAnnotationMarks(trendlineOptions, markOptions.name));
   }
 
-  if (trendlines.some((trendline) => hasTooltip(trendline))) {
+  if (trendlines.some((trendline) => hasInspect(trendline))) {
     marks.push(
       getTrendlineHoverMarks(
         markOptions,
@@ -311,8 +312,10 @@ const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRa
   const trendlines = getTrendlines(markOptions);
   const trendlineHoverOptions = getLineMarkOptions(markOptions, trendlines[0], {
     name: `${name}Trendline`,
-    chartTooltips: trendlines.flatMap((trendline) => trendline.chartTooltips),
+    chartInspects: trendlines.flatMap((trendline) => trendline.chartInspects),
     metric: TRENDLINE_VALUE,
+    // forced false: this group's hover-label data source is never added, so leaving it unset crashes Vega on parse
+    showHoverLabel: false,
   });
 
   return {
@@ -343,7 +346,7 @@ const getLineMarkOptions = (
     popoverMarkName,
     scaleType: dimensionScaleType,
     staticPoint,
-
+    isHoverAnimate: false,
     ...override,
   };
 };

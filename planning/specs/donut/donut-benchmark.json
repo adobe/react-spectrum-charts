@@ -1,0 +1,110 @@
+{
+  "id": "donut-benchmark",
+  "title": "Donut Benchmark — Target Line Geometry & Child Component (2-Segment Only)",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 5,
+    "rationale": "Scope narrowed to the radial line+cap geometry and the child-component API (sentiment coloring and label positioning are now their own specs: donut-benchmark-sentiment-color and donut-benchmark-label). No existing implementation anywhere (confirmed via repo-wide search). The donut-benchmark skill says to reuse S2's existing reference-line feature, but reading packages/vega-spec-builder-s2/src/axis/axisReferenceLineUtils.ts shows that implementation is horizontal-axis-only ('S2 reference lines are horizontal only' per its own comment) with zero rotation/radial-positioning logic - so the only things actually reusable are visual conventions (single cap, capRuleGap, the caret path shape family, rounded stroke) and constants, not the geometry itself. The radial line+cap positioning (angle derived from an independent benchmark value via the same pie-angle math the segments use, rotated cap) is genuinely new trigonometry with no working precedent - this alone, plus the new child-component scaffolding, keeps this at a 5 even with the other two concerns split out."
+  },
+  "summary": "Benchmark is a not-yet-built Donut child component, restricted to 2-segment (binary) donuts: a thin radial target line with a small caret cap marks a benchmark/comparison value on the ring, positioned at the benchmark value's own angle (independent of the segment's own boundary). Confirmed against two live Figma examples (a red/negative 'dropped by 7.4%' case and a green/positive 'over the target by 5.2%' case). This spec covers the line/cap geometry and the `<Donut><Benchmark/></Donut>` child-component API; the sentiment-color arc override is tracked in donut-benchmark-sentiment-color, and the label (two formats, lower-left positioning) in donut-benchmark-label.",
+  "requirements": [
+    "Restrict Benchmark to 2-segment (binary/isBoolean) donuts only, per donut-chart-tokens' `benchmarkRequiresBinary` usage rule - extend/reuse the existing `isBoolean` gate on DonutOptions rather than inventing a separate validation mechanism.",
+    "The benchmark line's angular position is derived from an independent benchmark value (e.g. 'last week' = 54.2%, or a target = ~60%), using the same percent-to-radians pie-angle formula the donut's own segments already use (getPieTransforms in donutSpecBuilder.ts) - not tied to the segment's own start/end angle. Confirmed visually: in the positive example, the target line sits at a visibly different angle than the green/gray segment boundary (actual 65.2% vs. target ~60%).",
+    "Render a single radial line: 2px stroke, `stroke-linecap: round`, filled `text-primary` (#292929), inner endpoint at the ring's inner-edge radius, extending outward past the outer radius - unlike a standard ReferenceLine, only one cap is drawn (at the outer end; no cap at the inner end).",
+    "The cap is a small caret shape reusing `referenceLineCaretPath` (the same S2 caret-path family as ReferenceLine's small end caps, not a new shape), nominally ~10x10 per the donut-chart-tokens skill - draw it at its authored linear scale, not squared into an area value. Note: two live examples at the same nominal 'L' (200px) size tier show 12x12 and 14x14 caps respectively, so there's real observed variance around the documented 10x10 baseline (see openQuestions).",
+    "Cap-to-line gap is 1px (`spacing.referenceLine.capRuleGap`), reusing the same token as standard ReferenceLine.",
+    "No separate swatch legend for a benchmark donut - the center metric summary (value + label) already serves that role, per donut-chart-tokens.",
+    "Benchmark is exposed as a child component of `<Donut>` (e.g. `<Donut isBoolean><Benchmark value={0.542} label=\"Last week\" semantic=\"negative\" /></Donut>`), following the same child-component pattern already established for ReferenceLine (a child of `<Axis>`) and for Donut's own existing children (DonutSummary, SegmentLabel) - not as direct props on `<Donut>` itself. Confirmed by the user: a Benchmark is authored the same way a user would compose a binary 2-segment donut with a ReferenceLine-like child, not as a chart-level boolean/variant flag. The `semantic`/`label` props this component exposes are consumed by donut-benchmark-sentiment-color and donut-benchmark-label respectively, not by this spec's own logic."
+  ],
+  "designTokens": [
+    { "token": "benchmarkRequiresBinary", "value": "true", "usage": "Benchmark is only valid when the donut is a 2-segment (isBoolean) donut." },
+    { "token": "chart.donut.color.text-primary", "value": "#292929 (gray-800)", "usage": "Line and cap fill color." },
+    { "token": "spacing.referenceLine.capRuleGap", "value": "1px", "usage": "Gap between the cap and the line - shared with standard ReferenceLine." },
+    { "token": "referenceLineCaretPath (design-tokens SVG Paths)", "value": "small caret/arrow Bezier path, ~10x10 nominal size", "usage": "Reuse this shape for the benchmark cap rather than inventing a new one - same path family as ReferenceLine's small end caps (compare REFERENCE_LINE_START_CAP_PATHS.XS in constants.ts, a structurally similar Bezier caret)." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-benchmark/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54002&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "Benchmark attempted on a non-binary (>2 segment) donut", "expectedBehavior": "Should be blocked or ignored per benchmarkRequiresBinary, consistent with the existing isBoolean restriction pattern." },
+    { "case": "Benchmark value exactly equal to the actual segment value", "expectedBehavior": "The line would coincide with (or sit very close to) the segment boundary - confirm it still renders as a visibly distinct mark rather than being hidden behind the arc's own padAngle gap." },
+    { "case": "Benchmark value at 0% or 100%", "expectedBehavior": "Line sits at the pie's start angle (12 o'clock by default) - confirm no clipping or mispositioning at that boundary." },
+    { "case": "Cap size consistency across donut size tiers", "expectedBehavior": "The skill states a flat ~10x10 cap with no documented per-tier scaling, but two live examples at the same nominal 'L' tier show 12x12 and 14x14 - confirm whether this is intentional organic variance in the example art or whether cap size should actually scale by donut size tier like other typography (see openQuestions)." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: needs new radial-angle-to-position trigonometry - no existing donut or reference-line code computes a rotated line+cap at an arbitrary angle (the sentiment-color arc override is donut-benchmark-sentiment-color's concern, not this spec's). requiresS1S2Parity is false: s1 (vega-spec-builder) has no Benchmark implementation at all to mirror, so there is nothing for s1 to keep parity with - this is s2-only work by definition, not a parity gap. None of the hover/controlled-highlight/legend/tooltip flags are touched by anything documented for this feature specifically."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/supplemental/benchmarkSpec.types.ts",
+      "change": "New file: BenchmarkOptions (value: number, semantic?: 'positive' | 'negative' - consumed by donut-benchmark-sentiment-color; label?: string, categoryLabel?: string - consumed by donut-benchmark-label) and BenchmarkSpecOptions (with defaults applied + donutOptions), following the DonutSummaryOptions/SegmentLabelOptions pattern.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutBenchmarkUtils.ts",
+      "change": "New file: compute the benchmark angle from `value` using the same pie-angle formula as getPieTransforms (donutSpecBuilder.ts), and build the radial rule mark (inner-radius to past-outer-radius, single outer cap only) plus the rotated caret cap mark (referenceLineCaretPath). Label marks are added by donut-benchmark-label; the sentiment-color arc override is added by donut-benchmark-sentiment-color.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/donutSpec.types.ts",
+      "change": "Add `benchmarks?: BenchmarkOptions[]` to DonutOptions, following the same array-of-children pattern already used for `donutSummaries`/`segmentLabels` (even though, like DonutSummary, only the first entry is meaningful in practice), and enforce the binary-only restriction alongside the existing `isBoolean` field.",
+      "lines": "19-41"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts",
+      "change": "Destructure `benchmarks = []` in addDonut's produce callback, add it to the assembled donutOptions object, and call the new getBenchmarkMarks(options) in addMarks alongside getSegmentLabelMarks/getDonutSummaryMarks.",
+      "lines": "38-92, 156-163"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/types/marks/supplemental/benchmark.types.ts",
+      "change": "New file: BenchmarkProps extending BenchmarkOptions, following segmentLabel.types.ts's pattern.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/pre-alpha/components/Benchmark/Benchmark.tsx",
+      "change": "New file: render-null child component holding prop defaults, `displayName = 'Benchmark'`, following SegmentLabel.tsx/DonutSummary.tsx's pattern - a child of `<Donut>`, the same relationship ReferenceLine has to `<Axis>`.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts",
+      "change": "Add a `case Benchmark.displayName:` to the shared children-to-options switch, collecting into a `benchmarks` array, following the existing `segmentLabels`/`donutSummaries` cases.",
+      "lines": "N/A - new case in existing switch"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/donutAdapter.ts",
+      "change": "Destructure `benchmarks` from `childrenToOptions(children)` and include it in the returned DonutOptions.",
+      "lines": "17-27"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/donutAdapter.test.ts",
+      "change": "Add a test passing `createElement(Benchmark)` as a child and asserting the resulting collection has length 1, following the existing segmentLabels/donutSummaries child tests.",
+      "lines": "N/A - new test case"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutBenchmarkUtils.test.ts",
+      "change": "New file: unit tests for the angle computation, single-cap rule/cap marks, and the binary-only validation gate.",
+      "lines": "N/A - new file"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/Benchmark/Benchmark.story.tsx",
+      "change": "New file: a basic story composing `<Donut isBoolean><Benchmark value={...} /></Donut>` to exercise the line/cap geometry - sentiment-color and label-format story variants are added by donut-benchmark-sentiment-color and donut-benchmark-label.",
+      "lines": "N/A - new file"
+    }
+  ],
+  "openQuestions": [
+    "What is the exact cap size - the skill states a flat ~10x10, but two live examples at the same nominal 'L' tier show 12x12 and 14x14; confirm whether that's organic variance in hand-authored example art or whether cap size should scale by donut size tier like other typography."
+  ],
+  "relatedIssues": ["donut-benchmark-sentiment-color", "donut-benchmark-label", "donut-direct-labels", "donut-advanced-labels", "donut-hover", "donut-emphasize", "donut-summary-responsive-sizing"]
+}

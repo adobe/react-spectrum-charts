@@ -26,6 +26,13 @@ export type LegendDescription = { seriesName: string; description: string; title
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
 
 export interface LegendOptions {
+  /**
+   * Alignment of the legend along its main axis.
+   * For horizontal legends (bottom/top): start=left, middle=center, end=right.
+   * For vertical legends (left/right): start=top, middle=center, end=bottom.
+   * @default 'middle'
+   */
+  align?: 'start' | 'middle' | 'end';
   /** color or key in the data that is used as the color facet for the symbols */
   color?: ColorFacet;
   /** series that should be hidden by default (uncontrolled) */

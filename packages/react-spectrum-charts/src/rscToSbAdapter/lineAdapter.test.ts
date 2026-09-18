@@ -49,6 +49,10 @@ describe('getLineOptions()', () => {
     expect(getLineOptions({ onClick: () => {} }).hasOnClick).toBe(true);
     expect(getLineOptions({ onClick: undefined }).hasOnClick).toBe(false);
   });
+  test('should set hasOnContextMenu to true if onContextMenu prop exists and is not undefined', () => {
+    expect(getLineOptions({ onContextMenu: () => {} }).hasOnContextMenu).toBe(true);
+    expect(getLineOptions({ onContextMenu: undefined }).hasOnContextMenu).toBe(false);
+  });
   test('should set hasMouseInteraction to true if onMouseOver prop exists', () => {
     expect(getLineOptions({ onMouseOver: () => {} }).hasMouseInteraction).toBe(true);
     expect(getLineOptions({ onMouseOver: undefined }).hasMouseInteraction).toBe(false);

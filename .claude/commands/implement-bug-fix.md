@@ -1,6 +1,34 @@
 # react-spectrum-charts: Bug Fix
 
-Use this skill when fixing a bug. Read `.claude/architecture.md` first — diagnosing any bug requires understanding the render cycle, signal system, data sources, COMPONENT_NAME, and encoding conventions.
+Use this skill when fixing a bug. Read `.claude/architecture-core.md` first, then use the table in Step 1 below to find which additional architecture file matches your bug's symptom.
+
+---
+
+## Step 0: Check for a Filed Bug Spec
+
+Look for `planning/specs/<chartType>/issues/<slug>.json` matching this bug, checking both
+the base `issues/` directory (still open) and its `implemented/` subfolder (already fixed —
+still useful context, e.g. to check whether this is a regression of a previously-fixed bug).
+If one exists and `status` is `"approved"` or `"implemented"`, read it and start from its
+`symptom`, `rootCause`, `crossCutting`, and `implementationPlan` instead of rediscovering
+them from scratch — `crossCutting` tells you up front whether the fix needs to interact with
+hover animation, controlled highlight, legend interaction, or tooltip/popover wiring, and
+whether S1/S2 parity applies. Use `implementationPlan` as a starting file checklist,
+re-locating by symbol name if its line numbers have drifted.
+
+Treat `rootCause` as a starting hypothesis, not gospel — re-verify it against the current
+code before implementing, since the spec may have been filed before other changes landed. If
+the code no longer matches the spec's description, update the spec (`status:
+"needs-revision"` or a corrected `rootCause`) as part of the fix PR. If no spec exists,
+proceed as below.
+
+Before setting `status` to `"implemented"`, reconcile the whole spec against the final diff —
+see README.md's "Reconcile the whole spec before marking implemented." A discovery made
+mid-implementation (a second file that needed fixing, a `crossCutting` flag that turns out to
+be true) must be reflected everywhere it's relevant, not just in `rootCause`. Any time you
+touch a field, re-stamp `lastUpdated` with the output of `date +%Y-%m-%d` — never a
+hand-written guess. Then `git mv` the file into
+`planning/specs/<chartType>/issues/implemented/<slug>.json` as part of the same PR.
 
 ---
 
@@ -8,16 +36,16 @@ Use this skill when fixing a bug. Read `.claude/architecture.md` first — diagn
 
 ### Step 1: Identify which layer the bug lives in
 
-| Symptom | Layer | Where to look |
-|---|---|---|
-| Chart flickers or disappears on resize | Render cycle | `VegaChart.tsx` dep arrays, `useSpec.tsx` memo deps |
-| Chart redraws when popover opens/closes | Render cycle | State mutations causing spec rebuild |
-| Hover/selection stays stuck after interaction | Signal | `clearHoverSignals`, `setSelectedSignals`, `useNewChartView.tsx` |
-| Popover opens with wrong content or for wrong mark | COMPONENT_NAME | `markClickUtils.ts`, `getTooltip()` in mark utils |
-| Mark has wrong color that doesn't respect backgroundColor | Encoding | Check for hardcoded color vs `{ signal: BACKGROUND_COLOR }` |
-| Mouse events not firing | Interaction wiring | `useNewChartView.tsx`, `isInteractive()`, voronoi mark existence |
-| TypeScript errors after tests pass | Type system | Run `yarn tsc --noEmit` — Jest doesn't type-check |
-| Feature works in S1 but not S2 | S2 parity | Find the S2 equivalent file and apply the same fix |
+| Symptom | Layer | Where to look | Architecture file |
+|---|---|---|---|
+| Chart flickers or disappears on resize | Render cycle | `VegaChart.tsx` dep arrays, `useSpec.tsx` memo deps | `architecture-rendering-and-signals.md` |
+| Chart redraws when popover opens/closes | Render cycle | State mutations causing spec rebuild | `architecture-rendering-and-signals.md` |
+| Hover/selection stays stuck after interaction | Signal | `clearHoverSignals`, `setSelectedSignals`, `useNewChartView.tsx` | `architecture-rendering-and-signals.md` |
+| Popover opens with wrong content or for wrong mark | COMPONENT_NAME | `markClickUtils.ts`, `getTooltip()` in mark utils | `architecture-rendering-and-signals.md` |
+| Mark has wrong color that doesn't respect backgroundColor | Encoding | Check for hardcoded color vs `{ signal: BACKGROUND_COLOR }` | `architecture-encoding-and-props.md` |
+| Mouse events not firing | Interaction wiring | `useNewChartView.tsx`, `isInteractive()`, voronoi mark existence | `architecture-mark-internals.md` |
+| TypeScript errors after tests pass | Type system | Run `yarn tsc --noEmit` — Jest doesn't type-check | — |
+| Feature works in S1 but not S2 | S2 parity | Find the S2 equivalent file and apply the same fix | `architecture-s2-parity.md` |
 
 ### Step 2: Follow the data flow from symptom to root cause
 
@@ -57,6 +85,9 @@ Any mark that is purely visual (annotation text, halo, badge, reference label) m
 ### S2 parity is always required
 When fixing a bug in an s1 file, find the corresponding s2 file (`packages/vega-spec-builder-s2/` mirrors `packages/vega-spec-builder/`). Apply the same fix unless the bug doesn't exist in s2 — but verify, don't assume. S2 has intentional simplifications (no Venn, simpler static point rendering) so don't port s1-specific behavior blindly.
 
+### Comments stay short — no narration of the fix
+New or touched functions get at most a one-line JSDoc (description + `@param`/`@returns`), matching the length of sibling functions in the same file. Do not add paragraphs explaining what bug was fixed, why, or what the investigation found — that belongs in the PR description and commit message, never in the code. See `CLAUDE.md`'s Code Style section for a worked example.
+
 ---
 
 ## Writing the Regression Test
@@ -71,4 +102,4 @@ Every bug fix must include a test that would have caught the bug:
 
 **For data bugs**: Test `addData` directly with `initializeSpec()` and assert the transform array. Prefer unit tests on spec builder functions over integration tests for data pipeline issues.
 
-After writing tests, always run `yarn tsc --noEmit`. Test passes do not imply type correctness.
+Once the fix is complete, run `yarn tsc --noEmit` (see CLAUDE.md's Test Completeness Checklist) — test passes do not imply type correctness. Don't run it proactively after every change.

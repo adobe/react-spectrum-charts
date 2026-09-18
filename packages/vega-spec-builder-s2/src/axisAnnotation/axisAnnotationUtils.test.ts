@@ -20,7 +20,7 @@ import {
 
 const testAxisAnnotation: AxisAnnotationSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   name: 'annotation0',
   dataKey: 'anids',
   color: 'gray-600',
@@ -33,7 +33,7 @@ const testAxisAnnotation: AxisAnnotationSpecOptions = {
 
 const testAxisAnnotationWithOptions: AxisAnnotationSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   name: 'annotation0',
   dataKey: 'anids',
   color: 'gray-600',
@@ -51,7 +51,7 @@ const testAxisAnnotationWithOptions: AxisAnnotationSpecOptions = {
 
 const testAxisAnnotationSummary: AxisAnnotationSpecOptions = {
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   name: 'annotation0',
   dataKey: 'anids',
   color: 'gray-600',

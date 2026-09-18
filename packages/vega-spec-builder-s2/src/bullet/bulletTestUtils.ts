@@ -13,6 +13,7 @@ import { BulletSpecOptions } from '../types';
 
 export const sampleOptionsColumn: BulletSpecOptions = {
   markType: 'bullet',
+  chartInspects: [],
   colorScheme: 'light',
   index: 0,
   color: 'green',
@@ -21,6 +22,7 @@ export const sampleOptionsColumn: BulletSpecOptions = {
   target: 'target',
   name: 'bullet0',
   idKey: 'rscMarkId',
+  interactiveMarkName: undefined,
   direction: 'column',
   showTarget: true,
   showTargetValue: false,
@@ -34,6 +36,7 @@ export const sampleOptionsColumn: BulletSpecOptions = {
 
 export const sampleOptionsRow: BulletSpecOptions = {
   markType: 'bullet',
+  chartInspects: [],
   colorScheme: 'light',
   index: 0,
   color: 'green',
@@ -42,6 +45,7 @@ export const sampleOptionsRow: BulletSpecOptions = {
   target: 'target',
   name: 'bullet0',
   idKey: 'rscMarkId',
+  interactiveMarkName: undefined,
   direction: 'row',
   showTarget: true,
   showTargetValue: false,
@@ -51,4 +55,11 @@ export const sampleOptionsRow: BulletSpecOptions = {
   track: false,
   thresholdBarColor: false,
   metricAxis: false,
+};
+
+export const sampleOptionsWithInspect: BulletSpecOptions = {
+  ...sampleOptionsColumn,
+  chartInspects: [{ highlightBy: 'item', targets: ['item'] }],
+  interactiveMarkName: 'bullet0',
+  track: true,
 };

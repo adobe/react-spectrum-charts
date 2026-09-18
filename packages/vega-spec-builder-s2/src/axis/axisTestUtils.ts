@@ -57,6 +57,7 @@ export const defaultAxisOptions: AxisSpecOptions = {
   colorScheme: DEFAULT_COLOR_SCHEME,
   granularity: DEFAULT_GRANULARITY,
   grid: false,
+  hasOnClick: false,
   hideDefaultLabels: false,
   index: 0,
   labelAlign: DEFAULT_LABEL_ALIGN,

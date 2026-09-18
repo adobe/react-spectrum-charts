@@ -1,0 +1,47 @@
+{
+  "id": "s2-dotted-line-gap-too-tight",
+  "title": "S2 Dotted Line Segments Have a Too-Tight Gap Between Dots",
+  "chartType": "chart",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-05",
+  "complexity": {
+    "score": 1,
+    "rationale": "No research remaining - root cause and exact target value are fully confirmed by the round-cap math above. Implementation is a single literal value change in one shared lookup function plus a matching test update - no new logic, encode site, or mark."
+  },
+  "summary": "S2 dotted line segments (Line lineType='dotted', MetricRange dotted styling, Line forecast's default alternateSegmentLineType='dotted', etc.) render with a visually tight ~2px gap between dots at the default line width, instead of the intended 3px gap.",
+  "symptom": "At the default line width, S2 dotted strokes show roughly a 2px visible gap between dots, which reads as too tight. A 3px visible gap is the intended spacing.",
+  "rootCause": "getStrokeDashFromLineType in packages/vega-spec-builder-s2/src/specUtils.ts (~line 121) returns `[0, 4]` for `'dotted'`. With the default `lineCap: 'round'` (packages/vega-spec-builder-s2/src/line/lineMarkUtils.ts:229) and default `lineWidth: 'M'` resolving to a 2px stroke width (`getLineWidthPixelsFromLineWidth`, specUtils.ts:141-159, `case 'M': return 2`), a zero-length dash renders as a round dot with radius = strokeWidth/2 = 1px, and dot centers are spaced `gap` (4px) apart along the path. The visible edge-to-edge gap between dots is therefore `gap - strokeWidth` = `4 - 2` = 2px, not the array's literal `4` - this is a general property of round-capped dash patterns (declared gap minus stroke width equals visible gap), not specific to this one entry.",
+  "comparison": [
+    {
+      "aspect": "Visible edge-to-edge gap for s2 'dotted' at the default line width",
+      "expected": "3px visible gap between dots at the default (M, 2px) line width.",
+      "actual": "getStrokeDashFromLineType('dotted') returns [0, 4]; with round line caps and the 2px default stroke width, the visible gap is 4 - 2 = 2px."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "requiresS1S2Parity is false per explicit instruction - s1 is out of scope for this fix even though vega-spec-builder's 'dotted' value ([2, 3]) is already different from s2's and would need its own separate consideration if ever addressed."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/specUtils.ts",
+      "change": "In getStrokeDashFromLineType, change the 'dotted' case's array from [0, 4] to [0, 5], so the visible edge-to-edge gap at the default 2px line width becomes 5 - 2 = 3px. This affects every s2 consumer that reaches 'dotted' via the shared getStrokeDashFromLineType/getStrokeDashProductionRule pipeline: Line, Trendline, Scatter, Bar, ReferenceLine, MetricRange, legend swatches, and Line forecast's default alternateSegmentLineType.",
+      "lines": "~121"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/specUtils.test.ts",
+      "change": "Update the existing getStrokeDashFromLineType test assertion for 'dotted' to expect [0, 5] instead of [0, 4].",
+      "lines": "~131-136"
+    }
+  ],
+  "openQuestions": [
+    "The 3px target is only exact at the default lineWidth ('M', 2px). Because round-capped dash gaps are (declared gap - strokeWidth), a series using a different lineWidth (XS/S/L/XL, or a numeric override) will see a different visible gap with this fixed array - e.g. 5 - 3 (L) = 2px, 5 - 4 (XL) = 1px. This spec scopes the fix to the reported default-width case only; a lineWidth-adaptive dash gap (computing gap = target + strokeWidth per instance) is a larger change not included here."
+  ]
+}

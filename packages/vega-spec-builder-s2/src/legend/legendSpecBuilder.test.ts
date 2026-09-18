@@ -17,13 +17,20 @@ import {
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_SECONDARY_COLOR,
+  FILTERED_TABLE,
   GROUP_ID,
   HOVERED_SERIES,
   LINEAR_COLOR_SCALE,
+  SERIES_ID,
   TABLE,
 } from '@spectrum-charts/constants';
 
 import {
+  defaultChartSizeFontSizeSignal,
+  defaultChartSizeHoverStrokeWidthSignal,
+  defaultChartSizeLabelGapSignal,
+  defaultChartSizePointSizeSignal,
+  defaultChartSizeStrokeWidthSignal,
   defaultHighlightedGroupSignal,
   defaultHighlightedItemSignal,
   defaultHighlightedSeriesSignal,
@@ -63,7 +70,7 @@ const hiddenSeriesLabelUpdateEncoding = {
     },
   ],
 };
-const defaultTooltipLegendEncoding: LegendEncode = {
+const defaultDescriptionLegendEncoding: LegendEncode = {
   entries: {
     name: 'legend0_legendEntry',
     interactive: true,
@@ -102,7 +109,7 @@ const defaultLegend: Legend = {
   labelLimit: undefined,
   orient: 'bottom',
   title: undefined,
-  columns: { signal: 'floor(width / 220)' },
+  columns: { signal: "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 184, 184) + 36)))" },
 };
 
 const defaultLegendAggregateData: Data = {
@@ -121,6 +128,24 @@ const defaultLegendAggregateData: Data = {
   ],
 };
 
+const defaultLegendMaxLabelWidthData: Data = {
+  name: 'legend0_maxLabelWidth',
+  source: 'legend0Aggregate',
+  transform: [
+    {
+      type: 'formula',
+      as: 'displayLabel',
+      expr: "indexof(pluck(legend0_labels, 'seriesName'), datum.legend0Entries) > -1 ? legend0_labels[indexof(pluck(legend0_labels, 'seriesName'), datum.legend0Entries)].label : datum.legend0Entries",
+    },
+    { type: 'formula', as: 'labelWidth', expr: "getLabelWidth(datum.displayLabel, 'normal', 14)" },
+    { type: 'aggregate', fields: ['labelWidth'], ops: ['max'], as: ['maxLabelWidth'] },
+  ],
+};
+
+const defaultLegendLabelsSignal = { name: 'legend0_labels', value: [] };
+
+const defaultLegendData = [defaultLegendAggregateData, defaultLegendMaxLabelWidthData];
+
 const defaultLegendEntriesScale: Scale = {
   name: 'legend0Entries',
   type: 'ordinal',
@@ -132,8 +157,9 @@ describe('addLegend()', () => {
     test('no options, should setup default legend', () => {
       expect(addLegend(defaultSpec, {})).toStrictEqual({
         ...defaultSpec,
-        data: [defaultLegendAggregateData],
+        data: defaultLegendData,
         scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
+        signals: [...defaultSignals, defaultLegendLabelsSignal],
         legends: [defaultLegend],
       });
     });
@@ -141,16 +167,17 @@ describe('addLegend()', () => {
     test('descriptions, should add encoding', () => {
       expect(addLegend(defaultSpec, { descriptions: [{ seriesName: 'test', description: 'test' }] })).toStrictEqual({
         ...defaultSpec,
-        data: [defaultLegendAggregateData],
+        data: defaultLegendData,
         scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
-        legends: [{ ...defaultLegend, encode: defaultTooltipLegendEncoding }],
+        signals: [...defaultSignals, defaultLegendLabelsSignal],
+        legends: [{ ...defaultLegend, encode: defaultDescriptionLegendEncoding }],
       });
     });
 
     test('highlight, should add encoding', () => {
       expect(addLegend(defaultSpec, { highlight: true })).toStrictEqual({
         ...defaultSpec,
-        data: [defaultLegendAggregateData],
+        data: defaultLegendData,
         scales: [...(defaultSpec.scales || []), defaultLegendEntriesScale],
         signals: [
           defaultHighlightedItemSignal,
@@ -159,6 +186,11 @@ describe('addLegend()', () => {
           defaultSelectedItemSignal,
           defaultSelectedSeriesSignal,
           defaultSelectedGroupSignal,
+          defaultChartSizeStrokeWidthSignal,
+          defaultChartSizeHoverStrokeWidthSignal,
+          defaultChartSizePointSizeSignal,
+          defaultChartSizeFontSizeSignal,
+          defaultChartSizeLabelGapSignal,
           {
             name: `legend0_${HOVERED_SERIES}`,
             value: null,
@@ -170,6 +202,7 @@ describe('addLegend()', () => {
               { events: '@legend0_legendEntry:mouseout', update: 'null' },
             ],
           },
+          defaultLegendLabelsSignal,
         ],
         legends: [{ ...defaultLegend, encode: defaultHighlightLegendEncoding }],
       });
@@ -270,15 +303,8 @@ describe('addLegend()', () => {
       });
       const legend = legendSpec.legends?.[0];
       expect(legend?.labelLimit).toBe(300);
-      expect(legendSpec.legends).toEqual([
-        {
-          ...defaultLegend,
-          labelLimit: 300,
-          encode: defaultTooltipLegendEncoding,
-          columns: { signal: 'max(1, floor(width / 336))' },
-        },
-      ]);
-      expect(legendSpec.data).toEqual([defaultLegendAggregateData]);
+      expect(legend?.columns).toEqual({ signal: "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 300, 300) + 36)))" });
+      expect(legendSpec.data).toHaveLength(2);
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });
 
@@ -291,6 +317,48 @@ describe('addLegend()', () => {
       const legend = legendSpec.legends?.[0];
       expect(legend?.titleLimit).toBe(123);
       expect(legend?.title).toBe('My title');
+    });
+
+    describe('align', () => {
+      test('align start pushes a legend.layout.bottom anchor patch to usermeta.patches', () => {
+        const spec = addLegend(defaultSpec, { align: 'start' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'start' } } } }]);
+      });
+
+      test('align middle passes through as anchor middle', () => {
+        const spec = addLegend(defaultSpec, { align: 'middle' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'middle' } } } }]);
+      });
+
+      test('align end pushes anchor end', () => {
+        const spec = addLegend(defaultSpec, { align: 'end' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { bottom: { anchor: 'end' } } } }]);
+      });
+
+      test('align top position patches layout.top', () => {
+        const spec = addLegend(defaultSpec, { align: 'start', position: 'top' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { top: { anchor: 'start' } } } }]);
+      });
+
+      test('align left position patches layout.left', () => {
+        const spec = addLegend(defaultSpec, { align: 'start', position: 'left' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { left: { anchor: 'start' } } } }]);
+      });
+
+      test('align right position patches layout.right', () => {
+        const spec = addLegend(defaultSpec, { align: 'end', position: 'right' });
+        expect(spec.usermeta.patches).toStrictEqual([{ legend: { layout: { right: { anchor: 'end' } } } }]);
+      });
+
+      test('no align leaves usermeta.patches unset', () => {
+        const spec = addLegend(defaultSpec, {});
+        expect(spec.usermeta.patches).toBeUndefined();
+      });
+
+      test('does not write to spec.config', () => {
+        const spec = addLegend(defaultSpec, { align: 'start' });
+        expect(spec.config).toBeUndefined();
+      });
     });
 
     test('should add fields to scales if they have not been added', () => {
@@ -319,9 +387,7 @@ describe('addLegend()', () => {
 
 describe('addData()', () => {
   test('should add legend0Aggregate data', () => {
-    expect(addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR] })).toStrictEqual([
-      defaultLegendAggregateData,
-    ]);
+    expect(addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR] })).toStrictEqual(defaultLegendData);
   });
   test('should join multiple facets', () => {
     expect(addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toStrictEqual([
@@ -337,6 +403,7 @@ describe('addData()', () => {
           },
         ],
       },
+      defaultLegendMaxLabelWidthData,
     ]);
   });
   test('should add legend group Id if keys has length', () => {
@@ -351,6 +418,38 @@ describe('addData()', () => {
       keys: ['key1', 'key2'],
     });
     expect(data[0].transform).toHaveLength(1);
+  });
+
+  const hoverTargetData: Data = {
+    name: 'line0_hoverTargetData',
+    source: FILTERED_TABLE,
+    transform: [
+      { type: 'aggregate', groupby: [SERIES_ID] },
+      { type: 'formula', as: 'hoveredMatch', expr: 'isValid(hoveredItem) ? 1 : null' },
+      { type: 'formula', as: 'target', expr: 'isValid(datum.hoveredMatch) ? datum.hoveredMatch : 0.5' },
+    ],
+  };
+
+  test('injects legend hover into _hoverTargetData sources when highlight is true', () => {
+    const data = addData([...baseData, hoverTargetData], {
+      ...defaultLegendOptions,
+      facets: [DEFAULT_COLOR],
+      highlight: true,
+    });
+    const targetData = data.find((d) => d.name === 'line0_hoverTargetData');
+    expect(targetData?.transform).toHaveLength(5);
+    expect(targetData?.transform?.[2]).toHaveProperty('as', 'conditions');
+    expect(targetData?.transform?.[4]).toHaveProperty('as', 'target');
+  });
+
+  test('does not inject legend hover into _hoverTargetData sources when highlight is false', () => {
+    const data = addData([...baseData, hoverTargetData], {
+      ...defaultLegendOptions,
+      facets: [DEFAULT_COLOR],
+      highlight: false,
+    });
+    const targetData = data.find((d) => d.name === 'line0_hoverTargetData');
+    expect(targetData?.transform).toStrictEqual(hoverTargetData.transform);
   });
 });
 

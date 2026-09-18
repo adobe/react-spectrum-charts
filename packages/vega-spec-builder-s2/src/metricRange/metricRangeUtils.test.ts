@@ -15,6 +15,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
+  DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
@@ -39,7 +40,7 @@ const defaultMetricRangeOptions: MetricRangeOptions = {
 };
 
 const defaultMetricRangeSpecOptions: MetricRangeSpecOptions = {
-  chartTooltips: [],
+  chartInspects: [],
   lineType: 'shortDash',
   lineWidth: 'S',
   rangeOpacity: 0.2,
@@ -52,16 +53,19 @@ const defaultMetricRangeSpecOptions: MetricRangeSpecOptions = {
 const defaultLineOptions: LineSpecOptions = {
   chartActionBars: [],
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
   color: DEFAULT_COLOR,
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimension: DEFAULT_TIME_DIMENSION,
+  forecasts: [],
   gradient: false,
   hasOnClick: false,
+  hasOnContextMenu: false,
   idKey: MARK_ID,
   index: 0,
   interactiveMarkName: undefined,
   lineDirectLabels: [],
+  linePointAnnotations: [],
   lineType: { value: 'solid' },
   markType: 'line',
   metric: DEFAULT_METRIC,
@@ -71,7 +75,10 @@ const defaultLineOptions: LineSpecOptions = {
   popoverMarkName: undefined,
   scaleType: 'time',
   trendlines: [],
+  lineCap: 'round',
   interpolate: undefined,
+  dimensionHover: false,
+  showHoverLabel: true,
 };
 
 const basicMetricRangeMarks = [
@@ -87,9 +94,9 @@ const basicMetricRangeMarks = [
       enter: {
         y: [{ scale: 'yLinear', field: 'metric' }],
         stroke: { scale: COLOR_SCALE, field: 'series' },
+        strokeCap: { value: 'round' },
         strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
-        strokeWidth: { value: 1.5 },
       },
       update: {
         x: {
@@ -97,6 +104,7 @@ const basicMetricRangeMarks = [
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
         opacity: [DEFAULT_OPACITY_RULE],
+        strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
       },
     },
   },
@@ -114,6 +122,7 @@ const basicMetricRangeMarks = [
         y: { scale: 'yLinear', field: 'metricStart' },
         y2: { scale: 'yLinear', field: 'metricEnd' },
         fill: { scale: COLOR_SCALE, field: 'series' },
+        defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
       },
       update: {
         cursor: undefined,
@@ -128,7 +137,7 @@ const basicMetricRangeMarks = [
 describe('applyMetricRangePropDefaults', () => {
   test('applies defaults', () => {
     expect(applyMetricRangeOptionDefaults({ metricEnd: 'metricStart', metricStart: 'metricEnd' }, 'line0', 0)).toEqual({
-      chartTooltips: [],
+      chartInspects: [],
       displayOnHover: false,
       lineType: 'dashed',
       lineWidth: 'S',
@@ -155,7 +164,7 @@ describe('applyMetricRangePropDefaults', () => {
         0
       )
     ).toEqual({
-      chartTooltips: [],
+      chartInspects: [],
       displayOnHover: true,
       lineType: 'solid',
       lineWidth: 'L',
@@ -171,6 +180,19 @@ describe('applyMetricRangePropDefaults', () => {
 describe('getMetricRangeMark', () => {
   test('creates MetricRange mark from basic input', () => {
     expect(getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions)).toEqual(basicMetricRangeMarks);
+  });
+
+  test('boundary line opacity stays the static instant-rule array even when the parent line is animated', () => {
+    // the boundary line renders under `${metricRangeName}_line`, which has no `_hoverFractionData` of
+    // its own — getMetricRangeMark forces isHoverAnimate: false for exactly this reason, otherwise this
+    // would reference a data source that was only ever created for the parent line's name
+    const [lineMark] = getMetricRangeMark(
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
+      defaultMetricRangeSpecOptions
+    );
+    expect(Array.isArray((lineMark as { encode: { update: { opacity: unknown } } }).encode.update.opacity)).toBe(
+      true
+    );
   });
 });
 

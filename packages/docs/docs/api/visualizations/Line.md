@@ -155,6 +155,12 @@ const [menu, setMenu] = useState({ x: 0, y: 0, datum: null, open: false });
             <td>Callback function that will be executed when a point or section of the line is right-clicked. Receives the native mouse event (e.g. for <code>clientX</code>/<code>clientY</code> and <code>preventDefault()</code>) and the data point. Use this to show your own custom context menu anchored to the clicked point.</td>
         </tr>
         <tr>
+            <td>contextMenuMode</td>
+            <td>'interaction' | 'dimension' | 'item'</td>
+            <td>'interaction'</td>
+            <td>Controls which interactions can trigger <code>onContextMenu</code>.<br/><code>'interaction'</code>: fires for any hover interaction (default).<br/><code>'dimension'</code>: fires when a dimension value (x-axis column) is right-clicked; the callback receives all series data for that dimension.<br/><code>'item'</code>: fires only when an individual data point is right-clicked.</td>
+        </tr>
+        <tr>
             <td>onMouseOver</td>
             <td>function</td>
             <td>–</td>

@@ -31,60 +31,96 @@ import {
   Bar,
   BarDirectLabel,
   ChartActionBar,
+  ChartInspect,
   ChartPopover,
-  ChartTooltip,
   Legend,
   Line,
   LineDirectLabel,
+  LineForecast,
+  LinePointAnnotation,
   ReferenceLine,
   Title,
 } from '../components';
-import { Donut, DonutSummary, SegmentLabel } from '../rc';
 import {
+  Area,
+  Bullet,
+  Combo,
+  Donut,
+  DonutSummary,
+  Scatter,
+  ScatterAnnotation,
+  ScatterPath,
+  SegmentLabel,
+  Trendline,
+  TrendlineAnnotation,
+} from '../pre-alpha';
+import {
+  AreaElement,
   AxisChildElement,
   AxisElement,
   BarAnnotationElement,
   BarElement,
+  BulletElement,
   ChartActionBarElement,
   ChartChildElement,
   ChartElement,
+  ChartInspectElement,
   ChartPopoverElement,
-  ChartTooltipElement,
   ChildElement,
+  ComboElement,
   DonutElement,
   DonutSummaryElement,
   LegendElement,
+  LineForecastElement,
   LineDirectLabelElement,
   LineElement,
+  ScatterAnnotationElement,
+  ScatterElement,
+  ScatterPathElement,
   SegmentLabelElement,
   TitleElement,
+  TrendlineAnnotationElement,
+  TrendlineElement,
 } from '../types';
 
 type MarkChildElement =
   | BarAnnotationElement
   | ChartActionBarElement
+  | ChartInspectElement
   | ChartPopoverElement
-  | ChartTooltipElement
   | DonutSummaryElement
+  | LineForecastElement
   | LineDirectLabelElement
-  | SegmentLabelElement;
+  | ScatterAnnotationElement
+  | ScatterPathElement
+  | SegmentLabelElement
+  | TrendlineAnnotationElement
+  | TrendlineElement;
 type RscElement =
   | MarkChildElement
+  | AreaElement
   | AxisElement
   | BarElement
+  | BulletElement
+  | ComboElement
   | DonutElement
   | LegendElement
   | LineElement
+  | ScatterElement
   | TitleElement;
 
 type MappedElement = { name: string; element: ChartElement | RscElement; parent?: string };
 type ElementCounts = {
+  area: number;
   axis: number;
   axisAnnotation: number;
   bar: number;
+  bullet: number;
+  combo: number;
   donut: number;
   legend: number;
   line: number;
+  scatter: number;
 };
 
 // coerces a value that could be a single value or an array of that value to an array
@@ -109,21 +145,31 @@ export const getElementDisplayName = (element: unknown): string => {
 
 export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkChildElement)[] => {
   const validDisplayNames = new Set([
+    Area.displayName,
     Axis.displayName,
     AxisThumbnail.displayName,
     Bar.displayName,
     BarDirectLabel.displayName,
+    Bullet.displayName,
     ChartActionBar.displayName,
+    ChartInspect.displayName,
     ChartPopover.displayName,
-    ChartTooltip.displayName,
+    Combo.displayName,
     Donut.displayName,
     DonutSummary.displayName,
     Legend.displayName,
     Line.displayName,
     LineDirectLabel.displayName,
+    LineForecast.displayName,
+    LinePointAnnotation.displayName,
     ReferenceLine.displayName,
+    Scatter.displayName,
+    ScatterAnnotation.displayName,
+    ScatterPath.displayName,
     SegmentLabel.displayName,
     Title.displayName,
+    Trendline.displayName,
+    TrendlineAnnotation.displayName,
   ]);
   return toArray(children)
     .flat()
@@ -135,11 +181,15 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
 // removes all non-chart specific elements
 export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[] => {
   const chartChildDisplyNames = new Set([
+    Area.displayName,
     Axis.displayName,
     Bar.displayName,
+    Bullet.displayName,
+    Combo.displayName,
     Donut.displayName,
     Legend.displayName,
     Line.displayName,
+    Scatter.displayName,
     Title.displayName,
   ]);
   return toArray(children)
@@ -151,11 +201,16 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
 export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
   const markChildDisplayNames = new Set([
     ChartActionBar.displayName,
+    ChartInspect.displayName,
     ChartPopover.displayName,
-    ChartTooltip.displayName,
     DonutSummary.displayName,
+    LineForecast.displayName,
     LineDirectLabel.displayName,
+    ScatterAnnotation.displayName,
+    ScatterPath.displayName,
     SegmentLabel.displayName,
+    Trendline.displayName,
+    TrendlineAnnotation.displayName,
   ]);
 
   return toArray(children)
@@ -191,7 +246,14 @@ export const toggleStringArrayValue = (target: string[], value: string): string[
 // traverses the children to find the first element instance of the proivded type
 export function getElement(
   element: ReactNode | (() => void),
-  type: typeof Axis | typeof Bar | typeof ChartActionBar | typeof ChartPopover | typeof ChartTooltip | typeof Legend | typeof Line
+  type:
+    | typeof Axis
+    | typeof Bar
+    | typeof ChartActionBar
+    | typeof ChartInspect
+    | typeof ChartPopover
+    | typeof Legend
+    | typeof Line
 ): ChartElement | RscElement | undefined {
   // if the element is undefined or 'type' doesn't exist on the element, stop searching
   if (!element || typeof element !== 'object' || !('type' in element) || element.type === Fragment) {
@@ -269,7 +331,14 @@ export const getAllMarkElements = (
  */
 export const getAllElements = (
   target: unknown,
-  source: typeof Axis | typeof Bar | typeof ChartActionBar | typeof ChartPopover | typeof ChartTooltip | typeof Legend | typeof Line,
+  source:
+    | typeof Axis
+    | typeof Bar
+    | typeof ChartActionBar
+    | typeof ChartInspect
+    | typeof ChartPopover
+    | typeof Legend
+    | typeof Line,
   elements: MappedElement[] = [],
   name: string = '',
   parent?: string
@@ -315,12 +384,21 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     return '';
   // use displayName since it is the olny way to check alpha and beta components
   switch (element.type.displayName) {
+    case Area.displayName:
+      elementCounts.area++;
+      return getComponentName(element as AreaElement, `area${elementCounts.area}`);
     case Axis.displayName:
       elementCounts.axis++;
       return getComponentName(element as AxisElement, `axis${elementCounts.axis}`);
     case Bar.displayName:
       elementCounts.bar++;
       return getComponentName(element as BarElement, `bar${elementCounts.bar}`);
+    case Bullet.displayName:
+      elementCounts.bullet++;
+      return getComponentName(element as BulletElement, `bullet${elementCounts.bullet}`);
+    case Combo.displayName:
+      elementCounts.combo++;
+      return getComponentName(element as ComboElement, `combo${elementCounts.combo}`);
     case Donut.displayName:
       elementCounts.donut++;
       return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
@@ -330,6 +408,11 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Line.displayName:
       elementCounts.line++;
       return getComponentName(element as LineElement, `line${elementCounts.line}`);
+    case Scatter.displayName:
+      elementCounts.scatter++;
+      return getComponentName(element as ScatterElement, `scatter${elementCounts.scatter}`);
+    case Trendline.displayName:
+      return getComponentName(element as TrendlineElement, 'Trendline');
     default:
       return '';
   }
@@ -343,12 +426,16 @@ export const getComponentName = (element: ChildElement<RscElement>, defaultName:
 };
 
 const initElementCounts = (): ElementCounts => ({
+  area: -1,
   axis: -1,
   axisAnnotation: -1,
   bar: -1,
+  bullet: -1,
+  combo: -1,
   donut: -1,
   legend: -1,
   line: -1,
+  scatter: -1,
 });
 
 /**
@@ -404,6 +491,10 @@ export const clearHoverSignals = (
   safeClear(`${componentName}_${HOVERED_SERIES}`);
   safeClear(`${componentName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`);
 };
+
+/** False when a closing popover's hover-parity is still owned by an active keyboard focus on the same component — clearing it would just get reapplied moments later, causing a visible flash. */
+export const shouldClearHoverSignalsOnClose = (componentName: string, keyboardComponentName: string | null): boolean =>
+  !!componentName && keyboardComponentName !== componentName;
 
 /**
  * Return true if chart has a child with the corresponding displayName

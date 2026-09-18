@@ -1,0 +1,73 @@
+{
+  "id": "donut-trellis-subset-mode",
+  "title": "Donut Trellis — Subset Mode (Binary Decomposition by Category)",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-18",
+  "complexity": {
+    "score": 3,
+    "rationale": "Scope narrowed to the per-panel binary-decomposition data derivation (panel grid layout is now donut-trellis-grid-layout's shared concern, consumed here rather than built here). Confirmed with the user this is part of the same `trellis` feature family as donut-trellis (category mode), not an unrelated feature - but the per-panel data derivation is genuinely different and still real new logic: deriving N independent 2-row 'this category vs. everything else' datasets from one categorical field, akin to running the existing isBoolean pie-transform once per unique category value. The exact mechanism for selecting subset mode (vs. category mode) within the shared `trellis` prop family is still an open question, but it's a design decision to confirm, not a deep unknown."
+  },
+  "summary": "Donut Trellis Subset Mode is one of two modes of the same not-yet-built `trellis` feature (the other, category mode, is donut-trellis) - confirmed by the user that both are 'trellis,' just with different data derivation. Subset mode decomposes ONE existing categorical field into N separate binary (highlighted-vs-rest) donuts, one per unique category value - each panel highlights that single category's own color against the rest of the data grouped into a shared gray 'other' segment. Confirmed via a live Figma reference (a 'Big one'/'Trellis' toggle demonstrating this as an alternate presentation of the same single-donut data: Phone/Tablet/Desktop/Watch, one binary donut per device category, each showing that category's value/percent inside and its name as a title below). Matches donut-chart-tokens' documented 'Small multiple binary donut (S/M/L)' component set. Unlike category mode - which facets by an independent field and repeats the full multi-segment donut per value - subset mode has no separate trellis field; each panel is a generated 2-row subset of the same field already driving the donut's segmentation. Panel grid positioning is shared infrastructure tracked in donut-trellis-grid-layout.",
+  "requirements": [
+    "Given the same categorical field a normal Donut already uses for `color`, auto-generate N small binary donuts, one per unique value in that field - each panel highlights that ONE category's own categorical color against the rest of the data grouped into a shared gray 'other' segment (chart.donut.color.secondary-gray, #C6C6C6/gray-400).",
+    "Each panel's center shows the value/percent of only that category (e.g. '65.2%' for Phone) - confirmed as a single line (value only, no separate metric-label line) in this reference, simpler than the standard DonutSummary.",
+    "Each panel's title (below it, using donut-trellis-grid-layout's shared mechanism) shows the category name (e.g. 'Phone', 'Tablet').",
+    "This mode and category mode (donut-trellis) are both part of the same `trellis` prop family, per the user - not two unrelated features. They need genuinely different per-panel data-derivation logic (category mode facets an independent field and keeps each facet's own rows; subset mode derives a 2-row this-vs-rest dataset per value of the donut's own color field), but share the same grid-layout mechanism (donut-trellis-grid-layout) and ideally the same prop namespace (see openQuestions in both specs).",
+    "The 'Big one' vs. 'Trellis' segmented control shown in the reference is a UI affordance in the Figma mockup demonstrating two presentations of the same data - unclear whether RSC needs to expose a built-in toggle, or whether choosing between a normal `<Donut>` and this subset mode is purely up to the consuming application (see openQuestions)."
+  ],
+  "designTokens": [
+    { "token": "Small multiple binary donut (S/M/L) component set", "value": "named component set in the Figma library (per donut-chart-tokens §7)", "usage": "The design-system name for this per-category binary-decomposition pattern, distinct from the plain 'Small multiple donut' component set (category mode)." },
+    { "token": "chart.donut.color.secondary-gray", "value": "#C6C6C6 (gray-400)", "usage": "Fill for each panel's 'everything else' segment - the same token already used elsewhere for de-emphasized/complementary segments." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-53949&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "A category with 0% share", "expectedBehavior": "The binary donut would show no highlighted arc and an all-gray ring - confirm this isn't visually confused with the existing chart-level empty-state gray ring (getEmptyStateArcMark)." },
+    { "case": "Combined with Benchmark or sentiment coloring", "expectedBehavior": "Both this feature and Benchmark produce a '2-segment, one highlighted color, one gray' visual - confirm whether they're meant to be mutually exclusive or can compose, since combining could read as confusing (which gray segment means what)." },
+    { "case": "Relationship to the existing isBoolean donut variant", "expectedBehavior": "This feature is effectively 'auto-generate N isBoolean-style donuts from one categorical field' - confirm whether it should reuse isBoolean's existing pie-transform/rendering code path directly rather than duplicating similar logic." },
+    { "case": "S1 parity", "expectedBehavior": "No existing s1 implementation exists to mirror - this is s2-only new work, not a parity gap." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: needs a new per-category data-derivation transform (one 2-row 'this category vs. rest' dataset per unique value), not an existing signal/scale. touchesHoverAnimation/touchesLegendInteraction are false because this reference shows no shared legend and hovering a panel's own highlighted segment should just reuse the existing per-donut hover mechanism (donut-hover) unchanged, not introduce new cross-panel behavior. requiresS1S2Parity is false: no existing s1 implementation to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/donutSpec.types.ts",
+      "change": "Extend the same `trellis` prop family added by donut-trellis with whatever mechanism selects subset mode (a `trellisType`/`trellisMode` value, or triggered when `trellis` names the same field as `color` - see openQuestions), rather than adding an unrelated new prop.",
+      "lines": "19-41"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisUtils.ts (shared with donut-trellis)",
+      "change": "Add the subset-mode data derivation: for each unique value of the color field, derive a 2-row facet dataset (this category's sum, total-minus-this-category sum) reusing/adapting the existing isBoolean pie-transform and gray/categorical-color arc logic per panel. Call donut-trellis-grid-layout's shared title-label mark builder with the category name as content, rather than building a new label mechanism.",
+      "lines": "N/A - extends the file donut-trellis creates"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTrellisUtils.test.ts (shared with donut-trellis)",
+      "change": "Add tests for the subset-mode per-category data derivation, alongside category mode's tests.",
+      "lines": "N/A - extends the file donut-trellis creates"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/Donut story files",
+      "change": "Add a story matching the Figma reference: Phone/Tablet/Desktop/Watch binary donuts in a row.",
+      "lines": "N/A - new story"
+    }
+  ],
+  "openQuestions": [
+    "What is the exact mechanism for selecting subset mode within the shared `trellis` prop family - a `trellisType`/`trellisMode` prop, or automatically triggered when `trellis` is set to the same field as `color`? Not specified by any skill file.",
+    "Is the 'Big one'/'Trellis' segmented control expected to be a built-in RSC-provided UI toggle component, or purely something the consuming application builds itself around two different chart configurations?",
+    "Confirm the exact center-text format (value-only, single line, per this reference) versus whether a metric-label line could also be shown per panel.",
+    "Should this reuse the existing isBoolean donut variant's rendering path directly (since each panel is effectively an isBoolean donut), or is a separate implementation warranted?"
+  ],
+  "relatedIssues": ["donut-trellis", "donut-trellis-grid-layout"]
+}

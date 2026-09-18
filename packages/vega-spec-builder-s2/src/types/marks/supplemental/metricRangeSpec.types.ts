@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartTooltipOptions } from '../../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../../dialogs/chartInspectSpec.types';
 import { LineType, LineWidth, PartiallyRequired } from '../../specUtil.types';
 import { SpectrumColor } from '../../spectrumVizColor.types';
 
@@ -34,11 +34,11 @@ export interface MetricRangeOptions {
   scaleAxisToFit?: boolean;
 
   // children
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
 }
 
 type MetricRangeOptionsWithDefaults =
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'lineType'
   | 'lineWidth'
   | 'metric'

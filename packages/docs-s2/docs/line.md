@@ -60,6 +60,21 @@ Available interpolation methods:
 
 ---
 
+## Line cap
+
+The `lineCap` prop controls how the stroke is drawn at the ends of the line and at the boundaries of dashed gaps.
+
+```jsx
+<Line color="series" lineCap="square" />
+```
+
+| Value | Description |
+|-------|-------------|
+| `'round'` | Rounded line ends (default) |
+| `'square'` | Flat square ends — the stroke ends exactly at the data point |
+
+---
+
 ## Line point styles
 
 In the S2 package, visible points on a line are styled automatically using Spectrum 2 design tokens — including color, stroke, and size — when they are displayed. Points are shown in two cases:

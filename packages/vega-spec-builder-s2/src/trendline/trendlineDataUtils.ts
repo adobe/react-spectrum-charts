@@ -20,6 +20,7 @@ import {
   SELECTED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
+  TRENDLINE_VALUE,
 } from '@spectrum-charts/constants';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils';
@@ -28,6 +29,7 @@ import { getFacetsFromOptions } from '../specUtils';
 import { TrendlineMethod, TrendlineSpecOptions } from '../types';
 import {
   getAggregateTransform,
+  getMetricFilterTransform,
   getNormalizedDimensionTransform,
   getPartialWindowFilterTransforms,
   getRegressionExtentTransform,
@@ -115,7 +117,7 @@ export const getAggregateTrendlineData = (
   facets: string[]
 ) => {
   const data: SourceData[] = [];
-  const { dimensionRange, name, trendlineDimension } = trendlineOptions;
+  const { dimensionRange, name, trendlineDimension, trendlineMetric } = trendlineOptions;
   const dimensionRangeTransforms = getTrendlineDimensionRangeTransforms(trendlineDimension, dimensionRange);
   // high resolution data used for drawing the rule marks
   data.push({
@@ -123,6 +125,7 @@ export const getAggregateTrendlineData = (
     source: FILTERED_TABLE,
     transform: [
       ...getExcludeDataKeyTransforms(trendlineOptions.excludeDataKeys),
+      getMetricFilterTransform(trendlineMetric),
       ...dimensionRangeTransforms,
       ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, true),
       ...getSeriesIdTransform(facets),
@@ -134,6 +137,7 @@ export const getAggregateTrendlineData = (
       name: `${name}_data`,
       source: FILTERED_TABLE,
       transform: [
+        getMetricFilterTransform(trendlineMetric),
         ...dimensionRangeTransforms,
         ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, false),
       ],
@@ -156,7 +160,7 @@ export const getRegressionTrendlineData = (
 ) => {
   const data: SourceData[] = [];
   const { dimension, metric } = markOptions;
-  const { dimensionRange, method, name, orientation, trendlineDimension } = trendlineOptions;
+  const { dimensionRange, method, name, orientation, trendlineDimension, trendlineMetric } = trendlineOptions;
   const { trendlineDimension: standardTrendlineDimension } = getTrendlineDimensionMetric(
     dimension,
     metric,
@@ -170,19 +174,22 @@ export const getRegressionTrendlineData = (
     source: FILTERED_TABLE,
     transform: [
       ...getExcludeDataKeyTransforms(trendlineOptions.excludeDataKeys),
+      getMetricFilterTransform(trendlineMetric),
       ...dimensionRangeTransforms,
       ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, true),
+      getMetricFilterTransform(TRENDLINE_VALUE),
       ...getSeriesIdTransform(facets),
     ],
   });
   if (isInteractive(trendlineOptions)) {
     // params and data used for each of the trendline data points
-    // the high resolution data has too much detail and we don't want a tooltip at each high resolution point
+    // the high resolution data has too much detail and we don't want an inspect at each high resolution point
     data.push(
       {
         name: `${name}_params`,
         source: FILTERED_TABLE,
         transform: [
+          getMetricFilterTransform(trendlineMetric),
           ...dimensionRangeTransforms,
           ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, false),
         ],
@@ -216,6 +223,7 @@ const getWindowTrendlineData = (
   transform: [
     ...getExcludeDataKeyTransforms(trendlineOptions.excludeDataKeys),
     ...getTrendlineStatisticalTransforms(markOptions, trendlineOptions, false),
+    getMetricFilterTransform(TRENDLINE_VALUE),
     ...getTrendlineDimensionRangeTransforms(markOptions.dimension, trendlineOptions.dimensionRange),
   ],
 });

@@ -20,6 +20,8 @@ import { Legend } from '../components';
 import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';
 import {
+  getItemBounds,
+  getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
@@ -27,7 +29,8 @@ import {
   setSelectedSignals,
 } from '../utils';
 import useActionBars from './useActionBars';
-import useLegend from './useLegend';
+import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails';
+import { UseLegendProps } from './useLegend';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails';
 import useMarkOnClickDetails from './useMarkOnClickDetails';
 import usePopovers from './usePopovers';
@@ -35,9 +38,11 @@ import usePopovers from './usePopovers';
 const useNewChartView = (
   { idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  tooltipOptions: TooltipOptions
+  inspectOptions: TooltipOptions,
+  legendProps: UseLegendProps
 ) => {
-  const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
+  const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId, setHoveredAxisLabel } =
+    useChartContext();
   const actionBars = useActionBars(sanitizedChildren);
   const popovers = usePopovers(sanitizedChildren);
   const {
@@ -47,8 +52,9 @@ const useNewChartView = (
     onClick: onLegendClick,
     onMouseOut: onLegendMouseOut,
     onMouseOver: onLegendMouseOver,
-  } = useLegend(sanitizedChildren); // gets props from the legend if it exists
+  } = legendProps;
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
+  const axisLabelOnClickDetails = useAxisLabelOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
   const legendHasPopover = useMemo(
@@ -69,21 +75,27 @@ const useNewChartView = (
     (view: View) => {
       chartView.current = view;
       // Add a delay before displaying legend tooltips on hover.
-      let tooltipTimeout: NodeJS.Timeout | undefined;
+      let inspectTimeout: NodeJS.Timeout | undefined;
       view.tooltip((viewRef, event, item, value) => {
-        const tooltipHandler = new Handler(tooltipOptions);
+        const inspectHandler = new Handler(inspectOptions);
         // Cancel delayed tooltips if the mouse moves before the delay is resolved.
-        if (tooltipTimeout) {
-          clearTimeout(tooltipTimeout);
-          tooltipTimeout = undefined;
+        if (inspectTimeout) {
+          clearTimeout(inspectTimeout);
+          inspectTimeout = undefined;
         }
-        if (event?.type === 'pointermove' && (itemIsLegendItem(item) || itemIsAxisLabel(item)) && 'tooltip' in item) {
-          tooltipTimeout = setTimeout(() => {
-            tooltipHandler.call(viewRef, event, item, value);
-            tooltipTimeout = undefined;
+        // Axis labels use a real Tooltip, not vega-tooltip's popup.
+        if (item && itemIsAxisLabel(item) && value !== undefined && value !== null) {
+          setHoveredAxisLabel({ bounds: getItemBounds(item), content: String(value) });
+          return;
+        }
+        setHoveredAxisLabel(null);
+        if (event?.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
+          inspectTimeout = setTimeout(() => {
+            inspectHandler.call(viewRef, event, item, value);
+            inspectTimeout = undefined;
           }, TOOLTIP_DELAY);
         } else {
-          tooltipHandler.call(viewRef, event, item, value);
+          inspectHandler.call(viewRef, event, item, value);
         }
       });
       if (popovers.length || actionBars.length || legendIsToggleable || onLegendClick) {
@@ -132,7 +144,7 @@ const useNewChartView = (
               legendIsToggleable,
               onLegendClick,
               trigger: 'contextmenu',
-              markHasPopover: markHasPopover,
+              markHasPopover,
             })
           );
         }
@@ -145,11 +157,15 @@ const useNewChartView = (
         view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(chartView, markClickDetails));
       }
       view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
+      if (axisLabelOnClickDetails.length) {
+        view.addEventListener('click', getOnAxisLabelClickCallback(axisLabelOnClickDetails));
+      }
       view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver, markMouseInputDetails));
       view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut, markMouseInputDetails));
     },
     [
       actionBars,
+      axisLabelOnClickDetails,
       chartId,
       chartView,
       idKey,
@@ -168,8 +184,9 @@ const useNewChartView = (
       selectedData,
       selectedDataBounds,
       selectedDataName,
+      setHoveredAxisLabel,
       setLegendHiddenSeries,
-      tooltipOptions,
+      inspectOptions,
     ]
   );
 };

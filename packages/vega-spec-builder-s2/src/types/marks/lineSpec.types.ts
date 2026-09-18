@@ -11,25 +11,29 @@
  */
 import { INTERACTION_MODE } from '@spectrum-charts/constants';
 
-import { ColorScheme, HighlightedItem } from '../chartSpec.types';
+import { ChartData, ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartActionBarOptions } from '../dialogs/chartActionBarSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
   ColorFacet,
   FacetRef,
+  LineType,
   LineTypeFacet,
   LineWidth,
   OpacityFacet,
   PartiallyRequired,
   ScaleType,
 } from '../specUtil.types';
+import { LineForecastOptions } from './supplemental/lineForecastSpec.types';
 import { LineDirectLabelOptions } from './supplemental/lineDirectLabelSpec.types';
+import { LinePointAnnotationOptions } from './supplemental/linePointAnnotationSpec.types';
 import { MetricRangeOptions } from './supplemental/metricRangeSpec.types';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types';
 
 export type InteractionMode = `${INTERACTION_MODE}`;
 export type InterpolationType = 'basis' | 'cardinal' | 'catmull-rom' | 'linear' | 'monotone' | 'natural' | 'step' | 'step-after' | 'step-before';
+export type LineCap = 'round' | 'square';
 
 export interface LineOptions {
   markType: 'line';
@@ -44,6 +48,8 @@ export interface LineOptions {
   dimension?: string;
   /** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */
   hasOnClick?: boolean;
+  /** `true` if LineProps has an onContextMenu callback. Ensures interactive marks are generated even without inspect/click. */
+  hasOnContextMenu?: boolean;
   /** Line type or key in the data that is used as the line type facet */
   lineType?: LineTypeFacet;
   /** Opacity or key in the data that is used as the opacity facet */
@@ -69,12 +75,63 @@ export interface LineOptions {
   gradient?: boolean;
   /** Sets the interpolation method for the line */
   interpolate?: InterpolationType;
+  /**
+   * Sets the stroke line cap style for the line ends and gap boundaries.
+   * @default 'round'
+   */
+  lineCap?: LineCap;
+  /**
+   * Data field key whose truthy value marks a point as part of an alternate segment.
+   * Alternate segments render with a different line type (see `alternateSegmentLineType`).
+   */
+  alternateSegmentKey?: string;
+  /**
+   * Line type used for alternate segments identified by `alternateSegmentKey`.
+   * @default 'dotted'
+   */
+  alternateSegmentLineType?: LineType;
+  /**
+   * Text appended to the hover value label for alternate-segment points (e.g. `'(Estimated)'`).
+   * No default — omitting means no append.
+   */
+  alternateSegmentLabel?: string;
+  /**
+   * Designates which series render with full color. Remaining series render in a de-emphasized gray
+   * color with direct labels suppressed.
+   * - `number`: the first N series by color scale order are primary.
+   * - `string[]`: the named series are primary, regardless of color scale order.
+   */
+  primarySeries?: number | string[];
+  /**
+   * Overrides the default gray color used for series beyond the `primarySeries`.
+   * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
+   */
+  otherSeriesColor?: string;
+  /**
+   * If `true`, all series at the hovered x-dimension highlight simultaneously instead of
+   * only the nearest series. Hover value labels show for every series at that dimension.
+   * @default false
+   */
+  dimensionHover?: boolean;
+  /**
+   * If `true`, shows the metric value as a label adjacent to the hovered data point.
+   * Suppressed when a `<ChartInspect>` child is present.
+   * @default true
+   */
+  showHoverLabel?: boolean;
+  /**
+   * Data field key to display in the hover value label. Defaults to the `metric` field.
+   * Use this to show a pre-formatted or alternate field (e.g. `'displayValue'`) instead of the raw metric.
+   */
+  hoverLabelKey?: string;
 
   // children
   chartActionBars?: ChartActionBarOptions[];
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
+  forecasts?: LineForecastOptions[];
   lineDirectLabels?: LineDirectLabelOptions[];
+  linePointAnnotations?: LinePointAnnotationOptions[];
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
 }
@@ -82,29 +139,41 @@ export interface LineOptions {
 type LineOptionsWithDefaults =
   | 'chartActionBars'
   | 'chartPopovers'
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'color'
   | 'dimension'
+  | 'dimensionHover'
+  | 'forecasts'
   | 'gradient'
   | 'hasOnClick'
+  | 'hasOnContextMenu'
+  | 'lineCap'
   | 'lineDirectLabels'
+  | 'linePointAnnotations'
   | 'lineType'
   | 'metric'
   | 'metricRanges'
   | 'name'
   | 'opacity'
   | 'scaleType'
+  | 'showHoverLabel'
   | 'trendlines';
 
 export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOptionsWithDefaults> {
+  data?: ChartData[];
+  seriesIds?: string[];
+  isHoverAnimate?: boolean;
+  isDrawInAnimate?: boolean;
   backgroundColor?: string;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];
   highlightedItem?: HighlightedItem;
+  highlightedSeries?: string | number;
   idKey: string;
   index: number;
   interactiveMarkName: string | undefined;
   isHighlightedByGroup?: boolean;
+  legendHighlightSignals?: string[];
   lineWidth?: FacetRef<LineWidth>;
   popoverMarkName: string | undefined;
   interactionMode?: InteractionMode;

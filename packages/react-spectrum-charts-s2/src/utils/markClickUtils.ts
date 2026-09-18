@@ -13,9 +13,11 @@ import { RefObject } from 'react';
 
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-import { COMPONENT_NAME, SERIES_ID } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
+import { ContextMenuMode } from '../types/marks/line.types';
 
+import { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails';
 import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
 import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
 import { toggleStringArrayValue } from '../utils';
@@ -85,13 +87,14 @@ const handleMarkClick = (
   triggerActionBar(chartId, itemName, trigger);
 };
 
-const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
-  if (!itemName) return;
-  (
-    document.querySelector(
-      `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
-    ) as HTMLButtonElement
-  )?.click();
+/** @returns whether a matching popover button was actually found and clicked. */
+export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu'): boolean => {
+  if (!itemName) return false;
+  const button = document.querySelector(
+    `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
+  ) as HTMLButtonElement | null;
+  button?.click();
+  return button != null;
 };
 
 const triggerActionBar = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
@@ -136,16 +139,77 @@ export const getOnChartMarkContextMenuCallback = (
     if (!item || !markClickDetails?.length || isLegendItem(item) || !chartView.current) return;
     if (event.type !== 'contextmenu') return;
 
+    // Capture the mark name before getGroupOrAreaMarkItemFromItem may unwrap the item
+    const fullMarkName = isItemSceneItem(item) ? (item.mark as unknown as { name: string }).name : '';
+
     item = getGroupOrAreaMarkItemFromItem(item);
     if (!userDidNotClickOnLegend(item)) return;
 
     const itemName = getItemName(item);
     const detail = markClickDetails.find((d) => d.markName === itemName);
-    if (detail?.onContextMenu) {
+    if (detail?.onContextMenu && contextMenuModeAllowsMark(detail.contextMenuMode, fullMarkName)) {
       const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
-      detail.onContextMenu(nativeEvent, item.datum);
+      let datum = item.datum;
+      if (fullMarkName.endsWith('_xAxisVoronoi')) {
+        const dimensionField = datum[DIMENSION_FIELD] as string;
+        if (dimensionField) {
+          const dimensionValue = toComparableValue(datum[dimensionField]);
+          const tableData = chartView.current.data(FILTERED_TABLE);
+          datum = { ...datum, [GROUP_DATA]: tableData.filter((d) => toComparableValue(d[dimensionField]) === dimensionValue) };
+        }
+      }
+      detail.onContextMenu(nativeEvent, datum);
     }
   };
+};
+
+/**
+ * Callback for the `onClick` prop on an Axis, fired when an axis label is clicked.
+ * Matches via Vega's `axis-label` mark role, not the Bar/Line mark-name convention.
+ * @param axisLabelOnClickDetails - The details for all axes with the onClick prop.
+ * @returns The callback for axis label click events.
+ */
+export const getOnAxisLabelClickCallback = (
+  axisLabelOnClickDetails?: AxisLabelOnClickDetail[]
+): ViewEventCallback => {
+  return (event, item) => {
+    if (!item || !axisLabelOnClickDetails?.length || !isAxisLabelItem(item)) return;
+
+    const itemName = getItemName(item);
+    const datum = item.datum as { value?: string | number | Date; index: number };
+    // Vega's synthetic "extra" boundary tick (binned domains) has index -1 and no value
+    // (vega-encode's AxisTicks) - skip it rather than firing onClick with a bad value/index.
+    if (datum.index < 0 || datum.value === undefined) return;
+
+    const index = getAxisLabelIndex(item, datum.index);
+    const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+    axisLabelOnClickDetails.find((detail) => detail.markName === itemName)?.onClick?.(nativeEvent, datum.value, index);
+  };
+};
+
+const isAxisLabelItem = (item: ActionItem): boolean =>
+  isItemSceneItem(item) && 'role' in item.mark && item.mark.role === 'axis-label';
+
+/**
+ * Vega's tick datum.index is a fraction (`i / (tickCount - 1)`, per vega-encode's AxisTicks),
+ * not a 0-based position. Recovers the real index from the sibling tick count on the mark.
+ */
+const getAxisLabelIndex = (item: NonNullable<ActionItem>, normalizedIndex: number): number => {
+  const tickCount = isItemSceneItem(item) ? item.mark.items.length : 1;
+  return Math.round(normalizedIndex * (tickCount - 1));
+};
+
+const toComparableValue = (val: unknown): string | number => {
+  if (val instanceof Date) return val.getTime();
+  if (typeof val === 'number') return val;
+  return val as string;
+};
+
+const contextMenuModeAllowsMark = (contextMenuMode: ContextMenuMode | undefined, fullMarkName: string): boolean => {
+  if (!contextMenuMode || contextMenuMode === 'interaction') return true;
+  if (contextMenuMode === 'dimension') return fullMarkName.endsWith('_xAxisVoronoi');
+  if (contextMenuMode === 'item') return /_hover\d/.test(fullMarkName);
+  return true;
 };
 
 const getGroupOrAreaMarkItemFromItem = (item: NonNullable<ActionItem>) => {

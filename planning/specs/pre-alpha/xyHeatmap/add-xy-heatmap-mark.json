@@ -1,0 +1,65 @@
+{
+  "id": "add-xy-heatmap-mark",
+  "title": "Add XY Heatmap Chart Mark",
+  "chartType": "xyHeatmap",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 2,
+    "rationale": "This reuses two already-precedented pieces once add-histogram-mark and add-heatmap-mark land: Vega's `bin` transform (applied to two continuous fields instead of one) plus a count aggregate, and a rect-per-cell mark with a sequential color scale (the same addSequentialColorScale helper Heatmap introduces). No new algorithm is needed — only combining two existing patterns across two axes instead of one."
+  },
+  "summary": "A two-continuous-variable density grid mark — bins x and y into a grid via Vega's `bin` transform on both axes, aggregates a count per cell, and renders with a sequential color scale. Kept as a distinct mark/chartType from the categorical Heatmap per its own quantitative-binned axes.",
+  "requirements": [
+    "Accepts `x`, `y` (both continuous/quantitative, required) channels — no pre-existing categories",
+    "Bins both x and y into equal-width buckets via Vega's `bin` transform (extending add-histogram-mark's single-axis bin approach to two axes), then aggregates a `count` per x-bin/y-bin combination",
+    "Renders one rect per populated bin combination, reusing Heatmap's rect-mark construction pattern but keyed by bin boundaries instead of ordinal row/column values",
+    "Cell fill color is driven by the same sequential color scale approach introduced for Heatmap, over the count domain"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "All points identical (single x/y value)", "expectedBehavior": "Degenerate bin extent on both axes — falls back to a single bin per axis, matching Histogram's degenerate-extent handling." },
+    { "case": "Sparse data (many empty bin combinations)", "expectedBehavior": "Only populated bins render rects; empty combinations are simply absent, not rendered as zero-count cells." },
+    { "case": "Non-numeric or null x/y values", "expectedBehavior": "Excluded from binning, consistent with Histogram's null-handling." },
+    { "case": "Very large datasets (many points, fine bins)", "expectedBehavior": "Aggregation happens once via the Vega transform pipeline at render time; no client-side pre-aggregation needed, consistent with how other marks let Vega handle transforms." },
+    { "case": "Light vs dark background", "expectedBehavior": "Sequential color scale range is theme-aware, matching Heatmap." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: reuses the standard rect-mark hover encode; the 1.08x hover scale-up from add-heatmap-mark can be reused directly since the mark shape is the same. touchesTooltipOrPopover: cells support ChartTooltip/ChartPopover showing bin range/count, reusing existing interactive-mark plumbing. requiresNewSignalOrScale: true — reuses add-heatmap-mark's addSequentialColorScale helper (shared scale-builder, separate scale instance) plus two binned-linear axis scales (not ordinal band scales, since axes are continuous). requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/xyHeatmapSpec.types.ts", "change": "Create XyHeatmapOptions/XyHeatmapOptionsWithDefaults/XyHeatmapSpecOptions with required `x`/`y` fields and an optional `maxBins` option for each axis." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new XY Heatmap types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add XyHeatmapOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/xyHeatmap/xyHeatmapTestUtils.ts", "change": "Fully-populated defaultXyHeatmapOptions fixture, including a degenerate-extent (single value) variant." },
+    { "file": "packages/vega-spec-builder-s2/src/xyHeatmap/xyHeatmapDataUtils.ts", "change": "addTwoAxisBinTransform (applies add-histogram-mark's bin-transform approach to both x and y, then an aggregate count per bin-pair) — extends the histogram spec's single-axis pattern to two axes rather than duplicating it from scratch." },
+    { "file": "packages/vega-spec-builder-s2/src/xyHeatmap/xyHeatmapMarkUtils.ts", "change": "getXyHeatmapCellMark, reusing add-heatmap-mark's getHeatmapCellMark rect-mark construction but keyed by bin0/bin1 fields on both axes instead of ordinal row/column." },
+    { "file": "packages/vega-spec-builder-s2/src/xyHeatmap/xyHeatmapSpecBuilder.ts", "change": "addXyHeatmap, addData (calls addTwoAxisBinTransform), addSignals (reuse interactive-mark signal helpers), setScales (two binned-linear axis scales, calls add-heatmap-mark's addSequentialColorScale for count)." },
+    { "file": "packages/vega-spec-builder-s2/src/xyHeatmap/xyHeatmapDataUtils.test.ts", "change": "Unit tests for addTwoAxisBinTransform, including the degenerate-extent case." },
+    { "file": "packages/vega-spec-builder-s2/src/xyHeatmap/xyHeatmapMarkUtils.test.ts", "change": "Unit tests for getXyHeatmapCellMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/xyHeatmap/xyHeatmapSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register xyHeatmapCount: -1 in initializeComponentCounts, import addXyHeatmap, add the 'xyHeatmap' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/xyHeatmap.types.ts", "change": "XyHeatmapProps/XyHeatmapElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/XyHeatmap/XyHeatmap.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/XyHeatmap/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './XyHeatmap'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import XyHeatmap from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add XyHeatmap to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/XyHeatmap/XyHeatmap.story.tsx", "change": "Basic story with a two-continuous-variable dataset." }
+  ],
+  "openQuestions": [
+    "Should maxBins be independently configurable per axis, or a single shared value for both x and y?",
+    "Sequencing: should this wait for add-histogram-mark's bin-transform helper and add-heatmap-mark's sequential-scale helper to land first so this spec can directly reuse them, rather than reimplementing either?"
+  ],
+  "relatedIssues": ["add-heatmap-mark", "add-histogram-mark"]
+}

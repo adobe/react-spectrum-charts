@@ -2,7 +2,29 @@
 
 Use this skill when adding a new top-level chart mark (a new mark type like Scatter, Combo, or a hypothetical Heatmap) or a new supplemental visualization type. This is the most involved type of change in the library.
 
-Read `.claude/architecture.md` first — this is the most involved type of change and requires understanding the full pipeline, all four spec builder functions, the scale system, data sources, interactive mark system, encoding conventions, and alpha vs stable paths.
+Read `.claude/architecture-core.md`, plus `.claude/architecture-mark-internals.md`, `.claude/architecture-encoding-and-props.md`, and `.claude/architecture-file-creation.md` — this is the most involved change type and touches most of the architecture docs. If the mark ships in S2, also read `.claude/architecture-s2-parity.md`.
+
+---
+
+## Step 0: Check for an Approved Spec
+
+Look for `planning/specs/<chartType>/<slug>.json` matching this feature, checking both the
+base directory (not yet implemented) and its `implemented/` subfolder (already shipped —
+still useful context, e.g. for a regression). If one exists and `status` is `"approved"` or
+`"implemented"`, read it and treat its `requirements`, `edgeCases`, and `crossCutting` flags
+as authoritative instead of re-deriving them — `crossCutting` in particular tells you up
+front whether this mark needs to interact with hover animation, controlled highlight, legend
+interaction, or tooltip/popover wiring, and whether S1/S2 parity is required. Use
+`implementationPlan` as a starting file checklist, re-locating by symbol name if its line
+numbers have drifted. If no spec exists, proceed as below.
+
+Before setting `status` to `"implemented"`, reconcile the whole spec against the final diff —
+see README.md's "Reconcile the whole spec before marking implemented." A discovery made
+mid-implementation must be reflected everywhere it's relevant (`crossCutting`,
+`implementationPlan`), not just wherever you first noted it. Any time you touch a field,
+re-stamp `lastUpdated` with the output of `date +%Y-%m-%d` — never a hand-written guess. Then
+`git mv` the file into `planning/specs/<chartType>/implemented/<slug>.json` as part of the
+same PR.
 
 ---
 
@@ -222,7 +244,7 @@ Add `Widget.displayName` to `sanitizeRscChartChildren` in `utils.ts`.
 
 **`Widget.test.tsx`** — integration test using `findChart` and `findAllMarksByGroupName`.
 
-After writing tests: `yarn tsc --noEmit`.
+After writing tests, type-check once at task completion — not proactively after every file. See CLAUDE.md's Test Completeness Checklist for when to run it.
 
 ### Step 11: Alpha vs Stable
 
@@ -283,8 +305,10 @@ S2 differences: uses `getS2ColorValue` instead of `getColorValue`, no `s2` boole
 
 **`interactiveMarkName` vs mark name** — The interactive mark name is what Vega event listeners attach to. For most marks it equals the mark name. For marks with a separate hover layer (like a voronoi overlay), it should reference the voronoi mark name so events fire on the overlay, not the data mark.
 
-**Failing TypeScript but not tests** — `yarn test` doesn't type-check. Always run `yarn tsc --noEmit` when done.
+**Failing TypeScript but not tests** — `yarn test` doesn't type-check. Run `yarn tsc --noEmit` once the whole task is complete (see CLAUDE.md's Test Completeness Checklist) — don't run it proactively after each change.
 
 **Cognitive complexity** — SonarQube flags functions whose cognitive complexity exceeds the threshold. Spec builder functions with many conditionals are the most common trigger. When a function grows complex, extract inline conditional chains or loops into named helper functions rather than inlining them. The `addData` and `addMarks` functions are the most likely candidates.
 
-**Copyright header missing** — Every new `.ts`/`.tsx` source file requires the Apache 2.0 copyright block at the top. ESLint enforces this as a hard error. See `.claude/architecture.md` for the exact header text. Story files (`.story.tsx`) are exempt.
+**Copyright header missing** — Every new `.ts`/`.tsx` source file requires the Apache 2.0 copyright block at the top. ESLint enforces this as a hard error. See `.claude/architecture-file-creation.md` for the exact header text. Story files (`.story.tsx`) are exempt.
+
+**Multi-line JSDoc/comments narrating the change** — New functions get at most a one-line JSDoc (description + `@param`/`@returns`), matching the length of sibling functions in the same file. Do not add paragraphs explaining why the mark was added or what was investigated while building it — that belongs in the PR description, never the code. See `CLAUDE.md`'s Code Style section for a worked example.

@@ -451,7 +451,7 @@ export const getAxisAnnotationsFromChildren = ({
 export const applyDefaultAxisAnnotationOptions = (
   {
     chartPopovers = [],
-    chartTooltips = [],
+    chartInspects = [],
     name,
     format,
     offset = DEFAULT_AXIS_ANNOTATION_OFFSET,
@@ -466,7 +466,7 @@ export const applyDefaultAxisAnnotationOptions = (
 ): AxisAnnotationSpecOptions => {
   return {
     chartPopovers,
-    chartTooltips,
+    chartInspects,
     color,
     colorScheme,
     dataKey,

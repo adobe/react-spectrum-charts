@@ -1,0 +1,64 @@
+{
+  "id": "add-bubble-mark",
+  "title": "Add Bubble Chart Mark",
+  "chartType": "bubble",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 2,
+    "rationale": "No open design questions — Bubble is Scatter plus one additional quantitative size channel. The symbol mark, x/y scales, and series-based grouping already exist in scatterSpecBuilder.ts/scatterMarkUtils.ts; the only new logic is a size scale (sqrt range for area-accurate radius), which is a standard Vega scale type with no novel behavior to design."
+  },
+  "summary": "A scatter-derived mark that maps a quantitative size field to an area-accurate symbol radius via a sqrt scale. Reuses Scatter's x/y/series encoding and grow-in enter animation; adds only the size scale/encoding.",
+  "requirements": [
+    "Accepts x, y, and a required quantitative size channel, plus an optional series channel for grouping/coloring points (same as Scatter's series channel, not a color channel)",
+    "Size channel drives symbol radius via a sqrt scale so encoded area (not radius) is linearly proportional to the data value",
+    "Reuses Scatter's grow-in point enter animation",
+    "Stroke color matches fill color per point (no separate stroke styling)",
+    "Legend shown only when the series channel is present, same rule as Scatter"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState, matching Scatter's current empty-data behavior." },
+    { "case": "Single data point", "expectedBehavior": "Render one bubble sized by the sqrt scale's domain-to-range mapping; scale domain degenerates to a single value, so radius should fall back to the scale's minimum range value." },
+    { "case": "Size value of zero or negative", "expectedBehavior": "Clamp to the sqrt scale's minimum radius rather than rendering a zero-radius or inverted bubble; document the clamp explicitly since sqrt of a negative number is invalid." },
+    { "case": "Many series (color scale overflow)", "expectedBehavior": "Same categorical overflow behavior as Scatter's existing series/color handling — no new behavior needed." },
+    { "case": "Overlapping bubbles at similar x/y", "expectedBehavior": "Larger bubbles should not fully occlude smaller ones for hover purposes — reuse Scatter's voronoi hover-target approach so hit-testing isn't blocked by z-order." },
+    { "case": "Light vs dark background", "expectedBehavior": "Fill/stroke resolve through the existing colorScheme-aware color scale, matching Scatter." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Interaction conflicts", "expectedBehavior": "Hover/tooltip state must key off the underlying data point, not the rendered radius, so tooltip positioning doesn't jump when bubble size varies." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation/touchesControlledHighlight/touchesLegendInteraction/touchesTooltipOrPopover: inherited as-is from Scatter's existing wiring (isAnimate gate, CONTROLLED_HIGHLIGHTED_TABLE/SERIES, legendHighlightSignals, voronoi hover overlay + ChartTooltip/ChartPopover) — Bubble reuses scatterMarkUtils.ts's interactive-mark plumbing rather than reimplementing it. requiresNewSignalOrScale: true because a new quantitative size scale (sqrt type) must be added to setScales; no new signal is needed. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/bubbleSpec.types.ts", "change": "Create BubbleOptions/BubbleOptionsWithDefaults/BubbleSpecOptions, extending scatterSpec.types.ts's ScatterOptions shape with a required `size` field (data field name) and a `sizeRange` (min/max radius) option with a default." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Bubble types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add BubbleOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/bubble/bubbleTestUtils.ts", "change": "Fully-populated defaultBubbleOptions fixture, modeled on scatterTestUtils.ts's defaultScatterOptions plus the size field." },
+    { "file": "packages/vega-spec-builder-s2/src/bubble/bubbleMarkUtils.ts", "change": "getBubbleMark, reusing scatterMarkUtils.ts's getScatterMark symbol construction and grow-in animation encode, adding a size-scale-driven `size` encode property (stroke = fill, per requirements)." },
+    { "file": "packages/vega-spec-builder-s2/src/bubble/bubbleSpecBuilder.ts", "change": "addBubble, addData, addSignals (reuse scatter's interactive-mark signal helpers), setScales (reuse addContinuousDimensionScale/addMetricScale/addFieldToFacetScaleDomain for series/color, plus a new sqrt size scale), modeled on scatterSpecBuilder.ts's addScatter." },
+    { "file": "packages/vega-spec-builder-s2/src/bubble/bubbleMarkUtils.test.ts", "change": "Unit tests for getBubbleMark including the size encode, using the new fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/bubble/bubbleSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales, including a test asserting the sqrt size scale is added." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register bubbleCount: -1 in initializeComponentCounts, import addBubble, add the 'bubble' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/bubble.types.ts", "change": "BubbleProps/BubbleElement, Omit-ing only fields replaced at the React boundary (children for ChartTooltip/ChartPopover, same as Scatter)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Bubble/Bubble.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Bubble/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Bubble'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Bubble from '../rc' and add its displayName dispatch case, following the Scatter/Donut case pattern (including ChartTooltip/ChartPopover child collection reuse from scatterAdapter-style helpers)." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Bubble to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Bubble/Bubble.story.tsx", "change": "Basic and WithSeries stories, following Scatter.story.tsx's structure." }
+  ],
+  "openQuestions": [
+    "What is the default sizeRange (min/max radius in px)? Needs a design token or a sensible default (e.g. 4–40px) confirmed before implementation.",
+    "Should size support a custom scale type override (e.g. linear) or always default to sqrt for area accuracy?"
+  ]
+}

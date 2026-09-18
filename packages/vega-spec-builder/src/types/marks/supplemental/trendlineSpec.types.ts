@@ -11,7 +11,15 @@
  */
 import { ColorScheme } from '../../chartSpec.types';
 import { ChartTooltipOptions } from '../../dialogs/chartTooltipSpec.types';
-import { ColorFacet, LineType, LineWidth, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types';
+import {
+  ColorFacet,
+  DisplayOnHoverTrigger,
+  LineType,
+  LineWidth,
+  Orientation,
+  PartiallyRequired,
+  ScaleType,
+} from '../../specUtil.types';
 import { SpectrumColor } from '../../spectrumVizColor.types';
 import { TrendlineAnnotationOptions } from './trendlineAnnotationSpec.types';
 
@@ -50,6 +58,13 @@ export interface TrendlineOptions {
   dimensionRange?: [number | null, number | null];
   /** Whether the trendline should only be visible when hovering over the parent line */
   displayOnHover?: boolean;
+  /**
+   * Restricts which hover trigger reveals `displayOnHover` content. Independent of the parent line's `interactionMode`.
+   * e.g. a line with `interactionMode="dimension"` can still have a trendline with `displayOnHoverTrigger="item"`,
+   * so the trendline only appears when hovering near an actual point, not anywhere along the dimension strip.
+   * Has no effect unless `displayOnHover` is set. Undefined (default) matches any active hover signal (legacy behavior).
+   */
+  displayOnHoverTrigger?: DisplayOnHoverTrigger;
   /** Data points where these keys have truthy values will not be included in the trendline calculation */
   excludeDataKeys?: string[];
   /** If there is a tooltip on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
@@ -96,6 +111,7 @@ export interface TrendlineSpecOptions extends PartiallyRequired<TrendlineOptions
   isDimensionNormalized: boolean;
   metric: string;
   name: string;
+  s2?: boolean;
   trendlineColor: ColorFacet;
   trendlineDimension: string;
   trendlineMetric: string;

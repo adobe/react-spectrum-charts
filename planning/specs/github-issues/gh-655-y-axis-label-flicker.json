@@ -1,0 +1,50 @@
+{
+  "id": "gh-655-y-axis-label-flicker",
+  "title": "Y axis label flickers on hover",
+  "chartType": "chart",
+  "kind": "bug",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 5,
+    "rationale": "Root cause is not yet confirmed against a live reproduction — only a plausible code-grounded mechanism has been identified — and validating/fixing it would require reasoning through Vega's reactive autosize behavior (a non-precedented investigation) plus separately checking whether S2's newer continuous-timer hover-animation system (which s1 doesn't have) independently compounds the same symptom, which is a different kind of reasoning than the s1 fix. Both the research and the multi-site reasoning are open, so this doesn't fit a 3."
+  },
+  "summary": "Hovering over a chart occasionally causes visible y-axis label flicker; the most likely mechanism found in the code is that every RSC chart spec sets `autosize: { type: 'fit', contains: 'padding', resize: true }`, which makes Vega re-run its fit-based layout (re-measuring axis label bounds) on every reactive view update, including the discrete mouseover/mouseout signal updates fired as the mouse crosses between hoverable regions.",
+  "symptom": "While hovering over a chart, the y-axis tick labels intermittently and inconsistently flicker/redraw; it's data-dependent and not always reproducible, but frequent enough to be noticeable, especially reported on a chart with large multi-million-scale y-values.",
+  "rootCause": "Not fully confirmed — no live browser reproduction was performed as part of this investigation, only static code analysis. The most plausible mechanism found: packages/react-spectrum-charts/src/hooks/useSpec.tsx:171 (and packages/react-spectrum-charts-s2/src/hooks/useSpec.tsx:106, identical) set `autosize: { type: 'fit', contains: 'padding', resize: true }` on every chart spec. Per Vega's autosize semantics, `resize: true` causes the fit-based size/layout calculation (which includes measuring axis label text bounds to compute the padding reserved for them) to re-run on every reactive view update, not just on container resize. Hover interactions in this codebase are wired as discrete `mouseover`/`mouseout` signal handlers (e.g. packages/vega-spec-builder/src/signal/signalSpecBuilder.ts:163, packages/vega-spec-builder/src/chartTooltip/chartTooltipUtils.ts:196) attached to interactive marks and voronoi-style hover overlays; as the mouse crosses between many small hoverable regions (e.g. one region per data point on a 12-point time series), each crossing fires a signal update, which — combined with `resize: true` — can trigger a full autosize relayout pass, including axis label remeasurement/redraw, producing a visible flicker even though the label text itself hasn't changed. Larger/more precise numeric y-values (as in the reporter's ~3.5M-4.9M dataset) would plausibly make any such remeasurement more visible if label width varies slightly between renders (e.g. due to number formatting or font metric rounding), but this specific data-dependency has not been verified.",
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "touchesTooltipOrPopover is true because the hover signals implicated (mouseover/mouseout wiring for interactive marks, chart tooltips, voronoi overlays) are exactly the interactive-mark system described by that flag. touchesHoverAnimation is set false because the dedicated mouse-hover *animation* system (isAnimate gate, hoverAnimationUtils.ts, usermeta.animatedMark, and the continuous HOVER_TIMER timer-event signal it adds) exists only in vega-spec-builder-s2/src/marks/hoverAnimationUtils.ts — there is no equivalent in vega-spec-builder (s1), and this issue's reported version (1.20.0) predates the S2 package entirely (S2's 'feat: initial s2 package' commit is a recent addition). requiresS1S2Parity is true for two reasons: (1) react-spectrum-charts-s2/src/hooks/useSpec.tsx:106 has the identical `autosize.resize: true` config, so any fix to the autosize approach must be mirrored there; (2) S2 additionally has the HOVER_TIMER continuous timer signal (throttled via ANIMATION_THROTTLE) driving its hover-animation fractions, which is a *second*, s2-only mechanism that could independently cause or worsen the same flicker symptom during an active hover animation and needs its own check once s1's root cause is confirmed."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/react-spectrum-charts/src/hooks/useSpec.tsx",
+      "change": "Reference/possible fix location. Investigate whether `resize: true` can be scoped more narrowly (e.g. only re-running fit-autosize on actual container resize rather than every signal-driven view update), or whether axis label bounds can be memoized/stabilized so hover-driven view updates don't perturb them. Line 171 is the exact autosize config.",
+      "lines": "162-177"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/hooks/useSpec.tsx",
+      "change": "Same autosize config exists here; needs the same fix once one is confirmed for s1, or an independent check that S2 exhibits the same symptom.",
+      "lines": "106"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/marks/hoverAnimationUtils.ts",
+      "change": "Reference only. Contains the continuous HOVER_TIMER timer-event signal (lines 206-213) unique to S2; if S2 is confirmed to exhibit this bug, this continuous signal stream combined with autosize.resize is a second candidate mechanism worth ruling in/out separately from the s1 mouseover/mouseout-based mechanism.",
+      "lines": "206-250"
+    }
+  ],
+  "openQuestions": [
+    "This root cause has not been confirmed via live browser reproduction — is there a way to reproduce reliably (e.g. the reporter's 12-month ~3.5M-4.9M dataset) to confirm the autosize/resize hypothesis before committing to a fix direction?",
+    "If the autosize.resize mechanism is confirmed, what's the right fix: disabling `resize: true` outright (risking stale layout after real container resizes), debouncing/throttling the relayout, or a different autosize `contains` mode?",
+    "Does this same symptom reproduce on S2 charts, where the additional continuous HOVER_TIMER signal (unique to S2, not present in s1) could independently or compoundingly cause layout thrashing during an active hover animation?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/655" }
+  ]
+}

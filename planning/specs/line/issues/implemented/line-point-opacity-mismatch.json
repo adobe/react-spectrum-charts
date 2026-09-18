@@ -1,0 +1,82 @@
+{
+  "id": "line-point-opacity-mismatch",
+  "title": "Line Points Ignore Hover and Controlled Opacity",
+  "chartType": "line",
+  "kind": "bug",
+  "variant": "s1",
+  "status": "implemented",
+  "lastUpdated": "2026-07-30",
+  "complexity": {
+    "score": 3,
+    "rationale": "Reused S1's own existing getLineOpacity() directly in getLineStaticPoint() — no signature change needed. Turned out to require two follow-on fixes beyond the initial encode change: a legend-hover detection gap in legendHighlightUtils.ts (encodingUsesScale didn't recurse into array-shaped fill/stroke), and a new always-opaque background mark to stop the line bleeding through dimmed hollow points. Still contained to a small, well-understood set of files, hence not scored 5."
+  },
+  "summary": "Static points on an S1 line mark stayed at full opacity during hover dimming, controlled highlighting, legend hover, and other interaction states because getLineStaticPoint() encoded no opacity at all, while the parent line mark's getLineOpacity() covers five interaction states. Fixing this also surfaced two related gaps: legend hover wasn't detecting static points as series-aware, and hollow points had no background mask to stop the line bleeding through once they could dim.",
+  "symptom": "Static points on a line mark stay at full opacity when the parent line is dimmed — during hover interactions (other series highlighted), controlled opacity/highlighting, and legend hover. Points and their line visually disagree.",
+  "rootCause": "getLineStaticPoint() (linePointUtils.ts:73-107) had no opacity encoding at all, so points never reflected any of the dimming states getLineOpacity() (lineMarkUtils.ts:132-219) applies to the line itself: hover, controlled highlight, legend hover, and popover selection. Reusing getLineOpacity() for the point's update.opacity, plus getOpacityProductionRule(opacity) for its base enter.fillOpacity, surfaced two coupled defects fixed in the same change: encodingUsesScale() (legendHighlightUtils.ts:137-144) checked only top-level object keys, not array elements, so it never recognized static points' array-shaped fill/stroke (getStaticPointFillEncode/StrokeEncode) as series-aware — legend hover skipped them entirely. And hollow points' BACKGROUND_COLOR fill, once it could dim, let the line bleed through what's meant to look like a clean punched-out hole — S1 already has this exact background-mask pattern for highlight/select points (getHighlightBackgroundPoint, lineMarkUtils.ts:236) but lacked the static-point equivalent that S2 already has (getLineStaticPointBackground).",
+  "comparison": [
+    {
+      "aspect": "static point opacity encoding, before vs. after",
+      "expected": "fillOpacity: getOpacityProductionRule(opacity) in enter + opacity: getLineOpacity(lineOptions) in update, matching the line mark's own two-channel pattern",
+      "actual": "No opacity-related key present anywhere — points always rendered at full alpha regardless of interaction state"
+    },
+    {
+      "aspect": "encodingUsesScale() on an array-shaped fill/stroke, before vs. after",
+      "expected": "Recurse into array elements so a scale-based fallback rule (e.g. static points' hollow-test override) is still detected",
+      "actual": "Returned false for any array, since only 'scale' in encoding was checked on the top-level value — static points were filtered out of markIsSeriesAware() and never got a legend-hover opacity rule"
+    },
+    {
+      "aspect": "hollow static point background, before vs. after",
+      "expected": "A dedicated, always-opaque getLineStaticPointBackground mark behind the real point, so dimming the foreground point never reveals the line — matching S2 and S1's own getHighlightBackgroundPoint precedent",
+      "actual": "No background mask existed; a dimmed hollow point's BACKGROUND_COLOR fill let the line show through"
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": true,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "touchesControlledHighlight and touchesTooltipOrPopover are true because getLineOpacity() branches on CONTROLLED_HIGHLIGHTED_TABLE/CONTROLLED_HIGHLIGHTED_SERIES and on interactiveMarkName's HOVERED_ITEM/SELECTED_SERIES signals (set by the voronoi hover/tooltip and popover system) — the fix threads these through to points via the same function the line mark already uses, so no new signal wiring was needed. touchesLegendInteraction is true: fixing encodingUsesScale() in legendHighlightUtils.ts (array recursion) was required for legend hover to recognize static points as series-aware at all — this was not caught until implementation, after the flag was first set false based on lineMarkUtils.ts alone not referencing legend signals directly (still true, but incomplete — the legend side of the interaction lives in a separate file). touchesHoverAnimation is false in S1: grep confirms hoverAnimationUtils.ts is never referenced in vega-spec-builder/src/line/lineMarkUtils.ts — that mechanism is S2-only. requiresS1S2Parity is false for *this* spec's fix (the S1 code path) because no S1 change requires a mirrored S2 change here; the separate, narrower S2 non-animated gap is tracked in its own follow-up spec rather than folded into this one."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder/src/line/linePointUtils.ts",
+      "change": "Fixed. getLineStaticPoint() now destructures opacity from lineOptions, adds fillOpacity: getOpacityProductionRule(opacity) to enter, and opacity: getLineOpacity(lineOptions) to update. Imports getOpacityProductionRule from markUtils.ts and getLineOpacity from lineMarkUtils.ts. No signature change needed — LineSpecOptions is structurally assignable to LineMarkOptions (confirmed via the existing getHighlightPoint(options) call site in lineSpecBuilder.ts's addLineMarks).",
+      "lines": "73-108"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/line/lineMarkUtils.ts",
+      "change": "Reference only — getLineOpacity() here is the function reused as-is for the static point's update.opacity encoding.",
+      "lines": "132-219"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/marks/markUtils.ts",
+      "change": "Reference only — getOpacityProductionRule() used for the point's base enter.fillOpacity, matching the same helper's use in scatterMarkUtils.ts and barUtils.ts for comparable symbol marks."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/line/linePointUtils.test.ts",
+      "change": "Fixed. Added 3 test cases to the getLineStaticPoint() describe block: base fillOpacity from the opacity facet, default full opacity with no interactivity, and dimming on hover matching lineMarkUtils.test.ts's getLineOpacity coverage shape. Verified these fail without the implementation change and pass with it."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/line/lineSpecBuilder.test.ts",
+      "change": "Fixed. Updated the displayPointMarks and metricRangeWithDisplayPointMarks toStrictEqual fixtures (addLineMarks() tests) to include the new fillOpacity/opacity default values, per the snapshot-test completeness checklist."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendHighlightUtils.ts",
+      "change": "Fixed. encodingUsesScale() now recurses into array-shaped production rules instead of only checking the top-level value for a 'scale' key — needed because static points' fill/stroke are conditional arrays (hollow-test fallback), which previously made markIsSeriesAware() always return false for them, excluding them from the legend-hover opacity splice entirely.",
+      "lines": "137-144"
+    },
+    {
+      "file": "packages/vega-spec-builder/src/legend/legendHighlightUtils.test.ts",
+      "change": "Fixed. Added array-recursion cases to the encodingUsesScale() describe block and a static-point-shaped mark case to setHoverOpacityForMarks() confirming it now receives the legend-hover opacity rule."
+    },
+    {
+      "file": "packages/vega-spec-builder/src/chartSpecBuilder.ts",
+      "change": "Reference, verified not fixed — a separate top-level mechanism (setHoverOpacityForMarks('', spec.marks, undefined, true), gated on `if (highlightedSeries)`) splices a CONTROLLED_HIGHLIGHTED_SERIES rule into every series-aware mark's update.opacity independent of getLineOpacity's own internal branches. This is what actually makes highlightedSeries-only controlled highlighting (no tooltip/popover/legend) work for both the line and, now, static points — confirmed with buildSpec() output, not just static reading.",
+      "lines": "209-212"
+    }
+  ],
+  "relatedIssues": ["hover-point-opacity-s2-non-animated-gap"],
+  "openQuestions": []
+}

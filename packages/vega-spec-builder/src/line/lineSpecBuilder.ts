@@ -41,7 +41,7 @@ import { ColorScheme, Granularity, HighlightedItem, LineOptions, LineSpecOptions
 import { getFilteredIsValidData, getLineHighlightedData, getLineStaticPointData, getUniqueDimensionData } from './lineDataUtils';
 import { getLineHoverMarks, getLineMark } from './lineMarkUtils';
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
-import { getLineStaticPoint } from './linePointUtils';
+import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
 
 export const addLine = produce<
@@ -53,6 +53,7 @@ export const addLine = produce<
       index?: number;
       idKey: string;
       comboSiblingNames?: string[];
+      s2?: boolean;
     }
   ]
 >(
@@ -66,6 +67,7 @@ export const addLine = produce<
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
       hasOnClick = false,
+      hasOnContextMenu = false,
       hasMouseInteraction = false,
       index = 0,
       linePointAnnotations = [],
@@ -90,6 +92,7 @@ export const addLine = produce<
       dimension,
       dualMetricAxis,
       hasOnClick,
+      hasOnContextMenu,
       index,
       hasMouseInteraction,
       interactiveMarkName: getInteractiveMarkName(
@@ -97,6 +100,7 @@ export const addLine = produce<
           chartPopovers,
           chartTooltips,
           hasOnClick,
+          hasOnContextMenu,
           hasMouseInteraction,
           highlightedItem: options.highlightedItem,
           metricRanges,
@@ -158,7 +162,8 @@ export const addData = produce<Data[], [LineSpecOptions, { timeGranularity?: Gra
       const metricRangeHoverableMetrics = options.metricRanges
         .filter((mr) => mr.hoverPoint && mr.metric)
         .map((mr) => mr.metric as string);
-      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys, metricRangeHoverableMetrics));
+      const metricRangeScaleName = options.metricAxis ?? 'yLinear';
+      data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips, validNumericKeys, metricRangeHoverableMetrics, metricRangeScaleName));
       if (hasHoverableMetricRanges) {
         const filteredHighlightData = getFilteredIsValidData(`${name}_filteredHighlightedData`, `${name}_highlightedData`, metric);
         data.push(filteredHighlightData);
@@ -267,7 +272,10 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     },
     marks: [getLineMark(options, `${name}_facet`)],
   });
-  if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
+  if (staticPoint || isSparkline) {
+    // background point prevents the line from bleeding through a dimmed/hollow point
+    marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
+  }
   if ((staticPoint || isSparkline) && linePointAnnotations.length > 0) {
     marks.push(...getLinePointAnnotationMarks(options));
   }

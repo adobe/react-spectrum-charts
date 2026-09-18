@@ -1,0 +1,67 @@
+{
+  "id": "add-sunburst-mark",
+  "title": "Add Sunburst Chart Mark",
+  "chartType": "sunburst",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 3,
+    "rationale": "The radial partition layout is a native Vega transform (`stratify` + `partition`), and the resulting depth/angle values map onto arc marks the same way Donut already does (getDonutMark's theta/innerRadius/outerRadius pattern is directly reusable). The genuinely new pieces are zoomable drill-down re-rooting a radial layout (distinct from Treemap's rectangular re-root) and a center hub button — both well-defined once designed, building on the hierarchy-repair groundwork shared with add-tree-mark and the arc-geometry groundwork shared with Donut, so remaining research is narrow despite three subsystems being combined."
+  },
+  "summary": "An id/parent/value/label hierarchy mark rendering a radial (icicle-style) partition layout as nested arcs (Vega's `stratify` + `partition` transforms, reusing Donut's arc-mark geometry), with zoomable drill-down, a center hub button to zoom back out, and an angle-sweep enter animation matching Donut.",
+  "requirements": [
+    "Accepts `id`, `parent`, `value` (required) and an optional `label` channel; reuses the same auto-repair-flat-hierarchy groundwork as the Tree mark for malformed data",
+    "Renders a radial partition layout via Vega's `stratify` + `partition` transforms, converting each node's layout position into arc theta/innerRadius/outerRadius values the same way Donut's arc mark is built",
+    "Clicking a ring segment zooms in, re-rooting the radial layout at that node's subtree (its ring becomes the new inner ring)",
+    "A center hub button zooms back out one level, reversing the most recent drill-down",
+    "Arcs animate in with an angle-sweep enter transition, reusing Donut's existing sweep animation pattern"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "Data with no explicit root", "expectedBehavior": "Auto-repair synthesizes a root, reusing the same hierarchyUtils.ts logic as Tree." },
+    { "case": "Clicking a leaf ring segment with no children", "expectedBehavior": "No-op — zoom-in only applies to nodes that have descendants." },
+    { "case": "Clicking the center hub at the top-level (already at root)", "expectedBehavior": "No-op / hub should be visually inert (e.g. no hover affordance) when there's nothing to zoom out to." },
+    { "case": "A node's value is zero or missing", "expectedBehavior": "Renders as a zero-angle arc (invisible but present in the layout) rather than throwing." },
+    { "case": "Many siblings at one depth level (thin arc slices)", "expectedBehavior": "Label rendering should suppress below an angle threshold, matching the same in-slice label rule Donut/Pie already use." },
+    { "case": "Light vs dark background", "expectedBehavior": "Arc colors resolve through the existing colorScheme-aware color scale." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: reuses Donut's existing angle-sweep enter-animation encode from donutUtils.ts, applied per-arc across all depth levels rather than one ring. touchesTooltipOrPopover: arcs support ChartTooltip/ChartPopover showing label/value, reusing existing interactive-mark plumbing. requiresNewSignalOrScale: true — a `zoomRoot` signal (set on segment click, cleared/popped by the center hub click, following a stack so the hub can unwind multiple levels) driving the partition transform's root and the arc radius scale's domain. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/sunburstSpec.types.ts", "change": "Create SunburstOptions/SunburstOptionsWithDefaults/SunburstSpecOptions with required `id`/`parent`/`value` fields and an optional `label` field." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Sunburst types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add SunburstOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/sunburst/sunburstTestUtils.ts", "change": "Fully-populated defaultSunburstOptions fixture, reusing the tree mark's malformed-hierarchy fixture pattern." },
+    { "file": "packages/vega-spec-builder-s2/src/sunburst/sunburstDataUtils.ts", "change": "addStratifyAndPartitionTransforms (Vega `stratify` + `partition` transform pair scoped to the current zoomRoot signal), addArcAnglesFromPartition (maps partition layout output (y0/y1/x0/x1) onto theta0/theta1/innerRadius/outerRadius fields, reusing the angle-mapping approach from donutUtils.ts) — reuses tree/hierarchyUtils.ts's repairFlatHierarchy from add-tree-mark rather than duplicating it." },
+    { "file": "packages/vega-spec-builder-s2/src/sunburst/sunburstMarkUtils.ts", "change": "getSunburstArcMark, reusing donutUtils.ts's getDonutMark arc construction and angle-sweep animation encode, driven by the mapped theta/radius fields instead of a single-ring domain." },
+    { "file": "packages/vega-spec-builder-s2/src/sunburst/sunburstSpecBuilder.ts", "change": "addSunburst, addData (calls repairFlatHierarchy + the new transform/mapping helpers), addSignals (zoomRoot stack signal with click/hub handlers, plus interactive-mark signals), setScales (categorical color scale)." },
+    { "file": "packages/vega-spec-builder-s2/src/sunburst/sunburstDataUtils.test.ts", "change": "Unit tests for the transform and angle-mapping helpers, including the zoomRoot-scoping behavior." },
+    { "file": "packages/vega-spec-builder-s2/src/sunburst/sunburstMarkUtils.test.ts", "change": "Unit tests for getSunburstArcMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/sunburst/sunburstSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register sunburstCount: -1 in initializeComponentCounts, import addSunburst, add the 'sunburst' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/sunburst.types.ts", "change": "SunburstProps/SunburstElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Sunburst/Sunburst.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Sunburst/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Sunburst'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Sunburst from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Sunburst to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Sunburst/Sunburst.story.tsx", "change": "Basic story plus a ZoomDrillDown interaction story showing the center hub button." }
+  ],
+  "openQuestions": [
+    "Is the center hub rendered as part of the Sunburst mark's own group (an inner circle mark with a click handler) or a separate chart-level element the consumer places? Mirrors the same open question in add-treemap-mark's back button.",
+    "Should ring depth be visually capped (e.g. only render N levels at once from the current zoomRoot) to avoid arbitrarily thin outer rings on very deep hierarchies?"
+  ],
+  "relatedIssues": ["add-tree-mark", "add-treemap-mark"]
+}

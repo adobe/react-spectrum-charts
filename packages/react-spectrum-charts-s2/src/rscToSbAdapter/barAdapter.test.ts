@@ -14,8 +14,8 @@ import { createElement } from 'react';
 import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
 import { BarDirectLabel } from '../components/BarDirectLabel';
+import { ChartInspect } from '../components/ChartInspect';
 import { ChartPopover } from '../components/ChartPopover';
-import { ChartTooltip } from '../components/ChartTooltip';
 import { getBarOptions } from './barAdapter';
 
 describe('getBarOptions()', () => {
@@ -24,15 +24,19 @@ describe('getBarOptions()', () => {
     expect(options.markType).toBe('bar');
     expect(options.hasOnClick).toBe(false);
     expect(options.chartPopovers).toHaveLength(0);
-    expect(options.chartTooltips).toHaveLength(0);
+    expect(options.chartInspects).toHaveLength(0);
   });
   it('should convert popover children to chartPopovers array', () => {
     const options = getBarOptions({ children: [createElement(ChartPopover)] });
     expect(options.chartPopovers).toHaveLength(1);
   });
-  it('should convert tooltip children to chartTooltips array', () => {
-    const options = getBarOptions({ children: [createElement(ChartTooltip)] });
-    expect(options.chartTooltips).toHaveLength(1);
+  it('should convert ChartInspect children to chartInspects array', () => {
+    const options = getBarOptions({ children: [createElement(ChartInspect)] });
+    expect(options.chartInspects).toHaveLength(1);
+  });
+  it('should convert ChartInspect children to chartInspects array', () => {
+    const options = getBarOptions({ children: [createElement(ChartInspect)] });
+    expect(options.chartInspects).toHaveLength(1);
   });
   it('should convert BarDirectLabel children to barDirectLabels array', () => {
     const options = getBarOptions({ children: [createElement(BarDirectLabel)] });

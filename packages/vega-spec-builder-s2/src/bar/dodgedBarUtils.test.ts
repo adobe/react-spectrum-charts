@@ -21,6 +21,7 @@ import {
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
+  DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   FILTERED_TABLE,
   HOVERED_ITEM,
@@ -35,6 +36,7 @@ import {
   defaultDodgedYEncodings,
   dodgedAnnotationMarks,
 } from './barTestUtils';
+import { getBarDimensionHoverArea } from './barUtils';
 import { getDodgedMarks } from './dodgedBarUtils';
 
 const defaultDodgedOptions: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
@@ -101,7 +103,7 @@ const defaultMark: Mark = {
   },
 };
 
-const defaultMarkWithTooltip: Mark = {
+const defaultMarkWithInspect: Mark = {
   name: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
@@ -125,6 +127,10 @@ const defaultMarkWithTooltip: Mark = {
         {
           test: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) === -1`,
           value: FADE_FACTOR,
+        },
+        {
+          test: `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`,
+          signal: `bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}.${DEFAULT_CATEGORICAL_DIMENSION} === datum.${DEFAULT_CATEGORICAL_DIMENSION} ? 1 : ${FADE_FACTOR}`,
         },
         DEFAULT_OPACITY_RULE,
       ],
@@ -219,14 +225,29 @@ describe('dodgedBarUtils', () => {
       expect(annotationGroup.marks?.[0].name).toEqual('bar0_annotationText');
       expect(annotationGroup.marks?.[1].name).toEqual('bar0_annotationBackground');
     });
-    test('should add tooltip keys if ChartTooltip exists as child', () => {
-      expect(getDodgedMarks({ ...defaultDodgedOptions, chartTooltips: [{}] })).toEqual([
+    test('should add inspect keys if ChartInspect exists as child', () => {
+      const options = { ...defaultDodgedOptions, chartInspects: [{}] };
+      // the bar is interactive (has a ChartInspect), so the dimension hover area mark is also prepended
+      expect(getDodgedMarks(options)).toEqual([
+        getBarDimensionHoverArea(options, 'dodged'),
         {
           ...defaultDodgedMark,
-          marks: [defaultBackgroundMark, defaultMarkWithTooltip],
+          marks: [defaultBackgroundMark, defaultMarkWithInspect],
         },
       ]);
     });
+    test('uses the animated per-bar opacity signal when isHoverAnimate, instead of the instant opacity rules', () => {
+      const options = { ...defaultDodgedOptions, chartInspects: [{}], isHoverAnimate: true };
+      const marks = getDodgedMarks(options) as Mark[];
+      const group = marks.find((m) => m.type === 'group') as GroupMark;
+      const bar = group.marks?.find((m) => m.name === 'bar0');
+      const opacity = bar?.encode?.update?.opacity as { signal?: string };
+      expect(opacity.signal).toContain('bar0_rscBarAnimId');
+      // background bar has no opacity key at all -- it stays permanently opaque
+      const background = group.marks?.find((m) => m.name === 'bar0_background');
+      expect(background?.encode?.update?.opacity).toBeUndefined();
+    });
+
     test('subseries, should include advanced fill, advanced corner radius, and border strokes,', () => {
       expect(getDodgedMarks({ ...defaultDodgedOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })).toEqual([
         {
@@ -235,14 +256,51 @@ describe('dodgedBarUtils', () => {
         },
       ]);
     });
-    test('should add dimension hover area marks if has tooltip with dimension area target', () => {
+    test('should add dimension hover area marks if has inspect with dimension area target', () => {
       const marks = getDodgedMarks({
         ...defaultDodgedOptions,
-        chartTooltips: [{ targets: ['dimensionArea'] }],
+        chartInspects: [{ targets: ['dimensionArea'] }],
       });
       expect(marks).toHaveLength(2);
       expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
       expect(marks[1].name).toEqual('bar0_group');
+    });
+    test('adds the selection backdrop under the bars and the outline ring on top when an item popover exists', () => {
+      const marks = getDodgedMarks({
+        ...defaultDodgedOptions,
+        chartPopovers: [{}],
+      });
+      // the dimension hover area is unshifted to the front since the bar is interactive
+      expect(marks).toHaveLength(2);
+      expect(marks[0].name).toEqual('bar0_dimensionHoverArea');
+      const mark = marks[1] as GroupMark;
+      expect(mark.marks).toHaveLength(4);
+      // backdrop is drawn first (underneath) to fill the gap; the outline ring is drawn last (on top)
+      expect(mark.marks?.[0].name).toEqual('bar0_itemSelectionBackdrop');
+      expect(mark.marks?.[1].name).toEqual('bar0_background');
+      expect(mark.marks?.[2].name).toEqual('bar0');
+      expect(mark.marks?.[3].name).toEqual('bar0_itemSelectionRing');
+    });
+    test('does not add the item selection marks when the popover highlights by dimension', () => {
+      const marks = getDodgedMarks({
+        ...defaultDodgedOptions,
+        chartPopovers: [{ UNSAFE_highlightBy: 'dimension' }],
+      });
+      const mark = marks[1] as GroupMark;
+      const names = mark.marks?.map((ringMark) => ringMark.name);
+      expect(names).not.toContain('bar0_itemSelectionBackdrop');
+      expect(names).not.toContain('bar0_itemSelectionRing');
+    });
+    test('adds the dimension hover area mark whenever the bar is interactive, regardless of chartInspect target', () => {
+      const marks = getDodgedMarks({
+        ...defaultDodgedOptions,
+        chartPopovers: [{}],
+      });
+      expect(marks.find((mark) => mark.name === 'bar0_dimensionHoverArea')).toBeDefined();
+    });
+    test('does not add the dimension hover area mark if the bar is not interactive', () => {
+      const marks = getDodgedMarks(defaultDodgedOptions);
+      expect(marks.find((mark) => mark.name === 'bar0_dimensionHoverArea')).toBeUndefined();
     });
   });
 });

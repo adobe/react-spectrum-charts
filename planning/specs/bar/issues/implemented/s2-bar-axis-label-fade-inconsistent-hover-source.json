@@ -1,0 +1,48 @@
+{
+  "id": "s2-bar-axis-label-fade-inconsistent-hover-source",
+  "title": "S2 Bar Axis Label Fade Only Triggers From Padding Gap, Not the Bar Itself",
+  "chartType": "bar",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-07-30",
+  "complexity": {
+    "score": 3,
+    "rationale": "Fix adds one extra symmetric mouseover/mouseout wiring onto an existing signal in a single addSignals function; no new mark or scale, but it is signal-wiring logic, not a plain value change."
+  },
+  "summary": "In S2 bar charts, hovering directly on a bar does not fade the other categories' axis labels, while hovering the padding gap around a bar (or the axis label itself) correctly triggers the fade - the dimension fade highlight only responds to some of the ways a user can hover a bar's category, not all of them.",
+  "symptom": "Hovering directly on a bar in an S2 bar chart leaves all axis labels at full opacity. Hovering just outside the same bar, in the padding gap between bars, correctly dims the other (non-hovered) axis labels. The fade should trigger consistently regardless of whether the cursor is over the bar itself or the padding around it.",
+  "rootCause": "packages/vega-spec-builder-s2/src/axis/axisLabelHoverUtils.ts:65-76 (getAxisLabelDimensionFillOpacity) computes axis label opacity purely from the `${name}_dimensionHoverArea_hoveredItem` signal. Before this fix, packages/vega-spec-builder-s2/src/bar/barSpecBuilder.ts:189 (addSignals) only ever wired that signal to the transparent dimension-hover-area rect's own mouseover/mouseout via `addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`)` (targeting `@${name}_dimensionHoverArea:mouseover`), plus axisLabelHoverUtils.ts's own addAxisLabelHoverSignalWiring appending a second source for the axis label mark. That rect (packages/vega-spec-builder-s2/src/bar/barUtils.ts:610, getBarDimensionHoverArea) is added to the marks array before the real bar mark in stackedBarUtils.ts:53-55 (and nested inside the bar's group in dodgedBarUtils.ts), so it is painted underneath the real bar and only ever receives pointer events in the padding gaps where no bar occludes it - never when the cursor is directly over a bar, since the real bar mark (on top, its own `isInteractive` handler already wired to a separate `${name}_hoveredItem` signal) intercepts those events instead. The dimension-hover-area signal therefore only ever reflected gap-hovers and axis-label hovers, never bar-hovers.",
+  "comparison": [
+    {
+      "aspect": "Sources that update the `${name}_dimensionHoverArea_hoveredItem` signal driving axis-label fade",
+      "expected": "Fading other-category axis labels should happen whenever any part of a bar's dimension band is hovered - the bar itself, the padding gap around it, or the axis label.",
+      "actual": "Only the padding-gap rect (barSpecBuilder.ts:189) and the axis label (axisLabelHoverUtils.ts's addAxisLabelHoverSignalWiring) were wired onto the signal. The real bar mark's own mouseover/mouseout never updated it, since the bar visually and interactively occludes the rect within its own footprint."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale is true because the fix adds a second symmetric mouseover/mouseout pair onto the existing `${name}_dimensionHoverArea_hoveredItem` signal (not a brand-new signal, but a new set/clear source that must stay paired). requiresS1S2Parity is false because the axis-label-hover feature (packages/vega-spec-builder-s2/src/axis/axisLabelHoverUtils.ts) is s2-only - it was added by commit 7bfc581c365da5070376f2f8fc2e1725d5fe1940 ('feat: AN-456589 Highlight bar on axis label hover') with no corresponding vega-spec-builder (s1) file, so there is no s1 equivalent behavior to check."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barSpecBuilder.ts",
+      "change": "In addSignals, after the existing addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`) call (wired to the rect's own hover), add a second addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`, name) call - passing the real bar mark's name as the targetName - so the bar's own mouseover/mouseout also updates the same signal.",
+      "lines": "186-190"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/bar/barSpecBuilder.test.ts",
+      "change": "Add a regression test asserting the dimension-hover-area signal's `on` array contains an entry for `@${name}:mouseover` (the bar's own mark name), not just `@${name}_dimensionHoverArea:mouseover`.",
+      "lines": "508-515 (inserted alongside the existing dimension-hover-area signal tests)"
+    }
+  ],
+  "openQuestions": [
+    "Fix was verified at the signal-wiring level (unit test) and confirmed type-agnostic (addSignals doesn't branch on stacked vs. dodged), but wasn't separately visually verified for trellised or dodged-and-stacked combo bar charts - worth a manual check if those layouts are in active use with this feature."
+  ],
+  "relatedIssues": ["s2-bar-dimension-hover-blank-tooltip"]
+}

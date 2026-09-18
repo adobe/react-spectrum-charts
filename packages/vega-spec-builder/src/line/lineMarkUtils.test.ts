@@ -18,14 +18,16 @@ import {
   DIMENSION_HOVER_AREA,
   FADE_FACTOR,
   HOVERED_ITEM,
+  LAST_RSC_SERIES_ID,
   SELECTED_SERIES,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import type { Mark } from 'vega';
 
-import { getLineHoverMarks, getLineMark, getLineOpacity, getLineYEncoding, getVoronoiYEncoding } from './lineMarkUtils';
-import { defaultLineMarkOptions } from './lineTestUtils';
+import { getHoverContext } from '../marks/hoverContext';
+import { getClampedYEncoding, getLineHoverMarks, getLineMark, getLineOpacity, getLineYEncoding, getVoronoiYEncoding } from './lineMarkUtils';
+import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils';
 
 describe('getLineMark()', () => {
   test('should return line mark', () => {
@@ -67,11 +69,20 @@ describe('getLineMark()', () => {
   });
 
   test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
+    const ctx = getHoverContext({ ...defaultLineOptions, chartTooltips: [{}], interactiveMarkName: 'line0' });
     const lineMark = getLineMark(
-      { ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true },
+      {
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        displayOnHover: true,
+        isMetricRange: true,
+        hoverContext: ctx,
+      },
       'line0_facet'
     );
-    expect(lineMark.encode?.update?.opacity).toEqual([DEFAULT_OPACITY_RULE]);
+    // show mode: 2 rules [{ test: combined, value: 1 }, { value: 0 }]
+    expect(lineMark.encode?.update?.opacity).toHaveLength(2);
+    expect(lineMark.encode?.update?.opacity?.[1]).toEqual({ value: 0 });
   });
 
   test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
@@ -187,16 +198,25 @@ describe('getVoronoiYEncoding()', () => {
     expect(encoding).toEqual([{ scale: 'yLinear', field: 'value' }]);
   });
 
-  test('returns conditional y encoding with MetricRange fallback when hoverPoint is true', () => {
+  test('returns conditional y encoding with clamped MetricRange fallback when hoverPoint is true', () => {
     const encoding = getVoronoiYEncoding(
       { ...defaultLineMarkOptions, metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'metric', hoverPoint: true }] },
       'value'
     );
     expect(encoding).toEqual([
       { test: 'isValid(datum["value"])', scale: 'yLinear', field: 'value' },
-      { test: 'isValid(datum["metric"])', scale: 'yLinear', field: 'metric' },
+      { test: 'isValid(datum["metric"])', signal: `clamp(scale('yLinear', datum['metric']), 0, height)` },
       { scale: 'yLinear', field: 'value' },
     ]);
+  });
+
+  test('clamps metric range y to [0, height - 1] so out-of-domain values do not create oversized voronoi cells', () => {
+    const encoding = getVoronoiYEncoding(
+      { ...defaultLineMarkOptions, metricRanges: [{ metricEnd: 'metricEnd', metricStart: 'metricStart', metric: 'forecastMetric', hoverPoint: true }] },
+      'value'
+    );
+    const metricRuleEntry = (encoding as Array<{ test?: string; signal?: string }>).find(e => e.test?.includes('forecastMetric'));
+    expect(metricRuleEntry).toHaveProperty('signal', `clamp(scale('yLinear', datum['forecastMetric']), 0, height)`);
   });
 
   test('excludes MetricRange metrics where hoverPoint is false', () => {
@@ -205,6 +225,29 @@ describe('getVoronoiYEncoding()', () => {
       'value'
     );
     expect(encoding).toEqual([{ scale: 'yLinear', field: 'value' }]);
+  });
+});
+
+describe('getClampedYEncoding()', () => {
+  test('returns a signal that clamps the scaled metric to [0, height]', () => {
+    const encoding = getClampedYEncoding(defaultLineMarkOptions, 'metric');
+    expect(encoding).toEqual([{ signal: `clamp(scale('yLinear', datum['metric']), 0, height)` }]);
+  });
+
+  test('uses the metricAxis scale name when provided', () => {
+    const encoding = getClampedYEncoding({ ...defaultLineMarkOptions, metricAxis: 'yLinear2' }, 'metric');
+    expect(encoding).toEqual([{ signal: `clamp(scale('yLinear2', datum['metric']), 0, height)` }]);
+  });
+
+  test('clamps both branches when dualMetricAxis is true', () => {
+    const encoding = getClampedYEncoding({ ...defaultLineMarkOptions, dualMetricAxis: true }, 'metric');
+    expect(encoding).toEqual([
+      {
+        test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
+        signal: `clamp(scale('yLinearSecondary', datum['metric']), 0, height)`,
+      },
+      { signal: `clamp(scale('yLinearPrimary', datum['metric']), 0, height)` },
+    ]);
   });
 });
 
@@ -223,7 +266,7 @@ describe('getLineOpacity()', () => {
     expect(opacityRule).toEqual([
       {
         test: `isValid(line0_${HOVERED_ITEM})`,
-        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} || indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 || isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       {
         test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
@@ -247,7 +290,7 @@ describe('getLineOpacity()', () => {
     expect(opacityRule).toEqual([
       {
         test: 'isValid(line0_hoveredItem)',
-        signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+        signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} || indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 || isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
       {
         test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
@@ -262,28 +305,119 @@ describe('getLineOpacity()', () => {
     ]);
   });
 
-  test('should include displayOnHover rules if displayOnHover is true', () => {
+  test('should return default opacity when displayOnHover is true without isMetricRange (e.g. trendlines)', () => {
     const opacityRule = getLineOpacity({
       ...defaultLineMarkOptions,
       interactiveMarkName: 'line0',
       displayOnHover: true,
     });
-    expect(opacityRule).toEqual([DEFAULT_OPACITY_RULE]);
+    expect(opacityRule).toEqual([{ value: 1 }]);
   });
 
-  test('returns opacity rules when displayOnHover is "metric" to show the line on hover', () => {
+  test('includes dimension hover rule when displayOnHover is "metric" and interactionMode is dimension', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+    });
     const opacityRule = getLineOpacity({
       ...defaultLineMarkOptions,
       interactiveMarkName: 'line0',
       displayOnHover: 'metric',
+      interactionMode: 'dimension',
+      isMetricRange: true,
+      hoverContext: ctx,
     });
-    expect(opacityRule).toEqual([
-      { test: `isValid(line0_${HOVERED_ITEM}) && line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`, value: 1 },
-      { test: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-      { test: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`, value: 1 },
-      { test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`, value: 1 },
-      { value: 0 },
-    ]);
+    // show mode: combined predicate includes dimension hover, 2 rules total
+    expect(opacityRule).toHaveLength(2);
+    expect(JSON.stringify(opacityRule[0])).toContain(`line0_dimensionHoverArea_${HOVERED_ITEM}`);
+    expect(opacityRule[1]).toEqual({ value: 0 });
+  });
+
+  test('includes dimension hover rule when displayOnHover is true and interactionMode is dimension', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+    });
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: true,
+      interactionMode: 'dimension',
+      isMetricRange: true,
+      hoverContext: ctx,
+    });
+    // show mode: combined predicate includes dimension hover, 2 rules total
+    expect(opacityRule).toHaveLength(2);
+    expect(JSON.stringify(opacityRule[0])).toContain(`line0_dimensionHoverArea_${HOVERED_ITEM}`);
+    expect(opacityRule[1]).toEqual({ value: 0 });
+  });
+
+  test('displayOnHoverTrigger "item" excludes dimension hover rule even when interactionMode is dimension', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+    });
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: true,
+      displayOnHoverTrigger: 'item',
+      interactionMode: 'dimension',
+      isMetricRange: true,
+      hoverContext: ctx,
+    });
+    expect(JSON.stringify(opacityRule[0])).not.toContain('dimensionHoverArea');
+    expect(JSON.stringify(opacityRule[0])).toContain(`line0_${HOVERED_ITEM}`);
+  });
+
+  test('displayOnHoverTrigger "dimension" excludes item-series-match rule even though item hover is active', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+      interactionMode: 'dimension',
+    });
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: true,
+      displayOnHoverTrigger: 'dimension',
+      interactionMode: 'dimension',
+      isMetricRange: true,
+      hoverContext: ctx,
+    });
+    const test = (opacityRule[0] as { test?: string })?.test;
+    expect(test).toContain('dimensionHoverArea');
+    expect(test).not.toContain(`line0_${HOVERED_ITEM}.`);
+  });
+
+  test('returns opacity rules when displayOnHover is "metric" to show the line on hover', () => {
+    const ctx = getHoverContext({
+      ...defaultLineOptions,
+      chartTooltips: [{}],
+      interactiveMarkName: 'line0',
+    });
+    const opacityRule = getLineOpacity({
+      ...defaultLineMarkOptions,
+      interactiveMarkName: 'line0',
+      displayOnHover: 'metric',
+      isMetricRange: true,
+      hoverContext: ctx,
+    });
+    // show mode: combined predicate in one test rule + { value: 0 }
+    expect(opacityRule).toHaveLength(2);
+    expect(opacityRule[0]).toHaveProperty('value', 1);
+    expect(JSON.stringify(opacityRule[0])).toContain(`line0_${HOVERED_ITEM}`);
+    expect(JSON.stringify(opacityRule[0])).toContain(SELECTED_SERIES);
+    expect(JSON.stringify(opacityRule[0])).toContain(CONTROLLED_HIGHLIGHTED_TABLE);
+    expect(JSON.stringify(opacityRule[0])).toContain(CONTROLLED_HIGHLIGHTED_SERIES);
+    expect(opacityRule[1]).toEqual({ value: 0 });
   });
 
 

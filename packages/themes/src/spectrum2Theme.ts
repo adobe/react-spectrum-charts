@@ -93,6 +93,7 @@ export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
     legend: {
       columnPadding: DEFAULT_LEGEND_COLUMN_PADDING,
       labelColor: FONT_COLOR,
+      padding: 8,
       labelFont: ADOBE_CLEAN_FONT,
       labelFontSize: DEFAULT_FONT_SIZE,
       labelFontWeight: 'normal',

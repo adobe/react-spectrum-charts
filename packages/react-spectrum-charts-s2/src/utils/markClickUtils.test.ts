@@ -11,18 +11,21 @@
  */
 import { Item, View } from 'vega';
 
-import { COMPONENT_NAME } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA } from '@spectrum-charts/constants';
 
+import { ContextMenuMode } from '../types/marks/line.types';
 import {
   ActionItem,
   GetOnMarkClickCallbackArgs,
   getItemBounds,
   getItemName,
   getLegendItemValue,
+  getOnAxisLabelClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
   handleLegendItemClick,
   handleLegendItemMouseInput,
+  triggerPopover,
 } from './markClickUtils';
 
 const defaultMarkClickArgs: GetOnMarkClickCallbackArgs = {
@@ -41,6 +44,30 @@ describe('getItemBounds()', () => {
   test('should return default bounds if null or undefined', () => {
     expect(getItemBounds(null)).toStrictEqual({ x1: 0, x2: 0, y1: 0, y2: 0 });
     expect(getItemBounds(undefined)).toStrictEqual({ x1: 0, x2: 0, y1: 0, y2: 0 });
+  });
+});
+
+describe('triggerPopover()', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  test('clicks the matching button and returns true when one exists', () => {
+    document.body.innerHTML = '<div id="test-chart"><div><button id="bar0-popover-button"></button></div></div>';
+    const button = document.getElementById('bar0-popover-button') as HTMLButtonElement;
+    const onClick = jest.fn();
+    button.addEventListener('click', onClick);
+
+    expect(triggerPopover('test-chart', 'bar0', 'click')).toBe(true);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('returns false without clicking anything when no matching button exists', () => {
+    expect(triggerPopover('test-chart', 'bar0', 'click')).toBe(false);
+  });
+
+  test('returns false when itemName is undefined', () => {
+    expect(triggerPopover('test-chart', undefined, 'click')).toBe(false);
   });
 });
 
@@ -344,5 +371,282 @@ describe('getOnChartMarkContextMenuCallback()', () => {
       expect.objectContaining({ clientX: 100, clientY: 200 }),
       { date: 1000, value: 42 }
     );
+  });
+
+  describe('contextMenuMode filtering', () => {
+    const xAxisVoronoiItem = {
+      datum: { date: 1000, value: 42 },
+      bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+      mark: {
+        role: 'mark',
+        name: 'line0_xAxisVoronoi',
+        marktype: 'path',
+        group: { x: 0, y: 0 },
+        items: [],
+      },
+    } as unknown as ActionItem;
+
+    const hoverItem = {
+      datum: { date: 1000, value: 42 },
+      bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+      mark: {
+        role: 'mark',
+        name: 'line0_hover0',
+        marktype: 'symbol',
+        group: { x: 0, y: 0 },
+        items: [],
+      },
+    } as unknown as ActionItem;
+
+    test("'interaction' allows all mark types", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'interaction' },
+      ]);
+      callback(fakeContextMenuEvent, lineMarkItem);
+      callback(fakeContextMenuEvent, hoverItem);
+      expect(onContextMenu).toHaveBeenCalledTimes(2);
+    });
+
+    test("'dimension' allows _xAxisVoronoi marks", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'dimension' },
+      ]);
+      callback(fakeContextMenuEvent, xAxisVoronoiItem);
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
+    });
+
+    test("'dimension' blocks _voronoi and hover marks", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'dimension' },
+      ]);
+      callback(fakeContextMenuEvent, lineMarkItem);
+      callback(fakeContextMenuEvent, hoverItem);
+      expect(onContextMenu).not.toHaveBeenCalled();
+    });
+
+    test("'item' allows hover marks", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'item' },
+      ]);
+      callback(fakeContextMenuEvent, hoverItem);
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
+    });
+
+    test("'item' blocks _voronoi and _xAxisVoronoi marks", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'item' },
+      ]);
+      callback(fakeContextMenuEvent, lineMarkItem);
+      callback(fakeContextMenuEvent, xAxisVoronoiItem);
+      expect(onContextMenu).not.toHaveBeenCalled();
+    });
+
+    test('enriches datum with GROUP_DATA when mark is _xAxisVoronoi and DIMENSION_FIELD is present', () => {
+      const row1 = { date: 1000, value: 10, series: 'a' };
+      const row2 = { date: 1000, value: 20, series: 'b' };
+      const row3 = { date: 2000, value: 30, series: 'a' };
+      const mockChartView = {
+        current: {
+          data: (name: string) => (name === FILTERED_TABLE ? [row1, row2, row3] : []),
+        } as unknown as View,
+      };
+      const itemWithDimensionField = {
+        datum: { date: 1000, value: 42, [DIMENSION_FIELD]: 'date' },
+        bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+        mark: {
+          role: 'mark',
+          name: 'line0_xAxisVoronoi',
+          marktype: 'path',
+          group: { x: 0, y: 0 },
+          items: [],
+        },
+      } as unknown as ActionItem;
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(mockChartView, [
+        { markName: 'line0', onContextMenu },
+      ]);
+      callback(fakeContextMenuEvent, itemWithDimensionField);
+      const [, datum] = onContextMenu.mock.calls[0];
+      expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
+    });
+
+    test('handles Date dimension values in GROUP_DATA enrichment', () => {
+      const date1 = new Date(1000);
+      const date2 = new Date(2000);
+      const row1 = { date: date1, value: 10, series: 'a' };
+      const row2 = { date: date1, value: 20, series: 'b' };
+      const row3 = { date: date2, value: 30, series: 'a' };
+      const mockChartView = {
+        current: {
+          data: (name: string) => (name === FILTERED_TABLE ? [row1, row2, row3] : []),
+        } as unknown as View,
+      };
+      const itemWithDate = {
+        datum: { date: date1, value: 42, [DIMENSION_FIELD]: 'date' },
+        bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+        mark: {
+          role: 'mark',
+          name: 'line0_xAxisVoronoi',
+          marktype: 'path',
+          group: { x: 0, y: 0 },
+          items: [],
+        },
+      } as unknown as ActionItem;
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(mockChartView, [
+        { markName: 'line0', onContextMenu },
+      ]);
+      callback(fakeContextMenuEvent, itemWithDate);
+      const [, datum] = onContextMenu.mock.calls[0];
+      expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
+    });
+
+    test("unknown contextMenuMode falls back to allowing the mark", () => {
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(chartView, [
+        { markName: 'line0', onContextMenu, contextMenuMode: 'unknown' as ContextMenuMode },
+      ]);
+      callback(fakeContextMenuEvent, lineMarkItem);
+      expect(onContextMenu).toHaveBeenCalledTimes(1);
+    });
+
+    test('handles string dimension values in GROUP_DATA enrichment', () => {
+      const row1 = { category: 'A', value: 10, series: 'a' };
+      const row2 = { category: 'A', value: 20, series: 'b' };
+      const row3 = { category: 'B', value: 30, series: 'a' };
+      const mockChartView = {
+        current: {
+          data: (name: string) => (name === FILTERED_TABLE ? [row1, row2, row3] : []),
+        } as unknown as View,
+      };
+      const itemWithString = {
+        datum: { category: 'A', value: 42, [DIMENSION_FIELD]: 'category' },
+        bounds: { x1: 5, y1: 10, x2: 15, y2: 20 },
+        mark: {
+          role: 'mark',
+          name: 'line0_xAxisVoronoi',
+          marktype: 'path',
+          group: { x: 0, y: 0 },
+          items: [],
+        },
+      } as unknown as ActionItem;
+      const onContextMenu = jest.fn();
+      const callback = getOnChartMarkContextMenuCallback(mockChartView, [
+        { markName: 'line0', onContextMenu },
+      ]);
+      callback(fakeContextMenuEvent, itemWithString);
+      const [, datum] = onContextMenu.mock.calls[0];
+      expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
+    });
+  });
+});
+
+describe('getOnAxisLabelClickCallback()', () => {
+  const fakeClickEvent = { type: 'click' } as Parameters<ReturnType<typeof getOnAxisLabelClickCallback>>[0];
+
+  // mimics Vega's tick datum shape - index is a fraction (i / (tickCount - 1)), not a position
+  const getAxisLabelItem = (value: string | Date, normalizedIndex: number, markItemCount = 5) =>
+    ({
+      datum: { value, index: normalizedIndex },
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      mark: {
+        role: 'axis-label',
+        name: 'axis0_labelHover',
+        marktype: 'text',
+        group: { x: 0, y: 0 },
+        items: new Array(markItemCount).fill(null),
+      },
+    } as unknown as Item);
+
+  test('calls onClick with the native event, the label value, and the recovered integer index', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    // 3rd of 5 ticks -> recovered index 2
+    callback(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onClick).toHaveBeenCalledWith(fakeClickEvent, 'Safari', 2);
+  });
+
+  test('recovers index 0 and the last index correctly', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    callback(fakeClickEvent, getAxisLabelItem('Chrome', 0));
+    callback(fakeClickEvent, getAxisLabelItem('Explorer', 1));
+    expect(onClick).toHaveBeenNthCalledWith(1, fakeClickEvent, 'Chrome', 0);
+    expect(onClick).toHaveBeenNthCalledWith(2, fakeClickEvent, 'Explorer', 4);
+  });
+
+  test('passes through a Date value unchanged for time-scale axis labels', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    const tickDate = new Date('2026-01-01');
+    callback(fakeClickEvent, getAxisLabelItem(tickDate, 0));
+    expect(onClick).toHaveBeenCalledWith(fakeClickEvent, tickDate, 0);
+  });
+
+  test('unwraps sourceEvent to pass the underlying native mouse event', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    const nativeEvent = { clientX: 10, clientY: 20 } as unknown as MouseEvent;
+    const wrappedEvent = { type: 'click', sourceEvent: nativeEvent } as unknown as typeof fakeClickEvent;
+    callback(wrappedEvent, getAxisLabelItem('Safari', 0.5));
+    expect(onClick).toHaveBeenCalledWith(nativeEvent, 'Safari', 2);
+  });
+
+  test('does not call onClick when the item is not an axis-label mark', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    const nonAxisLabelItem = {
+      datum: { value: 'Safari', index: 0.5 },
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      mark: { role: 'mark', name: 'axis0_labelHover', marktype: 'text', group: { x: 0, y: 0 }, items: [] },
+    } as unknown as Item;
+    callback(fakeClickEvent, nonAxisLabelItem);
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('does not call onClick when no detail matches the mark name', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis1', onClick }]);
+    callback(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('does not call onClick when axisLabelOnClickDetails is empty or undefined', () => {
+    const onClick = jest.fn();
+    getOnAxisLabelClickCallback([])(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
+    getOnAxisLabelClickCallback(undefined)(fakeClickEvent, getAxisLabelItem('Safari', 0.5));
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('does not throw when item is null', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    expect(() => callback(fakeClickEvent, null as unknown as ActionItem)).not.toThrow();
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  test('does not call onClick for the synthetic "extra" boundary tick on binned domains', () => {
+    const onClick = jest.fn();
+    const callback = getOnAxisLabelClickCallback([{ markName: 'axis0', onClick }]);
+    // Vega's extra boundary tick: index -1, no top-level value
+    const extraTickItem = {
+      datum: { index: -1, extra: { value: 'Chrome' }, label: '' },
+      bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
+      mark: {
+        role: 'axis-label',
+        name: 'axis0_labelHover',
+        marktype: 'text',
+        group: { x: 0, y: 0 },
+        items: new Array(5).fill(null),
+      },
+    } as unknown as Item;
+    callback(fakeClickEvent, extraTickItem);
+    expect(onClick).not.toHaveBeenCalled();
   });
 });

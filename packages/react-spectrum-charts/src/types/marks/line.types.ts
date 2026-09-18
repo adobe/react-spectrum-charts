@@ -17,17 +17,34 @@ import { ChartPopoverElement, ChartTooltipElement } from '../dialogs';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
 import { LinePointAnnotationElement, MetricRangeElement, TrendlineElement } from './supplemental';
 
+/**
+ * Controls which interaction marks can trigger `onContextMenu`.
+ * Acts as a filter on top of whatever marks `interactionMode` generates.
+ * - `'interaction'` (default) — fires on all marks the current `interactionMode` generates
+ * - `'dimension'` — only fires from dimension strips (`_xAxisVoronoi`); datum includes `rscGroupData`
+ * - `'item'` — only fires from individual hover points (`_hover*`)
+ */
+export type ContextMenuMode = 'interaction' | 'dimension' | 'item';
+
 type LineChildElement = ChartTooltipElement | ChartPopoverElement | LinePointAnnotationElement | MetricRangeElement | TrendlineElement;
 export interface LineProps
   extends Omit<
     LineOptions,
-    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'hasMouseInteraction' | 'linePointAnnotations' | 'markType' | 'metricRanges' | 'trendlines'
+    'chartPopovers' | 'chartTooltips' | 'hasOnClick' | 'hasOnContextMenu' | 'hasMouseInteraction' | 'linePointAnnotations' | 'markType' | 'metricRanges' | 'trendlines'
   > {
   children?: Children<LineChildElement>;
   /** Callback that will be run when a point/section is clicked */
   onClick?: MarkCallback;
-  /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
+  /**
+   * Callback that will be run when a point/section is right-clicked. Use to show a custom context menu.
+   * Use `contextMenuMode` to control which marks can trigger it.
+   */
   onContextMenu?: ContextMenuCallback;
+  /**
+   * Controls which marks can trigger `onContextMenu`.
+   * @default 'interaction'
+   */
+  contextMenuMode?: ContextMenuMode;
   /** Callback that will be run when a point/section is hovered */
   onMouseOver?: MarkCallback;
   /** Callback that will be run when a point/section is no longer hovered */

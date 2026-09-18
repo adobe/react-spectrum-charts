@@ -1,0 +1,49 @@
+{
+  "id": "gh-702-bignumber-sparkline-position",
+  "title": "Trailing sparklines on BigNumber (before/after placement)",
+  "chartType": "bigNumber",
+  "kind": "feature",
+  "variant": "s1",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 2,
+    "rationale": "The approach is fully known: add a placement prop and reorder the existing Flex children in BigNumber.tsx. All four orientation/position combinations reuse the same reordering pattern already present in the file (conditional Flex ordering keyed off `orientation`) — no site requires new, non-precedented logic."
+  },
+  "summary": "BigNumber's sparkline is always rendered ahead of the label/value block in packages/react-spectrum-charts/src/rc/components/BigNumber/BigNumber.tsx (the `{lineProps && <BigNumberChart .../>}` block is the first child in the outer Flex), which visually places it left of the number in horizontal orientation and above it in vertical orientation. This request adds a prop to also allow placing the sparkline after the number (right/below), useful when BigNumber is used as a chart header.",
+  "requirements": [
+    "Add a new prop (e.g. `sparklinePosition`: 'before' | 'after') to BigNumberOptions/BigNumberProps, defaulting to 'before' to preserve current visual behavior for existing consumers.",
+    "When 'after' is set, render the BigNumberChart sparkline block after the icon/label/value Flex block in the outer Flex in BigNumber.tsx, instead of before it.",
+    "Combined with existing `orientation` ('horizontal' | 'vertical'), the four combinations must resolve as: before+horizontal = sparkline left, before+vertical = sparkline above, after+horizontal = sparkline right, after+vertical = sparkline below.",
+    "No change to spacing/columnGap or sizing logic (getBigNumberSize, getBigNumberChartDimensions) — only ordering changes."
+  ],
+  "edgeCases": [
+    { "case": "sparklinePosition='after' combined with an icon prop", "expectedBehavior": "Icon+label+value layout (the icon-and-lineProps branch inside the text Flex) is unaffected; only the outer sparkline-vs-text-block ordering changes." },
+    { "case": "sparklinePosition='after' at 'small' bigNumberSize (chartWidth/height <= 100)", "expectedBehavior": "Sparkline still renders within available space; no overlap with the value/label text." },
+    { "case": "sparklinePosition set but no sparkline children (Line) provided", "expectedBehavior": "No-op — nothing renders differently since `lineProps` is undefined and the BigNumberChart block is skipped entirely either way." },
+    { "case": "RTL locale", "expectedBehavior": "Before/after placement should be evaluated for whether it should flip in RTL, or intentionally stay LTR-anchored; flag for design review." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "Purely a React Flex-ordering change in react-spectrum-charts; no Vega signal/scale involved. BigNumber has no s2 implementation yet (see gh-703 for the same note), so there is nothing to parity-check in vega-spec-builder-s2/react-spectrum-charts-s2."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder/src/types/marks/bigNumberSpec.types.ts", "change": "Add `sparklinePosition?: 'before' | 'after'` to BigNumberOptions with JSDoc; add to BigNumberOptionsWithDefaults-equivalent if the codebase applies a runtime default at this layer.", "lines": "18-30" },
+    { "file": "packages/react-spectrum-charts/src/types/marks/bigNumber.types.ts", "change": "Passes through automatically via Omit<BigNumberOptions, ...> since it's a plain value prop; no change needed unless review decides otherwise.", "lines": "26-30" },
+    { "file": "packages/react-spectrum-charts/src/rc/components/BigNumber/BigNumber.tsx", "change": "Destructure `sparklinePosition = 'before'` in BigNumberInternal; wrap the BigNumberChart block and the icon/label/value Flex block so BigNumberChart renders before or after based on the new prop.", "lines": "35-116" },
+    { "file": "packages/docs/docs/api/visualizations/BigNumber.md", "change": "Document the new prop and add a 'Sparkline after value' example." },
+    { "file": "packages/react-spectrum-charts/src/stories/components/BigNumber/BigNumber.story.tsx", "change": "Add a story for `sparklinePosition='after'` next to the existing sparkline stories." }
+  ],
+  "openQuestions": [
+    "Should this prop be named `sparklinePosition`, or align with a more general naming convention if other trailing-element features (e.g. gh-703's delta) also need before/after placement?",
+    "Does 'after' placement need to flip under RTL locales, or stay anchored to physical left/right regardless of text direction?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/702" }
+  ]
+}

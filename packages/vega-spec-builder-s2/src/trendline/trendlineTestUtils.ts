@@ -22,9 +22,11 @@ import { LineSpecOptions, TrendlineSpecOptions } from '../types';
 export const defaultLineOptions: LineSpecOptions = {
   chartActionBars: [],
   chartPopovers: [],
-  chartTooltips: [],
+  chartInspects: [],
+  forecasts: [],
   gradient: false,
   hasOnClick: false,
+  hasOnContextMenu: false,
   metricRanges: [],
   trendlines: [{ method: 'average' }],
   color: DEFAULT_COLOR,
@@ -40,12 +42,17 @@ export const defaultLineOptions: LineSpecOptions = {
   scaleType: 'time',
   interactiveMarkName: undefined,
   lineDirectLabels: [],
+  linePointAnnotations: [],
   popoverMarkName: undefined,
+  lineCap: 'round',
   interpolate: undefined,
+  alternateSegmentLineType: 'dotted',
+  dimensionHover: false,
+  showHoverLabel: true,
 };
 
 export const defaultTrendlineOptions: TrendlineSpecOptions = {
-  chartTooltips: [],
+  chartInspects: [],
   colorScheme: DEFAULT_COLOR_SCHEME,
   dimensionExtent: [null, null],
   dimensionRange: [null, null],

@@ -54,6 +54,7 @@ export interface VennSpecOptions extends PartiallyRequired<VennOptions, VennOpti
   idKey: string;
   index: number;
   markType: 'venn';
+  s2?: boolean;
 }
 
 export type VennDegreeOptions = '0deg' | '90deg' | '180deg' | '270deg';

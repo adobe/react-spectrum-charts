@@ -22,6 +22,7 @@ import {
   render,
   rightClickNthElement,
   screen,
+  waitFor,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock';
 import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story';
@@ -60,15 +61,20 @@ test('Hidden series should have the correct legend styling', async () => {
   expect(symbols[0]).toHaveAttribute('fill', colors['categorical-100']);
   expect(symbols[0]).toHaveAttribute('stroke', colors['categorical-100']);
   expect(screen.getByText('Windows')).toHaveAttribute('fill', colors['gray-700']);
+  const visibleShape = symbols[0].getAttribute('d');
 
   // clicking on the first series should hide it
   const entries = getAllLegendEntries(chart);
   await clickNthElement(entries, 0);
 
   symbols = getAllLegendSymbols(chart);
-  expect(symbols[0]).toHaveAttribute('fill', colors['gray-300']);
-  expect(symbols[0]).toHaveAttribute('stroke', colors['gray-300']);
-  expect(screen.getByText('Windows')).toHaveAttribute('fill', colors['gray-500']);
+  // Hidden symbol swaps to the eye icon, filled to match the (full-opacity) legend text rather
+  // than the series color; stroke is transparent so the icon's fine linework isn't outlined
+  expect(symbols[0]).toHaveAttribute('fill', colors['gray-700']);
+  expect(symbols[0]).toHaveAttribute('stroke', 'transparent');
+  expect(symbols[0].getAttribute('d')).not.toEqual(visibleShape);
+  // Hidden label stays at full opacity (gray-700), not grayed out
+  expect(screen.getByText('Windows')).toHaveAttribute('fill', colors['gray-700']);
 });
 
 test('HiddenSeries should not be drawn to bar chart', async () => {
@@ -112,12 +118,13 @@ test('Hidden series should not highlight any marks', async () => {
   // hovering the second entry should lower the opacity of the first series
   await hoverNthElement(entries, 1);
   let bars = await findAllMarksByGroupName(chart, 'bar0');
-  expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+  // opacity is now animated, so it settles asynchronously -- hence waitFor
+  await waitFor(() => expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`));
 
   // hovering the third entry should not adjust the opcity of any of the bars since it is a hidden series
   await hoverNthElement(entries, 2);
   bars = await findAllMarksByGroupName(chart, 'bar0');
-  expect(bars[0]).toHaveAttribute('opacity', '1');
+  await waitFor(() => expect(bars[0]).toHaveAttribute('opacity', '1'));
 });
 
 test('Right clicking on a legend entry should not hide the series or trigger onClick', async () => {

@@ -1,0 +1,97 @@
+{
+  "id": "gh-770-gauge-chart-s2",
+  "title": "New chart type: Gauge (S2)",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-11",
+  "complexity": {
+    "score": 5,
+    "rationale": "A wholly new mark type with no existing precedent in either package: arc/track rendering, needle-vs-fill mode, sequential threshold zone coloring, target markers, tick decoration, and responsive named sizing are each genuinely new, non-precedented logic, not a repeat of an existing pattern. Donut supplies an arc-geometry precedent and Bullet supplies a threshold/target API precedent, but neither covers needle rendering, threshold-to-arc-zone coloring, or the fill/needle mode switch, so multiple sites each need different new reasoning. Remaining research also includes whether BigNumber/Bullet S2 prerequisites are needed first, and no Figma detail was available in this investigation."
+  },
+  "summary": "Add a Gauge chart type to react-spectrum-charts-s2 that shows a single metric value within a configured range via an arc track, either with a needle pointing at the value (colored by sequential thresholds) or a colored arc fill from the range minimum to the current value. Confirmed via grep that no gauge component or mark exists anywhere in packages/react-spectrum-charts-s2/src or packages/vega-spec-builder-s2/src today.",
+  "requirements": [
+    "Render a full prop set: name, label (required, shown in center), metric (default 'value'), minScaleValue (default 0), maxScaleValue (default 100), method ('last'|'avg'|'sum', default 'last'), numberFormat (default 'shortNumber'), showNeedle (default true), color (default 'categorical-01'), arcSize (default 2/3, range 0.2-0.85), holeRatio (default 0.8, range 0.4-0.9), thresholds, target, targetLabel, ticks, showRangeLabels (default false), size ('XL'|'L'|'M'|'S'|number, default 'M').",
+    "Always render the label and the aggregated, formatted metric value in the center of the arc.",
+    "When showNeedle is true, color the arc track in sequential threshold zones (or a single color if no thresholds are set) and render a needle pointing at the aggregated value.",
+    "When showNeedle is false, fill the arc from minScaleValue to the aggregated current value using the color prop; thresholds do not apply to fill-mode coloring per the issue's spec.",
+    "Ignore the color prop when thresholds are set (needle mode only), following the same precedence Bullet already uses for thresholdBarColor vs. thresholds.",
+    "Treat thresholds as sequential, non-overlapping zones aligned with Bullet's ThresholdBackground shape (packages/vega-spec-builder-s2/src/types/marks/bulletSpec.types.ts), auto-showing each threshold's breakpoint value only when that threshold entry has a label.",
+    "Support target/targetLabel data keys aligned with Bullet's existing target/targetLabel API.",
+    "Clamp values outside [minScaleValue, maxScaleValue] silently for rendering, but emit a dev-facing console.error when clamping occurs.",
+    "Support ticks ('minimal'|'normal'|'dense'), off by default, as decorative marks only (no data encoding).",
+    "Support showRangeLabels to render minScaleValue/maxScaleValue labels at the arc endpoints.",
+    "Support the named/numeric size prop (XL=350px, L=225px, M=150px, S=110px, or an explicit number) the same way other S2 chart-level sizing works.",
+    "Accept <ChartTooltip> as a child following the standard RSC child-component pattern (see donutAdapter.ts's popover/tooltip child handling for precedent).",
+    "Fix the track color to a Spectrum neutral token rather than a user-configurable color, per the issue's spec.",
+    "Treat arcSize and holeRatio as chart-author-only configuration, not exposed as end-user runtime controls."
+  ],
+  "edgeCases": [
+    { "case": "aggregated value outside [minScaleValue, maxScaleValue]", "expectedBehavior": "clamp silently to the nearest bound for rendering position, but log a dev-facing console.error so the chart author notices the mismatch" },
+    { "case": "no data or the metric field is missing/empty", "expectedBehavior": "render the label with an empty/placeholder value rather than throwing, consistent with how BigNumber-style single-value marks in this codebase should degrade" },
+    { "case": "thresholds overlap or are supplied out of order", "expectedBehavior": "normalize/sort by value before rendering zones; document that overlapping thresholds are not supported input, mirroring Bullet's existing 'sequential, non-overlapping' threshold contract" },
+    { "case": "long label, targetLabel, or threshold label text at small sizes (size='S', 110px)", "expectedBehavior": "truncate with an ellipsis rather than overflowing the fixed-size container, consistent with existing S2 label-truncation conventions" },
+    { "case": "size set to a custom number smaller than the smallest named size (110px)", "expectedBehavior": "arc/needle/tick/label geometry all scale down proportionally rather than clipping or overlapping" },
+    { "case": "light vs. dark background", "expectedBehavior": "the fixed neutral track color and any background/halo behind the needle must resolve via the existing BACKGROUND_COLOR signal convention, not a hardcoded color value" },
+    { "case": "showNeedle true with no thresholds set", "expectedBehavior": "the arc renders in the single color prop value rather than defaulting to an empty/uncolored track" },
+    { "case": "hover/tooltip interaction over the arc or needle", "expectedBehavior": "ChartTooltip, if present, follows the same interactive-mark (isInteractive) wiring as other S2 marks rather than a bespoke hover path" }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesTooltipOrPopover: the issue explicitly requires accepting <ChartTooltip> as a child, following the standard RSC interactive-mark pattern. requiresNewSignalOrScale: mapping a metric value to an arc angle/needle rotation needs a new scale (linear value -> angle) and likely a reactive signal for the aggregated/clamped value, neither of which exists in any current mark. requiresS1S2Parity is false because this is explicitly an S2-alpha-only feature with no S1 vega-spec-builder equivalent planned."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/gaugeSpec.types.ts",
+      "change": "New file. Define GaugeOptions (public contract) and GaugeSpecOptions (defaults-applied + internal fields), modeled on donutSpec.types.ts's pattern, reusing Bullet's ThresholdBackground-style shape (bulletSpec.types.ts) for thresholds and target/targetLabel."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/gauge/gaugeSpecBuilder.ts",
+      "change": "New file. Add the produce-wrapped addGauge function (assembles defaults, calls addData/addSignals/setScales/addGaugeMarks), modeled on donut/donutSpecBuilder.ts's addDonut."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/gauge/gaugeUtils.ts",
+      "change": "New file. Arc/needle geometry helpers (arcSize/holeRatio math, value-to-angle mapping, threshold-zone-to-arc-segment coloring), modeled on donut/donutUtils.ts's arc geometry helpers."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/gauge/gaugeTestUtils.ts",
+      "change": "New file. Test fixtures for GaugeSpecOptions variants, modeled on donut/donutTestUtils.ts."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts",
+      "change": "Wire in a case for the new Gauge mark type calling addGauge, following the existing pattern used for addDonut/addBullet."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/types/marks/gauge.types.ts",
+      "change": "New file. GaugeProps (React boundary), modeled on donut.types.ts's Omit-based pattern over GaugeOptions."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rc/components/Gauge/Gauge.tsx",
+      "change": "New file. Render-null prop-holder component carrying default values, modeled on rc/components/Donut/Donut.tsx."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/gaugeAdapter.ts",
+      "change": "New file. childrenAdapter case for Gauge.displayName, including ChartTooltip child handling, modeled on rscToSbAdapter/donutAdapter.ts."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/components/Gauge/Gauge.story.tsx",
+      "change": "New file. Storybook stories covering needle mode, fill mode, thresholds, target, ticks, and each named size, modeled on stories/components/Donut/Donut.story.tsx."
+    }
+  ],
+  "openQuestions": [
+    "schema.json's chartType enum (area/bar/bigNumber/bullet/combo/donut/line/scatter/venn/chart) has no 'gauge' value; a real implementation PR needs to add 'gauge' before a proper chartType-scoped spec directory (planning/specs/gauge/...) can be used instead of the generic 'chart' fallback used here.",
+    "BigNumber S2 support is currently only a types stub (packages/vega-spec-builder-s2/src/types/marks/bigNumberSpec.types.ts, with no spec builder or React component found under either package's src) — does Gauge's center label/value rendering need BigNumber's number-formatting utilities to land first, or can Gauge inline its own numberFormat handling independently?",
+    "Bullet has no React component wrapper yet in react-spectrum-charts-s2/src (only its vega-spec-builder-s2 spec builder exists) — should Gauge's target/threshold API wait for Bullet's own React component to land first for API consistency, or proceed now and reconcile later?",
+    "The original issue's Figma link was not accessible in this investigation — exact arc styling, needle shape, and tick appearance need designer confirmation before implementation.",
+    "Should arcSize/holeRatio being 'chart-author-only' be enforced purely via omission from the public TypeScript GaugeProps, or does it also need a runtime dev warning for untyped/JS consumers who pass it anyway?"
+  ],
+  "references": [
+    { "type": "other", "url": "https://github.com/adobe/react-spectrum-charts/issues/770" }
+  ]
+}

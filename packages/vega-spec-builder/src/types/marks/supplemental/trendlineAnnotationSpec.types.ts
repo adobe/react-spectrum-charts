@@ -35,6 +35,7 @@ export interface TrendlineAnnotationSpecOptions
   displayOnHover: boolean;
   markName: string;
   name: string;
+  s2?: boolean;
   trendlineColor: ColorFacet;
   trendlineDimension: string;
   trendlineDimensionExtent: TrendlineSpecOptions['dimensionExtent'];

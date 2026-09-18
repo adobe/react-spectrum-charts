@@ -15,7 +15,7 @@ import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, ChartPopover, ChartTooltip, Legend, Line } from '../../../../components';
+import { Axis, ChartPopover, ChartInspect, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../../stories/data/data';
 import { formatTimestamp } from '../../../../stories/storyUtils';
@@ -29,8 +29,8 @@ export default {
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
 
-const generateCallback = (variant: 'popover' | 'tooltip') => {
-  const actionName = { popover: 'ChartPopover', tooltip: 'ChartTooltip' };
+const generateCallback = (variant: 'popover' | 'inspect') => {
+  const actionName = { popover: 'ChartPopover', inspect: 'ChartInspect' };
   const callback = (datum) => {
     action(`${actionName[variant]}:callback`)(datum);
     return (
@@ -97,7 +97,7 @@ GradientWithDialogs.args = {
   color: { value: 'categorical-100' },
   gradient: true,
   children: [
-    <ChartTooltip key={0}>{generateCallback('tooltip')}</ChartTooltip>,
+    <ChartInspect key={0}>{generateCallback('inspect')}</ChartInspect>,
     <ChartPopover key={1}>{generateCallback('popover')}</ChartPopover>,
   ],
 };

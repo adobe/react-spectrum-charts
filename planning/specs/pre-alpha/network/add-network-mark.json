@@ -1,0 +1,72 @@
+{
+  "id": "add-network-mark",
+  "title": "Add Network Chart Mark",
+  "chartType": "network",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-08-17",
+  "externalDemand": "single-consumer",
+  "complexity": {
+    "score": 5,
+    "rationale": "The force-directed layout itself is a native Vega `force` transform (run statically for ~300 iterations rather than live-animated, per requirements) — not custom physics. But this is the first mark in the codebase needing zoom/pan (no existing scale-range/signal infra to extend) and the first needing node dragging (mouse-event-to-position-signal binding, also with no precedent). Those two interaction primitives, plus click-to-pin neighbor isolation (a new adjacency computation from source/target pairs), are three separately-reasoned, non-precedented pieces landing in one mark — the definition of a 5, not a breadth issue."
+  },
+  "summary": "A source/target/label relationship mark laying out nodes via a statically-settled force simulation (Vega's `force` transform, ~300 iterations, not live-animated), supporting node drag, zoom/pan, and click-to-pin isolating a node's neighbors. First mark to introduce zoom/pan and drag interaction primitives to this codebase.",
+  "requirements": [
+    "Accepts `source`, `target` (required, defining edges) and an optional `label` channel for node labeling",
+    "Lays out nodes via Vega's `force` transform run to a settled static state (fixed iteration count) rather than a continuously re-simulating live layout",
+    "Nodes are draggable — dragging repositions a node and its connected edges follow in real time",
+    "Supports zoom and pan over the node/edge canvas",
+    "Clicking a node pins it: isolates and highlights its direct neighbors (connected nodes/edges), dimming everything else, until clicked again or a background click clears the pin"
+  ],
+  "edgeCases": [
+    { "case": "Empty data array", "expectedBehavior": "Render the existing EmptyState." },
+    { "case": "A node with no edges (isolated node)", "expectedBehavior": "Renders at a force-settled position with no connected edges; not excluded from layout." },
+    { "case": "Self-referencing edge (source === target)", "expectedBehavior": "Renders as a self-loop or is filtered out — needs an explicit decision (see openQuestions) rather than silently breaking the force layout." },
+    { "case": "Disconnected subgraphs (multiple components)", "expectedBehavior": "Each component settles independently under the force simulation; no requirement that they visually separate or overlap-avoid across components." },
+    { "case": "Dragging a node during/before force settling", "expectedBehavior": "Drag is only enabled after the static force simulation has completed settling; dragging mid-simulation is out of scope since the layout isn't live-animated." },
+    { "case": "Panning/zooming while a node is pinned", "expectedBehavior": "Pin state persists through pan/zoom — it's independent of viewport transform." },
+    { "case": "Clicking a node while another is already pinned", "expectedBehavior": "Only one node can be pinned at a time; pinning a new node clears the previous pin, per the click-to-pin convention used elsewhere (Funnel, Sankey, Chord)." },
+    { "case": "Light vs dark background", "expectedBehavior": "Node/edge colors resolve through the existing colorScheme-aware color scale." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "S1-only for this spec; no S2 port until the mark stabilizes out of rc status." },
+    { "case": "Accessibility", "expectedBehavior": "Drag and zoom/pan are mouse-only in this initial version; keyboard-equivalent navigation is an explicit v1 gap, not silently omitted (see openQuestions)." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": true,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesControlledHighlight: click-to-pin neighbor isolation is a new adjacency-based highlight computation (not CONTROLLED_HIGHLIGHTED_TABLE/SERIES) but should reuse the same opacity-encode convention. touchesTooltipOrPopover: nodes/edges support ChartTooltip/ChartPopover, reusing existing interactive-mark plumbing. requiresNewSignalOrScale: true — this mark introduces the codebase's first zoom/pan signal pair (scale-range transform driven by wheel/drag-on-background events) and first per-node drag-position signal (mouse-event-bound x/y override on top of the force-settled position), plus a `pinnedNode` signal for click-to-pin. requiresS1S2Parity: false because this ships as a new s1-only rc-status mark, matching the Donut/BigNumber precedent; revisit once promoted out of rc."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/networkSpec.types.ts", "change": "Create NetworkOptions/NetworkOptionsWithDefaults/NetworkSpecOptions with required `source`/`target` fields and an optional `label` field." },
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/index.ts", "change": "Export the new Network types." },
+    { "file": "packages/vega-spec-builder-s2/src/types/chartSpec.types.ts", "change": "Add NetworkOptions to the MarkOptions union." },
+    { "file": "packages/vega-spec-builder-s2/src/network/networkTestUtils.ts", "change": "Fully-populated defaultNetworkOptions fixture, including a self-referencing-edge variant and a disconnected-subgraph variant." },
+    { "file": "packages/vega-spec-builder-s2/src/marks/zoomPanUtils.ts", "change": "New shared module: addZoomPanSignals (wheel-zoom + drag-pan signal pair updating scale ranges), intended for reuse by add-chord-mark and add-geographic-mark — first implementation of this pattern in the codebase, so no existing file to extend." },
+    { "file": "packages/vega-spec-builder-s2/src/network/networkDataUtils.ts", "change": "addForceTransform (Vega `force` transform configured for a static/settled run, ~300 iterations, no live restart), addAdjacencyField (derives each node's neighbor-id set from source/target pairs, for click-to-pin lookups)." },
+    { "file": "packages/vega-spec-builder-s2/src/network/networkMarkUtils.ts", "change": "getNetworkNodeMark (draggable symbol — drag event bound to an x/y override signal per node), getNetworkEdgeMark (line/rule following connected node positions, including drag overrides)." },
+    { "file": "packages/vega-spec-builder-s2/src/network/networkSpecBuilder.ts", "change": "addNetwork, addData (calls addForceTransform + addAdjacencyField), addSignals (pinnedNode, per-node drag-position signals, plus addZoomPanSignals + interactive-mark signals), setScales (color scale if used)." },
+    { "file": "packages/vega-spec-builder-s2/src/marks/zoomPanUtils.test.ts", "change": "Unit tests for the shared zoom/pan signal helper." },
+    { "file": "packages/vega-spec-builder-s2/src/network/networkDataUtils.test.ts", "change": "Unit tests for addForceTransform and addAdjacencyField, including self-loop and disconnected-subgraph cases." },
+    { "file": "packages/vega-spec-builder-s2/src/network/networkMarkUtils.test.ts", "change": "Unit tests for getNetworkNodeMark/getNetworkEdgeMark using the fixture." },
+    { "file": "packages/vega-spec-builder-s2/src/network/networkSpecBuilder.test.ts", "change": "Per-function tests for addData/addSignals/setScales." },
+    { "file": "packages/vega-spec-builder-s2/src/chartSpecBuilder.ts", "change": "Register networkCount: -1 in initializeComponentCounts, import addNetwork, add the 'network' switch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/network.types.ts", "change": "NetworkProps/NetworkElement, Omit-ing only fields replaced at the React boundary (ChartTooltip/ChartPopover children)." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Network/Network.tsx", "change": "Render-null component holding prop defaults, placed under rc/ per the Donut/BigNumber rc-status precedent." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/Network/index.ts", "change": "Barrel export." },
+    { "file": "packages/react-spectrum-charts-s2/src/rc/components/index.ts", "change": "Add `export * from './Network'`." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts", "change": "Import Network from '../rc' and add its displayName dispatch case." },
+    { "file": "packages/react-spectrum-charts-s2/src/utils/utils.ts", "change": "Add Network to the sanitizeRscChartChildren import/list from '../rc'." },
+    { "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/chartAdapter.test.ts", "change": "Update the toStrictEqual ChartOptions snapshot to include the new mark type at default values." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/components/Network/Network.story.tsx", "change": "Basic story plus a DragAndPin interaction story." }
+  ],
+  "openQuestions": [
+    "How should self-referencing edges (source === target) render, if at all — a small self-loop arc, or filtered out entirely?",
+    "Is zoom/pan built as genuinely shared infrastructure up front (this spec's zoomPanUtils.ts), or should this spec proceed standalone and add-chord-mark/add-geographic-mark each get their own copy if scheduling means they land before this one is reconciled? Affects file ownership across the three specs.",
+    "What keyboard-accessible equivalent (if any) is planned for drag and zoom/pan in a follow-up, given mouse-only interaction is called out as a v1 gap?"
+  ],
+  "relatedIssues": ["add-chord-mark", "add-geographic-mark"]
+}

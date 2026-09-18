@@ -62,8 +62,8 @@ describe('getOpacity()', () => {
   test('should return the default rule if there are not any interactive children', () => {
     expect(getOpacity(defaultScatterOptions)).toEqual([DEFAULT_OPACITY_RULE]);
   });
-  test('should include hover rules if tooltip exists', () => {
-    const opacity = getOpacity({ ...defaultScatterOptions, chartTooltips: [{}] });
+  test('should include hover rules if inspect exists', () => {
+    const opacity = getOpacity({ ...defaultScatterOptions, chartInspects: [{}] });
     expect(opacity).toHaveLength(3);
     expect(opacity[0]).toHaveProperty('test', `isValid(scatter0_${HOVERED_ITEM})`);
     expect(opacity[1]).toHaveProperty(
@@ -83,18 +83,18 @@ describe('getOpacity()', () => {
 });
 
 describe('getScatterHoverMarks()', () => {
-  test('should return the pointsForVoronoi mark if there is a tooltip', () => {
+  test('should return the pointsForVoronoi mark if there is an inspect', () => {
     expect(getScatterHoverMarks(defaultScatterOptions)).toHaveLength(0);
 
-    const marks = getScatterHoverMarks({ ...defaultScatterOptions, chartTooltips: [{}] });
+    const marks = getScatterHoverMarks({ ...defaultScatterOptions, chartInspects: [{}] });
     expect(marks).toHaveLength(2);
     expect(marks[0].name).toBe('scatter0_pointsForVoronoi');
   });
 
-  test('should return the voronoi mark if there is a tooltip', () => {
+  test('should return the voronoi mark if there is an inspect', () => {
     expect(getScatterHoverMarks(defaultScatterOptions)).toHaveLength(0);
 
-    const marks = getScatterHoverMarks({ ...defaultScatterOptions, chartTooltips: [{}] });
+    const marks = getScatterHoverMarks({ ...defaultScatterOptions, chartInspects: [{}] });
     expect(marks).toHaveLength(2);
     expect(marks[1].name).toBe('scatter0_voronoi');
   });

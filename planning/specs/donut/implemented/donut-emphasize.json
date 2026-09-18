@@ -1,0 +1,99 @@
+{
+  "id": "donut-emphasize",
+  "title": "Donut Emphasize — Static Per-Segment Highlight",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-09-14",
+  "complexity": {
+    "score": 3,
+    "rationale": "Line already has a near-exact precedent for this exact mechanism: `primarySeries`/`otherSeriesColor` (packages/vega-spec-builder-s2/src/types/marks/lineSpec.types.ts:103-108, getStrokeEncoding in lineMarkUtils.ts:99-118, getPrimarySeriesOtherExpr in lineDataUtils.ts:64-69) - a static/data-driven test expression that swaps non-designated series to a gray color at full opacity, entirely independent of the opacity/hover system. Adapting it from series-level (SERIES_ID) to segment-level (idKey) grouping for the arc mark is a precedented, low-risk port. What keeps this at a 3 rather than a 2: donut's label treatment genuinely diverges from Line's (Line suppresses non-primary direct labels entirely; the Figma reference shows donut keeps non-emphasized labels fully visible, just plainer), and there's a real open question about interaction with donut-hover and whether to literally reuse the highlightedItem/primarySeries naming or introduce a donut-specific prop."
+  },
+  "summary": "Emphasize is a static/data-driven per-segment highlight: emphasized segments keep categorical color while other segments swap to gray at full opacity. Optional mode-specific SegmentLabel children can render rich labels for emphasized segments and direct labels for de-emphasized segments, while preserving the legacy single-label behavior.",
+  "requirements": [
+    "The emphasized segment's arc keeps its full categorical color and full opacity, unchanged.",
+    "All non-emphasized segments' arcs render as a solid color swap to secondary-gray (gray-400/#C6C6C6), at full opacity - not a fade/reduced-opacity treatment. This must be a distinct mechanism from both donut-hover's opacity fade (FADE_FACTOR=0.2) and the existing generic highlightedItem/CONTROLLED_HIGHLIGHTED_ITEM opacity-fade used elsewhere - confirmed visually (non-emphasized segments in the Figma reference are fully opaque solid gray, not semi-transparent).",
+    "Non-emphasized segments' labels (direct or advanced) render at full, normal opacity and their normal colors - unlike Line's primarySeries (which suppresses non-primary direct labels entirely), donut's non-emphasized labels stay visible, just not necessarily in the richer Advanced Label style. Confirmed visually (EMEA/APAC/LATAM/Japan/Others direct labels all render at full gray-700 opacity, undimmed, in the reference).",
+    "Direct labels and advanced labels can be freely combined on the same chart when using emphasize - e.g. an AdvancedLabel on the emphasized segment paired with plain SegmentLabels on the rest, as shown in the reference - but this pairing is not a hard requirement of emphasize itself; which label type appears on which segment is an independent, orthogonal authoring choice (a user could equally emphasize a segment that only has a plain SegmentLabel, or none at all).",
+    "When labelMode is provided, support one SegmentLabel child for emphasized segments and one for de-emphasized segments; when labelMode is omitted, preserve the existing first-child label behavior.",
+    "When hideDeemphasizedLabels is true, omit labels for segments outside emphasizedItems.",
+    "Reuse the precedented shape of Line's `primarySeries`/`otherSeriesColor` mechanism (a static test-expression-driven color swap, fully independent of opacity/hover) rather than building something new from scratch - adapted from series-level grouping to segment-level (per-arc, keyed by idKey) grouping. See openQuestions for whether the donut-facing prop should reuse `highlightedItem` or introduce its own name.",
+    "Support at least one emphasized segment; confirm whether multiple segments can be emphasized simultaneously - Line's `primarySeries` already supports either a count (`number`) or a named list (`string[]`), and DonutSpecOptions' existing (currently unwired) `highlightedItem` type also already supports an array, suggesting multi-select is the expected shape either way."
+  ],
+  "designTokens": [
+    { "token": "chart.donut.color.secondary-gray", "value": "#C6C6C6 (gray-400)", "usage": "Fill for non-emphasized segments - exact match for Line's existing default otherSeriesColor fallback ('gray-400'), confirmed visually against the Figma reference." },
+    { "token": "maxSegments", "value": "6", "usage": "The emphasize reference example uses exactly 6 segments (North America, EMEA, APAC, LATAM, Japan, Others), consistent with donut-chart-tokens' documented maxSegments cap." }
+  ],
+  "references": [
+    { "type": "other", "url": "llm/skills/s2-donut/donut-chart-tokens/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-direct-labels/SKILL.md" },
+    { "type": "other", "url": "llm/skills/s2-donut/donut-advanced-labels/SKILL.md" },
+    { "type": "figma", "url": "https://www.figma.com/design/a9LVueYspAHETtc1x9Cll8/S2---Charts?node-id=6030-54281&m=dev" }
+  ],
+  "edgeCases": [
+    { "case": "isBoolean donut variant", "expectedBehavior": "RESOLVED: emphasize has no effect at all on boolean donuts - getArcFillEncoding (donutUtils.ts) gives isBoolean's own secondary-gray treatment full precedence (`if (!isBoolean) return getEmphasizeFillEncoding(options);`), so emphasizedItems is silently ignored rather than combined or conflicting. Confirmed by code inspection; not currently covered by an explicit regression test." },
+    { "case": "Hovering a non-emphasized (grayed-out) segment (interaction with donut-hover)", "expectedBehavior": "Normal hover behavior applies while emphasize is active: the hovered segment restores its categorical fill, all other arcs fade through the standard opacity rules, and labels follow opacity." },
+    { "case": "Hovering a non-emphasized segment's direct/advanced label value (interaction with donut-hover/donut-advanced-labels' hover-color-switch)", "expectedBehavior": "The hovered segment's value label switches to its categorical color while other labels follow the standard hover opacity." },
+    { "case": "No segments emphasized (feature not used)", "expectedBehavior": "All segments render in full color as today - this feature must be fully opt-in with no visual change when unused." },
+    { "case": "All segments emphasized simultaneously", "expectedBehavior": "RESOLVED: correctly degenerates to identical-to-'no emphasize' - getEmphasizeOtherExpr's `indexof(emphasizedItems, datum.color) < 0` test is false for every row when every color is in the list, so no segment ever gets the gray swap." },
+    { "case": "Donut paired with a `<Legend>` (interaction with donut-hover's legend-sync work)", "expectedBehavior": "RESOLVED: legend sync stays scoped to real mouse hover only - emphasize does not touch legendHighlightSignals or the arc's opacity encode at all (only the static fill), and touchesLegendInteraction is correctly false. A non-emphasized (grayed) segment's Legend entry is unaffected by emphasize; it only reacts to actual hover, consistent with donut-hover's existing behavior." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": true,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "touchesHoverAnimation: emphasize preserves normal donut hover behavior, including categorical fill restoration and label opacity/color switching. touchesControlledHighlight: emphasize remains independent of dormant highlightedItem state. touchesTooltipOrPopover: false - emphasize is unrelated to the inspect/popover gate. requiresNewSignalOrScale: true - the arc uses a test-expression-driven fill rule adapted from Line's precedent. requiresS1S2Parity is false: this is s2-only work."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "In getArcMark (lines 48-76), add a fill production rule that swaps non-emphasized segments to secondary-gray (gray-400) at full opacity, adapted from Line's getStrokeEncoding/getPrimarySeriesOtherExpr pattern (test expression checking whether the segment's idKey is in the emphasized set, gray otherwise) - keep this fully separate from the existing getMarkOpacity opacity encode, since this is a color swap, not an opacity change.",
+      "lines": "48-76"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/line/lineDataUtils.ts",
+      "change": "Reference only - getPrimarySeriesOtherExpr (lines 64-69) is the pattern to adapt: swap SERIES_ID/color-domain-slice logic for donut's idKey-based per-segment equivalent.",
+      "lines": "64-69"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/donutSpec.types.ts",
+      "change": "Added new `emphasizedItems?: (string | number)[]` and `otherItemColor?: string` fields to DonutOptions - did not wire up the existing `highlightedItem` field, which remains dormant.",
+      "lines": "19-61"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts",
+      "change": "Threaded emphasize options through addDonut and retained the standard hovered-item signal so emphasized donuts keep normal hover behavior.",
+      "lines": "38-92"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Support mode-specific direct and rich SegmentLabel variants with independent filtered data sources, scales, signals, collision fields, and marks; preserve the legacy first unlabeled child behavior and support hideDeemphasizedLabels.",
+      "lines": "N/A - implementation"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Added a regression test confirming label encodes are untouched by the emphasize field, per requirement 3. advancedLabelUtils.ts wasn't touched since donut-advanced-labels doesn't exist yet.",
+      "lines": "N/A - verification/test addition"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.test.ts, donutUtils.test.ts",
+      "change": "ADDED (not in original plan): companion test coverage for the emphasize fill encoding and the hover-suppression signal wiring.",
+      "lines": "N/A - new test cases"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Features/Emphasize/DonutEmphasize.story.tsx",
+      "change": "CORRECTED PATH (originally planned as components/Donut or SegmentLabel/AdvancedLabel story files): added Basic (single emphasized segment) and Multi (multiple emphasized segments) stories - not the full 6-segment AdvancedLabel Figma reference scenario, since donut-advanced-labels doesn't exist yet.",
+      "lines": "N/A - new story"
+    }
+  ],
+  "openQuestions": [
+    "RESOLVED: introduced entirely new donut-specific props - `emphasizedItems?: (string | number)[]` and `otherItemColor?: string` (DonutOptions/DonutSpecOptions) - rather than reusing the existing (still-unwired) `highlightedItem` field or literally mirroring Line's `primarySeries`/`otherSeriesColor` names. `highlightedItem` remains dormant/unconsumed, unaffected by this feature.",
+    "RESOLVED: emphasized donuts retain normal segment hover behavior, including categorical fill restoration and standard arc/label opacity handling.",
+    "RESOLVED: yes - `emphasizedItems` is typed as an array (`(string | number)[]`), so multiple segments can be emphasized simultaneously, matching Line's primarySeries flexibility."
+  ],
+  "relatedIssues": ["donut-direct-labels", "donut-advanced-labels", "donut-hover", "donut-summary-responsive-sizing"]
+}

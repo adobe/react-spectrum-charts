@@ -10,14 +10,23 @@
  * governing permissions and limitations under the License.
  */
 import { createRef } from 'react';
+import { renderToString } from 'react-dom/server';
 
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../Chart';
-import { Axis, Bar, ChartTooltip, Line } from '../components';
-import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen, waitFor } from '../test-utils';
+import { Axis, Bar, ChartInspect, Line } from '../components';
+import {
+  findChart,
+  getAllMarksByGroupName,
+  getChartContainer,
+  hoverNthElement,
+  render,
+  screen,
+  waitFor,
+} from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { getElement } from '../utils';
 import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story';
@@ -37,7 +46,7 @@ const PopoverTest = (
     <Axis position="left" />
     <Bar />
     <Bar>
-      <ChartTooltip />
+      <ChartInspect />
     </Bar>
   </Chart>
 );
@@ -330,8 +339,8 @@ describe('Chart', () => {
   });
 
   describe('getElement()', () => {
-    test('should find the first tooltip', () => {
-      expect(getElement(PopoverTest, ChartTooltip)).toStrictEqual(<ChartTooltip />);
+    test('should find the first inspect', () => {
+      expect(getElement(PopoverTest, ChartInspect)).toStrictEqual(<ChartInspect />);
     });
 
     test('should find the first bar', () => {
@@ -355,13 +364,13 @@ describe('Chart', () => {
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
       await hoverNthElement(bars, 0);
-      const tooltip = document.getElementById('vg-tooltip-element');
-      expect(tooltip).toBeInTheDocument();
-      if (!tooltip) return;
+      const inspectElement = document.getElementById('vg-tooltip-element');
+      expect(inspectElement).toBeInTheDocument();
+      if (!inspectElement) return;
 
       // will be at 10, 10 since the cursor is at 0, 0 and the offset is 10
-      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(10);
-      expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(10);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(10);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(10);
     });
 
     test('should render the tooltip relative to the mark if `tooltipAnchor` is set to `mark`', async () => {
@@ -372,12 +381,12 @@ describe('Chart', () => {
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
       await hoverNthElement(bars, 0);
-      const tooltip = document.getElementById('vg-tooltip-element');
-      expect(tooltip).toBeInTheDocument();
-      if (!tooltip) return;
+      const inspectElement = document.getElementById('vg-tooltip-element');
+      expect(inspectElement).toBeInTheDocument();
+      if (!inspectElement) return;
 
-      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(176);
-      expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(187);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
     });
 
     test('should render the tooltip to the right of the mark if placement is right', async () => {
@@ -387,12 +396,12 @@ describe('Chart', () => {
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
       await hoverNthElement(bars, 0);
-      const tooltip = document.getElementById('vg-tooltip-element');
-      expect(tooltip).toBeInTheDocument();
-      if (!tooltip) return;
+      const inspectElement = document.getElementById('vg-tooltip-element');
+      expect(inspectElement).toBeInTheDocument();
+      if (!inspectElement) return;
 
-      expect(getPxValue(tooltip.style.getPropertyValue('top'))).toBe(213);
-      expect(getPxValue(tooltip.style.getPropertyValue('left'))).toBe(35);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(225);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
     });
   });
 
@@ -403,9 +412,36 @@ describe('Chart', () => {
       expect(chart).toBeInTheDocument();
       const bars = getAllMarksByGroupName(chart, 'bar0');
 
-      expect(bars[14]).toHaveAttribute('opacity', '1');
-      expect(bars[13]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      expect(bars[15]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      // opacity is now animated, so it settles asynchronously -- hence waitFor
+      await waitFor(() => {
+        expect(bars[14]).toHaveAttribute('opacity', '1');
+        expect(bars[13]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+        expect(bars[15]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      });
+    });
+  });
+
+  describe('chartId', () => {
+    test('container id is deterministic across separate SSR render passes', () => {
+      // simulates two independent server render passes producing the same tree; a random-id generator would diverge between them
+      const getContainerId = () => {
+        const html = renderToString(<Basic {...Basic.args} />);
+        return html.match(/id="(rsc-[^"]+)"/)?.[1];
+      };
+
+      const firstId = getContainerId();
+      const secondId = getContainerId();
+
+      expect(firstId).toBeDefined();
+      expect(firstId).toBe(secondId);
+    });
+
+    test('container id contains no characters that break unescaped CSS id selectors', async () => {
+      render(<Basic {...Basic.args} />);
+      const chart = await findChart();
+      const id = getChartContainer(chart)?.id;
+
+      expect(id).toMatch(/^[A-Za-z0-9_-]+$/);
     });
   });
 

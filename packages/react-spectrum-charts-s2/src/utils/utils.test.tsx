@@ -12,16 +12,35 @@
 import { Fragment, createElement } from 'react';
 
 import { Chart } from '../Chart';
-import { Bar, ChartTooltip, Line } from '../components';
-import { Donut } from '../rc';
+import { Bar, ChartInspect, Line } from '../components';
+import { Area, Bullet, Donut, Scatter, Trendline } from '../pre-alpha';
 import {
   debugLog,
   getAllElements,
   getComponentName,
+  shouldClearHoverSignalsOnClose,
   toggleStringArrayValue,
 } from './utils';
 
 describe('utils', () => {
+  describe('shouldClearHoverSignalsOnClose()', () => {
+    test('true for a real (mouse-opened) popover close', () => {
+      expect(shouldClearHoverSignalsOnClose('bar0', null)).toBe(true);
+    });
+
+    test('false when this exact component is still owned by an active keyboard focus', () => {
+      expect(shouldClearHoverSignalsOnClose('bar0', 'bar0')).toBe(false);
+    });
+
+    test('true when the keyboard-focused component is a different one', () => {
+      expect(shouldClearHoverSignalsOnClose('bar0', 'line0')).toBe(true);
+    });
+
+    test('false when there is no component to clear', () => {
+      expect(shouldClearHoverSignalsOnClose('', null)).toBe(false);
+    });
+  });
+
   describe('toggleStringArrayValue()', () => {
     test('should add value to target if it does not exist', () => {
       expect(toggleStringArrayValue(['a', 'b'], 'c')).toStrictEqual(['a', 'b', 'c']);
@@ -37,28 +56,49 @@ describe('utils', () => {
       const element = (
         <Chart data={[]}>
           <Bar>
-            <ChartTooltip />
+            <ChartInspect />
           </Bar>
           <Line name="myLine">
             <></>
-            <ChartTooltip />
+            <ChartInspect />
           </Line>
           <Line>
-            <ChartTooltip />
+            <ChartInspect />
           </Line>
           <Donut>
-            <ChartTooltip />
+            <ChartInspect />
           </Donut>
+          <Scatter>
+            <ChartInspect />
+          </Scatter>
+          <Scatter>
+            <Trendline>
+              <ChartInspect />
+            </Trendline>
+          </Scatter>
+          <Area>
+            <ChartInspect />
+          </Area>
+          <Bullet>
+            <ChartInspect />
+          </Bullet>
         </Chart>
       );
 
-      const matches = getAllElements(element, ChartTooltip);
+      const matches = getAllElements(element, ChartInspect);
 
-      expect(matches).toHaveLength(4);
+      expect(matches).toHaveLength(8);
       expect(matches[0].name).toBe('bar0');
       expect(matches[1].name).toBe('myLine');
       expect(matches[2].name).toBe('line1');
       expect(matches[3].name).toBe('donut0');
+      expect(matches[4].name).toBe('scatter0');
+      // Trendline's own name doesn't carry an index (it merges into a single hover mark per
+      // parent), so it must combine with its parent as `scatter1Trendline`, matching the
+      // `${name}Trendline_hoverGroup` mark name in vega-spec-builder-s2.
+      expect(matches[5].name).toBe('scatter1Trendline');
+      expect(matches[6].name).toBe('area0');
+      expect(matches[7].name).toBe('bullet0');
     });
   });
 

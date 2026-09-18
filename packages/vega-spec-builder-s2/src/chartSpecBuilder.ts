@@ -10,10 +10,20 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
+import { Axis, Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
 
 import {
   BACKGROUND_COLOR,
+  CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_HOVER_STROKE_WIDTHS,
+  CHART_SIZE_LABEL_GAP,
+  CHART_SIZE_LABEL_GAPS,
+  CHART_SIZE_POINT_SIZE,
+  CHART_SIZE_POINT_SIZES,
+  CHART_SIZE_STROKE_WIDTH,
+  CHART_SIZE_STROKE_WIDTHS,
+  CHART_SIZE_FONT_SIZE,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
@@ -36,6 +46,9 @@ import {
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
   TABLE,
+  DIRECT_LABEL_FONT_SIZE_S,
+  DIRECT_LABEL_FONT_SIZE_M,
+  DIRECT_LABEL_FONT_SIZE_L,
 } from '@spectrum-charts/constants';
 import { colorSchemes, getS2ColorValue } from '@spectrum-charts/themes';
 
@@ -46,7 +59,7 @@ import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
 import { addDonut } from './donut/donutSpecBuilder';
-import { setHoverOpacityForMarks } from './legend/legendHighlightUtils';
+import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
 import { addLine } from './line/lineSpecBuilder';
 import { getOrdinalScale } from './scale/scaleSpecBuilder';
@@ -80,7 +93,16 @@ import {
 } from './types';
 import { addVenn } from './venn/vennSpecBuilder';
 
+/** True for an axis repositioned to its opposing scale's zero line (its `offset` is a `scale(…, 0)` signal). */
+const isDivergingAxis = (axis: Axis): boolean => {
+  const { offset } = axis;
+  return typeof offset === 'object' && offset !== null && 'signal' in offset && /scale\(.*,\s*0\)/.test(String(offset.signal));
+};
+
 export function buildSpec({
+  animations,
+  animationTypes,
+  accessibleNavigation = false,
   axes = [],
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
   chartHeight,
@@ -132,7 +154,18 @@ export function buildSpec({
 
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
-  const specOptions = { backgroundColor, colorScheme, idKey, highlightedItem };
+  const legendHighlightSignals = getLegendHighlightSignals(legends);
+  const specOptions = {
+    animations,
+    animationTypes,
+    accessibleNavigation,
+    backgroundColor,
+    colorScheme,
+    idKey,
+    highlightedItem,
+    highlightedSeries,
+    legendHighlightSignals,
+  };
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':
@@ -140,7 +173,7 @@ export function buildSpec({
         return addArea(acc, { ...mark, ...specOptions, index: areaCount });
       case 'bar':
         barCount++;
-        return addBar(acc, { ...mark, ...specOptions, index: barCount });
+        return addBar(acc, { ...mark, ...specOptions, index: barCount, data });
       case 'bullet':
         bulletCount++;
         return addBullet(acc, { ...mark, ...specOptions, index: bulletCount });
@@ -152,7 +185,7 @@ export function buildSpec({
         return addDonut(acc, { ...mark, ...specOptions, index: donutCount });
       case 'line':
         lineCount++;
-        return addLine(acc, { ...mark, ...specOptions, index: lineCount });
+        return addLine(acc, { ...mark, ...specOptions, index: lineCount, data });
       case 'scatter':
         scatterCount++;
         return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
@@ -196,9 +229,15 @@ export function buildSpec({
   spec = JSON.parse(JSON.stringify(spec));
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
+  // sibling axes paint in array order, so move the diverging axis last or a later grid axis paints over its labels
+  if (spec.usermeta?.divergingBarMarks?.length && spec.axes) {
+    spec.axes = [...spec.axes].sort((a, b) => Number(isDivergingAxis(a)) - Number(isDivergingAxis(b)));
+  }
+
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {
     setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
+    setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
   }
 
   // clear out all scales that don't have any fields on the domain
@@ -246,6 +285,35 @@ export const getDefaultSignals = ({
   // highlightedItem should be undefined or an array
   const formattedHighlightedItem =
     highlightedItem === undefined || Array.isArray(highlightedItem) ? highlightedItem : [highlightedItem];
+
+  // XS (1px) is reserved for sparklines only; auto-detection starts at S.
+  // Derive stroke width from Vega's `width` signal via rscContainerWidth so it reacts
+  // to resize without any React re-embed.
+  const chartSizeStrokeWidthSignal: Signal = {
+    name: CHART_SIZE_STROKE_WIDTH,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_STROKE_WIDTHS.M} : ${CHART_SIZE_STROKE_WIDTHS.L}`,
+  };
+
+  const chartSizeHoverStrokeWidthSignal: Signal = {
+    name: CHART_SIZE_HOVER_STROKE_WIDTH,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_HOVER_STROKE_WIDTHS.M} : ${CHART_SIZE_HOVER_STROKE_WIDTHS.L}`,
+  };
+
+  const chartSizePointSizeSignal: Signal = {
+    name: CHART_SIZE_POINT_SIZE,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_POINT_SIZES.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_POINT_SIZES.M} : ${CHART_SIZE_POINT_SIZES.L}`,
+  };
+
+  const chartSizeFontSizeSignal: Signal = {
+    name: CHART_SIZE_FONT_SIZE,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`
+  }
+
+  const chartSizeLabelGapSignal: Signal = {
+    name: CHART_SIZE_LABEL_GAP,
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_LABEL_GAPS.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_LABEL_GAPS.M} : ${CHART_SIZE_LABEL_GAPS.L}`,
+  };
+
   return [
     getGenericValueSignal(BACKGROUND_COLOR, getS2ColorValue(signalBackgroundColor, colorScheme)),
     getGenericValueSignal(REFERENCE_LINE_LABEL_BACKGROUND_STROKE, referenceLineLabelStroke),
@@ -259,6 +327,11 @@ export const getDefaultSignals = ({
     getGenericValueSignal(SELECTED_ITEM),
     getGenericValueSignal(SELECTED_SERIES),
     getGenericValueSignal(SELECTED_GROUP),
+    chartSizeStrokeWidthSignal,
+    chartSizeHoverStrokeWidthSignal,
+    chartSizePointSizeSignal,
+    chartSizeFontSizeSignal,
+    chartSizeLabelGapSignal,
   ];
 };
 

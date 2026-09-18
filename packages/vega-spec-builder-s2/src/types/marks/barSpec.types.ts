@@ -11,7 +11,7 @@
  */
 import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import { ColorFacet, LineTypeFacet, LineWidth, OpacityFacet, Orientation, PartiallyRequired } from '../specUtil.types';
 import { BarAnnotationOptions } from './supplemental/barAnnotationSpec.types';
 import { BarDirectLabelOptions } from './supplemental/barDirectLabelSpec.types';
@@ -69,6 +69,8 @@ export interface BarOptions {
   trellisPadding?: number;
   /** Bar type. */
   type?: BarType;
+  /** Diverging bar chart (metric spans positive and negative): moves the dimension axis to the zero baseline and flips each label to the opposite side of its bar. Single-series bars only; a no-op on dodged/stacked/multi-series bars. */
+  diverging?: boolean;
   /** Axis that the metric is trended against (y-axis for a vertical bar) */
   metricAxis?: string;
 
@@ -76,7 +78,7 @@ export interface BarOptions {
   barAnnotations?: BarAnnotationOptions[];
   barDirectLabels?: BarDirectLabelOptions[];
   chartPopovers?: ChartPopoverOptions[];
-  chartTooltips?: ChartTooltipOptions[];
+  chartInspects?: ChartInspectOptions[];
   trendlines?: TrendlineOptions[];
 }
 
@@ -85,8 +87,9 @@ type BarOptionsWithDefaults =
   | 'barDirectLabels'
   | 'color'
   | 'chartPopovers'
-  | 'chartTooltips'
+  | 'chartInspects'
   | 'dimension'
+  | 'diverging'
   | 'hasOnClick'
   | 'hasSquareCorners'
   | 'lineType'
@@ -102,11 +105,20 @@ type BarOptionsWithDefaults =
   | 'type';
 
 export interface BarSpecOptions extends PartiallyRequired<BarOptions, BarOptionsWithDefaults> {
+  /** Unique composite hover-animation identity per rendered bar, computed from the real data (not `rscMarkId`). */
+  barIds?: string[];
+  /** Experimental: keyboard navigation focus rings/signals are emitted when true. @see ChartOptions.accessibleNavigation */
+  accessibleNavigation?: boolean;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];
   dimensionScaleType: 'band';
   highlightedItem?: HighlightedItem;
+  highlightedSeries?: string | number;
   idKey: string;
   index: number;
   interactiveMarkName: string | undefined;
+  isHighlightedByGroup?: boolean;
+  isHoverAnimate?: boolean;
+  legendHighlightSignals?: string[];
+  popoverMarkName?: string;
 }

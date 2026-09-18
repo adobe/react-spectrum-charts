@@ -13,10 +13,13 @@ import { produce } from 'immer';
 import { Data, Mark, Scale, Signal } from 'vega';
 
 import {
+  AnimationType,
   COLOR_SCALE,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
+  DRAW_IN_PREV_DATA,
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -26,49 +29,104 @@ import {
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
+import {
+  addInspectData,
+  addInspectSignals,
+  getGroupIdTransform,
+  isHighlightedByGroup,
+} from '../chartInspect/chartInspectUtils';
 import { addPopoverData } from '../chartPopover/chartPopoverUtils';
-import { addTooltipData, addTooltipSignals, isHighlightedByGroup } from '../chartTooltip/chartTooltipUtils';
-import { addTimeTransform, getFilteredTooltipData, getTableData } from '../data/dataUtils';
+import { addTimeTransform, getFilteredInspectData, getFilteredTableData, getTableData } from '../data/dataUtils';
+import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
+import {
+  getEffectiveMetricField,
+  getForecastAlternateFlagTransform,
+  getForecastEffectiveValueTransform,
+  getLineForecastBoundaryMark,
+  getLineForecastLabelMarks,
+  getLineForecastSpecOptions,
+} from '../lineForecast';
+import {
+  addHoverAnimLastChangeData,
+  addHoverAnimationSignals,
+  getHoverAnimStateData,
+  getHoverFractionData,
+  getHoverSeriesFractionData,
+  getHoverTargetData,
+} from '../marks/hoverAnimationUtils';
 import { getHoverMarkNames, getInteractiveMarkName, isInteractive } from '../marks/markUtils';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
-import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
-import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel';
+import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
-import { ColorScheme, HighlightedItem, LineOptions, LineSpecOptions, ScSpec } from '../types';
-import { getLineHighlightedData, getLineStaticPointData } from './lineDataUtils';
-import { getLineGradientMark, getLineHoverMarks, getLineMark } from './lineMarkUtils';
-import { getLineStaticPoint } from './linePointUtils';
+import {
+  ChartData,
+  ColorScheme,
+  HighlightedItem,
+  LineDirectLabelSpecOptions,
+  LineForecastOptions,
+  LineOptions,
+  LineSpecOptions,
+  ScSpec,
+} from '../types';
+import {
+  getHoverLabelData,
+  getLineHighlightedData,
+  getLineHoverRules,
+  getLineStaticPointData,
+  getPrimarySeriesFacetData,
+  getPrimarySeriesOtherExpr,
+} from './lineDataUtils';
+import {
+  getHighlightedSeriesOpacityRules,
+  getLineGradientMark,
+  getLineHighlightOverlayGroup,
+  getLineHoverMarks,
+  getLineMark,
+} from './lineMarkUtils';
+import { getLinePointAnnotationMarks } from './linePointAnnotation';
+import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
+import { addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData } from '../marks/drawInAnimationUtils';
 
 export const addLine = produce<
   ScSpec,
   [
     LineOptions & {
+      animations?: boolean;
+      animationTypes?: AnimationType[];
       colorScheme?: ColorScheme;
       highlightedItem?: HighlightedItem;
+      highlightedSeries?: string | number;
       index?: number;
       idKey: string;
       comboSiblingNames?: string[];
+      data?: ChartData[];
     }
   ]
 >(
   (
     spec,
     {
+      animations,
+      animationTypes,
       chartActionBars = [],
       chartPopovers = [],
-      chartTooltips = [],
+      chartInspects = [],
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
+      forecasts = [],
       gradient = false,
       hasOnClick = false,
+      hasOnContextMenu = false,
       index = 0,
+      lineCap = 'round',
       lineDirectLabels = [],
+      linePointAnnotations = [],
       lineType = { value: 'solid' },
       metric = DEFAULT_METRIC,
       metricAxis,
@@ -78,29 +136,47 @@ export const addLine = produce<
       scaleType = 'time',
       trendlines = [],
       interpolate,
+      alternateSegmentKey,
+      alternateSegmentLineType = 'dotted',
+      alternateSegmentLabel,
+      primarySeries,
+      otherSeriesColor,
+      showHoverLabel = true,
+      dimensionHover = false,
+      data,
       ...options
     }
   ) => {
     const lineName = toCamelCase(name || `line${index}`);
+    // ChartInspect owns the hover story when present — suppress the hover value label
+    const effectiveShowHoverLabel = chartInspects.length > 0 ? false : showHoverLabel;
+    const { facets } = getFacetsFromOptions({ color, lineType, opacity });
+    const seriesIds = getUniqueSeriesIds(data, facets);
+
     // put options back together now that all defaults are set
     const lineOptions: LineSpecOptions = {
       chartActionBars,
       chartPopovers,
-      chartTooltips,
+      chartInspects,
       color,
       colorScheme,
       dimension,
       dualMetricAxis,
+      forecasts,
       gradient,
       hasOnClick,
+      hasOnContextMenu,
       index,
+      lineCap,
       lineDirectLabels,
+      linePointAnnotations,
       interactiveMarkName: getInteractiveMarkName(
         {
           chartActionBars,
           chartPopovers,
-          chartTooltips,
+          chartInspects,
           hasOnClick,
+          hasOnContextMenu,
           highlightedItem: options.highlightedItem,
           metricRanges,
           trendlines,
@@ -117,11 +193,21 @@ export const addLine = produce<
       scaleType,
       trendlines,
       interpolate,
+      alternateSegmentKey,
+      alternateSegmentLineType,
+      alternateSegmentLabel,
+      primarySeries,
+      otherSeriesColor,
+      showHoverLabel: effectiveShowHoverLabel,
+      dimensionHover,
+      seriesIds,
       ...options,
     };
-    lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions);
-
+    lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
+    lineOptions.isHoverAnimate = usesHoverAnimation(animations, animationTypes, lineOptions);
+    lineOptions.isDrawInAnimate = isLineDrawInSupported(animations, animationTypes, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
+    if (lineOptions.isHoverAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = setScales(spec.scales ?? [], lineOptions);
@@ -131,22 +217,88 @@ export const addLine = produce<
   }
 );
 
+/**
+ * Whether the line participates in the hover-animation system.
+ * Computed once in `addLine` and stored on `options.isHoverAnimate`; every downstream gate reads that
+ * resolved boolean. A highlight legend counts (via legendHighlightSignals) so both the legend and the line animate.
+ * `highlightedItem`/`highlightedSeries` are the chart-level controlled-highlight props; either one alone
+ * is enough to animate, since `getLineHoverRules` always wires both `controlledTableMatch` and
+ * `controlledSeriesMatch` regardless of which is set.
+ * `animations === false` is the master kill switch and opts out unconditionally; otherwise hover is
+ * gated on `animationTypes` including `'hover'` (defaults to `DEFAULT_ANIMATION_TYPES`, which does).
+ */
+const usesHoverAnimation = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined,
+  options: LineSpecOptions
+): boolean =>
+  animations !== false &&
+  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
+  (isInteractive(options) ||
+    options.highlightedItem !== undefined ||
+    options.highlightedSeries !== undefined ||
+    (options.legendHighlightSignals?.length ?? 0) > 0);
+
+/**
+ * Whether the line participates in the draw-in animation system.
+ * Unlike hover animation, this is opt-in — `animationTypes` must explicitly include `'drawIn'` — since
+ * draw-in is still gated to a subset of scale types. `animations === false` still overrides unconditionally.
+ */
+const isLineDrawInSupported = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined,
+  options: LineSpecOptions
+): boolean =>
+  animations !== false &&
+  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn') &&
+  (options.scaleType === 'time' || options.scaleType === 'linear' || options.scaleType === 'point');
+
+/**
+ * Gets the unique series ids for the line
+ * @param data - the data for the line
+ * @param facets - the facets for the line
+ * @returns string[] - list of the unique series ids for the line
+ */
+const getUniqueSeriesIds = (data: ChartData[] | undefined, facets: string[]): string[] => {
+  if (!data?.length || !facets.length) return [];
+  return [...new Set(data.map((row) => facets.map((f) => (row as Record<string, unknown>)[f]).join(' | ')))];
+};
+
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
-  const { chartTooltips, dimension, highlightedItem, isSparkline, isMethodLast, name, scaleType, staticPoint } =
-    options;
+  const { chartInspects, dimension, dimensionHover, isSparkline, isMethodLast, name, scaleType, staticPoint } = options;
+  const tableData = getTableData(data);
   if (scaleType === 'time') {
-    const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
+    if (options.isDrawInAnimate) {
+      tableData.transform = addLineDrawInTimeMsTransform(tableData.transform ?? [], dimension);
+    }
   }
-  if (isInteractive(options) || highlightedItem !== undefined) {
-    data.push(getLineHighlightedData(options), getFilteredTooltipData(chartTooltips));
+  addDimensionHoverGroupTransform(tableData, chartInspects, dimensionHover, dimension, name);
+  addSegmentData(data, tableData, options);
+  addLineHoverData(data, options);
+
+  if (options.isDrawInAnimate) {
+    if (scaleType === 'point') {
+      const pointIndexData = getLineDrawInPointIndexData(options);
+      addLineDrawInLeadTransform(pointIndexData, options);
+      data.push(pointIndexData, ...getLineDrawInData(options));
+    } else {
+      addLineDrawInLeadTransform(getFilteredTableData(data), options);
+      data.push(...getLineDrawInData(options));
+    }
   }
+
   if (staticPoint || isSparkline) {
-    data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    if (options.isDrawInAnimate){
+      data.push(getLineStaticPointData(name, staticPoint, `${name}_${DRAW_IN_PREV_DATA}`, isSparkline, isMethodLast));
+    } else {
+      data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    }
   }
+
   addDualMetricAxisData(data, options);
   addTrendlineData(data, options);
-  addTooltipData(data, options, false);
+  addInspectData(data, options, false);
   addPopoverData(data, options);
   data.push(...getMetricRangeData(options));
   for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
@@ -154,6 +306,69 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
     data.push(getLineDirectLabelData(options.name, specOpts, options));
   }
 });
+
+/**
+ * Adds the groupId transform used by dimensionHover, unless a ChartInspect is already grouping by dimension.
+ */
+const addDimensionHoverGroupTransform = (
+  tableData: Data,
+  chartInspects: LineSpecOptions['chartInspects'],
+  dimensionHover: boolean,
+  dimension: string,
+  name: string
+): void => {
+  const inspectAlreadyGroupsByDimension = chartInspects.some(({ highlightBy }) => highlightBy === 'dimension');
+  if (!dimensionHover || inspectAlreadyGroupsByDimension) return;
+  tableData.transform = tableData.transform ?? [];
+  tableData.transform.push(getGroupIdTransform([dimension], name));
+};
+
+/**
+ * Adds the data sources for whichever segmenting feature is in use: alternative segments, forecasts,
+ * or a primary series facet. These are mutually exclusive.
+ */
+const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions): void => {
+  const { alternateSegmentKey, dimension, forecasts, metric, name, primarySeries, scaleType } = options;
+  // time data was transformed above, so we need to use the transformed dimension
+  const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+  if (alternateSegmentKey) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
+    data.push(...getAlternateSegmentData(name, dimSortField));
+  } else if (forecasts.length > 0) {
+    tableData.transform = tableData.transform ?? [];
+    tableData.transform.push(
+      getForecastAlternateFlagTransform(name, dimension, forecasts[0].start),
+      getForecastEffectiveValueTransform(name, metric, forecasts[0].metric)
+    );
+    data.push(...getAlternateSegmentData(name, dimSortField));
+  } else if (primarySeries) {
+    data.push(getPrimarySeriesFacetData(name, primarySeries));
+  }
+};
+
+/**
+ * Adds the hover-label/highlight data sources for interactive or highlighted lines, plus the
+ * hover-animation engine's data sources when the line is animated.
+ */
+const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
+  const { chartInspects, highlightedItem, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
+  if (isInteractive(options) || highlightedItem !== undefined) {
+    data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
+    if (showHoverLabel) {
+      data.push(getHoverLabelData(options));
+    }
+  }
+  if (isHoverAnimate) {
+    data.push(
+      getHoverTargetData({ name, groupby: [SERIES_ID], rules: getLineHoverRules(options) }),
+      getHoverAnimStateData({ name, keys: seriesIds ?? [] }),
+      getHoverFractionData(name),
+      getHoverSeriesFractionData(name) // no-op for line, already one row per series
+    );
+    addHoverAnimLastChangeData(data, name);
+  }
+};
 
 /**
  * Adds data sources for dual metric axis feature
@@ -190,11 +405,27 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
   }
 
+  if (options.isHoverAnimate) {
+    addHoverAnimationSignals(signals, name);
+  }
+
+  if (options.isDrawInAnimate) {
+    addLineDrawInAnimationSignals(signals, options);
+  }
+
   if (!isInteractive(options)) return;
-  // we don't need to include the excludeDataKeys here because they will be excluded from the points for voronoi
-  addHoveredItemSignal(signals, name, `${name}_voronoi`, 2);
+  const { primarySeries } = options;
+  // datum.datum because the voronoi mark uses datumOrder=2
+  addHoveredItemSignal(
+    signals,
+    name,
+    `${name}_voronoi`,
+    2,
+    undefined,
+    getPrimarySeriesExcludeCondition(primarySeries, 'datum.datum')
+  );
   addHoverSignals(signals, options);
-  addTooltipSignals(signals, options);
+  addInspectSignals(signals, options);
 });
 
 export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) => {
@@ -227,39 +458,167 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { color, gradient, highlightedItem, isSparkline, lineType, name, opacity, staticPoint } = options;
+  const { highlightedItem, legendHighlightSignals, name } = options;
+  const forecasts = options.forecasts ?? [];
+  const { facetData, facetGroupby, markOptions } = getLineFacetContext(options);
+
+  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
+  const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
+
+  // boundary rules are drawn behind everything
+  addLineForecastBoundaryMarks(marks, forecasts, options);
+  addLineGroupMark(marks, name, markOptions, facetData, facetGroupby);
+  addLineStaticPointMarks(marks, options);
+  marks.push(...getMetricRangeGroupMarks(options), ...getTrendlineMarks(options));
+
+  const labelSpecOpts = getLineDirectLabelSpecOptionsList(options);
+  addLineDirectLabelMarks(marks, options, labelSpecOpts);
+  if (hasHighlightState) {
+    addLineHighlightOverlayMarks(marks, options, markOptions, facetData, facetGroupby, labelSpecOpts);
+  }
+  // hover marks are last so hollow points and interaction marks always render above everything
+  if (hasInteractiveHighlight) {
+    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
+  }
+  // forecast labels are drawn last so they appear on top of other marks
+  addLineForecastLabelMarks(marks, forecasts, options);
+});
+
+/**
+ * Computes the facet source/groupby that the line's main group mark and highlight overlay both
+ * facet from, plus the mark options those marks render with (metric/alternateSegmentKey are
+ * overridden when a forecast is present, to trigger getAlternateSegmentStrokeDash in getLineMark).
+ */
+const getLineFacetContext = (
+  options: LineSpecOptions
+): { facetData: string; facetGroupby: string[]; markOptions: LineSpecOptions } => {
+  const { alternateSegmentKey, color, lineType, name, opacity, primarySeries } = options;
+  const forecasts = options.forecasts ?? [];
+  const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
   const { facets } = getFacetsFromOptions({ color, lineType, opacity });
+  // when alternateSegmentKey or forecasts are active, facet by segmentId so each contiguous run
+  // gets its own path with its own strokeDash
+  const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
+  // when primarySeries is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
+  const defaultFacetData = primarySeries ? `${name}_primarySeriesFacetData` : FILTERED_TABLE;
+  const alternateSegmentsFacetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
+  // when animated, facet from the draw-in lerp source (prev + tip) so the line renders clipped to
+  // the animated cutoff instead of the full series
+  const facetData = options.isDrawInAnimate ? `${name}_drawInLerp` : alternateSegmentsFacetData;
+  const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
 
+  const markOptions = hasForecast
+    ? {
+        ...options,
+        metric: getEffectiveMetricField(options),
+        alternateSegmentKey: `${name}_alternateFlag`,
+      }
+    : options;
+
+  return { facetData, facetGroupby, markOptions };
+};
+
+const addLineForecastBoundaryMarks = (
+  marks: Mark[],
+  forecasts: LineForecastOptions[],
+  options: LineSpecOptions
+): void => {
+  for (const [i, forecast] of forecasts.entries()) {
+    marks.push(getLineForecastBoundaryMark(getLineForecastSpecOptions(forecast, i, options)));
+  }
+};
+
+const addLineGroupMark = (
+  marks: Mark[],
+  name: string,
+  markOptions: LineSpecOptions,
+  facetData: string,
+  facetGroupby: string[]
+): void => {
   marks.push({
     name: `${name}_group`,
     type: 'group',
     from: {
       facet: {
         name: `${name}_facet`,
-        data: FILTERED_TABLE,
-        groupby: facets,
+        data: facetData,
+        groupby: facetGroupby,
       },
     },
     marks: [
-      ...(gradient ? [getLineGradientMark(options, `${name}_facet`)] : []),
-      getLineMark(options, `${name}_facet`),
+      ...(markOptions.gradient ? [getLineGradientMark(markOptions, `${name}_facet`)] : []),
+      getLineMark(markOptions, `${name}_facet`),
     ],
   });
-  if (staticPoint || isSparkline) marks.push(getLineStaticPoint(options));
-  marks.push(...getMetricRangeGroupMarks(options));
-  if (isInteractive(options) || highlightedItem !== undefined) {
-    marks.push(...getLineHoverMarks(options, `${FILTERED_TABLE}ForTooltip`));
+};
+
+const addLineStaticPointMarks = (marks: Mark[], options: LineSpecOptions): void => {
+  const { isSparkline, linePointAnnotations, staticPoint } = options;
+  if (!staticPoint && !isSparkline) return;
+  marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
+  if (linePointAnnotations.length > 0) {
+    marks.push(...getLinePointAnnotationMarks(options));
   }
-  marks.push(...getTrendlineMarks(options));
-  for (const [i, label] of (options.lineDirectLabels ?? []).entries()) {
-    const specOpts = getLineDirectLabelSpecOptions(label, i, options);
-    marks.push(...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme));
+};
+
+const getLineDirectLabelSpecOptionsList = (options: LineSpecOptions): LineDirectLabelSpecOptions[] =>
+  (options.lineDirectLabels ?? []).map((label, i) => getLineDirectLabelSpecOptions(label, i, options));
+
+const addLineDirectLabelMarks = (
+  marks: Mark[],
+  options: LineSpecOptions,
+  labelSpecOpts: LineDirectLabelSpecOptions[]
+): void => {
+  for (const specOpts of labelSpecOpts) {
+    marks.push(
+      ...getLineDirectLabelMarks(options.name, specOpts, options, options.backgroundColor, options.colorScheme)
+    );
   }
-});
+};
+
+/**
+ * Renders the highlighted series on top of labels so the line stays in the foreground on hover.
+ * Foreground labels are pushed in the same call (after the overlay group) so they always render
+ * above all overlay lines.
+ */
+const addLineHighlightOverlayMarks = (
+  marks: Mark[],
+  options: LineSpecOptions,
+  markOptions: LineSpecOptions,
+  facetData: string,
+  facetGroupby: string[],
+  labelSpecOpts: LineDirectLabelSpecOptions[]
+): void => {
+  if (!labelSpecOpts.length) return;
+  const opacityRules = getHighlightedSeriesOpacityRules(markOptions);
+  marks.push(
+    getLineHighlightOverlayGroup(markOptions, facetData, facetGroupby),
+    ...labelSpecOpts.flatMap((specOpts) =>
+      getLineDirectLabelMarks(
+        options.name,
+        specOpts,
+        options,
+        options.backgroundColor,
+        options.colorScheme,
+        opacityRules
+      )
+    )
+  );
+};
+
+const addLineForecastLabelMarks = (
+  marks: Mark[],
+  forecasts: LineForecastOptions[],
+  options: LineSpecOptions
+): void => {
+  for (const [i, forecast] of forecasts.entries()) {
+    marks.push(...getLineForecastLabelMarks(getLineForecastSpecOptions(forecast, i, options)));
+  }
+};
 
 const getMetricKeys = (lineOptions: LineSpecOptions) => {
-  const metricKeys = [lineOptions.metric];
+  const metricKeys = [getEffectiveMetricField(lineOptions)];
 
   // metric range fields should be added if metric-axis will be scaled to fit
   const metricRanges = getMetricRanges(lineOptions);
@@ -270,10 +629,63 @@ const getMetricKeys = (lineOptions: LineSpecOptions) => {
   return metricKeys;
 };
 
+export const getAlternateSegmentData = (name: string, dimSortField: string): Data[] => [
+  {
+    name: `${name}_segmented`,
+    source: FILTERED_TABLE,
+    transform: [
+      {
+        type: 'window',
+        groupby: [SERIES_ID],
+        sort: { field: dimSortField, order: 'ascending' },
+        ops: ['lag'],
+        fields: [`${name}_alternateFlag`],
+        params: [1],
+        as: [`${name}_prevAlternateFlag`],
+      },
+      {
+        type: 'formula',
+        as: `${name}_isSegmentBreak`,
+        expr: `datum.${name}_prevAlternateFlag !== null && datum.${name}_alternateFlag !== datum.${name}_prevAlternateFlag ? 1 : 0`,
+      },
+      {
+        type: 'window',
+        groupby: [SERIES_ID],
+        sort: { field: dimSortField, order: 'ascending' },
+        ops: ['sum'],
+        fields: [`${name}_isSegmentBreak`],
+        frame: [null, 0],
+        as: [`${name}_segmentId`],
+      },
+    ],
+  },
+  {
+    name: `${name}_bridge`,
+    source: `${name}_segmented`,
+    transform: [
+      { type: 'filter', expr: `datum.${name}_isSegmentBreak === 1` },
+      { type: 'formula', as: `${name}_segmentId`, expr: `datum.${name}_segmentId - 1` },
+      { type: 'formula', as: `${name}_alternateFlag`, expr: `!datum.${name}_alternateFlag` },
+    ],
+  },
+  {
+    // merges segmented data with bridge points and re-sorts so each segment path connects seamlessly to the next
+    name: `${name}_with_bridges`,
+    source: [`${name}_segmented`, `${name}_bridge`],
+    transform: [{ type: 'collect', sort: { field: dimSortField, order: 'ascending' } }],
+  },
+];
+
 const addHoverSignals = (signals: Signal[], options: LineSpecOptions) => {
-  const { interactionMode, name: lineName } = options;
+  const { interactionMode, name: lineName, primarySeries } = options;
   if (interactionMode !== INTERACTION_MODE.ITEM) return;
+  const itemExcludeCondition = getPrimarySeriesExcludeCondition(primarySeries, 'datum');
   for (const hoverMarkName of getHoverMarkNames(lineName)) {
-    addHoveredItemSignal(signals, lineName, hoverMarkName);
+    addHoveredItemSignal(signals, lineName, hoverMarkName, 1, undefined, itemExcludeCondition);
   }
 };
+
+const getPrimarySeriesExcludeCondition = (
+  primarySeries: number | string[] | undefined,
+  datumPath: string
+): string | undefined => (primarySeries ? getPrimarySeriesOtherExpr(primarySeries, datumPath) : undefined);

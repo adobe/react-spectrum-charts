@@ -13,22 +13,18 @@ import { AreaMark, GroupMark, LineMark, SourceData, SymbolMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
-  CONTROLLED_HIGHLIGHTED_SERIES,
-  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_METRIC,
   DEFAULT_SYMBOL_SIZE,
   DEFAULT_SYMBOL_STROKE_WIDTH,
   FILTERED_TABLE,
-  HOVERED_ITEM,
-  SELECTED_SERIES,
-  SERIES_ID,
 } from '@spectrum-charts/constants';
 
 import { AreaMarkOptions, getAreaMark } from '../area/areaUtils';
 import { getFilteredIsValidData } from '../line/lineDataUtils';
-import { getLineMark, getLineYEncoding } from '../line/lineMarkUtils';
+import { getClampedYEncoding, getLineMark } from '../line/lineMarkUtils';
 import { LineMarkOptions } from '../line/lineUtils';
 import { getColorProductionRule, getOpacityProductionRule, getXProductionRule } from '../marks/markUtils';
+import { getHoverContext, getSeriesHoverPredicate } from '../marks/hoverContext';
 import { getFacetsFromOptions } from '../specUtils';
 import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
 
@@ -127,7 +123,7 @@ export const getMetricRangeHoverPoints = (
   lineMarkOptions: LineSpecOptions,
   metricRangeOptions: MetricRangeSpecOptions
 ): SymbolMark[] => {
-  const { color: lineColor, colorScheme, dimension, scaleType } = lineMarkOptions;
+  const { color: lineColor, colorScheme, dimension, s2, scaleType } = lineMarkOptions;
   const { color: rangeColor, metric, name } = metricRangeOptions;
   const highlightedData = `${name}_hoverPointData`;
   const color = rangeColor ? { value: rangeColor } : lineColor;
@@ -144,7 +140,7 @@ export const getMetricRangeHoverPoints = (
       enter: {
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
-        y: getLineYEncoding(lineMarkOptions, metric),
+        y: getClampedYEncoding(lineMarkOptions, metric),
       },
       update: {
         size: { value: DEFAULT_SYMBOL_SIZE },
@@ -163,13 +159,13 @@ export const getMetricRangeHoverPoints = (
     interactive: false,
     encode: {
       enter: {
-        y: getLineYEncoding(lineMarkOptions, metric),
-        stroke: getColorProductionRule(color, colorScheme),
+        y: getClampedYEncoding(lineMarkOptions, metric),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
       },
       update: {
         fill: { signal: BACKGROUND_COLOR },
         size: { value: DEFAULT_SYMBOL_SIZE },
-        stroke: getColorProductionRule(color, colorScheme),
+        stroke: getColorProductionRule(color, colorScheme, undefined, s2),
         strokeOpacity: getOpacityProductionRule(lineMarkOptions.opacity),
         strokeWidth: { value: DEFAULT_SYMBOL_STROKE_WIDTH },
         x: getXProductionRule(scaleType, dimension),
@@ -190,6 +186,7 @@ export const getMetricRangeMark = (
   lineMarkOptions: LineSpecOptions,
   metricRangeOptions: MetricRangeSpecOptions
 ): (LineMark | AreaMark)[] => {
+  const hoverContext = getHoverContext(lineMarkOptions);
   const areaOptions: AreaMarkOptions = {
     name: `${metricRangeOptions.name}_area`,
     color: lineMarkOptions.color,
@@ -198,26 +195,32 @@ export const getMetricRangeMark = (
     metricStart: metricRangeOptions.metricStart,
     metricEnd: metricRangeOptions.metricEnd,
     isStacked: false,
-    scaleType: 'time',
+    scaleType: lineMarkOptions.scaleType,
     dimension: lineMarkOptions.dimension,
     isMetricRange: true,
     parentName: lineMarkOptions.name,
-    // 'metric' means only the line is hidden on hover — area is always visible
-    displayOnHover: metricRangeOptions.displayOnHover === 'metric' ? false : metricRangeOptions.displayOnHover,
+    displayOnHover: metricRangeOptions.displayOnHover,
+    displayOnHoverTrigger: metricRangeOptions.displayOnHoverTrigger,
+    hoverContext,
     interactiveMarkName: lineMarkOptions.interactiveMarkName,
+    interactionMode: lineMarkOptions.interactionMode,
+    isHighlightedByGroup: lineMarkOptions.isHighlightedByGroup,
+    s2: lineMarkOptions.s2,
   };
   const { interactiveMarkName, ...baseLineMarkOptions } = lineMarkOptions;
   const lineOptions: LineMarkOptions = {
     ...baseLineMarkOptions,
+    isMetricRange: true,
     name: `${metricRangeOptions.name}_line`,
     color: metricRangeOptions.color ? { value: metricRangeOptions.color } : lineMarkOptions.color,
     metric: metricRangeOptions.metric,
     lineType: { value: metricRangeOptions.lineType },
     lineWidth: { value: metricRangeOptions.lineWidth },
-    // 'range' means only the area is hidden on hover — line is always visible and should not fade on hover
-    displayOnHover: metricRangeOptions.displayOnHover === 'range' ? false : metricRangeOptions.displayOnHover,
+    displayOnHover: metricRangeOptions.displayOnHover,
+    displayOnHoverTrigger: metricRangeOptions.displayOnHoverTrigger,
     opacity: metricRangeOptions.lineOpacity ? metricRangeOptions.lineOpacity : { value: 1 },
-    ...(metricRangeOptions.displayOnHover !== 'range' && { interactiveMarkName }),
+    hoverContext,
+    interactiveMarkName,
   };
 
   const dataSource = `${metricRangeOptions.name}_facet`;
@@ -235,8 +238,9 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
   const data: SourceData[] = [];
   const metricRanges = getMetricRanges(markOptions);
 
+  const ctx = getHoverContext(markOptions);
   for (const metricRangeOptions of metricRanges) {
-    const { displayOnHover, hoverPoint, metric, name } = metricRangeOptions;
+    const { displayOnHover, displayOnHoverTrigger, hoverPoint, metric, name } = metricRangeOptions;
     // if hoverPoint is true and the line is interactive, add a filtered data source to rows where the
     // MetricRange metric is valid. This prevents hover marks from being created at NaN y positions
     // for rows where the metric is null.
@@ -245,19 +249,10 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
     }
     // if displayOnHover is true, add a data source for the highlighted data
     if (displayOnHover === true) {
-      const hoveredItem = `isValid(${markOptions.interactiveMarkName}_${HOVERED_ITEM}) && ${markOptions.interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
-      const selectedSeries = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
-      const controlledHighlightedItem = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
-      const controlledHighlightedSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
       data.push({
         name: `${name}_highlightedData`,
         source: FILTERED_TABLE,
-        transform: [
-          {
-            type: 'filter',
-            expr: [hoveredItem, selectedSeries, controlledHighlightedItem, controlledHighlightedSeries].join(' || '),
-          },
-        ],
+        transform: [{ type: 'filter', expr: getSeriesHoverPredicate(ctx, displayOnHoverTrigger) }],
       });
     }
   }

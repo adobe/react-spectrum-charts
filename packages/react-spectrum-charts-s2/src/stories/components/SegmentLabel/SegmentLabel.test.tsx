@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { SegmentLabel } from '../../../rc';
+import { SegmentLabel } from '../../../pre-alpha';
 import { findChart, render, screen } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import { Basic, Percent, Value, ValueFormat } from './SegmentLabel.story';
@@ -69,8 +69,9 @@ describe('SegmentLabel', () => {
     expect(chart).toBeInTheDocument();
 
     expect(screen.getByText('Safari')).toBeInTheDocument();
-    // unknown has a font size of 0 since it's segment is too thin
-    expect(screen.getByText('Unknown')).toHaveAttribute('font-size', '0px');
+    // thin segments are excluded from the label data source entirely (so they don't consume a
+    // collision-rank slot), not rendered with font-size 0
+    expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
   });
 });
 
