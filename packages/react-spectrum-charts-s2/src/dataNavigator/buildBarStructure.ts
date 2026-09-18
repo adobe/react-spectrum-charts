@@ -210,6 +210,8 @@ export const buildBarStructure = ({
   // Every node rendered in keyboard mode needs an aria-label.
   prepareNodeSemantics(structure, {
     dimension,
+    metric,
+    color,
     data: orderedData,
     fieldLabels,
     colorOverride,
@@ -231,9 +233,13 @@ const getAccessibleColorName = (value: unknown, locale: string): string => {
 };
 
 export interface NodeLabelOptions {
-  /** The bar's category field. Needed to look up a division (stack/group) node's own rows and to exclude it from each segment's own field list, since it's already stated once in the group's own label. */
+  /** The bar's category field. Needed to look up a division (stack/group) node's own rows and to exclude it from each segment's own field list, since it's already stated once in the group's own label. Also used, with `metric`, to build the whole-chart root's fallback label. */
   dimension?: string;
-  /** The chart's visible, ordered rows. Needed to build a division (stack/group) node's itemized segment summary — a division's own `node.data` is data-navigator's internal bookkeeping, not the real rows. */
+  /** The bar's metric field. Used, with `dimension`, to build the whole-chart root's fallback label (e.g. "Downloads by Browser chart.") when the consumer doesn't supply an explicit `title`. */
+  metric?: string;
+  /** The bar's series/color field. When set, the whole-chart root's fallback label also names the series field and counts groups instead of bars. */
+  color?: string;
+  /** The chart's visible, ordered rows. Needed to build a division (stack/group) node's itemized segment summary, and to count bars/groups for the whole-chart root — a division's own `node.data` is data-navigator's internal bookkeeping, not the real rows. */
   data?: SimpleData[];
   /** Maps a data field to its display label. When set, a leaf's accessible name lists only these fields, labeled by their titles, instead of every raw field. */
   fieldLabels?: Record<string, string>;
@@ -277,11 +283,20 @@ const buildFieldValueParts = (
 
 /**
  * Fallback label for a node with no consumer-supplied semantics: a leaf's `field: value` pairs, a
- * division's dimension value plus an itemized summary of its own segments, or the bare node id for
- * the whole-chart root (no synthesized narration).
+ * division's dimension value plus an itemized summary of its own segments, or a "metric by dimension"
+ * summary of the whole chart for the root — read verbatim from the consumer's `Chart.title` instead
+ * whenever one is supplied (see `buildBarStructure`), so this fallback only ever applies without one.
  */
 export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {}): string => {
-  if (node.dimensionLevel === 1) return String(node.id);
+  if (node.dimensionLevel === 1) {
+    const { dimension, metric, color, data: rows, fieldLabels = {} } = options;
+    if (!dimension || !metric) return String(node.id);
+    const subject = `${fieldLabels[metric] ?? metric} by ${fieldLabels[dimension] ?? dimension} chart`;
+    const count = rows ? new Set(rows.map((row) => row[dimension])).size : undefined;
+    if (!count) return `${subject}.`;
+    if (color) return `${subject}, grouped by ${fieldLabels[color] ?? color}. ${count} ${count === 1 ? 'group' : 'groups'}.`;
+    return `${subject}. ${count} ${count === 1 ? 'bar' : 'bars'}.`;
+  }
 
   if (node.dimensionLevel != null) {
     const { dimension, data: rows, fieldLabels = {} } = options;

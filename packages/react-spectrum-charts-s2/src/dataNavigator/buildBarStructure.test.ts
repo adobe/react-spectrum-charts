@@ -72,9 +72,14 @@ describe('buildBarStructure()', () => {
     expect(structure.nodes[entryPoint as string].semantics?.label).toBe('Browser downloads');
   });
 
-  test('falls back to the node id (no synthesized narration) when no title is supplied', () => {
-    const { structure, entryPoint } = buildBarStructure({ data, dimension: 'browser' });
-    expect(structure.nodes[entryPoint as string].semantics?.label).toBe(entryPoint);
+  test('falls back to a "metric by dimension" summary with a bar count when no title is supplied', () => {
+    const { structure, entryPoint } = buildBarStructure({ data, dimension: 'browser', metric: 'downloads' });
+    expect(structure.nodes[entryPoint as string].semantics?.label).toBe('downloads by browser chart. 3 bars.');
+  });
+
+  test('counts groups instead of bars, and names the series field, when a color series is present', () => {
+    const { structure, entryPoint } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', metric: 'downloads' });
+    expect(structure.nodes[entryPoint as string].semantics?.label).toBe('downloads by browser chart, grouped by os. 2 groups.');
   });
 
   test('ensures every node has a semantics label', () => {
@@ -298,13 +303,64 @@ describe('buildNodeLabel()', () => {
     expect(buildNodeLabel({ id: 'lonely' } as NodeObject)).toBe('lonely');
   });
 
-  test('falls back to the node id for a dimension (root) node — no synthesized narration', () => {
+  test('falls back to the node id for a dimension (root) node when no dimension/metric is supplied', () => {
     const node = {
       id: '_browser',
       dimensionLevel: 1,
       data: { dimensionKey: 'browser', divisions: { a: {}, b: {} } },
     } as unknown as NodeObject;
     expect(buildNodeLabel(node)).toBe('_browser');
+  });
+
+  test('describes a dimension (root) node as "metric by dimension", labeled by their axis titles, with no count when no data is supplied', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(label).toBe('Downloads by Browser chart.');
+  });
+
+  test('counts distinct dimension values as bars when data is supplied and there is no color series', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      data: [
+        { browser: 'Chrome', downloads: 27000 },
+        { browser: 'Firefox', downloads: 8000 },
+      ],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(label).toBe('Downloads by Browser chart. 2 bars.');
+  });
+
+  test('uses singular "bar" for a single-category chart', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      data: [{ browser: 'Chrome', downloads: 27000 }],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads' },
+    });
+    expect(label).toBe('Downloads by Browser chart. 1 bar.');
+  });
+
+  test('counts groups and names the series field when a color series is present', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      color: 'operatingSystem',
+      data: [
+        { browser: 'Chrome', operatingSystem: 'Windows', downloads: 5 },
+        { browser: 'Chrome', operatingSystem: 'Mac', downloads: 3 },
+        { browser: 'Firefox', operatingSystem: 'Windows', downloads: 8 },
+      ],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads', operatingSystem: 'Operating system' },
+    });
+    expect(label).toBe('Downloads by Browser chart, grouped by Operating system. 2 groups.');
   });
 
   test('falls back to the node id for a division (stack) node when no dimension/data is supplied', () => {
