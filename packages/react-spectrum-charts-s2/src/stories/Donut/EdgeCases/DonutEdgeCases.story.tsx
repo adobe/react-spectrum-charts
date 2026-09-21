@@ -39,7 +39,7 @@ import { basicDonutData, booleanDonutData, zeroDonutData } from '../../component
 import { DonutEdgeCaseDatasetName, donutDatasetOptions, donutEdgeCaseDatasets } from './donutEdgeCaseData';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Edge Cases',
+  title: 'React Spectrum Charts 2/Donut/Edge Cases',
   component: Donut,
   parameters: {
     controls: { disable: true },
