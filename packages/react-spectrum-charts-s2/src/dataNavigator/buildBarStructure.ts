@@ -328,9 +328,9 @@ export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {})
     if (!dimension || !metric) return String(node.id);
     const { formatMessage } = getDataNavigatorIntl(locale);
     const count = rows ? new Set(rows.map((row) => row[dimension])).size : undefined;
-    const variables = { dimension: fieldLabels[dimension] ?? dimension, count: count ?? 0, metric: fieldLabels[metric] ?? metric };
+    const variables = { dimension: fieldLabels[dimension] ?? dimension, count: count ?? 0, metricLabel: fieldLabels[metric] ?? metric };
     if (color) return formatMessage('bar.stackedDescription', { ...variables, color: fieldLabels[color] ?? color });
-    return formatMessage('bar.description', { ...variables, hasCount: count ? 'true' : 'false' });
+    return formatMessage(count ? 'bar.description' : 'bar.descriptionNoCount', variables);
   }
 
   if (node.dimensionLevel != null) {

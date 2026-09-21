@@ -20,11 +20,10 @@ test('Dual-metric-axis navigation focuses a bar', async () => {
   const container = chart.closest('.rsc-container') as HTMLElement;
   await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
   (container.querySelector('button') as HTMLButtonElement).click();
-  let node: HTMLElement;
   await waitFor(() => {
-    node = container.querySelector('.dn-node') as HTMLElement;
-    expect(node).toBeTruthy();
+    expect(container.querySelector('.dn-node')).toBeTruthy();
   });
+  const node = container.querySelector('.dn-node') as HTMLElement;
   fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
   const groupRings = await findAllMarksByGroupName(chart, 'bar0_stackFocusRing');
   expect(groupRings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
@@ -40,11 +39,10 @@ test('Dual-metric-axis navigation moves within a group and to the corresponding 
   await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
   (container.querySelector('button') as HTMLButtonElement).click();
 
-  let node: HTMLElement;
   await waitFor(() => {
-    node = container.querySelector('.dn-node') as HTMLElement;
-    expect(node).toBeTruthy();
+    expect(container.querySelector('.dn-node')).toBeTruthy();
   });
+  const node = container.querySelector('.dn-node') as HTMLElement;
   fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
 
   const focusedNode = (): HTMLElement => container.querySelector('.dn-node') as HTMLElement;

@@ -20,11 +20,10 @@ test('Reference-line bar navigation focuses a bar', async () => {
   const container = chart.closest('.rsc-container') as HTMLElement;
   await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
   (container.querySelector('button') as HTMLButtonElement).click();
-  let node: HTMLElement;
   await waitFor(() => {
-    node = container.querySelector('.dn-node') as HTMLElement;
-    expect(node).toBeTruthy();
+    expect(container.querySelector('.dn-node')).toBeTruthy();
   });
+  const node = container.querySelector('.dn-node') as HTMLElement;
   fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
   const rings = await findAllMarksByGroupName(chart, 'bar0_focusRing');
   expect(rings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
