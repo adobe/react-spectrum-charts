@@ -12,27 +12,27 @@
 import { ReactElement, ReactNode, createContext, useContext, useState } from 'react';
 
 const DEFAULT_SIZE = 280;
-const EdgeCaseDatasetContext = createContext<string | undefined>(undefined);
-const EdgeCaseSizeContext = createContext(DEFAULT_SIZE);
-const EdgeCaseViewModeContext = createContext<string | undefined>(undefined);
+const VariationDatasetContext = createContext<string | undefined>(undefined);
+const VariationSizeContext = createContext(DEFAULT_SIZE);
+const VariationViewModeContext = createContext<string | undefined>(undefined);
 
-export interface EdgeCaseDataset {
+export interface VariationDataset {
   description?: string;
   label: string;
   value: string;
 }
 
-export interface EdgeCaseSizePreset {
+export interface VariationSizePreset {
   label: string;
   size: number;
 }
 
-export interface EdgeCaseViewMode {
+export interface VariationViewMode {
   label: string;
   value: string;
 }
 
-export interface EdgeCase {
+export interface Variation {
   /** Stable identifier used as the React key and future visual-regression identifier. */
   id: string;
   /** Short label shown above the visualization. */
@@ -43,26 +43,26 @@ export interface EdgeCase {
   dataset: string;
   /** Uses the dashboard dataset selection instead of the fixed dataset label. */
   usesDashboardDataset?: boolean;
-  /** Public props or child configurations exercised by this case. */
+  /** Public props or child configurations exercised by this variation. */
   coverage: string[];
-  /** Renders the isolated chart case. */
+  /** Renders the isolated chart variation. */
   render: () => ReactNode;
 }
 
-interface EdgeCaseDashboardProps {
+interface VariationDashboardProps {
   chartType: string;
-  cases: EdgeCase[];
-  datasets?: EdgeCaseDataset[];
+  variations: Variation[];
+  datasets?: VariationDataset[];
   getSizeDescription?: (size: number, viewMode?: string) => string;
   initialDataset?: string;
   initialSize?: number;
   initialViewMode?: string;
   resolvePresetSize?: (size: number, viewMode?: string) => number;
-  sizePresets?: EdgeCaseSizePreset[];
-  viewModes?: EdgeCaseViewMode[];
+  sizePresets?: VariationSizePreset[];
+  viewModes?: VariationViewMode[];
 }
 
-const defaultSizePresets: EdgeCaseSizePreset[] = [
+const defaultSizePresets: VariationSizePreset[] = [
   { label: 'S', size: 160 },
   { label: 'M', size: 240 },
   { label: 'L', size: 320 },
@@ -78,13 +78,13 @@ const badgeStyle = {
   padding: '2px 5px',
 } as const;
 
-export const useEdgeCaseSize = (): number => useContext(EdgeCaseSizeContext);
-export const useEdgeCaseDataset = (): string | undefined => useContext(EdgeCaseDatasetContext);
-export const useEdgeCaseViewMode = (): string | undefined => useContext(EdgeCaseViewModeContext);
+export const useVariationSize = (): number => useContext(VariationSizeContext);
+export const useVariationDataset = (): string | undefined => useContext(VariationDatasetContext);
+export const useVariationViewMode = (): string | undefined => useContext(VariationViewModeContext);
 
-export const EdgeCaseDashboard = ({
+export const VariationDashboard = ({
   chartType,
-  cases,
+  variations,
   datasets = [],
   getSizeDescription,
   initialDataset,
@@ -93,7 +93,7 @@ export const EdgeCaseDashboard = ({
   resolvePresetSize = (size) => size,
   sizePresets = defaultSizePresets,
   viewModes = [],
-}: EdgeCaseDashboardProps): ReactElement => {
+}: VariationDashboardProps): ReactElement => {
   const [dataset, setDataset] = useState(initialDataset ?? datasets[0]?.value);
   const [size, setSize] = useState(initialSize);
   const [viewMode, setViewMode] = useState(initialViewMode ?? viewModes[0]?.value);
@@ -111,15 +111,13 @@ export const EdgeCaseDashboard = ({
   };
 
   return (
-    <EdgeCaseSizeContext.Provider value={size}>
+    <VariationSizeContext.Provider value={size}>
       <main style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <header style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 900 }}>
           <div>
-            <h1 style={{ margin: '0 0 8px' }}>{chartType} edge-case dashboard</h1>
+            <h1 style={{ margin: '0 0 8px' }}>{chartType} variation dashboard</h1>
             <p style={{ margin: 0 }}>
-              Each card isolates a supported prop value or child configuration. The matrix is additive rather than a
-              Cartesian product so failures remain attributable; dataset stress suites can reuse these cases
-              independently.
+              Each card isolates a supported prop value or child configuration.
             </p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -205,8 +203,8 @@ export const EdgeCaseDashboard = ({
             {getSizeDescription && <span style={{ fontSize: 13 }}>{getSizeDescription(size, viewMode)}</span>}
           </div>
         </header>
-        <EdgeCaseDatasetContext.Provider value={dataset}>
-          <EdgeCaseViewModeContext.Provider value={viewMode}>
+        <VariationDatasetContext.Provider value={dataset}>
+          <VariationViewModeContext.Provider value={viewMode}>
             <div
               style={{
                 alignItems: 'start',
@@ -215,11 +213,11 @@ export const EdgeCaseDashboard = ({
                 gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minimumCardWidth}px), 1fr))`,
               }}
             >
-              {cases.map(
+              {variations.map(
                 ({ id, title, description, dataset: caseDataset, usesDashboardDataset = true, coverage, render }) => (
                   <section
                     key={id}
-                    data-edge-case-id={id}
+                    data-variation-id={id}
                     style={{
                       border: '1px solid var(--spectrum-gray-300, #d5d5d5)',
                       borderRadius: 8,
@@ -265,9 +263,9 @@ export const EdgeCaseDashboard = ({
                 )
               )}
             </div>
-          </EdgeCaseViewModeContext.Provider>
-        </EdgeCaseDatasetContext.Provider>
+          </VariationViewModeContext.Provider>
+        </VariationDatasetContext.Provider>
       </main>
-    </EdgeCaseSizeContext.Provider>
+    </VariationSizeContext.Provider>
   );
 };

@@ -27,19 +27,19 @@ import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutProps, SegmentLabelProps } from '../../../types';
 import {
-  EdgeCase,
-  EdgeCaseDashboard,
-  EdgeCaseSizePreset,
-  EdgeCaseViewMode,
-  useEdgeCaseDataset,
-  useEdgeCaseSize,
-  useEdgeCaseViewMode,
-} from '../../EdgeCaseDashboard';
+  Variation,
+  VariationDashboard,
+  VariationSizePreset,
+  VariationViewMode,
+  useVariationDataset,
+  useVariationSize,
+  useVariationViewMode,
+} from '../../VariationDashboard';
 import { basicDonutData, booleanDonutData, zeroDonutData } from '../../components/Donut/data';
-import { DonutEdgeCaseDatasetName, donutDatasetOptions, donutEdgeCaseDatasets } from './donutEdgeCaseData';
+import { DonutVariationDatasetName, donutDatasetOptions, donutVariationDatasets } from './donutVariationData';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Edge Cases',
+  title: 'React Spectrum Charts 2/Donut/Variations',
   component: Donut,
   parameters: {
     controls: { disable: true },
@@ -52,7 +52,7 @@ const alternateFieldData = basicDonutData.map(({ browser, count }) => ({
   total: count,
 }));
 
-const donutSizePresets: EdgeCaseSizePreset[] = [
+const donutSizePresets: VariationSizePreset[] = [
   { label: 'XS', size: 60 },
   { label: 'S', size: 120 },
   { label: 'M', size: 160 },
@@ -60,7 +60,7 @@ const donutSizePresets: EdgeCaseSizePreset[] = [
   { label: 'XL', size: 400 },
 ];
 
-const donutViewModes: EdgeCaseViewMode[] = [
+const donutViewModes: VariationViewMode[] = [
   { label: 'No added labels', value: 'none' },
   { label: 'Direct labels', value: 'direct' },
   { label: 'Advanced labels', value: 'advanced' },
@@ -97,7 +97,7 @@ const getEffectiveDonutDiameter = (containerSize: number, viewMode?: string): nu
   return Math.max(0, 2 * reservedRadius);
 };
 
-interface DonutCaseChartProps {
+interface DonutVariationChartProps {
   data?: ChartData[];
   donutProps?: DonutProps;
   children?: DonutProps['children'];
@@ -106,21 +106,21 @@ interface DonutCaseChartProps {
   size?: number;
 }
 
-const DonutCaseChart = ({
+const DonutVariationChart = ({
   data,
   donutProps,
   children,
   colors,
   emphasizedItemCount,
   size,
-}: DonutCaseChartProps): ReactElement => {
-  const selectedDataset = useEdgeCaseDataset();
-  const dashboardSize = useEdgeCaseSize();
-  const viewMode = useEdgeCaseViewMode();
-  if (!selectedDataset || !(selectedDataset in donutEdgeCaseDatasets)) {
-    throw new Error(`Unknown Donut edge-case dataset: ${selectedDataset}`);
+}: DonutVariationChartProps): ReactElement => {
+  const selectedDataset = useVariationDataset();
+  const dashboardSize = useVariationSize();
+  const viewMode = useVariationViewMode();
+  if (!selectedDataset || !(selectedDataset in donutVariationDatasets)) {
+    throw new Error(`Unknown Donut variation dataset: ${selectedDataset}`);
   }
-  const chartData = data ?? donutEdgeCaseDatasets[selectedDataset as DonutEdgeCaseDatasetName];
+  const chartData = data ?? donutVariationDatasets[selectedDataset as DonutVariationDatasetName];
   const chartSize = size ?? dashboardSize;
   const emphasizedItems =
     emphasizedItemCount === undefined
@@ -153,14 +153,14 @@ const dialogContent = (datum: Datum): ReactElement => (
   </div>
 );
 
-const cases: EdgeCase[] = [
+const variations: Variation[] = [
   {
     id: 'defaults',
     title: 'Defaults',
     description: 'Uses the default metric, color, hole ratio, start angle, and boolean mode.',
     dataset: 'canonical',
     coverage: ['metric=value', 'color=series', 'holeRatio=0.85', 'startAngle=0', 'isBoolean=false'],
-    render: () => <DonutCaseChart />,
+    render: () => <DonutVariationChart />,
   },
   {
     id: 'alternate-fields-and-name',
@@ -170,7 +170,7 @@ const cases: EdgeCase[] = [
     usesDashboardDataset: false,
     coverage: ['metric=total', 'color=category', 'name'],
     render: () => (
-      <DonutCaseChart
+      <DonutVariationChart
         data={alternateFieldData}
         donutProps={{ color: 'category', metric: 'total', name: 'alternate-fields-donut' }}
       />
@@ -182,7 +182,7 @@ const cases: EdgeCase[] = [
     description: 'Removes the inner radius completely.',
     dataset: 'canonical',
     coverage: ['holeRatio=0'],
-    render: () => <DonutCaseChart donutProps={{ holeRatio: 0 }} />,
+    render: () => <DonutVariationChart donutProps={{ holeRatio: 0 }} />,
   },
   {
     id: 'wide-ring',
@@ -190,7 +190,7 @@ const cases: EdgeCase[] = [
     description: 'Exercises a non-default inner-to-outer radius ratio.',
     dataset: 'canonical',
     coverage: ['holeRatio=0.5'],
-    render: () => <DonutCaseChart donutProps={{ holeRatio: 0.5 }} />,
+    render: () => <DonutVariationChart donutProps={{ holeRatio: 0.5 }} />,
   },
   {
     id: 'rotated',
@@ -198,7 +198,7 @@ const cases: EdgeCase[] = [
     description: 'Starts the first segment one quarter-turn clockwise from the default.',
     dataset: 'canonical',
     coverage: ['startAngle=PI/2'],
-    render: () => <DonutCaseChart donutProps={{ startAngle: Math.PI / 2 }} />,
+    render: () => <DonutVariationChart donutProps={{ startAngle: Math.PI / 2 }} />,
   },
   {
     id: 'boolean',
@@ -208,13 +208,13 @@ const cases: EdgeCase[] = [
     usesDashboardDataset: false,
     coverage: ['isBoolean=true'],
     render: () => (
-      <DonutCaseChart
+      <DonutVariationChart
         data={booleanDonutData}
         colors={['green-800']}
         donutProps={{ color: 'id', isBoolean: true, metric: 'value' }}
       >
         <DonutSummary label="Success rate" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -224,9 +224,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['emphasizedItems=[Chrome]'],
     render: () => (
-      <DonutCaseChart emphasizedItemCount={1}>
+      <DonutVariationChart emphasizedItemCount={1}>
         <SegmentLabel valueFormat="shortNumber" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -236,9 +236,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['emphasizedItems=[Chrome,Firefox]', 'otherItemColor=blue-200'],
     render: () => (
-      <DonutCaseChart donutProps={{ otherItemColor: 'blue-200' }} emphasizedItemCount={2}>
+      <DonutVariationChart donutProps={{ otherItemColor: 'blue-200' }} emphasizedItemCount={2}>
         <SegmentLabel valueFormat="shortNumber" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -248,10 +248,10 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['hideDeemphasizedLabels=true', 'labelMode=emphasized', 'labelMode=deemphasized'],
     render: () => (
-      <DonutCaseChart donutProps={{ hideDeemphasizedLabels: true }} emphasizedItemCount={1}>
+      <DonutVariationChart donutProps={{ hideDeemphasizedLabels: true }} emphasizedItemCount={1}>
         <SegmentLabel labelMode="emphasized" percent swatch value={false} />
         <SegmentLabel labelMode="deemphasized" value valueFormat="shortNumber" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -261,9 +261,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['DonutSummary.label', 'DonutSummary.numberFormat'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <DonutSummary label="Visitors" numberFormat="standardNumber" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -273,9 +273,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['DonutSummary.hideValue=true'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <DonutSummary hideValue label="Visitors" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -285,9 +285,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['DonutSummary.delta>0'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <DonutSummary delta={0.025} label="Visitors" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -297,9 +297,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['DonutSummary.delta<0', 'DonutSummary.label=undefined'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <DonutSummary delta={-0.074} />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -316,9 +316,9 @@ const cases: EdgeCase[] = [
       'showTotal=false',
     ],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <SegmentLabel />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -328,9 +328,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['valueFormat=shortNumber'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <SegmentLabel valueFormat="shortNumber" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -340,9 +340,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['percent=true', 'percentFormat=.0%', 'value=false'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <SegmentLabel percent value={false} />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -352,9 +352,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['percent=true', 'percentFormat=.1%', 'value=false'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <SegmentLabel percent percentFormat=".1%" value={false} />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -364,9 +364,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['swatch=true', 'showValueRow=false'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <SegmentLabel swatch value={false} />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -376,9 +376,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['showValueRow=true', 'showTotal=false', 'value=false'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <SegmentLabel showValueRow value={false} valueFormat="shortNumber" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -388,9 +388,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['showValueRow=true', 'showTotal=true', 'value=false'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <SegmentLabel showTotal showValueRow value={false} valueFormat="shortNumber" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -400,9 +400,9 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['labelKey=displayName', 'value=false'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <SegmentLabel labelKey="displayName" value={false} />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -412,10 +412,10 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['labelMode=emphasized', 'labelMode=deemphasized'],
     render: () => (
-      <DonutCaseChart donutProps={{ hideDeemphasizedLabels: false }} emphasizedItemCount={1}>
+      <DonutVariationChart donutProps={{ hideDeemphasizedLabels: false }} emphasizedItemCount={1}>
         <SegmentLabel labelMode="emphasized" percent showValueRow swatch value={false} />
         <SegmentLabel labelMode="deemphasized" value valueFormat="shortNumber" />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -425,10 +425,10 @@ const cases: EdgeCase[] = [
     dataset: 'canonical',
     coverage: ['ChartInspect', 'ChartPopover'],
     render: () => (
-      <DonutCaseChart>
+      <DonutVariationChart>
         <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover width="auto">{dialogContent}</ChartPopover>
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
   {
@@ -439,17 +439,17 @@ const cases: EdgeCase[] = [
     usesDashboardDataset: false,
     coverage: ['empty-state ring', 'DonutSummary', 'SegmentLabel'],
     render: () => (
-      <DonutCaseChart data={zeroDonutData} donutProps={{ color: 'browser', metric: 'count' }}>
+      <DonutVariationChart data={zeroDonutData} donutProps={{ color: 'browser', metric: 'count' }}>
         <DonutSummary label="Visitors" />
         <SegmentLabel percent value />
-      </DonutCaseChart>
+      </DonutVariationChart>
     ),
   },
 ];
 
 const DashboardStory: StoryFn = (): ReactElement => (
-  <EdgeCaseDashboard
-    cases={cases}
+  <VariationDashboard
+    variations={variations}
     chartType="Donut"
     datasets={donutDatasetOptions}
     getSizeDescription={(size, viewMode) =>

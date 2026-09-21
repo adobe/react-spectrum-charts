@@ -5,7 +5,7 @@
   "kind": "bug",
   "variant": "s2",
   "status": "approved",
-  "lastUpdated": "2026-09-18",
+  "lastUpdated": "2026-09-21",
   "complexity": {
     "score": 3,
     "rationale": "The breakpoint expressions are consistent, but the exact first-pass versus settled-dimension transition still needs runtime confirmation before choosing between a render-lifecycle or threshold-stability fix."
@@ -68,7 +68,7 @@
       "lines": "rich SegmentLabel scale, signal, and mark tests"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/EdgeCases/DonutEdgeCases.test.tsx",
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/DonutVariations.test.tsx",
       "change": "Add a render regression that starts at a breakpoint container size and asserts that the chart geometry remains stable after all scheduled Vega layout passes.",
       "lines": "new test file"
     }

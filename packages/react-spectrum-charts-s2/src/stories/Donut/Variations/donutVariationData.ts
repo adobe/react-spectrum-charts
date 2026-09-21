@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { EdgeCaseDataset } from '../../EdgeCaseDashboard';
+import { VariationDataset } from '../../VariationDashboard';
 
-export interface DonutEdgeCaseDatum extends Record<string, unknown> {
+export interface DonutVariationDatum extends Record<string, unknown> {
   displayName: string;
   series: string;
   value: number;
 }
 
-const standard: DonutEdgeCaseDatum[] = [
+const standard: DonutVariationDatum[] = [
   { displayName: 'Chrome browser', series: 'Chrome', value: 10390 },
   { displayName: 'Firefox browser', series: 'Firefox', value: 8281 },
   { displayName: 'Safari browser', series: 'Safari', value: 7045 },
@@ -27,20 +27,20 @@ const standard: DonutEdgeCaseDatum[] = [
   { displayName: 'Unknown browser', series: 'Unknown', value: 1021 },
 ];
 
-const singleSegment: DonutEdgeCaseDatum[] = [{ displayName: 'Only category', series: 'Only', value: 100 }];
+const singleSegment: DonutVariationDatum[] = [{ displayName: 'Only category', series: 'Only', value: 100 }];
 
-const twoSegments: DonutEdgeCaseDatum[] = [
+const twoSegments: DonutVariationDatum[] = [
   { displayName: 'Completed', series: 'Completed', value: 62 },
   { displayName: 'Remaining', series: 'Remaining', value: 38 },
 ];
 
-const dense: DonutEdgeCaseDatum[] = Array.from({ length: 24 }, (_, index) => ({
+const dense: DonutVariationDatum[] = Array.from({ length: 24 }, (_, index) => ({
   displayName: `Category ${String(index + 1).padStart(2, '0')}`,
   series: `Category ${String(index + 1).padStart(2, '0')}`,
   value: 25 - index,
 }));
 
-const dominantWithSlivers: DonutEdgeCaseDatum[] = [
+const dominantWithSlivers: DonutVariationDatum[] = [
   { displayName: 'Dominant category', series: 'Dominant', value: 9800 },
   ...Array.from({ length: 12 }, (_, index) => ({
     displayName: `Sliver ${index + 1}`,
@@ -49,7 +49,7 @@ const dominantWithSlivers: DonutEdgeCaseDatum[] = [
   })),
 ];
 
-const longLabels: DonutEdgeCaseDatum[] = [
+const longLabels: DonutVariationDatum[] = [
   {
     displayName: 'Customer acquisition through unpaid organic search results',
     series: 'Customer acquisition through unpaid organic search results',
@@ -72,7 +72,7 @@ const longLabels: DonutEdgeCaseDatum[] = [
   },
 ];
 
-const specialCharacters: DonutEdgeCaseDatum[] = [
+const specialCharacters: DonutVariationDatum[] = [
   { displayName: 'Revenue / Growth (YoY)', series: 'Revenue / Growth (YoY)', value: 24 },
   { displayName: 'Quotes "double" & \'single\'', series: 'Quotes "double" & \'single\'', value: 20 },
   { displayName: 'Café + crème brûlée', series: 'Café + crème brûlée', value: 18 },
@@ -81,21 +81,21 @@ const specialCharacters: DonutEdgeCaseDatum[] = [
   { displayName: 'Launch readiness 🚀', series: 'Launch readiness 🚀', value: 9 },
 ];
 
-const duplicateLabels: DonutEdgeCaseDatum[] = [
+const duplicateLabels: DonutVariationDatum[] = [
   { displayName: 'Repeated', series: 'Repeated', value: 40 },
   { displayName: 'Repeated', series: 'Repeated', value: 25 },
   { displayName: 'Unique A', series: 'Unique A', value: 20 },
   { displayName: 'Unique B', series: 'Unique B', value: 15 },
 ];
 
-const fractionalValues: DonutEdgeCaseDatum[] = [
+const fractionalValues: DonutVariationDatum[] = [
   { displayName: 'One ten-thousandth', series: 'Tiny', value: 0.0001 },
   { displayName: 'One quarter', series: 'Quarter', value: 0.25 },
   { displayName: 'One and a half', series: 'One and a half', value: 1.5 },
   { displayName: 'Twelve and three quarters', series: 'Twelve and three quarters', value: 12.75 },
 ];
 
-const mixedZeroValues: DonutEdgeCaseDatum[] = [
+const mixedZeroValues: DonutVariationDatum[] = [
   { displayName: 'Active A', series: 'Active A', value: 50 },
   { displayName: 'Zero A', series: 'Zero A', value: 0 },
   { displayName: 'Active B', series: 'Active B', value: 30 },
@@ -103,7 +103,7 @@ const mixedZeroValues: DonutEdgeCaseDatum[] = [
   { displayName: 'Active C', series: 'Active C', value: 20 },
 ];
 
-export const donutEdgeCaseDatasets = {
+export const donutVariationDatasets = {
   standard,
   singleSegment,
   twoSegments,
@@ -116,9 +116,9 @@ export const donutEdgeCaseDatasets = {
   mixedZeroValues,
 } as const;
 
-export type DonutEdgeCaseDatasetName = keyof typeof donutEdgeCaseDatasets;
+export type DonutVariationDatasetName = keyof typeof donutVariationDatasets;
 
-export const donutDatasetOptions: EdgeCaseDataset[] = [
+export const donutDatasetOptions: VariationDataset[] = [
   { label: 'Standard (7)', value: 'standard', description: 'Balanced baseline data.' },
   { label: 'Single segment (1)', value: 'singleSegment', description: 'Minimum non-empty dataset.' },
   { label: 'Two segments (2)', value: 'twoSegments', description: 'Sparse comparison data.' },

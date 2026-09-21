@@ -5,7 +5,7 @@
   "kind": "bug",
   "variant": "s2",
   "status": "approved",
-  "lastUpdated": "2026-09-18",
+  "lastUpdated": "2026-09-21",
   "complexity": {
     "score": 2,
     "rationale": "The root cause and available-width expression are confirmed; the fix applies the existing left-hemisphere truncation behavior symmetrically to right-hemisphere direct and advanced labels."
@@ -63,9 +63,9 @@
       "lines": "existing direct and rich SegmentLabel encoding tests"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/EdgeCases/DonutEdgeCases.story.tsx",
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/DonutVariations.story.tsx",
       "change": "Use the existing long-label dataset with Direct and Advanced label modes across responsive tiers to verify that the chart and card layout remain stable.",
-      "lines": "Donut edge-case dashboard dataset and view controls"
+      "lines": "Donut variation dashboard dataset and view controls"
     }
   ],
   "openQuestions": [],

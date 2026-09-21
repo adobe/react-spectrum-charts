@@ -14,35 +14,35 @@ import { ReactElement } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 import {
-  EdgeCase,
-  EdgeCaseDashboard,
-  EdgeCaseDataset,
-  EdgeCaseSizePreset,
-  EdgeCaseViewMode,
-  useEdgeCaseDataset,
-  useEdgeCaseSize,
-  useEdgeCaseViewMode,
-} from './EdgeCaseDashboard';
+  Variation,
+  VariationDashboard,
+  VariationDataset,
+  VariationSizePreset,
+  VariationViewMode,
+  useVariationDataset,
+  useVariationSize,
+  useVariationViewMode,
+} from './VariationDashboard';
 
-const sizePresets: EdgeCaseSizePreset[] = [{ label: 'L', size: 200 }];
-const viewModes: EdgeCaseViewMode[] = [
+const sizePresets: VariationSizePreset[] = [{ label: 'L', size: 200 }];
+const viewModes: VariationViewMode[] = [
   { label: 'No labels', value: 'none' },
   { label: 'Direct labels', value: 'direct' },
 ];
-const datasets: EdgeCaseDataset[] = [
+const datasets: VariationDataset[] = [
   { label: 'Standard', value: 'standard' },
   { label: 'Dense', value: 'dense' },
 ];
 const resolvePresetSize = (size: number, viewMode?: string): number => (viewMode === 'direct' ? size + 164 : size + 4);
 
 const ContextProbe = (): ReactElement => {
-  const size = useEdgeCaseSize();
-  const dataset = useEdgeCaseDataset();
-  const viewMode = useEdgeCaseViewMode();
+  const size = useVariationSize();
+  const dataset = useVariationDataset();
+  const viewMode = useVariationViewMode();
   return <div>{`${dataset}:${viewMode}:${size}`}</div>;
 };
 
-const cases: EdgeCase[] = [
+const variations: Variation[] = [
   {
     id: 'probe',
     title: 'Probe',
@@ -53,11 +53,11 @@ const cases: EdgeCase[] = [
   },
 ];
 
-describe('EdgeCaseDashboard', () => {
+describe('VariationDashboard', () => {
   test('preserves the selected effective size tier when the view mode changes', () => {
     render(
-      <EdgeCaseDashboard
-        cases={cases}
+      <VariationDashboard
+        variations={variations}
         chartType="Test"
         datasets={datasets}
         initialDataset="standard"
@@ -77,10 +77,10 @@ describe('EdgeCaseDashboard', () => {
     expect(screen.getByText('Container: 364px')).not.toBeNull();
   });
 
-  test('provides the selected dataset to every case', () => {
+  test('provides the selected dataset to every variation', () => {
     render(
-      <EdgeCaseDashboard
-        cases={cases}
+      <VariationDashboard
+        variations={variations}
         chartType="Test"
         datasets={datasets}
         initialDataset="standard"

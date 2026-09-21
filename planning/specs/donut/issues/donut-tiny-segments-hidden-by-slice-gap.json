@@ -5,7 +5,7 @@
   "kind": "bug",
   "variant": "s2",
   "status": "approved",
-  "lastUpdated": "2026-09-18",
+  "lastUpdated": "2026-09-21",
   "complexity": {
     "score": 3,
     "rationale": "The fixed-stroke root cause is confirmed, but the minimum-visibility and separator policy for infeasibly small arcs still requires a product and implementation decision."
@@ -72,7 +72,7 @@
       "lines": "existing donut transform and mark tests"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/EdgeCases/DonutEdgeCases.story.tsx",
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/DonutVariations.story.tsx",
       "change": "Retain the dominant-segment dataset as the visual regression scenario and document the expected tiny-segment rendering once the separator policy is selected.",
       "lines": "dominant dataset dashboard scenario"
     }
