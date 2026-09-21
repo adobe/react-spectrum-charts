@@ -50,6 +50,12 @@ const stackedData = [
   { browser: 'Firefox', os: 'Mac', downloads: 3000 },
 ];
 
+const threeStackData = [
+  ...stackedData,
+  { browser: 'Safari', os: 'Windows', downloads: 4000 },
+  { browser: 'Safari', os: 'Mac', downloads: 2000 },
+];
+
 describe('buildBarStructure()', () => {
   test('keys leaf nodes by the dimension value', () => {
     const { structure } = buildBarStructure({ data, dimension: 'browser' });
@@ -175,46 +181,52 @@ describe('buildBarStructure()', () => {
       });
     });
 
-    describe('segment Left/Right crosses to the same series in the adjacent stack', () => {
-      const threeStackData = [
-        { browser: 'Chrome', os: 'Windows', downloads: 18000 },
-        { browser: 'Chrome', os: 'Mac', downloads: 9000 },
-        { browser: 'Firefox', os: 'Windows', downloads: 5000 },
-        { browser: 'Firefox', os: 'Mac', downloads: 3000 },
-        { browser: 'Safari', os: 'Windows', downloads: 4000 },
-        { browser: 'Safari', os: 'Mac', downloads: 2000 },
-      ];
-
+    describe('dodged group navigation', () => {
       test('links a segment to the same-series segment one stack over', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(true);
       });
 
       test('never links segments of different series across stacks', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
-        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Mac'))).toBe(false);
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(true);
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Windows'))).toBe(false);
       });
 
-      test('the cross-stack edge navigates on Left/Right, not Up/Down', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+      test('the corresponding bar in the adjacent group navigates on Up/Down', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
         const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
+        expect(edge?.navigationRules).toEqual(['up', 'down']);
+      });
+
+      test('bars within a group navigate on Left/Right', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Chrome', 'Mac'));
+        expect(edge).toBeDefined();
+        expect(edge?.navigationRules).toContain('left');
+        expect(edge?.navigationRules).toContain('right');
+      });
+
+      test('the last bar in a group advances to the first bar in the next group', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Mac'));
         expect(edge?.navigationRules).toEqual(['left', 'right']);
       });
 
-      test('within-stack segment edges keep Up/Down and no longer use Left/Right', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
-        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Chrome', 'Mac'));
-        expect(edge).toBeDefined();
-        expect(edge?.navigationRules).toContain('up');
-        expect(edge?.navigationRules).toContain('down');
-        expect(edge?.navigationRules).not.toContain('left');
-        expect(edge?.navigationRules).not.toContain('right');
+      test('does not merge cross-group directions for a single-series group', () => {
+        const singleSeriesData = [
+          { browser: 'Chrome', os: 'Windows', downloads: 18000 },
+          { browser: 'Firefox', os: 'Windows', downloads: 12000 },
+        ];
+        const { structure } = buildBarStructure({ data: singleSeriesData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
+        expect(edge?.navigationRules).toEqual(['up', 'down']);
       });
 
       test('does not wrap the last stack back to the first', () => {
-        const { structure } = buildBarStructure({ data: threeStackData, dimension: 'browser', color: 'os' });
+        const { structure } = buildBarStructure({ data: threeStackData, dimension: 'browser', color: 'os', type: 'dodged' });
         expect(hasEdgeBetween(structure, segmentId('Safari', 'Windows'), segmentId('Chrome', 'Windows'))).toBe(false);
       });
 
@@ -225,7 +237,7 @@ describe('buildBarStructure()', () => {
           { browser: 'Firefox', os: 'Windows', downloads: 5000 },
           { browser: 'Firefox', os: 'Mac', downloads: 0 },
         ];
-        const { structure } = buildBarStructure({ data: sparseData, dimension: 'browser', color: 'os', metric: 'downloads' });
+        const { structure } = buildBarStructure({ data: sparseData, dimension: 'browser', color: 'os', type: 'dodged', metric: 'downloads' });
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
         expect(structure.nodes[segmentId('Firefox', 'Mac')]).toBeUndefined();
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(false);
@@ -234,25 +246,33 @@ describe('buildBarStructure()', () => {
 
     describe('orientation', () => {
       test('vertical (default) keys the stack axis on Left/Right and the segment axis on Up/Down', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
         expect(structure.navigationRules?.left?.key).toBe('ArrowLeft');
         expect(structure.navigationRules?.up?.key).toBe('ArrowUp');
       });
 
       test('horizontal rotates the key mapping onto the same graph (stack axis on Up/Down, segment axis on Left/Right)', () => {
-        const vertical = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' }).structure;
+        const vertical = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' }).structure;
         const horizontal = buildBarStructure({
           data: stackedData,
           dimension: 'browser',
           color: 'os',
           orientation: 'horizontal',
+          type: 'dodged',
         }).structure;
 
-        // The graph is identical — the cross-stack edge is still keyed on the logical left/right ids...
+        // The group graph keeps logical axes stable; orientation changes their physical arrow keys.
         const verticalEdge = edgeBetween(vertical, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
         const horizontalEdge = edgeBetween(horizontal, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
-        expect(horizontalEdge?.navigationRules).toEqual(['left', 'right']);
-        expect(horizontalEdge?.navigationRules).toEqual(verticalEdge?.navigationRules);
+        expect(verticalEdge?.navigationRules).toEqual(['up', 'down']);
+        expect(horizontalEdge?.navigationRules).toEqual(['up', 'down']);
+
+        const horizontalWithinGroupEdge = edgeBetween(
+          horizontal,
+          segmentId('Chrome', 'Windows'),
+          segmentId('Chrome', 'Mac')
+        );
+        expect(horizontalWithinGroupEdge?.navigationRules).toEqual(['left', 'right']);
 
         // ...only the physical keys that drive each axis rotate.
         expect(horizontal.navigationRules?.left?.key).toBe('ArrowUp');
@@ -261,7 +281,7 @@ describe('buildBarStructure()', () => {
         expect(horizontal.navigationRules?.down?.key).toBe('ArrowRight');
       });
 
-      test('horizontal reaches the origin (lowest-order) segment first, matching left-to-right reading order', () => {
+      test('horizontal dodged groups reach the visually top bar first', () => {
         const orderedData = [
           { browser: 'Chrome', os: 'Windows', downloads: 18000, order: 2 },
           { browser: 'Chrome', os: 'Mac', downloads: 9000, order: 1 },
@@ -272,10 +292,22 @@ describe('buildBarStructure()', () => {
           color: 'os',
           order: 'order',
           orientation: 'horizontal',
+          type: 'dodged',
         });
         const chrome = divisionIdFor(structure, 'browser', 'Chrome');
-        // Vertical reaches the highest-order segment first (see the segment-order tests); horizontal flips to the origin.
-        expect(firstSegmentOf(structure, chrome)).toBe(segmentId('Chrome', 'Mac'));
+        expect(firstSegmentOf(structure, chrome)).toBe(segmentId('Chrome', 'Windows'));
+      });
+
+      test('preserves stacked navigation when the bar type is stacked', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'stacked' });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Chrome', 'Mac'));
+        expect(edge?.navigationRules).toContain('up');
+        expect(edge?.navigationRules).toContain('down');
+        const chrome = divisionIdFor(structure, 'browser', 'Chrome');
+        const firefox = divisionIdFor(structure, 'browser', 'Firefox');
+        const adjacentGroupEdge = edgeBetween(structure, chrome, firefox);
+        expect(adjacentGroupEdge?.navigationRules).toContain('left');
+        expect(adjacentGroupEdge?.navigationRules).toContain('right');
       });
     });
   });
@@ -291,9 +323,9 @@ describe('buildBarStructure()', () => {
       expect(hasEdgeBetween(structure, 'Firefox', 'Chrome')).toBe(false);
     });
 
-    test('does not bridge the last segment of a stack into the next stack\'s first segment', () => {
-      const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });
-      expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Windows'))).toBe(false);
+    test('does not wrap the final group back to the first group', () => {
+      const { structure } = buildBarStructure({ data: threeStackData, dimension: 'browser', color: 'os' });
+      expect(hasEdgeBetween(structure, segmentId('Safari', 'Mac'), segmentId('Chrome', 'Windows'))).toBe(false);
     });
   });
 });
@@ -361,6 +393,18 @@ describe('buildNodeLabel()', () => {
       fieldLabels: { browser: 'Browser', downloads: 'Downloads', operatingSystem: 'Operating system' },
     });
     expect(label).toBe('Downloads by Browser chart, grouped by Operating system. 2 groups.');
+  });
+
+  test('keeps the series value in a titled chart when the legend has no title', () => {
+    const node = { id: '_browser', dimensionLevel: 1 } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'browser',
+      metric: 'downloads',
+      color: 'operatingSystem',
+      data: [{ browser: 'Chrome', operatingSystem: 'Windows', downloads: 2 }],
+      fieldLabels: { browser: 'Browser', downloads: 'Downloads', operatingSystem: 'operatingSystem' },
+    });
+    expect(label).toContain('grouped by operatingSystem');
   });
 
   test('falls back to the node id for a division (stack) node when no dimension/data is supplied', () => {

@@ -11,17 +11,52 @@
  */
 import { fireEvent } from '@testing-library/react';
 
-import { findAllMarksByGroupName, findChart, render } from '../../../test-utils';
+import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../test-utils';
 import { DodgedBarNavigation } from './DodgedBar.story';
 
 test('Dodged bar navigation focuses a group and its bars', async () => {
   render(<DodgedBarNavigation {...DodgedBarNavigation.args} />);
   const chart = await findChart();
   const container = chart.closest('.rsc-container') as HTMLElement;
+  await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
   (container.querySelector('button') as HTMLButtonElement).click();
-  const node = container.querySelector('.dn-node') as HTMLElement;
+  let node: HTMLElement;
+  await waitFor(() => {
+    node = container.querySelector('.dn-node') as HTMLElement;
+    expect(node).toBeTruthy();
+  });
   fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
+  const groupRings = await findAllMarksByGroupName(chart, 'bar0_stackFocusRing');
+  expect(groupRings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
   fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
   const rings = await findAllMarksByGroupName(chart, 'bar0_focusRing');
   expect(rings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+});
+
+test('Dodged bar navigation moves within a group and to the corresponding bar in the next group', async () => {
+  render(<DodgedBarNavigation {...DodgedBarNavigation.args} />);
+  const chart = await findChart();
+  const container = chart.closest('.rsc-container') as HTMLElement;
+  await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
+  (container.querySelector('button') as HTMLButtonElement).click();
+
+  let node: HTMLElement;
+  await waitFor(() => {
+    node = container.querySelector('.dn-node') as HTMLElement;
+    expect(node).toBeTruthy();
+  });
+  fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
+
+  const focusedNode = (): HTMLElement => container.querySelector('.dn-node') as HTMLElement;
+  const focusedLabel = (): HTMLElement => container.querySelector('.dn-node-text') as HTMLElement;
+  await waitFor(() => expect(focusedNode()).toBeTruthy());
+  fireEvent.keyDown(focusedNode(), { key: 'Enter', code: 'Enter' });
+
+  const initialLabel = focusedLabel().getAttribute('aria-label');
+  expect(initialLabel).toContain('Chrome');
+  fireEvent.keyDown(focusedNode(), { key: 'ArrowRight', code: 'ArrowRight' });
+  await waitFor(() => expect(focusedLabel().getAttribute('aria-label')).toContain('Mac'));
+
+  fireEvent.keyDown(focusedNode(), { key: 'ArrowDown', code: 'ArrowDown' });
+  await waitFor(() => expect(focusedLabel().getAttribute('aria-label')).toContain('Firefox'));
 });

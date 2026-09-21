@@ -215,7 +215,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     const metricTitle = titleAt(isHorizontal ? 'bottom' : 'left');
     const labels: Record<string, string> = {};
     if (dimensionTitle) labels[navFields?.dimension ?? DEFAULT_CATEGORICAL_DIMENSION] = dimensionTitle;
-    if (navColor && legendTitle) labels[navColor] = legendTitle;
+    if (navColor && (legendTitle || dimensionTitle || metricTitle)) labels[navColor] = legendTitle ?? navColor;
     if (metricTitle) labels[navFields?.metric ?? DEFAULT_METRIC] = metricTitle;
     return labels;
   }, [sanitizedChildren, navOrientation, navFields?.dimension, navFields?.metric, navColor, legendTitle]);
@@ -361,6 +361,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             data={data as SimpleData[]}
             dimension={navFields?.dimension}
             color={navColor}
+            type={navFields?.type}
             colorOverride={navColorOverride}
             locale={locale == null ? undefined : String(locale)}
             metric={navFields?.metric}

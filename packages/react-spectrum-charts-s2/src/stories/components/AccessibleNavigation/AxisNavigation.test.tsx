@@ -11,21 +11,19 @@
  */
 import { fireEvent } from '@testing-library/react';
 
-import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../test-utils';
-import { DivergingBarNavigation } from './DivergingBar.story';
+import { findChart, render, waitFor } from '../../../test-utils';
+import { Categorical } from './AxisNavigation.story';
 
-test('Diverging bar navigation focuses a bar after entering the chart', async () => {
-  render(<DivergingBarNavigation {...DivergingBarNavigation.args} />);
+test('axis navigation focuses a visible categorical label', async () => {
+  render(<Categorical {...Categorical.args} />);
   const chart = await findChart();
   const container = chart.closest('.rsc-container') as HTMLElement;
   await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
   (container.querySelector('button') as HTMLButtonElement).click();
-  let node: HTMLElement;
-  await waitFor(() => {
-    node = container.querySelector('.dn-node') as HTMLElement;
-    expect(node).toBeTruthy();
-  });
-  fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
-  const rings = await findAllMarksByGroupName(chart, 'bar0_focusRing');
-  expect(rings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+  await waitFor(() => expect(container.querySelector('.dn-node')).toBeTruthy());
+
+  const root = container.querySelector('.dn-node') as HTMLElement;
+  fireEvent.keyDown(root, { key: 'ArrowRight', code: 'ArrowRight' });
+
+  await waitFor(() => expect(container.querySelector('.dn-axis-focus-ring')).toHaveStyle({ display: 'block' }));
 });

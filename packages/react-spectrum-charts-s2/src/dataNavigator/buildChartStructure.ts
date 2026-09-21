@@ -41,6 +41,8 @@ export interface ChartStructureOptions {
   dimension?: string;
   /** Series / color field. When set on a bar, the chart is stacked. */
   color?: string;
+  /** Bar layout type. */
+  type?: 'dodged' | 'stacked';
   /** Per-datum color override field used in accessible bar labels. */
   colorOverride?: string;
   /** Locale used for accessible color names. */

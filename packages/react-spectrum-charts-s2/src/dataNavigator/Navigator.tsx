@@ -27,6 +27,8 @@ export interface NavigatorProps {
   dimension?: string;
   /** Series / color field (set for stacked bars). */
   color?: string;
+  /** Bar layout type. */
+  type?: 'dodged' | 'stacked';
   /** Per-datum color override field used in accessible bar labels. */
   colorOverride?: string;
   /** Locale used for accessible color names. */
@@ -72,6 +74,7 @@ export const Navigator = ({
   data,
   dimension,
   color,
+  type,
   colorOverride,
   locale,
   metric,
@@ -105,6 +108,7 @@ export const Navigator = ({
         data,
         dimension,
         color,
+        type,
         colorOverride,
         locale,
         metric,
@@ -125,16 +129,26 @@ export const Navigator = ({
         onNodeClick,
         hasChartPopover,
       });
-    attach();
-    // Re-attach on the next frame so a fresh render reads a laid-out scenegraph (the first effect
-    // tick can run before Vega's async layout settles). attachDataNavigator rebuilds cleanly.
-    const raf = requestAnimationFrame(attach);
-    return () => cancelAnimationFrame(raf);
+    let raf: number | undefined;
+    let retryCount = 0;
+    const attachAndRetry = () => {
+      attach();
+      if (!getView() && retryCount < 3) {
+        retryCount += 1;
+        raf = requestAnimationFrame(attachAndRetry);
+      }
+    };
+    // Attach promptly so the entry control is available while Vega finishes exposing its view.
+    raf = requestAnimationFrame(attachAndRetry);
+    return () => {
+      if (raf !== undefined) cancelAnimationFrame(raf);
+    };
   }, [
     chartType,
     data,
     dimension,
     color,
+    type,
     colorOverride,
     locale,
     metric,

@@ -72,6 +72,8 @@ export interface AttachDataNavigatorOptions {
   dimension?: string;
   /** Series / color field (set for stacked bars). */
   color?: string;
+  /** Bar layout type. */
+  type?: 'dodged' | 'stacked';
   /** Per-datum color override field used in accessible bar labels. */
   colorOverride?: string;
   /** Locale used for accessible color names. */
@@ -308,6 +310,7 @@ export const attachDataNavigator = ({
   data,
   dimension,
   color,
+  type,
   colorOverride,
   locale,
   metric,
@@ -336,7 +339,7 @@ export const attachDataNavigator = ({
       ? { ...xAxis, visibleValues: getVisibleAxisLabelColumns(initialView, container, 'bottom').map((column) => column.value) }
       : xAxis;
 
-  const built = buildChartStructure({ chartType, data, dimension, color, colorOverride, locale, metric, order, orientation, title, fieldLabels, metricTitleBySeries, xAxis: xAxisRegion });
+  const built = buildChartStructure({ chartType, data, dimension, color, type, colorOverride, locale, metric, order, orientation, title, fieldLabels, metricTitleBySeries, xAxis: xAxisRegion });
   if (!built) return;
   const { structure, entryPoint } = built;
 

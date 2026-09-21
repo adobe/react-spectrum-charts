@@ -11,7 +11,7 @@
  */
 import { ReactElement, useRef } from 'react';
 
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { View } from 'vega';
 
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
@@ -48,9 +48,9 @@ describe('Navigator', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test('attaches the data-navigator entry button into the container', () => {
+  test('attaches the data-navigator entry button into the container', async () => {
     const { getByTestId } = render(<Harness chartData={data} />);
-    expect(getByTestId('dn-container').querySelector('button')).toBeTruthy();
+    await waitFor(() => expect(getByTestId('dn-container').querySelector('button')).toBeTruthy());
   });
 
   test('does not attach navigation when there is no data', () => {
