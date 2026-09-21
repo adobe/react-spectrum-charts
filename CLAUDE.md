@@ -383,6 +383,12 @@ Bugs: investigate and file via the `file-issue` skill
 first. Full field-by-field guidance, the complexity rubric, and the `crossCutting` flag
 definitions are in `planning/specs/README.md`.
 
+When implementing a whole batch of related specs for one chart type as a sequence of stacked
+PRs (rather than a single spec in isolation), use the `implement-spec-cluster` skill
+(`.claude/commands/implement-spec-cluster.md`) — it covers clustering specs by dependency,
+the parent spec-batch PR, per-chart-type design-token checks, S1-reuse checks, and keeping
+every PR linked into the GitHub stack.
+
 ---
 
 ## API Documentation

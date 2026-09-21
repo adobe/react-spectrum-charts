@@ -39,9 +39,9 @@ Use this approach when you need access to S2-exclusive features such as line gra
 The S2 package is published under the `alpha` tag on npm.
 
 ```bash
-npm install @spectrum-charts/react-spectrum-charts-s2@alpha
+npm install @spectrum-charts/react-spectrum-charts-s2
 # or
-yarn add @spectrum-charts/react-spectrum-charts-s2@alpha
+yarn add @spectrum-charts/react-spectrum-charts-s2
 ```
 
 Import components from the S2 package instead of the base package:

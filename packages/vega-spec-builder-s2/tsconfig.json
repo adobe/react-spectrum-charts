@@ -11,4 +11,3 @@
   "exclude": ["*.test.ts"],
   "references": [{ "path": "../constants" }, { "path": "../themes" }, { "path": "../utils" }, { "path": "../locales" }]
 }
-
