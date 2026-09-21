@@ -11,8 +11,8 @@
  */
 // Both packages are published as UMD bundles, which Node's native ESM loader cannot
 // statically analyze for named exports — import the default and destructure instead.
-import themes from '@spectrum-charts/themes';
-import constants from '@spectrum-charts/constants';
+import * as themes from '@spectrum-charts/themes';
+import * as constants from '@spectrum-charts/constants';
 
 const { ADOBE_CLEAN_FONT, s2Categorical6, s2Categorical12, s2Categorical16, s2Categorical20, spectrum2Colors } =
   themes;

@@ -330,7 +330,7 @@ export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {})
     const count = rows ? new Set(rows.map((row) => row[dimension])).size : undefined;
     const variables = { dimension: fieldLabels[dimension] ?? dimension, count: count ?? 0, metricLabel: fieldLabels[metric] ?? metric };
     if (color) return formatMessage('bar.stackedDescription', { ...variables, color: fieldLabels[color] ?? color });
-    return formatMessage(count ? 'bar.description' : 'bar.descriptionNoCount', variables);
+    return formatMessage('bar.description', { ...variables, count: count ?? 0 });
   }
 
   if (node.dimensionLevel != null) {

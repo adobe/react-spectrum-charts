@@ -15,8 +15,7 @@
 import type { LocalizedString } from '@internationalized/string';
 
 const messages: Record<string, LocalizedString> = {
-  'bar.description': (args, formatter) => `${args.metricLabel} by ${args.dimension} chart. ${formatter.plural(args.count, {one: () => `${formatter.number(args.count)} bar`, other: () => `${formatter.number(args.count)} bars`})}.`,
-  'bar.descriptionNoCount': (args) => `${args.metricLabel} by ${args.dimension} chart.`,
+  'bar.description': (args, formatter) => `${args.metricLabel} by ${args.dimension} chart.${formatter.plural(args.count, { '=0': () => ``, one: () => ` ${formatter.number(args.count)} bar.`, other: () => ` ${formatter.number(args.count)} bars.`})}`,
   'bar.stackedDescription': (args, formatter) => `${args.metricLabel} by ${args.dimension} chart, grouped by ${args.color}. ${formatter.plural(args.count, {one: () => `${formatter.number(args.count)} group`, other: () => `${formatter.number(args.count)} groups`})}.`,
 };
 
