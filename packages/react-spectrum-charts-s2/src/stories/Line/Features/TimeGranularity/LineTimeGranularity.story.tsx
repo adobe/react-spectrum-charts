@@ -247,12 +247,6 @@ const dailyWindow: TimeWindow = {
   sampleHours: 24,
 };
 
-const weeklyWindow: TimeWindow = {
-  start: new Date(2024, 0, 1).getTime(),
-  end: new Date(2024, 6, 1).getTime(),
-  sampleHours: 24,
-};
-
 const monthlyWindow: TimeWindow = {
   start: new Date(2024, 0, 1).getTime(),
   end: new Date(2025, 6, 1).getTime(),
@@ -282,12 +276,6 @@ const DailyStory: StoryFn<TimeGranularityArgs> = (args): ReactElement => (
 );
 export const Daily = bindWithProps(DailyStory);
 Daily.args = { baseline: true, granularity: 'day', position: 'bottom', ticks: true };
-
-const WeeklyStory: StoryFn<TimeGranularityArgs> = (args): ReactElement => (
-  <TimeGranularityStory {...args} window={weeklyWindow} />
-);
-export const Weekly = bindWithProps(WeeklyStory);
-Weekly.args = { baseline: true, granularity: 'week', position: 'bottom', ticks: true };
 
 const MonthlyStory: StoryFn<TimeGranularityArgs> = (args): ReactElement => (
   <TimeGranularityStory {...args} window={monthlyWindow} />

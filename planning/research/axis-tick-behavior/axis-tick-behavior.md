@@ -77,7 +77,7 @@ The larger calendar context for the child tick cadence. Examples:
 - date for hour or minute granularity.
 
 Primary labels use parent-calendar boundaries. When the domain starts inside a parent period, a
-label-only value at the domain start provides the missing calendar context.
+label on the first visible child tick provides the missing calendar context.
 
 ### Secondary label
 
@@ -413,9 +413,10 @@ The primary row uses the next coarser calendar granularity:
 | month/quarter | year |
 | year | no primary row |
 
-Its values are selected responsively by Vega at true parent boundaries. A label-only value is also
-placed at the domain start when the first parent boundary is outside the visible range. For example,
-a chart beginning Jan 8 still shows `Jan` as context, while a later `Feb` label remains at Feb 1.
+Its values are selected responsively by Vega at true parent boundaries. When the first parent
+boundary is outside the visible range, its context label uses the first visible child tick. For
+example, a chart beginning Jan 8 shows `Jan` at the first visible January tick, while a later `Feb`
+label remains at Feb 1.
 
 Year granularity has no primary label row and should not create an empty axis solely for blank labels.
 
@@ -532,7 +533,7 @@ axis and must not duplicate titles, domain lines, or interaction surfaces.
 
 The major-values helper delegates the child sequence to Vega. The minor helper derives values from
 that final major sequence so those two layers cannot choose different cadences. The primary row uses a
-separate Vega sequence for the parent calendar unit plus a label-only domain-start context value.
+separate Vega sequence for the parent calendar unit plus first-child context for a partial first period.
 
 ---
 

@@ -211,7 +211,11 @@ export const getTimeAxisPrimaryTicks = (
 
   const primaryTicks = getTimeAxisMajorTicks(domain, range, parentGranularity, scaleType);
   const domainStart = new Date(domain[0]);
-  return Number(primaryTicks[0]) === Number(domainStart) ? primaryTicks : [domainStart, ...primaryTicks];
+  if (Number(primaryTicks[0]) === Number(domainStart)) return primaryTicks;
+
+  const childTicks = getTimeAxisMajorTicks(domain, range, granularity, scaleType);
+  const contextValue = childTicks[0] ?? domainStart;
+  return [contextValue, ...primaryTicks];
 };
 
 /**
