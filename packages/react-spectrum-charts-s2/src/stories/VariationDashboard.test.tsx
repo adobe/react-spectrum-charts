@@ -30,8 +30,8 @@ const viewModes: VariationViewMode[] = [
   { label: 'Direct labels', value: 'direct' },
 ];
 const datasets: VariationDataset[] = [
-  { label: 'Standard', value: 'standard' },
-  { label: 'Dense', value: 'dense' },
+  { label: 'Standard', value: 'standard', description: 'Standard dataset' },
+  { label: 'Dense', value: 'dense', description: 'Dense dataset' },
 ];
 const resolvePresetSize = (size: number, viewMode?: string): number => (viewMode === 'direct' ? size + 164 : size + 4);
 
@@ -93,5 +93,48 @@ describe('VariationDashboard', () => {
     fireEvent.change(screen.getByRole('combobox', { name: 'Test dataset' }), { target: { value: 'dense' } });
 
     expect(screen.getByText('dense:none:280')).not.toBeNull();
+    expect(screen.getByText('Dense dataset')).not.toBeNull();
+  });
+
+  test('updates the container from size presets and the range control', () => {
+    render(
+      <VariationDashboard
+        variations={variations}
+        chartType="Test"
+        datasets={datasets}
+        getSizeDescription={(size, viewMode) => `${viewMode} view uses a ${size}px container`}
+        initialDataset="standard"
+        initialViewMode="none"
+        resolvePresetSize={resolvePresetSize}
+        sizePresets={sizePresets}
+        viewModes={viewModes}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'L (204px container)' }));
+
+    expect(screen.getByText('standard:none:204')).not.toBeNull();
+    expect(screen.getByText('none view uses a 204px container')).not.toBeNull();
+
+    fireEvent.change(screen.getByRole('slider', { name: 'Test chart size' }), { target: { value: '250' } });
+
+    expect(screen.getByText('standard:none:250')).not.toBeNull();
+    expect(screen.getByText('none view uses a 250px container')).not.toBeNull();
+  });
+
+  test('uses a fixed dataset badge without optional dashboard controls', () => {
+    const fixedVariations: Variation[] = [
+      {
+        ...variations[0],
+        dataset: 'fixed',
+        usesDashboardDataset: false,
+      },
+    ];
+
+    render(<VariationDashboard variations={fixedVariations} chartType="Test" />);
+
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.queryByText('View:')).toBeNull();
+    expect(screen.getByText('data: fixed')).not.toBeNull();
   });
 });
