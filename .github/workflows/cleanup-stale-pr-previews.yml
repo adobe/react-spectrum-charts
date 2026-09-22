@@ -1,0 +1,63 @@
+name: Clean Up Stale PR Previews
+# Removes gh-pages PR-<n>/-s2/-docs preview directories for PRs closed more
+# than 60 days ago. Runs on a schedule since retention is time-based, not
+# tied to the close event itself.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Remove preview directories for PRs closed over 60 days ago
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "marshallpete"
+          git config user.email "40001449+marshallpete@users.noreply.github.com"
+
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          CUTOFF=$(date -u -d '60 days ago' +%s)
+
+          gh pr list --repo "${{ github.repository }}" --state closed --limit 5000 \
+            --json number,closedAt,mergedAt > /tmp/closed_prs.json
+
+          REMOVED=0
+          for row in $(jq -c '.[]' /tmp/closed_prs.json); do
+            NUM=$(echo "$row" | jq -r '.number')
+            CLOSE_DATE=$(echo "$row" | jq -r '.closedAt // .mergedAt')
+            [ "$CLOSE_DATE" = "null" ] && continue
+            CLOSE_TS=$(date -u -d "$CLOSE_DATE" +%s)
+            if [ "$CLOSE_TS" -lt "$CUTOFF" ]; then
+              for suffix in "" "-s2" "-docs"; do
+                DIR="PR-${NUM}${suffix}"
+                if [ -d "$DIR" ]; then
+                  git rm -r --cached --quiet -- "$DIR"
+                  rm -rf "$DIR"
+                  REMOVED=$((REMOVED+1))
+                fi
+              done
+            fi
+          done
+
+          echo "Removed ${REMOVED} stale preview directories"
+
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: remove PR preview folders closed over 60 days ago"
+            git push origin gh-pages
+          else
+            echo "Nothing to clean up"
+          fi
