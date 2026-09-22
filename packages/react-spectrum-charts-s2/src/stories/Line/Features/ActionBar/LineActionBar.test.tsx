@@ -16,6 +16,11 @@ import { clickNthElement, findAllMarksByGroupName, findChart, render, screen, wa
 import '../../../../test-utils/__mocks__/matchMedia.mock.js';
 import { WithActionBar, WithEmphasized, WithFewActions, WithOverflow } from './LineActionBar.story';
 
+// jsdom doesn't implement the Pointer Events capture API used for dragging.
+beforeAll(() => {
+  HTMLElement.prototype.setPointerCapture = jest.fn();
+});
+
 describe('ChartActionBar', () => {
   // ChartActionBar is not a real React component. This test just provides test coverage for sonarqube
   test('ChartActionBar pseudo element', () => {
@@ -68,6 +73,75 @@ describe('ChartActionBar', () => {
     await clickNthElement(points, 0);
     const actionBar = await screen.findByTestId('rsc-action-bar');
     await waitFor(() => expect(parseFloat(actionBar.style.top)).toBeGreaterThanOrEqual(22));
+  });
+
+  test('clamps the initial position within the viewport horizontally', async () => {
+    render(<WithActionBar {...WithActionBar.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+    const anchor = await screen.findByTestId('rsc-popover-anchor');
+    jest
+      .spyOn(anchor, 'getBoundingClientRect')
+      .mockReturnValue({ top: 400, bottom: 420, left: window.innerWidth + 500 } as DOMRect);
+
+    await clickNthElement(points, 0);
+    const actionBar = await screen.findByTestId('rsc-action-bar');
+    await waitFor(() => expect(parseFloat(actionBar.style.left)).toBeLessThanOrEqual(window.innerWidth));
+  });
+
+  test('drag repositions the bar', async () => {
+    render(<WithActionBar {...WithActionBar.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+
+    await clickNthElement(points, 0);
+    await screen.findByTestId('rsc-action-bar');
+    const dragHandle = screen.getByTestId('rsc-action-bar-drag-handle');
+    const actionBar = screen.getByTestId('rsc-action-bar');
+
+    // jsdom's getBoundingClientRect() is always a zero rect, so the result is the raw delta.
+    await userEvent.pointer([
+      { target: dragHandle, keys: '[MouseLeft>]', coords: { x: 0, y: 0 } },
+      { target: dragHandle, coords: { x: 40, y: 25 } },
+      { target: dragHandle, keys: '[/MouseLeft]' },
+    ]);
+
+    expect(parseFloat(actionBar.style.left)).toBe(40);
+    expect(parseFloat(actionBar.style.top)).toBe(25);
+  });
+
+  test('clamps dragging within the viewport', async () => {
+    render(<WithActionBar {...WithActionBar.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+
+    await clickNthElement(points, 0);
+    await screen.findByTestId('rsc-action-bar');
+    const dragHandle = screen.getByTestId('rsc-action-bar-drag-handle');
+    const actionBar = screen.getByTestId('rsc-action-bar');
+
+    await userEvent.pointer([
+      { target: dragHandle, keys: '[MouseLeft>]', coords: { x: 0, y: 0 } },
+      { target: dragHandle, coords: { x: window.innerWidth + 5000, y: window.innerHeight + 5000 } },
+      { target: dragHandle, keys: '[/MouseLeft]' },
+    ]);
+
+    expect(parseFloat(actionBar.style.left)).toBe(window.innerWidth);
+    expect(parseFloat(actionBar.style.top)).toBe(window.innerHeight);
+  });
+
+  test('releases focus back to the document when the bar closes', async () => {
+    render(<WithActionBar {...WithActionBar.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+
+    // Clicking a mark blurs any prior focus first, so restore-on-close lands on document.body.
+    await clickNthElement(points, 0);
+    const actionBar = await screen.findByTestId('rsc-action-bar');
+    await waitFor(() => expect(actionBar).not.toHaveFocus());
+
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(document.body).toHaveFocus());
   });
 
   test('Esc closes the action bar', async () => {
