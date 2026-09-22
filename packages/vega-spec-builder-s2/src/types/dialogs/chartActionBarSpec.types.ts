@@ -10,7 +10,5 @@
  * governing permissions and limitations under the License.
  */
 
-export interface ChartActionBarOptions {
-  /** Applies an accent background with white icon/text treatment, matching the RS ActionBar emphasized style. */
-  isEmphasized?: boolean;
-}
+/** Marker for an action bar's presence on a mark; rendering config lives on ChartActionBarProps. */
+export interface ChartActionBarOptions {}

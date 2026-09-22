@@ -362,6 +362,8 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
   const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
   const [overflowOpen, setOverflowOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const overflowAnchorRef = useRef<HTMLDivElement>(null);
+  const overflowContentRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ pointerX: number; pointerY: number; startLeft: number; startTop: number } | null>(null);
   const { chartActionBarProps, name } = actionBar;
   const { children, isEmphasized, maxActions: maxActionsProp, onClearSelection } = chartActionBarProps;
@@ -391,17 +393,20 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
   const visibleActions = allActions.slice(0, visibleCount);
   const overflowActions = allActions.slice(visibleCount);
 
-  // Position the bar above the anchor point before the browser paints.
+  // Positions above the anchor before paint; flips below and clamps to the viewport.
   useLayoutEffect(() => {
     if (!isOpen || !containerRef.current || !targetElement.current) return;
     const anchorRect = targetElement.current.getBoundingClientRect();
-    const barHeight = containerRef.current.offsetHeight;
-    containerRef.current.style.left = `${anchorRect.left}px`;
-    containerRef.current.style.top = `${anchorRect.top - barHeight - 8}px`;
+    const { offsetWidth: barWidth, offsetHeight: barHeight } = containerRef.current;
+    const hasRoomAbove = anchorRect.top - 8 - barHeight >= 0;
+    const top = hasRoomAbove ? anchorRect.top - barHeight - 8 : anchorRect.bottom + 8;
+    const maxLeft = Math.max(window.innerWidth - barWidth, 0);
+    const maxTop = Math.max(window.innerHeight - barHeight, 0);
+    containerRef.current.style.left = `${Math.min(Math.max(anchorRect.left, 0), maxLeft)}px`;
+    containerRef.current.style.top = `${Math.min(Math.max(top, 0), maxTop)}px`;
   }, [isOpen, targetElement]);
 
-  // Space-based overflow: reduce visible count when bar content exceeds its max-inline-size.
-  // Runs after each render until the bar no longer overflows or visibleCount hits 1.
+  // Shrinks visibleCount until the bar no longer overflows its max-inline-size.
   useLayoutEffect(() => {
     if (!containerRef.current || visibleCount <= 1) return;
     if (containerRef.current.scrollWidth > containerRef.current.clientWidth) {
@@ -423,17 +428,38 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
     setOverflowOpen(false);
   }, [renderDatum, MAX_ACTIONS]);
 
-  // Close when clicking outside the bar (overflow panel is inside containerRef so it's excluded).
+  // Closes on outside click; overflowContentRef excludes the portal-rendered overflow Popover.
   useEffect(() => {
     if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        closeActionBar();
-      }
+      const target = e.target as Node;
+      if (containerRef.current?.contains(target) || overflowContentRef.current?.contains(target)) return;
+      closeActionBar();
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, closeActionBar]);
+
+  // Escape closes the bar; the overflow Popover intercepts and handles its own Escape first.
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeActionBar();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, closeActionBar]);
+
+  // Focus the first action on open; restore prior focus on close.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const firstFocusable = containerRef.current?.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    firstFocusable?.focus();
+    return () => previouslyFocused?.focus();
+  }, [isOpen]);
 
   const handleDragStart = useCallback((e: PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -443,13 +469,18 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
     }
   }, []);
 
-  // Mutate DOM directly during drag to avoid React re-render lag.
+  // Mutates DOM directly to avoid re-render lag; clamped to the viewport.
   const handleDragMove = useCallback((e: PointerEvent<HTMLDivElement>) => {
     if (!dragStartRef.current || !containerRef.current) return;
     const dx = e.clientX - dragStartRef.current.pointerX;
     const dy = e.clientY - dragStartRef.current.pointerY;
-    containerRef.current.style.left = `${dragStartRef.current.startLeft + dx}px`;
-    containerRef.current.style.top = `${dragStartRef.current.startTop + dy}px`;
+    const { offsetWidth, offsetHeight } = containerRef.current;
+    const maxLeft = Math.max(window.innerWidth - offsetWidth, 0);
+    const maxTop = Math.max(window.innerHeight - offsetHeight, 0);
+    const newLeft = Math.min(Math.max(dragStartRef.current.startLeft + dx, 0), maxLeft);
+    const newTop = Math.min(Math.max(dragStartRef.current.startTop + dy, 0), maxTop);
+    containerRef.current.style.left = `${newLeft}px`;
+    containerRef.current.style.top = `${newTop}px`;
   }, []);
 
   const handleDragEnd = useCallback(() => {
@@ -486,19 +517,29 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
             />
             {visibleActions}
             {overflowActions.length > 0 && (
-              <div style={{ position: 'relative' }}>
+              <div ref={overflowAnchorRef} style={{ position: 'relative' }}>
                 <ActionButton
                   isQuiet
                   aria-label="More actions"
+                  aria-haspopup="true"
+                  aria-expanded={overflowOpen}
                   onPress={() => setOverflowOpen((o) => !o)}
                 >
                   ···
                 </ActionButton>
-                {overflowOpen && (
-                  <div className="rsc-popover rsc-action-bar-overflow" data-testid="rsc-action-bar-overflow">
+                <Popover
+                  triggerRef={overflowAnchorRef}
+                  isOpen={overflowOpen}
+                  onOpenChange={setOverflowOpen}
+                  placement="top"
+                  hideArrow
+                  padding="none"
+                  UNSAFE_className="rsc-popover"
+                >
+                  <div ref={overflowContentRef} className="rsc-action-bar-overflow" data-testid="rsc-action-bar-overflow">
                     {overflowActions}
                   </div>
-                )}
+                </Popover>
               </div>
             )}
           </div>

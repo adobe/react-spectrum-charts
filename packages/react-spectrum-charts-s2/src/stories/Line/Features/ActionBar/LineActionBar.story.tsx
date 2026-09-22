@@ -11,14 +11,14 @@
  */
 import { ReactElement } from 'react';
 
-import { ActionButton, Content, Dialog, DialogTrigger, Divider, Heading, Item, Menu, MenuTrigger, Text } from '@adobe/react-spectrum';
-import Bookmark from '@spectrum-icons/workflow/Bookmark';
-import Comment from '@spectrum-icons/workflow/Comment';
-import Note from '@spectrum-icons/workflow/Note';
-import Export from '@spectrum-icons/workflow/Export';
-import Flag from '@spectrum-icons/workflow/Flag';
-import Info from '@spectrum-icons/workflow/InfoOutline';
-import More from '@spectrum-icons/workflow/More';
+import { ActionButton, Content, ContextualHelp, Heading, Menu, MenuItem, MenuTrigger, Text } from '@react-spectrum/s2';
+import Bookmark from '@react-spectrum/s2/icons/Bookmark';
+import Comment from '@react-spectrum/s2/icons/Comment';
+import Note from '@react-spectrum/s2/icons/StickyNote';
+import Export from '@react-spectrum/s2/icons/Export';
+import Flag from '@react-spectrum/s2/icons/Flag';
+import Info from '@react-spectrum/s2/icons/InfoCircle';
+import More from '@react-spectrum/s2/icons/More';
 import { action } from '@storybook/addon-actions';
 import { StoryFn } from '@storybook/react';
 
@@ -86,29 +86,23 @@ const actionBarContent = (datum: Datum, close: () => void): ReactElement[] => [
     <Comment />
     <Text>Comment</Text>
   </ActionButton>,
-  <DialogTrigger key="info" type="popover" placement="top">
-    <ActionButton isQuiet aria-label="Info">
-      <Info />
-    </ActionButton>
-    <Dialog>
-      <Heading>Data point</Heading>
-      <Divider />
-      <Content>
-        <div>Series: {String(datum.series)}</div>
-        <div>Value: {String(datum.value)}</div>
-        <div>Date: {String(datum.datetime)}</div>
-      </Content>
-    </Dialog>
-  </DialogTrigger>,
+  <ContextualHelp key="info" variant="info" placement="top">
+    <Heading>Data point</Heading>
+    <Content>
+      <div>Series: {String(datum.series)}</div>
+      <div>Value: {String(datum.value)}</div>
+      <div>Date: {String(datum.datetime)}</div>
+    </Content>
+  </ContextualHelp>,
   <MenuTrigger key="more">
     <ActionButton isQuiet aria-label="More options">
       <More />
     </ActionButton>
     <Menu onAction={(key) => action('ChartActionBar:more')({ key, datum })}>
-      <Item key="copy-link">Copy link</Item>
-      <Item key="export">Export data</Item>
-      <Item key="share">Share</Item>
-      <Item key="delete">Delete</Item>
+      <MenuItem id="copy-link">Copy link</MenuItem>
+      <MenuItem id="export">Export data</MenuItem>
+      <MenuItem id="share">Share</MenuItem>
+      <MenuItem id="delete">Delete</MenuItem>
     </Menu>
   </MenuTrigger>,
 ];

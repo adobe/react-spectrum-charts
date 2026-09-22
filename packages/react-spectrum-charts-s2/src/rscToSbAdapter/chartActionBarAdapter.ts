@@ -15,6 +15,8 @@ import { ChartActionBarProps } from '../types';
 
 export const getChartActionBarOptions = ({
   children: _children,
+  isEmphasized: _isEmphasized,
+  maxActions: _maxActions,
   onClearSelection: _onClearSelection,
   ...rest
 }: ChartActionBarProps): ChartActionBarOptions => rest;

@@ -24,6 +24,8 @@ export interface ChartActionBarProps extends ChartActionBarOptions {
    * The component shows up to `maxActions` inline; any extras collapse into a "⋯" overflow popover.
    */
   children?: (datum: Datum, close: () => void) => ReactElement[];
+  /** Applies an accent background with white icon/text treatment, matching the RS ActionBar emphasized style. */
+  isEmphasized?: boolean;
   /**
    * Hard cap on inline actions before overflow kicks in.
    * Space is the primary driver — the component will also reduce visible actions when the bar

@@ -81,8 +81,7 @@ export const addPopoverData = (data: Data[], markOptions: PopoverParentOptions, 
     }
   }
 
-  // ChartActionBar needs the same _selectedData dataset as a popover (item-level selection)
-  // but doesn't use chartPopovers — add it when action bars are present and popovers are absent.
+  // Skipped if a popover exists — _selectedGroupId is one field a second transform would clobber.
   const chartActionBars = 'chartActionBars' in markOptions ? markOptions.chartActionBars : undefined;
   if (chartActionBars?.length && !popovers.length && addHighlightedData) {
     const { name: markName, idKey } = markOptions;
