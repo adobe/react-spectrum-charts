@@ -81,6 +81,10 @@ this removes transitions in the vega tooltip
 .rsc-action-bar {
   min-block-size: 0;
   max-inline-size: 800px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
 }
 .rsc-action-bar-drag-handle {
   width: 4px;

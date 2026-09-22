@@ -361,7 +361,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
   const [overflowOpen, setOverflowOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDialogElement>(null);
   const overflowAnchorRef = useRef<HTMLDivElement>(null);
   const overflowContentRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ pointerX: number; pointerY: number; startLeft: number; startTop: number } | null>(null);
@@ -499,9 +499,9 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
         }}
       />
       {isOpen && (
-        <div
+        <dialog
           ref={containerRef}
-          role="dialog"
+          open
           aria-label="Action bar"
           data-testid="rsc-action-bar"
           className={`rsc-popover rsc-action-bar${isEmphasized ? ' rsc-action-bar--emphasized' : ''}`}
@@ -543,7 +543,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
               </div>
             )}
           </div>
-        </div>
+        </dialog>
       )}
     </>
   );
