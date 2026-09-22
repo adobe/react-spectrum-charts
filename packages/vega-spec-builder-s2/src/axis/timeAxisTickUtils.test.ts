@@ -110,7 +110,7 @@ describe('responsive time-axis ticks', () => {
   test('includes parent context when the domain starts after the parent boundary', () => {
     const partialMonthDomain: [number, number] = [Date.UTC(2025, 0, 8), Date.UTC(2025, 1, 8)];
     expect(getTimeAxisPrimaryTicks(partialMonthDomain, 500, 'day', 'utc').map(Number)).toEqual([
-      partialMonthDomain[0],
+      Date.UTC(2025, 0, 9),
       Date.UTC(2025, 1, 1),
     ]);
   });

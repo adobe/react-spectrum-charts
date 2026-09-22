@@ -32,7 +32,7 @@
     "touchesTooltipOrPopover": false,
     "requiresNewSignalOrScale": false,
     "requiresS1S2Parity": false,
-    "notes": "Scoped to S2 only by explicit product decision. Runtime expression functions choose from a granularity-specific ladder of Vega-native interval-step tickCount values near the 50px labeled-major target. Vega generates the ticks against the backing time or UTC scale, and RSC does not coerce observation endpoints into off-boundary major ticks. Weekly cadence remains on week boundaries at every width rather than advancing to month boundaries that may not coincide with weekly observations. The ladder never selects a cadence finer than the requested granularity, includes a two-day step between daily and weekly ticks, and retains the previous finer interval when the next candidate would collapse below half the intended label count. Secondary labels retain the requested granularity format even when their cadence becomes coarser. The primary row independently selects actual parent-calendar boundaries (minute for seconds, day for minute/hour, month for day/week, year for month/quarter) and adds a label-only value at the domain start when the first parent boundary is outside the visible range. A separate tick-only axis derives one temporal midpoint per major interval and emits no values when the responsive major cadence falls below 50px; quarter granularity intentionally has no midpoint ticks. Gridlines and labels remain major-only; hover remains anchored solely to real observations. S2's tickCountMinimum and tickCountLimit props were removed because the automatic policy supersedes them. The Time Granularity story group provides horizontally resizable two-series examples."
+    "notes": "Scoped to S2 only by explicit product decision. Runtime expression functions choose from a granularity-specific ladder of Vega-native interval-step tickCount values near the 50px labeled-major target. Vega generates the ticks against the backing time or UTC scale, and RSC does not coerce observation endpoints into off-boundary major ticks. Weekly cadence remains on week boundaries at every width rather than advancing to month boundaries that may not coincide with weekly observations. The ladder never selects a cadence finer than the requested granularity, includes a two-day step between daily and weekly ticks, and retains the previous finer interval when the next candidate would collapse below half the intended label count. Secondary labels retain the requested granularity format even when their cadence becomes coarser. The primary row independently selects actual parent-calendar boundaries (minute for seconds, day for minute/hour, month for day/week, year for month/quarter) and places initial partial-period context on the first visible child tick. A separate tick-only axis derives one temporal midpoint per major interval and emits no values when the responsive major cadence falls below 50px; quarter granularity intentionally has no midpoint ticks. Gridlines and labels remain major-only; hover remains anchored solely to real observations. S2's tickCountMinimum and tickCountLimit props were removed because the automatic policy supersedes them. The Time Granularity story group provides horizontally resizable two-series examples."
   },
   "implementationPlan": [
     {
@@ -42,7 +42,7 @@
     },
     {
       "file": "packages/vega-spec-builder-s2/src/axis/axisUtils.ts",
-      "change": "Use Vega-selected calendar ticks for the labeled/grid axis, retain the requested secondary format, and generate the label-only primary row from parent-calendar boundaries plus domain-start context. Add a tick-only axis for midpoint minor values when ticks are enabled, omit quarter minors, and do not apply label-overlap removal.",
+      "change": "Use Vega-selected calendar ticks for the labeled/grid axis, retain the requested secondary format, and generate the label-only primary row from parent-calendar boundaries plus first-child context for a partial initial period. Add a tick-only axis for midpoint minor values when ticks are enabled, omit quarter minors, and do not apply label-overlap removal.",
       "lines": "88-220"
     },
     {
@@ -57,7 +57,7 @@
     },
     {
       "file": "packages/vega-spec-builder-s2/src/axis/timeAxisTickUtils.ts",
-      "change": "Own the responsive tick logic: choose the first candidate interval-step meeting the 50px major target, keep weekly cadence on week boundaries, ask Vega for calendar-aligned ticks, generate parent-calendar labels with domain-start context, and derive midpoint minors only when every major interval can support them.",
+      "change": "Own the responsive tick logic: choose the first candidate interval-step meeting the 50px major target, keep weekly cadence on week boundaries, ask Vega for calendar-aligned ticks, generate parent-calendar labels with first-child partial-period context, and derive midpoint minors only when every major interval can support them.",
       "lines": "n/a"
     },
     {
@@ -72,7 +72,7 @@
     },
     {
       "file": "packages/react-spectrum-charts-s2/src/stories/Line/Features/TimeGranularity/LineTimeGranularity.story.tsx",
-      "change": "Provide six deterministic, horizontally resizable local-time stories for hour/day/week/month/quarter/year windows. Each story uses two broadly distributed series, a reduced point count, top/bottom axis-position controls, and a granularity selector over its fixed window. Construct and display dates in the same local calendar system as the time scale.",
+      "change": "Provide five deterministic, horizontally resizable local-time stories for hour/day/month/quarter/year windows. Each story uses two broadly distributed series, a reduced point count, top/bottom axis-position controls, and a granularity selector that still includes week. Construct and display dates in the same local calendar system as the time scale.",
       "lines": "n/a"
     }
   ],
