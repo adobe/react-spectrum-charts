@@ -59,8 +59,8 @@ jobs:
           # Restore S2 storybook subdirectory
           find . -mindepth 1 -maxdepth 1 -type d -name 's2' -exec git reset {} +
 
-          # Explicitly remove the node_modules directory
-          rm -rf node_modules
+          # Wipes the rest of the checkout (node_modules, .docusaurus, old Storybook/docs output) — the copy steps below rebuild it
+          git clean -fdx -e dist-storybook -e packages/docs/dist
 
       - name: Copy 'dist-storybook' to 'gh-pages' branch
         run: |
@@ -72,6 +72,9 @@ jobs:
 
       - name: Commit and push changes to 'gh-pages' branch
         run: |
+          # Bypass GitHub's legacy Jekyll build for this pre-built static site
+          touch .nojekyll
+
           git add -- . ':!dist-storybook' ':!packages/docs/dist'
           git commit -m "Update gh-pages with latest Storybook build"
           git push origin gh-pages
