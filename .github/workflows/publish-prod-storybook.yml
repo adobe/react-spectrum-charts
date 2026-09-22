@@ -59,9 +59,7 @@ jobs:
           # Restore S2 storybook subdirectory
           find . -mindepth 1 -maxdepth 1 -type d -name 's2' -exec git reset {} +
 
-          # Remove all leftover untracked build artifacts (node_modules at every
-          # nesting level, .docusaurus caches, etc.) except the build output we
-          # still need to copy from below
+          # Wipes the rest of the checkout (node_modules, .docusaurus, old Storybook/docs output) — the copy steps below rebuild it
           git clean -fdx -e dist-storybook -e packages/docs/dist
 
       - name: Copy 'dist-storybook' to 'gh-pages' branch
