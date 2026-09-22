@@ -9,20 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, Mark, Scale, SignalRef } from 'vega';
+import { Axis, Mark, Scale, ScaleType, SignalRef } from 'vega';
 
 import { FILTERED_TABLE } from '@spectrum-charts/constants';
 
 import { AxisSpecOptions, DivergingBarMark, Granularity, Orientation, Position } from '../types';
 import {
-  getAxisLabelsEncoding,
   getAxisLabelTooltipRule,
+  getAxisLabelsEncoding,
   getLabelAnchorValues,
   getLabelAngle,
   getLabelFormat,
   getLabelOffset,
-  getTimeLabelFormats,
 } from './axisLabelUtils';
+import { getCombinedTimeLabelFormat, getTimeLabelFormats } from './timeAxisConfig';
+import { TemporalScaleType, TimeAxisLabelLevel, isTemporalScale } from './timeAxisTickUtils';
 
 /**
  * Generates a default vega axis from the axis options
@@ -39,8 +40,6 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     labelLimit,
     labelOrientation,
     name,
-    tickCountLimit,
-    tickCountMinimum,
     position,
     scaleType,
     ticks,
@@ -57,7 +56,7 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
     orient: position,
     grid,
     ticks,
-    tickCount: getTickCount(position, tickCountMinimum, tickCountLimit, grid),
+    tickCount: getTickCount(position, grid),
     tickMinStep: scaleType !== 'linear' ? undefined : tickMinStep, //only supported for linear scales
     title,
     labelAngle: getLabelAngle(labelOrientation),
@@ -86,13 +85,79 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
  * @returns axes
  */
 export const getTimeAxes = (scaleName: string, axisOptions: AxisSpecOptions): Axis[] => {
-  return [getSecondaryTimeAxis(scaleName, axisOptions), ...getPrimaryTimeAxis(scaleName, axisOptions)];
+  return [
+    getSecondaryTimeAxis(scaleName, axisOptions),
+    ...(axisOptions.ticks && axisOptions.granularity !== 'quarter' && isTemporalScale(axisOptions.scaleType)
+      ? [getMinorTimeAxis(scaleName, axisOptions)]
+      : []),
+    ...getPrimaryTimeAxis(scaleName, axisOptions),
+  ];
 };
 
 /**
- * Generates the secondary time axis from the axis options
- * This is the axis that shows the smaller granularity
- * If this is a vertical axis, it will also show the larger granularity and will hide repeats of the larger granularity
+ * Gets a signal that calls a time axis expression function with the rendered axis range.
+ * @param expressionName
+ * @param scaleName
+ * @param position
+ * @param granularity
+ * @param scaleType
+ * @param level
+ * @returns signal ref
+ */
+const getTimeAxisSignal = (
+  expressionName: string,
+  scaleName: string,
+  position: Position,
+  granularity: Granularity,
+  scaleType: TemporalScaleType,
+  level?: TimeAxisLabelLevel
+): SignalRef => {
+  const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
+  const levelArgument = level ? `, '${level}'` : '';
+  return {
+    signal: `${expressionName}(domain('${scaleName}'), ${range}, '${granularity}', '${scaleType}'${levelArgument})`,
+  };
+};
+
+const getTimeAxisValues = (
+  expressionName: string,
+  scaleName: string,
+  position: Position,
+  granularity: Granularity,
+  scaleType: ScaleType
+): SignalRef | undefined => {
+  if (!isTemporalScale(scaleType)) return undefined;
+  return getTimeAxisSignal(expressionName, scaleName, position, granularity, scaleType);
+};
+
+const getTimeAxisLabelFormat = (
+  scaleName: string,
+  position: Position,
+  granularity: Granularity,
+  scaleType: ScaleType,
+  level: TimeAxisLabelLevel
+): SignalRef | string => {
+  if (!isTemporalScale(scaleType)) {
+    const { primaryLabelFormat, secondaryLabelFormat } = getTimeLabelFormats(granularity);
+    if (level === 'primary') return primaryLabelFormat;
+    if (level === 'secondary') return secondaryLabelFormat;
+    return getCombinedTimeLabelFormat(granularity);
+  }
+  return getTimeAxisSignal('getTimeAxisLabelFormat', scaleName, position, granularity, scaleType, level);
+};
+
+const getTimeAxisPrimaryLabelFormat = (
+  scaleName: string,
+  position: Position,
+  granularity: Granularity,
+  scaleType: ScaleType
+): SignalRef | string => {
+  if (!isTemporalScale(scaleType)) return getTimeLabelFormats(granularity).primaryLabelFormat;
+  return getTimeAxisSignal('getTimeAxisPrimaryLabelFormat', scaleName, position, granularity, scaleType);
+};
+
+/**
+ * Generates the secondary time axis.
  * @param scaleName
  * @param axisOptions
  * @returns axis
@@ -105,41 +170,48 @@ const getSecondaryTimeAxis = (
     labelAlign,
     labelOrientation,
     position,
-    tickCountLimit,
-    tickCountMinimum,
+    scaleType,
     ticks,
     title,
     vegaLabelAlign,
     vegaLabelBaseline,
   }: AxisSpecOptions
 ): Axis => {
-  const { tickCount } = getTimeLabelFormats(granularity);
-  const resolvedTickCount =
-    tickCountLimit !== undefined || tickCountMinimum !== undefined
-      ? getTickCount(position, tickCountMinimum, tickCountLimit, grid)
-      : tickCount;
-
   return {
     scale: scaleName,
     orient: position,
     grid,
     ticks,
-    tickCount: scaleName.includes('Time') ? resolvedTickCount : undefined,
+    values: getTimeAxisValues('getTimeAxisMajorTicks', scaleName, position, granularity, scaleType),
     title,
-    formatType: 'time',
+    formatType: scaleType === 'utc' ? 'utc' : 'time',
     labelAngle: getLabelAngle(labelOrientation),
     labelSeparation: 12,
-    ...getSecondaryTimeAxisLabelFormatting(granularity, position),
+    ...getSecondaryTimeAxisLabelFormatting(scaleName, granularity, position, scaleType),
     ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
   };
 };
 
-const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position: Position): Partial<Axis> => {
-  const { secondaryLabelFormat, primaryLabelFormat } = getTimeLabelFormats(granularity);
+const getMinorTimeAxis = (scaleName: string, { granularity, position, scaleType }: AxisSpecOptions): Axis => ({
+  scale: scaleName,
+  orient: position,
+  domain: false,
+  grid: false,
+  labels: false,
+  ticks: true,
+  values: getTimeAxisValues('getTimeAxisMinorTicks', scaleName, position, granularity, scaleType),
+});
+
+const getSecondaryTimeAxisLabelFormatting = (
+  scaleName: string,
+  granularity: Granularity,
+  position: Position,
+  scaleType: ScaleType
+): Partial<Axis> => {
   const isVerticalAxis = ['left', 'right'].includes(position);
   if (isVerticalAxis) {
     return {
-      format: `${primaryLabelFormat}\u2000${secondaryLabelFormat}`,
+      format: getTimeAxisLabelFormat(scaleName, position, granularity, scaleType, 'combined'),
       encode: {
         labels: {
           interactive: false,
@@ -152,14 +224,12 @@ const getSecondaryTimeAxisLabelFormatting = (granularity: Granularity, position:
   }
 
   return {
-    format: secondaryLabelFormat,
+    format: getTimeAxisLabelFormat(scaleName, position, granularity, scaleType, 'secondary'),
   };
 };
 
 /**
- * Generates the primary time axis from the axis options
- * This is the axis that shows the larger granularity and hides duplicate labels
- * Only returns an axis for horizontal axes
+ * Generates the horizontal primary time axis.
  * @param scaleName
  * @param axisOptions
  * @returns axis
@@ -172,29 +242,25 @@ const getPrimaryTimeAxis = (
     labelOrientation,
     labelFontWeight,
     position,
-    tickCountLimit,
-    tickCountMinimum,
+    scaleType,
     ticks,
     vegaLabelAlign,
     vegaLabelBaseline,
   }: AxisSpecOptions
 ): Axis[] => {
-  if (['left', 'right'].includes(position)) {
+  if (['left', 'right'].includes(position) || granularity === 'year') {
     return [];
   }
-  const { primaryLabelFormat, tickCount } = getTimeLabelFormats(granularity);
-  const resolvedTickCount =
-    tickCountLimit !== undefined || tickCountMinimum !== undefined
-      ? getTickCount(position, tickCountMinimum, tickCountLimit)
-      : tickCount;
   return [
     {
       scale: scaleName,
       orient: position,
-      format: primaryLabelFormat,
-      tickCount: scaleName.includes('Time') ? resolvedTickCount : undefined,
-      formatType: 'time',
-      labelOverlap: 'greedy',
+      domain: false,
+      format: getTimeAxisPrimaryLabelFormat(scaleName, position, granularity, scaleType),
+      grid: false,
+      ticks: false,
+      values: getTimeAxisValues('getTimeAxisPrimaryTicks', scaleName, position, granularity, scaleType),
+      formatType: scaleType === 'utc' ? 'utc' : 'time',
       labelFontWeight,
       labelAngle: getLabelAngle(labelOrientation),
       ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
@@ -204,9 +270,11 @@ const getPrimaryTimeAxis = (
           enter: {
             dy: { value: (ticks ? 28 : 20) * (position === 'top' ? -1 : 1) }, // account for tick height
           },
-          update: {
-            text: { signal: 'formatHorizontalTimeAxisLabels(datum)' },
-          },
+          ...(!isTemporalScale(scaleType) && {
+            update: {
+              text: { signal: 'formatHorizontalTimeAxisLabels(datum)' },
+            },
+          }),
         },
       },
     },
@@ -378,20 +446,11 @@ export const getDivergingLabelEncode = (
     const flippedOffset = position === 'left' ? gapCompensation : -gapCompensation;
     return {
       update: {
-        align: [
-          { test: isNegativeTest, value: 'left' as const },
-          { value: 'right' as const },
-        ],
+        align: [{ test: isNegativeTest, value: 'left' as const }, { value: 'right' as const }],
         dx:
           position === 'left'
-            ? [
-                { test: isNegativeTest, value: flippedOffset - extraOutwardOffset },
-                { value: extraOutwardOffset },
-              ]
-            : [
-                { test: isNegativeTest, value: extraOutwardOffset },
-                { value: flippedOffset - extraOutwardOffset },
-              ],
+            ? [{ test: isNegativeTest, value: flippedOffset - extraOutwardOffset }, { value: extraOutwardOffset }]
+            : [{ test: isNegativeTest, value: extraOutwardOffset }, { value: flippedOffset - extraOutwardOffset }],
       },
     };
   }
@@ -399,20 +458,11 @@ export const getDivergingLabelEncode = (
   const flippedOffset = position === 'top' ? gapCompensation : -gapCompensation;
   return {
     update: {
-      baseline: [
-        { test: isNegativeTest, value: 'bottom' as const },
-        { value: 'top' as const },
-      ],
+      baseline: [{ test: isNegativeTest, value: 'bottom' as const }, { value: 'top' as const }],
       dy:
         position === 'top'
-          ? [
-              { test: isNegativeTest, value: extraOutwardOffset },
-              { value: flippedOffset - extraOutwardOffset },
-            ]
-          : [
-              { test: isNegativeTest, value: flippedOffset - extraOutwardOffset },
-              { value: extraOutwardOffset },
-            ],
+          ? [{ test: isNegativeTest, value: extraOutwardOffset }, { value: flippedOffset - extraOutwardOffset }]
+          : [{ test: isNegativeTest, value: flippedOffset - extraOutwardOffset }, { value: extraOutwardOffset }],
     },
   };
 };
@@ -476,35 +526,14 @@ const getDefaultOpposingScaleNameFromPosition = (position: Position) => {
 
 /**
  * Determines tick count based on axis type and available space.
- * Uses Vega's tickCount parameter which is treated as a suggestion rather than a strict limit.
- * The final number of ticks may vary as Vega optimizes for visually pleasing values and intervals.
- *
  * @param position The position of the axis
- * @param tickCountMinimum The minimum number of ticks
- * @param tickCountLimit The upper limit for the number of ticks
  * @param grid Whether grid lines are enabled
  * @returns tickCount production rule for Vega
  */
-export const getTickCount = (position: Position, tickCountMinimum?: number, tickCountLimit?: number, grid?: boolean): SignalRef | undefined => {
+export const getTickCount = (position: Position, grid?: boolean): SignalRef | undefined => {
   const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
 
-  // 0 is a valid tickCountLimit value.
-  if (tickCountLimit !== undefined) {
-    // both min and max are provided
-    if (tickCountMinimum !== undefined) {
-      return {
-        signal: `clamp(ceil(${range}/100), ${tickCountMinimum}, ${tickCountLimit})`,
-      };
-    }
-    // divide the range by 100 to get the ideal number of ticks (grid lines)
-    return {
-      signal: `clamp(ceil(${range}/100), 2, ${tickCountLimit})`,
-    };
-  } else if (tickCountMinimum !== undefined) {
-    return {
-      signal: `clamp(ceil(${range}/100), ${tickCountMinimum}, 10)`,
-    };
-  } else if (grid) {
+  if (grid) {
     // divide the range by 100 to get the ideal number of ticks (grid lines)
     return {
       signal: `clamp(ceil(${range}/100), 2, 10)`,

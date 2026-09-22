@@ -15,6 +15,14 @@ import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/themes';
 
+import {
+  getTimeAxisLabelFormat,
+  getTimeAxisMajorTicks,
+  getTimeAxisMinorTicks,
+  getTimeAxisPrimaryLabelFormat,
+  getTimeAxisPrimaryTicks,
+  getTimeAxisTickCount,
+} from '../axis/timeAxisTickUtils';
 import { NumberFormat } from '../types';
 
 export interface LabelDatum {
@@ -38,6 +46,12 @@ export const getExpressionFunctions = (
     consoleLog,
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
+    getTimeAxisLabelFormat,
+    getTimeAxisMajorTicks,
+    getTimeAxisMinorTicks,
+    getTimeAxisPrimaryLabelFormat,
+    getTimeAxisPrimaryTicks,
+    getTimeAxisTickCount,
     getLabelWidth,
     truncateText,
   };
@@ -122,6 +136,7 @@ export const formatVerticalAxisTimeLabels = () => {
   let prevLabel: string;
   return (datum: LabelDatum) => {
     const labels = datum.label.split('\u2000');
+    if (labels.length === 1) return datum.label;
     const label = labels[0];
 
     const showLabel = datum.index === 0 || prevLabel !== label;
@@ -208,6 +223,12 @@ export const expressionFunctions = {
   consoleLog,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
+  getTimeAxisLabelFormat,
+  getTimeAxisMajorTicks,
+  getTimeAxisMinorTicks,
+  getTimeAxisPrimaryLabelFormat,
+  getTimeAxisPrimaryTicks,
+  getTimeAxisTickCount,
   getLabelWidth,
   truncateText,
 };
