@@ -248,6 +248,7 @@ describe('getTimeAxes()', () => {
     expect(secondaryAxis).toHaveProperty('format', {
       signal: "getTimeAxisLabelFormat(domain('xTime'), width, 'day', 'time', 'secondary')",
     });
+    expect(secondaryAxis).not.toHaveProperty('encode.labels.update.align');
     expect(secondaryAxis).not.toHaveProperty('labelOverlap');
     expect(primaryAxis).toHaveProperty('values', {
       signal: "getTimeAxisPrimaryTicks(domain('xTime'), width, 'day', 'time')",
@@ -256,7 +257,8 @@ describe('getTimeAxes()', () => {
       signal: "getTimeAxisPrimaryLabelFormat(domain('xTime'), width, 'day', 'time')",
     });
     expect(primaryAxis).toMatchObject({ domain: false, grid: false, ticks: false });
-    expect(primaryAxis).not.toHaveProperty('encode.labels.update');
+    expect(primaryAxis).not.toHaveProperty('encode.labels.update.align');
+    expect(primaryAxis).not.toHaveProperty('encode.labels.update.text');
     expect(primaryAxis).not.toHaveProperty('labelOverlap');
   });
 

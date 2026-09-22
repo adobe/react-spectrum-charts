@@ -251,6 +251,13 @@ const getPrimaryTimeAxis = (
   if (['left', 'right'].includes(position) || granularity === 'year') {
     return [];
   }
+  const labelAnchorValues = getLabelAnchorValues(
+    position,
+    labelOrientation,
+    labelAlign,
+    vegaLabelAlign,
+    vegaLabelBaseline
+  );
   return [
     {
       scale: scaleName,
@@ -263,18 +270,18 @@ const getPrimaryTimeAxis = (
       formatType: scaleType === 'utc' ? 'utc' : 'time',
       labelFontWeight,
       labelAngle: getLabelAngle(labelOrientation),
-      ...getLabelAnchorValues(position, labelOrientation, labelAlign, vegaLabelAlign, vegaLabelBaseline),
+      ...labelAnchorValues,
       encode: {
         labels: {
           interactive: false,
           enter: {
             dy: { value: (ticks ? 28 : 20) * (position === 'top' ? -1 : 1) }, // account for tick height
           },
-          ...(!isTemporalScale(scaleType) && {
-            update: {
+          update: {
+            ...(!isTemporalScale(scaleType) && {
               text: { signal: 'formatHorizontalTimeAxisLabels(datum)' },
-            },
-          }),
+            }),
+          },
         },
       },
     },
