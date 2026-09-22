@@ -97,10 +97,9 @@ const getEffectiveDonutDiameter = (containerSize: number, viewMode?: string): nu
   return Math.max(0, 2 * reservedRadius);
 };
 
-interface DonutVariationChartProps {
+interface DonutVariationChartProps extends Pick<DonutProps, 'children'> {
   data?: ChartData[];
   donutProps?: DonutProps;
-  children?: DonutProps['children'];
   colors?: ChartProps['colors'];
   emphasizedItemCount?: number;
   size?: number;
@@ -130,12 +129,12 @@ const DonutVariationChart = ({
           .map((datum) => ('series' in datum ? datum.series : undefined))
           .filter((series): series is string => typeof series === 'string');
   const chartProps = useChartProps({ data: chartData, width: chartSize, height: chartSize, colors });
-  const dashboardSegmentLabel =
-    viewMode === 'direct' ? (
-      <SegmentLabel value valueFormat="shortNumber" />
-    ) : viewMode === 'advanced' ? (
-      <SegmentLabel percent showValueRow swatch value={false} />
-    ) : null;
+  let dashboardSegmentLabel: ReactElement | null = null;
+  if (viewMode === 'direct') {
+    dashboardSegmentLabel = <SegmentLabel value valueFormat="shortNumber" />;
+  } else if (viewMode === 'advanced') {
+    dashboardSegmentLabel = <SegmentLabel percent showValueRow swatch value={false} />;
+  }
   return (
     <Chart {...chartProps}>
       <Donut {...donutProps} emphasizedItems={emphasizedItems}>
