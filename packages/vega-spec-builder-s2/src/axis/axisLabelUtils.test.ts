@@ -26,6 +26,7 @@ describe('getLabelValue()', () => {
     expect(getLabelValue({ value: 1 })).toEqual(1);
     expect(getLabelValue({ value: 'test', label: 'testing' })).toEqual('test');
   });
+
   test('should return the label as is if not an object', () => {
     expect(getLabelValue(1)).toEqual(1);
     expect(getLabelValue('test')).toEqual('test');

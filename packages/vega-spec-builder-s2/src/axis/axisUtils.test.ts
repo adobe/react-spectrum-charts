@@ -216,43 +216,16 @@ describe('getSubLabelAxis()', () => {
 });
 
 describe('getTickCount()', () => {
-  test('when maxTicks is provided, it should use maxTicks as the max value', () => {
-    expect(getTickCount('left', undefined,5)).toEqual({
-      signal: 'clamp(ceil(height/100), 2, 5)',
-    });
-    expect(getTickCount('bottom', undefined,15)).toEqual({
-      signal: 'clamp(ceil(width/100), 2, 15)',
-    });
-  });
-
-  test('when tickCountMinimum is provided, it should use tickCountMinimum as the min value', () => {
-    expect(getTickCount('left', 3, undefined, false)).toEqual({
-      signal: 'clamp(ceil(height/100), 3, 10)',
-    });
-    expect(getTickCount('bottom', 5, undefined, false)).toEqual({
-      signal: 'clamp(ceil(width/100), 5, 10)',
-    });
-  });
-
-  test('when both tickCountMinimum and tickCountLimit are provided, it should use tickCountMinimum as the min value and tickCountLimit as the max value', () => {
-    expect(getTickCount('left', 3, 5, false)).toEqual({
-      signal: 'clamp(ceil(height/100), 3, 5)',
-    });
-    expect(getTickCount('bottom', 5, 15, false)).toEqual({
-      signal: 'clamp(ceil(width/100), 5, 15)',
-    });
-  });
-
-  test('when grid is true and maxTicks or tickCountMinimum is not provided, it should use 2 as the min value and 10 as the max value', () => {
-    expect(getTickCount('left', undefined, undefined, true)).toEqual({
+  test('uses the default responsive count when grid is enabled', () => {
+    expect(getTickCount('left', true)).toEqual({
       signal: 'clamp(ceil(height/100), 2, 10)',
     });
-    expect(getTickCount('bottom', undefined, undefined, true)).toEqual({
+    expect(getTickCount('bottom', true)).toEqual({
       signal: 'clamp(ceil(width/100), 2, 10)',
     });
   });
 
-  test('when neither maxTicks nor grid is provided, it should return undefined', () => {
+  test('returns undefined when grid is disabled', () => {
     expect(getTickCount('left')).toBeUndefined();
     expect(getTickCount('bottom')).toBeUndefined();
   });
@@ -263,38 +236,88 @@ describe('getTimeAxes()', () => {
     ...defaultAxisOptions,
     granularity: 'day',
     position: 'bottom',
+    scaleType: 'time',
   };
 
-  test('uses granularity tickCount by default when no limits are set', () => {
-    const [secondaryAxis] = getTimeAxes('xTime', baseTimeAxisOptions);
-    expect(secondaryAxis).toHaveProperty('tickCount', 'day');
-  });
-
-  test('uses width-based signal when tickCountLimit is set', () => {
-    const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', { ...baseTimeAxisOptions, tickCountLimit: 5 });
-    expect(secondaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 2, 5)' });
-    expect(primaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 2, 5)' });
-  });
-
-  test('uses width-based signal when tickCountMinimum is set', () => {
-    const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', { ...baseTimeAxisOptions, tickCountMinimum: 3 });
-    expect(secondaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 3, 10)' });
-    expect(primaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 3, 10)' });
-  });
-
-  test('uses width-based signal with both min and max when both limits are set', () => {
-    const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', {
-      ...baseTimeAxisOptions,
-      tickCountMinimum: 3,
-      tickCountLimit: 8,
+  test('uses independent Vega-selected values for child and parent label rows', () => {
+    const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', baseTimeAxisOptions);
+    const expectedSecondaryValues = {
+      signal: "getTimeAxisMajorTicks(domain('xTime'), width, 'day', 'time')",
+    };
+    expect(secondaryAxis).toHaveProperty('values', expectedSecondaryValues);
+    expect(secondaryAxis).toHaveProperty('format', {
+      signal: "getTimeAxisLabelFormat(domain('xTime'), width, 'day', 'time', 'secondary')",
     });
-    expect(secondaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 3, 8)' });
-    expect(primaryAxis).toHaveProperty('tickCount', { signal: 'clamp(ceil(width/100), 3, 8)' });
+    expect(secondaryAxis).not.toHaveProperty('labelOverlap');
+    expect(primaryAxis).toHaveProperty('values', {
+      signal: "getTimeAxisPrimaryTicks(domain('xTime'), width, 'day', 'time')",
+    });
+    expect(primaryAxis).toHaveProperty('format', {
+      signal: "getTimeAxisPrimaryLabelFormat(domain('xTime'), width, 'day', 'time')",
+    });
+    expect(primaryAxis).toMatchObject({ domain: false, grid: false, ticks: false });
+    expect(primaryAxis).not.toHaveProperty('encode.labels.update');
+    expect(primaryAxis).not.toHaveProperty('labelOverlap');
   });
 
-  test('falls back to granularity tickCount for non-time scale names', () => {
-    const [secondaryAxis] = getTimeAxes('xLinear', { ...baseTimeAxisOptions, tickCountLimit: 5 });
-    expect(secondaryAxis).toHaveProperty('tickCount', undefined);
+  test('adds midpoint minors only when ticks are enabled', () => {
+    const [secondaryAxis, minorAxis, primaryAxis] = getTimeAxes('xTime', {
+      ...baseTimeAxisOptions,
+      ticks: true,
+    });
+    expect(secondaryAxis).toHaveProperty('values', {
+      signal: "getTimeAxisMajorTicks(domain('xTime'), width, 'day', 'time')",
+    });
+    expect(minorAxis).toMatchObject({
+      domain: false,
+      grid: false,
+      labels: false,
+      ticks: true,
+      values: { signal: "getTimeAxisMinorTicks(domain('xTime'), width, 'day', 'time')" },
+    });
+    expect(primaryAxis).toHaveProperty('values', {
+      signal: "getTimeAxisPrimaryTicks(domain('xTime'), width, 'day', 'time')",
+    });
+  });
+
+  test('uses parent calendar values for every label granularity', () => {
+    const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', { ...baseTimeAxisOptions, granularity: 'quarter' });
+    expect(secondaryAxis).toHaveProperty('values', {
+      signal: "getTimeAxisMajorTicks(domain('xTime'), width, 'quarter', 'time')",
+    });
+    expect(primaryAxis).toHaveProperty('values', {
+      signal: "getTimeAxisPrimaryTicks(domain('xTime'), width, 'quarter', 'time')",
+    });
+  });
+
+  test('does not set generated tick counts or minors for non-temporal scales', () => {
+    const axes = getTimeAxes('xLinear', { ...baseTimeAxisOptions, scaleType: 'linear', ticks: true });
+    expect(axes).toHaveLength(2);
+    expect(axes[0]).toHaveProperty('values', undefined);
+  });
+
+  test('lets Vega resolve UTC tick intervals and formatting from a UTC scale', () => {
+    const [secondaryAxis, minorAxis, primaryAxis] = getTimeAxes('xUtc', {
+      ...baseTimeAxisOptions,
+      scaleType: 'utc',
+      ticks: true,
+    });
+    expect(secondaryAxis).toMatchObject({
+      formatType: 'utc',
+      values: { signal: "getTimeAxisMajorTicks(domain('xUtc'), width, 'day', 'utc')" },
+    });
+    expect(minorAxis).toHaveProperty('values', {
+      signal: "getTimeAxisMinorTicks(domain('xUtc'), width, 'day', 'utc')",
+    });
+    expect(primaryAxis).toHaveProperty('formatType', 'utc');
+  });
+
+  test('does not add an empty primary label axis for year granularity', () => {
+    expect(getTimeAxes('xTime', { ...baseTimeAxisOptions, granularity: 'year' })).toHaveLength(1);
+  });
+
+  test('does not add midpoint ticks for quarter granularity', () => {
+    expect(getTimeAxes('xTime', { ...baseTimeAxisOptions, granularity: 'quarter', ticks: true })).toHaveLength(2);
   });
 });
 
@@ -375,7 +398,7 @@ describe('getDivergingTickIsNegativeTest()', () => {
 
 describe('getDivergingLabelEncode()', () => {
   describe('vertical axes flip align + compensate dx', () => {
-    test("left axis: default labelPadding (8) → 2*8 gap compensation", () => {
+    test('left axis: default labelPadding (8) → 2*8 gap compensation', () => {
       expect(getDivergingLabelEncode('left', 'isNeg')).toStrictEqual({
         update: {
           align: [{ test: 'isNeg', value: 'left' }, { value: 'right' }],
