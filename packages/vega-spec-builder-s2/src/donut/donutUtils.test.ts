@@ -280,6 +280,27 @@ describe('getArcMark()', () => {
     expect(arcMark.encode?.enter?.x).toEqual({ signal: 'width / 2' });
     expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height' });
   });
+
+  test('should reserve space below a semicircle for a summary delta', () => {
+    const arcMark = getArcMark({
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
+    });
+    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height - testName_summaryBottomOffset' });
+  });
+
+  test.each([
+    [{ delta: 0.025 }, 'value and delta'],
+    [{ delta: 0.025, hideValue: true, label: 'Visitors' }, 'label and delta'],
+  ])('should remain bottom-anchored with only %s', (summary, _description) => {
+    const arcMark = getArcMark({
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      donutSummaries: [summary],
+    });
+    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height' });
+  });
 });
 
 describe('getEmptyStateArcMark()', () => {
@@ -297,6 +318,14 @@ describe('getEmptyStateArcMark()', () => {
     expect(emptyStateMark.encode?.enter?.y).toEqual({ signal: 'height' });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
     expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
+  });
+  test('should reserve the same summary-delta space for the semicircle empty state', () => {
+    const emptyStateMark = getEmptyStateArcMark({
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
+    });
+    expect(emptyStateMark.encode?.enter?.y).toEqual({ signal: 'height - testName_summaryBottomOffset' });
   });
   test('should only be visible when the donut is in the empty state', () => {
     const emptyStateMark = getEmptyStateArcMark(defaultDonutOptions);

@@ -274,8 +274,14 @@ const getHoveredArcFillEncoding = (
  * @param donutOptions
  * @returns vega signal string
  */
-export const getDonutCenterYSignal = ({ variant }: DonutSpecOptions): string =>
-  variant === 'semicircle' ? 'height' : 'height / 2';
+export const getDonutCenterYSignal = ({ donutSummaries, name, variant }: DonutSpecOptions): string => {
+  if (variant !== 'semicircle') {
+    return 'height / 2';
+  }
+  const summary = donutSummaries[0];
+  const hasThreeSummaryRows = summary?.delta !== undefined && !summary.hideValue && Boolean(summary.label);
+  return hasThreeSummaryRows ? `height - ${name}_summaryBottomOffset` : 'height';
+};
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;
