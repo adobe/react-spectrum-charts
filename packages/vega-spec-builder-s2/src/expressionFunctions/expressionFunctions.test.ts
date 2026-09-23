@@ -19,7 +19,31 @@ import {
   formatShortNumber,
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
+  isDonutLabelVisible,
 } from './expressionFunctions';
+
+describe('isDonutLabelVisible()', () => {
+  const data = [
+    { id: 'large', hemisphere: 'left', boxes: [[10, 80, 86, 114]], topY: 86, arcLength: 4 },
+    { id: 'middle', hemisphere: 'left', boxes: [[10, 80, 106, 134]], topY: 106, arcLength: 3 },
+    { id: 'small', hemisphere: 'left', boxes: [[10, 80, 132, 160]], topY: 132, arcLength: 2 },
+    { id: 'separate-x', hemisphere: 'left', boxes: [[90, 150, 90, 110]], topY: 90, arcLength: 1.5 },
+    { id: 'other-side', hemisphere: 'right', boxes: [[10, 80, 86, 114]], topY: 86, arcLength: 1 },
+  ];
+  const isVisible = (datum: (typeof data)[number]) =>
+    isDonutLabelVisible(data, datum, 'hemisphere', 'boxes', 'topY', 'arcLength', 'id', 4);
+
+  test('keeps fixed labels that do not overlap an accepted label', () => {
+    expect(isVisible(data[0])).toBe(true);
+    expect(isVisible(data[2])).toBe(true);
+    expect(isVisible(data[3])).toBe(true);
+    expect(isVisible(data[4])).toBe(true);
+  });
+
+  test('hides a smaller label that overlaps an accepted label', () => {
+    expect(isVisible(data[1])).toBe(false);
+  });
+});
 
 describe('formatLocaleCurrency()', () => {
   test('formats US currency correctly', () => {

@@ -274,6 +274,7 @@ export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [7.5, 9, 10.5, 12, 15];
 export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [10, 12, 14, 16, 20];
 /** Gap (px) between the ring's outer edge and a direct label's rendered bounding box */
 export const DONUT_LABEL_RING_GAP = 20;
+export const DONUT_LABEL_COLLISION_GAP = 4;
 /**
  * Gap (px) between the ring's outer edge and an advanced label's rendered bounding box - larger
  * than the direct-label ring gap since the taller swatch+multi-row block needs more breathing room.
@@ -310,14 +311,6 @@ export const DONUT_ADVANCED_LABEL_SWATCH_GAP = 8;
 export const DONUT_ADVANCED_LABEL_NAME_VALUE_GAP = 4;
 /** Gap (px) between the value/% row and the optional detail row - directly adjacent */
 export const DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP = 0;
-/**
- * Buffer (px) added to a label block's own rendered height to compute the minimum vertical gap
- * enforced between two labels stacked/colliding in the same hemisphere. Not a sourced token -
- * roughly double the 8-10px inter-element gaps used elsewhere, chosen so adjacent labels get
- * breathing room instead of touching edge-to-edge.
- */
-export const DONUT_LABEL_COLLISION_MIN_GAP_BUFFER = 16;
-
 // venn constant
 export const DEFAULT_VENN_COLOR = 'sets';
 /** default key in data for the metric in the venn diagram */

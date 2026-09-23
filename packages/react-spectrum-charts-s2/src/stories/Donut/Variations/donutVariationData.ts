@@ -17,6 +17,13 @@ export interface DonutVariationDatum extends Record<string, unknown> {
   value: number;
 }
 
+/** Gets the series keys for the largest values without changing dataset order. */
+export const getLargestDonutSeries = (data: DonutVariationDatum[], count: number): string[] =>
+  [...data]
+    .sort((a, b) => b.value - a.value)
+    .slice(0, count)
+    .map(({ series }) => series);
+
 const standard: DonutVariationDatum[] = [
   { displayName: 'Chrome browser', series: 'Chrome', value: 10390 },
   { displayName: 'Firefox browser', series: 'Firefox', value: 8281 },
@@ -40,12 +47,42 @@ const dense: DonutVariationDatum[] = Array.from({ length: 24 }, (_, index) => ({
   value: 25 - index,
 }));
 
+const denseNamed: DonutVariationDatum[] = [
+  { displayName: 'Northstar', series: 'Northstar', value: 110 },
+  { displayName: 'Bluebird', series: 'Bluebird', value: 108 },
+  { displayName: 'Redwood', series: 'Redwood', value: 106 },
+  { displayName: 'Sequoia', series: 'Sequoia', value: 104 },
+  { displayName: 'Glacier', series: 'Glacier', value: 102 },
+  { displayName: 'Harbor', series: 'Harbor', value: 101 },
+  { displayName: 'Juniper', series: 'Juniper', value: 100 },
+  { displayName: 'Meridian', series: 'Meridian', value: 99 },
+  { displayName: 'Solstice', series: 'Solstice', value: 98 },
+  { displayName: 'Cascade', series: 'Cascade', value: 97 },
+  { displayName: 'Summit', series: 'Summit', value: 96 },
+  { displayName: 'Meadow', series: 'Meadow', value: 95 },
+  { displayName: 'Copper', series: 'Copper', value: 94 },
+  { displayName: 'Indigo', series: 'Indigo', value: 93 },
+  { displayName: 'Cypress', series: 'Cypress', value: 92 },
+  { displayName: 'Marigold', series: 'Marigold', value: 91 },
+  { displayName: 'Tundra', series: 'Tundra', value: 90 },
+  { displayName: 'Zephyr', series: 'Zephyr', value: 90 },
+];
+
 const dominantWithSlivers: DonutVariationDatum[] = [
   { displayName: 'Dominant category', series: 'Dominant', value: 9800 },
   ...Array.from({ length: 12 }, (_, index) => ({
     displayName: `Sliver ${index + 1}`,
     series: `Sliver ${index + 1}`,
     value: index + 1,
+  })),
+];
+
+const moderateDominantWithSlivers: DonutVariationDatum[] = [
+  { displayName: 'Primary category', series: 'Primary', value: 400 },
+  ...Array.from({ length: 12 }, (_, index) => ({
+    displayName: `Supporting category ${index + 1}`,
+    series: `Supporting ${index + 1}`,
+    value: index + 3,
   })),
 ];
 
@@ -108,7 +145,9 @@ export const donutVariationDatasets = {
   singleSegment,
   twoSegments,
   dense,
+  denseNamed,
   dominantWithSlivers,
+  moderateDominantWithSlivers,
   longLabels,
   specialCharacters,
   duplicateLabels,
@@ -124,9 +163,19 @@ export const donutDatasetOptions: VariationDataset[] = [
   { label: 'Two segments (2)', value: 'twoSegments', description: 'Sparse comparison data.' },
   { label: 'Dense (24)', value: 'dense', description: 'Many gradually decreasing segments.' },
   {
+    label: 'Dense named (18)',
+    value: 'denseNamed',
+    description: 'Many similarly sized segments with distinct semantic labels.',
+  },
+  {
     label: 'Dominant with slivers (13)',
     value: 'dominantWithSlivers',
-    description: 'One dominant segment with many extremely thin segments.',
+    description: 'Verifies thin positive segments remain colored when the slice halo is clamped.',
+  },
+  {
+    label: 'Moderate dominant with slivers (13)',
+    value: 'moderateDominantWithSlivers',
+    description: 'One roughly 80% segment with twelve visible supporting segments.',
   },
   {
     label: 'Long labels (4)',

@@ -39,6 +39,7 @@ export const getExpressionFunctions = (
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
+    isDonutLabelVisible,
     truncateText,
   };
 };
@@ -187,6 +188,65 @@ const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: 
   return context.measureText(text).width;
 };
 
+/**
+ * Keeps fixed-position donut labels in priority order when their rendered blocks do not overlap.
+ * @param data
+ * @param datum
+ * @param hemisphereField
+ * @param collisionBoxesField
+ * @param topYField
+ * @param priorityField
+ * @param idField
+ * @param gap
+ * @returns whether the label should be visible
+ */
+export const isDonutLabelVisible = (
+  data: Record<string, unknown>[],
+  datum: Record<string, unknown>,
+  hemisphereField: string,
+  collisionBoxesField: string,
+  topYField: string,
+  priorityField: string,
+  idField: string,
+  gap: number
+): boolean => {
+  const hemisphere = datum[hemisphereField];
+  const candidates = data
+    .filter((candidate) => candidate[hemisphereField] === hemisphere)
+    .sort((a, b) => {
+      const priorityDifference = Number(b[priorityField]) - Number(a[priorityField]);
+      return priorityDifference || Number(a[topYField]) - Number(b[topYField]);
+    });
+  const accepted: Record<string, unknown>[] = [];
+
+  for (const candidate of candidates) {
+    const collisionBoxes = candidate[collisionBoxesField] as number[][];
+    const overlaps = accepted.some((visibleCandidate) => {
+      const visibleCollisionBoxes = visibleCandidate[collisionBoxesField] as number[][];
+      return collisionBoxes.some(([leftX, rightX, topY, bottomY]) =>
+        visibleCollisionBoxes.some(
+          ([visibleLeftX, visibleRightX, visibleTopY, visibleBottomY]) =>
+            leftX < visibleRightX + gap &&
+            rightX > visibleLeftX - gap &&
+            topY < visibleBottomY + gap &&
+            bottomY > visibleTopY - gap
+        )
+      );
+    });
+    const isDatum =
+      candidate === datum ||
+      (candidate[idField] !== undefined && datum[idField] !== undefined && candidate[idField] === datum[idField]);
+    if (overlaps) {
+      if (isDatum) return false;
+      continue;
+    }
+    accepted.push(candidate);
+    if (isDatum) return true;
+  }
+
+  return false;
+};
+
 const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = 'normal', fontSize: number = 12) => {
   maxWidth = maxWidth - 4;
   const textWidth = getLabelWidth(text, fontWeight, fontSize);
@@ -209,5 +269,6 @@ export const expressionFunctions = {
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   getLabelWidth,
+  isDonutLabelVisible,
   truncateText,
 };
