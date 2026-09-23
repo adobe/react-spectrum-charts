@@ -350,6 +350,7 @@ cross-unit jumps can:
 - A zero rendered range produces no generated tick values.
 - A reversed scale range uses its absolute rendered length.
 - Invalid dates or an invalid domain produce no generated tick values and must not throw.
+- If the selected interval has no boundary inside the domain, the domain start is the sole reference tick.
 - A single-instant domain requires explicit product behavior; see Open Questions.
 
 ---

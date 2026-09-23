@@ -72,7 +72,7 @@
     },
     {
       "file": "packages/react-spectrum-charts-s2/src/stories/Line/Features/TimeGranularity/LineTimeGranularity.story.tsx",
-      "change": "Provide five deterministic, horizontally resizable local-time stories for hour/day/month/quarter/year windows. Each story uses two broadly distributed series, a reduced point count, top/bottom axis-position controls, and a granularity selector that still includes week. Construct and display dates in the same local calendar system as the time scale.",
+      "change": "Provide five deterministic, horizontally resizable local-time stories for hour/day/month/quarter/year windows. Each story uses a fixed, sparsely sampled two-series dataset, top/bottom axis-position controls, and a granularity selector that changes only axis presentation and still includes week. Construct and display dates in the same local calendar system as the time scale.",
       "lines": "n/a"
     }
   ],
