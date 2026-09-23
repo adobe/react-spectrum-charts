@@ -44,7 +44,7 @@ export default {
 
 const HOUR_MS = 3.6e6;
 const CHART_HEIGHT = 400;
-const DEFAULT_CHART_WIDTH = 700;
+const DEFAULT_CHART_WIDTH = 800;
 const MIN_CHART_WIDTH = 200;
 const MAX_CHART_WIDTH = 1600;
 const RESIZE_HANDLE_HEIGHT = 48;
@@ -129,57 +129,6 @@ const generateTimeSeries = ({ end, sampleHours, start }: TimeWindow): GeneratedT
   return data;
 };
 
-/**
- * Gets the start of the local calendar bucket for a timestamp.
- * @param datetime
- * @param granularity
- * @returns bucket start timestamp
- */
-const getBucketStart = (datetime: number, granularity: Granularity): number => {
-  const date = new Date(datetime);
-  switch (granularity) {
-    case 'day':
-      return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-    case 'week': {
-      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      dayStart.setDate(dayStart.getDate() - dayStart.getDay());
-      return dayStart.getTime();
-    }
-    case 'month':
-      return new Date(date.getFullYear(), date.getMonth(), 1).getTime();
-    case 'quarter':
-      return new Date(date.getFullYear(), Math.floor(date.getMonth() / 3) * 3, 1).getTime();
-    case 'year':
-      return new Date(date.getFullYear(), 0, 1).getTime();
-    default:
-      return datetime;
-  }
-};
-
-const getBucketedData = (
-  sourceData: GeneratedTimeSeriesDatum[],
-  granularity: Granularity
-): GeneratedTimeSeriesDatum[] => {
-  if (granularity === 'hour') return sourceData;
-
-  const buckets = new Map<string, { count: number; datetime: number; series: string; total: number }>();
-  for (const { datetime, series, value } of sourceData) {
-    const bucketStart = getBucketStart(datetime, granularity);
-    const bucketKey = `${series}-${bucketStart}`;
-    const bucket = buckets.get(bucketKey) ?? { count: 0, datetime: bucketStart, series, total: 0 };
-    bucket.count += 1;
-    bucket.total += value;
-    buckets.set(bucketKey, bucket);
-  }
-  return Array.from(buckets.values())
-    .sort((a, b) => a.datetime - b.datetime || a.series.localeCompare(b.series))
-    .map(({ count, datetime, series, total }) => ({
-      datetime,
-      series,
-      value: Math.round(total / count),
-    }));
-};
-
 const TimeGranularityStory = ({
   granularity,
   position,
@@ -187,8 +136,7 @@ const TimeGranularityStory = ({
   ...axisProps
 }: TimeGranularityStoryProps): ReactElement => {
   const [chartWidth, setChartWidth] = useState(DEFAULT_CHART_WIDTH);
-  const sourceData = useMemo(() => generateTimeSeries(window), [window]);
-  const data = useMemo(() => getBucketedData(sourceData, granularity), [granularity, sourceData]);
+  const data = useMemo(() => generateTimeSeries(window), [window]);
   const chartProps: ChartProps = useChartProps({ data, width: 'auto', height: '100%' });
 
   return (
@@ -250,19 +198,19 @@ const dailyWindow: TimeWindow = {
 const monthlyWindow: TimeWindow = {
   start: new Date(2024, 0, 1).getTime(),
   end: new Date(2025, 6, 1).getTime(),
-  sampleHours: 24,
+  sampleHours: 24 * 14,
 };
 
 const quarterlyWindow: TimeWindow = {
   start: new Date(2022, 0, 1).getTime(),
   end: new Date(2026, 0, 1).getTime(),
-  sampleHours: 24,
+  sampleHours: 24 * 30,
 };
 
 const yearlyWindow: TimeWindow = {
   start: new Date(2016, 0, 1).getTime(),
   end: new Date(2026, 0, 1).getTime(),
-  sampleHours: 24 * 7,
+  sampleHours: 24 * 90,
 };
 
 const HourlyStory: StoryFn<TimeGranularityArgs> = (args): ReactElement => (
