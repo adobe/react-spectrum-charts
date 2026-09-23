@@ -14,6 +14,7 @@ import {
   DONUT_LABEL_RING_GAP,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
+  DONUT_SEMICIRCLE_RADIUS,
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
   FILTERED_TABLE,
@@ -95,6 +96,20 @@ describe('getDonutOuterRadiusExpr()', () => {
   test('should reserve room using the rich SegmentLabel ring gap when enabled', () => {
     const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
     expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_ADVANCED_LABEL_RING_GAP}) / (1 + 0.6))`);
+  });
+
+  test('should use the semicircle base radius (full height/width) for a semicircle donut', () => {
+    expect(getDonutOuterRadiusExpr({ ...defaultDonutOptions, variant: 'semicircle' })).toBe(DONUT_SEMICIRCLE_RADIUS);
+  });
+
+  test('should not reserve label space for a semicircle donut because its labels are omitted', () => {
+    expect(
+      getDonutOuterRadiusExpr({
+        ...defaultDonutOptions,
+        variant: 'semicircle',
+        segmentLabels: [{ swatch: true }],
+      })
+    ).toBe(DONUT_SEMICIRCLE_RADIUS);
   });
 });
 
@@ -182,11 +197,12 @@ describe('getArcMark()', () => {
   test('should fade segments that do not match a hovered Legend entry', () => {
     const arcMark = getArcMark({ ...defaultDonutOptions, legendHighlightSignals: ['legend0_hoveredSeries'] });
     const opacity = arcMark.encode?.update?.opacity as { test?: string }[];
-    expect(opacity).toHaveLength(3);
+    expect(opacity).toHaveLength(5);
     expect(opacity[1]).toEqual({
       test: "isValid(legend0_hoveredSeries) && legend0_hoveredSeries !== datum.rscSeriesId",
       value: 0.2,
     });
+    expect(opacity[2]).toHaveProperty('test', 'isValid(testName_hoveredItem)');
   });
 
   test('should not add any legend-highlight opacity rules when no Legend is paired', () => {
@@ -252,6 +268,18 @@ describe('getArcMark()', () => {
       { scale: 'color', field: 'testColor' },
     ]);
   });
+
+  test('should anchor at the vertical center for a circle donut', () => {
+    const arcMark = getArcMark(defaultDonutOptions);
+    expect(arcMark.encode?.enter?.x).toEqual({ signal: 'width / 2' });
+    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height / 2' });
+  });
+
+  test('should anchor at the bottom edge for a semicircle donut', () => {
+    const arcMark = getArcMark({ ...defaultDonutOptions, variant: 'semicircle' });
+    expect(arcMark.encode?.enter?.x).toEqual({ signal: 'width / 2' });
+    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height' });
+  });
 });
 
 describe('getEmptyStateArcMark()', () => {
@@ -262,7 +290,13 @@ describe('getEmptyStateArcMark()', () => {
     expect(emptyStateMark).toHaveProperty('interactive', false);
     expect(emptyStateMark.encode?.enter?.fill).toEqual({ value: spectrum2Colors.light['gray-200'] });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: 0 });
-    expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: '2 * PI' });
+    expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: '0 + 2 * PI' });
+  });
+  test('should mirror the semicircle sweep and bottom-edge anchor', () => {
+    const emptyStateMark = getEmptyStateArcMark({ ...defaultDonutOptions, variant: 'semicircle', startAngle: -Math.PI / 2 });
+    expect(emptyStateMark.encode?.enter?.y).toEqual({ signal: 'height' });
+    expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
+    expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
   });
   test('should only be visible when the donut is in the empty state', () => {
     const emptyStateMark = getEmptyStateArcMark(defaultDonutOptions);

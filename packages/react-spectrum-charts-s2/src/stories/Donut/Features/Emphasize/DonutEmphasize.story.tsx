@@ -22,11 +22,11 @@ import useChartProps from '../../../../hooks/useChartProps';
 import { Donut, SegmentLabel } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
 import { basicDonutData } from '../../../components/Donut/data';
-import { ResponsiveDonut } from '../DirectLabel/DirectLabels.story';
+import { ResponsiveDonut } from '../ResponsiveDonut';
 
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Emphasize',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Emphasize',
   component: Donut,
 };
 

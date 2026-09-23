@@ -180,11 +180,55 @@ describe('addData', () => {
     expect(data[1].transform?.[4]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
   });
 
+  test('should add a SERIES_ID transform when paired with a highlighted legend', () => {
+    const data = addData(initializeSpec().data ?? [], {
+      ...defaultDonutOptions,
+      legendHighlightSignals: ['legend0_hoveredSeries'],
+    });
+    expect(data[1].transform).toHaveLength(5);
+    expect(data[1].transform?.[4]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
+  });
+
   test('should not add a SERIES_ID transform when not interactive', () => {
     const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
     expect(data[1].transform).toHaveLength(4);
   });
 
+  test('should add a descending sort transform ahead of the pie transform for a semicircle donut', () => {
+    const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, variant: 'semicircle' });
+    expect(data[1].transform).toHaveLength(5);
+    expect(data[1].transform?.[0]).toEqual({ type: 'collect', sort: { field: 'testMetric', order: 'descending' } });
+    expect(data[1].transform?.[1].type).toBe('pie');
+  });
+
+  test('should preserve source order for a semicircle donut when sortOrder is data', () => {
+    const data = addData(initializeSpec().data ?? [], {
+      ...defaultDonutOptions,
+      sortOrder: 'data',
+      variant: 'semicircle',
+    });
+    expect(data[1].transform).toHaveLength(4);
+    expect(data[1].transform?.[0].type).toBe('pie');
+  });
+
+  test('should not add a sort transform for a circle donut', () => {
+    const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
+    expect(data[1].transform?.[0].type).toBe('pie');
+  });
+
+  test('should sweep a semicircle donut half the full circle', () => {
+    const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, variant: 'semicircle' });
+    const pieTransform = data[1].transform?.[1];
+    expect(pieTransform).toHaveProperty('startAngle', 0);
+    expect(pieTransform).toHaveProperty('endAngle', { signal: '0 + PI' });
+    expect(data[1].transform?.[4]).toHaveProperty('expr', "datum['testName_arcLength'] / (PI)");
+  });
+
+  test('should sweep a circle donut the full circle', () => {
+    const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
+    const pieTransform = data[1].transform?.[0];
+    expect(pieTransform).toHaveProperty('endAngle', { signal: '0 + 2 * PI' });
+  });
 });
 
 describe('addSignals()', () => {
@@ -195,6 +239,17 @@ describe('addSignals()', () => {
 
     expect(hoveredItemSignal).toBeDefined();
     expect(hoveredItemSignal?.on).toHaveLength(2);
+    expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
+    expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
+  });
+  test('should add hover events when paired with a highlighted legend', () => {
+    const signals = addSignals(defaultSignals, {
+      ...defaultDonutOptions,
+      legendHighlightSignals: ['legend0_hoveredSeries'],
+    });
+    const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
+
+    expect(hoveredItemSignal).toBeDefined();
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
     expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
   });
@@ -254,6 +309,15 @@ describe('addMarks()', () => {
     expect(marks).toHaveLength(3);
     expect(marks[2]).toHaveProperty('name', 'testName_richSegmentLabelGroup');
   });
+
+  test('should omit SegmentLabel and rich SegmentLabel marks for a semicircle donut', () => {
+    const marks = addMarks([], {
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      segmentLabels: [{ swatch: true }],
+    });
+    expect(marks).toHaveLength(2);
+  });
 });
 
 describe('donutSpecBuilder', () => {
@@ -287,5 +351,39 @@ describe('donutSpecBuilder', () => {
       usermeta: {},
     };
     expect(result).toEqual(expectedSpec);
+  });
+
+  test('should register a donut paired with a highlighted legend as interactive', () => {
+    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
+    const result = addDonut(spec, {
+      ...defaultDonutOptions,
+      legendHighlightSignals: ['legend0_hoveredSeries'],
+    });
+    expect(result.usermeta?.interactiveMarks).toContainEqual({ name: 'testName', dimension: undefined });
+  });
+
+  test('should default startAngle to -PI/2 for a semicircle donut when not explicitly provided', () => {
+    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
+    const { startAngle: _startAngle, ...rest } = defaultDonutOptions;
+    const result = addDonut(spec, { ...rest, variant: 'semicircle' });
+    const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
+    expect(emptyStateMark?.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
+    expect(emptyStateMark?.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
+  });
+
+  test('should default startAngle to 0 for a circle donut when not explicitly provided', () => {
+    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
+    const { startAngle: _startAngle, ...rest } = defaultDonutOptions;
+    const result = addDonut(spec, rest);
+    const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
+    expect(emptyStateMark?.encode?.enter?.startAngle).toEqual({ value: 0 });
+    expect(emptyStateMark?.encode?.enter?.endAngle).toEqual({ signal: '0 + 2 * PI' });
+  });
+
+  test('should honor an explicit startAngle even for a semicircle donut', () => {
+    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
+    const result = addDonut(spec, { ...defaultDonutOptions, variant: 'semicircle', startAngle: 1 });
+    const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
+    expect(emptyStateMark?.encode?.enter?.startAngle).toEqual({ value: 1 });
   });
 });

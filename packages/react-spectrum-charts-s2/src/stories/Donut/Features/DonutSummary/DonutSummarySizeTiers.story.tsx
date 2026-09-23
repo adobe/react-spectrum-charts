@@ -20,7 +20,7 @@ import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Donut Summary',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Donut Summary',
   component: DonutSummary,
 };
 

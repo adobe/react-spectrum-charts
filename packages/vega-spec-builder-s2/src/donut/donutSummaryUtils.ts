@@ -35,7 +35,60 @@ import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
-import { getDonutInnerRadiusExpr, getDonutOuterRadiusExpr } from './donutUtils';
+import { getDonutCenterYSignal, getDonutInnerRadiusExpr, getDonutOuterRadiusExpr } from './donutUtils';
+
+type DonutSummaryLayoutOptions = Pick<DonutSummarySpecOptions, 'donutOptions' | 'hideValue' | 'label' | 'delta'>;
+
+/**
+ * Gets the distance from the summary anchor to the bottom of its text stack.
+ * @param options
+ * @returns vega expression string
+ */
+const getDonutSummaryStackBottomExpr = ({
+  donutOptions,
+  hideValue,
+  label,
+  delta,
+}: DonutSummaryLayoutOptions): string => {
+  const { name } = donutOptions;
+  const hasValue = !hideValue;
+  const hasLabel = Boolean(label);
+  const hasDelta = delta !== undefined;
+  const valueGap = `ceil(${name}_summaryValueFontSize * 0.25)`;
+  const labelGap = `ceil(${name}_summaryLabelFontSize * 0.25)`;
+
+  if (hasValue && hasLabel && hasDelta) {
+    return `${valueGap} + ${name}_summaryLabelFontSize + ${labelGap} + ${name}_summaryLabelFontSize`;
+  }
+  if (hasValue && (hasLabel || hasDelta)) {
+    return `${valueGap} + ${name}_summaryLabelFontSize`;
+  }
+  if (!hasValue && hasLabel && hasDelta) {
+    return `${labelGap} + ${name}_summaryLabelFontSize`;
+  }
+  const fontSize = hasValue ? `${name}_summaryValueFontSize` : `${name}_summaryLabelFontSize`;
+  return `${fontSize} * 0.5`;
+};
+
+/**
+ * Gets the vertical offset from the donut center to the summary anchor.
+ * @param options
+ * @returns vega expression string
+ */
+const getDonutSummaryAnchorOffsetExpr = (options: DonutSummaryLayoutOptions): string =>
+  options.donutOptions.variant === 'semicircle' ? `3 + ${getDonutSummaryStackBottomExpr(options)}` : '0';
+
+/**
+ * Gets the y anchor signal for the donut summary's text marks.
+ * @param options
+ * @returns vega expression string
+ */
+const getDonutSummaryAnchorYSignal = (options: DonutSummaryLayoutOptions): string => {
+  const offset = getDonutSummaryAnchorOffsetExpr(options);
+  return offset === '0'
+    ? getDonutCenterYSignal(options.donutOptions)
+    : `${getDonutCenterYSignal(options.donutOptions)} - (${offset})`;
+};
 
 /**
  * Gets the DonutSummary component from the children if one exists
@@ -253,7 +306,7 @@ export const getSummaryValueEncode = (
   return {
     update: {
       x: { signal: 'width / 2' },
-      y: { signal: 'height / 2' },
+      y: { signal: getDonutSummaryAnchorYSignal(options) },
       text: getSummaryValueText(options),
       fontSize: [
         { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
@@ -306,12 +359,14 @@ export const getSummaryValueLimit = ({ donutOptions, label, delta }: DonutSummar
   // if nothing renders below it, the height of the font from the center of the donut is 1/2 the font size
   const fontHeight = hasLineBelow ? `${name}_summaryValueFontSize` : `${name}_summaryValueFontSize * 0.5`;
   const donutInnerRadius = getDonutInnerRadiusExpr(donutOptions);
+  const anchorOffset = getDonutSummaryAnchorOffsetExpr({ donutOptions, hideValue: false, label, delta });
 
   return {
     // This is the max length of the text that can be displayed in the donut summary
     // If the text is longer than this, it will be truncated
-    // It is calculated using the Pythagorean theorem
-    signal: `2 * sqrt(pow(${donutInnerRadius}, 2) - pow(${fontHeight}, 2))`,
+    // It is calculated using the Pythagorean theorem, offset by the anchor's own distance from
+    // the arc's true center (0 for a full circle, non-zero for a semicircle)
+    signal: `2 * sqrt(pow(${donutInnerRadius}, 2) - pow((${fontHeight}) + (${anchorOffset}), 2))`,
   };
 };
 
@@ -350,12 +405,13 @@ export const getSummaryLabelEncode = ({
   } else {
     heightFromCenter = `ceil(${name}_summaryValueFontSize * 0.25) + ${name}_summaryLabelFontSize`;
   }
-  const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow(${heightFromCenter}, 2))`;
+  const anchorOffset = getDonutSummaryAnchorOffsetExpr({ donutOptions, hideValue, label, delta });
+  const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow((${heightFromCenter}) + (${anchorOffset}), 2))`;
   return {
     update: {
       x: { signal: 'width / 2' },
-      y: { signal: 'height / 2' },
-      ...(hasValue && { dy: { signal: `ceil(${name}_summaryValueFontSize * 0.25)` } }),
+      y: { signal: getDonutSummaryAnchorYSignal({ donutOptions, hideValue, label, delta }) },
+      dy: { signal: hasValue ? `ceil(${name}_summaryValueFontSize * 0.25)` : '0' },
       text: { value: label },
       fontSize: [
         { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
@@ -389,8 +445,10 @@ export const getSummaryDeltaEncode = ({
   // (taking over the label's usual gap), or centered alone if neither value nor label render
   const valueGapExpr = hasValue ? `ceil(${name}_summaryValueFontSize * 0.25) + ` : '';
   let dyExpr: string | undefined;
-  if (hasLabel) {
+  if (hasLabel && hasValue) {
     dyExpr = `${valueGapExpr}${name}_summaryLabelFontSize + ceil(${name}_summaryLabelFontSize * 0.25)`;
+  } else if (hasLabel) {
+    dyExpr = `ceil(${name}_summaryLabelFontSize * 0.25)`;
   } else if (hasValue) {
     dyExpr = `ceil(${name}_summaryValueFontSize * 0.25)`;
   } else {
@@ -399,12 +457,13 @@ export const getSummaryDeltaEncode = ({
   const baseline = dyExpr === undefined ? 'middle' : 'top';
   const heightFromCenter =
     baseline === 'middle' ? `${name}_summaryLabelFontSize * 0.5` : `${dyExpr} + ${name}_summaryLabelFontSize`;
-  const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow(${heightFromCenter}, 2))`;
+  const anchorOffset = getDonutSummaryAnchorOffsetExpr({ donutOptions, hideValue, label, delta });
+  const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow((${heightFromCenter}) + (${anchorOffset}), 2))`;
   return {
     update: {
       x: { signal: 'width / 2' },
-      y: { signal: 'height / 2' },
-      ...(dyExpr !== undefined && { dy: { signal: dyExpr } }),
+      y: { signal: getDonutSummaryAnchorYSignal({ donutOptions, hideValue, label, delta }) },
+      dy: { signal: dyExpr ?? '0' },
       text: getSummaryDeltaText(delta),
       fontSize: [
         { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },

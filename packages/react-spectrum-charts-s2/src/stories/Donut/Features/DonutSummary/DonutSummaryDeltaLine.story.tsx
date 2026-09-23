@@ -19,7 +19,7 @@ import { Donut, DonutSummary } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Donut Summary',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Donut Summary',
   component: DonutSummary,
 };
 

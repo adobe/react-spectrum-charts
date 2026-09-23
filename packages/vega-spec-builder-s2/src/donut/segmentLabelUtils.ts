@@ -404,10 +404,10 @@ const getLimitExpr = (options: SegmentLabelSpecOptions): string => {
  * @returns GroupMark[]
  */
 const getSegmentLabelMarksForLabel = (segmentLabel: SegmentLabelSpecOptions): GroupMark[] => {
-  const { isBoolean } = segmentLabel.donutOptions;
+  const { isBoolean, variant } = segmentLabel.donutOptions;
   const labelName = getSegmentLabelName(segmentLabel);
-  // segment labels are not supported for boolean variants
-  if (isBoolean) return [];
+  // segment labels are not supported for boolean or semicircle variants
+  if (isBoolean || variant === 'semicircle') return [];
 
   // if there isn't a segment label, we don't need to do anything
   if (isRichSegmentLabel(segmentLabel)) return [];
@@ -1167,7 +1167,7 @@ const getRichSegmentLabelDetailTextMark = (options: SegmentLabelSpecOptions): Te
  * @returns GroupMark[]
  */
 export const getRichSegmentLabelMarks = (donutOptions: DonutSpecOptions): GroupMark[] => {
-  if (donutOptions.isBoolean) return [];
+  if (donutOptions.isBoolean || donutOptions.variant === 'semicircle') return [];
   return getRichSegmentLabels(donutOptions).flatMap((richSegmentLabel) => {
     const labelName = getRichSegmentLabelName(richSegmentLabel);
     return [

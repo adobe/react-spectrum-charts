@@ -17,6 +17,7 @@ import {
   Variation,
   VariationDashboard,
   VariationDataset,
+  VariationFilter,
   VariationSizePreset,
   VariationViewMode,
   useVariationDataset,
@@ -32,6 +33,11 @@ const viewModes: VariationViewMode[] = [
 const datasets: VariationDataset[] = [
   { label: 'Standard', value: 'standard', description: 'Standard dataset' },
   { label: 'Dense', value: 'dense', description: 'Dense dataset' },
+];
+const filters: VariationFilter[] = [
+  { label: 'All', value: 'all', matches: () => true },
+  { label: 'Probe', value: 'probe', matches: (variation) => variation.id === 'probe' },
+  { label: 'Other', value: 'other', matches: (variation) => variation.id === 'other' },
 ];
 const resolvePresetSize = (size: number, viewMode?: string): number => (viewMode === 'direct' ? size + 164 : size + 4);
 
@@ -50,6 +56,14 @@ const variations: Variation[] = [
     dataset: 'test',
     coverage: ['view mode', 'size'],
     render: () => <ContextProbe />,
+  },
+  {
+    id: 'other',
+    title: 'Other',
+    description: 'Displays another variation.',
+    dataset: 'test',
+    coverage: ['other'],
+    render: () => <div>Other variation</div>,
   },
 ];
 
@@ -136,5 +150,25 @@ describe('VariationDashboard', () => {
     expect(screen.queryByRole('combobox')).toBeNull();
     expect(screen.queryByText('View:')).toBeNull();
     expect(screen.getByText('data: fixed')).not.toBeNull();
+  });
+
+  test('filters the visible variations', () => {
+    render(
+      <VariationDashboard
+        variations={variations}
+        chartType="Test"
+        filters={filters}
+        initialFilter="all"
+        sizePresets={sizePresets}
+      />
+    );
+
+    expect(screen.getByRole('heading', { name: 'Probe' })).not.toBeNull();
+    expect(screen.getByRole('heading', { name: 'Other' })).not.toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Probe' }));
+
+    expect(screen.getByRole('heading', { name: 'Probe' })).not.toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Other' })).toBeNull();
   });
 });

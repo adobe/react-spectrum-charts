@@ -1,0 +1,117 @@
+{
+  "id": "semicircle-donut-variant",
+  "title": "Semicircle (half donut) Donut variant",
+  "chartType": "donut",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-09-16",
+  "complexity": {
+    "score": 3,
+    "rationale": "The boolean/gray fill logic and slice-gap/stroke encodings already work unmodified for a half-arc, so no research is needed there. But rendering a true top-half gauge shape (not just a 180 degree arc floating in a full-size circle) requires new, non-precedented geometry: the arc/empty-state/summary anchor point must move from the container's vertical center to its bottom edge, and the outer-radius expression must use the full available height as the radius instead of half of it. Those are real design decisions with no existing precedent in donutUtils.ts to copy, hence a 3 rather than a 2."
+  },
+  "summary": "Adds a `variant: 'semicircle'` option to the S2 Donut that renders a top-half ('gauge style') arc instead of a full circle. Segments default to value-descending order, while `sortOrder: 'data'` preserves source order for ordinal categories. It keeps the central hole and DonutSummary support and works with `isBoolean`, but does not support SegmentLabel/rich segment labels in this iteration.",
+  "requirements": [
+    "Add a `variant?: 'circle' | 'semicircle'` prop to Donut, defaulting to `'circle'` (fully backward compatible).",
+    "When `variant: 'semicircle'`, the pie transform sweeps 180 degrees (PI radians) instead of 360.",
+    "Default `startAngle` for `variant: 'semicircle'` is `-PI/2` (radians), so the first data row's segment starts at the 9 o'clock position and segments sweep clockwise through 12 o'clock to 3 o'clock, producing the classic top-half gauge silhouette. An explicit `startAngle` prop still overrides this.",
+    "Add a `sortOrder?: 'valueDescending' | 'data'` prop to Donut, defaulting to `'valueDescending'`.",
+    "When `variant: 'semicircle'` and `sortOrder: 'valueDescending'`, the largest value renders on the left, with decreasing values sweeping right. This is enforced by a descending metric sort transform ahead of the pie transform.",
+    "When `variant: 'semicircle'` and `sortOrder: 'data'`, no sort transform is added, preserving source order for ordinal categories such as Strongly agree through Strongly disagree.",
+    "The semicircle's flat edge sits at the bottom of the chart's plotting area; the arc's radius scales to use the full available height (not half, as the full-circle variant does), so the half-donut fills the available vertical space instead of leaving the bottom half of the bounding box empty.",
+    "The central hole (holeRatio) is retained identically to the circle variant - same ring-width/slice-gap tiering, same hole-ratio math, just applied to a half sweep.",
+    "DonutSummary continues to work with `variant: 'semicircle'` and renders anchored at the flat edge (bottom-center) of the half-arc, which is the same anchor point used for the full circle's center.",
+    "`isBoolean` works with `variant: 'semicircle'` - the forced primary/secondary-gray fill logic is angle-range agnostic and needs no changes.",
+    "SegmentLabel and rich segment label children are not supported when `variant: 'semicircle'` - they must be silently omitted (no marks rendered), mirroring the existing `isBoolean` exclusion pattern in segmentLabelUtils.ts, rather than rendering with the current (full-circle-only) hemisphere-cascade math and producing incorrect output.",
+    "The empty-state ring (shown when there's no data or the metric sums to zero) mirrors the semicircle's start/end angle and anchor point, so the empty state doesn't render as a full circle while real data renders as a half."
+  ],
+  "designTokens": [],
+  "references": [],
+  "edgeCases": [
+    { "case": "Empty data / metric sums to zero", "expectedBehavior": "The empty-state gray ring renders as a matching half-ring (same startAngle/endAngle/anchor as the real arc), not a full circle." },
+    { "case": "Single data point", "expectedBehavior": "Renders as a single half-ring segment spanning the full 180 degrees; no different from a single-segment full circle other than the sweep range." },
+    { "case": "Many series (color scale overflow)", "expectedBehavior": "Unaffected - color scale domain construction doesn't depend on sweep angle." },
+    { "case": "segmentLabels or rich segment labels supplied alongside variant: 'semicircle'", "expectedBehavior": "Labels are not rendered (silently omitted), consistent with the isBoolean precedent. Documented as unsupported in this iteration." },
+    { "case": "isBoolean + variant: 'semicircle' together", "expectedBehavior": "Renders a half-donut with the primary segment in its set color and the secondary segment forced to secondary-gray, identical fill logic to the full-circle boolean case." },
+    { "case": "Data not pre-sorted descending by metric", "expectedBehavior": "With the default sortOrder of valueDescending, the spec builder reorders segments descending by metric before the pie transform runs." },
+    { "case": "Ordinal categories", "expectedBehavior": "With sortOrder set to data, the spec builder omits its sort transform and preserves the caller's source row order." },
+    { "case": "Tied metric values", "expectedBehavior": "Ties retain their relative input order (stable sort), matching Vega's own 'sort' transform stability guarantee." },
+    { "case": "Light vs dark background", "expectedBehavior": "Unaffected - all existing color/background token usage (BACKGROUND_COLOR signal, gray-400/gray-200) is untouched by this feature." },
+    { "case": "S1 vs S2 parity", "expectedBehavior": "This spec is S2-only. S1's donutSpecBuilder.ts/donutUtils.ts are not touched; a follow-up spec would be needed to port this to s1 - see openQuestions." },
+    { "case": "Narrow/responsive breakpoints", "expectedBehavior": "The radius expression continues to be a function of width/height so it responds to container resizing the same way the circle variant does, just using height instead of height/2 as the limiting dimension when height is the constraint." },
+    { "case": "Accessibility (keyboard/screen reader)", "expectedBehavior": "No change - tooltip/inspect encodings are unaffected by sweep angle." },
+    { "case": "Interaction conflicts (hover/selection)", "expectedBehavior": "Hover, controlled-highlight, and legend-highlight opacity/fill rules are angle-agnostic and require no changes." }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": true,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": true,
+    "notes": "Semicircle stories include highlighted Legend interaction, so a legend-paired donut must emit its hovered-item signal and register as an interactive mark even without SegmentLabel, ChartInspect, or ChartPopover children. S1 parity remains intentionally deferred because the semicircle variant is S2-only."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/marks/donutSpec.types.ts",
+      "change": "Add `variant?: 'circle' | 'semicircle'` and `sortOrder?: 'valueDescending' | 'data'` to DonutOptions. Add both fields to the DonutOptionsWithDefaults union."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts",
+      "change": "Destructure `variant = 'circle'` and `sortOrder = 'valueDescending'` in addDonut's produce callback. Change the `startAngle = 0` default to a variant-aware default (`variant === 'semicircle' ? -Math.PI / 2 : 0`) evaluated after `variant` is known. Update getPieTransforms' endAngle from `startAngle + 2 * PI` to `startAngle + (variant === 'semicircle' ? PI : 2 * PI)`, threading variant into the function's destructured options. In addData, add the descending metric sort only when `variant === 'semicircle' && sortOrder === 'valueDescending'`; omit it for `sortOrder === 'data'`.",
+      "lines": "62-140"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "Introduce variant-aware radius and anchor helpers, bypass SegmentLabel radius reservation for semicircles because those labels are omitted, mirror the semicircle sweep in the empty state, and treat a highlighted Legend as donut interactivity so arc hover opacity drives the matching legend item.",
+      "lines": "88-293"
+    },
+    {
+      "file": "packages/constants/constants.ts",
+      "change": "Add a new constant for the semicircle base-radius expression (mirroring DONUT_RADIUS's shape), e.g. DONUT_SEMICIRCLE_RADIUS = '(min(width, height) - 2)', for donutUtils.ts's variant-aware radius helper to reference."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts",
+      "change": "Update the three `x: { signal: 'width / 2' }, y: { signal: 'height / 2' }` anchor pairs (title/value/label text marks) to use the same variant-aware y anchor as the arc (`height` for semicircle) so the summary stays centered under the half-arc's flat edge.",
+      "lines": "255-256, 356-358, 405-407"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Extend the existing `if (isBoolean) return [];` / `if (donutOptions.isBoolean) return [];` guards in getSegmentLabelMarksForLabel and getRichSegmentLabelMarks (and the equivalent data-generation guard near line 353) to also short-circuit when `donutOptions.variant === 'semicircle'`, so labels are silently omitted rather than rendering with full-circle hemisphere math against a half arc.",
+      "lines": "350-353, 1073-1074"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/pre-alpha/components/Donut/Donut.tsx",
+      "change": "Destructure and default `variant = 'circle'` and `sortOrder = 'valueDescending'` alongside the other prop defaults this render-null component holds."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/donutAdapter.ts",
+      "change": "No change expected - `variant` passes through automatically via the existing `...donutProps` spread into DonutOptions. Verify with a test."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutTestUtils.ts",
+      "change": "Add the default sortOrder to the DonutSpecOptions fixture for use across donut tests."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.test.ts",
+      "change": "Add tests covering: default startAngle resolution for variant: 'semicircle', the pie transform's endAngle for semicircle vs circle, ordering modes, highlighted-Legend hover signals/usermeta, and that segmentLabels supplied with variant: 'semicircle' produce no label marks."
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.test.ts",
+      "change": "Add tests for the variant-aware radius expression and the variant-aware arc/empty-state anchor (x/y) encodes."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/rscToSbAdapter/donutAdapter.test.ts",
+      "change": "Add tests asserting `variant: 'semicircle'` and `sortOrder: 'data'` pass through getDonutOptions unchanged."
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Features/DonutSemicircle.story.tsx",
+      "change": "New story file with plain, ordinal source-order, and isBoolean semicircle examples using bindWithProps."
+    },
+    {
+      "file": "packages/docs/docs/spectrum2/donut.md",
+      "change": "Document the `variant` and `sortOrder` props, including value-descending default behavior, source-order preservation for ordinal categories, and the unsupported SegmentLabel limitation."
+    }
+  ],
+  "openQuestions": []
+}

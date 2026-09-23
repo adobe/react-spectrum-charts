@@ -29,6 +29,7 @@ import { ChartProps, DonutProps, SegmentLabelProps } from '../../../types';
 import {
   Variation,
   VariationDashboard,
+  VariationFilter,
   VariationSizePreset,
   VariationViewMode,
   useVariationDataset,
@@ -45,12 +46,13 @@ import {
 } from './donutVariationData';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Variations',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Dashboard',
   component: Donut,
   parameters: {
     controls: { disable: true },
     layout: 'fullscreen',
   },
+  tags: ['hidden']
 };
 
 const alternateFieldData = basicDonutData.map(({ browser, count }) => ({
@@ -70,6 +72,14 @@ const donutViewModes: VariationViewMode[] = [
   { label: 'No added labels', value: 'none' },
   { label: 'Direct labels', value: 'direct' },
   { label: 'Advanced labels', value: 'advanced' },
+];
+
+const isSemicircleVariation = ({ coverage }: Variation): boolean => coverage.includes('variant=semicircle');
+
+const donutVariationFilters: VariationFilter[] = [
+  { label: 'All', value: 'all', matches: () => true },
+  { label: 'Full', value: 'full', matches: (variation) => !isSemicircleVariation(variation) },
+  { label: 'Semicircle', value: 'semicircle', matches: isSemicircleVariation },
 ];
 
 const segmentLabelScenarioIds: Record<keyof SegmentLabelProps, string> = {
@@ -447,6 +457,56 @@ const variations: Variation[] = [
       </DonutVariationChart>
     ),
   },
+  {
+    id: 'semicircle',
+    title: 'Semicircle',
+    description: 'Renders the selected dataset across the lower half of the donut.',
+    dataset: 'canonical',
+    coverage: ['variant=semicircle'],
+    render: () => <DonutVariationChart donutProps={{ variant: 'semicircle' }} />,
+  },
+  {
+    id: 'semicircle-formatted-summary',
+    title: 'Semicircle with formatted summary',
+    description: 'Adds a labeled and explicitly formatted summary to the semicircle.',
+    dataset: 'canonical',
+    coverage: ['variant=semicircle', 'DonutSummary.label', 'DonutSummary.numberFormat'],
+    render: () => (
+      <DonutVariationChart donutProps={{ variant: 'semicircle' }}>
+        <DonutSummary label="Visitors" numberFormat="standardNumber" />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'semicircle-hidden-value-summary',
+    title: 'Semicircle with label and delta',
+    description: 'Hides the summary value while retaining its label and sentiment delta.',
+    dataset: 'canonical',
+    coverage: ['variant=semicircle', 'DonutSummary.label', 'DonutSummary.hideValue=true', 'DonutSummary.delta'],
+    render: () => (
+      <DonutVariationChart donutProps={{ variant: 'semicircle' }}>
+        <DonutSummary delta={0.025} hideValue label="Visitors" />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'semicircle-all-summary-options',
+    title: 'Semicircle with all summary options',
+    description: 'Renders a semicircle with every DonutSummary option configured.',
+    dataset: 'canonical',
+    coverage: [
+      'variant=semicircle',
+      'DonutSummary.label',
+      'DonutSummary.numberFormat',
+      'DonutSummary.hideValue=false',
+      'DonutSummary.delta',
+    ],
+    render: () => (
+      <DonutVariationChart donutProps={{ variant: 'semicircle' }}>
+        <DonutSummary delta={0.025} hideValue={false} label="Visitors" numberFormat="standardNumber" />
+      </DonutVariationChart>
+    ),
+  },
 ];
 
 const DashboardStory: StoryFn = (): ReactElement => (
@@ -454,11 +514,13 @@ const DashboardStory: StoryFn = (): ReactElement => (
     variations={variations}
     chartType="Donut"
     datasets={donutDatasetOptions}
+    filters={donutVariationFilters}
     getSizeDescription={(size, viewMode) =>
       `Effective donut diameter: ${Math.round(getEffectiveDonutDiameter(size, viewMode))}px`
     }
     initialSize={getDonutContainerSize(200, 'none')}
     initialDataset="standard"
+    initialFilter="all"
     initialViewMode="none"
     resolvePresetSize={getDonutContainerSize}
     sizePresets={donutSizePresets}

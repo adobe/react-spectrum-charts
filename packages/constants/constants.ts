@@ -235,6 +235,8 @@ export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
 export const DONUT_RADIUS = '(min(width, height) / 2 - 2)';
+/** Calculation for a semicircle donut's radius - the arc still spans the full width from center (so it's bounded by width / 2, same as a full circle), but can use the full height since only the top half sweeps, unlike the full-circle radius which halves it */
+export const DONUT_SEMICIRCLE_RADIUS = '(min(width / 2, height) - 2)';
 /** Min arc angle radians to display a segment label. If the arc angle is less than this, the segment label will be hidden. */
 export const DONUT_SEGMENT_LABEL_MIN_ANGLE = 0.3;
 /** Min font size for the donut summary metric value */
