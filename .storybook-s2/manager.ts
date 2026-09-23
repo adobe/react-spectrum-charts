@@ -1,3 +1,5 @@
+import { addons } from '@storybook/manager-api';
+
 /**
  * This file is loaded automatically by Storybook's manager. It will be used to to add a blue banner for the PR-specific Storybook variants.
  */
@@ -18,3 +20,13 @@ if (match && match[1]) {
   document.body.insertBefore(blueBanner, document.body.firstChild);
 }
 
+// if you tag a story with 'hidden', it will not be displayed in the sidebar
+addons.setConfig({
+  sidebar: {
+    filters: {
+      patterns: (item) => {
+        return !item.tags?.includes('hidden');
+      }
+    }
+  }
+});

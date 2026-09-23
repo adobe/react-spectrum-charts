@@ -1,0 +1,76 @@
+{
+  "id": "donut-segment-label-start-angle-positioning",
+  "title": "Donut segment labels use the wrong hemisphere after start-angle rotation",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-09-18",
+  "complexity": {
+    "score": 2,
+    "rationale": "The root cause and fix direction are confirmed: normalize arc-center angles before all hemisphere-dependent label calculations and add Direct and Advanced regressions."
+  },
+  "summary": "S2 Donut arcs rotate when `startAngle` changes, but SegmentLabel hemisphere classification uses the unnormalized arc-center angle. Labels can be positioned and aligned on the wrong side of the rotated donut.",
+  "symptom": "When a Donut uses a nonzero `startAngle`, Direct and Advanced labels do not rotate or reposition consistently with their segments. Some labels move to the wrong hemisphere or use the wrong horizontal alignment.",
+  "rootCause": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.ts:153-166 creates arc-center angles from the supplied `startAngle` through `startAngle + 2 * PI` without normalizing the midpoint. For positive rotations, valid arc-center values can exceed `2 * PI`; negative rotations can produce negative values. packages/vega-spec-builder-s2/src/donut/donutLabelCollisionUtils.ts:66 classifies the raw angle with `arcTheta <= PI ? 'right' : 'left'`. That hemisphere field then drives Direct and Advanced label X positions and text alignment in packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts. Periodic sine/cosine positioning remains geometrically valid, but the non-periodic hemisphere comparison does not.",
+  "comparison": [
+    {
+      "aspect": "Label positioning after Donut rotation",
+      "expected": "Normalize each arc-center angle to `[0, 2 * PI)` before hemisphere-dependent positioning so labels remain attached to the same segments and switch alignment only when crossing the visual left/right boundary.",
+      "actual": "Raw angles above `2 * PI` or below zero are compared directly with `PI`, causing incorrect hemisphere, X position, and alignment decisions."
+    }
+  ],
+  "edgeCases": [
+    {
+      "case": "`startAngle = PI / 2`",
+      "expectedBehavior": "Every label rotates one quarter-turn with its segment and uses the correct visual hemisphere."
+    },
+    {
+      "case": "`startAngle = PI`",
+      "expectedBehavior": "Labels rotate one half-turn and swap hemispheres consistently."
+    },
+    {
+      "case": "Negative start angle",
+      "expectedBehavior": "Negative arc-center angles normalize correctly before hemisphere classification."
+    },
+    {
+      "case": "Start angle greater than `2 * PI`",
+      "expectedBehavior": "Equivalent rotations produce identical label positions and alignment."
+    },
+    {
+      "case": "Dense labels combined with rotation",
+      "expectedBehavior": "Each label enters the correct hemisphere group before collision packing is applied."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "This is static S2 label geometry. S1 uses a separate legacy polar label path and does not share the S2 collision hemisphere field, so parity is not required."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutLabelCollisionUtils.ts",
+      "change": "Normalize the arc-center expression to `[0, 2 * PI)` before assigning the hemisphere field used by collision groups and horizontal label positioning.",
+      "lines": "45-67"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutLabelCollisionUtils.test.ts",
+      "change": "Add hemisphere-classification regressions for quarter-turn, half-turn, negative, and greater-than-full-turn arc-center angles.",
+      "lines": "existing collision transform tests"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Verify Direct and Advanced label position/alignment encodings consume the normalized hemisphere field when `startAngle` is nonzero.",
+      "lines": "Direct and rich SegmentLabel position tests"
+    }
+  ],
+  "openQuestions": [],
+  "relatedIssues": [
+    "donut-direct-labels-collision",
+    "donut-dense-segment-label-collision-collapse"
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "donut-advanced-label-breakpoint-bounce",
+  "title": "Donut advanced labels bounce at size-tier breakpoints",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-09-21",
+  "complexity": {
+    "score": 3,
+    "rationale": "The breakpoint expressions are consistent, but the exact first-pass versus settled-dimension transition still needs runtime confirmation before choosing between a render-lifecycle or threshold-stability fix."
+  },
+  "summary": "At the edge of an S2 Donut size tier, Advanced SegmentLabel swatch visibility and label geometry can disagree during initial layout. Labels overflow before the chart re-settles, producing a visible donut bounce.",
+  "symptom": "Near a named breakpoint such as a 160px effective donut diameter, the initial load displays the Advanced label swatch when it should be hidden for the settled size. The added swatch width makes labels overflow, then the swatch/geometry changes and the donut visibly resizes or bounces.",
+  "rootCause": "The leading hypothesis is an initial-layout timing mismatch, but it is not yet confirmed with captured first-pass dimensions. packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts:596-617, 725-741, and 930-956 consistently derive rich-label font tiers, swatch visibility, swatch width reservation, and text offsets from the effective outer diameter, using an inclusive `>= 160` swatch threshold. packages/react-spectrum-charts-s2/src/VegaChart.tsx:45-61 and 111-151 run multiple asynchronous layout passes during embed and resize. If the first and settled width/height signals straddle 160 because of fractional or not-yet-settled container dimensions, the swatch, label width, collision geometry, and donut radius change together between passes, causing overflow and bounce. The current evidence does not establish whether the first-pass effective diameter is wrong, whether the settled value is wrong, or whether the product expects the swatch hidden at exactly 160 despite the documented inclusive tier boundary.",
+  "comparison": [
+    {
+      "aspect": "Initial and settled breakpoint state",
+      "expected": "A Donut loads directly into the same size tier, swatch visibility, label reservation, and geometry it will retain after Vega settles, with no visible intermediate overflow or resize.",
+      "actual": "Near 160px, the initial pass can show a swatch and wider labels before a later layout pass changes the effective tier state, producing overflow and a visible bounce."
+    }
+  ],
+  "edgeCases": [
+    {
+      "case": "Effective diameters of 159px, 160px, and 161px on initial load",
+      "expectedBehavior": "Each size renders once with deterministic swatch visibility and matching label-width reservation."
+    },
+    {
+      "case": "Resize upward and downward across 160px",
+      "expectedBehavior": "Swatch, font tier, offsets, and collision geometry update atomically without an overflowing intermediate frame."
+    },
+    {
+      "case": "Container dimensions that produce a fractional effective diameter near 160px",
+      "expectedBehavior": "Rounding and threshold evaluation remain stable across the initial and settled Vega runs."
+    },
+    {
+      "case": "Advanced labels with long names or secondary value rows",
+      "expectedBehavior": "Content remains bounded during the threshold transition and does not trigger chart or card collapse."
+    },
+    {
+      "case": "SVG and canvas renderers",
+      "expectedBehavior": "Breakpoint behavior is consistent across renderers."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "This issue touches the S2 render/resize lifecycle and Advanced SegmentLabel geometry, not interaction state. Existing size-tier signals and scales already represent the required state; the investigation must determine why their first visible evaluation differs from the settled layout. S1 has no Advanced SegmentLabel swatch implementation to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/react-spectrum-charts-s2/src/VegaChart.tsx",
+      "change": "Instrument and reproduce the initial embed/resize passes near 160px, then ensure the first visible frame uses settled dimensions or otherwise prevent inconsistent intermediate tier geometry.",
+      "lines": "45-61, 88-151"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Verify that swatch visibility, swatch width reservation, offsets, font tiers, and collision calculations share one stable effective-diameter boundary; adjust only if runtime evidence shows divergent evaluation.",
+      "lines": "575-617, 715-749, 915-970"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Add boundary-expression tests for 159px, 160px, and 161px effective diameters covering swatch size, width reservation, offsets, and rich-label font tiers.",
+      "lines": "rich SegmentLabel scale, signal, and mark tests"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/DonutVariations.test.tsx",
+      "change": "Add a render regression that starts at a breakpoint container size and asserts that the chart geometry remains stable after all scheduled Vega layout passes.",
+      "lines": "new test file"
+    }
+  ],
+  "openQuestions": [
+    "What effective diameter is observed during the first Vega pass and after the delayed settle pass in the failing dashboard?",
+    "Should a swatch be visible at exactly 160px, matching the current inclusive M-tier boundary, or hidden until the diameter is greater than 160px?",
+    "Does the bounce reproduce with both SVG and canvas renderers?"
+  ],
+  "relatedIssues": [
+    "donut-advanced-labels",
+    "donut-summary-responsive-sizing",
+    "donut-direct-labels",
+    "donut-direct-labels-long-text-overlap",
+    "donut-dense-segment-label-collision-collapse"
+  ]
+}

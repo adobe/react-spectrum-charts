@@ -1,0 +1,77 @@
+{
+  "id": "donut-advanced-label-hidden-row-spacing",
+  "title": "Donut advanced labels retain spacing for a hidden value row",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-09-18",
+  "complexity": {
+    "score": 2,
+    "rationale": "The incorrect row-offset branches are confirmed and the fix is a localized application of the existing visible-value predicate across top- and bottom-hemisphere spacing."
+  },
+  "summary": "Advanced SegmentLabels can retain vertical whitespace for a hidden primary value/percent row. Optional label content should contribute spacing only when that content is rendered.",
+  "symptom": "When `showValueRow` is enabled but both `value` and `percent` are disabled, a blank vertical gap remains where the hidden primary value row would have appeared. The segment name and detail row do not collapse into a compact two-row block.",
+  "rootCause": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts:804-836 computes rich-label row offsets separately from the correctly conditional block-height calculation. In the top-hemisphere `showValueRow` branch, `getRichSegmentLabelTopRowDy` reserves the primary value font size and name/value gap even when `hasValue` is false. In the bottom hemisphere, `getRichSegmentLabelBottomDetailDy` retains the name/value gap before a detail-only row. Mark creation, collision `minGap`, width measurement, swatch reservation, and total-suffix width already omit their respective disabled content correctly; the defect is limited to the hemisphere-specific row `dy` expressions. The existing detail-only expectation in packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx currently codifies the extra gap.",
+  "comparison": [
+    {
+      "aspect": "Spacing for optional Advanced label rows",
+      "expected": "Only visible rows and the gaps between those visible rows contribute to the label block. A name plus detail row forms a compact two-row block when the primary value/percent row is hidden.",
+      "actual": "The hidden primary row still contributes its font height or adjacent gap to the row-position formulas, leaving visible whitespace."
+    }
+  ],
+  "edgeCases": [
+    {
+      "case": "`showValueRow=true`, `value=false`, and `percent=false`",
+      "expectedBehavior": "The detail value sits directly after the name using only the intended gap between the two visible rows."
+    },
+    {
+      "case": "Primary value or percent visible with the detail row",
+      "expectedBehavior": "The existing three-row name/value/detail spacing remains unchanged."
+    },
+    {
+      "case": "Swatch-only Advanced label",
+      "expectedBehavior": "No vertical space is reserved for either value row when both are disabled."
+    },
+    {
+      "case": "Swatch hidden below its 160px threshold",
+      "expectedBehavior": "No horizontal swatch width or gap remains; this already-working behavior must not regress."
+    },
+    {
+      "case": "`showTotal=false` and `showTotal=true`",
+      "expectedBehavior": "The total suffix contributes horizontal width only when rendered and does not change unrelated vertical row spacing."
+    },
+    {
+      "case": "Top and bottom hemispheres",
+      "expectedBehavior": "Both hemisphere-specific row stacks remove hidden-row whitespace consistently."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "This is a static row-geometry correction using existing font-size signals and visible-row predicates. S1 has no Advanced SegmentLabel implementation to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Update the rich-label top-row and bottom-detail `dy` helpers so primary value font height and adjacent gaps are included only when `value || percent` is true.",
+      "lines": "780-836"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Replace the detail-only expectation that currently includes hidden-row spacing and add a visible-content matrix covering swatch-only, detail-only, value-only, value plus detail, total on/off, and both hemispheres.",
+      "lines": "rich SegmentLabel optional-row and position tests"
+    }
+  ],
+  "openQuestions": [],
+  "relatedIssues": [
+    "donut-advanced-labels",
+    "donut-advanced-label-breakpoint-bounce",
+    "donut-dense-segment-label-collision-collapse",
+    "donut-direct-labels-long-text-overlap"
+  ]
+}

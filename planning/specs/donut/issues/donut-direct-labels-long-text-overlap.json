@@ -1,23 +1,23 @@
 {
   "id": "donut-direct-labels-long-text-overlap",
-  "title": "Donut direct labels can overlap the ring for long segment names/values instead of wrapping",
+  "title": "Donut segment labels overflow the right hemisphere instead of truncating",
   "chartType": "donut",
   "kind": "bug",
   "variant": "s2",
   "status": "approved",
-  "lastUpdated": "2026-09-01",
+  "lastUpdated": "2026-09-21",
   "complexity": {
-    "score": 3,
-    "rationale": "Root cause is fully confirmed (no wrap/truncation logic exists at all), but the fix requires new, non-precedented logic - line-wrapping donut labels around a curved ring has no existing precedent elsewhere in the codebase (unlike a straightforward encode tweak), and the interaction with the existing hemisphere-mirrored anchor offset and hemisphere-based vertical dy stacking (name always above value) needs new reasoning, not a copy of an existing pattern."
+    "score": 2,
+    "rationale": "The root cause and available-width expression are confirmed; the fix applies the existing left-hemisphere truncation behavior symmetrically to right-hemisphere direct and advanced labels."
   },
-  "summary": "donut-direct-labels' requirement that a label wrap onto 2 lines rather than overlap the ring was never implemented - long segment names/values can visually overlap the ring instead.",
-  "symptom": "For a segment with a long name or value string, especially on the left hemisphere (where the label's anchor is pulled back by the wider line's width), the label's text can render on top of the donut ring instead of respecting the documented 20px ring gap. There is no visible line-break or truncation - the text just extends further than the reserved space and can overlap.",
-  "rootCause": "getLabelAnchorDxExpr (packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts) caps the left-hemisphere pull-back distance at DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO (0.6) times the outer radius, matching the worst-case reach getDonutOuterRadiusExpr already reserved room for. This cap only bounds the *anchor offset* - it does not bound or wrap the *label text itself*. Neither getSegmentLabelTextMark nor getSegmentLabelValueTextMark (same file) sets a `limit` (truncation) property or splits text across multiple lines, unlike DonutSummary's value/label text marks (donutSummaryUtils.ts), which do set `limit` for exactly this reason. So once a label's real rendered width (measured via the existing getLabelWidth() Vega expression function) exceeds what the capped anchor offset accounts for, the excess simply renders past the ring-gap boundary.",
+  "summary": "S2 Donut direct and advanced labels disable Vega text limits on the right hemisphere. Long labels can paint beyond the chart bounds instead of truncating, causing overflow and apparent chart/container collapse.",
+  "symptom": "With long segment labels, labels on the right hemisphere extend beyond the available chart width instead of truncating. The overflow can distort or collapse the surrounding dashboard card/chart layout, particularly at responsive sizes.",
+  "rootCause": "In packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts:320-351, getLimitExpr returns Vega's unlimited value (`0`) whenever a label is on the right hemisphere, even though getWidthExprs already calculates the remaining horizontal reach from the collision-adjusted anchor to the container edge. The rich-label equivalent in getRichSegmentLabelLimitExpr (approximately lines 705-725) follows the same right-unlimited policy. Direct labels anchor right-side text at `width / 2 + collisionHalfWidth` with left alignment (approximately lines 495-523), so text wider than `DONUT_RADIUS - collisionHalfWidth` paints outside the chart. The collision transforms in packages/vega-spec-builder-s2/src/donut/donutLabelCollisionUtils.ts:31-94 reserve the ring gap and calculate the anchor position but do not reserve arbitrary text width.",
   "comparison": [
     {
-      "aspect": "Guarding against text overflowing its reserved space",
-      "expected": "Per donut-direct-labels' requirement: if the 20px ring-gap would be violated by a label's real rendered width, wrap the label onto 2 lines instead of letting it overlap - mirroring how DonutSummary already truncates (via a `limit` property) when its value/label text would overflow the donut's inner radius.",
-      "actual": "getLabelAnchorDxExpr caps only the anchor's *offset* at a fixed ratio of the outer radius; the label text itself is never wrapped, truncated, or otherwise constrained, so long text can render past the reserved space and overlap the ring."
+      "aspect": "Hemisphere text-width constraints",
+      "expected": "Both hemispheres constrain direct and advanced label text to the measured horizontal space between the collision-adjusted anchor and the chart edge, truncating when the text is wider.",
+      "actual": "Left-hemisphere labels receive a finite Vega `limit` when their measured width exceeds the available reach, while right-hemisphere labels always receive `limit: 0` and can overflow without bounds."
     }
   ],
   "references": [
@@ -25,8 +25,22 @@
     { "type": "other", "url": "planning/specs/donut/implemented/donut-direct-labels.json" }
   ],
   "edgeCases": [
-    { "case": "Long segment name, right hemisphere (no anchor pull-back)", "expectedBehavior": "Right-hemisphere labels have no offset cap to hide behind at all (dx is always 0) - a long name here would overflow rightward with no bound whatsoever, likely the most visible case of this bug." },
-    { "case": "Long value text combined with a long name on the same label", "expectedBehavior": "Both lines currently measure/anchor independently (max of the two widths) - confirm whether wrapping should apply per-line or should force both lines to wrap together to preserve their shared left-edge alignment." }
+    {
+      "case": "Long direct-label name or formatted value on the right hemisphere",
+      "expectedBehavior": "Each text line truncates within the available right-side chart width without changing the donut or container dimensions."
+    },
+    {
+      "case": "Long advanced label with swatch and secondary value row",
+      "expectedBehavior": "The name, primary value, detail value, and total suffix remain within the available right-side chart width."
+    },
+    {
+      "case": "Switching XS-XL responsive tiers with the long-label dataset",
+      "expectedBehavior": "Labels truncate progressively as space decreases; the chart and dashboard card retain stable dimensions."
+    },
+    {
+      "case": "Left-hemisphere long labels",
+      "expectedBehavior": "Existing left-side truncation remains unchanged while the right-side constraint is added."
+    }
   ],
   "crossCutting": {
     "touchesHoverAnimation": false,
@@ -35,28 +49,25 @@
     "touchesTooltipOrPopover": false,
     "requiresNewSignalOrScale": false,
     "requiresS1S2Parity": false,
-    "notes": "requiresS1S2Parity is false: packages/vega-spec-builder (s1) has no per-tier direct-label positioning system to mirror (this whole ring-gap/hemisphere-anchor mechanism is s2-only, per donut-direct-labels), so there is no s1 equivalent to check for the same symptom."
+    "notes": "All interaction flags are false because this is text geometry only. requiresS1S2Parity is false: packages/vega-spec-builder/src/donut/segmentLabelUtils.ts uses the older polar label placement and has no S2 collision-adjusted hemisphere or measured-width limit logic to mirror."
   },
   "implementationPlan": [
     {
       "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
-      "change": "Design and implement 2-line wrapping for a label whose real rendered width (via getLabelWidth()) would exceed the space reserved by the ring-gap/anchor-offset math - likely requires splitting the name and/or value text into two text marks positioned on adjacent lines, or a Vega expression that inserts a line break at the measured midpoint. Needs new reasoning: no existing multi-line wrapped label exists elsewhere in this codebase to copy from.",
-      "lines": "N/A - new logic, exact site depends on chosen approach"
+      "change": "Update the direct and rich SegmentLabel limit expressions to constrain right-hemisphere text using the existing measured max-reach calculation, while preserving unlimited text only when the natural width fits.",
+      "lines": "281-351, 695-725"
     },
     {
       "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
-      "change": "Add regression tests with a long segment name/value asserting the label wraps (or otherwise never renders past the ring-gap boundary) rather than overlapping.",
-      "lines": "N/A - new test cases"
+      "change": "Add regression tests asserting finite right-hemisphere limits for direct and advanced label rows, plus unchanged left-hemisphere behavior when text fits or exceeds its available reach.",
+      "lines": "existing direct and rich SegmentLabel encoding tests"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Features/DirectLabel/DirectLabels.story.tsx",
-      "change": "Add a story with an intentionally long segment name/value to visually verify the fix.",
-      "lines": "N/A - new story"
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/DonutVariations.story.tsx",
+      "change": "Use the existing long-label dataset with Direct and Advanced label modes across responsive tiers to verify that the chart and card layout remain stable.",
+      "lines": "Donut variation dashboard dataset and view controls"
     }
   ],
-  "openQuestions": [
-    "Should wrapping split on word boundaries or just at the measured character-width midpoint? donut-chart-tokens/donut-direct-labels skills don't document a wrapping algorithm.",
-    "Right-hemisphere labels have no anchor cap at all today (dx is always 0) - does 'wrap to 2 lines' apply there too, or does the right hemisphere need its own reserved-space cap first (a gap not covered by donut-direct-labels' original spec, which focused on the left-hemisphere pull-back)?"
-  ],
+  "openQuestions": [],
   "relatedIssues": ["donut-direct-labels"]
 }

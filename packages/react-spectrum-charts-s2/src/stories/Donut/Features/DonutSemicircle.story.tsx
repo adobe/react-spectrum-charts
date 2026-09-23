@@ -25,7 +25,7 @@ import { bindWithProps } from '../../../test-utils';
 import { DonutProps, DonutSummaryProps } from '../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Semicircle',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Semicircle',
   component: DonutSummary,
 };
 
