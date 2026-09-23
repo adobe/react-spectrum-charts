@@ -197,8 +197,8 @@ Use `excludeSeries` to prevent labels from appearing on specific series:
 The `ChartActionBar` component is an S2-exclusive child of `Line`. It displays contextual actions for a selected data point.
 
 ```jsx
-import {ActionButton} from '@react-spectrum/s2';
-import {Chart, ChartActionBar, Line} from '@spectrum-charts/react-spectrum-charts-s2';
+import { ActionButton } from '@react-spectrum/s2';
+import { Chart, ChartActionBar, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 
 <Chart data={data}>
     <Line>
@@ -225,40 +225,40 @@ The action bar opens when a data point is selected. Drag its handle to repositio
 ### ChartActionBar props
 
 <table>
-        <thead>
-                <tr>
-                        <th>name</th>
-                        <th>type</th>
-                        <th>default</th>
-                        <th>description</th>
-                </tr>
-        </thead>
-        <tbody>
-                <tr>
-                        <td>children</td>
-                        <td>(datum: Datum, close: () =&gt; void) =&gt; ReactElement[]</td>
-                        <td>–</td>
-                        <td>Callback that returns actions for the selected datum. The second argument dismisses the action bar.</td>
-                </tr>
-                <tr>
-                        <td>isEmphasized</td>
-                        <td>boolean</td>
-                        <td>false</td>
-                        <td>Applies emphasized styling to the action bar.</td>
-                </tr>
-                <tr>
-                        <td>maxActions</td>
-                        <td>number</td>
-                        <td>4</td>
-                        <td>Maximum number of actions displayed inline before overflow. Available width may reduce this number.</td>
-                </tr>
-                <tr>
-                        <td>onClearSelection</td>
-                        <td>() =&gt; void</td>
-                        <td>–</td>
-                        <td>Callback fired when the action bar is dismissed and the selection is cleared.</td>
-                </tr>
-        </tbody>
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>default</th>
+            <th>description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>children</td>
+            <td>(datum: Datum, close: () =&gt; void) =&gt; ReactElement[]</td>
+            <td>–</td>
+            <td>Callback that returns actions for the selected datum. The second argument dismisses the action bar.</td>
+        </tr>
+        <tr>
+            <td>isEmphasized</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Applies emphasized styling to the action bar.</td>
+        </tr>
+        <tr>
+            <td>maxActions</td>
+            <td>number</td>
+            <td>4</td>
+            <td>Maximum number of actions displayed inline before overflow. Available width may reduce this number.</td>
+        </tr>
+        <tr>
+            <td>onClearSelection</td>
+            <td>() =&gt; void</td>
+            <td>–</td>
+            <td>Callback fired when the action bar is dismissed and the selection is cleared.</td>
+        </tr>
+    </tbody>
 </table>
 
 ---
