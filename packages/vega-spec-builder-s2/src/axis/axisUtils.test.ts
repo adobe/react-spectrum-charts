@@ -242,19 +242,19 @@ describe('getTimeAxes()', () => {
   test('uses independent Vega-selected values for child and parent label rows', () => {
     const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', baseTimeAxisOptions);
     const expectedSecondaryValues = {
-      signal: "getTimeAxisMajorTicks(domain('xTime'), width, 'day', 'time')",
+      signal: "getTimeAxisMajorTicks(domain('xTime'), rscContainerWidth(width), 'day', 'time')",
     };
     expect(secondaryAxis).toHaveProperty('values', expectedSecondaryValues);
     expect(secondaryAxis).toHaveProperty('format', {
-      signal: "getTimeAxisLabelFormat(domain('xTime'), width, 'day', 'time', 'secondary')",
+      signal: "getTimeAxisLabelFormat(domain('xTime'), rscContainerWidth(width), 'day', 'time', 'secondary')",
     });
     expect(secondaryAxis).not.toHaveProperty('encode.labels.update.align');
     expect(secondaryAxis).not.toHaveProperty('labelOverlap');
     expect(primaryAxis).toHaveProperty('values', {
-      signal: "getTimeAxisPrimaryTicks(domain('xTime'), width, 'day', 'time')",
+      signal: "getTimeAxisPrimaryTicks(domain('xTime'), rscContainerWidth(width), 'day', 'time')",
     });
     expect(primaryAxis).toHaveProperty('format', {
-      signal: "getTimeAxisPrimaryLabelFormat(domain('xTime'), width, 'day', 'time')",
+      signal: "getTimeAxisPrimaryLabelFormat(domain('xTime'), rscContainerWidth(width), 'day', 'time')",
     });
     expect(primaryAxis).toMatchObject({ domain: false, grid: false, ticks: false });
     expect(primaryAxis).not.toHaveProperty('encode.labels.update.align');
@@ -268,27 +268,27 @@ describe('getTimeAxes()', () => {
       ticks: true,
     });
     expect(secondaryAxis).toHaveProperty('values', {
-      signal: "getTimeAxisMajorTicks(domain('xTime'), width, 'day', 'time')",
+      signal: "getTimeAxisMajorTicks(domain('xTime'), rscContainerWidth(width), 'day', 'time')",
     });
     expect(minorAxis).toMatchObject({
       domain: false,
       grid: false,
       labels: false,
       ticks: true,
-      values: { signal: "getTimeAxisMinorTicks(domain('xTime'), width, 'day', 'time')" },
+      values: { signal: "getTimeAxisMinorTicks(domain('xTime'), rscContainerWidth(width), 'day', 'time')" },
     });
     expect(primaryAxis).toHaveProperty('values', {
-      signal: "getTimeAxisPrimaryTicks(domain('xTime'), width, 'day', 'time')",
+      signal: "getTimeAxisPrimaryTicks(domain('xTime'), rscContainerWidth(width), 'day', 'time')",
     });
   });
 
   test('uses parent calendar values for every label granularity', () => {
     const [secondaryAxis, primaryAxis] = getTimeAxes('xTime', { ...baseTimeAxisOptions, granularity: 'quarter' });
     expect(secondaryAxis).toHaveProperty('values', {
-      signal: "getTimeAxisMajorTicks(domain('xTime'), width, 'quarter', 'time')",
+      signal: "getTimeAxisMajorTicks(domain('xTime'), rscContainerWidth(width), 'quarter', 'time')",
     });
     expect(primaryAxis).toHaveProperty('values', {
-      signal: "getTimeAxisPrimaryTicks(domain('xTime'), width, 'quarter', 'time')",
+      signal: "getTimeAxisPrimaryTicks(domain('xTime'), rscContainerWidth(width), 'quarter', 'time')",
     });
   });
 
@@ -306,12 +306,22 @@ describe('getTimeAxes()', () => {
     });
     expect(secondaryAxis).toMatchObject({
       formatType: 'utc',
-      values: { signal: "getTimeAxisMajorTicks(domain('xUtc'), width, 'day', 'utc')" },
+      values: { signal: "getTimeAxisMajorTicks(domain('xUtc'), rscContainerWidth(width), 'day', 'utc')" },
     });
     expect(minorAxis).toHaveProperty('values', {
-      signal: "getTimeAxisMinorTicks(domain('xUtc'), width, 'day', 'utc')",
+      signal: "getTimeAxisMinorTicks(domain('xUtc'), rscContainerWidth(width), 'day', 'utc')",
     });
     expect(primaryAxis).toHaveProperty('formatType', 'utc');
+  });
+
+  test('uses height for vertical time axes', () => {
+    const [secondaryAxis] = getTimeAxes('yTime', {
+      ...baseTimeAxisOptions,
+      position: 'left',
+    });
+    expect(secondaryAxis).toHaveProperty('values', {
+      signal: "getTimeAxisMajorTicks(domain('yTime'), height, 'day', 'time')",
+    });
   });
 
   test('does not add an empty primary label axis for year granularity', () => {
