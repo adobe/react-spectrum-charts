@@ -81,6 +81,13 @@ describe('responsive time-axis ticks', () => {
     expect(ticks.every((tick) => tick.getUTCDay() === 0)).toBe(true);
   });
 
+  test('uses the domain start when no requested calendar boundary is visible', () => {
+    const partialWeekDomain: [number, number] = [Date.UTC(2025, 0, 1), Date.UTC(2025, 0, 4)];
+    expect(getTimeAxisMajorTicks(partialWeekDomain, 800, 'week', 'utc')).toEqual([
+      new Date(partialWeekDomain[0]),
+    ]);
+  });
+
   test('uses formats that match the Vega interval selected for the available width', () => {
     expect(getTimeAxisLabelFormat(domain, 500, 'hour', 'time', 'secondary')).toBe('%-I %p');
     expect(getTimeAxisLabelFormat(domain, 500, 'hour', 'time', 'primary')).toBe('%b %-d');
@@ -113,6 +120,14 @@ describe('responsive time-axis ticks', () => {
       Date.UTC(2025, 0, 9),
       Date.UTC(2025, 1, 1),
     ]);
+  });
+
+  test('does not duplicate parent context when its boundary precedes the first child tick', () => {
+    const weeklyDomain: [number, number] = [Date.UTC(2023, 11, 31), Date.UTC(2024, 6, 1)];
+    const januaryTicks = getTimeAxisPrimaryTicks(weeklyDomain, 500, 'week', 'utc').filter(
+      (tick) => tick.getUTCFullYear() === 2024 && tick.getUTCMonth() === 0
+    );
+    expect(januaryTicks).toEqual([new Date(Date.UTC(2024, 0, 1))]);
   });
 
   test('keeps hourly child labels while independently labeling parent dates', () => {

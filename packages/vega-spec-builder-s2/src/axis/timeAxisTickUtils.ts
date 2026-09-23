@@ -189,7 +189,8 @@ export const getTimeAxisMajorTicks = (
   const steppedInterval = interval.every(tickCount.step);
   if (!steppedInterval) return [];
 
-  return vega.scale(scaleType)().domain(domain).ticks(steppedInterval);
+  const ticks = vega.scale(scaleType)().domain(domain).ticks(steppedInterval);
+  return ticks.length ? ticks : [new Date(domain[0])];
 };
 
 /**
@@ -215,6 +216,8 @@ export const getTimeAxisPrimaryTicks = (
 
   const childTicks = getTimeAxisMajorTicks(domain, range, granularity, scaleType);
   const contextValue = childTicks[0] ?? domainStart;
+  if (primaryTicks.length && Number(primaryTicks[0]) <= Number(contextValue)) return primaryTicks;
+
   return [contextValue, ...primaryTicks];
 };
 
