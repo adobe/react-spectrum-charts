@@ -52,7 +52,7 @@ export default {
     controls: { disable: true },
     layout: 'fullscreen',
   },
-  // tags: ['hidden']
+  tags: ['hidden']
 };
 
 const alternateFieldData = basicDonutData.map(({ browser, count }) => ({
