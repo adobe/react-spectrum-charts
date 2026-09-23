@@ -36,6 +36,23 @@ describe('getLineOptions()', () => {
     const options = getLineOptions({ children: [createElement(ChartPopover)] });
     expect(options.chartPopovers).toHaveLength(1);
   });
+  it('should drop a non-rightClick popover and warn when paired with an action bar', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const options = getLineOptions({
+      children: [createElement(ChartActionBar), createElement(ChartPopover)],
+    });
+    expect(options.chartActionBars).toHaveLength(1);
+    expect(options.chartPopovers).toHaveLength(0);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('cannot both be children'));
+    errorSpy.mockRestore();
+  });
+  it('should keep a rightClick popover alongside an action bar', () => {
+    const options = getLineOptions({
+      children: [createElement(ChartActionBar), createElement(ChartPopover, { rightClick: true })],
+    });
+    expect(options.chartActionBars).toHaveLength(1);
+    expect(options.chartPopovers).toHaveLength(1);
+  });
   it('should convert ChartInspect children to chartInspects array', () => {
     const options = getLineOptions({ children: [createElement(ChartInspect)] });
     expect(options.chartInspects).toHaveLength(1);

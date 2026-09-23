@@ -12,6 +12,7 @@
 import {
   CSSProperties,
   FC,
+  KeyboardEvent as ReactKeyboardEvent,
   PointerEvent,
   Ref,
   RefObject,
@@ -350,6 +351,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 };
 RscChart.displayName = 'RscChart';
 
+const DRAG_STEP = 10;
+
 const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
   actionBar,
   idKey,
@@ -487,6 +490,21 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
     dragStartRef.current = null;
   }, []);
 
+  // Keyboard alternative to pointer dragging; arrow keys nudge by DRAG_STEP px, clamped to the viewport.
+  const handleDragKeyDown = useCallback((e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const dx = e.key === 'ArrowLeft' ? -DRAG_STEP : e.key === 'ArrowRight' ? DRAG_STEP : 0;
+    const dy = e.key === 'ArrowUp' ? -DRAG_STEP : e.key === 'ArrowDown' ? DRAG_STEP : 0;
+    if (dx === 0 && dy === 0) return;
+    e.preventDefault();
+    const rect = containerRef.current.getBoundingClientRect();
+    const { offsetWidth, offsetHeight } = containerRef.current;
+    const maxLeft = Math.max(window.innerWidth - offsetWidth, 0);
+    const maxTop = Math.max(window.innerHeight - offsetHeight, 0);
+    containerRef.current.style.left = `${Math.min(Math.max(rect.left + dx, 0), maxLeft)}px`;
+    containerRef.current.style.top = `${Math.min(Math.max(rect.top + dy, 0), maxTop)}px`;
+  }, []);
+
   return (
     <>
       <button
@@ -511,9 +529,13 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
             <div
               className="rsc-action-bar-drag-handle"
               data-testid="rsc-action-bar-drag-handle"
+              role="button"
+              tabIndex={0}
+              aria-label="Drag to reposition action bar. Use arrow keys to move."
               onPointerDown={handleDragStart}
               onPointerMove={handleDragMove}
               onPointerUp={handleDragEnd}
+              onKeyDown={handleDragKeyDown}
             />
             {visibleActions}
             {overflowActions.length > 0 && (
