@@ -5,4 +5,4 @@
 '@spectrum-charts/docs': patch
 ---
 
-Pre-Alpha S2 Donut label positioning, truncation, spacing, and dense collision handling; fixed visibility of tiny segments; and fixed semicircle summary delta overlap.
+Pre-Alpha S2 Donut fixes for label positioning, truncation, spacing, and dense collision handling; fixing visibility of tiny segments; and fixing semicircle summary delta overlap.
