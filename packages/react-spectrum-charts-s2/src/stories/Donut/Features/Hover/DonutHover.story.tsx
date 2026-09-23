@@ -21,7 +21,7 @@ import { bindWithProps } from '../../../../test-utils';
 import { basicDonutData } from '../../../components/Donut/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Hover',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Hover',
   component: SegmentLabel,
 };
 

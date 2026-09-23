@@ -19,7 +19,7 @@ import { basicDonutData, sliveredDonutData } from '../../../components/Donut/dat
 import { ResponsiveDonut } from '../ResponsiveDonut';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Segment Label',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Segment Label',
   component: SegmentLabel,
 };
 

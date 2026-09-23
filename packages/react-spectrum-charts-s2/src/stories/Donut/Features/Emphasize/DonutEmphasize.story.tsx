@@ -26,7 +26,7 @@ import { ResponsiveDonut } from '../ResponsiveDonut';
 
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Features/Emphasize',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Emphasize',
   component: Donut,
 };
 

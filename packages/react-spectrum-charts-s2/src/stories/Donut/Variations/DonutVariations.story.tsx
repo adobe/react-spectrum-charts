@@ -40,7 +40,7 @@ import { basicDonutData, booleanDonutData, zeroDonutData } from '../../component
 import { DonutVariationDatasetName, donutDatasetOptions, donutVariationDatasets } from './donutVariationData';
 
 export default {
-  title: 'React Spectrum Charts 2/Donut/Variations',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Dashboard',
   component: Donut,
   parameters: {
     controls: { disable: true },
