@@ -192,6 +192,77 @@ Use `excludeSeries` to prevent labels from appearing on specific series:
 
 ---
 
+## Chart action bar (ChartActionBar)
+
+The `ChartActionBar` component is an S2-exclusive child of `Line`. It displays contextual actions for a selected data point.
+
+```jsx
+import {ActionButton} from '@react-spectrum/s2';
+import {Chart, ChartActionBar, Line} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={data}>
+    <Line>
+        <ChartActionBar maxActions={4} onClearSelection={handleClearSelection}>
+            {(datum, close) => [
+                <ActionButton key="annotate" onPress={close}>
+                    Annotate
+                </ActionButton>,
+                <ActionButton key="share" onPress={() => share(datum)}>
+                    Share
+                </ActionButton>,
+            ]}
+        </ChartActionBar>
+    </Line>
+</Chart>;
+```
+
+The action bar opens when a data point is selected. Drag its handle to reposition it, or focus the handle and use the arrow keys. Actions that exceed `maxActions` or the available width are placed in an overflow popover. Press Escape, click outside the action bar, or call the provided `close` function to dismiss it.
+
+:::note
+`ChartActionBar` cannot be combined with a click-triggered `ChartPopover` on the same `Line`; only the action bar is rendered. It can coexist with a `ChartPopover` that uses `rightClick`.
+:::
+
+### ChartActionBar props
+
+<table>
+        <thead>
+                <tr>
+                        <th>name</th>
+                        <th>type</th>
+                        <th>default</th>
+                        <th>description</th>
+                </tr>
+        </thead>
+        <tbody>
+                <tr>
+                        <td>children</td>
+                        <td>(datum: Datum, close: () =&gt; void) =&gt; ReactElement[]</td>
+                        <td>–</td>
+                        <td>Callback that returns actions for the selected datum. The second argument dismisses the action bar.</td>
+                </tr>
+                <tr>
+                        <td>isEmphasized</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                        <td>Applies emphasized styling to the action bar.</td>
+                </tr>
+                <tr>
+                        <td>maxActions</td>
+                        <td>number</td>
+                        <td>4</td>
+                        <td>Maximum number of actions displayed inline before overflow. Available width may reduce this number.</td>
+                </tr>
+                <tr>
+                        <td>onClearSelection</td>
+                        <td>() =&gt; void</td>
+                        <td>–</td>
+                        <td>Callback fired when the action bar is dismissed and the selection is cleared.</td>
+                </tr>
+        </tbody>
+</table>
+
+---
+
 ## Line props (S2)
 
 :::note Not all base Line props are supported
@@ -210,9 +281,9 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
     <tbody>
         <tr>
             <td>children</td>
-            <td>ChartTooltip | ChartPopover | LineDirectLabel</td>
+            <td>ChartTooltip | ChartPopover | ChartActionBar | LineDirectLabel</td>
             <td>–</td>
-            <td>Optional child components for tooltips, popovers, and inline direct labels.</td>
+            <td>Optional child components for tooltips, popovers, contextual actions, and inline direct labels.</td>
         </tr>
         <tr>
             <td>color</td>
