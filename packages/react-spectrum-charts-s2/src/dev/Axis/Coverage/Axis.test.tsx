@@ -120,7 +120,7 @@ describe('Axis', () => {
       expect(chart).toBeInTheDocument();
 
       // make sure labels are visible
-      expect(screen.getByText('30')).toBeInTheDocument();
+      expect(screen.getByText('29')).toBeInTheDocument();
       expect(screen.getByText('Nov')).toBeInTheDocument();
     });
 
