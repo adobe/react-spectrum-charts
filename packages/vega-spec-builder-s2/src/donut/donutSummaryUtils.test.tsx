@@ -199,13 +199,13 @@ describe('getSummaryValueBaseline()', () => {
 describe('getSummaryValueLimit()', () => {
   test('should use full font size in signal if label is truthy', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: 'Visitors' })).toEqual({
-      signal: '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(testName_summaryValueFontSize, 2))',
+      signal: '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize) + (0), 2))',
     });
   });
 
   test('should use 1/2 font size in signal if label is falsey', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' })).toEqual({
-      signal: '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(testName_summaryValueFontSize * 0.5, 2))',
+      signal: '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize * 0.5) + (0), 2))',
     });
   });
 });
@@ -218,7 +218,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
       label: 'Visitors',
     });
     expect(encode.update?.baseline).toEqual({ value: 'middle' });
-    expect(encode.update?.dy).toBeUndefined();
+    expect(encode.update?.dy).toEqual({ signal: '0' });
   });
 
   test('should position label below value when hideValue is false', () => {
@@ -247,7 +247,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
     const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: true, label: 'Visitors' });
     expect(encode.update?.limit).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(testName_summaryLabelFontSize * 0.5, 2))',
+        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryLabelFontSize * 0.5) + (0), 2))',
     });
   });
 
@@ -255,7 +255,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
     const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: false, label: 'Visitors' });
     expect(encode.update?.limit).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize, 2))',
+        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize) + (0), 2))',
     });
   });
 });
@@ -277,6 +277,58 @@ describe('s2 styles', () => {
       });
 
       expect(encode.update?.fontWeight).toEqual({ value: 700 });
+    });
+  });
+});
+
+describe('semicircle summary anchoring', () => {
+  const semicircleDonutOptions = { ...defaultDonutOptions, variant: 'semicircle' as const };
+  const semicircleSummaryOptions: DonutSummarySpecOptions = {
+    ...defaultDonutSummaryOptions,
+    donutOptions: semicircleDonutOptions,
+  };
+  test('getSummaryValueEncode bottom-aligns the value and label stack with a 3px gap', () => {
+    const encode = getSummaryValueEncode(semicircleSummaryOptions);
+    expect(encode.update?.y).toEqual({
+      signal: 'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
+    });
+  });
+
+  test('getSummaryLabelEncode uses the same bottom-aligned anchor', () => {
+    const encode = getSummaryLabelEncode({ ...semicircleSummaryOptions, label: 'Visitors' });
+    expect(encode.update?.y).toEqual({
+      signal: 'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
+    });
+  });
+
+  test('hideValue removes the value and bottom-aligns the remaining label', () => {
+    const groupMark = getDonutSummaryGroupMark({ ...semicircleSummaryOptions, hideValue: true });
+    expect(groupMark.marks).toHaveLength(1);
+    expect(groupMark.marks?.[0]).toHaveProperty('name', 'testName_summaryLabel');
+    expect(groupMark.marks?.[0]).toHaveProperty(
+      'encode.update.y.signal',
+      'height - (3 + testName_summaryLabelFontSize * 0.5)'
+    );
+  });
+
+  test('getSummaryDeltaEncode bottom-aligns the complete three-line stack', () => {
+    const encode = getSummaryDeltaEncode({ ...semicircleSummaryOptions, delta: 0.025 });
+    expect(encode.update?.y).toEqual({
+      signal:
+        'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize)',
+    });
+  });
+
+  test('a full circle still anchors directly at the arc center (no offset)', () => {
+    const encode = getSummaryValueEncode(defaultDonutSummaryOptions);
+    expect(encode.update?.y).toEqual({ signal: 'height / 2' });
+  });
+
+  test('getSummaryValueLimit adds the anchor offset to the Pythagorean width-limit math', () => {
+    const limit = getSummaryValueLimit({ ...semicircleSummaryOptions, label: 'Visitors' });
+    expect(limit).toEqual({
+      signal:
+        '2 * sqrt(pow(((min(width / 2, height) - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize) + (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize), 2))',
     });
   });
 });
@@ -342,7 +394,7 @@ describe('getSummaryDeltaEncode() stacking', () => {
     expect(encode.update?.baseline).toEqual({ value: 'top' });
   });
 
-  test('label + delta, hideValue: delta stacks directly below the label with no value gap', () => {
+  test('label + delta, hideValue: delta sits a quarter-gap below the label acting as the anchor line', () => {
     const encode = getSummaryDeltaEncode({
       ...defaultDonutSummaryOptions,
       hideValue: true,
@@ -350,7 +402,7 @@ describe('getSummaryDeltaEncode() stacking', () => {
       delta: 0.025,
     });
     expect(encode.update?.dy).toEqual({
-      signal: 'testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25)',
+      signal: 'ceil(testName_summaryLabelFontSize * 0.25)',
     });
   });
 
@@ -361,7 +413,7 @@ describe('getSummaryDeltaEncode() stacking', () => {
       label: undefined,
       delta: 0.025,
     });
-    expect(encode.update?.dy).toBeUndefined();
+    expect(encode.update?.dy).toEqual({ signal: '0' });
     expect(encode.update?.baseline).toEqual({ value: 'middle' });
   });
 
@@ -389,7 +441,7 @@ describe('interaction: value/label baseline when delta is present without a labe
     const limit = getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: undefined, delta: 0.025 });
     expect(limit).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow(testName_summaryValueFontSize, 2))',
+        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize) + (0), 2))',
     });
   });
 
@@ -401,6 +453,6 @@ describe('interaction: value/label baseline when delta is present without a labe
       delta: 0.025,
     });
     expect(encode.update?.baseline).toEqual({ value: 'alphabetic' });
-    expect(encode.update?.dy).toBeUndefined();
+    expect(encode.update?.dy).toEqual({ signal: '0' });
   });
 });
