@@ -37,6 +37,7 @@ import {
 import {
   getArcMark,
   getEmptyStateArcMark,
+  isDonutInteractive,
   getRingWidthScale,
   getRingWidthSignal,
   getSliceGapScale,
@@ -62,6 +63,7 @@ export const addDonut = produce<
       highlightedItem?: HighlightedItem;
       index?: number;
       idKey: string;
+      legendHighlightSignals?: string[];
     }
   ]
 >(
@@ -76,13 +78,17 @@ export const addDonut = produce<
       index = 0,
       metric = DEFAULT_METRIC,
       name,
-      startAngle = 0,
+      startAngle,
       holeRatio = DEFAULT_HOLE_RATIO,
       isBoolean = false,
       segmentLabels = [],
+      sortOrder = 'valueDescending',
+      variant = 'circle',
       ...options
     }
   ) => {
+    // semicircle donuts default to a 9 o'clock start so the sweep runs clockwise through 12 to 3 o'clock
+    const resolvedStartAngle = startAngle ?? (variant === 'semicircle' ? -Math.PI / 2 : 0);
     // put options back together now that all defaults are set
     const donutOptions: DonutSpecOptions = {
       chartPopovers,
@@ -96,11 +102,13 @@ export const addDonut = produce<
       metric,
       name: toCamelCase(name ?? `donut${index}`),
       segmentLabels,
-      startAngle,
+      sortOrder,
+      startAngle: resolvedStartAngle,
+      variant,
       ...options,
     };
 
-    if (isInteractive(donutOptions)) {
+    if (isDonutInteractive(donutOptions)) {
       spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, donutOptions.name);
     }
     spec.data = addData(spec.data ?? [], donutOptions);
@@ -111,11 +119,15 @@ export const addDonut = produce<
 );
 
 export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
-  const { color, legendHighlightSignals, name, isBoolean } = options;
+  const { color, legendHighlightSignals, name, isBoolean, metric, sortOrder, variant } = options;
   const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
   //set up transform
   data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
+  // Semicircles default to largest-first but can preserve source order for ordinal data.
+  if (variant === 'semicircle' && sortOrder === 'valueDescending') {
+    data[filteredTableIndex].transform?.push({ type: 'collect', sort: { field: metric, order: 'descending' } });
+  }
   data[filteredTableIndex].transform?.push(...getPieTransforms(options));
   // Adds SERIES_ID so hovering an arc can highlight its legend entry and hovering a legend entry can
   // fade this mark's arcs - donut rows don't have SERIES_ID by default like Line/Bar do
@@ -150,30 +162,38 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
   );
 });
 
-const getPieTransforms = ({ startAngle, metric, name }: DonutSpecOptions): (FormulaTransform | PieTransform)[] => [
-  {
-    type: 'pie',
-    field: metric,
-    startAngle,
-    endAngle: { signal: `${startAngle} + 2 * PI` },
-    as: [`${name}_startAngle`, `${name}_endAngle`],
-  },
-  {
-    type: 'formula',
-    as: `${name}_arcTheta`,
-    expr: `(datum['${name}_startAngle'] + datum['${name}_endAngle']) / 2`,
-  },
-  {
-    type: 'formula',
-    as: `${name}_arcLength`,
-    expr: `datum['${name}_endAngle'] - datum['${name}_startAngle']`,
-  },
-  {
-    type: 'formula',
-    as: `${name}_arcPercent`,
-    expr: `datum['${name}_arcLength'] / (2 * PI)`,
-  },
-];
+const getPieTransforms = ({
+  startAngle,
+  metric,
+  name,
+  variant,
+}: DonutSpecOptions): (FormulaTransform | PieTransform)[] => {
+  const sweep = variant === 'semicircle' ? 'PI' : '2 * PI';
+  return [
+    {
+      type: 'pie',
+      field: metric,
+      startAngle,
+      endAngle: { signal: `${startAngle} + ${sweep}` },
+      as: [`${name}_startAngle`, `${name}_endAngle`],
+    },
+    {
+      type: 'formula',
+      as: `${name}_arcTheta`,
+      expr: `(datum['${name}_startAngle'] + datum['${name}_endAngle']) / 2`,
+    },
+    {
+      type: 'formula',
+      as: `${name}_arcLength`,
+      expr: `datum['${name}_endAngle'] - datum['${name}_startAngle']`,
+    },
+    {
+      type: 'formula',
+      as: `${name}_arcPercent`,
+      expr: `datum['${name}_arcLength'] / (${sweep})`,
+    },
+  ];
+};
 
 export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) => {
   const { color, holeRatio } = options;
@@ -210,6 +230,6 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
     ...getSegmentLabelSignals(options),
     ...getRichSegmentLabelSignals(options)
   );
-  if (!isInteractive(options)) return;
+  if (!isDonutInteractive(options)) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
 });

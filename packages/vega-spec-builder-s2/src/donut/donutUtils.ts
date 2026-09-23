@@ -19,6 +19,7 @@ import {
   DONUT_LABEL_RING_GAP,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
+  DONUT_SEMICIRCLE_RADIUS,
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
   FADE_FACTOR,
@@ -28,6 +29,7 @@ import {
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
+import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils';
 import {
   getColorProductionRule,
   getCursor,
@@ -36,6 +38,18 @@ import {
   isInteractive,
 } from '../marks/markUtils';
 import { DonutSpecOptions } from '../types';
+
+/** Returns whether a donut needs hover state for its own interactions or a highlighted legend. */
+export const isDonutInteractive = (options: DonutSpecOptions): boolean =>
+  isInteractive(options) || Boolean(options.legendHighlightSignals?.length);
+
+const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+  const opacity = getMarkOpacity(options);
+  if (!isInteractive(options) && options.legendHighlightSignals?.length) {
+    addHoveredItemOpacityRules(opacity, options);
+  }
+  return opacity;
+};
 
 /**
  * Gets the test expression that is true when the donut has no data or all metric values sum to 0.
@@ -82,27 +96,33 @@ const getArcFillEncoding = (options: DonutSpecOptions): ColorValueRef | Producti
 };
 
 /**
+ * Gets the donut's un-reserved base radius expression, using the full available height for a
+ * semicircle (only the top half sweeps) instead of half of it for a full circle.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+const getDonutBaseRadiusExpr = ({ variant }: DonutSpecOptions): string =>
+  variant === 'semicircle' ? DONUT_SEMICIRCLE_RADIUS : DONUT_RADIUS;
+
+/**
  * Gets the donut's outer radius, reserving space for SegmentLabel content when needed.
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutOuterRadiusExpr = ({
-  isBoolean,
-  segmentLabels,
-  hideDeemphasizedLabels,
-  emphasizedItems,
-}: DonutSpecOptions): string => {
-  // DONUT_RADIUS is already parenthesized; the reserved branch below self-parenthesizes too, so
+export const getDonutOuterRadiusExpr = (options: DonutSpecOptions): string => {
+  const { isBoolean, segmentLabels, hideDeemphasizedLabels, emphasizedItems, variant } = options;
+  const baseRadius = getDonutBaseRadiusExpr(options);
+  // baseRadius is already parenthesized; the reserved branch below self-parenthesizes too, so
   // callers can interpolate this result directly without adding their own wrapping parens
   const visibleLabels = segmentLabels.filter(
     ({ labelMode }) => !(emphasizedItems?.length && hideDeemphasizedLabels && labelMode === 'deemphasized')
   );
-  if (isBoolean || !visibleLabels.length) return DONUT_RADIUS;
+  if (isBoolean || variant === 'semicircle' || !visibleLabels.length) return baseRadius;
   const ringGap = visibleLabels.some(({ swatch, showValueRow }) => swatch || showValueRow)
     ? DONUT_ADVANCED_LABEL_RING_GAP
     : DONUT_LABEL_RING_GAP;
-  // solve R such that R + ringGap + R*capRatio == DONUT_RADIUS (the worst-case label reach)
-  return `((${DONUT_RADIUS} - ${ringGap}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}))`;
+  // solve R such that R + ringGap + R*capRatio == baseRadius (the worst-case label reach)
+  return `((${baseRadius} - ${ringGap}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}))`;
 };
 
 /**
@@ -222,6 +242,14 @@ const getHoveredArcFillEncoding = (
   ];
 };
 
+/**
+ * Gets the y anchor signal for donut marks, placing a semicircle's flat edge below its diameter.
+ * @param donutOptions
+ * @returns vega signal string
+ */
+export const getDonutCenterYSignal = ({ variant }: DonutSpecOptions): string =>
+  variant === 'semicircle' ? 'height' : 'height / 2';
+
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;
   const outerRadius = getDonutOuterRadiusExpr(options);
@@ -235,7 +263,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
       enter: {
         fill: getArcFillEncoding(options),
         x: { signal: 'width / 2' },
-        y: { signal: 'height / 2' },
+        y: { signal: getDonutCenterYSignal(options) },
         tooltip: getInspectEncoding(chartInspects, name),
       },
       update: {
@@ -252,7 +280,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         opacity: [
           { test: getDonutEmptyStateTest(name), value: 0 },
           ...getLegendHighlightOpacityRules(legendHighlightSignals),
-          ...getMarkOpacity(options),
+          ...getDonutOpacity(options),
         ],
         cursor: getCursor(chartPopovers),
         strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { signal: `${name}_sliceGap` }],
@@ -268,8 +296,9 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
  * @returns ArcMark
  */
 export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { colorScheme, name } = options;
+  const { colorScheme, name, startAngle, variant } = options;
   const outerRadius = getDonutOuterRadiusExpr(options);
+  const sweep = variant === 'semicircle' ? 'PI' : '2 * PI';
   return {
     type: 'arc',
     name: `${name}_emptyState`,
@@ -279,9 +308,9 @@ export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
       enter: {
         fill: { value: getS2ColorValue('gray-200', colorScheme) },
         x: { signal: 'width / 2' },
-        y: { signal: 'height / 2' },
-        startAngle: { value: 0 },
-        endAngle: { signal: '2 * PI' },
+        y: { signal: getDonutCenterYSignal(options) },
+        startAngle: { value: startAngle },
+        endAngle: { signal: `${startAngle} + ${sweep}` },
       },
       update: {
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },

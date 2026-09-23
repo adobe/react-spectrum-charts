@@ -58,6 +58,14 @@ describe('getDonutOptions()', () => {
     const options = getDonutOptions({ color: DEFAULT_COLOR });
     expect(options).toHaveProperty('color', DEFAULT_COLOR);
   });
+  it('should pass through the variant prop unchanged', () => {
+    const options = getDonutOptions({ variant: 'semicircle' });
+    expect(options).toHaveProperty('variant', 'semicircle');
+  });
+  it('should pass through the sortOrder prop unchanged', () => {
+    const options = getDonutOptions({ sortOrder: 'data' });
+    expect(options).toHaveProperty('sortOrder', 'data');
+  });
   it('should not add props that are not provided', () => {
     const options = getDonutOptions({});
     expect(options).not.toHaveProperty('color');
