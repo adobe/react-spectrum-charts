@@ -156,14 +156,16 @@ describe('ChartActionBar', () => {
     await waitFor(() => expect(actionBar).not.toBeInTheDocument());
   });
 
-  test('moves focus into the bar when it opens', async () => {
+  test('focuses the drag handle when the bar opens', async () => {
     render(<WithActionBar {...WithActionBar.args} />);
     const chart = await findChart();
     const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
 
     await clickNthElement(points, 0);
     const actionBar = await screen.findByTestId('rsc-action-bar');
-    await waitFor(() => expect(within(actionBar).getByRole('button', { name: 'Annotate' })).toHaveFocus());
+    await waitFor(() =>
+      expect(within(actionBar).getByRole('button', { name: 'Drag to reposition action bar. Use arrow keys to move.' })).toHaveFocus()
+    );
   });
 
   test('actions appear in the action bar and clicking one closes it', async () => {
