@@ -87,10 +87,13 @@ this removes transitions in the vega tooltip
   color: inherit;
 }
 .rsc-action-bar-drag-handle {
+  appearance: none;
   width: 4px;
   align-self: stretch;
   min-block-size: 20px;
+  padding: 0;
   background-color: var(--spectrum-gray-500, #b3b3b3);
+  border: 0;
   border-radius: 2px;
   cursor: grab;
   flex-shrink: 0;
