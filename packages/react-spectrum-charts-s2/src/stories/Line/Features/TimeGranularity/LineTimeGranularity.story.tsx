@@ -15,10 +15,11 @@ import { ComponentProps, ReactElement, useMemo, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
+import { NumberField } from '@react-spectrum/s2';
 import { Granularity } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, Line } from '../../../../components';
+import { Axis, ChartInspect, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
@@ -42,8 +43,7 @@ export default {
   },
 };
 
-const HOUR_MS = 3.6e6;
-const CHART_HEIGHT = 400;
+const CHART_HEIGHT = 450;
 const DEFAULT_CHART_WIDTH = 800;
 const MIN_CHART_WIDTH = 200;
 const MAX_CHART_WIDTH = 1600;
@@ -91,9 +91,11 @@ const RESIZE_HANDLE_STYLES = `
 `;
 
 type TimeWindow = {
-  end: number;
-  sampleHours: number;
+  defaultCount: number;
+  maxCount: number;
   start: number;
+  unit: 'hour' | 'day' | 'month' | 'quarter' | 'year';
+  unitLabel: string;
 };
 
 type TimeGranularityArgs = Omit<ComponentProps<typeof Axis>, 'granularity' | 'labelFormat'> & {
@@ -113,12 +115,35 @@ const getTimeSeriesValue = (progress: number, seriesIndex: number): number => {
   return Math.round(baseline + primaryWave + secondaryWave);
 };
 
-const generateTimeSeries = ({ end, sampleHours, start }: TimeWindow): GeneratedTimeSeriesDatum[] => {
+const getTimeValue = (start: number, index: number, unit: TimeWindow['unit']): number => {
+  const date = new Date(start);
+  switch (unit) {
+    case 'hour':
+      date.setHours(date.getHours() + index);
+      break;
+    case 'day':
+      date.setDate(date.getDate() + index);
+      break;
+    case 'month':
+      date.setMonth(date.getMonth() + index);
+      break;
+    case 'quarter':
+      date.setMonth(date.getMonth() + index * 3);
+      break;
+    case 'year':
+      date.setFullYear(date.getFullYear() + index);
+  }
+  return date.getTime();
+};
+
+const SERIES = ['Desktop', 'Mobile'];
+
+const generateTimeSeries = ({ maxCount, start, unit }: TimeWindow): GeneratedTimeSeriesDatum[] => {
   const data: GeneratedTimeSeriesDatum[] = [];
-  const sampleDuration = sampleHours * HOUR_MS;
-  for (let datetime = start; datetime < end; datetime += sampleDuration) {
-    const progress = (datetime - start) / (end - start);
-    ['Desktop', 'Mobile'].forEach((series, seriesIndex) => {
+  for (let index = 0; index < maxCount; index++) {
+    const datetime = getTimeValue(start, index, unit);
+    const progress = maxCount === 1 ? 0 : index / (maxCount - 1);
+    SERIES.forEach((series, seriesIndex) => {
       data.push({
         datetime,
         series,
@@ -136,12 +161,23 @@ const TimeGranularityStory = ({
   ...axisProps
 }: TimeGranularityStoryProps): ReactElement => {
   const [chartWidth, setChartWidth] = useState(DEFAULT_CHART_WIDTH);
-  const data = useMemo(() => generateTimeSeries(window), [window]);
+  const [itemCount, setItemCount] = useState(window.defaultCount);
+  const sourceData = useMemo(() => generateTimeSeries(window), [window]);
+  const data = useMemo(() => sourceData.slice(0, itemCount * SERIES.length), [itemCount, sourceData]);
   const chartProps: ChartProps = useChartProps({ data, width: 'auto', height: '100%' });
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <style>{RESIZE_HANDLE_STYLES}</style>
+      <div style={{ width: 200 }}>
+        <NumberField
+          label={`${window.unitLabel} displayed`}
+          minValue={1}
+          maxValue={window.maxCount}
+          value={itemCount}
+          onChange={setItemCount}
+        />
+      </div>
       <div style={{ position: 'relative', display: 'inline-block', alignSelf: 'flex-start' }}>
         <div
           style={{
@@ -166,6 +202,7 @@ const TimeGranularityStory = ({
                 )}
               </ChartInspect>
             </Line>
+            <Legend highlight />
           </Chart>
         </div>
         <input
@@ -185,32 +222,42 @@ const TimeGranularityStory = ({
 
 const hourlyWindow: TimeWindow = {
   start: new Date(2025, 0, 1).getTime(),
-  end: new Date(2025, 0, 4).getTime(),
-  sampleHours: 3,
+  defaultCount: 72,
+  maxCount: 144,
+  unit: 'hour',
+  unitLabel: 'Hours',
 };
 
 const dailyWindow: TimeWindow = {
   start: new Date(2025, 0, 1).getTime(),
-  end: new Date(2025, 1, 15).getTime(),
-  sampleHours: 24,
+  defaultCount: 50,
+  maxCount: 180,
+  unit: 'day',
+  unitLabel: 'Days',
 };
 
 const monthlyWindow: TimeWindow = {
   start: new Date(2024, 0, 1).getTime(),
-  end: new Date(2025, 6, 1).getTime(),
-  sampleHours: 24 * 14,
+  defaultCount: 24,
+  maxCount: 48,
+  unit: 'month',
+  unitLabel: 'Months',
 };
 
 const quarterlyWindow: TimeWindow = {
   start: new Date(2022, 0, 1).getTime(),
-  end: new Date(2026, 0, 1).getTime(),
-  sampleHours: 24 * 30,
+  defaultCount: 16,
+  maxCount: 32,
+  unit: 'quarter',
+  unitLabel: 'Quarters',
 };
 
 const yearlyWindow: TimeWindow = {
   start: new Date(2016, 0, 1).getTime(),
-  end: new Date(2026, 0, 1).getTime(),
-  sampleHours: 24 * 90,
+  defaultCount: 10,
+  maxCount: 20,
+  unit: 'year',
+  unitLabel: 'Years',
 };
 
 const HourlyStory: StoryFn<TimeGranularityArgs> = (args): ReactElement => (

@@ -112,7 +112,7 @@ const getTimeAxisSignal = (
   scaleType: TemporalScaleType,
   level?: TimeAxisLabelLevel
 ): SignalRef => {
-  const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
+  const range = ['top', 'bottom'].includes(position) ? 'rscContainerWidth(width)' : 'height';
   const levelArgument = level ? `, '${level}'` : '';
   return {
     signal: `${expressionName}(domain('${scaleName}'), ${range}, '${granularity}', '${scaleType}'${levelArgument})`,
