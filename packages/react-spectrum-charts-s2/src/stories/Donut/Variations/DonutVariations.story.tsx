@@ -29,6 +29,7 @@ import { ChartProps, DonutProps, SegmentLabelProps } from '../../../types';
 import {
   Variation,
   VariationDashboard,
+  VariationFilter,
   VariationSizePreset,
   VariationViewMode,
   useVariationDataset,
@@ -65,6 +66,14 @@ const donutViewModes: VariationViewMode[] = [
   { label: 'No added labels', value: 'none' },
   { label: 'Direct labels', value: 'direct' },
   { label: 'Advanced labels', value: 'advanced' },
+];
+
+const isSemicircleVariation = ({ coverage }: Variation): boolean => coverage.includes('variant=semicircle');
+
+const donutVariationFilters: VariationFilter[] = [
+  { label: 'All', value: 'all', matches: () => true },
+  { label: 'Full', value: 'full', matches: (variation) => !isSemicircleVariation(variation) },
+  { label: 'Semicircle', value: 'semicircle', matches: isSemicircleVariation },
 ];
 
 const segmentLabelScenarioIds: Record<keyof SegmentLabelProps, string> = {
@@ -502,11 +511,13 @@ const DashboardStory: StoryFn = (): ReactElement => (
     variations={variations}
     chartType="Donut"
     datasets={donutDatasetOptions}
+    filters={donutVariationFilters}
     getSizeDescription={(size, viewMode) =>
       `Effective donut diameter: ${Math.round(getEffectiveDonutDiameter(size, viewMode))}px`
     }
     initialSize={getDonutContainerSize(200, 'none')}
     initialDataset="standard"
+    initialFilter="all"
     initialViewMode="none"
     resolvePresetSize={getDonutContainerSize}
     sizePresets={donutSizePresets}

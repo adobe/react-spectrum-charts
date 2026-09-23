@@ -32,6 +32,12 @@ export interface VariationViewMode {
   value: string;
 }
 
+export interface VariationFilter {
+  label: string;
+  value: string;
+  matches: (variation: Variation) => boolean;
+}
+
 export interface Variation {
   /** Stable identifier used as the React key and future visual-regression identifier. */
   id: string;
@@ -53,8 +59,10 @@ interface VariationDashboardProps {
   chartType: string;
   variations: Variation[];
   datasets?: VariationDataset[];
+  filters?: VariationFilter[];
   getSizeDescription?: (size: number, viewMode?: string) => string;
   initialDataset?: string;
+  initialFilter?: string;
   initialSize?: number;
   initialViewMode?: string;
   resolvePresetSize?: (size: number, viewMode?: string) => number;
@@ -86,8 +94,10 @@ export const VariationDashboard = ({
   chartType,
   variations,
   datasets = [],
+  filters = [],
   getSizeDescription,
   initialDataset,
+  initialFilter,
   initialSize = DEFAULT_SIZE,
   initialViewMode,
   resolvePresetSize = (size) => size,
@@ -95,6 +105,7 @@ export const VariationDashboard = ({
   viewModes = [],
 }: VariationDashboardProps): ReactElement => {
   const [dataset, setDataset] = useState(initialDataset ?? datasets[0]?.value);
+  const [filter, setFilter] = useState(initialFilter ?? filters[0]?.value);
   const [size, setSize] = useState(initialSize);
   const [viewMode, setViewMode] = useState(initialViewMode ?? viewModes[0]?.value);
   const presetSizes = sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
@@ -102,6 +113,8 @@ export const VariationDashboard = ({
   const maxSize = Math.max(...presetSizes, initialSize);
   const selectedPreset = sizePresets.find((preset) => resolvePresetSize(preset.size, viewMode) === size);
   const minimumCardWidth = Math.max(320, size + 16);
+  const activeFilter = filters.find((option) => option.value === filter);
+  const visibleVariations = activeFilter ? variations.filter(activeFilter.matches) : variations;
 
   const updateViewMode = (nextViewMode: string): void => {
     setViewMode(nextViewMode);
@@ -120,9 +133,18 @@ export const VariationDashboard = ({
               Each card isolates a supported prop value or child configuration.
             </p>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div
+            style={{
+              alignItems: 'start',
+              display: 'grid',
+              gap: 8,
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            }}
+          >
             {datasets.length > 0 && (
-              <label style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <label
+                style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8, gridColumn: 1, gridRow: 1 }}
+              >
                 <strong>Dataset:</strong>
                 <select
                   aria-label={`${chartType} dataset`}
@@ -144,7 +166,9 @@ export const VariationDashboard = ({
               </label>
             )}
             {viewModes.length > 0 && (
-              <div style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <div
+                style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8, gridColumn: 2, gridRow: 1 }}
+              >
                 <strong>View:</strong>
                 {viewModes.map((mode) => (
                   <button
@@ -166,7 +190,34 @@ export const VariationDashboard = ({
                 ))}
               </div>
             )}
-            <div style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {filters.length > 0 && (
+              <div
+                style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8, gridColumn: 2, gridRow: 2 }}
+              >
+                <strong>Filter:</strong>
+                {filters.map((option) => (
+                  <button
+                    key={option.value}
+                    aria-pressed={filter === option.value}
+                    onClick={() => setFilter(option.value)}
+                    style={{
+                      background: filter === option.value ? 'var(--spectrum-blue-900, #0265dc)' : 'transparent',
+                      border: '1px solid var(--spectrum-gray-500, #909090)',
+                      borderRadius: 4,
+                      color: filter === option.value ? 'white' : 'inherit',
+                      cursor: 'pointer',
+                      padding: '4px 10px',
+                    }}
+                    type="button"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div
+              style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8, gridColumn: 1, gridRow: 2 }}
+            >
               <strong>Chart size:</strong>
               {sizePresets.map((preset) => (
                 <button
@@ -188,7 +239,7 @@ export const VariationDashboard = ({
                 </button>
               ))}
             </div>
-            <label style={{ alignItems: 'center', display: 'flex', gap: 12 }}>
+            <label style={{ alignItems: 'center', display: 'flex', gap: 12, gridColumn: '1 / -1' }}>
               <span style={{ minWidth: 120 }}>Container: {size}px</span>
               <input
                 aria-label={`${chartType} chart size`}
@@ -200,7 +251,9 @@ export const VariationDashboard = ({
                 value={size}
               />
             </label>
-            {getSizeDescription && <span style={{ fontSize: 13 }}>{getSizeDescription(size, viewMode)}</span>}
+            {getSizeDescription && (
+              <span style={{ fontSize: 13, gridColumn: '1 / -1' }}>{getSizeDescription(size, viewMode)}</span>
+            )}
           </div>
         </header>
         <VariationDatasetContext.Provider value={dataset}>
@@ -213,7 +266,7 @@ export const VariationDashboard = ({
                 gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minimumCardWidth}px), 1fr))`,
               }}
             >
-              {variations.map(
+              {visibleVariations.map(
                 ({ id, title, description, dataset: caseDataset, usesDashboardDataset = true, coverage, render }) => (
                   <section
                     key={id}
