@@ -194,7 +194,6 @@ const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: 
  * @param datum
  * @param hemisphereField
  * @param collisionBoxesField
- * @param topYField
  * @param priorityField
  * @param idField
  * @param gap
@@ -205,17 +204,18 @@ export const isDonutLabelVisible = (
   datum: Record<string, unknown>,
   hemisphereField: string,
   collisionBoxesField: string,
-  topYField: string,
   priorityField: string,
   idField: string,
   gap: number
 ): boolean => {
   const hemisphere = datum[hemisphereField];
+  const getTopY = (candidate: Record<string, unknown>): number =>
+    Math.min(...(candidate[collisionBoxesField] as number[][]).map(([, , topY]) => topY));
   const candidates = data
     .filter((candidate) => candidate[hemisphereField] === hemisphere)
     .sort((a, b) => {
       const priorityDifference = Number(b[priorityField]) - Number(a[priorityField]);
-      return priorityDifference || Number(a[topYField]) - Number(b[topYField]);
+      return priorityDifference || getTopY(a) - getTopY(b);
     });
   const accepted: Record<string, unknown>[] = [];
 

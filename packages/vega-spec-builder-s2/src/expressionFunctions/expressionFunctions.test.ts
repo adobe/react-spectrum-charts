@@ -31,7 +31,7 @@ describe('isDonutLabelVisible()', () => {
     { id: 'other-side', hemisphere: 'right', boxes: [[10, 80, 86, 114]], topY: 86, arcLength: 1 },
   ];
   const isVisible = (datum: (typeof data)[number]) =>
-    isDonutLabelVisible(data, datum, 'hemisphere', 'boxes', 'topY', 'arcLength', 'id', 4);
+    isDonutLabelVisible(data, datum, 'hemisphere', 'boxes', 'arcLength', 'id', 4);
 
   test('keeps fixed labels that do not overlap an accepted label', () => {
     expect(isVisible(data[0])).toBe(true);

@@ -305,7 +305,7 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
           type: 'filter',
           expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getHemisphereField(
             fieldPrefix
-          )}', '${getCollisionBoxesField(fieldPrefix)}', '${getLabelTopYField(
+          )}', '${getCollisionBoxesField(
             fieldPrefix
           )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP})`,
         },
@@ -699,16 +699,22 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
     const labelHeightExpr = getRichSegmentLabelHeightExpr(richSegmentLabel);
     const rowDy = getRichSegmentLabelRowDy(richSegmentLabel);
     const nameFontSize = `${labelName}NameFontSize`;
-    const bottomRowDy = richSegmentLabel.showValueRow
-      ? rowDy.detail
-      : richSegmentLabel.value || richSegmentLabel.percent
-      ? rowDy.value
-      : '0';
-    const bottomFontSize = richSegmentLabel.showValueRow
-      ? `${labelName}DetailFontSize`
-      : richSegmentLabel.value || richSegmentLabel.percent
-      ? `${labelName}ValueFontSize`
-      : nameFontSize;
+    const hasValue = richSegmentLabel.value || richSegmentLabel.percent;
+    let bottomRowDy = '0';
+    let bottomFontSize = nameFontSize;
+    if (richSegmentLabel.showValueRow) {
+      if (rowDy.detail === undefined) {
+        throw new Error('Expected a detail row offset when showValueRow is enabled.');
+      }
+      bottomRowDy = rowDy.detail;
+      bottomFontSize = `${labelName}DetailFontSize`;
+    } else if (hasValue) {
+      if (rowDy.value === undefined) {
+        throw new Error('Expected a value row offset when value or percent is enabled.');
+      }
+      bottomRowDy = rowDy.value;
+      bottomFontSize = `${labelName}ValueFontSize`;
+    }
     const topExtentExpr = `${nameFontSize} / 2`;
     const bottomExtentExpr = `(${bottomRowDy}) + ${bottomFontSize} / 2`;
     const inwardExtentExpr = `cos(${arcThetaExpr}) >= 0 ? ${bottomExtentExpr} : ${topExtentExpr}`;
@@ -779,7 +785,7 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
             type: 'filter',
             expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getHemisphereField(
               labelName
-            )}', '${getCollisionBoxesField(labelName)}', '${getLabelTopYField(
+            )}', '${getCollisionBoxesField(
               labelName
             )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP})`,
           },
@@ -910,11 +916,12 @@ const getRichSegmentLabelRowDy = (
   const totalHeightExpr = `${nameSize}${valueHeightExpr}${detailHeightExpr}`;
   const maxHeightExpr = `${getDonutOuterRadiusExpr(donutOptions)} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}`;
   const scaleExpr = `min(1, (${maxHeightExpr}) / (${totalHeightExpr}))`;
-  const nameFollowingHeight = hasValue
-    ? `${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}${detailHeightExpr}`
-    : showValueRow
-    ? `${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${detailSize}`
-    : '0';
+  let nameFollowingHeight = '0';
+  if (hasValue) {
+    nameFollowingHeight = `${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}${detailHeightExpr}`;
+  } else if (showValueRow) {
+    nameFollowingHeight = `${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${detailSize}`;
+  }
   const valuePrecedingHeight = `${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}`;
   const valueFollowingHeight = showValueRow
     ? `${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${detailSize}`
