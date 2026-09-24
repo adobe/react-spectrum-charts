@@ -11,37 +11,26 @@
  */
 import { FormulaTransform } from 'vega';
 
+/** Suffixes of the derived label position fields */
+type LabelFieldSuffix =
+  | 'hemisphere'
+  | 'idealY'
+  | 'radius'
+  | 'labelY'
+  | 'centerY'
+  | 'topY'
+  | 'bottomY'
+  | 'labelHalfWidth'
+  | 'leftX'
+  | 'rightX';
+
 /**
- * Gets the field name this util writes for a given field prefix and suffix
+ * Gets the derived label field name for a given field prefix and suffix
  * @param fieldPrefix
  * @param suffix
  * @returns field name
  */
-const getLabelField = (fieldPrefix: string, suffix: string): string => `${fieldPrefix}_${suffix}`;
-
-/** Field holding which hemisphere ('left' | 'right') a row's label anchors in */
-export const getHemisphereField = (fieldPrefix: string): string => getLabelField(fieldPrefix, 'hemisphere');
-
-/** Field holding a row's absolute label Y position */
-export const getLabelYField = (fieldPrefix: string): string => getLabelField(fieldPrefix, 'labelY');
-
-/** Field holding a row's label-block center Y position */
-export const getLabelCenterYField = (fieldPrefix: string): string => getLabelField(fieldPrefix, 'centerY');
-
-/** Field holding a row's rendered label-block top Y position */
-export const getLabelTopYField = (fieldPrefix: string): string => getLabelField(fieldPrefix, 'topY');
-
-/** Field holding a row's rendered label-block bottom Y position */
-export const getLabelBottomYField = (fieldPrefix: string): string => getLabelField(fieldPrefix, 'bottomY');
-
-/** Field holding a row's horizontal label offset from chart center */
-export const getLabelHalfWidthField = (fieldPrefix: string): string => getLabelField(fieldPrefix, 'labelHalfWidth');
-
-/** Field holding a row's rendered label-block left X position */
-export const getLabelLeftXField = (fieldPrefix: string): string => getLabelField(fieldPrefix, 'leftX');
-
-/** Field holding a row's rendered label-block right X position */
-export const getLabelRightXField = (fieldPrefix: string): string => getLabelField(fieldPrefix, 'rightX');
+export const getLabelField = (fieldPrefix: string, suffix: LabelFieldSuffix): string => `${fieldPrefix}_${suffix}`;
 
 type LabelPositionFields = {
   hemisphere: string;
@@ -62,14 +51,14 @@ type LabelGeometryExpressions = {
 
 /** Gets the derived field names written by the label position transforms. */
 const getLabelPositionFields = (fieldPrefix: string): LabelPositionFields => ({
-  hemisphere: getHemisphereField(fieldPrefix),
+  hemisphere: getLabelField(fieldPrefix, 'hemisphere'),
   idealY: getLabelField(fieldPrefix, 'idealY'),
   radius: getLabelField(fieldPrefix, 'radius'),
-  labelY: getLabelYField(fieldPrefix),
-  centerY: getLabelCenterYField(fieldPrefix),
-  topY: getLabelTopYField(fieldPrefix),
-  bottomY: getLabelBottomYField(fieldPrefix),
-  halfWidth: getLabelHalfWidthField(fieldPrefix),
+  labelY: getLabelField(fieldPrefix, 'labelY'),
+  centerY: getLabelField(fieldPrefix, 'centerY'),
+  topY: getLabelField(fieldPrefix, 'topY'),
+  bottomY: getLabelField(fieldPrefix, 'bottomY'),
+  halfWidth: getLabelField(fieldPrefix, 'labelHalfWidth'),
 });
 
 /**
@@ -118,12 +107,7 @@ export const getLabelPositionTransforms = (
   inwardExtentExpr?: string
 ): FormulaTransform[] => {
   const fields = getLabelPositionFields(fieldPrefix);
-  const geometry = getLabelGeometryExpressions(
-    arcThetaExpr,
-    anchorRadiusExpr,
-    labelHeightExpr,
-    inwardExtentExpr
-  );
+  const geometry = getLabelGeometryExpressions(arcThetaExpr, anchorRadiusExpr, labelHeightExpr, inwardExtentExpr);
 
   return [
     // Choose the label side after normalizing rotated or negative angles.
