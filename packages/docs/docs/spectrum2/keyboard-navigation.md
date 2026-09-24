@@ -9,7 +9,7 @@ Keyboard navigation is an early, work-in-progress feature. It does not yet provi
 :::
 
 :::caution Bar charts only
-Keyboard navigation is currently only supported for `Bar` charts with a plain or stacked layout. Grouped (dodged) and trellis bar configurations, other mark types (Line, Area, Donut, Scatter, etc.), and legend/axis label navigation are not yet supported.
+Keyboard navigation currently supports plain, stacked, dodged, and dual-metric-axis `Bar` charts. Trellis bar configurations and other mark types (Line, Area, Donut, Scatter, etc.) are not yet supported.
 :::
 
 Set `accessibleNavigation` on `Chart` to let keyboard users navigate bar chart content — individual bars, stacked segments, and their tooltips and popovers — without a mouse.
@@ -52,7 +52,7 @@ Set `accessibleNavigation` on `Chart` to let keyboard users navigate bar chart c
 | `Arrow Left` / `Arrow Up` | Moves to the previous sibling |
 | `Space` | Opens the `ChartPopover` for the focused bar, segment, or stack, if one is configured |
 
-Right and Down behave identically, as do Left and Up. Navigation does not wrap — arrowing past the last item stays there — and arrowing through a stack's segments never spills into the next stack.
+For grouped and dual-metric-axis bars, arrows within a group follow the chart orientation, while the perpendicular arrows move between corresponding bars in adjacent groups. Forward navigation from the last bar in a group enters the first bar in the next group. Navigation does not wrap past the final group.
 
 Bars and segments with a value of exactly `0` are excluded from navigation, since they render invisibly and a mouse could never reach them either.
 
@@ -61,6 +61,8 @@ Bars and segments with a value of exactly `0` are excluded from navigation, sinc
 ## Focus and hover parity
 
 A keyboard-focused bar drives the same signals real mouse hover drives, so keyboard and mouse interactions look identical: other bars dim the same way, the real `ChartInspect` tooltip appears with the same content and positioning, and `Space` opens the real `ChartPopover` through the same trigger a click uses.
+
+Axis labels on the categorical bottom axis are also keyboard-navigable when they are rendered and not hidden by overlap handling.
 
 ---
 

@@ -517,7 +517,7 @@ DimensionContextMenu.args = {
   interactionMode: 'dimension',
   contextMenuMode: 'dimension',
 };
-DimensionContextMenu.argTypes = {
+(DimensionContextMenu as typeof DimensionContextMenu & { argTypes: Record<string, unknown> }).argTypes = {
   contextMenuMode: {
     control: { type: 'radio' },
     options: ['interaction', 'dimension', 'item'],

@@ -27,6 +27,12 @@ export interface NavigatorProps {
   dimension?: string;
   /** Series / color field (set for stacked bars). */
   color?: string;
+  /** Bar layout type. */
+  type?: 'dodged' | 'stacked';
+  /** Per-datum color override field used in accessible bar labels. */
+  colorOverride?: string;
+  /** Locale used for accessible color names. */
+  locale?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
   /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
@@ -35,6 +41,8 @@ export interface NavigatorProps {
   orientation?: Orientation;
   /** Maps a data field to its axis/legend title — drives the focused leaf's accessible name and a clean focus tooltip for bars without a ChartInspect. */
   fieldLabels?: Record<string, string>;
+  /** Per-series metric-axis titles for dual-metric-axis bars. */
+  metricTitleBySeries?: Record<string, string>;
   /** Whether the mark has a ChartInspect (keeps the full-datum tooltip); otherwise the focus tooltip lists only the `fieldLabels` fields. */
   hasChartInspect?: boolean;
   /** The mark's own name (e.g. `bar0`) — drives its real hover signals and focus ring, so keyboard focus matches mouse hover exactly. */
@@ -66,10 +74,14 @@ export const Navigator = ({
   data,
   dimension,
   color,
+  type,
+  colorOverride,
+  locale,
   metric,
   order,
   orientation,
   fieldLabels,
+  metricTitleBySeries,
   hasChartInspect,
   markName,
   title,
@@ -96,10 +108,14 @@ export const Navigator = ({
         data,
         dimension,
         color,
+        type,
+        colorOverride,
+        locale,
         metric,
         order,
         orientation,
         fieldLabels,
+        metricTitleBySeries,
         hasChartInspect,
         markName,
         title,
@@ -113,20 +129,33 @@ export const Navigator = ({
         onNodeClick,
         hasChartPopover,
       });
-    attach();
-    // Re-attach on the next frame so a fresh render reads a laid-out scenegraph (the first effect
-    // tick can run before Vega's async layout settles). attachDataNavigator rebuilds cleanly.
-    const raf = requestAnimationFrame(attach);
-    return () => cancelAnimationFrame(raf);
+    let raf: number | undefined;
+    let retryCount = 0;
+    const attachAndRetry = () => {
+      attach();
+      if (!getView() && retryCount < 3) {
+        retryCount += 1;
+        raf = requestAnimationFrame(attachAndRetry);
+      }
+    };
+    // Attach promptly so the entry control is available while Vega finishes exposing its view.
+    raf = requestAnimationFrame(attachAndRetry);
+    return () => {
+      if (raf !== undefined) cancelAnimationFrame(raf);
+    };
   }, [
     chartType,
     data,
     dimension,
     color,
+    type,
+    colorOverride,
+    locale,
     metric,
     order,
     orientation,
     fieldLabels,
+    metricTitleBySeries,
     hasChartInspect,
     markName,
     title,

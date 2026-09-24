@@ -85,6 +85,7 @@
     "publish-package": "npm publish --access public --registry https://registry.npmjs.org"
   },
   "dependencies": {
+    "@internationalized/string": "^3.2.1",
     "@spectrum-charts/constants": "^1.53.0",
     "@spectrum-charts/locales": "^1.52.0",
     "@spectrum-charts/schemas": "^1.52.0",
@@ -96,6 +97,7 @@
     "data-navigator": "^2.4.1",
     "deepmerge": ">= 4.0.0",
     "immer": ">= 9.0.0",
+    "react-stately": "^3.46.0",
     "vega-embed": ">= 7.1.0",
     "vega-tooltip": ">= 1.1.0"
   },
@@ -105,6 +107,9 @@
     "react-dom": ">= 19.0.0",
     "vega": "^6.2.0",
     "vega-lite": "^6.4.2"
+  },
+  "devDependencies": {
+    "@internationalized/string-compiler": "^3.4.1"
   },
   "resolutions": {
     "jackspeak": "2.1.1"

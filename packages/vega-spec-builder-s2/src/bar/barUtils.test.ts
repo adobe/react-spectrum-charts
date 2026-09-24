@@ -426,13 +426,10 @@ describe('barUtils', () => {
       expect(strokeRule).toHaveLength(1);
       expect(strokeRule[0]).toStrictEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
     });
-    test('should return rules for selected data if popover exists', () => {
+    test('does not add a selected stroke when the selection ring owns the popover outline', () => {
       const strokeRule = getStroke({ ...defaultBarOptions, chartPopovers: [{}] });
-      expect(strokeRule).toHaveLength(2);
-      expect(strokeRule[0]).toStrictEqual({
-        test: `(${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${MARK_ID}) || (${SELECTED_GROUP} && ${SELECTED_GROUP} === datum.bar0_selectedGroupId)`,
-        value: 'static-blue',
-      });
+      expect(strokeRule).toHaveLength(1);
+      expect(strokeRule[0]).toStrictEqual({ scale: COLOR_SCALE, field: DEFAULT_COLOR });
     });
     test('uses colorOverride for default stroke when set', () => {
       const options: BarSpecOptions = {
@@ -443,16 +440,15 @@ describe('barUtils', () => {
       expect(strokeRule).toHaveLength(1);
       expect(strokeRule[0]).toStrictEqual({ signal: 'datum["barColor"]' });
     });
-    test('uses colorOverride for default stroke with popover (selected rule first)', () => {
+    test('keeps the colorOverride stroke when the selection ring owns the popover outline', () => {
       const options: BarSpecOptions = {
         ...defaultBarOptions,
         colorOverride: 'barColor',
         chartPopovers: [{}],
       };
       const strokeRule = getStroke(options);
-      expect(strokeRule).toHaveLength(2);
-      expect(strokeRule[0]).toMatchObject({ value: 'static-blue' });
-      expect(strokeRule[1]).toStrictEqual({ signal: 'datum["barColor"]' });
+      expect(strokeRule).toHaveLength(1);
+      expect(strokeRule[0]).toStrictEqual({ signal: 'datum["barColor"]' });
     });
   });
 

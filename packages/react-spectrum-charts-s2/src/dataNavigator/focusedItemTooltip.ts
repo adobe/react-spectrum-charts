@@ -98,6 +98,20 @@ const absoluteBounds = (item: SceneNode): Bounds | undefined => {
   return { x1: b.x1 + dx, y1: b.y1 + dy, x2: b.x2 + dx, y2: b.y2 + dy };
 };
 
+/** A focused mark's bounds in page coordinates: `absoluteBounds` plus the view's own origin and the container's page position — the same conversion `axisLabelGeometry.ts` uses for axis labels. */
+export const pageBoundsForItem = (view: View, container: HTMLElement, item: SceneNode): Bounds | undefined => {
+  const bounds = absoluteBounds(item);
+  if (!bounds) return undefined;
+  const [originX, originY] = view.origin();
+  const containerRect = container.getBoundingClientRect();
+  return {
+    x1: containerRect.left + originX + bounds.x1,
+    y1: containerRect.top + originY + bounds.y1,
+    x2: containerRect.left + originX + bounds.x2,
+    y2: containerRect.top + originY + bounds.y2,
+  };
+};
+
 export const hideFocusedItemTooltip = (view: View | undefined): void => {
   const tooltipCallback = view && getRegisteredTooltipCallback(view);
   tooltipCallback?.(undefined, undefined, undefined, null);

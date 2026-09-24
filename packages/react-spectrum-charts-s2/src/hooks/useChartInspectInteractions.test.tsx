@@ -83,6 +83,9 @@ function getFormatTooltip() {
   return result.current.inspectOptions.formatTooltip;
 }
 
+const callFormatTooltip = (value: Record<string, unknown>): string | undefined =>
+  getFormatTooltip()?.(value, (formattedValue) => String(formattedValue), 0, '');
+
 describe('useChartInspectInteractions - controlledHoveredIdSignal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -91,22 +94,19 @@ describe('useChartInspectInteractions - controlledHoveredIdSignal', () => {
 
   test('calls signal with the idKey value when controlledHoveredIdSignal is set', () => {
     mockUseChartContext.mockReturnValue(makeContext({ name: 'line0_controlledHoveredId' }) as unknown as ReturnType<typeof useChartContext>);
-    const formatTooltip = getFormatTooltip();
-    formatTooltip?.({ ...baseValue });
+    callFormatTooltip({ ...baseValue });
     expect(mockSignal).toHaveBeenCalledWith('line0_controlledHoveredId', 'item-1');
   });
 
   test('calls signal with null when idKey is absent from value', () => {
     mockUseChartContext.mockReturnValue(makeContext({ name: 'line0_controlledHoveredId' }) as unknown as ReturnType<typeof useChartContext>);
-    const formatTooltip = getFormatTooltip();
-    formatTooltip?.({ [COMPONENT_NAME]: 'line0' });
+    callFormatTooltip({ [COMPONENT_NAME]: 'line0' });
     expect(mockSignal).toHaveBeenCalledWith('line0_controlledHoveredId', null);
   });
 
   test('does not call signal when controlledHoveredIdSignal is not set', () => {
     mockUseChartContext.mockReturnValue(makeContext() as unknown as ReturnType<typeof useChartContext>);
-    const formatTooltip = getFormatTooltip();
-    formatTooltip?.({ ...baseValue });
+    callFormatTooltip({ ...baseValue });
     expect(mockSignal).not.toHaveBeenCalled();
   });
 });
@@ -121,22 +121,19 @@ describe('useChartInspectInteractions - controlledHoveredGroupSignal', () => {
 
   test('calls group signal when value contains a key ending in GROUP_ID', () => {
     mockUseChartContext.mockReturnValue(makeContext(undefined, { name: 'line0_controlledHoveredGroup' }) as unknown as ReturnType<typeof useChartContext>);
-    const formatTooltip = getFormatTooltip();
-    formatTooltip?.({ ...baseValue, [groupKey]: 'group-a' });
+    callFormatTooltip({ ...baseValue, [groupKey]: 'group-a' });
     expect(mockSignal).toHaveBeenCalledWith('line0_controlledHoveredGroup', 'group-a');
   });
 
   test('does not call group signal when no GROUP_ID key exists in value', () => {
     mockUseChartContext.mockReturnValue(makeContext(undefined, { name: 'line0_controlledHoveredGroup' }) as unknown as ReturnType<typeof useChartContext>);
-    const formatTooltip = getFormatTooltip();
-    formatTooltip?.({ ...baseValue }); // no key ending in GROUP_ID
+    callFormatTooltip({ ...baseValue }); // no key ending in GROUP_ID
     expect(mockSignal).not.toHaveBeenCalled();
   });
 
   test('does not call group signal when controlledHoveredGroupSignal is not set', () => {
     mockUseChartContext.mockReturnValue(makeContext() as unknown as ReturnType<typeof useChartContext>);
-    const formatTooltip = getFormatTooltip();
-    formatTooltip?.({ ...baseValue, [groupKey]: 'group-a' });
+    callFormatTooltip({ ...baseValue, [groupKey]: 'group-a' });
     expect(mockSignal).not.toHaveBeenCalled();
   });
 });
@@ -158,7 +155,7 @@ describe('useChartInspectInteractions - highlightBy GROUP_DATA population', () =
   test('filters FILTERED_TABLE into GROUP_DATA when highlightBy is series', () => {
     mockUseChartInspects.mockReturnValue([{ ...defaultInspect, highlightBy: 'series' }]);
     const value = { ...baseValue, [groupKey]: 'group-a' };
-    getFormatTooltip()?.({ ...value });
+    callFormatTooltip({ ...value });
     expect(mockData).toHaveBeenCalledWith(FILTERED_TABLE);
     expect(mockCallback).toHaveBeenCalledWith(
       expect.objectContaining({ [GROUP_DATA]: [tableData[0], tableData[2]] })
@@ -168,7 +165,7 @@ describe('useChartInspectInteractions - highlightBy GROUP_DATA population', () =
   test('filters FILTERED_TABLE into GROUP_DATA when highlightBy is dimension', () => {
     mockUseChartInspects.mockReturnValue([{ ...defaultInspect, highlightBy: 'dimension' }]);
     const value = { ...baseValue, [groupKey]: 'group-b' };
-    getFormatTooltip()?.({ ...value });
+    callFormatTooltip({ ...value });
     expect(mockData).toHaveBeenCalledWith(FILTERED_TABLE);
     expect(mockCallback).toHaveBeenCalledWith(
       expect.objectContaining({ [GROUP_DATA]: [tableData[1]] })
@@ -177,13 +174,13 @@ describe('useChartInspectInteractions - highlightBy GROUP_DATA population', () =
 
   test('does not fetch table data when highlightBy is item', () => {
     mockUseChartInspects.mockReturnValue([{ ...defaultInspect, highlightBy: 'item' }]);
-    getFormatTooltip()?.({ ...baseValue });
+    callFormatTooltip({ ...baseValue });
     expect(mockData).not.toHaveBeenCalled();
   });
 
   test('does not fetch table data when highlightBy is undefined', () => {
     mockUseChartInspects.mockReturnValue([{ ...defaultInspect, highlightBy: undefined }]);
-    getFormatTooltip()?.({ ...baseValue });
+    callFormatTooltip({ ...baseValue });
     expect(mockData).not.toHaveBeenCalled();
   });
 });

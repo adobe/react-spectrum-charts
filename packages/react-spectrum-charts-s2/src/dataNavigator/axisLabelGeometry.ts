@@ -161,32 +161,40 @@ export const findAxisLabelItem = (view: View, value: string, orient: AxisOrient 
   return undefined;
 };
 
-/**
- * Draw the focus ring around a box, padded evenly on all sides. A plain DOM overlay (unlike a Vega
- * mark) doesn't participate in autosize, so it can center over an edge label without being clamped
- * to the plot or label-union bounds.
- */
-export const setAxisFocusRing = (element: HTMLElement | undefined, bounds: Bounds): void => {
-  if (!element) return;
-
+/** Pads bounds symmetrically by `AXIS_FOCUS_RING_PAD`, or `undefined` if the padded box would be inverted/degenerate. */
+export const padAxisBounds = (bounds: Bounds): Bounds | undefined => {
   const x1 = bounds.x1 - AXIS_FOCUS_RING_PAD;
   const x2 = bounds.x2 + AXIS_FOCUS_RING_PAD;
   const y1 = bounds.y1 - AXIS_FOCUS_RING_PAD;
   const y2 = bounds.y2 + AXIS_FOCUS_RING_PAD;
+  return x2 > x1 && y2 > y1 ? { x1, y1, x2, y2 } : undefined;
+};
 
-  if (x2 <= x1 || y2 <= y1) {
-    clearAxisFocusRing(element);
-    return;
-  }
-
-  element.style.display = 'block';
+/**
+ * Positions an absolutely-positioned overlay element to page-absolute bounds, relative to its own
+ * offsetParent. A plain DOM overlay (unlike a Vega mark) doesn't participate in autosize, so it can
+ * extend past the plot or label-union bounds without being clamped.
+ */
+export const positionOverlayAtBounds = (element: HTMLElement, bounds: Bounds): void => {
   const parentRect = element.offsetParent?.getBoundingClientRect();
   const left = parentRect ? parentRect.left : 0;
   const top = parentRect ? parentRect.top : 0;
-  element.style.left = `${x1 - left}px`;
-  element.style.top = `${y1 - top}px`;
-  element.style.width = `${x2 - x1}px`;
-  element.style.height = `${y2 - y1}px`;
+  element.style.left = `${bounds.x1 - left}px`;
+  element.style.top = `${bounds.y1 - top}px`;
+  element.style.width = `${bounds.x2 - bounds.x1}px`;
+  element.style.height = `${bounds.y2 - bounds.y1}px`;
+};
+
+/** Draw the focus ring around a box, padded evenly on all sides. */
+export const setAxisFocusRing = (element: HTMLElement | undefined, bounds: Bounds): void => {
+  if (!element) return;
+  const padded = padAxisBounds(bounds);
+  if (!padded) {
+    clearAxisFocusRing(element);
+    return;
+  }
+  element.style.display = 'block';
+  positionOverlayAtBounds(element, padded);
 };
 
 export const clearAxisFocusRing = (element: HTMLElement | undefined): void => {

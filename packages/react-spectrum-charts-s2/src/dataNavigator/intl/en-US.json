@@ -1,0 +1,4 @@
+{
+  "bar.description": "{metricLabel} by {dimension} chart.{count, plural, =0 {} one { # bar}. other { # bars}.}",
+  "bar.stackedDescription": "{metricLabel} by {dimension} chart, grouped by {color}. {count, plural, one {# group} other {# groups}}."
+}
