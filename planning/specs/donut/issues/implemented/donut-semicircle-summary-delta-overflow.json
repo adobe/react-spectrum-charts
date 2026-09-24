@@ -1,0 +1,85 @@
+{
+  "id": "donut-semicircle-summary-delta-overflow",
+  "title": "Donut semicircle summary with delta overlaps the arc",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-09-23",
+  "complexity": {
+    "score": 2,
+    "rationale": "The fix uses one new summary-layout signal to coordinate the existing arc, empty-state, and summary encodings, with focused unit and runtime geometry coverage."
+  },
+  "summary": "A DonutSummary with a delta line can extend into the inner edge of an S2 semicircle donut. The complete summary stack should remain contained within the semicircle hole without overlapping the arc.",
+  "symptom": "When a semicircle Donut renders a summary value, label, and delta line, the value extends upward into the donut arc. Summary content that fits correctly without the delta can overlap once the third row is added.",
+  "rootCause": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts bottom-aligned the complete value/label/delta stack above the semicircle's flat diameter line. Adding the third delta row therefore pushed the value upward into the curved inner arc. packages/vega-spec-builder-s2/src/donut/donutUtils.ts anchored the semicircle center at the chart's bottom edge, leaving no canvas space for the delta to render below the diameter instead.",
+  "comparison": [
+    {
+      "aspect": "Summary containment inside the donut hole",
+      "expected": "The value and label remain inside the semicircle while the delta renders below its flat diameter line without clipping.",
+      "actual": "The complete three-line stack is forced above the diameter, pushing the value into the curved inner arc."
+    },
+    {
+      "aspect": "Circle and semicircle summary anchoring",
+      "expected": "Circle summaries remain centered, while semicircles reserve the delta row below the diameter when one is present.",
+      "actual": "The semicircle remained anchored at the chart bottom and provided no space below its diameter for the delta."
+    }
+  ],
+  "edgeCases": [
+    {
+      "case": "Value, label, and positive or negative delta are visible",
+      "expectedBehavior": "All three rows remain inside the semicircle hole with the intended row spacing."
+    },
+    {
+      "case": "Value and delta are visible without a label",
+      "expectedBehavior": "The two-row stack remains contained and uses the existing value-to-delta spacing."
+    },
+    {
+      "case": "The value is hidden while label and delta remain visible",
+      "expectedBehavior": "The label and delta remain contained without reserving space for the hidden value."
+    },
+    {
+      "case": "XS and other constrained semicircle sizes",
+      "expectedBehavior": "The existing minimum-inner-radius rule hides summary typography when the stack cannot fit."
+    },
+    {
+      "case": "Circle donut summary with a delta",
+      "expectedBehavior": "Existing centered circle-summary placement remains unchanged."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "A summary-bottom-offset signal coordinates the semicircle arc center with the summary stack only when value, label, and delta are all visible. It is a derived layout signal with no interaction set/clear path. S1 does not support the semicircle Donut variant, so there is no equivalent layout path to update."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.ts",
+      "change": "When value, label, and delta are all visible, calculate the delta row's below-diameter height, expose it as a summary-bottom-offset signal, and anchor the remaining summary rows above the semicircle diameter.",
+      "lines": "summary layout helpers and signals"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSummaryUtils.test.tsx",
+      "change": "Cover the bottom-offset signal and the split value/label-above, delta-below semicircle summary layout.",
+      "lines": "semicircle summary anchoring tests"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "Move semicircle arc and empty-state centers upward by the derived summary bottom offset when a delta has summary content above it.",
+      "lines": "getDonutCenterYSignal"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.test.ts",
+      "change": "Verify normal semicircles remain bottom-anchored and delta summaries reserve matching space for both data and empty-state arcs.",
+      "lines": "semicircle arc anchor tests"
+    }
+  ],
+  "openQuestions": [],
+  "relatedIssues": [
+    "semicircle-donut-variant"
+  ]
+}

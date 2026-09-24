@@ -4,8 +4,8 @@
   "chartType": "donut",
   "kind": "bug",
   "variant": "s2",
-  "status": "approved",
-  "lastUpdated": "2026-09-18",
+  "status": "implemented",
+  "lastUpdated": "2026-09-22",
   "complexity": {
     "score": 2,
     "rationale": "The root cause and fix direction are confirmed: normalize arc-center angles before all hemisphere-dependent label calculations and add Direct and Advanced regressions."

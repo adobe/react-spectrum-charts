@@ -9,14 +9,141 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { View, expressionFunction, parse } from 'vega';
 
+import {
+  COLOR_SCALE,
+  DONUT_ADVANCED_LABEL_RING_GAP,
+  DONUT_LABEL_COLLISION_GAP,
+  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_RING_GAP,
+  FILTERED_TABLE,
+  HOVERED_ITEM,
+  TABLE,
+} from '@spectrum-charts/constants';
+
+import { buildSpec } from '../chartSpecBuilder';
+import { getExpressionFunctions } from '../expressionFunctions';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
 import { defaultDonutOptions } from './donutTestUtils';
 
 describe('addData', () => {
+  test('rotates direct-label data coordinates with startAngle', async () => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = [
+      { series: 'Chrome', value: 10390 },
+      { series: 'Firefox', value: 8281 },
+      { series: 'Safari', value: 7045 },
+      { series: 'Opera', value: 6166 },
+      { series: 'Other', value: 4201 },
+      { series: 'Brave', value: 3261 },
+      { series: 'Unknown', value: 1021 },
+    ];
+    const getLabelData = async (startAngle: number) => {
+      const spec = buildSpec({
+        data,
+        marks: [
+          {
+            markType: 'donut',
+            color: 'series',
+            metric: 'value',
+            name: 'testDonut',
+            startAngle,
+            segmentLabels: [{ value: true }],
+          },
+        ],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(400).height(400);
+      await view.runAsync();
+      return view.data('testDonut_segmentLabelData');
+    };
+    const baseline = await getLabelData(0);
+    const rotated = await getLabelData(Math.PI / 2);
+
+    baseline.forEach((datum, index) => {
+      const rotatedDatum = rotated[index];
+      expect(datum.testDonut_segmentLabel_labelY).toBeCloseTo(datum.testDonut_segmentLabel_idealY);
+      expect(rotatedDatum.testDonut_arcTheta - datum.testDonut_arcTheta).toBeCloseTo(Math.PI / 2);
+      expect(rotatedDatum.testDonut_segmentLabel_labelY).not.toBeCloseTo(
+        datum.testDonut_segmentLabel_labelY
+      );
+    });
+  });
+
+  test.each([
+    ['direct', { value: true }],
+    ['advanced', { percent: true, showValueRow: true, swatch: true, value: false }],
+  ])('keeps dense %s labels fixed and hides only overlapping candidates', async (_mode, label) => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = Array.from({ length: 24 }, (_, index) => ({
+      series: `Category ${String(index + 1).padStart(2, '0')}`,
+      value: 25 - index,
+    }));
+    const spec = buildSpec({
+      data,
+      marks: [
+        {
+          markType: 'donut',
+          color: 'series',
+          metric: 'value',
+          name: 'denseDonut',
+          segmentLabels: [label],
+        },
+      ],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(364).height(364);
+    await view.runAsync();
+    const prefix = _mode === 'advanced' ? 'denseDonut_richSegmentLabel' : 'denseDonut_segmentLabel';
+    const candidates = view.data(`${prefix}Candidates`);
+    const labels = view.data(`${prefix}Data`);
+    expect(labels.length).toBeGreaterThan(0);
+    expect(labels.length).toBeLessThanOrEqual(candidates.length);
+    labels.forEach((datum) => {
+      expect(datum[`${prefix}_labelY`]).toBeCloseTo(datum[`${prefix}_idealY`]);
+      expect(datum[`${prefix}_labelHalfWidth`]).toBeLessThanOrEqual(182);
+      const ringGap = _mode === 'advanced' ? DONUT_ADVANCED_LABEL_RING_GAP : DONUT_LABEL_RING_GAP;
+      const outerRadius = (364 / 2 - 2 - ringGap) / (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO);
+      const innerX =
+        datum[`${prefix}_hemisphere`] === 'right'
+          ? datum[`${prefix}_leftX`] - 182
+          : 182 - datum[`${prefix}_rightX`];
+      const topY = datum[`${prefix}_topY`] - 182;
+      const bottomY = datum[`${prefix}_bottomY`] - 182;
+      const nearestY = topY <= 0 && bottomY >= 0 ? 0 : Math.min(Math.abs(topY), Math.abs(bottomY));
+      expect(Math.hypot(innerX, nearestY) - outerRadius).toBeCloseTo(ringGap);
+    });
+    ['left', 'right'].forEach((hemisphere) => {
+      const collisionBoxes = labels
+        .filter((datum) => datum[`${prefix}_hemisphere`] === hemisphere)
+        .map((datum) => datum[`${prefix}_collisionBoxes`]);
+      collisionBoxes.forEach((labelBoxes, index) => {
+        collisionBoxes.slice(index + 1).forEach((otherLabelBoxes) => {
+          labelBoxes.forEach(([left, right, top, bottom]) => {
+            otherLabelBoxes.forEach(([otherLeft, otherRight, otherTop, otherBottom]) => {
+              const withinHorizontalGap =
+                left < otherRight + DONUT_LABEL_COLLISION_GAP &&
+                right > otherLeft - DONUT_LABEL_COLLISION_GAP;
+              const withinVerticalGap =
+                top < otherBottom + DONUT_LABEL_COLLISION_GAP &&
+                bottom > otherTop - DONUT_LABEL_COLLISION_GAP;
+              expect(withinHorizontalGap && withinVerticalGap).toBe(false);
+            });
+          });
+        });
+      });
+    });
+  });
+
   test('should add data correctly for boolean donut', () => {
     const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, isBoolean: true });
 

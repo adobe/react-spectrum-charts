@@ -1,0 +1,90 @@
+{
+  "id": "donut-tiny-segments-hidden-by-slice-gap",
+  "title": "Donut slice gaps hide tiny positive segments",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-09-23",
+  "complexity": {
+    "score": 3,
+    "rationale": "The fixed-stroke root cause is resolved by clamping the existing separator per slice. The implementation preserves the normal S2 halo when space permits and reduces or removes it before it can consume the complete fill."
+  },
+  "summary": "S2 Donut segments with very small positive values can disappear when rendered beside a dominant segment. The fix retains the configured 1px XS or 2px S-XL background halo when space permits, then clamps it per segment to `min(configuredGap, max(0, innerArcWidth - 1px))` so the separator cannot erase the complete fill.",
+  "symptom": "With one dominant value and many tiny positive values, the dominant arc does not visibly transition through the expected colored slivers. Some or all of the tiny segments appear as blank background-colored space even though their values are nonzero.",
+  "rootCause": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts applied the fixed `${name}_sliceGap` signal as a centered background-colored `strokeWidth` on every arc. When a positive segment's width at the donut's inner edge was smaller than that stroke, the halo covered its fill and made the segment appear absent. The pie transform preserves tiny values correctly; the defect was limited to the unbounded separator encoding.",
+  "comparison": [
+    {
+      "aspect": "Visibility of tiny positive segments",
+      "expected": "Every positive segment retains its available colored fill. The separator is reduced or removed before it can erase a narrow segment.",
+      "actual": "A fixed pixel-width background stroke can cover the complete fill of a tiny arc, making valid positive segments appear missing."
+    },
+    {
+      "aspect": "S1 and S2 slice separation",
+      "expected": "S2 preserves its intended separator appearance without erasing segments that remain visible in the equivalent S1 geometry.",
+      "actual": "S1 uses an angular pad with no normal stroke, while S2 centers a fixed background stroke on every arc regardless of the arc's available width."
+    }
+  ],
+  "edgeCases": [
+    {
+      "case": "One dominant segment with many values between 1 and 12",
+      "expectedBehavior": "Tiny positive categories remain distinguishable or follow the documented minimum-size fallback rather than appearing as unexplained white space."
+    },
+    {
+      "case": "A tiny segment whose width at the inner radius is smaller than the configured slice gap",
+      "expectedBehavior": "The effective separator is reduced below the configured 1px or 2px gap as needed. It preserves 1px of colored width at the inner radius when geometry permits and becomes 0px when the segment itself is narrower than 1px."
+    },
+    {
+      "case": "XS through XL Donut size tiers",
+      "expectedBehavior": "The visibility policy remains consistent as the configured slice gap and radius change."
+    },
+    {
+      "case": "Hovered, selected, or legend-highlighted tiny segments",
+      "expectedBehavior": "Interaction strokes and opacity rules do not erase a segment that is otherwise visible."
+    },
+    {
+      "case": "Zero and negative values",
+      "expectedBehavior": "The fix does not create artificial visible arcs for values that the existing pie semantics do not render."
+    },
+    {
+      "case": "SVG and canvas renderers",
+      "expectedBehavior": "Tiny-segment visibility and separator behavior are consistent across renderers."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "The effective halo is `min(configuredGap, max(0, innerArcWidth - 1px))`, where the configured gap is 1px for XS and 2px for S through XL. Slices with sufficient room retain the normal halo; narrower slices receive a reduced halo; sub-1px slices receive no halo. When the halo is reduced, the slice radii are inset by half the removed stroke width so its visible ring height remains consistent. The selected outline uses the same clamp. S1 uses different separation geometry and does not require parity."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.ts",
+      "change": "Clamp both the background separator and selected outline with `min(configuredGap, max(0, innerArcWidth - 1px))`. Preserve the configured 1px XS or 2px S-XL halo for ordinary slices, reduce it when necessary to retain 1px of colored fill, remove it for sub-1px slices, and inset clamped slices by half the removed stroke width so every segment retains the same visible ring height.",
+      "lines": "getSliceStrokeWidthExpr and getArcMark"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutUtils.test.ts",
+      "change": "Verify ordinary slices retain the configured gap, narrow slices receive a reduced gap, extremely narrow slices receive no gap, and selected outlines use the same clamp.",
+      "lines": "slice stroke-width tests"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/donutVariationData.ts",
+      "change": "Retain the extreme dominant-segment fixture, document its expected clamped-halo behavior, and add a roughly 80% dominant fixture for less extreme visual verification.",
+      "lines": "dominant variation fixtures and selector descriptions"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/donutVariationData.test.ts",
+      "change": "Verify the moderate dominant fixture remains available and retains its intended approximate 80% proportion.",
+      "lines": "Donut variation dataset tests"
+    }
+  ],
+  "openQuestions": [],
+  "relatedIssues": [
+    "donut-dense-segment-label-collision-collapse",
+    "donut-advanced-label-breakpoint-bounce"
+  ]
+}
