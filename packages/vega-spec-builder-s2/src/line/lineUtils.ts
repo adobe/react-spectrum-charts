@@ -11,6 +11,7 @@
  */
 import {
   BarAnnotationOptions,
+  ChartActionBarOptions,
   ChartPopoverOptions,
   ChartInspectOptions,
   ColorFacet,
@@ -31,9 +32,12 @@ import {
   LineCap,
 } from '../types';
 
-export const getPopoverMarkName = (chartPopovers: ChartPopoverOptions[], lineName: string): string | undefined => {
-  // if the line has a popover, this line is the target for the popover
-  if (chartPopovers.length) {
+export const getPopoverMarkName = (
+  chartPopovers: ChartPopoverOptions[],
+  lineName: string,
+  chartActionBars?: ChartActionBarOptions[]
+): string | undefined => {
+  if (chartPopovers.length || chartActionBars?.length) {
     return lineName;
   }
 };
@@ -49,6 +53,7 @@ export const isDualMetricAxis = (options: { dualMetricAxis?: boolean }): boolean
 
 export interface LineMarkOptions {
   barAnnotations?: BarAnnotationOptions[];
+  chartActionBars?: ChartActionBarOptions[];
   chartPopovers?: ChartPopoverOptions[];
   chartInspects?: ChartInspectOptions[];
   color: ColorFacet;

@@ -264,6 +264,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
         lineWidths: ['M'],
         marks: [
           {
+            chartActionBars: [],
             chartPopovers: [],
             chartInspects: [],
             color: 'series',

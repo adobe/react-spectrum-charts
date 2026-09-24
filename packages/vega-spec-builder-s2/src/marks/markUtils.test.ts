@@ -252,6 +252,10 @@ describe('isInteractive()', () => {
     expect(isInteractive({ hasOnClick: true })).toEqual(true);
   });
 
+  test('should return true if chartActionBars is non-empty', () => {
+    expect(isInteractive({ chartActionBars: [{}] })).toEqual(true);
+  });
+
   test('should return true for a donut SegmentLabel showing value/percent, even with no popover/inspect', () => {
     expect(isInteractive({ segmentLabels: [{ value: true }] })).toEqual(true);
     expect(isInteractive({ segmentLabels: [{ percent: true }] })).toEqual(true);
@@ -275,6 +279,10 @@ describe('getCursor()', () => {
 
   test('should return falsy value if there are not any popovers and hasOnClick is not false', () => {
     expect(getCursor([])).toBeFalsy();
+  });
+
+  test('should return pointer object if chartActionBars is non-empty', () => {
+    expect(getCursor([], undefined, [{}])).toEqual({ value: 'pointer' });
   });
 });
 

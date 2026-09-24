@@ -52,6 +52,7 @@ import {
   getStrokeDashProductionRule,
   getVoronoiPath,
   getXProductionRule,
+  hasActionBar,
   hasPopover,
 } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
@@ -422,8 +423,8 @@ export const getLineHoverMarks = (
   return [
     // vertical rule shown for the hovered or selected point
     getHoverRule(dimension, name, scaleType),
-    // if has popover, add selection point
-    ...(hasPopover(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
+    // if has popover or action bar, add selection point
+    ...(hasPopover(lineOptions) || hasActionBar(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
     // hover or select point
     getHighlightPoint(lineOptions),
     // additional point that gets highlighted like the trendline or raw line point
