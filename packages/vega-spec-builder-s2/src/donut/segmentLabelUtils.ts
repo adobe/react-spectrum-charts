@@ -56,16 +56,7 @@ import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
 import { getPathFromSymbolShape } from '../specUtils';
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
-import {
-  getLabelBottomYField,
-  getHemisphereField,
-  getLabelHalfWidthField,
-  getLabelLeftXField,
-  getLabelPositionTransforms,
-  getLabelRightXField,
-  getLabelTopYField,
-  getLabelYField,
-} from './donutLabelPositionUtils';
+import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils';
 import { getDonutEmptyStateTest, getDonutOuterRadiusExpr } from './donutUtils';
 
 const getSegmentLabelName = ({ donutOptions, labelMode }: SegmentLabelSpecOptions): string => {
@@ -216,8 +207,8 @@ const getCollisionBoxExpr = (
   centerYExpr: string,
   heightExpr: string
 ): string => {
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const halfWidthField = getLabelHalfWidthField(fieldPrefix);
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
   const anchorXExpr = `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`;
   const leftXExpr = `datum['${hemisphereField}'] === 'right' ? ${anchorXExpr} : (${anchorXExpr}) - (${widthExpr})`;
   const rightXExpr = `datum['${hemisphereField}'] === 'right' ? (${anchorXExpr}) + (${widthExpr}) : ${anchorXExpr}`;
@@ -226,18 +217,18 @@ const getCollisionBoxExpr = (
 
 /** Gets rendered horizontal bounds for a fixed-position label block. */
 const getLabelHorizontalBoundsTransforms = (fieldPrefix: string, widthExpr: string): FormulaTransform[] => {
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const halfWidthField = getLabelHalfWidthField(fieldPrefix);
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
   const anchorXExpr = `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`;
   return [
     {
       type: 'formula',
-      as: getLabelLeftXField(fieldPrefix),
+      as: getLabelField(fieldPrefix, 'leftX'),
       expr: `datum['${hemisphereField}'] === 'right' ? ${anchorXExpr} : (${anchorXExpr}) - (${widthExpr})`,
     },
     {
       type: 'formula',
-      as: getLabelRightXField(fieldPrefix),
+      as: getLabelField(fieldPrefix, 'rightX'),
       expr: `datum['${hemisphereField}'] === 'right' ? (${anchorXExpr}) + (${widthExpr}) : ${anchorXExpr}`,
     },
   ];
@@ -259,7 +250,7 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
   const candidateDataName = getSegmentLabelCandidateDataName(segmentLabel);
   const labelHeightExpr = getSegmentLabelHeightExpr(segmentLabel);
   const { nameWidthExpr, valueWidthExpr, maxReachExpr, cappedWidthExpr } = getWidthExprs(segmentLabel);
-  const labelYExpr = `datum['${getLabelYField(fieldPrefix)}']`;
+  const labelYExpr = `datum['${getLabelField(fieldPrefix, 'labelY')}']`;
   const hasValue = segmentLabel.value || segmentLabel.percent;
   const nameCenterYExpr = hasValue ? `${labelYExpr} - ${getSegmentLabelName(segmentLabel)}ValueFontSize / 2` : labelYExpr;
   const collisionBoxes = [
@@ -303,8 +294,9 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
       transform: [
         {
           type: 'filter',
-          expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getHemisphereField(
-            fieldPrefix
+          expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getLabelField(
+            fieldPrefix,
+            'hemisphere'
           )}', '${getCollisionBoxesField(
             fieldPrefix
           )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP})`,
@@ -377,7 +369,7 @@ const getWidthExprs = (
   // equator) and the container's actual edge (DONUT_RADIUS). A flat ratio-based cap matches this
   // exactly only at the equator (the original worst-case it was derived for); away from the equator
   // it leaves real, visible unused space between the label and the container edge.
-  const halfWidthField = getLabelHalfWidthField(getSegmentLabelFieldPrefix(options));
+  const halfWidthField = getLabelField(getSegmentLabelFieldPrefix(options), 'labelHalfWidth');
   const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
   return {
     nameWidthExpr,
@@ -506,13 +498,13 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
  */
 const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeSignal: string): TextEncodeEntry => {
   const fieldPrefix = getSegmentLabelFieldPrefix(options);
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const halfWidthField = getLabelHalfWidthField(fieldPrefix);
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
   return {
     x: {
       signal: `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`,
     },
-    y: { field: getLabelYField(fieldPrefix) },
+    y: { field: getLabelField(fieldPrefix, 'labelY') },
     // truncates (ellipsis) if this line alone is what pushed the pair past their shared cap, so its
     // real rendered width can never exceed the distance the shift already assumed
     limit: { signal: getLimitExpr(options) },
@@ -720,7 +712,7 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
     const inwardExtentExpr = `cos(${arcThetaExpr}) >= 0 ? ${bottomExtentExpr} : ${topExtentExpr}`;
     const { nameWidthExpr, valueWidthExpr, detailWidthExpr, maxReachExpr, cappedWidthExpr } =
       getRichSegmentLabelWidthExprs(richSegmentLabel);
-    const labelYExpr = `datum['${getLabelYField(labelName)}']`;
+    const labelYExpr = `datum['${getLabelField(labelName, 'labelY')}']`;
     const collisionBoxes = [
       getCollisionBoxExpr(
         labelName,
@@ -765,13 +757,13 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
           ),
           {
             type: 'formula',
-            as: getLabelTopYField(labelName),
-            expr: `datum['${getLabelYField(labelName)}'] - ${nameFontSize} / 2`,
+            as: getLabelField(labelName, 'topY'),
+            expr: `datum['${getLabelField(labelName, 'labelY')}'] - ${nameFontSize} / 2`,
           },
           {
             type: 'formula',
-            as: getLabelBottomYField(labelName),
-            expr: `datum['${getLabelYField(labelName)}'] + (${bottomRowDy}) + ${bottomFontSize} / 2`,
+            as: getLabelField(labelName, 'bottomY'),
+            expr: `datum['${getLabelField(labelName, 'labelY')}'] + (${bottomRowDy}) + ${bottomFontSize} / 2`,
           },
           ...getLabelHorizontalBoundsTransforms(labelName, cappedWidthExpr),
           { type: 'formula', as: getCollisionBoxesField(labelName), expr: `[${collisionBoxes.join(', ')}]` },
@@ -783,8 +775,9 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
         transform: [
           {
             type: 'filter',
-            expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getHemisphereField(
-              labelName
+            expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getLabelField(
+              labelName,
+              'hemisphere'
             )}', '${getCollisionBoxesField(
               labelName
             )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP})`,
@@ -871,7 +864,7 @@ const getRichSegmentLabelWidthExprs = (
     )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}DetailFontSize)${suffixWidthExpr}`;
   }
   const widerWidthExpr = `max(${nameWidthExpr}, max(${valueWidthExpr}, ${detailWidthExpr}))`;
-  const halfWidthField = getLabelHalfWidthField(labelName);
+  const halfWidthField = getLabelField(labelName, 'labelHalfWidth');
   const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
   return {
     nameWidthExpr,
@@ -944,13 +937,13 @@ const getRichSegmentLabelRowDy = (
 /** Gets shared position encodes for every row in a rich SegmentLabel block. */
 const getRichSegmentLabelSharedEncode = (options: SegmentLabelSpecOptions): TextEncodeEntry => {
   const fieldPrefix = getRichSegmentLabelName(options);
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const halfWidthField = getLabelHalfWidthField(fieldPrefix);
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
   return {
     x: {
       signal: `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`,
     },
-    y: { field: getLabelYField(fieldPrefix) },
+    y: { field: getLabelField(fieldPrefix, 'labelY') },
     align: {
       signal: `datum['${hemisphereField}'] === 'right' ? 'left' : 'right'`,
     },
@@ -985,10 +978,10 @@ const getRichSegmentLabelSwatchMark = (options: SegmentLabelSpecOptions): Symbol
   const { color, colorScheme } = donutOptions;
   const labelName = getRichSegmentLabelName(options);
   const fieldPrefix = labelName;
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const halfWidthField = getLabelHalfWidthField(fieldPrefix);
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
   const anchorX = `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`;
-  const anchorY = `datum['${getLabelYField(fieldPrefix)}']`;
+  const anchorY = `datum['${getLabelField(fieldPrefix, 'labelY')}']`;
 
   return {
     type: 'symbol',
@@ -1041,7 +1034,7 @@ const getRichSegmentLabelNameTextMark = (options: SegmentLabelSpecOptions): Text
         ...shared,
         dx: {
           signal: options.swatch
-            ? `(datum['${getHemisphereField(labelName)}'] === 'right' ? 1 : -1) * (${swatchOffsetExpr})`
+            ? `(datum['${getLabelField(labelName, 'hemisphere')}'] === 'right' ? 1 : -1) * (${swatchOffsetExpr})`
             : '0',
         },
         dy: { signal: rowDy.name },
@@ -1103,7 +1096,7 @@ const getRichSegmentLabelDetailTextMark = (options: SegmentLabelSpecOptions): Te
   const rowDy = getRichSegmentLabelRowDy(options);
   const { value, suffix } = getRichSegmentLabelDetailTextParts(options);
   const fieldPrefix = labelName;
-  const hemisphereField = getHemisphereField(fieldPrefix);
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
   const detailFontSize = `${labelName}DetailFontSize`;
   const valueWidth = `getLabelWidth(${getTextRuleExpr(
     value
