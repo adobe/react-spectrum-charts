@@ -121,8 +121,7 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
     });
   }
   // used to detect the empty state (no data or all metric values are 0)
-  data.push(getSumData(options));
-  data.push(...getDonutSummaryData(options));
+  data.push(getSumData(options), ...getDonutSummaryData(options));
 });
 
 const getPieTransforms = ({ startAngle, metric, name }: DonutSpecOptions): (FormulaTransform | PieTransform)[] => [
