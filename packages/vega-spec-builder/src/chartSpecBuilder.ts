@@ -203,7 +203,7 @@ export function buildSpec({
   }
 
   // copy the spec so we don't mutate the original
-  spec = JSON.parse(JSON.stringify(spec));
+  spec = safeClone(spec);
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
