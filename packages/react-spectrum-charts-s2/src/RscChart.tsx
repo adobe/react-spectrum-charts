@@ -423,45 +423,52 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
       onOpenChange?.(open);
       setIsPopoverOpen(open);
 
-      if (chartView.current) {
-        if (open) {
-          if (closeFrame.current !== null) {
-            cancelAnimationFrame(closeFrame.current);
-            closeFrame.current = null;
-          }
-          setRenderDatum(selectedData.current);
-          if (keyboardPopoverComponentName.current === name) {
-            // The popover owns the selected item's outline while open.
-            chartView.current.signal(FOCUSED_ITEM, null);
-            chartView.current.signal(FOCUSED_DIMENSION, null);
-            chartView.current.signal(FOCUSED_REGION, null);
-          }
-        } else {
-          const componentName = selectedDataName.current;
-          const keyboardComponentName = keyboardPopoverComponentName.current;
-          keyboardPopoverComponentName.current = null;
-          const clearSelection = () => {
-            closeFrame.current = null;
-            if (!chartView.current) return;
-            selectedData.current = null;
-            selectedDataName.current = '';
-            if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
-              clearHoverSignals(chartView.current, componentName, specSignalNames);
-            }
-            setSelectedSignals({ idKey, selectedData: null, view: chartView.current });
-            chartView.current.run();
-          };
-          // Keyboard navigation needs one frame for focus restoration; mouse popovers retain synchronous cleanup.
-          if (keyboardComponentName === name) {
-            closeFrame.current = requestAnimationFrame(clearSelection);
-          } else {
-            clearSelection();
-          }
+      if (!chartView.current) return;
+      const view = chartView.current;
+
+      const openPopoverView = () => {
+        if (closeFrame.current !== null) {
+          cancelAnimationFrame(closeFrame.current);
+          closeFrame.current = null;
         }
-        if (open) {
-          setSelectedSignals({ idKey, selectedData: selectedData.current, view: chartView.current });
+        setRenderDatum(selectedData.current);
+        if (keyboardPopoverComponentName.current === name) {
+          // The popover owns the selected item's outline while open.
+          view.signal(FOCUSED_ITEM, null);
+          view.signal(FOCUSED_DIMENSION, null);
+          view.signal(FOCUSED_REGION, null);
+        }
+        setSelectedSignals({ idKey, selectedData: selectedData.current, view });
+        view.run();
+      };
+
+      const closePopoverView = () => {
+        const componentName = selectedDataName.current;
+        const keyboardComponentName = keyboardPopoverComponentName.current;
+        keyboardPopoverComponentName.current = null;
+        const clearSelection = () => {
+          closeFrame.current = null;
+          if (!chartView.current) return;
+          selectedData.current = null;
+          selectedDataName.current = '';
+          if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
+            clearHoverSignals(chartView.current, componentName, specSignalNames);
+          }
+          setSelectedSignals({ idKey, selectedData: null, view: chartView.current });
           chartView.current.run();
+        };
+        // Keyboard navigation needs one frame for focus restoration; mouse popovers retain synchronous cleanup.
+        if (keyboardComponentName === name) {
+          closeFrame.current = requestAnimationFrame(clearSelection);
+        } else {
+          clearSelection();
         }
+      };
+
+      if (open) {
+        openPopoverView();
+      } else {
+        closePopoverView();
       }
     },
     [
