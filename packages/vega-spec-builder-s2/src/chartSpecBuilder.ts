@@ -226,7 +226,7 @@ export function buildSpec({
   }
 
   // copy the spec so we don't mutate the original
-  spec = safeClone(spec);
+  spec = JSON.parse(JSON.stringify(spec));
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
   // sibling axes paint in array order, so move the diverging axis last or a later grid axis paints over its labels
@@ -243,7 +243,7 @@ export function buildSpec({
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);
 
-  return safeClone(spec);
+  return JSON.parse(JSON.stringify(spec));
 }
 
 export const removeUnusedScales = produce<ScSpec>((spec) => {
@@ -523,11 +523,4 @@ export const isNumberArray = (opacities: Opacities): opacities is number[] => {
 
 export const isSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is ChartSymbolShape[] => {
   return !symbolShapes.some((symbolShape) => Array.isArray(symbolShape));
-};
-
-const safeClone = <T>(obj: T): T => {
-  if (typeof structuredClone === 'function') {
-    return structuredClone(obj);
-  }
-  return JSON.parse(JSON.stringify(obj));
 };
