@@ -8,7 +8,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License. -->
 
 - Start Date: 2026-09-25
-- RFC PR: (leave this empty, to be filled in later)
+- RFC PR: https://github.com/adobe/react-spectrum-charts/pull/934
 - Authors: Connor Lamoureux
 
 # S2 layered architecture: React config layer, embed layer, and serializable spec builder
