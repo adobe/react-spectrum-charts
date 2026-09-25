@@ -23,6 +23,7 @@ import {
   ComboOptions,
   DonutOptions,
   LineOptions,
+  SankeyOptions,
   ScatterOptions,
   VennOptions,
 } from './marks';
@@ -61,6 +62,7 @@ export type MarkOptions =
   | ComboOptions
   | DonutOptions
   | LineOptions
+  | SankeyOptions
   | ScatterOptions
   | VennOptions;
 

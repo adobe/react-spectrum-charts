@@ -17,6 +17,7 @@ export * from './bulletSpec.types';
 export * from './comboSpec.types';
 export * from './donutSpec.types';
 export * from './lineSpec.types';
+export * from './sankeySpec.types';
 export * from './scatterSpec.types';
 export * from './vennSpec.types';
 
