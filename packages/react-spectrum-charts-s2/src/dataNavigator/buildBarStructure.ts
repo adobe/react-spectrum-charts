@@ -331,7 +331,7 @@ const buildFieldValueParts = (
     .filter(([key]) => key !== order)
     .map(([key, value]) => {
       if (key === colorOverride) return `${fieldLabels[key] ?? 'Color'}: ${getAccessibleColorName(value, locale)}`;
-      if (metricSeriesLabel && key === metricSeriesLabel.metric) {
+      if (key === metricSeriesLabel?.metric) {
         const seriesTitle = metricSeriesLabel.titleBySeries[String(data[metricSeriesLabel.color])];
         if (seriesTitle) return `${seriesTitle}: ${value}`;
       }
@@ -361,7 +361,7 @@ export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {})
     if (!dimension || !rows) return String(node.id);
     // The division's own id is a data-navigator-internal composite, not the dimension value itself.
     const dimensionValue = node.derivedNode ? (node.data as Record<string, unknown> | undefined)?.[node.derivedNode] : undefined;
-    if (dimensionValue == null) return String(node.id);
+    if (dimensionValue == null || typeof dimensionValue === 'object') return String(node.id);
     const groupRows = rowsByDimension?.get(String(dimensionValue)) ?? rows.filter((row) => String(row[dimension]) === String(dimensionValue));
     if (groupRows.length === 0) return String(node.id);
     const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionValue}.`;
