@@ -62,8 +62,7 @@ export const addMarks = produce<Mark[], [BulletSpecOptions]>((marks, bulletOptio
   }
 
   if (bulletOptions.labelPosition === 'top' || bulletOptions.direction === 'row') {
-    bulletMark.marks?.push(getBulletMarkLabel(bulletOptions));
-    bulletMark.marks?.push(getBulletMarkValueLabel(bulletOptions));
+    bulletMark.marks?.push(getBulletMarkLabel(bulletOptions), getBulletMarkValueLabel(bulletOptions));
   }
 
   // thresholds/track render behind the rect and target, so they need their own hover area to catch inspect events
