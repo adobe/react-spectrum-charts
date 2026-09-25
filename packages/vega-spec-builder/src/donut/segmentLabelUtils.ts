@@ -190,7 +190,7 @@ export const getSegmentLabelValueText = ({
       // rules will be an array so we need to add the percent to each signal
       return rules.map((rule) => ({
         ...rule,
-        signal: `${percentSignal} + "\\u00a0\\u00a0" + ${rule.signal}`,
+        signal: String.raw`${percentSignal} + "\u00a0\u00a0" + ${rule.signal}`,
       }));
     }
     return rules;
