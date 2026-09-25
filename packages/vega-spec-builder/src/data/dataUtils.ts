@@ -59,7 +59,7 @@ export const getTimeUnitsFromGranularity = (granularity?: Granularity): TimeUnit
 
 export const addTimeTransform = produce<Transforms[], [string, Granularity?]>(
   (transforms, dimension, granularity) => {
-    if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
+    if (!transforms.some((transform) => transform.type === 'timeunit')) {
       transforms.push(
         {
           type: 'formula',
