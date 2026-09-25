@@ -20,11 +20,10 @@ import {
   StringValueRef,
   TextEncodeEntry,
   TextValueRef,
-  TickCount,
 } from 'vega';
 
 import { getTextNumberFormat } from '../textUtils';
-import { AxisSpecOptions, Granularity, Label, LabelAlign, Orientation, Position } from '../types';
+import { AxisSpecOptions, Label, LabelAlign, Orientation, Position } from '../types';
 import { isVerticalAxis } from './axisUtils';
 
 /**
@@ -37,36 +36,6 @@ export const getLabelValue = (label: Label | number | string): string | number =
     return label.value;
   }
   return label;
-};
-
-/**
- * Gets the label format values based on the granularity
- * @param granularity
- * @returns [secondaryFormat, primaryFormat, tickCount]
- */
-export const getTimeLabelFormats = (
-  granularity: Granularity
-): { secondaryLabelFormat: string; primaryLabelFormat: string; tickCount: TickCount } => {
-  switch (granularity) {
-    case 'second':
-      return { secondaryLabelFormat: ':%S', primaryLabelFormat: '%-I:%M %p', tickCount: 'second' };
-    case 'minute':
-      return { secondaryLabelFormat: '%-I:%M %p', primaryLabelFormat: '%b %-d', tickCount: 'minute' };
-    case 'hour':
-      return { secondaryLabelFormat: '%-I %p', primaryLabelFormat: '%b %-d', tickCount: 'hour' };
-    case 'day':
-      return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
-    case 'week':
-      return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'week' };
-    case 'month':
-      return { secondaryLabelFormat: '%b', primaryLabelFormat: '%Y', tickCount: 'month' };
-    case 'quarter':
-      return { secondaryLabelFormat: 'Q%q', primaryLabelFormat: '%Y', tickCount: { interval: 'month', step: 3 } };
-    case 'year':
-      return { secondaryLabelFormat: '%Y', primaryLabelFormat: '', tickCount: 'year' };
-    default:
-      return { secondaryLabelFormat: '%-d', primaryLabelFormat: '%b', tickCount: 'day' };
-  }
 };
 
 /**

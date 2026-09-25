@@ -154,6 +154,16 @@ Set `onClick` to run a callback when an axis label is clicked. The callback rece
 
 ---
 
+## Time axis ticks
+
+When `labelFormat="time"` and a `granularity` is set, S2 picks the tick cadence automatically from the rendered axis size: major ticks use the finest multiple of the granularity's calendar unit that keeps roughly 50px between labeled values, and an unlabeled midpoint tick subdivides each major interval when `ticks` is enabled and there is room for it (quarter granularity has no midpoints). The primary (parent) label row is generated independently from the parent calendar unit, so month/year labels stay on real calendar boundaries.
+
+:::note
+S2 does not support `tickCountLimit` or `tickCountMinimum`; the automatic time-axis cadence replaces them.
+:::
+
+---
+
 ## Axis props (S2)
 
 <table>
@@ -279,18 +289,6 @@ Set `onClick` to run a callback when an axis label is clicked. The callback rece
             <td>SubLabel[]</td>
             <td>–</td>
             <td>Adds sublabels below the axis labels.</td>
-        </tr>
-        <tr>
-            <td>tickCountMinimum</td>
-            <td>number</td>
-            <td>2</td>
-            <td>Sets the minimum number of axis ticks. Smaller charts may want a minimum of 3 for a more accurate representation of the data.</td>
-        </tr>
-        <tr>
-            <td>tickCountLimit</td>
-            <td>number</td>
-            <td>–</td>
-            <td>Sets the upper limit on the number of axis ticks. On time-based axes, setting this overrides the automatic granularity-based tick interval and can produce duplicate labels — you are responsible for aligning it with the data granularity.</td>
         </tr>
         <tr>
             <td>tickMinStep</td>

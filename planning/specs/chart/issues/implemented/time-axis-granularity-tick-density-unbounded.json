@@ -1,0 +1,85 @@
+{
+  "id": "time-axis-granularity-tick-density-unbounded",
+  "title": "Time Axis Granularity Ticks Aren't Bounded By Available Pixel Space",
+  "chartType": "chart",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-09-22",
+  "complexity": {
+    "score": 3,
+    "rationale": "The S2 fix changes responsive time-axis cadence, label formatting, and major/minor axis composition together. RSC must choose a stable Vega interval-step from rendered pixel space without taking ownership of Vega's calendar-boundary generation, and the selected label formats must advance when the responsive cadence crosses into a coarser calendar unit."
+  },
+  "summary": "When an Axis has labelFormat=\"time\" and a granularity is set, tick generation for every granularity except 'quarter' is delegated straight to Vega's raw per-unit interval (or, implicitly, Vega's fallback when the interval name doesn't resolve) with no bound relative to the chart's actual pixel width, so a domain spanning many multiples of the chosen granularity renders one tick per calendar unit with no thinning, producing gridline/tick spacing far below any usable minimum.",
+  "symptom": "A time axis with granularity=\"day\" (or week/month/year) over a domain spanning many days/weeks/months/years renders one tick and one gridline per calendar unit with no thinning - e.g. a 2-year domain with granularity=\"day\" in a 700px-wide chart renders 735 <line> elements (gridlines + ticks), visually merging into a solid bar instead of legible, evenly spaced ticks.",
+  "rootCause": "getTimeLabelFormats in packages/vega-spec-builder/src/axis/axisLabelUtils.ts:46-69 (identical in packages/vega-spec-builder-s2/src/axis/axisLabelUtils.ts:47-69) returns tickCount as a bare granularity-name string ('second'|'minute'|'hour'|'day'|'week'|'month'|'year') for every granularity except 'quarter', which gets an explicit {interval:'month', step:3}. getSecondaryTimeAxis (axisUtils.ts:96-132 in s1, 96-131 in s2) and getPrimaryTimeAxis (axisUtils.ts:176-223 in s1, matching in s2) only route tickCount through the existing pixel-aware getTickCount() (axisUtils.ts:372 in s1, 488 in s2 - clamp(ceil(range/100), min, max), a signal already re-evaluated on resize) when the caller explicitly passes tickCountLimit or tickCountMinimum; otherwise they hand the raw granularity tickCount straight to Vega's Axis.tickCount unchanged. In vega-scale's tickCount() (node_modules/vega-scale/src/ticks.js) and d3-time's ticks()/tickInterval() (node_modules/d3-time/src/ticks.js), passing a raw interval object (as opposed to a plain number) skips d3's adaptive 'nice interval' bisection entirely and calls interval.range(start, stop) literally - one tick per unit, regardless of domain span. Separately, vega-time's interval lookup table (node_modules/vega-time/src/interval.js and units.js) only registers plural keys for sub-day units ('hours', 'minutes', 'seconds'), while getTimeLabelFormats emits singular ('hour', 'minute', 'second'); that lookup miss makes those three fall back to Vega's generic ~10-tick default rather than the intended per-unit ticks, which is why hour/minute/second granularities look accidentally acceptable today while day/week/month/year (whose singular names do resolve) exhibit the literal flooding - fixing only the naming mismatch, without also bounding tick count, would extend the same flooding to hour/minute/second instead of fixing anything.",
+  "comparison": [
+    {
+      "aspect": "Tick count when tickCountLimit/tickCountMinimum is explicitly set",
+      "expected": "Ticks bound to roughly one per 100px of the rendered axis range, via getTickCount's clamp(ceil(range/100), min, max) signal.",
+      "actual": "This already works correctly - getSecondaryTimeAxis/getPrimaryTimeAxis both call getTickCount when either prop is set (axisUtils.ts:108-111, :199-201 in s1)."
+    },
+    {
+      "aspect": "Tick count with granularity set but neither tickCountLimit nor tickCountMinimum set (the default/common case)",
+      "expected": "Major ticks should use uniform multiples of the selected granularity and target approximately 50px between labeled values. Gridlines and labels should occur only at those majors. When every major interval has enough space, one unlabeled midpoint tick should subdivide it at approximately 25px; if the responsive major cadence falls below 50px, midpoint ticks should disappear.",
+      "actual": "resolvedTickCount falls back to the bare granularity tickCount string/object with no pixel-space bound at all (axisUtils.ts:108-111, :199-201), so tick count scales purely with the domain's span in that granularity's units, unbounded by chart width or height."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "Scoped to S2 only by explicit product decision. Runtime expression functions choose from a granularity-specific ladder of Vega-native interval-step tickCount values near the 50px labeled-major target. Horizontal tick selection uses the full container width rather than Vega's fitted inner plot width so axis-label layout cannot feed back into the responsive cadence. Vega generates the ticks against the backing time or UTC scale, and RSC does not coerce observation endpoints into off-boundary major ticks. Weekly cadence remains on week boundaries at every width rather than advancing to month boundaries that may not coincide with weekly observations. The ladder never selects a cadence finer than the requested granularity, includes a two-day step between daily and weekly ticks, and retains the previous finer interval when the next candidate would collapse below half the intended label count. Secondary labels retain the requested granularity format even when their cadence becomes coarser. The primary row independently selects actual parent-calendar boundaries (minute for seconds, day for minute/hour, month for day/week, year for month/quarter) and places initial partial-period context on the first visible child tick. A separate tick-only axis derives one temporal midpoint per major interval and emits no values when the responsive major cadence falls below 50px; quarter granularity intentionally has no midpoint ticks. Gridlines and labels remain major-only; hover remains anchored solely to real observations. S2's tickCountMinimum and tickCountLimit props were removed because the automatic policy supersedes them. The Time Granularity story group provides horizontally resizable two-series examples with highlighted legends and adjustable fixed-data counts."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/axis/axisLabelUtils.ts",
+      "change": "Keep granularity-specific primary and secondary label formats while removing tick-interval output; tick generation is now owned by the responsive runtime helpers.",
+      "lines": "46-69"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/axis/axisUtils.ts",
+      "change": "Use Vega-selected calendar ticks for the labeled/grid axis, deriving horizontal density from the stable full container width rather than the fitted inner plot width. Retain the requested secondary format and generate the label-only primary row from parent-calendar boundaries plus first-child context for a partial initial period. Add a tick-only axis for midpoint minor values when ticks are enabled, omit quarter minors, and do not apply label-overlap removal.",
+      "lines": "88-220"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/expressionFunctions/expressionFunctions.ts",
+      "change": "Register the responsive time-axis expression functions (major/minor/primary ticks, tick count, and label formats) so Vega signals can call them at render time.",
+      "lines": "n/a"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/axis/timeAxisConfig.ts",
+      "change": "Centralize the static time-axis policy: primary/secondary label formats, the granularity tick-candidate ladder, parent granularities, and the major tick spacing target.",
+      "lines": "n/a"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/axis/timeAxisTickUtils.ts",
+      "change": "Own the responsive tick logic: choose the first candidate interval-step meeting the 50px major target, keep weekly cadence on week boundaries, ask Vega for calendar-aligned ticks, generate parent-calendar labels with first-child partial-period context, and derive midpoint minors only when every major interval can support them.",
+      "lines": "n/a"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/axis/axisUtils.test.ts",
+      "change": "Assert shared Vega-derived major-value signals for both label rows, stable full-container width for horizontal density, height for vertical density, deterministic primary-label formatting, tick-only minor-axis styling, quarter-minor suppression, UTC scale propagation, year-row suppression, and no label-overlap removal.",
+      "lines": "260-310"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/types/axis/axisSpec.types.ts",
+      "change": "Remove tickCountMinimum and tickCountLimit from the S2 Axis API; automatic major/minor spacing replaces these low-level controls.",
+      "lines": "n/a"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Line/Features/TimeGranularity/LineTimeGranularity.story.tsx",
+      "change": "Provide five deterministic, horizontally resizable local-time stories for hour/day/month/quarter/year windows. Each story uses a fixed maximum two-series dataset, a Spectrum NumberField that selects how many source periods are displayed, a highlighted legend, top/bottom axis-position controls, and a granularity selector that changes only axis presentation and still includes week. Construct and display dates in the same local calendar system as the time scale.",
+      "lines": "n/a"
+    }
+  ],
+  "openQuestions": [
+    "The earliest/latest-year intent of planning/specs/github-issues/gh-584-year-granularity-boundary-ticks.json remains unresolved for S2 because observation endpoints cannot be formatted as synthetic year boundaries without misrepresenting their actual dates."
+  ],
+  "relatedIssues": [
+    "gh-584-year-granularity-boundary-ticks"
+  ]
+}

@@ -19,7 +19,24 @@ import {
   formatShortNumber,
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
+  getExpressionFunctions,
 } from './expressionFunctions';
+
+describe('getExpressionFunctions()', () => {
+  test('registers the responsive time-axis helpers used by time axis signals', () => {
+    expect(Object.keys(getExpressionFunctions())).toEqual(expect.arrayContaining(Object.keys(expressionFunctions)));
+    expect(expressionFunctions).toEqual(
+      expect.objectContaining({
+        getTimeAxisLabelFormat: expect.any(Function),
+        getTimeAxisMajorTicks: expect.any(Function),
+        getTimeAxisMinorTicks: expect.any(Function),
+        getTimeAxisPrimaryLabelFormat: expect.any(Function),
+        getTimeAxisPrimaryTicks: expect.any(Function),
+        getTimeAxisTickCount: expect.any(Function),
+      })
+    );
+  });
+});
 
 describe('formatLocaleCurrency()', () => {
   test('formats US currency correctly', () => {

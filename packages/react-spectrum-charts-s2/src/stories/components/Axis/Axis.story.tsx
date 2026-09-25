@@ -366,24 +366,6 @@ CurrencyFormatSpecifier.args = {
   title: 'Conversion Rate',
 };
 
-const TickCountMinimum = bindWithProps(LinearYAxisStory);
-TickCountMinimum.args = {
-  position: 'left',
-  baseline: true,
-  grid: true,
-  labelFormat: 'linear',
-  ticks: true,
-  tickCountMinimum: 3,
-};
-
-const TickCountLimit = bindWithProps(TimeAxisBarStory);
-TickCountLimit.args = {
-  position: 'right',
-  tickCountLimit: 5,
-  ticks: true,
-  title: 'Y-Axis with Limited Ticks',
-};
-
 const VerticalSecondGranularity = bindWithProps(VerticalTimeAxisStory);
 VerticalSecondGranularity.args = {
   granularity: 'second',
@@ -415,6 +397,4 @@ export {
   TruncateLabels,
   CurrencyLocale,
   CurrencyFormatSpecifier,
-  TickCountLimit,
-  TickCountMinimum,
 };
