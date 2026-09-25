@@ -62,8 +62,7 @@ export const addMarks = produce<Mark[], [BulletSpecOptions]>((marks, bulletOptio
   }
 
   if (bulletOptions.labelPosition === 'top' || bulletOptions.direction === 'row') {
-    bulletMark.marks?.push(getBulletMarkLabel(bulletOptions));
-    bulletMark.marks?.push(getBulletMarkValueLabel(bulletOptions));
+    bulletMark.marks?.push(getBulletMarkLabel(bulletOptions), getBulletMarkValueLabel(bulletOptions));
   }
 
   // Add hover area for tooltips when thresholds or track exist
