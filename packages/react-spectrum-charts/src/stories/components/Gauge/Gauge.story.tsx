@@ -1,0 +1,133 @@
+/*
+ * Copyright 2025 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+import { ReactElement } from 'react';
+
+import { StoryFn } from '@storybook/react';
+
+import { Chart } from '../../../Chart';
+// Gauge chart component from alpha export
+import { Gauge } from '../../../alpha';
+import { Title } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { bindWithProps } from '../../../test-utils';
+import { GaugeProps, ChartProps } from '../../../types';
+import { basicGaugeData, coloredPerformanceData } from './data';
+
+export default {
+  title: 'RSC/Gauge (alpha)',
+  component: Gauge,
+};
+
+// Default chart properties
+const defaultChartProps: ChartProps = {
+  data: basicGaugeData,
+  width: 500,
+  height: 600,
+};
+
+// Basic Gauge chart story
+const GaugeStory: StoryFn<GaugeProps & { width?: number; height?: number }> = (args): ReactElement => {
+  const { width, height, ...gaugeProps } = args;
+  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 500, height: height ?? 500 });
+  return (
+    <Chart {...chartProps} debug>
+      <Gauge {...gaugeProps} />
+    </Chart>
+  );
+};
+
+// Gauge with Title
+const GaugeTitleStory: StoryFn<typeof Gauge> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Title text={'Title Gauge'} position={'start'} orient={'top'} />
+      <Gauge {...args} />
+    </Chart>
+  );
+};
+
+// Basic Gauge chart story. All the ones below it are variations of the Gauge chart. 
+const Basic = bindWithProps(GaugeStory);
+Basic.args = {
+  metric: 'currentAmount',
+  color: 'blue-900',
+};
+
+const PerformanceRange = bindWithProps(GaugeStory);
+PerformanceRange.args = {
+  metric: 'currentAmount',
+  color: 'red-900',
+  showPerformanceRanges: true,
+  performanceRanges: coloredPerformanceData,
+};
+
+const Empty = bindWithProps(GaugeStory);
+Empty.args = {
+  metric: 'currentAmount-60',
+  color: 'fuchsia-900',
+};
+
+const Full = bindWithProps(GaugeStory);
+Full.args = {
+  metric: 'currentAmount+40',
+  color: 'static-pruple-900',
+};
+
+const GaugeLabelNoNeedleNoPercent = bindWithProps(GaugeStory);
+GaugeLabelNoNeedleNoPercent.args = {
+  metric: 'currentAmount',
+  color: 'indigo-1200',
+  showLabel: true,
+  needle: false,
+  showsAsPercent: false
+};
+
+const GaugeLabelNoNeedlePercent = bindWithProps(GaugeStory);
+GaugeLabelNoNeedlePercent.args = {
+  metric: 'currentAmount',
+  color: 'celery-800',
+  maxArcValue: 151,
+  showLabel: true,
+  needle: false,
+  showsAsPercent: true
+};
+
+const GaugeLabelNeedleNoPercent = bindWithProps(GaugeStory);
+GaugeLabelNeedleNoPercent.args = {
+  metric: 'currentAmount',
+  color: 'cyan-700',
+  showLabel: true,
+  needle: true,
+  showsAsPercent: false
+};
+
+const GaugeLabelNeedlePercent = bindWithProps(GaugeStory);
+GaugeLabelNeedlePercent.args = {
+  metric: 'currentAmount',
+  color: 'magenta-1000',
+  maxArcValue: 151,
+  showLabel: true,
+  needle: true,
+  showsAsPercent: true
+};
+
+export { 
+  Basic, 
+  Empty, 
+  Full,
+  PerformanceRange,
+  GaugeLabelNoNeedleNoPercent, 
+  GaugeLabelNeedleNoPercent, 
+  GaugeLabelNoNeedlePercent,  
+  GaugeLabelNeedlePercent 
+};
