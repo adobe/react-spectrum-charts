@@ -30,11 +30,13 @@ export function getDualAxisScaleNames(baseScaleName: string) {
 
 export const getScaleField = (scale: Scale): string | undefined => {
   if (scale.domain) {
+    // A domain field can be a signal reference instead of a plain field name; only the latter is a usable field.
     if ('field' in scale.domain) {
-      return scale.domain.field.toString();
+      return typeof scale.domain.field === 'string' ? scale.domain.field : undefined;
     }
     if ('fields' in scale.domain) {
-      return scale.domain.fields[0]?.toString();
+      const field = scale.domain.fields[0];
+      return typeof field === 'string' ? field : undefined;
     }
   }
   return undefined;
