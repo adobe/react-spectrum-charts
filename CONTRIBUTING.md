@@ -41,6 +41,7 @@ A few things to keep in mind before submitting a pull request:
 - Add/update stories in storybook for your changes
   - Any change that adds or modifies a prop must have stories to represent that change and tests written that validate the new behavior
 - Update documentation
+- Add a required changeset, or an empty changeset when no package release is required
 - Remember that all submissions require review, please be patient.
 
 The team will review all pull requests and do one of the following:
@@ -52,6 +53,43 @@ The team will review all pull requests and do one of the following:
 Read GitHub's [pull request documentation](https://help.github.com/articles/about-pull-requests/) for more information on sending pull requests.
 
 Lastly, please follow the pull request template when submitting a pull request!
+
+### Changesets
+
+**Every pull request must include a changeset.** This is enforced by the pull
+request checks.
+
+We use [Changesets](https://github.com/changesets/changesets) to decide which
+packages are released, apply semantic version bumps, and generate changelogs.
+Recording this information with the change keeps release decisions and notes
+close to the people who understand the change instead of reconstructing them
+at release time.
+
+For a consumer-facing package change, run:
+
+```bash
+yarn changeset
+```
+
+Select every affected package, choose `patch`, `minor`, or `major`, and write a
+consumer-facing summary. Commit the generated `.changeset/*.md` file with your
+change. A single changeset can include multiple packages when they are part of
+the same change.
+
+For documentation, tests, CI, or internal-only work that should not publish a
+package, run:
+
+```bash
+yarn changeset:empty
+```
+
+For work split across several pull requests, each pull request must add its own
+changeset. Changesets
+accumulate on the target branch and are combined when the work becomes ready
+for release.
+
+See [PUBLISHING.md](./PUBLISHING.md) for package relationships and the complete
+release process.
 
 ### Contributor License Agreement
 

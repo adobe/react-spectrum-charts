@@ -57,7 +57,9 @@ There is no manual version edit or release tag to create. Published versions
 use npm's standard `latest` tag unless a future prerelease mode is explicitly
 started with Changesets.
 
-The workflow uses the `ADOBE_BOT_NPM_TOKEN` repository secret.
+Packages authenticate to npm through trusted publishing. Each publishable
+package must authorize the `adobe/react-spectrum-charts` repository and
+`.github/workflows/release.yml` workflow in its npm settings.
 
 ## Version relationships
 

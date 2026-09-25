@@ -28,9 +28,15 @@ jobs:
       - name: Install Dependencies 📦
         run: yarn install --frozen-lockfile
 
-      - name: Verify changeset
+      - name: Require changeset
         if: ${{ !startsWith(github.head_ref, 'changeset-release/') }}
-        run: yarn changeset status --since=${{ github.event.pull_request.base.sha }}
+        run: |
+          if ! yarn changeset status --since=${{ github.event.pull_request.base.sha }}; then
+            echo "::error title=Changeset required::Every pull request must include a changeset."
+            echo "Run 'yarn changeset' for a package release."
+            echo "Run 'yarn changeset:empty' for documentation, tests, CI, or internal-only changes."
+            exit 1
+          fi
 
       - name: Lint 🧼
         run: yarn lint
