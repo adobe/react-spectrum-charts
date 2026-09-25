@@ -82,7 +82,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   // Need to de a deep copy of the data because vega tries to transform the data
   const chartData = useMemo(() => {
-    const clonedData = JSON.parse(JSON.stringify(data));
+    const clonedData = structuredClone(data);
 
     // We received a full Vega data array with potentially multiple dataset objects
     if (isVegaData(clonedData)) {
@@ -112,7 +112,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   useEffect(() => {
     if (width && height && containerRef.current) {
-      const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
+      const specCopy = structuredClone(spec);
       const tableData = specCopy.data?.find((d) => d.name === TABLE);
       if (tableData && 'values' in tableData) {
         tableData.values = chartData.table;

@@ -47,7 +47,7 @@ const copy = ({ chartView }: ChartImperativeHandleProps) =>
               () => reject(new Error('Error occurred while writing to clipboard, copy to clipboard failed'))
             );
           } catch (error) {
-            reject(new Error('Error occurred while fetching image, copy to clipboard failed'));
+            reject(new Error('Error occurred while fetching image, copy to clipboard failed', { cause: error }));
           }
         },
         () => reject(new Error('Error occurred while converting image to URL, copy to clipboard failed'))
@@ -104,7 +104,7 @@ const getBase64Png = ({ chartView }: ChartImperativeHandleProps) =>
               reject(new Error('Error occurred while converting image to base64, get base64 PNG failed'));
             }
           } catch (error) {
-            reject(new Error('Error occurred while fetching image, get base64 PNG failed'));
+            reject(new Error('Error occurred while fetching image, get base64 PNG failed', { cause: error }));
           }
         },
         () => reject(new Error('Error occurred while converting image to URL, get base64 PNG failed'))

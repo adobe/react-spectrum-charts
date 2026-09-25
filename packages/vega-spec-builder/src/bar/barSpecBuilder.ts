@@ -198,15 +198,16 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
   const index = data.findIndex((d) => d.name === FILTERED_TABLE);
   data[index].transform = data[index].transform ?? [];
   if (type === 'stacked' || isDodgedAndStacked(options)) {
-    data[index].transform?.push({
-      type: 'stack',
-      groupby: getStackFields(options),
-      field: metric,
-      sort: getTransformSort(order),
-      as: [`${metric}0`, `${metric}1`],
-    });
-
-    data[index].transform?.push(getStackIdTransform(options));
+    data[index].transform?.push(
+      {
+        type: 'stack',
+        groupby: getStackFields(options),
+        field: metric,
+        sort: getTransformSort(order),
+        as: [`${metric}0`, `${metric}1`],
+      },
+      getStackIdTransform(options)
+    );
     data.push(getStackAggregateData(options));
   }
   if (type === 'dodged' || isDodgedAndStacked(options)) {

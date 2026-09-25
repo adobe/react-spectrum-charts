@@ -346,7 +346,7 @@ describe('Chart', () => {
 
   describe('TooltipAnchor()', () => {
     // get the integer value from a px string
-    const getPxValue = (pxString: string) => parseInt(pxString.replace('px', ''), 10);
+    const getPxValue = (pxString: string) => Number.parseInt(pxString.replace('px', ''), 10);
 
     test('should render the tooltip relative to the cursor if `tooltipAnchor` is set to `cursor`', async () => {
       render(<TooltipAnchor {...TooltipAnchor.args} tooltipAnchor="cursor" />);

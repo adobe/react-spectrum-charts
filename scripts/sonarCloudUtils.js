@@ -148,7 +148,7 @@ async function runSonarForFork() {
     process.exit(1);
   }
 
-  prNumber = parseInt(localBranchName.split('/')[1]);
+  prNumber = Number.parseInt(localBranchName.split('/')[1]);
 
   // Get the PR number from the github API
   const branch = await getPrBranchName(prNumber);

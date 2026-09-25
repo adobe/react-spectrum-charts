@@ -115,18 +115,8 @@ const addNavigationEdge = (structure: Structure, a: string, b: string, navigatio
 const hasNavigationEdge = (structure: Structure, a: string, b: string): boolean =>
   Boolean(structure.edges[`${a}<->${b}`] ?? structure.edges[`${b}<->${a}`]);
 
-/** Adds within-group and cross-group navigation for multi-series bars. */
-const wireSameSeriesStackNavigation = (
-  structure: Structure,
-  orderedData: SimpleData[],
-  dimension: string,
-  color: string,
-  type: 'dodged' | 'stacked'
-): void => {
-  // Logical left/right and up/down are mapped to physical keys by the chart orientation rules.
-  const withinGroupRules = type === 'dodged' ? ['left', 'right'] : ['up', 'down'];
-  const betweenGroupRules = type === 'dodged' ? ['up', 'down'] : ['left', 'right'];
-  // Keep leaf-to-leaf group edges on the group-local logical axis.
+/** Keeps leaf-to-leaf group edges on the group-local logical axis. */
+const applyWithinGroupNavigationRules = (structure: Structure, dimension: string, withinGroupRules: string[]): void => {
   for (const edge of Object.values(structure.edges)) {
     const source = typeof edge.source === 'string' ? structure.nodes[edge.source] : undefined;
     const target = typeof edge.target === 'string' ? structure.nodes[edge.target] : undefined;
@@ -138,8 +128,14 @@ const wireSameSeriesStackNavigation = (
       edge.navigationRules = withinGroupRules;
     }
   }
+};
 
-  // Stacks in first-seen (column) order, each mapping its series value to that segment's node id.
+/** Stacks in first-seen (column) order, each mapping its series value to that segment's node id. */
+const buildColumnsBySeries = (
+  orderedData: SimpleData[],
+  dimension: string,
+  color: string
+): Map<unknown, Map<unknown, string>> => {
   const columns = new Map<unknown, Map<unknown, string>>();
   for (const row of orderedData) {
     const columnKey = row[dimension];
@@ -147,8 +143,17 @@ const wireSameSeriesStackNavigation = (
     seriesToSegment.set(row[color], segmentId(columnKey, row[color]));
     columns.set(columnKey, seriesToSegment);
   }
+  return columns;
+};
 
-  // Adjacent columns only (no wraparound): connect each series to its counterpart one column over.
+/** Adjacent columns only (no wraparound): connects each series to its counterpart one column over. */
+const wireAdjacentColumnNavigation = (
+  structure: Structure,
+  columns: Map<unknown, Map<unknown, string>>,
+  type: 'dodged' | 'stacked',
+  withinGroupRules: string[],
+  betweenGroupRules: string[]
+): void => {
   const columnList = [...columns.values()];
   for (let index = 0; index < columnList.length - 1; index++) {
     for (const [series, segId] of columnList[index]) {
@@ -165,6 +170,24 @@ const wireSameSeriesStackNavigation = (
       addNavigationEdge(structure, lastSegment, firstNextSegment, withinGroupRules);
     }
   }
+};
+
+/** Adds within-group and cross-group navigation for multi-series bars. */
+const wireSameSeriesStackNavigation = (
+  structure: Structure,
+  orderedData: SimpleData[],
+  dimension: string,
+  color: string,
+  type: 'dodged' | 'stacked'
+): void => {
+  // Logical left/right and up/down are mapped to physical keys by the chart orientation rules.
+  const withinGroupRules = type === 'dodged' ? ['left', 'right'] : ['up', 'down'];
+  const betweenGroupRules = type === 'dodged' ? ['up', 'down'] : ['left', 'right'];
+
+  applyWithinGroupNavigationRules(structure, dimension, withinGroupRules);
+
+  const columns = buildColumnsBySeries(orderedData, dimension, color);
+  wireAdjacentColumnNavigation(structure, columns, type, withinGroupRules, betweenGroupRules);
 };
 
 export const buildBarStructure = ({
@@ -308,7 +331,7 @@ const buildFieldValueParts = (
     .filter(([key]) => key !== order)
     .map(([key, value]) => {
       if (key === colorOverride) return `${fieldLabels[key] ?? 'Color'}: ${getAccessibleColorName(value, locale)}`;
-      if (metricSeriesLabel && key === metricSeriesLabel.metric) {
+      if (key === metricSeriesLabel?.metric) {
         const seriesTitle = metricSeriesLabel.titleBySeries[String(data[metricSeriesLabel.color])];
         if (seriesTitle) return `${seriesTitle}: ${value}`;
       }
@@ -338,7 +361,7 @@ export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {})
     if (!dimension || !rows) return String(node.id);
     // The division's own id is a data-navigator-internal composite, not the dimension value itself.
     const dimensionValue = node.derivedNode ? (node.data as Record<string, unknown> | undefined)?.[node.derivedNode] : undefined;
-    if (dimensionValue == null) return String(node.id);
+    if (dimensionValue == null || typeof dimensionValue === 'object') return String(node.id);
     const groupRows = rowsByDimension?.get(String(dimensionValue)) ?? rows.filter((row) => String(row[dimension]) === String(dimensionValue));
     if (groupRows.length === 0) return String(node.id);
     const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionValue}.`;

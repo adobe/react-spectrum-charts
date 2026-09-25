@@ -42,8 +42,17 @@ import useMarkOnClickDetails from './hooks/useMarkOnClickDetails';
 import usePopovers, { PopoverDetail } from './hooks/usePopovers';
 import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
-import { RscChartProps } from './types';
+import { ChartChildElement, RscChartProps } from './types';
 import { clearHoverSignals, sanitizeMarkChildren, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils';
+
+/** The `title` prop of the Axis child at the given `position`, if one exists. */
+const getAxisTitleAtPosition = (sanitizedChildren: ChartChildElement[], position: string): string | undefined =>
+  (
+    sanitizedChildren.find(
+      (child) =>
+        'displayName' in child.type && child.type.displayName === Axis.displayName && (child.props as { position?: string }).position === position
+    )?.props as { title?: string } | undefined
+  )?.title;
 
 interface ChartDialogProps {
   targetElement: RefObject<HTMLElement | null>;
@@ -201,15 +210,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       | undefined
   )?.title;
   const fieldLabels = useMemo(() => {
-    const titleAt = (position: 'bottom' | 'left') =>
-      (
-        sanitizedChildren.find(
-          (child) =>
-            'displayName' in child.type &&
-            child.type.displayName === Axis.displayName &&
-            (child.props as { position?: string }).position === position
-        )?.props as { title?: string } | undefined
-      )?.title;
+    const titleAt = (position: 'bottom' | 'left') => getAxisTitleAtPosition(sanitizedChildren, position);
     const isHorizontal = navOrientation === 'horizontal';
     const dimensionTitle = titleAt(isHorizontal ? 'left' : 'bottom');
     const metricTitle = titleAt(isHorizontal ? 'bottom' : 'left');
@@ -236,21 +237,12 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       return undefined;
     }
     const positions = navOrientation === 'horizontal' ? ['bottom', 'top'] : ['left', 'right'];
-    const titleAtPosition = (position: string) =>
-      (
-        sanitizedChildren.find(
-          (child) =>
-            'displayName' in child.type &&
-            child.type.displayName === Axis.displayName &&
-            (child.props as { position?: string }).position === position
-        )?.props as { title?: string } | undefined
-      )?.title;
-    const primaryTitle = titleAtPosition(positions[0]);
-    const secondaryTitle = titleAtPosition(positions[1]);
+    const primaryTitle = getAxisTitleAtPosition(sanitizedChildren, positions[0]);
+    const secondaryTitle = getAxisTitleAtPosition(sanitizedChildren, positions[1]);
     if (!primaryTitle && !secondaryTitle) return undefined;
     const seriesOrder = [...new Set((data as SimpleData[]).map((datum) => String(datum[navColor])))];
     if (seriesOrder.length === 0) return undefined;
-    const secondarySeries = seriesOrder[seriesOrder.length - 1];
+    const secondarySeries = seriesOrder.at(-1);
     const labels: Record<string, string> = {};
     for (const series of seriesOrder) {
       const axisTitle = series === secondarySeries ? secondaryTitle : primaryTitle;
@@ -363,7 +355,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             color={navColor}
             type={navFields?.type}
             colorOverride={navColorOverride}
-            locale={locale == null ? undefined : String(locale)}
+            locale={typeof locale === 'string' ? locale : undefined}
             metric={navFields?.metric}
             order={navFields?.order}
             orientation={navOrientation}
@@ -423,45 +415,52 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
       onOpenChange?.(open);
       setIsPopoverOpen(open);
 
-      if (chartView.current) {
-        if (open) {
-          if (closeFrame.current !== null) {
-            cancelAnimationFrame(closeFrame.current);
-            closeFrame.current = null;
-          }
-          setRenderDatum(selectedData.current);
-          if (keyboardPopoverComponentName.current === name) {
-            // The popover owns the selected item's outline while open.
-            chartView.current.signal(FOCUSED_ITEM, null);
-            chartView.current.signal(FOCUSED_DIMENSION, null);
-            chartView.current.signal(FOCUSED_REGION, null);
-          }
-        } else {
-          const componentName = selectedDataName.current;
-          const keyboardComponentName = keyboardPopoverComponentName.current;
-          keyboardPopoverComponentName.current = null;
-          const clearSelection = () => {
-            closeFrame.current = null;
-            if (!chartView.current) return;
-            selectedData.current = null;
-            selectedDataName.current = '';
-            if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
-              clearHoverSignals(chartView.current, componentName, specSignalNames);
-            }
-            setSelectedSignals({ idKey, selectedData: null, view: chartView.current });
-            chartView.current.run();
-          };
-          // Keyboard navigation needs one frame for focus restoration; mouse popovers retain synchronous cleanup.
-          if (keyboardComponentName === name) {
-            closeFrame.current = requestAnimationFrame(clearSelection);
-          } else {
-            clearSelection();
-          }
+      if (!chartView.current) return;
+      const view = chartView.current;
+
+      const openPopoverView = () => {
+        if (closeFrame.current !== null) {
+          cancelAnimationFrame(closeFrame.current);
+          closeFrame.current = null;
         }
-        if (open) {
-          setSelectedSignals({ idKey, selectedData: selectedData.current, view: chartView.current });
+        setRenderDatum(selectedData.current);
+        if (keyboardPopoverComponentName.current === name) {
+          // The popover owns the selected item's outline while open.
+          view.signal(FOCUSED_ITEM, null);
+          view.signal(FOCUSED_DIMENSION, null);
+          view.signal(FOCUSED_REGION, null);
+        }
+        setSelectedSignals({ idKey, selectedData: selectedData.current, view });
+        view.run();
+      };
+
+      const closePopoverView = () => {
+        const componentName = selectedDataName.current;
+        const keyboardComponentName = keyboardPopoverComponentName.current;
+        keyboardPopoverComponentName.current = null;
+        const clearSelection = () => {
+          closeFrame.current = null;
+          if (!chartView.current) return;
+          selectedData.current = null;
+          selectedDataName.current = '';
+          if (shouldClearHoverSignalsOnClose(componentName, keyboardComponentName)) {
+            clearHoverSignals(chartView.current, componentName, specSignalNames);
+          }
+          setSelectedSignals({ idKey, selectedData: null, view: chartView.current });
           chartView.current.run();
+        };
+        // Keyboard navigation needs one frame for focus restoration; mouse popovers retain synchronous cleanup.
+        if (keyboardComponentName === name) {
+          closeFrame.current = requestAnimationFrame(clearSelection);
+        } else {
+          clearSelection();
         }
+      };
+
+      if (open) {
+        openPopoverView();
+      } else {
+        closePopoverView();
       }
     },
     [

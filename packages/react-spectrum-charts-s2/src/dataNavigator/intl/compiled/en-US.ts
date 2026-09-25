@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 // AUTO-GENERATED from intl/en-US.json. Do not edit by hand.
 import type { LocalizedString } from '@internationalized/string';

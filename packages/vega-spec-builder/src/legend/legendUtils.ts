@@ -403,7 +403,7 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
       },
     ],
   };
-  // Remove undefined values
+  // Must omit unset properties entirely rather than keep them as `undefined`, so the JSON round-trip is intentional here (unlike structuredClone, it drops them).
   const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
   return {
     entries: {

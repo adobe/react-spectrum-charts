@@ -84,7 +84,7 @@ export const getNodeIdForDatum = (
 ): string | undefined => {
   if (chartType !== 'bar') return undefined;
   const dimensionValue = datum[dimension];
-  if (dimensionValue == null) return undefined;
+  if (dimensionValue == null || typeof dimensionValue === 'object') return undefined;
   // Stacked leaves are keyed by dimension+series; a padding-area datum has no series, so it won't match.
   if (color !== undefined) {
     return datum[color] == null ? undefined : segmentId(dimensionValue, datum[color]);
