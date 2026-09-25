@@ -242,7 +242,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     if (!primaryTitle && !secondaryTitle) return undefined;
     const seriesOrder = [...new Set((data as SimpleData[]).map((datum) => String(datum[navColor])))];
     if (seriesOrder.length === 0) return undefined;
-    const secondarySeries = seriesOrder[seriesOrder.length - 1];
+    const secondarySeries = seriesOrder.at(-1);
     const labels: Record<string, string> = {};
     for (const series of seriesOrder) {
       const axisTitle = series === secondarySeries ? secondaryTitle : primaryTitle;
@@ -355,7 +355,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             color={navColor}
             type={navFields?.type}
             colorOverride={navColorOverride}
-            locale={locale == null ? undefined : String(locale)}
+            locale={typeof locale === 'string' ? locale : undefined}
             metric={navFields?.metric}
             order={navFields?.order}
             orientation={navOrientation}
