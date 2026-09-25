@@ -213,18 +213,19 @@ const buildLeafTooltipValue = (
   return clean;
 };
 
+/** Chart context shared by the focus-tooltip and hover-parity-guard functions below. */
+interface FocusTooltipContext {
+  markName: string;
+  dimension: string;
+  color: string | undefined;
+  metric: string | undefined;
+  fieldLabels: Record<string, string>;
+  hasChartInspect: boolean;
+}
+
 /** Shows the tooltip matching a focused node (leaf, stack, or none) — shared by the `focus` handler and the mouse-hover guard below. */
-const showTooltipForFocusedNode = (
-  container: HTMLElement,
-  view: View,
-  node: NodeObject,
-  markName: string,
-  dimension: string,
-  color: string | undefined,
-  metric: string | undefined,
-  fieldLabels: Record<string, string>,
-  hasChartInspect: boolean
-): void => {
+const showTooltipForFocusedNode = (container: HTMLElement, view: View, node: NodeObject, context: FocusTooltipContext): void => {
+  const { markName, dimension, color, metric, fieldLabels, hasChartInspect } = context;
   const signals = nodeFocusSignals(node);
   if (signals.item != null) {
     // Leaf: full datum for ChartInspect, otherwise a clean axis-titled subset.
@@ -258,14 +259,10 @@ const clickToFocusHandlers = new WeakMap<View, ViewEventHandler>();
 const guardHoverParityAgainstMouseClear = (
   container: HTMLElement,
   view: View,
-  markName: string,
-  dimension: string,
-  color: string | undefined,
-  metric: string | undefined,
-  fieldLabels: Record<string, string>,
-  hasChartInspect: boolean,
+  context: FocusTooltipContext,
   getFocusedNode: () => NodeObject | undefined
 ): void => {
+  const { markName, dimension, color } = context;
   const itemSignal = `${markName}_${HOVERED_ITEM}`;
   const dimensionSignal = `${markName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
   const previous = hoverGuardHandlers.get(view);
@@ -286,7 +283,7 @@ const guardHoverParityAgainstMouseClear = (
       return;
     }
     view.runAfter((v) => {
-      v.runAsync().then(() => showTooltipForFocusedNode(container, v, node, markName, dimension, color, metric, fieldLabels, hasChartInspect));
+      v.runAsync().then(() => showTooltipForFocusedNode(container, v, node, context));
     });
   };
   try {
@@ -363,8 +360,11 @@ export const attachDataNavigator = ({
 
   const view = getView();
   if (view && markName && dimension) {
-    guardHoverParityAgainstMouseClear(container, view, markName, dimension, color, metric, fieldLabels ?? {}, hasChartInspect ?? false, () =>
-      focusInsideWidget && current ? structure.nodes[current] : undefined
+    guardHoverParityAgainstMouseClear(
+      container,
+      view,
+      { markName, dimension, color, metric, fieldLabels: fieldLabels ?? {}, hasChartInspect: hasChartInspect ?? false },
+      () => (focusInsideWidget && current ? structure.nodes[current] : undefined)
     );
   }
 
@@ -608,7 +608,14 @@ export const attachDataNavigator = ({
             showFocusedItemTooltip(container, view, `${markName ?? 'bar0'}_focusRing`, null);
             return;
           }
-          showTooltipForFocusedNode(container, view, node, markName, dimension, color, metric, fieldLabels ?? {}, hasChartInspect ?? false);
+          showTooltipForFocusedNode(container, view, node, {
+            markName,
+            dimension,
+            color,
+            metric,
+            fieldLabels: fieldLabels ?? {},
+            hasChartInspect: hasChartInspect ?? false,
+          });
         });
     });
 
