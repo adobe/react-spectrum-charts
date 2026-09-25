@@ -11,7 +11,7 @@
  */
 import { renderHook } from '@testing-library/react';
 
-import { COMPONENT_NAME, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
 
 import { useChartContext } from '../context/RscChartContext';
 import { RscChartProps } from '../types';
@@ -181,6 +181,59 @@ describe('useChartInspectInteractions - highlightBy GROUP_DATA population', () =
   test('does not fetch table data when highlightBy is undefined', () => {
     mockUseChartInspects.mockReturnValue([{ ...defaultInspect, highlightBy: undefined }]);
     callFormatTooltip({ ...baseValue });
+    expect(mockData).not.toHaveBeenCalled();
+  });
+});
+
+describe('useChartInspectInteractions - default donut content', () => {
+  const donutInspect: InspectDetail = {
+    name: 'donut0',
+    callback: undefined,
+    defaultDonutContent: { colorKey: 'browser', metricKey: 'count' },
+    highlightBy: undefined,
+    targets: undefined,
+  };
+  const donutValue = { [COMPONENT_NAME]: 'donut0', rscMarkId: 'item-1', browser: 'Chrome', count: 10390 };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    const context = makeContext();
+    mockUseChartContext.mockReturnValue({
+      ...context,
+      chartView: { current: { ...context.chartView.current, scale: () => () => '#ff0000' } },
+    } as unknown as ReturnType<typeof useChartContext>);
+  });
+
+  test('renders the default swatch, series, and value when no callback is provided', () => {
+    mockUseChartInspects.mockReturnValue([donutInspect]);
+    const html = callFormatTooltip({ ...donutValue });
+    expect(html).toContain('Chrome');
+    expect(html).toContain('10390');
+    expect(html).toContain('background-color: rgb(255, 0, 0)');
+    expect(html).not.toContain('rsc-donut-dialog-custom');
+  });
+
+  test('appends callback content below the default content', () => {
+    const callback = jest.fn(() => <span>custom content</span>);
+    mockUseChartInspects.mockReturnValue([{ ...donutInspect, callback }]);
+    const html = callFormatTooltip({ ...donutValue }) ?? '';
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({ browser: 'Chrome' }));
+    expect(html).toContain('rsc-donut-dialog-custom');
+    expect(html.indexOf('10390')).toBeLessThan(html.indexOf('custom content'));
+  });
+});
+
+describe('useChartInspectInteractions - dimension area', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseChartContext.mockReturnValue(makeContext() as unknown as ReturnType<typeof useChartContext>);
+  });
+
+  test('returns empty markup when the dimension area inspect has no callback', () => {
+    mockUseChartInspects.mockReturnValue([
+      { ...defaultInspect, name: 'bar0', callback: undefined, targets: ['dimensionArea'] },
+    ]);
+    expect(callFormatTooltip({ [COMPONENT_NAME]: `bar0_${DIMENSION_HOVER_AREA}` })).toBe('');
     expect(mockData).not.toHaveBeenCalled();
   });
 });

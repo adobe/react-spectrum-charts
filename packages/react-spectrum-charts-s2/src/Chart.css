@@ -76,6 +76,34 @@ this removes transitions in the vega tooltip
   font-weight: 400;
   line-height: 1.5;
 }
+.rsc-donut-dialog-content {
+  display: grid;
+  grid-template-columns: 16px minmax(0, auto);
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+}
+.rsc-donut-dialog-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+.rsc-donut-dialog-series {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #505050;
+}
+.spectrum--dark .rsc-donut-dialog-series,
+#vg-tooltip-element.vg-tooltip.dark-theme .rsc-donut-dialog-series {
+  color: #afafaf;
+}
+.rsc-donut-dialog-value {
+  grid-column: 1 / -1;
+  font-weight: 800;
+}
+.rsc-donut-dialog-custom {
+  grid-column: 1 / -1;
+}
 .rsc-container {
   position: relative;
   width: auto;

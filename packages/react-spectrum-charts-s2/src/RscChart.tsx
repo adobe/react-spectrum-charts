@@ -16,6 +16,7 @@ import { Focusable } from 'react-aria-components';
 import { View as VegaView } from 'vega';
 import {
   COMPONENT_NAME,
+  COLOR_SCALE,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_METRIC,
   DEFAULT_SYMBOL_SHAPES,
@@ -28,6 +29,7 @@ import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
+import { DonutDialogContent } from './components/ChartDialogContent';
 import { Axis } from './components/Axis';
 import { ChartInspect } from './components/ChartInspect';
 import { Legend } from './components/Legend';
@@ -478,6 +480,20 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
   );
 
   const close = useCallback(() => handleOpenChange(false), [handleOpenChange]);
+  const activeDatum = renderDatum?.[COMPONENT_NAME] === name ? renderDatum : null;
+  const customContent = activeDatum ? children?.(activeDatum, close) : null;
+  const content =
+    activeDatum && popover.defaultDonutContent ? (
+      <DonutDialogContent
+        {...popover.defaultDonutContent}
+        datum={activeDatum}
+        getColor={(series) => chartView.current?.scale(COLOR_SCALE)(series) as string | undefined}
+      >
+        {customContent}
+      </DonutDialogContent>
+    ) : (
+      customContent
+    );
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -522,7 +538,7 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
       >
         <div data-testid="rsc-popover" style={popoverStyle}>
           <div data-testid="rsc-popover-content" className="rsc-popover-content" style={{ margin: contentMargin ?? 12 }}>
-            {renderDatum && renderDatum[COMPONENT_NAME] === name && children?.(renderDatum, close)}
+            {activeDatum && content}
           </div>
         </div>
       </Popover>

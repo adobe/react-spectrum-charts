@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, useMemo, type ReactElement } from 'react';
+import { FC, useMemo, type ReactElement, type ReactNode } from 'react';
 
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -26,10 +26,11 @@ function renderToHtml(element: ReactElement): string {
   return html;
 }
 
-import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
+import { COLOR_SCALE, COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
 import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../context/RscChartContext';
+import { DonutDialogContent } from '../components/ChartDialogContent';
 import { ChartChildElement, RscChartProps } from '../types';
 import { debugLog } from '../utils';
 import useLegend from './useLegend';
@@ -76,7 +77,7 @@ const getDimensionAreaInspectMarkup = (
 
   const inspectName = componentName.replace(`_${DIMENSION_HOVER_AREA}`, '');
   const inspect = inspects.find((t) => t.name === inspectName && t.targets?.includes('dimensionArea'));
-  if (!inspect) return '';
+  if (!inspect?.callback) return '';
 
   const dimension = value.dimension;
 
@@ -87,6 +88,27 @@ const getDimensionAreaInspectMarkup = (
     <div className="rsc-tooltip" data-testid="rsc-tooltip">
       {inspect.callback(value)}
     </div>
+  );
+};
+
+/**
+ * Gets the inspect content, appending consumer content below the default donut content when applicable.
+ * @param inspect
+ * @param value
+ * @param getColor
+ * @returns ReactNode
+ */
+const getInspectContent = (
+  inspect: InspectDetail,
+  value: Datum,
+  getColor: (series: unknown) => string | undefined
+): ReactNode => {
+  const customContent = inspect.callback?.(value);
+  if (!inspect.defaultDonutContent) return customContent;
+  return (
+    <DonutDialogContent {...inspect.defaultDonutContent} datum={value} getColor={getColor}>
+      {customContent}
+    </DonutDialogContent>
   );
 };
 
@@ -111,7 +133,7 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
 
         // get the correct inspect to render based on the hovered item
         const inspect = inspects.find((t) => t.name === value[COMPONENT_NAME]);
-        if (inspect?.callback && !('index' in value)) {
+        if ((inspect?.callback || inspect?.defaultDonutContent) && !('index' in value)) {
           if (controlledHoveredIdSignal.current) {
             chartView.current?.signal(controlledHoveredIdSignal.current.name, value?.[idKey] ?? null);
           }
@@ -126,9 +148,14 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
             const groupId = `${inspect.name}_${GROUP_ID}`;
             value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
           }
+          const content = getInspectContent(
+            inspect,
+            value,
+            (series) => chartView.current?.scale(COLOR_SCALE)(series) as string | undefined
+          );
           return renderToHtml(
             <div className="rsc-tooltip" data-testid="rsc-tooltip">
-              {inspect.callback(value)}
+              {content}
             </div>
           );
         }
