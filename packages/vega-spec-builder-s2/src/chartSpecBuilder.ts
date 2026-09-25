@@ -226,7 +226,7 @@ export function buildSpec({
   }
 
   // copy the spec so we don't mutate the original
-  spec = JSON.parse(JSON.stringify(spec));
+  spec = safeClone(spec);
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
   // sibling axes paint in array order, so move the diverging axis last or a later grid axis paints over its labels
