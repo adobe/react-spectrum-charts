@@ -9,14 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { GaugeOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bullet.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './gauge.types';
-export * from './line.types';
-export * from './scatter.types';
+import { GaugeProps } from '../types';
 
-export * from './supplemental';
+export const getGaugeOptions = (gaugeProps: GaugeProps): GaugeOptions => ({
+  ...gaugeProps,
+  markType: 'gauge',
+});

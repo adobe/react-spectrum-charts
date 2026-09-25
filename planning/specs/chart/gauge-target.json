@@ -1,0 +1,45 @@
+{
+  "id": "gauge-target",
+  "title": "Gauge: target/goal marker",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-09-16",
+  "complexity": {
+    "score": 2,
+    "rationale": "Reuses the same value-to-angle mapping already built for the current-value needle/fill, applied to a second data field. No open design questions and no new interaction system - just the same precedented angle math and a marker mark applied once more."
+  },
+  "summary": "Adds an optional target marker to Gauge, showing a goal value on the arc distinct from the current aggregated value.",
+  "requirements": [
+    "Accept a target data field; when present, render a marker on the arc at the angle corresponding to the target's value, using the same scale as the current value.",
+    "Accept an optional targetLabel data field; when present, display it near the marker instead of the target's raw numeric value.",
+    "The target marker renders in addition to, and visually distinct from, the needle or fill indicating the current value.",
+    "The target marker is available in both needle mode and fill mode."
+  ],
+  "edgeCases": [
+    { "case": "target value outside [minScaleValue, maxScaleValue]", "expectedBehavior": "clamp the marker's position to the nearest scale bound rather than rendering it off the arc" },
+    { "case": "no target field provided", "expectedBehavior": "no marker renders; existing needle/fill behavior is unaffected" },
+    { "case": "target and current value are equal", "expectedBehavior": "both the marker and the needle/fill render at the same angle without one obscuring the other" },
+    { "case": "long targetLabel text at a small rendered size", "expectedBehavior": "truncate with an ellipsis rather than overlapping the arc or center text" }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: the target's value needs its own angle computation alongside the existing current-value angle, following the same pattern already established for the aggregated value. requiresS1S2Parity is false because Gauge is S2-only."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/gaugeSpec.types.ts", "change": "Add optional target and targetLabel fields to the public Gauge contract." },
+    { "file": "packages/vega-spec-builder-s2/src/gauge/gaugeSpecBuilder.ts", "change": "Compute the target's angle from its data field using the same value-to-angle mapping already used for the aggregated value." },
+    { "file": "packages/vega-spec-builder-s2/src/gauge/gaugeMarkUtils.ts", "change": "Render a marker mark at the target's angle, with optional label text." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/gauge.types.ts", "change": "Expose target and targetLabel on the public GaugeProps." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/Gauge/Features/GaugeBasic.story.tsx", "change": "Add a story showing a gauge with a target marker distinct from the current value." }
+  ],
+  "openQuestions": [
+    "planning/specs/schema.json's chartType enum has no 'gauge' value; this spec uses the 'chart' fallback until 'gauge' is added (ideally to the pre-alpha list), at which point this file should move to planning/specs/pre-alpha/gauge/."
+  ]
+}

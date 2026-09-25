@@ -1,0 +1,50 @@
+{
+  "id": "gauge-thresholds",
+  "title": "Gauge: threshold performance zones",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-09-16",
+  "complexity": {
+    "score": 3,
+    "rationale": "The angle-mapping infrastructure already exists on Gauge, but mapping a sequential list of value breakpoints onto arc zones and rendering each as its own colored segment is new, non-precedented logic with a real design decision (how zone boundaries and their optional labels are positioned)."
+  },
+  "summary": "Adds a thresholds prop to Gauge that divides the arc into sequential, non-overlapping colored zones representing performance bands (e.g. red/yellow/green), used only in needle mode.",
+  "requirements": [
+    "Accept an ordered list of threshold entries, each with a breakpoint value and a color.",
+    "In needle mode, render the arc as consecutive colored zones: the first zone spans from the scale minimum to the first breakpoint, each subsequent zone spans from the previous breakpoint to its own, using each entry's color.",
+    "When thresholds are provided, the arc's zone coloring replaces the single fixed-color track for that instance.",
+    "Thresholds have no effect in fill mode; fill mode keeps its existing single-color fill behavior.",
+    "A threshold entry may optionally include a label, displayed at that breakpoint's position on the arc; entries without a label show no text.",
+    "The needle continues to render on top of the zoned arc, pointing at the aggregated value exactly as it does over the current single-color track."
+  ],
+  "edgeCases": [
+    { "case": "thresholds supplied out of value order", "expectedBehavior": "normalize by sorting on breakpoint value before rendering zones, so visual order always matches value order" },
+    { "case": "thresholds overlap (a breakpoint at or before the previous one)", "expectedBehavior": "treat as unsupported input; document that thresholds must be strictly increasing rather than attempting to render overlapping zones" },
+    { "case": "a single threshold entry", "expectedBehavior": "renders exactly two zones: minimum-to-breakpoint and breakpoint-to-maximum" },
+    { "case": "showNeedle is false with thresholds set", "expectedBehavior": "thresholds are ignored entirely; the fill mode's single-color behavior is unaffected" },
+    { "case": "long threshold label text at a small rendered size", "expectedBehavior": "truncate with an ellipsis rather than overlapping neighboring zone labels" },
+    { "case": "light vs. dark background", "expectedBehavior": "zone label text remains legible against both, following the same neutral text-color convention already used for the value/metric labels" }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: mapping each threshold breakpoint to an arc angle needs new derived geometry beyond the existing single value-to-angle signal. requiresS1S2Parity is false because Gauge is S2-only with no S1 equivalent."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/gaugeSpec.types.ts", "change": "Add an optional thresholds field (ordered breakpoint value + color, with an optional label) to the public Gauge contract." },
+    { "file": "packages/vega-spec-builder-s2/src/gauge/gaugeMarkUtils.ts", "change": "When thresholds are present and showNeedle is true, render one colored arc segment per zone instead of the single fixed-color track, plus optional per-breakpoint label text." },
+    { "file": "packages/vega-spec-builder-s2/src/gauge/gaugeSpecBuilder.ts", "change": "Normalize/sort threshold entries by value before they reach the mark layer." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/gauge.types.ts", "change": "Expose thresholds on the public GaugeProps." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/Gauge/Features/GaugeBasic.story.tsx", "change": "Add a story demonstrating a multi-zone threshold gauge." }
+  ],
+  "openQuestions": [
+    "Whether zone label text should always show the breakpoint's numeric value alongside a custom label, or replace it entirely.",
+    "planning/specs/schema.json's chartType enum has no 'gauge' value; this spec uses the 'chart' fallback until 'gauge' is added (ideally to the pre-alpha list), at which point this file should move to planning/specs/pre-alpha/gauge/."
+  ]
+}
