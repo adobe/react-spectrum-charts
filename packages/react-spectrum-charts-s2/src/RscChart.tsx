@@ -54,8 +54,17 @@ import useMarkOnClickDetails from './hooks/useMarkOnClickDetails.js';
 import usePopovers, { PopoverDetail } from './hooks/usePopovers.js';
 import useSpec from './hooks/useSpec.js';
 import useSpecProps from './hooks/useSpecProps.js';
-import { RscChartProps } from './types/index.js';
+import { ChartChildElement, RscChartProps } from './types/index.js';
 import { clearHoverSignals, sanitizeMarkChildren, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils/index.js';
+
+/** The `title` prop of the Axis child at the given `position`, if one exists. */
+const getAxisTitleAtPosition = (sanitizedChildren: ChartChildElement[], position: string): string | undefined =>
+  (
+    sanitizedChildren.find(
+      (child) =>
+        'displayName' in child.type && child.type.displayName === Axis.displayName && (child.props as { position?: string }).position === position
+    )?.props as { title?: string } | undefined
+  )?.title;
 
 interface ChartDialogProps {
   targetElement: RefObject<HTMLElement | null>;
@@ -216,15 +225,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       | undefined
   )?.title;
   const fieldLabels = useMemo(() => {
-    const titleAt = (position: 'bottom' | 'left') =>
-      (
-        sanitizedChildren.find(
-          (child) =>
-            'displayName' in child.type &&
-            child.type.displayName === Axis.displayName &&
-            (child.props as { position?: string }).position === position
-        )?.props as { title?: string } | undefined
-      )?.title;
+    const titleAt = (position: 'bottom' | 'left') => getAxisTitleAtPosition(sanitizedChildren, position);
     const isHorizontal = navOrientation === 'horizontal';
     const dimensionTitle = titleAt(isHorizontal ? 'left' : 'bottom');
     const metricTitle = titleAt(isHorizontal ? 'bottom' : 'left');
@@ -251,17 +252,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
       return undefined;
     }
     const positions = navOrientation === 'horizontal' ? ['bottom', 'top'] : ['left', 'right'];
-    const titleAtPosition = (position: string) =>
-      (
-        sanitizedChildren.find(
-          (child) =>
-            'displayName' in child.type &&
-            child.type.displayName === Axis.displayName &&
-            (child.props as { position?: string }).position === position
-        )?.props as { title?: string } | undefined
-      )?.title;
-    const primaryTitle = titleAtPosition(positions[0]);
-    const secondaryTitle = titleAtPosition(positions[1]);
+    const primaryTitle = getAxisTitleAtPosition(sanitizedChildren, positions[0]);
+    const secondaryTitle = getAxisTitleAtPosition(sanitizedChildren, positions[1]);
     if (!primaryTitle && !secondaryTitle) return undefined;
     const seriesOrder = [...new Set((data as SimpleData[]).map((datum) => String(datum[navColor])))];
     if (seriesOrder.length === 0) return undefined;
