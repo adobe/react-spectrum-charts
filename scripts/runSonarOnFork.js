@@ -16,7 +16,7 @@ const chalk = require('chalk');
 const { execSync } = require('child_process');
 const { getBranchName, runSonarForFork, askQuestion } = require('./sonarCloudUtils');
 
-const prNumber = parseInt(process.argv[2]);
+const prNumber = Number.parseInt(process.argv[2]);
 
 if (!prNumber || isNaN(prNumber)) {
   console.error(chalk.red('Please provide a PR number.\nUsage: yarn sonar-fork-pr <pr-number>'));

@@ -227,7 +227,7 @@ export const getPolynomialOrder = (method: TrendlineMethod): number => {
   }
 
   // method is of the form polynomial-<order>
-  const order = parseInt(method.split('-')[1]);
+  const order = Number.parseInt(method.split('-')[1]);
   if (order < 1) {
     throw new Error(`Invalid polynomial order: ${order}, order must be an interger greater than 0`);
   }
