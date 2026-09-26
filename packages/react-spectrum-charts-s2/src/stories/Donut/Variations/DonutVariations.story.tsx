@@ -18,7 +18,7 @@ import {
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAP,
 } from '@spectrum-charts/constants';
-import { ChartData, Datum } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
 import { ChartInspect, ChartPopover } from '../../../components';
@@ -154,13 +154,6 @@ const DonutVariationChart = ({
     </Chart>
   );
 };
-
-const dialogContent = (datum: Datum): ReactElement => (
-  <div>
-    <div>Series: {datum.series}</div>
-    <div>Value: {datum.value}</div>
-  </div>
-);
 
 const variations: Variation[] = [
   {
@@ -435,8 +428,8 @@ const variations: Variation[] = [
     coverage: ['ChartInspect', 'ChartPopover'],
     render: () => (
       <DonutVariationChart>
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover width="auto">{dialogContent}</ChartPopover>
+        <ChartInspect />
+        <ChartPopover width="auto" />
       </DonutVariationChart>
     ),
   },
