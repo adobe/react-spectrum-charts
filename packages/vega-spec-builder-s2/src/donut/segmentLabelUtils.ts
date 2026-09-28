@@ -715,7 +715,10 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
     const labelModeFilter = getLabelModeFilter(richSegmentLabel);
     const candidateDataName = `${labelName}Candidates`;
     const labelHeightExpr = getRichSegmentLabelHeightExpr(richSegmentLabel);
-    const bottomRow = rows[rows.length - 1];
+    const bottomRow = rows.at(-1);
+    if (!bottomRow) {
+      throw new Error('Expected a rich segment label to have at least one row.');
+    }
     const topExtentExpr = `${nameRow.fontSize} / 2`;
     const bottomExtentExpr = `(${bottomRow.dy}) + ${bottomRow.fontSize} / 2`;
     const inwardExtentExpr = `cos(${arcThetaExpr}) >= 0 ? ${bottomExtentExpr} : ${topExtentExpr}`;
