@@ -39,6 +39,20 @@ interface ChartActionBarDialogProps {
 
 const DRAG_STEP = 10;
 
+/**
+ * Places a fixed element at viewport coordinates, offsetting for a transformed ancestor's containing block.
+ * @param element
+ * @param left
+ * @param top
+ */
+const setViewportPosition = (element: HTMLElement, left: number, top: number) => {
+  element.style.left = '0px';
+  element.style.top = '0px';
+  const origin = element.getBoundingClientRect();
+  element.style.left = `${left - origin.left}px`;
+  element.style.top = `${top - origin.top}px`;
+};
+
 const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
   actionBar,
   idKey,
@@ -90,8 +104,11 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
     const top = hasRoomAbove ? anchorRect.top - barHeight - 8 : anchorRect.bottom + 8;
     const maxLeft = Math.max(window.innerWidth - barWidth, 0);
     const maxTop = Math.max(window.innerHeight - barHeight, 0);
-    containerRef.current.style.left = `${Math.min(Math.max(anchorRect.left, 0), maxLeft)}px`;
-    containerRef.current.style.top = `${Math.min(Math.max(top, 0), maxTop)}px`;
+    setViewportPosition(
+      containerRef.current,
+      Math.min(Math.max(anchorRect.left, 0), maxLeft),
+      Math.min(Math.max(top, 0), maxTop)
+    );
   }, [isOpen, targetElement]);
 
   // Shrinks visibleCount until the bar no longer overflows its max-inline-size.
@@ -172,8 +189,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
     const maxTop = Math.max(window.innerHeight - offsetHeight, 0);
     const newLeft = Math.min(Math.max(dragStartRef.current.startLeft + dx, 0), maxLeft);
     const newTop = Math.min(Math.max(dragStartRef.current.startTop + dy, 0), maxTop);
-    containerRef.current.style.left = `${newLeft}px`;
-    containerRef.current.style.top = `${newTop}px`;
+    setViewportPosition(containerRef.current, newLeft, newTop);
   }, []);
 
   const handleDragEnd = useCallback(() => {
@@ -205,8 +221,11 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
     const { offsetWidth, offsetHeight } = containerRef.current;
     const maxLeft = Math.max(window.innerWidth - offsetWidth, 0);
     const maxTop = Math.max(window.innerHeight - offsetHeight, 0);
-    containerRef.current.style.left = `${Math.min(Math.max(rect.left + dx, 0), maxLeft)}px`;
-    containerRef.current.style.top = `${Math.min(Math.max(rect.top + dy, 0), maxTop)}px`;
+    setViewportPosition(
+      containerRef.current,
+      Math.min(Math.max(rect.left + dx, 0), maxLeft),
+      Math.min(Math.max(rect.top + dy, 0), maxTop)
+    );
   }, []);
 
   return (

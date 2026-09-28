@@ -89,6 +89,25 @@ describe('ChartActionBar', () => {
     await waitFor(() => expect(parseFloat(actionBar.style.left)).toBeLessThanOrEqual(window.innerWidth));
   });
 
+  test('offsets for a transformed ancestor so the bar lands at the anchor', async () => {
+    // Simulates a transformed ancestor (e.g. Storybook Docs zoom) whose containing block starts at (100, 50).
+    const rectSpy = jest.spyOn(HTMLDialogElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLDialogElement
+    ) {
+      return { left: parseFloat(this.style.left || '0') + 100, top: parseFloat(this.style.top || '0') + 50 } as DOMRect;
+    });
+    render(<WithActionBar {...WithActionBar.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+    const anchor = await screen.findByTestId('rsc-popover-anchor');
+    jest.spyOn(anchor, 'getBoundingClientRect').mockReturnValue({ top: 400, bottom: 420, left: 150 } as DOMRect);
+
+    await clickNthElement(points, 0);
+    const actionBar = await screen.findByTestId('rsc-action-bar');
+    await waitFor(() => expect(actionBar.getBoundingClientRect()).toMatchObject({ left: 150, top: 392 }));
+    rectSpy.mockRestore();
+  });
+
   test('drag repositions the bar', async () => {
     render(<WithActionBar {...WithActionBar.args} />);
     const chart = await findChart();
