@@ -53,6 +53,7 @@ import {
 } from '../specUtils';
 import {
   BarSpecOptions,
+  ChartActionBarOptions,
   ChartPopoverOptions,
   ChartInspectOptions,
   ColorFacet,
@@ -74,13 +75,18 @@ import {
 } from '../types';
 
 /**
- * If a popover or hasOnClick exists on the mark, then set the cursor to a pointer.
+ * If a popover, action bar, or hasOnClick exists on the mark, then set the cursor to a pointer.
  * @param chartPopovers
  * @param hasOnClick
+ * @param chartActionBars
  * @returns cursor encoding
  */
-export const getCursor = (chartPopovers: ChartPopoverOptions[], hasOnClick?: boolean): EncodeEntry['cursor'] => {
-  if (hasOnClick || chartPopovers.length) {
+export const getCursor = (
+  chartPopovers: ChartPopoverOptions[],
+  hasOnClick?: boolean,
+  chartActionBars?: ChartActionBarOptions[]
+): EncodeEntry['cursor'] => {
+  if (hasOnClick || chartPopovers.length || chartActionBars?.length) {
     return { value: 'pointer' };
   }
 };
@@ -129,11 +135,12 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
 };
 
 /**
- * Checks if there are any inspects or popovers on the mark
+ * Checks if there are any inspects, popovers, or action bars on the mark
  * @param children
  * @returns
  */
 export const isInteractive = (options: {
+  chartActionBars?: ChartActionBarOptions[];
   chartPopovers?: ChartPopoverOptions[];
   chartInspects?: ChartInspectOptions[];
   hasOnClick?: boolean;
@@ -151,6 +158,7 @@ export const isInteractive = (options: {
   return (
     hasOnClick ||
     hasOnContextMenu ||
+    hasActionBar(options) ||
     hasPopover(options) ||
     hasInspect(options) ||
     trendlines.some((trendline) => trendline.displayOnHover) ||
@@ -159,6 +167,9 @@ export const isInteractive = (options: {
     segmentLabels.some((segmentLabel) => segmentLabel.value !== false || segmentLabel.percent)
   );
 };
+
+export const hasActionBar = (options: { chartActionBars?: ChartActionBarOptions[] }): boolean =>
+  Boolean('chartActionBars' in options && options.chartActionBars?.length);
 
 export const hasPopover = (options: { chartPopovers?: ChartPopoverOptions[] }): boolean =>
   Boolean('chartPopovers' in options && options.chartPopovers?.length);
@@ -346,6 +357,7 @@ export const getPointsForVoronoi = (
  */
 export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions, dataSource: string): PathMark => {
   const { chartPopovers, chartInspects, name: markName } = markOptions;
+  const chartActionBars = 'chartActionBars' in markOptions ? markOptions.chartActionBars : undefined;
   const hasOnClick = 'hasOnClick' in markOptions && markOptions.hasOnClick;
   return {
     name: `${markName}_voronoi`,
@@ -360,7 +372,7 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
         tooltip: getInspectEncoding(chartInspects ?? [], markName, true),
       },
       update: {
-        cursor: getCursor(chartPopovers ?? [], hasOnClick),
+        cursor: getCursor(chartPopovers ?? [], hasOnClick, chartActionBars),
       },
     },
     transform: [
@@ -469,6 +481,7 @@ export const getMarkOpacity = (
 
 export const getInteractiveMarkName = (
   options: {
+    chartActionBars?: ChartActionBarOptions[];
     chartPopovers?: ChartPopoverOptions[];
     chartInspects?: ChartInspectOptions[];
     hasOnClick?: boolean;

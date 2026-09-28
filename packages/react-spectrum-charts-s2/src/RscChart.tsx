@@ -9,7 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { CSSProperties, RefObject, Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  CSSProperties,
+  Ref,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
 import { Focusable } from 'react-aria-components';
@@ -29,6 +38,7 @@ import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig
 import './Chart.css';
 import { VegaChart } from './VegaChart';
 import { Axis } from './components/Axis';
+import { ChartActionBarDialog } from './components/ChartActionBar/ChartActionBarDialog';
 import { ChartInspect } from './components/ChartInspect';
 import { Legend } from './components/Legend';
 import { AxisRegionOptions } from './dataNavigator/buildChartStructure';
@@ -36,6 +46,7 @@ import { isDualMetricAxisNavigation } from './dataNavigator/buildBarStructure';
 import { Navigator } from './dataNavigator/Navigator';
 import { getNavigableChartType } from './dataNavigator/navigableMarks';
 import { useChartContext } from './context/RscChartContext';
+import useActionBars from './hooks/useActionBars';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
 import { useChartInteractions } from './hooks/useChartInteractions';
 import useMarkOnClickDetails from './hooks/useMarkOnClickDetails';
@@ -150,6 +161,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   }, [isPopoverOpen]);
 
   useChartImperativeHandle(ref, { chartView, title });
+  const actionBars = useActionBars(sanitizedChildren);
   const popovers = usePopovers(sanitizedChildren);
 
   const handleNewView = useCallback(
@@ -391,6 +403,16 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
           targetElement={popoverAnchorRef}
           setIsPopoverOpen={setIsPopoverOpen}
           popover={popover}
+          idKey={idKey}
+          specSignalNames={specSignalNames}
+        />
+      ))}
+      {actionBars.map((ab) => (
+        <ChartActionBarDialog
+          key={ab.key}
+          actionBar={ab}
+          targetElement={popoverAnchorRef}
+          setIsPopoverOpen={setIsPopoverOpen}
           idKey={idKey}
           specSignalNames={specSignalNames}
         />
