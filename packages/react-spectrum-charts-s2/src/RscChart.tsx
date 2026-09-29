@@ -37,7 +37,7 @@ import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
-import { DonutDialogContent, getDonutSwatchColor } from './components/ChartDialogContent';
+import { DonutDialogContent, getDonutSwatchColor } from './pre-alpha/components/Donut/DonutDialogContent';
 import { Axis } from './components/Axis';
 import { ChartActionBarDialog } from './components/ChartActionBar/ChartActionBarDialog';
 import { ChartInspect } from './components/ChartInspect';

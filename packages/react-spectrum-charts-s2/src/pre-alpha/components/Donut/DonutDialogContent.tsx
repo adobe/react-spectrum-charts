@@ -17,7 +17,7 @@ import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_METRIC, DONUT_BOOLEAN_SECONDARY_COL
 import { getS2ColorValue } from '@spectrum-charts/themes';
 import { ColorScheme, Datum, formatPercentWithValue } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartProps, DonutProps } from '../types';
+import { ChartProps, DonutProps } from '../../../types';
 
 interface DonutDialogContentOptions {
   colorKey: string;

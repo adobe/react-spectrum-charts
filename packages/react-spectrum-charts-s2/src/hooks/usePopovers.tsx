@@ -11,9 +11,9 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { DefaultDonutContent, getDefaultDonutContent } from '../components/ChartDialogContent';
 import { ChartPopover } from '../components/ChartPopover';
 import { Donut } from '../pre-alpha';
+import { DefaultDonutContent, getDefaultDonutContent } from '../pre-alpha/components/Donut/DonutDialogContent';
 import { ChartChildElement, ChartPopoverElement, ChartPopoverProps, DonutElement } from '../types';
 import { getAllElements, getAllMarkElements } from '../utils';
 

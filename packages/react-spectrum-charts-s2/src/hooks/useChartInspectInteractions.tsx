@@ -9,11 +9,31 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, useMemo, type ReactElement, type ReactNode } from 'react';
+import { FC, type ReactElement, type ReactNode, useMemo } from 'react';
 
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { Position, Options as VegaTooltipOptions } from 'vega-tooltip';
+
+import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
+import {
+  ColorScheme,
+  Datum,
+  LegendDescription,
+  TooltipAnchor,
+  TooltipPlacement,
+} from '@spectrum-charts/vega-spec-builder-s2';
+
+import { useChartContext } from '../context/RscChartContext';
+import {
+  DefaultDonutContent,
+  DonutDialogContent,
+  getDonutSwatchColor,
+} from '../pre-alpha/components/Donut/DonutDialogContent';
+import { ChartChildElement, RscChartProps } from '../types';
+import { debugLog } from '../utils';
+import useChartInspects, { type InspectDetail } from './useChartInspects';
+import useLegend from './useLegend';
 
 function renderToHtml(element: ReactElement): string {
   const container = document.createElement('div');
@@ -25,16 +45,6 @@ function renderToHtml(element: ReactElement): string {
   root.unmount();
   return html;
 }
-
-import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
-import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
-
-import { useChartContext } from '../context/RscChartContext';
-import { DefaultDonutContent, DonutDialogContent, getDonutSwatchColor } from '../components/ChartDialogContent';
-import { ChartChildElement, RscChartProps } from '../types';
-import { debugLog } from '../utils';
-import useLegend from './useLegend';
-import useChartInspects, { type InspectDetail } from './useChartInspects';
 
 interface LegendInspectProps {
   value: { index: number };
@@ -50,7 +60,12 @@ const getLegendInspectMarkup = (
 ): string | undefined => {
   const componentName = value[COMPONENT_NAME];
   const index = (value as { index?: number }).index;
-  if (typeof componentName === 'string' && componentName.startsWith('legend') && legendDescriptions && typeof index === 'number') {
+  if (
+    typeof componentName === 'string' &&
+    componentName.startsWith('legend') &&
+    legendDescriptions &&
+    typeof index === 'number'
+  ) {
     debugLog(debug, {
       title: 'Legend descriptions',
       contents: legendDescriptions,
@@ -175,7 +190,19 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
     }
 
     return options;
-  }, [colorScheme, tooltipAnchor, tooltipPlacement, inspects, legendDescriptions, debug, idKey, locale, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
+  }, [
+    colorScheme,
+    tooltipAnchor,
+    tooltipPlacement,
+    inspects,
+    legendDescriptions,
+    debug,
+    idKey,
+    locale,
+    chartView,
+    controlledHoveredIdSignal,
+    controlledHoveredGroupSignal,
+  ]);
 
   return { inspectOptions };
 };
