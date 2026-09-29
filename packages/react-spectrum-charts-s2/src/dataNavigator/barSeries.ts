@@ -108,8 +108,8 @@ export const withViewKeys = (
   const dimensionLabels = new Map<string, unknown>();
   const parsedDimension = (row: SimpleData, index: number, field: string): unknown => {
     const parsed = table?.[index][field];
-    // The chart parses dimensions to primitives (e.g. epoch ms); anything else keeps the original value.
-    if (parsed == null || parsed === row[field] || typeof parsed === 'object') return row[field];
+    // The chart parses dimensions to numbers or strings (e.g. epoch ms); anything else keeps the original value.
+    if ((typeof parsed !== 'number' && typeof parsed !== 'string') || parsed === row[field]) return row[field];
     dimensionLabels.set(String(parsed), row[field]);
     return parsed;
   };
