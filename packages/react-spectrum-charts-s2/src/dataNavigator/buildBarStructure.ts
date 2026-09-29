@@ -68,7 +68,7 @@ const SEGMENT_ID_KEY = '_dnId';
  * @param value
  * @returns string
  */
-export const toNavigationKey = (value: unknown): string => String(value);
+export const toNavigationKey: (value: unknown) => string = String;
 
 /**
  * The leaf id of a bar without a series; an empty dimension falls back to the separator, since data-navigator skips empty ids.
@@ -233,6 +233,33 @@ const removeEdge = (structure: Structure, edgeId: string): void => {
   }
 };
 
+/** Removes every edge between two leaf bars, keeping the dimension edges. */
+const removeLeafEdges = (structure: Structure): void => {
+  for (const [edgeId, edge] of Object.entries(structure.edges)) {
+    const source = typeof edge.source === 'string' ? structure.nodes[edge.source] : undefined;
+    const target = typeof edge.target === 'string' ? structure.nodes[edge.target] : undefined;
+    if (source && target && source.dimensionLevel == null && target.dimensionLevel == null) removeEdge(structure, edgeId);
+  }
+};
+
+interface StackSegment {
+  id: string;
+  stackKey: unknown;
+}
+
+/** Links each segment to the same segment in the next stack; stacks sharing none are still linked, so left/right never dead-ends. */
+const linkAdjacentStacks = (structure: Structure, stack: StackSegment[], next: StackSegment[]): void => {
+  let linked = false;
+  for (const { id, stackKey } of stack) {
+    const counterpart = next.find((candidate) => candidate.stackKey === stackKey);
+    if (counterpart) {
+      addNavigationEdge(structure, id, counterpart.id, ['left', 'right']);
+      linked = true;
+    }
+  }
+  if (!linked) addNavigationEdge(structure, stack[0].id, next[0].id, ['left', 'right']);
+};
+
 /** Dodged-and-stacked bars: logical up/down moves within a stack, left/right to the same segment in the next stack (across categories too). */
 const wireDodgedStackNavigation = (
   structure: Structure,
@@ -242,11 +269,7 @@ const wireDodgedStackNavigation = (
   dodgeFields: string[],
   stackFields: string[]
 ): void => {
-  for (const [edgeId, edge] of Object.entries(structure.edges)) {
-    const source = typeof edge.source === 'string' ? structure.nodes[edge.source] : undefined;
-    const target = typeof edge.target === 'string' ? structure.nodes[edge.target] : undefined;
-    if (source && target && source.dimensionLevel == null && target.dimensionLevel == null) removeEdge(structure, edgeId);
-  }
+  removeLeafEdges(structure);
   const stacks = groupRows(orderedData, (row) => `${row[dimension]}${NAVIGATION_ID_SEPARATOR}${getSeriesKey(row, dodgeFields)}`).map(
     (rows) => rows.map((row) => ({ id: segmentId(row[dimension], row[seriesField]), stackKey: getSeriesKey(row, stackFields) }))
   );
@@ -255,17 +278,7 @@ const wireDodgedStackNavigation = (
       addNavigationEdge(structure, stack[segment].id, stack[segment + 1].id, ['up', 'down']);
     }
     const next = stacks[index + 1];
-    if (!next) continue;
-    let linked = false;
-    for (const { id, stackKey } of stack) {
-      const counterpart = next.find((candidate) => candidate.stackKey === stackKey);
-      if (counterpart) {
-        addNavigationEdge(structure, id, counterpart.id, ['left', 'right']);
-        linked = true;
-      }
-    }
-    // Stacks sharing no segment are still linked, so left/right never dead-ends.
-    if (!linked) addNavigationEdge(structure, stack[0].id, next[0].id, ['left', 'right']);
+    if (next) linkAdjacentStacks(structure, stack, next);
   }
 };
 
