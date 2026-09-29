@@ -19,6 +19,7 @@ import {
   DONUT_LABEL_RING_GAP,
   FILTERED_TABLE,
   HOVERED_ITEM,
+  MARK_ID,
   TABLE,
 } from '@spectrum-charts/constants';
 
@@ -142,6 +143,71 @@ describe('addData', () => {
         });
       });
     });
+  });
+
+  test.each([
+    ['direct', { value: true }, 'denseDonut_segmentLabel'],
+    ['advanced', { percent: true, showValueRow: true, swatch: true, value: true }, 'denseDonut_richSegmentLabel'],
+  ])('hovering a segment reveals its hidden %s label and hides the labels it overlaps', async (_mode, label, prefix) => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    // small chart + long names force direct-label collisions (jsdom measures text width as ~0)
+    const data = [
+      ...Array.from({ length: 18 }, (_, index) => ({ series: `Long category name ${index + 1}`, value: 10 })),
+      { series: 'Sliver', value: 1 },
+    ];
+    const spec = buildSpec({
+      data,
+      marks: [{ markType: 'donut', color: 'series', metric: 'value', name: 'denseDonut', segmentLabels: [label] }],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(240).height(240);
+    await view.runAsync();
+
+    const hoveredSignal = `denseDonut_${HOVERED_ITEM}`;
+    const getLabelIds = () =>
+      view
+        .data(`${prefix}Data`)
+        .map((datum) => datum[MARK_ID])
+        .sort((a, b) => a - b);
+    const expectNoCollisions = () => {
+      const labels = view.data(`${prefix}Data`);
+      labels.forEach((datum, index) => {
+        labels.slice(index + 1).forEach((other) => {
+          if (datum[`${prefix}_hemisphere`] !== other[`${prefix}_hemisphere`]) return;
+          datum[`${prefix}_collisionBoxes`].forEach(([left, right, top, bottom]) => {
+            other[`${prefix}_collisionBoxes`].forEach(([otherLeft, otherRight, otherTop, otherBottom]) => {
+              const overlaps =
+                left < otherRight + DONUT_LABEL_COLLISION_GAP &&
+                right > otherLeft - DONUT_LABEL_COLLISION_GAP &&
+                top < otherBottom + DONUT_LABEL_COLLISION_GAP &&
+                bottom > otherTop - DONUT_LABEL_COLLISION_GAP;
+              expect(overlaps).toBe(false);
+            });
+          });
+        });
+      });
+    };
+    const defaultIds = getLabelIds();
+    const candidateIds = view.data(`${prefix}Candidates`).map((datum) => datum[MARK_ID]);
+    const collisionHiddenId = candidateIds.find((id) => !defaultIds.includes(id));
+    const belowMinAngleId = view
+      .data(FILTERED_TABLE)
+      .map((datum) => datum[MARK_ID])
+      .find((id) => !candidateIds.includes(id));
+    expect(collisionHiddenId).toBeDefined();
+    expect(belowMinAngleId).toBeDefined();
+
+    for (const hoveredId of [collisionHiddenId, belowMinAngleId]) {
+      await view.signal(hoveredSignal, { [MARK_ID]: hoveredId }).runAsync();
+      expect(getLabelIds()).toContain(hoveredId);
+      expectNoCollisions();
+    }
+
+    await view.signal(hoveredSignal, null).runAsync();
+    expect(getLabelIds()).toEqual(defaultIds);
   });
 
   test('should add data correctly for boolean donut', () => {

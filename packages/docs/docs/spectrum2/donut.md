@@ -110,6 +110,10 @@ and/or metric value.
 </Donut>
 ```
 
+Labels stay fixed at each segment's midpoint. A label is hidden when it would overlap a label for a larger
+segment, or when its segment is narrower than 0.3 radians (about 17°). Hovering a segment always shows its
+label and temporarily hides any labels that would overlap it.
+
 When `emphasizedItems` is set, two `SegmentLabel` children can provide different label
 treatments for emphasized and de-emphasized segments:
 

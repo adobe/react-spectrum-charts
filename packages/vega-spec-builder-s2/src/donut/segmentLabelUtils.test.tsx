@@ -17,7 +17,10 @@ import {
   DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
+  DONUT_SEGMENT_LABEL_MIN_ANGLE,
   DONUT_SIZE_TIER_CUTPOINTS,
+  HOVERED_ITEM,
+  MARK_ID,
 } from '@spectrum-charts/constants';
 
 import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types';
@@ -728,6 +731,45 @@ describe('hover behavior', () => {
       },
       { value: '#505050' },
     ]);
+  });
+});
+
+describe('hovered label reveal', () => {
+  const minAngleExpr = `datum['testName_arcLength'] >= ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`;
+  const hoveredIdExpr = `isValid(testName_${HOVERED_ITEM}) ? testName_${HOVERED_ITEM}.${MARK_ID} : null`;
+  const interactiveDonutOptions: DonutSpecOptions = {
+    ...defaultDonutOptions,
+    segmentLabels: [{ value: true }],
+  };
+
+  test('interactive direct labels keep the hovered segment past the min-angle filter', () => {
+    const [candidates] = getSegmentLabelData(interactiveDonutOptions);
+    expect(candidates.transform?.[0]).toHaveProperty(
+      'expr',
+      `${minAngleExpr} || datum.${MARK_ID} === (${hoveredIdExpr})`
+    );
+  });
+
+  test('interactive direct labels pass the hovered id to isDonutLabelVisible', () => {
+    const [, visible] = getSegmentLabelData(interactiveDonutOptions);
+    expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringMatching(/isDonutLabelVisible\(.*\)$/));
+    expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringContaining(`, ${hoveredIdExpr})`));
+  });
+
+  test('non-interactive direct labels keep the plain min-angle filter and pass a null hovered id', () => {
+    const [candidates, visible] = getSegmentLabelData({ ...defaultDonutOptions, segmentLabels: [{ value: false }] });
+    expect(candidates.transform?.[0]).toHaveProperty('expr', minAngleExpr);
+    expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringMatching(/, null\)$/));
+    expect(visible.transform?.[0]).not.toHaveProperty('expr', expect.stringContaining(HOVERED_ITEM));
+  });
+
+  test('rich labels use the same hovered-label wiring', () => {
+    const [candidates, visible] = getRichSegmentLabelData(richDonutOptions);
+    expect(candidates.transform?.[0]).toHaveProperty(
+      'expr',
+      `${minAngleExpr} || datum.${MARK_ID} === (${hoveredIdExpr})`
+    );
+    expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringContaining(`, ${hoveredIdExpr})`));
   });
 });
 
