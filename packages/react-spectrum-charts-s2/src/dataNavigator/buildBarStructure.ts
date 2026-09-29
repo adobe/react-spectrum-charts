@@ -52,6 +52,8 @@ export interface BuildBarStructureOptions {
   locale?: string;
   /** Maps series values to their metric-axis titles for dual-metric-axis bars. */
   metricTitleBySeries?: Record<string, string>;
+  /** Series toggled off via the legend. Their rows are excluded, since they aren't rendered. */
+  hiddenSeries?: string[];
 }
 
 interface MetricSeriesLabel {
@@ -299,12 +301,15 @@ export const buildBarStructure = ({
   dimensionLabels,
   locale = 'en-US',
   metricTitleBySeries,
+  hiddenSeries = [],
 }: BuildBarStructureOptions): BarStructure => {
   const effectiveType = type ?? 'stacked';
   const isMultiSeries = seriesField !== undefined;
   const isDodgedStacked = isMultiSeries && Boolean(dodgeFields?.length);
-  // Zero-value rows render nothing, so a mouse can't reach them and neither can navigation.
-  const visibleData = data.filter((d) => Number(d[metric]) !== 0);
+  // Zero-value and legend-hidden rows render nothing, so a mouse can't reach them and neither can navigation.
+  const visibleData = data.filter(
+    (d) => Number(d[metric]) !== 0 && !(seriesField !== undefined && hiddenSeries.includes(String(d[seriesField])))
+  );
   const orderedData = isMultiSeries
     ? orderStackSegments(visibleData, dimension, orientation, effectiveType, order, seriesField, dodgeFields)
     : visibleData;

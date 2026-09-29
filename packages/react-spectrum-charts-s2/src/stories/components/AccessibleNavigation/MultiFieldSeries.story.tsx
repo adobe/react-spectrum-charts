@@ -9,9 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ReactElement, useState } from 'react';
+
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
+import { Axis, Bar, ChartPopover, Legend } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import {
   FunnelConversion,
@@ -46,3 +50,56 @@ export const FunnelDodgedAndStacked = withNavigation(FunnelConversion);
 
 /** Dodged by `series` and `period`, stacked by `subSeries`. */
 export const FunnelTimeComparison = withNavigation(FunnelTimeComparisonExample);
+
+const contextMenuData = ['Chrome', 'Firefox', 'Safari'].flatMap((browser, browserIndex) =>
+  ['Windows', 'macOS', 'Linux'].map((operatingSystem, osIndex) => ({
+    browser,
+    operatingSystem,
+    downloads: ((browserIndex + 2) * (osIndex + 3)) % 11 + 1,
+  }))
+);
+
+interface ContextMenuArgs {
+  width: number;
+  height: number;
+}
+
+/** Shift+F10 (or the ContextMenu key) on a legend series or a bar opens its right-click popover; bars also log `onContextMenu`. */
+const ContextMenuStory: StoryFn<ContextMenuArgs> = (args): ReactElement => {
+  const { width, height } = args;
+  const [lastContextMenu, setLastContextMenu] = useState('none');
+  const chartProps = useChartProps({ data: contextMenuData, width, height, accessibleNavigation: true });
+  return (
+    <>
+      <Chart {...chartProps}>
+        <Axis position="bottom" baseline title="Browser" />
+        <Axis position="left" grid title="Downloads" />
+        <Bar
+          dimension="browser"
+          metric="downloads"
+          color="operatingSystem"
+          onContextMenu={(event, datum) =>
+            setLastContextMenu(`${datum.browser} / ${datum.operatingSystem} at (${Math.round(event.clientX)}, ${Math.round(event.clientY)})`)
+          }
+        >
+          <ChartPopover rightClick width={200}>
+            {(datum) => (
+              <div>
+                Bar menu: {datum.browser} / {datum.operatingSystem}
+              </div>
+            )}
+          </ChartPopover>
+        </Bar>
+        <Legend title="Operating system">
+          <ChartPopover rightClick width="auto">
+            {(datum) => <div>Legend menu: {datum.value}</div>}
+          </ChartPopover>
+        </Legend>
+      </Chart>
+      <div data-testid="last-context-menu">Last onContextMenu: {lastContextMenu}</div>
+    </>
+  );
+};
+
+export const KeyboardContextMenu = bindWithProps(ContextMenuStory);
+KeyboardContextMenu.args = { width: 700, height: 450 };
