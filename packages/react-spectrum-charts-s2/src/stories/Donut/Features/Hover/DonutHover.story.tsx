@@ -13,8 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
-
 import { Chart } from '../../../../Chart';
 import { ChartInspect, ChartPopover, Legend } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
@@ -70,28 +68,6 @@ const InspectAndPopoverStory: StoryFn<typeof Donut> = (): ReactElement => {
   );
 };
 
-const totalCount = basicDonutData.reduce((sum, { count }) => sum + count, 0);
-
-const customContent = (datum: Datum): ReactElement => (
-  <div>
-    <div>{((Number(datum.count) / totalCount) * 100).toFixed(1)}% of all visitors</div>
-    <div style={{ color: '#505050' }}>Browser share, May 2025</div>
-  </div>
-);
-
-// children are rendered below the default swatch, series, and raw value
-const CustomContentStory: StoryFn<typeof Donut> = (): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Donut metric="count" color="browser">
-        <ChartInspect>{customContent}</ChartInspect>
-        <ChartPopover width="auto">{customContent}</ChartPopover>
-      </Donut>
-    </Chart>
-  );
-};
-
 const SimpleDirectLabel = bindWithProps(SimpleDirectLabelStory);
 SimpleDirectLabel.args = { value: true, valueFormat: 'shortNumber' };
 
@@ -100,6 +76,4 @@ WithLegend.args = { value: true, valueFormat: 'shortNumber' };
 
 const InspectAndPopover = bindWithProps(InspectAndPopoverStory);
 
-const CustomContent = bindWithProps(CustomContentStory);
-
-export { CustomContent, InspectAndPopover, SimpleDirectLabel, WithLegend };
+export { InspectAndPopover, SimpleDirectLabel, WithLegend };

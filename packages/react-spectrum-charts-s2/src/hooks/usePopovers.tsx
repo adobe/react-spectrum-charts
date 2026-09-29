@@ -41,13 +41,7 @@ export default function usePopovers(children: ChartChildElement[]): PopoverDetai
     const container = createElement(ChartContainer, undefined, children);
     return {
       donutElements: getAllMarkElements(container, Donut, []) as MappedDonut[],
-      popoverElements: getAllElements(
-        container,
-        ChartPopover,
-        [],
-        undefined,
-        'Chart'
-      ) as MappedPopover[],
+      popoverElements: getAllElements(container, ChartPopover, [], undefined, 'Chart') as MappedPopover[],
     };
   }, [children]);
 
@@ -59,12 +53,15 @@ export default function usePopovers(children: ChartChildElement[]): PopoverDetai
           const donut = donutElements.find(({ name }) => name === popover.name);
           return {
             chartPopoverProps: popover.element.props,
-            defaultDonutContent: donut
-              ? {
-                  colorKey: donut.element.props.color ?? DEFAULT_COLOR,
-                  metricKey: donut.element.props.metric ?? DEFAULT_METRIC,
-                }
-              : undefined,
+            defaultDonutContent:
+              donut && !popover.element.props.children
+                ? {
+                    booleanDataName: donut.element.props.isBoolean ? `${donut.name}_booleanData` : undefined,
+                    colorKey: donut.element.props.color ?? DEFAULT_COLOR,
+                    metricKey: donut.element.props.metric ?? DEFAULT_METRIC,
+                    percentKey: `${donut.name}_arcPercent`,
+                  }
+                : undefined,
             key: `${popover.name}Popover${index}`,
             name: popover.name,
             UNSAFE_highlightBy: popover.element.props.UNSAFE_highlightBy,

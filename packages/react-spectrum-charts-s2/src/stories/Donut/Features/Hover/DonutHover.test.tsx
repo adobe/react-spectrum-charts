@@ -20,10 +20,10 @@ import {
   within,
 } from '../../../../test-utils';
 import '../../../../test-utils/__mocks__/matchMedia.mock.js';
-import { CustomContent, InspectAndPopover } from './DonutHover.story';
+import { InspectAndPopover } from './DonutHover.story';
 
 describe('InspectAndPopover', () => {
-  test('hovering a segment shows the default swatch, series, and raw value', async () => {
+  test('hovering a segment shows the default swatch, series, and percent with value', async () => {
     render(<InspectAndPopover {...InspectAndPopover.args} />);
     const chart = await findChart();
     const segments = await findAllMarksByGroupName(chart, 'donut0');
@@ -31,11 +31,10 @@ describe('InspectAndPopover', () => {
     await hoverNthElement(segments, 0);
     const inspect = await screen.findByTestId('rsc-tooltip');
     expect(within(inspect).getByText('Chrome')).toBeInTheDocument();
-    expect(within(inspect).getByText('10390')).toBeInTheDocument();
+    expect(within(inspect).getByText('25.7% (10K)')).toBeInTheDocument();
     expect(within(inspect).getByTestId('donut-dialog-swatch')).toHaveStyle({
       backgroundColor: segments[0].getAttribute('fill'),
     });
-    expect(inspect.querySelector('.rsc-donut-dialog-custom')).not.toBeInTheDocument();
   });
 
   test('clicking a segment opens a popover with the default content', async () => {
@@ -47,41 +46,9 @@ describe('InspectAndPopover', () => {
     const popover = await screen.findByTestId('rsc-popover');
     await waitFor(() => expect(popover).toBeInTheDocument());
     expect(within(popover).getByText('Other')).toBeInTheDocument();
-    expect(within(popover).getByText('4201')).toBeInTheDocument();
+    expect(within(popover).getByText('10.4% (4.2K)')).toBeInTheDocument();
     expect(within(popover).getByTestId('donut-dialog-swatch')).toHaveStyle({
       backgroundColor: segments[4].getAttribute('fill'),
     });
-    expect(popover.querySelector('.rsc-donut-dialog-custom')).not.toBeInTheDocument();
-  });
-});
-
-describe('CustomContent', () => {
-  test('hovering a segment appends consumer content below the default content', async () => {
-    render(<CustomContent {...CustomContent.args} />);
-    const chart = await findChart();
-    const segments = await findAllMarksByGroupName(chart, 'donut0');
-
-    await hoverNthElement(segments, 0);
-    const inspect = await screen.findByTestId('rsc-tooltip');
-    expect(within(inspect).getByText('Chrome')).toBeInTheDocument();
-    expect(within(inspect).getByText('10390')).toBeInTheDocument();
-    expect(within(inspect).getByText('25.7% of all visitors')).toBeInTheDocument();
-    expect(within(inspect).getByText('Browser share, May 2025')).toBeInTheDocument();
-  });
-
-  test('clicking a segment appends consumer content in the popover', async () => {
-    render(<CustomContent {...CustomContent.args} />);
-    const chart = await findChart();
-    const segments = await findAllMarksByGroupName(chart, 'donut0');
-
-    await clickNthElement(segments, 4);
-    const popover = await screen.findByTestId('rsc-popover');
-    await waitFor(() => expect(popover).toBeInTheDocument());
-    expect(within(popover).getByText('Other')).toBeInTheDocument();
-    expect(within(popover).getByText('4201')).toBeInTheDocument();
-    expect(within(popover).getByTestId('donut-dialog-swatch')).toHaveStyle({
-      backgroundColor: segments[4].getAttribute('fill'),
-    });
-    expect(within(popover).getByText('10.4% of all visitors')).toBeInTheDocument();
   });
 });

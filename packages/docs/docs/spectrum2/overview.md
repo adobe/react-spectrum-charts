@@ -140,7 +140,7 @@ Popovers are styled to match the Spectrum 2 elevated surface style (border, box 
             <td>children</td>
             <td>(datum: Datum) =&gt; ReactNode</td>
             <td>–</td>
-            <td>Callback that returns the content to render inside the inspect panel.</td>
+            <td>Callback that returns the content to render inside the inspect panel. Optional inside a <code>Donut</code>, which renders <a href="./donut#tooltips-and-popovers">default content</a> when omitted.</td>
         </tr>
         <tr>
             <td>excludeDataKeys</td>
@@ -179,7 +179,7 @@ Popovers are styled to match the Spectrum 2 elevated surface style (border, box 
             <td>children</td>
             <td>(datum: Datum, close: () =&gt; void) =&gt; ReactNode</td>
             <td>–</td>
-            <td>Callback that returns the content to render inside the popover. The second argument is a function that closes the popover.</td>
+            <td>Callback that returns the content to render inside the popover. The second argument is a function that closes the popover. Optional inside a <code>Donut</code>, which renders <a href="./donut#tooltips-and-popovers">default content</a> when omitted.</td>
         </tr>
         <tr>
             <td>width</td>

@@ -97,12 +97,9 @@ this removes transitions in the vega tooltip
 #vg-tooltip-element.vg-tooltip.dark-theme .rsc-donut-dialog-series {
   color: #afafaf;
 }
-.rsc-donut-dialog-value {
+.rsc-donut-dialog-percent-value {
   grid-column: 1 / -1;
   font-weight: 800;
-}
-.rsc-donut-dialog-custom {
-  grid-column: 1 / -1;
 }
 .rsc-container {
   position: relative;

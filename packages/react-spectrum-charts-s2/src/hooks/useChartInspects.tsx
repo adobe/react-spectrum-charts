@@ -54,12 +54,15 @@ export default function useChartInspects(children: ChartChildElement[]): Inspect
           return {
             name: inspect.name,
             callback: inspect.element.props.children,
-            defaultDonutContent: donut
-              ? {
-                  colorKey: donut.element.props.color ?? DEFAULT_COLOR,
-                  metricKey: donut.element.props.metric ?? DEFAULT_METRIC,
-                }
-              : undefined,
+            defaultDonutContent:
+              donut && !inspect.element.props.children
+                ? {
+                    booleanDataName: donut.element.props.isBoolean ? `${donut.name}_booleanData` : undefined,
+                    colorKey: donut.element.props.color ?? DEFAULT_COLOR,
+                    metricKey: donut.element.props.metric ?? DEFAULT_METRIC,
+                    percentKey: `${donut.name}_arcPercent`,
+                  }
+                : undefined,
             highlightBy: inspect.element.props.highlightBy,
             targets: inspect.element.props.targets,
           };

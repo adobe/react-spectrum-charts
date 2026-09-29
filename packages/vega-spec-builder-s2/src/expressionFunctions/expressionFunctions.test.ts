@@ -16,6 +16,7 @@ import {
   expressionFunctions,
   formatHorizontalTimeAxisLabels,
   formatLocaleCurrency,
+  formatPercentWithValue,
   formatShortNumber,
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
@@ -199,5 +200,21 @@ describe('formatShortNumber()', () => {
         percent: '\u202f%',
       })(1234567)
     ).toBe('1,2M');
+  });
+});
+
+describe('formatPercentWithValue()', () => {
+  test('should format the percent to one decimal followed by the short number value', () => {
+    expect(formatPercentWithValue('en-US')(0.652, 23456)).toBe('65.2% (23K)');
+    expect(formatPercentWithValue('en-US')(0.5, 900)).toBe('50.0% (900)');
+  });
+  test('should default to en-US', () => {
+    expect(formatPercentWithValue()(0.257, 10390)).toBe('25.7% (10K)');
+  });
+  test('should use the chart locale', () => {
+    expect(formatPercentWithValue('fr-FR')(0.652, 23456)).toBe('65,2\u202f% (23\u00a0k)');
+  });
+  test('should fall back to en-US percent formatting when only a time locale is provided', () => {
+    expect(formatPercentWithValue({ time: 'fr-FR' })(0.652, 900)).toBe('65.2% (900)');
   });
 });

@@ -24,18 +24,31 @@ const callback = () => null;
 describe('usePopovers', () => {
   test('uses the donut color and metric keys for default content', () => {
     const [detail] = run([createElement(Donut, { color: 'browser', metric: 'count' }, createElement(ChartPopover))]);
-    expect(detail.defaultDonutContent).toEqual({ colorKey: 'browser', metricKey: 'count' });
+    expect(detail.defaultDonutContent).toEqual({
+      colorKey: 'browser',
+      metricKey: 'count',
+      percentKey: 'donut0_arcPercent',
+    });
   });
 
   test('falls back to default color and metric keys', () => {
     const [detail] = run([createElement(Donut, {}, createElement(ChartPopover))]);
-    expect(detail.defaultDonutContent).toEqual({ colorKey: 'series', metricKey: 'value' });
+    expect(detail.defaultDonutContent).toEqual({
+      colorKey: 'series',
+      metricKey: 'value',
+      percentKey: 'donut0_arcPercent',
+    });
   });
 
-  test('keeps a donut child without children and exposes its callback when provided', () => {
+  test('sets the boolean data name for boolean donuts', () => {
+    const [detail] = run([createElement(Donut, { isBoolean: true }, createElement(ChartPopover))]);
+    expect(detail.defaultDonutContent?.booleanDataName).toBe('donut0_booleanData');
+  });
+
+  test('uses children instead of the default content when provided', () => {
     const details = run([createElement(Donut, {}, <ChartPopover>{callback}</ChartPopover>)]);
     expect(details).toHaveLength(1);
-    expect(details[0].defaultDonutContent).toBeDefined();
+    expect(details[0].defaultDonutContent).toBeUndefined();
   });
 
   test('ignores a non-donut child without children', () => {

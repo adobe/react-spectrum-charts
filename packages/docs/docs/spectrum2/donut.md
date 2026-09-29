@@ -32,17 +32,21 @@ import { Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectr
 Unlike the base package, S2 does not have a `ChartTooltip` component — use `ChartInspect`
 instead.
 
-Inside a `Donut`, both render a default header with the segment's color swatch, series name,
-and raw metric value. Children are optional; when provided, their content is rendered below
-the default header rather than replacing it, so use them for extra context instead of
-repeating the series or value.
+Inside a `Donut`, both render default content without children: the segment's color swatch and
+series name, followed by its share of the visible total and short-number value (e.g.
+`65.2% (23K)`), formatted with the chart `locale`. When children are provided, their content
+replaces the default content.
 
 ```jsx
 <Donut metric="count" color="browser">
-  <ChartInspect>
-    {(datum) => <div>{((datum.count / total) * 100).toFixed(1)}% of all visitors</div>}
-  </ChartInspect>
-  <ChartPopover width="auto" />
+  <ChartInspect />
+  <ChartPopover width="auto">
+    {(datum) => (
+      <div>
+        {datum.browser}: {datum.count} visitors
+      </div>
+    )}
+  </ChartPopover>
 </Donut>
 ```
 

@@ -396,7 +396,7 @@ describe('ChartPopover', () => {
 
     // check the content of the popover
     expect(within(popover).getByText('Other')).toBeInTheDocument();
-    expect(within(popover).getByText('4201')).toBeInTheDocument();
+    expect(within(popover).getByText('10.4% (4.2K)')).toBeInTheDocument();
 
     segments = getAllMarksByGroupName(chart, 'donut0');
 

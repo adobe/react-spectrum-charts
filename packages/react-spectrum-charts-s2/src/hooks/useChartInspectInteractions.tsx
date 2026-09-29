@@ -26,11 +26,11 @@ function renderToHtml(element: ReactElement): string {
   return html;
 }
 
-import { COLOR_SCALE, COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
 import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../context/RscChartContext';
-import { DonutDialogContent } from '../components/ChartDialogContent';
+import { DonutDialogContent, DonutDialogContentOptions, getDonutSwatchColor } from '../components/ChartDialogContent';
 import { ChartChildElement, RscChartProps } from '../types';
 import { debugLog } from '../utils';
 import useLegend from './useLegend';
@@ -92,29 +92,36 @@ const getDimensionAreaInspectMarkup = (
 };
 
 /**
- * Gets the inspect content, appending consumer content below the default donut content when applicable.
+ * Gets the inspect content, using the default donut content when the consumer does not provide children.
  * @param inspect
  * @param value
  * @param getColor
+ * @param locale
  * @returns ReactNode
  */
 const getInspectContent = (
   inspect: InspectDetail,
   value: Datum,
-  getColor: (series: unknown) => string | undefined
+  getColor: (options: DonutDialogContentOptions, datum: Datum) => string | undefined,
+  locale: RscChartProps['locale']
 ): ReactNode => {
-  const customContent = inspect.callback?.(value);
-  if (!inspect.defaultDonutContent) return customContent;
-  return (
-    <DonutDialogContent {...inspect.defaultDonutContent} datum={value} getColor={getColor}>
-      {customContent}
-    </DonutDialogContent>
-  );
+  const { defaultDonutContent } = inspect;
+  if (defaultDonutContent) {
+    return (
+      <DonutDialogContent
+        {...defaultDonutContent}
+        datum={value}
+        getColor={(datum) => getColor(defaultDonutContent, datum)}
+        locale={locale}
+      />
+    );
+  }
+  return inspect.callback?.(value);
 };
 
 const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
-  const { debug, colorScheme, idKey, tooltipAnchor, tooltipPlacement } = props;
+  const { debug, colorScheme, idKey, locale, tooltipAnchor, tooltipPlacement } = props;
   const inspects = useChartInspects(sanitizedChildren);
   const { descriptions: legendDescriptions } = useLegend(sanitizedChildren);
 
@@ -151,7 +158,8 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
           const content = getInspectContent(
             inspect,
             value,
-            (series) => chartView.current?.scale(COLOR_SCALE)(series) as string | undefined
+            (options, datum) => getDonutSwatchColor(chartView.current, options, datum, idKey, colorScheme),
+            locale
           );
           return renderToHtml(
             <div className="rsc-tooltip" data-testid="rsc-tooltip">
@@ -164,7 +172,7 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
     }
 
     return options;
-  }, [colorScheme, tooltipAnchor, tooltipPlacement, inspects, legendDescriptions, debug, idKey, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
+  }, [colorScheme, tooltipAnchor, tooltipPlacement, inspects, legendDescriptions, debug, idKey, locale, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
 
   return { inspectOptions };
 };

@@ -189,11 +189,17 @@ describe('useChartInspectInteractions - default donut content', () => {
   const donutInspect: InspectDetail = {
     name: 'donut0',
     callback: undefined,
-    defaultDonutContent: { colorKey: 'browser', metricKey: 'count' },
+    defaultDonutContent: { colorKey: 'browser', metricKey: 'count', percentKey: 'donut0_arcPercent' },
     highlightBy: undefined,
     targets: undefined,
   };
-  const donutValue = { [COMPONENT_NAME]: 'donut0', rscMarkId: 'item-1', browser: 'Chrome', count: 10390 };
+  const donutValue = {
+    [COMPONENT_NAME]: 'donut0',
+    rscMarkId: 'item-1',
+    browser: 'Chrome',
+    count: 10390,
+    donut0_arcPercent: 0.2574,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -204,22 +210,21 @@ describe('useChartInspectInteractions - default donut content', () => {
     } as unknown as ReturnType<typeof useChartContext>);
   });
 
-  test('renders the default swatch, series, and value when no callback is provided', () => {
+  test('renders the default swatch, series, and percent when no callback is provided', () => {
     mockUseChartInspects.mockReturnValue([donutInspect]);
     const html = callFormatTooltip({ ...donutValue });
     expect(html).toContain('Chrome');
-    expect(html).toContain('10390');
+    expect(html).toContain('25.7% (10K)');
     expect(html).toContain('background-color: rgb(255, 0, 0)');
-    expect(html).not.toContain('rsc-donut-dialog-custom');
   });
 
-  test('appends callback content below the default content', () => {
+  test('renders only the callback content when no default content is provided', () => {
     const callback = jest.fn(() => <span>custom content</span>);
-    mockUseChartInspects.mockReturnValue([{ ...donutInspect, callback }]);
+    mockUseChartInspects.mockReturnValue([{ ...donutInspect, callback, defaultDonutContent: undefined }]);
     const html = callFormatTooltip({ ...donutValue }) ?? '';
     expect(callback).toHaveBeenCalledWith(expect.objectContaining({ browser: 'Chrome' }));
-    expect(html).toContain('rsc-donut-dialog-custom');
-    expect(html.indexOf('10390')).toBeLessThan(html.indexOf('custom content'));
+    expect(html).toContain('custom content');
+    expect(html).not.toContain('rsc-donut-dialog-content');
   });
 });
 

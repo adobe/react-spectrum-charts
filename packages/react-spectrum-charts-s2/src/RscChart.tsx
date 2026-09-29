@@ -16,7 +16,6 @@ import { Focusable } from 'react-aria-components';
 import { View as VegaView } from 'vega';
 import {
   COMPONENT_NAME,
-  COLOR_SCALE,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_METRIC,
   DEFAULT_SYMBOL_SHAPES,
@@ -29,7 +28,7 @@ import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
-import { DonutDialogContent } from './components/ChartDialogContent';
+import { DonutDialogContent, getDonutSwatchColor } from './components/ChartDialogContent';
 import { Axis } from './components/Axis';
 import { ChartInspect } from './components/ChartInspect';
 import { Legend } from './components/Legend';
@@ -52,6 +51,8 @@ interface ChartDialogProps {
   setIsPopoverOpen: (isOpen: boolean) => void;
   popover: PopoverDetail;
   idKey: string;
+  colorScheme: RscChartProps['colorScheme'];
+  locale: RscChartProps['locale'];
   specSignalNames: ReadonlySet<string>;
 }
 
@@ -394,6 +395,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
           setIsPopoverOpen={setIsPopoverOpen}
           popover={popover}
           idKey={idKey}
+          colorScheme={colorScheme}
+          locale={locale}
           specSignalNames={specSignalNames}
         />
       ))}
@@ -402,7 +405,15 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 };
 RscChart.displayName = 'RscChart';
 
-const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSignalNames }: ChartDialogProps) => {
+const ChartDialog = ({
+  popover,
+  setIsPopoverOpen,
+  targetElement,
+  idKey,
+  colorScheme,
+  locale,
+  specSignalNames,
+}: ChartDialogProps) => {
   const { chartView, selectedData, selectedDataName, keyboardPopoverComponentName } = useChartContext();
   const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -481,18 +492,17 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
 
   const close = useCallback(() => handleOpenChange(false), [handleOpenChange]);
   const activeDatum = renderDatum?.[COMPONENT_NAME] === name ? renderDatum : null;
-  const customContent = activeDatum ? children?.(activeDatum, close) : null;
+  const { defaultDonutContent } = popover;
   const content =
-    activeDatum && popover.defaultDonutContent ? (
+    activeDatum && defaultDonutContent ? (
       <DonutDialogContent
-        {...popover.defaultDonutContent}
+        {...defaultDonutContent}
         datum={activeDatum}
-        getColor={(series) => chartView.current?.scale(COLOR_SCALE)(series) as string | undefined}
-      >
-        {customContent}
-      </DonutDialogContent>
+        getColor={(datum) => getDonutSwatchColor(chartView.current, defaultDonutContent, datum, idKey, colorScheme)}
+        locale={locale}
+      />
     ) : (
-      customContent
+      activeDatum && children?.(activeDatum, close)
     );
 
   useEffect(() => {
@@ -538,7 +548,7 @@ const ChartDialog = ({ popover, setIsPopoverOpen, targetElement, idKey, specSign
       >
         <div data-testid="rsc-popover" style={popoverStyle}>
           <div data-testid="rsc-popover-content" className="rsc-popover-content" style={{ margin: contentMargin ?? 12 }}>
-            {activeDatum && content}
+            {content}
           </div>
         </div>
       </Popover>
