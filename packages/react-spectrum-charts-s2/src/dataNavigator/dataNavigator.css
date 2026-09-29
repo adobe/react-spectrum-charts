@@ -42,7 +42,8 @@
   outline: none !important;
   box-shadow: none !important;
 }
-.dn-axis-focus-ring {
+.dn-axis-focus-ring,
+.dn-legend-focus-ring {
   position: absolute;
   display: none;
   z-index: 2;
