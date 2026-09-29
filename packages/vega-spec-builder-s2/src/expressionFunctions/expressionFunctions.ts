@@ -67,6 +67,20 @@ export const formatShortNumber = (numberLocale?: string | FormatLocaleDefinition
 };
 
 /**
+ * Formats a percent of total followed by the short number value, e.g. `65.2% (23K)`.
+ * @param locale
+ * @returns formatted string
+ */
+export const formatPercentWithValue = (locale: Parameters<typeof getLocale>[0] = 'en-US') => {
+  const { number: numberLocale } = getLocale(locale);
+  const localeCode = typeof locale === 'string' ? locale : locale?.number;
+  const formatPercent = formatLocale((numberLocale ?? numberLocales['en-US']) as FormatLocaleDefinition).format('.1%');
+  // matches getTextNumberFormat's 'shortNumber' so the value reads the same as the segment label
+  const formatValue = formatShortNumber(localeCode);
+  return (percent: number, value: number) => `${formatPercent(percent)} (${formatValue(value)})`;
+};
+
+/**
  * Formats currency values using a currency specific locale and currency code for the position and
  * type of currency symbol.
  * Applies thousands and decimal separators based on the numberFormat.

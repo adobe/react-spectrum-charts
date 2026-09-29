@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Legend } from '../../../../components';
+import { ChartInspect, ChartPopover, Legend } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { Donut, SegmentLabel } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
@@ -48,8 +48,22 @@ const WithLegendStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Donut metric="count" color="browser">
         <SegmentLabel {...args} />
+        <ChartInspect />
+        <ChartPopover width="auto" />
       </Donut>
       <Legend title="Browsers" position="right" highlight isToggleable />
+    </Chart>
+  );
+};
+
+const InspectAndPopoverStory: StoryFn<typeof Donut> = (): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Donut metric="count" color="browser">
+        <ChartInspect />
+        <ChartPopover width="auto" />
+      </Donut>
     </Chart>
   );
 };
@@ -60,4 +74,6 @@ SimpleDirectLabel.args = { value: true, valueFormat: 'shortNumber' };
 const WithLegend = bindWithProps(WithLegendStory);
 WithLegend.args = { value: true, valueFormat: 'shortNumber' };
 
-export { SimpleDirectLabel, WithLegend };
+const InspectAndPopover = bindWithProps(InspectAndPopoverStory);
+
+export { InspectAndPopover, SimpleDirectLabel, WithLegend };

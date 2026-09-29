@@ -12,10 +12,13 @@
 import { createElement, useMemo } from 'react';
 
 import { ChartInspect } from '../components/ChartInspect';
-import { ChartChildElement, ChartInspectElement, ChartInspectProps, InspectHandler } from '../types';
-import { getAllElements } from '../utils';
+import { Donut } from '../pre-alpha';
+import { DefaultDonutContent, getDefaultDonutContent } from '../pre-alpha/components/Donut/DonutDialogContent';
+import { ChartChildElement, ChartInspectElement, ChartInspectProps, DonutElement, InspectHandler } from '../types';
+import { getAllElements, getAllMarkElements } from '../utils';
 
-type MappedInspect = { name: string; element: ChartInspectElement };
+type MappedInspect = { name: string; element: ChartInspectElement; parent?: string };
+type MappedDonut = { name: string; element: DonutElement };
 
 const ChartContainer = ({ children }: { children: React.ReactNode }) => {
   return <div>{children}</div>;
@@ -24,28 +27,39 @@ ChartContainer.displayName = 'ChartContainer';
 
 export type InspectDetail = {
   name: string;
-  callback: InspectHandler;
+  callback?: InspectHandler;
+  defaultDonutContent?: DefaultDonutContent;
   highlightBy: ChartInspectProps['highlightBy'];
   targets: ChartInspectProps['targets'];
   width?: number;
 };
 
 export default function useChartInspects(children: ChartChildElement[]): InspectDetail[] {
-  const inspectElements = useMemo(() => {
+  const { donutElements, inspectElements } = useMemo(() => {
     const container = createElement(ChartContainer, undefined, children);
-    return getAllElements(container, ChartInspect, []) as MappedInspect[];
+    return {
+      donutElements: getAllMarkElements(container, Donut, []) as MappedDonut[],
+      inspectElements: getAllElements(container, ChartInspect, []) as MappedInspect[],
+    };
   }, [children]);
 
   return useMemo(
     () =>
       inspectElements
-        .filter((inspect) => inspect.element.props.children)
-        .map((inspect) => ({
-          name: inspect.name,
-          callback: inspect.element.props.children,
-          highlightBy: inspect.element.props.highlightBy,
-          targets: inspect.element.props.targets,
-        })) as InspectDetail[],
-    [inspectElements]
+        .filter((inspect) => inspect.element.props.children || inspect.parent === Donut.displayName)
+        .map((inspect) => {
+          const donut = donutElements.find(({ name }) => name === inspect.name);
+          return {
+            name: inspect.name,
+            callback: inspect.element.props.children,
+            defaultDonutContent:
+              donut && !inspect.element.props.children
+                ? getDefaultDonutContent(donut.name, donut.element.props)
+                : undefined,
+            highlightBy: inspect.element.props.highlightBy,
+            targets: inspect.element.props.targets,
+          };
+        }) as InspectDetail[],
+    [donutElements, inspectElements]
   );
 }

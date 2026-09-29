@@ -13,8 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
-
 import { Chart } from '../../../Chart';
 import { ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
@@ -92,23 +90,8 @@ const BooleanStory: StoryFn<typeof Donut> = (args): ReactElement => {
   );
 };
 
-// content for tooltip and popover
-const dialogContent = (datum: Datum) => {
-  return (
-    <div>
-      <div>Browser: {datum.browser}</div>
-      <div>Visitors: {datum.count}</div>
-    </div>
-  );
-};
-
-// tooltip and popover
-const interactiveChildren = [
-  <ChartInspect key={0}>{dialogContent}</ChartInspect>,
-  <ChartPopover width="auto" key={1}>
-    {dialogContent}
-  </ChartPopover>,
-];
+// tooltip and popover render the default swatch, series, and value
+const interactiveChildren = [<ChartInspect key={0} />, <ChartPopover width="auto" key={1} />];
 
 const Basic = bindWithProps(DonutStory);
 Basic.args = {

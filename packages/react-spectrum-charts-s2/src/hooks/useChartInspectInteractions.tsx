@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, useMemo, type ReactElement } from 'react';
+import { FC, useMemo, type ReactElement, type ReactNode } from 'react';
 
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -30,6 +30,7 @@ import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP
 import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../context/RscChartContext';
+import { DefaultDonutContent, DonutDialogContent, getDonutSwatchColor } from '../pre-alpha/components/Donut/DonutDialogContent';
 import { ChartChildElement, RscChartProps } from '../types';
 import { debugLog } from '../utils';
 import useLegend from './useLegend';
@@ -76,7 +77,7 @@ const getDimensionAreaInspectMarkup = (
 
   const inspectName = componentName.replace(`_${DIMENSION_HOVER_AREA}`, '');
   const inspect = inspects.find((t) => t.name === inspectName && t.targets?.includes('dimensionArea'));
-  if (!inspect) return '';
+  if (!inspect?.callback) return '';
 
   const dimension = value.dimension;
 
@@ -90,9 +91,40 @@ const getDimensionAreaInspectMarkup = (
   );
 };
 
+/**
+ * Gets the inspect content, using the default donut content when the consumer does not provide children.
+ * @param inspect
+ * @param value
+ * @param getColor
+ * @param locale
+ * @returns ReactNode
+ */
+const getInspectContent = (
+  inspect: InspectDetail,
+  value: Datum,
+  getColor: (content: DefaultDonutContent, datum: Datum) => string | undefined,
+  locale: RscChartProps['locale']
+): ReactNode => {
+  const { defaultDonutContent } = inspect;
+  if (defaultDonutContent) {
+    const { colorKey, metricKey, percentKey } = defaultDonutContent;
+    return (
+      <DonutDialogContent
+        colorKey={colorKey}
+        metricKey={metricKey}
+        percentKey={percentKey}
+        color={getColor(defaultDonutContent, value)}
+        datum={value}
+        locale={locale}
+      />
+    );
+  }
+  return inspect.callback?.(value);
+};
+
 const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
   const { chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
-  const { debug, colorScheme, idKey, tooltipAnchor, tooltipPlacement } = props;
+  const { debug, colorScheme, idKey, locale, tooltipAnchor, tooltipPlacement } = props;
   const inspects = useChartInspects(sanitizedChildren);
   const { descriptions: legendDescriptions } = useLegend(sanitizedChildren);
 
@@ -111,7 +143,7 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
 
         // get the correct inspect to render based on the hovered item
         const inspect = inspects.find((t) => t.name === value[COMPONENT_NAME]);
-        if (inspect?.callback && !('index' in value)) {
+        if ((inspect?.callback || inspect?.defaultDonutContent) && !('index' in value)) {
           if (controlledHoveredIdSignal.current) {
             chartView.current?.signal(controlledHoveredIdSignal.current.name, value?.[idKey] ?? null);
           }
@@ -126,9 +158,15 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
             const groupId = `${inspect.name}_${GROUP_ID}`;
             value[GROUP_DATA] = tableData?.filter((d) => d[groupId] === value[groupId]);
           }
+          const content = getInspectContent(
+            inspect,
+            value,
+            (content, datum) => getDonutSwatchColor(chartView.current, content, datum, idKey, colorScheme),
+            locale
+          );
           return renderToHtml(
             <div className="rsc-tooltip" data-testid="rsc-tooltip">
-              {inspect.callback(value)}
+              {content}
             </div>
           );
         }
@@ -137,7 +175,7 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
     }
 
     return options;
-  }, [colorScheme, tooltipAnchor, tooltipPlacement, inspects, legendDescriptions, debug, idKey, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
+  }, [colorScheme, tooltipAnchor, tooltipPlacement, inspects, legendDescriptions, debug, idKey, locale, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
 
   return { inspectOptions };
 };

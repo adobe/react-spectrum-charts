@@ -15,6 +15,7 @@ import {
   BACKGROUND_COLOR,
   DEFAULT_HOLE_RATIO,
   DONUT_ADVANCED_LABEL_RING_GAP,
+  DONUT_BOOLEAN_SECONDARY_COLOR,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAP,
   DONUT_RADIUS,
@@ -94,7 +95,10 @@ const getArcFillEncoding = (options: DonutSpecOptions): ColorValueRef | Producti
 
   const normalColor = getColorProductionRule(color, colorScheme);
   const isPrimaryTest = `datum.${idKey} === data('${name}_booleanData')[0].${idKey}`;
-  return [{ test: `!(${isPrimaryTest})`, value: getS2ColorValue('gray-400', colorScheme) }, normalColor];
+  return [
+    { test: `!(${isPrimaryTest})`, value: getS2ColorValue(DONUT_BOOLEAN_SECONDARY_COLOR, colorScheme) },
+    normalColor,
+  ];
 };
 
 /**

@@ -107,23 +107,13 @@ const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
   );
 };
 
-// content for tooltip and popover
-const donutDialogContent = (datum: Datum) => {
-  return (
-    <div>
-      <div>Browser: {datum.browser}</div>
-      <div>Visitors: {datum.count}</div>
-    </div>
-  );
-};
-
 const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
   const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
   return (
     <Chart {...chartProps}>
       <Donut metric="count" color="browser">
         <DonutSummary label="Visitors" />
-        <ChartInspect>{donutDialogContent}</ChartInspect>
+        <ChartInspect />
         <ChartPopover {...args} />
       </Donut>
     </Chart>
@@ -137,7 +127,7 @@ const DodgedBarChart = bindWithProps(ChartPopoverDodgedBarStory);
 DodgedBarChart.args = { children: dialogContent, width: 'auto' };
 
 const DonutChart = bindWithProps(DonutStory);
-DonutChart.args = { children: donutDialogContent, width: 'auto' };
+DonutChart.args = { width: 'auto' };
 
 const LineChart = bindWithProps(LineStory);
 LineChart.args = { children: dialogContent, width: 'auto' };
