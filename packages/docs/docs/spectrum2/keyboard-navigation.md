@@ -62,12 +62,16 @@ Bars and segments with a value of exactly `0` are excluded from navigation, sinc
 
 A keyboard-focused bar drives the same signals real mouse hover drives, so keyboard and mouse interactions look identical: other bars dim the same way, the real `ChartInspect` tooltip appears with the same content and positioning, and `Space` opens the real `ChartPopover` through the same trigger a click uses.
 
-Axis labels on the categorical bottom axis are also keyboard-navigable when they are rendered and not hidden by overlap handling.
+Axis labels on the categorical bottom axis are also keyboard-navigable when they are rendered and not hidden by overlap handling. The axis is its own region below the chart: `Arrow Down` on the chart root moves to it, and `Arrow Up` comes back.
 
 ---
 
 ## Stacked bars
 
 For a stacked `Bar` (`color` set), navigation has an extra layer: `Enter` on the chart root drills into a stack (column), and `Enter` again drills into an individual segment. `Escape` reverses this one layer at a time.
+
+Series can span several fields. When `color`, `lineType`, and `opacity` name different fields (for example `color="series"` and `opacity="period"` in a time comparison), each bar is identified by all of them, and bars read every field, so bars for different periods are distinct. Dodged-and-stacked bars (a facet set to a two-field array) are navigable too: within a category, the arrows along the orientation move between side-by-side stacks, the perpendicular arrows move through a stack's segments, and moving between stacks lands on the same segment of the next stack.
+
+Number and time dimensions are supported, including `0` and `dimensionDataType="time"` with date-string data. Bars, stacks, and groups get their focus rings, and bars read the dimension value as written in the data (e.g. "Day: 2024-01-01 00:00:00.0"), not the parsed timestamp. Empty-string dimension values are navigable too; their empty axis tick is skipped, since it has no label to read.
 
 Focusing a stack — before drilling into a segment — shows the dimension-area tooltip or popover, if configured, the same one a mouse hovering the stack's exposed padding would show. See the `targets` prop on [`ChartInspect`](/docs/spectrum2/overview#chartinspect-props).

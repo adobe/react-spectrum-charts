@@ -12,9 +12,10 @@
 import dataNavigator, { NodeObject, Structure, StructureOptions } from 'data-navigator';
 import { parseColor } from 'react-stately';
 
-import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/core-s2/constants';
+import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, NAVIGATION_ID_SEPARATOR, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { getSeriesKey } from './barSeries.js';
 import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules.js';
 import { DEFAULT_DATA_NAVIGATOR_LOCALE, getDataNavigatorIntl } from './dataNavigatorIntl.js';
 
@@ -23,8 +24,14 @@ export interface BuildBarStructureOptions {
   data: SimpleData[];
   /** The bar's category field (the stack/column for a stacked bar). Defaults to the standard categorical dimension. */
   dimension?: string;
-  /** The series/color field. When set, the bar is multi-series (each column holds multiple segments). */
+  /** The series/color field, read as the series' name in labels. */
   color?: string;
+  /** The field identifying each row's series (e.g. the series id joining every series facet). Defaults to `color`; when set, the bar is multi-series. */
+  seriesField?: string;
+  /** For a dodged-and-stacked bar, the fields splitting each category into side-by-side stacks. */
+  dodgeFields?: string[];
+  /** For a dodged-and-stacked bar, the fields that tell a stack's segments apart. */
+  stackFields?: string[];
   /** Bar layout type. */
   type?: 'dodged' | 'stacked';
   /** A per-datum color override field whose values are raw color strings. */
@@ -39,6 +46,8 @@ export interface BuildBarStructureOptions {
   title?: string;
   /** Maps a data field to its display label (axis/legend title). When set, a leaf's accessible name lists only these fields, labeled by their titles, instead of every raw field. */
   fieldLabels?: Record<string, string>;
+  /** The original value of each dimension value the chart parsed (keyed by `String(parsed)`), read in labels instead of the parsed value. */
+  dimensionLabels?: Map<string, unknown>;
   /** Locale used when converting color values to accessible names. */
   locale?: string;
   /** Maps series values to their metric-axis titles for dual-metric-axis bars. */
@@ -51,11 +60,25 @@ interface MetricSeriesLabel {
   titleBySeries: Record<string, string>;
 }
 
-/** Data field that carries the composite leaf id for multi-series (stacked/dodged) bars. */
+/** Data field that carries each bar's leaf id, always a string (data-navigator skips falsy ids such as a 0 dimension). */
 const SEGMENT_ID_KEY = '_dnId';
 
+/**
+ * Converts a value to the string navigation keys it by; the spec's focus rings compare against `"" + value`, which matches.
+ * @param value
+ * @returns string
+ */
+export const toNavigationKey = (value: unknown): string => String(value);
+
+/**
+ * The leaf id of a bar without a series; an empty dimension falls back to the separator, since data-navigator skips empty ids.
+ * @param dimensionValue
+ * @returns string
+ */
+export const barId = (dimensionValue: unknown): string => toNavigationKey(dimensionValue) || NAVIGATION_ID_SEPARATOR;
+
 export const segmentId = (dimensionValue: unknown, seriesValue: unknown): string =>
-  `${dimensionValue}${NAVIGATION_ID_SEPARATOR}${seriesValue}`;
+  `${toNavigationKey(dimensionValue)}${NAVIGATION_ID_SEPARATOR}${toNavigationKey(seriesValue)}`;
 
 /**
  * Converts a dimension value to its navigator key, or undefined if it can't be one.
@@ -73,39 +96,72 @@ export interface BarStructure {
   entryPoint: string | undefined;
 }
 
-/** Orders each stack's own segments (never the column order) so Enter reaches the reading-order-first one: the topmost segment for a vertical bar, the leftmost/origin segment for a horizontal bar. */
-const orderStackSegments = (
+/** Orders one stack's segments in reading order: the topmost first for a vertical bar, the origin segment first for a horizontal bar. */
+const orderStack = (rows: SimpleData[], orientation: Orientation, type: 'dodged' | 'stacked' | undefined, order?: string): SimpleData[] => {
+  const isHorizontal = orientation === 'horizontal';
+  if (order) {
+    // Vega stacks a higher `order` further from the baseline; vertical reads from that (top) end, horizontal from the origin (left).
+    const ascending = isHorizontal && type !== 'dodged';
+    return [...rows].sort((a, b) => (ascending ? Number(a[order]) - Number(b[order]) : Number(b[order]) - Number(a[order])));
+  }
+  // No order field: Vega stacks the last-encountered row furthest out — reverse for vertical's top-first, keep as-is for horizontal's origin-first.
+  return isHorizontal ? [...rows] : [...rows].reverse();
+};
+
+/** Groups rows by a key, keeping first-seen group order. */
+const groupRows = (data: SimpleData[], keyOf: (row: SimpleData) => unknown): SimpleData[][] => {
+  const groups = new Map<unknown, SimpleData[]>();
+  for (const row of data) {
+    const key = keyOf(row);
+    groups.set(key, [...(groups.get(key) ?? []), row]);
+  }
+  return [...groups.values()];
+};
+
+/** Orders each stack's own segments (never the column order) so Enter reaches the reading-order-first one: the topmost segment for a vertical bar, the leftmost/origin segment for a horizontal bar. A dodged-and-stacked bar orders each category's side-by-side stacks by `dodgeFields`, then each stack's segments. */
+export const orderStackSegments = (
   data: SimpleData[],
   dimension: string,
   orientation: Orientation,
   type: 'dodged' | 'stacked' | undefined,
-  order?: string
+  order?: string,
+  seriesField?: string,
+  dodgeFields?: string[]
 ): SimpleData[] => {
-  const groups = new Map<unknown, SimpleData[]>();
+  if (dodgeFields?.length) return orderDodgedStacks(data, dimension, orientation, order, dodgeFields);
+  if (type === 'dodged' && seriesField !== undefined) return orderDodgedBars(data, dimension, seriesField);
+  return groupRows(data, (row) => row[dimension]).flatMap((rows) => orderStack(rows, orientation, type, order));
+};
+
+/** Orders each dodge group's bars by their series' first appearance in the data, the order Vega's `_position` band scale lays them out in (left-to-right, or top-to-bottom when horizontal). */
+const orderDodgedBars = (data: SimpleData[], dimension: string, seriesField: string): SimpleData[] => {
+  const seriesRank = new Map<unknown, number>();
   for (const row of data) {
-    const key = row[dimension];
-    const group = groups.get(key);
-    if (group) {
-      group.push(row);
-    } else {
-      groups.set(key, [row]);
-    }
+    if (!seriesRank.has(row[seriesField])) seriesRank.set(row[seriesField], seriesRank.size);
   }
-  const isHorizontal = orientation === 'horizontal';
-  const result: SimpleData[] = [];
-  for (const rows of groups.values()) {
-    let ordered: SimpleData[];
-    if (order) {
-      // Vega stacks a higher `order` further from the baseline; vertical reads from that (top) end, horizontal from the origin (left).
-      const ascending = isHorizontal && type !== 'dodged';
-      ordered = [...rows].sort((a, b) => (ascending ? Number(a[order]) - Number(b[order]) : Number(b[order]) - Number(a[order])));
-    } else {
-      // No order field: Vega stacks the last-encountered row furthest out — reverse for vertical's top-first, keep as-is for horizontal's origin-first.
-      ordered = isHorizontal ? [...rows] : [...rows].reverse();
-    }
-    result.push(...ordered);
+  return groupRows(data, (row) => row[dimension]).flatMap((rows) =>
+    [...rows].sort((a, b) => (seriesRank.get(a[seriesField]) ?? 0) - (seriesRank.get(b[seriesField]) ?? 0))
+  );
+};
+
+/** Orders each category's side-by-side stacks by their dodge group's first appearance (Vega's `_position` order), then each stack's segments. */
+const orderDodgedStacks = (
+  data: SimpleData[],
+  dimension: string,
+  orientation: Orientation,
+  order: string | undefined,
+  dodgeFields: string[]
+): SimpleData[] => {
+  const dodgeKey = (row: SimpleData) => getSeriesKey(row, dodgeFields);
+  const dodgeRank = new Map<unknown, number>();
+  for (const row of data) {
+    if (!dodgeRank.has(dodgeKey(row))) dodgeRank.set(dodgeKey(row), dodgeRank.size);
   }
-  return result;
+  return groupRows(data, (row) => row[dimension]).flatMap((rows) =>
+    groupRows(rows, dodgeKey)
+      .sort((a, b) => (dodgeRank.get(dodgeKey(a[0])) ?? 0) - (dodgeRank.get(dodgeKey(b[0])) ?? 0))
+      .flatMap((stack) => orderStack(stack, orientation, 'stacked', order))
+  );
 };
 
 /** Links two nodes with the supplied logical navigation directions. */
@@ -188,7 +244,7 @@ const wireSameSeriesStackNavigation = (
   structure: Structure,
   orderedData: SimpleData[],
   dimension: string,
-  color: string,
+  seriesField: string,
   type: 'dodged' | 'stacked'
 ): void => {
   // Logical left/right and up/down are mapped to physical keys by the chart orientation rules.
@@ -197,14 +253,63 @@ const wireSameSeriesStackNavigation = (
 
   applyWithinGroupNavigationRules(structure, dimension, withinGroupRules);
 
-  const columns = buildColumnsBySeries(orderedData, dimension, color);
+  const columns = buildColumnsBySeries(orderedData, dimension, seriesField);
   wireAdjacentColumnNavigation(structure, columns, type, withinGroupRules, betweenGroupRules);
+};
+
+const removeEdge = (structure: Structure, edgeId: string): void => {
+  const edge = structure.edges[edgeId];
+  if (!edge) return;
+  delete structure.edges[edgeId];
+  for (const end of [edge.source, edge.target]) {
+    const node = typeof end === 'string' ? structure.nodes[end] : undefined;
+    if (node) node.edges = node.edges.filter((id) => id !== edgeId);
+  }
+};
+
+/** Dodged-and-stacked bars: logical up/down moves within a stack, left/right to the same segment in the next stack (across categories too). */
+const wireDodgedStackNavigation = (
+  structure: Structure,
+  orderedData: SimpleData[],
+  dimension: string,
+  seriesField: string,
+  dodgeFields: string[],
+  stackFields: string[]
+): void => {
+  for (const [edgeId, edge] of Object.entries(structure.edges)) {
+    const source = typeof edge.source === 'string' ? structure.nodes[edge.source] : undefined;
+    const target = typeof edge.target === 'string' ? structure.nodes[edge.target] : undefined;
+    if (source && target && source.dimensionLevel == null && target.dimensionLevel == null) removeEdge(structure, edgeId);
+  }
+  const stacks = groupRows(orderedData, (row) => `${row[dimension]}${NAVIGATION_ID_SEPARATOR}${getSeriesKey(row, dodgeFields)}`).map(
+    (rows) => rows.map((row) => ({ id: segmentId(row[dimension], row[seriesField]), stackKey: getSeriesKey(row, stackFields) }))
+  );
+  for (const [index, stack] of stacks.entries()) {
+    for (let segment = 0; segment < stack.length - 1; segment++) {
+      addNavigationEdge(structure, stack[segment].id, stack[segment + 1].id, ['up', 'down']);
+    }
+    const next = stacks[index + 1];
+    if (!next) continue;
+    let linked = false;
+    for (const { id, stackKey } of stack) {
+      const counterpart = next.find((candidate) => candidate.stackKey === stackKey);
+      if (counterpart) {
+        addNavigationEdge(structure, id, counterpart.id, ['left', 'right']);
+        linked = true;
+      }
+    }
+    // Stacks sharing no segment are still linked, so left/right never dead-ends.
+    if (!linked) addNavigationEdge(structure, stack[0].id, next[0].id, ['left', 'right']);
+  }
 };
 
 export const buildBarStructure = ({
   data,
   dimension = DEFAULT_CATEGORICAL_DIMENSION,
   color,
+  seriesField = color,
+  dodgeFields,
+  stackFields = [],
   type,
   colorOverride,
   metric = DEFAULT_METRIC,
@@ -212,23 +317,27 @@ export const buildBarStructure = ({
   orientation = 'vertical',
   title,
   fieldLabels = {},
+  dimensionLabels,
   locale = 'en-US',
   metricTitleBySeries,
 }: BuildBarStructureOptions): BarStructure => {
   const effectiveType = type ?? 'stacked';
-  const isMultiSeries = color !== undefined;
-  const idKey = isMultiSeries ? SEGMENT_ID_KEY : dimension;
-  // Excluded so a zero-value row never gets a leaf node here — it's invisible, so a mouse can't reach it either.
+  const isMultiSeries = seriesField !== undefined;
+  const isDodgedStacked = isMultiSeries && Boolean(dodgeFields?.length);
+  // Zero-value rows render nothing, so a mouse can't reach them and neither can navigation.
   const visibleData = data.filter((d) => Number(d[metric]) !== 0);
-  const orderedData = isMultiSeries ? orderStackSegments(visibleData, dimension, orientation, effectiveType, order) : visibleData;
-  const structureData = color
-    ? orderedData.map((d) => ({ ...d, [SEGMENT_ID_KEY]: segmentId(d[dimension], d[color]) }))
-    : orderedData;
+  const orderedData = isMultiSeries
+    ? orderStackSegments(visibleData, dimension, orientation, effectiveType, order, seriesField, dodgeFields)
+    : visibleData;
+  const structureData = orderedData.map((d) => ({
+    ...d,
+    [SEGMENT_ID_KEY]: seriesField ? segmentId(d[dimension], d[seriesField]) : barId(d[dimension]),
+  }));
 
   const navigationRules = getBaseNavigationRules(orientation);
   const structureOptions: StructureOptions = {
     data: structureData,
-    idKey,
+    idKey: SEGMENT_ID_KEY,
     navigationRules,
     dimensions: {
       values: [
@@ -252,8 +361,10 @@ export const buildBarStructure = ({
   // and the no-axis path returns this structure directly (composeRegions overrides for the axis path).
   structure.navigationRules = navigationRules;
   addSiblingKeySynonyms(structure);
-  if (isMultiSeries && color) {
-    wireSameSeriesStackNavigation(structure, orderedData, dimension, color, effectiveType);
+  if (isDodgedStacked && seriesField && dodgeFields) {
+    wireDodgedStackNavigation(structure, orderedData, dimension, seriesField, dodgeFields, stackFields);
+  } else if (isMultiSeries && seriesField) {
+    wireSameSeriesStackNavigation(structure, orderedData, dimension, seriesField, effectiveType);
   }
 
   let entryPoint: string | undefined;
@@ -281,6 +392,7 @@ export const buildBarStructure = ({
       return groups;
     }, new Map<string, SimpleData[]>()),
     fieldLabels,
+    dimensionLabels,
     colorOverride,
     order,
     metricSeriesLabel: metricTitleBySeries && color ? { metric, color, titleBySeries: metricTitleBySeries } : undefined,
@@ -312,6 +424,8 @@ export interface NodeLabelOptions {
   rowsByDimension?: Map<string, SimpleData[]>;
   /** Maps a data field to its display label. When set, a leaf's accessible name lists only these fields, labeled by their titles, instead of every raw field. */
   fieldLabels?: Record<string, string>;
+  /** The original value of each dimension value the chart parsed (keyed by `String(parsed)`), read in labels instead of the parsed value. */
+  dimensionLabels?: Map<string, unknown>;
   /** A per-datum color override field whose values are raw color strings, rendered via a locale-aware accessible color name instead of the raw value. */
   colorOverride?: string;
   /** The stack sort field (matches the `order` prop on `<Bar>`) — excluded from the label, since it's an internal sort key rather than a displayable value. */
@@ -323,9 +437,9 @@ export interface NodeLabelOptions {
 }
 
 /** A row's `field: value` parts, limited to `fieldLabels` (and labeled by them) when provided, with color/metric-series overrides applied. `excludeFields` drops fields already stated elsewhere (e.g. a division's own dimension value). */
-const buildFieldValueParts = (
+export const buildFieldValueParts = (
   data: Record<string, unknown>,
-  { fieldLabels = {}, colorOverride, order, metricSeriesLabel, locale = 'en-US' }: NodeLabelOptions,
+  { dimension, fieldLabels = {}, dimensionLabels, colorOverride, order, metricSeriesLabel, locale = 'en-US' }: NodeLabelOptions,
   excludeFields: string[] = []
 ): string[] => {
   const labeledFields = Object.keys(fieldLabels).filter((field) => !excludeFields.includes(field));
@@ -336,7 +450,12 @@ const buildFieldValueParts = (
     ? includedFields.filter((field) => data[field] != null).map((field) => [field, data[field]])
     : Object.entries(data).filter(
         ([key, value]) =>
-          !excludeFields.includes(key) && !key.startsWith('_') && value != null && typeof value !== 'object' && typeof value !== 'function'
+          !excludeFields.includes(key) &&
+          !key.startsWith('_') &&
+          key !== SERIES_ID &&
+          value != null &&
+          typeof value !== 'object' &&
+          typeof value !== 'function'
       );
   return entries
     .filter(([key]) => key !== order)
@@ -346,9 +465,13 @@ const buildFieldValueParts = (
         const seriesTitle = metricSeriesLabel.titleBySeries[String(data[metricSeriesLabel.color])];
         if (seriesTitle) return `${seriesTitle}: ${value}`;
       }
-      return `${fieldLabels[key] ?? key}: ${value}`;
+      return `${fieldLabels[key] ?? key}: ${key === dimension ? getDimensionLabel(value, dimensionLabels) : value}`;
     });
 };
+
+/** A dimension value as the consumer supplied it, before the chart parsed it (e.g. a time dimension's date string). */
+export const getDimensionLabel = (value: unknown, dimensionLabels?: Map<string, unknown>): unknown =>
+  dimensionLabels?.has(String(value)) ? dimensionLabels.get(String(value)) : value;
 
 /** Fallback label for the whole-chart root: a "metric by dimension" summary. */
 const buildRootLabel = (node: NodeObject, options: NodeLabelOptions): string => {
@@ -363,7 +486,7 @@ const buildRootLabel = (node: NodeObject, options: NodeLabelOptions): string => 
 
 /** Fallback label for a division (stack/group): its dimension value plus an itemized summary of its own segments. */
 const buildDivisionLabel = (node: NodeObject, options: NodeLabelOptions): string => {
-  const { dimension, data: rows, rowsByDimension, fieldLabels = {} } = options;
+  const { dimension, data: rows, rowsByDimension, fieldLabels = {}, dimensionLabels } = options;
   if (!dimension || !rows) return String(node.id);
   // The division's own id is a data-navigator-internal composite, not the dimension value itself.
   const dimensionValue = node.derivedNode ? (node.data as Record<string, unknown> | undefined)?.[node.derivedNode] : undefined;
@@ -371,7 +494,7 @@ const buildDivisionLabel = (node: NodeObject, options: NodeLabelOptions): string
   if (dimensionKey === undefined) return String(node.id);
   const groupRows = rowsByDimension?.get(dimensionKey) ?? rows.filter((row) => toDimensionKey(row[dimension]) === dimensionKey);
   if (groupRows.length === 0) return String(node.id);
-  const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionKey}.`;
+  const header = `${fieldLabels[dimension] ?? dimension}: ${getDimensionLabel(dimensionKey, dimensionLabels)}.`;
   const segments = groupRows
     .map((row) => buildFieldValueParts(row as Record<string, unknown>, options, [dimension]))
     .filter((parts) => parts.length > 0)
