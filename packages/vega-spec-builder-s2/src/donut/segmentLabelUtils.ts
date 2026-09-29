@@ -40,7 +40,6 @@ import {
   DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT,
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT,
-  DONUT_LABEL_COLLISION_GAP,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAP,
   DONUT_RADIUS,
@@ -324,9 +323,9 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
           expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getLabelField(
             fieldPrefix,
             'hemisphere'
-          )}', '${getCollisionBoxesField(
-            fieldPrefix
-          )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP}, ${getHoveredLabelIdExpr(donutOptions)})`,
+          )}', '${getCollisionBoxesField(fieldPrefix)}', '${name}_arcLength', '${idKey}', ${getHoveredLabelIdExpr(
+            donutOptions
+          )})`,
         },
       ],
     },
@@ -794,9 +793,7 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
             expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getLabelField(
               labelName,
               'hemisphere'
-            )}', '${getCollisionBoxesField(
-              labelName
-            )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP}, ${getHoveredLabelIdExpr(
+            )}', '${getCollisionBoxesField(labelName)}', '${name}_arcLength', '${idKey}', ${getHoveredLabelIdExpr(
               donutOptions
             )})`,
           },

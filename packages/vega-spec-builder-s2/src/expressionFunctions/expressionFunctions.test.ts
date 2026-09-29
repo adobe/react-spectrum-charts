@@ -31,7 +31,7 @@ describe('isDonutLabelVisible()', () => {
     { id: 'other-side', hemisphere: 'right', boxes: [[10, 80, 86, 114]], topY: 86, arcLength: 1 },
   ];
   const isVisible = (datum: (typeof data)[number]) =>
-    isDonutLabelVisible(data, datum, 'hemisphere', 'boxes', 'arcLength', 'id', 4);
+    isDonutLabelVisible(data, datum, 'hemisphere', 'boxes', 'arcLength', 'id');
 
   test('keeps fixed labels that do not overlap an accepted label', () => {
     expect(isVisible(data[0])).toBe(true);
@@ -46,7 +46,7 @@ describe('isDonutLabelVisible()', () => {
 
   describe('with a hovered label', () => {
     const isVisibleWhileHovering = (datum: (typeof data)[number], hoveredId: unknown) =>
-      isDonutLabelVisible(data, datum, 'hemisphere', 'boxes', 'arcLength', 'id', 4, hoveredId);
+      isDonutLabelVisible(data, datum, 'hemisphere', 'boxes', 'arcLength', 'id', hoveredId);
 
     test('shows the hovered label and hides the higher-priority labels it overlaps', () => {
       expect(isVisibleWhileHovering(data[1], 'middle')).toBe(true);

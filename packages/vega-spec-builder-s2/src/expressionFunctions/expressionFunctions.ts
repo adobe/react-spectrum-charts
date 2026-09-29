@@ -12,6 +12,7 @@
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 
+import { DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/constants';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/themes';
 
@@ -196,7 +197,6 @@ const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: 
  * @param collisionBoxesField
  * @param priorityField
  * @param idField
- * @param gap
  * @param hoveredId
  * @returns whether the label should be visible
  */
@@ -207,9 +207,9 @@ export const isDonutLabelVisible = (
   collisionBoxesField: string,
   priorityField: string,
   idField: string,
-  gap: number,
   hoveredId?: unknown
 ): boolean => {
+  const gap = DONUT_LABEL_COLLISION_GAP;
   const hemisphere = datum[hemisphereField];
   const getTopY = (candidate: Record<string, unknown>): number =>
     Math.min(...(candidate[collisionBoxesField] as number[][]).map(([, , topY]) => topY));
