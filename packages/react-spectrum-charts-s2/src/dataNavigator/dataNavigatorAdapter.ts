@@ -24,12 +24,16 @@ import {
   HOVERED_ITEM,
   MARK_ID,
   SELECTED_ITEM,
+  SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/constants';
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils';
 import { clearAxisFocusRing, getVisibleAxisLabelColumns, padAxisBounds, positionOverlayAtBounds, setAxisFocusRing } from './axisLabelGeometry';
+import { withViewKeys } from './barSeries';
 import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, getNodeFieldValues, Row } from './barHoverParity';
+import { toNavigationKey } from './buildBarStructure';
 import { AxisRegionOptions, NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure';
 import { getNodeRegion, stripRegionPrefix } from './composeRegions';
 import {
@@ -70,8 +74,14 @@ export interface AttachDataNavigatorOptions {
   data: SimpleData[];
   /** Primary categorical / x-axis field. */
   dimension?: string;
-  /** Series / color field (set for stacked bars). */
+  /** Series / color field (set for stacked bars), read as the series' name in labels. */
   color?: string;
+  /** Every field dividing the bar into series (color, lineType, opacity and dual-facet fields), in the chart's series-id order. */
+  seriesFields?: string[];
+  /** For a dodged-and-stacked bar, the fields splitting each category into side-by-side stacks. */
+  dodgeFields?: string[];
+  /** For a dodged-and-stacked bar, the fields that tell a stack's segments apart. */
+  stackFields?: string[];
   /** Bar layout type. */
   type?: 'dodged' | 'stacked';
   /** Per-datum color override field used in accessible bar labels. */
@@ -112,6 +122,12 @@ export interface AttachDataNavigatorOptions {
   hasChartPopover?: boolean;
 }
 
+/** How a focused leaf finds its live row (`field`) and which series fields its tooltip lists. */
+interface SeriesLookup {
+  field: string | undefined;
+  labelFields: string[];
+}
+
 interface FocusSignals {
   item: string | null; // a single bar / stacked segment
   region: string | null; // the whole chart (entry/root)
@@ -138,12 +154,12 @@ const resolveContentFocusBounds = (
   node: NodeObject,
   markName: string,
   dimension: string,
-  color: string | undefined
+  seriesField: string | undefined
 ): Bounds | undefined => {
   if (node.dimensionLevel === 1) return undefined;
 
   if (node.dimensionLevel == null) {
-    const row = findFocusedRow(view, node, dimension, color);
+    const row = findFocusedRow(view, node, dimension, seriesField);
     const item = row ? findFocusedBarSceneItem(view, markName, row[MARK_ID]) : undefined;
     return item ? pageBoundsForItem(view, container, item) : undefined;
   }
@@ -176,7 +192,7 @@ const nodeFocusSignals = (node: NodeObject): FocusSignals => {
     return { ...CLEARED_FOCUS, region: 'chart' };
   }
   const dimensionValue = node.derivedNode ? node.data?.[node.derivedNode] : undefined;
-  const dimension = dimensionValue == null ? null : String(dimensionValue);
+  const dimension = dimensionValue === undefined ? null : toNavigationKey(dimensionValue);
   return { ...CLEARED_FOCUS, dimension };
 };
 
@@ -220,7 +236,7 @@ const showTooltipForFocusedNode = (
   node: NodeObject,
   markName: string,
   dimension: string,
-  color: string | undefined,
+  series: SeriesLookup,
   metric: string | undefined,
   fieldLabels: Record<string, string>,
   hasChartInspect: boolean
@@ -228,8 +244,9 @@ const showTooltipForFocusedNode = (
   const signals = nodeFocusSignals(node);
   if (signals.item != null) {
     // Leaf: full datum for ChartInspect, otherwise a clean axis-titled subset.
-    const row = findFocusedRow(view, node, dimension, color);
-    const value = row ? buildLeafTooltipValue(row, markName, hasChartInspect, fieldLabels, [dimension, color, metric]) : null;
+    const row = findFocusedRow(view, node, dimension, series.field);
+    const fields = [dimension, ...series.labelFields, metric];
+    const value = row ? buildLeafTooltipValue(row, markName, hasChartInspect, fieldLabels, fields) : null;
     showFocusedItemTooltip(container, view, `${markName}_focusRing`, value);
   } else if (signals.dimension != null) {
     // Division (whole stack): empty unless a dimensionArea-targeted ChartInspect exists, matching real hover.
@@ -260,7 +277,7 @@ const guardHoverParityAgainstMouseClear = (
   view: View,
   markName: string,
   dimension: string,
-  color: string | undefined,
+  series: SeriesLookup,
   metric: string | undefined,
   fieldLabels: Record<string, string>,
   hasChartInspect: boolean,
@@ -279,14 +296,14 @@ const guardHoverParityAgainstMouseClear = (
     // The chart root and axis root have no specific row to restore — nothing to guard.
     if (!node || node.dimensionLevel === 1) return;
     const isAxisNode = getNodeRegion(node) === 'xAxis';
-    applyHoverParitySignals(view, { markName, dimension, color }, node, isAxisNode);
+    applyHoverParitySignals(view, { markName, dimension, color: series.field }, node, isAxisNode);
     // Axis ticks don't drive the chart tooltip (matching real axis-label hover), only the bar/stack does.
     if (isAxisNode) {
       view.runAfter((v) => v.runAsync());
       return;
     }
     view.runAfter((v) => {
-      v.runAsync().then(() => showTooltipForFocusedNode(container, v, node, markName, dimension, color, metric, fieldLabels, hasChartInspect));
+      v.runAsync().then(() => showTooltipForFocusedNode(container, v, node, markName, dimension, series, metric, fieldLabels, hasChartInspect));
     });
   };
   try {
@@ -296,6 +313,15 @@ const guardHoverParityAgainstMouseClear = (
   } catch {
     // The view can be mid-rebuild (e.g. orientation just changed) or finalized and not expose these
     // signals yet; skip wiring rather than throwing — the next re-attach registers on the ready view.
+  }
+};
+
+/** Reads a view's rows for a data set, or undefined when the view doesn't have it. */
+const readViewData = (view: View | undefined, name: string): Row[] | undefined => {
+  try {
+    return view ? (view.data(name) as Row[]) : undefined;
+  } catch {
+    return undefined;
   }
 };
 
@@ -310,6 +336,9 @@ export const attachDataNavigator = ({
   data,
   dimension,
   color,
+  seriesFields = [],
+  dodgeFields,
+  stackFields,
   type,
   colorOverride,
   locale,
@@ -339,7 +368,35 @@ export const attachDataNavigator = ({
       ? { ...xAxis, visibleValues: getVisibleAxisLabelColumns(initialView, container, 'bottom').map((column) => column.value) }
       : xAxis;
 
-  const built = buildChartStructure({ chartType, data, dimension, color, type, colorOverride, locale, metric, order, orientation, title, fieldLabels, metricTitleBySeries, xAxis: xAxisRegion });
+  // Rows are keyed by the chart's own series id and dimension value, so ids match the spec's even when it parses the dimension (e.g. time).
+  const { data: navData, dimensionLabels } = withViewKeys(data, readViewData(initialView, TABLE) as SimpleData[] | undefined, {
+    seriesFields,
+    dimension,
+  });
+  const seriesField = navData.some((row) => SERIES_ID in row) ? SERIES_ID : color;
+  const colorLabelFields = color ? [color] : [];
+  const series: SeriesLookup = { field: seriesField, labelFields: seriesFields.length ? seriesFields : colorLabelFields };
+
+  const built = buildChartStructure({
+    chartType,
+    data: navData,
+    dimension,
+    color,
+    seriesField,
+    dodgeFields,
+    stackFields,
+    type,
+    colorOverride,
+    locale,
+    metric,
+    order,
+    orientation,
+    title,
+    fieldLabels,
+    dimensionLabels,
+    metricTitleBySeries,
+    xAxis: xAxisRegion,
+  });
   if (!built) return;
   const { structure, entryPoint } = built;
 
@@ -363,7 +420,7 @@ export const attachDataNavigator = ({
 
   const view = getView();
   if (view && markName && dimension) {
-    guardHoverParityAgainstMouseClear(container, view, markName, dimension, color, metric, fieldLabels ?? {}, hasChartInspect ?? false, () =>
+    guardHoverParityAgainstMouseClear(container, view, markName, dimension, series, metric, fieldLabels ?? {}, hasChartInspect ?? false, () =>
       focusInsideWidget && current ? structure.nodes[current] : undefined
     );
   }
@@ -426,7 +483,7 @@ export const attachDataNavigator = ({
     const columns = getVisibleAxisLabelColumns(view, container, 'bottom');
     if (!columns.length) {
       clearAxisFocusRing(focusRing);
-      applyHoverParitySignals(view, { markName, dimension, color }, null, true);
+      applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null, true);
       return;
     }
     const union = columns.reduce(
@@ -443,7 +500,7 @@ export const attachDataNavigator = ({
       setAxisFocusRing(focusRing, union);
       const bounds = padAxisBounds(union);
       if (bounds) positionOverlayAtBounds(el, bounds);
-      applyHoverParitySignals(view, { markName, dimension, color }, null, true);
+      applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null, true);
       return;
     }
 
@@ -451,13 +508,13 @@ export const attachDataNavigator = ({
     const column = columns.find((c) => c.value === value);
     if (!column) {
       clearAxisFocusRing(focusRing);
-      applyHoverParitySignals(view, { markName, dimension, color }, null, true);
+      applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null, true);
       return;
     }
     setAxisFocusRing(focusRing, column.bounds);
     const bounds = padAxisBounds(column.bounds);
     if (bounds) positionOverlayAtBounds(el, bounds);
-    applyHoverParitySignals(view, { markName, dimension, color }, node, true);
+    applyHoverParitySignals(view, { markName, dimension, color: seriesField }, node, true);
     // Show the label's tooltip on focus, matching mouse hover. React Spectrum's TooltipTrigger dismisses
     // it on Escape (via onOpenChange in RscChart) without moving focus — WCAG 2.2 SC 1.4.13.
     showAxisLabelTooltip(view, value);
@@ -488,7 +545,7 @@ export const attachDataNavigator = ({
   function activateBar(node: NodeObject) {
     const view = getView();
     if (!view || !markName || !dimension) return;
-    const row = findFocusedRow(view, node, dimension, color);
+    const row = findFocusedRow(view, node, dimension, seriesField);
     if (!row) return;
     const sceneItem = findFocusedBarSceneItem(view, markName, row[MARK_ID]);
     if (sceneItem) triggerBarPopover(row, sceneItem);
@@ -530,7 +587,7 @@ export const attachDataNavigator = ({
     const view = getView();
     const contentBounds =
       !isAxisNode && view && markName && dimension
-        ? resolveContentFocusBounds(view, container, node, markName, dimension, color)
+        ? resolveContentFocusBounds(view, container, node, markName, dimension, seriesField)
         : undefined;
     if (contentBounds) {
       positionOverlayAtBounds(el, contentBounds);
@@ -597,7 +654,7 @@ export const attachDataNavigator = ({
       } else {
         clearAxisFocusRing(focusRing);
         if (view && markName && dimension) {
-          applyHoverParitySignals(view, { markName, dimension, color }, node);
+          applyHoverParitySignals(view, { markName, dimension, color: seriesField }, node);
         }
       }
       const signals = nodeFocusSignals(node);
@@ -608,7 +665,7 @@ export const attachDataNavigator = ({
             showFocusedItemTooltip(container, view, `${markName ?? 'bar0'}_focusRing`, null);
             return;
           }
-          showTooltipForFocusedNode(container, view, node, markName, dimension, color, metric, fieldLabels ?? {}, hasChartInspect ?? false);
+          showTooltipForFocusedNode(container, view, node, markName, dimension, series, metric, fieldLabels ?? {}, hasChartInspect ?? false);
         });
     });
 
@@ -632,7 +689,7 @@ export const attachDataNavigator = ({
     const view = getView();
     hideFocusedItemTooltip(view);
     if (view && markName && dimension) {
-      applyHoverParitySignals(view, { markName, dimension, color }, null);
+      applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null);
     }
     clearAxisFocusRing(focusRing);
     applyFocusSignals(view, CLEARED_FOCUS);
@@ -677,8 +734,8 @@ export const attachDataNavigator = ({
       // Overlay marks (e.g. a voronoi cell) wrap the real datum one level deeper.
       const nested = (datum as { datum?: Row }).datum;
       const nodeId =
-        getNodeIdForDatum(chartType, datum as SimpleData, { dimension, color }) ??
-        (nested ? getNodeIdForDatum(chartType, nested as SimpleData, { dimension, color }) : undefined);
+        getNodeIdForDatum(chartType, datum as SimpleData, { dimension, seriesField }) ??
+        (nested ? getNodeIdForDatum(chartType, nested as SimpleData, { dimension, seriesField }) : undefined);
       if (!nodeId || nodeId === current) return;
       const node = structure.nodes[nodeId];
       if (!node) return;

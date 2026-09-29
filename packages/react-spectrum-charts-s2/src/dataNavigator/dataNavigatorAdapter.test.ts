@@ -1160,15 +1160,15 @@ describe('attachDataNavigator()', () => {
     const enterAxisRegion = () => {
       attachWithAxis();
       entryButton().click(); // chart root
-      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' }); // chart root -> axis root
+      fireEvent.keyDown(focused(), { key: 'ArrowDown', code: 'ArrowDown' }); // chart root -> axis root
     };
 
-    test('Right from the chart root clears the chart-region focus signal', () => {
+    test('Down from the chart root clears the chart-region focus signal', () => {
       enterAxisRegion();
       expect(signaledWith(FOCUSED_REGION, null)).toBe(true);
     });
 
-    test('Right from the chart root shows the axis focus ring', () => {
+    test('Down from the chart root shows the axis focus ring', () => {
       enterAxisRegion();
       expect(focusRing().style.display).toBe('block');
     });
@@ -1241,19 +1241,19 @@ describe('attachDataNavigator()', () => {
       expect(focusRing().style).toMatchObject({ left: '-6px', top: '94px', width: '152px', height: '32px' });
     });
 
-    test('Left from the axis root returns to the chart region', () => {
+    test('Up from the axis root returns to the chart region', () => {
       enterAxisRegion();
       signal.mockClear();
 
-      fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
+      fireEvent.keyDown(focused(), { key: 'ArrowUp', code: 'ArrowUp' });
 
       expect(signaledWith(FOCUSED_REGION, 'chart')).toBe(true);
     });
 
-    test('Left from the axis root clears the axis focus ring', () => {
+    test('Up from the axis root clears the axis focus ring', () => {
       enterAxisRegion();
 
-      fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
+      fireEvent.keyDown(focused(), { key: 'ArrowUp', code: 'ArrowUp' });
 
       expect(focusRing().style.display).toBe('none');
     });
@@ -1263,7 +1263,7 @@ describe('attachDataNavigator()', () => {
       axisLabelItems.length = 0; // no labels rendered, e.g. an empty/zero-width axis
       entryButton().click();
 
-      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+      fireEvent.keyDown(focused(), { key: 'ArrowDown', code: 'ArrowDown' });
 
       expect(focusRing().style.display).toBe('none');
     });
@@ -1290,4 +1290,5 @@ describe('attachDataNavigator()', () => {
       expect(signal).toHaveBeenCalledWith('bar0_dimensionHoverArea_hoveredItem', data[0]);
     });
   });
+
 });

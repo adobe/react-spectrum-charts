@@ -32,6 +32,7 @@ import { Axis } from './components/Axis';
 import { ChartInspect } from './components/ChartInspect';
 import { Legend } from './components/Legend';
 import { AxisRegionOptions } from './dataNavigator/buildChartStructure';
+import { getBarSeriesFields } from './dataNavigator/barSeries';
 import { isDualMetricAxisNavigation } from './dataNavigator/buildBarStructure';
 import { Navigator } from './dataNavigator/Navigator';
 import { getNavigableChartType } from './dataNavigator/navigableMarks';
@@ -182,12 +183,17 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         orientation?: Orientation;
       }
     | undefined;
-  const navColor = typeof navFields?.color === 'string' ? navFields.color : undefined;
-  const navColorOverride = typeof navFields?.colorOverride === 'string' ? navFields.colorOverride : undefined;
   const navLineType = navFields?.lineType;
   const navOpacity = navFields?.opacity;
-  const navTrellis = navFields?.trellis;
   const navType = navFields?.type;
+  // Every field dividing the bar into series (color, lineType, opacity, dual facets), mirroring the chart's series id.
+  const navSeries = useMemo(
+    () => getBarSeriesFields({ color: navFields?.color, lineType: navLineType, opacity: navOpacity, type: navType }),
+    [navFields?.color, navLineType, navOpacity, navType]
+  );
+  const navColor = navSeries.color;
+  const navColorOverride = typeof navFields?.colorOverride === 'string' ? navFields.colorOverride : undefined;
+  const navTrellis = navFields?.trellis;
   const navDualMetricAxis = navFields?.dualMetricAxis;
   const navOrientation: Orientation = navFields?.orientation === 'horizontal' ? 'horizontal' : 'vertical';
   const markName = navFields?.name ?? (navChartType ? `${navChartType}0` : undefined);
@@ -215,10 +221,14 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     const metricTitle = titleAt(isHorizontal ? 'bottom' : 'left');
     const labels: Record<string, string> = {};
     if (dimensionTitle) labels[navFields?.dimension ?? DEFAULT_CATEGORICAL_DIMENSION] = dimensionTitle;
-    if (navColor && (legendTitle || dimensionTitle || metricTitle)) labels[navColor] = legendTitle ?? navColor;
+    if (navColor && (legendTitle || dimensionTitle || metricTitle)) {
+      labels[navColor] = legendTitle ?? navColor;
+      // The other series fields (e.g. a time-comparison period) tell series apart too, so they're read under their own names.
+      for (const field of navSeries.seriesFields) labels[field] ??= field;
+    }
     if (metricTitle) labels[navFields?.metric ?? DEFAULT_METRIC] = metricTitle;
     return labels;
-  }, [sanitizedChildren, navOrientation, navFields?.dimension, navFields?.metric, navColor, legendTitle]);
+  }, [sanitizedChildren, navOrientation, navFields?.dimension, navFields?.metric, navColor, navSeries, legendTitle]);
 
   const navMetricTitleBySeries = useMemo(() => {
     // Mirrors vega-spec-builder-s2's isDualMetricAxis (barUtils.ts) — keep the two in sync.
@@ -361,6 +371,9 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             data={data as SimpleData[]}
             dimension={navFields?.dimension}
             color={navColor}
+            seriesFields={navSeries.seriesFields}
+            dodgeFields={navSeries.dodgeFields}
+            stackFields={navSeries.stackFields}
             type={navFields?.type}
             colorOverride={navColorOverride}
             locale={locale == null ? undefined : String(locale)}
