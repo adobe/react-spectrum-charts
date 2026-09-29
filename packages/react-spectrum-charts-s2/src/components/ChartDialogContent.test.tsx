@@ -20,33 +20,22 @@ import { DonutDialogContent, getDonutSwatchColor } from './ChartDialogContent';
 
 const datum = (fields: Record<string, unknown>): Datum => ({ [MARK_ID]: 0, [SERIES_ID]: '', ...fields });
 
-const getColor = jest.fn(() => '#ff0000');
 const keys = { colorKey: 'browser', metricKey: 'count', percentKey: 'donut0_arcPercent' };
+const props = { ...keys, color: '#ff0000', locale: undefined };
 
 describe('DonutDialogContent', () => {
-  beforeEach(() => jest.clearAllMocks());
-
   test('renders the swatch, series, and percent of total', () => {
     render(
-      <DonutDialogContent
-        {...keys}
-        datum={datum({ browser: 'Chrome', count: 23456, donut0_arcPercent: 0.652 })}
-        getColor={getColor}
-      />
+      <DonutDialogContent {...props} datum={datum({ browser: 'Chrome', count: 23456, donut0_arcPercent: 0.652 })} />
     );
     expect(screen.getByText('Chrome')).toBeInTheDocument();
     expect(screen.getByText('65.2% (23K)')).toBeInTheDocument();
     expect(screen.getByTestId('donut-dialog-swatch')).toHaveStyle({ backgroundColor: '#ff0000' });
-    expect(getColor).toHaveBeenCalledWith(expect.objectContaining({ browser: 'Chrome' }));
   });
 
   test('does not render a standalone raw value row', () => {
     const { container } = render(
-      <DonutDialogContent
-        {...keys}
-        datum={datum({ browser: 'Chrome', count: 23456, donut0_arcPercent: 0.652 })}
-        getColor={getColor}
-      />
+      <DonutDialogContent {...props} datum={datum({ browser: 'Chrome', count: 23456, donut0_arcPercent: 0.652 })} />
     );
     expect(screen.queryByText('23456')).not.toBeInTheDocument();
     expect(container.firstElementChild?.children).toHaveLength(3);
@@ -55,9 +44,8 @@ describe('DonutDialogContent', () => {
   test('formats the percent with the chart locale', () => {
     const { container } = render(
       <DonutDialogContent
-        {...keys}
+        {...props}
         datum={datum({ browser: 'Chrome', count: 23456, donut0_arcPercent: 0.652 })}
-        getColor={getColor}
         locale="fr-FR"
       />
     );
@@ -65,16 +53,14 @@ describe('DonutDialogContent', () => {
   });
 
   test('renders empty text when the series, metric, and percent are missing', () => {
-    const { container } = render(<DonutDialogContent {...keys} datum={datum({})} getColor={() => undefined} />);
+    const { container } = render(<DonutDialogContent {...keys} datum={datum({})} locale={undefined} />);
     expect(container.querySelector('.rsc-donut-dialog-series')).toHaveTextContent('');
     expect(container.querySelector('.rsc-donut-dialog-percent-value')).toHaveTextContent('');
     expect(screen.getByTestId('donut-dialog-swatch').style.backgroundColor).toBe('');
   });
 
   test('renders zero values instead of treating them as missing', () => {
-    render(
-      <DonutDialogContent {...keys} datum={datum({ browser: 0, count: 0, donut0_arcPercent: 0 })} getColor={getColor} />
-    );
+    render(<DonutDialogContent {...props} datum={datum({ browser: 0, count: 0, donut0_arcPercent: 0 })} />);
     expect(screen.getByText('0')).toBeInTheDocument();
     expect(screen.getByText('0.0% (0)')).toBeInTheDocument();
   });

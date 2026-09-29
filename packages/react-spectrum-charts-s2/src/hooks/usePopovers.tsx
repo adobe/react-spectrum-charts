@@ -11,9 +11,7 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_METRIC } from '@spectrum-charts/constants';
-
-import { DonutDialogContentOptions } from '../components/ChartDialogContent';
+import { DefaultDonutContent, getDefaultDonutContent } from '../components/ChartDialogContent';
 import { ChartPopover } from '../components/ChartPopover';
 import { Donut } from '../pre-alpha';
 import { ChartChildElement, ChartPopoverElement, ChartPopoverProps, DonutElement } from '../types';
@@ -29,7 +27,7 @@ ChartContainer.displayName = 'ChartContainer';
 
 export type PopoverDetail = {
   chartPopoverProps: ChartPopoverProps;
-  defaultDonutContent?: DonutDialogContentOptions;
+  defaultDonutContent?: DefaultDonutContent;
   key: string;
   name: string;
   UNSAFE_highlightBy: ChartPopoverProps['UNSAFE_highlightBy'];
@@ -55,12 +53,7 @@ export default function usePopovers(children: ChartChildElement[]): PopoverDetai
             chartPopoverProps: popover.element.props,
             defaultDonutContent:
               donut && !popover.element.props.children
-                ? {
-                    booleanDataName: donut.element.props.isBoolean ? `${donut.name}_booleanData` : undefined,
-                    colorKey: donut.element.props.color ?? DEFAULT_COLOR,
-                    metricKey: donut.element.props.metric ?? DEFAULT_METRIC,
-                    percentKey: `${donut.name}_arcPercent`,
-                  }
+                ? getDefaultDonutContent(donut.name, donut.element.props)
                 : undefined,
             key: `${popover.name}Popover${index}`,
             name: popover.name,

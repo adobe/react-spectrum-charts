@@ -13,31 +13,34 @@ import { FC } from 'react';
 
 import { View } from 'vega';
 
-import { COLOR_SCALE } from '@spectrum-charts/constants';
+import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_METRIC, DONUT_BOOLEAN_SECONDARY_COLOR } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 import { ColorScheme, Datum, formatPercentWithValue } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartProps } from '../types';
+import { ChartProps, DonutProps } from '../types';
 
 interface DonutDialogContentOptions {
-  /** Data source holding a boolean donut's primary segment; only set for boolean donuts */
-  booleanDataName?: string;
   colorKey: string;
   metricKey: string;
   /** Field holding the segment's percent of the visible total (0-1) */
   percentKey: string;
 }
 
+type DefaultDonutContent = DonutDialogContentOptions & {
+  /** Data source holding a boolean donut's primary segment; only set for boolean donuts */
+  booleanDataName?: string;
+};
+
 interface DonutDialogContentProps extends DonutDialogContentOptions {
+  color?: string;
   datum: Datum;
-  getColor: (datum: Datum) => string | undefined;
-  locale?: ChartProps['locale'];
+  locale: ChartProps['locale'];
 }
 
 /**
  * Gets the swatch color for a donut segment, matching the gray fill of a boolean donut's secondary segment.
  * @param view
- * @param options
+ * @param content
  * @param datum
  * @param idKey
  * @param colorScheme
@@ -45,26 +48,32 @@ interface DonutDialogContentProps extends DonutDialogContentOptions {
  */
 const getDonutSwatchColor = (
   view: View | undefined,
-  { booleanDataName, colorKey }: DonutDialogContentOptions,
+  { booleanDataName, colorKey }: DefaultDonutContent,
   datum: Datum,
   idKey: string,
   colorScheme: ColorScheme
 ): string | undefined => {
   if (!view) return undefined;
   if (booleanDataName && datum[idKey] !== view.data(booleanDataName)[0]?.[idKey]) {
-    return getS2ColorValue('gray-400', colorScheme);
+    return getS2ColorValue(DONUT_BOOLEAN_SECONDARY_COLOR, colorScheme);
   }
   return view.scale(COLOR_SCALE)(datum[colorKey]) as string | undefined;
 };
 
-const DonutDialogContent: FC<DonutDialogContentProps> = ({
-  colorKey,
-  datum,
-  getColor,
-  locale,
-  metricKey,
-  percentKey,
-}) => {
+/**
+ * Gets the default dialog content options for a donut.
+ * @param name
+ * @param donutProps
+ * @returns DefaultDonutContent
+ */
+const getDefaultDonutContent = (name: string, { color, isBoolean, metric }: DonutProps): DefaultDonutContent => ({
+  booleanDataName: isBoolean ? `${name}_booleanData` : undefined,
+  colorKey: color ?? DEFAULT_COLOR,
+  metricKey: metric ?? DEFAULT_METRIC,
+  percentKey: `${name}_arcPercent`,
+});
+
+const DonutDialogContent: FC<DonutDialogContentProps> = ({ color, colorKey, datum, locale, metricKey, percentKey }) => {
   const series = datum[colorKey];
   const percent = datum[percentKey];
   const value = datum[metricKey];
@@ -76,7 +85,7 @@ const DonutDialogContent: FC<DonutDialogContentProps> = ({
         aria-hidden="true"
         className="rsc-donut-dialog-swatch"
         data-testid="donut-dialog-swatch"
-        style={{ backgroundColor: getColor(datum) }}
+        style={{ backgroundColor: color }}
       />
       <span className="rsc-donut-dialog-series">{String(series ?? '')}</span>
       <span className="rsc-donut-dialog-percent-value">{percentWithValue}</span>
@@ -84,5 +93,5 @@ const DonutDialogContent: FC<DonutDialogContentProps> = ({
   );
 };
 
-export { DonutDialogContent, getDonutSwatchColor };
-export type { DonutDialogContentOptions, DonutDialogContentProps };
+export { DonutDialogContent, getDefaultDonutContent, getDonutSwatchColor };
+export type { DefaultDonutContent };

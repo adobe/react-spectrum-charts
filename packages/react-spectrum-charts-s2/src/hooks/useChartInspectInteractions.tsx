@@ -30,7 +30,7 @@ import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP
 import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../context/RscChartContext';
-import { DonutDialogContent, DonutDialogContentOptions, getDonutSwatchColor } from '../components/ChartDialogContent';
+import { DefaultDonutContent, DonutDialogContent, getDonutSwatchColor } from '../components/ChartDialogContent';
 import { ChartChildElement, RscChartProps } from '../types';
 import { debugLog } from '../utils';
 import useLegend from './useLegend';
@@ -102,16 +102,19 @@ const getDimensionAreaInspectMarkup = (
 const getInspectContent = (
   inspect: InspectDetail,
   value: Datum,
-  getColor: (options: DonutDialogContentOptions, datum: Datum) => string | undefined,
+  getColor: (content: DefaultDonutContent, datum: Datum) => string | undefined,
   locale: RscChartProps['locale']
 ): ReactNode => {
   const { defaultDonutContent } = inspect;
   if (defaultDonutContent) {
+    const { colorKey, metricKey, percentKey } = defaultDonutContent;
     return (
       <DonutDialogContent
-        {...defaultDonutContent}
+        colorKey={colorKey}
+        metricKey={metricKey}
+        percentKey={percentKey}
+        color={getColor(defaultDonutContent, value)}
         datum={value}
-        getColor={(datum) => getColor(defaultDonutContent, datum)}
         locale={locale}
       />
     );
@@ -158,7 +161,7 @@ const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: Ch
           const content = getInspectContent(
             inspect,
             value,
-            (options, datum) => getDonutSwatchColor(chartView.current, options, datum, idKey, colorScheme),
+            (content, datum) => getDonutSwatchColor(chartView.current, content, datum, idKey, colorScheme),
             locale
           );
           return renderToHtml(

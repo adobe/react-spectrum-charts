@@ -11,9 +11,7 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_METRIC } from '@spectrum-charts/constants';
-
-import { DonutDialogContentOptions } from '../components/ChartDialogContent';
+import { DefaultDonutContent, getDefaultDonutContent } from '../components/ChartDialogContent';
 import { ChartInspect } from '../components/ChartInspect';
 import { Donut } from '../pre-alpha';
 import { ChartChildElement, ChartInspectElement, ChartInspectProps, DonutElement, InspectHandler } from '../types';
@@ -30,7 +28,7 @@ ChartContainer.displayName = 'ChartContainer';
 export type InspectDetail = {
   name: string;
   callback?: InspectHandler;
-  defaultDonutContent?: DonutDialogContentOptions;
+  defaultDonutContent?: DefaultDonutContent;
   highlightBy: ChartInspectProps['highlightBy'];
   targets: ChartInspectProps['targets'];
   width?: number;
@@ -56,12 +54,7 @@ export default function useChartInspects(children: ChartChildElement[]): Inspect
             callback: inspect.element.props.children,
             defaultDonutContent:
               donut && !inspect.element.props.children
-                ? {
-                    booleanDataName: donut.element.props.isBoolean ? `${donut.name}_booleanData` : undefined,
-                    colorKey: donut.element.props.color ?? DEFAULT_COLOR,
-                    metricKey: donut.element.props.metric ?? DEFAULT_METRIC,
-                    percentKey: `${donut.name}_arcPercent`,
-                  }
+                ? getDefaultDonutContent(donut.name, donut.element.props)
                 : undefined,
             highlightBy: inspect.element.props.highlightBy,
             targets: inspect.element.props.targets,

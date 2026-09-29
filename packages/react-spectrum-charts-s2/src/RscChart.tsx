@@ -518,9 +518,11 @@ const ChartDialog = ({
   const content =
     activeDatum && defaultDonutContent ? (
       <DonutDialogContent
-        {...defaultDonutContent}
+        colorKey={defaultDonutContent.colorKey}
+        metricKey={defaultDonutContent.metricKey}
+        percentKey={defaultDonutContent.percentKey}
         datum={activeDatum}
-        getColor={(datum) => getDonutSwatchColor(chartView.current, defaultDonutContent, datum, idKey, colorScheme)}
+        color={getDonutSwatchColor(chartView.current, defaultDonutContent, activeDatum, idKey, colorScheme)}
         locale={locale}
       />
     ) : (

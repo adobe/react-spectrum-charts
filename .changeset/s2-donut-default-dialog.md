@@ -1,4 +1,5 @@
 ---
+'@spectrum-charts/constants': minor
 '@spectrum-charts/react-spectrum-charts-s2': minor
 '@spectrum-charts/vega-spec-builder-s2': minor
 ---
