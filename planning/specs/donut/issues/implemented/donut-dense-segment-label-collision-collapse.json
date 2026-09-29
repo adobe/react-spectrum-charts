@@ -1,0 +1,108 @@
+{
+  "id": "donut-dense-segment-label-collision-collapse",
+  "title": "Dense Donut labels need bounded collision handling",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-09-22",
+  "complexity": {
+    "score": 3,
+    "rationale": "The final behavior requires slice-derived placement, rendered-edge geometry, per-row collision bounds, and deterministic runtime filtering for both Direct and Advanced labels."
+  },
+  "summary": "S2 Donut labels stay on Vega's natural slice bisector with the nearest point of each rendered block exactly 20px beyond the ring. Fixed-position overlaps are resolved by retaining larger segments first and hiding lower-priority labels without moving them.",
+  "symptom": "Dense Direct and Advanced label blocks overlap when every eligible label is rendered at its fixed slice-derived position. Advanced swatches can also appear offset from the slice when they inherit the name row's vertical offset.",
+  "rootCause": "Fixed bisector placement needs a separate visibility pass because moving labels breaks slice alignment and the exact ring gap. A single maximum-width rectangle overstates multi-row labels by treating empty space beside shorter rows as occupied, so collision checks must compare the actual rendered rectangle of each row.",
+  "comparison": [
+    {
+      "aspect": "Dense per-hemisphere label packing",
+      "expected": "Every visible label is centered on the segment's angular bisector with its nearest rendered edge exactly 20px beyond the donut, and lower-priority overlapping labels are hidden without moving surviving labels.",
+      "actual": "Rendering every eligible label creates overlaps, while position-adjustment approaches move labels away from their slice midpoint or the fixed ring distance."
+    }
+  ],
+  "edgeCases": [
+    {
+      "case": "Twenty-four gradually decreasing segments",
+      "expectedBehavior": "Direct and Advanced labels remain fixed at their slice anchors, with smaller overlapping labels hidden."
+    },
+    {
+      "case": "One dominant segment with many slivers",
+      "expectedBehavior": "The dominant label remains visible and overlapping sliver labels are hidden without moving any anchor."
+    },
+    {
+      "case": "Total requested label height exceeds one hemisphere",
+      "expectedBehavior": "Hide lower-priority overlapping labels until every visible fixed-position block has sufficient separation."
+    },
+    {
+      "case": "Sparse datasets with one or two labels per hemisphere",
+      "expectedBehavior": "The existing no-collision positioning remains unchanged."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "The visibility filter only removes fixed-position candidates whose rendered rows violate the 4px minimum gap. S1 has no equivalent Advanced label geometry, so parity is not required."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/constants/constants.ts",
+      "change": "Define the shared 4px minimum gap used by Donut label collision filtering.",
+      "lines": "Donut label constants"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutLabelPositionUtils.ts",
+      "change": "Generate fixed polar coordinates from the pie arc's angular midpoint, using each block's actual inward extent to keep its nearest rendered edge exactly 20px from the donut.",
+      "lines": "label position transforms"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutLabelPositionUtils.test.ts",
+      "change": "Verify normalized hemisphere selection and the exact rendered-edge distance across representative slice angles.",
+      "lines": "label position transform tests"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Build candidate and visible data sources for Direct and Advanced labels, derive a collision rectangle for each rendered row, filter fixed-position overlaps with a 4px minimum gap, and anchor the Advanced swatch and name row directly to the slice-derived label Y coordinate.",
+      "lines": "Direct and rich SegmentLabel data and swatch mark"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/expressionFunctions/expressionFunctions.ts",
+      "change": "Expose a deterministic visibility expression that evaluates larger segments first within each hemisphere and rejects candidates only when a rendered row comes within 4px of an accepted label row on both axes.",
+      "lines": "isDonutLabelVisible"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Verify candidate and visible data sources, fixed row layout, per-row collision boxes, visibility filtering, and the Advanced swatch and name row's direct slice-anchor Y encoding.",
+      "lines": "Direct and rich SegmentLabel data and position tests"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/expressionFunctions/expressionFunctions.test.ts",
+      "change": "Verify priority ordering, hemisphere isolation, row-level overlap detection, and the 4px minimum gap.",
+      "lines": "isDonutLabelVisible tests"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.test.ts",
+      "change": "Run dense datasets through Vega and verify every visible block's nearest rendered edge remains exactly 20px from the donut with no row pairs violating the 4px gap.",
+      "lines": "dense Direct and Advanced runtime tests"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/donutVariationData.ts",
+      "change": "Provide numeric and semantic dense datasets for visual verification of label selection and spacing.",
+      "lines": "dense variation fixtures"
+    },
+    {
+      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/donutVariationData.test.ts",
+      "change": "Verify the dense variation fixtures remain available through the dataset selector.",
+      "lines": "Donut variation dataset tests"
+    }
+  ],
+  "openQuestions": [],
+  "relatedIssues": [
+    "donut-direct-labels-collision",
+    "donut-direct-labels-long-text-overlap",
+    "donut-advanced-labels"
+  ]
+}

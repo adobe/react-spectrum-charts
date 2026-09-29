@@ -32,6 +32,7 @@ import {
   getRingWidthSignal,
   getSliceGapScale,
   getSliceGapSignal,
+  getSliceStrokeWidthExpr,
   getSumData,
 } from './donutUtils';
 
@@ -45,6 +46,35 @@ describe('getDonutEmptyStateTest()', () => {
 describe('getDonutOuterRadiusExpr()', () => {
   test('should return the raw donut radius when no labels are present', () => {
     expect(getDonutOuterRadiusExpr(defaultDonutOptions)).toBe(DONUT_RADIUS);
+  });
+
+  describe('getSliceStrokeWidthExpr()', () => {
+    const evaluate = (arcLength: number): number => {
+      const expression = getSliceStrokeWidthExpr(defaultDonutOptions, 'testName_sliceGap');
+      // eslint-disable-next-line no-new-func
+      return new Function(
+        'width',
+        'height',
+        'datum',
+        'testName_ringWidth',
+        'testName_sliceGap',
+        'PI',
+        'min',
+        'max',
+        'sin',
+        `return ${expression};`
+      )(364, 364, { testName_arcLength: arcLength }, 28, 2, Math.PI, Math.min, Math.max, Math.sin);
+    };
+
+    test('preserves the configured gap for ordinary slices', () => {
+      expect(evaluate(0.5)).toBe(2);
+    });
+
+    test('reduces or removes the gap before it consumes a tiny slice', () => {
+      expect(evaluate(0.01)).toBeGreaterThan(0);
+      expect(evaluate(0.01)).toBeLessThan(2);
+      expect(evaluate(0.001)).toBe(0);
+    });
   });
 
   test('should return the raw donut radius for isBoolean donuts, even with labels configured', () => {
@@ -124,14 +154,24 @@ describe('getArcMark()', () => {
 
   test('should use the per-tier fixed ring width at the default holeRatio', () => {
     const arcMark = getArcMark(defaultDonutOptions);
+    const strokeWidth = getSliceStrokeWidthExpr(defaultDonutOptions, 'testName_sliceGap');
+    const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
     expect(arcMark.encode?.update?.innerRadius).toEqual({
-      signal: '((min(width, height) / 2 - 2) - testName_ringWidth)',
+      signal: `(((min(width, height) / 2 - 2) - testName_ringWidth)) + (${inset})`,
+    });
+    expect(arcMark.encode?.update?.outerRadius).toEqual({
+      signal: `((min(width, height) / 2 - 2)) - (${inset})`,
     });
   });
 
   test('should use a proportional ring when holeRatio is explicitly customized', () => {
-    const arcMark = getArcMark({ ...defaultDonutOptions, holeRatio: 0.5 });
-    expect(arcMark.encode?.update?.innerRadius).toEqual({ signal: '0.5 * (min(width, height) / 2 - 2)' });
+    const options = { ...defaultDonutOptions, holeRatio: 0.5 };
+    const arcMark = getArcMark(options);
+    const strokeWidth = getSliceStrokeWidthExpr(options, 'testName_sliceGap');
+    const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
+    expect(arcMark.encode?.update?.innerRadius).toEqual({
+      signal: `(0.5 * (min(width, height) / 2 - 2)) + (${inset})`,
+    });
   });
 
   test('should use the per-tier fixed slice gap as the segment border width', () => {
@@ -142,8 +182,15 @@ describe('getArcMark()', () => {
       { signal: 'chartBackgroundColor' },
     ]);
     expect(arcMark.encode?.update?.strokeWidth).toEqual([
-      { test: 'selectedItem === datum.rscMarkId', value: 2 },
-      { signal: 'testName_sliceGap' },
+      {
+        test: 'selectedItem === datum.rscMarkId',
+        signal:
+          "min(2, max(0, (2 * (max(0, ((min(width, height) / 2 - 2) - testName_ringWidth))) * sin((min(PI, max(0, datum['testName_arcLength']))) / 2)) - 1))",
+      },
+      {
+        signal:
+          "min(testName_sliceGap, max(0, (2 * (max(0, ((min(width, height) / 2 - 2) - testName_ringWidth))) * sin((min(PI, max(0, datum['testName_arcLength']))) / 2)) - 1))",
+      },
     ]);
   });
 
@@ -233,6 +280,27 @@ describe('getArcMark()', () => {
     expect(arcMark.encode?.enter?.x).toEqual({ signal: 'width / 2' });
     expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height' });
   });
+
+  test('should reserve space below a semicircle for a summary delta', () => {
+    const arcMark = getArcMark({
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
+    });
+    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height - testName_summaryBottomOffset' });
+  });
+
+  test.each([
+    [{ delta: 0.025 }, 'value and delta'],
+    [{ delta: 0.025, hideValue: true, label: 'Visitors' }, 'label and delta'],
+  ])('should remain bottom-anchored with only %s', (summary, _description) => {
+    const arcMark = getArcMark({
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      donutSummaries: [summary],
+    });
+    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height' });
+  });
 });
 
 describe('getEmptyStateArcMark()', () => {
@@ -251,6 +319,14 @@ describe('getEmptyStateArcMark()', () => {
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
     expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
   });
+  test('should reserve the same summary-delta space for the semicircle empty state', () => {
+    const emptyStateMark = getEmptyStateArcMark({
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
+    });
+    expect(emptyStateMark.encode?.enter?.y).toEqual({ signal: 'height - testName_summaryBottomOffset' });
+  });
   test('should only be visible when the donut is in the empty state', () => {
     const emptyStateMark = getEmptyStateArcMark(defaultDonutOptions);
     expect(emptyStateMark.encode?.update?.opacity).toEqual([
@@ -258,10 +334,14 @@ describe('getEmptyStateArcMark()', () => {
       { value: 0 },
     ]);
   });
-  test('should match the real arc mark ring width so the empty state stays visually consistent', () => {
+  test('should use the configured ring radii without per-datum slice clamping', () => {
     const emptyStateMark = getEmptyStateArcMark(defaultDonutOptions);
-    const arcMark = getArcMark(defaultDonutOptions);
-    expect(emptyStateMark.encode?.update?.innerRadius).toEqual(arcMark.encode?.update?.innerRadius);
+    expect(emptyStateMark.encode?.update?.innerRadius).toEqual({
+      signal: getDonutInnerRadiusExpr(defaultDonutOptions),
+    });
+    expect(emptyStateMark.encode?.update?.outerRadius).toEqual({
+      signal: getDonutOuterRadiusExpr(defaultDonutOptions),
+    });
   });
 });
 

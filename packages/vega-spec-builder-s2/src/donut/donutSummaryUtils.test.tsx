@@ -107,6 +107,33 @@ describe('getDonutSummarySignals()', () => {
       update: "scale('testName_summaryLabelFontSizeScale', 2 * (min(width, height) / 2 - 2))",
     });
   });
+
+  test('should reserve the delta row below a semicircle with summary content above it', () => {
+    const signals = getDonutSummarySignals({
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
+    });
+    expect(signals[2]).toEqual({
+      name: 'testName_summaryBottomOffset',
+      update: 'ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize',
+    });
+  });
+
+  test.each([
+    [{ delta: 0.025 }, 'value and delta'],
+    [{ delta: 0.025, hideValue: true, label: 'Visitors' }, 'label and delta'],
+  ])('should not reserve space below a semicircle with only %s', (summary, _description) => {
+    const signals = getDonutSummarySignals({
+      ...defaultDonutOptions,
+      variant: 'semicircle',
+      donutSummaries: [summary],
+    });
+    expect(signals[2]).toEqual({
+      name: 'testName_summaryBottomOffset',
+      update: '0',
+    });
+  });
 });
 
 describe('getDonutSummaryGroupMark()', () => {
@@ -287,7 +314,7 @@ describe('semicircle summary anchoring', () => {
     ...defaultDonutSummaryOptions,
     donutOptions: semicircleDonutOptions,
   };
-  test('getSummaryValueEncode bottom-aligns the value and label stack with a 3px gap', () => {
+  test('getSummaryValueEncode bottom-aligns the value and label stack', () => {
     const encode = getSummaryValueEncode(semicircleSummaryOptions);
     expect(encode.update?.y).toEqual({
       signal: 'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
@@ -311,11 +338,11 @@ describe('semicircle summary anchoring', () => {
     );
   });
 
-  test('getSummaryDeltaEncode bottom-aligns the complete three-line stack', () => {
+  test('getSummaryDeltaEncode aligns the complete three-line stack to the flat edge', () => {
     const encode = getSummaryDeltaEncode({ ...semicircleSummaryOptions, delta: 0.025 });
     expect(encode.update?.y).toEqual({
       signal:
-        'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize)',
+        'height - (ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize) - (3 + (ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize) - (ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize))',
     });
   });
 

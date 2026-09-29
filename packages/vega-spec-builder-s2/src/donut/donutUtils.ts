@@ -39,6 +39,8 @@ import {
 } from '../marks/markUtils';
 import { DonutSpecOptions } from '../types';
 
+const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
+
 /** Returns whether a donut needs hover state for its own interactions or a highlighted legend. */
 export const isDonutInteractive = (options: DonutSpecOptions): boolean =>
   isInteractive(options) || Boolean(options.legendHighlightSignals?.length);
@@ -185,6 +187,31 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
 };
 
 /**
+ * Clamps a slice outline so it cannot consume the complete arc width at the inner radius.
+ * @param options
+ * @param requestedWidth
+ * @returns vega expression string
+ */
+export const getSliceStrokeWidthExpr = (options: DonutSpecOptions, requestedWidth: string): string => {
+  const { name } = options;
+  const innerRadius = `max(0, ${getDonutInnerRadiusExpr(options)})`;
+  const arcAngle = `min(PI, max(0, datum['${name}_arcLength']))`;
+  const availableWidth = `2 * (${innerRadius}) * sin((${arcAngle}) / 2)`;
+  return `min(${requestedWidth}, max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH}))`;
+};
+
+/**
+ * Insets a clamped slice so its visible ring height matches slices with the full separator.
+ * @param options
+ * @param effectiveStrokeWidth
+ * @returns vega expression string
+ */
+const getClampedSliceRadiusInsetExpr = (
+  options: DonutSpecOptions,
+  effectiveStrokeWidth: string
+): string => `(${options.name}_sliceGap - (${effectiveStrokeWidth})) / 2`;
+
+/**
  * Gets opacity rules that fade a segment when a paired Legend's hovered entry doesn't match it -
  * the reverse direction of the arc's own hover fading the legend (legendUtils.ts). Each signal
  * fades non-matching segments and falls through (to getMarkOpacity's own rules) otherwise, mirroring
@@ -247,12 +274,20 @@ const getHoveredArcFillEncoding = (
  * @param donutOptions
  * @returns vega signal string
  */
-export const getDonutCenterYSignal = ({ variant }: DonutSpecOptions): string =>
-  variant === 'semicircle' ? 'height' : 'height / 2';
+export const getDonutCenterYSignal = ({ donutSummaries, name, variant }: DonutSpecOptions): string => {
+  if (variant !== 'semicircle') {
+    return 'height / 2';
+  }
+  const summary = donutSummaries[0];
+  const hasThreeSummaryRows = summary?.delta !== undefined && !summary.hideValue && Boolean(summary.label);
+  return hasThreeSummaryRows ? `height - ${name}_summaryBottomOffset` : 'height';
+};
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;
   const outerRadius = getDonutOuterRadiusExpr(options);
+  const sliceStrokeWidth = getSliceStrokeWidthExpr(options, `${name}_sliceGap`);
+  const clampedRadiusInset = getClampedSliceRadiusInsetExpr(options, sliceStrokeWidth);
   const hoveredArcFillEncoding = getHoveredArcFillEncoding(options);
   return {
     type: 'arc',
@@ -270,8 +305,8 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         ...(hoveredArcFillEncoding ? { fill: hoveredArcFillEncoding } : {}),
         startAngle: { field: `${name}_startAngle` },
         endAngle: { field: `${name}_endAngle` },
-        innerRadius: { signal: getDonutInnerRadiusExpr(options) },
-        outerRadius: { signal: outerRadius },
+        innerRadius: { signal: `(${getDonutInnerRadiusExpr(options)}) + (${clampedRadiusInset})` },
+        outerRadius: { signal: `(${outerRadius}) - (${clampedRadiusInset})` },
         stroke: [
           { test: `${SELECTED_ITEM} === datum.${idKey}`, value: getS2ColorValue('static-blue', colorScheme) },
           { signal: BACKGROUND_COLOR },
@@ -283,7 +318,13 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
           ...getDonutOpacity(options),
         ],
         cursor: getCursor(chartPopovers),
-        strokeWidth: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 2 }, { signal: `${name}_sliceGap` }],
+        strokeWidth: [
+          {
+            test: `${SELECTED_ITEM} === datum.${idKey}`,
+            signal: getSliceStrokeWidthExpr(options, '2'),
+          },
+          { signal: sliceStrokeWidth },
+        ],
       },
     },
   };

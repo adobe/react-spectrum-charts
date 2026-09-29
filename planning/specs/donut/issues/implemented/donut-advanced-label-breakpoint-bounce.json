@@ -1,0 +1,84 @@
+{
+  "id": "donut-advanced-label-breakpoint-bounce",
+  "title": "Donut advanced labels bounce at size-tier breakpoints",
+  "chartType": "donut",
+  "kind": "bug",
+  "variant": "s2",
+  "status": "implemented",
+  "lastUpdated": "2026-09-23",
+  "complexity": {
+    "score": 3,
+    "rationale": "The issue was resolved by the final Advanced-label geometry and collision model. Swatch visibility still changes at the documented threshold, but it no longer feeds label movement or donut resizing."
+  },
+  "summary": "S2 Donut Advanced labels previously appeared to bounce near the swatch visibility breakpoint. The finalized fixed-position geometry, stable ring reservation, and hide-only collision filtering keep the donut and surviving label anchors stable while threshold-dependent swatch content updates.",
+  "symptom": "Near a named breakpoint such as a 160px effective donut diameter, the initial load displays the Advanced label swatch when it should be hidden for the settled size. The added swatch width makes labels overflow, then the swatch/geometry changes and the donut visibly resizes or bounces.",
+  "rootCause": "The breakpoint expressions themselves were consistent. The visible bounce came from the previous Advanced-label placement and collision behavior allowing threshold-dependent content width and height to influence label movement and apparent chart reach. The final implementation reserves the Advanced-label ring space independently of runtime swatch visibility, keeps every candidate on its slice-derived fixed position, and hides overlapping candidates instead of moving them. Crossing the inclusive `>= 160` swatch threshold can now change content but does not resize or reposition the donut.",
+  "comparison": [
+    {
+      "aspect": "Initial and settled breakpoint state",
+      "expected": "A Donut loads directly into the same size tier, swatch visibility, label reservation, and geometry it will retain after Vega settles, with no visible intermediate overflow or resize.",
+      "actual": "Near 160px, the initial pass can show a swatch and wider labels before a later layout pass changes the effective tier state, producing overflow and a visible bounce."
+    }
+  ],
+  "edgeCases": [
+    {
+      "case": "Effective diameters of 159px, 160px, and 161px on initial load",
+      "expectedBehavior": "Each size renders once with deterministic swatch visibility and matching label-width reservation."
+    },
+    {
+      "case": "Resize upward and downward across 160px",
+      "expectedBehavior": "Swatch, font tier, offsets, and collision geometry update atomically without an overflowing intermediate frame."
+    },
+    {
+      "case": "Container dimensions that produce a fractional effective diameter near 160px",
+      "expectedBehavior": "Rounding and threshold evaluation remain stable across the initial and settled Vega runs."
+    },
+    {
+      "case": "Advanced labels with long names or secondary value rows",
+      "expectedBehavior": "Content remains bounded during the threshold transition and does not trigger chart or card collapse."
+    },
+    {
+      "case": "SVG and canvas renderers",
+      "expectedBehavior": "Breakpoint behavior is consistent across renderers."
+    }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": false,
+    "requiresS1S2Parity": false,
+    "notes": "No VegaChart render-lifecycle change was required. Swatch visibility, width reservation, offsets, and font tiers continue to share the inclusive `>= 160` effective-diameter boundary. Stable ring reservation and fixed hide-only label geometry prevent that content transition from producing chart movement. S1 has no Advanced SegmentLabel swatch implementation to mirror."
+  },
+  "implementationPlan": [
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutLabelPositionUtils.ts",
+      "change": "Keep label candidates on fixed slice-derived coordinates with rendered-edge distance independent of collision outcomes.",
+      "lines": "label position transforms"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
+      "change": "Reserve Advanced-label ring space consistently, keep swatch visibility and width expressions on the same threshold, and filter overlapping fixed-position candidates without moving surviving labels.",
+      "lines": "rich SegmentLabel data, signals, width expressions, and marks"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
+      "change": "Verify the swatch size, name offset, width reservation, font tiers, and fixed-position data pipeline use consistent effective-diameter expressions.",
+      "lines": "rich SegmentLabel scale, signal, data, and mark tests"
+    },
+    {
+      "file": "packages/vega-spec-builder-s2/src/donut/donutSpecBuilder.test.ts",
+      "change": "Verify runtime label candidates retain fixed coordinates and exact ring distance while visibility filtering changes only which candidates render.",
+      "lines": "dense Direct and Advanced runtime tests"
+    }
+  ],
+  "openQuestions": [],
+  "relatedIssues": [
+    "donut-advanced-labels",
+    "donut-summary-responsive-sizing",
+    "donut-direct-labels",
+    "donut-direct-labels-long-text-overlap",
+    "donut-dense-segment-label-collision-collapse"
+  ]
+}

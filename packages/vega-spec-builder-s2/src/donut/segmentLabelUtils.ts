@@ -11,6 +11,7 @@
  */
 import {
   ColorValueRef,
+  FormulaTransform,
   GroupMark,
   NumericValueRef,
   ProductionRule,
@@ -39,7 +40,7 @@ import {
   DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT,
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT,
-  DONUT_LABEL_COLLISION_MIN_GAP_BUFFER,
+  DONUT_LABEL_COLLISION_GAP,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAP,
   DONUT_RADIUS,
@@ -55,12 +56,7 @@ import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
 import { getPathFromSymbolShape } from '../specUtils';
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
-import {
-  getAdjustedYField,
-  getCollisionHalfWidthField,
-  getHemisphereField,
-  getLabelCollisionTransforms,
-} from './donutLabelCollisionUtils';
+import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils';
 import { getDonutEmptyStateTest, getDonutOuterRadiusExpr } from './donutUtils';
 
 const getSegmentLabelName = ({ donutOptions, labelMode }: SegmentLabelSpecOptions): string => {
@@ -76,17 +72,12 @@ const getRichSegmentLabelName = ({ donutOptions, labelMode }: SegmentLabelSpecOp
 /** Unique field/data-source prefix for direct labels' collision fields, distinct from rich labels' */
 const getSegmentLabelFieldPrefix = (options: SegmentLabelSpecOptions): string => getSegmentLabelName(options);
 
-/** Name of the derived, collision-adjusted data source direct label marks read from */
+/** Name of the derived data source direct label marks read from */
 const getSegmentLabelDataName = (options: SegmentLabelSpecOptions): string => `${getSegmentLabelName(options)}Data`;
 
-/**
- * Gets the expression testing whether a label's collision-adjusted (not original ideal) position
- * falls in the top half of the donut - collision can push a label across the vertical midpoint, so
- * the top/bottom split for dy/baseline must track where the label actually ends up, not its ideal angle
- * @param fieldPrefix
- * @returns vega expression string
- */
-const getIsTopHalfExpr = (fieldPrefix: string): string => `datum['${getAdjustedYField(fieldPrefix)}'] <= height / 2`;
+/** Name of the direct label candidates used for overlap filtering */
+const getSegmentLabelCandidateDataName = (options: SegmentLabelSpecOptions): string =>
+  `${getSegmentLabelName(options)}Candidates`;
 
 /**
  * Gets the SegmentLabel component from the children if one exists
@@ -200,48 +191,118 @@ const getSegmentLabelSignalsForLabel = (segmentLabel: SegmentLabelSpecOptions): 
 export const getSegmentLabelSignals = (donutOptions: DonutSpecOptions): Signal[] =>
   getSegmentLabels(donutOptions).flatMap(getSegmentLabelSignalsForLabel);
 
-/**
- * Gets the minimum vertical gap enforced between two colliding direct labels - the rendered
- * (name + optional value line) block height plus a stacking buffer
- * @param segmentLabelOptions
- * @returns vega expression string
- */
-const getSegmentLabelMinGapExpr = (options: SegmentLabelSpecOptions): string => {
-  const { value, percent } = options;
+/** Gets the rendered height of a direct SegmentLabel block. */
+const getSegmentLabelHeightExpr = (options: SegmentLabelSpecOptions): string => {
   const labelName = getSegmentLabelName(options);
-  const valueLineHeight = value || percent ? ` + ${labelName}ValueFontSize` : '';
-  return `${labelName}NameFontSize${valueLineHeight} + ${DONUT_LABEL_COLLISION_MIN_GAP_BUFFER}`;
+  const valueHeight = options.value || options.percent ? ` + ${labelName}ValueFontSize` : '';
+  return `${labelName}NameFontSize${valueHeight}`;
+};
+
+const getCollisionBoxesField = (fieldPrefix: string): string => `${fieldPrefix}_collisionBoxes`;
+
+/** Gets one rendered row's collision-box expression. */
+const getCollisionBoxExpr = (
+  fieldPrefix: string,
+  widthExpr: string,
+  centerYExpr: string,
+  heightExpr: string
+): string => {
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
+  const anchorXExpr = `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`;
+  const leftXExpr = `datum['${hemisphereField}'] === 'right' ? ${anchorXExpr} : (${anchorXExpr}) - (${widthExpr})`;
+  const rightXExpr = `datum['${hemisphereField}'] === 'right' ? (${anchorXExpr}) + (${widthExpr}) : ${anchorXExpr}`;
+  return `[${leftXExpr}, ${rightXExpr}, (${centerYExpr}) - (${heightExpr}) / 2, (${centerYExpr}) + (${heightExpr}) / 2]`;
+};
+
+/** Gets rendered horizontal bounds for a fixed-position label block. */
+const getLabelHorizontalBoundsTransforms = (fieldPrefix: string, widthExpr: string): FormulaTransform[] => {
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
+  const anchorXExpr = `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`;
+  return [
+    {
+      type: 'formula',
+      as: getLabelField(fieldPrefix, 'leftX'),
+      expr: `datum['${hemisphereField}'] === 'right' ? ${anchorXExpr} : (${anchorXExpr}) - (${widthExpr})`,
+    },
+    {
+      type: 'formula',
+      as: getLabelField(fieldPrefix, 'rightX'),
+      expr: `datum['${hemisphereField}'] === 'right' ? (${anchorXExpr}) + (${widthExpr}) : ${anchorXExpr}`,
+    },
+  ];
 };
 
 /**
- * Gets the derived, collision-adjusted data source direct label marks read from. Excludes segments
- * below the min-angle threshold entirely (rather than rendering them at fontSize 0) so they don't
- * consume a collision rank slot and needlessly push visible labels further apart.
+ * Gets the derived data source direct label marks read from. Excludes segments
+ * below the min-angle threshold entirely rather than rendering them at fontSize 0.
  * @param donutOptions
  * @returns SourceData[]
  */
 const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): SourceData[] => {
   if (!segmentLabel || isRichSegmentLabel(segmentLabel)) return [];
   const { donutOptions } = segmentLabel;
-  const { name } = donutOptions;
+  const { idKey, name } = donutOptions;
   const arcThetaExpr = `datum['${name}_arcTheta']`;
-  const outerRadiusExpr = getDonutOuterRadiusExpr(donutOptions);
   const labelModeFilter = getLabelModeFilter(segmentLabel);
+  const fieldPrefix = getSegmentLabelFieldPrefix(segmentLabel);
+  const candidateDataName = getSegmentLabelCandidateDataName(segmentLabel);
+  const labelHeightExpr = getSegmentLabelHeightExpr(segmentLabel);
+  const { nameWidthExpr, valueWidthExpr, maxReachExpr, cappedWidthExpr } = getWidthExprs(segmentLabel);
+  const labelYExpr = `datum['${getLabelField(fieldPrefix, 'labelY')}']`;
+  const hasValue = segmentLabel.value || segmentLabel.percent;
+  const nameCenterYExpr = hasValue
+    ? `${labelYExpr} - ${getSegmentLabelName(segmentLabel)}ValueFontSize / 2`
+    : labelYExpr;
+  const collisionBoxes = [
+    getCollisionBoxExpr(
+      fieldPrefix,
+      `min(${nameWidthExpr}, ${maxReachExpr})`,
+      nameCenterYExpr,
+      `${getSegmentLabelName(segmentLabel)}NameFontSize`
+    ),
+    ...(hasValue
+      ? [
+          getCollisionBoxExpr(
+            fieldPrefix,
+            `min(${valueWidthExpr}, ${maxReachExpr})`,
+            `${labelYExpr} + ${getSegmentLabelName(segmentLabel)}NameFontSize / 2`,
+            `${getSegmentLabelName(segmentLabel)}ValueFontSize`
+          ),
+        ]
+      : []),
+  ];
   return [
     {
-      name: getSegmentLabelDataName(segmentLabel),
+      name: candidateDataName,
       source: FILTERED_TABLE,
       transform: [
         { type: 'filter', expr: `datum['${name}_arcLength'] >= ${DONUT_SEGMENT_LABEL_MIN_ANGLE}` },
         ...(labelModeFilter ? [{ type: 'filter' as const, expr: labelModeFilter }] : []),
-        ...getLabelCollisionTransforms(
-          getSegmentLabelFieldPrefix(segmentLabel),
+        ...getLabelPositionTransforms(
+          fieldPrefix,
           arcThetaExpr,
-          getLabelAnchorRadiusExpr(donutOptions),
-          outerRadiusExpr,
-          `${DONUT_LABEL_RING_GAP}`,
-          getSegmentLabelMinGapExpr(segmentLabel)
+          `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_LABEL_RING_GAP}`,
+          labelHeightExpr
         ),
+        ...getLabelHorizontalBoundsTransforms(fieldPrefix, cappedWidthExpr),
+        { type: 'formula', as: getCollisionBoxesField(fieldPrefix), expr: `[${collisionBoxes.join(', ')}]` },
+      ],
+    },
+    {
+      name: getSegmentLabelDataName(segmentLabel),
+      source: candidateDataName,
+      transform: [
+        {
+          type: 'filter',
+          expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getLabelField(
+            fieldPrefix,
+            'hemisphere'
+          )}', '${getCollisionBoxesField(
+            fieldPrefix
+          )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP})`,
+        },
       ],
     },
   ];
@@ -277,17 +338,6 @@ export const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined):
 };
 
 /**
- * Gets a label's pre-collision ideal anchor radius (the ring-gap point) - used only to compute its
- * ideal Y for the collision cascade (donutLabelCollisionUtils.ts), not as a mark encode field directly,
- * since the actual rendered position re-anchors horizontally against the ring's real half-width at
- * whatever Y the label ends up at after collision adjustment.
- * @param donutOptions
- * @returns vega expression string
- */
-const getLabelAnchorRadiusExpr = (donutOptions: DonutSpecOptions): string =>
-  `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_LABEL_RING_GAP}`;
-
-/**
  * Gets the pieces behind the widest-line-capped pixel width shared by a label's name/value lines:
  * the real (uncapped) widest-line width, the max horizontal reach available before hitting the
  * container's edge, and the smaller of the two. Returned separately (not just the final capped
@@ -297,7 +347,13 @@ const getLabelAnchorRadiusExpr = (donutOptions: DonutSpecOptions): string =>
  */
 const getWidthExprs = (
   options: SegmentLabelSpecOptions
-): { widerWidthExpr: string; maxReachExpr: string; cappedWidthExpr: string } => {
+): {
+  nameWidthExpr: string;
+  valueWidthExpr: string;
+  widerWidthExpr: string;
+  maxReachExpr: string;
+  cappedWidthExpr: string;
+} => {
   const { donutOptions, labelKey, percent, value } = options;
   const { color } = donutOptions;
   const labelName = getSegmentLabelName(options);
@@ -311,34 +367,29 @@ const getWidthExprs = (
       : '0';
   const widerWidthExpr = `max(${nameWidthExpr}, ${valueWidthExpr})`;
   // the cap is per-label, not a flat outerRadius*ratio - it's however much horizontal room remains
-  // between this label's own anchor point (collisionHalfWidth, which shrinks away from the ring's
+  // between this label's own anchor point (labelHalfWidth, which shrinks away from the ring's
   // equator) and the container's actual edge (DONUT_RADIUS). A flat ratio-based cap matches this
   // exactly only at the equator (the original worst-case it was derived for); away from the equator
   // it leaves real, visible unused space between the label and the container edge.
-  const halfWidthField = getCollisionHalfWidthField(getSegmentLabelFieldPrefix(options));
+  const halfWidthField = getLabelField(getSegmentLabelFieldPrefix(options), 'labelHalfWidth');
   const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
-  return { widerWidthExpr, maxReachExpr, cappedWidthExpr: `min(${widerWidthExpr}, ${maxReachExpr})` };
+  return {
+    nameWidthExpr,
+    valueWidthExpr,
+    widerWidthExpr,
+    maxReachExpr,
+    cappedWidthExpr: `min(${widerWidthExpr}, ${maxReachExpr})`,
+  };
 };
 
 /**
- * Gets a line's truncation limit - only the left hemisphere is ever capped (its shift is what's
- * bounded by getCappedWidthExpr); the right hemisphere has no shift at all (dx is always 0,
- * growing freely away from the ring) and must not be truncated by that same cap, or every line -
- * even ones that fit comfortably - gets needlessly cut off. `0` is Vega's "no limit" value.
- *
- * Left-hemisphere lines are ALSO only limited when their real width genuinely exceeds the available
- * reach (widerWidth > maxReach) - when it doesn't, the cap equals the line's own exact natural
- * width, and setting `limit` to that exact value is a razor's-edge boundary: our own width estimate
- * and Vega's internal text-measurement can round against each other by a fraction of a pixel,
- * truncating a character that didn't need to go. Passing `0` (no limit) whenever nothing was
- * actually capped avoids that boundary entirely.
+ * Gets a direct-label line's truncation limit.
  * @param segmentLabelOptions
  * @returns vega expression string
  */
 const getLimitExpr = (options: SegmentLabelSpecOptions): string => {
-  const hemisphereField = getHemisphereField(getSegmentLabelFieldPrefix(options));
   const { widerWidthExpr, maxReachExpr, cappedWidthExpr } = getWidthExprs(options);
-  return `datum['${hemisphereField}'] === 'right' || (${widerWidthExpr}) <= (${maxReachExpr}) ? 0 : ${cappedWidthExpr}`;
+  return `(${widerWidthExpr}) <= (${maxReachExpr}) ? 0 : max(1, ${cappedWidthExpr})`;
 };
 
 /**
@@ -388,13 +439,10 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
       },
       update: {
         ...getSegmentLabelUpdateEncode(options, `${labelName}NameFontSize`),
-        // top half: shift up by the value line's own font size so the two lines sit flush (0px gap
-        // token) regardless of size tier - a fixed px shift would leave a mismatched gap at every
-        // tier except the one it was tuned for
         dy:
           value || percent
             ? {
-                signal: `${getIsTopHalfExpr(getSegmentLabelFieldPrefix(options))} ? -${labelName}ValueFontSize : 0`,
+                signal: `-${labelName}ValueFontSize / 2`,
               }
             : undefined,
         // fades in step with the arc's own hover/controlled-highlight fade (getMarkOpacity is the
@@ -430,9 +478,8 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
         },
         update: {
           ...getSegmentLabelUpdateEncode(options, `${labelName}ValueFontSize`),
-          // bottom half: shift down by the name line's own font size, mirroring the top-half case
           dy: {
-            signal: `${getIsTopHalfExpr(getSegmentLabelFieldPrefix(options))} ? 0 : ${labelName}NameFontSize`,
+            signal: `${labelName}NameFontSize / 2`,
           },
           fill: getLabelValueFill(donutOptions, 'gray-700'),
           opacity: getMarkOpacity(donutOptions),
@@ -446,22 +493,20 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
  * Gets the standard position/size encodes for segment label text marks. These must live in the
  * `update` set, not `enter` - Vega only evaluates `enter` once per mark instance at creation, but
  * x/y/dx/fontSize here all derive from `width`/`height`-dependent signals that change on resize.
- * Position is collision-adjusted (see donutLabelCollisionUtils.ts): x/y come from the derived
- * data source's per-hemisphere cascade fields, not a fixed radius+theta polar anchor, since the
- * ring's horizontal half-width must be re-measured at each label's (possibly shifted) Y.
+ * Position follows the segment midpoint at the label anchor radius.
  * @param segmentLabelOptions
  * @param fontSizeSignal - the tier-based font size signal name for this specific line (name or value)
  * @returns TextEncodeEntry
  */
 const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeSignal: string): TextEncodeEntry => {
   const fieldPrefix = getSegmentLabelFieldPrefix(options);
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const halfWidthField = getCollisionHalfWidthField(fieldPrefix);
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
   return {
     x: {
       signal: `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`,
     },
-    y: { field: getAdjustedYField(fieldPrefix) },
+    y: { field: getLabelField(fieldPrefix, 'labelY') },
     // truncates (ellipsis) if this line alone is what pushed the pair past their shared cap, so its
     // real rendered width can never exceed the distance the shift already assumed
     limit: { signal: getLimitExpr(options) },
@@ -469,11 +514,7 @@ const getSegmentLabelUpdateEncode = (options: SegmentLabelSpecOptions, fontSizeS
     align: {
       signal: `datum['${hemisphereField}'] === 'right' ? 'left' : 'right'`,
     },
-    // uses the collision-adjusted position, not the ideal arcTheta - collision can push a label
-    // across the vertical midpoint, and baseline must track where it actually ends up
-    baseline: {
-      signal: `${getIsTopHalfExpr(fieldPrefix)} ? 'bottom' : 'top'`,
-    },
+    baseline: { value: 'middle' },
   };
 };
 
@@ -559,9 +600,46 @@ const getSegmentLabelFontSize = (
   ];
 };
 
-/** Gets the rich SegmentLabel options when swatch or showValueRow is enabled. */
-const getRichSegmentLabels = (options: DonutSpecOptions): SegmentLabelSpecOptions[] =>
-  getSegmentLabels(options).filter(isRichSegmentLabel);
+type RichSegmentLabelRowKey = 'name' | 'value' | 'detail';
+
+interface RichSegmentLabelRow {
+  key: RichSegmentLabelRowKey;
+  fontSize: string;
+  dy: string;
+  gapBefore: number;
+}
+
+interface RichSegmentLabelDetailLayout {
+  value: ProductionRule<TextValueRef>;
+  suffix?: ProductionRule<TextValueRef>;
+  valueWidth: string;
+  suffixWidth: string;
+}
+
+interface RichSegmentLabelLayout {
+  widths: Record<RichSegmentLabelRowKey, string> & {
+    widest: string;
+    maxReach: string;
+    capped: string;
+  };
+  detail?: RichSegmentLabelDetailLayout;
+  swatchVisible: string;
+  swatchOffset: string;
+  swatchReservedWidth: string;
+}
+
+interface RichSegmentLabelSpecOptions extends SegmentLabelSpecOptions {
+  labelName: string;
+  layout: RichSegmentLabelLayout;
+  nameRow: RichSegmentLabelRow;
+  valueRow?: RichSegmentLabelRow;
+  detailRow?: RichSegmentLabelRow;
+  rows: RichSegmentLabelRow[];
+}
+
+/** Gets resolved rich SegmentLabels with their rendered rows. */
+const getRichSegmentLabels = (options: DonutSpecOptions): RichSegmentLabelSpecOptions[] =>
+  getSegmentLabels(options).filter(isRichSegmentLabel).map(resolveRichSegmentLabel);
 
 /**
  * Gets the threshold scales that snap a donut's outer diameter to its rich SegmentLabel font sizes
@@ -570,7 +648,7 @@ const getRichSegmentLabels = (options: DonutSpecOptions): SegmentLabelSpecOption
  */
 export const getRichSegmentLabelScales = (donutOptions: DonutSpecOptions): ThresholdScale[] => {
   return getRichSegmentLabels(donutOptions).flatMap((segmentLabel) => {
-    const labelName = getRichSegmentLabelName(segmentLabel);
+    const { labelName } = segmentLabel;
     return [
       {
         name: `${labelName}NameFontSizeScale`,
@@ -601,7 +679,7 @@ export const getRichSegmentLabelScales = (donutOptions: DonutSpecOptions): Thres
  */
 export const getRichSegmentLabelSignals = (donutOptions: DonutSpecOptions): Signal[] => {
   return getRichSegmentLabels(donutOptions).flatMap((segmentLabel) => {
-    const labelName = getRichSegmentLabelName(segmentLabel);
+    const { labelName } = segmentLabel;
     const donutDiameter = `2 * ${getDonutOuterRadiusExpr(donutOptions)}`;
     return [
       {
@@ -620,49 +698,81 @@ export const getRichSegmentLabelSignals = (donutOptions: DonutSpecOptions): Sign
   });
 };
 
-/**
- * Gets the minimum vertical gap enforced between two colliding rich SegmentLabels
- * @param options
- * @returns vega expression string
- */
-const getRichSegmentLabelMinGapExpr = (options: SegmentLabelSpecOptions): string => {
-  const { percent, value, showValueRow } = options;
-  const labelName = getRichSegmentLabelName(options);
-  const nameSize = `${labelName}NameFontSize`;
-  const valueSize = `${labelName}ValueFontSize`;
-  const detailSize = `${labelName}DetailFontSize`;
-  const valueHeight = value || percent ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : '';
-  const detailHeight = showValueRow ? ` + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${detailSize}` : '';
-  return `${nameSize}${valueHeight}${detailHeight} + ${DONUT_LABEL_COLLISION_MIN_GAP_BUFFER}`;
-};
+/** Gets the rendered height of a rich SegmentLabel block. */
+const getRichSegmentLabelHeightExpr = ({ rows }: RichSegmentLabelSpecOptions): string =>
+  rows.map(({ fontSize, gapBefore }, index) => (index ? ` + ${gapBefore} + ${fontSize}` : fontSize)).join('');
 
 /**
- * Gets the derived, collision-adjusted data source rich SegmentLabel marks read from
+ * Gets the derived data source rich SegmentLabel marks read from
  * @param donutOptions
  * @returns SourceData[]
  */
 export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceData[] => {
   return getRichSegmentLabels(donutOptions).flatMap((richSegmentLabel) => {
-    const { name } = donutOptions;
-    const labelName = getRichSegmentLabelName(richSegmentLabel);
+    const { idKey, name } = donutOptions;
+    const { labelName, nameRow, rows } = richSegmentLabel;
     const arcThetaExpr = `datum['${name}_arcTheta']`;
-    const outerRadiusExpr = getDonutOuterRadiusExpr(donutOptions);
     const labelModeFilter = getLabelModeFilter(richSegmentLabel);
+    const candidateDataName = `${labelName}Candidates`;
+    const labelHeightExpr = getRichSegmentLabelHeightExpr(richSegmentLabel);
+    const bottomRow = rows.at(-1);
+    if (!bottomRow) {
+      throw new Error('Expected a rich segment label to have at least one row.');
+    }
+    const topExtentExpr = `${nameRow.fontSize} / 2`;
+    const bottomExtentExpr = `(${bottomRow.dy}) + ${bottomRow.fontSize} / 2`;
+    const inwardExtentExpr = `cos(${arcThetaExpr}) >= 0 ? ${bottomExtentExpr} : ${topExtentExpr}`;
+    const { widths } = richSegmentLabel.layout;
+    const labelYExpr = `datum['${getLabelField(labelName, 'labelY')}']`;
+    const collisionBoxes = rows.map((row) =>
+      getCollisionBoxExpr(
+        labelName,
+        `min(${widths[row.key]}, ${widths.maxReach})`,
+        row.key === 'name' ? labelYExpr : `${labelYExpr} + (${row.dy})`,
+        row.fontSize
+      )
+    );
     return [
       {
-        name: `${labelName}Data`,
+        name: candidateDataName,
         source: FILTERED_TABLE,
         transform: [
           { type: 'filter', expr: `datum['${name}_arcLength'] >= ${DONUT_SEGMENT_LABEL_MIN_ANGLE}` },
           ...(labelModeFilter ? [{ type: 'filter' as const, expr: labelModeFilter }] : []),
-          ...getLabelCollisionTransforms(
+          ...getLabelPositionTransforms(
             labelName,
             arcThetaExpr,
-            getRichSegmentLabelAnchorRadiusExpr(donutOptions),
-            outerRadiusExpr,
-            `${DONUT_ADVANCED_LABEL_RING_GAP}`,
-            getRichSegmentLabelMinGapExpr(richSegmentLabel)
+            `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_ADVANCED_LABEL_RING_GAP}`,
+            labelHeightExpr,
+            inwardExtentExpr
           ),
+          {
+            type: 'formula',
+            as: getLabelField(labelName, 'topY'),
+            expr: `datum['${getLabelField(labelName, 'labelY')}'] - ${nameRow.fontSize} / 2`,
+          },
+          {
+            type: 'formula',
+            as: getLabelField(labelName, 'bottomY'),
+            expr: `datum['${getLabelField(labelName, 'labelY')}'] + (${bottomRow.dy}) + ${bottomRow.fontSize} / 2`,
+          },
+          ...getLabelHorizontalBoundsTransforms(labelName, widths.capped),
+          { type: 'formula', as: getCollisionBoxesField(labelName), expr: `[${collisionBoxes.join(', ')}]` },
+        ],
+      },
+      {
+        name: `${labelName}Data`,
+        source: candidateDataName,
+        transform: [
+          {
+            type: 'filter',
+            expr: `isDonutLabelVisible(data('${candidateDataName}'), datum, '${getLabelField(
+              labelName,
+              'hemisphere'
+            )}', '${getCollisionBoxesField(
+              labelName
+            )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP})`,
+          },
         ],
       },
     ];
@@ -702,53 +812,66 @@ const getRichSegmentLabelDetailTextParts = ({
   };
 };
 
-/**
- * Gets a rich SegmentLabel's pre-collision-avoidance ideal anchor radius
- * @param donutOptions
- * @returns vega expression string
- */
-const getRichSegmentLabelAnchorRadiusExpr = (donutOptions: DonutSpecOptions): string =>
-  `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_ADVANCED_LABEL_RING_GAP}`;
-
-/**
- * Gets the width expressions shared by a rich SegmentLabel's rows
- * @param options
- * @returns vega expression strings
- */
-const getRichSegmentLabelWidthExprs = (
-  options: SegmentLabelSpecOptions
-): { widerWidthExpr: string; maxReachExpr: string; cappedWidthExpr: string } => {
-  const { donutOptions, labelKey, percent, value, showValueRow, swatch } = options;
+/** Gets the derived expressions shared by a rich SegmentLabel's data and marks. */
+const getRichSegmentLabelLayout = (
+  options: SegmentLabelSpecOptions,
+  labelName: string,
+  hasValue: boolean,
+  hasDetail: boolean
+): RichSegmentLabelLayout => {
+  const { donutOptions, labelKey, swatch } = options;
   const { color } = donutOptions;
-  const labelName = getRichSegmentLabelName(options);
   const nameTextExpr = `datum['${labelKey ?? color}']`;
   const swatchVisibleExpr = `2 * ${getDonutOuterRadiusExpr(donutOptions)} >= 160`;
-  const swatchWidthExpr = swatch
+  const swatchOffsetExpr = `${swatchVisibleExpr} ? ${
+    DONUT_ADVANCED_LABEL_SWATCH_SIZE + DONUT_ADVANCED_LABEL_SWATCH_GAP
+  } : 0`;
+  const swatchReservedWidth = swatch
     ? `(${swatchVisibleExpr} ? ${DONUT_ADVANCED_LABEL_SWATCH_SIZE + DONUT_ADVANCED_LABEL_SWATCH_GAP} : 0)`
     : '0';
-  const nameWidthExpr = `${swatchWidthExpr} + getLabelWidth(${nameTextExpr}, ${DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT}, ${labelName}NameFontSize)`;
-  const valueWidthExpr =
-    value || percent
-      ? `getLabelWidth(${getTextRuleExpr(
-          getRichSegmentLabelValueText(options)
-        )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}ValueFontSize)`
-      : '0';
-  const detailParts = showValueRow ? getRichSegmentLabelDetailTextParts(options) : undefined;
-  let detailWidthExpr = '0';
-  if (detailParts) {
-    const suffixWidthExpr = detailParts.suffix
-      ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + getLabelWidth(${getTextRuleExpr(
-          detailParts.suffix
-        )}, ${DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT}, ${labelName}DetailFontSize)`
-      : '';
-    detailWidthExpr = `getLabelWidth(${getTextRuleExpr(
-      detailParts.value
-    )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}DetailFontSize)${suffixWidthExpr}`;
-  }
-  const widerWidthExpr = `max(${nameWidthExpr}, max(${valueWidthExpr}, ${detailWidthExpr}))`;
-  const halfWidthField = getCollisionHalfWidthField(labelName);
-  const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
-  return { widerWidthExpr, maxReachExpr, cappedWidthExpr: `min(${widerWidthExpr}, ${maxReachExpr})` };
+  const nameWidth = `${swatchReservedWidth} + getLabelWidth(${nameTextExpr}, ${DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT}, ${labelName}NameFontSize)`;
+  const valueWidth = hasValue
+    ? `getLabelWidth(${getTextRuleExpr(
+        getRichSegmentLabelValueText(options)
+      )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}ValueFontSize)`
+    : '0';
+  const detailParts = hasDetail ? getRichSegmentLabelDetailTextParts(options) : undefined;
+  const detailValueWidth = detailParts
+    ? `getLabelWidth(${getTextRuleExpr(
+        detailParts.value
+      )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}DetailFontSize)`
+    : '0';
+  const detailSuffixWidth = detailParts?.suffix
+    ? `getLabelWidth(${getTextRuleExpr(
+        detailParts.suffix
+      )}, ${DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT}, ${labelName}DetailFontSize)`
+    : '0';
+  const detailWidth = detailParts?.suffix
+    ? `${detailValueWidth} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${detailSuffixWidth}`
+    : detailValueWidth;
+  const widest = `max(${nameWidth}, max(${valueWidth}, ${detailWidth}))`;
+  const halfWidthField = getLabelField(labelName, 'labelHalfWidth');
+  const maxReach = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
+  return {
+    widths: {
+      name: nameWidth,
+      value: valueWidth,
+      detail: detailWidth,
+      widest,
+      maxReach,
+      capped: `min(${widest}, ${maxReach})`,
+    },
+    detail: detailParts
+      ? {
+          ...detailParts,
+          valueWidth: detailValueWidth,
+          suffixWidth: detailSuffixWidth,
+        }
+      : undefined,
+    swatchVisible: swatchVisibleExpr,
+    swatchOffset: swatchOffsetExpr,
+    swatchReservedWidth,
+  };
 };
 
 /**
@@ -757,43 +880,9 @@ const getRichSegmentLabelWidthExprs = (
  * @param extraReservedWidthExpr width reserved outside the text itself
  * @returns vega expression string
  */
-const getRichSegmentLabelLimitExpr = (options: SegmentLabelSpecOptions, extraReservedWidthExpr = '0'): string => {
-  const hemisphereField = getHemisphereField(getRichSegmentLabelName(options));
-  const { widerWidthExpr, maxReachExpr, cappedWidthExpr } = getRichSegmentLabelWidthExprs(options);
-  return `datum['${hemisphereField}'] === 'right' || (${widerWidthExpr}) <= (${maxReachExpr}) ? 0 : (${cappedWidthExpr}) - (${extraReservedWidthExpr})`;
-};
-
-const getRichSegmentLabelBottomDetailDy = (
-  showValueRow: boolean,
-  hasValue: boolean,
-  nameSize: string,
-  valueSize: string,
-  scaleExpr: string
-): string | undefined => {
-  if (!showValueRow) return;
-  if (hasValue) {
-    return `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr})`;
-  }
-  return `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`;
-};
-
-const getRichSegmentLabelTopRowDy = (
-  showValueRow: boolean,
-  hasValue: boolean,
-  valueSize: string,
-  detailSize: string,
-  scaleExpr: string
-): { name: string; value?: string } => {
-  if (showValueRow) {
-    return {
-      name: `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))`,
-      value: hasValue ? `-((${detailSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}) * (${scaleExpr}))` : undefined,
-    };
-  }
-  return {
-    name: hasValue ? `-((${valueSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr}))` : '0',
-    value: hasValue ? '0' : undefined,
-  };
+const getRichSegmentLabelLimitExpr = (options: RichSegmentLabelSpecOptions, extraReservedWidthExpr = '0'): string => {
+  const { capped, maxReach, widest } = options.layout.widths;
+  return `(${widest}) <= (${maxReach}) ? 0 : max(1, (${capped}) - (${extraReservedWidthExpr}))`;
 };
 
 /**
@@ -802,57 +891,95 @@ const getRichSegmentLabelTopRowDy = (
  * @returns per-row dy expressions
  */
 const getRichSegmentLabelRowDy = (
-  options: SegmentLabelSpecOptions
-): { name: string; value?: string; detail?: string } => {
-  const { donutOptions, percent, value, showValueRow } = options;
+  options: SegmentLabelSpecOptions,
+  hasValue: boolean,
+  hasDetail: boolean
+): { name: string; value: string; detail: string } => {
+  const { donutOptions } = options;
   const labelName = getRichSegmentLabelName(options);
   const nameSize = `${labelName}NameFontSize`;
   const valueSize = `${labelName}ValueFontSize`;
   const detailSize = `${labelName}DetailFontSize`;
-  const hasValue = value || percent;
+  const detailGap = hasValue ? DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP : DONUT_ADVANCED_LABEL_NAME_VALUE_GAP;
   const valueHeightExpr = hasValue ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : '';
-  const detailHeightExpr = showValueRow ? ` + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${detailSize}` : '';
+  const detailHeightExpr = hasDetail ? ` + ${detailGap} + ${detailSize}` : '';
   const totalHeightExpr = `${nameSize}${valueHeightExpr}${detailHeightExpr}`;
   const maxHeightExpr = `${getDonutOuterRadiusExpr(donutOptions)} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}`;
   const scaleExpr = `min(1, (${maxHeightExpr}) / (${totalHeightExpr}))`;
-
-  const bottomValueDy = hasValue
-    ? `(${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}) * (${scaleExpr})`
-    : undefined;
-  const bottomDetailDy = getRichSegmentLabelBottomDetailDy(showValueRow, hasValue, nameSize, valueSize, scaleExpr);
-  const topDetailDy = showValueRow ? '0' : undefined;
-  const { name: topNameDy, value: topValueDy } = getRichSegmentLabelTopRowDy(
-    showValueRow,
-    hasValue,
-    valueSize,
-    detailSize,
-    scaleExpr
-  );
-
-  const isTopHalfExpr = getIsTopHalfExpr(labelName);
+  let nameFollowingHeight = '0';
+  if (hasValue) {
+    nameFollowingHeight = `${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}${detailHeightExpr}`;
+  } else if (hasDetail) {
+    nameFollowingHeight = `${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${detailSize}`;
+  }
+  const valuePrecedingHeight = `${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP}`;
+  const valueFollowingHeight = hasDetail ? `${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP} + ${detailSize}` : '0';
+  const detailPrecedingHeight = hasValue
+    ? `${nameSize} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize} + ${DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP}`
+    : `${nameSize} + ${detailGap}`;
+  const nameDy = `-((${nameFollowingHeight}) / 2) * (${scaleExpr})`;
+  const valueDy = hasValue ? `((${valuePrecedingHeight}) - (${valueFollowingHeight})) / 2 * (${scaleExpr})` : undefined;
+  const detailDy = hasDetail ? `((${detailPrecedingHeight}) / 2) * (${scaleExpr})` : undefined;
   return {
-    name: `${isTopHalfExpr} ? (${topNameDy}) : 0`,
-    value: hasValue ? `${isTopHalfExpr} ? (${topValueDy}) : (${bottomValueDy})` : undefined,
-    detail: showValueRow ? `${isTopHalfExpr} ? (${topDetailDy}) : (${bottomDetailDy})` : undefined,
+    name: '0',
+    value: valueDy ? `(${valueDy}) - (${nameDy})` : '0',
+    detail: detailDy ? `(${detailDy}) - (${nameDy})` : '0',
+  };
+};
+
+/** Resolves the rows rendered by a rich SegmentLabel. */
+const resolveRichSegmentLabel = (options: SegmentLabelSpecOptions): RichSegmentLabelSpecOptions => {
+  const labelName = getRichSegmentLabelName(options);
+  const hasValue = options.value || options.percent;
+  const hasDetail = options.showValueRow;
+  const rowDy = getRichSegmentLabelRowDy(options, hasValue, hasDetail);
+  const nameRow: RichSegmentLabelRow = {
+    key: 'name',
+    fontSize: `${labelName}NameFontSize`,
+    dy: rowDy.name,
+    gapBefore: 0,
+  };
+  const valueRow: RichSegmentLabelRow | undefined = hasValue
+    ? {
+        key: 'value',
+        fontSize: `${labelName}ValueFontSize`,
+        dy: rowDy.value,
+        gapBefore: DONUT_ADVANCED_LABEL_NAME_VALUE_GAP,
+      }
+    : undefined;
+  const detailRow: RichSegmentLabelRow | undefined = hasDetail
+    ? {
+        key: 'detail',
+        fontSize: `${labelName}DetailFontSize`,
+        dy: rowDy.detail,
+        gapBefore: valueRow ? DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP : DONUT_ADVANCED_LABEL_NAME_VALUE_GAP,
+      }
+    : undefined;
+  return {
+    ...options,
+    labelName,
+    layout: getRichSegmentLabelLayout(options, labelName, hasValue, hasDetail),
+    nameRow,
+    valueRow,
+    detailRow,
+    rows: [nameRow, ...(valueRow ? [valueRow] : []), ...(detailRow ? [detailRow] : [])],
   };
 };
 
 /** Gets shared position encodes for every row in a rich SegmentLabel block. */
-const getRichSegmentLabelSharedEncode = (options: SegmentLabelSpecOptions): TextEncodeEntry => {
-  const fieldPrefix = getRichSegmentLabelName(options);
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const halfWidthField = getCollisionHalfWidthField(fieldPrefix);
+const getRichSegmentLabelSharedEncode = (options: RichSegmentLabelSpecOptions): TextEncodeEntry => {
+  const fieldPrefix = options.labelName;
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
   return {
     x: {
       signal: `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`,
     },
-    y: { field: getAdjustedYField(fieldPrefix) },
+    y: { field: getLabelField(fieldPrefix, 'labelY') },
     align: {
       signal: `datum['${hemisphereField}'] === 'right' ? 'left' : 'right'`,
     },
-    baseline: {
-      signal: `${getIsTopHalfExpr(fieldPrefix)} ? 'bottom' : 'top'`,
-    },
+    baseline: { value: 'middle' },
   };
 };
 
@@ -878,20 +1005,15 @@ const getRichSegmentLabelFontSize = (
 ];
 
 /** Gets the swatch mark for a rich SegmentLabel. */
-const getRichSegmentLabelSwatchMark = (options: SegmentLabelSpecOptions): SymbolMark => {
+const getRichSegmentLabelSwatchMark = (options: RichSegmentLabelSpecOptions): SymbolMark => {
   const { donutOptions } = options;
   const { color, colorScheme } = donutOptions;
-  const labelName = getRichSegmentLabelName(options);
+  const { labelName } = options;
   const fieldPrefix = labelName;
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const halfWidthField = getCollisionHalfWidthField(fieldPrefix);
-  const rowDy = getRichSegmentLabelRowDy(options);
-  const isTopHalfExpr = getIsTopHalfExpr(fieldPrefix);
-  const nameFontSize = `${labelName}NameFontSize`;
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
+  const halfWidthField = getLabelField(fieldPrefix, 'labelHalfWidth');
   const anchorX = `datum['${hemisphereField}'] === 'right' ? width / 2 + datum['${halfWidthField}'] : width / 2 - datum['${halfWidthField}']`;
-  const anchorY = `datum['${getAdjustedYField(fieldPrefix)}']`;
-  const nameAnchorY = `(${anchorY}) + (${rowDy.name})`;
-  const nameCenterY = `(${nameAnchorY}) + (${isTopHalfExpr} ? -(${nameFontSize} * 0.5) : (${nameFontSize} * 0.5))`;
+  const anchorY = `datum['${getLabelField(fieldPrefix, 'labelY')}']`;
 
   return {
     type: 'symbol',
@@ -908,7 +1030,7 @@ const getRichSegmentLabelSwatchMark = (options: SegmentLabelSpecOptions): Symbol
             DONUT_ADVANCED_LABEL_SWATCH_SIZE / 2
           }`,
         },
-        y: { signal: nameCenterY },
+        y: { signal: anchorY },
         size: getRichSegmentLabelFontSize(
           options,
           `${DONUT_ADVANCED_LABEL_SWATCH_SIZE * DONUT_ADVANCED_LABEL_SWATCH_SIZE}`,
@@ -921,16 +1043,11 @@ const getRichSegmentLabelSwatchMark = (options: SegmentLabelSpecOptions): Symbol
 };
 
 /** Gets the text mark for a rich SegmentLabel's name row. */
-const getRichSegmentLabelNameTextMark = (options: SegmentLabelSpecOptions): TextMark => {
+const getRichSegmentLabelNameTextMark = (options: RichSegmentLabelSpecOptions): TextMark => {
   const { labelKey, donutOptions } = options;
   const { color, name } = donutOptions;
-  const labelName = getRichSegmentLabelName(options);
+  const { labelName, layout, nameRow } = options;
   const shared = getRichSegmentLabelSharedEncode(options);
-  const rowDy = getRichSegmentLabelRowDy(options);
-  const swatchVisibleExpr = `2 * ${getDonutOuterRadiusExpr(donutOptions)} >= 160`;
-  const swatchOffsetExpr = `${swatchVisibleExpr} ? ${
-    DONUT_ADVANCED_LABEL_SWATCH_SIZE + DONUT_ADVANCED_LABEL_SWATCH_GAP
-  } : 0`;
   return {
     type: 'text',
     name: `${labelName}Name`,
@@ -944,18 +1061,13 @@ const getRichSegmentLabelNameTextMark = (options: SegmentLabelSpecOptions): Text
         ...shared,
         dx: {
           signal: options.swatch
-            ? `(datum['${getHemisphereField(labelName)}'] === 'right' ? 1 : -1) * (${swatchOffsetExpr})`
+            ? `(datum['${getLabelField(labelName, 'hemisphere')}'] === 'right' ? 1 : -1) * (${layout.swatchOffset})`
             : '0',
         },
-        dy: { signal: rowDy.name },
-        fontSize: getRichSegmentLabelFontSize(options, `${labelName}NameFontSize`, 120),
+        dy: { signal: nameRow.dy },
+        fontSize: getRichSegmentLabelFontSize(options, nameRow.fontSize, 120),
         limit: {
-          signal: getRichSegmentLabelLimitExpr(
-            options,
-            options.swatch
-              ? `(${swatchVisibleExpr} ? ${DONUT_ADVANCED_LABEL_SWATCH_SIZE + DONUT_ADVANCED_LABEL_SWATCH_GAP} : 0)`
-              : '0'
-          ),
+          signal: getRichSegmentLabelLimitExpr(options, layout.swatchReservedWidth),
         },
         opacity: getMarkOpacity(donutOptions),
       },
@@ -964,15 +1076,16 @@ const getRichSegmentLabelNameTextMark = (options: SegmentLabelSpecOptions): Text
 };
 
 /** Gets the text mark for a rich SegmentLabel's value/percent row. */
-const getRichSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): TextMark[] => {
-  if (!options.value && !options.percent) return [];
+const getRichSegmentLabelValueTextMark = (
+  options: RichSegmentLabelSpecOptions,
+  valueRow: RichSegmentLabelRow
+): TextMark[] => {
   const { donutOptions } = options;
   const { name } = donutOptions;
-  const labelName = getRichSegmentLabelName(options);
+  const { labelName } = options;
   const valueText = getRichSegmentLabelValueText(options) ?? [];
   const valueTextRules = Array.isArray(valueText) ? valueText : [valueText];
   const shared = getRichSegmentLabelSharedEncode(options);
-  const rowDy = getRichSegmentLabelRowDy(options);
   return [
     {
       type: 'text',
@@ -985,8 +1098,8 @@ const getRichSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): Tex
         },
         update: {
           ...shared,
-          dy: { signal: rowDy.value as string },
-          fontSize: getRichSegmentLabelFontSize(options, `${labelName}ValueFontSize`, 120),
+          dy: { signal: valueRow.dy },
+          fontSize: getRichSegmentLabelFontSize(options, valueRow.fontSize, 120),
           limit: { signal: getRichSegmentLabelLimitExpr(options) },
           fill: getLabelValueFill(donutOptions, 'gray-800'),
           opacity: getMarkOpacity(donutOptions),
@@ -997,30 +1110,29 @@ const getRichSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): Tex
 };
 
 /** Gets the optional detail row marks for a rich SegmentLabel. */
-const getRichSegmentLabelDetailTextMark = (options: SegmentLabelSpecOptions): TextMark[] => {
-  if (!options.showValueRow) return [];
+const getRichSegmentLabelDetailTextMark = (
+  options: RichSegmentLabelSpecOptions,
+  detailRow: RichSegmentLabelRow,
+  detail: RichSegmentLabelDetailLayout
+): TextMark[] => {
   const { donutOptions } = options;
   const { name } = donutOptions;
-  const labelName = getRichSegmentLabelName(options);
+  const { labelName } = options;
   const shared = getRichSegmentLabelSharedEncode(options);
-  const rowDy = getRichSegmentLabelRowDy(options);
-  const { value, suffix } = getRichSegmentLabelDetailTextParts(options);
+  const { suffix, suffixWidth, value, valueWidth } = detail;
   const fieldPrefix = labelName;
-  const hemisphereField = getHemisphereField(fieldPrefix);
-  const detailFontSize = `${labelName}DetailFontSize`;
-  const valueWidth = `getLabelWidth(${getTextRuleExpr(
-    value
-  )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${detailFontSize})`;
-  const suffixWidth = suffix
-    ? `getLabelWidth(${getTextRuleExpr(suffix)}, ${DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT}, ${detailFontSize})`
-    : '0';
+  const hemisphereField = getLabelField(fieldPrefix, 'hemisphere');
   const commonUpdate = {
     ...shared,
-    dy: { signal: rowDy.detail as string },
-    fontSize: getRichSegmentLabelFontSize(options, detailFontSize, 200),
-    limit: { signal: getRichSegmentLabelLimitExpr(options) },
+    dy: { signal: detailRow.dy },
+    fontSize: getRichSegmentLabelFontSize(options, detailRow.fontSize, 200),
     opacity: getMarkOpacity(donutOptions),
   };
+  const detailGap = DONUT_ADVANCED_LABEL_NAME_VALUE_GAP;
+  const detailValueReservedWidth = suffix
+    ? `datum['${hemisphereField}'] === 'left' ? ${suffixWidth} + ${detailGap} : 0`
+    : '0';
+  const suffixReservedWidth = `datum['${hemisphereField}'] === 'right' ? ${valueWidth} + ${detailGap} : 0`;
   const valueTextRules = Array.isArray(value) ? value : [value];
   const suffixTextRules = suffix && (Array.isArray(suffix) ? suffix : [suffix]);
   const suffixMark: TextMark | undefined = suffix
@@ -1035,6 +1147,7 @@ const getRichSegmentLabelDetailTextMark = (options: SegmentLabelSpecOptions): Te
           },
           update: {
             ...commonUpdate,
+            limit: { signal: getRichSegmentLabelLimitExpr(options, suffixReservedWidth) },
             dx: {
               signal: `datum['${hemisphereField}'] === 'right' ? ${valueWidth} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} : 0`,
             },
@@ -1055,6 +1168,7 @@ const getRichSegmentLabelDetailTextMark = (options: SegmentLabelSpecOptions): Te
         },
         update: {
           ...commonUpdate,
+          limit: { signal: getRichSegmentLabelLimitExpr(options, detailValueReservedWidth) },
           dx: {
             signal: `datum['${hemisphereField}'] === 'right' ? 0 : -(${suffixWidth} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP})`,
           },
@@ -1073,7 +1187,7 @@ const getRichSegmentLabelDetailTextMark = (options: SegmentLabelSpecOptions): Te
 export const getRichSegmentLabelMarks = (donutOptions: DonutSpecOptions): GroupMark[] => {
   if (donutOptions.isBoolean || donutOptions.variant === 'semicircle') return [];
   return getRichSegmentLabels(donutOptions).flatMap((richSegmentLabel) => {
-    const labelName = getRichSegmentLabelName(richSegmentLabel);
+    const { detailRow, labelName, layout, valueRow } = richSegmentLabel;
     return [
       {
         name: `${labelName}Group`,
@@ -1081,8 +1195,10 @@ export const getRichSegmentLabelMarks = (donutOptions: DonutSpecOptions): GroupM
         marks: [
           ...(richSegmentLabel.swatch ? [getRichSegmentLabelSwatchMark(richSegmentLabel)] : []),
           getRichSegmentLabelNameTextMark(richSegmentLabel),
-          ...getRichSegmentLabelValueTextMark(richSegmentLabel),
-          ...getRichSegmentLabelDetailTextMark(richSegmentLabel),
+          ...(valueRow ? getRichSegmentLabelValueTextMark(richSegmentLabel, valueRow) : []),
+          ...(detailRow && layout.detail
+            ? getRichSegmentLabelDetailTextMark(richSegmentLabel, detailRow, layout.detail)
+            : []),
         ],
       },
     ];

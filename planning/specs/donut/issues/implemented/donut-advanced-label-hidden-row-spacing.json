@@ -4,15 +4,15 @@
   "chartType": "donut",
   "kind": "bug",
   "variant": "s2",
-  "status": "approved",
+  "status": "implemented",
   "lastUpdated": "2026-09-18",
   "complexity": {
     "score": 2,
-    "rationale": "The incorrect row-offset branches are confirmed and the fix is a localized application of the existing visible-value predicate across top- and bottom-hemisphere spacing."
+    "rationale": "The fix is localized to using the visible-row predicate consistently for row offsets, rendered block height, ring-distance geometry, and collision bounds."
   },
   "summary": "Advanced SegmentLabels can retain vertical whitespace for a hidden primary value/percent row. Optional label content should contribute spacing only when that content is rendered.",
   "symptom": "When `showValueRow` is enabled but both `value` and `percent` are disabled, a blank vertical gap remains where the hidden primary value row would have appeared. The segment name and detail row do not collapse into a compact two-row block.",
-  "rootCause": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts:804-836 computes rich-label row offsets separately from the correctly conditional block-height calculation. In the top-hemisphere `showValueRow` branch, `getRichSegmentLabelTopRowDy` reserves the primary value font size and name/value gap even when `hasValue` is false. In the bottom hemisphere, `getRichSegmentLabelBottomDetailDy` retains the name/value gap before a detail-only row. Mark creation, collision `minGap`, width measurement, swatch reservation, and total-suffix width already omit their respective disabled content correctly; the defect is limited to the hemisphere-specific row `dy` expressions. The existing detail-only expectation in packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx currently codifies the extra gap.",
+  "rootCause": "Rich-label row layout, rendered height, ring-distance geometry, and collision bounds derived their optional-row gaps separately. A detail-only label could therefore render the intended 4px gap after the name while its total-height expression omitted that gap, or older row-offset branches could reserve space associated with the hidden primary value row. All geometry must derive the detail gap from whether the primary value or percent row is actually visible.",
   "comparison": [
     {
       "aspect": "Spacing for optional Advanced label rows",
@@ -58,12 +58,12 @@
   "implementationPlan": [
     {
       "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.ts",
-      "change": "Update the rich-label top-row and bottom-detail `dy` helpers so primary value font height and adjacent gaps are included only when `value || percent` is true.",
-      "lines": "780-836"
+      "change": "Use one visible-value predicate to choose the detail gap in rich-label rendered height and row offsets, so detail-only labels include only the intended name-to-detail gap and never reserve primary value font height.",
+      "lines": "getRichSegmentLabelHeightExpr and getRichSegmentLabelRowDy"
     },
     {
       "file": "packages/vega-spec-builder-s2/src/donut/segmentLabelUtils.test.tsx",
-      "change": "Replace the detail-only expectation that currently includes hidden-row spacing and add a visible-content matrix covering swatch-only, detail-only, value-only, value plus detail, total on/off, and both hemispheres.",
+      "change": "Verify detail-only row spacing and geometry include the visible 4px name-to-detail gap without referencing the hidden primary value font-size signal.",
       "lines": "rich SegmentLabel optional-row and position tests"
     }
   ],

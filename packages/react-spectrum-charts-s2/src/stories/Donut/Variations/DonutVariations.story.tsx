@@ -37,7 +37,13 @@ import {
   useVariationViewMode,
 } from '../../VariationDashboard';
 import { basicDonutData, booleanDonutData, zeroDonutData } from '../../components/Donut/data';
-import { DonutVariationDatasetName, donutDatasetOptions, donutVariationDatasets } from './donutVariationData';
+import {
+  DonutVariationDatum,
+  DonutVariationDatasetName,
+  donutDatasetOptions,
+  donutVariationDatasets,
+  getLargestDonutSeries,
+} from './donutVariationData';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Dashboard',
@@ -46,7 +52,7 @@ export default {
     controls: { disable: true },
     layout: 'fullscreen',
   },
-  tags: ['hidden']
+  // tags: ['hidden']
 };
 
 const alternateFieldData = basicDonutData.map(({ browser, count }) => ({
@@ -134,10 +140,7 @@ const DonutVariationChart = ({
   const emphasizedItems =
     emphasizedItemCount === undefined
       ? donutProps?.emphasizedItems
-      : chartData
-          .slice(0, emphasizedItemCount)
-          .map((datum) => ('series' in datum ? datum.series : undefined))
-          .filter((series): series is string => typeof series === 'string');
+      : getLargestDonutSeries(chartData as DonutVariationDatum[], emphasizedItemCount);
   const chartProps = useChartProps({ data: chartData, width: chartSize, height: chartSize, colors });
   let dashboardSegmentLabel: ReactElement | null = null;
   if (viewMode === 'direct') {
