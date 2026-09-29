@@ -32,7 +32,9 @@ export interface BarSeriesFields {
 
 /** The field a facet prop names at `index` (a dual facet's primary or secondary field). */
 const facetField = (facet: unknown, index: 0 | 1): string | undefined => {
-  const value = Array.isArray(facet) ? facet[index] : index === 0 ? facet : undefined;
+  let value: unknown;
+  if (Array.isArray(facet)) value = facet[index];
+  else if (index === 0) value = facet;
   return typeof value === 'string' ? value : undefined;
 };
 
@@ -54,7 +56,8 @@ export const getBarSeriesFields = (props: BarFacetProps): BarSeriesFields => {
   const primary = uniqueFields(facets.map((facet) => facetField(facet, 0)));
   const secondary = uniqueFields(facets.map((facet) => facetField(facet, 1)));
   const seriesFields = uniqueFields([...primary, ...secondary]);
-  const dodgeFields = isDodgedAndStackedBar(props) ? (props.type === 'dodged' ? primary : secondary) : undefined;
+  let dodgeFields: string[] | undefined;
+  if (isDodgedAndStackedBar(props)) dodgeFields = props.type === 'dodged' ? primary : secondary;
   const stackFields = dodgeFields && seriesFields.filter((field) => !dodgeFields.includes(field));
   return { color: facetField(props.color, 0) ?? seriesFields[0], seriesFields, dodgeFields, stackFields };
 };
@@ -105,7 +108,8 @@ export const withViewKeys = (
   const dimensionLabels = new Map<string, unknown>();
   const parsedDimension = (row: SimpleData, index: number, field: string): unknown => {
     const parsed = table?.[index][field];
-    if (parsed == null || parsed === row[field]) return row[field];
+    // The chart parses dimensions to primitives (e.g. epoch ms); anything else keeps the original value.
+    if (parsed == null || parsed === row[field] || typeof parsed === 'object') return row[field];
     dimensionLabels.set(String(parsed), row[field]);
     return parsed;
   };

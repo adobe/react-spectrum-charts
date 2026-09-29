@@ -377,7 +377,8 @@ export const attachDataNavigator = ({
     dimension,
   });
   const seriesField = navData.some((row) => SERIES_ID in row) ? SERIES_ID : color;
-  const series: SeriesLookup = { field: seriesField, labelFields: seriesFields.length ? seriesFields : color ? [color] : [] };
+  const colorLabelFields = color ? [color] : [];
+  const series: SeriesLookup = { field: seriesField, labelFields: seriesFields.length ? seriesFields : colorLabelFields };
 
   const built = buildChartStructure({
     chartType,
