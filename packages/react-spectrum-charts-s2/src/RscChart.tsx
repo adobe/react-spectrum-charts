@@ -24,7 +24,16 @@ import {
   FOCUSED_ITEM,
   FOCUSED_REGION,
 } from '@spectrum-charts/constants';
-import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
+import {
+  ChartHandle,
+  Datum,
+  LegendDescription,
+  LegendLabel,
+  Orientation,
+  SimpleData,
+  SymbolSize,
+  getChartConfig,
+} from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart';
@@ -32,6 +41,7 @@ import { Axis } from './components/Axis';
 import { ChartInspect } from './components/ChartInspect';
 import { Legend } from './components/Legend';
 import { AxisRegionOptions } from './dataNavigator/buildChartStructure';
+import { LegendNavigationOptions } from './dataNavigator/dataNavigatorAdapter';
 import { getBarSeriesFields } from './dataNavigator/barSeries';
 import { isDualMetricAxisNavigation } from './dataNavigator/buildBarStructure';
 import { Navigator } from './dataNavigator/Navigator';
@@ -45,6 +55,7 @@ import useSpec from './hooks/useSpec';
 import useSpecProps from './hooks/useSpecProps';
 import { RscChartProps } from './types';
 import { clearHoverSignals, sanitizeMarkChildren, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils';
+import { ActionItem, handleLegendItemClick } from './utils/markClickUtils';
 
 interface ChartDialogProps {
   targetElement: RefObject<HTMLElement | null>;
@@ -135,7 +146,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView } = useChartInteractions(
+  const { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView, legendProps } = useChartInteractions(
     props,
     sanitizedChildren
   );
@@ -153,12 +164,15 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   useChartImperativeHandle(ref, { chartView, title });
   const popovers = usePopovers(sanitizedChildren);
 
+  // Bumped on every new Vega view (e.g. a legend toggle re-embeds), so the navigator re-attaches to it.
+  const [navViewVersion, setNavViewVersion] = useState(0);
   const handleNewView = useCallback(
     (view: VegaView) => {
       onNewView(view);
       onVegaViewReady?.(view);
+      if (accessibleNavigation) setNavViewVersion((version) => version + 1);
     },
-    [onNewView, onVegaViewReady]
+    [onNewView, onVegaViewReady, accessibleNavigation]
   );
 
   const navContainerRef = useRef<HTMLDivElement>(null);
@@ -201,11 +215,18 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   // Axis/legend titles keyed by the field they represent, so a focused bar's accessible name and
   // (for bars without a ChartInspect) its focus tooltip read as the chart's own titles rather than
   // raw field names or every data column. Insertion order (dimension, series, metric) sets read order.
-  const legendTitle = (
-    sanitizedChildren.find((child) => 'displayName' in child.type && child.type.displayName === Legend.displayName)?.props as
-      | { title?: string }
-      | undefined
-  )?.title;
+  const legendChildren = sanitizedChildren.filter(
+    (child) => 'displayName' in child.type && child.type.displayName === Legend.displayName
+  );
+  // The legend representing the nav mark's series field; its index among legends is its spec name (`legend${index}`).
+  const navLegendIndex = navColor
+    ? legendChildren.findIndex((child) => {
+        const legendColor = (child.props as { color?: unknown }).color;
+        return legendColor === undefined || legendColor === navColor;
+      })
+    : -1;
+  const legendChild = navLegendIndex >= 0 ? legendChildren[navLegendIndex] : undefined;
+  const legendTitle = ((legendChild ?? legendChildren[0])?.props as { title?: string } | undefined)?.title;
   const fieldLabels = useMemo(() => {
     const titleAt = (position: 'bottom' | 'left') =>
       (
@@ -296,6 +317,13 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     },
     [markOnClickDetails, markName]
   );
+  // Fires the focused mark's onContextMenu on Shift+F10 / the ContextMenu key, the same as a right-click.
+  const onNavNodeContextMenu = useCallback(
+    (event: MouseEvent, datum: Datum) => {
+      markOnClickDetails.find((detail) => detail.markName === markName)?.onContextMenu?.(event, datum);
+    },
+    [markOnClickDetails, markName]
+  );
   // Whether the nav mark has a ChartPopover — a click that focuses a node will also open it, so the
   // navigator must retain focus through the popover (see suppressNextLeave in the adapter).
   const navMarkHasPopover = useMemo(() => popovers.some((popover) => popover.name === markName), [popovers, markName]);
@@ -319,6 +347,139 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         : undefined,
     [xAxisChild, navFields?.dimension, navOrientation]
   );
+
+  // Legend region: series (one per legend entry), then that series' bars. Only when the legend
+  // represents the nav mark's own series field.
+  const legendChildProps = legendChild?.props as
+    | {
+        name?: string;
+        position?: LegendNavigationOptions['position'];
+        highlight?: boolean;
+        hiddenEntries?: string[];
+        legendLabels?: LegendLabel[];
+        descriptions?: LegendDescription[];
+        keys?: string[];
+      }
+    | undefined;
+  const hasNavLegend = legendChild !== undefined;
+  const legendName = legendChildProps?.name ?? `legend${navLegendIndex}`;
+  const legendHasPopover = useMemo(
+    () => popovers.some((popover) => popover.parent === Legend.displayName && !popover.chartPopoverProps.rightClick),
+    [popovers]
+  );
+  const legendHasRightClickPopover = useMemo(
+    () => popovers.some((popover) => popover.parent === Legend.displayName && popover.chartPopoverProps.rightClick),
+    [popovers]
+  );
+  const {
+    legendHiddenSeries,
+    setLegendHiddenSeries,
+    isToggleable: legendIsToggleable,
+    onClick: onLegendClick,
+    onMouseOver: onLegendMouseOver,
+    onMouseOut: onLegendMouseOut,
+  } = legendProps;
+  // Read at activation time so the legend options (and so the navigator) stay stable across toggles.
+  const legendClickArgs = useRef({
+    legendHiddenSeries,
+    setLegendHiddenSeries,
+    legendIsToggleable,
+    onLegendClick,
+    legendHasPopover,
+    legendHasRightClickPopover,
+  });
+  legendClickArgs.current = {
+    legendHiddenSeries,
+    setLegendHiddenSeries,
+    legendIsToggleable,
+    onLegendClick,
+    legendHasPopover,
+    legendHasRightClickPopover,
+  };
+  // Same ref pattern: keyboard focus on a series reports through the legend's current hover callbacks.
+  const legendHoverArgs = useRef({ onLegendMouseOver, onLegendMouseOut });
+  legendHoverArgs.current = { onLegendMouseOver, onLegendMouseOut };
+  const onLegendFocusSeries = useCallback((series: string) => legendHoverArgs.current.onLegendMouseOver?.(series), []);
+  const onLegendBlurSeries = useCallback((series: string) => legendHoverArgs.current.onLegendMouseOut?.(series), []);
+  const runLegendItemClick = useCallback(
+    (item: unknown, trigger: 'click' | 'contextmenu') => {
+      const args = legendClickArgs.current;
+      handleLegendItemClick(item as NonNullable<ActionItem>, {
+        chartView,
+        hiddenSeries: args.legendHiddenSeries,
+        chartId,
+        selectedData,
+        selectedDataBounds,
+        selectedDataName,
+        setHiddenSeries: args.setLegendHiddenSeries,
+        legendIsToggleable: args.legendIsToggleable,
+        legendHasPopover: trigger === 'contextmenu' ? args.legendHasRightClickPopover : args.legendHasPopover,
+        onLegendClick: args.onLegendClick,
+        trigger,
+      });
+    },
+    [chartView, chartId, selectedData, selectedDataBounds, selectedDataName]
+  );
+  const onLegendActivate = useCallback((item: unknown) => runLegendItemClick(item, 'click'), [runLegendItemClick]);
+  const onLegendContextMenu = useCallback((item: unknown) => runLegendItemClick(item, 'contextmenu'), [runLegendItemClick]);
+  const legendPosition = legendChildProps?.position;
+  const legendHighlight = legendChildProps?.highlight;
+  const legendHiddenEntries = legendChildProps?.hiddenEntries;
+  const legendLabels = legendChildProps?.legendLabels;
+  const legendDescriptions = legendChildProps?.descriptions;
+  const legendKeys = legendChildProps?.keys;
+  const navLegendLabels = useMemo(
+    () => (legendLabels?.length ? Object.fromEntries(legendLabels.map(({ seriesName, label }) => [String(seriesName), label])) : undefined),
+    [legendLabels]
+  );
+  const navLegendDescriptions = useMemo(
+    () =>
+      legendDescriptions?.length
+        ? Object.fromEntries(legendDescriptions.map(({ seriesName, description, title }) => [seriesName, { description, title }]))
+        : undefined,
+    [legendDescriptions]
+  );
+  // Memoized for the same reason as xAxis: Navigator's effect depends on it by reference.
+  const navLegend: LegendNavigationOptions | undefined = useMemo(
+    () =>
+      hasNavLegend
+        ? {
+            name: legendName,
+            title: legendTitle,
+            labels: navLegendLabels,
+            descriptions: navLegendDescriptions,
+            keys: legendKeys,
+            onMouseOver: onLegendFocusSeries,
+            onMouseOut: onLegendBlurSeries,
+            position: legendPosition,
+            highlight: legendHighlight,
+            hiddenEntries: legendHiddenEntries,
+            onActivate: onLegendActivate,
+            onContextMenu: onLegendContextMenu,
+          }
+        : undefined,
+    [
+      hasNavLegend,
+      legendName,
+      legendTitle,
+      navLegendLabels,
+      navLegendDescriptions,
+      legendKeys,
+      onLegendFocusSeries,
+      onLegendBlurSeries,
+      legendPosition,
+      legendHighlight,
+      legendHiddenEntries,
+      onLegendActivate,
+      onLegendContextMenu,
+    ]
+  );
+  // Series hidden by the chart's `hiddenSeries` prop or toggled off via the legend aren't rendered, so
+  // chart content skips them and the legend can't drill into them.
+  const navHiddenSeries = useMemo(() => {
+    const hidden = [...(hiddenSeries ?? []), ...(legendIsToggleable ? legendHiddenSeries : [])];
+    return hidden.length ? [...new Set(hidden)] : undefined;
+  }, [hiddenSeries, legendIsToggleable, legendHiddenSeries]);
 
   const getView = useCallback(() => chartView.current ?? undefined, [chartView]);
 
@@ -386,6 +547,9 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             markName={markName}
             title={title}
             xAxis={xAxis}
+            legend={navLegend}
+            hiddenSeries={navHiddenSeries}
+            viewVersion={navViewVersion}
             containerRef={navContainerRef}
             chartId={chartId}
             getView={getView}
@@ -394,6 +558,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             selectedDataName={selectedDataName}
             keyboardPopoverComponentName={keyboardPopoverComponentName}
             onNodeClick={onNavNodeClick}
+            onNodeContextMenu={onNavNodeContextMenu}
             hasChartPopover={navMarkHasPopover}
           />
         )}

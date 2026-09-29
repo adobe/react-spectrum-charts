@@ -133,6 +133,14 @@ describe('buildBarStructure()', () => {
     });
   });
 
+  describe('hidden series (toggled off via the legend, so not rendered)', () => {
+    test('excludes the hidden series\' segments, keeping the rest', () => {
+      const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', metric: 'downloads', hiddenSeries: ['Mac'] });
+      expect(structure.nodes[segmentId('Chrome', 'Mac')]).toBeUndefined();
+      expect(structure.nodes[segmentId('Chrome', 'Windows')]).toBeDefined();
+    });
+  });
+
   describe('stacked (color series present)', () => {
     test('keys leaf segments by the dimension + series composite', () => {
       const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os' });

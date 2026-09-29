@@ -45,5 +45,5 @@ export const useChartInteractions = (props: RscChartProps, sanitizedChildren: Ch
 
   const onNewView = useNewChartView(props, sanitizedChildren, inspectOptions, legendProps);
 
-  return { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView };
+  return { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView, legendProps };
 };

@@ -51,8 +51,11 @@ Set `accessibleNavigation` on `Chart` to let keyboard users navigate bar chart c
 | `Arrow Right` / `Arrow Down` | Moves to the next sibling (bar, stack, or segment) |
 | `Arrow Left` / `Arrow Up` | Moves to the previous sibling |
 | `Space` | Opens the `ChartPopover` for the focused bar, segment, or stack, if one is configured |
+| `Shift+F10` / `ContextMenu` | The keyboard right-click: on a focused bar or segment, opens its `rightClick` `ChartPopover` and calls the `Bar`'s `onContextMenu`; on a focused legend series, opens the legend's `rightClick` `ChartPopover` |
 
 For grouped and dual-metric-axis bars, arrows within a group follow the chart orientation, while the perpendicular arrows move between corresponding bars in adjacent groups. Forward navigation from the last bar in a group enters the first bar in the next group. Navigation does not wrap past the final group.
+
+`onContextMenu` receives a synthetic `contextmenu` event positioned at the center of the focused bar, so a menu can be placed next to it. Stacks and categories aren't a single mark, so the keyboard right-click does nothing there.
 
 Bars and segments with a value of exactly `0` are excluded from navigation, since they render invisibly and a mouse could never reach them either.
 
@@ -75,3 +78,25 @@ Series can span several fields. When `color`, `lineType`, and `opacity` name dif
 Number and time dimensions are supported, including `0` and `dimensionDataType="time"` with date-string data. Bars, stacks, and groups get their focus rings, and bars read the dimension value as written in the data (e.g. "Day: 2024-01-01 00:00:00.0"), not the parsed timestamp. Empty-string dimension values are navigable too; their empty axis tick is skipped, since it has no label to read.
 
 Focusing a stack — before drilling into a segment — shows the dimension-area tooltip or popover, if configured, the same one a mouse hovering the stack's exposed padding would show. See the `targets` prop on [`ChartInspect`](/docs/spectrum2/overview#chartinspect-props).
+
+---
+
+## Legend
+
+When a bar with a series has a `Legend` for it, the legend becomes its own navigation region. From the chart root, the arrow pointing toward the legend's `position` moves to it (`Arrow Left` for a left legend, `Arrow Up` for a top one), and the opposite arrow comes back. A bottom legend sits below the bottom axis, so it's reached with `Arrow Down` from the axis root (or from the chart root when there's no navigable axis).
+
+| Level | Keys |
+|---|---|
+| Legend | `Enter` drills into the first series. A focus ring outlines the whole legend. |
+| Series | Arrow keys follow the legend's rendered layout, whatever its position. Along the direction its entries are laid out (left/right when they run across rows, up/down when they stack in a column), arrows walk the entries in order and continue onto the next row or column when the legend wraps. The other two arrows only move to the entry directly above/below (or beside) the focused one, and do nothing if there isn't one. `Space` does what clicking the entry does: opens the legend's `ChartPopover`, calls `onClick`, or toggles the series when `isToggleable` is set. `Shift+F10` opens the legend's `rightClick` `ChartPopover`. `Enter` drills into that series' bars. |
+| Series bars | Arrows along the chart orientation move between categories in that series. The perpendicular arrows move to the same category in the adjacent series. `Escape` returns to the series. |
+
+Focusing a series outlines its legend entry and shows its `descriptions` tooltip. With `highlight`, it also highlights that series in the chart, the same as hovering the entry. The legend's `onMouseOver` and `onMouseOut` fire as focus enters and leaves a series, so a controlled legend (`highlightedSeries`) follows keyboard focus too.
+
+A legend entry covers every bar that shares its fields. For a legend with `keys`, or for a series spanning several fields (for example "Add Freeform table | Previous 4 weeks"), `Enter` on the entry drills into all of its bars. Those bars also read their category, since they're reached outside it.
+
+The legend reads its title and how many series it has, including how many are hidden (e.g. "Operating system legend. 8 series, 1 hidden."). A focused series reads its legend title and the label the legend displays for it (its `legendLabels` entry, if any), then its `descriptions` entry (title first, if it has one), then each of its bars, the same way a focused stack itemizes its segments (e.g. "Operating system: Windows. Windows downloads. Browser: Chrome, Downloads: 7. Browser: Firefox, Downloads: 10.").
+
+A series that has been toggled off stays in the legend so you can toggle it back on, but you can't drill into it. It reads as hidden (e.g. "Operating system: Windows. Hidden."). Chart content navigation skips its bars.
+
+Toggling a series re-renders the chart, and focus returns to the same legend entry. That entry's name says what changed, for example "Operating system: Windows. Hidden." or "Operating system: Windows. Shown." followed by its bars, so a screen reader announces the toggle once. If the chart re-renders for any other reason, such as new data, focus returns to the node that had it, which is read again.

@@ -87,12 +87,21 @@ const handleMarkClick = (
 
 /** @returns whether a matching popover button was actually found and clicked. */
 export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu'): boolean => {
-  if (!itemName) return false;
-  const button = document.querySelector(
-    `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
-  ) as HTMLButtonElement | null;
+  const button = getPopoverButton(chartId, itemName, trigger);
   button?.click();
   return button != null;
+};
+
+/** The hidden button that opens `itemName`'s popover, if that popover is mounted. */
+export const getPopoverButton = (
+  chartId: string,
+  itemName: string | undefined,
+  trigger: 'click' | 'contextmenu' = 'click'
+): HTMLButtonElement | null => {
+  if (!itemName) return null;
+  return document.querySelector(
+    `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
+  ) as HTMLButtonElement | null;
 };
 
 /**
