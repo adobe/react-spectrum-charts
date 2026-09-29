@@ -13,14 +13,21 @@ import { useSyncExternalStore } from 'react';
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
+const getMediaQueryList = (): MediaQueryList | undefined =>
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia(REDUCED_MOTION_QUERY)
+    : undefined;
+
 const subscribe = (callback: () => void): (() => void) => {
-  const mediaQueryList = window.matchMedia(REDUCED_MOTION_QUERY);
+  const mediaQueryList = getMediaQueryList();
+  if (!mediaQueryList) return () => {};
+
   mediaQueryList.addEventListener('change', callback);
 
   return () => mediaQueryList.removeEventListener('change', callback);
 };
 
-const getSnapshot = (): boolean => window.matchMedia(REDUCED_MOTION_QUERY).matches;
+const getSnapshot = (): boolean => getMediaQueryList()?.matches ?? false;
 
 export default function usePrefersReducedMotion(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, () => false);

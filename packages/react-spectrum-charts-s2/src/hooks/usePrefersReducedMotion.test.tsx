@@ -14,6 +14,16 @@ import { act, renderHook } from '@testing-library/react';
 import usePrefersReducedMotion from './usePrefersReducedMotion';
 
 describe('usePrefersReducedMotion', () => {
+  test('returns false when matchMedia is unavailable', () => {
+    const matchMedia = window.matchMedia;
+    Object.defineProperty(window, 'matchMedia', { configurable: true, value: undefined });
+
+    const { result } = renderHook(() => usePrefersReducedMotion());
+
+    expect(result.current).toBe(false);
+    Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: matchMedia });
+  });
+
   test('updates when the reduced motion preference changes', () => {
     let matches = false;
     let changeListener: (() => void) | undefined;
