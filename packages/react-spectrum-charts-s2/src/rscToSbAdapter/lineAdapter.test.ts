@@ -13,6 +13,7 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
+import { ChartActionBar } from '../components/ChartActionBar';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';
 import { LineForecast } from '../components/LineForecast';
@@ -27,8 +28,29 @@ describe('getLineOptions()', () => {
     expect(options.chartPopovers).toHaveLength(0);
     expect(options.chartInspects).toHaveLength(0);
   });
+  it('should convert action bar children to chartActionBars array', () => {
+    const options = getLineOptions({ children: [createElement(ChartActionBar)] });
+    expect(options.chartActionBars).toHaveLength(1);
+  });
   it('should convert popover children to chartPopovers array', () => {
     const options = getLineOptions({ children: [createElement(ChartPopover)] });
+    expect(options.chartPopovers).toHaveLength(1);
+  });
+  it('should drop a non-rightClick popover and warn when paired with an action bar', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const options = getLineOptions({
+      children: [createElement(ChartActionBar), createElement(ChartPopover)],
+    });
+    expect(options.chartActionBars).toHaveLength(1);
+    expect(options.chartPopovers).toHaveLength(0);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('cannot both be children'));
+    errorSpy.mockRestore();
+  });
+  it('should keep a rightClick popover alongside an action bar', () => {
+    const options = getLineOptions({
+      children: [createElement(ChartActionBar), createElement(ChartPopover, { rightClick: true })],
+    });
+    expect(options.chartActionBars).toHaveLength(1);
     expect(options.chartPopovers).toHaveLength(1);
   });
   it('should convert ChartInspect children to chartInspects array', () => {

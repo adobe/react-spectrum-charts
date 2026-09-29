@@ -52,6 +52,45 @@ export const applyPopoverPropDefaults = (
 };
 
 /**
+ * Pushes the group id transform matching a popover's UNSAFE_highlightBy onto the filtered table
+ * @param filteredTable
+ * @param markOptions
+ * @param markName
+ * @param highlightBy
+ */
+const pushGroupIdTransform = (
+  filteredTable: SourceData,
+  markOptions: PopoverParentOptions,
+  markName: string,
+  highlightBy: ChartPopoverSpecOptions['UNSAFE_highlightBy']
+) => {
+  if (!filteredTable.transform) {
+    filteredTable.transform = [];
+  }
+  if (highlightBy === 'dimension' && markOptions.markType !== 'donut') {
+    filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
+  } else if (highlightBy === 'series') {
+    filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
+  } else if (Array.isArray(highlightBy)) {
+    filteredTable.transform.push(getGroupIdTransform(highlightBy, markName));
+  } else {
+    filteredTable.transform.push(getGroupIdTransform([markOptions.idKey], markName));
+  }
+};
+
+/**
+ * Adds the idKey-based selection source ChartActionBar needs, skipped if a popover already has one
+ * @param data
+ * @param markOptions
+ */
+const addActionBarSelectionData = (data: Data[], markOptions: PopoverParentOptions) => {
+  const { name: markName } = markOptions;
+  const filteredTable = getFilteredTableData(data);
+  pushGroupIdTransform(filteredTable, markOptions, markName, 'item');
+  data.push(getMarkSelectedData(markName));
+};
+
+/**
  * Sets all the data needed for popovers
  *
  * NOTE: this function mutates the data object so it should only be called from a produce function
@@ -62,23 +101,16 @@ export const addPopoverData = (data: Data[], markOptions: PopoverParentOptions, 
   const popovers = getPopovers(markOptions.chartPopovers, markOptions.name);
 
   for (const { UNSAFE_highlightBy, markName } of popovers) {
-    const filteredTable = getFilteredTableData(data);
-    if (!filteredTable.transform) {
-      filteredTable.transform = [];
-    }
-    if (UNSAFE_highlightBy === 'dimension' && markOptions.markType !== 'donut') {
-      filteredTable.transform.push(getGroupIdTransform([markOptions.dimension], markName));
-    } else if (UNSAFE_highlightBy === 'series') {
-      filteredTable.transform.push(getGroupIdTransform([SERIES_ID], markName));
-    } else if (Array.isArray(UNSAFE_highlightBy)) {
-      filteredTable.transform.push(getGroupIdTransform(UNSAFE_highlightBy, markName));
-    } else {
-      filteredTable.transform.push(getGroupIdTransform([markOptions.idKey], markName));
-    }
-
+    pushGroupIdTransform(getFilteredTableData(data), markOptions, markName, UNSAFE_highlightBy);
     if (addHighlightedData) {
       data.push(getMarkSelectedData(markName));
     }
+  }
+
+  const chartActionBars = 'chartActionBars' in markOptions ? markOptions.chartActionBars : undefined;
+  const needsActionBarSelectionData = chartActionBars?.length && !popovers.length && addHighlightedData;
+  if (needsActionBarSelectionData) {
+    addActionBarSelectionData(data, markOptions);
   }
 };
 

@@ -12,6 +12,7 @@
 import { Data } from 'vega';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
+import { defaultLineOptions } from '../line/lineTestUtils';
 import { baseData } from '../specUtils';
 import { BarSpecOptions, ChartPopoverOptions } from '../types';
 import { addPopoverData, applyPopoverPropDefaults, getPopovers } from './chartPopoverUtils';
@@ -74,5 +75,16 @@ describe('addPopoverData()', () => {
     addPopoverData(data, markOptions, false);
     // length sholdn't be changed
     expect(data).toHaveLength(dataLength);
+  });
+  test('should add an idKey-based group id transform for an action bar with no popovers', () => {
+    const markOptions = { ...defaultLineOptions, chartActionBars: [{}], chartPopovers: [] };
+    addPopoverData(data, markOptions);
+    expect(data[1].transform?.length).toBe(1);
+    expect(data[1].transform?.[0]).toHaveProperty('as', 'line0_selectedGroupId');
+  });
+  test('should not add a second selection source when a coexisting popover already created one', () => {
+    const markOptions = { ...defaultLineOptions, chartActionBars: [{}], chartPopovers: [{ rightClick: true }] };
+    addPopoverData(data, markOptions);
+    expect(data[1].transform?.length).toBe(1);
   });
 });
