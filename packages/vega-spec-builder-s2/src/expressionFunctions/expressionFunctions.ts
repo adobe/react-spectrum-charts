@@ -197,6 +197,7 @@ const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: 
  * @param priorityField
  * @param idField
  * @param gap
+ * @param hoveredId
  * @returns whether the label should be visible
  */
 export const isDonutLabelVisible = (
@@ -206,14 +207,19 @@ export const isDonutLabelVisible = (
   collisionBoxesField: string,
   priorityField: string,
   idField: string,
-  gap: number
+  gap: number,
+  hoveredId?: unknown
 ): boolean => {
   const hemisphere = datum[hemisphereField];
   const getTopY = (candidate: Record<string, unknown>): number =>
     Math.min(...(candidate[collisionBoxesField] as number[][]).map(([, , topY]) => topY));
+  const isHovered = (candidate: Record<string, unknown>): boolean =>
+    hoveredId !== undefined && hoveredId !== null && candidate[idField] === hoveredId;
   const candidates = data
     .filter((candidate) => candidate[hemisphereField] === hemisphere)
     .sort((a, b) => {
+      const hoveredDifference = Number(isHovered(b)) - Number(isHovered(a));
+      if (hoveredDifference) return hoveredDifference;
       const priorityDifference = Number(b[priorityField]) - Number(a[priorityField]);
       return priorityDifference || getTopY(a) - getTopY(b);
     });

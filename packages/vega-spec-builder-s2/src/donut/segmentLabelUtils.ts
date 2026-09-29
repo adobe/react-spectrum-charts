@@ -57,7 +57,7 @@ import { getPathFromSymbolShape } from '../specUtils';
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
 import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils';
-import { getDonutEmptyStateTest, getDonutOuterRadiusExpr } from './donutUtils';
+import { getDonutEmptyStateTest, getDonutOuterRadiusExpr, isDonutInteractive } from './donutUtils';
 
 const getSegmentLabelName = ({ donutOptions, labelMode }: SegmentLabelSpecOptions): string => {
   const suffix = labelMode ? `${labelMode}SegmentLabel` : 'segmentLabel';
@@ -235,6 +235,31 @@ const getLabelHorizontalBoundsTransforms = (fieldPrefix: string, widthExpr: stri
 };
 
 /**
+ * Gets the vega expression for the hovered segment's idKey, or 'null' when the donut isn't interactive.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+const getHoveredLabelIdExpr = (donutOptions: DonutSpecOptions): string => {
+  if (!isDonutInteractive(donutOptions)) return 'null';
+  const { idKey, name } = donutOptions;
+  const hoveredItemSignal = `${name}_${HOVERED_ITEM}`;
+  return `isValid(${hoveredItemSignal}) ? ${hoveredItemSignal}.${idKey} : null`;
+};
+
+/**
+ * Gets the filter expression that drops labels below the min angle, unless the segment is hovered.
+ * @param donutOptions
+ * @returns vega expression string
+ */
+const getMinAngleFilterExpr = (donutOptions: DonutSpecOptions): string => {
+  const { idKey, name } = donutOptions;
+  const minAngleExpr = `datum['${name}_arcLength'] >= ${DONUT_SEGMENT_LABEL_MIN_ANGLE}`;
+  if (!isDonutInteractive(donutOptions)) return minAngleExpr;
+  const hoveredIdExpr = getHoveredLabelIdExpr(donutOptions);
+  return `${minAngleExpr} || datum.${idKey} === (${hoveredIdExpr})`;
+};
+
+/**
  * Gets the derived data source direct label marks read from. Excludes segments
  * below the min-angle threshold entirely rather than rendering them at fontSize 0.
  * @param donutOptions
@@ -278,7 +303,7 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
       name: candidateDataName,
       source: FILTERED_TABLE,
       transform: [
-        { type: 'filter', expr: `datum['${name}_arcLength'] >= ${DONUT_SEGMENT_LABEL_MIN_ANGLE}` },
+        { type: 'filter', expr: getMinAngleFilterExpr(donutOptions) },
         ...(labelModeFilter ? [{ type: 'filter' as const, expr: labelModeFilter }] : []),
         ...getLabelPositionTransforms(
           fieldPrefix,
@@ -301,7 +326,7 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
             'hemisphere'
           )}', '${getCollisionBoxesField(
             fieldPrefix
-          )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP})`,
+          )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP}, ${getHoveredLabelIdExpr(donutOptions)})`,
         },
       ],
     },
@@ -737,7 +762,7 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
         name: candidateDataName,
         source: FILTERED_TABLE,
         transform: [
-          { type: 'filter', expr: `datum['${name}_arcLength'] >= ${DONUT_SEGMENT_LABEL_MIN_ANGLE}` },
+          { type: 'filter', expr: getMinAngleFilterExpr(donutOptions) },
           ...(labelModeFilter ? [{ type: 'filter' as const, expr: labelModeFilter }] : []),
           ...getLabelPositionTransforms(
             labelName,
@@ -771,7 +796,9 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
               'hemisphere'
             )}', '${getCollisionBoxesField(
               labelName
-            )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP})`,
+            )}', '${name}_arcLength', '${idKey}', ${DONUT_LABEL_COLLISION_GAP}, ${getHoveredLabelIdExpr(
+              donutOptions
+            )})`,
           },
         ],
       },

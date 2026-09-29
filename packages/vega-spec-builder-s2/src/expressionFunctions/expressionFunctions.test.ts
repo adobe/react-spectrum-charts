@@ -43,6 +43,34 @@ describe('isDonutLabelVisible()', () => {
   test('hides a smaller label that overlaps an accepted label', () => {
     expect(isVisible(data[1])).toBe(false);
   });
+
+  describe('with a hovered label', () => {
+    const isVisibleWhileHovering = (datum: (typeof data)[number], hoveredId: unknown) =>
+      isDonutLabelVisible(data, datum, 'hemisphere', 'boxes', 'arcLength', 'id', 4, hoveredId);
+
+    test('shows the hovered label and hides the higher-priority labels it overlaps', () => {
+      expect(isVisibleWhileHovering(data[1], 'middle')).toBe(true);
+      expect(isVisibleWhileHovering(data[0], 'middle')).toBe(false);
+      expect(isVisibleWhileHovering(data[2], 'middle')).toBe(false);
+    });
+
+    test('keeps labels that do not overlap the hovered label', () => {
+      expect(isVisibleWhileHovering(data[3], 'middle')).toBe(true);
+      expect(isVisibleWhileHovering(data[4], 'middle')).toBe(true);
+    });
+
+    test('does not affect labels in the other hemisphere', () => {
+      data.forEach((datum) => {
+        expect(isVisibleWhileHovering(datum, 'other-side')).toBe(isVisible(datum));
+      });
+    });
+
+    test.each([null, undefined, 'missing'])('matches the default visibility when hoveredId is %s', (hoveredId) => {
+      data.forEach((datum) => {
+        expect(isVisibleWhileHovering(datum, hoveredId)).toBe(isVisible(datum));
+      });
+    });
+  });
 });
 
 describe('formatLocaleCurrency()', () => {
