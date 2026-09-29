@@ -79,7 +79,7 @@ import {
 import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
 import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types';
-import { getChartFocusRing } from './barFocusRingUtils';
+import { getChartFocusRing, getDodgedGroupFocusRing } from './barFocusRingUtils';
 import {
   getBarAnimIdField,
   getBarHoverRules,
@@ -429,6 +429,8 @@ const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: 
 export const getDodgedGroupAggregateData = (options: BarSpecOptions): Data => {
   const { dimension, metric, name } = options;
   const dualMetricAxis = isDualMetricAxis(options);
+  // Keep in sync with getDodgedGroupFocusRing: a dodged-and-stacked group spans its stacks' end values.
+  const extentField = isDodgedAndStacked(options) ? `${metric}1` : metric;
   // A dual-metric-axis bar's last series renders against a secondary scale with its own domain (see
   // getMetricEncodings), so its metric can't be aggregated together with the rest — null out whichever
   // side a row doesn't belong to and aggregate both fields, so getDodgedGroupFocusRing can resolve each
@@ -457,7 +459,7 @@ export const getDodgedGroupAggregateData = (options: BarSpecOptions): Data => {
         groupby: [dimension],
         fields: dualMetricAxis
           ? [`${metric}_primary`, `${metric}_primary`, `${metric}_secondary`, `${metric}_secondary`]
-          : [metric, metric],
+          : [extentField, extentField],
         ops: dualMetricAxis ? ['min', 'max', 'min', 'max'] : ['min', 'max'],
       },
     ],
@@ -576,6 +578,7 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
   const barMarks: Mark[] = [];
   if (isDodgedAndStacked(options)) {
     barMarks.push(getDodgedAndStackedBarMark(options));
+    if (options.accessibleNavigation) barMarks.push(getDodgedGroupFocusRing(options));
   } else if (type === 'stacked') {
     barMarks.push(...getStackedBarMarks(options));
   } else {

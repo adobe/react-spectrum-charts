@@ -93,4 +93,5 @@ describe('buildChartStructure()', () => {
       expect(axisNodes).toHaveLength(0);
     });
   });
+
 });

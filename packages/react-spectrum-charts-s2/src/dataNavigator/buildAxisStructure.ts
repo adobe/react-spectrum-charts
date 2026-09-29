@@ -58,7 +58,8 @@ const uniqueCategoricalValues = (data: SimpleData[], field: string): (string | n
     // Narrowed (not just null-checked) so String() below never risks Object's default stringification.
     if (typeof value !== 'string' && typeof value !== 'number') continue;
     const key = String(value);
-    if (seen.has(key)) continue;
+    // An empty label renders nothing to read, and an empty id would break data-navigator's structure.
+    if (key === '' || seen.has(key)) continue;
     seen.add(key);
     values.push(value);
   }

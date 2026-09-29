@@ -15,7 +15,7 @@ import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisFieldType, buildAxisStructure } from './buildAxisStructure';
-import { buildBarStructure, segmentId } from './buildBarStructure';
+import { barId, buildBarStructure, segmentId } from './buildBarStructure';
 import { composeRegions, NamedRegion } from './composeRegions';
 import { getBaseNavigationRules } from './navigationRules';
 
@@ -39,8 +39,14 @@ export interface ChartStructureOptions {
   data: SimpleData[];
   /** Primary categorical / x-axis field (e.g. bar category). */
   dimension?: string;
-  /** Series / color field. When set on a bar, the chart is stacked. */
+  /** Series / color field, read as the series' name in labels. */
   color?: string;
+  /** The field identifying each row's series (the series id when several facets divide the series). Defaults to `color`; when set on a bar, the chart is multi-series. */
+  seriesField?: string;
+  /** For a dodged-and-stacked bar, the fields splitting each category into side-by-side stacks. */
+  dodgeFields?: string[];
+  /** For a dodged-and-stacked bar, the fields that tell a stack's segments apart. */
+  stackFields?: string[];
   /** Bar layout type. */
   type?: 'dodged' | 'stacked';
   /** Per-datum color override field used in accessible bar labels. */
@@ -57,6 +63,8 @@ export interface ChartStructureOptions {
   title?: string;
   /** Maps a data field to its axis/legend title, so a focused leaf's accessible name reads as the chart's titles. */
   fieldLabels?: Record<string, string>;
+  /** The original value of each dimension value the chart parsed (keyed by `String(parsed)`), read in labels instead of the parsed value. */
+  dimensionLabels?: Map<string, unknown>;
   /** Per-series metric-axis titles for dual-metric-axis bars. */
   metricTitleBySeries?: Record<string, string>;
   /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
@@ -80,16 +88,16 @@ const contentStructureBuilders: Record<NavigableChartType, (options: ChartStruct
 export const getNodeIdForDatum = (
   chartType: NavigableChartType,
   datum: SimpleData,
-  { dimension = DEFAULT_CATEGORICAL_DIMENSION, color }: { dimension?: string; color?: string }
+  { dimension = DEFAULT_CATEGORICAL_DIMENSION, seriesField }: { dimension?: string; seriesField?: string }
 ): string | undefined => {
   if (chartType !== 'bar') return undefined;
   const dimensionValue = datum[dimension];
   if (dimensionValue == null) return undefined;
   // Stacked leaves are keyed by dimension+series; a padding-area datum has no series, so it won't match.
-  if (color !== undefined) {
-    return datum[color] == null ? undefined : segmentId(dimensionValue, datum[color]);
+  if (seriesField !== undefined) {
+    return datum[seriesField] == null ? undefined : segmentId(dimensionValue, datum[seriesField]);
   }
-  return String(dimensionValue);
+  return barId(dimensionValue);
 };
 
 export const buildChartStructure = (options: ChartStructureOptions): ChartStructure | undefined => {
