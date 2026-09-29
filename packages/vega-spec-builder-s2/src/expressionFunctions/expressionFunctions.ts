@@ -190,6 +190,25 @@ const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: 
 };
 
 /**
+ * Gets the smallest top y of a donut label's collision boxes.
+ * @param candidate
+ * @param collisionBoxesField
+ * @returns top y in pixels
+ */
+const getTopY = (candidate: Record<string, unknown>, collisionBoxesField: string): number =>
+  Math.min(...(candidate[collisionBoxesField] as number[][]).map(([, , topY]) => topY));
+
+/**
+ * Checks whether a donut label candidate is the hovered item.
+ * @param candidate
+ * @param idField
+ * @param hoveredId
+ * @returns whether the candidate is hovered
+ */
+const isHovered = (candidate: Record<string, unknown>, idField: string, hoveredId?: unknown): boolean =>
+  hoveredId !== undefined && hoveredId !== null && candidate[idField] === hoveredId;
+
+/**
  * Keeps fixed-position donut labels in priority order when their rendered blocks do not overlap.
  * @param data
  * @param datum
@@ -211,17 +230,13 @@ export const isDonutLabelVisible = (
 ): boolean => {
   const gap = DONUT_LABEL_COLLISION_GAP;
   const hemisphere = datum[hemisphereField];
-  const getTopY = (candidate: Record<string, unknown>): number =>
-    Math.min(...(candidate[collisionBoxesField] as number[][]).map(([, , topY]) => topY));
-  const isHovered = (candidate: Record<string, unknown>): boolean =>
-    hoveredId !== undefined && hoveredId !== null && candidate[idField] === hoveredId;
   const candidates = data
     .filter((candidate) => candidate[hemisphereField] === hemisphere)
     .sort((a, b) => {
-      const hoveredDifference = Number(isHovered(b)) - Number(isHovered(a));
+      const hoveredDifference = Number(isHovered(b, idField, hoveredId)) - Number(isHovered(a, idField, hoveredId));
       if (hoveredDifference) return hoveredDifference;
       const priorityDifference = Number(b[priorityField]) - Number(a[priorityField]);
-      return priorityDifference || getTopY(a) - getTopY(b);
+      return priorityDifference || getTopY(a, collisionBoxesField) - getTopY(b, collisionBoxesField);
     });
   const accepted: Record<string, unknown>[] = [];
 
