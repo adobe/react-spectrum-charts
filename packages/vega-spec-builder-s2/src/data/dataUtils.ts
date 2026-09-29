@@ -23,7 +23,7 @@ import {
 import { ChartInspectOptions } from '../types';
 
 export const addTimeTransform = produce<Transforms[], [string]>((transforms, dimension) => {
-  if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) {
+  if (!transforms.some((transform) => transform.type === 'timeunit')) {
     transforms.push(
       {
         type: 'formula',

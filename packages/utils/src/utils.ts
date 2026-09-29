@@ -28,7 +28,7 @@ export const combineNames = (parentName: string | null, childName: string | null
  * @returns The camel case string
  */
 export function toCamelCase(str: string) {
-  const words = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+\d*|\b)|[A-Z]?[a-z]+\d*|[A-Z]|\d+/g);
+  const words = str.match(/[A-Z]+(?![a-z])|[A-Z]?[a-z]+\d*|\d+/g);
   if (words) {
     return words
       .map((word, i) => {

@@ -343,7 +343,11 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
     }
 
     // add legend hovered series to the trendline and metric range highlighted data
-    const highlightedDataSets = data.filter((data) => /.*(Trendline|MetricRange).*highlightedData$/.test(data.name));
+    const highlightedDataSets = data.filter(
+      (data) =>
+        (data.name.includes('Trendline') || data.name.includes('MetricRange')) &&
+        data.name.endsWith('highlightedData')
+    );
     for (const data of highlightedDataSets) {
       if (data.transform?.[0] && 'expr' in data.transform[0]) {
         data.transform[0].expr += ` || datum.${SERIES_ID} === ${name}_${HOVERED_SERIES}`;

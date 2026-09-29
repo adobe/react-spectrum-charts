@@ -18,4 +18,7 @@ describe('getPopoverMarkName()', () => {
   test('should return the name provided if there is a popover in the children', () => {
     expect(getPopoverMarkName([{}], 'line0')).toEqual('line0');
   });
+  test('should return the name provided if there is an action bar in the children', () => {
+    expect(getPopoverMarkName([], 'line0', [{}])).toEqual('line0');
+  });
 });

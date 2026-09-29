@@ -356,7 +356,7 @@ export const isAreaMarkItem = (item: ActionItem): boolean => {
 export const getItemForAreaMark = (item: ActionItem): ActionItem => {
   // for area, we want to use the hovered data not the entire area
   const pointMark = item?.mark.group.items.find((mark) => mark.name.includes('_anchorPoint'));
-  if (pointMark && pointMark.items.length === 1) {
+  if (pointMark?.items.length === 1) {
     const point = pointMark.items[0];
     if (isItemSceneItem(point)) {
       return point;

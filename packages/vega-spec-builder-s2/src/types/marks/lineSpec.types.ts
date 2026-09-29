@@ -12,6 +12,7 @@
 import { INTERACTION_MODE } from '@spectrum-charts/constants';
 
 import { ChartData, ColorScheme, HighlightedItem } from '../chartSpec.types';
+import { ChartActionBarOptions } from '../dialogs/chartActionBarSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
 import {
@@ -125,6 +126,7 @@ export interface LineOptions {
   hoverLabelKey?: string;
 
   // children
+  chartActionBars?: ChartActionBarOptions[];
   chartPopovers?: ChartPopoverOptions[];
   chartInspects?: ChartInspectOptions[];
   forecasts?: LineForecastOptions[];
@@ -135,6 +137,7 @@ export interface LineOptions {
 }
 
 type LineOptionsWithDefaults =
+  | 'chartActionBars'
   | 'chartPopovers'
   | 'chartInspects'
   | 'color'

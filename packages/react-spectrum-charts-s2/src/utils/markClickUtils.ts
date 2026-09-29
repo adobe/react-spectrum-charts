@@ -37,6 +37,7 @@ export interface GetOnMarkClickCallbackArgs {
   legendHasPopover?: boolean;
   onLegendClick?: (seriesName: string) => void;
   trigger: 'click' | 'contextmenu';
+  markHasActionBar?: boolean;
   markHasPopover?: boolean;
 }
 
@@ -61,7 +62,7 @@ export const getOnMarkClickCallback = (args: GetOnMarkClickCallbackArgs): ViewEv
       handleLegendItemClick(item, args);
       return;
     }
-    if (args.markHasPopover) {
+    if (args.markHasPopover || args.markHasActionBar) {
       handleMarkClick(item, args);
     }
   };
@@ -83,6 +84,7 @@ const handleMarkClick = (
   selectedDataBounds.current = getItemBounds(item);
   selectedDataName.current = itemName;
   triggerPopover(chartId, itemName, trigger);
+  triggerActionBar(chartId, itemName, trigger);
 };
 
 /** @returns whether a matching popover button was actually found and clicked. */
@@ -93,6 +95,11 @@ export const triggerPopover = (chartId: string, itemName: string | undefined, tr
   ) as HTMLButtonElement | null;
   button?.click();
   return button != null;
+};
+
+const triggerActionBar = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu') => {
+  if (!itemName || trigger !== 'click') return;
+  (document.querySelector(`#${chartId} > div > #${itemName}-actionbar-button`) as HTMLButtonElement)?.click();
 };
 
 /**
@@ -388,7 +395,7 @@ export const isAreaMarkItem = (item: ActionItem): boolean => {
 export const getItemForAreaMark = (item: ActionItem): ActionItem => {
   // for area, we want to use the hovered data not the entire area
   const pointMark = item?.mark.group.items.find((mark) => mark.name.includes('_anchorPoint'));
-  if (pointMark && pointMark.items.length === 1) {
+  if (pointMark?.items.length === 1) {
     const point = pointMark.items[0];
     if (isItemSceneItem(point)) {
       return point;

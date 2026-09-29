@@ -28,6 +28,7 @@ import {
   getOnMouseInputCallback,
   setSelectedSignals,
 } from '../utils';
+import useActionBars from './useActionBars';
 import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails';
 import { UseLegendProps } from './useLegend';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails';
@@ -42,6 +43,7 @@ const useNewChartView = (
 ) => {
   const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId, setHoveredAxisLabel } =
     useChartContext();
+  const actionBars = useActionBars(sanitizedChildren);
   const popovers = usePopovers(sanitizedChildren);
   const {
     legendHiddenSeries,
@@ -63,6 +65,7 @@ const useNewChartView = (
     () => popovers.some((p) => p.parent === Legend.displayName && p.chartPopoverProps.rightClick),
     [popovers]
   );
+  const markHasActionBar = useMemo(() => actionBars.length > 0, [actionBars]);
   const markHasPopover = useMemo(
     () => popovers.some((p) => p.parent !== Legend.displayName),
     [popovers]
@@ -95,7 +98,7 @@ const useNewChartView = (
           inspectHandler.call(viewRef, event, item, value);
         }
       });
-      if (popovers.length || legendIsToggleable || onLegendClick) {
+      if (popovers.length || actionBars.length || legendIsToggleable || onLegendClick) {
         if (legendIsToggleable) {
           view.signal('hiddenSeries', legendHiddenSeries);
         }
@@ -118,6 +121,7 @@ const useNewChartView = (
             legendHasPopover,
             onLegendClick,
             trigger: 'click',
+            markHasActionBar,
             markHasPopover,
           })
         );
@@ -160,6 +164,7 @@ const useNewChartView = (
       view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut, markMouseInputDetails));
     },
     [
+      actionBars,
       axisLabelOnClickDetails,
       chartId,
       chartView,
@@ -169,6 +174,7 @@ const useNewChartView = (
       legendHiddenSeries,
       legendIsToggleable,
       markClickDetails,
+      markHasActionBar,
       markHasPopover,
       markMouseInputDetails,
       onLegendClick,
