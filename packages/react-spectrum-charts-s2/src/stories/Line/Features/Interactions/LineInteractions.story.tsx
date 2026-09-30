@@ -11,7 +11,7 @@
  */
 import { ReactElement } from 'react';
 
-import { action } from '@storybook/addon-actions';
+import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';

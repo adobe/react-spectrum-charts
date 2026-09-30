@@ -11,7 +11,7 @@
  */
 import { ReactElement, useState } from 'react';
 
-import { action } from '@storybook/addon-actions';
+import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
 import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';

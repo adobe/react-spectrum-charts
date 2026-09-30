@@ -19,7 +19,7 @@ import Export from '@react-spectrum/s2/icons/Export';
 import Flag from '@react-spectrum/s2/icons/Flag';
 import Info from '@react-spectrum/s2/icons/InfoCircle';
 import More from '@react-spectrum/s2/icons/More';
-import { action } from '@storybook/addon-actions';
+import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';

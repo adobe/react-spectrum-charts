@@ -13,7 +13,7 @@
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics, not React propTypes */
 import { ComponentProps, ReactElement } from 'react';
 
-import { action } from '@storybook/addon-actions';
+import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
 import { AnimationType } from '@spectrum-charts/constants';
