@@ -30,6 +30,7 @@
     "@spectrum-charts/utils": "^1.52.0",
     "immer": "^10.1.1",
     "vega": "^6.2.0",
+    "vega-util": "~2.1.0",
     "venn-helper": "^2.3.6"
   },
   "devDependencies": {

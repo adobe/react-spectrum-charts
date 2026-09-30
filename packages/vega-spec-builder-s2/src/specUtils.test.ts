@@ -223,6 +223,7 @@ describe('getChartConfig()', () => {
     // S2 package always uses Spectrum 2 theming
     expect(getChartConfig(undefined, 'light')).toEqual(getSpectrum2VegaConfig('light'));
     const mergedConfig = getChartConfig({ axis: { labelFontSize: 12 } }, 'light');
+    expect(mergedConfig.axis).toHaveProperty('labelFontSize', 12);
     expect(mergedConfig.axis).toHaveProperty('domainWidth', 1);
     expect(mergedConfig.axis).toHaveProperty('domainColor', s2colors['gray-800']);
   });
