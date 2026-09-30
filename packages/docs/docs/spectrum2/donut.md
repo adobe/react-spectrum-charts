@@ -11,7 +11,6 @@ and is imported from the `pre-alpha` subpath.
 
 The `Donut` component displays a donut (or pie, via `holeRatio={0}`) chart. Each data point
 becomes a segment sized by `metric` and colored by `color`.
-Pie charts use fixed 1px slice gaps, including for tiny slices.
 
 ```jsx
 import { Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
