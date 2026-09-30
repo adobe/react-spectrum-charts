@@ -41,7 +41,6 @@ import {
 import { DonutSpecOptions } from '../types';
 
 const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
-// const DONUT_MAX_PIE_STROKE_OVERLAP_RADIUS = 2;
 
 /** Returns whether a donut needs hover state for its own interactions or a highlighted legend. */
 export const isDonutInteractive = (options: DonutSpecOptions): boolean =>
@@ -156,15 +155,15 @@ export const getRingWidthSignal = (options: DonutSpecOptions): Signal => ({
 });
 
 /**
- * Gets the threshold scale that snaps a donut's outer diameter to its nearest named size tier's fixed slice gap
+ * Gets size-tiered donut slice gaps, using a fixed 1px gap for pies.
  * @param donutOptions
  * @returns ThresholdScale
  */
-export const getSliceGapScale = ({ name }: DonutSpecOptions): ThresholdScale => ({
+export const getSliceGapScale = ({ holeRatio, name }: DonutSpecOptions): ThresholdScale => ({
   name: `${name}_sliceGapScale`,
   type: 'threshold',
   domain: DONUT_SIZE_TIER_CUTPOINTS,
-  range: DONUT_SLICE_GAPS,
+  range: holeRatio === 0 ? DONUT_SLICE_GAPS.map(() => 1) : DONUT_SLICE_GAPS,
 });
 
 /**
@@ -192,22 +191,18 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
 };
 
 /**
- * Clamps slice outlines to preserve fill and limit pie stroke overlap near the center.
+ * Preserves fixed pie outlines and clamps donut outlines to preserve fill at the inner radius.
  * @param options
  * @param requestedWidth
  * @returns vega expression string
  */
 export const getSliceStrokeWidthExpr = (options: DonutSpecOptions, requestedWidth: string): string => {
   const { holeRatio, name } = options;
-  const radiusExpr = holeRatio === 0 ? getDonutOuterRadiusExpr(options) : getDonutInnerRadiusExpr(options);
-  const radius = `max(0, ${radiusExpr})`;
+  if (holeRatio === 0) return requestedWidth;
+  const radius = `max(0, ${getDonutInnerRadiusExpr(options)})`;
   const arcAngle = `min(PI, max(0, datum['${name}_arcLength']))`;
   const availableWidth = `2 * (${radius}) * sin((${arcAngle}) / 2)`;
   const visibleWidth = `max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH})`;
-  // if (holeRatio === 0) {
-  //   const overlapWidth = `2 * min(${DONUT_MAX_PIE_STROKE_OVERLAP_RADIUS}, ${radius}) * sin((${arcAngle}) / 2)`;
-  //   return `min(${requestedWidth}, ${visibleWidth}, ${overlapWidth})`;
-  // }
   return `min(${requestedWidth}, ${visibleWidth})`;
 };
 

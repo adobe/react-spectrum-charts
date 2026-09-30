@@ -84,47 +84,43 @@ describe('getDonutOuterRadiusExpr()', () => {
 
     test.each([
       [64, 1],
-      [124, 2],
-      [164, 2],
-      [204, 2],
-      [404, 2],
+      [124, 1],
+      [164, 1],
+      [204, 1],
+      [404, 1],
     ])('preserves the configured pie gap at chart size %s', (size, sliceGap) => {
       expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0 }, sliceGap, size)).toBe(sliceGap);
     });
 
     test('preserves gaps for semicircle pies and pies with labels', () => {
-      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0, variant: 'semicircle' })).toBe(2);
-      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0, segmentLabels: [{}] })).toBe(2);
+      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0, variant: 'semicircle' }, 1)).toBe(1);
+      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0, segmentLabels: [{}] }, 1)).toBe(1);
     });
 
-    test('reduces pie gaps and selected outlines for tiny slices', () => {
+    test('keeps pie gaps and selected outlines fixed even for tiny slices', () => {
       const options = { ...defaultDonutOptions, holeRatio: 0 };
-      expect(evaluate(0.01, options)).toBeCloseTo(0.02, 4);
-      expect(evaluate(0.001, options)).toBe(0);
-      expect(evaluate(0, options)).toBe(0);
+      expect(evaluate(0.01, options, 1)).toBe(1);
+      expect(evaluate(0.001, options, 1)).toBe(1);
+      expect(evaluate(0, options, 1)).toBe(1);
       expect(evaluate(1.2, options, 2, 364, '2')).toBe(2);
-      expect(evaluate(0.01, options, 2, 364, '2')).toBeCloseTo(0.02, 4);
-      expect(evaluate(0.001, options, 2, 364, '2')).toBe(0);
+      expect(evaluate(0.01, options, 1, 364, '2')).toBe(2);
+      expect(evaluate(0.001, options, 1, 364, '2')).toBe(2);
     });
 
-    test.each([
-      [64, 1],
-      [124, 2],
-      [164, 2],
-      [204, 2],
-      [404, 2],
-    ])('limits moderate-dominant sliver stroke overlap to 2px at chart size %s', (size, sliceGap) => {
+    test.each([64, 124, 164, 204, 404])(
+      'keeps moderate-dominant sliver strokes fixed at chart size %s',
+      (size) => {
       const options = { ...defaultDonutOptions, holeRatio: 0 };
       for (let value = 3; value <= 14; value++) {
         const angle = (value / 502) * 2 * Math.PI;
         for (const requestedWidth of ['testName_sliceGap', '2']) {
-          const strokeWidth = evaluate(angle, options, sliceGap, size, requestedWidth);
-          const overlapRadius = strokeWidth / (2 * Math.sin(angle / 2));
-          expect(overlapRadius).toBeLessThanOrEqual(2 + 1e-10);
-          expect(strokeWidth).toBeGreaterThan(0);
+          const strokeWidth = evaluate(angle, options, 1, size, requestedWidth);
+          const requestedGap = requestedWidth === '2' ? 2 : 1;
+          expect(strokeWidth).toBe(requestedGap);
         }
       }
-    });
+      }
+    );
   });
 
   test('should return the raw donut radius for isBoolean donuts, even with labels configured', () => {
@@ -433,6 +429,11 @@ describe('getRingWidthSignal()', () => {
 });
 
 describe('getSliceGapScale()', () => {
+  test('should use a 1px gap for pies at every size tier', () => {
+    const scale = getSliceGapScale({ ...defaultDonutOptions, holeRatio: 0 });
+    expect(scale).toHaveProperty('range', DONUT_SLICE_GAPS.map(() => 1));
+  });
+
   test('should snap outer diameter to the nearest named tier via the shared cutpoints', () => {
     const scale = getSliceGapScale(defaultDonutOptions);
     expect(scale).toEqual({
