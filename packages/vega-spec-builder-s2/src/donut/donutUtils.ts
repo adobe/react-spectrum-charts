@@ -41,6 +41,7 @@ import {
 import { DonutSpecOptions } from '../types';
 
 const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
+// const DONUT_MAX_PIE_STROKE_OVERLAP_RADIUS = 2;
 
 /** Returns whether a donut needs hover state for its own interactions or a highlighted legend. */
 export const isDonutInteractive = (options: DonutSpecOptions): boolean =>
@@ -191,17 +192,23 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
 };
 
 /**
- * Clamps a slice outline so it cannot consume the complete arc width at the inner radius.
+ * Clamps slice outlines to preserve fill and limit pie stroke overlap near the center.
  * @param options
  * @param requestedWidth
  * @returns vega expression string
  */
 export const getSliceStrokeWidthExpr = (options: DonutSpecOptions, requestedWidth: string): string => {
-  const { name } = options;
-  const innerRadius = `max(0, ${getDonutInnerRadiusExpr(options)})`;
+  const { holeRatio, name } = options;
+  const radiusExpr = holeRatio === 0 ? getDonutOuterRadiusExpr(options) : getDonutInnerRadiusExpr(options);
+  const radius = `max(0, ${radiusExpr})`;
   const arcAngle = `min(PI, max(0, datum['${name}_arcLength']))`;
-  const availableWidth = `2 * (${innerRadius}) * sin((${arcAngle}) / 2)`;
-  return `min(${requestedWidth}, max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH}))`;
+  const availableWidth = `2 * (${radius}) * sin((${arcAngle}) / 2)`;
+  const visibleWidth = `max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH})`;
+  // if (holeRatio === 0) {
+  //   const overlapWidth = `2 * min(${DONUT_MAX_PIE_STROKE_OVERLAP_RADIUS}, ${radius}) * sin((${arcAngle}) / 2)`;
+  //   return `min(${requestedWidth}, ${visibleWidth}, ${overlapWidth})`;
+  // }
+  return `min(${requestedWidth}, ${visibleWidth})`;
 };
 
 /**
@@ -309,7 +316,10 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         ...(hoveredArcFillEncoding ? { fill: hoveredArcFillEncoding } : {}),
         startAngle: { field: `${name}_startAngle` },
         endAngle: { field: `${name}_endAngle` },
-        innerRadius: { signal: `(${getDonutInnerRadiusExpr(options)}) + (${clampedRadiusInset})` },
+        innerRadius:
+          options.holeRatio === 0
+            ? { value: 0 }
+            : { signal: `(${getDonutInnerRadiusExpr(options)}) + (${clampedRadiusInset})` },
         outerRadius: { signal: `(${outerRadius}) - (${clampedRadiusInset})` },
         stroke: [
           { test: `${SELECTED_ITEM} === datum.${idKey}`, value: getS2ColorValue('static-blue', colorScheme) },

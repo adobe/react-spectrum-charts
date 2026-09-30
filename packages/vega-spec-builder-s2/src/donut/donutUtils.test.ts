@@ -49,8 +49,14 @@ describe('getDonutOuterRadiusExpr()', () => {
   });
 
   describe('getSliceStrokeWidthExpr()', () => {
-    const evaluate = (arcLength: number): number => {
-      const expression = getSliceStrokeWidthExpr(defaultDonutOptions, 'testName_sliceGap');
+    const evaluate = (
+      arcLength: number,
+      options = defaultDonutOptions,
+      sliceGap = 2,
+      size = 364,
+      requestedWidth = 'testName_sliceGap'
+    ): number => {
+      const expression = getSliceStrokeWidthExpr(options, requestedWidth);
       // eslint-disable-next-line no-new-func
       return new Function(
         'width',
@@ -63,7 +69,7 @@ describe('getDonutOuterRadiusExpr()', () => {
         'max',
         'sin',
         `return ${expression};`
-      )(364, 364, { testName_arcLength: arcLength }, 28, 2, Math.PI, Math.min, Math.max, Math.sin);
+      )(size, size, { testName_arcLength: arcLength }, 28, sliceGap, Math.PI, Math.min, Math.max, Math.sin);
     };
 
     test('preserves the configured gap for ordinary slices', () => {
@@ -74,6 +80,50 @@ describe('getDonutOuterRadiusExpr()', () => {
       expect(evaluate(0.01)).toBeGreaterThan(0);
       expect(evaluate(0.01)).toBeLessThan(2);
       expect(evaluate(0.001)).toBe(0);
+    });
+
+    test.each([
+      [64, 1],
+      [124, 2],
+      [164, 2],
+      [204, 2],
+      [404, 2],
+    ])('preserves the configured pie gap at chart size %s', (size, sliceGap) => {
+      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0 }, sliceGap, size)).toBe(sliceGap);
+    });
+
+    test('preserves gaps for semicircle pies and pies with labels', () => {
+      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0, variant: 'semicircle' })).toBe(2);
+      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0, segmentLabels: [{}] })).toBe(2);
+    });
+
+    test('reduces pie gaps and selected outlines for tiny slices', () => {
+      const options = { ...defaultDonutOptions, holeRatio: 0 };
+      expect(evaluate(0.01, options)).toBeCloseTo(0.02, 4);
+      expect(evaluate(0.001, options)).toBe(0);
+      expect(evaluate(0, options)).toBe(0);
+      expect(evaluate(1.2, options, 2, 364, '2')).toBe(2);
+      expect(evaluate(0.01, options, 2, 364, '2')).toBeCloseTo(0.02, 4);
+      expect(evaluate(0.001, options, 2, 364, '2')).toBe(0);
+    });
+
+    test.each([
+      [64, 1],
+      [124, 2],
+      [164, 2],
+      [204, 2],
+      [404, 2],
+    ])('limits moderate-dominant sliver stroke overlap to 2px at chart size %s', (size, sliceGap) => {
+      const options = { ...defaultDonutOptions, holeRatio: 0 };
+      for (let value = 3; value <= 14; value++) {
+        const angle = (value / 502) * 2 * Math.PI;
+        for (const requestedWidth of ['testName_sliceGap', '2']) {
+          const strokeWidth = evaluate(angle, options, sliceGap, size, requestedWidth);
+          const overlapRadius = strokeWidth / (2 * Math.sin(angle / 2));
+          expect(overlapRadius).toBeLessThanOrEqual(2 + 1e-10);
+          expect(strokeWidth).toBeGreaterThan(0);
+        }
+      }
     });
   });
 
@@ -172,6 +222,21 @@ describe('getArcMark()', () => {
     expect(arcMark.encode?.update?.innerRadius).toEqual({
       signal: `(0.5 * (min(width, height) / 2 - 2)) + (${inset})`,
     });
+  });
+
+  test('should not add the slice inset to a pie inner radius', () => {
+    const options = { ...defaultDonutOptions, holeRatio: 0 };
+    const arcMark = getArcMark(options);
+    const strokeWidth = getSliceStrokeWidthExpr(options, 'testName_sliceGap');
+    const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
+    expect(arcMark.encode?.update).toHaveProperty('innerRadius', { value: 0 });
+    expect(arcMark.encode?.update).toHaveProperty('outerRadius', {
+      signal: `(${DONUT_RADIUS}) - (${inset})`,
+    });
+    expect(arcMark.encode?.update).toHaveProperty('strokeWidth', [
+      { test: 'selectedItem === datum.rscMarkId', signal: getSliceStrokeWidthExpr(options, '2') },
+      { signal: strokeWidth },
+    ]);
   });
 
   test('should use the per-tier fixed slice gap as the segment border width', () => {
