@@ -31,7 +31,7 @@ import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecB
 import { defaultDonutOptions } from './donutTestUtils';
 
 describe('addData', () => {
-  test('rotates direct-label data coordinates with startAngle', async () => {
+  test('positions direct-label data coordinates from the fixed circle start', async () => {
     Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
     expressionFunction('rscContainerWidth', (width: number) => width);
     const data = [
@@ -43,7 +43,7 @@ describe('addData', () => {
       { series: 'Brave', value: 3261 },
       { series: 'Unknown', value: 1021 },
     ];
-    const getLabelData = async (startAngle: number) => {
+    const getLabelData = async () => {
       const spec = buildSpec({
         data,
         marks: [
@@ -52,7 +52,6 @@ describe('addData', () => {
             color: 'series',
             metric: 'value',
             name: 'testDonut',
-            startAngle,
             segmentLabels: [{ value: true }],
           },
         ],
@@ -64,16 +63,13 @@ describe('addData', () => {
       await view.runAsync();
       return view.data('testDonut_segmentLabelData');
     };
-    const baseline = await getLabelData(0);
-    const rotated = await getLabelData(Math.PI / 2);
+    const labels = await getLabelData();
+    expect(labels.length).toBeGreaterThan(0);
 
-    baseline.forEach((datum, index) => {
-      const rotatedDatum = rotated[index];
+    labels.forEach((datum) => {
       expect(datum.testDonut_segmentLabel_labelY).toBeCloseTo(datum.testDonut_segmentLabel_idealY);
-      expect(rotatedDatum.testDonut_arcTheta - datum.testDonut_arcTheta).toBeCloseTo(Math.PI / 2);
-      expect(rotatedDatum.testDonut_segmentLabel_labelY).not.toBeCloseTo(
-        datum.testDonut_segmentLabel_labelY
-      );
+      expect(datum.testDonut_arcTheta).toBeGreaterThan(0);
+      expect(datum.testDonut_arcTheta).toBeLessThan(2 * Math.PI);
     });
   });
 
@@ -285,14 +281,15 @@ describe('addData', () => {
   test('should sweep a semicircle donut half the full circle', () => {
     const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, variant: 'semicircle' });
     const pieTransform = data[1].transform?.[1];
-    expect(pieTransform).toHaveProperty('startAngle', 0);
-    expect(pieTransform).toHaveProperty('endAngle', { signal: '0 + PI' });
+    expect(pieTransform).toHaveProperty('startAngle', -Math.PI / 2);
+    expect(pieTransform).toHaveProperty('endAngle', { signal: `${-Math.PI / 2} + PI` });
     expect(data[1].transform?.[4]).toHaveProperty('expr', "datum['testName_arcLength'] / (PI)");
   });
 
   test('should sweep a circle donut the full circle', () => {
     const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
     const pieTransform = data[1].transform?.[0];
+    expect(pieTransform).toHaveProperty('startAngle', 0);
     expect(pieTransform).toHaveProperty('endAngle', { signal: '0 + 2 * PI' });
   });
 });
@@ -428,28 +425,19 @@ describe('donutSpecBuilder', () => {
     expect(result.usermeta?.interactiveMarks).toContainEqual({ name: 'testName', dimension: undefined });
   });
 
-  test('should default startAngle to -PI/2 for a semicircle donut when not explicitly provided', () => {
+  test('should start a semicircle donut at -PI/2', () => {
     const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
-    const { startAngle: _startAngle, ...rest } = defaultDonutOptions;
-    const result = addDonut(spec, { ...rest, variant: 'semicircle' });
+    const result = addDonut(spec, { ...defaultDonutOptions, variant: 'semicircle' });
     const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
-    expect(emptyStateMark?.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
-    expect(emptyStateMark?.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
+    expect(emptyStateMark?.encode?.enter).toHaveProperty('startAngle', { value: -Math.PI / 2 });
+    expect(emptyStateMark?.encode?.enter).toHaveProperty('endAngle', { signal: `${-Math.PI / 2} + PI` });
   });
 
-  test('should default startAngle to 0 for a circle donut when not explicitly provided', () => {
+  test('should start a circle donut at 0', () => {
     const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
-    const { startAngle: _startAngle, ...rest } = defaultDonutOptions;
-    const result = addDonut(spec, rest);
+    const result = addDonut(spec, defaultDonutOptions);
     const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
-    expect(emptyStateMark?.encode?.enter?.startAngle).toEqual({ value: 0 });
-    expect(emptyStateMark?.encode?.enter?.endAngle).toEqual({ signal: '0 + 2 * PI' });
-  });
-
-  test('should honor an explicit startAngle even for a semicircle donut', () => {
-    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
-    const result = addDonut(spec, { ...defaultDonutOptions, variant: 'semicircle', startAngle: 1 });
-    const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
-    expect(emptyStateMark?.encode?.enter?.startAngle).toEqual({ value: 1 });
+    expect(emptyStateMark?.encode?.enter).toHaveProperty('startAngle', { value: 0 });
+    expect(emptyStateMark?.encode?.enter).toHaveProperty('endAngle', { signal: '0 + 2 * PI' });
   });
 });

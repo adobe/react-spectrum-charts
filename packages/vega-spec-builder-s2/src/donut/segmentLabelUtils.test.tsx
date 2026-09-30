@@ -494,15 +494,13 @@ describe('rich SegmentLabel', () => {
 });
 
 describe('label anchor x/y and dx (hemisphere offset)', () => {
-  test('normalizes rotated arc angles for both direct and rich label hemisphere fields', () => {
+  test('normalizes arc angles for both direct and rich label hemisphere fields', () => {
     const directData = getSegmentLabelData({
       ...defaultDonutOptions,
-      startAngle: Math.PI / 2,
       segmentLabels: [{}],
     });
     const richData = getRichSegmentLabelData({
       ...defaultDonutOptions,
-      startAngle: Math.PI / 2,
       segmentLabels: [{ swatch: true }],
     });
     const expected =

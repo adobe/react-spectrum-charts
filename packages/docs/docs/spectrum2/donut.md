@@ -213,9 +213,8 @@ point is displayed as a percent of the whole (e.g. a success/failure rate):
 Setting `variant="semicircle"` renders a top-half arc instead of a full
 circle. By default, data is sorted descending by `metric`, so the largest segment renders
 leftmost. Set `sortOrder="data"` to preserve source order for ordinal categories.
-`startAngle` defaults to
-`-Math.PI / 2` for this variant (a 9 o'clock start, sweeping clockwise through 12 to 3
-o'clock), but an explicit `startAngle` still overrides it.
+Semicircles start at 9 o'clock and sweep clockwise through 12 to 3 o'clock.
+Circle donuts start at 12 o'clock. These start positions are fixed.
 
 ```jsx
 <Donut metric="count" color="browser" variant="semicircle">
@@ -264,19 +263,13 @@ omitted.
             <td>emphasizedItems</td>
             <td>(string | number)[]</td>
             <td>–</td>
-            <td>Segments whose categorical colors remain emphasized.</td>
+            <td>Segments whose categorical colors remain emphasized. Other segments use <code>gray-400</code>.</td>
         </tr>
         <tr>
             <td>hideDeemphasizedLabels</td>
             <td>boolean</td>
             <td>false</td>
             <td>Hides labels for segments outside <code>emphasizedItems</code>.</td>
-        </tr>
-        <tr>
-            <td>otherItemColor</td>
-            <td>string</td>
-            <td>–</td>
-            <td>Color token or CSS color used for segments outside <code>emphasizedItems</code>.</td>
         </tr>
         <tr>
             <td>holeRatio</td>
@@ -307,12 +300,6 @@ omitted.
             <td>'valueDescending' | 'data'</td>
             <td>'valueDescending'</td>
             <td>Controls semicircle segment ordering. <code>'data'</code> preserves source order for ordinal categories.</td>
-        </tr>
-        <tr>
-            <td>startAngle</td>
-            <td>number</td>
-            <td>0</td>
-            <td>Start angle of the donut in radians. <code>0</code> is top dead center. Defaults to <code>-Math.PI / 2</code> when <code>variant="semicircle"</code>.</td>
         </tr>
         <tr>
             <td>variant</td>
