@@ -254,9 +254,12 @@ describe('Chart', () => {
 
   describe('State stories', () => {
     test('Empty state renders correctly', async () => {
-      render(<EmptyState {...EmptyState.args} />);
+      const { container } = render(<EmptyState {...EmptyState.args} />);
       const text = screen.getByText('No data found');
       expect(text).toBeInTheDocument();
+      const icon = container.querySelector('svg.EmptyState-icon');
+      expect(icon).toBeInTheDocument();
+      expect(icon).toHaveStyle({ width: '72px', height: '72px' });
     });
 
     test('Loading state renders correctly', async () => {

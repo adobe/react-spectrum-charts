@@ -11,7 +11,7 @@
  */
 import React, { FC } from 'react';
 
-import GraphBarVertical from '@spectrum-icons/workflow/GraphBarVertical';
+import ChartBarVert from '@react-spectrum/s2/icons/ChartBarVert';
 
 import './EmptyState.css';
 
@@ -23,7 +23,7 @@ export interface EmptyStateProps {
 const EmptyState: FC<EmptyStateProps> = ({ height, text }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height }}>
-      <GraphBarVertical size="XXL" UNSAFE_className="EmptyState-icon" />
+      <ChartBarVert UNSAFE_className="EmptyState-icon" UNSAFE_style={{ width: 72, height: 72 }} />
       {Boolean(text) && <span className="EmptyState-text">{text}</span>}
     </div>
   );
