@@ -16,13 +16,13 @@ import { StoryFn } from '@storybook/react';
 import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
 import { Orientation } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { barData, barSeriesData } from '../Bar/data';
+import { Chart } from '../../../../Chart';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../../components';
+import useChartProps from '../../../../hooks/useChartProps';
+import { barData, barSeriesData } from '../../../../stories/components/Bar/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Accessible Navigation/Bar Navigation',
+  title: 'React Spectrum Charts 2/Bar/Tests/Accessible Navigation',
   argTypes: {
     // Inline radio so a tester can flip orientation and confirm arrow keys follow the bars' layout.
     orientation: { control: 'inline-radio', options: ['vertical', 'horizontal'] },

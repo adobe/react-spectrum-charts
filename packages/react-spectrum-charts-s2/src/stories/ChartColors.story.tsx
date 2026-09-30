@@ -15,7 +15,7 @@ import { ChartBarStory } from './ChartBarStory';
 import { data } from './data/data';
 
 export default {
-  title: 'RSC/Chart/Colors',
+  title: 'React Spectrum Charts 2/Chart/Features/Colors',
   component: Chart,
 };
 

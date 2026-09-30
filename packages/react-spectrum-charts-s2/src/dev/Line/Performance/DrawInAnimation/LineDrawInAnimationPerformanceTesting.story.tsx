@@ -18,16 +18,16 @@ import { StoryFn } from '@storybook/react';
 import { AnimationType, DRAW_IN_ANIMATION_DURATION_MS } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../../../Chart';
-import { Axis, ChartInspect, Line } from '../../../../../components';
-import useChartProps from '../../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../data/data';
-import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../storyUtils';
-import { bindWithProps } from '../../../../../test-utils';
-import { ChartProps } from '../../../../../types';
+import { Chart } from '../../../../Chart';
+import { Axis, ChartInspect, Line } from '../../../../components';
+import useChartProps from '../../../../hooks/useChartProps';
+import { workspaceTrendsData } from '../../../../stories/data/data';
+import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../stories/storyUtils';
+import { bindWithProps } from '../../../../test-utils';
+import { ChartProps } from '../../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Features/DrawInAnimation/Performance',
+  title: 'React Spectrum Charts 2/Line/Performance/DrawIn',
   component: Line,
   argTypes: {
     animations: {

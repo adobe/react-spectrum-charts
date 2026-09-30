@@ -21,8 +21,8 @@ import {
   hoverNthElement,
   render,
   screen,
-} from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock.js';
+} from '../../../../test-utils';
+import '../../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   DodgedStackedLegendHover,
   DodgedStackedPointHover,

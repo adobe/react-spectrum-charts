@@ -20,7 +20,7 @@ import { bindWithProps } from '../../../test-utils';
 import errorData from './errorData.json';
 
 export default {
-  title: 'RSC/Chart/Examples',
+  title: 'React Spectrum Charts 2/Chart/Examples',
   component: ReferenceLine,
 };
 

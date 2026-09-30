@@ -13,14 +13,14 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, ChartPopover } from '../../../components';
-import { ReferenceLine } from '../../../components/ReferenceLine';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
+import { Chart } from '../../../../Chart';
+import { Axis, Bar, ChartInspect, ChartPopover } from '../../../../components';
+import { ReferenceLine } from '../../../../components/ReferenceLine';
+import useChartProps from '../../../../hooks/useChartProps';
+import { bindWithProps } from '../../../../test-utils';
 
 export default {
-  title: 'React Spectrum Charts 2/Accessible Navigation/Bar Navigation',
+  title: 'React Spectrum Charts 2/Bar/Tests/Accessible Navigation',
   component: Bar,
 };
 

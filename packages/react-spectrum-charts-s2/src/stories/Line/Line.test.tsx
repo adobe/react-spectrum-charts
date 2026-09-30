@@ -42,7 +42,7 @@ import {
   OnClick as HoverAnimationOnClick,
   PointHover as HoverAnimationPointHover,
   PopoverSelection as HoverAnimationPopoverSelection,
-} from './Features/HoverAnimation/LineHoverAnimation.story';
+} from '../../dev/Line/Performance/HoverAnimation/LineHoverAnimation.story';
 import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story';
 import { LineType } from './Features/LineType.story';
 import { Opacity } from './Features/LineOpacity.story';

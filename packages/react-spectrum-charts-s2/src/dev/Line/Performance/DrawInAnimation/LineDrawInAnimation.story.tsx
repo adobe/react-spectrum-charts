@@ -23,7 +23,7 @@ import useChartProps from '../../../../hooks/useChartProps';
 import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
-import { formatTimestamp } from '../../../storyUtils';
+import { formatTimestamp } from '../../../../stories/storyUtils';
 import { Datum } from 'vega';
 
 
@@ -32,7 +32,7 @@ import { Datum } from 'vega';
  * On mount, an animated line "draws in" left to right over its dimension domain.
  */
 export default {
-  title: 'React Spectrum Charts 2/Line/Features/DrawInAnimation',
+  title: 'React Spectrum Charts 2/Line/Performance/DrawIn',
   component: Line,
   argTypes: {
     animations: {

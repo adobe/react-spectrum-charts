@@ -13,8 +13,8 @@ import React from 'react';
 
 import { sequentialViridis16 } from '@spectrum-charts/themes';
 
-import { findChart, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '../test-utils';
-import '../test-utils/__mocks__/matchMedia.mock.js';
+import { findChart, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '../../../../test-utils';
+import '../../../../test-utils/__mocks__/matchMedia.mock.js';
 import { BasicBar, PackedBubbleChart } from './ChartUnsafeVega.story';
 
 const testFill = (el: HTMLElement, color: string) => {

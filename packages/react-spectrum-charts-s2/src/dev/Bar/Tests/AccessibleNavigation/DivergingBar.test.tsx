@@ -11,7 +11,7 @@
  */
 import { fireEvent } from '@testing-library/react';
 
-import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../test-utils';
+import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../../test-utils';
 import { DivergingBarNavigation } from './DivergingBar.story';
 
 test('Diverging bar navigation focuses a bar after entering the chart', async () => {

@@ -17,15 +17,15 @@ import { StoryFn } from '@storybook/react';
 import { ActionButton } from '@react-spectrum/s2';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../Chart';
-import { Axis, Line } from '../components';
-import useChartProps from '../hooks/useChartProps';
-import { bindWithProps } from '../test-utils';
-import './Chart.story.css';
-import { data } from './data/data';
+import { Chart } from '../../../../Chart';
+import { Axis, Line } from '../../../../components';
+import useChartProps from '../../../../hooks/useChartProps';
+import { bindWithProps } from '../../../../test-utils';
+import '../../../../stories/Chart.story.css';
+import { data } from '../../../../stories/data/data';
 
 export default {
-  title: 'RSC/Chart/Handles',
+  title: 'React Spectrum Charts 2/Chart/Tests/Handles',
   component: Chart,
 };
 

@@ -23,7 +23,7 @@ import { BarDirectLabelProps } from '../../../types';
 import { barData, mixedBarData } from './data';
 
 export default {
-  title: 'RSC/Bar/BarDirectLabel',
+  title: 'React Spectrum Charts 2/Bar/Features/Direct Label',
   component: BarDirectLabel,
 };
 

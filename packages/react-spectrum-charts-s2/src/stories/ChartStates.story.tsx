@@ -14,7 +14,7 @@ import { bindWithProps } from '../test-utils';
 import { ChartBarStory } from './ChartBarStory';
 
 export default {
-  title: 'RSC/Chart/States',
+  title: 'React Spectrum Charts 2/Chart/Features/States',
   component: Chart,
 };
 

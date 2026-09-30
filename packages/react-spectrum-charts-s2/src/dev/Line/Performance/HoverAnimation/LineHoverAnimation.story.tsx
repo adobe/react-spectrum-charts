@@ -57,7 +57,7 @@ import { ChartProps } from '../../../../types';
  * opacity; on un-hover everything animates back.
  */
 export default {
-  title: 'React Spectrum Charts 2/Line/Features/HoverAnimation',
+  title: 'React Spectrum Charts 2/Line/Performance/Hover',
   component: Line,
   argTypes: {
     animations: {

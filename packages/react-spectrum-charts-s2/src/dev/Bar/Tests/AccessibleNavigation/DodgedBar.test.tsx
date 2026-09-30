@@ -11,7 +11,7 @@
  */
 import { fireEvent } from '@testing-library/react';
 
-import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../test-utils';
+import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../../test-utils';
 import { DodgedBarNavigation } from './DodgedBar.story';
 
 test('Dodged bar navigation focuses a group and its bars', async () => {

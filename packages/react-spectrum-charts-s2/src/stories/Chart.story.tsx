@@ -22,7 +22,7 @@ import { ChartDynamicHeightBarStory } from './ChartDynamicHeightBarStory';
 import { data, workspaceTrendsData } from './data/data';
 
 export default {
-  title: 'RSC/Chart',
+  title: 'React Spectrum Charts 2/Chart/Features',
   component: Chart,
 };
 

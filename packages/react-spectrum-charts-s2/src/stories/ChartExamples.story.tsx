@@ -35,7 +35,7 @@ import stackOverflowData from './data/stackOverflowTrends.json';
 import { trendsTimeComparisonData } from './data/trendsTimeComparisonData';
 
 export default {
-  title: 'RSC/Chart/Examples',
+  title: 'React Spectrum Charts 2/Chart/Examples',
   component: Chart,
 };
 

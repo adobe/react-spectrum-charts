@@ -11,7 +11,6 @@
  */
 import { ReactElement } from 'react';
 
-import { View } from '@adobe/react-spectrum';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
@@ -53,18 +52,19 @@ const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<
   const ResizableLegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
     const chartProps = useChartProps({ data, width: 'auto', height: '100%', padding: 2 });
     return (
-      <View
-        backgroundColor="gray-50"
-        overflow="auto"
-        width={700}
-        minWidth={200}
-        maxWidth={1400}
-        height={350}
-        minHeight={200}
-        maxHeight={600}
-        borderColor="gray-400"
-        borderWidth="thick"
-        UNSAFE_style={{ resize: 'both' }}
+      <div
+        style={{
+          backgroundColor: 'var(--spectrum-gray-50)',
+          border: '4px solid var(--spectrum-gray-400)',
+          height: 350,
+          maxHeight: 600,
+          maxWidth: 1400,
+          minHeight: 200,
+          minWidth: 200,
+          overflow: 'auto',
+          resize: 'both',
+          width: 700,
+        }}
       >
         <Chart {...chartProps}>
           <Axis position="left" grid />
@@ -72,7 +72,7 @@ const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<
           <Line color="series" dimension="datetime" metric="value" scaleType="time" />
           <Legend {...args} />
         </Chart>
-      </View>
+      </div>
     );
   };
   return ResizableLegendLineStory;

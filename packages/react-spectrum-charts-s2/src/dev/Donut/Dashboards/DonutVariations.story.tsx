@@ -31,8 +31,8 @@ import {
   useVariationSize,
   useVariationViewMode,
 } from '../../VariationDashboard';
-import { booleanDonutData, zeroDonutData } from '../../components/Donut/data';
-import { getContainerWidthForDiameter, getEffectiveDiameter } from '../Features/ResponsiveDonut';
+import { booleanDonutData, zeroDonutData } from '../../../stories/components/Donut/data';
+import { getContainerWidthForDiameter, getEffectiveDiameter } from '../../../stories/Donut/Features/ResponsiveDonut';
 import {
   DonutVariationDatum,
   DonutVariationDatasetName,
@@ -42,7 +42,7 @@ import {
 } from './donutVariationData';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Dashboard',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Dashboards',
   component: Donut,
   parameters: {
     controls: { disable: true },

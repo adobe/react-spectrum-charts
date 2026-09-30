@@ -11,7 +11,7 @@
  */
 import { fireEvent } from '@testing-library/react';
 
-import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../test-utils';
+import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../../test-utils';
 import { DualMetricAxisBarNavigation } from './DualMetricAxis.story';
 
 test('Dual-metric-axis navigation focuses a bar', async () => {
