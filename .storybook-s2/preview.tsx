@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 
-import { DocsContainer } from '@storybook/addon-docs';
+import { DocsContainer } from '@storybook/addon-docs/blocks';
 import { Decorator, Parameters, Preview } from '@storybook/react';
-import { themes } from '@storybook/theming';
+import { themes } from 'storybook/theming';
 import { useDarkMode } from 'storybook-dark-mode';
 
 import { Provider } from '@react-spectrum/s2';
