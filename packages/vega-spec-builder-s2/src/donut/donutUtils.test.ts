@@ -49,8 +49,14 @@ describe('getDonutOuterRadiusExpr()', () => {
   });
 
   describe('getSliceStrokeWidthExpr()', () => {
-    const evaluate = (arcLength: number): number => {
-      const expression = getSliceStrokeWidthExpr(defaultDonutOptions, 'testName_sliceGap');
+    const evaluate = (
+      arcLength: number,
+      options = defaultDonutOptions,
+      sliceGap = 2,
+      size = 364,
+      requestedWidth = 'testName_sliceGap'
+    ): number => {
+      const expression = getSliceStrokeWidthExpr(options, requestedWidth);
       // eslint-disable-next-line no-new-func
       return new Function(
         'width',
@@ -63,7 +69,7 @@ describe('getDonutOuterRadiusExpr()', () => {
         'max',
         'sin',
         `return ${expression};`
-      )(364, 364, { testName_arcLength: arcLength }, 28, 2, Math.PI, Math.min, Math.max, Math.sin);
+      )(size, size, { testName_arcLength: arcLength }, 28, sliceGap, Math.PI, Math.min, Math.max, Math.sin);
     };
 
     test('preserves the configured gap for ordinary slices', () => {
@@ -75,6 +81,46 @@ describe('getDonutOuterRadiusExpr()', () => {
       expect(evaluate(0.01)).toBeLessThan(2);
       expect(evaluate(0.001)).toBe(0);
     });
+
+    test.each([
+      [64, 1],
+      [124, 1],
+      [164, 1],
+      [204, 1],
+      [404, 1],
+    ])('preserves the configured pie gap at chart size %s', (size, sliceGap) => {
+      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0 }, sliceGap, size)).toBe(sliceGap);
+    });
+
+    test('preserves gaps for semicircle pies and pies with labels', () => {
+      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0, variant: 'semicircle' }, 1)).toBe(1);
+      expect(evaluate(1.2, { ...defaultDonutOptions, holeRatio: 0, segmentLabels: [{}] }, 1)).toBe(1);
+    });
+
+    test('keeps pie gaps and selected outlines fixed even for tiny slices', () => {
+      const options = { ...defaultDonutOptions, holeRatio: 0 };
+      expect(evaluate(0.01, options, 1)).toBe(1);
+      expect(evaluate(0.001, options, 1)).toBe(1);
+      expect(evaluate(0, options, 1)).toBe(1);
+      expect(evaluate(1.2, options, 2, 364, '2')).toBe(2);
+      expect(evaluate(0.01, options, 1, 364, '2')).toBe(2);
+      expect(evaluate(0.001, options, 1, 364, '2')).toBe(2);
+    });
+
+    test.each([64, 124, 164, 204, 404])(
+      'keeps moderate-dominant sliver strokes fixed at chart size %s',
+      (size) => {
+      const options = { ...defaultDonutOptions, holeRatio: 0 };
+      for (let value = 3; value <= 14; value++) {
+        const angle = (value / 502) * 2 * Math.PI;
+        for (const requestedWidth of ['testName_sliceGap', '2']) {
+          const strokeWidth = evaluate(angle, options, 1, size, requestedWidth);
+          const requestedGap = requestedWidth === '2' ? 2 : 1;
+          expect(strokeWidth).toBe(requestedGap);
+        }
+      }
+      }
+    );
   });
 
   test('should return the raw donut radius for isBoolean donuts, even with labels configured', () => {
@@ -172,6 +218,36 @@ describe('getArcMark()', () => {
     expect(arcMark.encode?.update?.innerRadius).toEqual({
       signal: `(0.5 * (min(width, height) / 2 - 2)) + (${inset})`,
     });
+  });
+
+  test('should not add the slice inset to a pie inner radius', () => {
+    const options = { ...defaultDonutOptions, holeRatio: 0 };
+    const arcMark = getArcMark(options);
+    const strokeWidth = getSliceStrokeWidthExpr(options, 'testName_sliceGap');
+    const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
+    expect(arcMark.encode?.update).toHaveProperty('innerRadius', { value: 0 });
+    expect(arcMark.encode?.update).toHaveProperty('outerRadius', {
+      signal: `(${DONUT_RADIUS}) - (${inset})`,
+    });
+    expect(arcMark.encode?.update).toHaveProperty('strokeWidth', [
+      { test: 'selectedItem === datum.rscMarkId', signal: getSliceStrokeWidthExpr(options, '2') },
+      { signal: strokeWidth },
+    ]);
+  });
+
+  test('should bevel pie stroke joins without changing gaps or selected outlines', () => {
+    const options = { ...defaultDonutOptions, holeRatio: 0 };
+    const arcMark = getArcMark(options);
+    expect(arcMark.encode?.update).toHaveProperty('strokeJoin', { value: 'bevel' });
+    expect(arcMark.encode?.update).toHaveProperty('strokeWidth', [
+      { test: 'selectedItem === datum.rscMarkId', signal: '2' },
+      { signal: 'testName_sliceGap' },
+    ]);
+    expect(getArcMark({ ...options, variant: 'semicircle' }).encode?.update).toHaveProperty('strokeJoin', {
+      value: 'bevel',
+    });
+    expect(getArcMark(defaultDonutOptions).encode?.update).not.toHaveProperty('strokeJoin');
+    expect(getArcMark({ ...defaultDonutOptions, holeRatio: 0.5 }).encode?.update).not.toHaveProperty('strokeJoin');
   });
 
   test('should use the per-tier fixed slice gap as the segment border width', () => {
@@ -368,6 +444,11 @@ describe('getRingWidthSignal()', () => {
 });
 
 describe('getSliceGapScale()', () => {
+  test('should use a 1px gap for pies at every size tier', () => {
+    const scale = getSliceGapScale({ ...defaultDonutOptions, holeRatio: 0 });
+    expect(scale).toHaveProperty('range', DONUT_SLICE_GAPS.map(() => 1));
+  });
+
   test('should snap outer diameter to the nearest named tier via the shared cutpoints', () => {
     const scale = getSliceGapScale(defaultDonutOptions);
     expect(scale).toEqual({

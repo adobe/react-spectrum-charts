@@ -155,15 +155,15 @@ export const getRingWidthSignal = (options: DonutSpecOptions): Signal => ({
 });
 
 /**
- * Gets the threshold scale that snaps a donut's outer diameter to its nearest named size tier's fixed slice gap
+ * Gets size-tiered donut slice gaps, using a fixed 1px gap for pies.
  * @param donutOptions
  * @returns ThresholdScale
  */
-export const getSliceGapScale = ({ name }: DonutSpecOptions): ThresholdScale => ({
+export const getSliceGapScale = ({ holeRatio, name }: DonutSpecOptions): ThresholdScale => ({
   name: `${name}_sliceGapScale`,
   type: 'threshold',
   domain: DONUT_SIZE_TIER_CUTPOINTS,
-  range: DONUT_SLICE_GAPS,
+  range: holeRatio === 0 ? DONUT_SLICE_GAPS.map(() => 1) : DONUT_SLICE_GAPS,
 });
 
 /**
@@ -191,17 +191,19 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
 };
 
 /**
- * Clamps a slice outline so it cannot consume the complete arc width at the inner radius.
+ * Preserves fixed pie outlines and clamps donut outlines to preserve fill at the inner radius.
  * @param options
  * @param requestedWidth
  * @returns vega expression string
  */
 export const getSliceStrokeWidthExpr = (options: DonutSpecOptions, requestedWidth: string): string => {
-  const { name } = options;
-  const innerRadius = `max(0, ${getDonutInnerRadiusExpr(options)})`;
+  const { holeRatio, name } = options;
+  if (holeRatio === 0) return requestedWidth;
+  const radius = `max(0, ${getDonutInnerRadiusExpr(options)})`;
   const arcAngle = `min(PI, max(0, datum['${name}_arcLength']))`;
-  const availableWidth = `2 * (${innerRadius}) * sin((${arcAngle}) / 2)`;
-  return `min(${requestedWidth}, max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH}))`;
+  const availableWidth = `2 * (${radius}) * sin((${arcAngle}) / 2)`;
+  const visibleWidth = `max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH})`;
+  return `min(${requestedWidth}, ${visibleWidth})`;
 };
 
 /**
@@ -312,12 +314,16 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         ...(hoveredArcFillEncoding ? { fill: hoveredArcFillEncoding } : {}),
         startAngle: { field: `${name}_startAngle` },
         endAngle: { field: `${name}_endAngle` },
-        innerRadius: { signal: `(${getDonutInnerRadiusExpr(options)}) + (${clampedRadiusInset})` },
+        innerRadius:
+          options.holeRatio === 0
+            ? { value: 0 }
+            : { signal: `(${getDonutInnerRadiusExpr(options)}) + (${clampedRadiusInset})` },
         outerRadius: { signal: `(${outerRadius}) - (${clampedRadiusInset})` },
         stroke: [
           { test: `${SELECTED_ITEM} === datum.${idKey}`, value: getS2ColorValue('static-blue', colorScheme) },
           { signal: BACKGROUND_COLOR },
         ],
+        ...(options.holeRatio === 0 ? { strokeJoin: { value: 'bevel' as const } } : {}),
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
         opacity: [
           { test: getDonutEmptyStateTest(name), value: 0 },
