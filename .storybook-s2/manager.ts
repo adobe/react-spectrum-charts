@@ -1,4 +1,4 @@
-import { addons } from '@storybook/manager-api';
+import { addons } from 'storybook/manager-api';
 
 /**
  * This file is loaded automatically by Storybook's manager. It will be used to to add a blue banner for the PR-specific Storybook variants.

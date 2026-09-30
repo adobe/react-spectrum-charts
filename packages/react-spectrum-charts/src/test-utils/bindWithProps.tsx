@@ -11,7 +11,7 @@
  */
 import { type FC } from 'react';
 
-import { ArgsStoryFn } from '@storybook/csf';
+import type { ArgsStoryFn } from 'storybook/internal/types';
 import { ReactRenderer, StoryFn } from '@storybook/react';
 
 type StoryArgsTypes<T> = T extends ArgsStoryFn<ReactRenderer, infer Return> ? Return : T;

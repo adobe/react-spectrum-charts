@@ -30,6 +30,7 @@ module.exports = {
     '^.+\\.(css|less|scss)$': 'babel-jest',
     '^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
     '^vega$': '<rootDir>/node_modules/vega/build/vega.js',
+    '^(storybook/actions|storybook-dark-mode)$': '<rootDir>/jest.storybookMock.js',
     ...pathsToModuleNameMapper(compilerOptions.paths),
   },
   transformIgnorePatterns: [
