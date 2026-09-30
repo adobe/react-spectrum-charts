@@ -23,6 +23,7 @@ import { barData, barSeriesData } from '../../../../stories/components/Bar/data'
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Tests/Accessible Navigation',
+  component: Bar,
   argTypes: {
     // Inline radio so a tester can flip orientation and confirm arrow keys follow the bars' layout.
     orientation: { control: 'inline-radio', options: ['vertical', 'horizontal'] },
