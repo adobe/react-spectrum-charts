@@ -320,6 +320,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
           { test: `${SELECTED_ITEM} === datum.${idKey}`, value: getS2ColorValue('static-blue', colorScheme) },
           { signal: BACKGROUND_COLOR },
         ],
+        ...(options.holeRatio === 0 ? { strokeJoin: { value: 'bevel' as const } } : {}),
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
         opacity: [
           { test: getDonutEmptyStateTest(name), value: 0 },

@@ -235,6 +235,21 @@ describe('getArcMark()', () => {
     ]);
   });
 
+  test('should bevel pie stroke joins without changing gaps or selected outlines', () => {
+    const options = { ...defaultDonutOptions, holeRatio: 0 };
+    const arcMark = getArcMark(options);
+    expect(arcMark.encode?.update).toHaveProperty('strokeJoin', { value: 'bevel' });
+    expect(arcMark.encode?.update).toHaveProperty('strokeWidth', [
+      { test: 'selectedItem === datum.rscMarkId', signal: '2' },
+      { signal: 'testName_sliceGap' },
+    ]);
+    expect(getArcMark({ ...options, variant: 'semicircle' }).encode?.update).toHaveProperty('strokeJoin', {
+      value: 'bevel',
+    });
+    expect(getArcMark(defaultDonutOptions).encode?.update).not.toHaveProperty('strokeJoin');
+    expect(getArcMark({ ...defaultDonutOptions, holeRatio: 0.5 }).encode?.update).not.toHaveProperty('strokeJoin');
+  });
+
   test('should use the per-tier fixed slice gap as the segment border width', () => {
     const arcMark = getArcMark(defaultDonutOptions);
     expect(arcMark.encode?.update).not.toHaveProperty('padAngle');
