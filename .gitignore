@@ -9,6 +9,8 @@ local.json
 # build
 dist
 dist-storybook
+dist-storybook-s2
+dist-storybook-s2-dev
 *.tgz
 
 # coverage reports
