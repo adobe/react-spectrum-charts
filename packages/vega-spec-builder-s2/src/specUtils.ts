@@ -10,7 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Config, Data, Scale, ScaleType, Spec, mergeConfig } from 'vega';
+import { Config, Data, Scale, ScaleType, Spec } from 'vega';
+import { mergeConfig } from 'vega-util';
 
 import {
   COLOR_SCALE,
