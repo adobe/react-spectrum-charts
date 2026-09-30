@@ -17,16 +17,23 @@ import { s2Categorical12 } from '@spectrum-charts/themes';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Bar, Line } from '../../../components';
+import { Axis, Bar, Legend, Line } from '../../../components';
 import { ChartInspect } from '../../../components/ChartInspect';
 import useChartProps from '../../../hooks/useChartProps';
 import { browserData } from '../../../stories/data/data';
 import { formatTimestamp } from '../../../stories/storyUtils';
 import { bindWithProps } from '../../../test-utils';
 
+type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
+
+const setControlInclude = (story: StoryWithParameters, include: string[]) => {
+  story.parameters = { controls: { include } };
+};
+
 export default {
   title: 'React Spectrum Charts 2/Chart Inspect/Features',
   component: ChartInspect,
+  parameters: { controls: { include: ['excludeDataKeys', 'highlightBy'] } },
   argTypes: {
     children: {
       description: '`(datum) => React.ReactElement`',
@@ -45,9 +52,12 @@ const StackedBarInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElemen
   const chartProps = useChartProps({ data: barData, width: 600 });
   return (
     <Chart {...chartProps}>
-      <Bar color="series">
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
+      <Bar color="series" type="stacked">
         <ChartInspect {...args} />
       </Bar>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -56,9 +66,12 @@ const DodgedBarInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement
   const chartProps = useChartProps({ data: barData, width: 600 });
   return (
     <Chart {...chartProps}>
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
       <Bar type="dodged" color="series">
         <ChartInspect {...args} />
       </Bar>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -88,9 +101,12 @@ const LineInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement => {
   const chartProps = useChartProps({ data: lineData, width: 600 });
   return (
     <Chart {...chartProps}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid title="Events" />
       <Line color="series">
         <ChartInspect {...args} />
       </Line>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -99,9 +115,12 @@ const DisabledSeriesLineInspectStory: StoryFn<typeof ChartInspect> = (args): Rea
   const chartProps = useChartProps({ data: disabledLineData, width: 600, colors: ['gray-300', ...s2Categorical12] });
   return (
     <Chart {...chartProps}>
+      <Axis position="bottom" baseline ticks labelFormat="time" />
+      <Axis position="left" grid title="Events" />
       <Line color="series">
         <ChartInspect {...args} />
       </Line>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -116,6 +135,7 @@ interface LineData extends Datum {
 }
 
 const StackedBarChart = bindWithProps(StackedBarInspectStory);
+setControlInclude(StackedBarChart as StoryWithParameters, ['highlightBy']);
 StackedBarChart.args = {
   children: (datum: LineData) => (
     <div className="bar-inspect">
@@ -127,6 +147,7 @@ StackedBarChart.args = {
 };
 
 const DodgedBarChart = bindWithProps(DodgedBarInspectStory);
+setControlInclude(DodgedBarChart as StoryWithParameters, ['highlightBy']);
 DodgedBarChart.args = {
   children: (datum: LineData) => (
     <div className="bar-inspect">
@@ -138,6 +159,7 @@ DodgedBarChart.args = {
 };
 
 const LineChart = bindWithProps(LineInspectStory);
+setControlInclude(LineChart as StoryWithParameters, ['highlightBy']);
 LineChart.args = {
   children: (datum: LineData) => (
     <div className="bar-inspect">
@@ -150,6 +172,7 @@ LineChart.args = {
 };
 
 const DisabledSeriesLineChart = bindWithProps(DisabledSeriesLineInspectStory);
+setControlInclude(DisabledSeriesLineChart as StoryWithParameters, ['excludeDataKeys']);
 DisabledSeriesLineChart.args = {
   children: (datum: LineData) => (
     <div className="bar-inspect">

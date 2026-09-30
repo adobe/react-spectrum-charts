@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, Line, LineForecast } from '../../../../components';
+import { Axis, Legend, Line, LineForecast } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
@@ -22,6 +22,7 @@ import { ChartProps } from '../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/LineForecast',
   component: Line,
+  parameters: { controls: { include: ['gradient', 'opacity'] } },
 };
 
 const forecastData = [
@@ -77,11 +78,12 @@ const ForecastStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid />
-      <Axis position="bottom" labelFormat="time" />
+      <Axis position="left" grid title="Monthly visits" />
+      <Axis position="bottom" labelFormat="time" granularity="month" />
       <Line {...args}>
         <LineForecast metric="forecastValue" start={1725148800000} label="Forecast" />
       </Line>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -110,11 +112,12 @@ const ForecastNearEndStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: forecastDataNearEnd });
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid />
-      <Axis position="bottom" labelFormat="time" />
+      <Axis position="left" grid title="Monthly visits" />
+      <Axis position="bottom" labelFormat="time" granularity="month" />
       <Line {...args}>
         <LineForecast metric="forecastValue" start={1730419200000} label="Forecast" />
       </Line>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -132,11 +135,12 @@ const ForecastEarlyStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: forecastDataEarly });
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid />
-      <Axis position="bottom" labelFormat="time" />
+      <Axis position="left" grid title="Monthly visits" />
+      <Axis position="bottom" labelFormat="time" granularity="month" />
       <Line {...args}>
         <LineForecast metric="forecastValue" start={1709251200000} label="Forecast" />
       </Line>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -181,11 +185,12 @@ const ForecastMultiSeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: forecastDataMultiSeries });
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid />
-      <Axis position="bottom" labelFormat="time" />
+      <Axis position="left" grid title="Monthly visits" />
+      <Axis position="bottom" labelFormat="time" granularity="month" />
       <Line {...args}>
         <LineForecast metric="forecastValue" start={1725148800000} label="Forecast" />
       </Line>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -203,11 +208,12 @@ const ForecastCustomLabelStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid />
-      <Axis position="bottom" labelFormat="time" />
+      <Axis position="left" grid title="Monthly visits" />
+      <Axis position="bottom" labelFormat="time" granularity="month" />
       <Line {...args}>
         <LineForecast metric="forecastValue" start={1725148800000} label="Projected" />
       </Line>
+      <Legend highlight />
     </Chart>
   );
 };
@@ -221,4 +227,4 @@ WithForecastCustomLabel.args = {
   scaleType: 'time',
 };
 
-export { WithForecast, WithForecastAndGradient, WithForecastMultiSeries, WithForecastNearEnd, WithForecastEarly, WithForecastCustomLabel };
+export { WithForecast, WithForecastMultiSeries };

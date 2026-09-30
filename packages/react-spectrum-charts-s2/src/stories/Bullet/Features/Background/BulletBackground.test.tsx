@@ -10,23 +10,24 @@
  * governing permissions and limitations under the License.
  */
 import { findChart, render } from '../../../../test-utils';
-import { ColoredMetric, Thresholds, Track } from './BulletBackground.story';
+import { basicThresholdsData, coloredThresholdsData } from '../../../data/bulletData';
+import { Background } from './BulletBackground.story';
 
 describe('Bullet Background', () => {
   test('Thresholds renders properly', async () => {
-    render(<Thresholds {...Thresholds.args} />);
+    render(<Background {...Background.args} thresholds={basicThresholdsData} thresholdBarColor={false} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('ColoredMetric renders properly', async () => {
-    render(<ColoredMetric {...ColoredMetric.args} />);
+    render(<Background {...Background.args} thresholds={coloredThresholdsData} thresholdBarColor />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('Track renders properly', async () => {
-    render(<Track {...Track.args} />);
+    render(<Background {...Background.args} thresholds={undefined} thresholdBarColor={false} track />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });

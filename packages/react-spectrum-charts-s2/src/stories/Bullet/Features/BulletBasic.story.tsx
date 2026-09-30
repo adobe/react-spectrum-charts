@@ -14,19 +14,23 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Bullet } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { BulletProps, ChartProps } from '../../../types';
-import { basicBulletData, basicThresholdsData, coloredThresholdsData } from '../../data/bulletData';
+import { basicBulletData, coloredThresholdsData } from '../../data/bulletData';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features',
   component: Bullet,
+  parameters: {
+    controls: {
+      include: ['direction', 'labelPosition', 'maxScaleValue', 'metricAxis', 'scaleType'],
+    },
+  },
 };
 
-const defaultChartProps: ChartProps = { data: basicBulletData, width: 350, height: 350 };
+const defaultChartProps: ChartProps = { data: basicBulletData, width: 560, height: 180 };
 const defaultArgs: Partial<BulletProps> = {
   metric: 'currentAmount',
   dimension: 'graphLabel',
@@ -44,43 +48,13 @@ const BulletStory: StoryFn<BulletProps> = (args): ReactElement => {
 };
 
 const Basic = bindWithProps(BulletStory);
-Basic.args = { ...defaultArgs, direction: 'column', labelPosition: 'top' };
-
-// direction: 'row' lays bullet groups out side by side instead of stacked
-const RowMode = bindWithProps(BulletStory);
-RowMode.args = {
-  ...defaultArgs,
-  direction: 'row',
-  labelPosition: 'top',
-  thresholds: coloredThresholdsData,
-  thresholdBarColor: true,
-};
-
-// scaleType: 'fixed' pins the x-scale max to maxScaleValue instead of deriving it from the data
-const FixedScale = bindWithProps(BulletStory);
-FixedScale.args = {
+Basic.args = {
   ...defaultArgs,
   direction: 'column',
-  scaleType: 'fixed',
+  labelPosition: 'top',
   maxScaleValue: 250,
-  thresholds: basicThresholdsData,
+  metricAxis: true,
+  thresholds: coloredThresholdsData,
 };
 
-// metricAxis adds a bottom axis that follows the shared max scale value
-const MetricAxis = bindWithProps(BulletStory);
-MetricAxis.args = { ...defaultArgs, direction: 'column', maxScaleValue: 250, metricAxis: true };
-
-const BulletTitleStory: StoryFn<BulletProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, width: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Title Bullet" position="start" orient="top" />
-      <Bullet {...args} />
-    </Chart>
-  );
-};
-
-const WithTitle = bindWithProps(BulletTitleStory);
-WithTitle.args = { ...defaultArgs, direction: 'column' };
-
-export { Basic, RowMode, FixedScale, MetricAxis, WithTitle };
+export { Basic };

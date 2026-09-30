@@ -23,6 +23,12 @@ import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { DonutProps, DonutSummaryProps } from '../../../types';
 
+export default {
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Tests/Semicircle Variants',
+  component: Donut,
+};
+
+
 type SemicircleMode = 'browser' | 'ordinal' | 'boolean';
 type SemicircleStoryProps = DonutProps & Pick<DonutSummaryProps, 'hideValue' | 'numberFormat' | 'delta'> & { mode?: SemicircleMode };
 
@@ -69,20 +75,10 @@ const SemicircleStory: StoryFn<SemicircleStoryProps> = (args): ReactElement => {
   );
 };
 
-export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Semicircle',
-  component: DonutSummary,
-  parameters: {
-    controls: {
-      include: ['delta', 'hideValue', 'mode', 'numberFormat'],
-    },
-  },
-  argTypes: {
-    mode: { control: 'select', options: ['browser', 'ordinal', 'boolean'] },
-  },
-};
+const SemicircleOrdinal = bindWithProps(SemicircleStory);
+SemicircleOrdinal.args = { mode: 'ordinal' };
 
-const Semicircle = bindWithProps(SemicircleStory);
-Semicircle.args = { mode: 'ordinal' };
+const SemicircleBoolean = bindWithProps(SemicircleStory);
+SemicircleBoolean.args = { mode: 'boolean' };
 
-export { Semicircle };
+export { SemicircleBoolean, SemicircleOrdinal };

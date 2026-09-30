@@ -21,7 +21,7 @@ import {
   screen,
   waitFor,
 } from '../../../test-utils';
-import { SemicircleBoolean, SemicircleOrdinal } from './DonutSemicircle.story';
+import { SemicircleBoolean, SemicircleOrdinal } from './DonutSemicircleVariants.story';
 
 describe('DonutSemicircle', () => {
   test('passes hideValue to the boolean DonutSummary', async () => {

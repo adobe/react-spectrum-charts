@@ -10,12 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { findChart, render } from '../../../../test-utils';
-import {
-  CustomLabels,
-  CustomLabelsRowDirection,
-  CustomLabelsSidePosition,
-  CustomTargetLabel,
-} from './BulletCustomLabels.story';
+import { CustomLabels } from './BulletCustomLabels.story';
 
 describe('Bullet CustomLabels', () => {
   test('CustomLabels renders properly', async () => {
@@ -25,19 +20,19 @@ describe('Bullet CustomLabels', () => {
   });
 
   test('CustomLabelsSidePosition renders properly', async () => {
-    render(<CustomLabelsSidePosition {...CustomLabelsSidePosition.args} />);
+    render(<CustomLabels {...CustomLabels.args} labelPosition="side" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('CustomTargetLabel renders properly', async () => {
-    render(<CustomTargetLabel {...CustomTargetLabel.args} />);
+    render(<CustomLabels {...CustomLabels.args} showTargetValue />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('CustomLabelsRowDirection renders properly', async () => {
-    render(<CustomLabelsRowDirection {...CustomLabelsRowDirection.args} />);
+    render(<CustomLabels {...CustomLabels.args} direction="row" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });

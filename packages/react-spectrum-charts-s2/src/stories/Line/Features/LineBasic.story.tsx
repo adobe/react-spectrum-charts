@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Legend, Line } from '../../../components';
+import { Axis, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
@@ -23,6 +23,7 @@ import { ChartProps } from '../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features',
   component: Line,
+  parameters: { controls: { include: ['color', 'dimension', 'metric', 'scaleType'] } },
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
@@ -31,6 +32,8 @@ const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line {...args} />
       <Legend lineWidth={{ value: 0 }} />
     </Chart>

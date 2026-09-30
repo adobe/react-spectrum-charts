@@ -24,6 +24,11 @@ import { characterData } from '../../../data/marioKartData';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Annotation',
   component: ScatterAnnotation,
+  parameters: {
+    controls: {
+      include: ['textKey'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 600 };

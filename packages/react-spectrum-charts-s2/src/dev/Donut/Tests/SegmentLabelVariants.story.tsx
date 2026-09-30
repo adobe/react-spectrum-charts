@@ -14,28 +14,19 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
-import { basicDonutData, sliveredDonutData } from '../Donut/data';
+import { basicDonutData } from '../../../stories/components/Donut/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Segment Label',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Tests/SegmentLabel Variants',
   component: SegmentLabel,
-  parameters: {
-    controls: {
-      include: ['labelKey', 'percent', 'showValueRow', 'swatch', 'value', 'valueFormat'],
-    },
-  },
 };
 
-const defaultChartProps: ChartProps = {
-  data: basicDonutData,
-  width: 560,
-  height: 420,
-};
+
+const defaultChartProps: ChartProps = { data: basicDonutData, width: 350, height: 350 };
 
 const SegmentLabelStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
@@ -45,28 +36,20 @@ const SegmentLabelStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => 
       <Donut metric="count" color="browser">
         <SegmentLabel {...args} />
       </Donut>
-      <Legend title="Browsers" position="right" highlight />
     </Chart>
   );
 };
 
-const SliverStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: sliveredDonutData, width: 640, height: 460 });
+const Basic = bindWithProps(SegmentLabelStory);
+Basic.args = { labelKey: 'browser' };
 
-  return (
-    <Chart {...chartProps}>
-      <Donut metric="count" color="browser">
-        <SegmentLabel {...args} />
-      </Donut>
-      <Legend title="Browsers" position="right" highlight />
-    </Chart>
-  );
-};
+const Percent = bindWithProps(SegmentLabelStory);
+Percent.args = { percent: true, value: false };
 
-const Content = bindWithProps(SegmentLabelStory);
-Content.args = { labelKey: 'browser', percent: true, value: true, valueFormat: 'shortNumber', showValueRow: true };
+const Value = bindWithProps(SegmentLabelStory);
+Value.args = { value: true };
 
-const Slivers = bindWithProps(SliverStory);
-Slivers.args = { percent: true, value: true, valueFormat: 'shortNumber' };
+const ValueFormat = bindWithProps(SegmentLabelStory);
+ValueFormat.args = { value: true, valueFormat: 'shortNumber' };
 
-export { Content, Slivers };
+export { Basic, Percent, Value, ValueFormat };

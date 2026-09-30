@@ -22,6 +22,7 @@ import { ChartProps } from '../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features',
   component: Line,
+  parameters: { controls: { include: ['color', 'lineType', 'lineTypeField'] } },
 };
 
 const historicalCompareData = [

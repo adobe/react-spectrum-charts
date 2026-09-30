@@ -21,14 +21,19 @@ import useChartProps from '../../../../hooks/useChartProps';
 import { Bullet } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
 import { BulletProps, ChartProps } from '../../../../types';
-import { basicBulletData, coloredThresholdsData } from '../../../data/bulletData';
+import { basicBulletData } from '../../../data/bulletData';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features/Inspect',
   component: Bullet,
+  parameters: {
+    controls: {
+      include: ['children', 'thresholds', 'track'],
+    },
+  },
 };
 
-const defaultChartProps: ChartProps = { data: basicBulletData, width: 350, height: 350 };
+const defaultChartProps: ChartProps = { data: basicBulletData, width: 560, height: 180 };
 const defaultArgs: Partial<BulletProps> = {
   metric: 'currentAmount',
   dimension: 'graphLabel',
@@ -54,27 +59,10 @@ const dialogContent = (datum: Datum) => (
   </div>
 );
 
-// no track or thresholds — the tooltip binds directly to the rect and target marks
 const Inspect = bindWithProps(BulletStory);
 Inspect.args = {
   ...defaultArgs,
   children: <ChartInspect>{dialogContent}</ChartInspect>,
 };
 
-// thresholds add a dedicated hover area so the tooltip also fires between the threshold bands
-const InspectWithThresholds = bindWithProps(BulletStory);
-InspectWithThresholds.args = {
-  ...defaultArgs,
-  thresholds: coloredThresholdsData,
-  children: <ChartInspect>{dialogContent}</ChartInspect>,
-};
-
-// track also gets its own hover area, same as thresholds
-const InspectWithTrack = bindWithProps(BulletStory);
-InspectWithTrack.args = {
-  ...defaultArgs,
-  track: true,
-  children: <ChartInspect>{dialogContent}</ChartInspect>,
-};
-
-export { Inspect, InspectWithThresholds, InspectWithTrack };
+export { Inspect };

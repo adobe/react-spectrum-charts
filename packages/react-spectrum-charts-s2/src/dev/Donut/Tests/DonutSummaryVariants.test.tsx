@@ -13,7 +13,7 @@ import { DONUT_SUMMARY_MIN_RADIUS } from '@spectrum-charts/constants';
 
 import { DonutSummary } from '../../../pre-alpha';
 import { render, screen } from '../../../test-utils';
-import { Basic, NoLabel, NumberFormat } from './DonutSummary.story';
+import { Basic, NoLabel, NumberFormat } from './DonutSummaryVariants.story';
 
 describe('DonutSummary renders properly', () => {
   // Donut is not a real React component. This is test just provides test coverage for sonarqube

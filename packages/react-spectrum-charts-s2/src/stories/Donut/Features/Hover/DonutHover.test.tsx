@@ -20,11 +20,11 @@ import {
   within,
 } from '../../../../test-utils';
 import '../../../../test-utils/__mocks__/matchMedia.mock.js';
-import { InspectAndPopover } from './DonutHover.story';
+import { Hover } from './DonutHover.story';
 
-describe('InspectAndPopover', () => {
+describe('Hover', () => {
   test('hovering a segment shows the default swatch, series, and percent with value', async () => {
-    render(<InspectAndPopover {...InspectAndPopover.args} />);
+    render(<Hover {...Hover.args} />);
     const chart = await findChart();
     const segments = await findAllMarksByGroupName(chart, 'donut0');
 
@@ -38,7 +38,7 @@ describe('InspectAndPopover', () => {
   });
 
   test('clicking a segment opens a popover with the default content', async () => {
-    render(<InspectAndPopover {...InspectAndPopover.args} />);
+    render(<Hover {...Hover.args} />);
     const chart = await findChart();
     const segments = await findAllMarksByGroupName(chart, 'donut0');
 

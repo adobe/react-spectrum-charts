@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, Bar, Line } from '../../../../components';
+import { Axis, Bar, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { Combo } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
@@ -24,6 +24,11 @@ import { peopleTotalComboData } from '../../../data/data';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features/DualAxis',
   component: Combo,
+  parameters: {
+    controls: {
+      include: ['dimension', 'name'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = {
@@ -45,6 +50,7 @@ const DualAxisStory: StoryFn<ComboProps> = (args): ReactElement => {
         <Bar metric="people" metricAxis="people" />
         <Line metric="total" metricAxis="total" color={{ value: 'categorical-200' }} scaleType="point" />
       </Combo>
+      <Legend title="Metric" />
     </Chart>
   );
 };

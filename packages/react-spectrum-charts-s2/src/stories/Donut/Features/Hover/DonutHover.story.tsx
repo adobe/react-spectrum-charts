@@ -23,26 +23,16 @@ import { basicDonutData } from '../../../components/Donut/data';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Hover',
   component: SegmentLabel,
+  parameters: {
+    controls: {
+      include: ['value', 'valueFormat'],
+    },
+  },
 };
 
 const defaultChartProps = { data: basicDonutData, width: 400, height: 400 };
 
-// no chartPopover/chartInspect configured - a SegmentLabel showing a value is enough on its own to
-// make the donut hover-interactive, matching the Figma reference
-const SimpleDirectLabelStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Donut metric="count" color="browser">
-        <SegmentLabel {...args} />
-      </Donut>
-    </Chart>
-  );
-};
-
-// hovering an arc highlights the matching Legend entry, and hovering a Legend entry fades/highlights
-// the corresponding arc - both directions of the shared legendHighlightSignals mechanism
-const WithLegendStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
+const HoverStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, width: 500 });
   return (
     <Chart {...chartProps}>
@@ -56,24 +46,7 @@ const WithLegendStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
   );
 };
 
-const InspectAndPopoverStory: StoryFn<typeof Donut> = (): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Donut metric="count" color="browser">
-        <ChartInspect />
-        <ChartPopover width="auto" />
-      </Donut>
-    </Chart>
-  );
-};
+const Hover = bindWithProps(HoverStory);
+Hover.args = { value: true, valueFormat: 'shortNumber' };
 
-const SimpleDirectLabel = bindWithProps(SimpleDirectLabelStory);
-SimpleDirectLabel.args = { value: true, valueFormat: 'shortNumber' };
-
-const WithLegend = bindWithProps(WithLegendStory);
-WithLegend.args = { value: true, valueFormat: 'shortNumber' };
-
-const InspectAndPopover = bindWithProps(InspectAndPopoverStory);
-
-export { InspectAndPopover, SimpleDirectLabel, WithLegend };
+export { Hover };

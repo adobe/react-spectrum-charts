@@ -10,7 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import { findChart, render } from '../../../../test-utils';
-import { Inspect, InspectWithThresholds, InspectWithTrack } from './BulletInspect.story';
+import { coloredThresholdsData } from '../../../data/bulletData';
+import { Inspect } from './BulletInspect.story';
 
 describe('Bullet Inspect', () => {
   test('Inspect renders properly', async () => {
@@ -20,13 +21,13 @@ describe('Bullet Inspect', () => {
   });
 
   test('InspectWithThresholds renders properly', async () => {
-    render(<InspectWithThresholds {...InspectWithThresholds.args} />);
+    render(<Inspect {...Inspect.args} thresholds={coloredThresholdsData} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('InspectWithTrack renders properly', async () => {
-    render(<InspectWithTrack {...InspectWithTrack.args} />);
+    render(<Inspect {...Inspect.args} track />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });

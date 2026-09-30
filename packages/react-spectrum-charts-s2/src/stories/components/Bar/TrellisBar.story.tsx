@@ -9,15 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { MARK_ID } from '@spectrum-charts/constants';
 import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -26,6 +25,11 @@ import { generateMockDataForTrellis } from './data';
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Trellis',
   component: Bar,
+  parameters: {
+    controls: {
+      include: ['orientation', 'trellisOrientation', 'trellisPadding', 'type'],
+    },
+  },
 };
 
 const colors: SpectrumColor[] = [
@@ -41,22 +45,26 @@ const colors: SpectrumColor[] = [
 const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
   const chartProps = useChartProps({
     data: generateMockDataForTrellis({
-      property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
-      property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
-      property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
+      property1: ['All users', 'Roku', 'Chromecast', 'Apple TV'],
+      property2: ['Sign up', 'Watch video', 'Add to list'],
+      property3: ['1-5 times', '6-10 times', '11-15 times', '16+ times'],
       propertyNames: ['segment', 'event', 'bucket'],
       randomizeSteps: false,
       orderBy: 'bucket',
     }),
     colors,
-    width: 800,
-    height: 800,
+    width: 780,
+    height: 620,
   });
 
   const dialog = (item: Datum) => {
     return (
       <div>
-        <span>{item[MARK_ID]}</span>
+        <div>{item.event}</div>
+        <div>{item.segment}</div>
+        <div>
+          {item.bucket}: {Number(item.value).toLocaleString()} users
+        </div>
       </div>
     );
   };
@@ -69,26 +77,13 @@ const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
         <ChartInspect>{dialog}</ChartInspect>
         <ChartPopover>{dialog}</ChartPopover>
       </Bar>
-      <Legend />
+      <Legend title="Usage frequency" />
     </Chart>
   );
 };
 
-const Dodged = bindWithProps<BarProps>(BarStory);
-Dodged.args = {
-  type: 'dodged',
-  dimension: 'segment',
-  onClick: undefined,
-  order: 'order',
-  color: 'bucket',
-  trellis: 'event',
-  trellisOrientation: 'horizontal',
-  orientation: 'horizontal',
-};
-
-const HorizontalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
-HorizontalBarHorizontalTrellis.storyName = 'Horizontal Bar, Horizontal Trellis';
-HorizontalBarHorizontalTrellis.args = {
+const Basic = bindWithProps<BarProps>(BarStory);
+Basic.args = {
   type: 'stacked',
   trellis: 'event',
   dimension: 'segment',
@@ -99,41 +94,4 @@ HorizontalBarHorizontalTrellis.args = {
   trellisOrientation: 'horizontal',
 };
 
-const HorizontalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
-HorizontalBarVerticalTrellis.storyName = 'Horizontal Bar, Vertical Trellis';
-HorizontalBarVerticalTrellis.args = {
-  ...HorizontalBarHorizontalTrellis.args,
-  trellisOrientation: 'vertical',
-};
-
-const VerticalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
-VerticalBarHorizontalTrellis.storyName = 'Vertical Bar, Horizontal Trellis';
-VerticalBarHorizontalTrellis.args = {
-  ...HorizontalBarHorizontalTrellis.args,
-  orientation: 'vertical',
-  trellisOrientation: 'horizontal',
-};
-
-const VerticalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
-VerticalBarVerticalTrellis.storyName = 'Vertical Bar, Vertical Trellis';
-VerticalBarVerticalTrellis.args = {
-  ...HorizontalBarVerticalTrellis.args,
-  orientation: 'vertical',
-  trellisOrientation: 'vertical',
-};
-
-const WithCustomTrellisPadding = bindWithProps<BarProps>(BarStory);
-WithCustomTrellisPadding.args = {
-  ...HorizontalBarVerticalTrellis.args,
-  orientation: 'vertical',
-  trellisPadding: 0.33,
-};
-
-export {
-  Dodged,
-  HorizontalBarHorizontalTrellis,
-  HorizontalBarVerticalTrellis,
-  VerticalBarHorizontalTrellis,
-  VerticalBarVerticalTrellis,
-  WithCustomTrellisPadding,
-};
+export { Basic };

@@ -24,6 +24,11 @@ import { characterData } from '../../../../data/marioKartData';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Trendline/Annotation',
   component: TrendlineAnnotation,
+  parameters: {
+    controls: {
+      include: ['badge'],
+    },
+  },
 };
 
 const trendlineProps: TrendlineProps = {
@@ -51,8 +56,6 @@ const TrendlineAnnotationStory: StoryFn<typeof TrendlineAnnotation> = (args): Re
 };
 
 const Basic = bindWithProps(TrendlineAnnotationStory);
+Basic.args = { badge: true };
 
-const Badge = bindWithProps(TrendlineAnnotationStory);
-Badge.args = { badge: true };
-
-export { Badge, Basic };
+export { Basic };

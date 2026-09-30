@@ -32,6 +32,7 @@ const manySeriesData = Array.from({ length: 25 }, (_, i) =>
 export default {
   title: 'React Spectrum Charts 2/Line/Features/HoverLabel',
   component: Line,
+  parameters: { controls: { include: ['displayOnHover', 'highlight'] } },
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
@@ -57,7 +58,7 @@ WithHoverLabel.args = {
   showHoverLabel: true,
 };
 
-export const WithoutHoverLabel = bindWithProps(HoverLabelStory);
+const WithoutHoverLabel = bindWithProps(HoverLabelStory);
 WithoutHoverLabel.args = {
   color: 'series',
   dimension: 'datetime',
@@ -87,7 +88,7 @@ const ManySeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   );
 };
 
-export const DimensionHoverManySeries = bindWithProps(ManySeriesStory);
+const DimensionHoverManySeries = bindWithProps(ManySeriesStory);
 DimensionHoverManySeries.args = {
   color: 'series',
   dimension: 'datetime',

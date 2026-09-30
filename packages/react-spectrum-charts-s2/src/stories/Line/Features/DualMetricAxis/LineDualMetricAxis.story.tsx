@@ -22,6 +22,7 @@ import { LineProps } from '../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Dual Metric Axis',
   component: Line,
+  parameters: { controls: { include: ['dimension', 'metric', 'color', 'scaleType'] } },
 };
 
 const lineDualAxisData = [
@@ -122,4 +123,4 @@ DualMetricAxisWithThreeSeries.args = { ...defaultProps, color: 'series' };
 const DualMetricAxisItemInspect = bindWithProps(BasicStory);
 DualMetricAxisItemInspect.args = { ...defaultProps, color: 'series', interactionMode: 'item' };
 
-export { DualMetricAxisBasic, DualMetricAxisWithThreeSeries, DualMetricAxisItemInspect };
+export { DualMetricAxisBasic, DualMetricAxisWithThreeSeries };

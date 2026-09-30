@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Line, ReferenceLine } from '../../../components';
+import { Axis, Legend, Line, ReferenceLine } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import errorData from './errorData.json';
@@ -22,19 +22,23 @@ import errorData from './errorData.json';
 export default {
   title: 'React Spectrum Charts 2/Chart/Examples',
   component: ReferenceLine,
+  parameters: { controls: { include: [] } },
 };
 
+const errorRateData = errorData.map((datum) => ({ ...datum, series: 'Checkout errors' }));
+
 const ErrorRateStory: StoryFn = (): ReactElement => {
-  const chartProps = useChartProps({ data: errorData, width: 800 });
+  const chartProps = useChartProps({ data: errorRateData, width: 800 });
   return (
     <Chart {...chartProps}>
-      <Line scaleType="linear" dimension="time" metric="errors" />
+      <Line scaleType="linear" dimension="time" metric="errors" color="series" />
       <Axis position="left" hideDefaultLabels>
-        <ReferenceLine value={400} />
-        <ReferenceLine value={200} />
-        <ReferenceLine value={100} />
+        <ReferenceLine value={400} label="Critical" secondary />
+        <ReferenceLine value={200} label="Warning" secondary />
+        <ReferenceLine value={100} label="Watch" secondary />
       </Axis>
       <Axis position="bottom" baseline ticks labelFormat="duration" />
+      <Legend highlight />
     </Chart>
   );
 };

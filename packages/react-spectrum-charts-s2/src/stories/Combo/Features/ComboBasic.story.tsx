@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, Line } from '../../../components';
+import { Axis, Bar, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Combo } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
@@ -34,6 +34,11 @@ const ordersAndVisitsComboData = [
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features',
   component: Combo,
+  parameters: {
+    controls: {
+      include: ['dimension', 'name'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = {
@@ -53,6 +58,7 @@ const BasicComboStory: StoryFn<ComboProps> = (args): ReactElement => {
         <Bar metric="orders" />
         <Line metric="visits" color={{ value: 'categorical-200' }} scaleType="point" />
       </Combo>
+      <Legend title="Metric" />
     </Chart>
   );
 };

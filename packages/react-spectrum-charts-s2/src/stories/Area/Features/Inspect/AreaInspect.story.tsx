@@ -25,6 +25,11 @@ import { AreaProps, ChartProps } from '../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Area/Features/Inspect',
   component: Area,
+  parameters: {
+    controls: {
+      include: ['children', 'color', 'dimension', 'scaleType'],
+    },
+  },
 };
 
 const data = [

@@ -11,22 +11,25 @@
  */
 import { ReactElement } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
 import { s2Categorical6 } from '@spectrum-charts/themes';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
+import { Axis, Bar, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { DimensionAreaStory } from './SharedBarStories';
 import { barSeriesData, barSubSeriesData } from './data';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Dodged Bar',
   component: Bar,
+  parameters: {
+    controls: {
+      include: ['orientation', 'paddingRatio'],
+    },
+  },
 };
 
 const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
@@ -39,48 +42,13 @@ const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
       ]
     : s2Categorical6;
   const data = Array.isArray(color) ? barSubSeriesData : barSeriesData;
-  const chartProps = useChartProps({ data, width: 800, height: 600, colors });
+  const chartProps = useChartProps({ data, width: 720, height: 460, colors });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args} />
       <Legend title="Operating system" highlight />
-    </Chart>
-  );
-};
-
-const dialogContent = (datum) => (
-  <div>
-    <div>Operating system: {datum.operatingSystem}</div>
-    <div>Browser: {datum.browser}</div>
-    <div>Users: {datum.value}</div>
-  </div>
-);
-
-const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args}>
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover width={200}>{dialogContent}</ChartPopover>
-      </Bar>
-      <Legend title="Operating system" highlight />
-    </Chart>
-  );
-};
-
-const DodgedBarLineTypeStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args} />
-      <Legend title="Operating system" opacity={{ value: 0.2 }} />
     </Chart>
   );
 };
@@ -88,14 +56,14 @@ const DodgedBarLineTypeStory: StoryFn<typeof Bar> = (args): ReactElement => {
 const defaultProps: BarProps = {
   type: 'dodged',
   dimension: 'browser',
+  order: 'order',
+  color: 'operatingSystem',
   onClick: undefined,
 };
 
-const Color = bindWithProps(DodgedBarStory);
-Color.args = {
+const Basic = bindWithProps(DodgedBarStory);
+Basic.args = {
   ...defaultProps,
-  order: 'order',
-  color: 'operatingSystem',
 };
 
 const DodgedStacked = bindWithProps(DodgedBarStory);
@@ -104,67 +72,4 @@ DodgedStacked.args = {
   color: ['operatingSystem', 'version'],
 };
 
-const LineType = bindWithProps(DodgedBarLineTypeStory);
-LineType.args = {
-  ...defaultProps,
-  order: 'order',
-  lineType: 'operatingSystem',
-  lineWidth: 2,
-  opacity: { value: 0.2 },
-};
-
-const Opacity = bindWithProps(DodgedBarStory);
-Opacity.args = {
-  ...defaultProps,
-  order: 'order',
-  opacity: 'operatingSystem',
-};
-
-const Popover = bindWithProps(DodgedBarPopoverStory);
-Popover.args = {
-  ...defaultProps,
-  order: 'order',
-  color: 'operatingSystem',
-};
-
-const DodgedStackedWithLabels = bindWithProps(DodgedBarStory);
-DodgedStackedWithLabels.args = {
-  ...defaultProps,
-  color: ['operatingSystem', 'version'],
-  // Annotation component removed from S2
-  paddingRatio: 0.1,
-};
-
-const OnClick = bindWithProps(DodgedBarStory);
-OnClick.args = {
-  type: 'dodged',
-  dimension: 'browser',
-  order: 'order',
-  color: 'operatingSystem',
-  onClick: action('onClick'),
-};
-
-const InspectOnDimensionArea = bindWithProps(DimensionAreaStory);
-InspectOnDimensionArea.args = {
-  ...defaultProps,
-  color: 'operatingSystem',
-};
-
-// Hovering an axis label highlights the matching dodged group, same as hovering the group itself.
-const AxisLabelHighlight = bindWithProps(DodgedBarPopoverStory);
-AxisLabelHighlight.args = {
-  ...defaultProps,
-  color: 'operatingSystem',
-};
-
-export {
-  Color,
-  DodgedStacked,
-  DodgedStackedWithLabels,
-  LineType,
-  OnClick,
-  Opacity,
-  Popover,
-  InspectOnDimensionArea,
-  AxisLabelHighlight,
-};
+export { Basic, DodgedStacked };

@@ -29,15 +29,8 @@ import {
 } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { getElement } from '../utils';
-import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story';
-import {
-  CssColors,
-  Spectrum2CategoricalColorScheme,
-  Spectrum2ColorNames,
-  SpectrumColorNames,
-  SpectrumDivergentColorScheme,
-  SpectrumSequentialColorScheme,
-} from './ChartColors.story';
+import { BackgroundColor, Basic, Config, HighlightedItem, Locale, ResponsiveBounds, TooltipAnchor } from './Chart.story';
+import { ColorSchemes, ColorValues } from './ChartColors.story';
 import { EmptyState, LoadingState } from './ChartStates.story';
 import { data } from './data/data';
 
@@ -92,33 +85,33 @@ describe('Chart', () => {
   });
 
   test('Width renders properly', async () => {
-    render(<Width {...Width.args} />);
+    render(<ResponsiveBounds {...ResponsiveBounds.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('Width renders properly with invalid width', async () => {
-    render(<Width {...Width.args} width="50.2%" />);
+    render(<ResponsiveBounds {...ResponsiveBounds.args} width="50.2%" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('Height renders properly', async () => {
-    render(<Height {...Height.args} />);
+    render(<ResponsiveBounds {...ResponsiveBounds.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('Height renders properly with invalid Height', async () => {
-    render(<Height {...Height.args} height="50.2%" />);
+    render(<ResponsiveBounds {...ResponsiveBounds.args} height="50.2%" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('Chart does not render if the width or height are 0', () => {
-    render(<Width {...Width.args} width={0} />);
+    render(<ResponsiveBounds {...ResponsiveBounds.args} width={0} />);
     expect(screen.queryByRole('graphics-document')).not.toBeInTheDocument();
-    render(<Width {...Width.args} height={0} />);
+    render(<ResponsiveBounds {...ResponsiveBounds.args} height={0} />);
     expect(screen.queryByRole('graphics-document')).not.toBeInTheDocument();
   });
 
@@ -130,7 +123,7 @@ describe('Chart', () => {
 
   describe('Color stories', () => {
     test('Spectrum colors render correctly (light)', async () => {
-      render(<SpectrumColorNames {...SpectrumColorNames.args} />);
+      render(<ColorValues {...ColorValues.args} colors={['gray-800', 'gray-700', 'gray-600', 'gray-500']} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -143,7 +136,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum colors render correctly (dark)', async () => {
-      render(<SpectrumColorNames {...SpectrumColorNames.args} colorScheme="dark" />);
+      render(<ColorValues {...ColorValues.args} colors={['gray-800', 'gray-700', 'gray-600', 'gray-500']} colorScheme="dark" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -156,7 +149,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum diverging color scheme renders correctly', async () => {
-      render(<SpectrumDivergentColorScheme {...SpectrumDivergentColorScheme.args} />);
+      render(<ColorSchemes {...ColorSchemes.args} colors="divergentOrangeYellowSeafoam5" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -169,7 +162,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum sequential color scheme renders correctly', async () => {
-      render(<SpectrumSequentialColorScheme {...SpectrumSequentialColorScheme.args} />);
+      render(<ColorSchemes {...ColorSchemes.args} colors="sequentialCerulean5" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -182,7 +175,7 @@ describe('Chart', () => {
     });
 
     test('CSS colors renders correctly', async () => {
-      render(<CssColors {...CssColors.args} />);
+      render(<ColorValues {...ColorValues.args} colors={['purple', 'rgb(38, 142, 108)', '#0d66d0', 'hsl(32deg, 86%, 46%)']} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -207,7 +200,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum diverging color scheme renders correctly', async () => {
-      render(<Spectrum2CategoricalColorScheme {...Spectrum2CategoricalColorScheme.args} />);
+      render(<ColorSchemes {...ColorSchemes.args} colors="s2Categorical12" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -222,7 +215,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum colors render correctly (light)', async () => {
-      render(<Spectrum2ColorNames {...Spectrum2ColorNames.args} />);
+      render(<ColorValues {...ColorValues.args} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -237,7 +230,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum colors render correctly (dark)', async () => {
-      render(<Spectrum2ColorNames {...Spectrum2ColorNames.args} colorScheme="dark" />);
+      render(<ColorValues {...ColorValues.args} colorScheme="dark" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -388,8 +381,8 @@ describe('Chart', () => {
       expect(inspectElement).toBeInTheDocument();
       if (!inspectElement) return;
 
-      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(187);
-      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(154);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(79);
     });
 
     test('should render the tooltip to the right of the mark if placement is right', async () => {
@@ -403,8 +396,8 @@ describe('Chart', () => {
       expect(inspectElement).toBeInTheDocument();
       if (!inspectElement) return;
 
-      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(225);
-      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(195);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(79);
     });
   });
 

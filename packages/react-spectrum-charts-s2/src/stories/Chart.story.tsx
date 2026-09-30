@@ -17,22 +17,30 @@ import useChartProps from '../hooks/useChartProps';
 import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../index';
 import { bindWithProps } from '../test-utils';
 import './Chart.story.css';
-import { ChartBarStory } from './ChartBarStory';
-import { ChartDynamicHeightBarStory } from './ChartDynamicHeightBarStory';
-import { data, workspaceTrendsData } from './data/data';
+import { chartEngagementData, workspaceTrendsData } from './data/data';
+
+type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
+
+const setControlInclude = (story: StoryWithParameters, include: string[]) => {
+  story.parameters = { controls: { include } };
+};
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features',
   component: Chart,
+  parameters: { controls: { include: ['backgroundColor', 'colors', 'config', 'height', 'highlightedItem', 'locale', 'maxHeight', 'maxWidth', 'minHeight', 'minWidth', 'padding', 'tooltipAnchor', 'tooltipPlacement', 'width'] } },
 };
+
+const chartData = chartEngagementData;
 
 const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
   const props = useChartProps(args);
   return (
     <Chart {...props}>
-      <Axis position="bottom" baseline ticks />
-      <Axis position="left" grid />
-      <Line dimension="x" metric="y" color="series" scaleType="linear" />
+      <Axis position="bottom" baseline ticks title="Month" />
+      <Axis position="left" grid title="Accounts" />
+      <Line dimension="x" metric="y" color="series" scaleType="point" />
+      <Legend highlight />
     </Chart>
   );
 };
@@ -42,8 +50,21 @@ const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
   return (
     <Chart {...props} width={500}>
       <Axis position="bottom" baseline ticks labelFormat="time" />
-      <Axis position="left" grid numberFormat=",.2f" />
+      <Axis position="left" grid numberFormat=",.2f" title="Events" />
       <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const ChartBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
+  const props = useChartProps(args);
+  return (
+    <Chart {...props}>
+      <Axis position="bottom" baseline title="Month" />
+      <Axis position="left" grid title="Accounts" />
+      <Bar dimension="x" metric="y" color="series" />
+      <Legend highlight />
     </Chart>
   );
 };
@@ -52,32 +73,35 @@ const ChartBarInspectStory: StoryFn<typeof Chart> = (args): ReactElement => {
   const props = useChartProps(args);
   return (
     <Chart {...props}>
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid />
+      <Axis position="bottom" baseline title="Month" />
+      <Axis position="left" grid title="Accounts" />
       <Bar dimension="x" metric="y" color="series">
         <ChartInspect>
           {(datum) => (
             <div className="bar-tooltip">
-              <div>x: {datum.x}</div>
-              <div>y: {datum.y}</div>
+              <div>Month: {datum.x}</div>
+              <div>Segment: {datum.series}</div>
+              <div>Accounts: {datum.y}</div>
             </div>
           )}
         </ChartInspect>
       </Bar>
-      <Legend />
+      <Legend highlight />
     </Chart>
   );
 };
 
 const Basic = bindWithProps(ChartLineStory);
-Basic.args = { data };
+Basic.args = { data: chartData };
+setControlInclude(Basic as StoryWithParameters, []);
 
 const BackgroundColor = bindWithProps(ChartLineStory);
 BackgroundColor.args = {
   backgroundColor: 'gray-100',
   padding: 32,
-  data,
+  data: chartData,
 };
+setControlInclude(BackgroundColor as StoryWithParameters, ['backgroundColor', 'padding']);
 
 const Config = bindWithProps(ChartBarStory);
 Config.args = {
@@ -86,42 +110,42 @@ Config.args = {
       strokeWidth: 2,
     },
   },
-  data,
+  data: chartData,
 };
+setControlInclude(Config as StoryWithParameters, ['config']);
 
 const Locale = bindWithProps(ChartTimeStory);
 Locale.args = {
   locale: 'de-DE',
   data: workspaceTrendsData,
 };
+setControlInclude(Locale as StoryWithParameters, ['locale']);
 
-const Width = bindWithProps(ChartBarStory);
-Width.args = {
+const ResponsiveBounds = bindWithProps(ChartBarStory);
+ResponsiveBounds.args = {
   width: '50%',
   minWidth: 300,
   maxWidth: 600,
-  data,
-};
-
-const Height = bindWithProps(ChartDynamicHeightBarStory);
-Height.args = {
   height: '50%',
   minHeight: 300,
   maxHeight: 600,
-  data,
+  data: chartData,
 };
+setControlInclude(ResponsiveBounds as StoryWithParameters, ['height', 'maxHeight', 'maxWidth', 'minHeight', 'minWidth', 'width']);
 
 const TooltipAnchor = bindWithProps(ChartBarInspectStory);
 TooltipAnchor.args = {
   tooltipAnchor: 'mark',
   tooltipPlacement: 'top',
-  data,
+  data: chartData,
 };
+setControlInclude(TooltipAnchor as StoryWithParameters, ['tooltipAnchor', 'tooltipPlacement']);
 
 const HighlightedItem = bindWithProps(ChartBarInspectStory);
 HighlightedItem.args = {
   highlightedItem: 15,
-  data,
+  data: chartData,
 };
+setControlInclude(HighlightedItem as StoryWithParameters, ['highlightedItem']);
 
-export { Basic, BackgroundColor, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };
+export { Basic, BackgroundColor, Config, HighlightedItem, Locale, ResponsiveBounds, TooltipAnchor };

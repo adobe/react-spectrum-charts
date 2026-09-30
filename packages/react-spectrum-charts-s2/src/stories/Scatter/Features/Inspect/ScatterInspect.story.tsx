@@ -26,6 +26,11 @@ import { characterData } from '../../../data/marioKartData';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Inspect',
   component: Scatter,
+  parameters: {
+    controls: {
+      include: ['children', 'color', 'dimension', 'metric'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 500 };

@@ -23,9 +23,14 @@ import { customLabelBulletData, customLabelThresholdsData } from '../../../data/
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features/CustomLabels',
   component: Bullet,
+  parameters: {
+    controls: {
+      include: ['direction', 'labelPosition', 'showTargetValue'],
+    },
+  },
 };
 
-const defaultChartProps: ChartProps = { data: customLabelBulletData, width: 500, height: 350 };
+const defaultChartProps: ChartProps = { data: customLabelBulletData, width: 620, height: 240 };
 const defaultArgs: Partial<BulletProps> = {
   metric: 'currentAmount',
   metricLabel: 'currentAmountLabel',
@@ -39,7 +44,8 @@ const defaultArgs: Partial<BulletProps> = {
 };
 
 const BulletStory: StoryFn<BulletProps> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+  const rowDimensions = args.direction === 'row' ? { width: 760, height: 260 } : {};
+  const chartProps = useChartProps({ ...defaultChartProps, ...rowDimensions });
   return (
     <Chart {...chartProps}>
       <Bullet {...args} />
@@ -47,30 +53,7 @@ const BulletStory: StoryFn<BulletProps> = (args): ReactElement => {
   );
 };
 
-// row direction needs more width to fit all groups side by side
-const BulletRowStory: StoryFn<BulletProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, width: 700, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Bullet {...args} />
-    </Chart>
-  );
-};
-
-// metricLabel/targetLabel display pre-formatted strings from the data instead of the raw numbers
 const CustomLabels = bindWithProps(BulletStory);
 CustomLabels.args = { ...defaultArgs };
 
-// custom labels also work with side label position
-const CustomLabelsSidePosition = bindWithProps(BulletStory);
-CustomLabelsSidePosition.args = { ...defaultArgs, labelPosition: 'side' };
-
-// showTargetValue renders the custom targetLabel next to the target line
-const CustomTargetLabel = bindWithProps(BulletStory);
-CustomTargetLabel.args = { ...defaultArgs, showTargetValue: true };
-
-// custom labels also work in row direction
-const CustomLabelsRowDirection = bindWithProps(BulletRowStory);
-CustomLabelsRowDirection.args = { ...defaultArgs, direction: 'row' };
-
-export { CustomLabels, CustomLabelsSidePosition, CustomTargetLabel, CustomLabelsRowDirection };
+export { CustomLabels };

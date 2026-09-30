@@ -18,42 +18,27 @@ import useChartProps from '../../../../hooks/useChartProps';
 import { Bullet } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
 import { BulletProps } from '../../../../types';
-import {
-  basicBulletData,
-  kmbtBulletData,
-  kmbtThresholdsData,
-  largeNumbersBulletData,
-  largeNumbersThresholdsData,
-} from '../../../data/bulletData';
+import { kmbtBulletData, kmbtThresholdsData } from '../../../data/bulletData';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features/NumberFormat',
   component: Bullet,
+  parameters: {
+    controls: {
+      include: ['numberFormat'],
+    },
+  },
+  argTypes: {
+    numberFormat: {
+      control: 'select',
+      options: ['shortNumber', 'shortCurrency', 'currency', ',.1f', '.0%'],
+    },
+  },
 };
 
 // K/M/B/T-range data, to demonstrate the abbreviation cutovers
 const KmbtStory: StoryFn<BulletProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: kmbtBulletData, width: 500, height: 450 });
-  return (
-    <Chart {...chartProps}>
-      <Bullet {...args} />
-    </Chart>
-  );
-};
-
-// billions-range data, enough to show currency-style formatting without the full K/M/B/T sweep
-const LargeNumbersStory: StoryFn<BulletProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: largeNumbersBulletData, width: 500, height: 350 });
-  return (
-    <Chart {...chartProps}>
-      <Bullet {...args} />
-    </Chart>
-  );
-};
-
-// small data, for custom d3-format specifiers that don't need large-number formatting
-const BasicNumbersStory: StoryFn<BulletProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: basicBulletData, width: 500, height: 350 });
+  const chartProps = useChartProps({ data: kmbtBulletData, width: 620, height: 270 });
   return (
     <Chart {...chartProps}>
       <Bullet {...args} />
@@ -71,49 +56,11 @@ const sharedArgs: Partial<BulletProps> = {
   showTargetValue: true,
 };
 
-// K/M/B/T abbreviations (e.g. 5.5K, 12.5M, 3.25B)
-const ShortNumber = bindWithProps(KmbtStory);
-ShortNumber.args = {
+const NumberFormat = bindWithProps(KmbtStory);
+NumberFormat.args = {
   ...sharedArgs,
   thresholds: kmbtThresholdsData,
   thresholdBarColor: true,
   numberFormat: 'shortNumber',
 };
-
-// K/M/B/T abbreviations with a currency symbol (e.g. $1.5M)
-const ShortCurrency = bindWithProps(LargeNumbersStory);
-ShortCurrency.args = {
-  ...sharedArgs,
-  thresholds: largeNumbersThresholdsData,
-  thresholdBarColor: true,
-  numberFormat: 'shortCurrency',
-};
-
-// full currency formatting (e.g. $1,500,000.00)
-const Currency = bindWithProps(LargeNumbersStory);
-Currency.args = {
-  ...sharedArgs,
-  thresholds: largeNumbersThresholdsData,
-  thresholdBarColor: true,
-  numberFormat: 'currency',
-};
-
-// a custom d3-format specifier, applied identically to the metric, target, and axis labels
-const CustomFormat = bindWithProps(BasicNumbersStory);
-CustomFormat.args = {
-  ...sharedArgs,
-  track: true,
-  maxScaleValue: 500,
-  numberFormat: ',.1f',
-};
-
-// a custom d3-format specifier for percentages (e.g. 30%)
-const Percentage = bindWithProps(BasicNumbersStory);
-Percentage.args = {
-  ...sharedArgs,
-  track: true,
-  maxScaleValue: 500,
-  numberFormat: '.0%',
-};
-
-export { ShortNumber, ShortCurrency, Currency, CustomFormat, Percentage };
+export { NumberFormat };

@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, Bar, ChartInspect, Line } from '../../../../components';
+import { Axis, Bar, ChartInspect, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { Combo } from '../../../../pre-alpha';
 import { formatTimestamp } from '../../../../stories/storyUtils';
@@ -25,6 +25,11 @@ import { peopleAdoptionComboData } from '../../../data/data';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features/Inspect',
   component: Combo,
+  parameters: {
+    controls: {
+      include: ['dimension', 'name'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = {
@@ -64,6 +69,7 @@ const InspectStory: StoryFn<ComboProps> = (args): ReactElement => {
           </ChartInspect>
         </Line>
       </Combo>
+      <Legend title="Metric" />
     </Chart>
   );
 };

@@ -14,76 +14,70 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
+import { Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutProps } from '../../../types';
 
+type BinaryMode = 'completion' | 'at-risk' | 'satisfaction';
+type BinaryStoryProps = DonutProps & { mode?: BinaryMode };
+
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features',
   component: Donut,
+  parameters: {
+    controls: {
+      include: ['isBoolean', 'mode'],
+    },
+  },
+  argTypes: {
+    mode: { control: 'select', options: ['completion', 'at-risk', 'satisfaction'] },
+  },
 };
 
-const booleanDonutData = [
-  { id: '1', value: 0.68 },
-  { id: '2', value: 0.32 },
-];
-
-const defaultChartProps: ChartProps = { data: booleanDonutData, width: 350, height: 350 };
-
-// only the primary segment's color is set - the secondary segment is always forced to secondary-gray
-const BooleanStory: StoryFn<DonutProps> = (args): ReactElement => {
-  const positiveChartProps = useChartProps({ ...defaultChartProps, colors: ['green-800'] });
-  const negativeChartProps = useChartProps({
-    ...defaultChartProps,
-    data: [...booleanDonutData].reverse(),
+const modeConfig: Record<BinaryMode, { data: ChartProps['data']; colors: string[]; label: string }> = {
+  completion: {
+    data: [
+      { id: 'Complete', value: 0.68 },
+      { id: 'Remaining', value: 0.32 },
+    ],
+    colors: ['green-800'],
+    label: 'Completion',
+  },
+  'at-risk': {
+    data: [
+      { id: 'At risk', value: 0.32 },
+      { id: 'On track', value: 0.68 },
+    ],
     colors: ['red-800'],
-  });
-  return (
-    <div style={{ display: 'flex', flexDirection: 'row', gap: '30px' }}>
-      <Chart {...positiveChartProps}>
-        <Donut {...args}>
-          <DonutSummary label="Success rate" />
-        </Donut>
-      </Chart>
-      <Chart {...negativeChartProps}>
-        <Donut {...args}>
-          <DonutSummary label="Success rate" />
-        </Donut>
-      </Chart>
-    </div>
-  );
+    label: 'At risk',
+  },
+  satisfaction: {
+    data: [
+      { id: 'Satisfied', value: 0.883 },
+      { id: 'Unsatisfied', value: 0.117 },
+    ],
+    colors: ['categorical-600'],
+    label: 'Satisfied',
+  },
 };
 
-const BooleanProp = bindWithProps(BooleanStory);
-BooleanProp.args = {
-  metric: 'value',
-  color: 'id',
-  isBoolean: true,
-};
-
-const satisfiedDonutData = [
-  { id: '1', value: 0.883 },
-  { id: '2', value: 0.117 },
-];
-
-// a single donut with isBoolean, using the normal (default) categorical color scheme - proves the secondary segment is forced to secondary-gray regardless of what the color scale would otherwise assign it
-const BinaryStory: StoryFn<DonutProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: satisfiedDonutData, colors: ['categorical-600'] });
+const BinaryStory: StoryFn<BinaryStoryProps> = (args): ReactElement => {
+  const { mode = 'completion', ...donutProps } = args;
+  const config = modeConfig[mode];
+  const chartProps = useChartProps({ data: config.data, width: 390, height: 300, colors: config.colors });
   return (
     <Chart {...chartProps}>
-      <Donut {...args}>
-        <DonutSummary label="Satisfied" />
+      <Donut {...donutProps}>
+        <DonutSummary label={config.label} />
       </Donut>
+      <Legend title="Status" position="right" />
     </Chart>
   );
 };
 
-const Binary = bindWithProps(BinaryStory);
-Binary.args = {
-  metric: 'value',
-  color: 'id',
-  isBoolean: true,
-};
+const BinaryBoolean = bindWithProps(BinaryStory);
+BinaryBoolean.args = { metric: 'value', color: 'id', isBoolean: true, mode: 'completion' };
 
-export { BooleanProp, Binary };
+export { BinaryBoolean };

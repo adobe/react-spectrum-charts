@@ -25,6 +25,7 @@ import { ChartProps } from '../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Reference Line',
   component: ReferenceLine,
+  parameters: { controls: { include: ['position', 'value', 'label', 'axis', 'size'] } },
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
@@ -212,6 +213,4 @@ const AutoDetectSizeStory = (): ReactElement => {
   );
 };
 
-export const AutoDetectSize = AutoDetectSizeStory;
-
-export { Basic, Label, PrimaryAndSecondary, SecondaryBasic, WithSecondary, WithSize };
+export { Basic };

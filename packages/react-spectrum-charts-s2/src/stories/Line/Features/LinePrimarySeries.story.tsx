@@ -23,6 +23,7 @@ import { ChartProps } from '../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/PrimarySeries',
   component: Line,
+  parameters: { controls: { include: ['primarySeries', 'color'] } },
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
@@ -89,4 +90,4 @@ PrimarySeriesWithDirectLabels.args = {
   primarySeries: ['Add Freeform table', 'Add Line viz'],
 };
 
-export { PrimarySeries, PrimarySeriesCustomSeries, PrimarySeriesWithCustomColor, PrimarySeriesWithDirectLabels };
+export { PrimarySeries };

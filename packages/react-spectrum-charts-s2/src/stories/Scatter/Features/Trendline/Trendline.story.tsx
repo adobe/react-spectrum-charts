@@ -27,6 +27,11 @@ import { characterData } from '../../../data/marioKartData';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Trendline',
   component: Trendline,
+  parameters: {
+    controls: {
+      include: ['dimensionExtent', 'highlightRawPoint', 'lineType', 'lineWidth', 'method', 'orientation'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 500 };
@@ -77,16 +82,6 @@ Basic.args = {
   lineWidth: 'S',
 };
 
-// orientation is only supported on scatter plots
-const Orientation = bindWithProps(TrendlineStory);
-Orientation.args = {
-  orientation: 'vertical',
-  method: 'average',
-  lineType: 'solid',
-  lineWidth: 'XS',
-  dimensionExtent: ['domain', 'domain'],
-};
-
 const Inspect = bindWithProps(TrendlineWithInspectStory);
 Inspect.args = {
   method: 'linear',
@@ -95,4 +90,4 @@ Inspect.args = {
   highlightRawPoint: true,
 };
 
-export { Basic, Inspect, Orientation };
+export { Basic, Inspect };

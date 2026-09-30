@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar } from '../../../components';
+import { Axis, Bar, Legend } from '../../../components';
 import { ReferenceLine } from '../../../components/ReferenceLine';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
@@ -22,39 +22,39 @@ import { bindWithProps } from '../../../test-utils';
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Reference Line',
   component: ReferenceLine,
+  parameters: {
+    controls: {
+      include: ['value', 'label', 'position'],
+    },
+  },
 };
 
 // S2 reference lines are horizontal-only (left/right axes only).
 const data = [
-  { x: 1, y: 1, series: 0 },
-  { x: 2, y: 2, series: 0 },
-  { x: 3, y: 3, series: 0 },
-  { x: 4, y: 4, series: 0 },
-  { x: 5, y: 5, series: 0 },
+  { channel: 'Email', conversions: 2100, series: 'Conversions' },
+  { channel: 'Search', conversions: 3400, series: 'Conversions' },
+  { channel: 'Display', conversions: 1800, series: 'Conversions' },
+  { channel: 'Social', conversions: 2900, series: 'Conversions' },
+  { channel: 'Affiliate', conversions: 1200, series: 'Conversions' },
 ];
 
 const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
   const chartProps = useChartProps({ data, width: 600 });
   return (
     <Chart {...chartProps}>
-      <Axis position="left" baseline ticks>
+      <Axis position="left" baseline ticks title="Conversions">
         <ReferenceLine {...args} />
       </Axis>
-      <Axis position="bottom" baseline ticks />
-      <Bar dimension="y" metric="x" />
+      <Axis position="bottom" baseline ticks title="Channel" />
+      <Bar dimension="channel" metric="conversions" color="series" />
+      <Legend title="Metric" />
     </Chart>
   );
 };
 
 const Basic = bindWithProps(ReferenceLineStory);
 Basic.args = {
-  value: 3,
+  value: 2500,
 };
 
-const Label = bindWithProps(ReferenceLineStory);
-Label.args = {
-  value: 3,
-  label: 'Target',
-};
-
-export { Basic, Label };
+export { Basic };

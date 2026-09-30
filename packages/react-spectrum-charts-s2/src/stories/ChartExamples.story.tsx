@@ -11,7 +11,6 @@
  */
 import { ReactElement } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
 import { ActionButton, Divider } from '@react-spectrum/s2';
@@ -37,6 +36,7 @@ import { trendsTimeComparisonData } from './data/trendsTimeComparisonData';
 export default {
   title: 'React Spectrum Charts 2/Chart/Examples',
   component: Chart,
+  parameters: { controls: { include: ['height', 'maxWidth', 'minWidth', 'width'] } },
 };
 
 const userGrowthColors: SpectrumColor[] = [
@@ -86,8 +86,8 @@ const UserGrowthBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
       <Axis position="bottom" baseline />
       <Axis position="left" grid title="Users" />
       <Bar dimension="x" metric="y" color="series" order="order">
-        <ChartInspect>{generateCallback('inspect')}</ChartInspect>
-        <ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
+        <ChartInspect>{generateDialogContent()}</ChartInspect>
+        <ChartPopover width={200}>{generateDialogContent()}</ChartPopover>
       </Bar>
       <Legend highlight descriptions={userGrowthDescriptions} />
     </Chart>
@@ -111,23 +111,16 @@ const UserGrowthBarTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactEle
         paddingRatio={0.3}
         groupedPadding={0.12}
       >
-        <ChartInspect>{generateCallback('inspect')}</ChartInspect>
-        <ChartPopover width={200}>{generateCallback('popover')}</ChartPopover>
+        <ChartInspect>{generateDialogContent()}</ChartInspect>
+        <ChartPopover width={200}>{generateDialogContent()}</ChartPopover>
       </Bar>
       <Legend highlight descriptions={userGrowthDescriptions} />
     </Chart>
   );
 };
 
-/** Generates identical return callbacks but each has a custom Storybook Action Name for a better dev experience. */
-const generateCallback = (variant: 'popover' | 'inspect') => {
-  const actionName = {
-    popover: 'ChartPopover',
-    inspect: 'ChartInspect',
-  };
-
+const generateDialogContent = () => {
   const callback = (datum: Datum, close?: () => void) => {
-    action(`${actionName[variant]}:callback`)(datum);
     return (
       <div className="userGrowth-dialog">
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -294,7 +287,8 @@ const StackOverflowStory: StoryFn<typeof Chart> = (args): ReactElement => {
     <Chart {...props}>
       <Axis position="left" grid title="Page Views" />
       <Axis position="bottom" baseline ticks labelFormat="time" granularity="month" />
-      <Line dimension="timestamp" metric="rollingAveragePageViews" />
+      <Line dimension="timestamp" metric="rollingAveragePageViews" color="series" />
+      <Legend highlight />
     </Chart>
   );
 };
@@ -374,9 +368,11 @@ TrendsTimeComparisonLine.args = {
   opacities: [0.5, 1],
 };
 
+const stackOverflowChartData = stackOverflowData.map((datum) => ({ ...datum, series: 'Stack Overflow' }));
+
 const StackOverflowTrends = bindWithProps(StackOverflowStory);
 StackOverflowTrends.args = {
-  data: stackOverflowData,
+  data: stackOverflowChartData,
   height: 500,
   minWidth: 840,
   width: 'auto',

@@ -9,57 +9,54 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ReactElement } from 'react';
+
+import { StoryFn } from '@storybook/react';
+
 import { Chart } from '../Chart';
+import { Axis, Bar, Legend } from '../components';
+import useChartProps from '../hooks/useChartProps';
 import { bindWithProps } from '../test-utils';
-import { ChartBarStory } from './ChartBarStory';
-import { data } from './data/data';
+import { chartEngagementData } from './data/data';
+
+type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
+
+const setControlInclude = (story: StoryWithParameters, include: string[]) => {
+  story.parameters = { controls: { include } };
+};
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/Colors',
   component: Chart,
+  parameters: { controls: { include: ['colors'] } },
 };
 
-const SpectrumColorNames = bindWithProps(ChartBarStory);
-SpectrumColorNames.args = {
-  colors: ['gray-800', 'gray-700', 'gray-600', 'gray-500'],
-  data,
+const colorData = chartEngagementData;
+
+const ChartColorStory: StoryFn<typeof Chart> = (args): ReactElement => {
+  const props = useChartProps(args);
+  return (
+    <Chart {...props}>
+      <Axis position="bottom" baseline title="Month" />
+      <Axis position="left" grid title="Accounts" />
+      <Bar dimension="x" metric="y" color="series" />
+      <Legend highlight />
+    </Chart>
+  );
 };
 
-const SpectrumDivergentColorScheme = bindWithProps(ChartBarStory);
-SpectrumDivergentColorScheme.args = {
-  colors: 'divergentOrangeYellowSeafoam5',
-  data,
-};
-
-const SpectrumSequentialColorScheme = bindWithProps(ChartBarStory);
-SpectrumSequentialColorScheme.args = {
-  colors: 'sequentialCerulean5',
-  data,
-};
-
-const CssColors = bindWithProps(ChartBarStory);
-CssColors.args = {
-  colors: ['purple', 'rgb(38, 142, 108)', '#0d66d0', 'hsl(32deg, 86%, 46%)'],
-  data,
-};
-
-const Spectrum2CategoricalColorScheme = bindWithProps(ChartBarStory);
-Spectrum2CategoricalColorScheme.args = {
-  colors: 's2Categorical12',
-  data,
-};
-
-const Spectrum2ColorNames = bindWithProps(ChartBarStory);
-Spectrum2ColorNames.args = {
+const ColorValues = bindWithProps(ChartColorStory);
+ColorValues.args = {
   colors: ['cinnamon-1200', 'cinnamon-1000', 'cinnamon-800', 'cinnamon-600'],
-  data,
+  data: colorData,
 };
+setControlInclude(ColorValues as StoryWithParameters, ['colors']);
 
-export {
-  SpectrumColorNames,
-  SpectrumDivergentColorScheme,
-  SpectrumSequentialColorScheme,
-  CssColors,
-  Spectrum2CategoricalColorScheme,
-  Spectrum2ColorNames,
+const ColorSchemes = bindWithProps(ChartColorStory);
+ColorSchemes.args = {
+  colors: 's2Categorical12',
+  data: colorData,
 };
+setControlInclude(ColorSchemes as StoryWithParameters, ['colors']);
+
+export { ColorSchemes, ColorValues };

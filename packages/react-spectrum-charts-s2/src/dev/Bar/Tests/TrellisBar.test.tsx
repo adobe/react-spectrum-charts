@@ -22,17 +22,17 @@ import {
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
-  Dodged,
-  HorizontalBarHorizontalTrellis,
-  HorizontalBarVerticalTrellis,
-  VerticalBarHorizontalTrellis,
-  VerticalBarVerticalTrellis,
-  WithCustomTrellisPadding,
-} from './TrellisBar.story';
+  TrellisHorizontalHorizontal,
+  TrellisDodged,
+  TrellisHorizontalVertical,
+  TrellisVerticalHorizontal,
+  TrellisVerticalVertical,
+  TrellisWithCustomPadding,
+} from './BarMovedTests.story';
 
 describe('TrellisBar', () => {
-  test('Dodged renders properly', async () => {
-    render(<Dodged {...Dodged.args} />);
+  test('TrellisHorizontalHorizontal renders properly', async () => {
+    render(<TrellisDodged {...TrellisDodged.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -45,13 +45,13 @@ describe('TrellisBar', () => {
     const popoverAnchor = await screen.findByTestId('rsc-popover-anchor');
     expect(popoverAnchor).toHaveStyle('position: absolute');
     expect(popoverAnchor).toHaveStyle('width: 85.60000000000002px');
-    expect(popoverAnchor).toHaveStyle('height: 8.575714285714298px');
+    expect(popoverAnchor).toHaveStyle('height: 8.292857142857144px');
     expect(popoverAnchor).toHaveStyle('left: 316.5px');
-    expect(popoverAnchor).toHaveStyle('top: 358.35857142857145px');
+    expect(popoverAnchor).toHaveStyle('top: 347.26428571428573px');
   });
 
-  test('HorizontalBarHorizontalTrellis renders correctly', async () => {
-    render(<HorizontalBarHorizontalTrellis {...HorizontalBarHorizontalTrellis.args} />);
+  test('TrellisHorizontalHorizontal renders correctly', async () => {
+    render(<TrellisHorizontalHorizontal {...TrellisHorizontalHorizontal.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -60,8 +60,8 @@ describe('TrellisBar', () => {
     expect(bars.length).toEqual(90);
   });
 
-  test('HorizontalBarVerticalTrellis renders correctly', async () => {
-    render(<HorizontalBarVerticalTrellis {...HorizontalBarVerticalTrellis.args} />);
+  test('TrellisHorizontalVertical renders correctly', async () => {
+    render(<TrellisHorizontalVertical {...TrellisHorizontalVertical.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -70,8 +70,8 @@ describe('TrellisBar', () => {
     expect(bars.length).toEqual(90);
   });
 
-  test('VerticalBarHorizontalTrellis renders correctly', async () => {
-    render(<VerticalBarHorizontalTrellis {...VerticalBarHorizontalTrellis.args} />);
+  test('TrellisVerticalHorizontal renders correctly', async () => {
+    render(<TrellisVerticalHorizontal {...TrellisVerticalHorizontal.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -80,8 +80,8 @@ describe('TrellisBar', () => {
     expect(bars.length).toEqual(90);
   });
 
-  test('VerticalBarVerticalTrellis renders correctly', async () => {
-    render(<VerticalBarVerticalTrellis {...VerticalBarVerticalTrellis.args} />);
+  test('TrellisVerticalVertical renders correctly', async () => {
+    render(<TrellisVerticalVertical {...TrellisVerticalVertical.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -91,8 +91,8 @@ describe('TrellisBar', () => {
   });
 
   describe('With custom trellis padding', () => {
-    test('WithCustomTrellisPadding renders correctly', async () => {
-      render(<WithCustomTrellisPadding {...WithCustomTrellisPadding.args} />);
+    test('TrellisWithCustomPadding renders correctly', async () => {
+      render(<TrellisWithCustomPadding {...TrellisWithCustomPadding.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 
@@ -101,8 +101,8 @@ describe('TrellisBar', () => {
       expect(bars.length).toEqual(90);
     });
 
-    test('WithCustomTrellisPadding has correct padding for vertical trellis', async () => {
-      render(<WithCustomTrellisPadding {...WithCustomTrellisPadding.args} />);
+    test('TrellisWithCustomPadding has correct padding for vertical trellis', async () => {
+      render(<TrellisWithCustomPadding {...TrellisWithCustomPadding.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
       // Get subcharts
@@ -111,12 +111,12 @@ describe('TrellisBar', () => {
       // Y Trellis Group should have Y Translate. X Translate should be 0.
       // First chart should not have been tra.
       expect(trellisCharts[0]).toHaveAttribute('transform', 'translate(0,0)');
-      expect(trellisCharts[1]).toHaveAttribute('transform', 'translate(0,249.43820224719101)');
-      expect(trellisCharts[2]).toHaveAttribute('transform', 'translate(0,498.87640449438203)');
+      expect(trellisCharts[1]).toHaveAttribute('transform', 'translate(0,241.1985018726592)');
+      expect(trellisCharts[2]).toHaveAttribute('transform', 'translate(0,482.3970037453184)');
     });
 
-    test('WithCustomTrellisPadding has correct padding for horizontal trellis', async () => {
-      render(<WithCustomTrellisPadding {...WithCustomTrellisPadding.args} trellisOrientation="horizontal" />);
+    test('TrellisWithCustomPadding has correct padding for horizontal trellis', async () => {
+      render(<TrellisWithCustomPadding {...TrellisWithCustomPadding.args} trellisOrientation="horizontal" />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
       // Get subcharts
@@ -132,7 +132,7 @@ describe('TrellisBar', () => {
 
   describe('axis titles', () => {
     test('should only display the axis title once, the others should have opacity = 0', async () => {
-      render(<Dodged {...Dodged.args} />);
+      render(<TrellisHorizontalHorizontal {...TrellisHorizontalHorizontal.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 

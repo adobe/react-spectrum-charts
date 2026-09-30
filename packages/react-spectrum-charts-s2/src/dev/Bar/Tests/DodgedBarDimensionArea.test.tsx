@@ -18,18 +18,20 @@ import {
   render,
   screen,
   unhoverNthElement,
+  waitFor,
   waitForMarksByGroupName,
   within,
 } from '../../../test-utils';
-import { InspectOnDimensionArea } from './StackedBar.story';
+import { DodgedInspectOnDimensionArea } from './BarMovedTests.story';
 
-describe('InspectOnDimensionArea', () => {
+describe('DodgedInspectOnDimensionArea', () => {
   test('hovering dimension area should apply highlight styling and show tooltip', async () => {
-    render(<InspectOnDimensionArea {...InspectOnDimensionArea.args} />);
+    render(<DodgedInspectOnDimensionArea {...DodgedInspectOnDimensionArea.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
     const dimensionAreas = await findAllMarksByGroupName(chart, `bar0_${DIMENSION_HOVER_AREA}`);
     const bars = await findAllMarksByGroupName(chart, 'bar0');
+    const legendSymbols = await findAllMarksByGroupName(chart, 'role-legend-symbol');
     expect(dimensionAreas).toHaveLength(3);
 
     // hovering dimension area should apply highlight styling and show tooltip
@@ -37,7 +39,7 @@ describe('InspectOnDimensionArea', () => {
     const inspect = await screen.findByTestId('rsc-tooltip');
     expect(inspect).toBeInTheDocument();
     expect(within(inspect).getByText('Chrome Downloads')).toBeInTheDocument();
-    // opacity is now animated, so it settles asynchronously -- hence waitForMarksByGroupName
+    // opacity is now animated, so it settles asynchronously -- hence waitForMarksByGroupName/waitFor
     await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
       expect(updatedBars[0]).toHaveAttribute('opacity', `1`);
       expect(updatedBars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
@@ -50,6 +52,12 @@ describe('InspectOnDimensionArea', () => {
     await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
       expect(updatedBars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
       expect(updatedBars[4]).toHaveAttribute('opacity', `1`);
+    });
+
+    await waitFor(() => {
+      expect(legendSymbols[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
+      expect(legendSymbols[1]).toHaveAttribute('opacity', '1');
+      expect(legendSymbols[2]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     });
   });
 });

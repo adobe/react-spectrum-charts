@@ -23,6 +23,7 @@ import { ChartProps } from '../../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Direct Label/Cascade',
   component: LineDirectLabel,
+  parameters: { controls: { include: ['value', 'position', 'fontSize', 'excludeSeries'] } },
   argTypes: {
     value: {
       control: { type: 'select' },
@@ -45,56 +46,56 @@ const twoSeriesData = workspaceTrendsData
 
 // Three series that diverge near  the end to expose label overlap behavior
 const threeSeriesDivergingData = [
-  { datetime: 1667890800000, users: 1000, series: 'Series A' },
-  { datetime: 1667977200000, users: 1400, series: 'Series A' },
-  { datetime: 1668063600000, users: 1900, series: 'Series A' },
-  { datetime: 1668150000000, users: 2500, series: 'Series A' },
-  { datetime: 1668236400000, users: 3200, series: 'Series A' },
-  { datetime: 1668322800000, users: 4000, series: 'Series A' },
-  { datetime: 1668409200000, users: 5000, series: 'Series A' },
+  { datetime: 1667890800000, users: 1000, series: 'Enterprise' },
+  { datetime: 1667977200000, users: 1400, series: 'Enterprise' },
+  { datetime: 1668063600000, users: 1900, series: 'Enterprise' },
+  { datetime: 1668150000000, users: 2500, series: 'Enterprise' },
+  { datetime: 1668236400000, users: 3200, series: 'Enterprise' },
+  { datetime: 1668322800000, users: 4000, series: 'Enterprise' },
+  { datetime: 1668409200000, users: 5000, series: 'Enterprise' },
 
-  { datetime: 1667890800000, users: 2500, series: 'Series B' },
-  { datetime: 1667977200000, users: 2600, series: 'Series B' },
-  { datetime: 1668063600000, users: 2500, series: 'Series B' },
-  { datetime: 1668150000000, users: 2600, series: 'Series B' },
-  { datetime: 1668236400000, users: 2500, series: 'Series B' },
-  { datetime: 1668322800000, users: 2600, series: 'Series B' },
-  { datetime: 1668409200000, users: 2500, series: 'Series B' },
+  { datetime: 1667890800000, users: 2500, series: 'Team' },
+  { datetime: 1667977200000, users: 2600, series: 'Team' },
+  { datetime: 1668063600000, users: 2500, series: 'Team' },
+  { datetime: 1668150000000, users: 2600, series: 'Team' },
+  { datetime: 1668236400000, users: 2500, series: 'Team' },
+  { datetime: 1668322800000, users: 2600, series: 'Team' },
+  { datetime: 1668409200000, users: 2500, series: 'Team' },
 
-  { datetime: 1667890800000, users: 5000, series: 'Series C' },
-  { datetime: 1667977200000, users: 4200, series: 'Series C' },
-  { datetime: 1668063600000, users: 3500, series: 'Series C' },
-  { datetime: 1668150000000, users: 2900, series: 'Series C' },
-  { datetime: 1668236400000, users: 1800, series: 'Series C' },
-  { datetime: 1668322800000, users: 1000, series: 'Series C' },
-  { datetime: 1668409200000, users: 400, series: 'Series C' },
+  { datetime: 1667890800000, users: 5000, series: 'Individual' },
+  { datetime: 1667977200000, users: 4200, series: 'Individual' },
+  { datetime: 1668063600000, users: 3500, series: 'Individual' },
+  { datetime: 1668150000000, users: 2900, series: 'Individual' },
+  { datetime: 1668236400000, users: 1800, series: 'Individual' },
+  { datetime: 1668322800000, users: 1000, series: 'Individual' },
+  { datetime: 1668409200000, users: 400, series: 'Individual' },
 ];
 
 // Six series: A/B/C cluster near ~3000 at the end, D/E cluster near ~1400, F isolated at ~300
 const sixSeriesData = [
-  { datetime: 1667890800000, users: 7000, series: 'Series A' },
-  { datetime: 1667977200000, users: 6200, series: 'Series A' },
-  { datetime: 1668063600000, users: 5400, series: 'Series A' },
-  { datetime: 1668150000000, users: 4400, series: 'Series A' },
-  { datetime: 1668236400000, users: 3600, series: 'Series A' },
-  { datetime: 1668322800000, users: 3100, series: 'Series A' },
-  { datetime: 1668409200000, users: 3050, series: 'Series A' },
+  { datetime: 1667890800000, users: 7000, series: 'Enterprise' },
+  { datetime: 1667977200000, users: 6200, series: 'Enterprise' },
+  { datetime: 1668063600000, users: 5400, series: 'Enterprise' },
+  { datetime: 1668150000000, users: 4400, series: 'Enterprise' },
+  { datetime: 1668236400000, users: 3600, series: 'Enterprise' },
+  { datetime: 1668322800000, users: 3100, series: 'Enterprise' },
+  { datetime: 1668409200000, users: 3050, series: 'Enterprise' },
 
-  { datetime: 1667890800000, users: 500, series: 'Series B' },
-  { datetime: 1667977200000, users: 1000, series: 'Series B' },
-  { datetime: 1668063600000, users: 1600, series: 'Series B' },
-  { datetime: 1668150000000, users: 2200, series: 'Series B' },
-  { datetime: 1668236400000, users: 2600, series: 'Series B' },
-  { datetime: 1668322800000, users: 2900, series: 'Series B' },
-  { datetime: 1668409200000, users: 2900, series: 'Series B' },
+  { datetime: 1667890800000, users: 500, series: 'Team' },
+  { datetime: 1667977200000, users: 1000, series: 'Team' },
+  { datetime: 1668063600000, users: 1600, series: 'Team' },
+  { datetime: 1668150000000, users: 2200, series: 'Team' },
+  { datetime: 1668236400000, users: 2600, series: 'Team' },
+  { datetime: 1668322800000, users: 2900, series: 'Team' },
+  { datetime: 1668409200000, users: 2900, series: 'Team' },
 
-  { datetime: 1667890800000, users: 3500, series: 'Series C' },
-  { datetime: 1667977200000, users: 3400, series: 'Series C' },
-  { datetime: 1668063600000, users: 3300, series: 'Series C' },
-  { datetime: 1668150000000, users: 3200, series: 'Series C' },
-  { datetime: 1668236400000, users: 3100, series: 'Series C' },
-  { datetime: 1668322800000, users: 3000, series: 'Series C' },
-  { datetime: 1668409200000, users: 2800, series: 'Series C' },
+  { datetime: 1667890800000, users: 3500, series: 'Individual' },
+  { datetime: 1667977200000, users: 3400, series: 'Individual' },
+  { datetime: 1668063600000, users: 3300, series: 'Individual' },
+  { datetime: 1668150000000, users: 3200, series: 'Individual' },
+  { datetime: 1668236400000, users: 3100, series: 'Individual' },
+  { datetime: 1668322800000, users: 3000, series: 'Individual' },
+  { datetime: 1668409200000, users: 2800, series: 'Individual' },
 
   { datetime: 1667890800000, users: 2000, series: 'Series D' },
   { datetime: 1667977200000, users: 2100, series: 'Series D' },
@@ -124,9 +125,9 @@ const sixSeriesData = [
 // 20 series data to demonstrate what happens when labels cannot all fit on screen
 const manySeriesData = (
     [
-        ['Series A',  9800, 9500],
-        ['Series B',  9000, 8700],
-        ['Series C',  8200, 7900],
+        ['Enterprise',  9800, 9500],
+        ['Team',  9000, 8700],
+        ['Individual',  8200, 7900],
         ['Series D',  7500, 7200],
         ['Series E',  6800, 6500],
         ['Series F',  6100, 5800],
@@ -158,7 +159,7 @@ const manySeriesData = (
 const LineDirectLabelTwoSeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: twoSeriesData });
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time">
@@ -172,7 +173,7 @@ const LineDirectLabelTwoSeriesStory: StoryFn<typeof LineDirectLabel> = (args): R
 const LineDirectLabelThreeSeriesDivergeStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: threeSeriesDivergingData });
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time">
@@ -186,7 +187,7 @@ const LineDirectLabelThreeSeriesDivergeStory: StoryFn<typeof LineDirectLabel> = 
 const LineDirectLabelSixSeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: sixSeriesData });
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time">
@@ -200,7 +201,7 @@ const LineDirectLabelSixSeriesStory: StoryFn<typeof LineDirectLabel> = (args): R
 const LineDirectLabelManySeriesStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: manySeriesData });
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time">
@@ -214,7 +215,7 @@ const LineDirectLabelManySeriesStory: StoryFn<typeof LineDirectLabel> = (args): 
 const LineDirectLabelManySeriesLegendStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: manySeriesData });
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line dimension="datetime" metric="users" color="series" scaleType="time">
@@ -243,9 +244,5 @@ const DirectLabelManySeriesLegend = bindWithProps(LineDirectLabelManySeriesLegen
 DirectLabelManySeriesLegend.args = { value: 'series' };
 
 export {
-  DirectLabelTwoSeries,
   DirectLabelThreeSeriesDiverge,
-  DirectLabelSixSeries,
-  DirectLabelManySeries,
-  DirectLabelManySeriesLegend,
 };

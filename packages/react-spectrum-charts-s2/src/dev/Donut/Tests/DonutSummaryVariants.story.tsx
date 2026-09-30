@@ -14,46 +14,39 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutSummaryProps } from '../../../types';
-import { basicDonutData } from '../Donut/data';
+import { basicDonutData } from '../../../stories/components/Donut/data';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Donut Summary',
+  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Tests/DonutSummary Variants',
   component: DonutSummary,
-  parameters: {
-    controls: {
-      include: ['delta', 'hideValue', 'label', 'numberFormat'],
-    },
-  },
 };
 
-const defaultChartProps: ChartProps = {
-  data: basicDonutData,
-  width: 430,
-  height: 320,
-};
 
-const DonutStory: StoryFn<DonutSummaryProps> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+const defaultChartProps: ChartProps = { data: basicDonutData, width: 350, height: 350 };
+
+const DonutStory: StoryFn<DonutSummaryProps & { width?: number; height?: number }> = (args): ReactElement => {
+  const { width, height, ...donutSummaryProps } = args;
+  const chartProps = useChartProps({ ...defaultChartProps, width: width ?? 350, height: height ?? 350 });
   return (
     <Chart {...chartProps}>
       <Donut metric="count" color="browser">
-        <DonutSummary {...args} />
+        <DonutSummary {...donutSummaryProps} />
       </Donut>
-      <Legend title="Browsers" position="right" highlight />
     </Chart>
   );
 };
 
-const Summary = bindWithProps(DonutStory);
-Summary.args = {
-  label: 'Visitors',
-  numberFormat: 'shortNumber',
-  delta: 0.025,
-};
+const Basic = bindWithProps(DonutStory);
+Basic.args = { label: 'Visitors', numberFormat: 'shortNumber' };
 
-export { Summary };
+const NoLabel = bindWithProps(DonutStory);
+NoLabel.args = {};
+
+const NumberFormat = bindWithProps(DonutStory);
+NumberFormat.args = { numberFormat: 'standardNumber', label: 'Visitors' };
+
+export { Basic, NoLabel, NumberFormat };

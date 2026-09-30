@@ -24,6 +24,7 @@ import { ChartProps } from '../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Point Annotation',
   component: LinePointAnnotation,
+  parameters: { controls: { include: ['anchor', 'matchLineColor', 'color'] } },
 };
 
 const defaultChartProps: ChartProps = {
@@ -36,7 +37,7 @@ const defaultChartProps: ChartProps = {
 const LinePointAnnotationStory: StoryFn<typeof LinePointAnnotation> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
-    <Chart {...chartProps} debug={true}>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line color="series" dimension="datetime" metric="value" scaleType="time" staticPoint="staticPoint">
@@ -74,7 +75,7 @@ MultipleAnchors.args = {
 const HoverInteractionStory: StoryFn<typeof LinePointAnnotation> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
-    <Chart {...chartProps} debug={true}>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line color="series" dimension="datetime" metric="value" scaleType="time" staticPoint="staticPoint">
@@ -99,4 +100,4 @@ WithHoverInteraction.args = {
   textKey: 'label',
 };
 
-export { Basic, MatchLineColor, AnchorLeft, MultipleAnchors, WithHoverInteraction };
+export { Basic };

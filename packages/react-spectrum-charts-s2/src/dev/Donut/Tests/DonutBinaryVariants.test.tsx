@@ -12,7 +12,7 @@
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
 import { findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
-import { Binary, BooleanProp } from './DonutBinary.story';
+import { Binary, BooleanProp } from './DonutBinaryVariants.story';
 
 describe('DonutBinary', () => {
   // Boolean renders two charts: positive (green primary) and negative (red primary, reversed data)

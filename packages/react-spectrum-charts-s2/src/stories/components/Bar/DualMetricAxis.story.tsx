@@ -23,6 +23,11 @@ import { barDataTwoSeries, barSeriesData } from './data';
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Dual Metric Axis',
   component: Bar,
+  parameters: {
+    controls: {
+      include: ['orientation', 'color', 'order'],
+    },
+  },
 };
 
 const dialogContent = (datum) => (
@@ -34,7 +39,7 @@ const dialogContent = (datum) => (
 );
 
 const BasicStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barDataTwoSeries, width: 800, height: 600 });
+  const chartProps = useChartProps({ data: barDataTwoSeries, width: 720, height: 460 });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -60,7 +65,7 @@ const BasicStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const WithSublabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barDataTwoSeries, width: 800, height: 600 });
+  const chartProps = useChartProps({ data: barDataTwoSeries, width: 720, height: 460 });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
@@ -96,7 +101,7 @@ const WithSublabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
 };
 
 const WithThreeSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
+  const chartProps = useChartProps({ data: barSeriesData, width: 720, height: 460 });
   return (
     <Chart {...chartProps}>
       <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />

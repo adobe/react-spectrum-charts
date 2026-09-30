@@ -10,35 +10,35 @@
  * governing permissions and limitations under the License.
  */
 import { findChart, render } from '../../../../test-utils';
-import { Currency, CustomFormat, Percentage, ShortCurrency, ShortNumber } from './BulletNumberFormat.story';
+import { NumberFormat } from './BulletNumberFormat.story';
 
 describe('Bullet NumberFormat', () => {
   test('ShortNumber renders properly', async () => {
-    render(<ShortNumber {...ShortNumber.args} />);
+    render(<NumberFormat {...NumberFormat.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('ShortCurrency renders properly', async () => {
-    render(<ShortCurrency {...ShortCurrency.args} />);
+    render(<NumberFormat {...NumberFormat.args} numberFormat="shortCurrency" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('Currency renders properly', async () => {
-    render(<Currency {...Currency.args} />);
+    render(<NumberFormat {...NumberFormat.args} numberFormat="currency" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('CustomFormat renders properly', async () => {
-    render(<CustomFormat {...CustomFormat.args} />);
+    render(<NumberFormat {...NumberFormat.args} numberFormat=",.1f" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('Percentage renders properly', async () => {
-    render(<Percentage {...Percentage.args} />);
+    render(<NumberFormat {...NumberFormat.args} numberFormat=".0%" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });

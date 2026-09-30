@@ -13,8 +13,15 @@ import { Chart } from '../Chart';
 import { bindWithProps } from '../test-utils';
 import { ChartBarStory } from './ChartBarStory';
 
+type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
+
+const setControlInclude = (story: StoryWithParameters, include: string[]) => {
+  story.parameters = { controls: { include } };
+};
+
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/States',
+  parameters: { controls: { include: ['emptyStateText', 'loading'] } },
   component: Chart,
 };
 
@@ -24,6 +31,7 @@ EmptyState.args = {
   height: 500,
   emptyStateText: 'No data found',
 };
+setControlInclude(EmptyState as StoryWithParameters, ['emptyStateText']);
 
 const LoadingState = bindWithProps(ChartBarStory);
 LoadingState.args = {
@@ -31,5 +39,6 @@ LoadingState.args = {
   height: 500,
   loading: true,
 };
+setControlInclude(LoadingState as StoryWithParameters, ['loading']);
 
 export { EmptyState, LoadingState };

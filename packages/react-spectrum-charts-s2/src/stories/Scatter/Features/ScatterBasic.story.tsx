@@ -24,6 +24,11 @@ import { characterData } from '../../data/marioKartData';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features',
   component: Scatter,
+  parameters: {
+    controls: {
+      include: ['color', 'colorScaleType', 'dimension', 'metric'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 500 };
@@ -44,7 +49,4 @@ const ScatterStory: StoryFn<ScatterProps> = (args): ReactElement => {
 const Basic = bindWithProps(ScatterStory);
 Basic.args = { dimension: 'speedNormal', metric: 'handlingNormal', color: 'weightClass' };
 
-const ColorScaleType = bindWithProps(ScatterStory);
-ColorScaleType.args = { dimension: 'speedNormal', metric: 'handlingNormal', color: 'weight', colorScaleType: 'linear' };
-
-export { Basic, ColorScaleType };
+export { Basic };

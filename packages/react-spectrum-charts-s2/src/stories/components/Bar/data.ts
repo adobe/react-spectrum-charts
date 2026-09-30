@@ -18,6 +18,16 @@ export const barData = [
   { browser: 'Explorer', downloads: 500, percentLabel: '1.0%', share: 0.01 },
 ];
 
+export const barDataWithSeries = barData.map((datum) => ({ ...datum, series: 'Downloads' }));
+
+export const acquisitionChannelData = [
+  { channel: 'Email', signups: 18200, series: 'Sign-ups' },
+  { channel: 'Search', signups: 15100, series: 'Sign-ups' },
+  { channel: 'Social', signups: 12400, series: 'Sign-ups' },
+  { channel: 'Display', signups: 9800, series: 'Sign-ups' },
+  { channel: 'Referral', signups: 7600, series: 'Sign-ups' },
+];
+
 export const barDataLongLabels = [
   { browser: 'Google Chrome', downloads: 27000 },
   { browser: 'Mozilla Firefox', downloads: 8000 },
@@ -59,6 +69,8 @@ export const barDataWithUTC = [
   },
 ];
 
+export const barDataWithUTCSeries = barDataWithUTC.map((datum) => ({ ...datum, datasetName: 'Daily downloads' }));
+
 export const stackedBarDataWithUTC = [
   {
     browser: '2025-01-27 00:00:00.0',
@@ -92,12 +104,27 @@ export const stackedBarDataWithUTC = [
   },
 ];
 
+export const stackedBarDataWithUTCSeries = stackedBarDataWithUTC.map((datum) => ({
+  ...datum,
+  datasetName: datum.dataset_id === '6257b7b5436f7a1949f44d3b' ? 'Desktop downloads' : 'Mobile downloads',
+}));
+
 export const mixedBarData = [
   { browser: 'Chrome', downloads: 27000 },
   { browser: 'Firefox', downloads: 8000 },
   { browser: 'Safari', downloads: -7750 },
   { browser: 'Edge', downloads: -7600 },
   { browser: 'Explorer', downloads: -500 },
+];
+
+export const mixedBarDataWithSeries = mixedBarData.map((datum) => ({ ...datum, series: 'Downloads' }));
+
+export const mixedAcquisitionData = [
+  { channel: 'Email', signups: 12600, series: 'Sign-ups' },
+  { channel: 'Search', signups: 9400, series: 'Sign-ups' },
+  { channel: 'Social', signups: 6200, series: 'Sign-ups' },
+  { channel: 'Display', signups: -3300, series: 'Sign-ups' },
+  { channel: 'Referral', signups: -2100, series: 'Sign-ups' },
 ];
 
 /** Diverging conversion-rate-change data matching the Figma reference ("FB Stories" negative row renamed to "FB Post" for a unique band-scale value). */
@@ -110,6 +137,11 @@ export const divergingConversionRateData = [
   { channel: 'FB Reels', changeRate: -0.07, barColor: '#d7373f' },
 ];
 
+export const divergingConversionRateDataWithDirection = divergingConversionRateData.map((datum) => ({
+  ...datum,
+  changeDirection: datum.changeRate >= 0 ? 'Increase' : 'Decrease',
+}));
+
 /** Same values as divergingConversionRateData, with long category names to check label truncation/collision. */
 export const divergingConversionRateDataLongLabels = [
   { channel: 'Instagram Stories Advertisement Campaign', changeRate: 0.131, barColor: '#2d7d46' },
@@ -120,6 +152,11 @@ export const divergingConversionRateDataLongLabels = [
   { channel: 'Facebook Reels Sponsored Video Content', changeRate: -0.029, barColor: '#d7373f' },
 ];
 
+export const divergingConversionRateDataLongLabelsWithDirection = divergingConversionRateDataLongLabels.map((datum) => ({
+  ...datum,
+  changeDirection: datum.changeRate >= 0 ? 'Increase' : 'Decrease',
+}));
+
 /** Verifies `labelFormat="time"` + `diverging` (mixed sign, monthly granularity): primary/secondary time axes share the same offset and flip encode via a static `dy`, not `labelPadding`. */
 export const timeAxisDivergingData = [
   { day: '2024-11-15 00:00:00.0', changeRate: 0.131 },
@@ -127,6 +164,11 @@ export const timeAxisDivergingData = [
   { day: '2025-01-10 00:00:00.0', changeRate: -0.01 },
   { day: '2025-02-05 00:00:00.0', changeRate: -0.05 },
 ];
+
+export const timeAxisDivergingDataWithDirection = timeAxisDivergingData.map((datum) => ({
+  ...datum,
+  changeDirection: datum.changeRate >= 0 ? 'Increase' : 'Decrease',
+}));
 
 export const barDataTwoSeries = [
   { browser: 'Chrome', value: 5, operatingSystem: 'Windows', order: 2, percentLabel: '50%' },

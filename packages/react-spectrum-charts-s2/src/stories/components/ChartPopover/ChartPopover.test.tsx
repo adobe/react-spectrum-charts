@@ -30,17 +30,14 @@ import {
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
-  Canvas,
-  ContentMargin,
   DodgedBarChart,
   DonutChart,
   LineChart,
-  MinWidth,
   OnOpenChange,
   RightClick,
-  Size,
   StackedBarChart,
-  Svg,
+  Renderer,
+  Sizing,
   WithCloseCallback,
 } from './ChartPopover.story';
 
@@ -51,13 +48,13 @@ describe('ChartPopover', () => {
   });
 
   test('Renders properly on canvas', async () => {
-    render(<Canvas {...Canvas.args} />);
+    render(<Renderer {...Renderer.args} renderer="canvas" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
 
   test('Renders properly in svg', async () => {
-    render(<Svg {...Svg.args} />);
+    render(<Renderer {...Renderer.args} renderer="svg" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });
@@ -119,7 +116,7 @@ describe('ChartPopover', () => {
   });
 
   test('Popover should be corrrect size', async () => {
-    render(<Size {...Size.args} />);
+    render(<Sizing {...Sizing.args} width={200} height={100} minWidth={undefined} contentMargin={12} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -134,7 +131,7 @@ describe('ChartPopover', () => {
   });
 
   test('should honor minWidth', async () => {
-    render(<MinWidth {...MinWidth.args} />);
+    render(<Sizing {...Sizing.args} width="auto" minWidth={250} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -149,7 +146,7 @@ describe('ChartPopover', () => {
   });
 
   test('should honor contentMargin', async () => {
-    render(<ContentMargin {...ContentMargin.args} />);
+    render(<Sizing {...Sizing.args} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();

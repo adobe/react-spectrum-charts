@@ -19,11 +19,16 @@ import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutProps } from '../../../types';
-import { basicDonutData, booleanDonutData, zeroDonutData } from './data';
+import { basicDonutData, zeroDonutData } from './data';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features',
   component: Donut,
+  parameters: {
+    controls: {
+      include: ['children', 'color', 'holeRatio', 'isBoolean', 'metric'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = {
@@ -38,6 +43,7 @@ const DonutStory: StoryFn<DonutProps & { width?: number; height?: number }> = (a
   return (
     <Chart {...chartProps}>
       <Donut {...donutProps} />
+      <Legend title="Browsers" position="right" highlight />
     </Chart>
   );
 };
@@ -62,34 +68,6 @@ const EmptyStateStory: StoryFn<typeof Donut> = (args): ReactElement => {
   );
 };
 
-const BooleanStory: StoryFn<typeof Donut> = (args): ReactElement => {
-  const positiveBooleanProps = useChartProps({
-    ...defaultChartProps,
-    data: booleanDonutData,
-    colors: ['green-800', 'gray-200'],
-  });
-  const negativeBooleanProps = useChartProps({
-    ...defaultChartProps,
-    data: [...booleanDonutData].reverse(),
-    colors: ['red-800', 'gray-200'],
-  });
-  return (
-    <div style={{ display: 'flex', flexDirection: 'row', gap: '30px' }}>
-      <Chart {...positiveBooleanProps}>
-        <Donut {...args}>
-          <DonutSummary label="Success rate" />
-        </Donut>
-      </Chart>
-
-      <Chart {...negativeBooleanProps}>
-        <Donut {...args}>
-          <DonutSummary label="Success rate" />
-        </Donut>
-      </Chart>
-    </div>
-  );
-};
-
 // tooltip and popover render the default swatch, series, and value
 const interactiveChildren = [<ChartInspect key={0} />, <ChartPopover width="auto" key={1} />];
 
@@ -104,19 +82,6 @@ WithPopover.args = {
   metric: 'count',
   color: 'browser',
   children: interactiveChildren,
-};
-
-const WithLegend = bindWithProps(DonutLegendStory);
-WithLegend.args = {
-  metric: 'count',
-  color: 'browser',
-};
-
-const BooleanDonut = bindWithProps(BooleanStory);
-BooleanDonut.args = {
-  metric: 'value',
-  color: 'id',
-  isBoolean: true,
 };
 
 // all metric values are 0, so the donut renders the empty state ring with 0 displayed in the center
@@ -136,4 +101,4 @@ Supreme.args = {
   children: [...interactiveChildren, <DonutSummary label="Visitors" key={0} />],
 };
 
-export { Basic, BooleanDonut, EmptyState, Supreme, WithLegend, WithPopover };
+export { Basic, EmptyState, Supreme, WithPopover };

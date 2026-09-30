@@ -18,14 +18,19 @@ import useChartProps from '../../../../hooks/useChartProps';
 import { Bullet } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
 import { BulletProps, ChartProps } from '../../../../types';
-import { basicBulletData, basicThresholdsData, coloredThresholdsData } from '../../../data/bulletData';
+import { basicBulletData, basicThresholdsData } from '../../../data/bulletData';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features/Background',
   component: Bullet,
+  parameters: {
+    controls: {
+      include: ['thresholdBarColor', 'thresholds', 'track'],
+    },
+  },
 };
 
-const defaultChartProps: ChartProps = { data: basicBulletData, width: 350, height: 350 };
+const defaultChartProps: ChartProps = { data: basicBulletData, width: 560, height: 180 };
 const defaultArgs: Partial<BulletProps> = {
   metric: 'currentAmount',
   dimension: 'graphLabel',
@@ -43,16 +48,7 @@ const BulletStory: StoryFn<BulletProps> = (args): ReactElement => {
   );
 };
 
-// thresholds render as background bands behind the metric bar
-const Thresholds = bindWithProps(BulletStory);
-Thresholds.args = { ...defaultArgs, thresholds: basicThresholdsData };
+const Background = bindWithProps(BulletStory);
+Background.args = { ...defaultArgs, thresholds: basicThresholdsData, thresholdBarColor: true };
 
-// thresholdBarColor colors the metric bar itself based on which threshold band it falls in
-const ColoredMetric = bindWithProps(BulletStory);
-ColoredMetric.args = { ...defaultArgs, thresholds: coloredThresholdsData, thresholdBarColor: true };
-
-// track renders a flat background region instead of thresholds
-const Track = bindWithProps(BulletStory);
-Track.args = { ...defaultArgs, track: true };
-
-export { Thresholds, ColoredMetric, Track };
+export { Background };

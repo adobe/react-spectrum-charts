@@ -18,16 +18,21 @@ import { StoryFn } from '@storybook/react';
 
 
 import { Chart } from '../../../../Chart';
+import { Legend } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { Donut, SegmentLabel } from '../../../../pre-alpha';
 import { bindWithProps } from '../../../../test-utils';
 import { basicDonutData } from '../../../components/Donut/data';
-import { ResponsiveDonut } from '../ResponsiveDonut';
 
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Emphasize',
   component: Donut,
+  parameters: {
+    controls: {
+      include: ['emphasizedItems', 'hideDeemphasizedLabels'],
+    },
+  },
 };
 
 const defaultChartProps = { data: basicDonutData, width: 400, height: 400 };
@@ -41,34 +46,28 @@ const BasicStory: StoryFn<typeof Donut> = (args): ReactElement => {
       <Donut metric="count" color="browser" {...args}>
         <SegmentLabel value valueFormat="shortNumber" />
       </Donut>
+      <Legend title="Browsers" position="right" highlight />
     </Chart>
   );
 };
 
 const Basic = bindWithProps(BasicStory);
-Basic.args = { emphasizedItems: ['Chrome'] };
+Basic.args = { emphasizedItems: ['Chrome', 'Firefox'] };
 
-const Multi = bindWithProps(BasicStory);
-Multi.args = { emphasizedItems: ['Chrome', 'Firefox'] };
-
-const AdvancedAndDirectStory: StoryFn<typeof Donut> = (args): ReactElement => (
-  <ResponsiveDonut data={basicDonutData} donutProps={args} initialWidth={500}>
-    <SegmentLabel labelMode="emphasized" swatch showValueRow showTotal percent value={false} />
-    <SegmentLabel labelMode="deemphasized" value={false} percent valueFormat="shortNumber" />
-  </ResponsiveDonut>
-);
+const AdvancedAndDirectStory: StoryFn<typeof Donut> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, width: 520 });
+  return (
+    <Chart {...chartProps}>
+      <Donut metric="count" color="browser" {...args}>
+        <SegmentLabel labelMode="emphasized" swatch showValueRow showTotal percent value={false} />
+        <SegmentLabel labelMode="deemphasized" value={false} percent valueFormat="shortNumber" />
+      </Donut>
+      <Legend title="Browsers" position="right" highlight />
+    </Chart>
+  );
+};
 
 const AdvancedAndDirect = bindWithProps(AdvancedAndDirectStory);
 AdvancedAndDirect.args = { emphasizedItems: ['Chrome'], hideDeemphasizedLabels: false };
 
-const AdvancedOnlyStory: StoryFn<typeof Donut> = (args): ReactElement => (
-  <ResponsiveDonut data={basicDonutData} donutProps={args} initialWidth={500}>
-    <SegmentLabel labelMode="emphasized" swatch showValueRow showTotal value={false} percent valueFormat="shortNumber" />
-    <SegmentLabel labelMode="deemphasized" value valueFormat="shortNumber" />
-  </ResponsiveDonut>
-);
-
-const AdvancedOnly = bindWithProps(AdvancedOnlyStory);
-AdvancedOnly.args = { emphasizedItems: ['Chrome'], hideDeemphasizedLabels: true };
-
-export { Basic, Multi, AdvancedAndDirect, AdvancedOnly };
+export { Basic, AdvancedAndDirect };

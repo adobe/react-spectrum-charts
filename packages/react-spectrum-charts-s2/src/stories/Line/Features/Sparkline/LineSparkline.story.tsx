@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Line } from '../../../../components';
+import { Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
 import { simpleSparklineData } from '../../../../stories/data/data';
 import { bindWithProps } from '../../../../test-utils';
@@ -23,15 +23,19 @@ import { ChartProps } from '../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Sparkline',
   component: Line,
+  parameters: { controls: { include: ['isSparkline', 'staticPoint', 'isMethodLast'] } },
 };
 
-const sparklineChartProps: ChartProps = { data: simpleSparklineData, minWidth: 50, maxWidth: 200, height: 50 };
+const sparklineData = simpleSparklineData.map((datum) => ({ ...datum, series: 'Conversion rate' }));
+
+const sparklineChartProps: ChartProps = { data: sparklineData, minWidth: 240, maxWidth: 360, height: 120 };
 
 const PlainLineStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(sparklineChartProps);
   return (
     <Chart {...chartProps}>
       <Line {...args} />
+      <Legend />
     </Chart>
   );
 };
@@ -59,4 +63,4 @@ SparklineWithStaticPoint.args = {
   isMethodLast: true,
 };
 
-export { BasicSparkline, SparklineWithStaticPoint };
+export { BasicSparkline };

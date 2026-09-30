@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Line } from '../../../components';
+import { Axis, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { workspaceTrendsData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
@@ -23,6 +23,7 @@ import { ChartProps } from '../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features',
   component: Line,
+  parameters: { controls: { include: ['lineCap'] } },
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
@@ -37,6 +38,7 @@ const LineCapStory: StoryFn<typeof Line> = (args): ReactElement => {
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line {...args} />
+      <Legend highlight />
     </Chart>
   );
 };
@@ -61,4 +63,4 @@ WithSquareLineCap.args = {
   lineCap: 'square',
 };
 
-export { WithRoundLineCap, WithSquareLineCap };
+export { WithRoundLineCap };

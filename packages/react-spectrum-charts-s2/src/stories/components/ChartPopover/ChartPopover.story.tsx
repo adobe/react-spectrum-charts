@@ -11,6 +11,7 @@
  */
 import { ReactElement } from 'react';
 
+import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
@@ -21,12 +22,24 @@ import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
+import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';
 import { browserData as data } from '../../data/data';
 import { basicDonutData } from '../Donut/data';
+
+interface ChartPopoverStoryArgs extends ChartPopoverProps {
+  renderer?: ChartProps['renderer'];
+}
+
+type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
+
+const setControlInclude = (story: StoryWithParameters, include: string[]) => {
+  story.parameters = { controls: { include } };
+};
 
 export default {
   title: 'React Spectrum Charts 2/Chart Popover/Features',
   component: ChartPopover,
+  parameters: { controls: { include: ['contentMargin', 'height', 'minWidth', 'renderer', 'rightClick', 'width'] } },
   argTypes: {
     children: {
       description: '`(datum: Datum, close: () => void)`',
@@ -56,53 +69,63 @@ const dialogContentWithClose = (datum: Datum, close?: () => void) => (
 
 const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
 
-const ChartPopoverCanvasStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-  const chartProps = useChartProps({ data, renderer: 'canvas', width: 600 });
+const BarPopoverStory: StoryFn<ChartPopoverStoryArgs> = (args): ReactElement => {
+  const { renderer = 'svg', ...popoverArgs } = args;
+  const chartProps = useChartProps({ ...defaultChartProps, renderer });
   return (
     <Chart {...chartProps}>
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
       <Bar color="series">
         <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover {...args} />
+        <ChartPopover {...popoverArgs} />
       </Bar>
+      <Legend highlight />
     </Chart>
   );
 };
 
-const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
+const DodgedBarPopoverStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Bar color="series">
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover {...args} />
-      </Bar>
-    </Chart>
-  );
-};
-
-const ChartPopoverDodgedBarStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
       <Bar color="series" type="dodged">
         <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
+      <Legend highlight />
     </Chart>
   );
 };
 
-const LineStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
+const StackedBarPopoverStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid />
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
+      <Bar color="series" type="stacked">
+        <ChartInspect>{dialogContent}</ChartInspect>
+        <ChartPopover {...args} />
+      </Bar>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const LineStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
       <Line scaleType="point" dimension="category" color="series">
         <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Line>
-      <Legend />
+      <Legend highlight />
     </Chart>
   );
 };
@@ -116,57 +139,55 @@ const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
         <ChartInspect />
         <ChartPopover {...args} />
       </Donut>
+      <Legend highlight />
     </Chart>
   );
 };
 
-const Canvas = bindWithProps(ChartPopoverCanvasStory);
-Canvas.args = { children: dialogContent, width: 'auto' };
+const Renderer = bindWithProps(BarPopoverStory);
+Renderer.args = { children: dialogContent, width: 'auto', renderer: 'svg' };
+setControlInclude(Renderer as StoryWithParameters, ['renderer']);
 
-const DodgedBarChart = bindWithProps(ChartPopoverDodgedBarStory);
+const Sizing = bindWithProps(BarPopoverStory);
+Sizing.args = { children: dialogContent, width: 220, height: 120, minWidth: 220, contentMargin: 24 };
+setControlInclude(Sizing as StoryWithParameters, ['contentMargin', 'height', 'minWidth', 'width']);
+
+const OnOpenChange = bindWithProps(BarPopoverStory);
+OnOpenChange.args = { children: dialogContent, width: 'auto', onOpenChange: action('onOpenChange') };
+setControlInclude(OnOpenChange as StoryWithParameters, []);
+
+const RightClick = bindWithProps(BarPopoverStory);
+RightClick.args = { children: dialogContent, width: 'auto', rightClick: true };
+setControlInclude(RightClick as StoryWithParameters, ['rightClick']);
+
+const WithCloseCallback = bindWithProps(BarPopoverStory);
+WithCloseCallback.args = { children: dialogContentWithClose, width: 'auto' };
+setControlInclude(WithCloseCallback as StoryWithParameters, []);
+
+const DodgedBarChart = bindWithProps(DodgedBarPopoverStory);
 DodgedBarChart.args = { children: dialogContent, width: 'auto' };
+setControlInclude(DodgedBarChart as StoryWithParameters, ['width']);
 
 const DonutChart = bindWithProps(DonutStory);
 DonutChart.args = { width: 'auto' };
+setControlInclude(DonutChart as StoryWithParameters, ['width']);
 
 const LineChart = bindWithProps(LineStory);
 LineChart.args = { children: dialogContent, width: 'auto' };
+setControlInclude(LineChart as StoryWithParameters, ['width']);
 
-const MinWidth = bindWithProps(ChartPopoverSvgStory);
-MinWidth.args = { children: dialogContent, width: 'auto', minWidth: 250 };
-
-const OnOpenChange = bindWithProps(ChartPopoverSvgStory);
-OnOpenChange.args = { children: dialogContent, width: 'auto' };
-
-const RightClick = bindWithProps(ChartPopoverSvgStory);
-RightClick.args = { children: dialogContent, width: 'auto', rightClick: true };
-
-const Size = bindWithProps(ChartPopoverSvgStory);
-Size.args = { children: dialogContent, width: 200, height: 100 };
-
-const StackedBarChart = bindWithProps(ChartPopoverSvgStory);
+const StackedBarChart = bindWithProps(StackedBarPopoverStory);
 StackedBarChart.args = { children: dialogContent, width: 'auto' };
-
-const Svg = bindWithProps(ChartPopoverSvgStory);
-Svg.args = { children: dialogContent, width: 'auto' };
-
-const ContentMargin = bindWithProps(ChartPopoverSvgStory);
-ContentMargin.args = { children: dialogContent, width: 'auto', contentMargin: 24 };
-
-const WithCloseCallback = bindWithProps(ChartPopoverSvgStory);
-WithCloseCallback.args = { children: dialogContentWithClose, width: 'auto' };
+setControlInclude(StackedBarChart as StoryWithParameters, ['width']);
 
 export {
-  Canvas,
-  ContentMargin,
   DodgedBarChart,
   DonutChart,
   LineChart,
-  MinWidth,
   OnOpenChange,
+  Renderer,
   RightClick,
-  Size,
+  Sizing,
   StackedBarChart,
-  Svg,
   WithCloseCallback,
 };

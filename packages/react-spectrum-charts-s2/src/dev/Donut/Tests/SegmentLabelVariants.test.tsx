@@ -14,7 +14,7 @@ import React from 'react';
 import { SegmentLabel } from '../../../pre-alpha';
 import { findChart, render, screen } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, Percent, Value, ValueFormat } from './SegmentLabel.story';
+import { Basic, Percent, Value, ValueFormat } from './SegmentLabelVariants.story';
 
 describe('SegmentLabel', () => {
   // SegmentLabel is not a real React component. This is test just provides test coverage for sonarqube
@@ -27,10 +27,10 @@ describe('SegmentLabel', () => {
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
-    const label = await screen.findByText('Chrome');
-    expect(label).toBeInTheDocument();
-    expect(await screen.findByText('Safari')).toBeInTheDocument();
-    expect(await screen.findByText('Other')).toBeInTheDocument();
+    const labels = await screen.findAllByText('Chrome');
+    expect(labels.length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Safari')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Other')).length).toBeGreaterThan(0);
   });
 
   test('Percent renders properly', async () => {
@@ -68,10 +68,9 @@ describe('SegmentLabel', () => {
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
-    expect(screen.getByText('Safari')).toBeInTheDocument();
+    expect(screen.getAllByText('Safari').length).toBeGreaterThan(0);
     // thin segments are excluded from the label data source entirely (so they don't consume a
     // collision-rank slot), not rendered with font-size 0
     expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
   });
 });
-

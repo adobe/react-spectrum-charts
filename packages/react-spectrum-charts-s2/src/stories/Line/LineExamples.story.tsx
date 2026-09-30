@@ -22,6 +22,7 @@ import { ChartProps } from '../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Examples',
   component: Line,
+  parameters: { controls: { include: ['color', 'dimension', 'metric', 'scaleType'] } },
 };
 
 // User retention by cohort — all cohorts start at 100% (1.0) at week 0.
@@ -154,7 +155,7 @@ const totalVisitsChartProps: ChartProps = {
 const TotalVisitsLStory: StoryFn<typeof Line> = (args): ReactElement => {
   const props = useChartProps(totalVisitsChartProps);
   return (
-    <Chart {...props} debug>
+    <Chart {...props}>
       <Title text="Total visits reached 18.9M in Dec 2024" />
       <Axis position="right" grid labelFormat="percentage" range={[-0.3, 0.3]} tickMinStep={0.3}>
         <ReferenceLine value={0} label="Target" />
@@ -163,6 +164,7 @@ const TotalVisitsLStory: StoryFn<typeof Line> = (args): ReactElement => {
       <Line {...args}>
         <LineDirectLabel value="series" />
       </Line>
+      <Legend />
     </Chart>
   );
 };

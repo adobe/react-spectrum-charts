@@ -53,6 +53,34 @@ export const data = [
   { x: 9, y: 72, series: 3 },
 ];
 
+
+export const chartEngagementData = [
+  { x: 'Jan', y: 42, series: 'Acquisition' },
+  { x: 'Jan', y: 31, series: 'Activation' },
+  { x: 'Jan', y: 58, series: 'Retention' },
+  { x: 'Jan', y: 22, series: 'Expansion' },
+  { x: 'Feb', y: 48, series: 'Acquisition' },
+  { x: 'Feb', y: 35, series: 'Activation' },
+  { x: 'Feb', y: 61, series: 'Retention' },
+  { x: 'Feb', y: 28, series: 'Expansion' },
+  { x: 'Mar', y: 55, series: 'Acquisition' },
+  { x: 'Mar', y: 42, series: 'Activation' },
+  { x: 'Mar', y: 67, series: 'Retention' },
+  { x: 'Mar', y: 36, series: 'Expansion' },
+  { x: 'Apr', y: 62, series: 'Acquisition' },
+  { x: 'Apr', y: 48, series: 'Activation' },
+  { x: 'Apr', y: 70, series: 'Retention' },
+  { x: 'Apr', y: 41, series: 'Expansion' },
+  { x: 'May', y: 68, series: 'Acquisition' },
+  { x: 'May', y: 54, series: 'Activation' },
+  { x: 'May', y: 76, series: 'Retention' },
+  { x: 'May', y: 46, series: 'Expansion' },
+  { x: 'Jun', y: 75, series: 'Acquisition' },
+  { x: 'Jun', y: 61, series: 'Activation' },
+  { x: 'Jun', y: 81, series: 'Retention' },
+  { x: 'Jun', y: 53, series: 'Expansion' },
+];
+
 export const userGrowthData = [
   {
     x: 'Apr 2022',

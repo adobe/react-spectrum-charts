@@ -24,6 +24,11 @@ import { characterData } from '../../../data/marioKartData';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Path',
   component: ScatterPath,
+  parameters: {
+    controls: {
+      include: ['color', 'groupBy'],
+    },
+  },
 };
 
 const defaultChartProps: ChartProps = { data: characterData, height: 500, width: 500 };
@@ -46,7 +51,4 @@ const ScatterPathStory: StoryFn<typeof ScatterPath> = (args): ReactElement => {
 const Basic = bindWithProps(ScatterPathStory);
 Basic.args = { groupBy: ['weightClass'] };
 
-const Color = bindWithProps(ScatterPathStory);
-Color.args = { groupBy: ['weightClass'], color: 'gray-900' };
-
-export { Basic, Color };
+export { Basic };

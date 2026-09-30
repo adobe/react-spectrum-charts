@@ -25,6 +25,7 @@ import { ChartProps } from '../../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Gradient',
   component: Line,
+  parameters: { controls: { include: ['gradient', 'opacity', 'interpolate', 'lineType'] } },
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
@@ -47,7 +48,7 @@ const generateCallback = (variant: 'popover' | 'inspect') => {
 const MultiSeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
-    <Chart {...chartProps} debug>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line {...args} />
@@ -133,4 +134,4 @@ GradientWithInterpolate.args = {
   interpolate: 'step-after',
 };
 
-export { GradientMultiSeries, GradientSingleSeries, GradientWithDialogs, GradientStaticOpacity, GradientMultiLineType, GradientWithInterpolate };
+export { GradientMultiSeries };

@@ -24,27 +24,32 @@ import { workspaceTrendsData } from '../../data/data';
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Area/Features',
   component: Area,
+  parameters: {
+    controls: {
+      include: ['color', 'dimension', 'metric', 'metricStart', 'metricEnd', 'opacity', 'scaleType'],
+    },
+  },
 };
 
 // weather data is single-series, used by the basic and floating examples
 const weatherData = [
-  { datetime: 1667890800000, maxTemperature: 73, minTemperature: 47, series: 'Add Fallout' },
-  { datetime: 1667977200000, maxTemperature: 70, minTemperature: 48, series: 'Add Fallout' },
-  { datetime: 1668063600000, maxTemperature: 73, minTemperature: 48, series: 'Add Fallout' },
-  { datetime: 1668150000000, maxTemperature: 56, minTemperature: 31, series: 'Add Fallout' },
-  { datetime: 1668236400000, maxTemperature: 41, minTemperature: 18, series: 'Add Fallout' },
-  { datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
-  { datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
+  { datetime: 1667890800000, maxTemperature: 73, minTemperature: 47, series: 'Daily high' },
+  { datetime: 1667977200000, maxTemperature: 70, minTemperature: 48, series: 'Daily high' },
+  { datetime: 1668063600000, maxTemperature: 73, minTemperature: 48, series: 'Daily high' },
+  { datetime: 1668150000000, maxTemperature: 56, minTemperature: 31, series: 'Daily high' },
+  { datetime: 1668236400000, maxTemperature: 41, minTemperature: 18, series: 'Daily high' },
+  { datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Daily high' },
+  { datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Daily high' },
 ];
 
 const weatherDataWithGaps = [
-  { datetime: 1667890800000, maxTemperature: 73, minTemperature: 47, series: 'Add Fallout' },
-  { datetime: 1667977200000, maxTemperature: 70, minTemperature: 48, series: 'Add Fallout' },
-  { datetime: 1668063600000, maxTemperature: undefined, minTemperature: undefined, series: 'Add Fallout' },
-  { datetime: 1668150000000, maxTemperature: 56, minTemperature: 31, series: 'Add Fallout' },
-  { datetime: 1668236400000, maxTemperature: 41, minTemperature: 18, series: 'Add Fallout' },
-  { datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Add Fallout' },
-  { datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Add Fallout' },
+  { datetime: 1667890800000, maxTemperature: 73, minTemperature: 47, series: 'Temperature band' },
+  { datetime: 1667977200000, maxTemperature: 70, minTemperature: 48, series: 'Temperature band' },
+  { datetime: 1668063600000, maxTemperature: undefined, minTemperature: undefined, series: 'Temperature band' },
+  { datetime: 1668150000000, maxTemperature: 56, minTemperature: 31, series: 'Temperature band' },
+  { datetime: 1668236400000, maxTemperature: 41, minTemperature: 18, series: 'Temperature band' },
+  { datetime: 1668322800000, maxTemperature: 60, minTemperature: 45, series: 'Temperature band' },
+  { datetime: 1668409200000, maxTemperature: 64, minTemperature: 43, series: 'Temperature band' },
 ];
 
 // browser/OS data is categorical, used to demonstrate stacking on a point scale rather than time
@@ -69,6 +74,7 @@ const AreaStory: StoryFn<AreaProps> = (args): ReactElement => {
       <Axis position="bottom" labelFormat="time" baseline />
       <Axis position="left" title="Temperature (F)" grid />
       <Area {...args} />
+      <Legend title="Temperature" />
     </Chart>
   );
 };
@@ -105,6 +111,7 @@ const WithGapsInDataStory: StoryFn<AreaProps> = (args): ReactElement => {
       <Axis position="bottom" labelFormat="time" baseline />
       <Axis position="left" title="Temperature (F)" grid />
       <Area {...args} />
+      <Legend title="Temperature" />
     </Chart>
   );
 };

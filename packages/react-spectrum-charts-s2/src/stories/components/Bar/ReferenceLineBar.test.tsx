@@ -12,7 +12,7 @@
 import React from 'react';
 
 import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils';
-import { Basic, Label } from './ReferenceLineBar.story';
+import { Basic } from './ReferenceLineBar.story';
 
 describe('ReferenceLineBar', () => {
   test('Reference line renders', async () => {
@@ -29,7 +29,7 @@ describe('ReferenceLineBar', () => {
   });
 
   test('Label renders', async () => {
-    render(<Label {...Label.args} />);
+    render(<Basic {...{ ...Basic.args, label: 'Quarterly target' }} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();

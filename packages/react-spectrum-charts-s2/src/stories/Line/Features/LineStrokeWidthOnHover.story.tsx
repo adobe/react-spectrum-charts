@@ -20,6 +20,7 @@ import { workspaceTrendsData } from '../../../stories/data/data';
 export default {
   title: 'React Spectrum Charts 2/Line/Features/StrokeWidthOnHover',
   component: Line,
+  parameters: { controls: { include: ['lineWidth', 'lineWidthOnHover'] } },
 };
 
 const CHART_HEIGHT = 300;
