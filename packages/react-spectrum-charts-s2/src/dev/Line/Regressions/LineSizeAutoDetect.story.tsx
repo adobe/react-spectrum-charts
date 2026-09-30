@@ -15,10 +15,7 @@ import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_POINT_SIZES } from '@spectrum-charts
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartInspect, Legend, Line, ReferenceLine } from '../../../components';
-import {
-  workspaceTrendsData,
-  workspaceTrendsDataWithVisiblePoints,
-} from '../../../stories/data/data';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../stories/data/data';
 import { formatTimestamp } from '../../../stories/storyUtils';
 
 export default {

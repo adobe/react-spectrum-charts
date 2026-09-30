@@ -79,3 +79,21 @@ export const customLabelThresholdsData = [
   { thresholdMin: 600, thresholdMax: 900, fill: 'rgb(249, 137, 23)' },
   { thresholdMin: 900, fill: 'rgb(234, 56, 41)' },
 ];
+
+export const quarterlyKpiData = [
+  { kpi: 'New customers', current: 1240, target: 1500 },
+  { kpi: 'Renewals', current: 860, target: 800 },
+  { kpi: 'Upgrades', current: 410, target: 600 },
+];
+
+export const quarterlyKpiThresholdsData = [
+  { thresholdMax: 500, fill: 'rgb(234, 56, 41)' },
+  { thresholdMin: 500, thresholdMax: 1000, fill: 'rgb(249, 137, 23)' },
+  { thresholdMin: 1000, fill: 'rgb(21, 164, 110)' },
+];
+
+export const regionalRevenueData = [
+  { region: 'North America', revenue: 4215000, target: 4000000 },
+  { region: 'EMEA', revenue: 2930000, target: 3500000 },
+  { region: 'APAC', revenue: 1785000, target: 2200000 },
+];

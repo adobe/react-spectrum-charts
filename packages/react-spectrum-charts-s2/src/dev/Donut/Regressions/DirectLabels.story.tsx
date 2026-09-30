@@ -13,10 +13,13 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { SegmentLabel } from '../../../pre-alpha';
+import { Chart } from '../../../Chart';
+import { Legend } from '../../../components';
+import useChartProps from '../../../hooks/useChartProps';
+import { Donut, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
-import { basicDonutData, sliveredDonutData } from '../../../stories/components/Donut/data';
-import { ResponsiveDonut } from '../../../stories/Donut/Features/ResponsiveDonut';
+import { basicDonutData, sliveredDonutData } from '../../../stories/Donut/data';
+import { ResponsiveDonut } from './ResponsiveDonut';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Regressions/Segment Label',
@@ -43,6 +46,19 @@ const ManySegmentsResponsiveStory: StoryFn<typeof SegmentLabel> = (args): ReactE
   </ResponsiveDonut>
 );
 
+// fixed-size chart with many thin segments, formerly the Segment Label demo's Slivers story
+const SliversStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: sliveredDonutData, width: 640, height: 460 });
+  return (
+    <Chart {...chartProps}>
+      <Donut metric="count" color="browser">
+        <SegmentLabel {...args} />
+      </Donut>
+      <Legend title="Browsers" position="right" highlight />
+    </Chart>
+  );
+};
+
 const Responsive = bindWithProps(ResponsiveStory);
 Responsive.args = { value: true, valueFormat: 'shortNumber' };
 
@@ -52,4 +68,7 @@ Advanced.args = { percent: true, value: false, swatch: true, showValueRow: true 
 const ManySegmentsResponsive = bindWithProps(ManySegmentsResponsiveStory);
 ManySegmentsResponsive.args = { value: true, valueFormat: 'shortNumber' };
 
-export { Responsive, Advanced, ManySegmentsResponsive };
+const Slivers = bindWithProps(SliversStory);
+Slivers.args = { percent: true, value: true, valueFormat: 'shortNumber' };
+
+export { Responsive, Advanced, ManySegmentsResponsive, Slivers };

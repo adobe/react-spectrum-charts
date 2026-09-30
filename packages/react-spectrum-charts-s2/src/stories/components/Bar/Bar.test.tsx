@@ -25,18 +25,11 @@ import {
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import {
-  Basic,
-  LineType,
-  OnClick,
-  OnMouseInputs,
-  PaddingRatio,
-  WithInspect,
-} from './Bar.story';
-import { BarWithUTCDatetimeFormat } from '../../../dev/Bar/Tests/BarMovedTests.story';
-import { Basic as DodgedBasic, DodgedStacked } from './DodgedBar.story';
-import { Basic as StackedBasic } from './StackedBar.story';
-import { barData } from './data';
+import { BarWithUTCDatetimeFormat, OnMouseInputs } from '../../../dev/Bar/Tests/BarMovedTests.story';
+import { Basic, ChartInspect as ChartInspectStory, OnClick, Opacity, PaddingRatio } from './Bar.story';
+import { Dodged as DodgedBasic, DodgedStacked } from './DodgedBar.story';
+import { Stacked as StackedBasic } from './StackedBar.story';
+import { acquisitionChannelData as barData } from './data';
 
 describe('Bar', () => {
   // Bar is not a real React component. This is test just provides test coverage for sonarqube
@@ -55,13 +48,13 @@ describe('Bar', () => {
   });
 
   test('Opacity renders properly', async () => {
-    render(<LineType {...LineType.args} />);
+    render(<Opacity {...Opacity.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars[0].getAttribute('fill-opacity')).toEqual('0.75');
+    expect(bars[0].getAttribute('fill-opacity')).toEqual('0.6');
   });
 
   test('Padding Ratio renders properly', async () => {
@@ -82,7 +75,7 @@ describe('Bar', () => {
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(9);
+    expect(bars.length).toEqual(12);
   });
 
   test('Dodged Stacked renders properly', async () => {
@@ -92,7 +85,7 @@ describe('Bar', () => {
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(18);
+    expect(bars.length).toEqual(16);
   });
 
   test('Stacked Basic renders properly', async () => {
@@ -102,7 +95,7 @@ describe('Bar', () => {
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(9);
+    expect(bars.length).toEqual(12);
   });
 
   test('Bar with UTC date on dimension renders properly', async () => {
@@ -202,9 +195,9 @@ describe('Bar', () => {
     expect(hoverData).toHaveTextContent('Previewing Firefox: 8,000 downloads');
   });
 
-  describe('WithInspect', () => {
+  describe('ChartInspect', () => {
     test('hovering bar should apply highlight styling and show tooltip', async () => {
-      render(<WithInspect {...WithInspect.args} />);
+      render(<ChartInspectStory {...ChartInspectStory.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
       const bars = await findAllMarksByGroupName(chart, 'bar0');
@@ -219,7 +212,7 @@ describe('Bar', () => {
       });
       const inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
-      expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();
+      expect(within(inspect).getByText('Referral: 7,600 sign-ups')).toBeInTheDocument();
     });
   });
 });

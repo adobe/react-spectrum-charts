@@ -13,66 +13,44 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
-
 import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barSeriesData, negativeBarSeriesData } from './data';
+import { channelDeviceData } from './data';
+import { bindStory } from './storyUtils';
 
 export default {
-  title: 'React Spectrum Charts 2/Bar/Features/Stacked Bar',
+  title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
-  parameters: {
-    controls: {
-      include: ['orientation', 'order'],
-    },
-  },
 };
 
-const colors: SpectrumColor[] = ['categorical-100', 'categorical-200', 'categorical-300', 'categorical-400'];
-
-const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, colors, width: 720, height: 460 });
+const StackedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const isHorizontal = args.orientation === 'horizontal';
+  const chartProps = useChartProps({ data: channelDeviceData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Acquisition channel" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Sign-ups" />
       <Bar {...args} />
-      <Legend title="Operating system" />
-    </Chart>
-  );
-};
-
-const NegativeBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: negativeBarSeriesData, width: 720, height: 460 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args} />
-      <Legend title="Operating system" />
+      <Legend title="Device" highlight />
     </Chart>
   );
 };
 
 const defaultProps: BarProps = {
-  dimension: 'browser',
-  order: 'order',
-  color: 'operatingSystem',
-  onClick: undefined,
+  type: 'stacked',
+  dimension: 'channel',
+  metric: 'signups',
+  color: 'device',
 };
 
-const Basic = bindWithProps(BarStory);
-Basic.args = {
-  ...defaultProps,
-};
+const Stacked = bindStory(StackedBarStory);
+Stacked.args = { ...defaultProps };
+Stacked.parameters = { controls: { include: ['type'] } };
 
-const NegativeStack = bindWithProps(NegativeBarStory);
-NegativeStack.args = {
-  ...defaultProps,
-};
+const Order = bindStory(StackedBarStory);
+Order.args = { ...defaultProps, order: 'order' };
+Order.parameters = { controls: { include: ['order'] } };
 
-export { Basic, NegativeStack };
+export { Stacked, Order };

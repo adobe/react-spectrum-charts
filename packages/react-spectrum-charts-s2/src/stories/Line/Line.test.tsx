@@ -12,6 +12,24 @@
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Line, LinePointAnnotation } from '../../components';
+import {
+  ControlledHighlight as HoverAnimationControlledHighlight,
+  GroupedLegendHover as HoverAnimationGroupedLegendHover,
+  LegendHover as HoverAnimationLegendHover,
+  OnClick as HoverAnimationOnClick,
+  PointHover as HoverAnimationPointHover,
+  PopoverSelection as HoverAnimationPopoverSelection,
+} from '../../dev/Line/Performance/HoverAnimation/LineHoverAnimation.story';
+import { HistoricalCompare } from '../../dev/Line/Tests/LineHistoricalCompare.story';
+import { Inspect, ItemInspect } from '../../dev/Line/Tests/LineInspect.story';
+import {
+  OnClick as OnClickStory,
+  WithStaticPoints,
+  WithStaticPointsAndDialogs,
+} from '../../dev/Line/Tests/LineInteractions.story';
+import { LinearTrendScale, TrendScale } from '../../dev/Line/Tests/LineTrendScale.story';
+import { LineWithAxisAndLegend } from '../../dev/Line/Tests/LineWithAxisAndLegend.story';
+import { LineWithUTCDatetimeFormat } from '../../dev/Line/Tests/LineWithUTCDatetimeFormat.story';
 import { workspaceTrendsData } from '../../stories/data/data';
 import {
   allElementsHaveAttributeValue,
@@ -31,23 +49,7 @@ import {
   within,
 } from '../../test-utils';
 import '../../test-utils/__mocks__/matchMedia.mock';
-import { Basic } from './Features/LineBasic.story';
-import { LineWithAxisAndLegend } from './Features/LineWithAxisAndLegend.story';
-import { LineWithUTCDatetimeFormat } from './Features/LineWithUTCDatetimeFormat.story';
-import { HistoricalCompare } from './Features/LineHistoricalCompare.story';
-import {
-  ControlledHighlight as HoverAnimationControlledHighlight,
-  GroupedLegendHover as HoverAnimationGroupedLegendHover,
-  LegendHover as HoverAnimationLegendHover,
-  OnClick as HoverAnimationOnClick,
-  PointHover as HoverAnimationPointHover,
-  PopoverSelection as HoverAnimationPopoverSelection,
-} from '../../dev/Line/Performance/HoverAnimation/LineHoverAnimation.story';
-import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story';
-import { LineType } from './Features/LineType.story';
-import { Opacity } from './Features/LineOpacity.story';
-import { ItemInspect, Inspect } from './Features/Inspect/LineInspect.story';
-import { TrendScale, LinearTrendScale } from './Features/TrendScale/LineTrendScale.story';
+import { Basic, LineType, Opacity } from './Features/Line.story';
 
 describe('LinePointAnnotation', () => {
   // LinePointAnnotation is not a real React component. This test provides coverage for sonarqube
@@ -63,7 +65,7 @@ describe('Line', () => {
   });
 
   test('Basic renders', async () => {
-    render(<Basic {...Basic.args} />);
+    render(<Basic {...Basic.args} name="line0" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -92,7 +94,7 @@ describe('Line', () => {
   });
 
   test('LineType renders', async () => {
-    render(<LineType {...LineType.args} />);
+    render(<LineType {...LineType.args} name="line0" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -106,7 +108,7 @@ describe('Line', () => {
   });
 
   test('Opacity renders', async () => {
-    render(<Opacity {...Opacity.args} />);
+    render(<Opacity {...Opacity.args} name="line0" />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -446,8 +448,6 @@ describe('Line', () => {
       expect(point.getAttribute('stroke-opacity')).toBeNull();
       expect(point.getAttribute('stroke-width')).toEqual('2.5');
     });
-
-
   });
 
   describe('onClick callback', () => {
@@ -478,10 +478,7 @@ describe('Line', () => {
       await rightClickNthElement(paths, 4);
 
       expect(onContextMenu).toHaveBeenCalledTimes(1);
-      expect(onContextMenu).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.objectContaining(workspaceTrendsData[4])
-      );
+      expect(onContextMenu).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining(workspaceTrendsData[4]));
       expect(onContextMenu.mock.calls[0][0]).toMatchObject(
         expect.objectContaining({ clientX: expect.any(Number), clientY: expect.any(Number) })
       );

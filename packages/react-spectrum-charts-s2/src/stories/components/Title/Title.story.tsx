@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
@@ -17,52 +17,54 @@ import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
-import { browserData as data } from '../../data/data';
+import { downloadsByBrowserData } from '../Axis/axisStoryData';
 
 export default {
   title: 'React Spectrum Charts 2/Title/Features',
   component: Title,
-  excludeStories: ['FontWeight', 'Orient', 'Position'],
+  argTypes: {
+    position: { control: 'inline-radio', options: ['start', 'middle', 'end'] },
+    orient: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
+    fontWeight: { control: 'inline-radio', options: ['normal', 'bold', 'lighter'] },
+    fontSize: { control: { type: 'range', min: 12, max: 32, step: 2 } },
+  },
 };
 
-const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
+const controls = (...include: string[]) => ({ parameters: { controls: { include } } });
 
-const TitleBarStory: StoryFn<typeof Title> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+const TitleStory: StoryFn<typeof Title> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: downloadsByBrowserData, width: 700, height: 400 });
   return (
     <Chart {...chartProps}>
       <Title {...args} />
-      <Bar color="series" />
+      <Axis position="left" grid title="Downloads" numberFormat="shortNumber" />
+      <Axis position="bottom" baseline title="Browser" />
+      <Bar dimension="browser" metric="downloads" color="os" />
       <Legend />
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid />
     </Chart>
   );
 };
 
-const Basic = bindWithProps(TitleBarStory);
-Basic.args = {
-  text: 'Browser usage by operating system',
-};
-Object.assign(Basic, { parameters: { controls: { include: ['text', 'orient', 'position', 'fontWeight'] } } });
+const text = 'Downloads by browser and operating system';
 
-const Orient = bindWithProps(TitleBarStory);
-Orient.args = {
-  text: 'Bar Chart',
-  orient: 'bottom',
-};
+const Basic = bindWithProps(TitleStory);
+Basic.args = { text };
+Object.assign(Basic, controls('text'));
 
-const Position = bindWithProps(TitleBarStory);
-Position.args = {
-  text: 'Bar Chart',
-  position: 'start',
-};
+const Position = bindWithProps(TitleStory);
+Position.args = { text, position: 'middle' };
+Object.assign(Position, controls('position'));
 
-const FontWeight = bindWithProps(TitleBarStory);
-FontWeight.args = {
-  text: 'Bar Chart',
-  fontWeight: 'lighter',
-};
+const Orient = bindWithProps(TitleStory);
+Orient.args = { text, orient: 'bottom' };
+Object.assign(Orient, controls('orient'));
 
-export { Basic, Orient, Position, FontWeight };
+const FontWeight = bindWithProps(TitleStory);
+FontWeight.args = { text, fontWeight: 'normal' };
+Object.assign(FontWeight, controls('fontWeight'));
+
+const FontSize = bindWithProps(TitleStory);
+FontSize.args = { text, fontSize: 16 };
+Object.assign(FontSize, controls('fontSize'));
+
+export { Basic, Position, Orient, FontWeight, FontSize };

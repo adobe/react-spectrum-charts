@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 
 import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
@@ -24,6 +24,7 @@ import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
 import {
+  barDataTwoSeries,
   barDataWithSeries,
   barSeriesData,
   barSubSeriesData,
@@ -223,3 +224,127 @@ TrellisVerticalVertical.args = { ...TrellisHorizontalVertical.args, orientation:
 
 export const TrellisWithCustomPadding = bindWithProps<BarProps>(TrellisStory);
 TrellisWithCustomPadding.args = { ...TrellisHorizontalVertical.args, orientation: 'vertical', trellisPadding: 0.33 };
+
+const OnMouseInputsStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const [hoveredData, setHoveredData] = useState<Datum | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const controlledMouseOver = (datum: Datum) => {
+    if (!isHovering) {
+      setHoveredData(datum);
+      setIsHovering(true);
+    }
+  };
+  const controlledMouseOut = () => {
+    if (isHovering) {
+      setIsHovering(false);
+    }
+  };
+
+  const chartProps = useChartProps({ data: barDataWithSeries, width: 640, height: 420 });
+  return (
+    <div>
+      <div data-testid="hover-info" style={{ marginBottom: 8 }}>
+        {isHovering && hoveredData ? (
+          <div data-testid="hover-data">
+            Previewing {hoveredData.browser}: {Number(hoveredData.downloads).toLocaleString()} downloads
+          </div>
+        ) : (
+          <div data-testid="no-hover">Hover a browser to preview its downloads.</div>
+        )}
+      </div>
+      <Chart {...chartProps}>
+        <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+        <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+        <Bar {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
+        <Legend title="Metric" />
+      </Chart>
+    </div>
+  );
+};
+
+const dualAxisDialogContent = (datum: Datum): ReactElement => (
+  <div>
+    <div>Operating system: {datum.operatingSystem}</div>
+    <div>Browser: {datum.browser}</div>
+    <div>Users: {datum.value}</div>
+  </div>
+);
+
+const DualMetricAxisWithSublabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barDataTwoSeries, width: 720, height: 460 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis
+        position={args.orientation === 'horizontal' ? 'bottom' : 'left'}
+        ticks
+        tickMinStep={1}
+        title="Downloads"
+        subLabels={[
+          { value: '1', subLabel: 'Low' },
+          { value: '2', subLabel: 'Medium' },
+          { value: '5', subLabel: 'High' },
+        ]}
+      />
+      <Axis
+        position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
+        ticks
+        tickMinStep={1}
+        title="Mac Downloads"
+        subLabels={[
+          { value: '1', subLabel: 'Low' },
+          { value: '2', subLabel: 'Medium' },
+          { value: '3', subLabel: 'High' },
+        ]}
+      />
+      <Bar {...args}>
+        <ChartInspect>{dualAxisDialogContent}</ChartInspect>
+        <ChartPopover width={200}>{dualAxisDialogContent}</ChartPopover>
+      </Bar>
+      <Legend title="Operating system" highlight />
+    </Chart>
+  );
+};
+
+const DualMetricAxisWithThreeSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: barSeriesData, width: 720, height: 460 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} ticks tickMinStep={1} title="Downloads" />
+      <Axis
+        position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
+        ticks
+        tickMinStep={1}
+        title="Other Downloads"
+      />
+      <Bar {...args}>
+        <ChartInspect>{dualAxisDialogContent}</ChartInspect>
+        <ChartPopover width={200}>{dualAxisDialogContent}</ChartPopover>
+      </Bar>
+      <Legend title="Operating system" highlight />
+    </Chart>
+  );
+};
+
+export const OnMouseInputs = bindWithProps(OnMouseInputsStory);
+OnMouseInputs.args = { dimension: 'browser', metric: 'downloads', color: 'series' };
+
+export const DualMetricAxisWithSublabels = bindWithProps(DualMetricAxisWithSublabelsStory);
+DualMetricAxisWithSublabels.args = {
+  dualMetricAxis: true,
+  type: 'dodged',
+  dimension: 'browser',
+  order: 'order',
+  color: 'operatingSystem',
+};
+
+export const DualMetricAxisWithThreeSeries = bindWithProps(DualMetricAxisWithThreeSeriesStory);
+DualMetricAxisWithThreeSeries.args = {
+  dualMetricAxis: true,
+  type: 'dodged',
+  dimension: 'browser',
+  order: 'order',
+  color: 'operatingSystem',
+};

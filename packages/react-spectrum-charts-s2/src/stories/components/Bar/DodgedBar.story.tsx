@@ -13,63 +13,74 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { s2Categorical6 } from '@spectrum-charts/themes';
+import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
-import { barSeriesData, barSubSeriesData } from './data';
+import { channelDeviceData, channelDeviceVisitorData } from './data';
+import { bindStory } from './storyUtils';
 
 export default {
-  title: 'React Spectrum Charts 2/Bar/Features/Dodged Bar',
+  title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
-  parameters: {
-    controls: {
-      include: ['orientation', 'paddingRatio'],
-    },
-  },
 };
 
 const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const { color } = args;
-  const colors = Array.isArray(color)
-    ? [
-        ['categorical-700', 'categorical-1000'],
-        ['categorical-400', 'categorical-500'],
-        ['categorical-300', 'categorical-1100'],
-      ]
-    : s2Categorical6;
-  const data = Array.isArray(color) ? barSubSeriesData : barSeriesData;
-  const chartProps = useChartProps({ data, width: 720, height: 460, colors });
+  const isHorizontal = args.orientation === 'horizontal';
+  const chartProps = useChartProps({ data: channelDeviceData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Acquisition channel" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Sign-ups" />
       <Bar {...args} />
-      <Legend title="Operating system" highlight />
+      <Legend title="Device" highlight />
+    </Chart>
+  );
+};
+
+// One color pair per device: [new visitors, returning visitors].
+const deviceVisitorColors: SpectrumColor[][] = [
+  ['blue-900', 'blue-500'],
+  ['fuchsia-900', 'fuchsia-500'],
+];
+
+const DodgedStackedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    data: channelDeviceVisitorData,
+    colors: deviceVisitorColors,
+    width: 640,
+    height: 400,
+  });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" baseline title="Acquisition channel" />
+      <Axis position="left" grid title="Sessions" />
+      <Bar {...args} />
+      <Legend title="Device and visitor type" highlight />
     </Chart>
   );
 };
 
 const defaultProps: BarProps = {
   type: 'dodged',
-  dimension: 'browser',
-  order: 'order',
-  color: 'operatingSystem',
-  onClick: undefined,
+  dimension: 'channel',
+  metric: 'signups',
+  color: 'device',
 };
 
-const Basic = bindWithProps(DodgedBarStory);
-Basic.args = {
-  ...defaultProps,
-};
+const Dodged = bindStory(DodgedBarStory);
+Dodged.args = { ...defaultProps };
+Dodged.parameters = { controls: { include: ['type'] } };
 
-const DodgedStacked = bindWithProps(DodgedBarStory);
-DodgedStacked.args = {
-  ...defaultProps,
-  color: ['operatingSystem', 'version'],
-};
+const GroupedPadding = bindStory(DodgedBarStory);
+GroupedPadding.args = { ...defaultProps, groupedPadding: 0 };
+GroupedPadding.parameters = { controls: { include: ['groupedPadding'] } };
 
-export { Basic, DodgedStacked };
+// A two-key color facet dodges by the first key and stacks by the second.
+const DodgedStacked = bindStory(DodgedStackedBarStory);
+DodgedStacked.args = { type: 'dodged', dimension: 'channel', metric: 'sessions', color: ['device', 'visitor'] };
+DodgedStacked.parameters = { controls: { include: [] } };
+
+export { Dodged, GroupedPadding, DodgedStacked };

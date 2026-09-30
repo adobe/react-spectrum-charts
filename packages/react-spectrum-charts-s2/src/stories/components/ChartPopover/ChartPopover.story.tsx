@@ -11,6 +11,7 @@
  */
 import { ReactElement } from 'react';
 
+import { Button } from '@react-spectrum/s2';
 import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
@@ -24,11 +25,7 @@ import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';
 import { browserData as data } from '../../data/data';
-import { basicDonutData } from '../Donut/data';
-
-interface ChartPopoverStoryArgs extends ChartPopoverProps {
-  renderer?: ChartProps['renderer'];
-}
+import { basicDonutData } from '../../Donut/data';
 
 type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
 
@@ -39,7 +36,6 @@ const setControlInclude = (story: StoryWithParameters, include: string[]) => {
 export default {
   title: 'React Spectrum Charts 2/Chart Popover/Features',
   component: ChartPopover,
-  parameters: { controls: { include: ['contentMargin', 'height', 'minWidth', 'renderer', 'rightClick', 'width'] } },
   argTypes: {
     children: {
       description: '`(datum: Datum, close: () => void)`',
@@ -63,50 +59,23 @@ const dialogContentWithClose = (datum: Datum, close?: () => void) => (
     <div>Operating system: {datum.series}</div>
     <div>Browser: {datum.category}</div>
     <div>Users: {datum.value}</div>
-    {close && <button data-testid="popover-close-button" onClick={close}>Close</button>}
+    {close && (
+      <Button data-testid="popover-close-button" variant="secondary" size="S" onPress={close} UNSAFE_style={{ marginTop: 8 }}>
+        Close
+      </Button>
+    )}
   </div>
 );
 
 const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
 
-const BarPopoverStory: StoryFn<ChartPopoverStoryArgs> = (args): ReactElement => {
-  const { renderer = 'svg', ...popoverArgs } = args;
-  const chartProps = useChartProps({ ...defaultChartProps, renderer });
+const BarPopoverStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" baseline title="Browser" />
       <Axis position="left" grid title="Users" />
       <Bar color="series">
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover {...popoverArgs} />
-      </Bar>
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-const DodgedBarPopoverStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" baseline title="Browser" />
-      <Axis position="left" grid title="Users" />
-      <Bar color="series" type="dodged">
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover {...args} />
-      </Bar>
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-const StackedBarPopoverStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" baseline title="Browser" />
-      <Axis position="left" grid title="Users" />
-      <Bar color="series" type="stacked">
         <ChartInspect>{dialogContent}</ChartInspect>
         <ChartPopover {...args} />
       </Bar>
@@ -144,13 +113,22 @@ const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
   );
 };
 
-const Renderer = bindWithProps(BarPopoverStory);
-Renderer.args = { children: dialogContent, width: 'auto', renderer: 'svg' };
-setControlInclude(Renderer as StoryWithParameters, ['renderer']);
+// Click a bar to open the popover; the content's Close button calls the `close` callback.
+const Basic = bindWithProps(BarPopoverStory);
+Basic.args = { children: dialogContentWithClose, width: 'auto' };
+setControlInclude(Basic as StoryWithParameters, []);
 
-const Sizing = bindWithProps(BarPopoverStory);
-Sizing.args = { children: dialogContent, width: 220, height: 120, minWidth: 220, contentMargin: 24 };
-setControlInclude(Sizing as StoryWithParameters, ['contentMargin', 'height', 'minWidth', 'width']);
+const ContainerPadding = bindWithProps(BarPopoverStory);
+ContainerPadding.args = { children: dialogContent, width: 'auto', containerPadding: 48 };
+setControlInclude(ContainerPadding as StoryWithParameters, ['containerPadding']);
+
+const ContentMargin = bindWithProps(BarPopoverStory);
+ContentMargin.args = { children: dialogContent, width: 'auto', contentMargin: 24 };
+setControlInclude(ContentMargin as StoryWithParameters, ['contentMargin']);
+
+const Height = bindWithProps(BarPopoverStory);
+Height.args = { children: dialogContent, width: 'auto', height: 'auto', minHeight: 160, maxHeight: 240 };
+setControlInclude(Height as StoryWithParameters, ['height', 'maxHeight', 'minHeight']);
 
 const OnOpenChange = bindWithProps(BarPopoverStory);
 OnOpenChange.args = { children: dialogContent, width: 'auto', onOpenChange: action('onOpenChange') };
@@ -160,34 +138,18 @@ const RightClick = bindWithProps(BarPopoverStory);
 RightClick.args = { children: dialogContent, width: 'auto', rightClick: true };
 setControlInclude(RightClick as StoryWithParameters, ['rightClick']);
 
-const WithCloseCallback = bindWithProps(BarPopoverStory);
-WithCloseCallback.args = { children: dialogContentWithClose, width: 'auto' };
-setControlInclude(WithCloseCallback as StoryWithParameters, []);
+const Width = bindWithProps(BarPopoverStory);
+Width.args = { children: dialogContent, width: 'auto', minWidth: 260, maxWidth: 400 };
+setControlInclude(Width as StoryWithParameters, ['maxWidth', 'minWidth', 'width']);
 
-const DodgedBarChart = bindWithProps(DodgedBarPopoverStory);
-DodgedBarChart.args = { children: dialogContent, width: 'auto' };
-setControlInclude(DodgedBarChart as StoryWithParameters, ['width']);
+// Line popovers select the whole series and fade the others.
+const OnLine = bindWithProps(LineStory);
+OnLine.args = { children: dialogContent, width: 'auto' };
+setControlInclude(OnLine as StoryWithParameters, []);
 
-const DonutChart = bindWithProps(DonutStory);
-DonutChart.args = { width: 'auto' };
-setControlInclude(DonutChart as StoryWithParameters, ['width']);
+// Donut popovers render default segment content when no children are passed.
+const OnDonut = bindWithProps(DonutStory);
+OnDonut.args = { width: 'auto' };
+setControlInclude(OnDonut as StoryWithParameters, []);
 
-const LineChart = bindWithProps(LineStory);
-LineChart.args = { children: dialogContent, width: 'auto' };
-setControlInclude(LineChart as StoryWithParameters, ['width']);
-
-const StackedBarChart = bindWithProps(StackedBarPopoverStory);
-StackedBarChart.args = { children: dialogContent, width: 'auto' };
-setControlInclude(StackedBarChart as StoryWithParameters, ['width']);
-
-export {
-  DodgedBarChart,
-  DonutChart,
-  LineChart,
-  OnOpenChange,
-  Renderer,
-  RightClick,
-  Sizing,
-  StackedBarChart,
-  WithCloseCallback,
-};
+export { Basic, ContainerPadding, ContentMargin, Height, OnOpenChange, RightClick, Width, OnLine, OnDonut };

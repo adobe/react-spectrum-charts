@@ -31,8 +31,8 @@ import {
   useVariationSize,
   useVariationViewMode,
 } from '../../VariationDashboard';
-import { booleanDonutData, zeroDonutData } from '../../../stories/components/Donut/data';
-import { getContainerWidthForDiameter, getEffectiveDiameter } from '../../../stories/Donut/Features/ResponsiveDonut';
+import { booleanDonutData, zeroDonutData } from '../../../stories/Donut/data';
+import { getContainerWidthForDiameter, getEffectiveDiameter } from '../Regressions/ResponsiveDonut';
 import {
   DonutVariationDatum,
   DonutVariationDatasetName,

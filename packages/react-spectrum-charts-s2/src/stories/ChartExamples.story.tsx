@@ -13,288 +13,49 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { ActionButton, Divider } from '@react-spectrum/s2';
-import Close from '@spectrum-icons/workflow/Close';
-import Download from '@spectrum-icons/workflow/Download';
-import GraphPathing from '@spectrum-icons/workflow/GraphPathing';
-import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
-import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
-
-import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '@spectrum-charts/vega-spec-builder-s2';
 import useChartProps from '../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartPopover, ChartInspect, Legend, Line, s2Categorical16 } from '../index';
+import { Axis, Chart, Legend, Line, ReferenceLine } from '../index';
 import { bindWithProps } from '../test-utils';
 import {
-  funnelConversionData,
-  funnelConversionTimeComparisonData,
-  userGrowthData,
-  userGrowthTimeComparisonData,
-} from './data/data';
+  FunnelConversionStory,
+  StackOverflowStory,
+  TrendsTimeComparisonBarStory,
+  UserGrowthBarStory,
+  funnelColors,
+  userGrowthColors,
+} from './ChartExamples/ChartExamplesUtils';
+import { funnelConversionData, userGrowthData } from './data/data';
+import errorData from './data/errorData.json';
 import stackOverflowData from './data/stackOverflowTrends.json';
 import { trendsTimeComparisonData } from './data/trendsTimeComparisonData';
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Examples',
   component: Chart,
-  parameters: { controls: { include: ['height', 'maxWidth', 'minWidth', 'width'] } },
+  parameters: { controls: { include: [] } },
 };
 
-const userGrowthColors: SpectrumColor[] = [
-  'categorical-100',
-  'categorical-200',
-  'categorical-300',
-  'categorical-400',
-];
+const errorRateData = errorData.map((datum) => ({ ...datum, series: 'Checkout errors' }));
 
-const userGrowthDescriptions: LegendDescription[] = [
-  {
-    seriesName: `New users`,
-    description: `Users active in the current period, but not previously (within 6 months of the current period).`,
-  },
-  { seriesName: `Current users`, description: `Users active in the current and previous period.` },
-  {
-    seriesName: `Resurrected users`,
-    description: `Users active in the current period, after being dormant previously (within 6 months of the current period).`,
-  },
-  {
-    seriesName: `Dormant users`,
-    description: `Users not active in the current period, but were active in the previous period.`,
-  },
-];
-
-const funnelSublabels: SubLabel[] = [
-  { value: '2. Click promo slide', subLabel: '90DF-0123 +2 more', fontWeight: 'normal' },
-  { value: '3. Start video', subLabel: '90 Day Fiance', fontWeight: 'normal' },
-];
-
-const funnelLegendLabels: LegendLabel[] = [
-  { seriesName: 'All users | retained', label: 'All users' },
-  { seriesName: 'US | retained', label: 'US' },
-];
-
-const funnelTimeCompareLegendLabels: LegendLabel[] = [
-  { seriesName: 'All users | Previous 4 weeks | retained', label: 'All users | Previous 4 weeks' },
-  { seriesName: 'All users | Last 4 weeks | retained', label: 'All users | Last 4 weeks' },
-  { seriesName: 'US | Previous 4 weeks | retained', label: 'US | Previous 4 weeks ' },
-  { seriesName: 'US | Last 4 weeks | retained', label: 'US | Last 4 weeks ' },
-];
-
-const UserGrowthBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
+const CheckoutErrorRateStory: StoryFn<typeof Chart> = (args): ReactElement => {
+  const chartProps = useChartProps(args);
   return (
-    <Chart {...props}>
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid title="Users" />
-      <Bar dimension="x" metric="y" color="series" order="order">
-        <ChartInspect>{generateDialogContent()}</ChartInspect>
-        <ChartPopover width={200}>{generateDialogContent()}</ChartPopover>
-      </Bar>
-      <Legend highlight descriptions={userGrowthDescriptions} />
-    </Chart>
-  );
-};
-
-const UserGrowthBarTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  return (
-    <Chart {...props}>
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid title="Users" />
-      <Bar
-        dimension="x"
-        metric="y"
-        order="order"
-        color="series"
-        opacity={['series', 'period']}
-        lineType={['series', 'period']}
-        lineWidth={1.5}
-        paddingRatio={0.3}
-        groupedPadding={0.12}
-      >
-        <ChartInspect>{generateDialogContent()}</ChartInspect>
-        <ChartPopover width={200}>{generateDialogContent()}</ChartPopover>
-      </Bar>
-      <Legend highlight descriptions={userGrowthDescriptions} />
-    </Chart>
-  );
-};
-
-const generateDialogContent = () => {
-  const callback = (datum: Datum, close?: () => void) => {
-    return (
-      <div className="userGrowth-dialog">
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <div>
-              <div>{datum.x}</div>
-              <div>{datum.series}</div>
-              <div>{Math.abs(datum.y as number).toLocaleString()} users</div>
-            </div>
-            {close !== undefined && (
-              <ActionButton isQuiet onPress={close}>
-                <Close />
-              </ActionButton>
-            )}
-          </div>
-          {close !== undefined && (
-            <>
-              <Divider />
-              <div className="dialog-actions" style={{ display: 'flex', flexDirection: 'column' }}>
-                <ActionButton isQuiet onPress={close}>
-                  <UsersAdd />
-                  Create segment
-                </ActionButton>
-                <ActionButton isQuiet onPress={close}>
-                  <GraphPathing />
-                  Show user paths
-                </ActionButton>
-                <ActionButton isQuiet onPress={close}>
-                  <ViewDetail />
-                  View users
-                </ActionButton>
-                <ActionButton isQuiet onPress={close}>
-                  <Download />
-                  Download users
-                </ActionButton>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  };
-  return callback;
-};
-
-const FunnelConversionStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  return (
-    <Chart {...props}>
-      <Axis position="bottom" labelAlign="start" labelFontWeight="bold" subLabels={funnelSublabels} baseline />
-      <Axis position="left" grid labelFormat="percentage" title="Conversion rate" />
-      <Bar type="dodged" dimension="step" color={['series', 'subSeries']} paddingRatio={0.1} />
-      <Legend highlight hiddenEntries={['All users | lost', 'US | lost']} legendLabels={funnelLegendLabels} />
-    </Chart>
-  );
-};
-
-const FunnelTimeComparisonStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  return (
-    <Chart {...props}>
-      <Axis position="bottom" labelAlign="start" labelFontWeight="bold" subLabels={funnelSublabels} baseline />
-      <Axis position="left" grid labelFormat="percentage" title="Conversion rate" />
-      <Bar
-        type="dodged"
-        dimension="step"
-        color={['series', 'subSeries']}
-        paddingRatio={0.1}
-        opacity="period"
-        lineType="period"
-        lineWidth={1.5}
-      >
-        <ChartInspect />
-      </Bar>
-      <Legend
-        highlight
-        hiddenEntries={[
-          'All users | lost',
-          'US | lost',
-          'US | Previous 4 weeks | lost',
-          'All users | Previous 4 weeks | lost',
-          'All users | Last 4 weeks | lost',
-          'US | Last 4 weeks | lost',
-        ]}
-        legendLabels={funnelTimeCompareLegendLabels}
-      />
-    </Chart>
-  );
-};
-
-const TrendsTimeComparisonLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  const legendLabels = [
-    { seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
-    { seriesName: 'add-freeform-table-0 | Last 4 weeks', label: 'Add Freeform table | Last 4 weeks' },
-    { seriesName: 'add-line-viz-1 | Previous 4 weeks', label: 'Add Line Viz | Previous 4 weeks' },
-    { seriesName: 'add-line-viz-1 | Last 4 weeks', label: 'Add Line Viz | Last 4 weeks' },
-  ];
-  return (
-    <Chart {...props}>
-      <Axis position="bottom" ticks baseline labelFormat="time" />
-      <Axis position="left" grid title="Events" />
-      <Line color="series" lineType="period" scaleType="time" />
-      <Legend highlight legendLabels={legendLabels} opacity="period" />
-    </Chart>
-  );
-};
-
-const TrendsTimeComparisonBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  const legendLabels = [
-    { seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
-    { seriesName: 'add-freeform-table-0 | Last 4 weeks', label: 'Add Freeform table | Last 4 weeks' },
-    { seriesName: 'add-line-viz-1 | Previous 4 weeks', label: 'Add Line Viz | Previous 4 weeks' },
-    { seriesName: 'add-line-viz-1 | Last 4 weeks', label: 'Add Line Viz | Last 4 weeks' },
-  ];
-  return (
-    <Chart {...props}>
-      <Axis position="bottom" ticks baseline labelFormat="time" />
-      <Axis position="left" grid title="Events" />
-      <Bar
-        type="dodged"
-        dimension="datetime"
-        color="series"
-        opacity="period"
-        lineType="period"
-        lineWidth={1.5}
-        paddingRatio={0.2}
-      />
-      <Legend highlight legendLabels={legendLabels} />
-    </Chart>
-  );
-};
-
-const TrendsTimeComparisonStackedBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  const legendLabels = [
-    { seriesName: 'add-freeform-table-0 | Previous 4 weeks', label: 'Add Freeform table | Previous 4 weeks' },
-    { seriesName: 'add-freeform-table-0 | Last 4 weeks', label: 'Add Freeform table | Last 4 weeks' },
-    { seriesName: 'add-line-viz-1 | Previous 4 weeks', label: 'Add Line Viz | Previous 4 weeks' },
-    { seriesName: 'add-line-viz-1 | Last 4 weeks', label: 'Add Line Viz | Last 4 weeks' },
-  ];
-  return (
-    <Chart {...props} colors={s2Categorical16} opacities={[[0.5, 1]]} lineTypes={[['shortDash', 'solid']]}>
-      <Axis position="bottom" ticks baseline labelFormat="time" />
-      <Axis position="left" grid title="Events" />
-      <Bar
-        type="stacked"
-        dimension="datetime"
-        color="series"
-        opacity={['series', 'period']}
-        lineType={['series', 'period']}
-        lineWidth={1.5}
-        paddingRatio={0.2}
-      />
-      <Legend highlight legendLabels={legendLabels} />
-    </Chart>
-  );
-};
-
-const StackOverflowStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  return (
-    <Chart {...props}>
-      <Axis position="left" grid title="Page Views" />
-      <Axis position="bottom" baseline ticks labelFormat="time" granularity="month" />
-      <Line dimension="timestamp" metric="rollingAveragePageViews" color="series" />
+    <Chart {...chartProps}>
+      <Line scaleType="linear" dimension="time" metric="errors" color="series" />
+      <Axis position="left" hideDefaultLabels title="Errors">
+        <ReferenceLine value={400} label="Critical" secondary />
+        <ReferenceLine value={200} label="Warning" secondary />
+        <ReferenceLine value={100} label="Watch" secondary />
+      </Axis>
+      <Axis position="bottom" baseline ticks labelFormat="duration" title="Time since deploy" />
       <Legend highlight />
     </Chart>
   );
 };
 
-const UserGrowthBarGrowth = bindWithProps(UserGrowthBarStory);
-UserGrowthBarGrowth.args = {
+// Click a bar to open the popover with segment actions.
+const UserGrowthByLifecycleStage = bindWithProps(UserGrowthBarStory);
+UserGrowthByLifecycleStage.args = {
   data: userGrowthData,
   colors: userGrowthColors,
   height: 500,
@@ -303,20 +64,7 @@ UserGrowthBarGrowth.args = {
   width: 'auto',
 };
 
-const UserGrowthTimeComparisonBarGrowth = bindWithProps(UserGrowthBarTimeComparisonStory);
-UserGrowthTimeComparisonBarGrowth.args = {
-  data: userGrowthTimeComparisonData,
-  colors: userGrowthColors,
-  height: 500,
-  minWidth: 600,
-  maxWidth: 1600,
-  width: 'auto',
-  lineTypes: [['shortDash', 'solid']],
-  opacities: [[0.5, 1]],
-};
-
 const FunnelConversion = bindWithProps(FunnelConversionStory);
-const funnelColors: Colors[] = s2Categorical16.map((color) => [color, 'gray-300']);
 FunnelConversion.args = {
   data: funnelConversionData,
   colors: funnelColors,
@@ -326,40 +74,8 @@ FunnelConversion.args = {
   width: 'auto',
 };
 
-const FunnelTimeComparison = bindWithProps(FunnelTimeComparisonStory);
-const funnelTimeComparisonColors: Colors[] = s2Categorical16.map((color) => [color, 'gray-300']);
-FunnelTimeComparison.args = {
-  data: funnelConversionTimeComparisonData,
-  colors: funnelTimeComparisonColors,
-  height: 500,
-  minWidth: 840,
-  width: 'auto',
-  lineTypes: ['shortDash', 'solid'],
-  opacities: [0.5, 1],
-};
-
-const TrendsTimeComparisonBar = bindWithProps(TrendsTimeComparisonBarStory);
-TrendsTimeComparisonBar.args = {
-  data: trendsTimeComparisonData,
-  height: 500,
-  minWidth: 840,
-  width: 'auto',
-  lineTypes: ['shortDash', 'solid'],
-  opacities: [0.5, 1],
-};
-
-const TrendsTimeComparisonStackedBar = bindWithProps(TrendsTimeComparisonStackedBarStory);
-TrendsTimeComparisonStackedBar.args = {
-  data: trendsTimeComparisonData,
-  height: 500,
-  minWidth: 840,
-  width: 'auto',
-  lineTypes: ['shortDash', 'solid'],
-  opacities: [0.5, 1],
-};
-
-const TrendsTimeComparisonLine = bindWithProps(TrendsTimeComparisonLineStory);
-TrendsTimeComparisonLine.args = {
+const EventTrendsPeriodComparison = bindWithProps(TrendsTimeComparisonBarStory);
+EventTrendsPeriodComparison.args = {
   data: trendsTimeComparisonData,
   height: 500,
   minWidth: 840,
@@ -370,8 +86,8 @@ TrendsTimeComparisonLine.args = {
 
 const stackOverflowChartData = stackOverflowData.map((datum) => ({ ...datum, series: 'Stack Overflow' }));
 
-const StackOverflowTrends = bindWithProps(StackOverflowStory);
-StackOverflowTrends.args = {
+const StackOverflowPageViews = bindWithProps(StackOverflowStory);
+StackOverflowPageViews.args = {
   data: stackOverflowChartData,
   height: 500,
   minWidth: 840,
@@ -380,13 +96,13 @@ StackOverflowTrends.args = {
   title: 'The Fall of Stack Overflow',
 };
 
+const CheckoutErrorRateThresholds = bindWithProps(CheckoutErrorRateStory);
+CheckoutErrorRateThresholds.args = { data: errorRateData, width: 800 };
+
 export {
+  UserGrowthByLifecycleStage,
   FunnelConversion,
-  FunnelTimeComparison,
-  UserGrowthBarGrowth,
-  TrendsTimeComparisonBar,
-  TrendsTimeComparisonStackedBar,
-  TrendsTimeComparisonLine,
-  StackOverflowTrends,
-  UserGrowthTimeComparisonBarGrowth,
+  EventTrendsPeriodComparison,
+  StackOverflowPageViews,
+  CheckoutErrorRateThresholds,
 };

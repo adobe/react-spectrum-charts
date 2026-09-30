@@ -16,38 +16,22 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../../Chart';
 import { Axis, Legend, Line, LineDirectLabel } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../stories/data/data';
 import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
+import { visitsByChannelData } from '../../lineData';
+import { setArgTypes, setControls } from '../../lineStoryUtils';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Direct Label',
   component: LineDirectLabel,
-  parameters: { controls: { include: ['value', 'position', 'fontSize', 'excludeSeries'] } },
-  argTypes: {
-    value: {
-      control: { type: 'select' },
-      options: ['last', 'average', 'series'],
-    },
-    position: {
-      control: { type: 'select' },
-      options: ['start', 'end'],
-    },
-    fontSize: { control: { type: 'number' } },
-  },
 };
 
-const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 100, maxWidth: 1000, height: 400, backgroundColor: 'gray-50' };
-
-// TEMPLATES
-
-const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+const DirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: visitsByChannelData, minWidth: 400, maxWidth: 800, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid title="Users" />
+      <Axis position="left" grid title="Visits" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+      <Line dimension="datetime" metric="visits" color="channel">
         <LineDirectLabel {...args} />
       </Line>
       <Legend highlight />
@@ -55,7 +39,34 @@ const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactEleme
   );
 };
 
-const DirectLabelDefault = bindWithProps(LineDirectLabelStory);
-DirectLabelDefault.args = { value: 'series' };
+const Basic = bindWithProps(DirectLabelStory);
+Basic.args = {};
+setControls(Basic, []);
 
-export { DirectLabelDefault };
+const Value = bindWithProps(DirectLabelStory);
+Value.args = { value: 'series' };
+setControls(Value, ['value']);
+setArgTypes(Value, { value: { control: 'inline-radio', options: ['last', 'average', 'series'] } });
+
+const Position = bindWithProps(DirectLabelStory);
+Position.args = { position: 'start' };
+setControls(Position, ['position']);
+setArgTypes(Position, { position: { control: 'inline-radio', options: ['start', 'end'] } });
+
+const Format = bindWithProps(DirectLabelStory);
+Format.args = { format: '.2s' };
+setControls(Format, ['format']);
+
+const Prefix = bindWithProps(DirectLabelStory);
+Prefix.args = { prefix: 'Last: ' };
+setControls(Prefix, ['prefix']);
+
+const ExcludeSeries = bindWithProps(DirectLabelStory);
+ExcludeSeries.args = { excludeSeries: ['Social'] };
+setControls(ExcludeSeries, ['excludeSeries']);
+
+const FontSize = bindWithProps(DirectLabelStory);
+FontSize.args = { fontSize: 16 };
+setControls(FontSize, ['fontSize']);
+
+export { Basic, Value, Position, Format, Prefix, ExcludeSeries, FontSize };

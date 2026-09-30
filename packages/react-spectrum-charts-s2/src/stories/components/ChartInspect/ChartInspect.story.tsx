@@ -13,7 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { s2Categorical12 } from '@spectrum-charts/themes';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
@@ -33,8 +32,8 @@ const setControlInclude = (story: StoryWithParameters, include: string[]) => {
 export default {
   title: 'React Spectrum Charts 2/Chart Inspect/Features',
   component: ChartInspect,
-  parameters: { controls: { include: ['excludeDataKeys', 'highlightBy'] } },
   argTypes: {
+    targets: { control: 'check', options: ['item', 'dimensionArea'] },
     children: {
       description: '`(datum) => React.ReactElement`',
       control: {
@@ -93,26 +92,8 @@ const lineData = [
   { datetime: 1668409200000, point: 25, value: 10932, users: 4913, series: 'Add Freeform table' },
 ];
 
-const disabledLineData = lineData.map((datum) =>
-  datum.series === 'Add Fallout' ? { ...datum, excludeFromInspect: true } : datum
-);
-
 const LineInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement => {
   const chartProps = useChartProps({ data: lineData, width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" baseline ticks labelFormat="time" />
-      <Axis position="left" grid title="Events" />
-      <Line color="series">
-        <ChartInspect {...args} />
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-const DisabledSeriesLineInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: disabledLineData, width: 600, colors: ['gray-300', ...s2Categorical12] });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" baseline ticks labelFormat="time" />
@@ -134,46 +115,35 @@ interface LineData extends Datum {
   category?: string;
 }
 
-const StackedBarChart = bindWithProps(StackedBarInspectStory);
-setControlInclude(StackedBarChart as StoryWithParameters, ['highlightBy']);
-StackedBarChart.args = {
-  children: (datum: LineData) => (
-    <div className="bar-inspect">
-      <div>Operating system: {datum.series}</div>
-      <div>Browser: {datum.category}</div>
-      <div>Users: {datum.value}</div>
-    </div>
-  ),
-};
+const barInspectContent = (datum: LineData) => (
+  <div className="bar-inspect">
+    <div>Operating system: {datum.series}</div>
+    <div>Browser: {datum.category}</div>
+    <div>Users: {datum.value}</div>
+  </div>
+);
 
-const DodgedBarChart = bindWithProps(DodgedBarInspectStory);
-setControlInclude(DodgedBarChart as StoryWithParameters, ['highlightBy']);
-DodgedBarChart.args = {
-  children: (datum: LineData) => (
-    <div className="bar-inspect">
-      <div>Operating system: {datum.series}</div>
-      <div>Browser: {datum.category}</div>
-      <div>Users: {datum.value}</div>
-    </div>
-  ),
-};
+const Basic = bindWithProps(StackedBarInspectStory);
+setControlInclude(Basic as StoryWithParameters, []);
+Basic.args = { children: barInspectContent };
 
-const LineChart = bindWithProps(LineInspectStory);
-setControlInclude(LineChart as StoryWithParameters, ['highlightBy']);
-LineChart.args = {
-  children: (datum: LineData) => (
-    <div className="bar-inspect">
-      <div>{formatTimestamp(datum.datetime as number)}</div>
-      <div>Event: {datum.series}</div>
-      <div>Count: {Number(datum.value).toLocaleString()}</div>
-      <div>Users: {Number(datum.users).toLocaleString()}</div>
-    </div>
-  ),
-};
+// Chrome rows carry `excludeFromInspect`, so hovering them shows no inspect.
+const ExcludeDataKeys = bindWithProps(StackedBarInspectStory);
+setControlInclude(ExcludeDataKeys as StoryWithParameters, ['excludeDataKeys']);
+ExcludeDataKeys.args = { children: barInspectContent, excludeDataKeys: ['excludeFromInspect'] };
 
-const DisabledSeriesLineChart = bindWithProps(DisabledSeriesLineInspectStory);
-setControlInclude(DisabledSeriesLineChart as StoryWithParameters, ['excludeDataKeys']);
-DisabledSeriesLineChart.args = {
+// Dodged bars make the dimension-wide highlight visible across each browser group.
+const HighlightBy = bindWithProps(DodgedBarInspectStory);
+setControlInclude(HighlightBy as StoryWithParameters, ['highlightBy']);
+HighlightBy.args = { children: barInspectContent, highlightBy: 'dimension' };
+
+const Targets = bindWithProps(StackedBarInspectStory);
+setControlInclude(Targets as StoryWithParameters, ['targets']);
+Targets.args = { children: barInspectContent, targets: ['dimensionArea'] };
+
+const OnLine = bindWithProps(LineInspectStory);
+setControlInclude(OnLine as StoryWithParameters, ['highlightBy']);
+OnLine.args = {
   children: (datum: LineData) => (
     <div className="bar-inspect">
       <div>{formatTimestamp(datum.datetime as number)}</div>
@@ -182,7 +152,6 @@ DisabledSeriesLineChart.args = {
       <div>Users: {Number(datum.users).toLocaleString()}</div>
     </div>
   ),
-  excludeDataKeys: ['excludeFromInspect'],
 };
 
-export { DisabledSeriesLineChart, DodgedBarChart, LineChart, StackedBarChart };
+export { Basic, ExcludeDataKeys, HighlightBy, Targets, OnLine };

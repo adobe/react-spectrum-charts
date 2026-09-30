@@ -9,66 +9,89 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Legend, Line, ReferenceLine } from '../../../components';
+import { Axis, Bar, Legend, Line, ReferenceLine } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
+import { channelPerformanceData, downloadsByBrowserData } from './axisStoryData';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Reference Line',
   component: ReferenceLine,
-  excludeStories: ['Basic'],
+  argTypes: {
+    size: { control: 'inline-radio', options: ['XS', 'S', 'M', 'L'] },
+    position: { control: 'inline-radio', options: ['before', 'center', 'after'] },
+  },
 };
 
-const conversionData = [
-  { week: 1, conversionRate: 0.39, channel: 'Paid search' },
-  { week: 2, conversionRate: 0.43, channel: 'Paid search' },
-  { week: 3, conversionRate: 0.47, channel: 'Paid search' },
-  { week: 4, conversionRate: 0.51, channel: 'Paid search' },
-  { week: 1, conversionRate: 0.31, channel: 'Email' },
-  { week: 2, conversionRate: 0.34, channel: 'Email' },
-  { week: 3, conversionRate: 0.38, channel: 'Email' },
-  { week: 4, conversionRate: 0.42, channel: 'Email' },
-];
+const controls = (...include: string[]) => ({ parameters: { controls: { include } } });
 
-const defaultChartProps: ChartProps = {
-  data: conversionData,
-  minWidth: 400,
-  maxWidth: 800,
-  height: 400,
-  backgroundColor: 'gray-50',
-};
-
-const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+const ConversionTargetStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: channelPerformanceData, width: 700, height: 360 });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Conversion rate" labelFormat="percentage">
         <ReferenceLine {...args} />
       </Axis>
-      <Axis position="bottom" baseline ticks title="Week" />
-      <Line dimension="week" metric="conversionRate" color="channel" scaleType="linear" />
+      <Axis position="bottom" labelFormat="time" granularity="month" baseline />
+      <Line dimension="datetime" metric="conversionRate" color="channel" scaleType="time" />
       <Legend />
     </Chart>
   );
 };
 
-const Basic = bindWithProps(ReferenceLineStory);
-Basic.args = {
-  value: 0.45,
+const PrimaryAndSecondaryStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: channelPerformanceData, width: 700, height: 360 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Conversion rate" labelFormat="percentage">
+        <ReferenceLine value={0.05} label="Target" />
+        <ReferenceLine {...args} />
+      </Axis>
+      <Axis position="bottom" labelFormat="time" granularity="month" baseline />
+      <Line dimension="datetime" metric="conversionRate" color="channel" scaleType="time" />
+      <Legend />
+    </Chart>
+  );
 };
 
-const Label = bindWithProps(ReferenceLineStory);
-Label.args = {
-  label: 'Target',
-  value: 0.45,
+// Reference lines are horizontal, so on a band scale they need categories on the left axis.
+const HorizontalBarStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: downloadsByBrowserData, width: 700, height: 360 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" baseline title="Browser">
+        <ReferenceLine {...args} />
+      </Axis>
+      <Axis position="bottom" grid title="Downloads" numberFormat="shortNumber" />
+      <Bar orientation="horizontal" dimension="browser" metric="downloads" color="os" />
+      <Legend />
+    </Chart>
+  );
 };
-Label.storyName = 'Reference line';
-Object.assign(Label, { parameters: { controls: { include: ['label', 'value'] } } });
 
-export { Label, Basic };
+const Basic = bindWithProps(ConversionTargetStory);
+Basic.args = { value: 0.04 };
+Object.assign(Basic, controls('value'));
+
+const Label = bindWithProps(ConversionTargetStory);
+Label.args = { value: 0.04, label: 'Target' };
+Object.assign(Label, controls('label'));
+
+const Size = bindWithProps(ConversionTargetStory);
+Size.args = { value: 0.04, label: 'Target', size: 'L' };
+Object.assign(Size, controls('size'));
+
+const Secondary = bindWithProps(PrimaryAndSecondaryStory);
+Secondary.args = { value: 0.035, label: 'Last year', secondary: true };
+Object.assign(Secondary, controls('secondary'));
+
+const Position = bindWithProps(HorizontalBarStory);
+Position.args = { value: 'Safari', label: 'Top 2', position: 'after' };
+Object.assign(Position, controls('position'));
+
+export { Basic, Label, Size, Secondary, Position };

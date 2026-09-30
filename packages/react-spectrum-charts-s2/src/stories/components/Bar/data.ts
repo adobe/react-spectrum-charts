@@ -337,3 +337,88 @@ export const generateMockDataForTrellis = ({
 
   return data;
 };
+
+/** Sign-ups per channel with a goal status and a per-row CSS color supplied by the data. */
+export const acquisitionGoalData = [
+  { channel: 'Email', signups: 18200, status: 'Above goal', statusColor: '#0d7a55' },
+  { channel: 'Search', signups: 15100, status: 'Above goal', statusColor: '#0d7a55' },
+  { channel: 'Social', signups: 12400, status: 'Above goal', statusColor: '#0d7a55' },
+  { channel: 'Display', signups: 9800, status: 'Below goal', statusColor: '#d7373f' },
+  { channel: 'Referral', signups: 7600, status: 'Below goal', statusColor: '#d7373f' },
+];
+
+/** Monthly sign-ups keyed by the first day of each month. */
+export const monthlySignupsData = [
+  { month: '2025-01-01', signups: 11800, series: 'Sign-ups' },
+  { month: '2025-02-01', signups: 12600, series: 'Sign-ups' },
+  { month: '2025-03-01', signups: 14100, series: 'Sign-ups' },
+  { month: '2025-04-01', signups: 13400, series: 'Sign-ups' },
+  { month: '2025-05-01', signups: 15900, series: 'Sign-ups' },
+  { month: '2025-06-01', signups: 17200, series: 'Sign-ups' },
+];
+
+/** Sign-ups per channel split by device. Higher `order` stacks higher, so `order` puts Desktop on top. */
+export const channelDeviceData = [
+  { channel: 'Email', device: 'Desktop', signups: 9800, order: 2 },
+  { channel: 'Email', device: 'Mobile', signups: 6400, order: 1 },
+  { channel: 'Email', device: 'Tablet', signups: 2000, order: 0 },
+  { channel: 'Search', device: 'Desktop', signups: 7200, order: 2 },
+  { channel: 'Search', device: 'Mobile', signups: 6100, order: 1 },
+  { channel: 'Search', device: 'Tablet', signups: 1800, order: 0 },
+  { channel: 'Social', device: 'Desktop', signups: 3100, order: 2 },
+  { channel: 'Social', device: 'Mobile', signups: 8200, order: 1 },
+  { channel: 'Social', device: 'Tablet', signups: 1100, order: 0 },
+  { channel: 'Display', device: 'Desktop', signups: 4200, order: 2 },
+  { channel: 'Display', device: 'Mobile', signups: 3900, order: 1 },
+  { channel: 'Display', device: 'Tablet', signups: 1700, order: 0 },
+];
+
+/** Sessions per channel, dodged by device and stacked by new vs returning visitors. */
+export const channelDeviceVisitorData = [
+  { channel: 'Email', device: 'Desktop', visitor: 'New', sessions: 4200 },
+  { channel: 'Email', device: 'Desktop', visitor: 'Returning', sessions: 6100 },
+  { channel: 'Email', device: 'Mobile', visitor: 'New', sessions: 3100 },
+  { channel: 'Email', device: 'Mobile', visitor: 'Returning', sessions: 3900 },
+  { channel: 'Search', device: 'Desktop', visitor: 'New', sessions: 5600 },
+  { channel: 'Search', device: 'Desktop', visitor: 'Returning', sessions: 2400 },
+  { channel: 'Search', device: 'Mobile', visitor: 'New', sessions: 4800 },
+  { channel: 'Search', device: 'Mobile', visitor: 'Returning', sessions: 2100 },
+  { channel: 'Social', device: 'Desktop', visitor: 'New', sessions: 2300 },
+  { channel: 'Social', device: 'Desktop', visitor: 'Returning', sessions: 1200 },
+  { channel: 'Social', device: 'Mobile', visitor: 'New', sessions: 6900 },
+  { channel: 'Social', device: 'Mobile', visitor: 'Returning', sessions: 3300 },
+  { channel: 'Display', device: 'Desktop', visitor: 'New', sessions: 3000 },
+  { channel: 'Display', device: 'Desktop', visitor: 'Returning', sessions: 1400 },
+  { channel: 'Display', device: 'Mobile', visitor: 'New', sessions: 2700 },
+  { channel: 'Display', device: 'Mobile', visitor: 'Returning', sessions: 1100 },
+];
+
+/** Sessions and orders per channel; orders are an order of magnitude smaller, so they get the secondary axis. */
+export const sessionsAndOrdersData = [
+  { channel: 'Email', series: 'Sessions', value: 18400, order: 0 },
+  { channel: 'Email', series: 'Orders', value: 920, order: 1 },
+  { channel: 'Search', series: 'Sessions', value: 22600, order: 0 },
+  { channel: 'Search', series: 'Orders', value: 780, order: 1 },
+  { channel: 'Social', series: 'Sessions', value: 15300, order: 0 },
+  { channel: 'Social', series: 'Orders', value: 310, order: 1 },
+  { channel: 'Display', series: 'Sessions', value: 9800, order: 0 },
+  { channel: 'Display', series: 'Orders', value: 240, order: 1 },
+];
+
+/** New subscribers gained per acquisition channel last month. */
+export const newSubscribersData = [
+  { channel: 'Email', subscribers: 12600, series: 'New subscribers' },
+  { channel: 'Search', subscribers: 9400, series: 'New subscribers' },
+  { channel: 'Social', subscribers: 6200, series: 'New subscribers' },
+  { channel: 'Display', subscribers: 3800, series: 'New subscribers' },
+  { channel: 'Referral', subscribers: 2100, series: 'New subscribers' },
+];
+
+/** Monthly conversions per channel, compared against a shared target. */
+export const channelConversionsData = [
+  { channel: 'Email', conversions: 2100, series: 'Conversions' },
+  { channel: 'Search', conversions: 3400, series: 'Conversions' },
+  { channel: 'Display', conversions: 1800, series: 'Conversions' },
+  { channel: 'Social', conversions: 2900, series: 'Conversions' },
+  { channel: 'Affiliate', conversions: 1200, series: 'Conversions' },
+];

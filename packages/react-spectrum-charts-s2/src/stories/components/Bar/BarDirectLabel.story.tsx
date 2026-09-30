@@ -16,27 +16,22 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, BarDirectLabel, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
 import { BarDirectLabelProps } from '../../../types';
-import { mixedAcquisitionData } from './data';
+import { newSubscribersData } from './data';
+import { bindStory } from './storyUtils';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Direct Label',
   component: BarDirectLabel,
-  parameters: {
-    controls: {
-      include: ['position', 'format'],
-    },
-  },
 };
 
 const BarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: mixedAcquisitionData, width: 640, height: 420 });
+  const chartProps = useChartProps({ data: newSubscribersData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" baseline title="Acquisition channel" />
-      <Axis position="left" grid title="Sign-ups" />
-      <Bar dimension="channel" metric="signups" color="series">
+      <Axis position="left" grid title="Subscribers" />
+      <Bar dimension="channel" metric="subscribers" color="series">
         <BarDirectLabel {...args} />
       </Bar>
       <Legend title="Metric" />
@@ -44,32 +39,24 @@ const BarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement =
   );
 };
 
-const HorizontalBarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: mixedAcquisitionData, width: 640, height: 420 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" baseline title="Acquisition channel" />
-      <Axis position="bottom" grid title="Sign-ups" />
-      <Bar dimension="channel" metric="signups" color="series" orientation="horizontal">
-        <BarDirectLabel {...args} />
-      </Bar>
-      <Legend title="Metric" />
-    </Chart>
-  );
+const Basic = bindStory(BarDirectLabelStory);
+Basic.args = {};
+Basic.parameters = { controls: { include: [] } };
+
+const Position = bindStory(BarDirectLabelStory);
+Position.args = { position: 'end' };
+Position.parameters = {
+  controls: { include: ['position'] },
+};
+Position.argTypes = {
+  position: { control: 'select', options: ['start', 'middle', 'end', 'end-outside'] },
 };
 
-const defaultProps: BarDirectLabelProps = {
-  position: 'end-outside',
+const Format = bindStory(BarDirectLabelStory);
+Format.args = { format: '.2~s' };
+Format.parameters = { controls: { include: ['format'] } };
+Format.argTypes = {
+  format: { control: 'select', options: ['.2~s', 'standardNumber', ',.0f', 'currency'] },
 };
 
-const Vertical = bindWithProps(BarDirectLabelStory);
-Vertical.args = {
-  ...defaultProps,
-};
-
-const Horizontal = bindWithProps(HorizontalBarDirectLabelStory);
-Horizontal.args = {
-  ...defaultProps,
-};
-
-export { Vertical, Horizontal };
+export { Basic, Position, Format };

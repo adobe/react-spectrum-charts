@@ -31,7 +31,13 @@ export default {
   component: LineDirectLabel,
 };
 
-const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 100, maxWidth: 1000, height: 400, backgroundColor: 'gray-50' };
+const defaultChartProps: ChartProps = {
+  data: workspaceTrendsData,
+  minWidth: 100,
+  maxWidth: 1000,
+  height: 400,
+  backgroundColor: 'gray-50',
+};
 
 const CHART_HEIGHT = 400;
 const MAX_WIDTH = CHART_SIZE_BREAKPOINTS.L + 200;
@@ -235,9 +241,4 @@ DirectLabelManySeries.args = { value: 'series' };
 const DirectLabelManySeriesLegend = bindWithProps(LineDirectLabelManySeriesLegendStory);
 DirectLabelManySeriesLegend.args = { value: 'series' };
 
-export {
-  DirectLabelLabelCollision,
-  DirectLabelSizeScaling,
-  DirectLabelManySeries,
-  DirectLabelManySeriesLegend,
-};
+export { DirectLabelLabelCollision, DirectLabelSizeScaling, DirectLabelManySeries, DirectLabelManySeriesLegend };

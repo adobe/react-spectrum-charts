@@ -30,15 +30,13 @@ import {
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
-  DodgedBarChart,
-  DonutChart,
-  LineChart,
+  Basic,
+  ContentMargin,
+  OnDonut,
+  OnLine,
   OnOpenChange,
   RightClick,
-  StackedBarChart,
-  Renderer,
-  Sizing,
-  WithCloseCallback,
+  Width,
 } from './ChartPopover.story';
 
 describe('ChartPopover', () => {
@@ -47,20 +45,8 @@ describe('ChartPopover', () => {
     render(<ChartPopover />);
   });
 
-  test('Renders properly on canvas', async () => {
-    render(<Renderer {...Renderer.args} renderer="canvas" />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-  });
-
-  test('Renders properly in svg', async () => {
-    render(<Renderer {...Renderer.args} renderer="svg" />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-  });
-
   test('Popover opens on mark click and closes when clicking outside', async () => {
-    render(<StackedBarChart {...StackedBarChart.args} />);
+    render(<Basic {...Basic.args} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -81,7 +67,7 @@ describe('ChartPopover', () => {
   });
 
   test('Esc closes the popover', async () => {
-    render(<StackedBarChart {...StackedBarChart.args} />);
+    render(<Basic {...Basic.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
     const bars = getAllMarksByGroupName(chart, 'bar0');
@@ -97,7 +83,7 @@ describe('ChartPopover', () => {
   });
 
   test('Content appears in popover', async () => {
-    render(<StackedBarChart {...StackedBarChart.args} />);
+    render(<Basic {...Basic.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
     let bars = getAllMarksByGroupName(chart, 'bar0');
@@ -116,7 +102,7 @@ describe('ChartPopover', () => {
   });
 
   test('Popover should be corrrect size', async () => {
-    render(<Sizing {...Sizing.args} width={200} height={100} minWidth={undefined} contentMargin={12} />);
+    render(<Width {...Width.args} width={200} height={100} minWidth={undefined} maxWidth={undefined} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -131,7 +117,7 @@ describe('ChartPopover', () => {
   });
 
   test('should honor minWidth', async () => {
-    render(<Sizing {...Sizing.args} width="auto" minWidth={250} />);
+    render(<Width {...Width.args} width="auto" minWidth={250} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -146,7 +132,7 @@ describe('ChartPopover', () => {
   });
 
   test('should honor contentMargin', async () => {
-    render(<Sizing {...Sizing.args} />);
+    render(<ContentMargin {...ContentMargin.args} contentMargin={24} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -169,7 +155,7 @@ describe('ChartPopover', () => {
   });
 
   test('should use default contentMargin when not provided', async () => {
-    render(<StackedBarChart {...StackedBarChart.args} />);
+    render(<Basic {...Basic.args} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -192,7 +178,7 @@ describe('ChartPopover', () => {
   });
 
   test('close callback passed to children closes the popover', async () => {
-    render(<WithCloseCallback {...WithCloseCallback.args} />);
+    render(<Basic {...Basic.args} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -207,7 +193,7 @@ describe('ChartPopover', () => {
   });
 
   test('popover content div has rsc-popover-content class', async () => {
-    render(<StackedBarChart {...StackedBarChart.args} />);
+    render(<Basic {...Basic.args} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -246,7 +232,7 @@ describe('ChartPopover', () => {
   });
 
   test('Line popover opens and closes corectly when clicking on the chart', async () => {
-    render(<LineChart {...LineChart.args} />);
+    render(<OnLine {...OnLine.args} />);
     // validate that the line drew
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -275,7 +261,7 @@ describe('ChartPopover', () => {
   });
 
   test('should highlight the selected line by fading other lines', async () => {
-    render(<LineChart {...LineChart.args} />);
+    render(<OnLine {...OnLine.args} />);
     // validate that the line drew
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -298,70 +284,6 @@ describe('ChartPopover', () => {
     });
   });
 
-  test('Dodged bar popover opens on mark click and closes when clicking outside', async () => {
-    render(<DodgedBarChart {...DodgedBarChart.args} />);
-
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-    let bars = getAllMarksByGroupName(chart, 'bar0');
-
-    // clicking the bar should open the popover
-    await clickNthElement(bars, 4);
-    const popover = await screen.findByTestId('rsc-popover');
-    await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
-
-    // check the content of the popover
-    expect(within(popover).getByText('Operating system: Mac')).toBeInTheDocument();
-    expect(within(popover).getByText('Browser: Firefox')).toBeInTheDocument();
-    expect(within(popover).getByText('Users: 3')).toBeInTheDocument();
-
-    bars = getAllMarksByGroupName(chart, 'bar0');
-
-    // validate the highlight visuals are present -- opacity is now animated, so it settles asynchronously
-    await waitFor(() => {
-      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      expect(bars[4]).toHaveAttribute('opacity', '1');
-    });
-    expect(bars[4]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
-    expect(bars[4]).toHaveAttribute('stroke-width', '2');
-  });
-
-  test('Dodged bar popover opens on dimension click and closes when clicking outside', async () => {
-    render(<DodgedBarChart {...DodgedBarChart.args} UNSAFE_highlightBy="dimension" />);
-
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-    let bars = getAllMarksByGroupName(chart, 'bar0');
-
-    // clicking the bar should open the popover
-    await clickNthElement(bars, 4);
-    const popover = await screen.findByTestId('rsc-popover');
-    await waitFor(() => expect(popover).toBeInTheDocument()); // waitFor to give the popover time to make sure it doesn't close
-
-    // check the content of the popover
-    expect(within(popover).getByText('Operating system: Mac')).toBeInTheDocument();
-    expect(within(popover).getByText('Browser: Firefox')).toBeInTheDocument();
-    expect(within(popover).getByText('Users: 3')).toBeInTheDocument();
-
-    bars = getAllMarksByGroupName(chart, 'bar0');
-
-    // validate the highlight visuals are present -- opacity is now animated, so it settles asynchronously
-    await waitFor(() => {
-      expect(bars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      expect(bars[4]).toHaveAttribute('opacity', '1');
-    });
-
-    const selectionRingMarks = getAllMarksByGroupName(chart, 'bar0_selectionRing');
-
-    expect(selectionRingMarks).toHaveLength(3);
-    expect(selectionRingMarks[0]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
-    expect(selectionRingMarks[1]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
-    expect(selectionRingMarks[2]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
-    expect(selectionRingMarks[0]).toHaveAttribute('stroke-width', '2');
-    expect(selectionRingMarks[1]).toHaveAttribute('stroke-width', '2');
-    expect(selectionRingMarks[2]).toHaveAttribute('stroke-width', '2');
-  });
-
   test('should call onClick callback when selecting a legend entry', async () => {
     const onOpenChange = jest.fn();
     render(<OnOpenChange {...OnOpenChange.args} onOpenChange={onOpenChange} />);
@@ -378,8 +300,8 @@ describe('ChartPopover', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  test('DonutChart', async () => {
-    render(<DonutChart {...DonutChart.args} />);
+  test('Donut popover renders default content', async () => {
+    render(<OnDonut {...OnDonut.args} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();

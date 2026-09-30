@@ -18,7 +18,7 @@ import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutSummaryProps } from '../../../types';
-import { basicDonutData } from '../../../stories/components/Donut/data';
+import { basicDonutData } from '../../../stories/Donut/data';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Tests/DonutSummary Variants',
