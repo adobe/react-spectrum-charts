@@ -202,6 +202,9 @@ yarn start
 # Storybook S2 variant (port 6010)
 yarn storybook:s2
 
+# Storybook S2 dev variant (port 6011)
+yarn storybook:s2:dev
+
 # Build all packages (respects dependency order)
 yarn build
 
@@ -245,14 +248,26 @@ WithMyFeature.args = {
 
 ## S2 Storybook Directory Structure
 
-S2 stories live in `packages/react-spectrum-charts-s2/src/stories/<ComponentName>/`:
+S2 has two Storybooks:
 
-- `<ComponentName>Examples.story.tsx` — Figma design equivalents only. These match specific Figma frames and use `title: 'React Spectrum Charts 2/<ComponentName>/Examples'`.
-- `Features/` — Granular per-prop and test-case stories. Title prefix: `'React Spectrum Charts 2/<ComponentName>/Features'`.
-  - **Single-story files** (one named export): Storybook hoists them flat into the sidebar — no folder node is created. Use for simple prop showcases (e.g. `LineType.story.tsx`).
-  - **Multi-story groups** (two or more related stories): Place in a named subdirectory with a matching title segment. Example: `Features/Tooltip/LineTooltip.story.tsx` with `title: 'React Spectrum Charts 2/Line/Features/Tooltip'`. This creates a `Tooltip` folder node in the sidebar.
-  - Never put two files with the same `title` and overlapping export names — Storybook will throw a duplicate story ID error.
-- **Pre-alpha components** (any mark exported from `pre-alpha/components/index.ts` — currently Area, Bullet, Combo, Donut, DonutSummary, Scatter, ScatterAnnotation, ScatterPath, SegmentLabel, Trendline, TrendlineAnnotation) get an extra `Pre-Alpha` segment right after `React Spectrum Charts 2/`, e.g. `'React Spectrum Charts 2/Pre-Alpha/Bullet/Features'`. This groups every pre-alpha mark's stories under one `Pre-Alpha` sidebar folder, separate from stable S2 components (Line, Bar, Legend, Axis) which keep the plain `'React Spectrum Charts 2/<ComponentName>/...'` prefix.
+- **Demo** (`yarn storybook:s2`, build `yarn build:storybook:s2`) loads only `packages/react-spectrum-charts-s2/src/stories/**`. Demo stories should be polished public examples: realistic data, no debug UI, no `UNSAFE_`/`unstable_` APIs, limited controls, and no duplicate variations.
+- **Dev** (`yarn storybook:s2:dev`, build `yarn build:storybook:s2:dev`) loads both `src/stories/**` and `src/dev/**`. Dev-only stories live in `packages/react-spectrum-charts-s2/src/dev/<Chart>/<Category>/...`.
+
+Demo stories in `src/stories/<ComponentName>/` use:
+
+- `<ComponentName>Examples.story.tsx` — realistic app examples or Figma design equivalents with `title: 'React Spectrum Charts 2/<ComponentName>/Examples'`.
+- `Features/` — one representative story per feature. Title prefix: `'React Spectrum Charts 2/<ComponentName>/Features'`.
+- **Pre-alpha components** keep the `React Spectrum Charts 2/Pre-Alpha/<ComponentName>/...` title prefix.
+
+Dev categories are chart-first:
+
+- `Tests` — visible stories used by tests or manual reproduction.
+- `Playground` — one story per chart/component exposing broad controls.
+- `Regressions` — specific bug reproductions, named after issue spec slugs when one exists.
+- `Performance` — animation, large-data, timing, and stress stories.
+- `Dashboards` — variation dashboards and other internal review dashboards.
+
+Never put two files with the same `title` and overlapping export names — Storybook will throw a duplicate story ID error.
 
 ---
 
