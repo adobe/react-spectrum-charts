@@ -16,10 +16,13 @@ import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from '.
 export default {
   title: 'React Spectrum Charts 2/Legend/Features/Highlight',
   component: Legend,
+  excludeStories: ['Controlled'],
 };
 
 const Basic = bindWithProps(LegendBarStory);
 Basic.args = { highlight: true, ...defaultProps };
+Basic.storyName = 'Hover highlight';
+Object.assign(Basic, { parameters: { controls: { include: ['highlight'] } } });
 
 const Controlled = bindWithProps(LegendBarHighlightedSeriesStory);
 Controlled.args = { ...defaultProps };

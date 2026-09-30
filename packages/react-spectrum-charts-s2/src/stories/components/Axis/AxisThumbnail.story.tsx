@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, AxisThumbnail, Bar, ChartPopover, ChartInspect } from '../../../components';
+import { Axis, AxisThumbnail, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { AxisThumbnailProps } from '../../../types';
@@ -26,6 +26,7 @@ import { browserData as chartPopoverData } from '../../data/data';
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Thumbnail',
   component: AxisThumbnail,
+  excludeStories: ['YAxis'],
   parameters: {
     controls: {
       exclude: ['orientation', 'width'],
@@ -50,12 +51,13 @@ const AxisThumbnailStory: StoryFn<StoryArgs> = (args): ReactElement => {
   const chartProps = useChartProps({ data, width: width || 'auto', height: '100%', padding: 2 });
 
   return (
-    <div style={{ overflow: 'hidden', width: 800, minWidth: 150, maxWidth: 1200, height: 400, minHeight: 150, maxHeight: 800, border: '1px solid var(--spectrum-gray-200)', padding: 16, resize: 'both' }}>
+    <div style={{ overflow: 'hidden', width: 760, height: 360, padding: 16 }}>
       <Chart {...chartProps}>
-        <Bar orientation={orientation} dimension="browser" metric="downloads" />
+        <Bar orientation={orientation} dimension="browser" metric="downloads" color="browser" />
         <Axis position={orientation === 'horizontal' ? 'left' : 'bottom'} baseline>
           <AxisThumbnail {...axisThumbnailProps} />
         </Axis>
+        <Legend />
       </Chart>
     </div>
   );
@@ -66,6 +68,7 @@ Basic.args = {
   urlKey: 'thumbnail',
   orientation: 'vertical',
 };
+Object.assign(Basic, { parameters: { controls: { include: ['urlKey', 'orientation'] } } });
 
 const YAxis = bindWithProps(AxisThumbnailStory);
 YAxis.args = {
@@ -105,6 +108,7 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
       <Axis position="bottom" baseline>
         <AxisThumbnail urlKey="thumbnail" />
       </Axis>
+      <Legend />
     </Chart>
   );
 };
@@ -112,5 +116,6 @@ const ChartPopoverSvgStory: StoryFn<typeof ChartPopover> = (args): ReactElement 
 const Popover = bindWithProps(ChartPopoverSvgStory);
 Popover.args = { children: dialogContent, width: 'auto' };
 Popover.storyName = 'Popover';
+Object.assign(Popover, { parameters: { controls: { include: ['children', 'width'] } } });
 
 export { Basic, YAxis, Popover };

@@ -17,7 +17,7 @@ import { StoryFn } from '@storybook/react';
 import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
 
 import useChartProps from '../../../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartInspect, Line } from '../../../index';
+import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
 import { stockPriceData, workspaceTrendsData } from '../../data/data';
 import { barData, barDataLongLabels } from '../Bar/data';
@@ -26,6 +26,27 @@ import timeData from './timeData.json';
 export default {
   title: 'React Spectrum Charts 2/Axis/Features',
   component: Axis,
+  excludeStories: [
+    'Basic',
+    'ControlledLabels',
+    'CurrencyFormatSpecifier',
+    'CurrencyLocale',
+    'CustomYRange',
+    'MultilineTitle',
+    'NonLinearAxis',
+    'NumberFormat',
+    'OnClick',
+    'SecondGranularity',
+    'SecondGranularityLine',
+    'SubLabels',
+    'TickCountLimit',
+    'TickCountMinimum',
+    'TickMinStep',
+    'TruncateLabels',
+    'VerticalSecondGranularity',
+    'VerticalTimeAxis',
+    'YearGranularity',
+  ],
   argTypes: {
     lineType: {
       control: 'select',
@@ -43,8 +64,58 @@ export default {
 };
 
 const data = [
-  { x: 0, y: 0, series: 0 },
-  { x: 1, y: 1, series: 0 },
+  { x: 0, y: 0, series: 'Desktop conversion' },
+  { x: 1, y: 1, series: 'Desktop conversion' },
+];
+
+const conversionTrendData = [
+  { week: 1, conversionRate: 0.38, channel: 'Paid search' },
+  { week: 2, conversionRate: 0.44, channel: 'Paid search' },
+  { week: 3, conversionRate: 0.47, channel: 'Paid search' },
+  { week: 4, conversionRate: 0.52, channel: 'Paid search' },
+  { week: 1, conversionRate: 0.28, channel: 'Email' },
+  { week: 2, conversionRate: 0.33, channel: 'Email' },
+  { week: 3, conversionRate: 0.37, channel: 'Email' },
+  { week: 4, conversionRate: 0.41, channel: 'Email' },
+];
+
+const revenueTrendData = [
+  { week: 1, revenue: 420000, channel: 'Paid search' },
+  { week: 2, revenue: 760000, channel: 'Paid search' },
+  { week: 3, revenue: 1180000, channel: 'Paid search' },
+  { week: 4, revenue: 1640000, channel: 'Paid search' },
+  { week: 1, revenue: 260000, channel: 'Email' },
+  { week: 2, revenue: 520000, channel: 'Email' },
+  { week: 3, revenue: 910000, channel: 'Email' },
+  { week: 4, revenue: 1320000, channel: 'Email' },
+];
+
+const durationTrendData = [
+  { datetime: 1780293600000, seconds: 0, workflow: 'Checkout' },
+  { datetime: 1780380000000, seconds: 2200, workflow: 'Checkout' },
+  { datetime: 1780466400000, seconds: 5000, workflow: 'Checkout' },
+  { datetime: 1780552800000, seconds: 7800, workflow: 'Checkout' },
+  { datetime: 1780639200000, seconds: 10000, workflow: 'Checkout' },
+  { datetime: 1780293600000, seconds: 0, workflow: 'Documentation' },
+  { datetime: 1780380000000, seconds: 1800, workflow: 'Documentation' },
+  { datetime: 1780466400000, seconds: 4100, workflow: 'Documentation' },
+  { datetime: 1780552800000, seconds: 6200, workflow: 'Documentation' },
+  { datetime: 1780639200000, seconds: 8400, workflow: 'Documentation' },
+];
+
+const rangeDemoData = [
+  { point: 0, users: 2200, cohort: 'Trial accounts' },
+  { point: 5, users: 3100, cohort: 'Trial accounts' },
+  { point: 10, users: 4300, cohort: 'Trial accounts' },
+  { point: 15, users: 5200, cohort: 'Trial accounts' },
+  { point: 20, users: 6100, cohort: 'Trial accounts' },
+  { point: 25, users: 7200, cohort: 'Trial accounts' },
+  { point: 0, users: 1800, cohort: 'Paid accounts' },
+  { point: 5, users: 2600, cohort: 'Paid accounts' },
+  { point: 10, users: 3400, cohort: 'Paid accounts' },
+  { point: 15, users: 4600, cohort: 'Paid accounts' },
+  { point: 20, users: 5800, cohort: 'Paid accounts' },
+  { point: 25, users: 6900, cohort: 'Paid accounts' },
 ];
 
 const AxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
@@ -56,12 +127,38 @@ const AxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
   );
 };
 
+const AxisDemoStory: StoryFn<typeof Axis> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: conversionTrendData, width: 700 });
+  return (
+    <Chart {...chartProps}>
+      <Axis {...args} />
+      <Axis position="bottom" baseline title="Week" />
+      <Line color="channel" dimension="week" metric="conversionRate" scaleType="linear" />
+      <Legend />
+    </Chart>
+  );
+};
+
+const RevenueAxisDemoStory: StoryFn<typeof Axis> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: revenueTrendData, width: 700 });
+  return (
+    <Chart {...chartProps}>
+      <Axis {...args} />
+      <Axis position="bottom" baseline title="Week" />
+      <Line color="channel" dimension="week" metric="revenue" scaleType="linear" />
+      <Legend />
+    </Chart>
+  );
+};
+
 const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
   const chartProps = useChartProps({ data: timeData[args.granularity ?? DEFAULT_GRANULARITY], width: 600 });
   return (
     <Chart {...chartProps}>
       <Axis {...args} />
-      <Line />
+      <Axis position="left" grid title="Downloads" />
+      <Line color="series" />
+      <Legend />
     </Chart>
   );
 };
@@ -74,7 +171,9 @@ const VerticalTimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Axis {...args} />
-      <Bar orientation="horizontal" dimension="datetime" />
+      <Axis position="bottom" grid title="Downloads" />
+      <Bar orientation="horizontal" dimension="datetime" color="series" />
+      <Legend />
     </Chart>
   );
 };
@@ -87,7 +186,9 @@ const TimeAxisBarStory: StoryFn<typeof Axis> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Axis {...args} />
-      <Bar orientation="vertical" dimension="datetime" />
+      <Axis position="left" grid title="Downloads" />
+      <Bar orientation="vertical" dimension="datetime" color="series" />
+      <Legend />
     </Chart>
   );
 };
@@ -107,7 +208,9 @@ const TruncatedLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Axis {...args} />
-      <Bar dimension="browser" metric="downloads" />
+      <Axis position="left" grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads" color="browser" />
+      <Legend />
     </Chart>
   );
 };
@@ -119,6 +222,7 @@ const LinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
       <Axis position="left" grid title="Users" />
       <Axis {...args} />
       <Line color="series" dimension="point" scaleType="linear" />
+      <Legend />
     </Chart>
   );
 };
@@ -130,17 +234,31 @@ const LinearYAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
       <Axis position="bottom" grid baseline ticks tickMinStep={5} baselineOffset={args?.range?.[0]} title="Users" />
       <Axis {...args} />
       <Line color="series" dimension="point" scaleType="linear" />
+      <Legend />
     </Chart>
   );
 };
 
 const DurationStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
+  const chartProps = useChartProps({ data: durationTrendData, width: 700 });
   return (
     <Chart {...chartProps}>
       <Axis {...args} />
-      <Axis position="bottom" labelFormat="time" />
-      <Line color="series" dimension="datetime" scaleType="time" />
+      <Axis position="bottom" labelFormat="time" title="Day" />
+      <Line color="workflow" dimension="datetime" metric="seconds" scaleType="time" />
+      <Legend />
+    </Chart>
+  );
+};
+
+const RangeDemoStory: StoryFn<typeof Axis> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: rangeDemoData, width: 700 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Users" />
+      <Axis {...args} />
+      <Line color="cohort" dimension="point" metric="users" scaleType="linear" />
+      <Legend />
     </Chart>
   );
 };
@@ -152,6 +270,7 @@ const NonLinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
       <Axis position="bottom" ticks baseline labelFormat="time" />
       <Axis {...args} />
       <Line color="series" lineType="period" scaleType="time" />
+      <Legend />
     </Chart>
   );
 };
@@ -172,6 +291,7 @@ const SparkLineStory: StoryFn<typeof Axis> = (args): ReactElement => {
           )}
         </ChartInspect>
       </Line>
+      <Legend color="stock" />
     </Chart>
   );
 };
@@ -185,6 +305,12 @@ Basic.args = {
   ticks: true,
   title: 'Conversion Rate',
 };
+Object.assign(Basic, { parameters: { controls: { include: ['position', 'baseline', 'grid', 'labelFormat', 'ticks', 'title'] } } });
+
+const ScaleBasics = bindWithProps(AxisDemoStory);
+ScaleBasics.args = { ...Basic.args };
+ScaleBasics.storyName = 'Scale basics';
+Object.assign(ScaleBasics, { parameters: { controls: { include: ['position', 'baseline', 'grid', 'labelFormat', 'ticks', 'title'] } } });
 
 const MultilineTitle = bindWithProps(AxisStory);
 MultilineTitle.args = {
@@ -203,6 +329,7 @@ DurationLabelFormat.args = {
   labelFormat: 'duration',
   title: 'Time spent',
 };
+Object.assign(DurationLabelFormat, { parameters: { controls: { include: ['labelFormat', 'title', 'position', 'grid'] } } });
 
 const Time = bindWithProps(TimeAxisStory);
 Time.args = {
@@ -213,6 +340,7 @@ Time.args = {
   ticks: true,
   labelAlign: 'center',
 };
+Object.assign(Time, { parameters: { controls: { include: ['granularity', 'position', 'labelFormat', 'ticks', 'labelAlign'] } } });
 
 const SecondGranularity = bindWithProps(TimeAxisBarStory);
 SecondGranularity.args = {
@@ -262,6 +390,7 @@ OnClick.args = {
   title: 'Browser',
   onClick: action('onClick'),
 };
+Object.assign(OnClick, { parameters: { controls: { include: ['onClick', 'position', 'title'] } } });
 
 const TickMinStep = bindWithProps(LinearAxisStory);
 TickMinStep.args = {
@@ -291,8 +420,13 @@ NumberFormat.args = {
   title: 'Price',
   range: [0, 2000000],
 };
+Object.assign(NumberFormat, { parameters: { controls: { include: ['numberFormat', 'currencyCode', 'currencyLocale', 'range'] } } });
 
-const CustomXRange = bindWithProps(LinearAxisStory);
+const NumberFormatting = bindWithProps(RevenueAxisDemoStory);
+NumberFormatting.args = { ...NumberFormat.args, title: 'Revenue' };
+Object.assign(NumberFormatting, { parameters: { controls: { include: ['numberFormat', 'currencyCode', 'currencyLocale', 'range'] } } });
+
+const CustomXRange = bindWithProps(RangeDemoStory);
 CustomXRange.args = {
   position: 'bottom',
   baseline: true,
@@ -301,6 +435,8 @@ CustomXRange.args = {
   tickMinStep: 5,
   range: [-5, 30],
 };
+CustomXRange.storyName = 'Ranges and tick spacing';
+Object.assign(CustomXRange, { parameters: { controls: { include: ['range', 'tickMinStep', 'ticks', 'labelFormat'] } } });
 
 const CustomYRange = bindWithProps(LinearYAxisStory);
 CustomYRange.args = {
@@ -395,6 +531,8 @@ VerticalSecondGranularity.args = {
 };
 
 export {
+  ScaleBasics,
+  NumberFormatting,
   Basic,
   ControlledLabels,
   CustomXRange,

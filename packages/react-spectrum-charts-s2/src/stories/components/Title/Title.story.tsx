@@ -23,6 +23,7 @@ import { browserData as data } from '../../data/data';
 export default {
   title: 'React Spectrum Charts 2/Title/Features',
   component: Title,
+  excludeStories: ['FontWeight', 'Orient', 'Position'],
 };
 
 const defaultChartProps: ChartProps = { data, minWidth: 400, maxWidth: 800, height: 400 };
@@ -42,8 +43,9 @@ const TitleBarStory: StoryFn<typeof Title> = (args): ReactElement => {
 
 const Basic = bindWithProps(TitleBarStory);
 Basic.args = {
-  text: 'Bar Chart',
+  text: 'Browser usage by operating system',
 };
+Object.assign(Basic, { parameters: { controls: { include: ['text', 'orient', 'position', 'fontWeight'] } } });
 
 const Orient = bindWithProps(TitleBarStory);
 Orient.args = {

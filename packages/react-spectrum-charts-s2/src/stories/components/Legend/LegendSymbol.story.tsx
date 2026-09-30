@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../Chart';
-import { Bar, Legend, Line } from '../../../components';
+import { Axis, Bar, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { browserData as data } from '../../data/data';
@@ -25,6 +25,7 @@ import { defaultProps } from './LegendStoryUtils';
 export default {
   title: 'React Spectrum Charts 2/Legend/Features/Symbol',
   component: Legend,
+  excludeStories: ['Color', 'LineType', 'LineWidth', 'Opacity', 'Symbols'],
 };
 
 const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
@@ -33,6 +34,8 @@ const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Bar color="series" />
       <Legend {...args} />
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
     </Chart>
   );
 };
@@ -42,6 +45,8 @@ const LegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Line dimension="category" lineType="series" color="series" scaleType="point" />
       <Legend {...args} />
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
     </Chart>
   );
 };
@@ -70,5 +75,7 @@ Supreme.args = {
   symbolShape: 'series',
   ...defaultProps,
 };
+Supreme.storyName = 'Symbol encodings';
+Object.assign(Supreme, { parameters: { controls: { include: ['color', 'lineType', 'lineWidth', 'opacity', 'symbolShape'] } } });
 
-export { Color, LineType, LineWidth, Opacity, Supreme, Symbols };
+export { Supreme, Color, LineType, LineWidth, Opacity, Symbols };

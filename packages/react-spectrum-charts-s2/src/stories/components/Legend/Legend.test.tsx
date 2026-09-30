@@ -22,6 +22,7 @@ import {
   getAllLegendSymbols,
   hoverNthElement,
   render,
+  rightClickNthElement,
   screen,
   waitFor,
 } from '../../../test-utils';
@@ -211,7 +212,7 @@ describe('Legend', () => {
     const chart = await findChart();
     const entries = getAllLegendEntries(chart);
 
-    await clickNthElement(entries, 0);
+    await rightClickNthElement(entries, 0);
     const popover = await screen.findByTestId('rsc-popover');
     await waitFor(() => expect(popover).toBeInTheDocument());
 

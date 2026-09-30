@@ -12,6 +12,7 @@
 import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
+import { action } from 'storybook/actions';
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartPopover, Legend, Line } from '../../../components';
@@ -81,10 +82,26 @@ const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<
 export default {
   title: 'React Spectrum Charts 2/Legend/Features',
   component: Legend,
+  excludeStories: [
+    'Descriptions',
+    'Disconnected',
+    'Labels',
+    'LabelLimit',
+    'LegendColumns',
+    'LegendColumnsExtended',
+    'LegendColumnsLongLabel',
+    'LegendColumns20Series',
+    'OnClick',
+    'Position',
+    'Supreme',
+    'Title',
+    'TitleLimit',
+  ],
 };
 
 const Basic = bindWithProps(LegendBarStory);
 Basic.args = { ...defaultProps };
+Object.assign(Basic, { parameters: { controls: { include: [] } } });
 
 const descriptions = [
   {
@@ -127,13 +144,24 @@ TitleLimit.args = {
 };
 
 const OnClick = bindWithProps(LegendBarStory);
-OnClick.args = {};
+OnClick.args = { ...defaultProps, onClick: action('legend entry clicked') };
 
 const Popover = bindWithProps(LegendBarStory);
 Popover.args = {
-  children: <ChartPopover width="auto">{(datum) => <div>{datum.value}</div>}</ChartPopover>,
+  children: (
+    <ChartPopover rightClick width="auto">
+      {(datum) => (
+        <div>
+          <div>{datum.series}</div>
+          <div>{datum.category}: {datum.value}</div>
+        </div>
+      )}
+    </ChartPopover>
+  ),
   ...defaultProps,
 };
+Popover.storyName = 'Popover and context menu';
+Object.assign(Popover, { parameters: { controls: { include: ['children'] } } });
 
 const Position = bindWithProps(LegendBarStory);
 Position.args = { position: 'right', ...defaultProps };
@@ -150,11 +178,36 @@ Supreme.args = {
   title: 'Operating system',
 };
 
+const LabelsDescriptionsAndTitle = bindWithProps(LegendBarStory);
+LabelsDescriptionsAndTitle.args = {
+  descriptions,
+  highlight: true,
+  labelLimit: 180,
+  legendLabels,
+  title: 'Operating system',
+  titleLimit: 200,
+  ...defaultProps,
+};
+Object.assign(LabelsDescriptionsAndTitle, {
+  parameters: {
+    controls: { include: ['descriptions', 'legendLabels', 'labelLimit', 'title', 'titleLimit', 'position', 'align'] },
+  },
+});
+
 const LegendColumns = bindWithProps(LegendLineStory);
 LegendColumns.args = {
   labelLimit: 200,
   highlight: true,
 };
+
+const PositionAndColumns = bindWithProps(LegendLineStory);
+PositionAndColumns.args = {
+  labelLimit: 200,
+  highlight: true,
+  position: 'right',
+  title: 'Metrics',
+};
+Object.assign(PositionAndColumns, { parameters: { controls: { include: ['position', 'align', 'labelLimit', 'title'] } } });
 
 const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesData);
 const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
@@ -179,18 +232,20 @@ LegendColumns20Series.args = {
 
 export {
   Basic,
+  LabelsDescriptionsAndTitle,
+  Popover,
+  PositionAndColumns,
   Descriptions,
   Disconnected,
   Labels,
   LabelLimit,
-  TitleLimit,
-  OnClick,
-  Popover,
-  Position,
-  Title,
-  Supreme,
   LegendColumns,
   LegendColumnsExtended,
   LegendColumnsLongLabel,
   LegendColumns20Series,
+  OnClick,
+  Position,
+  Supreme,
+  Title,
+  TitleLimit,
 };

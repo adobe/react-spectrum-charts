@@ -16,6 +16,7 @@ import { LegendBarStory } from './LegendStoryUtils';
 export default {
   title: 'React Spectrum Charts 2/Legend/Features/Align',
   component: Legend,
+  excludeStories: ['Align'],
 };
 
 const descriptions = [

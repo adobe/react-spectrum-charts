@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { action } from 'storybook/actions';
+
 import { Legend } from '../../../components';
 import { bindWithProps } from '../../../test-utils';
 import { LegendBarStory, defaultProps } from './LegendStoryUtils';
@@ -18,18 +20,14 @@ export default {
   component: Legend,
 };
 
-const onMouseOver = (seriesName: string) => {
-  console.log('onMouseOver', seriesName);
-};
-const onMouseOut = (seriesName: string) => {
-  console.log('onMouseOut', seriesName);
-};
 const ControlledHover = bindWithProps(LegendBarStory);
 ControlledHover.args = {
-  onMouseOver: onMouseOver,
-  onMouseOut: onMouseOut,
+  highlight: true,
+  onMouseOver: action('legend mouse over'),
+  onMouseOut: action('legend mouse out'),
   ...defaultProps,
 };
 ControlledHover.storyName = 'Hover (controlled)';
+Object.assign(ControlledHover, { parameters: { controls: { include: ['highlight', 'onMouseOver', 'onMouseOut'] } } });
 
 export { ControlledHover };

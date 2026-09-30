@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend, Line } from '../../../components';
+import { Axis, Bar, Legend, Line, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { LegendProps } from '../../../types';
 import { browserData as data } from '../../data/data';
@@ -48,10 +48,11 @@ export const LegendBarStory: StoryFn<typeof Legend> = (args): ReactElement => {
   const chartProps = useChartProps({ data, width: 700 });
   return (
     <Chart {...chartProps}>
+      <Title text="Browser usage by operating system" />
       <Bar color="series" />
       <Legend {...args} />
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid />
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
     </Chart>
   );
 };
@@ -60,10 +61,11 @@ export const LegendBarHighlightedSeriesStory: StoryFn<typeof Legend> = (args): R
   const chartProps = useChartProps({ data, width: 700, highlightedSeries: 'Mac' });
   return (
     <Chart {...chartProps}>
+      <Title text="Browser usage by operating system" />
       <Bar color="series" />
       <Legend {...args} />
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid />
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
     </Chart>
   );
 };
@@ -72,10 +74,11 @@ export const LegendBarHiddenSeriesStory: StoryFn<typeof Legend> = (args): ReactE
   const chartProps = useChartProps({ data, width: 700, hiddenSeries: ['Mac'] });
   return (
     <Chart {...chartProps}>
+      <Title text="Browser usage by operating system" />
       <Bar color="series" />
       <Legend {...args} />
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid />
+      <Axis position="bottom" baseline title="Browser" />
+      <Axis position="left" grid title="Users" />
     </Chart>
   );
 };
@@ -97,6 +100,7 @@ export const LegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
   const chartProps = useChartProps({ data: legendColumnsData, width: 700, height: 300 });
   return (
     <Chart {...chartProps}>
+      <Title text="Daily product metrics" />
       <Axis position="left" grid />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line color="series" dimension="datetime" metric="value" scaleType="time" />

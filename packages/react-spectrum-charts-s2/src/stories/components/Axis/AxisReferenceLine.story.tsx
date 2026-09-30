@@ -14,19 +14,30 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Line, ReferenceLine } from '../../../components';
+import { Axis, Legend, Line, ReferenceLine } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../stories/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Reference Line',
   component: ReferenceLine,
+  excludeStories: ['Basic'],
 };
 
+const conversionData = [
+  { week: 1, conversionRate: 0.39, channel: 'Paid search' },
+  { week: 2, conversionRate: 0.43, channel: 'Paid search' },
+  { week: 3, conversionRate: 0.47, channel: 'Paid search' },
+  { week: 4, conversionRate: 0.51, channel: 'Paid search' },
+  { week: 1, conversionRate: 0.31, channel: 'Email' },
+  { week: 2, conversionRate: 0.34, channel: 'Email' },
+  { week: 3, conversionRate: 0.38, channel: 'Email' },
+  { week: 4, conversionRate: 0.42, channel: 'Email' },
+];
+
 const defaultChartProps: ChartProps = {
-  data: workspaceTrendsData,
+  data: conversionData,
   minWidth: 400,
   maxWidth: 800,
   height: 400,
@@ -37,24 +48,27 @@ const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement =
   const chartProps = useChartProps(defaultChartProps);
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid title="Users">
+      <Axis position="left" grid title="Conversion rate" labelFormat="percentage">
         <ReferenceLine {...args} />
       </Axis>
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time" />
+      <Axis position="bottom" baseline ticks title="Week" />
+      <Line dimension="week" metric="conversionRate" color="channel" scaleType="linear" />
+      <Legend />
     </Chart>
   );
 };
 
 const Basic = bindWithProps(ReferenceLineStory);
 Basic.args = {
-  value: 5000,
+  value: 0.45,
 };
 
 const Label = bindWithProps(ReferenceLineStory);
 Label.args = {
   label: 'Target',
-  value: 5000,
+  value: 0.45,
 };
+Label.storyName = 'Reference line';
+Object.assign(Label, { parameters: { controls: { include: ['label', 'value'] } } });
 
-export { Basic, Label };
+export { Label, Basic };

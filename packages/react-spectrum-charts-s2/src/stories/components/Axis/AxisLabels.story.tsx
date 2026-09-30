@@ -15,7 +15,7 @@ import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-charts/constants';
 
-import { Axis, Bar } from '../../../components';
+import { Axis, Bar, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Chart } from '../../../index';
 import { bindWithProps } from '../../../test-utils';
@@ -24,14 +24,26 @@ import { barDataLongLabels } from '../Bar/data';
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Labels',
   component: Axis,
+  excludeStories: ['LabelAlign', 'LabelLimit', 'LabelOrientation', 'LabelWithTooltip', 'TruncatedLabelWithTooltip'],
   argTypes: {
     hasTooltip: { control: 'boolean' },
   },
 };
 
 const data = [
-  { x: 0, y: 0, series: 0 },
-  { x: 1, y: 1, series: 0 },
+  { x: 0, y: 0, series: 'Desktop conversion' },
+  { x: 1, y: 1, series: 'Desktop conversion' },
+];
+
+const labelDemoData = [
+  { week: 1, conversionRate: 0.38, channel: 'Paid search' },
+  { week: 2, conversionRate: 0.44, channel: 'Paid search' },
+  { week: 3, conversionRate: 0.47, channel: 'Paid search' },
+  { week: 4, conversionRate: 0.52, channel: 'Paid search' },
+  { week: 1, conversionRate: 0.28, channel: 'Email' },
+  { week: 2, conversionRate: 0.33, channel: 'Email' },
+  { week: 3, conversionRate: 0.37, channel: 'Email' },
+  { week: 4, conversionRate: 0.41, channel: 'Email' },
 ];
 
 const AxisLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
@@ -43,7 +55,19 @@ const AxisLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
   );
 };
 
-const Basic = bindWithProps(AxisLabelStory);
+const AxisLabelDemoStory: StoryFn<typeof Axis> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: labelDemoData, width: 700 });
+  return (
+    <Chart {...chartProps}>
+      <Axis {...args}></Axis>
+      <Axis position="left" grid title="Conversion rate" />
+      <Line color="channel" dimension="week" metric="conversionRate" scaleType="linear" />
+      <Legend />
+    </Chart>
+  );
+};
+
+const Basic = bindWithProps(AxisLabelDemoStory);
 Basic.args = {
   labelAlign: 'center',
   labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
@@ -53,6 +77,11 @@ Basic.args = {
   ticks: true,
   baseline: true,
 };
+Object.assign(Basic, {
+  parameters: {
+    controls: { include: ['labelAlign', 'labelFontWeight', 'labelFormat', 'labelOrientation', 'hasTooltip'] },
+  },
+});
 
 const LabelAlign = bindWithProps(AxisLabelStory);
 LabelAlign.args = {
@@ -93,7 +122,9 @@ const TruncatedLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Axis {...args} />
-      <Bar dimension="browser" metric="downloads" />
+      <Axis position="left" grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads" color="browser" />
+      <Legend />
     </Chart>
   );
 };
@@ -122,6 +153,12 @@ CustomTooltipText.args = {
     { value: 'Google Chrome', text: 'Chrome is the most popular browser' },
   ],
 };
+CustomTooltipText.storyName = 'Truncated labels with tooltips';
+Object.assign(CustomTooltipText, {
+  parameters: {
+    controls: { include: ['truncateLabels', 'hasTooltip', 'tooltipText', 'labelLimit', 'title'] },
+  },
+});
 
 const LabelLimitStory: StoryFn<typeof Axis> = (args): ReactElement => {
   const longLabelData = [
@@ -134,7 +171,8 @@ const LabelLimitStory: StoryFn<typeof Axis> = (args): ReactElement => {
     <Chart {...chartProps}>
       <Axis {...args} />
       <Axis position="left" grid title="Downloads" />
-      <Bar dimension="browser" metric="downloads" />
+      <Bar dimension="browser" metric="downloads" color="browser" />
+      <Legend />
     </Chart>
   );
 };

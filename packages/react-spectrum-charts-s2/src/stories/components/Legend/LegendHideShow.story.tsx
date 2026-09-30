@@ -16,6 +16,7 @@ import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './Lege
 export default {
   title: 'React Spectrum Charts 2/Legend/Features/Hide Show',
   component: Legend,
+  excludeStories: ['HiddenSeriesIcon', 'IsToggleable'],
 };
 
 const DefaultHiddenSeries = bindWithProps(LegendBarStory);
@@ -31,10 +32,16 @@ DefaultHiddenSeries.args = {
   ...defaultProps,
 };
 DefaultHiddenSeries.storyName = 'Default Hidden Series (uncontrolled)';
+Object.assign(DefaultHiddenSeries, {
+  parameters: {
+    controls: { include: ['defaultHiddenSeries', 'isToggleable', 'highlight', 'children'] },
+  },
+});
 
 const HiddenSeries = bindWithProps(LegendBarHiddenSeriesStory);
 HiddenSeries.args = { highlight: true, ...defaultProps };
 HiddenSeries.storyName = 'Hidden Series (controlled)';
+Object.assign(HiddenSeries, { parameters: { controls: { include: ['highlight'] } } });
 
 const IsToggleable = bindWithProps(LegendBarStory);
 IsToggleable.args = { isToggleable: true, highlight: true, ...defaultProps };

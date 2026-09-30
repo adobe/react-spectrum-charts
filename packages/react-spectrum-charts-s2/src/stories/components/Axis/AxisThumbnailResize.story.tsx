@@ -23,6 +23,7 @@ import { barData } from '../Bar/data';
 export default {
 	title: 'React Spectrum Charts 2/Axis/Features/Thumbnail',
 	component: AxisThumbnail,
+	excludeStories: ['Resizable'],
 };
 
 const thumbnails = ['/chrome.png', '/firefox.png', '/safari.png', '/edge.png', '/explorer.png'];
