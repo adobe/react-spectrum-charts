@@ -242,12 +242,12 @@ describe('getArcMark()', () => {
     ]);
   });
 
-  test('should respect a custom otherItemColor override', () => {
-    const arcMark = getArcMark({ ...defaultDonutOptions, emphasizedItems: ['Chrome'], otherItemColor: 'gray-200' });
+  test('should use the dark theme gray-400 for non-emphasized segments', () => {
+    const arcMark = getArcMark({ ...defaultDonutOptions, colorScheme: 'dark', emphasizedItems: ['Chrome'] });
     expect(arcMark.encode?.enter?.fill).toEqual([
       {
         test: `indexof(["Chrome"], datum.testColor) < 0`,
-        value: spectrum2Colors.light['gray-200'],
+        value: spectrum2Colors.dark['gray-400'],
       },
       { scale: 'color', field: 'testColor' },
     ]);
@@ -314,7 +314,7 @@ describe('getEmptyStateArcMark()', () => {
     expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: '0 + 2 * PI' });
   });
   test('should mirror the semicircle sweep and bottom-edge anchor', () => {
-    const emptyStateMark = getEmptyStateArcMark({ ...defaultDonutOptions, variant: 'semicircle', startAngle: -Math.PI / 2 });
+    const emptyStateMark = getEmptyStateArcMark({ ...defaultDonutOptions, variant: 'semicircle' });
     expect(emptyStateMark.encode?.enter?.y).toEqual({ signal: 'height' });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
     expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });

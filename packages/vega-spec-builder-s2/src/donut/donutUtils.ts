@@ -249,10 +249,10 @@ const getEmphasizeOtherExpr = (emphasizedItems: (string | number)[], color: stri
  * @returns ColorValueRef | ProductionRule<ColorValueRef>
  */
 const getEmphasizeFillEncoding = (options: DonutSpecOptions): ColorValueRef | ProductionRule<ColorValueRef> => {
-  const { color, colorScheme, emphasizedItems, otherItemColor } = options;
+  const { color, colorScheme, emphasizedItems } = options;
   const normalColor = getColorProductionRule(color, colorScheme);
   if (!emphasizedItems?.length) return normalColor;
-  const grayColor = getS2ColorValue(otherItemColor || 'gray-400', colorScheme);
+  const grayColor = getS2ColorValue('gray-400', colorScheme);
   return [{ test: getEmphasizeOtherExpr(emphasizedItems, color), value: grayColor }, normalColor];
 };
 
@@ -262,7 +262,7 @@ const getHoveredArcFillEncoding = (
   const { color, colorScheme, emphasizedItems, idKey, name } = options;
   if (!emphasizedItems?.length || !isInteractive(options)) return;
   const normalColor = getColorProductionRule(color, colorScheme);
-  const grayColor = getS2ColorValue(options.otherItemColor || 'gray-400', colorScheme);
+  const grayColor = getS2ColorValue('gray-400', colorScheme);
   return [
     {
       test: `isValid(${name}_hoveredItem) && ${name}_hoveredItem.${idKey} === datum.${idKey}`,
@@ -272,6 +272,9 @@ const getHoveredArcFillEncoding = (
     normalColor,
   ];
 };
+
+export const getDonutStartAngle = ({ variant }: Pick<DonutSpecOptions, 'variant'>): number =>
+  variant === 'semicircle' ? -Math.PI / 2 : 0;
 
 /**
  * Gets the y anchor signal for donut marks, placing a semicircle's flat edge below its diameter.
@@ -341,7 +344,8 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
  * @returns ArcMark
  */
 export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { colorScheme, name, startAngle, variant } = options;
+  const { colorScheme, name, variant } = options;
+  const startAngle = getDonutStartAngle(options);
   const outerRadius = getDonutOuterRadiusExpr(options);
   const sweep = variant === 'semicircle' ? 'PI' : '2 * PI';
   return {

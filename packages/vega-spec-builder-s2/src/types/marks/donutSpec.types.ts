@@ -30,8 +30,6 @@ export interface DonutOptions {
   metric?: string;
   /** Sets the name of the component. */
   name?: string;
-  /** Start angle of the donut in radians (0 is top dead center, and default) */
-  startAngle?: number;
   /** Segment ordering for semicircle donuts. Use `data` to preserve ordinal source order. */
   sortOrder?: 'valueDescending' | 'data';
   /**
@@ -41,11 +39,6 @@ export interface DonutOptions {
    * non-primary direct labels entirely.
    */
   emphasizedItems?: (string | number)[];
-  /**
-   * Overrides the default gray color used for segments not in `emphasizedItems`.
-   * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
-   */
-  otherItemColor?: string;
   /** Hides labels for segments not in `emphasizedItems`. */
   hideDeemphasizedLabels?: boolean;
   /**
@@ -73,7 +66,6 @@ type DonutOptionsWithDefaults =
   | 'name'
   | 'segmentLabels'
   | 'sortOrder'
-  | 'startAngle'
   | 'variant';
 
 export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutOptionsWithDefaults> {

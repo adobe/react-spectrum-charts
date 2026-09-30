@@ -27,7 +27,6 @@ const Donut: FC<DonutProps> = ({
   metric = DEFAULT_METRIC,
   name,
   sortOrder = 'valueDescending',
-  startAngle = 0,
   variant = 'circle',
 }) => {
   return null;

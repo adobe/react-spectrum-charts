@@ -52,7 +52,7 @@ export default {
     controls: { disable: true },
     layout: 'fullscreen',
   },
-  // tags: ['hidden']
+  tags: ['hidden']
 };
 
 const alternateFieldData = basicDonutData.map(({ browser, count }) => ({
@@ -162,9 +162,9 @@ const variations: Variation[] = [
   {
     id: 'defaults',
     title: 'Defaults',
-    description: 'Uses the default metric, color, hole ratio, start angle, and boolean mode.',
+    description: 'Uses the default metric, color, hole ratio, and boolean mode.',
     dataset: 'canonical',
-    coverage: ['metric=value', 'color=series', 'holeRatio=0.85', 'startAngle=0', 'isBoolean=false'],
+    coverage: ['metric=value', 'color=series', 'holeRatio=0.85', 'isBoolean=false'],
     render: () => <DonutVariationChart />,
   },
   {
@@ -198,14 +198,6 @@ const variations: Variation[] = [
     render: () => <DonutVariationChart donutProps={{ holeRatio: 0.5 }} />,
   },
   {
-    id: 'rotated',
-    title: 'Rotated start angle',
-    description: 'Starts the first segment one quarter-turn clockwise from the default.',
-    dataset: 'canonical',
-    coverage: ['startAngle=PI/2'],
-    render: () => <DonutVariationChart donutProps={{ startAngle: Math.PI / 2 }} />,
-  },
-  {
     id: 'boolean',
     title: 'Boolean donut',
     description: 'Displays the first of two values as a percentage and forces the remainder to gray.',
@@ -235,13 +227,13 @@ const variations: Variation[] = [
     ),
   },
   {
-    id: 'emphasized-custom-other',
+    id: 'emphasized-multiple',
     title: 'Multiple emphasized items',
-    description: 'Uses multiple emphasized values and overrides the fallback segment color.',
+    description: 'Keeps multiple categorical segments in color and swaps all remaining segments to gray.',
     dataset: 'canonical',
-    coverage: ['emphasizedItems=[Chrome,Firefox]', 'otherItemColor=blue-200'],
+    coverage: ['emphasizedItems=[Chrome,Firefox]'],
     render: () => (
-      <DonutVariationChart donutProps={{ otherItemColor: 'blue-200' }} emphasizedItemCount={2}>
+      <DonutVariationChart emphasizedItemCount={2}>
         <SegmentLabel valueFormat="shortNumber" />
       </DonutVariationChart>
     ),

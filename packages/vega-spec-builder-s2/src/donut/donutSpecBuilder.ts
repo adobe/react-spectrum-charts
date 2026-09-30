@@ -36,6 +36,7 @@ import {
 } from './donutSummaryUtils';
 import {
   getArcMark,
+  getDonutStartAngle,
   getEmptyStateArcMark,
   isDonutInteractive,
   getRingWidthScale,
@@ -78,7 +79,6 @@ export const addDonut = produce<
       index = 0,
       metric = DEFAULT_METRIC,
       name,
-      startAngle,
       holeRatio = DEFAULT_HOLE_RATIO,
       isBoolean = false,
       segmentLabels = [],
@@ -87,8 +87,6 @@ export const addDonut = produce<
       ...options
     }
   ) => {
-    // semicircle donuts default to a 9 o'clock start so the sweep runs clockwise through 12 to 3 o'clock
-    const resolvedStartAngle = startAngle ?? (variant === 'semicircle' ? -Math.PI / 2 : 0);
     // put options back together now that all defaults are set
     const donutOptions: DonutSpecOptions = {
       chartPopovers,
@@ -103,7 +101,6 @@ export const addDonut = produce<
       name: toCamelCase(name ?? `donut${index}`),
       segmentLabels,
       sortOrder,
-      startAngle: resolvedStartAngle,
       variant,
       ...options,
     };
@@ -162,12 +159,9 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
   );
 });
 
-const getPieTransforms = ({
-  startAngle,
-  metric,
-  name,
-  variant,
-}: DonutSpecOptions): (FormulaTransform | PieTransform)[] => {
+const getPieTransforms = (options: DonutSpecOptions): (FormulaTransform | PieTransform)[] => {
+  const { metric, name, variant } = options;
+  const startAngle = getDonutStartAngle(options);
   const sweep = variant === 'semicircle' ? 'PI' : '2 * PI';
   return [
     {
