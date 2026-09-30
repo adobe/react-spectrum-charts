@@ -11,7 +11,7 @@
  */
 
 .EmptyState-icon.EmptyState-icon {
-  fill: lightgray;
+  --iconPrimary: lightgray;
 }
 .EmptyState-text {
   color: lightgray;
