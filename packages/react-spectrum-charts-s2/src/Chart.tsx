@@ -19,12 +19,13 @@ import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { RscChart } from './RscChart';
-import { applyChartPropsDefaults } from './chartUtils';
+import { applyChartPropsDefaults, resolveAnimations } from './chartUtils';
 import { EmptyState } from './components';
 import { LoadingState } from './components/LoadingState';
 import { ChartProvider } from './context/RscChartContext';
 import useChartHeight from './hooks/useChartHeight';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle';
+import usePrefersReducedMotion from './hooks/usePrefersReducedMotion';
 import useChartWidth from './hooks/useChartWidth';
 import { useResizeObserver } from './hooks/useResizeObserver';
 import { ChartProps, RscChartProps } from './types';
@@ -62,6 +63,7 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
   const chartView = useRef<View | undefined>(undefined);
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useChartImperativeHandle(ref, { chartView, title });
 
@@ -107,6 +109,7 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
     UNSAFE_vegaSpec,
     onVegaViewReady,
     ...otherProps,
+    animations: resolveAnimations(otherProps.animations, prefersReducedMotion),
   };
 
   const chartContent = <RscChart {...rscChartProps}>{props.children}</RscChart>;
@@ -142,4 +145,3 @@ const PlaceholderContent: FC<PlaceholderContentProps> = ({ data, emptyStateText,
   }
   return <></>;
 };
-

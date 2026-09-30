@@ -75,3 +75,8 @@ export const applyChartPropsDefaults = (props: ChartProps): PartiallyRequired<Ch
     ...props,
   };
 };
+
+export const resolveAnimations = (
+  animations: boolean | undefined,
+  prefersReducedMotion: boolean
+): boolean | undefined => (prefersReducedMotion ? false : animations);

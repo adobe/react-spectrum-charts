@@ -68,8 +68,7 @@ export type MarkOptions =
 // Notice that things like data and width/height are not included here
 // This is intentional as we don't want to have to rebuild the entire spec anytime data updates or the width/height change
 export interface ChartOptions {
-  /** Master kill switch for all chart animations. Defaults to `true`; set to `false` to disable every
-   * animation type regardless of `animationTypes` (e.g. to honor `prefers-reduced-motion`). */
+  /** Master kill switch for all chart animations. Reduced motion preferences disable animations automatically. */
   animations?: boolean;
   /** Which animation types are enabled. Defaults to `['hover']`. */
   animationTypes?: AnimationType[];
