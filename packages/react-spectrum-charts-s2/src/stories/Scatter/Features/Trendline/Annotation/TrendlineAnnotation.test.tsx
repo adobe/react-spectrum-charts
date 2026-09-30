@@ -27,5 +27,15 @@ describe('TrendlineAnnotation', () => {
     // one label is drawn per weightClass facet trendline
     const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
     expect(labels.length).toBeGreaterThan(0);
+    expect(chart.querySelector('.scatter0Trendline0Annotation0_badge')).toBeInTheDocument();
+  });
+
+  test('renders labels without badges when badge is false', async () => {
+    render(<Basic {...Basic.args} badge={false} />);
+    const chart = await findChart();
+
+    const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
+    expect(labels.length).toBeGreaterThan(0);
+    expect(chart.querySelector('.scatter0Trendline0Annotation0_badge')).not.toBeInTheDocument();
   });
 });

@@ -17,7 +17,7 @@ import { ControlledHover } from './legendHover.story';
 test('Mousing over a legend item should trigger callback function.', async () => {
   const onMouseOver = jest.fn();
   const onMouseOut = jest.fn();
-  render(<ControlledHover {...ControlledHover.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
+  render(<ControlledHover {...ControlledHover.args} highlight={false} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
   const chart = await findChart();
 
   const entries = getAllLegendEntries(chart);
