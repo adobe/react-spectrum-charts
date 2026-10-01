@@ -392,7 +392,8 @@ const calculateReferenceLineOffsets = (
 ): { verticalOffset: number; horizontalOffset: number } => {
   const isVertical = isVerticalAxis(position);
   // match tick label spacing: labelPadding (8), plus tickSize (8) when ticks are shown
-  let verticalOffset = isVertical ? 8 + (ticks && !icon ? 8 : 0) : 28;
+  const tickOffset = ticks && !icon ? 8 : 0;
+  let verticalOffset = isVertical ? 8 + tickOffset : 28;
   let horizontalOffset = isVertical ? 4 : 5;
 
   if (icon) {
