@@ -12,7 +12,6 @@
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Bar } from '../../../components';
-import { BarWithUTCDatetimeFormat, OnMouseInputs } from '../../../dev/Bar/Tests/BarMovedTests.story';
 import { acquisitionChannelData as barData } from '../../../storyShared/components/Bar/data';
 import {
   clickNthElement,
@@ -100,16 +99,6 @@ describe('Bar', () => {
     expect(bars.length).toEqual(12);
   });
 
-  test('Bar with UTC date on dimension renders properly', async () => {
-    render(<BarWithUTCDatetimeFormat {...BarWithUTCDatetimeFormat.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-
-    // get bars
-    const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(6);
-  });
-
   test('should call onClick callback when selecting a bar item', async () => {
     const onClick = jest.fn();
     render(<OnClick {...OnClick.args} onClick={onClick} />);
@@ -158,40 +147,6 @@ describe('Bar', () => {
 
     await unhoverNthElement(bars, 0);
     expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining(barData[0]));
-  });
-
-  test('should display custom hover information in UI when mousing over bar items', async () => {
-    render(<OnMouseInputs {...OnMouseInputs.args} />);
-    const chart = await findChart();
-    const bars = await findAllMarksByGroupName(chart, 'bar0');
-
-    // Initially no hover info should be displayed
-    expect(screen.getByTestId('no-hover')).toBeInTheDocument();
-    expect(screen.queryByTestId('hover-data')).not.toBeInTheDocument();
-
-    // Hover over first bar (Chrome, 27000)
-    await hoverNthElement(bars, 0);
-
-    expect(screen.queryByTestId('no-hover')).not.toBeInTheDocument();
-    let hoverData = screen.getByTestId('hover-data');
-    expect(hoverData).toHaveTextContent('Previewing Chrome: 27,000 downloads');
-
-    // Re-query bars after hover state change to get fresh DOM references
-    const barsAfterHover = await findAllMarksByGroupName(chart, 'bar0');
-
-    // Unhover first bar
-    await unhoverNthElement(barsAfterHover, 0);
-    expect(screen.getByTestId('no-hover')).toBeInTheDocument();
-    expect(screen.queryByTestId('hover-data')).not.toBeInTheDocument();
-
-    // Re-query bars after unhover state change for fresh DOM references
-    const barsAfterUnhover = await findAllMarksByGroupName(chart, 'bar0');
-
-    // Hover over second bar (Firefox, 8000)
-    await hoverNthElement(barsAfterUnhover, 1);
-
-    hoverData = screen.getByTestId('hover-data');
-    expect(hoverData).toHaveTextContent('Previewing Firefox: 8,000 downloads');
   });
 
   describe('ChartInspect', () => {
