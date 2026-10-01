@@ -49,7 +49,8 @@ import {
   within,
 } from '../../test-utils';
 import '../../test-utils/__mocks__/matchMedia.mock';
-import { Basic, LineType, Opacity } from './Features/Line.story';
+import { Basic } from './Features/Line.story';
+import { LineType, Opacity } from './Features/Styling/LineStyling.story';
 
 describe('LinePointAnnotation', () => {
   // LinePointAnnotation is not a real React component. This test provides coverage for sonarqube

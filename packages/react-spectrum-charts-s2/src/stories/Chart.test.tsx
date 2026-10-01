@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { createRef } from 'react';
+
 import { renderToString } from 'react-dom/server';
 
 import { FADE_FACTOR } from '@spectrum-charts/constants';
@@ -29,19 +30,10 @@ import {
 } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { getElement } from '../utils';
-import {
-  BackgroundColor,
-  Basic,
-  Colors,
-  Config,
-  EmptyStateText,
-  Height,
-  HighlightedItem,
-  Loading,
-  Locale,
-  TooltipAnchor,
-  Width,
-} from './Chart.story';
+import { BackgroundColor, Basic, Config, EmptyStateText, Loading, Locale, TooltipAnchor } from './Chart.story';
+import { Colors } from './Chart/Encodings/ChartEncodings.story';
+import { HighlightedItem } from './Chart/Highlight/ChartHighlight.story';
+import { Height, Width } from './Chart/Size/ChartSize.story';
 import { data } from './data/data';
 
 const PopoverTest = (
@@ -240,11 +232,13 @@ describe('Chart', () => {
     });
 
     test('Spectrum colors render correctly (dark)', async () => {
-      render(<Colors
+      render(
+        <Colors
           {...Colors.args}
           colors={['cinnamon-1200', 'cinnamon-1000', 'cinnamon-800', 'cinnamon-600']}
           colorScheme="dark"
-        />);
+        />
+      );
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();

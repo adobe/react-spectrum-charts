@@ -9,9 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { clickNthElement, findAllMarksByGroupName, findChart, getAllLegendEntries, render, waitFor } from '../../../test-utils';
+import {
+  clickNthElement,
+  findAllMarksByGroupName,
+  findChart,
+  getAllLegendEntries,
+  render,
+  waitFor,
+} from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock';
-import { Basic, HiddenSeries } from './Legend.story';
+import { Basic } from './Legend.story';
+import { HiddenSeries } from './SeriesVisibility/LegendSeriesVisibility.story';
 
 describe('Legend demo stories', () => {
   test('Basic renders a legend entry per traffic source', async () => {

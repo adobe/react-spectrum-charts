@@ -11,11 +11,13 @@
  */
 import { findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { OnContextMenu } from './ActionHandlers/BarActionHandlers.story';
+import { DimensionDataType } from './Bar.story';
 import { Basic as DirectLabelBasic, Format, Position } from './BarDirectLabel.story';
-import { ColorOverride, DimensionDataType, OnContextMenu } from './Bar.story';
 import { Diverging } from './Diverging.story';
 import { GroupedPadding } from './DodgedBar.story';
 import { Order } from './StackedBar.story';
+import { ColorOverride } from './Styling/BarStyling.story';
 import { Trellis, TrellisOrientation } from './TrellisBar.story';
 
 describe('Bar feature stories', () => {

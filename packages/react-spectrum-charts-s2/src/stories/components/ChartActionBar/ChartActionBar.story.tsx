@@ -11,27 +11,26 @@
  */
 import { ReactElement } from 'react';
 
-import { ActionButton, Content, ContextualHelp, Heading, Menu, MenuItem, MenuTrigger, Text } from '@react-spectrum/s2';
+import { action } from 'storybook/actions';
+
+import { ActionButton, Text } from '@react-spectrum/s2';
 import Bookmark from '@react-spectrum/s2/icons/Bookmark';
 import Comment from '@react-spectrum/s2/icons/Comment';
 import Export from '@react-spectrum/s2/icons/Export';
 import Flag from '@react-spectrum/s2/icons/Flag';
 import Info from '@react-spectrum/s2/icons/InfoCircle';
-import More from '@react-spectrum/s2/icons/More';
 import Note from '@react-spectrum/s2/icons/StickyNote';
-import { action } from 'storybook/actions';
-
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartActionBar } from '../../../components';
 import { bindWithProps } from '../../../test-utils';
-import { ActionBarLineStory, actionButton } from './ChartActionBarStoryUtils';
-
-type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
-
-const setControlInclude = (story: StoryWithParameters, include: string[]) => {
-  story.parameters = { controls: { include } };
-};
+import {
+  ActionBarLineStory,
+  StoryWithParameters,
+  actionBarContent,
+  actionButton,
+  setControlInclude,
+} from './ChartActionBarStoryUtils';
 
 export default {
   title: 'React Spectrum Charts 2/Chart Action Bar/Features',
@@ -43,30 +42,6 @@ export default {
     },
   },
 };
-
-const actionBarContent = (datum: Datum, close: () => void): ReactElement[] => [
-  actionButton('annotate', 'Annotate', <Note />, datum, close),
-  actionButton('comment', 'Comment', <Comment />, datum, close),
-  <ContextualHelp key="info" variant="info" placement="top">
-    <Heading>Data point</Heading>
-    <Content>
-      <div>Series: {String(datum.series)}</div>
-      <div>Value: {String(datum.value)}</div>
-      <div>Date: {String(datum.datetime)}</div>
-    </Content>
-  </ContextualHelp>,
-  <MenuTrigger key="more">
-    <ActionButton isQuiet aria-label="More options">
-      <More />
-    </ActionButton>
-    <Menu onAction={(key) => action('ChartActionBar:more')({ key, datum })}>
-      <MenuItem id="copy-link">Copy link</MenuItem>
-      <MenuItem id="export">Export data</MenuItem>
-      <MenuItem id="share">Share</MenuItem>
-      <MenuItem id="delete">Delete</MenuItem>
-    </Menu>
-  </MenuTrigger>,
-];
 
 const emphasizedActionBarContent = (datum: Datum, close: () => void): ReactElement[] => [
   <ActionButton
@@ -120,9 +95,4 @@ const MaxActions = bindWithProps(ActionBarLineStory);
 MaxActions.args = { children: overflowActionsContent, maxActions: 3 };
 setControlInclude(MaxActions as StoryWithParameters, ['maxActions']);
 
-// Fires when the bar closes and the point selection is cleared.
-const OnClearSelection = bindWithProps(ActionBarLineStory);
-OnClearSelection.args = { children: actionBarContent, onClearSelection: action('onClearSelection') };
-setControlInclude(OnClearSelection as StoryWithParameters, []);
-
-export { Basic, IsEmphasized, MaxActions, OnClearSelection };
+export { Basic, IsEmphasized, MaxActions };

@@ -12,9 +12,18 @@
 import userEvent from '@testing-library/user-event';
 
 import { ChartActionBar } from '../../../components';
-import { clickNthElement, findAllMarksByGroupName, findChart, render, screen, waitFor, within } from '../../../test-utils';
+import {
+  clickNthElement,
+  findAllMarksByGroupName,
+  findChart,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, IsEmphasized, MaxActions, OnClearSelection } from './ChartActionBar.story';
+import { OnClearSelection } from './ActionHandlers/ChartActionBarActionHandlers.story';
+import { Basic, IsEmphasized, MaxActions } from './ChartActionBar.story';
 
 // jsdom doesn't implement the Pointer Events capture API used for dragging.
 beforeAll(() => {
@@ -91,11 +100,14 @@ describe('ChartActionBar', () => {
 
   test('offsets for a transformed ancestor so the bar lands at the anchor', async () => {
     // Simulates a transformed ancestor (e.g. Storybook Docs zoom) whose containing block starts at (100, 50).
-    const rectSpy = jest.spyOn(HTMLDialogElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLDialogElement
-    ) {
-      return { left: parseFloat(this.style.left || '0') + 100, top: parseFloat(this.style.top || '0') + 50 } as DOMRect;
-    });
+    const rectSpy = jest
+      .spyOn(HTMLDialogElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLDialogElement) {
+        return {
+          left: parseFloat(this.style.left || '0') + 100,
+          top: parseFloat(this.style.top || '0') + 50,
+        } as DOMRect;
+      });
     render(<Basic {...Basic.args} />);
     const chart = await findChart();
     const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
@@ -183,7 +195,9 @@ describe('ChartActionBar', () => {
     await clickNthElement(points, 0);
     const actionBar = await screen.findByTestId('rsc-action-bar');
     await waitFor(() =>
-      expect(within(actionBar).getByRole('button', { name: 'Drag to reposition action bar. Use arrow keys to move.' })).toHaveFocus()
+      expect(
+        within(actionBar).getByRole('button', { name: 'Drag to reposition action bar. Use arrow keys to move.' })
+      ).toHaveFocus()
     );
   });
 

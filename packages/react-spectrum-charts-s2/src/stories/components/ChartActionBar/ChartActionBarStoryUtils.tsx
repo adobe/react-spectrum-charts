@@ -11,10 +11,13 @@
  */
 import { ReactElement } from 'react';
 
-import { ActionButton, Text } from '@react-spectrum/s2';
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
+import { action } from 'storybook/actions';
 
+import { ActionButton, Content, ContextualHelp, Heading, Menu, MenuItem, MenuTrigger, Text } from '@react-spectrum/s2';
+import Comment from '@react-spectrum/s2/icons/Comment';
+import More from '@react-spectrum/s2/icons/More';
+import Note from '@react-spectrum/s2/icons/StickyNote';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
@@ -22,6 +25,12 @@ import { Axis, ChartActionBar, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { ChartProps } from '../../../types';
 import { workspaceTrendsDataWithVisiblePoints } from '../../data/data';
+
+export type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
+
+export const setControlInclude = (story: StoryWithParameters, include: string[]) => {
+  story.parameters = { controls: { include } };
+};
 
 const defaultChartProps: ChartProps = {
   data: workspaceTrendsDataWithVisiblePoints,
@@ -57,3 +66,27 @@ export const actionButton = (key: string, label: string, icon: ReactElement, dat
     <Text>{label}</Text>
   </ActionButton>
 );
+
+export const actionBarContent = (datum: Datum, close: () => void): ReactElement[] => [
+  actionButton('annotate', 'Annotate', <Note />, datum, close),
+  actionButton('comment', 'Comment', <Comment />, datum, close),
+  <ContextualHelp key="info" variant="info" placement="top">
+    <Heading>Data point</Heading>
+    <Content>
+      <div>Series: {String(datum.series)}</div>
+      <div>Value: {String(datum.value)}</div>
+      <div>Date: {String(datum.datetime)}</div>
+    </Content>
+  </ContextualHelp>,
+  <MenuTrigger key="more">
+    <ActionButton isQuiet aria-label="More options">
+      <More />
+    </ActionButton>
+    <Menu onAction={(key) => action('ChartActionBar:more')({ key, datum })}>
+      <MenuItem id="copy-link">Copy link</MenuItem>
+      <MenuItem id="export">Export data</MenuItem>
+      <MenuItem id="share">Share</MenuItem>
+      <MenuItem id="delete">Delete</MenuItem>
+    </Menu>
+  </MenuTrigger>,
+];

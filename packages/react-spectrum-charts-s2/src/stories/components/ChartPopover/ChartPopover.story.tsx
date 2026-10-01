@@ -11,27 +11,25 @@
  */
 import { ReactElement } from 'react';
 
-import { Button } from '@react-spectrum/s2';
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
+import { Button } from '@react-spectrum/s2';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartInspect, Legend, Line } from '../../../components';
+import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
 import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';
-import { browserData as data } from '../../data/data';
 import { basicDonutData } from '../../Donut/data';
-
-type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
-
-const setControlInclude = (story: StoryWithParameters, include: string[]) => {
-  story.parameters = { controls: { include } };
-};
+import {
+  BarPopoverStory,
+  StoryWithParameters,
+  defaultChartProps,
+  dialogContent,
+  setControlInclude,
+} from './chartPopoverStoryTemplates';
 
 export default {
   title: 'React Spectrum Charts 2/Chart Popover/Features',
@@ -46,43 +44,24 @@ export default {
   },
 };
 
-const dialogContent = (datum: Datum) => (
-  <div>
-    <div>Operating system: {datum.series}</div>
-    <div>Browser: {datum.category}</div>
-    <div>Users: {datum.value}</div>
-  </div>
-);
-
 const dialogContentWithClose = (datum: Datum, close?: () => void) => (
   <div>
     <div>Operating system: {datum.series}</div>
     <div>Browser: {datum.category}</div>
     <div>Users: {datum.value}</div>
     {close && (
-      <Button data-testid="popover-close-button" variant="secondary" size="S" onPress={close} UNSAFE_style={{ marginTop: 8 }}>
+      <Button
+        data-testid="popover-close-button"
+        variant="secondary"
+        size="S"
+        onPress={close}
+        UNSAFE_style={{ marginTop: 8 }}
+      >
         Close
       </Button>
     )}
   </div>
 );
-
-const defaultChartProps: ChartProps = { data, renderer: 'svg', width: 600 };
-
-const BarPopoverStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" baseline title="Browser" />
-      <Axis position="left" grid title="Users" />
-      <Bar color="series">
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover {...args} />
-      </Bar>
-      <Legend highlight />
-    </Chart>
-  );
-};
 
 const LineStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
@@ -130,10 +109,6 @@ const Height = bindWithProps(BarPopoverStory);
 Height.args = { children: dialogContent, width: 'auto', height: 'auto', minHeight: 160, maxHeight: 240 };
 setControlInclude(Height as StoryWithParameters, ['height', 'maxHeight', 'minHeight']);
 
-const OnOpenChange = bindWithProps(BarPopoverStory);
-OnOpenChange.args = { children: dialogContent, width: 'auto', onOpenChange: action('onOpenChange') };
-setControlInclude(OnOpenChange as StoryWithParameters, []);
-
 const RightClick = bindWithProps(BarPopoverStory);
 RightClick.args = { children: dialogContent, width: 'auto', rightClick: true };
 setControlInclude(RightClick as StoryWithParameters, ['rightClick']);
@@ -152,4 +127,4 @@ const OnDonut = bindWithProps(DonutStory);
 OnDonut.args = { width: 'auto' };
 setControlInclude(OnDonut as StoryWithParameters, []);
 
-export { Basic, ContainerPadding, ContentMargin, Height, OnOpenChange, RightClick, Width, OnLine, OnDonut };
+export { Basic, ContainerPadding, ContentMargin, Height, RightClick, Width, OnLine, OnDonut };

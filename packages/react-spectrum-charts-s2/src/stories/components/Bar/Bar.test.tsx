@@ -12,6 +12,7 @@
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Bar } from '../../../components';
+import { BarWithUTCDatetimeFormat, OnMouseInputs } from '../../../dev/Bar/Tests/BarMovedTests.story';
 import {
   clickNthElement,
   findAllMarksByGroupName,
@@ -25,10 +26,12 @@ import {
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { BarWithUTCDatetimeFormat, OnMouseInputs } from '../../../dev/Bar/Tests/BarMovedTests.story';
-import { Basic, ChartInspect as ChartInspectStory, OnClick, Opacity, PaddingRatio } from './Bar.story';
+import { OnClick } from './ActionHandlers/BarActionHandlers.story';
+import { Basic, ChartInspect as ChartInspectStory } from './Bar.story';
 import { Dodged as DodgedBasic, DodgedStacked } from './DodgedBar.story';
+import { PaddingRatio } from './Spacing/BarSpacing.story';
 import { Stacked as StackedBasic } from './StackedBar.story';
+import { Opacity } from './Styling/BarStyling.story';
 import { acquisitionChannelData as barData } from './data';
 
 describe('Bar', () => {
@@ -66,7 +69,6 @@ describe('Bar', () => {
     const bars = await findAllMarksByGroupName(chart, 'bar0');
     expect(bars.length).toEqual(5);
   });
-
 
   test('Dodged Basic renders properly', async () => {
     render(<DodgedBasic {...DodgedBasic.args} />);
@@ -138,10 +140,7 @@ describe('Bar', () => {
 
     await rightClickNthElement(bars, 0);
     expect(onContextMenu).toHaveBeenCalledTimes(1);
-    expect(onContextMenu).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining(barData[0])
-    );
+    expect(onContextMenu).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining(barData[0]));
     expect(onContextMenu.mock.calls[0][0]).toMatchObject(
       expect.objectContaining({ clientX: expect.any(Number), clientY: expect.any(Number) })
     );

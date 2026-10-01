@@ -29,15 +29,8 @@ import {
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import {
-  Basic,
-  ContentMargin,
-  OnDonut,
-  OnLine,
-  OnOpenChange,
-  RightClick,
-  Width,
-} from './ChartPopover.story';
+import { OnOpenChange } from './ActionHandlers/ChartPopoverActionHandlers.story';
+import { Basic, ContentMargin, OnDonut, OnLine, RightClick, Width } from './ChartPopover.story';
 
 describe('ChartPopover', () => {
   // ChartPopover is not a real React component. This is test just provides test coverage for sonarqube
