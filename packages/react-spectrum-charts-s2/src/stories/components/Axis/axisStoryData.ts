@@ -70,14 +70,14 @@ export const downloadsByBrowserData = [
   { browser: 'Safari', os: 'macOS', downloads: 88000 },
   { browser: 'Safari', os: 'Linux', downloads: 0 },
   { browser: 'Edge', os: 'Windows', downloads: 64000 },
-  { browser: 'Edge', os: 'macOS', downloads: 9000 },
-  { browser: 'Edge', os: 'Linux', downloads: 2000 },
+  { browser: 'Edge', os: 'macOS', downloads: 18000 },
+  { browser: 'Edge', os: 'Linux', downloads: 0 },
   { browser: 'Firefox', os: 'Windows', downloads: 31000 },
   { browser: 'Firefox', os: 'macOS', downloads: 12000 },
   { browser: 'Firefox', os: 'Linux', downloads: 14000 },
-  { browser: 'Opera', os: 'Windows', downloads: 12000 },
-  { browser: 'Opera', os: 'macOS', downloads: 3000 },
-  { browser: 'Opera', os: 'Linux', downloads: 2000 },
+  { browser: 'Opera', os: 'Windows', downloads: 26000 },
+  { browser: 'Opera', os: 'macOS', downloads: 14000 },
+  { browser: 'Opera', os: 'Linux', downloads: 11000 },
 ];
 
 /** Conversions per marketing campaign, split by new vs returning customers. Campaign names are intentionally long. */

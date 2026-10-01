@@ -27,16 +27,25 @@ export default {
   component: Bar,
 };
 
-// Stacking the trellis cells vertically splits the height three ways, so show fewer platforms and a taller chart.
-const topPlatformsData = frequencyOfUseData.filter(({ segment }) =>
-  ['All users', 'Roku', 'Chromecast'].includes(segment)
+// Folds the 11-15 bucket into "6+ times" so the smaller events don't stack into thin slivers on the shared scale.
+const usageData = Object.values(
+  frequencyOfUseData.reduce<Record<string, (typeof frequencyOfUseData)[number]>>((usage, datum) => {
+    const bucket = datum.order === 0 ? datum.bucket : '6+ times';
+    const key = [datum.event, datum.segment, bucket].join('|');
+    const value = (usage[key]?.value ?? 0) + datum.value;
+    usage[key] = { ...datum, bucket, order: Math.min(datum.order, 1), value };
+    return usage;
+  }, {})
 );
+
+// Stacking the trellis cells vertically splits the height three ways, so show fewer platforms and a taller chart.
+const topPlatformsData = usageData.filter(({ segment }) => ['All users', 'Roku', 'Chromecast'].includes(segment));
 
 const TrellisStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
   const isHorizontal = args.orientation === 'horizontal';
   const isVerticalTrellis = args.trellisOrientation === 'vertical';
   const chartProps = useChartProps({
-    data: isVerticalTrellis ? topPlatformsData : frequencyOfUseData,
+    data: isVerticalTrellis ? topPlatformsData : usageData,
     width: 760,
     height: isVerticalTrellis ? 600 : 480,
   });
