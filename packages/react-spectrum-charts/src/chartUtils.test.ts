@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
+
 import { applyChartPropsDefaults } from './chartUtils';
 
 describe('applyChartPropsDefaults', () => {
@@ -46,5 +48,17 @@ describe('applyChartPropsDefaults', () => {
     const colors = ['blue-500', 'green-500'];
     const props = applyChartPropsDefaults({ data: [], colors });
     expect(props.colors).toBe(colors);
+  });
+
+  test('should apply defaults for props explicitly set to undefined', () => {
+    const props = applyChartPropsDefaults({
+      data: [],
+      colorScheme: undefined,
+      backgroundColor: undefined,
+      height: undefined,
+    });
+    expect(props.colorScheme).toBe(DEFAULT_COLOR_SCHEME);
+    expect(props.backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
+    expect(props.height).toBe(300);
   });
 });

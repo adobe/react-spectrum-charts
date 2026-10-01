@@ -70,9 +70,13 @@ const baseDefaults: Required<Pick<ChartProps, ChartPropsWithDefaults>> = {
 };
 
 export const applyChartPropsDefaults = (props: ChartProps): PartiallyRequired<ChartProps, ChartPropsWithDefaults> => {
+  // Explicit undefined values fall back to the defaults instead of overriding them.
+  const definedProps = Object.fromEntries(
+    Object.entries(props).filter(([, value]) => value !== undefined)
+  ) as ChartProps;
   return {
     ...baseDefaults,
-    ...props,
+    ...definedProps,
   };
 };
 
