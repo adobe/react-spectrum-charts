@@ -27,9 +27,19 @@ export default {
   component: Bar,
 };
 
+// Stacking the trellis cells vertically splits the height three ways, so show fewer platforms and a taller chart.
+const topPlatformsData = frequencyOfUseData.filter(({ segment }) =>
+  ['All users', 'Roku', 'Chromecast'].includes(segment)
+);
+
 const TrellisStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
   const isHorizontal = args.orientation === 'horizontal';
-  const chartProps = useChartProps({ data: frequencyOfUseData, width: 760, height: 480 });
+  const isVerticalTrellis = args.trellisOrientation === 'vertical';
+  const chartProps = useChartProps({
+    data: isVerticalTrellis ? topPlatformsData : frequencyOfUseData,
+    width: 760,
+    height: isVerticalTrellis ? 600 : 480,
+  });
 
   return (
     <Chart {...chartProps}>

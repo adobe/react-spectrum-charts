@@ -64,7 +64,7 @@ describe('Time comparison stories', () => {
       expect(chart).toBeInTheDocument();
 
       const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(112);
+      expect(bars).toHaveLength(16);
 
       testBarOpacity(bars[0], '0.5');
       testBarStroke(bars[0], '3,4', '1.5');
@@ -77,7 +77,7 @@ describe('Time comparison stories', () => {
       expect(chart).toBeInTheDocument();
 
       const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(112);
+      expect(bars).toHaveLength(16);
 
       testBarOpacity(bars[1], '1');
       testBarStroke(bars[1], '', '1.5');

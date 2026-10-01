@@ -27,9 +27,12 @@ export default {
   component: Bar,
 };
 
+// Two devices per channel keeps the dodged bars wide.
+const desktopMobileData = channelDeviceData.filter(({ device }) => device !== 'Tablet');
+
 const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const isHorizontal = args.orientation === 'horizontal';
-  const chartProps = useChartProps({ data: channelDeviceData, width: 640, height: 400 });
+  const chartProps = useChartProps({ data: desktopMobileData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
       <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Acquisition channel" />

@@ -74,9 +74,21 @@ FunnelConversion.args = {
   width: 'auto',
 };
 
+// Daily data rolled up to weekly totals so the four dodged bars per group stay wide.
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const firstTrendsDay = Math.min(...trendsTimeComparisonData.map(({ datetime }) => datetime));
+const weeklyTrendsMap = new Map<string, (typeof trendsTimeComparisonData)[number]>();
+for (const datum of trendsTimeComparisonData) {
+  const datetime = firstTrendsDay + Math.floor((datum.datetime - firstTrendsDay) / WEEK_MS) * WEEK_MS;
+  const key = [datetime, datum.series, datum.period].join('|');
+  const week = weeklyTrendsMap.get(key);
+  weeklyTrendsMap.set(key, week ? { ...week, value: week.value + datum.value } : { ...datum, datetime });
+}
+const weeklyTrendsData = [...weeklyTrendsMap.values()];
+
 const EventTrendsPeriodComparison = bindWithProps(TrendsTimeComparisonBarStory);
 EventTrendsPeriodComparison.args = {
-  data: trendsTimeComparisonData,
+  data: weeklyTrendsData,
   height: 500,
   minWidth: 840,
   width: 'auto',

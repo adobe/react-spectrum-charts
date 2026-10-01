@@ -76,7 +76,7 @@ describe('Bar', () => {
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(12);
+    expect(bars.length).toEqual(8);
   });
 
   test('Dodged Stacked renders properly', async () => {

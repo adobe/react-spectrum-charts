@@ -62,7 +62,7 @@ const StackedBarInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElemen
 };
 
 const DodgedBarInspectStory: StoryFn<typeof ChartInspect> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barData, width: 600 });
+  const chartProps = useChartProps({ data: barData, width: 800 });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" baseline title="Browser" />

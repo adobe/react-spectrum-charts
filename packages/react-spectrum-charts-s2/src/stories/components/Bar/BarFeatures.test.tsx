@@ -45,7 +45,7 @@ describe('Bar feature stories', () => {
     expect(await findAllMarksByGroupName(await findChart(), 'bar0')).toHaveLength(12);
     unmount();
     render(<GroupedPadding {...GroupedPadding.args} />);
-    expect(await findAllMarksByGroupName(await findChart(), 'bar0')).toHaveLength(12);
+    expect(await findAllMarksByGroupName(await findChart(), 'bar0')).toHaveLength(8);
   });
 
   test('Diverging renders both change directions in the legend', async () => {
