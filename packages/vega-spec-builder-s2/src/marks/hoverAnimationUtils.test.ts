@@ -12,6 +12,7 @@
 import { Data, Signal, ValuesData } from 'vega';
 
 import {
+  ANIMATION_ACTIVE,
   ANIMATION_HOVER_SPEED,
   ANIMATION_THROTTLE,
   HOVER_ACTIVE_TIMER,
@@ -35,6 +36,7 @@ import {
   getHoverFractionData,
   getHoverFractionSignal,
   getHoverSeriesFractionData,
+  getHoverAnimationActiveCondition,
   getHoverTargetData,
 } from './hoverAnimationUtils.js';
 
@@ -240,8 +242,14 @@ describe('addHoverAnimationSignals()', () => {
       {
         name: ANIMATION_TIMER,
         value: 0,
-        on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
+        on: [
+          {
+            events: { type: 'timer', throttle: ANIMATION_THROTTLE, filter: `(${getHoverAnimationActiveCondition('now()')})` },
+            update: 'now()',
+          },
+        ],
       },
+      { name: ANIMATION_ACTIVE, value: true, update: `(${getHoverAnimationActiveCondition(ANIMATION_TIMER)})` },
       {
         name: HOVER_ANIMATING,
         value: false,
@@ -277,6 +285,7 @@ describe('addHoverAnimationSignals()', () => {
     expect(signals.filter((s) => s.name === HOVER_ACTIVE_TIMER)).toHaveLength(1);
     expect(signals.map((s) => s.name)).toEqual([
       ANIMATION_TIMER,
+      ANIMATION_ACTIVE,
       HOVER_ANIMATING,
       HOVER_IDLE_TICKS,
       HOVER_ACTIVE_TIMER,
@@ -353,6 +362,21 @@ describe('addHoverAnimationSignals()', () => {
   });
 });
 
+describe('getHoverAnimationActiveCondition()', () => {
+  const evalCondition = (row: { lastChange: number; settled: boolean }, now: number): boolean =>
+    // eslint-disable-next-line no-new-func
+    new Function('data', 'clock', `return ${getHoverAnimationActiveCondition('clock')};`)(() => [row], now);
+
+  test('stays active until the grace tick has settled the animation', () => {
+    expect(evalCondition({ lastChange: 0, settled: false }, 10000)).toBe(true);
+    expect(evalCondition({ lastChange: 0, settled: true }, 10000)).toBe(false);
+  });
+
+  test('stays active within the nominal duration of the last change even if marked settled', () => {
+    expect(evalCondition({ lastChange: 1000, settled: true }, 1000 + ANIMATION_HOVER_SPEED)).toBe(true);
+  });
+});
+
 describe('addHoverAnimLastChangeData()', () => {
   test('creates the shared tracker data source, seeded at rest, with an on-trigger for the mark', () => {
     const data: Data[] = [];
@@ -360,12 +384,17 @@ describe('addHoverAnimLastChangeData()', () => {
     expect(data).toStrictEqual([
       {
         name: HOVER_ANIM_LAST_CHANGE_DATA,
-        values: [{ lastChange: 0 }],
+        values: [{ lastChange: 0, settled: false }],
         on: [
+          {
+            trigger: HOVER_IDLE_TICKS,
+            modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
+            values: `{settled: ${HOVER_IDLE_TICKS} >= 2}`,
+          },
           {
             trigger: `line0_${HOVER_TARGETS}`,
             modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
-            values: '{lastChange: now()}',
+            values: '{lastChange: now(), settled: false}',
           },
         ],
       },
@@ -378,9 +407,9 @@ describe('addHoverAnimLastChangeData()', () => {
     addHoverAnimLastChangeData(data, 'line1');
     expect(data.filter((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toHaveLength(1);
     const [tracker] = data as ValuesData[];
-    expect(tracker.on).toHaveLength(2);
-    expect(tracker.on?.[0].trigger).toEqual(`line0_${HOVER_TARGETS}`);
-    expect(tracker.on?.[1].trigger).toEqual(`line1_${HOVER_TARGETS}`);
+    expect(tracker.on).toHaveLength(3);
+    expect(tracker.on?.[1].trigger).toEqual(`line0_${HOVER_TARGETS}`);
+    expect(tracker.on?.[2].trigger).toEqual(`line1_${HOVER_TARGETS}`);
   });
 
   test('initializes `on` when an existing entry was constructed without one', () => {

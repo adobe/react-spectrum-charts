@@ -12,10 +12,12 @@
 import { Data, Signal, SourceData, Transforms } from 'vega';
 
 import {
+  ANIMATION_ACTIVE,
   ANIMATION_THROTTLE,
   ANIMATION_TIMER,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIMATION_DURATION_MS,
+  DRAW_IN_CLOCK_DATA,
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
   SERIES_ID,
@@ -24,6 +26,7 @@ import {
 import { defaultLineMarkOptions, defaultLineOptions } from '../line/lineTestUtils.js';
 import { LineSpecOptions } from '../types/index.js';
 import {
+  addDrawInClockData,
   addDrawInClockSignals,
   addLineDrawInAnimationSignals,
   addLineDrawInLeadTransform,
@@ -70,7 +73,12 @@ describe('getLineDrawInDataSourceName()', () => {
 
 describe('getLineDrawInPointIndexData()', () => {
   test('builds a formula source indexing each row within the x scale domain', () => {
-    const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', dimension: 'category', scaleType: 'point' };
+    const options: LineSpecOptions = {
+      ...defaultLineOptions,
+      name: 'line0',
+      dimension: 'category',
+      scaleType: 'point',
+    };
     expect(getLineDrawInPointIndexData(options)).toStrictEqual({
       name: 'line0_drawInIndexed',
       source: FILTERED_TABLE,
@@ -104,7 +112,13 @@ describe('addLineDrawInTimeMsTransform()', () => {
 describe('addLineDrawInLeadTransform()', () => {
   test('adds a lead window transform keyed to the sort field for a time scale', () => {
     const sourceData: Data = { name: 'filteredTable' };
-    const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', dimension: 'datetime', metric: 'value', scaleType: 'time' };
+    const options: LineSpecOptions = {
+      ...defaultLineOptions,
+      name: 'line0',
+      dimension: 'datetime',
+      metric: 'value',
+      scaleType: 'time',
+    };
     addLineDrawInLeadTransform(sourceData, options);
     expect(sourceData.transform).toStrictEqual([
       {
@@ -173,8 +187,7 @@ describe('getLineDrawInData()', () => {
       transform: [
         {
           type: 'filter',
-          expr:
-            'datum.rscDrawInTimeMs <= line0_drawInAnimCutoff && isValid(datum.line0_drawInNextDimValue) && datum.line0_drawInNextDimValue > line0_drawInAnimCutoff',
+          expr: 'datum.rscDrawInTimeMs <= line0_drawInAnimCutoff && isValid(datum.line0_drawInNextDimValue) && datum.line0_drawInNextDimValue > line0_drawInAnimCutoff',
         },
         { type: 'formula', as: 'isDrawInTip', expr: 'true' },
       ],
@@ -187,12 +200,34 @@ describe('getLineDrawInData()', () => {
   });
 
   test('reads from the name-scoped indexed source for a point scale', () => {
-    const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', dimension: 'category', scaleType: 'point' };
+    const options: LineSpecOptions = {
+      ...defaultLineOptions,
+      name: 'line0',
+      dimension: 'category',
+      scaleType: 'point',
+    };
     const [prevData, tipData] = getLineDrawInData(options) as SourceData[];
     expect(prevData.source).toEqual('line0_drawInIndexed');
     expect(tipData.source).toEqual('line0_drawInIndexed');
     expect(prevData.transform).toStrictEqual([
       { type: 'filter', expr: 'datum.line0_drawInPointIndex <= line0_drawInAnimCutoff' },
+    ]);
+  });
+});
+
+describe('addDrawInClockData()', () => {
+  test('adds a single done-flag data source triggered by drawInAnimT', () => {
+    const data: Data[] = [];
+    addDrawInClockData(data);
+    addDrawInClockData(data);
+    expect(data).toStrictEqual([
+      {
+        name: DRAW_IN_CLOCK_DATA,
+        values: [{ done: false }],
+        on: [
+          { trigger: 'drawInAnimT', modify: `data('${DRAW_IN_CLOCK_DATA}')[0]`, values: '{done: drawInAnimT >= 1}' },
+        ],
+      },
     ]);
   });
 });
@@ -205,9 +240,19 @@ describe('addDrawInClockSignals()', () => {
       {
         name: ANIMATION_TIMER,
         value: 0,
-        on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
+        on: [
+          {
+            events: { type: 'timer', throttle: ANIMATION_THROTTLE, filter: `(!data('${DRAW_IN_CLOCK_DATA}')[0].done)` },
+            update: 'now()',
+          },
+        ],
       },
-      { name: 'drawInStart', init: 'now()' },
+      { name: ANIMATION_ACTIVE, value: true, update: `(!data('${DRAW_IN_CLOCK_DATA}')[0].done)` },
+      {
+        name: 'drawInStart',
+        value: 0,
+        on: [{ events: { signal: ANIMATION_TIMER }, update: 'drawInStart || animationTimer' }],
+      },
       {
         name: 'drawInAnimT',
         value: 0,
@@ -224,7 +269,7 @@ describe('addDrawInClockSignals()', () => {
     const signals: Signal[] = [];
     addDrawInClockSignals(signals);
     addDrawInClockSignals(signals);
-    expect(signals).toHaveLength(4);
+    expect(signals).toHaveLength(5);
   });
 
   test('eases 0 -> 0, 1 -> 1, and the midpoint -> 0.5', () => {
@@ -248,6 +293,7 @@ describe('addLineDrawInAnimationSignals()', () => {
     addLineDrawInAnimationSignals(signals, options);
     expect(signals.map((s) => s.name)).toEqual([
       ANIMATION_TIMER,
+      ANIMATION_ACTIVE,
       'drawInStart',
       'drawInAnimT',
       'drawInAnimTEased',
@@ -308,7 +354,12 @@ describe('getDualAxisDrawInRule()', () => {
 
 describe('getLineDrawInXEncoding()', () => {
   test('lerps the flagged tip point toward its lead position for a time scale', () => {
-    const result = getLineDrawInXEncoding({ ...defaultLineMarkOptions, name: 'line0', dimension: 'datetime', scaleType: 'time' });
+    const result = getLineDrawInXEncoding({
+      ...defaultLineMarkOptions,
+      name: 'line0',
+      dimension: 'datetime',
+      scaleType: 'time',
+    });
     const currentPos = `scale('xTime', datum.${DEFAULT_TRANSFORMED_TIME_DIMENSION})`;
     const nextPos = `scale('xTime', datum.line0_drawInNextDimValue)`;
     const tween =
@@ -319,7 +370,12 @@ describe('getLineDrawInXEncoding()', () => {
   });
 
   test('looks up the lead position via the real category value for a point scale', () => {
-    const result = getLineDrawInXEncoding({ ...defaultLineMarkOptions, name: 'line0', dimension: 'category', scaleType: 'point' });
+    const result = getLineDrawInXEncoding({
+      ...defaultLineMarkOptions,
+      name: 'line0',
+      dimension: 'category',
+      scaleType: 'point',
+    });
     const currentPos = `scale('xPoint', datum.category)`;
     const nextPos = `scale('xPoint', datum.line0_drawInNextCategoryValue)`;
     const tween =
@@ -332,7 +388,12 @@ describe('getLineDrawInXEncoding()', () => {
 
 describe('getLineDrawInYEncoding()', () => {
   test('returns a single production rule against yLinear when there is no dual metric axis', () => {
-    const result = getLineDrawInYEncoding({ ...defaultLineMarkOptions, name: 'line0', metric: 'value', scaleType: 'time' });
+    const result = getLineDrawInYEncoding({
+      ...defaultLineMarkOptions,
+      name: 'line0',
+      metric: 'value',
+      scaleType: 'time',
+    });
     const currentPos = `scale('yLinear', datum.value)`;
     const nextPos = `scale('yLinear', datum.line0_drawInNextMetricValue)`;
     expect(result).toStrictEqual({

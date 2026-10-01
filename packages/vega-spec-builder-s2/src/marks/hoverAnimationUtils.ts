@@ -30,6 +30,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { hasSignalByName } from '../signal/signalSpecBuilder.js';
+import { addAnimationTimerSignal } from './animationTimerUtils.js';
 
 /** One hover condition. expr must evaluate to 1 | 0 | null. */
 export interface HoverMatchRule {
@@ -182,7 +183,18 @@ export const getHoverSeriesFractionData = (name: string, keyField: string = SERI
 export const addHoverAnimLastChangeData = (data: Data[], name: string): void => {
   let lastChangeData = data.find((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA) as ValuesData | undefined;
   if (!lastChangeData) {
-    lastChangeData = { name: HOVER_ANIM_LAST_CHANGE_DATA, values: [{ lastChange: 0 }], on: [] };
+    lastChangeData = {
+      name: HOVER_ANIM_LAST_CHANGE_DATA,
+      values: [{ lastChange: 0, settled: false }],
+      // settled lets the animation timer's event filter (which can't read signals) stop ticking once the grace tick has run
+      on: [
+        {
+          trigger: HOVER_IDLE_TICKS,
+          modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
+          values: `{settled: ${HOVER_IDLE_TICKS} >= 2}`,
+        },
+      ],
+    };
     data.push(lastChangeData);
   }
   if (lastChangeData.on === undefined) {
@@ -191,7 +203,7 @@ export const addHoverAnimLastChangeData = (data: Data[], name: string): void => 
   lastChangeData.on.push({
     trigger: `${name}_${HOVER_TARGETS}`,
     modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
-    values: '{lastChange: now()}',
+    values: '{lastChange: now(), settled: false}',
   });
 };
 
@@ -231,18 +243,22 @@ export const getEmphasisRamp = (fractionExpr: string): string =>
   `clamp((${fractionExpr} - ${HOVER_NEUTRAL_TARGET}) / (1 - ${HOVER_NEUTRAL_TARGET}), 0, 1)`;
 
 /**
+ * Gets the data-only condition that is true while a hover animation (or its grace tick) is pending.
+ * @param clock - vega expression for the current time
+ * @returns string
+ */
+export const getHoverAnimationActiveCondition = (clock: string): string => {
+  const lastChangeRow = `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`;
+  return `!${lastChangeRow}.settled || ${clock} - ${lastChangeRow}.lastChange < ${ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE}`;
+};
+
+/**
  * Adds the hover animation signals to the signals array.
  * @param signals - the signals array to add the hover animation signals to
  * @param name - the name of the mark
  */
 export const addHoverAnimationSignals = (signals: Signal[], name: string): void => {
-  if (!hasSignalByName(signals, ANIMATION_TIMER)) {
-    signals.push({
-      name: ANIMATION_TIMER,
-      value: 0,
-      on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
-    });
-  }
+  addAnimationTimerSignal(signals, getHoverAnimationActiveCondition);
   if (!hasSignalByName(signals, HOVER_ANIMATING)) {
     signals.push({
       name: HOVER_ANIMATING,
