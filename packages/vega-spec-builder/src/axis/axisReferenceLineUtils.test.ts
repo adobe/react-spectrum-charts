@@ -9,8 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { GroupMark } from 'vega';
+
 import {
-  BACKGROUND_COLOR,
   DATE_PATH,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_FONT_COLOR,
@@ -18,7 +19,6 @@ import {
   DEFAULT_LABEL_ALIGN,
   DEFAULT_LABEL_FONT_WEIGHT,
   DEFAULT_LABEL_ORIENTATION,
-  REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
@@ -27,6 +27,7 @@ import {
   getEncodedLabelBaselineAlign,
   getFrontInsertionIndex,
   getPositionEncoding,
+  getReferenceLineInsideLabelAnchors,
   getReferenceLineLabelsEncoding,
   getReferenceLineMarks,
   getReferenceLineRuleMark,
@@ -492,6 +493,11 @@ describe('reference line label offsets on vertical axes', () => {
 
 describe('getReferenceLineTextMark() with labelPosition', () => {
   const insideOptions = { ...defaultReferenceLineOptions, label: 'Hello world!' };
+  const getInsideGroup = (
+    axisOptions: AxisSpecOptions,
+    labelPosition: 'start' | 'end',
+    positionEncoding = defaultYPositionEncoding
+  ) => getReferenceLineTextMark(axisOptions, { ...insideOptions, labelPosition }, positionEncoding)[0] as GroupMark;
 
   test('should default labelPosition to axis', () => {
     const [referenceLine] = getReferenceLines({
@@ -501,63 +507,57 @@ describe('getReferenceLineTextMark() with labelPosition', () => {
     expect(referenceLine.labelPosition).toBe('axis');
   });
 
-  test('should return a halo mark and a label mark when inside the chart', () => {
-    const marks = getReferenceLineTextMark(
-      { ...defaultAxisOptions, position: 'left' },
-      { ...insideOptions, labelPosition: 'end' },
-      defaultYPositionEncoding
-    );
-    expect(marks.map((mark) => mark.name)).toEqual([
-      'axis0ReferenceLine0_labelBackground',
+  test('should return a group with an anchor, label and badge when inside the chart', () => {
+    const group = getInsideGroup({ ...defaultAxisOptions, position: 'left' }, 'end');
+    expect(group).toHaveProperty('type', 'group');
+    expect(group.marks?.map((mark) => mark.name)).toEqual([
+      'axis0ReferenceLine0_labelAnchor',
       'axis0ReferenceLine0_label',
+      'axis0ReferenceLine0_labelBadge',
     ]);
-    expect(marks[0].encode?.update).toHaveProperty('stroke', { signal: BACKGROUND_COLOR });
-    expect(marks[0].encode?.update).toHaveProperty('fill', { value: 'transparent' });
-    expect(marks[1].encode?.update).toHaveProperty('text', { value: 'Hello world!' });
   });
 
-  test('should place the label below the line at the end of a horizontal line', () => {
-    const [, label] = getReferenceLineTextMark(
-      { ...defaultAxisOptions, position: 'left' },
-      { ...insideOptions, labelPosition: 'end' },
-      defaultYPositionEncoding
-    );
-    expect(label.encode?.update).toHaveProperty('x', { signal: 'width' });
-    expect(label.encode?.update).toHaveProperty('y', defaultYPositionEncoding);
-    expect(label.encode?.update).toHaveProperty('align', { value: 'right' });
-    expect(label.encode?.update).toHaveProperty('baseline', { value: 'top' });
-    expect(label.encode?.update).toHaveProperty('dy', { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE });
+  test('should derive the label from the anchor and the badge from the label', () => {
+    const [, label, badge] = getInsideGroup({ ...defaultAxisOptions, position: 'left' }, 'end').marks ?? [];
+    expect(label.from).toEqual({ data: 'axis0ReferenceLine0_labelAnchor' });
+    expect(label.encode?.enter).toHaveProperty('text', { value: 'Hello world!' });
+    expect(badge.from).toEqual({ data: 'axis0ReferenceLine0_label' });
+    expect(badge.encode?.update).toHaveProperty('fill', { value: spectrumColors.light['gray-900'] });
+    expect(badge.encode?.update).toHaveProperty('opacity', { field: 'opacity' });
   });
 
-  test('should place the label at the start of a horizontal line', () => {
-    const [, label] = getReferenceLineTextMark(
-      { ...defaultAxisOptions, position: 'right' },
-      { ...insideOptions, labelPosition: 'start' },
-      defaultYPositionEncoding
-    );
-    expect(label.encode?.update).toHaveProperty('x', { value: 0 });
-    expect(label.encode?.update).toHaveProperty('align', { value: 'left' });
+  test('should pick a label color that contrasts with the badge', () => {
+    const [, label] = getInsideGroup({ ...defaultAxisOptions, position: 'left' }, 'end').marks ?? [];
+    const fill = label.encode?.enter?.fill as { test?: string; value: string }[];
+    expect(fill[0].test).toContain('contrast(');
+    expect(fill[0]).toHaveProperty('value', spectrumColors.light['gray-50']);
+    expect(fill[1]).toHaveProperty('value', spectrumColors.light['gray-900']);
   });
 
-  test('should place the label beside the top of a vertical line for start', () => {
-    const [, label] = getReferenceLineTextMark(
-      defaultAxisOptions,
-      { ...insideOptions, labelPosition: 'start' },
-      defaultXPositionEncoding
-    );
-    expect(label.encode?.update).toHaveProperty('x', defaultXPositionEncoding);
-    expect(label.encode?.update).toHaveProperty('y', { value: 0 });
-    expect(label.encode?.update).toHaveProperty('dx', { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE });
-    expect(label.encode?.update).toHaveProperty('baseline', { value: 'top' });
+  test('should anchor horizontal lines at the chart edge and flip above when there is no room below', () => {
+    const [anchor, label] = getInsideGroup({ ...defaultAxisOptions, position: 'left' }, 'end').marks ?? [];
+    expect(anchor.encode?.update).toHaveProperty('x', { signal: 'width' });
+    expect(anchor.encode?.update).toHaveProperty('y', defaultYPositionEncoding);
+    expect(label.transform?.[0]).toHaveProperty('anchor', ['bottom-left', 'top-left']);
+    expect(label.transform?.[0]).toHaveProperty('size', { signal: '[width, height]' });
   });
 
-  test('should place the label beside the bottom of a vertical line for end', () => {
-    const [, label] = getReferenceLineTextMark(
-      defaultAxisOptions,
-      { ...insideOptions, labelPosition: 'end' },
-      defaultXPositionEncoding
-    );
-    expect(label.encode?.update).toHaveProperty('y', { signal: 'height' });
-    expect(label.encode?.update).toHaveProperty('baseline', { value: 'bottom' });
+  test('should anchor vertical lines at the top for start and the bottom for end', () => {
+    const [startAnchor] = getInsideGroup(defaultAxisOptions, 'start', defaultXPositionEncoding).marks ?? [];
+    expect(startAnchor.encode?.update).toHaveProperty('x', defaultXPositionEncoding);
+    expect(startAnchor.encode?.update).toHaveProperty('y', { value: 0 });
+    const [endAnchor] = getInsideGroup(defaultAxisOptions, 'end', defaultXPositionEncoding).marks ?? [];
+    expect(endAnchor.encode?.update).toHaveProperty('y', { signal: 'height' });
+  });
+});
+
+describe('getReferenceLineInsideLabelAnchors()', () => {
+  test('should prefer below the line and flip above for horizontal lines', () => {
+    expect(getReferenceLineInsideLabelAnchors('left', 'start')).toEqual(['bottom-right', 'top-right']);
+    expect(getReferenceLineInsideLabelAnchors('right', 'end')).toEqual(['bottom-left', 'top-left']);
+  });
+  test('should prefer right of the line and flip left for vertical lines', () => {
+    expect(getReferenceLineInsideLabelAnchors('bottom', 'start')).toEqual(['bottom-right', 'bottom-left']);
+    expect(getReferenceLineInsideLabelAnchors('top', 'end')).toEqual(['top-right', 'top-left']);
   });
 });

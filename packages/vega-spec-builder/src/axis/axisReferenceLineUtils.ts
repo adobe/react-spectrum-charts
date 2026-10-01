@@ -11,27 +11,26 @@
  */
 import {
   EncodeEntry,
+  GroupMark,
   GuideEncodeEntry,
+  LabelAnchor,
   Mark,
   NumericValueRef,
   ProductionRule,
   RuleMark,
   ScaleType,
   SignalRef,
+  SymbolEncodeEntry,
   SymbolMark,
   TextEncodeEntry,
-  TextMark,
 } from 'vega';
 
 import {
   AREA_HOVER_POINT,
   AREA_HOVER_RULE,
-  BACKGROUND_COLOR,
   DEFAULT_FONT_COLOR,
   DEFAULT_LABEL_FONT_WEIGHT,
-  DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
   HOVER_RULE,
-  REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
   SELECT_BORDER,
 } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
@@ -39,6 +38,9 @@ import { getColorValue } from '@spectrum-charts/themes';
 import { getPathFromIcon, getStrokeDashFromLineType } from '../specUtils';
 import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
 import { isVerticalAxis } from './axisUtils';
+
+// distance from the line to the label for diagonal anchors (6px on each axis)
+const REFERENCE_LINE_LABEL_BADGE_OFFSET = 8.49;
 
 export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {
   return axisOptions.referenceLines.map((referenceLine, index) =>
@@ -244,16 +246,14 @@ export const getReferenceLineTextMark = (
   axisOptions: AxisSpecOptions,
   referenceLineOptions: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
-): TextMark[] => {
+): Mark[] => {
   const { label, labelPosition, name } = referenceLineOptions;
   if (!label) return [];
 
   if (labelPosition !== 'axis') {
-    return getReferenceLineInsideTextMarks(
-      axisOptions,
-      { ...referenceLineOptions, label, labelPosition },
-      positionEncoding
-    );
+    return [
+      getReferenceLineInsideLabelMark(axisOptions, { ...referenceLineOptions, label, labelPosition }, positionEncoding),
+    ];
   }
 
   return [
@@ -269,71 +269,108 @@ export const getReferenceLineTextMark = (
 };
 
 /**
- * Gets the halo and label text marks for a reference line label placed inside the chart area.
+ * Gets the label anchors for an inside label, in order of preference, based on the line orientation and label position.
+ * @param position
+ * @param labelPosition
+ * @returns LabelAnchor[]
+ */
+export const getReferenceLineInsideLabelAnchors = (
+  position: Position,
+  labelPosition: 'start' | 'end'
+): LabelAnchor[] => {
+  const isStart = labelPosition === 'start';
+  if (isVerticalAxis(position)) {
+    return isStart ? ['bottom-right', 'top-right'] : ['bottom-left', 'top-left'];
+  }
+  return isStart ? ['bottom-right', 'bottom-left'] : ['top-right', 'top-left'];
+};
+
+/**
+ * Gets a badged label placed inside the chart area at the start or end of the reference line.
  * @param axisOptions
  * @param referenceLineOptions
  * @param positionEncoding
- * @returns TextMark[]
+ * @returns GroupMark
  */
-export const getReferenceLineInsideTextMarks = (
+export const getReferenceLineInsideLabelMark = (
   { position }: AxisSpecOptions,
   {
+    color,
     colorScheme,
     label,
-    labelColor,
     labelFontWeight,
     labelPosition,
     name,
   }: ReferenceLineSpecOptions & { label: string; labelPosition: 'start' | 'end' },
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
-): TextMark[] => {
+): GroupMark => {
   const isStart = labelPosition === 'start';
-  const placement: TextEncodeEntry = isVerticalAxis(position)
-    ? {
-        x: isStart ? { value: 0 } : { signal: 'width' },
-        y: positionEncoding as NumericValueRef,
-        dy: { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE },
-        align: { value: isStart ? 'left' : 'right' },
-        baseline: { value: 'top' },
-      }
-    : {
-        x: positionEncoding as NumericValueRef,
-        y: isStart ? { value: 0 } : { signal: 'height' },
-        dx: { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE },
-        align: { value: 'left' },
-        baseline: { value: isStart ? 'top' : 'bottom' },
-      };
-  const update: TextEncodeEntry = {
-    ...placement,
-    text: { value: label },
-    fontWeight: { value: labelFontWeight },
-  };
+  const anchorPosition: SymbolEncodeEntry = isVerticalAxis(position)
+    ? { x: isStart ? { value: 0 } : { signal: 'width' }, y: positionEncoding as NumericValueRef }
+    : { x: positionEncoding as NumericValueRef, y: isStart ? { value: 0 } : { signal: 'height' } };
+  const badgeColor = getColorValue(color, colorScheme);
+  const textColors = [getColorValue('gray-50', colorScheme), getColorValue('gray-900', colorScheme)];
+  const anchors = getReferenceLineInsideLabelAnchors(position, labelPosition);
 
-  return [
-    {
-      name: `${name}_labelBackground`,
-      description: `${name}_labelBackground`,
-      type: 'text',
-      interactive: false,
-      encode: {
-        update: {
-          ...update,
-          fill: { value: 'transparent' },
-          stroke: { signal: BACKGROUND_COLOR },
-          strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
+  return {
+    name: `${name}_labelGroup`,
+    type: 'group',
+    interactive: false,
+    marks: [
+      {
+        name: `${name}_labelAnchor`,
+        type: 'symbol',
+        interactive: false,
+        encode: {
+          update: { ...anchorPosition, opacity: { value: 0 }, size: { value: 1 } },
         },
       },
-    },
-    {
-      name: `${name}_label`,
-      description: `${name}_label`,
-      type: 'text',
-      interactive: false,
-      encode: {
-        update: { ...update, fill: { value: getColorValue(labelColor, colorScheme) } },
+      {
+        name: `${name}_label`,
+        description: `${name}_label`,
+        type: 'text',
+        from: { data: `${name}_labelAnchor` },
+        zindex: 1,
+        interactive: false,
+        encode: {
+          enter: {
+            text: { value: label },
+            fontWeight: { value: labelFontWeight },
+            fill: [
+              { test: `contrast('${badgeColor}', '${textColors[0]}') >= 4.5`, value: textColors[0] },
+              { value: textColors[1] },
+            ],
+          },
+        },
+        transform: [
+          {
+            type: 'label',
+            size: { signal: '[width, height]' },
+            offset: anchors.map(() => REFERENCE_LINE_LABEL_BADGE_OFFSET),
+            anchor: anchors,
+          },
+        ],
       },
-    },
-  ];
+      {
+        name: `${name}_labelBadge`,
+        description: `${name}_labelBadge`,
+        type: 'rect',
+        from: { data: `${name}_label` },
+        interactive: false,
+        encode: {
+          update: {
+            cornerRadius: { value: 2 },
+            fill: { value: badgeColor },
+            opacity: { field: 'opacity' },
+            x: { signal: 'datum.bounds.x1 - 3' },
+            x2: { signal: 'datum.bounds.x2 + 3' },
+            y: { signal: 'datum.bounds.y1 - 3' },
+            y2: { signal: 'datum.bounds.y2 + 3' },
+          },
+        },
+      },
+    ],
+  };
 };
 
 /**
