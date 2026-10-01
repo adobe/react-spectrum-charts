@@ -7,10 +7,12 @@ This is the full Spectrum 2 variant of [react-spectrum-charts](https://github.co
 ## Installation
 
 ```bash
-npm install @spectrum-charts/react-spectrum-charts-s2 @adobe/react-spectrum vega vega-lite
+npm install @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react react-dom vega vega-lite
 # or
-yarn add @spectrum-charts/react-spectrum-charts-s2 @adobe/react-spectrum vega vega-lite
+yarn add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react react-dom vega vega-lite
 ```
+
+The package is ES modules only; `require()` is not supported.
 
 ## Usage
 

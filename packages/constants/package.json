@@ -6,6 +6,16 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/@types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/@types/index.d.ts",
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
   "files": [
     "dist"
   ],
@@ -16,7 +26,7 @@
     "url": "https://github.com/adobe/react-spectrum-charts.git"
   },
   "scripts": {
-    "build": "webpack --config ./webpack.config.js",
+    "build": "webpack --config ./webpack.config.js && rollup -c",
     "clean": "rm -rf dist",
     "pack-test": "yarn clean && yarn build &&cross-env NODE_ENV=development npm pack",
     "pack": "cross-env NODE_ENV=production npm pack",

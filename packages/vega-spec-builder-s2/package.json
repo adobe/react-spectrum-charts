@@ -3,9 +3,18 @@
   "version": "0.9.0",
   "description": "Vega spec builder for Spectrum 2 charts (S2 always enabled)",
   "browser": "dist/index.js",
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/@types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/@types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
   "files": [
     "dist"
   ],
@@ -17,7 +26,7 @@
   },
   "scripts": {
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "webpack --config ./webpack.config.js",
+    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly --composite false --incremental false",
     "clean": "rm -rf dist",
     "pack-test": "yarn clean && yarn build && cross-env NODE_ENV=development npm pack",
     "pack": "cross-env NODE_ENV=production npm pack",
@@ -28,6 +37,8 @@
     "@spectrum-charts/locales": "^1.52.0",
     "@spectrum-charts/themes": "^1.52.0",
     "@spectrum-charts/utils": "^1.52.0",
+    "d3-format": "^3.1.0",
+    "deepmerge": "^4.3.1",
     "immer": "^10.1.1",
     "vega": "^6.2.0",
     "vega-util": "~2.1.0",
