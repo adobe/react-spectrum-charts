@@ -57,7 +57,7 @@ describe('NumberFormat ', () => {
   });
 });
 
-describe('Font sizes stay at a named size tier (XS/S/M/L/XL) from its own minimum diameter until the next tier\'s minimum', () => {
+describe("Font sizes stay at a named size tier (XS/S/M/L/XL) from its own minimum diameter until the next tier's minimum", () => {
   // width/height chosen so outer diameter (width - 4, from DONUT_RADIUS's -2px pad doubled)
   // lands exactly on each tier's own defining (minimum) diameter, safely inside that tier's bucket.
   // XS (60px diameter) is omitted: at the default holeRatio, its inner radius can never
@@ -86,14 +86,14 @@ describe('Font sizes stay at a named size tier (XS/S/M/L/XL) from its own minimu
     expect(await screen.findByText('Visitors')).toHaveAttribute('font-size', '24px');
   });
 
-  test('a diameter numerically closer to M than to S stays S, since it has not reached M\'s own minimum yet', async () => {
+  test("a diameter numerically closer to M than to S stays S, since it has not reached M's own minimum yet", async () => {
     // outer diameter ~150 sits between S(120) and M(160), and is numerically closer to M - but a
     // tier is sticky from its own minimum, not nearest-neighbor, so this must still be S (20px)
     render(<Basic {...Basic.args} width={154} height={154} />);
     expect(await screen.findByText('40K')).toHaveAttribute('font-size', '20px');
   });
 
-  test('a diameter just below the next tier\'s minimum stays at the current tier, not the next one', async () => {
+  test("a diameter just below the next tier's minimum stays at the current tier, not the next one", async () => {
     // 199px outer diameter is 1px short of L's 200px minimum - must still render as M (22px)
     render(<Basic {...Basic.args} width={203} height={203} />);
     expect(await screen.findByText('40K')).toHaveAttribute('font-size', '22px');

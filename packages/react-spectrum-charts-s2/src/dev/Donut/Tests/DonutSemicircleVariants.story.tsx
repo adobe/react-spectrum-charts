@@ -28,9 +28,9 @@ export default {
   component: Donut,
 };
 
-
 type SemicircleMode = 'browser' | 'ordinal' | 'boolean';
-type SemicircleStoryProps = DonutProps & Pick<DonutSummaryProps, 'hideValue' | 'numberFormat' | 'delta'> & { mode?: SemicircleMode };
+type SemicircleStoryProps = DonutProps &
+  Pick<DonutSummaryProps, 'hideValue' | 'numberFormat' | 'delta'> & { mode?: SemicircleMode };
 
 const browserData: ChartData[] = [
   { browser: 'Chrome', count: 55 },
@@ -54,16 +54,40 @@ const ordinalData: ChartData[] = [
 
 const ordinalColors: ChartColors = [sequentialCerulean5[1], sequentialCerulean5[0], ...sequentialCerulean5.slice(2)];
 
-const modeConfig: Record<SemicircleMode, { data: ChartData[]; colors?: ChartColors; label: string; legendTitle: string; donutProps: Partial<DonutProps> }> = {
-  browser: { data: browserData, label: 'Share', legendTitle: 'Browser', donutProps: { metric: 'count', color: 'browser' } },
-  ordinal: { data: ordinalData, colors: ordinalColors, label: 'Responses', legendTitle: 'Response', donutProps: { metric: 'count', color: 'response', sortOrder: 'data' } },
-  boolean: { data: booleanData, label: 'Success rate', legendTitle: 'Status', donutProps: { metric: 'value', color: 'id', isBoolean: true } },
+const modeConfig: Record<
+  SemicircleMode,
+  { data: ChartData[]; colors?: ChartColors; label: string; legendTitle: string; donutProps: Partial<DonutProps> }
+> = {
+  browser: {
+    data: browserData,
+    label: 'Share',
+    legendTitle: 'Browser',
+    donutProps: { metric: 'count', color: 'browser' },
+  },
+  ordinal: {
+    data: ordinalData,
+    colors: ordinalColors,
+    label: 'Responses',
+    legendTitle: 'Response',
+    donutProps: { metric: 'count', color: 'response', sortOrder: 'data' },
+  },
+  boolean: {
+    data: booleanData,
+    label: 'Success rate',
+    legendTitle: 'Status',
+    donutProps: { metric: 'value', color: 'id', isBoolean: true },
+  },
 };
 
 const SemicircleStory: StoryFn<SemicircleStoryProps> = (args): ReactElement => {
   const { hideValue, numberFormat, delta, mode = 'ordinal', ...donutOnlyProps } = args;
   const config = modeConfig[mode];
-  const chartProps = useChartProps({ data: config.data, width: 420, height: 260, ...(config.colors && { colors: config.colors }) });
+  const chartProps = useChartProps({
+    data: config.data,
+    width: 420,
+    height: 260,
+    ...(config.colors && { colors: config.colors }),
+  });
 
   return (
     <Chart {...chartProps}>

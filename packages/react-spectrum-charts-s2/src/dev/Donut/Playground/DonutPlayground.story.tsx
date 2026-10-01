@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types */
 import { ReactElement } from 'react';
 
@@ -22,7 +23,15 @@ import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { DonutProps } from '../../../types';
 import { DonutDataPreset, getDonutData } from '../../playgroundData';
-import { category, chartArgTypes, inspectArgTypes, legendArgTypes, popoverArgTypes, renderInspectContent, renderPopoverContent } from '../../playgroundUtils';
+import {
+  category,
+  chartArgTypes,
+  inspectArgTypes,
+  legendArgTypes,
+  popoverArgTypes,
+  renderInspectContent,
+  renderPopoverContent,
+} from '../../playgroundUtils';
 
 interface DonutPlaygroundArgs extends DonutProps {
   dataPreset: DonutDataPreset;
@@ -68,9 +77,18 @@ export default {
     ...legendArgTypes,
     ...inspectArgTypes,
     ...popoverArgTypes,
-    ...category('Donut', ['color', 'holeRatio', 'isBoolean', 'metric', 'name', 'startAngle', 'sortOrder', 'emphasizedItems', 'otherItemColor', 'hideDeemphasizedLabels', 'variant']),
+    ...category('Donut', [
+      'color',
+      'holeRatio',
+      'isBoolean',
+      'metric',
+      'name',
+      'sortOrder',
+      'emphasizedItems',
+      'hideDeemphasizedLabels',
+      'variant',
+    ]),
     holeRatio: { control: { type: 'range', min: 0.1, max: 0.9, step: 0.05 }, table: { category: 'Donut' } },
-    startAngle: { control: { type: 'range', min: 0, max: 6.28, step: 0.1 }, table: { category: 'Donut' } },
     sortOrder: { control: 'select', options: ['valueDescending', 'data'], table: { category: 'Donut' } },
     variant: { control: 'select', options: ['circle', 'semicircle'], table: { category: 'Donut' } },
     showSummary: { control: 'boolean', table: { category: 'Summary' } },
@@ -79,7 +97,11 @@ export default {
     summaryHideValue: { control: 'boolean', table: { category: 'Summary' } },
     summaryDelta: { control: { type: 'range', min: -1, max: 1, step: 0.01 }, table: { category: 'Summary' } },
     showSegmentLabel: { control: 'boolean', table: { category: 'Segment label' } },
-    segmentLabelMode: { control: 'select', options: ['emphasized', 'deemphasized'], table: { category: 'Segment label' } },
+    segmentLabelMode: {
+      control: 'select',
+      options: ['emphasized', 'deemphasized'],
+      table: { category: 'Segment label' },
+    },
     segmentLabelKey: { control: 'text', table: { category: 'Segment label' } },
     segmentLabelPercent: { control: 'boolean', table: { category: 'Segment label' } },
     segmentLabelValue: { control: 'boolean', table: { category: 'Segment label' } },
@@ -131,12 +153,54 @@ const DonutPlaygroundStory: StoryFn<DonutPlaygroundArgs> = ({
     <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
       {chartTitle ? <Title text={chartTitle} /> : undefined}
       <Donut {...donutProps} isBoolean={isBoolean}>
-        {showInspect ? <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>{renderInspectContent(['browser', 'count'])}</ChartInspect> : undefined}
-        {showPopover ? <ChartPopover width={popoverWidth} rightClick={popoverRightClick} UNSAFE_highlightBy={popoverHighlightBy} onOpenChange={action('Donut ChartPopover:onOpenChange')}>{renderPopoverContent(['browser', 'count'])}</ChartPopover> : undefined}
-        {showSummary ? <DonutSummary label={summaryLabel} numberFormat={summaryNumberFormat} hideValue={summaryHideValue} delta={summaryDelta} /> : undefined}
-        {showSegmentLabel ? <SegmentLabel labelMode={segmentLabelMode} labelKey={segmentLabelKey} percent={segmentLabelPercent} value={segmentLabelValue} swatch={segmentLabelSwatch} showValueRow={segmentLabelShowValueRow} showTotal={segmentLabelShowTotal} /> : undefined}
+        {showInspect ? (
+          <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>
+            {renderInspectContent(['browser', 'count'])}
+          </ChartInspect>
+        ) : undefined}
+        {showPopover ? (
+          <ChartPopover
+            width={popoverWidth}
+            rightClick={popoverRightClick}
+            UNSAFE_highlightBy={popoverHighlightBy}
+            onOpenChange={action('Donut ChartPopover:onOpenChange')}
+          >
+            {renderPopoverContent(['browser', 'count'])}
+          </ChartPopover>
+        ) : undefined}
+        {showSummary ? (
+          <DonutSummary
+            label={summaryLabel}
+            numberFormat={summaryNumberFormat}
+            hideValue={summaryHideValue}
+            delta={summaryDelta}
+          />
+        ) : undefined}
+        {showSegmentLabel ? (
+          <SegmentLabel
+            labelMode={segmentLabelMode}
+            labelKey={segmentLabelKey}
+            percent={segmentLabelPercent}
+            value={segmentLabelValue}
+            swatch={segmentLabelSwatch}
+            showValueRow={segmentLabelShowValueRow}
+            showTotal={segmentLabelShowTotal}
+          />
+        ) : undefined}
       </Donut>
-      {showLegend ? <Legend color={donutProps.color} position={legendPosition} title={legendTitle} highlight={legendHighlight} isToggleable={legendToggleable} labelLimit={legendLabelLimit} onClick={action('Donut Legend:onClick')} onMouseOver={action('Donut Legend:onMouseOver')} onMouseOut={action('Donut Legend:onMouseOut')} /> : undefined}
+      {showLegend ? (
+        <Legend
+          color={donutProps.color}
+          position={legendPosition}
+          title={legendTitle}
+          highlight={legendHighlight}
+          isToggleable={legendToggleable}
+          labelLimit={legendLabelLimit}
+          onClick={action('Donut Legend:onClick')}
+          onMouseOver={action('Donut Legend:onMouseOver')}
+          onMouseOut={action('Donut Legend:onMouseOut')}
+        />
+      ) : undefined}
     </Chart>
   );
 };
@@ -179,9 +243,7 @@ Playground.args = {
   holeRatio: 0.72,
   isBoolean: false,
   sortOrder: 'valueDescending',
-  startAngle: 0,
   emphasizedItems: ['Chrome', 'Safari'],
   hideDeemphasizedLabels: false,
-  otherItemColor: 'gray-300',
   variant: 'circle',
 } satisfies DonutPlaygroundArgs;

@@ -25,10 +25,7 @@ describe('Donut variation datasets', () => {
       (total, { value }) => total + value,
       0
     );
-    expect(donutVariationDatasets.moderateDominantWithSlivers[0].value / moderateDominantTotal).toBeCloseTo(
-      0.8,
-      1
-    );
+    expect(donutVariationDatasets.moderateDominantWithSlivers[0].value / moderateDominantTotal).toBeCloseTo(0.8, 1);
     expect(donutVariationDatasets.denseNamed.every(({ series }) => !series.startsWith('Category'))).toBe(true);
     expect(donutVariationDatasets.longLabels.some(({ series }) => series.length > 50)).toBe(true);
     expect(donutVariationDatasets.specialCharacters.some(({ series }) => /[^\u0000-\u007f]/.test(series))).toBe(true);

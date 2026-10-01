@@ -131,13 +131,6 @@ const IsBoolean = bindWithProps(CompletionStory);
 IsBoolean.args = { metric: 'value', color: 'status', isBoolean: true };
 Object.assign(IsBoolean, { parameters: { controls: { include: ['isBoolean'] } } });
 
-const StartAngle = bindWithProps(DonutStory);
-StartAngle.args = { ...defaultArgs, startAngle: Math.PI / 2 };
-Object.assign(StartAngle, { parameters: { controls: { include: ['startAngle'] } } });
-Object.assign(StartAngle, {
-  argTypes: { startAngle: { control: { type: 'range', min: -Math.PI, max: Math.PI, step: Math.PI / 12 } } },
-});
-
 // semicircles sort by value by default; data order keeps the ordinal survey scale intact
 const SortOrder = bindWithProps(SurveyStory);
 SortOrder.args = { metric: 'count', color: 'response', variant: 'semicircle', sortOrder: 'data' };
@@ -150,10 +143,6 @@ Object.assign(Variant, { parameters: { controls: { include: ['variant'] } } });
 const EmphasizedItems = bindWithProps(LabeledDonutStory);
 EmphasizedItems.args = { ...defaultArgs, emphasizedItems: ['Chrome', 'Firefox'] };
 Object.assign(EmphasizedItems, { parameters: { controls: { include: ['emphasizedItems'] } } });
-
-const OtherItemColor = bindWithProps(LabeledDonutStory);
-OtherItemColor.args = { ...defaultArgs, emphasizedItems: ['Chrome', 'Firefox'], otherItemColor: 'gray-300' };
-Object.assign(OtherItemColor, { parameters: { controls: { include: ['otherItemColor'] } } });
 
 const HideDeemphasizedLabels = bindWithProps(LabeledDonutStory);
 HideDeemphasizedLabels.args = { ...defaultArgs, emphasizedItems: ['Chrome', 'Firefox'], hideDeemphasizedLabels: true };
@@ -173,11 +162,9 @@ export {
   EmptyState,
   HoleRatio,
   IsBoolean,
-  StartAngle,
   SortOrder,
   Variant,
   EmphasizedItems,
-  OtherItemColor,
   HideDeemphasizedLabels,
   ChartInspectStory as ChartInspect,
   ChartPopoverStory as ChartPopover,

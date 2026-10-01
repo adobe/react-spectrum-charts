@@ -16,7 +16,7 @@ import { Binary, BooleanProp } from './DonutBinaryVariants.story';
 
 describe('DonutBinary', () => {
   // Boolean renders two charts: positive (green primary) and negative (red primary, reversed data)
-  test('Boolean renders each chart\'s primary segment with its own explicit color', async () => {
+  test("Boolean renders each chart's primary segment with its own explicit color", async () => {
     render(<BooleanProp {...BooleanProp.args} />);
     const [positiveChart, negativeChart] = await screen.findAllByRole('graphics-document');
     const positiveSegments = await findAllMarksByGroupName(positiveChart, 'donut0');

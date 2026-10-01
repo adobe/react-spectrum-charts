@@ -24,7 +24,6 @@ export default {
   component: Donut,
 };
 
-
 const booleanDonutData = [
   { id: 'Complete', value: 0.68 },
   { id: 'Remaining', value: 0.32 },
@@ -34,7 +33,11 @@ const defaultChartProps: ChartProps = { data: booleanDonutData, width: 350, heig
 
 const BooleanStory: StoryFn<DonutProps> = (args): ReactElement => {
   const positiveChartProps = useChartProps({ ...defaultChartProps, colors: ['green-800'] });
-  const negativeChartProps = useChartProps({ ...defaultChartProps, data: [...booleanDonutData].reverse(), colors: ['red-800'] });
+  const negativeChartProps = useChartProps({
+    ...defaultChartProps,
+    data: [...booleanDonutData].reverse(),
+    colors: ['red-800'],
+  });
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: '30px' }}>
       <Chart {...positiveChartProps}>
