@@ -41,6 +41,7 @@ A few things to keep in mind before submitting a pull request:
 - Add/update stories in storybook for your changes
   - Any change that adds or modifies a prop must have stories to represent that change and tests written that validate the new behavior
 - Update documentation
+- Add a changeset (`yarn changeset`, or `yarn changeset:empty` if no release is needed). See [PUBLISHING.md](./PUBLISHING.md)
 - Remember that all submissions require review, please be patient.
 
 The team will review all pull requests and do one of the following:

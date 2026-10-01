@@ -93,7 +93,7 @@
     "skulk": "yarn watch --silent",
     "changeset": "changeset",
     "changeset:empty": "changeset add --empty",
-    "changeset:status": "changeset status --since=origin/main",
+    "changeset:status": "node ./scripts/checkChangeset.js",
     "release": "node ./scripts/buildUnpublishedPackages.js && changeset publish"
   },
   "devDependencies": {
