@@ -61,12 +61,6 @@ export const brandHealthData = [
   { brand: 'Category average', values: [100, 99, 100, 101, 100, 99, 98, 99, 100, 101, 101, 102] },
 ].flatMap(({ brand, values }) => MONTHS_2025.map((datetime, month) => ({ datetime, brand, index: values[month] })));
 
-/** Share of each sign-up cohort still active N weeks after sign-up. */
-export const cohortRetentionData = [
-  { cohort: 'January sign-ups', values: [1, 0.62, 0.51, 0.46, 0.43] },
-  { cohort: 'February sign-ups', values: [1, 0.66, 0.56, 0.52, 0.49] },
-].flatMap(({ cohort, values }) => values.map((retention, week) => ({ week, cohort, retention })));
-
 /** Monthly downloads by browser and operating system. */
 export const downloadsByBrowserData = [
   { browser: 'Chrome', os: 'Windows', downloads: 142000 },
@@ -99,6 +93,11 @@ export const campaignConversionsData = [
   { campaign: 'Summer clearance display', customer: 'New customers', conversions: 2210 },
   { campaign: 'Summer clearance display', customer: 'Returning customers', conversions: 1180 },
 ];
+
+/** Monthly downloads for the three most-used browsers, by operating system. */
+export const topBrowserDownloadsData = downloadsByBrowserData.filter(({ browser }) =>
+  ['Chrome', 'Safari', 'Edge'].includes(browser)
+);
 
 const GRANULARITY_SETTINGS: Record<Granularity, { start: Date; count: number; step: (date: Date, i: number) => Date }> =
   {

@@ -23,7 +23,7 @@ import { ChartProps } from '../../../types';
 export default {
   title: 'React Spectrum Charts 2/Line/Tests/Moved Demo Variants',
   component: ReferenceLine,
-  parameters: { controls: { include: ['position', 'value', 'label', 'axis', 'size'] } },
+  parameters: { controls: { include: ['position', 'value', 'label', 'axis'] } },
 };
 
 const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };

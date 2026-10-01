@@ -37,24 +37,4 @@ describe('Bar examples: ConversionsVsTarget', () => {
     const labelMark = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
     expect(labelMark).toBeInTheDocument();
   });
-
-  test('position before shifts the reference line', async () => {
-    render(<Basic {...{ ...Basic.args, position: 'before' }} />);
-
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-
-    const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
-    expect(axisReferenceLine).toBeInTheDocument();
-  });
-
-  test('position after shifts the reference line', async () => {
-    render(<Basic {...{ ...Basic.args, position: 'after' }} />);
-
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-
-    const axisReferenceLine = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
-    expect(axisReferenceLine).toBeInTheDocument();
-  });
 });

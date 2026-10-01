@@ -36,7 +36,6 @@ interface AxisPlaygroundArgs extends AxisProps {
   barColor: string;
   showReferenceLine: boolean;
   referenceLineLabel: string;
-  referenceLinePosition: 'before' | 'after' | 'center';
   referenceLineSecondary: boolean;
   showAxisThumbnail: boolean;
   axisThumbnailUrlKey: string;
@@ -62,7 +61,6 @@ export default {
     comparisonAxisGrid: { control: 'boolean', table: { category: 'Context axes' } },
     showReferenceLine: { control: 'boolean', table: { category: 'Reference line' } },
     referenceLineLabel: { control: 'text', table: { category: 'Reference line' } },
-    referenceLinePosition: { control: 'select', options: ['before', 'after', 'center'], table: { category: 'Reference line' } },
     referenceLineSecondary: { control: 'boolean', table: { category: 'Reference line' } },
     showAxisThumbnail: { control: 'boolean', table: { category: 'Axis thumbnail' } },
     axisThumbnailUrlKey: { control: 'text', table: { category: 'Axis thumbnail' } },
@@ -82,7 +80,6 @@ const AxisPlaygroundStory: StoryFn<AxisPlaygroundArgs> = ({
   barColor,
   showReferenceLine,
   referenceLineLabel,
-  referenceLinePosition,
   referenceLineSecondary,
   showAxisThumbnail,
   axisThumbnailUrlKey,
@@ -94,7 +91,7 @@ const AxisPlaygroundStory: StoryFn<AxisPlaygroundArgs> = ({
     <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
       {chartTitle ? <Title text={chartTitle} /> : undefined}
       <Axis {...axisProps} onClick={action('Axis:onClick')}>
-        {showReferenceLine ? <ReferenceLine value="Safari" label={referenceLineLabel} position={referenceLinePosition} secondary={referenceLineSecondary} /> : undefined}
+        {showReferenceLine ? <ReferenceLine value="Safari" label={referenceLineLabel} secondary={referenceLineSecondary} /> : undefined}
         {showAxisThumbnail ? <AxisThumbnail urlKey={axisThumbnailUrlKey} /> : undefined}
       </Axis>
       {showComparisonAxis ? <Axis position={comparisonPosition} grid={comparisonAxisGrid} /> : undefined}
@@ -115,7 +112,6 @@ Playground.args = {
   barColor: 'operatingSystem',
   showReferenceLine: true,
   referenceLineLabel: 'Target',
-  referenceLinePosition: 'center',
   referenceLineSecondary: false,
   showAxisThumbnail: true,
   axisThumbnailUrlKey: 'thumbnail',

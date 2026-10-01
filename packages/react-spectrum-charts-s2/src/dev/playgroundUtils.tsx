@@ -39,7 +39,6 @@ export const axesArgTypes = {
   axisTicks: { control: 'boolean', table: { category: 'Axes' } },
   showReferenceLine: { control: 'boolean', table: { category: 'Reference line' } },
   referenceLineLabel: { control: 'text', table: { category: 'Reference line' } },
-  referenceLinePosition: { control: 'select', options: ['before', 'after', 'center'], table: { category: 'Reference line' } },
   showAxisThumbnail: { control: 'boolean', table: { category: 'Axis thumbnail' } },
   axisThumbnailUrlKey: { control: 'text', table: { category: 'Axis thumbnail' } },
 } satisfies PlaygroundArgTypes;

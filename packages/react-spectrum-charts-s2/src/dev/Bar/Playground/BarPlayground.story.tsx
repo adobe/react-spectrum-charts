@@ -48,7 +48,6 @@ interface BarPlaygroundArgs extends BarProps {
   axisLabelLimit: number;
   showReferenceLine: boolean;
   referenceLineLabel: string;
-  referenceLinePosition: 'before' | 'after' | 'center';
   showLegend: boolean;
   legendPosition: 'top' | 'bottom' | 'left' | 'right';
   legendTitle?: string;
@@ -132,7 +131,6 @@ const BarPlaygroundStory: StoryFn<BarPlaygroundArgs> = ({
   axisLabelLimit,
   showReferenceLine,
   referenceLineLabel,
-  referenceLinePosition,
   showLegend,
   legendPosition,
   legendTitle,
@@ -168,12 +166,12 @@ const BarPlaygroundStory: StoryFn<BarPlaygroundArgs> = ({
       {chartTitle ? <Title text={chartTitle} /> : undefined}
       {showBottomAxis ? (
         <Axis position="bottom" baseline={axisBaseline} grid={axisGrid && isHorizontal} labelLimit={axisLabelLimit} title={isHorizontal ? leftAxisTitle : bottomAxisTitle}>
-          {showReferenceLine && metricAxis === 'bottom' ? <ReferenceLine value={50} label={referenceLineLabel} position={referenceLinePosition} /> : undefined}
+          {showReferenceLine && metricAxis === 'bottom' ? <ReferenceLine value={50} label={referenceLineLabel} /> : undefined}
         </Axis>
       ) : undefined}
       {showLeftAxis ? (
         <Axis position="left" baseline={axisBaseline} grid={axisGrid && !isHorizontal} labelLimit={axisLabelLimit} title={isHorizontal ? bottomAxisTitle : leftAxisTitle}>
-          {showReferenceLine && metricAxis === 'left' ? <ReferenceLine value={50} label={referenceLineLabel} position={referenceLinePosition} /> : undefined}
+          {showReferenceLine && metricAxis === 'left' ? <ReferenceLine value={50} label={referenceLineLabel} /> : undefined}
         </Axis>
       ) : undefined}
       <Bar
@@ -217,7 +215,6 @@ Playground.args = {
   axisLabelLimit: 110,
   showReferenceLine: false,
   referenceLineLabel: 'Goal',
-  referenceLinePosition: 'center',
   showLegend: true,
   legendPosition: 'bottom',
   legendTitle: 'Operating system',

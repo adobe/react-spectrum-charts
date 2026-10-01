@@ -62,7 +62,6 @@ interface LinePlaygroundArgs extends LineProps {
   axisLabelLimit: number;
   showReferenceLine: boolean;
   referenceLineLabel: string;
-  referenceLinePosition: 'before' | 'after' | 'center';
   showLegend: boolean;
   legendPosition: 'top' | 'bottom' | 'left' | 'right';
   legendTitle?: string;
@@ -175,7 +174,6 @@ const LinePlaygroundStory: StoryFn<LinePlaygroundArgs> = ({
   axisLabelLimit,
   showReferenceLine,
   referenceLineLabel,
-  referenceLinePosition,
   showLegend,
   legendPosition,
   legendTitle,
@@ -220,7 +218,7 @@ const LinePlaygroundStory: StoryFn<LinePlaygroundArgs> = ({
       {showBottomAxis ? <Axis position="bottom" baseline={axisBaseline} labelFormat={axisLabelFormat} labelLimit={axisLabelLimit} title={bottomAxisTitle} /> : undefined}
       {showLeftAxis ? (
         <Axis position="left" baseline={axisBaseline} grid={axisGrid} title={leftAxisTitle}>
-          {showReferenceLine ? <ReferenceLine value={50} label={referenceLineLabel} position={referenceLinePosition} /> : undefined}
+          {showReferenceLine ? <ReferenceLine value={50} label={referenceLineLabel} /> : undefined}
         </Axis>
       ) : undefined}
       <Line
@@ -266,7 +264,6 @@ Playground.args = {
   axisLabelLimit: 120,
   showReferenceLine: true,
   referenceLineLabel: 'Goal',
-  referenceLinePosition: 'center',
   showLegend: true,
   legendPosition: 'bottom',
   legendTitle: 'Workflow',
