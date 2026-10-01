@@ -11,15 +11,22 @@
  */
 import { ReactElement } from 'react';
 
+import { StoryFn } from '@storybook/react';
+
 import { ActionButton, Divider, Text } from '@react-spectrum/s2';
 import Close from '@react-spectrum/s2/icons/Close';
 import Download from '@react-spectrum/s2/icons/Download';
 import Path from '@react-spectrum/s2/icons/Path';
 import UserAdd from '@react-spectrum/s2/icons/UserAdd';
 import UserGroup from '@react-spectrum/s2/icons/UserGroup';
-import { StoryFn } from '@storybook/react';
-
-import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '@spectrum-charts/vega-spec-builder-s2';
+import {
+  Colors,
+  Datum,
+  LegendDescription,
+  LegendLabel,
+  SpectrumColor,
+  SubLabel,
+} from '@spectrum-charts/vega-spec-builder-s2';
 
 import useChartProps from '../../hooks/useChartProps';
 import { Axis, Bar, Chart, ChartInspect, ChartPopover, Legend, Line, s2Categorical16 } from '../../index';

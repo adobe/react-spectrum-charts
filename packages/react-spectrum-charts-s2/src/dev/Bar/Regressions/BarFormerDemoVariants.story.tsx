@@ -21,7 +21,7 @@ import {
   divergingConversionRateDataLongLabelsWithDirection,
   mixedAcquisitionData,
   negativeBarSeriesData,
-} from '../../../stories/components/Bar/data';
+} from '../../../storyShared/components/Bar/data';
 import { bindWithProps } from '../../../test-utils';
 import { BarDirectLabelProps, BarProps } from '../../../types';
 

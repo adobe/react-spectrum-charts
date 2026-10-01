@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Legend, Line, LineDirectLabel } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../stories/data/data';
+import { workspaceTrendsData } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 

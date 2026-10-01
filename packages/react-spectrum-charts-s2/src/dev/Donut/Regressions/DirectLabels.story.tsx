@@ -17,8 +17,8 @@ import { Chart } from '../../../Chart';
 import { Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, SegmentLabel } from '../../../pre-alpha';
+import { basicDonutData, sliveredDonutData } from '../../../storyShared/Donut/data';
 import { bindWithProps } from '../../../test-utils';
-import { basicDonutData, sliveredDonutData } from '../../../stories/Donut/data';
 import { ResponsiveDonut } from './ResponsiveDonut';
 
 export default {

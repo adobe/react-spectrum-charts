@@ -21,9 +21,13 @@ import { ChartData, Datum, SpectrumColor } from '@spectrum-charts/vega-spec-buil
 import { Chart } from '../../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
+import {
+  barSeriesData,
+  barSubSeriesData,
+  generateMockDataForTrellis,
+} from '../../../../storyShared/components/Bar/data';
 import { bindWithProps } from '../../../../test-utils';
 import { BarProps } from '../../../../types';
-import { barSeriesData, barSubSeriesData, generateMockDataForTrellis } from '../../../../stories/components/Bar/data';
 
 // ┌───────────────────────────┬──────────────────────────────────────────────────┬────────────────────────────────────────────────┐
 // │           Story           │                      Trigger                      │                   Match rule                    │
@@ -102,7 +106,10 @@ const dimensionAreaDialogContent = (datum: Datum): ReactElement => (
 );
 
 /** Point hover — hovering one segment/bar fades every other segment/bar independently, not the whole stack/group it's in. */
-const createPointHoverStory = (data: ChartData[], storyColors: SpectrumColor[] | SpectrumColor[][]): StoryFn<HoverAnimationArgs> => {
+const createPointHoverStory = (
+  data: ChartData[],
+  storyColors: SpectrumColor[] | SpectrumColor[][]
+): StoryFn<HoverAnimationArgs> => {
   const PointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
     const chartProps = useChartProps({
       data,
@@ -135,7 +142,14 @@ const StackedDimensionHoverStory: StoryFn<HoverAnimationArgs> = ({
   animationTypes,
   ...args
 }): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600, animations, animationTypes });
+  const chartProps = useChartProps({
+    data: barSeriesData,
+    colors,
+    width: 800,
+    height: 600,
+    animations,
+    animationTypes,
+  });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" baseline title="Browser" />
@@ -209,7 +223,14 @@ const StackedPopoverSelectionStory: StoryFn<HoverAnimationArgs> = ({
   animationTypes,
   ...args
 }): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600, animations, animationTypes });
+  const chartProps = useChartProps({
+    data: barSeriesData,
+    colors,
+    width: 800,
+    height: 600,
+    animations,
+    animationTypes,
+  });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" baseline title="Browser" />

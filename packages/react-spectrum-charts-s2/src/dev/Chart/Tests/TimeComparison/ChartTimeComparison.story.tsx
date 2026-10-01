@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Chart } from '../../../../index';
 import {
   FunnelTimeComparisonStory,
   TrendsTimeComparisonLineStory,
@@ -16,10 +17,9 @@ import {
   UserGrowthBarTimeComparisonStory,
   funnelColors,
   userGrowthColors,
-} from '../../../../stories/ChartExamples/ChartExamplesUtils';
-import { funnelConversionTimeComparisonData, userGrowthTimeComparisonData } from '../../../../stories/data/data';
-import { trendsTimeComparisonData } from '../../../../stories/data/trendsTimeComparisonData';
-import { Chart } from '../../../../index';
+} from '../../../../storyShared/ChartExamples/ChartExamplesUtils';
+import { funnelConversionTimeComparisonData, userGrowthTimeComparisonData } from '../../../../storyShared/data/data';
+import { trendsTimeComparisonData } from '../../../../storyShared/data/trendsTimeComparisonData';
 import { bindWithProps } from '../../../../test-utils';
 
 export default {

@@ -14,18 +14,17 @@
 import { ComponentProps, ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
+import { Datum } from 'vega';
 
 import { AnimationType } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../../Chart';
 import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../storyShared/data/data';
+import { formatTimestamp } from '../../../../storyShared/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
-import { formatTimestamp } from '../../../../stories/storyUtils';
-import { Datum } from 'vega';
-
 
 /**
  * Showcases the line draw-in animation across scale types and data shapes it does/doesn't support yet.
@@ -77,7 +76,6 @@ const funkyLineData = [...workspaceTrendsData]
   .filter((d) => !(d.series === 'Add Bar viz' && (d.datetime === 1668063600000 || d.datetime === 1668236400000)))
   .reverse();
 
-  
 /**
  * A genuinely categorical dimension (`quarter`, a string) on a point scale — unlike `PointScale`
  * below, which reuses `workspaceTrendsData`'s numeric `datetime` field and only *looks* like a
@@ -163,7 +161,11 @@ const FunkyDataShapeStory: StoryFn<DrawInAnimationArgs> = ({ animations, animati
 };
 
 /** Categorical point scale — a real string dimension (`quarter`), unlike `PointScale`'s numeric field. */
-const CategoricalPointScaleStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+const CategoricalPointScaleStory: StoryFn<DrawInAnimationArgs> = ({
+  animations,
+  animationTypes,
+  ...args
+}): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: categoricalPointData, animations, animationTypes });
   return (
     <Chart {...chartProps}>
@@ -182,8 +184,7 @@ const DualMetrixAxisStory: StoryFn<DrawInAnimationArgs> = ({ animations, animati
       <Axis position="bottom" labelFormat="time" baseline ticks title="Date" />
       <Axis position="left" grid ticks title="Downloads" />
       <Axis position="right" ticks title="Conversion Rate (%)" />
-      <Line {...args}>
-      </Line>
+      <Line {...args}></Line>
       <Legend title="Metrics" highlight />
     </Chart>
   );
@@ -195,7 +196,12 @@ const DualMetrixAxisStory: StoryFn<DrawInAnimationArgs> = ({ animations, animati
  * wiring into the same animated fraction as `getLineOpacity`.
  */
 const StaticPointStory: StoryFn<DrawInAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints, animations, animationTypes });
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data: workspaceTrendsDataWithVisiblePoints,
+    animations,
+    animationTypes,
+  });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -264,7 +270,7 @@ CardinalInterpolation.args = { ...defaultArgs, interpolate: 'cardinal' };
 export const DualMetrixAxisDrawIn = bindWithProps(DualMetrixAxisStory);
 DualMetrixAxisDrawIn.args = { ...defaultArgs, dualMetricAxis: true };
 
-export const StaticPointDrawIn= bindWithProps(StaticPointStory);
+export const StaticPointDrawIn = bindWithProps(StaticPointStory);
 StaticPointDrawIn.args = { ...defaultArgs, staticPoint: 'staticPoint' };
 
 export const DirectLabelDrawIn = bindWithProps(DirectLabelStory);

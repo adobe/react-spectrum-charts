@@ -11,16 +11,16 @@
  */
 import React, { ReactElement } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
+import { action } from 'storybook/actions';
 
 import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
 
 import useChartProps from '../../../hooks/useChartProps';
 import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../../../index';
+import { barData, barDataLongLabels } from '../../../storyShared/components/Bar/data';
+import { stockPriceData, workspaceTrendsData } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
-import { stockPriceData, workspaceTrendsData } from '../../../stories/data/data';
-import { barData, barDataLongLabels } from '../../../stories/components/Bar/data';
 import timeData from './timeData.json';
 
 export default {
@@ -284,12 +284,16 @@ Basic.args = {
   ticks: true,
   title: 'Conversion Rate',
 };
-Object.assign(Basic, { parameters: { controls: { include: ['position', 'baseline', 'grid', 'labelFormat', 'ticks', 'title'] } } });
+Object.assign(Basic, {
+  parameters: { controls: { include: ['position', 'baseline', 'grid', 'labelFormat', 'ticks', 'title'] } },
+});
 
 const ScaleBasics = bindWithProps(AxisDemoStory);
 ScaleBasics.args = { ...Basic.args };
 ScaleBasics.storyName = 'Scale basics';
-Object.assign(ScaleBasics, { parameters: { controls: { include: ['position', 'baseline', 'grid', 'labelFormat', 'ticks', 'title'] } } });
+Object.assign(ScaleBasics, {
+  parameters: { controls: { include: ['position', 'baseline', 'grid', 'labelFormat', 'ticks', 'title'] } },
+});
 
 const MultilineTitle = bindWithProps(AxisStory);
 MultilineTitle.args = {
@@ -308,7 +312,9 @@ DurationLabelFormat.args = {
   labelFormat: 'duration',
   title: 'Time spent',
 };
-Object.assign(DurationLabelFormat, { parameters: { controls: { include: ['labelFormat', 'title', 'position', 'grid'] } } });
+Object.assign(DurationLabelFormat, {
+  parameters: { controls: { include: ['labelFormat', 'title', 'position', 'grid'] } },
+});
 
 const Time = bindWithProps(TimeAxisStory);
 Time.args = {
@@ -319,7 +325,9 @@ Time.args = {
   ticks: true,
   labelAlign: 'center',
 };
-Object.assign(Time, { parameters: { controls: { include: ['granularity', 'position', 'labelFormat', 'ticks', 'labelAlign'] } } });
+Object.assign(Time, {
+  parameters: { controls: { include: ['granularity', 'position', 'labelFormat', 'ticks', 'labelAlign'] } },
+});
 
 const SecondGranularity = bindWithProps(TimeAxisBarStory);
 SecondGranularity.args = {
@@ -399,11 +407,15 @@ NumberFormat.args = {
   title: 'Price',
   range: [0, 2000000],
 };
-Object.assign(NumberFormat, { parameters: { controls: { include: ['numberFormat', 'currencyCode', 'currencyLocale', 'range'] } } });
+Object.assign(NumberFormat, {
+  parameters: { controls: { include: ['numberFormat', 'currencyCode', 'currencyLocale', 'range'] } },
+});
 
 const NumberFormatting = bindWithProps(RevenueAxisDemoStory);
 NumberFormatting.args = { ...NumberFormat.args, title: 'Revenue' };
-Object.assign(NumberFormatting, { parameters: { controls: { include: ['numberFormat', 'currencyCode', 'currencyLocale', 'range'] } } });
+Object.assign(NumberFormatting, {
+  parameters: { controls: { include: ['numberFormat', 'currencyCode', 'currencyLocale', 'range'] } },
+});
 
 const CustomXRange = bindWithProps(RangeDemoStory);
 CustomXRange.args = {
@@ -415,7 +427,9 @@ CustomXRange.args = {
   range: [-5, 30],
 };
 CustomXRange.storyName = 'Ranges and tick spacing';
-Object.assign(CustomXRange, { parameters: { controls: { include: ['range', 'tickMinStep', 'ticks', 'labelFormat'] } } });
+Object.assign(CustomXRange, {
+  parameters: { controls: { include: ['range', 'tickMinStep', 'ticks', 'labelFormat'] } },
+});
 
 const CustomYRange = bindWithProps(LinearYAxisStory);
 CustomYRange.args = {

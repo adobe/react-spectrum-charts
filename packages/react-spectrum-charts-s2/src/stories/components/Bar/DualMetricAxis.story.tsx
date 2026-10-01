@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { sessionsAndOrdersData } from './data';
+import { sessionsAndOrdersData } from '../../../storyShared/components/Bar/data';
 import { bindStory } from './storyUtils';
 
 export default {

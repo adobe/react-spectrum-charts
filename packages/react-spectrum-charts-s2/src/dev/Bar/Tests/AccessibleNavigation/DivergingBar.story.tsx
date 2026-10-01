@@ -16,9 +16,9 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
+import { divergingConversionRateData } from '../../../../storyShared/components/Bar/data';
 import { bindWithProps } from '../../../../test-utils';
 import { BarProps } from '../../../../types';
-import { divergingConversionRateData } from '../../../../stories/components/Bar/data';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Tests/Accessible Navigation',
@@ -33,7 +33,12 @@ const dialogContent = (datum) => (
 );
 
 const AccessibleNavigationStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: divergingConversionRateData, width: 700, height: 400, accessibleNavigation: true });
+  const chartProps = useChartProps({
+    data: divergingConversionRateData,
+    width: 700,
+    height: 400,
+    accessibleNavigation: true,
+  });
   return (
     <Chart {...chartProps}>
       <Axis position="left" baseline title="Channel" />

@@ -18,8 +18,8 @@ import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-
 import { Axis, Bar, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Chart } from '../../../index';
+import { barDataLongLabels } from '../../../storyShared/components/Bar/data';
 import { bindWithProps } from '../../../test-utils';
-import { barDataLongLabels } from '../../../stories/components/Bar/data';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Tests/Labels',

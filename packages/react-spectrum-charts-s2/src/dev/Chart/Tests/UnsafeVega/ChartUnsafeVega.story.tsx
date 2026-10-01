@@ -17,10 +17,10 @@ import { TABLE } from '@spectrum-charts/constants';
 
 import { Chart } from '../../../../Chart';
 import useChartProps from '../../../../hooks/useChartProps';
+import { barData } from '../../../../storyShared/components/Bar/data';
+import carsData from '../../../../storyShared/data/cars.json';
+import { packedBubbleData } from '../../../../storyShared/data/data';
 import { bindWithProps } from '../../../../test-utils';
-import { barData } from '../../../../stories/components/Bar/data';
-import carsData from '../../../../stories/data/cars.json';
-import { packedBubbleData } from '../../../../stories/data/data';
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Tests/UNSAFE_vegaSpec',

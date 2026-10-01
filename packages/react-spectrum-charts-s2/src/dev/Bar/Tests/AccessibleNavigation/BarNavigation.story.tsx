@@ -19,7 +19,7 @@ import { Orientation } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { barData, barSeriesData } from '../../../../stories/components/Bar/data';
+import { barData, barSeriesData } from '../../../../storyShared/components/Bar/data';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Tests/Accessible Navigation',

@@ -18,7 +18,7 @@ import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { barSeriesData } from './data';
+import { barSeriesData } from '../../../storyShared/components/Bar/data';
 
 export const DimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });

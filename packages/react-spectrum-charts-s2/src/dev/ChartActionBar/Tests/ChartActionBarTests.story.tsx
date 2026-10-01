@@ -14,11 +14,13 @@ import { ReactElement } from 'react';
 import Bookmark from '@react-spectrum/s2/icons/Bookmark';
 import Comment from '@react-spectrum/s2/icons/Comment';
 import Note from '@react-spectrum/s2/icons/StickyNote';
-
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartActionBar } from '../../../components';
-import { ActionBarLineStory, actionButton } from '../../../stories/components/ChartActionBar/ChartActionBarStoryUtils';
+import {
+  ActionBarLineStory,
+  actionButton,
+} from '../../../storyShared/components/ChartActionBar/chartActionBarStoryShared';
 import { bindWithProps } from '../../../test-utils';
 
 export default {

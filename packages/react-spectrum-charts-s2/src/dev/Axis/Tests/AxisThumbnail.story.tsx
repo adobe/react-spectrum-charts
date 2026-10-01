@@ -16,12 +16,12 @@ import { StoryFn } from '@storybook/react';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
-import { Axis, AxisThumbnail, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
+import { Axis, AxisThumbnail, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { barData } from '../../../storyShared/components/Bar/data';
+import { browserData as chartPopoverData } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { AxisThumbnailProps } from '../../../types';
-import { barData } from '../../../stories/components/Bar/data';
-import { browserData as chartPopoverData } from '../../../stories/data/data';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Tests/Thumbnail',

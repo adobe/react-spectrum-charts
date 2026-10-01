@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { SegmentLabel } from '../../../pre-alpha';
-import { basicDonutData } from '../../../stories/Donut/data';
+import { basicDonutData } from '../../../storyShared/Donut/data';
 import { findChart, fireEvent, render, screen } from '../../../test-utils';
 import { ResponsiveDonut } from './ResponsiveDonut';
 

@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import { Chart } from '../../../index';
+import { chartEngagementData } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
-import { chartEngagementData } from '../../data/data';
 import { ChartBarInspectStory, ChartLineStory, StoryWithParameters, setControlInclude } from '../chartStoryTemplates';
 
 export default {

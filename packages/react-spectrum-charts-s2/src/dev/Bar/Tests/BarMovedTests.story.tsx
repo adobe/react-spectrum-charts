@@ -11,27 +11,27 @@
  */
 import { ReactElement, useState } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
+import { action } from 'storybook/actions';
 
 import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
-import { SpectrumColor, Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { s2Categorical6 } from '@spectrum-charts/themes';
+import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
 import {
   barDataTwoSeries,
   barDataWithSeries,
+  barDataWithUTCSeries,
   barSeriesData,
   barSubSeriesData,
-  barDataWithUTCSeries,
   generateMockDataForTrellis,
   stackedBarDataWithUTCSeries,
-} from '../../../stories/components/Bar/data';
+} from '../../../storyShared/components/Bar/data';
+import { bindWithProps } from '../../../test-utils';
+import { BarProps } from '../../../types';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Tests/Moved Demo Variants',
@@ -99,7 +99,13 @@ const BarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barDataWithUTCSeries, width: 600, height: 600 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Date" />
+      <Axis
+        position={args.orientation === 'horizontal' ? 'left' : 'bottom'}
+        labelFormat="time"
+        granularity="day"
+        baseline
+        title="Date"
+      />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args} />
       <Legend title="Dataset" />
@@ -111,7 +117,13 @@ const StackedBarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => 
   const chartProps = useChartProps({ data: stackedBarDataWithUTCSeries, width: 600, height: 600 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Date" />
+      <Axis
+        position={args.orientation === 'horizontal' ? 'left' : 'bottom'}
+        labelFormat="time"
+        granularity="day"
+        baseline
+        title="Date"
+      />
       <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
       <Bar {...args} />
       <Legend title="Dataset" />
@@ -190,37 +202,85 @@ export const StackedInspectOnDimensionArea = bindWithProps(GroupedDimensionAreaS
 StackedInspectOnDimensionArea.args = { dimension: 'browser', order: 'order', color: 'operatingSystem' };
 
 export const BarWithUTCDatetimeFormat = bindWithProps(BarStoryWithUTCData);
-BarWithUTCDatetimeFormat.args = { dimension: 'browser', metric: 'downloads', color: 'datasetName', dimensionDataType: 'time' };
+BarWithUTCDatetimeFormat.args = {
+  dimension: 'browser',
+  metric: 'downloads',
+  color: 'datasetName',
+  dimensionDataType: 'time',
+};
 
 export const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);
-StackedBarWithUTCDatetimeFormat.args = { dimension: 'browser', metric: 'downloads', color: 'datasetName', dimensionDataType: 'time' };
+StackedBarWithUTCDatetimeFormat.args = {
+  dimension: 'browser',
+  metric: 'downloads',
+  color: 'datasetName',
+  dimensionDataType: 'time',
+};
 
 export const DodgedLineType = bindWithProps(DodgedBarStory);
-DodgedLineType.args = { type: 'dodged', dimension: 'browser', order: 'order', lineType: 'operatingSystem', lineWidth: 2, opacity: { value: 0.2 } };
+DodgedLineType.args = {
+  type: 'dodged',
+  dimension: 'browser',
+  order: 'order',
+  lineType: 'operatingSystem',
+  lineWidth: 2,
+  opacity: { value: 0.2 },
+};
 
 export const DodgedOpacity = bindWithProps(DodgedBarStory);
 DodgedOpacity.args = { type: 'dodged', dimension: 'browser', order: 'order', opacity: 'operatingSystem' };
 
 export const DodgedOnClick = bindWithProps(DodgedBarStory);
-DodgedOnClick.args = { type: 'dodged', dimension: 'browser', order: 'order', color: 'operatingSystem', onClick: action('onClick') };
+DodgedOnClick.args = {
+  type: 'dodged',
+  dimension: 'browser',
+  order: 'order',
+  color: 'operatingSystem',
+  onClick: action('onClick'),
+};
 
 export const StackedOnClick = bindWithProps(DodgedBarStory);
 StackedOnClick.args = { dimension: 'browser', order: 'order', color: 'operatingSystem', onClick: action('onClick') };
 
 export const TrellisHorizontalHorizontal = bindWithProps<BarProps>(TrellisStory);
-TrellisHorizontalHorizontal.args = { type: 'stacked', trellis: 'event', dimension: 'segment', color: 'bucket', order: 'order', orientation: 'horizontal', trellisOrientation: 'horizontal' };
+TrellisHorizontalHorizontal.args = {
+  type: 'stacked',
+  trellis: 'event',
+  dimension: 'segment',
+  color: 'bucket',
+  order: 'order',
+  orientation: 'horizontal',
+  trellisOrientation: 'horizontal',
+};
 
 export const TrellisDodged = bindWithProps<BarProps>(TrellisStory);
-TrellisDodged.args = { type: 'dodged', dimension: 'segment', onClick: undefined, order: 'order', color: 'bucket', trellis: 'event', trellisOrientation: 'horizontal', orientation: 'horizontal' };
+TrellisDodged.args = {
+  type: 'dodged',
+  dimension: 'segment',
+  onClick: undefined,
+  order: 'order',
+  color: 'bucket',
+  trellis: 'event',
+  trellisOrientation: 'horizontal',
+  orientation: 'horizontal',
+};
 
 export const TrellisHorizontalVertical = bindWithProps<BarProps>(TrellisStory);
 TrellisHorizontalVertical.args = { ...TrellisHorizontalHorizontal.args, trellisOrientation: 'vertical' };
 
 export const TrellisVerticalHorizontal = bindWithProps<BarProps>(TrellisStory);
-TrellisVerticalHorizontal.args = { ...TrellisHorizontalHorizontal.args, orientation: 'vertical', trellisOrientation: 'horizontal' };
+TrellisVerticalHorizontal.args = {
+  ...TrellisHorizontalHorizontal.args,
+  orientation: 'vertical',
+  trellisOrientation: 'horizontal',
+};
 
 export const TrellisVerticalVertical = bindWithProps<BarProps>(TrellisStory);
-TrellisVerticalVertical.args = { ...TrellisHorizontalVertical.args, orientation: 'vertical', trellisOrientation: 'vertical' };
+TrellisVerticalVertical.args = {
+  ...TrellisHorizontalVertical.args,
+  orientation: 'vertical',
+  trellisOrientation: 'vertical',
+};
 
 export const TrellisWithCustomPadding = bindWithProps<BarProps>(TrellisStory);
 TrellisWithCustomPadding.args = { ...TrellisHorizontalVertical.args, orientation: 'vertical', trellisPadding: 0.33 };

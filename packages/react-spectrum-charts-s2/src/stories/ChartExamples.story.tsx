@@ -15,7 +15,6 @@ import { StoryFn } from '@storybook/react';
 
 import useChartProps from '../hooks/useChartProps';
 import { Axis, Chart, Legend, Line, ReferenceLine } from '../index';
-import { bindWithProps } from '../test-utils';
 import {
   FunnelConversionStory,
   StackOverflowStory,
@@ -23,11 +22,12 @@ import {
   UserGrowthBarStory,
   funnelColors,
   userGrowthColors,
-} from './ChartExamples/ChartExamplesUtils';
-import { funnelConversionData, userGrowthData } from './data/data';
+} from '../storyShared/ChartExamples/ChartExamplesUtils';
+import { funnelConversionData, userGrowthData } from '../storyShared/data/data';
+import { trendsTimeComparisonData } from '../storyShared/data/trendsTimeComparisonData';
+import { bindWithProps } from '../test-utils';
 import errorData from './data/errorData.json';
 import stackOverflowData from './data/stackOverflowTrends.json';
-import { trendsTimeComparisonData } from './data/trendsTimeComparisonData';
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Examples',

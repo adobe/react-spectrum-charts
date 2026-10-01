@@ -11,61 +11,21 @@
  */
 import { ReactElement } from 'react';
 
-import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { ActionButton, Content, ContextualHelp, Heading, Menu, MenuItem, MenuTrigger, Text } from '@react-spectrum/s2';
+import { ActionButton, Content, ContextualHelp, Heading, Menu, MenuItem, MenuTrigger } from '@react-spectrum/s2';
 import Comment from '@react-spectrum/s2/icons/Comment';
 import More from '@react-spectrum/s2/icons/More';
 import Note from '@react-spectrum/s2/icons/StickyNote';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartActionBar, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { ChartProps } from '../../../types';
-import { workspaceTrendsDataWithVisiblePoints } from '../../data/data';
+import { actionButton } from '../../../storyShared/components/ChartActionBar/chartActionBarStoryShared';
 
 export type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
 
 export const setControlInclude = (story: StoryWithParameters, include: string[]) => {
   story.parameters = { controls: { include } };
 };
-
-const defaultChartProps: ChartProps = {
-  data: workspaceTrendsDataWithVisiblePoints,
-  minWidth: 400,
-  maxWidth: 800,
-  height: 400,
-};
-
-export const ActionBarLineStory: StoryFn<typeof ChartActionBar> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" baseline ticks labelFormat="time" title="Day" />
-      <Axis position="left" grid title="Events" />
-      <Line color="series" dimension="datetime" metric="value" name="line0" scaleType="time" staticPoint="staticPoint">
-        <ChartActionBar {...args} />
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
-
-export const actionButton = (key: string, label: string, icon: ReactElement, datum: Datum, close: () => void) => (
-  <ActionButton
-    key={key}
-    isQuiet
-    onPress={() => {
-      action(`ChartActionBar:${key}`)(datum);
-      close();
-    }}
-  >
-    {icon}
-    <Text>{label}</Text>
-  </ActionButton>
-);
 
 export const actionBarContent = (datum: Datum, close: () => void): ReactElement[] => [
   actionButton('annotate', 'Annotate', <Note />, datum, close),

@@ -16,15 +16,14 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../pre-alpha';
+import { basicDonutData } from '../../../storyShared/Donut/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutSummaryProps } from '../../../types';
-import { basicDonutData } from '../../../stories/Donut/data';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Tests/DonutSummary Variants',
   component: DonutSummary,
 };
-
 
 const defaultChartProps: ChartProps = { data: basicDonutData, width: 350, height: 350 };
 

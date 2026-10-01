@@ -19,8 +19,8 @@ import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend, Line } from '../../../components';
 import { ChartInspect } from '../../../components/ChartInspect';
 import useChartProps from '../../../hooks/useChartProps';
-import { browserData } from '../../../stories/data/data';
-import { formatTimestamp } from '../../../stories/storyUtils';
+import { browserData } from '../../../storyShared/data/data';
+import { formatTimestamp } from '../../../storyShared/storyUtils';
 import { bindWithProps } from '../../../test-utils';
 
 type StoryWithParameters = { parameters?: { controls: { include: string[] } } };

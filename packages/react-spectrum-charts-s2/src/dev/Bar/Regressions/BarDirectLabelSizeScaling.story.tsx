@@ -18,7 +18,7 @@ import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/constants';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, BarDirectLabel } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { barData } from '../../../stories/components/Bar/data';
+import { barData } from '../../../storyShared/components/Bar/data';
 import { bindWithProps } from '../../../test-utils';
 import { BarDirectLabelProps } from '../../../types';
 

@@ -15,8 +15,8 @@ import { StoryFn } from '@storybook/react';
 
 import useChartProps from '../../../hooks/useChartProps';
 import { Axis, Chart, Legend, Line } from '../../../index';
+import { chartEngagementData } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
-import { chartEngagementData } from '../../data/data';
 import { ChartBarStory, StoryWithParameters, setControlInclude } from '../chartStoryTemplates';
 
 export default {

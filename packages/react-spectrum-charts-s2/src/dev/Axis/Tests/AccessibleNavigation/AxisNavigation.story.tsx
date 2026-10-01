@@ -12,13 +12,14 @@
 import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
+
 import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart';
 import { Axis, Bar, ChartInspect } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { barData, barDataLongLabels, barDataTwoSeries } from '../../../../stories/components/Bar/data';
+import { barData, barDataLongLabels, barDataTwoSeries } from '../../../../storyShared/components/Bar/data';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Tests/Accessible Navigation',

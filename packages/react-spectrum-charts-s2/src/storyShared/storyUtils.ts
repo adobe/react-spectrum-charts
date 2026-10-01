@@ -53,11 +53,7 @@ const createSeededRandom = (seed: number): (() => number) => {
  * @param pointsPerSeries - The number of points per series.
  * @returns A large dataset for performance stress testing.
  */
-export const generateLargeData = (
-  seriesCount = 20,
-  pointsPerSeries = 10,
-  seed = 42
-): GeneratedTimeSeriesDatum[] => {
+export const generateLargeData = (seriesCount = 20, pointsPerSeries = 10, seed = 42): GeneratedTimeSeriesDatum[] => {
   const START = new Date('2023-01-01T00:00:00Z').getTime();
   const STEP_MS = 60 * 60 * 1000; // one point per hour
   const random = createSeededRandom(seed);

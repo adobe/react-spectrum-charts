@@ -13,8 +13,8 @@
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics, not React propTypes */
 import { ComponentProps, ReactElement } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
+import { action } from 'storybook/actions';
 
 import { AnimationType } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
@@ -22,8 +22,8 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../../Chart';
 import { Axis, ChartInspect, ChartPopover, Legend, Line, LineDirectLabel } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
-import { formatTimestamp } from '../../../../stories/storyUtils';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../storyShared/data/data';
+import { formatTimestamp } from '../../../../storyShared/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
@@ -137,7 +137,11 @@ const LegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTy
 };
 
 /** Grouped legend hover — hovering a grouped legend entry emphasizes every series in that group. */
-const GroupedLegendHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+const GroupedLegendHoverStory: StoryFn<HoverAnimationArgs> = ({
+  animations,
+  animationTypes,
+  ...args
+}): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, data: groupedData, animations, animationTypes });
   return (
     <Chart {...chartProps}>
@@ -165,8 +169,17 @@ const PopoverSelectionStory: StoryFn<HoverAnimationArgs> = ({ animations, animat
 };
 
 /** Controlled highlight — an external `highlightedSeries` chart prop emphasizes a series (the `controlledSeriesMatch` rule). */
-const ControlledHighlightStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Freeform table', animations, animationTypes });
+const ControlledHighlightStory: StoryFn<HoverAnimationArgs> = ({
+  animations,
+  animationTypes,
+  ...args
+}): ReactElement => {
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    highlightedSeries: 'Add Freeform table',
+    animations,
+    animationTypes,
+  });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />
@@ -178,7 +191,11 @@ const ControlledHighlightStory: StoryFn<HoverAnimationArgs> = ({ animations, ani
 };
 
 /** Controlled highlight — an external `highlightedItem` chart prop emphasizes the row's series (the `controlledTableMatch` rule). */
-const ControlledHighlightItemStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
+const ControlledHighlightItemStory: StoryFn<HoverAnimationArgs> = ({
+  animations,
+  animationTypes,
+  ...args
+}): ReactElement => {
   const chartProps = useChartProps({ ...defaultChartProps, highlightedItem: 0, animations, animationTypes });
   return (
     <Chart {...chartProps}>
@@ -209,7 +226,12 @@ const OnClickStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes,
  * wiring into the same animated fraction as `getLineOpacity`.
  */
 const StaticPointHoverStory: StoryFn<HoverAnimationArgs> = ({ animations, animationTypes, ...args }): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: workspaceTrendsDataWithVisiblePoints, animations, animationTypes });
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data: workspaceTrendsDataWithVisiblePoints,
+    animations,
+    animationTypes,
+  });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Users" />

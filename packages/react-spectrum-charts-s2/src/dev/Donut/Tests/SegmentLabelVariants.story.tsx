@@ -16,15 +16,14 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, SegmentLabel } from '../../../pre-alpha';
+import { basicDonutData } from '../../../storyShared/Donut/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
-import { basicDonutData } from '../../../stories/Donut/data';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Tests/SegmentLabel Variants',
   component: SegmentLabel,
 };
-
 
 const defaultChartProps: ChartProps = { data: basicDonutData, width: 350, height: 350 };
 

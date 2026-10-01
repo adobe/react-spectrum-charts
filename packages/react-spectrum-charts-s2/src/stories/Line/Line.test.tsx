@@ -30,7 +30,7 @@ import {
 import { LinearTrendScale, TrendScale } from '../../dev/Line/Tests/LineTrendScale.story';
 import { LineWithAxisAndLegend } from '../../dev/Line/Tests/LineWithAxisAndLegend.story';
 import { LineWithUTCDatetimeFormat } from '../../dev/Line/Tests/LineWithUTCDatetimeFormat.story';
-import { workspaceTrendsData } from '../../stories/data/data';
+import { workspaceTrendsData } from '../../storyShared/data/data';
 import {
   allElementsHaveAttributeValue,
   clickNthElement,

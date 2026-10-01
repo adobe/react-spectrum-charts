@@ -18,7 +18,7 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { browserData as data } from '../../../stories/data/data';
+import { browserData as data } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';

@@ -19,9 +19,9 @@ import { Chart } from '../../../Chart';
 import { Axis, ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Area } from '../../../pre-alpha';
+import { formatTimestamp } from '../../../storyShared/storyUtils';
 import { bindWithProps } from '../../../test-utils';
 import { AreaProps, ChartProps } from '../../../types';
-import { formatTimestamp } from '../../storyUtils';
 import { dailyTemperatureData, installsSinceLaunchData, sessionsByChannelData } from '../areaData';
 
 export default {

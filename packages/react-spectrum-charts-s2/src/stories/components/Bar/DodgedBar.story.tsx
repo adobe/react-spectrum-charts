@@ -18,8 +18,8 @@ import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { channelDeviceData, channelDeviceVisitorData } from '../../../storyShared/components/Bar/data';
 import { BarProps } from '../../../types';
-import { channelDeviceData, channelDeviceVisitorData } from './data';
 import { bindStory } from './storyUtils';
 
 export default {

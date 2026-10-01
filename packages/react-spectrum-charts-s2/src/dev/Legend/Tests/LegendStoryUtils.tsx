@@ -16,8 +16,8 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend, Line, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { browserData as data } from '../../../storyShared/data/data';
 import { LegendProps } from '../../../types';
-import { browserData as data } from '../../../stories/data/data';
 
 // Jun 1–7 2026 daily data, 3 series mirroring a CJA multi-metric line chart
 export const legendColumnsData = [

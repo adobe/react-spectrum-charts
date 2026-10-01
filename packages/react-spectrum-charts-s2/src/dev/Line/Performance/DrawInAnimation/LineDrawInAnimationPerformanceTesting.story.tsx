@@ -21,8 +21,8 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../../Chart';
 import { Axis, ChartInspect, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../stories/data/data';
-import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../stories/storyUtils';
+import { workspaceTrendsData } from '../../../../storyShared/data/data';
+import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../storyShared/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
@@ -52,7 +52,13 @@ export default {
       description: 'Number of data points generated per series.',
     },
   },
-  args: { animations: true, animationTypes: ['hover', 'drawIn'], chartCount: 20, seriesPerChart: 30, pointsPerSeries: 10 },
+  args: {
+    animations: true,
+    animationTypes: ['hover', 'drawIn'],
+    chartCount: 20,
+    seriesPerChart: 30,
+    pointsPerSeries: 10,
+  },
 };
 
 type DashboardArgs = {

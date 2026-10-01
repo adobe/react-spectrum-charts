@@ -15,6 +15,7 @@ import { StoryFn } from '@storybook/react';
 
 import useChartProps from '../hooks/useChartProps';
 import { Axis, Chart, Legend, Line } from '../index';
+import { chartEngagementData, workspaceTrendsData } from '../storyShared/data/data';
 import { bindWithProps } from '../test-utils';
 import {
   ChartBarInspectStory,
@@ -23,7 +24,6 @@ import {
   StoryWithParameters,
   setControlInclude,
 } from './Chart/chartStoryTemplates';
-import { chartEngagementData, workspaceTrendsData } from './data/data';
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features',

@@ -20,9 +20,9 @@ import { Chart } from '../../../Chart';
 import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary } from '../../../pre-alpha';
+import { basicDonutData } from '../../../storyShared/Donut/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';
-import { basicDonutData } from '../../Donut/data';
 import {
   BarPopoverStory,
   StoryWithParameters,

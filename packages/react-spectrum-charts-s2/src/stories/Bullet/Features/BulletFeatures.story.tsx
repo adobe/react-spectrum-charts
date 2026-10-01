@@ -19,14 +19,14 @@ import { Chart } from '../../../Chart';
 import { ChartInspect } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Bullet } from '../../../pre-alpha';
-import { bindWithProps } from '../../../test-utils';
-import { BulletProps, ChartProps } from '../../../types';
 import {
   customLabelBulletData,
   quarterlyKpiData,
   quarterlyKpiThresholdsData,
   regionalRevenueData,
-} from '../../data/bulletData';
+} from '../../../storyShared/data/bulletData';
+import { bindWithProps } from '../../../test-utils';
+import { BulletProps, ChartProps } from '../../../types';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features',

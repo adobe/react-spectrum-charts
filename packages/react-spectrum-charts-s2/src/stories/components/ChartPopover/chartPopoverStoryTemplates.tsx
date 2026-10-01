@@ -18,9 +18,9 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { browserData as data } from '../../../storyShared/data/data';
 import { ChartProps } from '../../../types';
 import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';
-import { browserData as data } from '../../data/data';
 
 export type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
 

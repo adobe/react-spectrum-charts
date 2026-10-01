@@ -20,9 +20,14 @@ import { Chart } from '../../../Chart';
 import { ChartInspect, ChartPopover, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
+import {
+  basicDonutData,
+  surveyResponseDonutData,
+  taskCompletionDonutData,
+  zeroDonutData,
+} from '../../../storyShared/Donut/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutProps } from '../../../types';
-import { basicDonutData, surveyResponseDonutData, taskCompletionDonutData, zeroDonutData } from '../data';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features',

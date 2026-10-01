@@ -23,14 +23,12 @@ import Note from '@react-spectrum/s2/icons/StickyNote';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartActionBar } from '../../../components';
-import { bindWithProps } from '../../../test-utils';
 import {
   ActionBarLineStory,
-  StoryWithParameters,
-  actionBarContent,
   actionButton,
-  setControlInclude,
-} from './ChartActionBarStoryUtils';
+} from '../../../storyShared/components/ChartActionBar/chartActionBarStoryShared';
+import { bindWithProps } from '../../../test-utils';
+import { StoryWithParameters, actionBarContent, setControlInclude } from './chartActionBarStoryTemplates';
 
 export default {
   title: 'React Spectrum Charts 2/Chart Action Bar/Features',

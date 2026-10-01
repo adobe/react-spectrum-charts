@@ -16,8 +16,8 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { divergingConversionRateDataWithDirection } from '../../../storyShared/components/Bar/data';
 import { BarProps } from '../../../types';
-import { divergingConversionRateDataWithDirection } from './data';
 import { bindStory } from './storyUtils';
 
 export default {

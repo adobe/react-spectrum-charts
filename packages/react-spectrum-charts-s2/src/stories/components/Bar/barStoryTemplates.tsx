@@ -16,8 +16,8 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { acquisitionChannelData } from '../../../storyShared/components/Bar/data';
 import { BarProps } from '../../../types';
-import { acquisitionChannelData } from './data';
 
 export const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const isHorizontal = args.orientation === 'horizontal';

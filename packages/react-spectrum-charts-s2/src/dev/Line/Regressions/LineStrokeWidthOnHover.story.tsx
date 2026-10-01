@@ -19,7 +19,7 @@ import {
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartInspect, Legend, Line } from '../../../components';
-import { workspaceTrendsData } from '../../../stories/data/data';
+import { workspaceTrendsData } from '../../../storyShared/data/data';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Regressions/Stroke Width On Hover',

@@ -19,6 +19,7 @@ import { Chart } from '../../../Chart';
 import { ChartInspect, ChartPopover } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
+import { booleanDonutData, zeroDonutData } from '../../../storyShared/Donut/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps, DonutProps, SegmentLabelProps } from '../../../types';
 import {
@@ -31,11 +32,10 @@ import {
   useVariationSize,
   useVariationViewMode,
 } from '../../VariationDashboard';
-import { booleanDonutData, zeroDonutData } from '../../../stories/Donut/data';
 import { getContainerWidthForDiameter, getEffectiveDiameter } from '../Regressions/ResponsiveDonut';
 import {
-  DonutVariationDatum,
   DonutVariationDatasetName,
+  DonutVariationDatum,
   donutDatasetOptions,
   donutVariationDatasets,
   getLargestDonutSeries,
@@ -48,7 +48,7 @@ export default {
     controls: { disable: true },
     layout: 'fullscreen',
   },
-  // tags: ['hidden']
+  tags: ['hidden'],
 };
 
 const donutSizePresets: VariationSizePreset[] = [

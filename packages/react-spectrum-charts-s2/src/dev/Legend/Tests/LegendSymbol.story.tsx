@@ -18,8 +18,8 @@ import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/constants';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { browserData as data } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
-import { browserData as data } from '../../../stories/data/data';
 import { defaultProps } from './LegendStoryUtils';
 
 export default {
@@ -75,6 +75,8 @@ Supreme.args = {
   ...defaultProps,
 };
 Supreme.storyName = 'Symbol encodings';
-Object.assign(Supreme, { parameters: { controls: { include: ['color', 'lineType', 'lineWidth', 'opacity', 'symbolShape'] } } });
+Object.assign(Supreme, {
+  parameters: { controls: { include: ['color', 'lineType', 'lineWidth', 'opacity', 'symbolShape'] } },
+});
 
 export { Supreme, Color, LineType, LineWidth, Opacity, Symbols };

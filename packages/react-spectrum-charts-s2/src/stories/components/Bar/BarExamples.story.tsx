@@ -17,7 +17,7 @@ import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, Legend } from '../../../components';
 import { ReferenceLine } from '../../../components/ReferenceLine';
 import useChartProps from '../../../hooks/useChartProps';
-import { channelConversionsData } from './data';
+import { channelConversionsData } from '../../../storyShared/components/Bar/data';
 import { bindStory } from './storyUtils';
 
 export default {

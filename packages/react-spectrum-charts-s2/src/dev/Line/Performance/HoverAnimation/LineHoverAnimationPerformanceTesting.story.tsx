@@ -21,8 +21,8 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../../Chart';
 import { Axis, ChartInspect, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../stories/data/data';
-import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../stories/storyUtils';
+import { workspaceTrendsData } from '../../../../storyShared/data/data';
+import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../storyShared/storyUtils';
 import { bindWithProps } from '../../../../test-utils';
 import { ChartProps } from '../../../../types';
 
@@ -188,7 +188,13 @@ const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({
 };
 
 export const Dashboard = bindWithProps(DashboardStory);
-Dashboard.args = { animations: true, animationTypes: ['hover'], chartCount: 20, seriesPerChart: 10, pointsPerSeries: 10 };
+Dashboard.args = {
+  animations: true,
+  animationTypes: ['hover'],
+  chartCount: 20,
+  seriesPerChart: 10,
+  pointsPerSeries: 10,
+};
 
 export const LargeDataset = bindWithProps(LargeDatasetStory);
 LargeDataset.args = { ...defaultArgs, seriesPerChart: 100, pointsPerSeries: 10 };

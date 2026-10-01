@@ -17,8 +17,8 @@ import { action } from 'storybook/actions';
 import { Chart } from '../../../Chart';
 import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../stories/data/data';
-import { formatTimestamp } from '../../../stories/storyUtils';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../storyShared/data/data';
+import { formatTimestamp } from '../../../storyShared/storyUtils';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 

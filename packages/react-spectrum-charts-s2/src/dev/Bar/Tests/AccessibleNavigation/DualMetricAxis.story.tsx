@@ -16,9 +16,9 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
+import { barDataTwoSeries } from '../../../../storyShared/components/Bar/data';
 import { bindWithProps } from '../../../../test-utils';
 import { BarProps } from '../../../../types';
-import { barDataTwoSeries } from '../../../../stories/components/Bar/data';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Tests/Accessible Navigation',

@@ -17,7 +17,7 @@ import { Chart } from '../../../Chart';
 import { Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Bullet } from '../../../pre-alpha';
-import { basicBulletData } from '../../../stories/data/bulletData';
+import { basicBulletData } from '../../../storyShared/data/bulletData';
 import { bindWithProps } from '../../../test-utils';
 import { BulletProps, ChartProps } from '../../../types';
 

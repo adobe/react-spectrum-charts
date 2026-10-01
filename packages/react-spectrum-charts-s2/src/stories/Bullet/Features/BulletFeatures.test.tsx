@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { coloredThresholdsData, quarterlyKpiThresholdsData } from '../../../storyShared/data/bulletData';
 import { findChart, render } from '../../../test-utils';
-import { coloredThresholdsData, quarterlyKpiThresholdsData } from '../../data/bulletData';
 import {
   ChartInspect,
   MetricLabel,
@@ -83,8 +83,11 @@ describe('Bullet ChartInspect', () => {
 });
 
 describe('Bullet NumberFormat', () => {
-  test.each([undefined, 'shortNumber', 'shortCurrency', 'currency', ',.1f', '.0%'])('%s renders properly', async (format) => {
-    render(<NumberFormat {...NumberFormat.args} numberFormat={format} showTargetValue />);
-    await expectChart();
-  });
+  test.each([undefined, 'shortNumber', 'shortCurrency', 'currency', ',.1f', '.0%'])(
+    '%s renders properly',
+    async (format) => {
+      render(<NumberFormat {...NumberFormat.args} numberFormat={format} showTargetValue />);
+      await expectChart();
+    }
+  );
 });

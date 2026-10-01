@@ -18,8 +18,8 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { frequencyOfUseData } from '../../../storyShared/components/Bar/data';
 import { BarProps } from '../../../types';
-import { frequencyOfUseData } from './data';
 import { bindStory } from './storyUtils';
 
 export default {

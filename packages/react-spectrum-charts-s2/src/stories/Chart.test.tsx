@@ -19,6 +19,7 @@ import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../Chart';
 import { Axis, Bar, ChartInspect, Line } from '../components';
+import { data } from '../storyShared/data/data';
 import {
   findChart,
   getAllMarksByGroupName,
@@ -34,7 +35,6 @@ import { BackgroundColor, Basic, Config, EmptyStateText, Loading, Locale, Toolti
 import { Colors } from './Chart/Encodings/ChartEncodings.story';
 import { HighlightedItem } from './Chart/Highlight/ChartHighlight.story';
 import { Height, Width } from './Chart/Size/ChartSize.story';
-import { data } from './data/data';
 
 const PopoverTest = (
   <Chart data={[]} renderer="svg">

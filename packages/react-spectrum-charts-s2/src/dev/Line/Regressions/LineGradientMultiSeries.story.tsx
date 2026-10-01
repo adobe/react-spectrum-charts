@@ -11,14 +11,14 @@
  */
 import { ReactElement } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
+import { action } from 'storybook/actions';
 
 import { Chart } from '../../../Chart';
-import { Axis, ChartPopover, ChartInspect, Legend, Line } from '../../../components';
+import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../stories/data/data';
-import { formatTimestamp } from '../../../stories/storyUtils';
+import { workspaceTrendsData } from '../../../storyShared/data/data';
+import { formatTimestamp } from '../../../storyShared/storyUtils';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 

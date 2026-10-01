@@ -16,9 +16,9 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, Legend, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { browserData as data } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
-import { browserData as data } from '../../../stories/data/data';
 
 export default {
   title: 'React Spectrum Charts 2/Title/Tests/Title',

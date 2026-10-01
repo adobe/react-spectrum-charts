@@ -16,8 +16,8 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
+import { acquisitionChannelData, monthlySignupsData } from '../../../storyShared/components/Bar/data';
 import { BarStory, defaultProps } from './barStoryTemplates';
-import { acquisitionChannelData, monthlySignupsData } from './data';
 import { bindStory } from './storyUtils';
 
 export default {

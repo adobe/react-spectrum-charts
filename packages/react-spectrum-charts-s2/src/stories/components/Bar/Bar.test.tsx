@@ -13,6 +13,7 @@ import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Bar } from '../../../components';
 import { BarWithUTCDatetimeFormat, OnMouseInputs } from '../../../dev/Bar/Tests/BarMovedTests.story';
+import { acquisitionChannelData as barData } from '../../../storyShared/components/Bar/data';
 import {
   clickNthElement,
   findAllMarksByGroupName,
@@ -32,7 +33,6 @@ import { Dodged as DodgedBasic, DodgedStacked } from './DodgedBar.story';
 import { PaddingRatio } from './Spacing/BarSpacing.story';
 import { Stacked as StackedBasic } from './StackedBar.story';
 import { Opacity } from './Styling/BarStyling.story';
-import { acquisitionChannelData as barData } from './data';
 
 describe('Bar', () => {
   // Bar is not a real React component. This is test just provides test coverage for sonarqube

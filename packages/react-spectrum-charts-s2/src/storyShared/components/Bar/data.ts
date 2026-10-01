@@ -152,10 +152,12 @@ export const divergingConversionRateDataLongLabels = [
   { channel: 'Facebook Reels Sponsored Video Content', changeRate: -0.029, barColor: '#d7373f' },
 ];
 
-export const divergingConversionRateDataLongLabelsWithDirection = divergingConversionRateDataLongLabels.map((datum) => ({
-  ...datum,
-  changeDirection: datum.changeRate >= 0 ? 'Increase' : 'Decrease',
-}));
+export const divergingConversionRateDataLongLabelsWithDirection = divergingConversionRateDataLongLabels.map(
+  (datum) => ({
+    ...datum,
+    changeDirection: datum.changeRate >= 0 ? 'Increase' : 'Decrease',
+  })
+);
 
 /** Verifies `labelFormat="time"` + `diverging` (mixed sign, monthly granularity): primary/secondary time axes share the same offset and flip encode via a static `dy`, not `labelPadding`. */
 export const timeAxisDivergingData = [

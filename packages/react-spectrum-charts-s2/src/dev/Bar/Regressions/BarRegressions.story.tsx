@@ -19,11 +19,7 @@ import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend, Title } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import {
-  barSeriesData,
-  barSubSeriesData,
-  timeAxisDivergingData,
-} from '../../../stories/components/Bar/data';
+import { barSeriesData, barSubSeriesData, timeAxisDivergingData } from '../../../storyShared/components/Bar/data';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
 

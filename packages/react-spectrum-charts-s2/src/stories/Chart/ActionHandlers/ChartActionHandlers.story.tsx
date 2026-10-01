@@ -12,8 +12,8 @@
 import { action } from 'storybook/actions';
 
 import { Chart } from '../../../index';
+import { chartEngagementData } from '../../../storyShared/data/data';
 import { bindWithProps } from '../../../test-utils';
-import { chartEngagementData } from '../../data/data';
 import { ChartLineStory, StoryWithParameters, setControlInclude } from '../chartStoryTemplates';
 
 export default {
