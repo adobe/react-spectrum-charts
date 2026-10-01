@@ -13,10 +13,7 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Donut, SegmentLabel } from '../../../pre-alpha';
+import { SegmentLabel } from '../../../pre-alpha';
 import { basicDonutData, sliveredDonutData } from '../../../storyShared/Donut/data';
 import { bindWithProps } from '../../../test-utils';
 import { ResponsiveDonut } from './ResponsiveDonut';
@@ -46,19 +43,6 @@ const ManySegmentsResponsiveStory: StoryFn<typeof SegmentLabel> = (args): ReactE
   </ResponsiveDonut>
 );
 
-// fixed-size chart with many thin segments, formerly the Segment Label demo's Slivers story
-const SliversStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: sliveredDonutData, width: 640, height: 460 });
-  return (
-    <Chart {...chartProps}>
-      <Donut metric="count" color="browser">
-        <SegmentLabel {...args} />
-      </Donut>
-      <Legend title="Browsers" position="right" highlight />
-    </Chart>
-  );
-};
-
 const Responsive = bindWithProps(ResponsiveStory);
 Responsive.args = { value: true, valueFormat: 'shortNumber' };
 
@@ -67,9 +51,6 @@ Advanced.args = { percent: true, value: false, swatch: true, showValueRow: true 
 
 const ManySegmentsResponsive = bindWithProps(ManySegmentsResponsiveStory);
 ManySegmentsResponsive.args = { value: true, valueFormat: 'shortNumber' };
-
-const Slivers = bindWithProps(SliversStory);
-Slivers.args = { percent: true, value: true, valueFormat: 'shortNumber' };
 
 Responsive.parameters = {
   ...Responsive.parameters,
@@ -95,12 +76,5 @@ ManySegmentsResponsive.parameters = {
     pr: 894,
   },
 };
-Slivers.parameters = {
-  ...Slivers.parameters,
-  regression: {
-    description:
-      'Not a bug reproduction: stress-tests segment labels on a fixed-size donut with many thin segments, formerly the Segment Label demo Slivers story.',
-  },
-};
 
-export { Responsive, Advanced, ManySegmentsResponsive, Slivers };
+export { Responsive, Advanced, ManySegmentsResponsive };
