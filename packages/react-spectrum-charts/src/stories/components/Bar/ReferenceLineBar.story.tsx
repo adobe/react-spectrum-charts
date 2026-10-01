@@ -113,6 +113,23 @@ HorizontalSupreme.args = {
   position: 'center',
 };
 
+const HorizontalLabelInside = bindWithProps(ReferenceLineHorizontalStory);
+HorizontalLabelInside.args = {
+  value: 3,
+  icon: 'date',
+  label: 'Independence Day',
+  labelPosition: 'end',
+  position: 'center',
+};
+
+const LabelInside = bindWithProps(ReferenceLineStory);
+LabelInside.args = {
+  value: 3,
+  label: 'Independence Day',
+  labelPosition: 'start',
+  position: 'center',
+};
+
 const ReferenceLineDashed = bindWithProps(ReferenceLineStory);
 ReferenceLineDashed.args = {
   value: 3,
@@ -128,5 +145,7 @@ export {
   HorizontalIcon,
   HorizontalLabel,
   HorizontalSupreme,
+  HorizontalLabelInside,
+  LabelInside,
   ReferenceLineDashed,
 };

@@ -16,9 +16,11 @@ import {
   Basic,
   HorizontalIcon,
   HorizontalLabel,
+  HorizontalLabelInside,
   HorizontalSupreme,
   Icon,
   Label,
+  LabelInside,
   ReferenceLineDashed,
   Supreme,
 } from './ReferenceLineBar.story';
@@ -297,7 +299,7 @@ describe('AxisReferenceLine', () => {
       expect(bars.length).toEqual(5);
 
       const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
-      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-40,111.60000000000001)');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-8,111.60000000000001)');
     });
 
     test('Icon', async () => {
@@ -344,7 +346,34 @@ describe('AxisReferenceLine', () => {
       expect(chart).toBeInTheDocument();
 
       const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
-      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-65,111.60000000000001)');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-37,111.60000000000001)');
+    });
+
+    test('Label inside renders halo and label at the end of the line, icon at the axis', async () => {
+      render(<HorizontalLabelInside {...HorizontalLabelInside.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const halo = await findMarksByGroupName(chart, 'axis0ReferenceLine0_labelBackground', 'text');
+      expect(halo).toHaveAttribute('text-anchor', 'end');
+      const label = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(label).toHaveAttribute('text-anchor', 'end');
+      expect(label).toHaveTextContent('Independence Day');
+      expect(await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol')).toBeInTheDocument();
+    });
+  });
+
+  describe('Vertical label inside', () => {
+    test('Label inside renders at the start of the line', async () => {
+      render(<LabelInside {...LabelInside.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const label = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(label).toHaveTextContent('Independence Day');
+      expect(label).toHaveAttribute('transform', 'translate(307,11)');
     });
   });
 

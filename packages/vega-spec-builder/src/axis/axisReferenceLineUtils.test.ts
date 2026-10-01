@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import {
+  BACKGROUND_COLOR,
   DATE_PATH,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_FONT_COLOR,
@@ -17,11 +18,13 @@ import {
   DEFAULT_LABEL_ALIGN,
   DEFAULT_LABEL_FONT_WEIGHT,
   DEFAULT_LABEL_ORIENTATION,
+  REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
 import { AxisSpecOptions, ReferenceLineSpecOptions } from '../types';
 import {
+  getEncodedLabelBaselineAlign,
   getFrontInsertionIndex,
   getPositionEncoding,
   getReferenceLineLabelsEncoding,
@@ -41,6 +44,7 @@ const defaultReferenceLineOptions: ReferenceLineSpecOptions = {
   iconColor: DEFAULT_FONT_COLOR,
   labelColor: DEFAULT_FONT_COLOR,
   labelFontWeight: DEFAULT_LABEL_FONT_WEIGHT,
+  labelPosition: 'axis',
   layer: 'front',
   name: 'axis0ReferenceLine0',
   lineType: 'solid',
@@ -452,5 +456,108 @@ describe('getReferenceLineLabelsEncoding()', () => {
       defaultXPositionEncoding
     );
     expect(encoding.update?.y).toHaveProperty('offset', 4);
+  });
+});
+
+describe('getEncodedLabelBaselineAlign()', () => {
+  test('should align left axis labels to the right so they grow away from the chart', () => {
+    expect(getEncodedLabelBaselineAlign('left')).toEqual({ align: { value: 'right' }, baseline: { value: 'center' } });
+  });
+  test('should align right axis labels to the left so they grow away from the chart', () => {
+    expect(getEncodedLabelBaselineAlign('right')).toEqual({ align: { value: 'left' }, baseline: { value: 'center' } });
+  });
+  test('should center labels on horizontal axes', () => {
+    expect(getEncodedLabelBaselineAlign('bottom')).toEqual({ align: { value: 'center' } });
+  });
+});
+
+describe('reference line label offsets on vertical axes', () => {
+  test('should offset the label 8px from the axis without an icon', () => {
+    const encoding = getReferenceLineLabelsEncoding(
+      { ...defaultAxisOptions, position: 'left' },
+      { ...defaultReferenceLineOptions, icon: undefined, label: 'Hello world!' },
+      defaultYPositionEncoding
+    );
+    expect(encoding.update?.x).toHaveProperty('value', -8);
+  });
+  test('should place the label beyond the icon when there is one', () => {
+    const encoding = getReferenceLineLabelsEncoding(
+      { ...defaultAxisOptions, position: 'right' },
+      { ...defaultReferenceLineOptions, label: 'Hello world!' },
+      defaultYPositionEncoding
+    );
+    expect(encoding.update?.x).toHaveProperty('signal', 'width + 37');
+  });
+});
+
+describe('getReferenceLineTextMark() with labelPosition', () => {
+  const insideOptions = { ...defaultReferenceLineOptions, label: 'Hello world!' };
+
+  test('should default labelPosition to axis', () => {
+    const [referenceLine] = getReferenceLines({
+      ...defaultAxisOptions,
+      referenceLines: [{ value: 10, label: 'Hello world!' }],
+    });
+    expect(referenceLine.labelPosition).toBe('axis');
+  });
+
+  test('should return a halo mark and a label mark when inside the chart', () => {
+    const marks = getReferenceLineTextMark(
+      { ...defaultAxisOptions, position: 'left' },
+      { ...insideOptions, labelPosition: 'end' },
+      defaultYPositionEncoding
+    );
+    expect(marks.map((mark) => mark.name)).toEqual([
+      'axis0ReferenceLine0_labelBackground',
+      'axis0ReferenceLine0_label',
+    ]);
+    expect(marks[0].encode?.update).toHaveProperty('stroke', { signal: BACKGROUND_COLOR });
+    expect(marks[0].encode?.update).toHaveProperty('fill', { value: 'transparent' });
+    expect(marks[1].encode?.update).toHaveProperty('text', { value: 'Hello world!' });
+  });
+
+  test('should place the label below the line at the end of a horizontal line', () => {
+    const [, label] = getReferenceLineTextMark(
+      { ...defaultAxisOptions, position: 'left' },
+      { ...insideOptions, labelPosition: 'end' },
+      defaultYPositionEncoding
+    );
+    expect(label.encode?.update).toHaveProperty('x', { signal: 'width' });
+    expect(label.encode?.update).toHaveProperty('y', defaultYPositionEncoding);
+    expect(label.encode?.update).toHaveProperty('align', { value: 'right' });
+    expect(label.encode?.update).toHaveProperty('baseline', { value: 'top' });
+    expect(label.encode?.update).toHaveProperty('dy', { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE });
+  });
+
+  test('should place the label at the start of a horizontal line', () => {
+    const [, label] = getReferenceLineTextMark(
+      { ...defaultAxisOptions, position: 'right' },
+      { ...insideOptions, labelPosition: 'start' },
+      defaultYPositionEncoding
+    );
+    expect(label.encode?.update).toHaveProperty('x', { value: 0 });
+    expect(label.encode?.update).toHaveProperty('align', { value: 'left' });
+  });
+
+  test('should place the label beside the top of a vertical line for start', () => {
+    const [, label] = getReferenceLineTextMark(
+      defaultAxisOptions,
+      { ...insideOptions, labelPosition: 'start' },
+      defaultXPositionEncoding
+    );
+    expect(label.encode?.update).toHaveProperty('x', defaultXPositionEncoding);
+    expect(label.encode?.update).toHaveProperty('y', { value: 0 });
+    expect(label.encode?.update).toHaveProperty('dx', { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE });
+    expect(label.encode?.update).toHaveProperty('baseline', { value: 'top' });
+  });
+
+  test('should place the label beside the bottom of a vertical line for end', () => {
+    const [, label] = getReferenceLineTextMark(
+      defaultAxisOptions,
+      { ...insideOptions, labelPosition: 'end' },
+      defaultXPositionEncoding
+    );
+    expect(label.encode?.update).toHaveProperty('y', { signal: 'height' });
+    expect(label.encode?.update).toHaveProperty('baseline', { value: 'bottom' });
   });
 });

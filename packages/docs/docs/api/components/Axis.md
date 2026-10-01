@@ -375,6 +375,12 @@ A `ReferenceLine` can be used to add a vertical or horizontal line to a chart as
             <td>Sets the font weight of the label.</td>
         </tr>
         <tr>
+            <td>labelPosition</td>
+            <td>'axis' | 'start' | 'end'</td>
+            <td>'axis'</td>
+            <td>Sets where the label is drawn. `axis` places it outside the chart area next to the axis. `start` and `end` place it inside the chart area at the start or end of the line, which avoids collisions with axis labels and titles. The icon always stays at the axis.</td>
+        </tr>
+        <tr>
             <td>layer</td>
             <td>'back' | 'front'</td>
             <td>'front'</td>

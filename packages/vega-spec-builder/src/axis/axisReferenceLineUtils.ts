@@ -23,7 +23,17 @@ import {
   TextMark,
 } from 'vega';
 
-import { AREA_HOVER_POINT, AREA_HOVER_RULE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT, HOVER_RULE, SELECT_BORDER } from '@spectrum-charts/constants';
+import {
+  AREA_HOVER_POINT,
+  AREA_HOVER_RULE,
+  BACKGROUND_COLOR,
+  DEFAULT_FONT_COLOR,
+  DEFAULT_LABEL_FONT_WEIGHT,
+  DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
+  HOVER_RULE,
+  REFERENCE_LINE_LABEL_OFFSET_FROM_LINE,
+  SELECT_BORDER,
+} from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getPathFromIcon, getStrokeDashFromLineType } from '../specUtils';
@@ -47,6 +57,7 @@ const applyReferenceLineOptionDefaults = (
   iconColor: options.iconColor || DEFAULT_FONT_COLOR,
   labelColor: options.labelColor || DEFAULT_FONT_COLOR,
   labelFontWeight: options.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
+  labelPosition: options.labelPosition ?? 'axis',
   layer: options.layer ?? 'front',
   name: `${axisOptions.name}ReferenceLine${index}`,
   lineType: options.lineType ?? 'solid',
@@ -234,8 +245,16 @@ export const getReferenceLineTextMark = (
   referenceLineOptions: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): TextMark[] => {
-  const { label, name } = referenceLineOptions;
+  const { label, labelPosition, name } = referenceLineOptions;
   if (!label) return [];
+
+  if (labelPosition !== 'axis') {
+    return getReferenceLineInsideTextMarks(
+      axisOptions,
+      { ...referenceLineOptions, label, labelPosition },
+      positionEncoding
+    );
+  }
 
   return [
     {
@@ -244,6 +263,74 @@ export const getReferenceLineTextMark = (
       type: 'text',
       encode: {
         ...getReferenceLineLabelsEncoding(axisOptions, { ...referenceLineOptions, label }, positionEncoding),
+      },
+    },
+  ];
+};
+
+/**
+ * Gets the halo and label text marks for a reference line label placed inside the chart area.
+ * @param axisOptions
+ * @param referenceLineOptions
+ * @param positionEncoding
+ * @returns TextMark[]
+ */
+export const getReferenceLineInsideTextMarks = (
+  { position }: AxisSpecOptions,
+  {
+    colorScheme,
+    label,
+    labelColor,
+    labelFontWeight,
+    labelPosition,
+    name,
+  }: ReferenceLineSpecOptions & { label: string; labelPosition: 'start' | 'end' },
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+): TextMark[] => {
+  const isStart = labelPosition === 'start';
+  const placement: TextEncodeEntry = isVerticalAxis(position)
+    ? {
+        x: isStart ? { value: 0 } : { signal: 'width' },
+        y: positionEncoding as NumericValueRef,
+        dy: { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE },
+        align: { value: isStart ? 'left' : 'right' },
+        baseline: { value: 'top' },
+      }
+    : {
+        x: positionEncoding as NumericValueRef,
+        y: isStart ? { value: 0 } : { signal: 'height' },
+        dx: { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE },
+        align: { value: 'left' },
+        baseline: { value: isStart ? 'top' : 'bottom' },
+      };
+  const update: TextEncodeEntry = {
+    ...placement,
+    text: { value: label },
+    fontWeight: { value: labelFontWeight },
+  };
+
+  return [
+    {
+      name: `${name}_labelBackground`,
+      description: `${name}_labelBackground`,
+      type: 'text',
+      interactive: false,
+      encode: {
+        update: {
+          ...update,
+          fill: { value: 'transparent' },
+          stroke: { signal: BACKGROUND_COLOR },
+          strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
+        },
+      },
+    },
+    {
+      name: `${name}_label`,
+      description: `${name}_label`,
+      type: 'text',
+      interactive: false,
+      encode: {
+        update: { ...update, fill: { value: getColorValue(labelColor, colorScheme) } },
       },
     },
   ];
@@ -260,12 +347,12 @@ const calculateReferenceLineOffsets = (
   icon?: string
 ): { verticalOffset: number; horizontalOffset: number } => {
   const isVertical = isVerticalAxis(position);
-  let verticalOffset = isVertical ? 40 : 28;
+  let verticalOffset = isVertical ? 8 : 28;
   let horizontalOffset = isVertical ? 4 : 5;
 
   if (icon) {
     if (isVertical) {
-      verticalOffset += 25;
+      verticalOffset += 29;
     } else {
       verticalOffset += 20;
     }
@@ -329,8 +416,13 @@ export const getEncodedLabelBaselineAlign = (position: Position): EncodeEntry =>
         align: { value: 'center' },
       };
     case 'left':
+      return {
+        align: { value: 'right' },
+        baseline: { value: 'center' },
+      };
     case 'right':
       return {
+        align: { value: 'left' },
         baseline: { value: 'center' },
       };
   }
