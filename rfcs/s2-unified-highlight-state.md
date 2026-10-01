@@ -8,7 +8,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License. -->
 
 - Start Date: 2026-10-01
-- RFC PR: (leave this empty, to be filled in later)
+- RFC PR: https://github.com/adobe/react-spectrum-charts/pull/963
 - Authors: Connor Lamoureux
 
 # S2 unified highlight and selection state
