@@ -23,6 +23,7 @@ import {
   getLabelOffset,
   getTimeLabelFormats,
 } from './axisLabelUtils';
+import { isVerticalAxis } from './axisPositionUtils';
 
 /**
  * Generates a default vega axis from the axis options
@@ -445,15 +446,6 @@ export const getPriorityMergedSignal = (priorityRule: unknown, fallbackRule: unk
   );
   const fallbackEntries = Array.isArray(fallbackRule) ? fallbackRule : [fallbackRule];
   return { signal: productionRuleToExpr([...priorityEntries, ...fallbackEntries]) };
-};
-
-/**
- * Returns whether the axis is vertical.
- * @param position
- * @returns boolean
- */
-export const isVerticalAxis = (position: Position): boolean => {
-  return ['left', 'right'].includes(position);
 };
 
 /**

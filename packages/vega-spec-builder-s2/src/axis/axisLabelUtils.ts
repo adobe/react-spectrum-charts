@@ -25,7 +25,7 @@ import {
 
 import { getTextNumberFormat } from '../textUtils';
 import { AxisSpecOptions, Granularity, Label, LabelAlign, Orientation, Position } from '../types';
-import { isVerticalAxis } from './axisUtils';
+import { isVerticalAxis } from './axisPositionUtils';
 
 /**
  * Gets the display value of the label. If it's an object, it will return the value property, otherwise it will return the label.

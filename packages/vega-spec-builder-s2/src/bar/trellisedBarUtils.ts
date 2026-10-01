@@ -16,6 +16,7 @@ import { FILTERED_TABLE } from '@spectrum-charts/constants';
 import { addDomainFields, getScaleIndexByName } from '../scale/scaleSpecBuilder';
 import { BarSpecOptions } from '../types';
 import { getDodgedDimensionEncodings, getTrellisedDimensionEncodings, isDodgedAndStacked } from './barUtils';
+import { getTrellisProperties } from './trellisPropertyUtils';
 
 /**
  * Generates the trellis group mark
@@ -86,31 +87,3 @@ export const getTrellisedEncodeEntries = (options: BarSpecOptions) => {
 
   return getTrellisedDimensionEncodings(options);
 };
-
-export interface BarTrellisProperties {
-  facetName: string;
-  scaleName: 'xTrellisBand' | 'yTrellisBand';
-  markName: 'xTrellisGroup' | 'yTrellisGroup';
-  dimensionSizeSignal: 'width' | 'height';
-  axis: 'x' | 'y';
-  paddingInner: number;
-}
-
-export const getTrellisProperties = ({
-  trellisOrientation,
-  name,
-  trellisPadding,
-}: BarSpecOptions): BarTrellisProperties => {
-  const axis = trellisOrientation === 'horizontal' ? 'x' : 'y';
-
-  return {
-    facetName: `${name}_trellis`,
-    scaleName: `${axis}TrellisBand`,
-    markName: `${axis}TrellisGroup`,
-    dimensionSizeSignal: axis === 'x' ? 'width' : 'height',
-    axis,
-    paddingInner: trellisPadding,
-  };
-};
-
-export const isTrellised = (options: BarSpecOptions) => Boolean(options.trellis);

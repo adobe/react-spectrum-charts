@@ -62,6 +62,7 @@ import {
   getControlledLabelAnchorValues,
   getLabelValue,
 } from './axisLabelUtils';
+import { isVerticalAxis } from './axisPositionUtils';
 import { getReferenceLineMarks, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
 import {
   addAxisThumbnailSignals,
@@ -87,7 +88,6 @@ import {
   getSubLabelAxis,
   getTimeAxes,
   hasSubLabels,
-  isVerticalAxis,
   productionRuleToExpr,
 } from './axisUtils';
 

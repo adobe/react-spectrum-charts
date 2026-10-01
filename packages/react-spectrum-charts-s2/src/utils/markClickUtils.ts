@@ -15,12 +15,12 @@ import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega'
 
 import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID } from '@spectrum-charts/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
-import { ContextMenuMode } from '../types/marks/line.types';
 
-import { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails';
-import { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
-import { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
-import { toggleStringArrayValue } from '../utils';
+import type { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails';
+import type { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
+import type { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
+import { ContextMenuMode } from '../types/marks/line.types';
+import { toggleStringArrayValue } from './utils';
 
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;

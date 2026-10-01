@@ -16,58 +16,59 @@ import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';
 import { DonutSummary, SegmentLabel } from '../pre-alpha';
+import { childrenToOptions } from './childrenAdapter';
 import { getDonutOptions } from './donutAdapter';
 
 describe('getDonutOptions()', () => {
   it('should return all basic options', () => {
-    const options = getDonutOptions({});
+    const options = getDonutOptions({}, childrenToOptions);
     expect(options.markType).toBe('donut');
     expect(options.chartPopovers).toHaveLength(0);
     expect(options.chartInspects).toHaveLength(0);
     expect(options.donutSummaries).toHaveLength(0);
   });
   it('should convert popover children to chartPopovers array', () => {
-    const options = getDonutOptions({ children: [createElement(ChartPopover)] });
+    const options = getDonutOptions({ children: [createElement(ChartPopover)] }, childrenToOptions);
     expect(options.chartPopovers).toHaveLength(1);
   });
   it('should convert ChartInspect children to chartInspects array', () => {
-    const options = getDonutOptions({ children: [createElement(ChartInspect)] });
+    const options = getDonutOptions({ children: [createElement(ChartInspect)] }, childrenToOptions);
     expect(options.chartInspects).toHaveLength(1);
   });
   it('should convert donnut summary children to donutSummaries array', () => {
-    const options = getDonutOptions({ children: [createElement(DonutSummary)] });
+    const options = getDonutOptions({ children: [createElement(DonutSummary)] }, childrenToOptions);
     expect(options.donutSummaries).toHaveLength(1);
   });
   it('should convert segment label children to segmentLabels array', () => {
-    const options = getDonutOptions({ children: [createElement(SegmentLabel)] });
+    const options = getDonutOptions({ children: [createElement(SegmentLabel)] }, childrenToOptions);
     expect(options.segmentLabels).toHaveLength(1);
   });
   it('should preserve two mode-specific segment label children', () => {
-    const options = getDonutOptions({
-      children: [
-        createElement(SegmentLabel, { labelMode: 'emphasized' }),
-        createElement(SegmentLabel, { labelMode: 'deemphasized' }),
-      ],
-    });
-    expect(options.segmentLabels).toEqual([
-      { labelMode: 'emphasized' },
-      { labelMode: 'deemphasized' },
-    ]);
+    const options = getDonutOptions(
+      {
+        children: [
+          createElement(SegmentLabel, { labelMode: 'emphasized' }),
+          createElement(SegmentLabel, { labelMode: 'deemphasized' }),
+        ],
+      },
+      childrenToOptions
+    );
+    expect(options.segmentLabels).toEqual([{ labelMode: 'emphasized' }, { labelMode: 'deemphasized' }]);
   });
   it('should pass through included props', () => {
-    const options = getDonutOptions({ color: DEFAULT_COLOR });
+    const options = getDonutOptions({ color: DEFAULT_COLOR }, childrenToOptions);
     expect(options).toHaveProperty('color', DEFAULT_COLOR);
   });
   it('should pass through the variant prop unchanged', () => {
-    const options = getDonutOptions({ variant: 'semicircle' });
+    const options = getDonutOptions({ variant: 'semicircle' }, childrenToOptions);
     expect(options).toHaveProperty('variant', 'semicircle');
   });
   it('should pass through the sortOrder prop unchanged', () => {
-    const options = getDonutOptions({ sortOrder: 'data' });
+    const options = getDonutOptions({ sortOrder: 'data' }, childrenToOptions);
     expect(options).toHaveProperty('sortOrder', 'data');
   });
   it('should not add props that are not provided', () => {
-    const options = getDonutOptions({});
+    const options = getDonutOptions({}, childrenToOptions);
     expect(options).not.toHaveProperty('color');
   });
 });

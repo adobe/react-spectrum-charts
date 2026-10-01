@@ -16,14 +16,10 @@ import { Donut } from '../pre-alpha';
 import { DefaultDonutContent, getDefaultDonutContent } from '../pre-alpha/components/Donut/DonutDialogContent';
 import { ChartChildElement, ChartPopoverElement, ChartPopoverProps, DonutElement } from '../types';
 import { getAllElements, getAllMarkElements } from '../utils';
+import { ChartContainer } from './ChartContainer';
 
 type MappedPopover = { name: string; element: ChartPopoverElement; parent?: string };
 type MappedDonut = { name: string; element: DonutElement };
-
-const ChartContainer = ({ children }: { children: React.ReactNode }) => {
-  return <div>{children}</div>;
-};
-ChartContainer.displayName = 'ChartContainer';
 
 export type PopoverDetail = {
   chartPopoverProps: ChartPopoverProps;

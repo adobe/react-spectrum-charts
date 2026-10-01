@@ -14,34 +14,35 @@ import { createElement } from 'react';
 import { AxisThumbnail, ReferenceLine } from '../components';
 import { AxisProps } from '../types';
 import { getAxisOptions } from './axisAdapter';
+import { childrenToOptions } from './childrenAdapter';
 
 const basicAxisProps: AxisProps = { position: 'bottom' };
 
 describe('getAxisOptions()', () => {
   it('should return all basic options', () => {
-    const options = getAxisOptions(basicAxisProps);
+    const options = getAxisOptions(basicAxisProps, childrenToOptions);
     expect(options.referenceLines).toHaveLength(0);
     expect(options.position).toBe('bottom');
     expect(options.hasOnClick).toBe(false);
   });
   it('should set hasOnClick to true if onClick prop exists and is not undefined', () => {
-    expect(getAxisOptions({ ...basicAxisProps, onClick: () => {} }).hasOnClick).toBe(true);
-    expect(getAxisOptions({ ...basicAxisProps, onClick: undefined }).hasOnClick).toBe(false);
+    expect(getAxisOptions({ ...basicAxisProps, onClick: () => {} }, childrenToOptions).hasOnClick).toBe(true);
+    expect(getAxisOptions({ ...basicAxisProps, onClick: undefined }, childrenToOptions).hasOnClick).toBe(false);
   });
   it('should convert ReferenceLine children to referenceLines array', () => {
-    const options = getAxisOptions({ ...basicAxisProps, children: [createElement(ReferenceLine)] });
+    const options = getAxisOptions({ ...basicAxisProps, children: [createElement(ReferenceLine)] }, childrenToOptions);
     expect(options.referenceLines).toHaveLength(1);
   });
   it('should convert AxisThumbnail children to axisThumbnails array', () => {
-    const options = getAxisOptions({ ...basicAxisProps, children: [createElement(AxisThumbnail)] });
+    const options = getAxisOptions({ ...basicAxisProps, children: [createElement(AxisThumbnail)] }, childrenToOptions);
     expect(options.axisThumbnails).toHaveLength(1);
   });
   it('should pass through included props', () => {
-    const options = getAxisOptions({ ...basicAxisProps, baseline: true });
+    const options = getAxisOptions({ ...basicAxisProps, baseline: true }, childrenToOptions);
     expect(options).toHaveProperty('baseline', true);
   });
   it('should not add props that are not provided', () => {
-    const options = getAxisOptions(basicAxisProps);
+    const options = getAxisOptions(basicAxisProps, childrenToOptions);
     expect(options).not.toHaveProperty('color');
   });
 });

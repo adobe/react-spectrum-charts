@@ -9,20 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AreaOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { AreaProps } from '../types';
-import { ChildrenToOptions } from './childOptions.types';
-
-export const getAreaOptions = (
-  { children, ...areaProps }: AreaProps,
-  childrenToOptions: ChildrenToOptions
-): AreaOptions => {
-  const { chartInspects, chartPopovers } = childrenToOptions(children);
-  return {
-    ...areaProps,
-    chartInspects,
-    chartPopovers,
-    markType: 'area',
-  };
+/** Root element used to walk chart children with the element-search utilities. */
+export const ChartContainer = ({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div>;
 };
+ChartContainer.displayName = 'ChartContainer';

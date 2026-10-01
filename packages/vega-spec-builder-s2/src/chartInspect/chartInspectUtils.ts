@@ -24,7 +24,7 @@ import {
 } from '@spectrum-charts/constants';
 
 import { getFilteredTableData } from '../data/dataUtils';
-import { getHoverMarkNames } from '../marks/markUtils';
+import { getHoverMarkNames } from '../marks/hoverMarkUtils';
 import {
   AreaSpecOptions,
   BarSpecOptions,

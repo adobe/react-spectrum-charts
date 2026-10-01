@@ -30,7 +30,7 @@ import {
   isDodgedAndStacked,
   shouldShowItemSelectionRing,
 } from './barUtils';
-import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
+import { getTrellisProperties, isTrellised } from './trellisPropertyUtils';
 
 export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
   const marks: Mark[] = [];

@@ -17,41 +17,42 @@ import { BarDirectLabel } from '../components/BarDirectLabel';
 import { ChartInspect } from '../components/ChartInspect';
 import { ChartPopover } from '../components/ChartPopover';
 import { getBarOptions } from './barAdapter';
+import { childrenToOptions } from './childrenAdapter';
 
 describe('getBarOptions()', () => {
   it('should return all basic options', () => {
-    const options = getBarOptions({});
+    const options = getBarOptions({}, childrenToOptions);
     expect(options.markType).toBe('bar');
     expect(options.hasOnClick).toBe(false);
     expect(options.chartPopovers).toHaveLength(0);
     expect(options.chartInspects).toHaveLength(0);
   });
   it('should convert popover children to chartPopovers array', () => {
-    const options = getBarOptions({ children: [createElement(ChartPopover)] });
+    const options = getBarOptions({ children: [createElement(ChartPopover)] }, childrenToOptions);
     expect(options.chartPopovers).toHaveLength(1);
   });
   it('should convert ChartInspect children to chartInspects array', () => {
-    const options = getBarOptions({ children: [createElement(ChartInspect)] });
+    const options = getBarOptions({ children: [createElement(ChartInspect)] }, childrenToOptions);
     expect(options.chartInspects).toHaveLength(1);
   });
   it('should convert ChartInspect children to chartInspects array', () => {
-    const options = getBarOptions({ children: [createElement(ChartInspect)] });
+    const options = getBarOptions({ children: [createElement(ChartInspect)] }, childrenToOptions);
     expect(options.chartInspects).toHaveLength(1);
   });
   it('should convert BarDirectLabel children to barDirectLabels array', () => {
-    const options = getBarOptions({ children: [createElement(BarDirectLabel)] });
+    const options = getBarOptions({ children: [createElement(BarDirectLabel)] }, childrenToOptions);
     expect(options.barDirectLabels).toHaveLength(1);
   });
   test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
-    expect(getBarOptions({ onClick: () => {} }).hasOnClick).toBe(true);
-    expect(getBarOptions({ onClick: undefined }).hasOnClick).toBe(false);
+    expect(getBarOptions({ onClick: () => {} }, childrenToOptions).hasOnClick).toBe(true);
+    expect(getBarOptions({ onClick: undefined }, childrenToOptions).hasOnClick).toBe(false);
   });
   it('should pass through included props', () => {
-    const options = getBarOptions({ color: DEFAULT_COLOR });
+    const options = getBarOptions({ color: DEFAULT_COLOR }, childrenToOptions);
     expect(options).toHaveProperty('color', DEFAULT_COLOR);
   });
   it('should not add props that are not provided', () => {
-    const options = getBarOptions({});
+    const options = getBarOptions({}, childrenToOptions);
     expect(options).not.toHaveProperty('color');
   });
 });

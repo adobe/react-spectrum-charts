@@ -95,6 +95,7 @@ import { getBulletOptions } from './bulletAdapter';
 import { getChartActionBarOptions } from './chartActionBarAdapter';
 import { getChartPopoverOptions } from './chartPopoverAdapter';
 import { getChartInspectOptions } from './chartInspectAdapter';
+import { ChildrenToOptions } from './childOptions.types';
 import { getComboOptions } from './comboAdapter';
 import { getDonutOptions } from './donutAdapter';
 import { getLegendOptions } from './legendAdapter';
@@ -102,31 +103,7 @@ import { getLineOptions } from './lineAdapter';
 import { getScatterOptions } from './scatterAdapter';
 import { getTrendlineOptions } from './trendlineAdapter';
 
-export const childrenToOptions = (
-  children: React.ReactNode
-): {
-  axes: AxisOptions[];
-  axisThumbnails: AxisThumbnailOptions[];
-  barAnnotations: BarAnnotationOptions[];
-  barDirectLabels: BarDirectLabelOptions[];
-  chartActionBars: ChartActionBarOptions[];
-  chartInspects: ChartInspectOptions[];
-  chartPopovers: ChartPopoverOptions[];
-  donutSummaries: DonutSummaryOptions[];
-  forecasts: LineForecastOptions[];
-  legends: LegendOptions[];
-  lineDirectLabels: LineDirectLabelOptions[];
-  linePointAnnotations: LinePointAnnotationOptions[];
-  lines: LineOptions[];
-  marks: MarkOptions[];
-  referenceLines: ReferenceLineOptions[];
-  scatterAnnotations: ScatterAnnotationOptions[];
-  scatterPaths: ScatterPathOptions[];
-  segmentLabels: SegmentLabelOptions[];
-  titles: TitleOptions[];
-  trendlineAnnotations: TrendlineAnnotationOptions[];
-  trendlines: TrendlineOptions[];
-} => {
+export const childrenToOptions: ChildrenToOptions = (children) => {
   const axes: AxisOptions[] = [];
   const axisThumbnails: AxisThumbnailOptions[] = [];
   const barAnnotations: BarAnnotationOptions[] = [];
@@ -158,11 +135,11 @@ export const childrenToOptions = (
     switch (child.type.displayName) {
 
       case Area.displayName:
-        marks.push(getAreaOptions(child.props as AreaProps));
+        marks.push(getAreaOptions(child.props as AreaProps, childrenToOptions));
         break;
 
       case Axis.displayName:
-        axes.push(getAxisOptions(child.props as AxisProps));
+        axes.push(getAxisOptions(child.props as AxisProps, childrenToOptions));
         break;
 
       case AxisThumbnail.displayName:
@@ -170,7 +147,7 @@ export const childrenToOptions = (
         break;
 
       case Bar.displayName:
-        marks.push(getBarOptions(child.props as BarProps));
+        marks.push(getBarOptions(child.props as BarProps, childrenToOptions));
         break;
 
       case BarDirectLabel.displayName:
@@ -178,7 +155,7 @@ export const childrenToOptions = (
         break;
 
       case Bullet.displayName:
-        marks.push(getBulletOptions(child.props as BulletProps));
+        marks.push(getBulletOptions(child.props as BulletProps, childrenToOptions));
         break;
 
       case ChartActionBar.displayName:
@@ -197,11 +174,11 @@ export const childrenToOptions = (
         break;
 
       case Combo.displayName:
-        marks.push(getComboOptions(child.props as ComboProps));
+        marks.push(getComboOptions(child.props as ComboProps, childrenToOptions));
         break;
 
       case Donut.displayName:
-        marks.push(getDonutOptions(child.props as DonutProps));
+        marks.push(getDonutOptions(child.props as DonutProps, childrenToOptions));
         break;
 
       case DonutSummary.displayName:
@@ -209,7 +186,7 @@ export const childrenToOptions = (
         break;
 
       case Legend.displayName:
-        legends.push(getLegendOptions(child.props as LegendProps));
+        legends.push(getLegendOptions(child.props as LegendProps, childrenToOptions));
         break;
 
       case LineForecast.displayName:
@@ -225,8 +202,8 @@ export const childrenToOptions = (
         break;
 
       case Line.displayName:
-        marks.push(getLineOptions(child.props as LineProps));
-        lines.push(getLineOptions(child.props as LineProps));
+        marks.push(getLineOptions(child.props as LineProps, childrenToOptions));
+        lines.push(getLineOptions(child.props as LineProps, childrenToOptions));
         break;
 
       case ReferenceLine.displayName:
@@ -234,7 +211,7 @@ export const childrenToOptions = (
         break;
 
       case Scatter.displayName:
-        marks.push(getScatterOptions(child.props as ScatterProps));
+        marks.push(getScatterOptions(child.props as ScatterProps, childrenToOptions));
         break;
 
       case ScatterAnnotation.displayName:
@@ -254,7 +231,7 @@ export const childrenToOptions = (
         break;
 
       case Trendline.displayName:
-        trendlines.push(getTrendlineOptions(child.props as TrendlineProps));
+        trendlines.push(getTrendlineOptions(child.props as TrendlineProps, childrenToOptions));
         break;
 
       case TrendlineAnnotation.displayName:

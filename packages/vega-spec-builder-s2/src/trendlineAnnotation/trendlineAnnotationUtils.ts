@@ -20,7 +20,7 @@ import { getLineWidthPixelsFromLineWidth } from '../specUtils';
 import {
   getEndDimensionExtentProductionRule,
   getStartDimensionExtentProductionRule,
-} from '../trendline/trendlineMarkUtils';
+} from '../trendline/trendlineExtentUtils';
 import { ColorFacet, TrendlineAnnotationOptions, TrendlineAnnotationSpecOptions, TrendlineSpecOptions } from '../types';
 
 /**

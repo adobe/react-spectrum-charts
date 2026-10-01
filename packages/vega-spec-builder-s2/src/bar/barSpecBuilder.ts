@@ -93,7 +93,8 @@ import {
 } from './barUtils';
 import { getDodgedMarks } from './dodgedBarUtils';
 import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
-import { addTrellisScale, getTrellisGroupMark, isTrellised } from './trellisedBarUtils';
+import { isTrellised } from './trellisPropertyUtils';
+import { addTrellisScale, getTrellisGroupMark } from './trellisedBarUtils';
 
 export const addBar = produce<
   ScSpec,

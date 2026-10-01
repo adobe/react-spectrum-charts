@@ -12,9 +12,12 @@
 import { ComboOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ComboProps } from '../types';
-import { childrenToOptions } from './childrenAdapter';
+import { ChildrenToOptions } from './childOptions.types';
 
-export const getComboOptions = ({ children, ...comboProps }: ComboProps): ComboOptions => {
+export const getComboOptions = (
+  { children, ...comboProps }: ComboProps,
+  childrenToOptions: ChildrenToOptions
+): ComboOptions => {
   return {
     ...comboProps,
     marks: childrenToOptions(children).marks as ComboOptions['marks'],

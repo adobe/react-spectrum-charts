@@ -26,6 +26,7 @@ import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getFacetsFromOptions } from '../specUtils';
 import { getTrendlineAnnotationMarks } from '../trendlineAnnotation';
 import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../types';
+import { getEndDimensionExtentProductionRule, getStartDimensionExtentProductionRule } from './trendlineExtentUtils';
 import {
   TrendlineParentOptions,
   getTrendlineColorFromMarkOptions,
@@ -175,56 +176,6 @@ export const getRuleXEncodings = (
     x: getStartDimensionExtentProductionRule(dimensionExtent[0], dimension, scale, 'x'),
     x2: getEndDimensionExtentProductionRule(dimensionExtent[1], dimension, scale, 'x'),
   };
-};
-
-/**
- * Gets the production rule for the start dimension extent of a trendline
- * @param startDimensionExtent
- * @param dimension
- * @param scale
- * @param axis
- * @returns
- */
-export const getStartDimensionExtentProductionRule = (
-  startDimensionExtent: number | 'domain' | null,
-  dimension: string,
-  scale: string,
-  axis: 'x' | 'y'
-): NumericValueRef => {
-  switch (startDimensionExtent) {
-    case null:
-      return { scale, field: `${dimension}Min` };
-    case 'domain':
-      if (axis === 'x') return { value: 0 };
-      return { signal: 'height' };
-    default:
-      return { scale, value: startDimensionExtent };
-  }
-};
-
-/**
- * gets the production rule for the end dimension extent of a trendline
- * @param endDimensionExtent
- * @param dimension
- * @param scale
- * @param axis
- * @returns
- */
-export const getEndDimensionExtentProductionRule = (
-  endDimensionExtent: number | 'domain' | null,
-  dimension: string,
-  scale: string,
-  axis: 'x' | 'y'
-): NumericValueRef => {
-  switch (endDimensionExtent) {
-    case null:
-      return { scale, field: `${dimension}Max` };
-    case 'domain':
-      if (axis === 'x') return { signal: 'width' };
-      return { value: 0 };
-    default:
-      return { scale, value: endDimensionExtent };
-  }
 };
 
 /**
