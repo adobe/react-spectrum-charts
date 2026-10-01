@@ -10,6 +10,13 @@
  * governing permissions and limitations under the License.
  */
 
+/**
+ * Verifies the branch has a changeset, as required by the PR `changeset` check.
+ * Runs `changeset status` against a base ref (argument, default `origin/main`). When it fails because
+ * no changeset was found, lists the changed packages and the commands to add one.
+ * Usage: `yarn changeset:status [baseRef]`
+ */
+
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
