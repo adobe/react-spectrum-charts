@@ -23,8 +23,10 @@ empty changeset:
 yarn changeset:empty
 ```
 
-PR CI runs `yarn changeset:status` and fails when neither kind of changeset is
-present.
+PR CI runs `yarn changeset:status` in its own `changeset` check, so lint, tests,
+and previews still run when it fails. It fails when a package changed and
+neither kind of changeset is present, and lists the changed packages. Run
+`yarn changeset:status` locally to check against `origin/main` before pushing.
 
 ## Release pull request
 
