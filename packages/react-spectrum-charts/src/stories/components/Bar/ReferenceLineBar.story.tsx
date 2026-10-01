@@ -149,7 +149,7 @@ const HorizontalLabelInside = bindWithProps(ReferenceLineHorizontalStory);
 HorizontalLabelInside.args = {
   value: 3,
   icon: 'date',
-  label: 'Independence Day',
+  label: 'Entitlement',
   labelPosition: 'end',
   position: 'center',
 };
@@ -157,7 +157,7 @@ HorizontalLabelInside.args = {
 const LabelInside = bindWithProps(ReferenceLineStory);
 LabelInside.args = {
   value: 3,
-  label: 'Independence Day',
+  label: 'Entitlement',
   labelPosition: 'start',
   position: 'center',
 };

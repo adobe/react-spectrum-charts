@@ -369,7 +369,7 @@ describe('AxisReferenceLine', () => {
       expect(chart).toBeInTheDocument();
 
       const label = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
-      expect(label).toHaveTextContent('Independence Day');
+      expect(label).toHaveTextContent('Entitlement');
       expect(label).toHaveAttribute('opacity', '1');
       expect(await findMarksByGroupName(chart, 'axis0ReferenceLine0_labelBadge')).toBeInTheDocument();
       expect(await findMarksByGroupName(chart, 'axis0ReferenceLine0_symbol')).toBeInTheDocument();
@@ -384,7 +384,7 @@ describe('AxisReferenceLine', () => {
       expect(chart).toBeInTheDocument();
 
       const label = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
-      expect(label).toHaveTextContent('Independence Day');
+      expect(label).toHaveTextContent('Entitlement');
       expect(label).toHaveAttribute('opacity', '1');
     });
   });
