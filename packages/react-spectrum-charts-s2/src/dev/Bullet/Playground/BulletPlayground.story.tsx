@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types */
 import { ReactElement } from 'react';
 
@@ -22,7 +23,7 @@ import { Bullet } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
 import { BulletProps } from '../../../types';
 import { BulletDataPreset, getBulletData, playgroundThresholds } from '../../playgroundData';
-import { category, chartArgTypes, inspectArgTypes, renderInspectContent } from '../../playgroundUtils';
+import { category, chartArgTypes, chartArgs, inspectArgTypes, renderInspectContent } from '../../playgroundUtils';
 
 interface BulletPlaygroundArgs extends BulletProps {
   dataPreset: BulletDataPreset;
@@ -43,7 +44,26 @@ export default {
     ...chartArgTypes,
     dataPreset: { ...chartArgTypes.dataPreset, options: ['progress', 'ranked', 'overTarget'] },
     ...inspectArgTypes,
-    ...category('Bullet', ['color', 'dimension', 'direction', 'labelPosition', 'maxScaleValue', 'metric', 'metricLabel', 'metricAxis', 'name', 'numberFormat', 'scaleType', 'showTarget', 'showTargetValue', 'target', 'targetLabel', 'thresholdBarColor', 'thresholds', 'track']),
+    ...category('Bullet', [
+      'color',
+      'dimension',
+      'direction',
+      'labelPosition',
+      'maxScaleValue',
+      'metric',
+      'metricLabel',
+      'metricAxis',
+      'name',
+      'numberFormat',
+      'scaleType',
+      'showTarget',
+      'showTargetValue',
+      'target',
+      'targetLabel',
+      'thresholdBarColor',
+      'thresholds',
+      'track',
+    ]),
     direction: { control: 'select', options: ['row', 'column'], table: { category: 'Bullet' } },
     labelPosition: { control: 'select', options: ['side', 'top'], table: { category: 'Bullet' } },
     scaleType: { control: 'select', options: ['normal', 'fixed', 'flexible'], table: { category: 'Bullet' } },
@@ -68,10 +88,14 @@ const BulletPlaygroundStory: StoryFn<BulletPlaygroundArgs> = ({
     <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
       {chartTitle ? <Title text={chartTitle} /> : undefined}
       <Bullet {...bulletProps}>
-        {showInspect ? <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>{(datum) => {
-          action('Bullet ChartInspect:hover')(datum);
-          return renderInspectContent(['graphLabel', 'currentAmount', 'target'])(datum);
-        }}</ChartInspect> : undefined}
+        {showInspect ? (
+          <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>
+            {(datum) => {
+              action('Bullet ChartInspect:hover')(datum);
+              return renderInspectContent(['graphLabel', 'currentAmount', 'target'])(datum);
+            }}
+          </ChartInspect>
+        ) : undefined}
       </Bullet>
     </Chart>
   );
@@ -79,6 +103,7 @@ const BulletPlaygroundStory: StoryFn<BulletPlaygroundArgs> = ({
 
 export const Playground = bindWithProps(BulletPlaygroundStory);
 Playground.args = {
+  ...chartArgs,
   dataPreset: 'progress',
   chartTitle: 'Quarterly funnel progress',
   height: 360,

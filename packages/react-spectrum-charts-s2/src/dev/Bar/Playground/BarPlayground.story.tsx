@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types */
 import { ReactElement, useState } from 'react';
 
@@ -16,7 +17,16 @@ import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, BarDirectLabel, ChartInspect, ChartPopover, Legend, ReferenceLine, Title } from '../../../components';
+import {
+  Axis,
+  Bar,
+  BarDirectLabel,
+  ChartInspect,
+  ChartPopover,
+  Legend,
+  ReferenceLine,
+  Title,
+} from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
@@ -25,6 +35,7 @@ import {
   axesArgTypes,
   category,
   chartArgTypes,
+  chartArgs,
   inspectArgTypes,
   legendArgTypes,
   popoverArgTypes,
@@ -74,7 +85,10 @@ export default {
   component: Bar,
   argTypes: {
     ...chartArgTypes,
-    dataPreset: { ...chartArgTypes.dataPreset, options: ['singleSeries', 'multiSeries', 'negativeValues', 'longLabels'] },
+    dataPreset: {
+      ...chartArgTypes.dataPreset,
+      options: ['singleSeries', 'multiSeries', 'negativeValues', 'longLabels'],
+    },
     ...axesArgTypes,
     ...legendArgTypes,
     ...inspectArgTypes,
@@ -107,7 +121,11 @@ export default {
     type: { control: 'select', options: ['stacked', 'dodged'], table: { category: 'Bar' } },
     lineWidth: { control: { type: 'range', min: 0, max: 8, step: 1 }, table: { category: 'Bar' } },
     showDirectLabel: { control: 'boolean', table: { category: 'Direct label' } },
-    directLabelPosition: { control: 'select', options: ['start', 'middle', 'end', 'end-outside'], table: { category: 'Direct label' } },
+    directLabelPosition: {
+      control: 'select',
+      options: ['start', 'middle', 'end', 'end-outside'],
+      table: { category: 'Direct label' },
+    },
     directLabelFormat: { control: 'text', table: { category: 'Direct label' } },
     enableClickCallback: { control: 'boolean', table: { category: 'Interactions' } },
     enableHoverCallbacks: { control: 'boolean', table: { category: 'Interactions' } },
@@ -162,46 +180,94 @@ const BarPlaygroundStory: StoryFn<BarPlaygroundArgs> = ({
 
   return (
     <div style={{ position: 'relative' }}>
-    <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
-      {chartTitle ? <Title text={chartTitle} /> : undefined}
-      {showBottomAxis ? (
-        <Axis position="bottom" baseline={axisBaseline} grid={axisGrid && isHorizontal} labelLimit={axisLabelLimit} title={isHorizontal ? leftAxisTitle : bottomAxisTitle}>
-          {showReferenceLine && metricAxis === 'bottom' ? <ReferenceLine value={50} label={referenceLineLabel} /> : undefined}
-        </Axis>
+      <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
+        {chartTitle ? <Title text={chartTitle} /> : undefined}
+        {showBottomAxis ? (
+          <Axis
+            position="bottom"
+            baseline={axisBaseline}
+            grid={axisGrid && isHorizontal}
+            labelLimit={axisLabelLimit}
+            title={isHorizontal ? leftAxisTitle : bottomAxisTitle}
+          >
+            {showReferenceLine && metricAxis === 'bottom' ? (
+              <ReferenceLine value={50} label={referenceLineLabel} />
+            ) : undefined}
+          </Axis>
+        ) : undefined}
+        {showLeftAxis ? (
+          <Axis
+            position="left"
+            baseline={axisBaseline}
+            grid={axisGrid && !isHorizontal}
+            labelLimit={axisLabelLimit}
+            title={isHorizontal ? bottomAxisTitle : leftAxisTitle}
+          >
+            {showReferenceLine && metricAxis === 'left' ? (
+              <ReferenceLine value={50} label={referenceLineLabel} />
+            ) : undefined}
+          </Axis>
+        ) : undefined}
+        <Bar
+          {...barProps}
+          onClick={enableClickCallback ? action('Bar:onClick') : undefined}
+          onContextMenu={
+            enableContextMenuCallback
+              ? (event, datum): void => {
+                  event.preventDefault();
+                  action('Bar:onContextMenu')({ event, datum });
+                  setContextMenuLabel(`Bar context menu: ${String(datum.browser ?? datum.series ?? datum.value)}`);
+                }
+              : undefined
+          }
+          onMouseOut={enableHoverCallbacks ? action('Bar:onMouseOut') : undefined}
+          onMouseOver={enableHoverCallbacks ? action('Bar:onMouseOver') : undefined}
+        >
+          {showInspect ? (
+            <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>
+              {renderInspectContent(['browser', 'operatingSystem', 'value'])}
+            </ChartInspect>
+          ) : undefined}
+          {showPopover ? (
+            <ChartPopover
+              width={popoverWidth}
+              rightClick={popoverRightClick}
+              UNSAFE_highlightBy={popoverHighlightBy}
+              onOpenChange={action('Bar ChartPopover:onOpenChange')}
+            >
+              {renderPopoverContent(['browser', 'operatingSystem', 'value'])}
+            </ChartPopover>
+          ) : undefined}
+          {showDirectLabel ? <BarDirectLabel position={directLabelPosition} format={directLabelFormat} /> : undefined}
+        </Bar>
+        {showLegend ? (
+          <Legend
+            color={legendColor}
+            position={legendPosition}
+            title={legendTitle}
+            highlight={legendHighlight}
+            isToggleable={legendToggleable}
+            labelLimit={legendLabelLimit}
+            onClick={action('Bar Legend:onClick')}
+            onMouseOver={action('Bar Legend:onMouseOver')}
+            onMouseOut={action('Bar Legend:onMouseOut')}
+          />
+        ) : undefined}
+      </Chart>
+      {contextMenuLabel ? (
+        <div
+          style={{ position: 'absolute', top: 8, right: 8, background: 'white', border: '1px solid #999', padding: 8 }}
+        >
+          {contextMenuLabel}
+        </div>
       ) : undefined}
-      {showLeftAxis ? (
-        <Axis position="left" baseline={axisBaseline} grid={axisGrid && !isHorizontal} labelLimit={axisLabelLimit} title={isHorizontal ? bottomAxisTitle : leftAxisTitle}>
-          {showReferenceLine && metricAxis === 'left' ? <ReferenceLine value={50} label={referenceLineLabel} /> : undefined}
-        </Axis>
-      ) : undefined}
-      <Bar
-        {...barProps}
-        onClick={enableClickCallback ? action('Bar:onClick') : undefined}
-        onContextMenu={
-          enableContextMenuCallback
-            ? (event, datum): void => {
-                event.preventDefault();
-                action('Bar:onContextMenu')({ event, datum });
-                setContextMenuLabel(`Bar context menu: ${String(datum.browser ?? datum.series ?? datum.value)}`);
-              }
-            : undefined
-        }
-        onMouseOut={enableHoverCallbacks ? action('Bar:onMouseOut') : undefined}
-        onMouseOver={enableHoverCallbacks ? action('Bar:onMouseOver') : undefined}
-      >
-        {showInspect ? <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>{renderInspectContent(['browser', 'operatingSystem', 'value'])}</ChartInspect> : undefined}
-        {showPopover ? <ChartPopover width={popoverWidth} rightClick={popoverRightClick} UNSAFE_highlightBy={popoverHighlightBy} onOpenChange={action('Bar ChartPopover:onOpenChange')}>{renderPopoverContent(['browser', 'operatingSystem', 'value'])}</ChartPopover> : undefined}
-        {showDirectLabel ? <BarDirectLabel position={directLabelPosition} format={directLabelFormat} /> : undefined}
-      </Bar>
-      {showLegend ? <Legend color={legendColor} position={legendPosition} title={legendTitle} highlight={legendHighlight} isToggleable={legendToggleable} labelLimit={legendLabelLimit} onClick={action('Bar Legend:onClick')} onMouseOver={action('Bar Legend:onMouseOver')} onMouseOut={action('Bar Legend:onMouseOut')} /> : undefined}
-    </Chart>
-    {contextMenuLabel ? <div style={{ position: 'absolute', top: 8, right: 8, background: 'white', border: '1px solid #999', padding: 8 }}>{contextMenuLabel}</div> : undefined}
     </div>
   );
 };
 
 export const Playground = bindWithProps(BarPlaygroundStory);
 Playground.args = {
+  ...chartArgs,
   dataPreset: 'multiSeries',
   chartTitle: 'Browser adoption by platform',
   height: 420,

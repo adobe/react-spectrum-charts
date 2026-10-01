@@ -26,6 +26,7 @@ import { DonutDataPreset, getDonutData } from '../../playgroundData';
 import {
   category,
   chartArgTypes,
+  chartArgs,
   inspectArgTypes,
   legendArgTypes,
   popoverArgTypes,
@@ -207,6 +208,7 @@ const DonutPlaygroundStory: StoryFn<DonutPlaygroundArgs> = ({
 
 export const Playground = bindWithProps(DonutPlaygroundStory);
 Playground.args = {
+  ...chartArgs,
   dataPreset: 'browserShare',
   chartTitle: 'Browser share',
   height: 420,

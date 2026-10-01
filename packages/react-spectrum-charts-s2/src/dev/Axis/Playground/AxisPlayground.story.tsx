@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types */
 import { ReactElement } from 'react';
 
@@ -21,7 +22,7 @@ import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { AxisProps } from '../../../types';
 import { CartesianDataPreset, getCartesianData } from '../../playgroundData';
-import { category, chartArgTypes } from '../../playgroundUtils';
+import { category, chartArgTypes, chartArgs } from '../../playgroundUtils';
 
 interface AxisPlaygroundArgs extends AxisProps {
   dataPreset: CartesianDataPreset;
@@ -46,13 +47,51 @@ export default {
   component: Axis,
   argTypes: {
     ...chartArgTypes,
-    dataPreset: { ...chartArgTypes.dataPreset, options: ['singleSeries', 'multiSeries', 'negativeValues', 'longLabels'] },
-    ...category('Axis', ['position', 'name', 'baseline', 'baselineOffset', 'granularity', 'grid', 'hideDefaultLabels', 'labelAlign', 'labelFontWeight', 'labelFormat', 'labelOrientation', 'labelLimit', 'labels', 'tickCountMinimum', 'tickCountLimit', 'numberFormat', 'range', 'subLabels', 'ticks', 'hasTooltip', 'tooltipText', 'tickMinStep', 'title', 'truncateLabels', 'currencyLocale', 'currencyCode']),
+    dataPreset: {
+      ...chartArgTypes.dataPreset,
+      options: ['singleSeries', 'multiSeries', 'negativeValues', 'longLabels'],
+    },
+    ...category('Axis', [
+      'position',
+      'name',
+      'baseline',
+      'baselineOffset',
+      'granularity',
+      'grid',
+      'hideDefaultLabels',
+      'labelAlign',
+      'labelFontWeight',
+      'labelFormat',
+      'labelOrientation',
+      'labelLimit',
+      'labels',
+      'tickCountMinimum',
+      'tickCountLimit',
+      'numberFormat',
+      'range',
+      'subLabels',
+      'ticks',
+      'hasTooltip',
+      'tooltipText',
+      'tickMinStep',
+      'title',
+      'truncateLabels',
+      'currencyLocale',
+      'currencyCode',
+    ]),
     position: { control: 'select', options: ['bottom', 'left', 'right', 'top'], table: { category: 'Axis' } },
-    granularity: { control: 'select', options: ['second', 'minute', 'hour', 'day', 'week', 'month', 'quarter', 'year'], table: { category: 'Axis' } },
+    granularity: {
+      control: 'select',
+      options: ['second', 'minute', 'hour', 'day', 'week', 'month', 'quarter', 'year'],
+      table: { category: 'Axis' },
+    },
     labelAlign: { control: 'select', options: ['center', 'start', 'end'], table: { category: 'Axis' } },
     labelFontWeight: { control: 'select', options: ['normal', 'bold'], table: { category: 'Axis' } },
-    labelFormat: { control: 'select', options: [undefined, 'duration', 'linear', 'percentage', 'time'], table: { category: 'Axis' } },
+    labelFormat: {
+      control: 'select',
+      options: [undefined, 'duration', 'linear', 'percentage', 'time'],
+      table: { category: 'Axis' },
+    },
     labelOrientation: { control: 'select', options: ['horizontal', 'vertical'], table: { category: 'Axis' } },
     labelLimit: { control: { type: 'range', min: 40, max: 240, step: 5 }, table: { category: 'Axis' } },
     barOrientation: { control: 'select', options: ['vertical', 'horizontal'], table: { category: 'Context mark' } },
@@ -91,7 +130,9 @@ const AxisPlaygroundStory: StoryFn<AxisPlaygroundArgs> = ({
     <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
       {chartTitle ? <Title text={chartTitle} /> : undefined}
       <Axis {...axisProps} onClick={action('Axis:onClick')}>
-        {showReferenceLine ? <ReferenceLine value="Safari" label={referenceLineLabel} secondary={referenceLineSecondary} /> : undefined}
+        {showReferenceLine ? (
+          <ReferenceLine value="Safari" label={referenceLineLabel} secondary={referenceLineSecondary} />
+        ) : undefined}
         {showAxisThumbnail ? <AxisThumbnail urlKey={axisThumbnailUrlKey} /> : undefined}
       </Axis>
       {showComparisonAxis ? <Axis position={comparisonPosition} grid={comparisonAxisGrid} /> : undefined}
@@ -102,6 +143,7 @@ const AxisPlaygroundStory: StoryFn<AxisPlaygroundArgs> = ({
 
 export const Playground = bindWithProps(AxisPlaygroundStory);
 Playground.args = {
+  ...chartArgs,
   dataPreset: 'longLabels',
   chartTitle: 'Axis feature playground',
   height: 400,

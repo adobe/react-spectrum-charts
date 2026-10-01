@@ -9,12 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/display-name */
 import { ReactElement, ReactNode } from 'react';
 
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-export type PlaygroundArgTypes = Record<string, { control?: unknown; options?: unknown[]; table?: { category: string }; description?: string }>;
+export type PlaygroundArgTypes = Record<
+  string,
+  { control?: unknown; options?: unknown[]; table?: { category: string }; description?: string }
+>;
 
 export const chartArgTypes = {
   dataPreset: { control: 'select', table: { category: 'Chart' } },
@@ -25,6 +30,9 @@ export const chartArgTypes = {
   backgroundColor: { control: 'color', table: { category: 'Chart' } },
 } satisfies PlaygroundArgTypes;
 
+// Chart props the playgrounds always pass through; explicit undefined would override Chart's defaults.
+export const chartArgs = { colorScheme: DEFAULT_COLOR_SCHEME, backgroundColor: DEFAULT_BACKGROUND_COLOR };
+
 export const axesArgTypes = {
   showBottomAxis: { control: 'boolean', table: { category: 'Axes' } },
   showLeftAxis: { control: 'boolean', table: { category: 'Axes' } },
@@ -34,7 +42,11 @@ export const axesArgTypes = {
   rightAxisTitle: { control: 'text', table: { category: 'Axes' } },
   axisGrid: { control: 'boolean', table: { category: 'Axes' } },
   axisBaseline: { control: 'boolean', table: { category: 'Axes' } },
-  axisLabelFormat: { control: 'select', options: [undefined, 'time', 'linear', 'percentage', 'duration'], table: { category: 'Axes' } },
+  axisLabelFormat: {
+    control: 'select',
+    options: [undefined, 'time', 'linear', 'percentage', 'duration'],
+    table: { category: 'Axes' },
+  },
   axisLabelLimit: { control: { type: 'range', min: 40, max: 240, step: 5 }, table: { category: 'Axes' } },
   axisTicks: { control: 'boolean', table: { category: 'Axes' } },
   showReferenceLine: { control: 'boolean', table: { category: 'Reference line' } },
@@ -83,22 +95,35 @@ export const datumRows = (datum: Datum, keys: string[]): ReactElement[] =>
     </div>
   ));
 
-export const renderInspectContent = (keys: string[]) => (datum: Datum): ReactNode => (
-  <div style={{ minWidth: 180 }}>{datumRows(datum, keys)}</div>
-);
+export const renderInspectContent =
+  (keys: string[]) =>
+  (datum: Datum): ReactNode =>
+    <div style={{ minWidth: 180 }}>{datumRows(datum, keys)}</div>;
 
-export const renderPopoverContent = (keys: string[]) => (datum: Datum, close: () => void): ReactNode => (
-  <div style={{ display: 'grid', gap: 8, maxWidth: 280 }}>
-    <div style={{ fontWeight: 700 }}>Selected datum</div>
-    {datumRows(datum, keys)}
-    <button type="button" onClick={close}>Close popover</button>
-  </div>
-);
+export const renderPopoverContent =
+  (keys: string[]) =>
+  (datum: Datum, close: () => void): ReactNode =>
+    (
+      <div style={{ display: 'grid', gap: 8, maxWidth: 280 }}>
+        <div style={{ fontWeight: 700 }}>Selected datum</div>
+        {datumRows(datum, keys)}
+        <button type="button" onClick={close}>
+          Close popover
+        </button>
+      </div>
+    );
 
-export const renderActionBarContent = (keys: string[]) => (datum: Datum, close: () => void): ReactElement[] => [
-  <button key="inspect" type="button" onClick={close}>Inspect {formatDatumValue(getDatumValue(datum, keys[0]))}</button>,
-  <button key="copy" type="button" onClick={close}>Copy value</button>,
-];
+export const renderActionBarContent =
+  (keys: string[]) =>
+  (datum: Datum, close: () => void): ReactElement[] =>
+    [
+      <button key="inspect" type="button" onClick={close}>
+        Inspect {formatDatumValue(getDatumValue(datum, keys[0]))}
+      </button>,
+      <button key="copy" type="button" onClick={close}>
+        Copy value
+      </button>,
+    ];
 
 export const category = (categoryName: string, argNames: string[]): PlaygroundArgTypes =>
   Object.fromEntries(argNames.map((name) => [name, { table: { category: categoryName } }])) as PlaygroundArgTypes;

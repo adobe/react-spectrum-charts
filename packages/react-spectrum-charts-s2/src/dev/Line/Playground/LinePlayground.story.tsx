@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types */
 import { ReactElement, useState } from 'react';
 
@@ -37,6 +38,7 @@ import {
   axesArgTypes,
   category,
   chartArgTypes,
+  chartArgs,
   inspectArgTypes,
   legendArgTypes,
   popoverArgTypes,
@@ -134,9 +136,28 @@ export default {
     ]),
     scaleType: { control: 'select', options: ['time', 'linear', 'point'], table: { category: 'Line' } },
     interactionMode: { control: 'select', options: ['item', 'nearest', 'dimension'], table: { category: 'Line' } },
-    interpolate: { control: 'select', options: [undefined, 'basis', 'cardinal', 'catmull-rom', 'linear', 'monotone', 'natural', 'step', 'step-after', 'step-before'], table: { category: 'Line' } },
+    interpolate: {
+      control: 'select',
+      options: [
+        undefined,
+        'basis',
+        'cardinal',
+        'catmull-rom',
+        'linear',
+        'monotone',
+        'natural',
+        'step',
+        'step-after',
+        'step-before',
+      ],
+      table: { category: 'Line' },
+    },
     lineCap: { control: 'select', options: ['round', 'square'], table: { category: 'Line' } },
-    alternateSegmentLineType: { control: 'select', options: [undefined, 'solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'], table: { category: 'Line' } },
+    alternateSegmentLineType: {
+      control: 'select',
+      options: [undefined, 'solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash'],
+      table: { category: 'Line' },
+    },
     showActionBar: { control: 'boolean', table: { category: 'Action bar' } },
     actionBarEmphasized: { control: 'boolean', table: { category: 'Action bar' } },
     actionBarMaxActions: { control: { type: 'range', min: 1, max: 4, step: 1 }, table: { category: 'Action bar' } },
@@ -144,13 +165,21 @@ export default {
     forecastMetric: { control: 'text', table: { category: 'Forecast' } },
     forecastLabel: { control: 'text', table: { category: 'Forecast' } },
     showDirectLabel: { control: 'boolean', table: { category: 'Direct label' } },
-    directLabelValue: { control: 'select', options: ['last', 'average', 'series'], table: { category: 'Direct label' } },
+    directLabelValue: {
+      control: 'select',
+      options: ['last', 'average', 'series'],
+      table: { category: 'Direct label' },
+    },
     directLabelPosition: { control: 'select', options: ['start', 'end'], table: { category: 'Direct label' } },
     directLabelPrefix: { control: 'text', table: { category: 'Direct label' } },
     directLabelFormat: { control: 'text', table: { category: 'Direct label' } },
     showPointAnnotation: { control: 'boolean', table: { category: 'Point annotation' } },
     pointAnnotationTextKey: { control: 'text', table: { category: 'Point annotation' } },
-    pointAnnotationAnchor: { control: 'select', options: ['top', 'bottom', 'left', 'right'], table: { category: 'Point annotation' } },
+    pointAnnotationAnchor: {
+      control: 'select',
+      options: ['top', 'bottom', 'left', 'right'],
+      table: { category: 'Point annotation' },
+    },
     pointAnnotationMatchLineColor: { control: 'boolean', table: { category: 'Point annotation' } },
     enableClickCallback: { control: 'boolean', table: { category: 'Interactions' } },
     enableContextMenuCallback: { control: 'boolean', table: { category: 'Interactions' } },
@@ -207,49 +236,115 @@ const LinePlaygroundStory: StoryFn<LinePlaygroundArgs> = ({
   ...lineProps
 }): ReactElement => {
   const [contextMenuLabel, setContextMenuLabel] = useState<string>();
-  const data = dataPreset === 'singleSeries' ? playgroundTimeSeriesData.filter((datum) => (datum as Record<string, unknown>).series === 'Create') : playgroundTimeSeriesData;
+  const data =
+    dataPreset === 'singleSeries'
+      ? playgroundTimeSeriesData.filter((datum) => (datum as Record<string, unknown>).series === 'Create')
+      : playgroundTimeSeriesData;
   const chartProps = useChartProps({ data, height, maxWidth });
   const effectiveRightClick = showActionBar ? true : popoverRightClick;
 
   return (
     <div style={{ position: 'relative' }}>
-    <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
-      {chartTitle ? <Title text={chartTitle} /> : undefined}
-      {showBottomAxis ? <Axis position="bottom" baseline={axisBaseline} labelFormat={axisLabelFormat} labelLimit={axisLabelLimit} title={bottomAxisTitle} /> : undefined}
-      {showLeftAxis ? (
-        <Axis position="left" baseline={axisBaseline} grid={axisGrid} title={leftAxisTitle}>
-          {showReferenceLine ? <ReferenceLine value={50} label={referenceLineLabel} /> : undefined}
-        </Axis>
+      <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
+        {chartTitle ? <Title text={chartTitle} /> : undefined}
+        {showBottomAxis ? (
+          <Axis
+            position="bottom"
+            baseline={axisBaseline}
+            labelFormat={axisLabelFormat}
+            labelLimit={axisLabelLimit}
+            title={bottomAxisTitle}
+          />
+        ) : undefined}
+        {showLeftAxis ? (
+          <Axis position="left" baseline={axisBaseline} grid={axisGrid} title={leftAxisTitle}>
+            {showReferenceLine ? <ReferenceLine value={50} label={referenceLineLabel} /> : undefined}
+          </Axis>
+        ) : undefined}
+        <Line
+          {...lineProps}
+          onClick={enableClickCallback ? action('Line:onClick') : undefined}
+          onContextMenu={
+            enableContextMenuCallback
+              ? (event, datum): void => {
+                  event.preventDefault();
+                  action('Line:onContextMenu')({ event, datum });
+                  setContextMenuLabel(
+                    `Line context menu: ${String(
+                      (datum as Record<string, unknown>).series ?? (datum as Record<string, unknown>).value
+                    )}`
+                  );
+                }
+              : undefined
+          }
+        >
+          {showInspect ? (
+            <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>
+              {renderInspectContent(['series', 'datetime', 'value'])}
+            </ChartInspect>
+          ) : undefined}
+          {showPopover ? (
+            <ChartPopover
+              width={popoverWidth}
+              rightClick={effectiveRightClick}
+              UNSAFE_highlightBy={popoverHighlightBy}
+              onOpenChange={action('Line ChartPopover:onOpenChange')}
+            >
+              {renderPopoverContent(['series', 'datetime', 'value'])}
+            </ChartPopover>
+          ) : undefined}
+          {showActionBar ? (
+            <ChartActionBar isEmphasized={actionBarEmphasized} maxActions={actionBarMaxActions}>
+              {renderActionBarContent(['series', 'value'])}
+            </ChartActionBar>
+          ) : undefined}
+          {showForecast ? (
+            <LineForecast metric={forecastMetric} start={Date.UTC(2026, 0, 6)} label={forecastLabel} />
+          ) : undefined}
+          {showDirectLabel ? (
+            <LineDirectLabel
+              value={directLabelValue}
+              position={directLabelPosition}
+              prefix={directLabelPrefix}
+              format={directLabelFormat}
+            />
+          ) : undefined}
+          {showPointAnnotation ? (
+            <LinePointAnnotation
+              textKey={pointAnnotationTextKey}
+              anchor={pointAnnotationAnchor}
+              matchLineColor={pointAnnotationMatchLineColor}
+            />
+          ) : undefined}
+        </Line>
+        {showLegend ? (
+          <Legend
+            color={lineProps.color}
+            position={legendPosition}
+            title={legendTitle}
+            highlight={legendHighlight}
+            isToggleable={legendToggleable}
+            labelLimit={legendLabelLimit}
+            onClick={action('Line Legend:onClick')}
+            onMouseOver={action('Line Legend:onMouseOver')}
+            onMouseOut={action('Line Legend:onMouseOut')}
+          />
+        ) : undefined}
+      </Chart>
+      {contextMenuLabel ? (
+        <div
+          style={{ position: 'absolute', top: 8, right: 8, background: 'white', border: '1px solid #999', padding: 8 }}
+        >
+          {contextMenuLabel}
+        </div>
       ) : undefined}
-      <Line
-        {...lineProps}
-        onClick={enableClickCallback ? action('Line:onClick') : undefined}
-        onContextMenu={
-          enableContextMenuCallback
-            ? (event, datum): void => {
-                event.preventDefault();
-                action('Line:onContextMenu')({ event, datum });
-                setContextMenuLabel(`Line context menu: ${String((datum as Record<string, unknown>).series ?? (datum as Record<string, unknown>).value)}`);
-              }
-            : undefined
-        }
-      >
-        {showInspect ? <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>{renderInspectContent(['series', 'datetime', 'value'])}</ChartInspect> : undefined}
-        {showPopover ? <ChartPopover width={popoverWidth} rightClick={effectiveRightClick} UNSAFE_highlightBy={popoverHighlightBy} onOpenChange={action('Line ChartPopover:onOpenChange')}>{renderPopoverContent(['series', 'datetime', 'value'])}</ChartPopover> : undefined}
-        {showActionBar ? <ChartActionBar isEmphasized={actionBarEmphasized} maxActions={actionBarMaxActions}>{renderActionBarContent(['series', 'value'])}</ChartActionBar> : undefined}
-        {showForecast ? <LineForecast metric={forecastMetric} start={Date.UTC(2026, 0, 6)} label={forecastLabel} /> : undefined}
-        {showDirectLabel ? <LineDirectLabel value={directLabelValue} position={directLabelPosition} prefix={directLabelPrefix} format={directLabelFormat} /> : undefined}
-        {showPointAnnotation ? <LinePointAnnotation textKey={pointAnnotationTextKey} anchor={pointAnnotationAnchor} matchLineColor={pointAnnotationMatchLineColor} /> : undefined}
-      </Line>
-      {showLegend ? <Legend color={lineProps.color} position={legendPosition} title={legendTitle} highlight={legendHighlight} isToggleable={legendToggleable} labelLimit={legendLabelLimit} onClick={action('Line Legend:onClick')} onMouseOver={action('Line Legend:onMouseOver')} onMouseOut={action('Line Legend:onMouseOut')} /> : undefined}
-    </Chart>
-    {contextMenuLabel ? <div style={{ position: 'absolute', top: 8, right: 8, background: 'white', border: '1px solid #999', padding: 8 }}>{contextMenuLabel}</div> : undefined}
     </div>
   );
 };
 
 export const Playground = bindWithProps(LinePlaygroundStory);
 Playground.args = {
+  ...chartArgs,
   dataPreset: 'timeSeries',
   chartTitle: 'Workspace activity forecast',
   height: 420,

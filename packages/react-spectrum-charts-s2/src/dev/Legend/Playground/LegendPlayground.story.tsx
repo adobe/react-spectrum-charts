@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types */
 import { ReactElement, useState } from 'react';
 
@@ -21,7 +22,7 @@ import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { LegendProps } from '../../../types';
 import { playgroundTimeSeriesData } from '../../playgroundData';
-import { category, chartArgTypes, popoverArgTypes, renderPopoverContent } from '../../playgroundUtils';
+import { category, chartArgTypes, chartArgs, popoverArgTypes, renderPopoverContent } from '../../playgroundUtils';
 
 interface LegendPlaygroundArgs extends LegendProps {
   chartTitle?: string;
@@ -47,7 +48,26 @@ export default {
   argTypes: {
     ...chartArgTypes,
     ...popoverArgTypes,
-    ...category('Legend', ['align', 'color', 'defaultHiddenSeries', 'descriptions', 'hiddenEntries', 'highlight', 'isToggleable', 'keys', 'legendLabels', 'labelLimit', 'lineType', 'lineWidth', 'name', 'opacity', 'position', 'symbolShape', 'title', 'titleLimit']),
+    ...category('Legend', [
+      'align',
+      'color',
+      'defaultHiddenSeries',
+      'descriptions',
+      'hiddenEntries',
+      'highlight',
+      'isToggleable',
+      'keys',
+      'legendLabels',
+      'labelLimit',
+      'lineType',
+      'lineWidth',
+      'name',
+      'opacity',
+      'position',
+      'symbolShape',
+      'title',
+      'titleLimit',
+    ]),
     align: { control: 'select', options: [undefined, 'start', 'middle', 'end'], table: { category: 'Legend' } },
     position: { control: 'select', options: ['top', 'bottom', 'left', 'right'], table: { category: 'Legend' } },
     labelLimit: { control: { type: 'range', min: 40, max: 240, step: 5 }, table: { category: 'Legend' } },
@@ -133,6 +153,7 @@ const LegendPlaygroundStory: StoryFn<LegendPlaygroundArgs> = ({
 
 export const Playground = bindWithProps(LegendPlaygroundStory);
 Playground.args = {
+  ...chartArgs,
   chartTitle: 'Legend controls and popover',
   height: 400,
   maxWidth: 760,
