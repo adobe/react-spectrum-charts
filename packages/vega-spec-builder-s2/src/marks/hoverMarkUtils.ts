@@ -9,20 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AreaOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import { HOVER_SHAPE_COUNT } from '@spectrum-charts/constants';
 
-import { AreaProps } from '../types';
-import { ChildrenToOptions } from './childOptions.types';
+export const getHoverMarkName = (name: string, index: number): string => `${name}_hover${index}`;
 
-export const getAreaOptions = (
-  { children, ...areaProps }: AreaProps,
-  childrenToOptions: ChildrenToOptions
-): AreaOptions => {
-  const { chartInspects, chartPopovers } = childrenToOptions(children);
-  return {
-    ...areaProps,
-    chartInspects,
-    chartPopovers,
-    markType: 'area',
-  };
-};
+export const getHoverMarkNames = (markName: string): string[] =>
+  new Array(HOVER_SHAPE_COUNT).fill(0).map((_, i) => getHoverMarkName(markName, i));

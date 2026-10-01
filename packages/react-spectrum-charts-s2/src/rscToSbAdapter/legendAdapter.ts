@@ -12,16 +12,12 @@
 import { LegendOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { LegendProps } from '../types';
-import { childrenToOptions } from './childrenAdapter';
+import { ChildrenToOptions } from './childOptions.types';
 
-export const getLegendOptions = ({
-  children,
-  titleLimit,
-  onClick,
-  onMouseOut,
-  onMouseOver,
-  ...legendProps
-}: LegendProps): LegendOptions => {
+export const getLegendOptions = (
+  { children, titleLimit, onClick, onMouseOut, onMouseOver, ...legendProps }: LegendProps,
+  childrenToOptions: ChildrenToOptions
+): LegendOptions => {
   const { chartPopovers } = childrenToOptions(children);
 
   return {

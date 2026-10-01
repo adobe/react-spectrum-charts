@@ -12,9 +12,12 @@
 import { ScatterOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ScatterProps } from '../types';
-import { childrenToOptions } from './childrenAdapter';
+import { ChildrenToOptions } from './childOptions.types';
 
-export const getScatterOptions = ({ children, ...scatterProps }: ScatterProps): ScatterOptions => {
+export const getScatterOptions = (
+  { children, ...scatterProps }: ScatterProps,
+  childrenToOptions: ChildrenToOptions
+): ScatterOptions => {
   const { chartInspects, chartPopovers, scatterAnnotations, scatterPaths, trendlines } = childrenToOptions(children);
   return {
     ...scatterProps,

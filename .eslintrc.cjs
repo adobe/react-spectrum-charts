@@ -66,4 +66,22 @@ module.exports = {
       ],
     ],
   },
+  overrides: [
+    {
+      // S2 publish closure: circular imports are not allowed. Type-definition folders hold recursive types.
+      files: [
+        'packages/{constants,locales,schemas,themes,utils}/**/*.{ts,tsx}',
+        'packages/{react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}',
+      ],
+      excludedFiles: ['**/src/types/**'],
+      plugins: ['import'],
+      settings: {
+        'import/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx'] },
+        'import/resolver': { typescript: { alwaysTryTypes: true } },
+      },
+      rules: {
+        'import/no-cycle': ['error', { ignoreExternal: true }],
+      },
+    },
+  ],
 };

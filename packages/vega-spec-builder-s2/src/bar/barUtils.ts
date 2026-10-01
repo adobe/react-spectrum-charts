@@ -54,7 +54,7 @@ import {
 import { getBandPadding } from '../scale/scaleSpecBuilder';
 import { getLineWidthPixelsFromLineWidth } from '../specUtils';
 import { BarSpecOptions, Orientation } from '../types';
-import { getTrellisProperties, isTrellised } from './trellisedBarUtils';
+import { getTrellisProperties, isTrellised } from './trellisPropertyUtils';
 
 /** Per-mark-namespaced field name for the composite per-bar hover-animation identity (see `BarSpecOptions.barIds`). */
 export const getBarAnimIdField = (name: string): string => `${name}_${BAR_ANIM_ID}`;

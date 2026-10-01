@@ -13,26 +13,27 @@ import { createElement } from 'react';
 
 import { ChartInspect } from '../components/ChartInspect';
 import { getBulletOptions } from './bulletAdapter';
+import { childrenToOptions } from './childrenAdapter';
 
 describe('getBulletOptions()', () => {
   it('should return all basic options', () => {
-    const options = getBulletOptions({});
+    const options = getBulletOptions({}, childrenToOptions);
     expect(options.markType).toBe('bullet');
     expect(options.chartInspects).toHaveLength(0);
   });
 
   it('should convert ChartInspect children to chartInspects array', () => {
-    const options = getBulletOptions({ children: [createElement(ChartInspect)] });
+    const options = getBulletOptions({ children: [createElement(ChartInspect)] }, childrenToOptions);
     expect(options.chartInspects).toHaveLength(1);
   });
 
   it('should pass through included props', () => {
-    const options = getBulletOptions({ metric: 'revenue' });
+    const options = getBulletOptions({ metric: 'revenue' }, childrenToOptions);
     expect(options).toHaveProperty('metric', 'revenue');
   });
 
   it('should not add props that are not provided', () => {
-    const options = getBulletOptions({});
+    const options = getBulletOptions({}, childrenToOptions);
     expect(options).not.toHaveProperty('metric');
   });
 });

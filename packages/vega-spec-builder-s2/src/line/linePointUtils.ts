@@ -26,7 +26,7 @@ import {
   getXProductionRule,
 } from '../marks/markUtils';
 import { LineSpecOptions } from '../types';
-import { getLineYEncoding, getLineDeemphasisOpacitySignal } from './lineMarkUtils';
+import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils';
 import { LineMarkOptions } from './lineUtils';
 
 const getPointSizeEncoding = (pointSize: number | undefined) =>

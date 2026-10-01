@@ -15,7 +15,8 @@ import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@spectrum-charts/constan
 
 import { BarSpecOptions } from '../types';
 import { defaultBarOptions } from './barTestUtils';
-import { getTrellisGroupMark, getTrellisProperties, getTrellisedEncodeEntries, isTrellised } from './trellisedBarUtils';
+import { getTrellisProperties, isTrellised } from './trellisPropertyUtils';
+import { getTrellisGroupMark, getTrellisedEncodeEntries } from './trellisedBarUtils';
 
 const defaultTrellisOptions: BarSpecOptions = { ...defaultBarOptions, trellis: 'trellisProperty' };
 const defaultRepeatedScale: Scale = { name: 'xLinear', type: 'linear', domain: { data: TABLE, field: 'x' } };

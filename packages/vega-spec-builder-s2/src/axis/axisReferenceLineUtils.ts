@@ -35,7 +35,7 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { AxisSpecOptions, ColorScheme, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
-import { isVerticalAxis } from './axisUtils';
+import { isVerticalAxis } from './axisPositionUtils';
 
 export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {
   return axisOptions.referenceLines.map((referenceLine, index) =>

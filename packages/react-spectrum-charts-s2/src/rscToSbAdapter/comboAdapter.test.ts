@@ -12,26 +12,27 @@
 import { createElement } from 'react';
 
 import { Bar, Line } from '../components';
+import { childrenToOptions } from './childrenAdapter';
 import { getComboOptions } from './comboAdapter';
 
 describe('getComboOptions()', () => {
   it('should return all basic options', () => {
-    const options = getComboOptions({});
+    const options = getComboOptions({}, childrenToOptions);
     expect(options.markType).toBe('combo');
     expect(options.marks).toHaveLength(0);
   });
   it('should convert mark children to marks array', () => {
-    const options = getComboOptions({ children: [createElement(Bar), createElement(Line)] });
+    const options = getComboOptions({ children: [createElement(Bar), createElement(Line)] }, childrenToOptions);
     expect(options.marks).toHaveLength(2);
     expect(options.marks?.[0].markType).toBe('bar');
     expect(options.marks?.[1].markType).toBe('line');
   });
   it('should pass through included props', () => {
-    const options = getComboOptions({ dimension: 'x' });
+    const options = getComboOptions({ dimension: 'x' }, childrenToOptions);
     expect(options).toHaveProperty('dimension', 'x');
   });
   it('should not add props that are not provided', () => {
-    const options = getComboOptions({});
+    const options = getComboOptions({}, childrenToOptions);
     expect(options).not.toHaveProperty('dimension');
   });
 });

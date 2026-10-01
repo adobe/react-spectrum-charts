@@ -14,42 +14,46 @@ import { createElement } from 'react';
 import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 
 import { ChartPopover } from '../components/ChartPopover';
+import { childrenToOptions } from './childrenAdapter';
 import { getLegendOptions } from './legendAdapter';
 
 describe('getLegendOptions()', () => {
   it('should return all basic options', () => {
-    const options = getLegendOptions({});
+    const options = getLegendOptions({}, childrenToOptions);
     expect(options).toHaveProperty('hasOnClick', false);
     expect(options).toHaveProperty('hasMouseInteraction', false);
   });
   test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
-    expect(getLegendOptions({ onClick: () => {} }).hasOnClick).toBe(true);
-    expect(getLegendOptions({ onClick: undefined }).hasOnClick).toBe(false);
+    expect(getLegendOptions({ onClick: () => {} }, childrenToOptions).hasOnClick).toBe(true);
+    expect(getLegendOptions({ onClick: undefined }, childrenToOptions).hasOnClick).toBe(false);
   });
   test('should set hasMouseInteraction to true if onMouseOut and/or onMouseOver are valid', () => {
-    expect(getLegendOptions({ onMouseOut: () => {} })).toHaveProperty('hasMouseInteraction', true);
-    expect(getLegendOptions({ onMouseOut: undefined })).toHaveProperty('hasMouseInteraction', false);
-    expect(getLegendOptions({ onMouseOver: () => {} })).toHaveProperty('hasMouseInteraction', true);
-    expect(getLegendOptions({ onMouseOver: undefined })).toHaveProperty('hasMouseInteraction', false);
-    expect(getLegendOptions({ onMouseOut: () => {}, onMouseOver: () => {} })).toHaveProperty(
+    expect(getLegendOptions({ onMouseOut: () => {} }, childrenToOptions)).toHaveProperty('hasMouseInteraction', true);
+    expect(getLegendOptions({ onMouseOut: undefined }, childrenToOptions)).toHaveProperty('hasMouseInteraction', false);
+    expect(getLegendOptions({ onMouseOver: () => {} }, childrenToOptions)).toHaveProperty('hasMouseInteraction', true);
+    expect(getLegendOptions({ onMouseOver: undefined }, childrenToOptions)).toHaveProperty(
+      'hasMouseInteraction',
+      false
+    );
+    expect(getLegendOptions({ onMouseOut: () => {}, onMouseOver: () => {} }, childrenToOptions)).toHaveProperty(
       'hasMouseInteraction',
       true
     );
-    expect(getLegendOptions({ onMouseOut: undefined, onMouseOver: undefined })).toHaveProperty(
+    expect(getLegendOptions({ onMouseOut: undefined, onMouseOver: undefined }, childrenToOptions)).toHaveProperty(
       'hasMouseInteraction',
       false
     );
   });
   it('should convert popover children to chartPopovers array', () => {
-    const options = getLegendOptions({ children: [createElement(ChartPopover)] });
+    const options = getLegendOptions({ children: [createElement(ChartPopover)] }, childrenToOptions);
     expect(options.chartPopovers).toHaveLength(1);
   });
   it('should pass through included props', () => {
-    const options = getLegendOptions({ color: DEFAULT_COLOR });
+    const options = getLegendOptions({ color: DEFAULT_COLOR }, childrenToOptions);
     expect(options).toHaveProperty('color', DEFAULT_COLOR);
   });
   it('should not add props that are not provided', () => {
-    const options = getLegendOptions({});
+    const options = getLegendOptions({}, childrenToOptions);
     expect(options).not.toHaveProperty('color');
   });
 });

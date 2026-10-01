@@ -16,11 +16,12 @@ import { DEFAULT_COLOR } from '@spectrum-charts/constants';
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';
 import { ScatterAnnotation, ScatterPath, Trendline } from '../pre-alpha';
+import { childrenToOptions } from './childrenAdapter';
 import { getScatterOptions } from './scatterAdapter';
 
 describe('getScatterOptions()', () => {
   it('should return all basic options', () => {
-    const options = getScatterOptions({});
+    const options = getScatterOptions({}, childrenToOptions);
     expect(options.markType).toBe('scatter');
     expect(options.chartPopovers).toHaveLength(0);
     expect(options.chartInspects).toHaveLength(0);
@@ -29,31 +30,31 @@ describe('getScatterOptions()', () => {
     expect(options.trendlines).toHaveLength(0);
   });
   it('should convert popover children to chartPopovers array', () => {
-    const options = getScatterOptions({ children: [createElement(ChartPopover)] });
+    const options = getScatterOptions({ children: [createElement(ChartPopover)] }, childrenToOptions);
     expect(options.chartPopovers).toHaveLength(1);
   });
   it('should convert ChartInspect children to chartInspects array', () => {
-    const options = getScatterOptions({ children: [createElement(ChartInspect)] });
+    const options = getScatterOptions({ children: [createElement(ChartInspect)] }, childrenToOptions);
     expect(options.chartInspects).toHaveLength(1);
   });
   it('should convert scatter path children to scatterPaths array', () => {
-    const options = getScatterOptions({ children: [createElement(ScatterPath)] });
+    const options = getScatterOptions({ children: [createElement(ScatterPath)] }, childrenToOptions);
     expect(options.scatterPaths).toHaveLength(1);
   });
   it('should convert scatter annotation children to scatterAnnotations array', () => {
-    const options = getScatterOptions({ children: [createElement(ScatterAnnotation)] });
+    const options = getScatterOptions({ children: [createElement(ScatterAnnotation)] }, childrenToOptions);
     expect(options.scatterAnnotations).toHaveLength(1);
   });
   it('should convert trendline children to trendlines array', () => {
-    const options = getScatterOptions({ children: [createElement(Trendline)] });
+    const options = getScatterOptions({ children: [createElement(Trendline)] }, childrenToOptions);
     expect(options.trendlines).toHaveLength(1);
   });
   it('should pass through included props', () => {
-    const options = getScatterOptions({ color: DEFAULT_COLOR });
+    const options = getScatterOptions({ color: DEFAULT_COLOR }, childrenToOptions);
     expect(options).toHaveProperty('color', DEFAULT_COLOR);
   });
   it('should not add props that are not provided', () => {
-    const options = getScatterOptions({});
+    const options = getScatterOptions({}, childrenToOptions);
     expect(options).not.toHaveProperty('color');
   });
 });

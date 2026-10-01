@@ -12,9 +12,12 @@
 import { BulletOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { BulletProps } from '../types';
-import { childrenToOptions } from './childrenAdapter';
+import { ChildrenToOptions } from './childOptions.types';
 
-export const getBulletOptions = ({ children, ...bulletProps }: BulletProps): BulletOptions => {
+export const getBulletOptions = (
+  { children, ...bulletProps }: BulletProps,
+  childrenToOptions: ChildrenToOptions
+): BulletOptions => {
   const { chartInspects } = childrenToOptions(children);
   return {
     ...bulletProps,

@@ -16,11 +16,7 @@ import { LegendDescription } from '@spectrum-charts/vega-spec-builder-s2';
 import { Legend } from '../components/Legend';
 import { ChartChildElement, LegendElement } from '../types';
 import { getElement } from '../utils';
-
-const ChartContainer = ({ children }: { children: React.ReactNode }) => {
-  return <div>{children}</div>;
-};
-ChartContainer.displayName = 'ChartContainer';
+import { ChartContainer } from './ChartContainer';
 
 export type UseLegendProps = {
   legendHiddenSeries: string[];

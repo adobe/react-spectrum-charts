@@ -33,7 +33,6 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
   HOVERED_ITEM,
-  LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SELECTED_SERIES,
@@ -42,7 +41,6 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils'
 import {
   getColorProductionRule,
@@ -56,42 +54,13 @@ import {
   hasPopover,
 } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { getStrokeDashFromLineType } from '../specUtils';
 import { ScaleType } from '../types';
 import { MIN_LABEL_GAP, getDirectLabelTextMarks } from './directLabelUtils';
 import { getPrimarySeriesOtherExpr } from './lineDataUtils';
+import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils';
 import { getHighlightPoint, getSecondaryHighlightPoint, getSelectionPoint } from './linePointUtils';
-import { LineMarkOptions, isDualMetricAxis } from './lineUtils';
-
-/**
- * Gets the Y encoding for line marks with dual metric axis support
- * @param lineMarkOptions - Line mark options including metricAxis and dualMetricAxis
- * @param metric - The metric field name
- * @returns Y encoding with conditional scale selection for dual metric axis
- */
-export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: string): ProductionRule<NumericValueRef> => {
-  const { metricAxis } = lineMarkOptions;
-
-  if (isDualMetricAxis(lineMarkOptions)) {
-    const baseScaleName = metricAxis || 'yLinear';
-    const scaleNames = getDualAxisScaleNames(baseScaleName);
-
-    return [
-      {
-        test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
-        scale: scaleNames.secondaryScale,
-        field: metric,
-      },
-      {
-        scale: scaleNames.primaryScale,
-        field: metric,
-      },
-    ];
-  }
-
-  return [{ scale: metricAxis || 'yLinear', field: metric }];
-};
+import { LineMarkOptions } from './lineUtils';
 
 const GRADIENT_BASE_OPACITY = 0.2;
 const FORECAST_GRADIENT_RATIO = 0.4;
@@ -268,13 +237,6 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
         strokeWidth: getLineStrokeWidth(lineMarkOptions),
       },
     },
-  };
-};
-
-export const getLineDeemphasisOpacitySignal = (name: string): ProductionRule<NumericValueRef> => {
-  const ramp = getDeemphasisRamp(getHoverFractionSignal(name));
-  return {
-    signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
   };
 };
 
