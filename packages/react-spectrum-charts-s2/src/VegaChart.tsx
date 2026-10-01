@@ -19,6 +19,7 @@ import { TABLE } from '@spectrum-charts/constants';
 import { getLocale } from '@spectrum-charts/locales';
 import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from './animation/animationTicker';
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
 import { ChartProps } from './types';
@@ -84,6 +85,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartView = useRef<View | undefined>(undefined);
+  const detachAnimationTicker = useRef<(() => void) | undefined>(undefined);
   const hasMounted = useRef(false);
   // AN-445759: flipped to true when dimensions become valid post-mount with no existing view,
   // forcing the embed effect to run even though width/height are not in its deps.
@@ -139,9 +141,18 @@ export const VegaChart: FC<VegaChartProps> = ({
       const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
       const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
       const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
+      const isAnimated = isAnimatedSpec(specCopy);
+      if (isAnimated) {
+        // animated charts are driven by the shared animation ticker instead of Vega's always-on timer
+        removeAnimationTimerEvents(specCopy);
+      }
+      const container = containerRef.current;
 
-      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
+      embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
         chartView.current = view;
+        if (isAnimated) {
+          detachAnimationTicker.current = attachAnimationTicker(view, container);
+        }
         onNewView(view);
         view.resize();
         view.runAsync();
@@ -151,6 +162,8 @@ export const VegaChart: FC<VegaChartProps> = ({
     }
     return () => {
       // destroy the chart on unmount
+      detachAnimationTicker.current?.();
+      detachAnimationTicker.current = undefined;
       if (chartView.current) {
         chartView.current.finalize();
         chartView.current = undefined;

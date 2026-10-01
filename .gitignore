@@ -37,3 +37,6 @@ tmp/
 .agents/
 .scout/
 .claude/rules/
+
+# performance benchmark output
+perf-results/
