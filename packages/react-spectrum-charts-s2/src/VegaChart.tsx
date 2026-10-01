@@ -55,6 +55,14 @@ const logRenderError = (error: unknown): void => {
 };
 
 /**
+ * Runs the view's dataflow and logs any failure.
+ * @param view
+ */
+const runView = (view: View): void => {
+  view.runAsync().catch(logRenderError);
+};
+
+/**
  * Resizes an existing Vega view without recreating it.
  */
 export const resizeView = (view: View | undefined, width: number, height: number): void => {
@@ -164,11 +172,9 @@ export const VegaChart: FC<VegaChartProps> = ({
           chartView.current = view;
           onNewView(view);
           view.resize();
-          view.runAsync().catch(logRenderError);
           // One additional render to settle all resize calculations
-          setTimeout(() => {
-            view.runAsync().catch(logRenderError);
-          }, 0);
+          setTimeout(() => runView(view), 0);
+          return view.runAsync();
         })
         .catch(logRenderError);
     }
