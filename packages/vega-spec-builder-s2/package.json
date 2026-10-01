@@ -9,6 +9,7 @@
   "types": "dist/@types/index.d.ts",
   "exports": {
     ".": {
+      "@spectrum-charts/source": "./index.ts",
       "types": "./dist/@types/index.d.ts",
       "default": "./dist/index.js"
     },

@@ -8,6 +8,7 @@
   "types": "dist/@types/index.d.ts",
   "exports": {
     ".": {
+      "@spectrum-charts/source": "./index.ts",
       "types": "./dist/@types/index.d.ts",
       "import": "./dist/esm/index.mjs",
       "require": "./dist/index.js",
