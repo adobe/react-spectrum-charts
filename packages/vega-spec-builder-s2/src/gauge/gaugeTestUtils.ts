@@ -9,14 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { GaugeSpecOptions } from '../types';
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bullet.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './gauge.types';
-export * from './line.types';
-export * from './scatter.types';
-
-export * from './supplemental';
+export const defaultGaugeOptions: GaugeSpecOptions = {
+  arcSize: 2 / 3,
+  color: 'categorical-100',
+  colorScheme: 'light',
+  holeRatio: 0.8,
+  index: 0,
+  label: 'Test label',
+  markType: 'gauge',
+  maxScaleValue: 100,
+  metric: 'testMetric',
+  method: 'last',
+  minScaleValue: 0,
+  name: 'testName',
+  numberFormat: 'shortNumber',
+  showNeedle: true,
+};

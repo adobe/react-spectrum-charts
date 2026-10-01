@@ -53,6 +53,7 @@ import {
   Combo,
   Donut,
   DonutSummary,
+  Gauge,
   Scatter,
   ScatterAnnotation,
   ScatterPath,
@@ -73,6 +74,7 @@ import {
   ComboProps,
   DonutProps,
   DonutSummaryProps,
+  GaugeProps,
   LegendProps,
   LineForecastProps,
   LineDirectLabelProps,
@@ -97,6 +99,7 @@ import { getChartPopoverOptions } from './chartPopoverAdapter';
 import { getChartInspectOptions } from './chartInspectAdapter';
 import { getComboOptions } from './comboAdapter';
 import { getDonutOptions } from './donutAdapter';
+import { getGaugeOptions } from './gaugeAdapter';
 import { getLegendOptions } from './legendAdapter';
 import { getLineOptions } from './lineAdapter';
 import { getScatterOptions } from './scatterAdapter';
@@ -206,6 +209,10 @@ export const childrenToOptions = (
 
       case DonutSummary.displayName:
         donutSummaries.push(child.props as DonutSummaryProps);
+        break;
+
+      case Gauge.displayName:
+        marks.push(getGaugeOptions(child.props as GaugeProps));
         break;
 
       case Legend.displayName:

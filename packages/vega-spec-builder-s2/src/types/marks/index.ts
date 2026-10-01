@@ -16,6 +16,7 @@ export * from './bigNumberSpec.types';
 export * from './bulletSpec.types';
 export * from './comboSpec.types';
 export * from './donutSpec.types';
+export * from './gaugeSpec.types';
 export * from './lineSpec.types';
 export * from './scatterSpec.types';
 export * from './vennSpec.types';

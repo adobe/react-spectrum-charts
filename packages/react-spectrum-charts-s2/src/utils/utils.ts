@@ -47,6 +47,7 @@ import {
   Combo,
   Donut,
   DonutSummary,
+  Gauge,
   Scatter,
   ScatterAnnotation,
   ScatterPath,
@@ -70,6 +71,7 @@ import {
   ComboElement,
   DonutElement,
   DonutSummaryElement,
+  GaugeElement,
   LegendElement,
   LineForecastElement,
   LineDirectLabelElement,
@@ -104,6 +106,7 @@ type RscElement =
   | BulletElement
   | ComboElement
   | DonutElement
+  | GaugeElement
   | LegendElement
   | LineElement
   | ScatterElement
@@ -118,6 +121,7 @@ type ElementCounts = {
   bullet: number;
   combo: number;
   donut: number;
+  gauge: number;
   legend: number;
   line: number;
   scatter: number;
@@ -157,6 +161,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     Combo.displayName,
     Donut.displayName,
     DonutSummary.displayName,
+    Gauge.displayName,
     Legend.displayName,
     Line.displayName,
     LineDirectLabel.displayName,
@@ -187,6 +192,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
     Bullet.displayName,
     Combo.displayName,
     Donut.displayName,
+    Gauge.displayName,
     Legend.displayName,
     Line.displayName,
     Scatter.displayName,
@@ -402,6 +408,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Donut.displayName:
       elementCounts.donut++;
       return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
+    case Gauge.displayName:
+      elementCounts.gauge++;
+      return getComponentName(element as GaugeElement, `gauge${elementCounts.gauge}`);
     case Legend.displayName:
       elementCounts.legend++;
       return getComponentName(element as LegendElement, `legend${elementCounts.legend}`);
@@ -433,6 +442,7 @@ const initElementCounts = (): ElementCounts => ({
   bullet: -1,
   combo: -1,
   donut: -1,
+  gauge: -1,
   legend: -1,
   line: -1,
   scatter: -1,

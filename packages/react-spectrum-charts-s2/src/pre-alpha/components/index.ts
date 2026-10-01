@@ -15,6 +15,7 @@ export * from './Bullet';
 export * from './Combo';
 export * from './Donut';
 export * from './DonutSummary';
+export * from './Gauge';
 export * from './Scatter';
 export * from './ScatterAnnotation';
 export * from './ScatterPath';

@@ -1,0 +1,46 @@
+{
+  "id": "gauge-ticks",
+  "title": "Gauge: decorative scale ticks",
+  "chartType": "chart",
+  "kind": "feature",
+  "variant": "s2",
+  "status": "approved",
+  "lastUpdated": "2026-09-16",
+  "complexity": {
+    "score": 3,
+    "rationale": "Deciding how many major/minor ticks to generate for each of three density levels, spaced evenly across an arbitrary [minScaleValue, maxScaleValue] range, is new logic with a real design decision - it isn't a straight repeat of the angle math already built for the value/target markers."
+  },
+  "summary": "Adds an optional ticks prop to Gauge that renders decorative graduation marks along the arc, purely visual, to help readers gauge the scale without reading exact values.",
+  "requirements": [
+    "Accept a ticks setting of 'minimal', 'normal', or 'dense', controlling how many graduation marks render along the arc.",
+    "Ticks are off by default.",
+    "Ticks are evenly spaced across the [minScaleValue, maxScaleValue] range and do not encode any data value themselves - they are purely decorative scale markers.",
+    "'normal' and 'dense' include a visually distinct minor tick between each pair of major ticks; 'dense' places more minor ticks between majors than 'normal'.",
+    "Ticks render along the inner edge of the arc and do not overlap the needle, fill, or center text."
+  ],
+  "edgeCases": [
+    { "case": "a very small [minScaleValue, maxScaleValue] range", "expectedBehavior": "tick spacing still produces a reasonable, evenly distributed set of marks rather than clustering or overlapping" },
+    { "case": "small rendered size", "expectedBehavior": "tick length and spacing scale down proportionally with the rendered arc rather than overlapping each other" },
+    { "case": "light vs. dark background", "expectedBehavior": "tick color remains a fixed neutral token that stays visible against both, matching the arc track's existing fixed-token convention" }
+  ],
+  "crossCutting": {
+    "touchesHoverAnimation": false,
+    "touchesControlledHighlight": false,
+    "touchesLegendInteraction": false,
+    "touchesTooltipOrPopover": false,
+    "requiresNewSignalOrScale": true,
+    "requiresS1S2Parity": false,
+    "notes": "requiresNewSignalOrScale: generating major/minor tick positions across the scale range and mapping each to an arc angle is new derived data, distinct from the single current-value angle already computed. requiresS1S2Parity is false because Gauge is S2-only."
+  },
+  "implementationPlan": [
+    { "file": "packages/vega-spec-builder-s2/src/types/marks/gaugeSpec.types.ts", "change": "Add an optional ticks field ('minimal' | 'normal' | 'dense') to the public Gauge contract." },
+    { "file": "packages/vega-spec-builder-s2/src/gauge/gaugeSpecBuilder.ts", "change": "Generate an evenly-spaced set of major/minor tick values across the scale range for the selected density, and map each to an arc angle." },
+    { "file": "packages/vega-spec-builder-s2/src/gauge/gaugeMarkUtils.ts", "change": "Render the generated ticks as short marks along the arc's inner edge." },
+    { "file": "packages/react-spectrum-charts-s2/src/types/marks/gauge.types.ts", "change": "Expose ticks on the public GaugeProps." },
+    { "file": "packages/react-spectrum-charts-s2/src/stories/Gauge/Features/GaugeBasic.story.tsx", "change": "Add stories for each tick density." }
+  ],
+  "openQuestions": [
+    "Exact major/minor tick counts per density level are not yet pinned down and need a design decision.",
+    "planning/specs/schema.json's chartType enum has no 'gauge' value; this spec uses the 'chart' fallback until 'gauge' is added (ideally to the pre-alpha list), at which point this file should move to planning/specs/pre-alpha/gauge/."
+  ]
+}
