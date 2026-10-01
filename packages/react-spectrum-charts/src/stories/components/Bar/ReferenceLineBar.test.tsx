@@ -18,6 +18,7 @@ import {
   HorizontalLabel,
   HorizontalLabelInside,
   HorizontalSupreme,
+  HorizontalLongLabel,
   Icon,
   Label,
   LabelInside,
@@ -299,7 +300,7 @@ describe('AxisReferenceLine', () => {
       expect(bars.length).toEqual(5);
 
       const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
-      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-8,111.60000000000001)');
+      expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-16,111.60000000000001)');
     });
 
     test('Icon', async () => {
@@ -347,6 +348,18 @@ describe('AxisReferenceLine', () => {
 
       const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
       expect(axisReferenceLineLabel).toHaveAttribute('transform', 'translate(-37,111.60000000000001)');
+    });
+
+    test('Long label is right aligned beside the axis like tick labels', async () => {
+      render(<HorizontalLongLabel {...HorizontalLongLabel.args} />);
+
+      const chart = await findChart();
+      expect(chart).toBeInTheDocument();
+
+      const axisReferenceLineLabel = await findMarksByGroupName(chart, 'axis0ReferenceLine0_label', 'text');
+      expect(axisReferenceLineLabel).toHaveTextContent('Entitlement');
+      expect(axisReferenceLineLabel).toHaveAttribute('text-anchor', 'end');
+      expect(axisReferenceLineLabel.getAttribute('transform')).toMatch(/^translate\(-8,/);
     });
 
     test('Label inside renders a badged label at the end of the line, icon at the axis', async () => {

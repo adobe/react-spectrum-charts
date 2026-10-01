@@ -481,6 +481,14 @@ describe('reference line label offsets on vertical axes', () => {
     );
     expect(encoding.update?.x).toHaveProperty('value', -8);
   });
+  test('should clear the ticks when the axis has them', () => {
+    const encoding = getReferenceLineLabelsEncoding(
+      { ...defaultAxisOptions, position: 'left', ticks: true },
+      { ...defaultReferenceLineOptions, icon: undefined, label: 'Hello world!' },
+      defaultYPositionEncoding
+    );
+    expect(encoding.update?.x).toHaveProperty('value', -16);
+  });
   test('should place the label beyond the icon when there is one', () => {
     const encoding = getReferenceLineLabelsEncoding(
       { ...defaultAxisOptions, position: 'right' },

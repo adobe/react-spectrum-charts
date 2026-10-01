@@ -387,10 +387,12 @@ export const getReferenceLineInsideLabelMark = (
  */
 const calculateReferenceLineOffsets = (
   position: Position,
-  icon?: string
+  icon?: string,
+  ticks?: boolean
 ): { verticalOffset: number; horizontalOffset: number } => {
   const isVertical = isVerticalAxis(position);
-  let verticalOffset = isVertical ? 8 : 28;
+  // match tick label spacing: labelPadding (8), plus tickSize (8) when ticks are shown
+  let verticalOffset = isVertical ? 8 + (ticks && !icon ? 8 : 0) : 28;
   let horizontalOffset = isVertical ? 4 : 5;
 
   if (icon) {
@@ -418,11 +420,11 @@ const calculateReferenceLineOffsets = (
  * @returns updateEncoding
  */
 export const getReferenceLineLabelsEncoding = (
-  { position }: AxisSpecOptions,
+  { position, ticks }: AxisSpecOptions,
   { colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecOptions & { label: string },
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): GuideEncodeEntry<TextEncodeEntry> => {
-  const { verticalOffset, horizontalOffset } = calculateReferenceLineOffsets(position, icon);
+  const { verticalOffset, horizontalOffset } = calculateReferenceLineOffsets(position, icon, ticks);
   const positionOptions = getAdditiveMarkPositionOptions(verticalOffset, positionEncoding, horizontalOffset);
 
   return {
