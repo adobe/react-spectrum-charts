@@ -190,13 +190,8 @@ export function getBulletValueText(numberFormat: string, datumProperty: string):
 }
 
 export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark {
-  const defaultColor = getS2ColorValue(bulletOptions.color, bulletOptions.colorScheme);
   const solidColor = getS2ColorValue('gray-900', bulletOptions.colorScheme);
   const encodeUpdateSignalWidth = bulletOptions.direction === 'column' ? 'width' : 'bulletGroupWidth';
-  const fillExpr =
-    bulletOptions.thresholdBarColor && (bulletOptions.thresholds?.length ?? 0) > 0
-      ? `datum.barColor === '${defaultColor}' ? '${solidColor}' : datum.barColor`
-      : `'${solidColor}'`;
 
   // Use metricLabel field if provided, otherwise format the metric value
   const textValue = bulletOptions.metricLabel
@@ -213,7 +208,7 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
         text: textValue,
         align: { value: 'right' },
         baseline: { value: 'top' },
-        fill: { signal: fillExpr },
+        fill: { value: solidColor },
       },
       update: { x: { signal: encodeUpdateSignalWidth }, y: { value: 0 } },
     },
