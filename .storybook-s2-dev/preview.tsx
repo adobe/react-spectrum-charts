@@ -29,9 +29,39 @@ const accessibleNavigationDecorator: Decorator = (Story, context) => {
   );
 };
 
+type RegressionParameter = { description: string; pr?: number };
+
+const regressionDecorator: Decorator = (Story, context) => {
+  const regression = context.parameters.regression as RegressionParameter | undefined;
+  if (!regression) {
+    return <Story />;
+  }
+
+  return (
+    <div>
+      <div
+        data-testid="regression-note"
+        style={{ fontFamily: 'adobe-clean, sans-serif', fontSize: 14, marginBottom: 16, maxWidth: 760 }}
+      >
+        <strong>Regression:</strong> {regression.description}{' '}
+        {regression.pr !== undefined && (
+          <a
+            href={`https://github.com/adobe/react-spectrum-charts/pull/${regression.pr}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Fixed in #{regression.pr}
+          </a>
+        )}
+      </div>
+      <Story />
+    </div>
+  );
+};
+
 const preview: Preview = {
   ...basePreview,
-  decorators: [...(basePreview.decorators ?? []), accessibleNavigationDecorator],
+  decorators: [...(basePreview.decorators ?? []), accessibleNavigationDecorator, regressionDecorator],
   globalTypes: {
     ...(basePreview.globalTypes ?? {}),
     accessibleNavigationControls: {

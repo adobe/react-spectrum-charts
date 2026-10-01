@@ -118,3 +118,28 @@ DivergingWithThumbnails.args = {
 
 export const NegativeStack = bindWithProps(NegativeStackStory);
 NegativeStack.args = { dimension: 'browser', order: 'order', color: 'operatingSystem' } as BarProps;
+
+AxisLabelHighlight.parameters = {
+  ...AxisLabelHighlight.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: former demo variant where hovering an axis label highlights the matching bar.',
+  },
+};
+DirectLabelHorizontal.parameters = {
+  ...DirectLabelHorizontal.parameters,
+  regression: {
+    description: 'Not a bug reproduction: former demo variant with end-outside direct labels on horizontal bars.',
+  },
+};
+DivergingWithThumbnails.parameters = {
+  ...DivergingWithThumbnails.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: former demo variant of a horizontal diverging bar with long labels and axis thumbnails.',
+  },
+};
+NegativeStack.parameters = {
+  ...NegativeStack.parameters,
+  regression: { description: 'Not a bug reproduction: former demo variant of stacked bars with negative values.' },
+};

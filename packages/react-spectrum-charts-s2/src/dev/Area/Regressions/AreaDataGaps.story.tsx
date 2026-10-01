@@ -51,4 +51,13 @@ const WithGapsInDataStory: StoryFn<AreaProps> = (args): ReactElement => {
 const WithGapsInData = bindWithProps(WithGapsInDataStory);
 WithGapsInData.args = { metricStart: 'minTemperature', metricEnd: 'maxTemperature', opacity: 0.6 };
 
+WithGapsInData.parameters = {
+  ...WithGapsInData.parameters,
+  regression: {
+    description:
+      'Null or undefined metric values were drawn at the top of the chart instead of breaking the area into a gap.',
+    pr: 715,
+  },
+};
+
 export { WithGapsInData };

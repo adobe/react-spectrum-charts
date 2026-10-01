@@ -195,3 +195,18 @@ export const StrokeWidthOnHoverGroupLegend = (): ReactElement => (
     )}
   </ResizableChart>
 );
+
+StrokeWidthOnHover.parameters = {
+  ...StrokeWidthOnHover.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: drag the width handle to verify the per-size-tier line stroke width and its 0.5px increase on hover.',
+  },
+};
+StrokeWidthOnHoverGroupLegend.parameters = {
+  ...StrokeWidthOnHoverGroupLegend.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: verifies the hover stroke width increase when highlighting through a Legend keyed on a grouping field.',
+  },
+};

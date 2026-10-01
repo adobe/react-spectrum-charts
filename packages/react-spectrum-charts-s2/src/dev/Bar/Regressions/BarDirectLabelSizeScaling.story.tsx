@@ -146,4 +146,12 @@ const BarDirectLabelSizeScalingStory: StoryFn<BarDirectLabelProps> = (args): Rea
 const SizeScaling = bindWithProps(BarDirectLabelSizeScalingStory);
 SizeScaling.args = { position: 'end-outside' };
 
+SizeScaling.parameters = {
+  ...SizeScaling.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: drag the width handle across the S/M/L breakpoints to verify BarDirectLabel font size scaling.',
+  },
+};
+
 export { SizeScaling };

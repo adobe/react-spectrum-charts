@@ -134,4 +134,11 @@ GradientWithInterpolate.args = {
   interpolate: 'step-after',
 };
 
+GradientMultiSeries.parameters = {
+  ...GradientMultiSeries.parameters,
+  regression: {
+    description: 'Not a bug reproduction: verifies the line gradient is not applied when the line has multiple series.',
+  },
+};
+
 export { GradientMultiSeries };

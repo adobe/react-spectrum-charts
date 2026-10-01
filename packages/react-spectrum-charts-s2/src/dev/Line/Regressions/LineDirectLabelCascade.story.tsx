@@ -88,4 +88,12 @@ const LineDirectLabelThreeSeriesDivergeStory: StoryFn<typeof LineDirectLabel> = 
 const ThreeSeriesDiverge = bindWithProps(LineDirectLabelThreeSeriesDivergeStory);
 ThreeSeriesDiverge.args = { value: 'series' };
 
+ThreeSeriesDiverge.parameters = {
+  ...ThreeSeriesDiverge.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: three series that cross and diverge near the end to exercise direct label cascade stacking.',
+  },
+};
+
 export { ThreeSeriesDiverge };

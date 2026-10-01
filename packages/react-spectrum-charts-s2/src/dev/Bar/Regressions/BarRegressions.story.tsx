@@ -177,6 +177,50 @@ StackedAxisLabelHighlight.args = {
   ...stackedDefaultProps,
 };
 
+TimeAxis.parameters = {
+  ...TimeAxis.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: verifies a diverging bar with a time dimension axis moves and flips both the primary and secondary label rows.',
+  },
+};
+DodgedStackedWithLabels.parameters = {
+  ...DodgedStackedWithLabels.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: dodged bars with a two-level color, formerly paired with bar labels before the S1 Annotation child was dropped from S2.',
+  },
+};
+DodgedAxisLabelHighlight.parameters = {
+  ...DodgedAxisLabelHighlight.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: hovering an axis label highlights the matching dodged group, same as hovering the group itself.',
+  },
+};
+DodgedPopover.parameters = {
+  ...DodgedPopover.parameters,
+  regression: { description: 'Not a bug reproduction: dodged bars with ChartInspect and ChartPopover content.' },
+};
+StackedWithBarLabels.parameters = {
+  ...StackedWithBarLabels.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: stacked bars formerly paired with bar labels before the S1 Annotation child was dropped from S2.',
+  },
+};
+StackedAxisLabelHighlight.parameters = {
+  ...StackedAxisLabelHighlight.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: hovering an axis label highlights the matching stack, same as hovering the stack itself.',
+  },
+};
+StackedPopover.parameters = {
+  ...StackedPopover.parameters,
+  regression: { description: 'Not a bug reproduction: stacked bars with ChartInspect and ChartPopover content.' },
+};
+
 export {
   TimeAxis,
   DodgedStackedWithLabels,

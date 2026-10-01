@@ -241,4 +241,33 @@ DirectLabelManySeries.args = { value: 'series' };
 const DirectLabelManySeriesLegend = bindWithProps(LineDirectLabelManySeriesLegendStory);
 DirectLabelManySeriesLegend.args = { value: 'series' };
 
+DirectLabelLabelCollision.parameters = {
+  ...DirectLabelLabelCollision.parameters,
+  regression: {
+    description:
+      'Hovering a series faded direct label background halos and drew the hovered line beneath overlapping labels of other series.',
+    pr: 817,
+  },
+};
+DirectLabelSizeScaling.parameters = {
+  ...DirectLabelSizeScaling.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: drag the width handle across the S/M/L breakpoints to verify direct label font size and weight scaling.',
+  },
+};
+DirectLabelManySeries.parameters = {
+  ...DirectLabelManySeries.parameters,
+  regression: {
+    description: 'Not a bug reproduction: stress-tests direct label auto-stacking with 20 converging series.',
+  },
+};
+DirectLabelManySeriesLegend.parameters = {
+  ...DirectLabelManySeriesLegend.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: stress-tests direct label auto-stacking with 20 converging series and a highlighting Legend.',
+  },
+};
+
 export { DirectLabelLabelCollision, DirectLabelSizeScaling, DirectLabelManySeries, DirectLabelManySeriesLegend };

@@ -269,4 +269,19 @@ const StaticPointSizeAutoDetect = (): ReactElement => {
   );
 };
 
+AutoDetectSize.parameters = {
+  ...AutoDetectSize.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: drag the width handle across the size breakpoints to verify ReferenceLine stroke width and caret size auto-detection.',
+  },
+};
+StaticPointSizeAutoDetect.parameters = {
+  ...StaticPointSizeAutoDetect.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: drag the width handle across the size breakpoints to verify static point diameter follows the chart size tier.',
+  },
+};
+
 export { AutoDetectSize, StaticPointSizeAutoDetect };

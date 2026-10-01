@@ -47,4 +47,12 @@ const BulletTitleStory: StoryFn<BulletProps> = (args): ReactElement => {
 const WithTitle = bindWithProps(BulletTitleStory);
 WithTitle.args = { ...defaultArgs, direction: 'column' };
 
+WithTitle.parameters = {
+  ...WithTitle.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: covers a column-direction Bullet composed with a chart-level Title, kept from the curated demo.',
+  },
+};
+
 export { WithTitle };

@@ -263,7 +263,7 @@ Dev categories are chart-first:
 
 - `Tests` — visible stories used by tests or manual reproduction.
 - `Playground` — one story per chart/component exposing broad controls.
-- `Regressions` — specific bug reproductions, named after issue spec slugs when one exists.
+- `Regressions` — specific bug reproductions, named after issue spec slugs when one exists. Every regression story must set `parameters.regression = { description, pr }`: a one-sentence description of the bug it reproduces and the number of the PR that fixed it. The dev preview renders both above the story. When fixing a bug, add the regression story in the fix PR and set `pr` to that PR's number once it's opened.
 - `Performance` — animation, large-data, timing, and stress stories.
 - `Dashboards` — variation dashboards and other internal review dashboards.
 

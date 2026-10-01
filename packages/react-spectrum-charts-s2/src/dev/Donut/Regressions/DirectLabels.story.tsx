@@ -71,4 +71,36 @@ ManySegmentsResponsive.args = { value: true, valueFormat: 'shortNumber' };
 const Slivers = bindWithProps(SliversStory);
 Slivers.args = { percent: true, value: true, valueFormat: 'shortNumber' };
 
+Responsive.parameters = {
+  ...Responsive.parameters,
+  regression: {
+    description:
+      'Segment labels kept the position and font size computed when the mark was created, so they detached from the ring as the donut resized.',
+    pr: 894,
+  },
+};
+Advanced.parameters = {
+  ...Advanced.parameters,
+  regression: {
+    description:
+      'Left-hemisphere segment labels were left-aligned like right-hemisphere ones instead of right-aligned toward the ring.',
+    pr: 914,
+  },
+};
+ManySegmentsResponsive.parameters = {
+  ...ManySegmentsResponsive.parameters,
+  regression: {
+    description:
+      'Segment labels on a dense 15-segment donut detached from the ring on resize because their position and font size were never recomputed.',
+    pr: 894,
+  },
+};
+Slivers.parameters = {
+  ...Slivers.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: stress-tests segment labels on a fixed-size donut with many thin segments, formerly the Segment Label demo Slivers story.',
+  },
+};
+
 export { Responsive, Advanced, ManySegmentsResponsive, Slivers };

@@ -67,4 +67,12 @@ const SizeTierChart = ({ label, diameter }: { label: string; diameter: number })
 
 const SizeTiers = bindWithProps(SizeTiersStory);
 
+SizeTiers.parameters = {
+  ...SizeTiers.parameters,
+  regression: {
+    description:
+      'Not a bug reproduction: renders DonutSummary at all five named size tiers (XS to XL) to verify the per-tier metric value and label font sizes.',
+  },
+};
+
 export { SizeTiers };
