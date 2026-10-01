@@ -14,6 +14,7 @@
 import { ReactElement, ReactNode } from 'react';
 
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
+import { ColorScheme } from '@spectrum-charts/vega-spec-builder-s2';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 export type PlaygroundArgTypes = Record<
@@ -31,7 +32,10 @@ export const chartArgTypes = {
 } satisfies PlaygroundArgTypes;
 
 // Chart props the playgrounds always pass through; explicit undefined would override Chart's defaults.
-export const chartArgs = { colorScheme: DEFAULT_COLOR_SCHEME, backgroundColor: DEFAULT_BACKGROUND_COLOR };
+export const chartArgs: { colorScheme: ColorScheme; backgroundColor: string } = {
+  colorScheme: DEFAULT_COLOR_SCHEME as ColorScheme,
+  backgroundColor: DEFAULT_BACKGROUND_COLOR,
+};
 
 export const axesArgTypes = {
   showBottomAxis: { control: 'boolean', table: { category: 'Axes' } },
