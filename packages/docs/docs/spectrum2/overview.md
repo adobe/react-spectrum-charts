@@ -58,7 +58,7 @@ npm install @react-spectrum/s2 react react-dom vega vega-lite
 
 ### Module format
 
-The S2 packages ship ES modules only, one file per module, so bundlers include only what you import. `require()` and the UMD global are not supported. Like `@react-spectrum/s2`, the package imports its own `.css` files, so the bundler setup you already use for S2 handles it.
+The S2 packages ship ES modules only, one file per module, so bundlers include only what you import. `require()` and the UMD global are not supported.
 
 #### Jest
 
