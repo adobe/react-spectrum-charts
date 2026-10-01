@@ -542,6 +542,11 @@ describe('getReferenceLineTextMark() with labelPosition', () => {
     expect(label.transform?.[0]).toHaveProperty('size', { signal: '[width, height]' });
   });
 
+  test('should limit the label to the widest side of the line so it truncates instead of hiding', () => {
+    const [, label] = getInsideGroup(defaultAxisOptions, 'start', defaultXPositionEncoding).marks ?? [];
+    expect(label.encode?.update).toHaveProperty('limit', { signal: 'max(datum.x, width - datum.x) - 9' });
+  });
+
   test('should anchor vertical lines at the top for start and the bottom for end', () => {
     const [startAnchor] = getInsideGroup(defaultAxisOptions, 'start', defaultXPositionEncoding).marks ?? [];
     expect(startAnchor.encode?.update).toHaveProperty('x', defaultXPositionEncoding);

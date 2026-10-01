@@ -41,6 +41,9 @@ import { isVerticalAxis } from './axisUtils';
 
 // distance from the line to the label for diagonal anchors (6px on each axis)
 const REFERENCE_LINE_LABEL_BADGE_OFFSET = 8.49;
+const REFERENCE_LINE_LABEL_BADGE_PADDING = 3;
+// widest the label can be and still fit beside the line (offset + badge padding)
+const REFERENCE_LINE_LABEL_LIMIT = `max(datum.x, width - datum.x) - ${6 + REFERENCE_LINE_LABEL_BADGE_PADDING}`;
 
 export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {
   return axisOptions.referenceLines.map((referenceLine, index) =>
@@ -341,6 +344,9 @@ export const getReferenceLineInsideLabelMark = (
               { value: textColors[1] },
             ],
           },
+          update: {
+            limit: { signal: REFERENCE_LINE_LABEL_LIMIT },
+          },
         },
         transform: [
           {
@@ -362,10 +368,10 @@ export const getReferenceLineInsideLabelMark = (
             cornerRadius: { value: 2 },
             fill: { value: badgeColor },
             opacity: { field: 'opacity' },
-            x: { signal: 'datum.bounds.x1 - 3' },
-            x2: { signal: 'datum.bounds.x2 + 3' },
-            y: { signal: 'datum.bounds.y1 - 3' },
-            y2: { signal: 'datum.bounds.y2 + 3' },
+            x: { signal: `datum.bounds.x1 - ${REFERENCE_LINE_LABEL_BADGE_PADDING}` },
+            x2: { signal: `datum.bounds.x2 + ${REFERENCE_LINE_LABEL_BADGE_PADDING}` },
+            y: { signal: `datum.bounds.y1 - ${REFERENCE_LINE_LABEL_BADGE_PADDING}` },
+            y2: { signal: `datum.bounds.y2 + ${REFERENCE_LINE_LABEL_BADGE_PADDING}` },
           },
         },
       },
