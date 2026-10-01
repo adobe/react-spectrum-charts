@@ -375,6 +375,12 @@ A `ReferenceLine` can be used to add a vertical or horizontal line to a chart as
             <td>Sets the font weight of the label.</td>
         </tr>
         <tr>
+            <td>labelPosition</td>
+            <td>'axis' | 'start' | 'end'</td>
+            <td>'axis'</td>
+            <td>Sets where the label is drawn. `axis` places it outside the chart area next to the axis. `start` and `end` place it inside the chart area at the start or end of the line, in a badge filled with the reference line `color`. The label sits below (or right of) the line and flips above (or left) when there isn't room. Labels too long for either side are truncated with an ellipsis. The label text color is chosen for contrast with the badge, so `labelColor` does not apply. The icon always stays at the axis.</td>
+        </tr>
+        <tr>
             <td>layer</td>
             <td>'back' | 'front'</td>
             <td>'front'</td>
