@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Mark, Scale, Signal } from 'vega';
+import { Data, Mark, OrdinalScale, Scale, Signal } from 'vega';
 
 import {
   AnimationType,
@@ -23,6 +23,7 @@ import {
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
+  LINE_TYPE_CHART_SIZE_SCALE,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SERIES_ID,
@@ -47,6 +48,13 @@ import {
   getLineForecastSpecOptions,
 } from '../lineForecast';
 import {
+  addLineDrawInAnimationSignals,
+  addLineDrawInLeadTransform,
+  addLineDrawInTimeMsTransform,
+  getLineDrawInData,
+  getLineDrawInPointIndexData,
+} from '../marks/drawInAnimationUtils';
+import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
   getHoverAnimStateData,
@@ -60,7 +68,12 @@ import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '.
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder';
-import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils';
+import {
+  addUserMetaAnimatedMark,
+  addUserMetaInteractiveMark,
+  getChartSizeDashExpr,
+  getFacetsFromOptions,
+} from '../specUtils';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline';
 import {
   ChartData,
@@ -90,7 +103,6 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils';
-import { addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData } from '../marks/drawInAnimationUtils';
 
 export const addLine = produce<
   ScSpec,
@@ -290,7 +302,7 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   }
 
   if (staticPoint || isSparkline) {
-    if (options.isDrawInAnimate){
+    if (options.isDrawInAnimate) {
       data.push(getLineStaticPointData(name, staticPoint, `${name}_${DRAW_IN_PREV_DATA}`, isSparkline, isMethodLast));
     } else {
       data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
@@ -437,6 +449,7 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
   addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
   // add lineType to the lineType domain
   addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
+  if (typeof lineType === 'string') addLineTypeChartSizeScale(scales);
   // add opacity to the opacity domain
   addFieldToFacetScaleDomain(scales, OPACITY_SCALE, opacity);
   // find the linear scale and add our fields to it
@@ -456,6 +469,23 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
   scales.push(...getTrendlineScales(options));
   return scales;
 });
+
+/**
+ * Adds an ordinal scale that mirrors the lineType scale with chart-size dash expressions.
+ * @param scales
+ */
+export const addLineTypeChartSizeScale = (scales: Scale[]) => {
+  if (scales.some((scale) => scale.name === LINE_TYPE_CHART_SIZE_SCALE)) return;
+  const lineTypeScale = scales.find((scale) => scale.name === LINE_TYPE_SCALE) as OrdinalScale | undefined;
+  const lineTypeRange = lineTypeScale?.range;
+  if (!Array.isArray(lineTypeRange)) return;
+  scales.push({
+    name: LINE_TYPE_CHART_SIZE_SCALE,
+    type: 'ordinal',
+    domain: { signal: `domain('${LINE_TYPE_SCALE}')` },
+    range: { signal: `[${(lineTypeRange as number[][]).map(getChartSizeDashExpr).join(', ')}]` },
+  });
+};
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
@@ -608,11 +638,7 @@ const addLineHighlightOverlayMarks = (
   );
 };
 
-const addLineForecastLabelMarks = (
-  marks: Mark[],
-  forecasts: LineForecastOptions[],
-  options: LineSpecOptions
-): void => {
+const addLineForecastLabelMarks = (marks: Mark[], forecasts: LineForecastOptions[], options: LineSpecOptions): void => {
   for (const [i, forecast] of forecasts.entries()) {
     marks.push(...getLineForecastLabelMarks(getLineForecastSpecOptions(forecast, i, options)));
   }

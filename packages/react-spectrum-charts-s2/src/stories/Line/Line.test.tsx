@@ -11,6 +11,7 @@
  */
 import { FADE_FACTOR } from '@spectrum-charts/constants';
 
+import { Chart } from '../../Chart';
 import { Line, LinePointAnnotation } from '../../components';
 import { workspaceTrendsData } from '../../stories/data/data';
 import {
@@ -100,9 +101,24 @@ describe('Line', () => {
     const lines = await findAllMarksByGroupName(chart, 'line0');
     expect(lines.length).toEqual(4);
     expect(lines[0].getAttribute('stroke-dasharray')).toEqual('');
-    expect(lines[1].getAttribute('stroke-dasharray')).toEqual('7,4');
+    expect(lines[1].getAttribute('stroke-dasharray')).toEqual('4.5,4');
     expect(lines[2].getAttribute('stroke-dasharray')).toEqual('0,4');
-    expect(lines[3].getAttribute('stroke-dasharray')).toEqual('2,3,7,4');
+    expect(lines[3].getAttribute('stroke-dasharray')).toEqual('0,4,4.5,4');
+  });
+
+  test.each([
+    [300, '1.5', ['', '4.5,3.5', '0,2.5', '0,3.5,4.5,3.5']],
+    [900, '2.5', ['', '6,5', '0,5.5', '0,5,6,5']],
+  ])('LineType dashes scale with chart size stroke width at width %d', async (width, strokeWidth, dashes) => {
+    render(
+      <Chart data={workspaceTrendsData} width={width} height={300}>
+        <Line color="series" lineType="series" dimension="datetime" metric="value" scaleType="time" />
+      </Chart>
+    );
+    const chart = await findChart();
+    const lines = await findAllMarksByGroupName(chart, 'line0');
+    expect(lines.map((line) => line.getAttribute('stroke-width'))).toEqual(Array(4).fill(strokeWidth));
+    expect(lines.map((line) => line.getAttribute('stroke-dasharray'))).toEqual(dashes);
   });
 
   test('Opacity renders', async () => {

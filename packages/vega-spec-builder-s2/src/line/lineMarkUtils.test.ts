@@ -20,6 +20,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
   HOVERED_ITEM,
+  LINE_TYPE_CHART_SIZE_SCALE,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SELECTED_SERIES,
@@ -28,6 +29,7 @@ import {
 
 import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils';
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
+import { getChartSizeDashExpr, getStrokeDashFromLineType } from '../specUtils';
 import {
   getAlternateSegmentStrokeDash,
   getHighlightedSeriesOpacityRules,
@@ -35,7 +37,9 @@ import {
   getLineHighlightOverlayGroup,
   getLineHoverMarks,
   getLineMark,
-  getLineOpacity, getLineStrokeWidth,
+  getLineOpacity,
+  getLineStrokeDash,
+  getLineStrokeWidth,
 } from './lineMarkUtils';
 import { defaultLineMarkOptions } from './lineTestUtils';
 
@@ -52,7 +56,6 @@ describe('getLineMark()', () => {
         enter: {
           stroke: { field: 'series', scale: COLOR_SCALE },
           strokeCap: { value: 'round' },
-          strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           y: [{ field: 'value', scale: 'yLinear' }],
         },
@@ -60,6 +63,7 @@ describe('getLineMark()', () => {
           x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
           opacity: [DEFAULT_OPACITY_RULE],
           strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+          strokeDash: { value: [] },
         },
       },
     });
@@ -138,8 +142,12 @@ describe('getLineMark()', () => {
     test('omits the enter y encoding and uses the draw-in x/y encodings in update when true', () => {
       const lineMark = getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: true }, 'line0_facet');
       expect(lineMark.encode?.enter).not.toHaveProperty('y');
-      expect(lineMark.encode?.update?.x).toStrictEqual(getLineDrawInXEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true }));
-      expect(lineMark.encode?.update?.y).toStrictEqual(getLineDrawInYEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true }));
+      expect(lineMark.encode?.update?.x).toStrictEqual(
+        getLineDrawInXEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true })
+      );
+      expect(lineMark.encode?.update?.y).toStrictEqual(
+        getLineDrawInYEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true })
+      );
     });
 
     test('keeps the static enter y encoding and the scale-based update x, with no update y, when false', () => {
@@ -437,19 +445,13 @@ describe('getLineGradientMark()', () => {
   });
 
   test('should scale fillOpacity with static opacity value', () => {
-    const gradientMark = getLineGradientMark(
-      { ...defaultLineMarkOptions, opacity: { value: 0.6 } },
-      'line0_facet'
-    );
+    const gradientMark = getLineGradientMark({ ...defaultLineMarkOptions, opacity: { value: 0.6 } }, 'line0_facet');
     const fillOpacity = gradientMark.encode?.enter?.fillOpacity;
     expect(fillOpacity).toEqual({ value: 0.6 * 0.2 });
   });
 
   test('should scale fillOpacity with dynamic opacity facet', () => {
-    const gradientMark = getLineGradientMark(
-      { ...defaultLineMarkOptions, opacity: 'weight' },
-      'line0_facet'
-    );
+    const gradientMark = getLineGradientMark({ ...defaultLineMarkOptions, opacity: 'weight' }, 'line0_facet');
     const fillOpacity = gradientMark.encode?.enter?.fillOpacity;
     expect(fillOpacity).toEqual({ signal: `scale('${OPACITY_SCALE}', datum.weight) * 0.2` });
   });
@@ -491,10 +493,7 @@ describe('getLineGradientMark()', () => {
   });
 
   test('should support dual metric axis y encoding', () => {
-    const gradientMark = getLineGradientMark(
-      { ...defaultLineMarkOptions, dualMetricAxis: true },
-      'line0_facet'
-    );
+    const gradientMark = getLineGradientMark({ ...defaultLineMarkOptions, dualMetricAxis: true }, 'line0_facet');
     const y = gradientMark.encode?.enter?.y;
     expect(Array.isArray(y)).toBe(true);
     expect((y as unknown[]).length).toBe(2);
@@ -510,8 +509,8 @@ describe('getAlternateSegmentStrokeDash()', () => {
 
   test('data-driven lineType + static alternateSegmentLineType: base uses scale lookup, alt does not', () => {
     const result = getAlternateSegmentStrokeDash('line0', 'lineTypeField', 'dotted') as { signal: string };
-    expect(result.signal).toContain(`scale('${LINE_TYPE_SCALE}', datum['lineTypeField'])`);
-    expect(result.signal).not.toContain(`scale('${LINE_TYPE_SCALE}', datum['dotted'])`);
+    expect(result.signal).toContain(`scale('${LINE_TYPE_CHART_SIZE_SCALE}', datum['lineTypeField'])`);
+    expect(result.signal).not.toContain(`datum['dotted']`);
     expect(result.signal).toContain('line0_alternateFlag');
   });
 
@@ -519,6 +518,50 @@ describe('getAlternateSegmentStrokeDash()', () => {
     const dotted = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
     const dashed = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dashed') as { signal: string };
     expect(dotted.signal).not.toBe(dashed.signal);
+  });
+
+  test('alternate segment dash scales with the chart-size stroke width', () => {
+    const result = getAlternateSegmentStrokeDash('line0', { value: 'solid' }, 'dotted') as { signal: string };
+    expect(result.signal).toBe(`datum.line0_alternateFlag ? ${getChartSizeDashExpr([2, 2])} : []`);
+  });
+});
+
+describe('getLineStrokeDash()', () => {
+  test('solid lineType returns an empty static dash', () => {
+    expect(getLineStrokeDash({ ...defaultLineMarkOptions, lineType: { value: 'solid' } })).toStrictEqual({
+      value: [],
+    });
+  });
+
+  test.each(['dashed', 'dotted', 'dotDash', 'shortDash', 'longDash', 'twoDash'] as const)(
+    'static %s lineType scales with the chart-size stroke width',
+    (lineType) => {
+      expect(getLineStrokeDash({ ...defaultLineMarkOptions, lineType: { value: lineType } })).toStrictEqual({
+        signal: getChartSizeDashExpr(getStrokeDashFromLineType(lineType)),
+      });
+    }
+  );
+
+  test('custom dash array scales with the chart-size stroke width', () => {
+    expect(getLineStrokeDash({ ...defaultLineMarkOptions, lineType: { value: [8, 4] } })).toStrictEqual({
+      signal: `(${CHART_SIZE_STROKE_WIDTH} < 2 ? [4.5, 4.5] : ${CHART_SIZE_STROKE_WIDTH} < 2.5 ? [6, 6] : [7.5, 7.5])`,
+    });
+  });
+
+  test('data-driven lineType uses the chart-size line type scale', () => {
+    expect(getLineStrokeDash({ ...defaultLineMarkOptions, lineType: 'lineTypeField' })).toStrictEqual({
+      signal: `scale('${LINE_TYPE_CHART_SIZE_SCALE}', datum['lineTypeField'])`,
+    });
+  });
+
+  test('uses the alternate segment signal when alternateSegmentKey and alternateSegmentLineType are set', () => {
+    const result = getLineStrokeDash({
+      ...defaultLineMarkOptions,
+      alternateSegmentKey: 'isForecast',
+      alternateSegmentLineType: 'dotted',
+    });
+    expect(result).toHaveProperty('signal');
+    expect((result as { signal: string }).signal).toContain('line0_alternateFlag');
   });
 });
 
@@ -532,21 +575,30 @@ describe('getHighlightedSeriesOpacityRules()', () => {
   });
 
   test('with interactiveMarkName adds hover rule as first condition', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as {
+      test?: string;
+      value: number;
+    }[];
     expect(rules).toHaveLength(4);
     expect(rules[0].test).toContain(`line0_${HOVERED_ITEM}`);
     expect(rules[0].test).toContain(SERIES_ID);
   });
 
   test('with isHighlightedByGroup uses highlightedData condition instead of hover item', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0', isHighlightedByGroup: true }) as { test?: string; value: number }[];
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0', isHighlightedByGroup: true }) as {
+      test?: string;
+      value: number;
+    }[];
     expect(rules[0].test).toContain(`line0_highlightedData`);
     expect(rules[0].test).not.toContain(HOVERED_ITEM);
   });
 
   test('all show rules have value 1 and fallback has value 0', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
-    rules.slice(0, -1).forEach(rule => expect(rule.value).toBe(1));
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as {
+      test?: string;
+      value: number;
+    }[];
+    rules.slice(0, -1).forEach((rule) => expect(rule.value).toBe(1));
     expect(rules.at(-1)?.value).toBe(0);
   });
 
@@ -568,7 +620,6 @@ describe('getHighlightedSeriesOpacityRules()', () => {
     expect(rules.filter((r) => r.test?.includes('isValid(sig'))).toHaveLength(2);
   });
 });
-
 
 describe('getLineHighlightOverlayGroup()', () => {
   test('returns a group mark named <name>_highlightOverlay_group', () => {
@@ -613,11 +664,9 @@ describe('getLineHighlightOverlayGroup()', () => {
     // the overlay mark is renamed to `${name}_highlightOverlayLine`, but the draw-in cutoff signal is
     // only ever registered under the original line's name — using draw-in encoding here would reference
     // a signal that doesn't exist (e.g. "line0_highlightOverlayLine_drawInAnimCutoff")
-    const group = getLineHighlightOverlayGroup(
-      { ...defaultLineMarkOptions, isDrawInAnimate: true },
-      'filteredTable',
-      [SERIES_ID]
-    );
+    const group = getLineHighlightOverlayGroup({ ...defaultLineMarkOptions, isDrawInAnimate: true }, 'filteredTable', [
+      SERIES_ID,
+    ]);
     const marks = (group as { marks: { encode: { update: { x: { signal?: string } } } }[] }).marks;
     expect(marks[0].encode.update.x).not.toHaveProperty('signal');
     expect(marks[0].encode.update).not.toHaveProperty('y');

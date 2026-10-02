@@ -463,7 +463,7 @@ describe('formatFacetRefsWithPresets()', () => {
       DEFAULT_COLOR_SCHEME
     );
     expect(formattedColor).toStrictEqual({ value: '#FF9D91' });
-    expect(formattedLineType).toStrictEqual({ value: [2, 3, 7, 4] });
+    expect(formattedLineType).toStrictEqual({ value: [2, 2, 6.5, 2] });
     expect(formattedLineWidth).toStrictEqual({ value: 4 });
     expect(formattedSymbolShape).toStrictEqual({ value: 'wedge' });
   });

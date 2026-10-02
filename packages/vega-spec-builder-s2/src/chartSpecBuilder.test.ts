@@ -214,12 +214,12 @@ describe('Chart spec builder', () => {
 
   describe('getTwoDimensionalLineTypes()', () => {
     test('should get 2d line types from line type array', () => {
-      expect(getTwoDimensionalLineTypes(['solid', 'dashed'])).toStrictEqual([[[]], [[7, 4]]]);
-      expect(getTwoDimensionalLineTypes([[1, 2, 3, 4], 'dashed'])).toStrictEqual([[[1, 2, 3, 4]], [[7, 4]]]);
+      expect(getTwoDimensionalLineTypes(['solid', 'dashed'])).toStrictEqual([[[]], [[6.5, 2]]]);
+      expect(getTwoDimensionalLineTypes([[1, 2, 3, 4], 'dashed'])).toStrictEqual([[[1, 2, 3, 4]], [[6.5, 2]]]);
     });
 
     test('should convert line type names', () => {
-      expect(getTwoDimensionalLineTypes([['solid', 'dashed'], ['dotted']])).toStrictEqual([[[], [7, 4]], [[0, 4]]]);
+      expect(getTwoDimensionalLineTypes([['solid', 'dashed'], ['dotted']])).toStrictEqual([[[], [6.5, 2]], [[2, 2]]]);
     });
   });
 
@@ -242,7 +242,7 @@ describe('Chart spec builder', () => {
       expect(getLineTypeScale(['solid', 'dashed'])).toStrictEqual({
         name: LINE_TYPE_SCALE,
         type: 'ordinal',
-        range: [[], [7, 4]],
+        range: [[], [6.5, 2]],
         domain: { data: 'table', fields: [] },
       });
     });
@@ -471,7 +471,7 @@ describe('Chart spec builder', () => {
           ['rgb(188, 233, 49)'],
         ],
       },
-      { name: 'lineTypes', value: [[[7, 4]]] },
+      { name: 'lineTypes', value: [[[6.5, 2]]] },
       { name: 'opacities', value: [[1]] },
     ];
 

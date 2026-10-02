@@ -12,6 +12,7 @@
 import { Data } from 'vega';
 
 import {
+  ANIMATION_TIMER,
   BACKGROUND_COLOR,
   CHART_SIZE_POINT_SIZE,
   COLOR_SCALE,
@@ -26,8 +27,9 @@ import {
   HOVERED_ITEM,
   HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_TARGETS,
-  ANIMATION_TIMER,
   LINEAR_PADDING,
+  LINE_TYPE_CHART_SIZE_SCALE,
+  LINE_TYPE_SCALE,
   MARK_ID,
   SERIES_ID,
   TABLE,
@@ -36,7 +38,7 @@ import {
 
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
-import { initializeSpec } from '../specUtils';
+import { getChartSizeDashExpr, getStrokeDashFromLineType, initializeSpec } from '../specUtils';
 import { ScSpec } from '../types';
 import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder';
 import { defaultLineOptions } from './lineTestUtils';
@@ -79,7 +81,6 @@ const defaultSpec = initializeSpec({
             enter: {
               stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
               strokeCap: { value: 'round' },
-              strokeDash: { value: [] },
               strokeOpacity: DEFAULT_OPACITY_RULE,
               y: [{ field: 'value', scale: 'yLinear' }],
             },
@@ -87,6 +88,7 @@ const defaultSpec = initializeSpec({
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
               opacity: [DEFAULT_OPACITY_RULE],
               strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+              strokeDash: { value: [] },
             },
           },
           from: { data: 'line0_facet' },
@@ -162,13 +164,13 @@ const line0_groupMark = {
           y: [{ scale: 'yLinear', field: 'value' }],
           stroke: { scale: COLOR_SCALE, field: 'series' },
           strokeCap: { value: 'round' },
-          strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
         },
         update: {
           x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
           opacity: [DEFAULT_OPACITY_RULE],
           strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+          strokeDash: { value: [] },
         },
       },
     },
@@ -208,9 +210,6 @@ const metricRangeGroupMark = {
             field: 'series',
           },
           strokeCap: { value: 'round' },
-          strokeDash: {
-            value: [7, 4],
-          },
           strokeOpacity: DEFAULT_OPACITY_RULE,
         },
         update: {
@@ -220,6 +219,7 @@ const metricRangeGroupMark = {
           },
           opacity: [DEFAULT_OPACITY_RULE],
           strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+          strokeDash: { signal: getChartSizeDashExpr(getStrokeDashFromLineType('dashed')) },
         },
       },
     },
@@ -858,6 +858,27 @@ describe('lineSpecBuilder', () => {
       expect(fields).toContain('line0_effectiveValue');
       expect(fields).not.toContain('value');
     });
+
+    test('with a data-driven lineType adds the chart-size line type scale', () => {
+      const lineTypeScale = {
+        name: LINE_TYPE_SCALE,
+        type: 'ordinal' as const,
+        range: [[], [6.5, 2]],
+        domain: { data: 'table', fields: [] },
+      };
+      const scales = setScales([lineTypeScale], { ...defaultLineOptions, lineType: 'series' });
+      expect(scales.find((s) => s.name === LINE_TYPE_CHART_SIZE_SCALE)).toStrictEqual({
+        name: LINE_TYPE_CHART_SIZE_SCALE,
+        type: 'ordinal',
+        domain: { signal: `domain('${LINE_TYPE_SCALE}')` },
+        range: { signal: `[[], ${getChartSizeDashExpr([6.5, 2])}]` },
+      });
+    });
+
+    test('with a static lineType does not add the chart-size line type scale', () => {
+      const scales = setScales(startingSpec.scales ?? [], defaultLineOptions);
+      expect(scales.some((s) => s.name === LINE_TYPE_CHART_SIZE_SCALE)).toBe(false);
+    });
   });
 
   describe('addLineMarks()', () => {
@@ -876,13 +897,13 @@ describe('lineSpecBuilder', () => {
                   stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
                   strokeCap: { value: 'round' },
                   strokeOpacity: DEFAULT_OPACITY_RULE,
-                  strokeDash: { value: [8, 8] },
                   y: [{ field: 'value', scale: 'yLinear' }],
                 },
                 update: {
                   x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
                   opacity: [DEFAULT_OPACITY_RULE],
                   strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+                  strokeDash: { signal: getChartSizeDashExpr([8, 8]) },
                 },
               },
               from: { data: 'line0_facet' },
@@ -1188,8 +1209,8 @@ describe('lineSpecBuilder', () => {
         alternateSegmentKey: 'isEstimated',
         alternateSegmentLineType: 'dotted',
       });
-      const groupMark = marks[0] as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
-      const strokeDash = groupMark.marks[0].encode.enter.strokeDash;
+      const groupMark = marks[0] as { marks: { encode: { update: { strokeDash: unknown } } }[] };
+      const strokeDash = groupMark.marks[0].encode.update.strokeDash;
       expect(strokeDash).toHaveProperty('signal');
     });
 
@@ -1238,9 +1259,9 @@ describe('lineSpecBuilder', () => {
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
       const groupMark = marks.find((m) => m.name === 'line0_group') as {
-        marks: { encode: { enter: { strokeDash: unknown } } }[];
+        marks: { encode: { update: { strokeDash: unknown } } }[];
       };
-      expect(groupMark?.marks?.[0]?.encode?.enter?.strokeDash).toHaveProperty('signal');
+      expect(groupMark?.marks?.[0]?.encode?.update?.strokeDash).toHaveProperty('signal');
     });
 
     test('with forecasts line mark y-encoding uses effectiveValue field', () => {

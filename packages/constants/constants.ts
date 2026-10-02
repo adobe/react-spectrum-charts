@@ -188,6 +188,8 @@ export const NAVIGATION_ID_SEPARATOR = '__rsc__';
 // scale names
 export const COLOR_SCALE = 'color';
 export const LINE_TYPE_SCALE = 'lineType';
+/** Ordinal scale of line type dash expressions scaled to the chart-size stroke width for round or square caps. */
+export const LINE_TYPE_CHART_SIZE_SCALE = 'lineTypeChartSize';
 export const LINEAR_COLOR_SCALE = 'linearColor';
 export const LINE_WIDTH_SCALE = 'lineWidth';
 export const OPACITY_SCALE = 'opacity';
@@ -385,18 +387,34 @@ const REFERENCE_LINE_CAP_RULE_GAP = 1;
 
 // Rule x-start for explicit size — uses REFERENCE_LINE_SIZE_STROKE_WIDTHS per tier.
 export const REFERENCE_LINE_RULE_X_START: Record<ReferenceLineSize, number> = {
-  XS: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.XS + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.XS / 2, // 9.91667
-  S: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.S + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2,   // 12.25
-  M: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.M + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2,   // 12.25
-  L: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.L + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2,   // 14.08333
+  XS:
+    REFERENCE_LINE_START_CAP_ANCHOR +
+    REFERENCE_LINE_CAP_RIGHT_TIP.XS +
+    REFERENCE_LINE_CAP_RULE_GAP +
+    REFERENCE_LINE_SIZE_STROKE_WIDTHS.XS / 2, // 9.91667
+  S:
+    REFERENCE_LINE_START_CAP_ANCHOR +
+    REFERENCE_LINE_CAP_RIGHT_TIP.S +
+    REFERENCE_LINE_CAP_RULE_GAP +
+    REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2, // 12.25
+  M:
+    REFERENCE_LINE_START_CAP_ANCHOR +
+    REFERENCE_LINE_CAP_RIGHT_TIP.M +
+    REFERENCE_LINE_CAP_RULE_GAP +
+    REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2, // 12.25
+  L:
+    REFERENCE_LINE_START_CAP_ANCHOR +
+    REFERENCE_LINE_CAP_RIGHT_TIP.L +
+    REFERENCE_LINE_CAP_RULE_GAP +
+    REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2, // 14.08333
 };
 
 // Rule x-start for auto mode — uses CHART_SIZE_STROKE_WIDTH signal values (S=1.5px, M=2px, L=3px)
 // so the 1px gap is correct when stroke width reacts to chart width.
 export const REFERENCE_LINE_AUTO_RULE_X_START = {
   S: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.S + REFERENCE_LINE_CAP_RULE_GAP + 1.5 / 2, // 12.25
-  M: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.M + REFERENCE_LINE_CAP_RULE_GAP + 1,   // strokeWidth(2)/2 = 1, total 12.5
-  L: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.L + REFERENCE_LINE_CAP_RULE_GAP + 3 / 2,   // 14.33333
+  M: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.M + REFERENCE_LINE_CAP_RULE_GAP + 1, // strokeWidth(2)/2 = 1, total 12.5
+  L: REFERENCE_LINE_START_CAP_ANCHOR + REFERENCE_LINE_CAP_RIGHT_TIP.L + REFERENCE_LINE_CAP_RULE_GAP + 3 / 2, // 14.33333
 };
 
 // Right face x in path space for each end cap. S and M share paths.
@@ -416,25 +434,25 @@ const REFERENCE_LINE_END_CAP_ANCHOR = REFERENCE_LINE_END_CAP_RIGHT_FACE_X.S - RE
 
 export const REFERENCE_LINE_END_CAP_ANCHOR_OFFSET: Record<ReferenceLineSize, number> = {
   XS: REFERENCE_LINE_END_CAP_RIGHT_FACE_X.XS - REFERENCE_LINE_END_CAP_CLIP, // 2.94961
-  S: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
-  M: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
-  L: REFERENCE_LINE_END_CAP_ANCHOR,   // 5.00039
+  S: REFERENCE_LINE_END_CAP_ANCHOR, // 5.00039
+  M: REFERENCE_LINE_END_CAP_ANCHOR, // 5.00039
+  L: REFERENCE_LINE_END_CAP_ANCHOR, // 5.00039
 };
 
 // Rule x2 offset for explicit size = end cap anchor + gap + strokeWidth/2.
 // S and M produce the same x2; L produces a shorter line (larger SW reduces x2 further left).
 export const REFERENCE_LINE_RULE_X2_OFFSET: Record<ReferenceLineSize, number> = {
   XS: REFERENCE_LINE_END_CAP_ANCHOR_OFFSET.XS + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.XS / 2, // 4.44961
-  S: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2,   // 6.75039
-  M: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2,   // 6.75039
-  L: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2,   // 7.25039
+  S: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.S / 2, // 6.75039
+  M: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.M / 2, // 6.75039
+  L: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + REFERENCE_LINE_SIZE_STROKE_WIDTHS.L / 2, // 7.25039
 };
 
 // Rule x2 offset for auto mode — uses CHART_SIZE_STROKE_WIDTH signal values (1.5/2/3px).
 export const REFERENCE_LINE_AUTO_RULE_X2_OFFSET = {
   S: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 0.75, // 6.75039
-  M: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 1,    // 7.00039
-  L: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 1.5,  // 7.50039
+  M: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 1, // 7.00039
+  L: REFERENCE_LINE_END_CAP_ANCHOR + REFERENCE_LINE_CAP_RULE_GAP + 1.5, // 7.50039
 };
 
 // Caret SVG paths per size tier, y-shifted to center on reference line.
@@ -489,10 +507,10 @@ export const DIMENSION_HOVER_AREA = 'dimensionHoverArea';
 //   - Bar: _dimensionHoverArea excluded — pushed BEFORE bar rect marks, so inserting before
 //     it would place the reference line behind all bars.
 //   - Scatter: hover marks are nested inside the group mark, not top-level, so no suffix needed.
-export const HOVER_RULE = '_hoverRule';         // line hover rule mark
-export const SELECT_BORDER = '_selectBorder';   // area selection border mark (with popover)
-export const AREA_HOVER_RULE = '_rule';         // area hover rule mark (dimension interaction)
-export const AREA_HOVER_POINT = '_point';       // area hover point mark
+export const HOVER_RULE = '_hoverRule'; // line hover rule mark
+export const SELECT_BORDER = '_selectBorder'; // area selection border mark (with popover)
+export const AREA_HOVER_RULE = '_rule'; // area hover rule mark (dimension interaction)
+export const AREA_HOVER_POINT = '_point'; // area hover point mark
 
 //SVG Paths
 export const ROUNDED_SQUARE_PATH =

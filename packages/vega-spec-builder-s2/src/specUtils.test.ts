@@ -12,6 +12,7 @@
 import { BandScale, OrdinalScale } from 'vega';
 
 import {
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
@@ -22,16 +23,15 @@ import {
   TABLE,
   VISIBILITY_OFF_PATH,
 } from '@spectrum-charts/constants';
-import {
-  getSpectrum2VegaConfig,
-  spectrum2Colors,
-} from '@spectrum-charts/themes';
+import { getSpectrum2VegaConfig, spectrum2Colors } from '@spectrum-charts/themes';
 
 import {
-  addUserMetaInteractiveMark,
   addUserMetaAnimatedMark,
+  addUserMetaInteractiveMark,
   escapeD3FormatSpecifier,
   getChartConfig,
+  getChartSizeDashExpr,
+  getChartSizeDashes,
   getD3FormatSpecifierFromNumberFormat,
   getDimensionField,
   getFacetsFromOptions,
@@ -129,12 +129,44 @@ describe('getStrokeDashFromLineType()', () => {
 
   test('should convert line type names to their coresponding stroke dash array', () => {
     expect(getStrokeDashFromLineType('solid')).toStrictEqual([]);
-    expect(getStrokeDashFromLineType('dashed')).toStrictEqual([7, 4]);
-    expect(getStrokeDashFromLineType('dotted')).toStrictEqual([0, 4]);
-    expect(getStrokeDashFromLineType('dotDash')).toStrictEqual([2, 3, 7, 4]);
-    expect(getStrokeDashFromLineType('shortDash')).toStrictEqual([3, 4]);
-    expect(getStrokeDashFromLineType('longDash')).toStrictEqual([11, 4]);
-    expect(getStrokeDashFromLineType('twoDash')).toStrictEqual([5, 2, 11, 2]);
+    expect(getStrokeDashFromLineType('dashed')).toStrictEqual([6.5, 2]);
+    expect(getStrokeDashFromLineType('dotted')).toStrictEqual([2, 2]);
+    expect(getStrokeDashFromLineType('dotDash')).toStrictEqual([2, 2, 6.5, 2]);
+    expect(getStrokeDashFromLineType('shortDash')).toStrictEqual([4, 2]);
+    expect(getStrokeDashFromLineType('longDash')).toStrictEqual([11, 2]);
+    expect(getStrokeDashFromLineType('twoDash')).toStrictEqual([6.5, 2, 11, 2]);
+  });
+});
+
+describe('getChartSizeDashes()', () => {
+  test('returns design values for named line types', () => {
+    expect(getChartSizeDashes([6.5, 2])).toStrictEqual({ S: [6, 2], M: [6.5, 2], L: [8.5, 2.5] });
+    expect(getChartSizeDashes([2, 2])).toStrictEqual({ S: [1.5, 1], M: [2, 2], L: [2.5, 3] });
+  });
+
+  test('scales custom arrays with the chart-size stroke width', () => {
+    expect(getChartSizeDashes([8, 4])).toStrictEqual({ S: [6, 3], M: [8, 4], L: [10, 5] });
+  });
+});
+
+describe('getChartSizeDashExpr()', () => {
+  const W = CHART_SIZE_STROKE_WIDTH;
+
+  test('picks the cap-compensated dash for each chart size', () => {
+    expect(getChartSizeDashExpr([6.5, 2])).toBe(`(${W} < 2 ? [4.5, 3.5] : ${W} < 2.5 ? [4.5, 4] : [6, 5])`);
+    expect(getChartSizeDashExpr([2, 2])).toBe(`(${W} < 2 ? [0, 2.5] : ${W} < 2.5 ? [0, 4] : [0, 5.5])`);
+  });
+
+  test('clamps dashes shorter than the stroke width to dots', () => {
+    expect(getChartSizeDashExpr([1, 2])).toBe(`(${W} < 2 ? [0, 3] : ${W} < 2.5 ? [0, 4] : [0, 5])`);
+  });
+
+  test('repeats odd-length arrays', () => {
+    expect(getChartSizeDashExpr([4])).toBe(`(${W} < 2 ? [1.5, 4.5] : ${W} < 2.5 ? [2, 6] : [2.5, 7.5])`);
+  });
+
+  test('returns an empty array for solid lines', () => {
+    expect(getChartSizeDashExpr([])).toBe('[]');
   });
 });
 
