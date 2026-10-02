@@ -18,7 +18,7 @@ The `align` prop controls where the legend is anchored along its edge — start,
 
 | `position` | `align: 'start'` | `align: 'middle'` | `align: 'end'` |
 |---|---|---|---|
-| `'bottom'` / `'top'` | left-aligned | centered (default) | right-aligned |
+| `'bottom'` / `'top'` | left-aligned (default) | centered | right-aligned |
 | `'left'` / `'right'` | top-aligned | centered (default) | bottom-aligned |
 
 ```jsx
@@ -34,7 +34,7 @@ The `align` prop controls where the legend is anchored along its edge — start,
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `align` | `'start' \| 'middle' \| 'end'` | `'middle'` | Alignment of the legend along its edge. For horizontal legends (bottom/top): `'start'` = left, `'middle'` = center, `'end'` = right. For vertical legends (left/right): `'start'` = top, `'middle'` = center, `'end'` = bottom. |
+| `align` | `'start' \| 'middle' \| 'end'` | `'start'` (bottom/top), `'middle'` (left/right) | Alignment of the legend along its edge. For horizontal legends (bottom/top): `'start'` = left, `'middle'` = center, `'end'` = right. For vertical legends (left/right): `'start'` = top, `'middle'` = center, `'end'` = bottom. |
 
 ---
 
