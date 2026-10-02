@@ -349,7 +349,7 @@ export const getSummaryTextFontSize = (
   const trimmedText = `trim(toString(${textExpr}) || '')`;
   const textWidth = `getLabelWidth(${trimmedText}, ${fontWeight}, ${fontSize})`;
   const firstCharacterWidth = `getLabelWidth(substring(${trimmedText}, 0, 1), ${fontWeight}, ${fontSize})`;
-  const ellipsisWidth = `getLabelWidth('\\u2026', ${fontWeight}, ${fontSize})`;
+  const ellipsisWidth = String.raw`getLabelWidth('\u2026', ${fontWeight}, ${fontSize})`;
   return [
     { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
     {
