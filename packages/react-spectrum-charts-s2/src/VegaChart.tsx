@@ -124,6 +124,7 @@ export const VegaChart: FC<VegaChartProps> = ({
   }, [width, height]);
 
   useEffect(() => {
+    let cancelled = false;
     if (width && height && containerRef.current) {
       const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
       const tableData = specCopy.data?.find((d) => d.name === TABLE);
@@ -150,6 +151,11 @@ export const VegaChart: FC<VegaChartProps> = ({
       const container = containerRef.current;
 
       embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
+        // cleanup already ran (unmount or re-embed) before embed resolved, so discard this view
+        if (cancelled) {
+          view.finalize();
+          return;
+        }
         chartView.current = view;
         if (isAnimated) {
           detachAnimationTicker.current = attachAnimationTicker(view, container);
@@ -162,6 +168,7 @@ export const VegaChart: FC<VegaChartProps> = ({
       });
     }
     return () => {
+      cancelled = true;
       // destroy the chart on unmount
       detachAnimationTicker.current?.();
       detachAnimationTicker.current = undefined;

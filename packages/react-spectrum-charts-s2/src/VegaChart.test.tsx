@@ -176,6 +176,22 @@ describe('VegaChart init render cycle', () => {
 			expect(mockDetachAnimationTicker).toHaveBeenCalledTimes(1);
 		});
 
+		test('discards a view whose embed resolves after unmount', async () => {
+			let resolveEmbed: (value: Awaited<ReturnType<typeof embed>>) => void = () => {};
+			mockEmbed.mockReturnValueOnce(new Promise((resolve) => (resolveEmbed = resolve)));
+			const view = createMockView();
+			const { unmount } = render(<VegaChart {...defaultProps} spec={animatedSpec} />);
+			await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+
+			unmount();
+			resolveEmbed({ view } as unknown as Awaited<ReturnType<typeof embed>>);
+			await Promise.resolve();
+
+			expect(view.finalize).toHaveBeenCalledTimes(1);
+			expect(mockAttachAnimationTicker).not.toHaveBeenCalled();
+			expect(defaultProps.onNewView).not.toHaveBeenCalled();
+		});
+
 		test('does not attach the ticker for non-animated specs', async () => {
 			render(<VegaChart {...defaultProps} />);
 
