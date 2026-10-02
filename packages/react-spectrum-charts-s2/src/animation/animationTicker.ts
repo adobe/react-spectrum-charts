@@ -75,7 +75,7 @@ const readActive = (view: View): boolean => {
   }
 };
 
-// monotonic clock for measuring the frame budget; wall-clock jumps would break it
+// precise elapsed time within a frame for the budget; the spec's animation timer uses Date.now() separately
 const clock = (): number => (typeof performance === 'undefined' ? Date.now() : performance.now());
 
 const tick = async (entry: TickerEntry, now: number): Promise<void> => {
@@ -113,8 +113,7 @@ const runFrame = async (now: number, frameStart: number): Promise<void> => {
 
 function frame(time: number): void {
   frameHandle = undefined;
-  // time < lastFrameTime means the frame clock was reset (e.g. a new document timeline)
-  if (time < lastFrameTime || time - lastFrameTime >= ANIMATION_MIN_FRAME_INTERVAL) {
+  if (time - lastFrameTime >= ANIMATION_MIN_FRAME_INTERVAL) {
     lastFrameTime = time;
     frameRunning = true;
     // wall-clock time to match the spec's now()-based animation timestamps
