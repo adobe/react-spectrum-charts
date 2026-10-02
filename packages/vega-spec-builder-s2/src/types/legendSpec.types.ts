@@ -30,7 +30,7 @@ export interface LegendOptions {
    * Alignment of the legend along its main axis.
    * For horizontal legends (bottom/top): start=left, middle=center, end=right.
    * For vertical legends (left/right): start=top, middle=center, end=bottom.
-   * @default 'middle'
+   * @default 'start' for bottom/top legends, 'middle' for left/right legends
    */
   align?: 'start' | 'middle' | 'end';
   /** color or key in the data that is used as the color facet for the symbols */

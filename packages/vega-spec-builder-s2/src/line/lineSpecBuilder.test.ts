@@ -987,6 +987,15 @@ describe('lineSpecBuilder', () => {
       expect(voronoiPointsMark?.description).toBe('line0_pointsForVoronoi');
     });
 
+    test('voronoi points should reserve the same extent as the highlight point', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true });
+      const voronoiPointsEnter = marks.at(-2)?.encode?.enter;
+      const highlightPointEnter = marks.find((mark) => mark.name === 'line0_point_highlight')?.encode?.enter;
+
+      expect(voronoiPointsEnter).toHaveProperty('size', highlightPointEnter?.size);
+      expect(voronoiPointsEnter).toHaveProperty('strokeWidth', highlightPointEnter?.strokeWidth);
+    });
+
     test('with gradient should add gradient area mark before line mark', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, gradient: true });
       const groupMark = marks[0];
