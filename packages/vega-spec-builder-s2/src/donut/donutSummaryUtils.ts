@@ -339,14 +339,14 @@ export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions
  * @param limitSignal
  * @returns font size production rule
  */
-const getSummaryTextFontSize = (
+export const getSummaryTextFontSize = (
   donutOptions: DonutSpecOptions,
   textExpr: string,
   fontSize: string,
   fontWeight: number,
   limitSignal: string
 ): ProductionRule<NumericValueRef> => {
-  const trimmedText = `trim(toString(${textExpr}))`;
+  const trimmedText = `trim(toString(${textExpr}) || '')`;
   const textWidth = `getLabelWidth(${trimmedText}, ${fontWeight}, ${fontSize})`;
   const firstCharacterWidth = `getLabelWidth(substring(${trimmedText}, 0, 1), ${fontWeight}, ${fontSize})`;
   const ellipsisWidth = `getLabelWidth('\\u2026', ${fontWeight}, ${fontSize})`;

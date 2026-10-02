@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Spec, View, expressionFunction, parse } from 'vega';
+import { View, expressionFunction, parse } from 'vega';
 
 import {
   DONUT_SIZE_TIER_CUTPOINTS,
@@ -18,7 +18,6 @@ import {
 } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
-import { getExpressionFunctions } from '../expressionFunctions';
 import { DonutSummarySpecOptions } from '../types';
 import {
   getBooleanDonutSummaryGroupMark,
@@ -30,13 +29,13 @@ import {
   getSummaryDeltaFill,
   getSummaryDeltaText,
   getSummaryLabelEncode,
+  getSummaryTextFontSize,
   getSummaryValueBaseline,
   getSummaryValueEncode,
   getSummaryValueLimit,
   getSummaryValueText,
 } from './donutSummaryUtils';
 import { defaultDonutOptions } from './donutTestUtils';
-import { getRingWidthScale, getRingWidthSignal } from './donutUtils';
 
 const defaultDonutSummaryOptions: DonutSummarySpecOptions = {
   donutOptions: defaultDonutOptions,
@@ -202,68 +201,6 @@ describe('getSummaryValueText()', () => {
     expect(result).toEqual({ signal: `format(datum['testMetric'], '.0%')` });
   });
 
-  describe('summary value truncation', () => {
-    test.each([
-      [false, '.0f', 123456789, '123456789', '1…'],
-      [false, 'shortCurrency', 123456789, '$123M', '$…'],
-      [true, 'shortNumber', 0.5, '50%', '5…'],
-      [false, '.0f', 1, '1', '1'],
-      [false, '.0f', 0, '0', '0'],
-    ])(
-      'hides ellipsis-only values and restores readable values (boolean=%s, format=%s)',
-      async (isBoolean, numberFormat, value, fullText, partialText) => {
-        Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
-        const options: DonutSummarySpecOptions = {
-          ...defaultDonutSummaryOptions,
-          numberFormat,
-          donutOptions: { ...defaultDonutOptions, isBoolean },
-        };
-        const spec: Spec = {
-          width: 200,
-          height: 200,
-          signals: [
-            { name: 'availableWidth', value: 1.5 },
-            { name: 'testName_summaryValueFontSize', value: 40 },
-            { name: 'testName_summaryLabelFontSize', value: 14 },
-            {
-              name: 'testName_ringWidth',
-              update: '98 - sqrt(pow(testName_summaryValueFontSize, 2) + pow(availableWidth / 2, 2))',
-            },
-          ],
-          data: [
-            { name: 'testName_summaryData', values: [{ sum: value }] },
-            { name: 'testName_booleanData', values: [{ testMetric: value }] },
-          ],
-          marks: [isBoolean ? getBooleanDonutSummaryGroupMark(options) : getDonutSummaryGroupMark(options)],
-        };
-        const view = new View(parse(spec), { renderer: 'none' });
-        const getSvg = async (availableWidth: number) => {
-          view.signal('availableWidth', availableWidth);
-          await view.runAsync();
-          return view.toSVG();
-        };
-        try {
-          const hiddenSvg = await getSvg(1.5);
-          const fontSize = fullText.length === 1 ? 40 : 0;
-          expect(hiddenSvg).toContain(`font-size="${fontSize}px"`);
-          expect(hiddenSvg).toContain('>Visitors</text>');
-
-          const partialSvg = await getSvg(2.5);
-          expect(partialSvg).toContain('font-size="40px"');
-          expect(partialSvg).toContain(`>${partialText}</text>`);
-
-          const fullSvg = await getSvg(30);
-          expect(fullSvg).toContain('font-size="40px"');
-          expect(fullSvg).toContain(`>${fullText}</text>`);
-
-          expect(await getSvg(1.5)).toContain(`font-size="${fontSize}px"`);
-        } finally {
-          view.finalize();
-        }
-      }
-    );
-  });
-
   test('should return the correct text for non-boolean metric', () => {
     const result = getSummaryValueText(defaultDonutSummaryOptions);
     expect(result).toEqual([
@@ -276,68 +213,69 @@ describe('getSummaryValueText()', () => {
   });
 });
 
-describe.each([false, true])('summary label and delta truncation (boolean=%s)', (isBoolean) => {
+describe('getSummaryTextFontSize()', () => {
+  const originalGetLabelWidth = expressionFunction('getLabelWidth');
+
+  beforeAll(() => {
+    expressionFunction('getLabelWidth', (text: string) =>
+      Array.from(text).reduce((width, character) => width + (character === '\u2026' ? 12 : 8), 0)
+    );
+  });
+
+  afterAll(() => {
+    expressionFunction('getLabelWidth', originalGetLabelWidth);
+  });
+
   test.each([
-    { line: 'label', summary: { hideValue: true, label: 'Visitors' }, heightFromCenter: 40 },
-    { line: 'label', summary: { label: 'Visitors' }, heightFromCenter: 90 },
-    { line: 'label', summary: { hideValue: true, label: 'Visitors', delta: 0.025 }, heightFromCenter: 80 },
-    { line: 'label', summary: { hideValue: true, label: 'Visitor\'s "total"' }, heightFromCenter: 40 },
-    { line: 'delta', summary: { hideValue: true, delta: 0.025 }, heightFromCenter: 40 },
-    { line: 'delta', summary: { delta: -0.025 }, heightFromCenter: 90 },
-    { line: 'delta', summary: { hideValue: true, label: 'Visitors', delta: 0.025 }, heightFromCenter: 100 },
-    { line: 'delta', summary: { label: 'Visitors', delta: 0.025 }, heightFromCenter: 190 },
-  ])('hides and restores the $line independently for $summary', async ({ line, summary, heightFromCenter }) => {
-    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
-    const options: DonutSummarySpecOptions = {
-      ...defaultDonutSummaryOptions,
-      label: undefined,
-      ...summary,
-      donutOptions: { ...defaultDonutOptions, isBoolean },
-    };
-    const spec: Spec = {
-      width: 600,
-      height: 600,
-      signals: [
-        { name: 'availableWidth', value: 1.5 },
-        { name: 'testName_summaryValueFontSize', value: 40 },
-        { name: 'testName_summaryLabelFontSize', value: 80 },
-        {
-          name: 'testName_ringWidth',
-          update: `298 - sqrt(pow(${heightFromCenter}, 2) + pow(availableWidth / 2, 2))`,
-        },
-      ],
-      data: [
-        { name: 'testName_summaryData', values: [{ sum: 123456789 }] },
-        { name: 'testName_booleanData', values: [{ testMetric: 0.5 }] },
-      ],
-      marks: [isBoolean ? getBooleanDonutSummaryGroupMark(options) : getDonutSummaryGroupMark(options)],
-    };
-    const view = new View(parse(spec), { renderer: 'none' });
-    const markSuffix = line === 'label' ? 'Label' : 'Delta';
-    const markPrefix = isBoolean ? 'booleanSummary' : 'summary';
-    const sign = options.delta !== undefined && options.delta < 0 ? '\u2212' : '+';
-    const getText = async (availableWidth: number) => {
-      view.signal('availableWidth', availableWidth);
-      await view.runAsync();
-      const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
-      const text = svg.querySelector(`.testName_${markPrefix}${markSuffix} text`);
-      if (!text) throw new Error('Expected summary text mark');
-      return text;
-    };
+    ['circle', '((min(width, height) / 2 - 2) - testName_ringWidth) < 40'],
+    ['semicircle', '((min(width / 2, height) - 2) - testName_ringWidth) < 40'],
+  ] as const)('should hide text below the minimum inner radius for a %s', (variant, test) => {
+    const fontSize = getSummaryTextFontSize(
+      { ...defaultDonutOptions, variant },
+      "datum['sum']",
+      'valueFontSize',
+      800,
+      'availableWidth'
+    );
+    expect(fontSize).toHaveProperty('0', { test, value: 0 });
+  });
+
+  test.each([
+    { scenario: 'only an ellipsis fits', text: '123', limit: 19, hidden: true },
+    { scenario: 'first character plus ellipsis exactly matches the limit', text: '123', limit: 20, hidden: true },
+    { scenario: 'first character plus ellipsis fits', text: '123', limit: 21, hidden: false },
+    { scenario: 'the full value fits', text: '123', limit: 25, hidden: false },
+    { scenario: 'numeric zero fits without an ellipsis', text: 0, limit: 9, hidden: false },
+    { scenario: 'a single character fits without an ellipsis', text: '1', limit: 9, hidden: false },
+    { scenario: 'the text is empty', text: '', limit: 19, hidden: false },
+    { scenario: 'the text is null', text: null, limit: 19, hidden: false },
+    { scenario: 'surrounding whitespace is ignored', text: ' 123 ', limit: 19, hidden: true },
+    { scenario: 'a zero limit disables truncation', text: '123', limit: 0, hidden: false },
+    { scenario: 'a negative limit disables truncation', text: '123', limit: -1, hidden: false },
+  ])('should select the correct font size when $scenario', async ({ text, limit, hidden }) => {
+    const result = getSummaryTextFontSize(defaultDonutOptions, 'text', 'summaryFontSize', 800, 'availableWidth');
+    if (!Array.isArray(result)) throw new Error('Expected summary font size production rules');
+    const hideRule = result[1];
+    const fallback = result[2];
+    if (!hideRule?.test || !('value' in hideRule) || !fallback || !('signal' in fallback)) {
+      throw new Error('Expected an ellipsis-only hiding rule and font size fallback');
+    }
+    const view = new View(
+      parse({
+        signals: [
+          { name: 'text', value: text },
+          { name: 'availableWidth', value: limit },
+          { name: 'summaryFontSize', value: 22 },
+          { name: 'shouldHide', update: hideRule.test },
+          { name: 'fontSize', update: `shouldHide ? ${hideRule.value} : ${fallback.signal}` },
+        ],
+      }),
+      { renderer: 'none' }
+    );
     try {
-      const hidden = await getText(1.5);
-      expect(hidden.getAttribute('font-size')).toBe('0px');
-      const partial = await getText(2.5);
-      expect(partial.getAttribute('font-size')).toBe('80px');
-      expect(partial.textContent).toBe(line === 'label' ? 'V…' : `${sign}…`);
-      const position = partial.getAttribute('transform');
-
-      const full = await getText(40);
-      expect(full.getAttribute('font-size')).toBe('80px');
-      expect(full.textContent).toBe(line === 'label' ? options.label : `${sign}2.5%`);
-      expect(full.getAttribute('transform')).toBe(position);
-
-      expect((await getText(1.5)).getAttribute('font-size')).toBe('0px');
+      await view.runAsync();
+      expect(view.signal('shouldHide')).toBe(hidden);
+      expect(view.signal('fontSize')).toBe(hidden ? 0 : 22);
     } finally {
       view.finalize();
     }
@@ -482,61 +420,6 @@ describe('semicircle summary anchoring', () => {
     });
     expect(encode).toHaveProperty('update.limit.signal', 'width');
   });
-
-  test.each([
-    [false, 0.025, '+2.5%'],
-    [false, -0.074, '\u22127.4%'],
-    [true, 0.025, '+2.5%'],
-    [true, -0.074, '\u22127.4%'],
-  ])(
-    'uses the container width for the delta below a 180px semicircle (boolean=%s, delta=%s)',
-    async (isBoolean, delta, text) => {
-      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
-      const donutOptions = {
-        ...semicircleDonutOptions,
-        isBoolean,
-        donutSummaries: [{ label: 'Visitors', delta }],
-      };
-      const options = { ...semicircleSummaryOptions, donutOptions, delta };
-      const encode = getSummaryDeltaEncode(options);
-      expect(encode).toHaveProperty('update.limit.signal', 'width');
-      const limit = encode.update?.limit;
-      if (!limit || Array.isArray(limit) || !('signal' in limit)) {
-        throw new Error('Expected a delta width limit signal');
-      }
-      const spec: Spec = {
-        width: 184,
-        height: 184,
-        signals: [
-          ...getDonutSummarySignals(donutOptions),
-          getRingWidthSignal(donutOptions),
-          { name: 'outerDiameter', update: '2 * (min(width / 2, height) - 2)' },
-          { name: 'deltaWidth', update: limit.signal },
-        ],
-        scales: [...getDonutSummaryScales(donutOptions), getRingWidthScale(donutOptions)],
-        data: [
-          { name: 'testName_summaryData', values: [{ sum: 123456789 }] },
-          { name: 'testName_booleanData', values: [{ testMetric: 0.5 }] },
-        ],
-        marks: [isBoolean ? getBooleanDonutSummaryGroupMark(options) : getDonutSummaryGroupMark(options)],
-      };
-      const view = new View(parse(spec), { renderer: 'none' });
-      const markPrefix = isBoolean ? 'booleanSummary' : 'summary';
-      try {
-        for (const size of [184, 124, 184]) {
-          await view.width(size).height(size).runAsync();
-          expect(view.signal('outerDiameter')).toBe(size - 4);
-          expect(view.signal('deltaWidth')).toBe(size);
-          const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
-          const deltaText = svg.querySelector(`.testName_${markPrefix}Delta text`);
-          expect(deltaText?.textContent).toBe(text);
-          expect(deltaText?.getAttribute('font-size')).toBe(size === 184 ? '16px' : '14px');
-        }
-      } finally {
-        view.finalize();
-      }
-    }
-  );
 
   test.each([
     { label: undefined, hideValue: false },
