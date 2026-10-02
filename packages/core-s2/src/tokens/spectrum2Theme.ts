@@ -39,7 +39,7 @@ export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
     'gray-800': gray800,
   } = spectrum2Colors[colorScheme];
   const horizontalLegendLayout: BaseLegendLayout = {
-    anchor: 'middle',
+    anchor: 'start',
     direction: 'horizontal',
     center: true,
     offset: 24,
