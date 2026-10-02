@@ -10,6 +10,7 @@
     "strict": true,
     "allowJs": false,
     "moduleResolution": "bundler",
+    "customConditions": ["@spectrum-charts/source"],
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,

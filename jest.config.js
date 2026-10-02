@@ -31,6 +31,9 @@ module.exports = {
     '^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
     '^vega$': '<rootDir>/node_modules/vega/build/vega.js',
     '^(storybook/actions|storybook-dark-mode)$': '<rootDir>/jest.storybookMock.js',
+    // Resolve workspace packages to source; their package.json `exports` point at unbuilt dist.
+    '^@spectrum-charts/(constants|locales|schemas|themes|utils|vega-spec-builder-s2)$':
+      '<rootDir>/packages/$1/index.ts',
     ...pathsToModuleNameMapper(compilerOptions.paths),
   },
   transformIgnorePatterns: [

@@ -4,38 +4,22 @@
   "description": "Declarative library for composing Spectrum 2 visualizations in React.",
   "browser": "./dist/index.js",
   "module": "./dist/index.js",
+  "type": "module",
   "main": "./dist/index.js",
   "exports": {
     ".": {
       "types": "./dist/@types/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./alpha": {
-      "types": "./dist/@types/alpha/index.d.ts",
-      "import": "./dist/alpha.js",
-      "require": "./dist/alpha.js",
-      "default": "./dist/alpha.js"
-    },
-    "./beta": {
-      "types": "./dist/@types/beta/index.d.ts",
-      "import": "./dist/beta.js",
-      "require": "./dist/beta.js",
-      "default": "./dist/beta.js"
     },
     "./pre-alpha": {
       "types": "./dist/@types/pre-alpha/index.d.ts",
-      "import": "./dist/pre-alpha.js",
-      "require": "./dist/pre-alpha.js",
-      "default": "./dist/pre-alpha.js"
+      "default": "./dist/pre-alpha/index.js"
     },
     "./ai-catalog": {
       "types": "./dist/@types/src/ai-catalog/index.d.ts",
-      "import": "./dist/ai-catalog.js",
-      "require": "./dist/ai-catalog.js",
-      "default": "./dist/ai-catalog.js"
-    }
+      "default": "./dist/src/ai-catalog/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
@@ -71,7 +55,7 @@
   "scripts": {
     "prebuild": "echo 'This will run before build'",
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "webpack --config webpack.config.js",
+    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly --composite false --incremental false && node ../../scripts/fixEsmDeclarations.mjs dist/@types",
     "clean": "rm -rf dist",
     "g": "plop component",
     "generate": "plop component",
@@ -104,12 +88,18 @@
   "peerDependencies": {
     "@react-spectrum/s2": ">=1.0.0",
     "react": ">= 19.0.0",
+    "react-aria-components": "^1.0.0",
     "react-dom": ">= 19.0.0",
     "vega": "^6.2.0",
     "vega-lite": "^6.4.2"
   },
   "devDependencies": {
     "@internationalized/string-compiler": "^3.4.1"
+  },
+  "peerDependenciesMeta": {
+    "react-aria-components": {
+      "optional": true
+    }
   },
   "resolutions": {
     "jackspeak": "2.1.1"
@@ -127,5 +117,13 @@
     "React",
     "Spectrum",
     "Charts"
-  ]
+  ],
+  "sideEffects": [
+    "*.css",
+    "./dist/src/VegaChart.js"
+  ],
+  "types": "./dist/@types/index.d.ts",
+  "engines": {
+    "node": ">=20.19.0"
+  }
 }
