@@ -28,14 +28,17 @@ export const combineNames = (parentName: string | null, childName: string | null
  * @returns The camel case string
  */
 export function toCamelCase(str: string) {
-  const words = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+\d*|\b)|[A-Z]?[a-z]+\d*|[A-Z]|\d+/g);
-  if (words) {
-    return words
-      .map((word, i) => {
-        if (i === 0) return word.toLowerCase();
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-      })
-      .join('');
-  }
-  return str;
+  const words = str
+    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+    .replace(/(\d)([A-Za-z])/g, '$1 $2')
+    .split(/[^A-Za-z\d]+/)
+    .filter(Boolean);
+  if (words.length === 0) return str;
+  return words
+    .map((word, i) => {
+      if (i === 0) return word.toLowerCase();
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join('');
 }

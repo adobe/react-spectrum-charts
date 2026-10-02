@@ -42,6 +42,18 @@ describe('toCamelCase()', () => {
   test('wild string should convert to camelCase', () => {
     expect(toCamelCase('The quickFox_jumped-over 2 DOGS!')).toStrictEqual('theQuickFoxJumpedOver2Dogs');
   });
+  test('acronyms should stay together', () => {
+    expect(toCamelCase('XMLHttpRequest')).toStrictEqual('xmlHttpRequest');
+    expect(toCamelCase('ABC1')).toStrictEqual('abc1');
+    expect(toCamelCase('ABC_x')).toStrictEqual('abcX');
+  });
+  test('digits should end a word', () => {
+    expect(toCamelCase('bar0baz')).toStrictEqual('bar0Baz');
+    expect(toCamelCase('2dogs')).toStrictEqual('2Dogs');
+  });
+  test('long input should convert in linear time', () => {
+    expect(toCamelCase(`${'A'.repeat(100000)}!`)).toStrictEqual('a'.repeat(100000));
+  });
   test('no alpha numeric characters should return original string', () => {
     expect(toCamelCase('&()*')).toStrictEqual('&()*');
   });
