@@ -36,6 +36,7 @@ import { getS2ColorValue } from '@spectrum-charts/themes';
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
 import { getDonutCenterYSignal, getDonutInnerRadiusExpr, getDonutOuterRadiusExpr } from './donutUtils';
+import { getTextRuleExpr } from './segmentLabelUtils';
 
 type DonutSummaryLayoutOptions = Pick<DonutSummarySpecOptions, 'donutOptions' | 'hideValue' | 'label' | 'delta'>;
 
@@ -116,9 +117,7 @@ const getDonutSummaryAnchorYSignal = (options: DonutSummaryLayoutOptions): strin
     options.donutOptions.variant === 'semicircle' && bottomOffset !== '0'
       ? `height - (${bottomOffset})`
       : getDonutCenterYSignal(options.donutOptions);
-  return offset === '0'
-    ? center
-    : `${center} - (${offset})`;
+  return offset === '0' ? center : `${center} - (${offset})`;
 };
 
 /**
@@ -332,6 +331,36 @@ export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions
 };
 
 /**
+ * Hides summary text when it is too small or truncates to only an ellipsis.
+ * @param donutOptions
+ * @param textExpr
+ * @param fontSize
+ * @param fontWeight
+ * @param limitSignal
+ * @returns font size production rule
+ */
+const getSummaryTextFontSize = (
+  donutOptions: DonutSpecOptions,
+  textExpr: string,
+  fontSize: string,
+  fontWeight: number,
+  limitSignal: string
+): ProductionRule<NumericValueRef> => {
+  const trimmedText = `trim(toString(${textExpr}))`;
+  const textWidth = `getLabelWidth(${trimmedText}, ${fontWeight}, ${fontSize})`;
+  const firstCharacterWidth = `getLabelWidth(substring(${trimmedText}, 0, 1), ${fontWeight}, ${fontSize})`;
+  const ellipsisWidth = `getLabelWidth('\\u2026', ${fontWeight}, ${fontSize})`;
+  return [
+    { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
+    {
+      test: `(${limitSignal}) > 0 && ${textWidth} >= (${limitSignal}) && ${firstCharacterWidth} >= (${limitSignal}) - ${ellipsisWidth}`,
+      value: 0,
+    },
+    { signal: fontSize },
+  ];
+};
+
+/**
  * Gets the encode for the summary value
  * @param donutSummaryOptions
  * @returns encode
@@ -341,19 +370,19 @@ export const getSummaryValueEncode = (
 ): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
   const { donutOptions, label, delta } = options;
   const hasLineBelow = Boolean(label) || delta !== undefined;
+  const text = getSummaryValueText(options);
+  const fontSize = `${donutOptions.name}_summaryValueFontSize`;
+  const limit = getSummaryValueLimit(options);
   return {
     update: {
       x: { signal: 'width / 2' },
       y: { signal: getDonutSummaryAnchorYSignal(options) },
-      text: getSummaryValueText(options),
-      fontSize: [
-        { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
-        { signal: `${donutOptions.name}_summaryValueFontSize` },
-      ],
+      text,
+      fontSize: getSummaryTextFontSize(donutOptions, getTextRuleExpr(text), fontSize, 800, limit.signal),
       fontWeight: { value: 800 }, // S2 font weight for value
       align: { value: 'center' },
       baseline: getSummaryValueBaseline(hasLineBelow),
-      limit: getSummaryValueLimit(options),
+      limit,
     },
   };
 };
@@ -391,7 +420,7 @@ export const getSummaryValueBaseline = (hasLineBelow?: string | boolean): TextBa
  * @param donutSummaryOptions
  * @returns NumericValueRef
  */
-export const getSummaryValueLimit = ({ donutOptions, label, delta }: DonutSummarySpecOptions): NumericValueRef => {
+export const getSummaryValueLimit = ({ donutOptions, label, delta }: DonutSummarySpecOptions): { signal: string } => {
   const { name } = donutOptions;
   const hasLineBelow = Boolean(label) || delta !== undefined;
   // if nothing renders below it, the height of the font from the center of the donut is 1/2 the font size
@@ -455,10 +484,13 @@ export const getSummaryLabelEncode = ({
       y: { signal: getDonutSummaryAnchorYSignal({ donutOptions, hideValue, label, delta }) },
       dy: { signal: hasValue ? `ceil(${name}_summaryValueFontSize * 0.25)` : '0' },
       text: { value: label },
-      fontSize: [
-        { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
-        { signal: `${name}_summaryLabelFontSize` },
-      ],
+      fontSize: getSummaryTextFontSize(
+        donutOptions,
+        JSON.stringify(label),
+        `${name}_summaryLabelFontSize`,
+        700,
+        limitSignal
+      ),
       fontWeight: { value: 700 },
       align: { value: 'center' },
       baseline: { value: baseline },
@@ -500,17 +532,24 @@ export const getSummaryDeltaEncode = ({
   const heightFromCenter =
     baseline === 'middle' ? `${name}_summaryLabelFontSize * 0.5` : `${dyExpr} + ${name}_summaryLabelFontSize`;
   const anchorOffset = getDonutSummaryAnchorOffsetExpr({ donutOptions, hideValue, label, delta });
-  const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow((${heightFromCenter}) + (${anchorOffset}), 2))`;
+  const holeLimit = `2 * sqrt(pow(${getDonutInnerRadiusExpr(
+    donutOptions
+  )}, 2) - pow((${heightFromCenter}) + (${anchorOffset}), 2))`;
+  const isBelowSemicircle = donutOptions.variant === 'semicircle' && hasValue && hasLabel;
+  const limitSignal = isBelowSemicircle ? 'width' : holeLimit;
   return {
     update: {
       x: { signal: 'width / 2' },
       y: { signal: getDonutSummaryAnchorYSignal({ donutOptions, hideValue, label, delta }) },
       dy: { signal: dyExpr ?? '0' },
       text: getSummaryDeltaText(delta),
-      fontSize: [
-        { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
-        { signal: `${name}_summaryLabelFontSize` },
-      ],
+      fontSize: getSummaryTextFontSize(
+        donutOptions,
+        getTextRuleExpr(getSummaryDeltaText(delta)),
+        `${name}_summaryLabelFontSize`,
+        800,
+        limitSignal
+      ),
       fontWeight: { value: 800 },
       fill: getSummaryDeltaFill(delta, colorScheme),
       align: { value: 'center' },
