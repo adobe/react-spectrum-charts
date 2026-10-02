@@ -13,8 +13,8 @@ import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { DONUT_SIZE_TIER_CUTPOINTS } from '@spectrum-charts/constants';
-import { sequentialCerulean5 } from '@spectrum-charts/themes';
+import { DONUT_SIZE_TIER_CUTPOINTS } from '@spectrum-charts/core-s2/constants';
+import { sequentialCerulean5 } from '@spectrum-charts/core-s2/tokens';
 import { ChartColors, ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';

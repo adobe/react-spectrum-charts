@@ -11,7 +11,7 @@
  */
 import { GroupMark, Mark, Scale } from 'vega';
 
-import { FILTERED_TABLE } from '@spectrum-charts/constants';
+import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { addDomainFields, getScaleIndexByName } from '../scale/scaleSpecBuilder';
 import { BarSpecOptions } from '../types';

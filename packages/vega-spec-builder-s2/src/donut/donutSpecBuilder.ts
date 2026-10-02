@@ -19,8 +19,8 @@ import {
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
   FILTERED_TABLE,
-} from '@spectrum-charts/constants';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getSeriesIdTransform } from '../data/dataUtils';
 import { isInteractive } from '../marks/markUtils';

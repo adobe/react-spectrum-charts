@@ -33,8 +33,8 @@ import {
   STACK_ID,
   TIME,
   TRELLIS_PADDING,
-} from '@spectrum-charts/constants';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
 import {

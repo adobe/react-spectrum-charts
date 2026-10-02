@@ -11,8 +11,8 @@
  */
 import { Data, Mark, NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
-import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getCascadeTransforms, MIN_LABEL_GAP } from '../line/directLabelUtils';
 

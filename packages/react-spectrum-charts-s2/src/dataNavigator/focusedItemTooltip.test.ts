@@ -11,7 +11,7 @@
  */
 import { View } from 'vega';
 
-import { MARK_ID } from '@spectrum-charts/constants';
+import { MARK_ID } from '@spectrum-charts/core-s2/constants';
 
 import {
   findFocusedBarSceneItem,

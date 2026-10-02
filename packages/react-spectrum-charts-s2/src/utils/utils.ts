@@ -21,8 +21,8 @@ import {
   SELECTED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
-import { combineNames, toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { combineNames, toCamelCase } from '@spectrum-charts/core-s2/utils';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import {

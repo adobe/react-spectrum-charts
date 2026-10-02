@@ -21,7 +21,8 @@
     "skipLibCheck": true,
     "paths": {
       "@react-spectrum-charts/*": ["packages/react-spectrum-charts/src/*"],
-      "@vega-spec-builder/*": ["packages/vega-spec-builder/src/*"]
+      "@vega-spec-builder/*": ["packages/vega-spec-builder/src/*"],
+      "@spectrum-charts/core-s2/*": ["packages/core-s2/src/*"]
     }
   },
   "include": ["packages", "packages/constants/webpack.config.js"],

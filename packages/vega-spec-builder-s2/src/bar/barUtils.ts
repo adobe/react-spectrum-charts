@@ -35,8 +35,8 @@ import {
   SELECTED_ITEM,
   SERIES_ID,
   STACK_ID,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
 import { getPopovers } from '../chartPopover/chartPopoverUtils';

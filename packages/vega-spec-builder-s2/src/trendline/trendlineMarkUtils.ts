@@ -11,7 +11,7 @@
  */
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 
 import { getLineHoverMarks, getLineOpacity } from '../line/lineMarkUtils';
 import { LineMarkOptions } from '../line/lineUtils';

@@ -11,7 +11,7 @@
  */
 import { Axis, Mark, Scale, SignalRef } from 'vega';
 
-import { FILTERED_TABLE } from '@spectrum-charts/constants';
+import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { AxisSpecOptions, DivergingBarMark, Granularity, Orientation, Position } from '../types';
 import {

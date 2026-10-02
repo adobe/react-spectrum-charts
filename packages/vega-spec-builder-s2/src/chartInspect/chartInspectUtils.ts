@@ -21,7 +21,7 @@ import {
   HOVERED_ITEM,
   INTERACTION_MODE,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { getFilteredTableData } from '../data/dataUtils';
 import { getHoverMarkNames } from '../marks/hoverMarkUtils';

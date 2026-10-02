@@ -14,7 +14,7 @@ import { ReactElement, useState } from 'react';
 import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
-import { GROUP_DATA } from '@spectrum-charts/constants';
+import { GROUP_DATA } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';

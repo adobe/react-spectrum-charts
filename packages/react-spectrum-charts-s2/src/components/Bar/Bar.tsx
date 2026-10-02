@@ -18,7 +18,7 @@ import {
   DEFAULT_METRIC,
   PADDING_RATIO,
   TRELLIS_PADDING,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { BarProps } from '../../types';
 

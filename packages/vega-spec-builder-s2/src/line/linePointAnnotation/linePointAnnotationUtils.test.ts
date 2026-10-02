@@ -21,8 +21,8 @@ import {
 	LINE_POINT_ANNOTATION_OFFSET,
 	SELECTED_SERIES,
 	SERIES_ID,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { defaultLineOptions } from '../lineTestUtils';
 import {

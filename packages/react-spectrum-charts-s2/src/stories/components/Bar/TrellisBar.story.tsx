@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { MARK_ID } from '@spectrum-charts/constants';
+import { MARK_ID } from '@spectrum-charts/core-s2/constants';
 import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';

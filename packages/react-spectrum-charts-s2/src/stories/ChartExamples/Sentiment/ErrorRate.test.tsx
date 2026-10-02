@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { findChart, findMarksByGroupName, render } from '../../../test-utils';
 import { ErrorRate } from './ErrorRate.story';

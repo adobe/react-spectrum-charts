@@ -5,9 +5,9 @@
     "outDir": "./dist",
     "declarationDir": "./dist/@types/",
     "composite": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "paths": {}
   },
   "include": ["src/**/*", "index.ts"],
-  "exclude": ["*.test.ts"],
-  "references": [{ "path": "../constants" }, { "path": "../themes" }, { "path": "../utils" }, { "path": "../locales" }]
+  "exclude": ["*.test.ts"]
 }

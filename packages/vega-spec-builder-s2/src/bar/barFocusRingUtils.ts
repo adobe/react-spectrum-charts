@@ -19,8 +19,8 @@ import {
   NAVIGATION_ID_SEPARATOR,
   SELECTED_ITEM,
   STACK_ID,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { BarSpecOptions } from '../types';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';

@@ -27,8 +27,8 @@ import {
   SENTIMENT_POSITIVE_PATH,
   TABLE,
   VISIBILITY_OFF_PATH,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/core-s2/tokens';
 
 import {
   ChartSpecOptions,

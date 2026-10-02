@@ -37,8 +37,8 @@ import {
   OPACITY_SCALE,
   SELECTED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
 import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils'

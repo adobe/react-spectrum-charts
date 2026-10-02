@@ -11,7 +11,7 @@
  */
 import { renderHook } from '@testing-library/react';
 
-import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/core-s2/constants';
 
 import { useChartContext } from '../context/RscChartContext';
 import { RscChartProps } from '../types';

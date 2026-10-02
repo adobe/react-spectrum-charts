@@ -22,7 +22,7 @@ import {
 } from 'react';
 
 import { ActionButton, Popover } from '@react-spectrum/s2';
-import { COMPONENT_NAME } from '@spectrum-charts/constants';
+import { COMPONENT_NAME } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../../context/RscChartContext';

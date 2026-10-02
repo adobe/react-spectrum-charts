@@ -12,7 +12,7 @@
 import { produce } from 'immer';
 import { Axis, GroupMark, Mark, TextValueRef } from 'vega';
 
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getInspectEncoding } from '../marks/markUtils';
 import { getTextNumberFormat } from '../textUtils';

@@ -40,8 +40,8 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils';
 import { LineMarkOptions } from '../line/lineUtils';

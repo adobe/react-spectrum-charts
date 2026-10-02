@@ -16,7 +16,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
   MARK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import { LineType } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Axis } from '../components/Axis';

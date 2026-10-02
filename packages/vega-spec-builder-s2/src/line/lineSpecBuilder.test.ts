@@ -32,7 +32,7 @@ import {
   SERIES_ID,
   TABLE,
   TRENDLINE_VALUE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import * as signalSpecBuilder from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';

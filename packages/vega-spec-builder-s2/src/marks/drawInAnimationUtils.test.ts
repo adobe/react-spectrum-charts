@@ -19,7 +19,7 @@ import {
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { defaultLineMarkOptions, defaultLineOptions } from '../line/lineTestUtils';
 import { LineSpecOptions } from '../types';

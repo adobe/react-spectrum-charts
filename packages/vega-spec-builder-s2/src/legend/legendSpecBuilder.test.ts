@@ -23,7 +23,7 @@ import {
   LINEAR_COLOR_SCALE,
   SERIES_ID,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   defaultChartSizeFontSizeSignal,

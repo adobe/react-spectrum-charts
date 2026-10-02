@@ -23,8 +23,8 @@ import {
   SERIES_ID,
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getTableData } from '../data/dataUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';

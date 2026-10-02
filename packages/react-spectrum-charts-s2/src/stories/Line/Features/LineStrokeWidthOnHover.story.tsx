@@ -11,7 +11,7 @@
  */
 import { ReactElement, useState } from 'react';
 
-import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_HOVER_STROKE_WIDTHS, CHART_SIZE_STROKE_WIDTHS } from '@spectrum-charts/constants';
+import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_HOVER_STROKE_WIDTHS, CHART_SIZE_STROKE_WIDTHS } from '@spectrum-charts/core-s2/constants';
 
 import { Chart } from '../../../Chart';
 import { Axis, ChartInspect, Legend, Line } from '../../../components';

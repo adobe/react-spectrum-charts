@@ -15,8 +15,8 @@ import { Config, Padding, Renderers, Spec, View, expressionFunction } from 'vega
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
-import { TABLE } from '@spectrum-charts/constants';
-import { getLocale } from '@spectrum-charts/locales';
+import { TABLE } from '@spectrum-charts/core-s2/constants';
+import { getLocale } from '@spectrum-charts/core-s2/locales';
 import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useDebugSpec } from './hooks/useDebugSpec';

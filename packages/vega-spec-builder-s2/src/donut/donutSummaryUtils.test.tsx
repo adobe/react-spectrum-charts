@@ -13,9 +13,9 @@ import {
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SUMMARY_LABEL_FONT_SIZES,
   DONUT_SUMMARY_VALUE_FONT_SIZES,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { DonutSummarySpecOptions } from '../types';
 import {

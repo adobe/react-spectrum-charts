@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { findChart, getAllLegendSymbols, render, screen } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';

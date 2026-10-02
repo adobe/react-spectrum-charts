@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { sequentialViridis16 } from '@spectrum-charts/themes';
+import { sequentialViridis16 } from '@spectrum-charts/core-s2/tokens';
 
 import { findChart, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';

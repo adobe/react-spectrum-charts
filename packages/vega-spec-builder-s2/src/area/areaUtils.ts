@@ -20,7 +20,7 @@ import {
   HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   getBorderStrokeEncodings,

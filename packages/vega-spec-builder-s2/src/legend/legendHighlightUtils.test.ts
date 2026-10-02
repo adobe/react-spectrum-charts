@@ -23,7 +23,7 @@ import {
   HOVER_FRACTION_DATA,
   HOVERED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   encodingUsesScale,

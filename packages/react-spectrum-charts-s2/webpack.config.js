@@ -51,11 +51,8 @@ module.exports = {
 
   externals: [
     nodeExternals(),
+    /^@spectrum-charts\/core-s2\//,
     {
-      '@spectrum-charts/constants': '@spectrum-charts/constants',
-      '@spectrum-charts/utils': '@spectrum-charts/utils',
-      '@spectrum-charts/themes': '@spectrum-charts/themes',
-      '@spectrum-charts/locales': '@spectrum-charts/locales',
       '@spectrum-charts/vega-spec-builder': '@spectrum-charts/vega-spec-builder',
       '@spectrum-charts/vega-spec-builder-s2': '@spectrum-charts/vega-spec-builder-s2',
       '@spectrum-charts/schemas': '@spectrum-charts/schemas',

@@ -11,7 +11,7 @@
  */
 import { Scale } from 'vega';
 
-import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@spectrum-charts/core-s2/constants';
 
 import { BarSpecOptions } from '../types';
 import { defaultBarOptions } from './barTestUtils';

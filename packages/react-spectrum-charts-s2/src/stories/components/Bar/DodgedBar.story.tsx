@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
-import { s2Categorical6 } from '@spectrum-charts/themes';
+import { s2Categorical6 } from '@spectrum-charts/core-s2/tokens';
 
 import { Chart } from '../../../Chart';
 import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';

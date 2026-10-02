@@ -19,7 +19,7 @@ import {
   SELECTED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { getHoverLabelData, getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { defaultLineOptions } from './lineTestUtils';

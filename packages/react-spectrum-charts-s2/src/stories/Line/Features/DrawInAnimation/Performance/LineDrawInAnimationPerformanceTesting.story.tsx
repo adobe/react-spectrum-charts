@@ -15,7 +15,7 @@ import { ComponentProps, ReactElement, useMemo, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { AnimationType, DRAW_IN_ANIMATION_DURATION_MS } from '@spectrum-charts/constants';
+import { AnimationType, DRAW_IN_ANIMATION_DURATION_MS } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../../Chart';

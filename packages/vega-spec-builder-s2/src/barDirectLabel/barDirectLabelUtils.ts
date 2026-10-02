@@ -17,7 +17,7 @@ import {
   DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
   DIRECT_LABEL_FONT_WEIGHT,
   FILTERED_TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { getOrientationProperties } from '../bar/barUtils';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils';

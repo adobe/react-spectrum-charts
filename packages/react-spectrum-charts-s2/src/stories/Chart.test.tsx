@@ -12,8 +12,8 @@
 import { createRef } from 'react';
 import { renderToString } from 'react-dom/server';
 
-import { FADE_FACTOR } from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../Chart';

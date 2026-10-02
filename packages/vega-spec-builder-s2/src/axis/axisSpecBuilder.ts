@@ -26,8 +26,8 @@ import {
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
   SERIES_ID,
-} from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   addAxisAnnotationAxis,

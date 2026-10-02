@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { COLOR_SCALE, HOVERED_ITEM, TABLE } from '@spectrum-charts/constants';
+import { COLOR_SCALE, HOVERED_ITEM, TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';

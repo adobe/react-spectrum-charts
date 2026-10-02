@@ -12,7 +12,7 @@
 
 export * from './components';
 export * from './Chart';
-export * from '@spectrum-charts/locales';
-export * from '@spectrum-charts/themes';
+export * from '@spectrum-charts/core-s2/locales';
+export * from '@spectrum-charts/core-s2/tokens';
 export * from './types/';
 export * from '@spectrum-charts/vega-spec-builder-s2';

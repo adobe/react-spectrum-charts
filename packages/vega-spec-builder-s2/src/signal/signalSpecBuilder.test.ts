@@ -11,7 +11,7 @@
  */
 import { Signal } from 'vega';
 
-import { FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/core-s2/constants';
 
 import { defaultSignals } from '../specTestUtils';
 import { addHoveredItemSignal, getHighlightSignalUpdateExpression } from './signalSpecBuilder';

@@ -45,8 +45,8 @@ import {
   SERIES_ID,
   STACK_ID,
   TABLE,
-} from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { defaultSignals } from '../specTestUtils';
 import { baseData, initializeSpec } from '../specUtils';

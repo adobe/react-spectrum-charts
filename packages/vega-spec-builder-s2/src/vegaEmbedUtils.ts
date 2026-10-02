@@ -11,8 +11,8 @@
  */
 import { Config, Locale, NumberLocale, Padding, Renderers, TimeLocale } from 'vega';
 
-import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale } from '@spectrum-charts/locales';
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale } from '@spectrum-charts/core-s2/locales';
 
 import { getExpressionFunctions } from './expressionFunctions';
 import { getChartConfig } from './specUtils';

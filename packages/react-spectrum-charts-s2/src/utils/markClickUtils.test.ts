@@ -11,7 +11,7 @@
  */
 import { Item, View } from 'vega';
 
-import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA } from '@spectrum-charts/core-s2/constants';
 
 import { ContextMenuMode } from '../types/marks/line.types';
 import {

@@ -13,7 +13,7 @@ import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_POINT_SIZES } from '@spectrum-charts/constants';
+import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_POINT_SIZES } from '@spectrum-charts/core-s2/constants';
 
 import { Chart } from '../../../../Chart';
 import { Axis, ChartInspect, Legend, Line } from '../../../../components';

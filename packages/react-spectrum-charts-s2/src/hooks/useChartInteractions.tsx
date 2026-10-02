@@ -11,8 +11,8 @@
  */
 import { useMemo } from 'react';
 
-import { SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/constants';
-import { getColorValue } from '@spectrum-charts/themes';
+import { SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/core-s2/constants';
+import { getColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { useChartContext } from '../context/RscChartContext';
 import { ChartChildElement, RscChartProps } from '../types';

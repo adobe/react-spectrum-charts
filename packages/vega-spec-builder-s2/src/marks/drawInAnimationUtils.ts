@@ -36,7 +36,7 @@ import {
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { hasTransformByAs } from '../data/dataUtils';
 import { isDualMetricAxis, LineMarkOptions } from '../line/lineUtils';

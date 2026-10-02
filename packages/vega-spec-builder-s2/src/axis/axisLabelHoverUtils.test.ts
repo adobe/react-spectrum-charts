@@ -11,7 +11,7 @@
  */
 import { Signal } from 'vega';
 
-import { DIMENSION_HOVER_AREA, FADE_FACTOR, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, FADE_FACTOR, HOVERED_ITEM } from '@spectrum-charts/core-s2/constants';
 
 import { InteractiveMark } from '../types';
 import {

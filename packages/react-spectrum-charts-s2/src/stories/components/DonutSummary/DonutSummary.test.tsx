@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_SUMMARY_MIN_RADIUS } from '@spectrum-charts/constants';
+import { DONUT_SUMMARY_MIN_RADIUS } from '@spectrum-charts/core-s2/constants';
 
 import { DonutSummary } from '../../../pre-alpha';
 import { render, screen } from '../../../test-utils';

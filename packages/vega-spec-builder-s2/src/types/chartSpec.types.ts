@@ -11,7 +11,7 @@
  */
 import { Data, Spec } from 'vega';
 
-import { AnimationType } from '@spectrum-charts/constants';
+import { AnimationType } from '@spectrum-charts/core-s2/constants';
 
 import { AxisOptions } from './axis';
 import { LegendOptions } from './legendSpec.types';

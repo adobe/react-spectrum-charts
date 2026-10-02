@@ -13,7 +13,7 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { s2Categorical12 } from '@spectrum-charts/themes';
+import { s2Categorical12 } from '@spectrum-charts/core-s2/tokens';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';

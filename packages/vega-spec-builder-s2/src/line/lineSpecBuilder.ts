@@ -26,8 +26,8 @@ import {
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SERIES_ID,
-} from '@spectrum-charts/constants';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import {
   addInspectData,

@@ -32,7 +32,7 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   FOCUSED_REGION,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';

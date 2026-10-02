@@ -16,7 +16,7 @@ import {
   ANNOTATION_FONT_WEIGHT,
   ANNOTATION_PADDING,
   BACKGROUND_COLOR,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   BarAnnotationOptions,

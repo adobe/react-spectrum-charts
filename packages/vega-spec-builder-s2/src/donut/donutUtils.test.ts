@@ -18,8 +18,8 @@ import {
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
   FILTERED_TABLE,
-} from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { defaultDonutOptions } from './donutTestUtils';
 import {

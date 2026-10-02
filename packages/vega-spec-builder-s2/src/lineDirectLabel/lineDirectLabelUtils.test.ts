@@ -22,7 +22,7 @@ import {
 	FILTERED_TABLE,
 	MARK_ID,
 	SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions } from '../types';

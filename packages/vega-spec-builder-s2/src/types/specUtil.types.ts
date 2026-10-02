@@ -11,7 +11,7 @@
  */
 import { Config, Spec, SymbolShape } from 'vega';
 
-import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 
 import { SpectrumVizColor } from './spectrumVizColor.types';
 

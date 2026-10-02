@@ -11,7 +11,7 @@
  */
 import { ScaleType, Signal } from 'vega';
 
-import { MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/constants';
+import { MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/core-s2/constants';
 
 import { AxisSpecOptions, AxisThumbnailOptions } from '../types';
 import { defaultAxisOptions } from './axisTestUtils';

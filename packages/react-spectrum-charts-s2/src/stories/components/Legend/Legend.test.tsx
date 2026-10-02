@@ -11,7 +11,7 @@
  */
 import userEvent from '@testing-library/user-event';
 
-import { FADE_FACTOR, TOOLTIP_DELAY } from '@spectrum-charts/constants';
+import { FADE_FACTOR, TOOLTIP_DELAY } from '@spectrum-charts/core-s2/constants';
 
 import { Chart } from '../../../Chart';
 import { Legend } from '../../../components';

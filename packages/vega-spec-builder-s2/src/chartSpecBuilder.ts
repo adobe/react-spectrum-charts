@@ -49,8 +49,8 @@ import {
   DIRECT_LABEL_FONT_SIZE_S,
   DIRECT_LABEL_FONT_SIZE_M,
   DIRECT_LABEL_FONT_SIZE_L,
-} from '@spectrum-charts/constants';
-import { colorSchemes, getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { colorSchemes, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';

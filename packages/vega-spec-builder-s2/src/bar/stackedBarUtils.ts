@@ -11,7 +11,7 @@
  */
 import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
-import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { isInteractive } from '../marks/markUtils';
 import { BarSpecOptions } from '../types';

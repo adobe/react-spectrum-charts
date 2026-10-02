@@ -12,8 +12,8 @@
 import { render, screen } from '@testing-library/react';
 import { View } from 'vega';
 
-import { MARK_ID, SERIES_ID } from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { MARK_ID, SERIES_ID } from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { DonutDialogContent, getDonutSwatchColor } from './DonutDialogContent';

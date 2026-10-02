@@ -31,7 +31,7 @@ import {
   SELECTED_ITEM,
   SERIES_ID,
   STACK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { BarSpecOptions } from '../types';
 import {

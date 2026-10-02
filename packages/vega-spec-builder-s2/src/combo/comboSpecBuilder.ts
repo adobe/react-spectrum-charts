@@ -11,8 +11,8 @@
  */
 import { produce } from 'immer';
 
-import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/constants';
-import { combineNames, toCamelCase } from '@spectrum-charts/utils';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
+import { combineNames, toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addBar } from '../bar/barSpecBuilder';
 import { addLine } from '../line/lineSpecBuilder';

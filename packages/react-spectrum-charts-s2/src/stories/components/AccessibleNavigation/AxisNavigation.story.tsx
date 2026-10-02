@@ -12,7 +12,7 @@
 import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
-import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
+import { GROUP_DATA, MARK_ID } from '@spectrum-charts/core-s2/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';

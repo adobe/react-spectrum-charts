@@ -33,8 +33,8 @@ import {
   REFERENCE_LINE_SECONDARY_STROKE_WIDTH,
   REFERENCE_LINE_SIZE_STROKE_WIDTHS,
   REFERENCE_LINE_START_CAP_PATHS,
-} from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { AxisSpecOptions, ReferenceLineSpecOptions } from '../types';
 import {

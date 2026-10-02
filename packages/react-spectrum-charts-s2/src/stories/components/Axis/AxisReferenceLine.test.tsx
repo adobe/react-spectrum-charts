@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { ReferenceLine } from '../../../components/ReferenceLine';
 import { findChart, findMarksByGroupName, render } from '../../../test-utils';
