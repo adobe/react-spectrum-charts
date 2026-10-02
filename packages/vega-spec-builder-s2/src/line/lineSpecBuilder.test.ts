@@ -22,7 +22,6 @@ import {
   DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
-  DRAW_IN_CLOCK_DATA,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
@@ -761,11 +760,6 @@ describe('lineSpecBuilder', () => {
         expect(resultData.find((d) => d.name === 'line0_drawInPrev')).toBeDefined();
         expect(resultData.find((d) => d.name === 'line0_drawInTip')).toBeDefined();
         expect(resultData.find((d) => d.name === 'line0_drawInLerp')).toBeDefined();
-      });
-
-      test('adds the draw-in clock data so the animation timer can stop when draw-in finishes', () => {
-        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, scaleType: 'time' });
-        expect(resultData.find((d) => d.name === DRAW_IN_CLOCK_DATA)).toBeDefined();
       });
 
       test('for a linear scale, adds the lead transform on filteredTable without the ms-formula transform', () => {

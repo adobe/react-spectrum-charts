@@ -120,8 +120,6 @@ export const FILTERED_TABLE = 'filteredTable';
 export const CONTROLLED_HIGHLIGHTED_TABLE = 'controlledHighlightedTable';
 /** Single-row data source recording timestamp of the most recent hover target change */
 export const HOVER_ANIM_LAST_CHANGE_DATA = 'hoverAnimLastChangeData';
-/** Single-row data source recording whether the draw-in animation has finished */
-export const DRAW_IN_CLOCK_DATA = 'drawInClockData';
 export const HOVER_TARGET_DATA = 'hoverTargetData';
 export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
 export const HOVER_FRACTION_DATA = 'hoverFractionData';

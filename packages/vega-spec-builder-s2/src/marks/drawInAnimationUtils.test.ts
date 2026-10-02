@@ -17,7 +17,6 @@ import {
   ANIMATION_TIMER,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIMATION_DURATION_MS,
-  DRAW_IN_CLOCK_DATA,
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
   SERIES_ID,
@@ -26,7 +25,6 @@ import {
 import { defaultLineMarkOptions, defaultLineOptions } from '../line/lineTestUtils';
 import { LineSpecOptions } from '../types';
 import {
-  addDrawInClockData,
   addDrawInClockSignals,
   addLineDrawInAnimationSignals,
   addLineDrawInLeadTransform,
@@ -215,23 +213,6 @@ describe('getLineDrawInData()', () => {
   });
 });
 
-describe('addDrawInClockData()', () => {
-  test('adds a single done-flag data source triggered by drawInAnimT', () => {
-    const data: Data[] = [];
-    addDrawInClockData(data);
-    addDrawInClockData(data);
-    expect(data).toStrictEqual([
-      {
-        name: DRAW_IN_CLOCK_DATA,
-        values: [{ done: false }],
-        on: [
-          { trigger: 'drawInAnimT', modify: `data('${DRAW_IN_CLOCK_DATA}')[0]`, values: '{done: drawInAnimT >= 1}' },
-        ],
-      },
-    ]);
-  });
-});
-
 describe('addDrawInClockSignals()', () => {
   test('adds the shared mount-timer chain', () => {
     const signals: Signal[] = [];
@@ -240,14 +221,9 @@ describe('addDrawInClockSignals()', () => {
       {
         name: ANIMATION_TIMER,
         value: 0,
-        on: [
-          {
-            events: { type: 'timer', throttle: ANIMATION_THROTTLE, filter: `(!data('${DRAW_IN_CLOCK_DATA}')[0].done)` },
-            update: 'now()',
-          },
-        ],
+        on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
       },
-      { name: ANIMATION_ACTIVE, value: true, update: `(!data('${DRAW_IN_CLOCK_DATA}')[0].done)` },
+      { name: ANIMATION_ACTIVE, value: true, update: '(drawInAnimT < 1)' },
       {
         name: 'drawInStart',
         value: 0,

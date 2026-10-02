@@ -253,10 +253,12 @@ The spec still carries the timer (`animationTimer`, throttle 33), so a standalon
 The spec also emits an `animationActive` signal: the OR of each animation's "still moving" condition.
 - Hover: `!hoverAnimLastChangeData[0].settled || clock - lastChange < SPEED + THROTTLE`. `settled` is set
   by `hoverIdleTicks >= 2`.
-- Draw-in: `!drawInClockData[0].done`. `done` is set by `drawInAnimT >= 1`.
+- Draw-in: `drawInAnimT < 1`.
 
 Both are built by `addAnimationTimerSignal` (`vega-spec-builder-s2/src/marks/animationTimerUtils.ts`). It
-also ORs the same conditions into the timer event's `filter`. The filter can only use `data()`, not signals.
+also ORs the same conditions into the timer event's `filter`. The filter can only use `data()`, not signals,
+so draw-in leaves the timer unfiltered. A data-backed draw-in condition was measured and dropped: it was
+slightly slower and only helps standalone Vega consumers, because the ticker strips the filter.
 
 At embed time (`react-spectrum-charts-s2/src/animation/animationTicker.ts`, framework-agnostic):
 1. `removeAnimationTimerEvents(spec)` strips the timer's `on` handler. It is not blocked through
