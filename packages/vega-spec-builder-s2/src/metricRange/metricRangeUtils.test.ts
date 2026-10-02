@@ -20,7 +20,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   MARK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
 import {

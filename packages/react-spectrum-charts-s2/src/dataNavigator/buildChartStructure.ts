@@ -11,7 +11,7 @@
  */
 import { Structure } from 'data-navigator';
 
-import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/constants';
+import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/core-s2/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisFieldType, buildAxisStructure } from './buildAxisStructure';

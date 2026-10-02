@@ -19,7 +19,7 @@ import {
   HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { AreaMarkOptions, getAreaMark } from '../area/areaUtils';
 import { getLineMark } from '../line/lineMarkUtils';

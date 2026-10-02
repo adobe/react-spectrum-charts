@@ -18,7 +18,7 @@ import {
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
 import { defaultScatterOptions } from '../scatter/scatterTestUtils';

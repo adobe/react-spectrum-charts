@@ -31,7 +31,7 @@ module.exports = {
     '^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
     '^vega$': '<rootDir>/node_modules/vega/build/vega.js',
     '^(storybook/actions|storybook-dark-mode)$': '<rootDir>/jest.storybookMock.js',
-    ...pathsToModuleNameMapper(compilerOptions.paths),
+    ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
   },
   transformIgnorePatterns: [
     'node_modules/(?!(vega|vega-.*|d3-.*|internmap|json-stringify-pretty-compact)/)',

@@ -18,9 +18,9 @@ import {
   DEFAULT_LABEL_POSITION,
   DEFAULT_SCALE_TYPE,
   DEFAULT_SCALE_VALUE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/themes';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
 import { getFilteredInspectData } from '../data/dataUtils';

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReferenceLineSize } from '@spectrum-charts/constants';
+import { ReferenceLineSize } from '@spectrum-charts/core-s2/constants';
 
 import { ColorScheme } from '../chartSpec.types';
 

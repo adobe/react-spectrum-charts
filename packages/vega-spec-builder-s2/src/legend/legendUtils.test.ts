@@ -20,8 +20,8 @@ import {
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
   VISIBILITY_OFF_PATH,
-} from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
 import { defaultLegendOptions } from './legendTestUtils';

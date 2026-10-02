@@ -11,7 +11,7 @@
  */
 import { NumericValueRef, ProductionRule } from 'vega';
 
-import { FADE_FACTOR, LAST_RSC_SERIES_ID, SERIES_ID } from '@spectrum-charts/constants';
+import { FADE_FACTOR, LAST_RSC_SERIES_ID, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';

@@ -12,9 +12,9 @@
 import { FormatLocaleDefinition, formatLocale } from 'd3-format';
 import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 
-import { DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/constants';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/locales';
-import { ADOBE_CLEAN_FONT } from '@spectrum-charts/themes';
+import { DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/core-s2/constants';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/core-s2/locales';
+import { ADOBE_CLEAN_FONT } from '@spectrum-charts/core-s2/tokens';
 
 import { NumberFormat } from '../types';
 

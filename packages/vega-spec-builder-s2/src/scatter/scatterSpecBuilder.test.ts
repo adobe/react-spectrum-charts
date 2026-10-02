@@ -18,7 +18,7 @@ import {
   LINE_WIDTH_SCALE,
   OPACITY_SCALE,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';

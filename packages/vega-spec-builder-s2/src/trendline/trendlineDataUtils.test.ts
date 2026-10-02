@@ -18,7 +18,7 @@ import {
   MS_PER_DAY,
   SERIES_ID,
   TRENDLINE_VALUE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { baseData } from '../specUtils';
 import {

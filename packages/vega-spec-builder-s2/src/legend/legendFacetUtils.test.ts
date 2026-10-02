@@ -11,7 +11,7 @@
  */
 import { Scale } from 'vega';
 
-import { COLOR_SCALE, DEFAULT_COLOR, LINE_TYPE_SCALE, SYMBOL_SIZE_SCALE, TABLE } from '@spectrum-charts/constants';
+import { COLOR_SCALE, DEFAULT_COLOR, LINE_TYPE_SCALE, SYMBOL_SIZE_SCALE, TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
 

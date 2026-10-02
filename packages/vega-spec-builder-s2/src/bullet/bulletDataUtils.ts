@@ -11,7 +11,7 @@
  */
 import { Data, FormulaTransform, ValuesData } from 'vega';
 
-import { TABLE } from '@spectrum-charts/constants';
+import { TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { getTableData } from '../data/dataUtils';
 import { BulletSpecOptions, ThresholdBackground } from '../types';

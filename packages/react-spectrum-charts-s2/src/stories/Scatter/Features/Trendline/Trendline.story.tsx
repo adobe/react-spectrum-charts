@@ -13,7 +13,7 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart';

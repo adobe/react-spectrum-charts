@@ -16,7 +16,7 @@ import { ComponentProps, ReactElement } from 'react';
 import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
-import { AnimationType } from '@spectrum-charts/constants';
+import { AnimationType } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart';

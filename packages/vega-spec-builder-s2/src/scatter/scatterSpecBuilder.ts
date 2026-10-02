@@ -25,8 +25,8 @@ import {
   OPACITY_SCALE,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';

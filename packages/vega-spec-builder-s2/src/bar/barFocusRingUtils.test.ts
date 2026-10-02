@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FOCUSED_DIMENSION, FOCUSED_REGION, NAVIGATION_ID_SEPARATOR, SELECTED_ITEM } from '@spectrum-charts/constants';
+import { FOCUSED_DIMENSION, FOCUSED_REGION, NAVIGATION_ID_SEPARATOR, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
 
 import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils';
 import { getBarFocusRing, getChartFocusRing, getDodgedGroupFocusRing, getStackFocusRing } from './barFocusRingUtils';

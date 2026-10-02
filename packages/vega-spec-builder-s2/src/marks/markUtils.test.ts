@@ -29,7 +29,7 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils';
 import { ProductionRuleTests } from '../types';

@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/constants';
+import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 
 import { AreaProps } from '../../../types';
 

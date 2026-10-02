@@ -19,7 +19,7 @@ import {
   HOVERED_ITEM,
   HOVERED_SERIES,
   LAST_RSC_SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 /**
  * Does signal with given name exist?

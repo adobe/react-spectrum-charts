@@ -18,7 +18,7 @@ import {
   OPACITY_SCALE,
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { FacetType, SecondaryFacetType } from '../types';
 import { Facet } from './legendUtils';

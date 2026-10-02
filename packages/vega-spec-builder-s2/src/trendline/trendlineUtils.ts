@@ -11,7 +11,7 @@
  */
 import { SignalRef } from 'vega';
 
-import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 
 import {
   AggregateMethod,

@@ -24,7 +24,7 @@ import {
   PADDING_RATIO,
   STACK_ID,
   TRELLIS_PADDING,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { BarSpecOptions } from '../types';
 

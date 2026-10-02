@@ -15,7 +15,7 @@ import {
   FILTERED_TABLE,
   MS_PER_DAY,
   TRENDLINE_VALUE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { defaultLineOptions } from './trendlineTestUtils';
 import {

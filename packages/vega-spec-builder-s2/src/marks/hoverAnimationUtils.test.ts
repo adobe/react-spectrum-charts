@@ -24,7 +24,7 @@ import {
   MARK_ID,
   SERIES_ID,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   addHoverAnimLastChangeData,

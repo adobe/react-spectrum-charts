@@ -48,8 +48,8 @@ import {
   FILTERED_TABLE,
   HOVERED_ITEM,
   SERIES_ID,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
 import { getPathFromSymbolShape } from '../specUtils';

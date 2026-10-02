@@ -11,8 +11,8 @@
  */
 import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getColorProductionRule, getColorProductionRuleSignalString } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';

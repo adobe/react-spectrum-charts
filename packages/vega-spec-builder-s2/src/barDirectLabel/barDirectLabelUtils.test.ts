@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 import { TextMark } from 'vega';
 
 import { defaultBarOptions } from '../bar/barTestUtils';

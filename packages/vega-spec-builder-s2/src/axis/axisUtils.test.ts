@@ -11,7 +11,7 @@
  */
 import { Scale } from 'vega';
 
-import { FILTERED_TABLE } from '@spectrum-charts/constants';
+import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { AxisSpecOptions, DivergingBarMark, SubLabel } from '../types';
 import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';

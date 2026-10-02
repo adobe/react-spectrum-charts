@@ -19,7 +19,7 @@ import {
   FADE_FACTOR,
   HOVERED_ITEM,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   getColorProductionRule,

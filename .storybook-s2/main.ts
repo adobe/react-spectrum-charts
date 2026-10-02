@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const config: StorybookConfig = {
@@ -22,6 +24,11 @@ const config: StorybookConfig = {
   ],
 
   webpackFinal(config) {
+    config.resolve ??= {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@spectrum-charts/core-s2': fileURLToPath(new URL('../packages/core-s2/src', import.meta.url)),
+    };
     return config;
   },
 

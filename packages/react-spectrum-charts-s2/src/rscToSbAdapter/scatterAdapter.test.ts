@@ -11,7 +11,7 @@
  */
 import { createElement } from 'react';
 
-import { DEFAULT_COLOR } from '@spectrum-charts/constants';
+import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
 import { ChartPopover } from '../components/ChartPopover';
 import { ChartInspect } from '../components/ChartInspect';

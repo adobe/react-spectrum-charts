@@ -23,7 +23,7 @@ import {
   HOVERED_ITEM,
   MARK_ID,
   SELECTED_ITEM,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { getItemBounds, triggerPopover } from '../utils/markClickUtils';

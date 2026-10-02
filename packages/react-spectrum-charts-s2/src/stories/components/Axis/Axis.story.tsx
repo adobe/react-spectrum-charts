@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
-import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
+import { DEFAULT_GRANULARITY } from '@spectrum-charts/core-s2/constants';
 
 import useChartProps from '../../../hooks/useChartProps';
 import { Axis, Bar, Chart, ChartInspect, Line } from '../../../index';

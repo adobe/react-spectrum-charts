@@ -11,7 +11,7 @@
  */
 import { Scale } from 'vega';
 
-import { FILTERED_TABLE, LINEAR_PADDING } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, LINEAR_PADDING } from '@spectrum-charts/core-s2/constants';
 
 import { TrendlineParentOptions, hasTrendlineWithNormalizedDimension } from './trendlineUtils';
 

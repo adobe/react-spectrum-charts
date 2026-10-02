@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { TABLE } from '@spectrum-charts/constants';
+import { TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { Chart } from '../Chart';
 import useChartProps from '../hooks/useChartProps';

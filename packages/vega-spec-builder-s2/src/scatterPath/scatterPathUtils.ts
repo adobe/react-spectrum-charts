@@ -20,8 +20,8 @@ import {
   SELECTED_ITEM,
   SELECTED_SERIES,
   SYMBOL_PATH_WIDTH_SCALE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getXProductionRule } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';

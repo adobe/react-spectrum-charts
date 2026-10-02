@@ -21,7 +21,7 @@ import {
   HOVERED_ITEM,
   MARK_ID,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { buildSpec } from '../chartSpecBuilder';
 import { getExpressionFunctions } from '../expressionFunctions';

@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_TIME_DIMENSION } from '@spectrum-charts/constants';
+import { DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 
 import { ComboProps } from '../../../types';
 

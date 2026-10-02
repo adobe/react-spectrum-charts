@@ -21,7 +21,7 @@ import {
   SELECTED_SERIES,
   SERIES_ID,
   TRENDLINE_VALUE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils';
 import { isInteractive } from '../marks/markUtils';

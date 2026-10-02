@@ -26,7 +26,7 @@ function renderToHtml(element: ReactElement): string {
   return html;
 }
 
-import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/core-s2/constants';
 import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../context/RscChartContext';

@@ -44,10 +44,8 @@ module.exports = {
 
   externals: [
     nodeExternals(),
+    /^@spectrum-charts\/core-s2\//,
     {
-      '@spectrum-charts/constants': '@spectrum-charts/constants',
-      '@spectrum-charts/utils': '@spectrum-charts/utils',
-      '@spectrum-charts/themes': '@spectrum-charts/themes',
     },
   ],
 

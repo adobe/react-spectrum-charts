@@ -24,9 +24,9 @@ import {
   GROUP_ID,
   SELECTED_ITEM,
   SELECTED_SERIES,
-} from '@spectrum-charts/constants';
-import { spectrumColors } from '@spectrum-charts/themes';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrumColors } from '@spectrum-charts/core-s2/tokens';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import {
   addInspectData,

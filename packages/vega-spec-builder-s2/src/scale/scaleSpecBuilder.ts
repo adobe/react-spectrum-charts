@@ -12,8 +12,8 @@
 import { produce } from 'immer';
 import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
-import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@spectrum-charts/constants';
-import { toCamelCase } from '@spectrum-charts/utils';
+import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@spectrum-charts/core-s2/constants';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getDimensionField } from '../specUtils';
 import { DualFacet, FacetRef, FacetType, Orientation } from '../types';

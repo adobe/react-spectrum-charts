@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { INTERACTION_MODE } from '@spectrum-charts/constants';
+import { INTERACTION_MODE } from '@spectrum-charts/core-s2/constants';
 
 import { ChartData, ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartActionBarOptions } from '../dialogs/chartActionBarSpec.types';

@@ -24,7 +24,7 @@ import {
   WindowTransform,
 } from 'vega';
 
-import { MS_PER_DAY, TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { MS_PER_DAY, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 
 import { getFacetsFromOptions } from '../specUtils';
 import { AggregateMethod, TrendlineMethod, TrendlineSpecOptions } from '../types';

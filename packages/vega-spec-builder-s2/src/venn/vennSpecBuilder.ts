@@ -30,8 +30,8 @@ import {
   DEFAULT_VENN_LABEL,
   DEFAULT_VENN_METRIC,
   TABLE,
-} from '@spectrum-charts/constants';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { isInteractive } from '../marks/markUtils';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';

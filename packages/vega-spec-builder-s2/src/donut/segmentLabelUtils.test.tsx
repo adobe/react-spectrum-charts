@@ -21,7 +21,7 @@ import {
   DONUT_SIZE_TIER_CUTPOINTS,
   HOVERED_ITEM,
   MARK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types';
 import { defaultDonutOptions } from './donutTestUtils';

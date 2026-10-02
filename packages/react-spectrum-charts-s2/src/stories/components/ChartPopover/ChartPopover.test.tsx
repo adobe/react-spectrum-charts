@@ -11,8 +11,8 @@
  */
 import userEvent from '@testing-library/user-event';
 
-import { FADE_FACTOR } from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { ChartPopover } from '../../../components';
 import {

@@ -17,7 +17,7 @@ import {
   DEFAULT_LINE_WIDTHS,
   DEFAULT_LOCALE,
   MARK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import { LineType, LineWidth, PartiallyRequired } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';

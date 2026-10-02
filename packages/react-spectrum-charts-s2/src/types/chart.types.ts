@@ -13,7 +13,7 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { Config, Locale, NumberLocale, Padding, TimeLocale, View } from 'vega';
 
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '@spectrum-charts/locales';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from '@spectrum-charts/core-s2/locales';
 import {
   ChartData,
   ChartOptions,

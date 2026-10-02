@@ -23,8 +23,8 @@ import {
   SERIES_ID,
   DEFAULT_FONT_COLOR,
   MIN_THUMBNAIL_SIZE,
-} from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { SubLabel } from '../types';
 import {

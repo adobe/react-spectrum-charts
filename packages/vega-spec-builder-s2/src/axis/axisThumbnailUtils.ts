@@ -11,7 +11,7 @@
  */
 import { ImageMark, ScaleType, Signal, TextEncodeEntry } from 'vega';
 
-import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/core-s2/constants';
 
 import { getGenericUpdateSignal } from '../signal/signalSpecBuilder';
 import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, Position } from '../types';

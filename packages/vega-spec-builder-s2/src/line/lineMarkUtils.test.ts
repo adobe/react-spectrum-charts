@@ -24,7 +24,7 @@ import {
   OPACITY_SCALE,
   SELECTED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils';
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';

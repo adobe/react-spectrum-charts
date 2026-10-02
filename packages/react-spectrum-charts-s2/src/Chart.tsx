@@ -14,7 +14,7 @@ import { FC, Ref, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { View } from 'vega';
 
 import { Provider } from '@react-spectrum/s2';
-import { getColorValue } from '@spectrum-charts/themes';
+import { getColorValue } from '@spectrum-charts/core-s2/tokens';
 import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';

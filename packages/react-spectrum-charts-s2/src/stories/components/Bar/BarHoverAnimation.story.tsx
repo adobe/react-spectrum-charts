@@ -15,7 +15,7 @@ import { ComponentProps, ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { AnimationType, GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
+import { AnimationType, GROUP_DATA, MARK_ID } from '@spectrum-charts/core-s2/constants';
 import { ChartData, Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';

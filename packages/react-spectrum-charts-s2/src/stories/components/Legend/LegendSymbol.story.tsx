@@ -13,7 +13,7 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/constants';
+import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/core-s2/constants';
 
 import { Chart } from '../../../Chart';
 import { Bar, Legend, Line } from '../../../components';

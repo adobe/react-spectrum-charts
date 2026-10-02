@@ -15,7 +15,7 @@ import {
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAP,
   DONUT_SIZE_TIER_CUTPOINTS,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';

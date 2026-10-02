@@ -31,7 +31,7 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SELECTED_SERIES,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { getGenericValueSignal } from './signal/signalSpecBuilder';
 

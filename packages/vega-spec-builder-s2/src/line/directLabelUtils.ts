@@ -11,8 +11,8 @@
  */
 import { NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
-import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, CHART_SIZE_LABEL_GAP, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, CHART_SIZE_LABEL_GAP, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { ColorScheme } from '../types';
 

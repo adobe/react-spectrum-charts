@@ -12,8 +12,8 @@
 import { PathMark, SymbolMark, TextMark } from 'vega';
 import { vennSolution } from 'venn-helper';
 
-import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SELECTED_ITEM } from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getColorProductionRule, getCursor, getMarkOpacity, getInspectEncoding } from '../marks/markUtils';
 import { VennDegreeOptions, VennSpecOptions } from '../types';

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID } from '@spectrum-charts/constants';
+import { MARK_ID } from '@spectrum-charts/core-s2/constants';
 
 import { addBar } from '../bar/barSpecBuilder';
 import { addLine } from '../line/lineSpecBuilder';

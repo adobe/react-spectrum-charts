@@ -15,7 +15,7 @@ import {
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
   MARK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import { LineSpecOptions } from '../types';
 import { LineMarkOptions } from './lineUtils';
