@@ -19,7 +19,6 @@ import {
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
   DRAW_IN_ANIMATION_DURATION_MS,
-  DRAW_IN_CLOCK_DATA,
   DRAW_IN_DOMAIN_MAX,
   DRAW_IN_DOMAIN_MIN,
   DRAW_IN_LERP_DATA,
@@ -179,23 +178,10 @@ export const getLineDrawInData = (options: LineSpecOptions): Data[] => {
 };
 
 /**
- * Adds the single-row data source that records when draw-in finishes so the animation timer can stop ticking.
- * @param data - the data array to add the draw-in clock data to
- */
-export const addDrawInClockData = (data: Data[]): void => {
-  if (data.some((d) => d.name === DRAW_IN_CLOCK_DATA)) return;
-  data.push({
-    name: DRAW_IN_CLOCK_DATA,
-    values: [{ done: false }],
-    on: [{ trigger: DRAW_IN_ANIM_T, modify: `data('${DRAW_IN_CLOCK_DATA}')[0]`, values: `{done: ${DRAW_IN_ANIM_T} >= 1}` }],
-  });
-};
-
-/**
- * Gets the data-only condition that is true until the draw-in animation has finished.
+ * Gets the condition that is true until the draw-in animation has finished.
  * @returns string
  */
-export const getDrawInAnimationActiveCondition = (): string => `!data('${DRAW_IN_CLOCK_DATA}')[0].done`;
+export const getDrawInAnimationActiveCondition = (): string => `${DRAW_IN_ANIM_T} < 1`;
 
 /**
  * Adds the shared mount-timer chain (`drawInStart` -> `drawInAnimT` -> `drawInAnimTEased`) every
@@ -205,7 +191,7 @@ export const getDrawInAnimationActiveCondition = (): string => `!data('${DRAW_IN
  * `drawInAnimTEased` - the animation progress with easing applied. Current easing formula is in-out quadratic
  */
 export const addDrawInClockSignals = (signals: Signal[]): void => {
-  addAnimationTimerSignal(signals, getDrawInAnimationActiveCondition);
+  addAnimationTimerSignal(signals, getDrawInAnimationActiveCondition, true);
   if (!hasSignalByName(signals, DRAW_IN_START)) {
     // starts on the first timer tick (the first painted frame) so a slow mount doesn't consume the animation
     signals.push({

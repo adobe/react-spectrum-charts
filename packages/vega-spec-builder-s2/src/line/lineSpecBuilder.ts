@@ -90,7 +90,7 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation/index.js';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils.js';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils.js';
-import { addDrawInClockData, addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData } from '../marks/drawInAnimationUtils.js';
+import { addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData } from '../marks/drawInAnimationUtils.js';
 
 export const addLine = produce<
   ScSpec,
@@ -279,7 +279,6 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   addLineHoverData(data, options);
 
   if (options.isDrawInAnimate) {
-    addDrawInClockData(data);
     if (scaleType === 'point') {
       const pointIndexData = getLineDrawInPointIndexData(options);
       addLineDrawInLeadTransform(pointIndexData, options);

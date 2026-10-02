@@ -13,7 +13,7 @@ import { EventStream, Signal } from 'vega';
 
 import { ANIMATION_ACTIVE, ANIMATION_THROTTLE, ANIMATION_TIMER } from '@spectrum-charts/core-s2/constants';
 
-/** Builds a data-only vega expression that is true while an animation still needs ticks, given a clock expression. */
+/** Builds a vega expression that is true while an animation still needs ticks, given a clock expression. */
 export type AnimationActiveCondition = (clock: string) => string;
 
 /**
@@ -28,10 +28,15 @@ const orCondition = (expr: string, condition: string): string =>
 /**
  * Adds the shared animation timer and `animationActive` signals (if missing) and ORs `getCondition` into both.
  * @param signals - the signals array to add the animation timer to
- * @param getCondition - builds the active condition; event filters cannot read signals, so it may only reference data
+ * @param getCondition - builds the active condition
+ * @param readsSignals - true if the condition reads signals; event filters can't, so the timer is left unfiltered
  */
-export const addAnimationTimerSignal = (signals: Signal[], getCondition: AnimationActiveCondition): void => {
-  const filterCondition = `(${getCondition('now()')})`;
+export const addAnimationTimerSignal = (
+  signals: Signal[],
+  getCondition: AnimationActiveCondition,
+  readsSignals = false
+): void => {
+  const filterCondition = readsSignals ? undefined : `(${getCondition('now()')})`;
   const activeCondition = `(${getCondition(ANIMATION_TIMER)})`;
 
   const timer = signals.find((signal) => signal.name === ANIMATION_TIMER);
@@ -39,12 +44,19 @@ export const addAnimationTimerSignal = (signals: Signal[], getCondition: Animati
     signals.push({
       name: ANIMATION_TIMER,
       value: 0,
-      on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE, filter: filterCondition }, update: 'now()' }],
+      on: [
+        {
+          events: { type: 'timer', throttle: ANIMATION_THROTTLE, ...(filterCondition && { filter: filterCondition }) },
+          update: 'now()',
+        },
+      ],
     });
   } else {
     const events = timer.on?.[0]?.events as EventStream | undefined;
     if (events && typeof events.filter === 'string') {
-      events.filter = orCondition(events.filter, filterCondition);
+      // an unfilterable condition means any tick may be needed, so the timer can't filter at all
+      if (filterCondition) events.filter = orCondition(events.filter, filterCondition);
+      else delete events.filter;
     }
   }
 

@@ -52,6 +52,21 @@ describe('addAnimationTimerSignal()', () => {
     expect(getActiveUpdate(signals)).toEqual(`(a(${ANIMATION_TIMER}))`);
   });
 
+  test('leaves the timer unfiltered when the condition reads signals', () => {
+    const signals: Signal[] = [];
+    addAnimationTimerSignal(signals, condition('a'), true);
+    expect(getTimerFilter(signals)).toBeUndefined();
+    expect(getActiveUpdate(signals)).toEqual(`(a(${ANIMATION_TIMER}))`);
+  });
+
+  test('removes an existing timer filter when a signal-reading condition is added', () => {
+    const signals: Signal[] = [];
+    addAnimationTimerSignal(signals, condition('a'));
+    addAnimationTimerSignal(signals, condition('b'), true);
+    expect(getTimerFilter(signals)).toBeUndefined();
+    expect(getActiveUpdate(signals)).toEqual(`(a(${ANIMATION_TIMER})) || (b(${ANIMATION_TIMER}))`);
+  });
+
   test('leaves an existing timer without a string filter untouched', () => {
     const signals: Signal[] = [
       { name: ANIMATION_TIMER, value: 0, on: [{ events: { type: 'timer' }, update: 'now()' }] },
