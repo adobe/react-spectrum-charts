@@ -29,7 +29,7 @@ import { LineSpecOptions } from '../types';
 import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils';
 import { LineMarkOptions } from './lineUtils';
 
-const getPointSizeEncoding = (pointSize: number | undefined) =>
+export const getPointSizeEncoding = (pointSize: number | undefined) =>
   pointSize === undefined ? { signal: CHART_SIZE_POINT_SIZE } : { value: pointSize };
 
 /**
