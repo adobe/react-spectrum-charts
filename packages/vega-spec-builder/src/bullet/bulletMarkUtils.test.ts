@@ -425,27 +425,25 @@ describe('getBulletMarkValueLabel', () => {
     }
   });
 
-  describe('getBulletMarkValueLabel threshold color logic', () => {
-    test('Uses barColor field for label when thresholdBarColor is true', () => {
+  describe('getBulletMarkValueLabel color', () => {
+    test('Uses gray-900 for the label even when thresholdBarColor is true', () => {
       const options = {
         ...sampleOptionsColumn,
         thresholdBarColor: true,
         thresholds: [{ thresholdMax: 200, fill: 'rgb(249, 137, 23)' }],
       };
       const labelMark = getBulletMarkValueLabel(options);
-      expect(labelMark.encode?.enter?.fill).toEqual({
-        signal: "datum.barColor === 'green' ? 'rgb(0, 0, 0)' : datum.barColor",
-      });
+      expect(labelMark.encode?.enter?.fill).toEqual({ value: 'rgb(0, 0, 0)' });
     });
 
-    test('Falls back to neutral when thresholdBarColor is false', () => {
+    test('Uses gray-900 for the label when thresholdBarColor is false', () => {
       const options = {
         ...sampleOptionsColumn,
         thresholdBarColor: false,
       };
       const labelMark = getBulletMarkValueLabel(options);
 
-      expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+      expect(labelMark.encode?.enter?.fill).toEqual({ value: 'rgb(0, 0, 0)' });
     });
 
     test('Uses default color when no thresholds are provided', () => {
@@ -455,7 +453,7 @@ describe('getBulletMarkValueLabel', () => {
         thresholds: [],
       };
       const labelMark = getBulletMarkValueLabel(options);
-      expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+      expect(labelMark.encode?.enter?.fill).toEqual({ value: 'rgb(0, 0, 0)' });
     });
 
     test('Uses default color when thresholdBarColor is false and no thresholds are provided', () => {
@@ -465,7 +463,7 @@ describe('getBulletMarkValueLabel', () => {
         thresholds: [],
       };
       const labelMark = getBulletMarkValueLabel(options);
-      expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+      expect(labelMark.encode?.enter?.fill).toEqual({ value: 'rgb(0, 0, 0)' });
     });
 
     test('Uses default color when thresholdBarColor is true and no thresholds are provided', () => {
@@ -475,7 +473,7 @@ describe('getBulletMarkValueLabel', () => {
         thresholds: [],
       };
       const labelMark = getBulletMarkValueLabel(options);
-      expect(labelMark.encode?.enter?.fill).toEqual({ signal: "'rgb(0, 0, 0)'" });
+      expect(labelMark.encode?.enter?.fill).toEqual({ value: 'rgb(0, 0, 0)' });
     });
   });
 });
