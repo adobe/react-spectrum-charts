@@ -13,7 +13,6 @@ import { produce } from 'immer';
 import { Data, NumericValueRef, ProductionRule, Signal, SourceData, Transforms } from 'vega';
 
 import {
-  ANIMATION_THROTTLE,
   ANIMATION_TIMER,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIM_CUTOFF,
@@ -44,6 +43,7 @@ import { getScaleName } from '../scale/scaleSpecBuilder';
 import { getDualAxisScaleNames } from '../scale/scaleUtils';
 import { hasSignalByName } from '../signal/signalSpecBuilder';
 import { LineSpecOptions, ScaleType } from '../types';
+import { addAnimationTimerSignal } from './animationTimerUtils';
 
 /**
  * The field used to compare rows against the animation cutoff. Time scales need a numeric-ms field
@@ -178,22 +178,27 @@ export const getLineDrawInData = (options: LineSpecOptions): Data[] => {
 };
 
 /**
+ * Gets the condition that is true until the draw-in animation has finished.
+ * @returns string
+ */
+export const getDrawInAnimationActiveCondition = (): string => `${DRAW_IN_ANIM_T} < 1`;
+
+/**
  * Adds the shared mount-timer chain (`drawInStart` -> `drawInAnimT` -> `drawInAnimTEased`) every
  * draw-in animated mark reads from.
- * `drawInStart` - captures the wall clock time once at the start of the animation
+ * `drawInStart` - captures the animation timer's first tick
  * `drawInAnimT` - the animation progess (t) from 0-1
  * `drawInAnimTEased` - the animation progress with easing applied. Current easing formula is in-out quadratic
  */
 export const addDrawInClockSignals = (signals: Signal[]): void => {
-  if (!hasSignalByName(signals, ANIMATION_TIMER)) {
-    signals.push({
-      name: ANIMATION_TIMER,
-      value: 0,
-      on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
-    });
-  }
+  addAnimationTimerSignal(signals, getDrawInAnimationActiveCondition, true);
   if (!hasSignalByName(signals, DRAW_IN_START)) {
-    signals.push({ name: DRAW_IN_START, init: 'now()' });
+    // starts on the first timer tick (the first painted frame) so a slow mount doesn't consume the animation
+    signals.push({
+      name: DRAW_IN_START,
+      value: 0,
+      on: [{ events: { signal: ANIMATION_TIMER }, update: `${DRAW_IN_START} || ${ANIMATION_TIMER}` }],
+    });
   }
   if (!hasSignalByName(signals, DRAW_IN_ANIM_T)) {
     signals.push({

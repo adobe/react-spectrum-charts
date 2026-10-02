@@ -169,11 +169,12 @@ export const SELECTED_GROUP = 'selectedGroup'; // data point
 export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
 export const ANIMATION_TIMER = 'animationTimer'; // main animation timer signal
+export const ANIMATION_ACTIVE = 'animationActive'; // true while any animation (or its final grace tick) still needs timer ticks
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
 export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's one-tick grace period after hoverAnimating goes false
-export const DRAW_IN_START = 'drawInStart'; // mount timestamp, captured once
+export const DRAW_IN_START = 'drawInStart'; // timestamp of the first animation timer tick, captured once
 export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
 export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-out) progress
 export const DRAW_IN_DOMAIN_MIN = 'drawInDomainMin'; // draw-in animation: dimension scale domain min, captured once at mount
@@ -218,6 +219,10 @@ export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover'];
 // hover animation constants
 /** Timer signal update interval in ms. Caps timer signal update at ~30fps. */
 export const ANIMATION_THROTTLE = 33;
+/** Minimum ms between host animation ticker frames. 0 = native display rate; set to ANIMATION_THROTTLE for ~30fps. */
+export const ANIMATION_MIN_FRAME_INTERVAL = 0;
+/** Per-frame time budget (ms) for ticking animated charts; charts past the budget tick on the next frame */
+export const ANIMATION_FRAME_BUDGET_MS = 8;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
 export const ANIMATION_HOVER_SPEED = 250;
 /**
