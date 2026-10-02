@@ -13,12 +13,12 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
-import { barDataTwoSeries, barSeriesData } from './data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarProps } from '../../../types/index.js';
+import { barDataTwoSeries, barSeriesData } from './data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Dual Metric Axis',

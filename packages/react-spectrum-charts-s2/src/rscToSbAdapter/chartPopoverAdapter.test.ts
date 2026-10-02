@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getChartPopoverOptions } from './chartPopoverAdapter';
+import { getChartPopoverOptions } from './chartPopoverAdapter.js';
 
 describe('getChartPopoverOptions()', () => {
   it('should strip out children', () => {

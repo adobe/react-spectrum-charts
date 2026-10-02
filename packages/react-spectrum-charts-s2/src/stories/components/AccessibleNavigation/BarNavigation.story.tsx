@@ -16,10 +16,10 @@ import { StoryFn } from '@storybook/react';
 import { GROUP_DATA, MARK_ID } from '@spectrum-charts/core-s2/constants';
 import { Orientation } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { barData, barSeriesData } from '../Bar/data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { barData, barSeriesData } from '../Bar/data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Accessible Navigation/Bar Navigation',

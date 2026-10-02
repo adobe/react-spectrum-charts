@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { buildBarStructure } from './buildBarStructure';
-import { buildChartStructure } from './buildChartStructure';
-import { getNavigableChartType } from './navigableMarks';
+import { buildBarStructure } from './buildBarStructure.js';
+import { buildChartStructure } from './buildChartStructure.js';
+import { getNavigableChartType } from './navigableMarks.js';
 
 const data = [
   { browser: 'Chrome', downloads: 27000 },

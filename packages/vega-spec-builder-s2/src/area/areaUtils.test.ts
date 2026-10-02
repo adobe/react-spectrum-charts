@@ -18,7 +18,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getAreaMark } from './areaUtils';
+import { getAreaMark } from './areaUtils.js';
 
 describe('getAreaMark', () => {
   test('basic options', () => {

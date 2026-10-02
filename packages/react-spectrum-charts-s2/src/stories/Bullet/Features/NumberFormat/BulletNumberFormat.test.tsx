@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, render } from '../../../../test-utils';
-import { Currency, CustomFormat, Percentage, ShortCurrency, ShortNumber } from './BulletNumberFormat.story';
+import { findChart, render } from '../../../../test-utils/index.js';
+import { Currency, CustomFormat, Percentage, ShortCurrency, ShortNumber } from './BulletNumberFormat.story.js';
 
 describe('Bullet NumberFormat', () => {
   test('ShortNumber renders properly', async () => {

@@ -13,9 +13,9 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../Chart';
-import { Axis, Bar } from '../components';
-import useChartProps from '../hooks/useChartProps';
+import { Chart } from '../Chart.js';
+import { Axis, Bar } from '../components/index.js';
+import useChartProps from '../hooks/useChartProps.js';
 
 export const ChartBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
   const props = useChartProps(args);

@@ -2,10 +2,20 @@
   "name": "@spectrum-charts/vega-spec-builder-s2",
   "version": "0.9.0",
   "description": "Vega spec builder for Spectrum 2 charts (S2 always enabled)",
-  "browser": "dist/index.js",
+  "type": "module",
   "main": "dist/index.js",
-  "module": "dist/index.js",
   "types": "dist/@types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/@types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "files": [
     "dist"
   ],
@@ -17,23 +27,22 @@
   },
   "scripts": {
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "webpack --config ./webpack.config.js",
+    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
-    "pack-test": "yarn clean && yarn build && cross-env NODE_ENV=development npm pack",
+    "pack-test": "yarn clean && yarn build:s2 && cross-env NODE_ENV=development npm pack",
     "pack": "cross-env NODE_ENV=production npm pack",
     "publish-package": "npm publish --access public --registry https://registry.npmjs.org"
   },
   "dependencies": {
     "@spectrum-charts/core-s2": "0.9.0",
+    "d3-format": "^3.1.0",
+    "deepmerge": "^4.3.1",
     "immer": "^10.1.1",
     "vega": "^6.2.0",
     "vega-util": "~2.1.0",
     "venn-helper": "^2.3.6"
   },
   "devDependencies": {
-    "ts-loader": "^9.4.2",
-    "typescript": "^5.4.5",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1"
+    "typescript": "^5.4.5"
   }
 }

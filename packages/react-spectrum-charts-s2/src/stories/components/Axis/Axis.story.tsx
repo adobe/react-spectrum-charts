@@ -16,12 +16,12 @@ import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_GRANULARITY } from '@spectrum-charts/core-s2/constants';
 
-import useChartProps from '../../../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartInspect, Line } from '../../../index';
-import { bindWithProps } from '../../../test-utils';
-import { stockPriceData, workspaceTrendsData } from '../../data/data';
-import { barData, barDataLongLabels } from '../Bar/data';
-import timeData from './timeData.json';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Axis, Bar, Chart, ChartInspect, Line } from '../../../index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { stockPriceData, workspaceTrendsData } from '../../data/data.js';
+import { barData, barDataLongLabels } from '../Bar/data.js';
+import timeData from './timeData.json' with { type: 'json' };
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features',

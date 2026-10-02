@@ -24,12 +24,12 @@ import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../../Chart';
-import { Axis, ChartActionBar, Line } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
+import { Chart } from '../../../../Chart.js';
+import { Axis, ChartActionBar, Line } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps } from '../../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/ActionBar',

@@ -16,7 +16,7 @@ import { DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/core-s2/constants';
 import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/core-s2/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/core-s2/tokens';
 
-import { NumberFormat } from '../types';
+import { NumberFormat } from '../types/index.js';
 
 export interface LabelDatum {
   index: number;

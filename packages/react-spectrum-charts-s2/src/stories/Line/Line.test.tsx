@@ -11,8 +11,8 @@
  */
 import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
-import { Line, LinePointAnnotation } from '../../components';
-import { workspaceTrendsData } from '../../stories/data/data';
+import { Line, LinePointAnnotation } from '../../components/index.js';
+import { workspaceTrendsData } from '../../stories/data/data.js';
 import {
   allElementsHaveAttributeValue,
   clickNthElement,
@@ -29,12 +29,12 @@ import {
   waitFor,
   waitForMarksByGroupName,
   within,
-} from '../../test-utils';
-import '../../test-utils/__mocks__/matchMedia.mock';
-import { Basic } from './Features/LineBasic.story';
-import { LineWithAxisAndLegend } from './Features/LineWithAxisAndLegend.story';
-import { LineWithUTCDatetimeFormat } from './Features/LineWithUTCDatetimeFormat.story';
-import { HistoricalCompare } from './Features/LineHistoricalCompare.story';
+} from '../../test-utils/index.js';
+import '../../test-utils/__mocks__/matchMedia.mock.js';
+import { Basic } from './Features/LineBasic.story.js';
+import { LineWithAxisAndLegend } from './Features/LineWithAxisAndLegend.story.js';
+import { LineWithUTCDatetimeFormat } from './Features/LineWithUTCDatetimeFormat.story.js';
+import { HistoricalCompare } from './Features/LineHistoricalCompare.story.js';
 import {
   ControlledHighlight as HoverAnimationControlledHighlight,
   GroupedLegendHover as HoverAnimationGroupedLegendHover,
@@ -42,12 +42,12 @@ import {
   OnClick as HoverAnimationOnClick,
   PointHover as HoverAnimationPointHover,
   PopoverSelection as HoverAnimationPopoverSelection,
-} from './Features/HoverAnimation/LineHoverAnimation.story';
-import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story';
-import { LineType } from './Features/LineType.story';
-import { Opacity } from './Features/LineOpacity.story';
-import { ItemInspect, Inspect } from './Features/Inspect/LineInspect.story';
-import { TrendScale, LinearTrendScale } from './Features/TrendScale/LineTrendScale.story';
+} from './Features/HoverAnimation/LineHoverAnimation.story.js';
+import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './Features/Interactions/LineInteractions.story.js';
+import { LineType } from './Features/LineType.story.js';
+import { Opacity } from './Features/LineOpacity.story.js';
+import { ItemInspect, Inspect } from './Features/Inspect/LineInspect.story.js';
+import { TrendScale, LinearTrendScale } from './Features/TrendScale/LineTrendScale.story.js';
 
 describe('LinePointAnnotation', () => {
   // LinePointAnnotation is not a real React component. This test provides coverage for sonarqube

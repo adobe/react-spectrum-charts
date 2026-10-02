@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getTextNumberFormat } from './textUtils';
+import { getTextNumberFormat } from './textUtils.js';
 
 describe('getTextNumberFormat()', () => {
   test('should return correct signal for shortNumber', () => {

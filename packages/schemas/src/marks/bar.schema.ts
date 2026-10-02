@@ -11,8 +11,8 @@
  */
 import { z } from 'zod';
 
-import { ChartInspectSchema } from '../dialogs/chartInspect.schema';
-import { BarDirectLabelSchema } from './supplemental/barDirectLabel.schema';
+import { ChartInspectSchema } from '../dialogs/chartInspect.schema.js';
+import { BarDirectLabelSchema } from './supplemental/barDirectLabel.schema.js';
 
 // FacetRef<T> = string (data field name) | { value: T }, see specUtil.types.ts in vega-spec-builder.
 const facetRef = <T extends z.ZodTypeAny>(value: T) => z.union([z.string(), z.object({ value })]);

@@ -20,8 +20,8 @@ import {
   render,
   screen,
   waitFor,
-} from '../../../test-utils';
-import { Basic, Controlled } from './LegendHighlight.story';
+} from '../../../test-utils/index.js';
+import { Basic, Controlled } from './LegendHighlight.story.js';
 
 // opacity is now animated, so it settles asynchronously -- hence waitFor
 describe('Controlled', () => {

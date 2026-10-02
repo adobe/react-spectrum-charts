@@ -24,9 +24,9 @@ import {
   Width,
 } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { AxisElement } from './axis';
-import { ChartInspectElement, ChartPopoverElement } from './dialogs';
-import { LegendElement } from './legend.types';
+import { AxisElement } from './axis/index.js';
+import { ChartInspectElement, ChartPopoverElement } from './dialogs/index.js';
+import { LegendElement } from './legend.types.js';
 import {
   AreaElement,
   BarAnnotationElement,
@@ -36,10 +36,10 @@ import {
   DonutElement,
   DonutSummaryElement,
   LineElement,
-} from './marks';
-import { ScatterElement } from './marks/scatter.types';
-import { TitleElement } from './title.types';
-import { Children } from './util.types';
+} from './marks/index.js';
+import { ScatterElement } from './marks/scatter.types.js';
+import { TitleElement } from './title.types.js';
+import { Children } from './util.types.js';
 
 export type ChartChildElement =
   | AreaElement

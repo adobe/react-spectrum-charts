@@ -27,11 +27,11 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils';
-import { clearAxisFocusRing, getVisibleAxisLabelColumns, padAxisBounds, positionOverlayAtBounds, setAxisFocusRing } from './axisLabelGeometry';
-import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, getNodeFieldValues, Row } from './barHoverParity';
-import { AxisRegionOptions, NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure';
-import { getNodeRegion, stripRegionPrefix } from './composeRegions';
+import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils.js';
+import { clearAxisFocusRing, getVisibleAxisLabelColumns, padAxisBounds, positionOverlayAtBounds, setAxisFocusRing } from './axisLabelGeometry.js';
+import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, getNodeFieldValues, Row } from './barHoverParity.js';
+import { AxisRegionOptions, NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure.js';
+import { getNodeRegion, stripRegionPrefix } from './composeRegions.js';
 import {
   findFocusedBarSceneItem,
   findFocusedDimensionAreaSceneItem,
@@ -39,7 +39,7 @@ import {
   pageBoundsForItem,
   showAxisLabelTooltip,
   showFocusedItemTooltip,
-} from './focusedItemTooltip';
+} from './focusedItemTooltip.js';
 import './dataNavigator.css';
 
 /*

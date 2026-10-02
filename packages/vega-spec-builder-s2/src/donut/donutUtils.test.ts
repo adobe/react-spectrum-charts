@@ -21,7 +21,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { defaultDonutOptions } from './donutTestUtils';
+import { defaultDonutOptions } from './donutTestUtils.js';
 import {
   getArcMark,
   getDonutEmptyStateTest,
@@ -34,7 +34,7 @@ import {
   getSliceGapSignal,
   getSliceStrokeWidthExpr,
   getSumData,
-} from './donutUtils';
+} from './donutUtils.js';
 
 describe('getDonutEmptyStateTest()', () => {
   test('should test for empty data and a metric sum of 0', () => {

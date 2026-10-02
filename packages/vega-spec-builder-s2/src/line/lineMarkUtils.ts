@@ -40,8 +40,8 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getPopovers } from '../chartPopover/chartPopoverUtils';
-import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils'
+import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
+import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils.js'
 import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
@@ -52,20 +52,20 @@ import {
   getXProductionRule,
   hasActionBar,
   hasPopover,
-} from '../marks/markUtils';
-import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getStrokeDashFromLineType } from '../specUtils';
-import { ScaleType } from '../types';
-import { MIN_LABEL_GAP, getDirectLabelTextMarks } from './directLabelUtils';
-import { getPrimarySeriesOtherExpr } from './lineDataUtils';
-import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils';
+} from '../marks/markUtils.js';
+import { getScaleName } from '../scale/scaleSpecBuilder.js';
+import { getStrokeDashFromLineType } from '../specUtils.js';
+import { ScaleType } from '../types/index.js';
+import { MIN_LABEL_GAP, getDirectLabelTextMarks } from './directLabelUtils.js';
+import { getPrimarySeriesOtherExpr } from './lineDataUtils.js';
+import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils.js';
 import {
   getHighlightPoint,
   getPointSizeEncoding,
   getSecondaryHighlightPoint,
   getSelectionPoint,
-} from './linePointUtils';
-import { LineMarkOptions } from './lineUtils';
+} from './linePointUtils.js';
+import { LineMarkOptions } from './lineUtils.js';
 
 const GRADIENT_BASE_OPACITY = 0.2;
 const FORECAST_GRADIENT_RATIO = 0.4;

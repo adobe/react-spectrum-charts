@@ -40,7 +40,7 @@ import {
   LinePointAnnotation,
   ReferenceLine,
   Title,
-} from '../components';
+} from '../components/index.js';
 import {
   Area,
   Bullet,
@@ -53,7 +53,7 @@ import {
   SegmentLabel,
   Trendline,
   TrendlineAnnotation,
-} from '../pre-alpha';
+} from '../pre-alpha/index.js';
 import {
   AreaElement,
   AxisChildElement,
@@ -81,7 +81,7 @@ import {
   TitleElement,
   TrendlineAnnotationElement,
   TrendlineElement,
-} from '../types';
+} from '../types/index.js';
 
 type MarkChildElement =
   | BarAnnotationElement

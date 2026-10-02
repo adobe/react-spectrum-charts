@@ -15,12 +15,12 @@ import { StoryFn } from '@storybook/react';
 
 import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, BarDirectLabel } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarDirectLabelProps } from '../../../types';
-import { barData, mixedBarData } from './data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, BarDirectLabel } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarDirectLabelProps } from '../../../types/index.js';
+import { barData, mixedBarData } from './data.js';
 
 export default {
   title: 'RSC/Bar/BarDirectLabel',

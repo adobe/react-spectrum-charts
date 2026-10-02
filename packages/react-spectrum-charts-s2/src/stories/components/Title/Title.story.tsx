@@ -13,12 +13,12 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend, Title } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
-import { browserData as data } from '../../data/data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend, Title } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps } from '../../../types/index.js';
+import { browserData as data } from '../../data/data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Title/Features',

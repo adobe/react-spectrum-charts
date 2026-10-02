@@ -20,7 +20,7 @@ import {
   TRELLIS_PADDING,
 } from '@spectrum-charts/core-s2/constants';
 
-import { BarProps } from '../../types';
+import { BarProps } from '../../types/index.js';
 
 const Bar: FC<BarProps> = ({
   dimension = DEFAULT_CATEGORICAL_DIMENSION,

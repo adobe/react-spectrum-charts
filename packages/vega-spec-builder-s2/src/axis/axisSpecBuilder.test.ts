@@ -26,7 +26,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { SubLabel } from '../types';
+import { SubLabel } from '../types/index.js';
 import {
   addAxes,
   addAxesMarks,
@@ -37,8 +37,8 @@ import {
   applySecondaryMetricAxisEncodings,
   getLabelSignalValue,
   setAxisBaseline,
-} from './axisSpecBuilder';
-import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
+} from './axisSpecBuilder.js';
+import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils.js';
 
 const defaultAxis: Axis = {
   orient: 'bottom',

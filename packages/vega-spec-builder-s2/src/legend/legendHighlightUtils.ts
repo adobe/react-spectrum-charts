@@ -22,7 +22,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { LegendOptions } from '../types';
+import { LegendOptions } from '../types/index.js';
 
 export const getLegendHighlightSignals = (legends: LegendOptions[]): string[] =>
   legends

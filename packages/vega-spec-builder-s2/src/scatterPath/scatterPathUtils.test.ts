@@ -11,8 +11,8 @@
  */
 import { DEFAULT_COLOR, SYMBOL_PATH_WIDTH_SCALE } from '@spectrum-charts/core-s2/constants';
 
-import { defaultScatterOptions } from '../scatter/scatterTestUtils';
-import { getPathWidth, getScatterPathMarks, getScatterPathSpecOptions } from './scatterPathUtils';
+import { defaultScatterOptions } from '../scatter/scatterTestUtils.js';
+import { getPathWidth, getScatterPathMarks, getScatterPathSpecOptions } from './scatterPathUtils.js';
 
 describe('getScatterPathSpecOptions()', () => {
   test('should apply defaults', () => {

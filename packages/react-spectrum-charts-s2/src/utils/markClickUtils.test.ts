@@ -13,7 +13,7 @@ import { Item, View } from 'vega';
 
 import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA } from '@spectrum-charts/core-s2/constants';
 
-import { ContextMenuMode } from '../types/marks/line.types';
+import { ContextMenuMode } from '../types/marks/line.types.js';
 import {
   ActionItem,
   GetOnMarkClickCallbackArgs,
@@ -26,7 +26,7 @@ import {
   handleLegendItemClick,
   handleLegendItemMouseInput,
   triggerPopover,
-} from './markClickUtils';
+} from './markClickUtils.js';
 
 const defaultMarkClickArgs: GetOnMarkClickCallbackArgs = {
   chartView: { current: true as unknown as View },

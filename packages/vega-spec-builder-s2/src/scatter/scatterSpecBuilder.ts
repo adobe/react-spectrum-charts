@@ -28,16 +28,16 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
-import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils';
-import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
-import { setScatterPathScales } from '../scatterPath';
-import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
-import { addUserMetaInteractiveMark } from '../specUtils';
-import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline';
-import { ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types';
-import { addScatterMarks } from './scatterMarkUtils';
+import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils.js';
+import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils.js';
+import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils.js';
+import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
+import { setScatterPathScales } from '../scatterPath/index.js';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
+import { addUserMetaInteractiveMark } from '../specUtils.js';
+import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
+import { ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types/index.js';
+import { addScatterMarks } from './scatterMarkUtils.js';
 
 /**
  * Adds all the necessary parts of a scatter to the spec

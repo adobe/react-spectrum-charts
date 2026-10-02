@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme } from '../../chartSpec.types';
-import { ColorFacet, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types';
-import { TrendlineSpecOptions } from './trendlineSpec.types';
+import { ColorScheme } from '../../chartSpec.types.js';
+import { ColorFacet, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types.js';
+import { TrendlineSpecOptions } from './trendlineSpec.types.js';
 
 export interface TrendlineAnnotationOptions {
   /** Adds a badge around the annotation */

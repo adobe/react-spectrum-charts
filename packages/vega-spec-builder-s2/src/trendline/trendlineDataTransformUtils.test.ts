@@ -18,8 +18,8 @@ import {
   getTrendlineDimensionRangeTransforms,
   getTrendlineParamFormulaTransforms,
   getWindowTransform,
-} from './trendlineDataTransformUtils';
-import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
+} from './trendlineDataTransformUtils.js';
+import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils.js';
 
 describe('getAggregateTransform()', () => {
   test('should return the correct method', () => {

@@ -16,7 +16,7 @@ import { MARK_ID, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { DonutDialogContent, getDonutSwatchColor } from './DonutDialogContent';
+import { DonutDialogContent, getDonutSwatchColor } from './DonutDialogContent.js';
 
 const datum = (fields: Record<string, unknown>): Datum => ({ [MARK_ID]: 0, [SERIES_ID]: '', ...fields });
 

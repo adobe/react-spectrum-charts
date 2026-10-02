@@ -20,7 +20,7 @@ import {
   getAllMarksByGroupName,
   render,
   screen,
-} from '../test-utils';
+} from '../test-utils/index.js';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import {
   FunnelConversion,
@@ -28,7 +28,7 @@ import {
   TrendsTimeComparisonBar,
   TrendsTimeComparisonStackedBar,
   UserGrowthTimeComparisonBarGrowth,
-} from './ChartExamples.story';
+} from './ChartExamples.story.js';
 
 const colors = spectrum2Colors.light;
 

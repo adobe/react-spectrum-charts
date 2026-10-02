@@ -13,9 +13,9 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartPopover } from '../components/ChartPopover';
-import { childrenToOptions } from './childrenAdapter';
-import { getLegendOptions } from './legendAdapter';
+import { ChartPopover } from '../components/ChartPopover/index.js';
+import { childrenToOptions } from './childrenAdapter.js';
+import { getLegendOptions } from './legendAdapter.js';
 
 describe('getLegendOptions()', () => {
   it('should return all basic options', () => {

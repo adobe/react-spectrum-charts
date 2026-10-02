@@ -15,11 +15,11 @@ import { StoryFn } from '@storybook/react';
 
 import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-charts/core-s2/constants';
 
-import { Axis, Bar } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Chart } from '../../../index';
-import { bindWithProps } from '../../../test-utils';
-import { barDataLongLabels } from '../Bar/data';
+import { Axis, Bar } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Chart } from '../../../index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { barDataLongLabels } from '../Bar/data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Labels',

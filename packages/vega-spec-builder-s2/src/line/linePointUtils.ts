@@ -24,10 +24,10 @@ import {
 import {
   getColorProductionRule,
   getXProductionRule,
-} from '../marks/markUtils';
-import { LineSpecOptions } from '../types';
-import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils';
-import { LineMarkOptions } from './lineUtils';
+} from '../marks/markUtils.js';
+import { LineSpecOptions } from '../types/index.js';
+import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils.js';
+import { LineMarkOptions } from './lineUtils.js';
 
 export const getPointSizeEncoding = (pointSize: number | undefined) =>
   pointSize === undefined ? { signal: CHART_SIZE_POINT_SIZE } : { value: pointSize };

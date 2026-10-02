@@ -19,7 +19,7 @@ import {
   addFieldToFacetScaleDomain,
   getPadding,
   getScaleName,
-} from './scaleSpecBuilder';
+} from './scaleSpecBuilder.js';
 
 const defaultColorScale: OrdinalScale = {
   domain: { data: 'table', fields: [DEFAULT_COLOR] },

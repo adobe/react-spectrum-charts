@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis } from '../../../components';
-import { findChart, getAllAxisLabels, render, screen, within } from '../../../test-utils';
+import { Axis } from '../../../components/index.js';
+import { findChart, getAllAxisLabels, render, screen, within } from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   Basic,
@@ -26,7 +26,7 @@ import {
   Time,
   VerticalSecondGranularity,
   VerticalTimeAxis,
-} from './Axis.story';
+} from './Axis.story.js';
 
 describe('Axis', () => {
   // Axis is not a real React component. This is test just provides test coverage for sonarqube

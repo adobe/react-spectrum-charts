@@ -22,17 +22,17 @@ import UsersAdd from '@spectrum-icons/workflow/UsersAdd';
 import ViewDetail from '@spectrum-icons/workflow/ViewDetail';
 
 import { Colors, Datum, LegendDescription, LegendLabel, SpectrumColor, SubLabel } from '@spectrum-charts/vega-spec-builder-s2';
-import useChartProps from '../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartPopover, ChartInspect, Legend, Line, s2Categorical16 } from '../index';
-import { bindWithProps } from '../test-utils';
+import useChartProps from '../hooks/useChartProps.js';
+import { Axis, Bar, Chart, ChartPopover, ChartInspect, Legend, Line, s2Categorical16 } from '../index.js';
+import { bindWithProps } from '../test-utils/index.js';
 import {
   funnelConversionData,
   funnelConversionTimeComparisonData,
   userGrowthData,
   userGrowthTimeComparisonData,
-} from './data/data';
-import stackOverflowData from './data/stackOverflowTrends.json';
-import { trendsTimeComparisonData } from './data/trendsTimeComparisonData';
+} from './data/data.js';
+import stackOverflowData from './data/stackOverflowTrends.json' with { type: 'json' };
+import { trendsTimeComparisonData } from './data/trendsTimeComparisonData.js';
 
 export default {
   title: 'RSC/Chart/Examples',

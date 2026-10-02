@@ -13,9 +13,9 @@ import { NumericValueRef, ProductionRule } from 'vega';
 
 import { FADE_FACTOR, LAST_RSC_SERIES_ID, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
-import { getDualAxisScaleNames } from '../scale/scaleUtils';
-import { LineMarkOptions, isDualMetricAxis } from './lineUtils';
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
+import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
+import { LineMarkOptions, isDualMetricAxis } from './lineUtils.js';
 
 /**
  * Gets the Y encoding for line marks with dual metric axis support

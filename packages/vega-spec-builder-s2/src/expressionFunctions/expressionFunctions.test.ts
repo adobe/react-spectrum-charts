@@ -21,7 +21,7 @@ import {
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
   isDonutLabelVisible,
-} from './expressionFunctions';
+} from './expressionFunctions.js';
 
 describe('isDonutLabelVisible()', () => {
   const data = [

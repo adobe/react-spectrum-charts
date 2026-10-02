@@ -24,9 +24,9 @@ import {
 	SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
-import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions } from '../types';
-import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from './lineDirectLabelUtils';
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
+import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions } from '../types/index.js';
+import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from './lineDirectLabelUtils.js';
 
 const asArray = (val: unknown): string[] => val as string[];
 const asSourceData = (data: Data): SourceData => data as SourceData;

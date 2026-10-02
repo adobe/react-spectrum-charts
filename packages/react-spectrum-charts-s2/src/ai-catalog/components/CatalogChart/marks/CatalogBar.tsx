@@ -13,7 +13,7 @@ import { ReactElement } from 'react';
 
 import { BarDecorationInput, BarInput } from '@spectrum-charts/schemas';
 
-import { Bar, BarDirectLabel, ChartInspect } from '../../../../components';
+import { Bar, BarDirectLabel, ChartInspect } from '../../../../components/index.js';
 
 function renderBarDecoration(
   decoration: BarDecorationInput,

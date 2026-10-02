@@ -38,12 +38,12 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { hasTransformByAs } from '../data/dataUtils';
-import { isDualMetricAxis, LineMarkOptions } from '../line/lineUtils';
-import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getDualAxisScaleNames } from '../scale/scaleUtils';
-import { hasSignalByName } from '../signal/signalSpecBuilder';
-import { LineSpecOptions, ScaleType } from '../types';
+import { hasTransformByAs } from '../data/dataUtils.js';
+import { isDualMetricAxis, LineMarkOptions } from '../line/lineUtils.js';
+import { getScaleName } from '../scale/scaleSpecBuilder.js';
+import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
+import { hasSignalByName } from '../signal/signalSpecBuilder.js';
+import { LineSpecOptions, ScaleType } from '../types/index.js';
 
 /**
  * The field used to compare rows against the animation cutoff. Time scales need a numeric-ms field

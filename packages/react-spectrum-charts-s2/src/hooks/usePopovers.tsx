@@ -11,12 +11,12 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { ChartPopover } from '../components/ChartPopover';
-import { Donut } from '../pre-alpha';
-import { DefaultDonutContent, getDefaultDonutContent } from '../pre-alpha/components/Donut/DonutDialogContent';
-import { ChartChildElement, ChartPopoverElement, ChartPopoverProps, DonutElement } from '../types';
-import { getAllElements, getAllMarkElements } from '../utils';
-import { ChartContainer } from './ChartContainer';
+import { ChartPopover } from '../components/ChartPopover/index.js';
+import { Donut } from '../pre-alpha/index.js';
+import { DefaultDonutContent, getDefaultDonutContent } from '../pre-alpha/components/Donut/DonutDialogContent.js';
+import { ChartChildElement, ChartPopoverElement, ChartPopoverProps, DonutElement } from '../types/index.js';
+import { getAllElements, getAllMarkElements } from '../utils/index.js';
+import { ChartContainer } from './ChartContainer.js';
 
 type MappedPopover = { name: string; element: ChartPopoverElement; parent?: string };
 type MappedDonut = { name: string; element: DonutElement };

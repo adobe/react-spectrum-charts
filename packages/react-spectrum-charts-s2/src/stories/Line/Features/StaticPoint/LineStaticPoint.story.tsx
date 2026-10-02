@@ -15,13 +15,13 @@ import { StoryFn } from '@storybook/react';
 
 import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_POINT_SIZES } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, Legend, Line } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
-import { formatTimestamp } from '../../../../stories/storyUtils';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
+import { Chart } from '../../../../Chart.js';
+import { Axis, ChartInspect, Legend, Line } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data.js';
+import { formatTimestamp } from '../../../../stories/storyUtils.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps } from '../../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/StaticPoint',

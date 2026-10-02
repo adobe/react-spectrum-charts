@@ -9,20 +9,34 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useMemo } from 'react';
+import { CSSProperties, useMemo } from 'react';
+
+import { View } from 'vega';
+import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 import { getColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { useChartContext } from '../context/RscChartContext';
-import { ChartChildElement, RscChartProps } from '../types';
-import useAxisLabelTooltipAnchorStyle from './useAxisLabelTooltipAnchorStyle';
-import useLegend from './useLegend';
-import useNewChartView from './useNewChartView';
-import usePopoverAnchorStyle from './usePopoverAnchorStyle';
-import useChartInspectInteractions from './useChartInspectInteractions';
+import { useChartContext } from '../context/RscChartContext.js';
+import { ChartChildElement, RscChartProps } from '../types/index.js';
+import useAxisLabelTooltipAnchorStyle from './useAxisLabelTooltipAnchorStyle.js';
+import useLegend from './useLegend.js';
+import useNewChartView from './useNewChartView.js';
+import usePopoverAnchorStyle from './usePopoverAnchorStyle.js';
+import useChartInspectInteractions from './useChartInspectInteractions.js';
 
-export const useChartInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
+export interface ChartInteractions {
+  signals: Record<string, unknown>;
+  targetStyle: CSSProperties;
+  axisLabelTooltipAnchorStyle: CSSProperties;
+  inspectOptions: TooltipOptions;
+  onNewView: (view: View) => void;
+}
+
+export const useChartInteractions = (
+  props: RscChartProps,
+  sanitizedChildren: ChartChildElement[]
+): ChartInteractions => {
   const { selectedData } = useChartContext();
   const { inspectOptions } = useChartInspectInteractions(props, sanitizedChildren);
   const legendProps = useLegend(sanitizedChildren);

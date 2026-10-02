@@ -17,7 +17,7 @@ import {
   TRENDLINE_VALUE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { defaultLineOptions } from './trendlineTestUtils';
+import { defaultLineOptions } from './trendlineTestUtils.js';
 import {
   applyTrendlinePropDefaults,
   getPolynomialOrder,
@@ -25,7 +25,7 @@ import {
   getTrendlineColorFromMarkOptions,
   getTrendlineLineTypeFromMarkOptions,
   getTrendlines,
-} from './trendlineUtils';
+} from './trendlineUtils.js';
 
 describe('getTrendlines()', () => {
   test('should return an array of trendline options', () => {

@@ -19,7 +19,7 @@ import {
   getByText,
   render,
   screen,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   Dodged,
@@ -28,7 +28,7 @@ import {
   VerticalBarHorizontalTrellis,
   VerticalBarVerticalTrellis,
   WithCustomTrellisPadding,
-} from './TrellisBar.story';
+} from './TrellisBar.story.js';
 
 describe('TrellisBar', () => {
   test('Dodged renders properly', async () => {

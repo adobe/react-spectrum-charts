@@ -13,10 +13,10 @@ import { GroupMark, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { isInteractive } from '../marks/markUtils';
-import { BarSpecOptions } from '../types';
-import { getBarFocusRing, getDodgedGroupFocusRing } from './barFocusRingUtils';
-import { getAnnotationMarks } from './barAnnotationUtils';
+import { isInteractive } from '../marks/markUtils.js';
+import { BarSpecOptions } from '../types/index.js';
+import { getBarFocusRing, getDodgedGroupFocusRing } from './barFocusRingUtils.js';
+import { getAnnotationMarks } from './barAnnotationUtils.js';
 import {
   getBarDimensionHoverArea,
   getBarEnterEncodings,
@@ -27,7 +27,7 @@ import {
   getDodgedDimensionEncodings,
   getDodgedGroupMark,
   shouldShowItemSelectionRing,
-} from './barUtils';
+} from './barUtils.js';
 
 export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[] => {
   const { name } = options;

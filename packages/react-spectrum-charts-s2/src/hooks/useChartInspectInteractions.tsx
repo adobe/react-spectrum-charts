@@ -29,12 +29,12 @@ function renderToHtml(element: ReactElement): string {
 import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/core-s2/constants';
 import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { useChartContext } from '../context/RscChartContext';
-import { DefaultDonutContent, DonutDialogContent, getDonutSwatchColor } from '../pre-alpha/components/Donut/DonutDialogContent';
-import { ChartChildElement, RscChartProps } from '../types';
-import { debugLog } from '../utils';
-import useLegend from './useLegend';
-import useChartInspects, { type InspectDetail } from './useChartInspects';
+import { useChartContext } from '../context/RscChartContext.js';
+import { DefaultDonutContent, DonutDialogContent, getDonutSwatchColor } from '../pre-alpha/components/Donut/DonutDialogContent.js';
+import { ChartChildElement, RscChartProps } from '../types/index.js';
+import { debugLog } from '../utils/index.js';
+import useLegend from './useLegend.js';
+import useChartInspects, { type InspectDetail } from './useChartInspects.js';
 
 interface LegendInspectProps {
   value: { index: number };

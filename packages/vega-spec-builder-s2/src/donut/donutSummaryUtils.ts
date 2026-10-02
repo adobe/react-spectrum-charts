@@ -33,9 +33,9 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getTextNumberFormat } from '../textUtils';
-import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
-import { getDonutCenterYSignal, getDonutInnerRadiusExpr, getDonutOuterRadiusExpr } from './donutUtils';
+import { getTextNumberFormat } from '../textUtils.js';
+import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types/index.js';
+import { getDonutCenterYSignal, getDonutInnerRadiusExpr, getDonutOuterRadiusExpr } from './donutUtils.js';
 
 type DonutSummaryLayoutOptions = Pick<DonutSummarySpecOptions, 'donutOptions' | 'hideValue' | 'label' | 'delta'>;
 

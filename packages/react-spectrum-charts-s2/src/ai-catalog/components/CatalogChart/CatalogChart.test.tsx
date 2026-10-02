@@ -11,9 +11,9 @@
  */
 import React from 'react';
 
-import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen, within } from '../../../test-utils';
+import { findChart, getAllMarksByGroupName, hoverNthElement, render, screen, within } from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { CatalogChart } from './CatalogChart';
+import { CatalogChart } from './CatalogChart.js';
 
 const barData = {
   values: [

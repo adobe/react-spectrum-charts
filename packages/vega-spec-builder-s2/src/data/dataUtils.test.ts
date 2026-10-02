@@ -13,7 +13,7 @@ import { Transforms } from 'vega';
 
 import { DEFAULT_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION, TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { addTimeTransform, getSeriesIdTransform, getTableData, hasTransformByAs } from './dataUtils';
+import { addTimeTransform, getSeriesIdTransform, getTableData, hasTransformByAs } from './dataUtils.js';
 
 describe('addTimeTransform()', () => {
   test('should return the time transforms', () => {

@@ -18,12 +18,12 @@ import { StoryFn } from '@storybook/react';
 import { AnimationType, GROUP_DATA, MARK_ID } from '@spectrum-charts/core-s2/constants';
 import { ChartData, Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
-import { barSeriesData, barSubSeriesData, generateMockDataForTrellis } from './data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarProps } from '../../../types/index.js';
+import { barSeriesData, barSubSeriesData, generateMockDataForTrellis } from './data.js';
 
 // ┌───────────────────────────┬──────────────────────────────────────────────────┬────────────────────────────────────────────────┐
 // │           Story           │                      Trigger                      │                   Match rule                    │

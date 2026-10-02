@@ -18,8 +18,8 @@ import {
   getAnnotationWidth,
   getAnnotationXEncode,
   getMinBandwidth,
-} from './barAnnotationUtils';
-import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils';
+} from './barAnnotationUtils.js';
+import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils.js';
 
 describe('getAnnotationMarks()', () => {
   test('should retrun an empty array if there is no annotation on the bar', () => {

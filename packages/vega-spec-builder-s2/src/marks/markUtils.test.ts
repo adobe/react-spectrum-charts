@@ -31,8 +31,8 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { defaultBarOptions } from '../bar/barTestUtils';
-import { ProductionRuleTests } from '../types';
+import { defaultBarOptions } from '../bar/barTestUtils.js';
+import { ProductionRuleTests } from '../types/index.js';
 import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
@@ -50,7 +50,7 @@ import {
   getYProductionRule,
   hasInspect,
   isInteractive,
-} from './markUtils';
+} from './markUtils.js';
 
 describe('getColorProductionRule', () => {
   test('should return scale reference if color is a string', () => {

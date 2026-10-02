@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Scatter } from '../../pre-alpha/components/Scatter';
-import { findAllMarksByGroupName, findChart, render } from '../../test-utils';
-import { Basic } from './Features/ScatterBasic.story';
+import { Scatter } from '../../pre-alpha/components/Scatter/index.js';
+import { findAllMarksByGroupName, findChart, render } from '../../test-utils/index.js';
+import { Basic } from './Features/ScatterBasic.story.js';
 
 describe('Scatter', () => {
   // Scatter is not a real React component. This is test just provides test coverage for sonarqube

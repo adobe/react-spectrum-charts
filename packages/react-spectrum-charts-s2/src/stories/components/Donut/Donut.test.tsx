@@ -11,9 +11,9 @@
  */
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { Donut } from '../../../pre-alpha/components/Donut';
-import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
-import { Basic, EmptyState } from './Donut.story';
+import { Donut } from '../../../pre-alpha/components/Donut/index.js';
+import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils/index.js';
+import { Basic, EmptyState } from './Donut.story.js';
 
 describe('Donut', () => {
   // Donut is not a real React component. This is test just provides test coverage for sonarqube

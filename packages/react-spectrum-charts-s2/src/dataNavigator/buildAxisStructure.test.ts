@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { buildAxisDescription, buildAxisStructure } from './buildAxisStructure';
+import { buildAxisDescription, buildAxisStructure } from './buildAxisStructure.js';
 
 const data = [
   { browser: 'Chrome', downloads: 27000 },

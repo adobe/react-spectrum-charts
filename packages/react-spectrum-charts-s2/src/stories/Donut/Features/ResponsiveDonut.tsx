@@ -18,10 +18,10 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import useChartProps from '../../../hooks/useChartProps';
-import { Donut } from '../../../pre-alpha';
-import { DonutProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Donut } from '../../../pre-alpha/index.js';
+import { DonutProps } from '../../../types/index.js';
 
 const THUMB_HEIGHT = 32;
 

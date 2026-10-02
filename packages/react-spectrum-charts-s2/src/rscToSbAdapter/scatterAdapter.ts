@@ -11,8 +11,8 @@
  */
 import { ScatterOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ScatterProps } from '../types';
-import { ChildrenToOptions } from './childOptions.types';
+import { ScatterProps } from '../types/index.js';
+import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getScatterOptions = (
   { children, ...scatterProps }: ScatterProps,

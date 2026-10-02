@@ -13,10 +13,10 @@ import { createElement } from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { Bar, ChartPopover } from '../components';
-import { Donut } from '../pre-alpha';
-import { ChartChildElement } from '../types';
-import usePopovers from './usePopovers';
+import { Bar, ChartPopover } from '../components/index.js';
+import { Donut } from '../pre-alpha/index.js';
+import { ChartChildElement } from '../types/index.js';
+import usePopovers from './usePopovers.js';
 
 const run = (children: ChartChildElement[]) => renderHook(() => usePopovers(children)).result.current;
 const callback = () => null;

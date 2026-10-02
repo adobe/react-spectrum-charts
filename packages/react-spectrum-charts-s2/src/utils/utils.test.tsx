@@ -11,16 +11,16 @@
  */
 import { Fragment, createElement } from 'react';
 
-import { Chart } from '../Chart';
-import { Bar, ChartInspect, Line } from '../components';
-import { Area, Bullet, Donut, Scatter, Trendline } from '../pre-alpha';
+import { Chart } from '../Chart.js';
+import { Bar, ChartInspect, Line } from '../components/index.js';
+import { Area, Bullet, Donut, Scatter, Trendline } from '../pre-alpha/index.js';
 import {
   debugLog,
   getAllElements,
   getComponentName,
   shouldClearHoverSignalsOnClose,
   toggleStringArrayValue,
-} from './utils';
+} from './utils.js';
 
 describe('utils', () => {
   describe('shouldClearHoverSignalsOnClose()', () => {

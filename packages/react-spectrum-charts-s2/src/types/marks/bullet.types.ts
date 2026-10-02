@@ -13,8 +13,8 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { BulletOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartInspectElement } from '../dialogs';
-import { Children } from '../util.types';
+import { ChartInspectElement } from '../dialogs/index.js';
+import { Children } from '../util.types.js';
 
 export interface BulletProps extends Omit<BulletOptions, 'chartInspects' | 'markType'> {
   children?: Children<ChartInspectElement>;

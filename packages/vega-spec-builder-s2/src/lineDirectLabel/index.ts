@@ -14,4 +14,4 @@ export {
   getLineDirectLabelData,
   getLineDirectLabelMarks,
   getLineDirectLabelSpecOptions,
-} from './lineDirectLabelUtils';
+} from './lineDirectLabelUtils.js';

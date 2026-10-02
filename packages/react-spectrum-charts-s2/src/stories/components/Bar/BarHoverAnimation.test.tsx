@@ -21,7 +21,7 @@ import {
   hoverNthElement,
   render,
   screen,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   DodgedStackedLegendHover,
@@ -32,7 +32,7 @@ import {
   StackedPointHover,
   StackedPopoverSelection,
   TrellisPointHover,
-} from './BarHoverAnimation.story';
+} from './BarHoverAnimation.story.js';
 
 // `animations={false}` restores the original instant, synchronous highlighting for every trigger.
 describe('animations={false}', () => {

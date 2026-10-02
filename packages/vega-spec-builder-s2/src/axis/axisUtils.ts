@@ -13,7 +13,7 @@ import { Axis, Mark, Scale, SignalRef } from 'vega';
 
 import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { AxisSpecOptions, DivergingBarMark, Granularity, Orientation, Position } from '../types';
+import { AxisSpecOptions, DivergingBarMark, Granularity, Orientation, Position } from '../types/index.js';
 import {
   getAxisLabelsEncoding,
   getAxisLabelTooltipRule,
@@ -22,8 +22,8 @@ import {
   getLabelFormat,
   getLabelOffset,
   getTimeLabelFormats,
-} from './axisLabelUtils';
-import { isVerticalAxis } from './axisPositionUtils';
+} from './axisLabelUtils.js';
+import { isVerticalAxis } from './axisPositionUtils.js';
 
 /**
  * Generates a default vega axis from the axis options

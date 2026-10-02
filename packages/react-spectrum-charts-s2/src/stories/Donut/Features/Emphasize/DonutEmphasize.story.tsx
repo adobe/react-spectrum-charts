@@ -17,12 +17,12 @@ import { StoryFn } from '@storybook/react';
 
 
 
-import { Chart } from '../../../../Chart';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Donut, SegmentLabel } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
-import { basicDonutData } from '../../../components/Donut/data';
-import { ResponsiveDonut } from '../ResponsiveDonut';
+import { Chart } from '../../../../Chart.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Donut, SegmentLabel } from '../../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { basicDonutData } from '../../../components/Donut/data.js';
+import { ResponsiveDonut } from '../ResponsiveDonut.js';
 
 
 export default {

@@ -15,8 +15,8 @@ import { View } from 'vega';
 
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { AxisRegionOptions, NavigableChartType } from './buildChartStructure';
-import { attachDataNavigator } from './dataNavigatorAdapter';
+import { AxisRegionOptions, NavigableChartType } from './buildChartStructure.js';
+import { attachDataNavigator } from './dataNavigatorAdapter.js';
 
 export interface NavigatorProps {
   /** The chart type to build navigation for. */

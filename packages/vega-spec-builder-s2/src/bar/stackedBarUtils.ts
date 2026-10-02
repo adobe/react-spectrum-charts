@@ -13,10 +13,10 @@ import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { isInteractive } from '../marks/markUtils';
-import { BarSpecOptions } from '../types';
-import { getAnnotationMarks } from './barAnnotationUtils';
-import { getBarFocusRing, getStackFocusRing } from './barFocusRingUtils';
+import { isInteractive } from '../marks/markUtils.js';
+import { BarSpecOptions } from '../types/index.js';
+import { getAnnotationMarks } from './barAnnotationUtils.js';
+import { getBarFocusRing, getStackFocusRing } from './barFocusRingUtils.js';
 import {
   getBarDimensionHoverArea,
   getBarEnterEncodings,
@@ -29,8 +29,8 @@ import {
   getOrientationProperties,
   isDodgedAndStacked,
   shouldShowItemSelectionRing,
-} from './barUtils';
-import { getTrellisProperties, isTrellised } from './trellisPropertyUtils';
+} from './barUtils.js';
+import { getTrellisProperties, isTrellised } from './trellisPropertyUtils.js';
 
 export const getStackedBarMarks = (options: BarSpecOptions): Mark[] => {
   const marks: Mark[] = [];

@@ -17,12 +17,12 @@ import { StoryFn } from '@storybook/react';
 import { ActionButton } from '@react-spectrum/s2';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../Chart';
-import { Axis, Line } from '../components';
-import useChartProps from '../hooks/useChartProps';
-import { bindWithProps } from '../test-utils';
+import { Chart } from '../Chart.js';
+import { Axis, Line } from '../components/index.js';
+import useChartProps from '../hooks/useChartProps.js';
+import { bindWithProps } from '../test-utils/index.js';
 import './Chart.story.css';
-import { data } from './data/data';
+import { data } from './data/data.js';
 
 export default {
   title: 'RSC/Chart/Handles',

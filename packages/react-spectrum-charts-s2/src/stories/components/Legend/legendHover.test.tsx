@@ -11,8 +11,8 @@
  */
 import React from 'react';
 
-import { findChart, getAllLegendEntries, hoverNthElement, render, unhoverNthElement } from '../../../test-utils';
-import { ControlledHover } from './legendHover.story';
+import { findChart, getAllLegendEntries, hoverNthElement, render, unhoverNthElement } from '../../../test-utils/index.js';
+import { ControlledHover } from './legendHover.story.js';
 
 test('Mousing over a legend item should trigger callback function.', async () => {
   const onMouseOver = jest.fn();

@@ -13,8 +13,8 @@ import { Data, Spec } from 'vega';
 
 import { AnimationType } from '@spectrum-charts/core-s2/constants';
 
-import { AxisOptions } from './axis';
-import { LegendOptions } from './legendSpec.types';
+import { AxisOptions } from './axis/index.js';
+import { LegendOptions } from './legendSpec.types.js';
 import {
   AreaOptions,
   BarOptions,
@@ -25,10 +25,10 @@ import {
   LineOptions,
   ScatterOptions,
   VennOptions,
-} from './marks';
-import { ChartSymbolShape, LineType, LineWidth, PartiallyRequired, SymbolSize } from './specUtil.types';
-import { Colors } from './spectrumVizColor.types';
-import { TitleOptions } from './titleSpec.types';
+} from './marks/index.js';
+import { ChartSymbolShape, LineType, LineWidth, PartiallyRequired, SymbolSize } from './specUtil.types.js';
+import { Colors } from './spectrumVizColor.types.js';
+import { TitleOptions } from './titleSpec.types.js';
 
 export type ColorScheme = 'light' | 'dark';
 export type Height = number | `${number}%`;

@@ -13,10 +13,10 @@ import { createElement } from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { Bar, ChartInspect } from '../components';
-import { Donut } from '../pre-alpha';
-import { ChartChildElement } from '../types';
-import useChartInspects from './useChartInspects';
+import { Bar, ChartInspect } from '../components/index.js';
+import { Donut } from '../pre-alpha/index.js';
+import { ChartChildElement } from '../types/index.js';
+import useChartInspects from './useChartInspects.js';
 
 const run = (children: ChartChildElement[]) => renderHook(() => useChartInspects(children)).result.current;
 const callback = () => null;

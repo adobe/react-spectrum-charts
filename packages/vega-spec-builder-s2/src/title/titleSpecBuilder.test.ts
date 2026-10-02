@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { applyTitleOptionsDefaults } from './titleSpecBuilder';
+import { applyTitleOptionsDefaults } from './titleSpecBuilder.js';
 
 describe('applyTitleOptionsDefaults()', () => {
   test('should always use S2 defaults', () => {

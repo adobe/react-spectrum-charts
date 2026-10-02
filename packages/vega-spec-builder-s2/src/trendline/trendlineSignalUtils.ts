@@ -11,9 +11,9 @@
  */
 import { Signal } from 'vega';
 
-import { hasInspect } from '../marks/markUtils';
-import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
-import { TrendlineParentOptions, getTrendlines } from './trendlineUtils';
+import { hasInspect } from '../marks/markUtils.js';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
+import { TrendlineParentOptions, getTrendlines } from './trendlineUtils.js';
 
 export const setTrendlineSignals = (signals: Signal[], markOptions: TrendlineParentOptions): void => {
   const { name: markName } = markOptions;

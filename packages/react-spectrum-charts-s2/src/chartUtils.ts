@@ -21,7 +21,7 @@ import {
 import { LineType, LineWidth, PartiallyRequired } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
-import { ChartProps } from './types';
+import { ChartProps } from './types/index.js';
 
 type ChartPropsWithDefaults =
   | 'backgroundColor'

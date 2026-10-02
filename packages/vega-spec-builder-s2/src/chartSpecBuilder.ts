@@ -52,19 +52,19 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { colorSchemes, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { addArea } from './area/areaSpecBuilder';
-import { addAxis } from './axis/axisSpecBuilder';
-import { addBar } from './bar/barSpecBuilder';
-import { addBullet } from './bullet/bulletSpecBuilder';
-import { addCombo } from './combo/comboSpecBuilder';
-import { getSeriesIdTransform } from './data/dataUtils';
-import { addDonut } from './donut/donutSpecBuilder';
-import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils';
-import { addLegend } from './legend/legendSpecBuilder';
-import { addLine } from './line/lineSpecBuilder';
-import { getOrdinalScale } from './scale/scaleSpecBuilder';
-import { addScatter } from './scatter/scatterSpecBuilder';
-import { getGenericValueSignal } from './signal/signalSpecBuilder';
+import { addArea } from './area/areaSpecBuilder.js';
+import { addAxis } from './axis/axisSpecBuilder.js';
+import { addBar } from './bar/barSpecBuilder.js';
+import { addBullet } from './bullet/bulletSpecBuilder.js';
+import { addCombo } from './combo/comboSpecBuilder.js';
+import { getSeriesIdTransform } from './data/dataUtils.js';
+import { addDonut } from './donut/donutSpecBuilder.js';
+import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils.js';
+import { addLegend } from './legend/legendSpecBuilder.js';
+import { addLine } from './line/lineSpecBuilder.js';
+import { getOrdinalScale } from './scale/scaleSpecBuilder.js';
+import { addScatter } from './scatter/scatterSpecBuilder.js';
+import { getGenericValueSignal } from './signal/signalSpecBuilder.js';
 import {
   getFacetsFromScales,
   getLineWidthPixelsFromLineWidth,
@@ -73,8 +73,8 @@ import {
   getSymbolWidthFromRscSymbolSize,
   getVegaSymbolSizeFromRscSymbolSize,
   initializeSpec,
-} from './specUtils';
-import { addTitle } from './title/titleSpecBuilder';
+} from './specUtils.js';
+import { addTitle } from './title/titleSpecBuilder.js';
 import {
   ChartColors,
   ChartOptions,
@@ -90,8 +90,8 @@ import {
   ScSpec,
   SymbolShapes,
   SymbolSize,
-} from './types';
-import { addVenn } from './venn/vennSpecBuilder';
+} from './types/index.js';
+import { addVenn } from './venn/vennSpecBuilder.js';
 
 /** True for an axis repositioned to its opposing scale's zero line (its `offset` is a `scale(…, 0)` signal). */
 const isDivergingAxis = (axis: Axis): boolean => {

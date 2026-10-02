@@ -15,12 +15,12 @@ import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, ChartPopover, Legend } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Area } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
-import { AreaProps, ChartProps } from '../../../../types';
+import { Chart } from '../../../../Chart.js';
+import { Axis, ChartInspect, ChartPopover, Legend } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Area } from '../../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { AreaProps, ChartProps } from '../../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Area/Features/Inspect',

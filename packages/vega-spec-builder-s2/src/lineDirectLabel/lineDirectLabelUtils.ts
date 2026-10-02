@@ -14,15 +14,15 @@ import { Data, Mark, NumericValueRef, ProductionRule, TextMark, Transforms } fro
 import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getCascadeTransforms, MIN_LABEL_GAP } from '../line/directLabelUtils';
+import { getCascadeTransforms, MIN_LABEL_GAP } from '../line/directLabelUtils.js';
 
-import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils';
-import { getLineOpacity } from '../line/lineMarkUtils';
-import { getEffectiveMetricField } from '../lineForecast';
-import { getColorProductionRule, getDirectLabelFontSizeProductionRule } from '../marks/markUtils';
-import { getScaleName } from '../scale/scaleSpecBuilder';
-import { escapeD3FormatSpecifier, getDimensionField, getFacetsFromOptions } from '../specUtils';
-import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types';
+import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils.js';
+import { getLineOpacity } from '../line/lineMarkUtils.js';
+import { getEffectiveMetricField } from '../lineForecast/index.js';
+import { getColorProductionRule, getDirectLabelFontSizeProductionRule } from '../marks/markUtils.js';
+import { getScaleName } from '../scale/scaleSpecBuilder.js';
+import { escapeD3FormatSpecifier, getDimensionField, getFacetsFromOptions } from '../specUtils.js';
+import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types/index.js';
 
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.

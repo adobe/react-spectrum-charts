@@ -13,9 +13,9 @@ import React from 'react';
 
 import { sequentialViridis16 } from '@spectrum-charts/core-s2/tokens';
 
-import { findChart, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '../test-utils';
+import { findChart, fireEvent, getAllMarksByGroupName, render, screen, waitFor } from '../test-utils/index.js';
 import '../test-utils/__mocks__/matchMedia.mock.js';
-import { BasicBar, PackedBubbleChart } from './ChartUnsafeVega.story';
+import { BasicBar, PackedBubbleChart } from './ChartUnsafeVega.story.js';
 
 const testFill = (el: HTMLElement, color: string) => {
   expect(el).toHaveAttribute('fill', color);

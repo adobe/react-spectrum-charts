@@ -23,7 +23,7 @@ import {
   useVariationDataset,
   useVariationSize,
   useVariationViewMode,
-} from './VariationDashboard';
+} from './VariationDashboard.js';
 
 const sizePresets: VariationSizePreset[] = [{ label: 'L', size: 200 }];
 const viewModes: VariationViewMode[] = [

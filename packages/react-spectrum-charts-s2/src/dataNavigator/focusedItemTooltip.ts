@@ -13,8 +13,8 @@ import { View } from 'vega';
 
 import { DIMENSION_HOVER_AREA, MARK_ID } from '@spectrum-charts/core-s2/constants';
 
-import { findAxisLabelItem } from './axisLabelGeometry';
-import { Row } from './barHoverParity';
+import { findAxisLabelItem } from './axisLabelGeometry.js';
+import { Row } from './barHoverParity.js';
 
 interface Bounds {
   x1: number;

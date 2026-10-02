@@ -13,7 +13,7 @@ import { Config } from 'vega';
 
 import { numberLocales } from '@spectrum-charts/core-s2/locales';
 
-import { applyUserMetaConfigPatches, getVegaEmbedOptions } from './vegaEmbedUtils';
+import { applyUserMetaConfigPatches, getVegaEmbedOptions } from './vegaEmbedUtils.js';
 
 describe('applyUserMetaConfigPatches()', () => {
   const base: Config = {

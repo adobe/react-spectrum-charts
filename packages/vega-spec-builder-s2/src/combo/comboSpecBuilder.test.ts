@@ -11,10 +11,10 @@
  */
 import { MARK_ID } from '@spectrum-charts/core-s2/constants';
 
-import { addBar } from '../bar/barSpecBuilder';
-import { addLine } from '../line/lineSpecBuilder';
-import { BarOptions, LineOptions } from '../types';
-import { addCombo, getComboMarkName } from './comboSpecBuilder';
+import { addBar } from '../bar/barSpecBuilder.js';
+import { addLine } from '../line/lineSpecBuilder.js';
+import { BarOptions, LineOptions } from '../types/index.js';
+import { addCombo, getComboMarkName } from './comboSpecBuilder.js';
 
 jest.mock('../bar/barSpecBuilder', () => ({
   addBar: jest.fn(),

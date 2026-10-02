@@ -15,7 +15,7 @@ import { FC } from 'react';
 
 import { DEFAULT_INTERACTION_MODE, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 
-import { LineProps } from '../../types';
+import { LineProps } from '../../types/index.js';
 
 const Line: FC<LineProps> = ({
   name = 'line0',

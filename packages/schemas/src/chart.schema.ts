@@ -11,9 +11,9 @@
  */
 import { z } from 'zod';
 
-import { AxisSchema } from './axis.schema';
-import { BarSchema } from './marks/bar.schema';
-import { LineSchema } from './marks/line.schema';
+import { AxisSchema } from './axis.schema.js';
+import { BarSchema } from './marks/bar.schema.js';
+import { LineSchema } from './marks/line.schema.js';
 
 // Add each new mark schema to this union as it's built out.
 export const MarkSchema = z.discriminatedUnion('component', [BarSchema, LineSchema]);

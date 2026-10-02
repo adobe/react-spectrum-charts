@@ -21,8 +21,8 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getHoverLabelData, getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils';
-import { defaultLineOptions } from './lineTestUtils';
+import { getHoverLabelData, getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils.js';
+import { defaultLineOptions } from './lineTestUtils.js';
 
 describe('getLineHighlightedData()', () => {
   test('should include select signal if hasPopover', () => {

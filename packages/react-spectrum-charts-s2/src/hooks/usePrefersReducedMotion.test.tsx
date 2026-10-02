@@ -11,7 +11,7 @@
  */
 import { act, renderHook } from '@testing-library/react';
 
-import usePrefersReducedMotion from './usePrefersReducedMotion';
+import usePrefersReducedMotion from './usePrefersReducedMotion.js';
 
 describe('usePrefersReducedMotion', () => {
   test('returns false when matchMedia is unavailable', () => {

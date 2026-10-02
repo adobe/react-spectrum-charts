@@ -11,7 +11,7 @@
  */
 import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartInspect } from '../../../components';
+import { ChartInspect } from '../../../components/index.js';
 import {
   allElementsHaveAttributeValue,
   findAllMarksByGroupName,
@@ -24,9 +24,9 @@ import {
   unhoverNthElement,
   waitFor,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { DodgedBarChart, LineChart, StackedBarChart } from './ChartInspect.story';
+import { DodgedBarChart, LineChart, StackedBarChart } from './ChartInspect.story.js';
 
 describe('ChartInspect', () => {
   // ChartInspect is not a real React component. This test provides coverage for sonarqube.

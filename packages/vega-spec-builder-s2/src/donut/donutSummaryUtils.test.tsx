@@ -17,7 +17,7 @@ import {
 
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { DonutSummarySpecOptions } from '../types';
+import { DonutSummarySpecOptions } from '../types/index.js';
 import {
   getBooleanDonutSummaryGroupMark,
   getDonutSummaryData,
@@ -32,8 +32,8 @@ import {
   getSummaryValueEncode,
   getSummaryValueLimit,
   getSummaryValueText,
-} from './donutSummaryUtils';
-import { defaultDonutOptions } from './donutTestUtils';
+} from './donutSummaryUtils.js';
+import { defaultDonutOptions } from './donutTestUtils.js';
 
 const defaultDonutSummaryOptions: DonutSummarySpecOptions = {
   donutOptions: defaultDonutOptions,

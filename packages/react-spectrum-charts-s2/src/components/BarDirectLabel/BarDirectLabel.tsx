@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { BarDirectLabelProps } from '../../types';
+import { BarDirectLabelProps } from '../../types/index.js';
 
 const BarDirectLabel: FC<BarDirectLabelProps> = (_props: BarDirectLabelProps) => {
   return null;

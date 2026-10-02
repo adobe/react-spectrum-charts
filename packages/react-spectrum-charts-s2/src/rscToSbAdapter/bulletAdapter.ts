@@ -11,8 +11,8 @@
  */
 import { BulletOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { BulletProps } from '../types';
-import { ChildrenToOptions } from './childOptions.types';
+import { BulletProps } from '../types/index.js';
+import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getBulletOptions = (
   { children, ...bulletProps }: BulletProps,

@@ -11,7 +11,7 @@
  */
 import { ReferenceLineSize } from '@spectrum-charts/core-s2/constants';
 
-import { ColorScheme } from '../chartSpec.types';
+import { ColorScheme } from '../chartSpec.types.js';
 
 export type Icon = 'date' | 'sentimentNegative' | 'sentimentNeutral' | 'sentimentPositive';
 

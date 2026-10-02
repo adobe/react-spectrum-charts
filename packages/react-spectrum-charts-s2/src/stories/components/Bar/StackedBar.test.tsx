@@ -20,8 +20,8 @@ import {
   unhoverNthElement,
   waitForMarksByGroupName,
   within,
-} from '../../../test-utils';
-import { InspectOnDimensionArea } from './StackedBar.story';
+} from '../../../test-utils/index.js';
+import { InspectOnDimensionArea } from './StackedBar.story.js';
 
 describe('InspectOnDimensionArea', () => {
   test('hovering dimension area should apply highlight styling and show tooltip', async () => {

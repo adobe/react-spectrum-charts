@@ -13,12 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../../Chart';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Bullet } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
-import { BulletProps, ChartProps } from '../../../../types';
-import { basicBulletData, basicThresholdsData, coloredThresholdsData } from '../../../data/bulletData';
+import { Chart } from '../../../../Chart.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Bullet } from '../../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { BulletProps, ChartProps } from '../../../../types/index.js';
+import { basicBulletData, basicThresholdsData, coloredThresholdsData } from '../../../data/bulletData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features/Background',

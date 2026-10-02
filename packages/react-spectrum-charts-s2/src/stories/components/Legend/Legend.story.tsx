@@ -14,11 +14,11 @@ import { ReactElement } from 'react';
 import { View } from '@adobe/react-spectrum';
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartPopover, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { LegendBarStory, LegendDisconnectedStory, LegendLineStory, defaultProps } from './LegendStoryUtils';
+import { Chart } from '../../../Chart.js';
+import { Axis, ChartPopover, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { LegendBarStory, LegendDisconnectedStory, LegendLineStory, defaultProps } from './LegendStoryUtils.js';
 
 const WEEK_DATETIMES = [
   1780293600000, 1780380000000, 1780466400000, 1780552800000,

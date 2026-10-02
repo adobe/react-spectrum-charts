@@ -11,8 +11,8 @@
  */
 import { TextValueRef } from 'vega';
 
-import { getD3FormatSpecifierFromNumberFormat } from './specUtils';
-import { NumberFormat } from './types';
+import { getD3FormatSpecifierFromNumberFormat } from './specUtils.js';
+import { NumberFormat } from './types/index.js';
 
 /**
  * gets the number format tests and signals based on the numberFormat

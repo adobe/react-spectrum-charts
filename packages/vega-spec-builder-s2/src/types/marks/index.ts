@@ -10,14 +10,14 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './areaSpec.types';
-export * from './barSpec.types';
-export * from './bigNumberSpec.types';
-export * from './bulletSpec.types';
-export * from './comboSpec.types';
-export * from './donutSpec.types';
-export * from './lineSpec.types';
-export * from './scatterSpec.types';
-export * from './vennSpec.types';
+export * from './areaSpec.types.js';
+export * from './barSpec.types.js';
+export * from './bigNumberSpec.types.js';
+export * from './bulletSpec.types.js';
+export * from './comboSpec.types.js';
+export * from './donutSpec.types.js';
+export * from './lineSpec.types.js';
+export * from './scatterSpec.types.js';
+export * from './vennSpec.types.js';
 
-export * from './supplemental';
+export * from './supplemental/index.js';

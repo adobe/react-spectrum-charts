@@ -23,8 +23,8 @@ import {
   getBulletMarkValueLabel,
   getBulletTrack,
   getBulletValueText,
-} from './bulletMarkUtils';
-import { sampleOptionsColumn, sampleOptionsRow, sampleOptionsWithInspect } from './bulletTestUtils';
+} from './bulletMarkUtils.js';
+import { sampleOptionsColumn, sampleOptionsRow, sampleOptionsWithInspect } from './bulletTestUtils.js';
 
 describe('getBulletMarks', () => {
   test('Should return the correct marks object for column mode', () => {

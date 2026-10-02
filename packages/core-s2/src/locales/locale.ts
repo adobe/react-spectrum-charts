@@ -11,9 +11,9 @@
  */
 import { Locale, NumberLocale, TimeLocale } from 'vega';
 
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locale.types';
-import { numberLocales } from './numberLocales';
-import { timeLocales } from './timeLocales';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locale.types.js';
+import { numberLocales } from './numberLocales/index.js';
+import { timeLocales } from './timeLocales/index.js';
 
 export const getLocale = (
   locale:

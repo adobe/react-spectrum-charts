@@ -13,7 +13,7 @@ import { Scale } from 'vega';
 
 import { COLOR_SCALE, DEFAULT_COLOR, LINE_TYPE_SCALE, SYMBOL_SIZE_SCALE, TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
+import { getFacets, getFacetsFromKeys } from './legendFacetUtils.js';
 
 describe('getFacets()', () => {
   test('should correctly identify continuous and categorical facets', () => {

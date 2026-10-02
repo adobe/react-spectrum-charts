@@ -11,7 +11,7 @@
  */
 import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
-import { Bar } from '../../../components';
+import { Bar } from '../../../components/index.js';
 import {
   clickNthElement,
   findAllMarksByGroupName,
@@ -23,7 +23,7 @@ import {
   unhoverNthElement,
   waitForMarksByGroupName,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   BarWithUTCDatetimeFormat,
@@ -34,10 +34,10 @@ import {
   PaddingRatio,
   InspectOnDimensionArea,
   WithInspect,
-} from './Bar.story';
-import { Color, DodgedStacked } from './DodgedBar.story';
-import { Basic as StackedBasic } from './StackedBar.story';
-import { barData } from './data';
+} from './Bar.story.js';
+import { Color, DodgedStacked } from './DodgedBar.story.js';
+import { Basic as StackedBasic } from './StackedBar.story.js';
+import { barData } from './data.js';
 
 describe('Bar', () => {
   // Bar is not a real React component. This is test just provides test coverage for sonarqube

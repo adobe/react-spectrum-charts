@@ -11,13 +11,13 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { Bar } from '../components/Bar';
-import { Line } from '../components/Line';
-import { BarElement, ChartChildElement, LineElement, MarkCallback } from '../types';
-import { ContextMenuMode } from '../types/marks/line.types';
-import { ContextMenuCallback } from '../types/util.types';
-import { getAllMarkElements } from '../utils';
-import { ChartContainer } from './ChartContainer';
+import { Bar } from '../components/Bar/index.js';
+import { Line } from '../components/Line/index.js';
+import { BarElement, ChartChildElement, LineElement, MarkCallback } from '../types/index.js';
+import { ContextMenuMode } from '../types/marks/line.types.js';
+import { ContextMenuCallback } from '../types/util.types.js';
+import { getAllMarkElements } from '../utils/index.js';
+import { ChartContainer } from './ChartContainer.js';
 
 type MappedMarkElement = { name: string; element: BarElement | LineElement };
 

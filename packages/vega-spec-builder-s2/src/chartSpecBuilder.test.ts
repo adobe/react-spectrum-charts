@@ -57,10 +57,10 @@ import {
   getTwoDimensionalColorScheme,
   getTwoDimensionalLineTypes,
   getTwoDimensionalOpacities,
-} from './chartSpecBuilder';
-import { defaultSignals } from './specTestUtils';
-import { baseData } from './specUtils';
-import { BarOptions, ChartSpecOptions, LineType } from './types';
+} from './chartSpecBuilder.js';
+import { defaultSignals } from './specTestUtils.js';
+import { baseData } from './specUtils.js';
+import { BarOptions, ChartSpecOptions, LineType } from './types/index.js';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 

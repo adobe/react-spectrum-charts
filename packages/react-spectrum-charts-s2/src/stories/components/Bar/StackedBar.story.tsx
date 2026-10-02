@@ -16,13 +16,13 @@ import { StoryFn } from '@storybook/react';
 
 import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
-import { DimensionAreaStory } from './SharedBarStories';
-import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarProps } from '../../../types/index.js';
+import { DimensionAreaStory } from './SharedBarStories.js';
+import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Stacked Bar',
