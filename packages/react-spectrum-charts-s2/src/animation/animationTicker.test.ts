@@ -13,7 +13,8 @@ import { Spec, View } from 'vega';
 
 import { ANIMATION_ACTIVE, ANIMATION_FRAME_BUDGET_MS, ANIMATION_TIMER } from '@spectrum-charts/core-s2/constants';
 
-import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from './animationTicker.js';
+// loaded fresh per test so module-level frame state (e.g. lastFrameTime) doesn't leak between fake-timer clocks
+let ticker: typeof import('./animationTicker.js');
 
 type Listener = (name: string, value: boolean) => void;
 
@@ -69,13 +70,15 @@ const flushFrames = async (frames: number) => {
 describe('animationTicker', () => {
   let detachers: (() => void)[] = [];
   const attach = (view: View, container: Element = document.createElement('div')) => {
-    const detach = attachAnimationTicker(view, container);
+    const detach = ticker.attachAnimationTicker(view, container);
     detachers.push(detach);
     return detach;
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.useFakeTimers();
+    jest.resetModules();
+    ticker = await import('./animationTicker.js');
     detachers = [];
   });
 
@@ -87,9 +90,9 @@ describe('animationTicker', () => {
 
   describe('isAnimatedSpec()', () => {
     test('detects the animation timer signal', () => {
-      expect(isAnimatedSpec({ signals: [{ name: ANIMATION_TIMER, value: 0 }] } as Spec)).toBe(true);
-      expect(isAnimatedSpec({ signals: [{ name: 'other', value: 0 }] } as Spec)).toBe(false);
-      expect(isAnimatedSpec({} as Spec)).toBe(false);
+      expect(ticker.isAnimatedSpec({ signals: [{ name: ANIMATION_TIMER, value: 0 }] } as Spec)).toBe(true);
+      expect(ticker.isAnimatedSpec({ signals: [{ name: 'other', value: 0 }] } as Spec)).toBe(false);
+      expect(ticker.isAnimatedSpec({} as Spec)).toBe(false);
     });
   });
 
@@ -101,7 +104,7 @@ describe('animationTicker', () => {
           { name: 'other', value: 0, on: [{ events: 'click', update: '1' }] },
         ],
       } as Spec;
-      removeAnimationTimerEvents(spec);
+      ticker.removeAnimationTimerEvents(spec);
       expect(spec.signals).toStrictEqual([
         { name: ANIMATION_TIMER, value: 0 },
         { name: 'other', value: 0, on: [{ events: 'click', update: '1' }] },
@@ -110,7 +113,7 @@ describe('animationTicker', () => {
 
     test('is a no-op for specs without the animation timer', () => {
       const spec = {} as Spec;
-      removeAnimationTimerEvents(spec);
+      ticker.removeAnimationTimerEvents(spec);
       expect(spec).toStrictEqual({});
     });
   });
