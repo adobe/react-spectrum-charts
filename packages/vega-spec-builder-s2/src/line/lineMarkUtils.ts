@@ -59,7 +59,12 @@ import { ScaleType } from '../types';
 import { MIN_LABEL_GAP, getDirectLabelTextMarks } from './directLabelUtils';
 import { getPrimarySeriesOtherExpr } from './lineDataUtils';
 import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils';
-import { getHighlightPoint, getSecondaryHighlightPoint, getSelectionPoint } from './linePointUtils';
+import {
+  getHighlightPoint,
+  getPointSizeEncoding,
+  getSecondaryHighlightPoint,
+  getSelectionPoint,
+} from './linePointUtils';
 import { LineMarkOptions } from './lineUtils';
 
 const GRADIENT_BASE_OPACITY = 0.2;
@@ -489,7 +494,7 @@ const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark
  * @returns SymbolMark
  */
 const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: string): Mark => {
-  const { dimension, metric, name, scaleType } = lineOptions;
+  const { dimension, metric, name, pointSize, scaleType } = lineOptions;
 
   return {
     name: `${name}_pointsForVoronoi`,
@@ -502,6 +507,9 @@ const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: strin
         y: getLineYEncoding(lineOptions, metric),
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
+        // matches the highlight point's extent so hovering doesn't change the autosize bounds
+        size: getPointSizeEncoding(pointSize),
+        strokeWidth: { signal: CHART_SIZE_HOVER_STROKE_WIDTH },
       },
       update: {
         x: getXProductionRule(scaleType, dimension),
