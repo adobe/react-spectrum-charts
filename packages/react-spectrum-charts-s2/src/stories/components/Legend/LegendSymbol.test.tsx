@@ -41,7 +41,7 @@ test('LineType renders correctly', async () => {
   expect(chart).toBeInTheDocument();
 
   const symbols = getAllLegendSymbols(chart);
-  expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('7,4');
+  expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('6.5,2');
 });
 
 test('LineWidth renders correctly', async () => {
@@ -87,8 +87,8 @@ test('Supreme renders correctly', async () => {
 
   const symbols = getAllLegendSymbols(chart);
   expect(symbols[0].getAttribute('stroke-dasharray')).toEqual('');
-  expect(symbols[1].getAttribute('stroke-dasharray')).toEqual('7,4');
-  expect(symbols[2].getAttribute('stroke-dasharray')).toEqual('0,4');
+  expect(symbols[1].getAttribute('stroke-dasharray')).toEqual('6.5,2');
+  expect(symbols[2].getAttribute('stroke-dasharray')).toEqual('2,2');
 
   expect(symbols[0].getAttribute('stroke-width')).toEqual('1.5');
 

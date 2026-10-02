@@ -14,6 +14,8 @@ import { Config, Data, Scale, ScaleType, Spec } from 'vega';
 import { mergeConfig } from 'vega-util';
 
 import {
+  CHART_SIZE_STROKE_WIDTH,
+  CHART_SIZE_STROKE_WIDTHS,
   COLOR_SCALE,
   DATE_PATH,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -106,6 +108,19 @@ export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
   return [...new Set(facets)];
 };
 
+type ChartSize = keyof typeof CHART_SIZE_STROKE_WIDTHS;
+const CHART_SIZES: ChartSize[] = ['S', 'M', 'L'];
+
+/** Visible dash (including caps) and gap lengths for each named line type at each chart size. */
+const LINE_TYPE_DASHES: Record<Exclude<LineType, number[] | 'solid'>, Record<ChartSize, number[]>> = {
+  dashed: { S: [6, 2], M: [6.5, 2], L: [8.5, 2.5] },
+  dotted: { S: [1.5, 1], M: [2, 2], L: [2.5, 3] },
+  dotDash: { S: [1.5, 2, 6, 2], M: [2, 2, 6.5, 2], L: [2.5, 2.5, 8.5, 2.5] },
+  shortDash: { S: [3, 2], M: [4, 2], L: [5, 2.5] },
+  longDash: { S: [10.5, 2], M: [11, 2], L: [14.5, 2.5] },
+  twoDash: { S: [6, 2, 10.5, 2], M: [6.5, 2, 11, 2], L: [8.5, 2.5, 14.5, 2.5] },
+};
+
 /**
  * gets the strokeDash array from the lineType
  * @param lineType
@@ -115,23 +130,48 @@ export const getStrokeDashFromLineType = (lineType: LineType): number[] => {
   if (Array.isArray(lineType)) {
     return lineType;
   }
-  switch (lineType) {
-    case 'dashed':
-      return [7, 4];
-    case 'dotted':
-      return [0, 4];
-    case 'dotDash':
-      return [2, 3, 7, 4];
-    case 'shortDash':
-      return [3, 4];
-    case 'longDash':
-      return [11, 4];
-    case 'twoDash':
-      return [5, 2, 11, 2];
-    case 'solid':
-    default:
-      return [];
-  }
+  if (lineType === 'solid' || !(lineType in LINE_TYPE_DASHES)) return [];
+  return LINE_TYPE_DASHES[lineType].M;
+};
+
+/**
+ * Gets the visible dash lengths for each chart size, using design values for named line types and scaling custom arrays.
+ * @param strokeDash visible dash lengths at medium chart size
+ * @returns visible dash lengths per chart size
+ */
+export const getChartSizeDashes = (strokeDash: number[]): Record<ChartSize, number[]> => {
+  const key = strokeDash.join();
+  const named = Object.values(LINE_TYPE_DASHES).find((dashes) => dashes.M.join() === key);
+  if (named) return named;
+  const scale = (size: ChartSize) =>
+    strokeDash.map((length) => (length * CHART_SIZE_STROKE_WIDTHS[size]) / CHART_SIZE_STROKE_WIDTHS.M);
+  return { S: scale('S'), M: strokeDash, L: scale('L') };
+};
+
+/**
+ * Converts visible dash lengths into a strokeDash for round or square caps, which extend each dash by the stroke width.
+ * @param strokeDash visible dash lengths
+ * @param strokeWidth
+ * @returns strokeDash array
+ */
+const getCapCompensatedDash = (strokeDash: number[], strokeWidth: number): number[] => {
+  const evenDash = strokeDash.length % 2 ? [...strokeDash, ...strokeDash] : strokeDash;
+  return evenDash.map((length, index) => (index % 2 ? length + strokeWidth : Math.max(0, length - strokeWidth)));
+};
+
+/**
+ * Gets a strokeDash expression that picks the cap-compensated dash for the current chart size.
+ * @param strokeDash visible dash lengths at medium chart size
+ * @returns vega expression string
+ */
+export const getChartSizeDashExpr = (strokeDash: number[]): string => {
+  if (!strokeDash.length) return '[]';
+  const dashes = getChartSizeDashes(strokeDash);
+  const [s, m, l] = CHART_SIZES.map(
+    (size) => `[${getCapCompensatedDash(dashes[size], CHART_SIZE_STROKE_WIDTHS[size]).join(', ')}]`
+  );
+  const width = CHART_SIZE_STROKE_WIDTH;
+  return `(${width} < ${CHART_SIZE_STROKE_WIDTHS.M} ? ${s} : ${width} < ${CHART_SIZE_STROKE_WIDTHS.L} ? ${m} : ${l})`;
 };
 
 /**
@@ -344,8 +384,5 @@ export const addUserMetaDivergingBarMark = produce<UserMeta, [string, string, st
 );
 
 export const addUserMetaAnimatedMark = produce<UserMeta, [string?]>((usermeta, animatedMarkName) => {
-  usermeta.animatedMarks = [
-    ...(usermeta.animatedMarks ?? []),
-    ...(animatedMarkName ? [animatedMarkName] : []),
-  ];
+  usermeta.animatedMarks = [...(usermeta.animatedMarks ?? []), ...(animatedMarkName ? [animatedMarkName] : [])];
 });

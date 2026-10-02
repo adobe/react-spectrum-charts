@@ -417,7 +417,7 @@ The S2 `Line` component does not yet support `onMouseOver`, `onMouseOut`, `Metri
             <td>lineType</td>
             <td>string | &#123;value: LineType | number[]&#125;</td>
             <td>&#123;value: 'solid'&#125;</td>
-            <td>Key in the data for line type faceting, or a fixed line type value.</td>
+            <td>Key in the data for line type faceting, or a fixed line type value. Named line types use Spectrum 2 dash and gap sizes for each chart size. Custom <code>number[]</code> patterns are visible dash (including caps) and gap lengths at medium chart size, and scale with chart size.</td>
         </tr>
         <tr>
             <td>metric</td>

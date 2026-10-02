@@ -22,6 +22,7 @@ import {
   MARK_ID,
 } from '@spectrum-charts/constants';
 
+import { getChartSizeDashExpr, getStrokeDashFromLineType } from '../specUtils';
 import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
 import {
   applyMetricRangeOptionDefaults,
@@ -95,7 +96,6 @@ const basicMetricRangeMarks = [
         y: [{ scale: 'yLinear', field: 'metric' }],
         stroke: { scale: COLOR_SCALE, field: 'series' },
         strokeCap: { value: 'round' },
-        strokeDash: { value: [3, 4] },
         strokeOpacity: DEFAULT_OPACITY_RULE,
       },
       update: {
@@ -105,6 +105,7 @@ const basicMetricRangeMarks = [
         },
         opacity: [DEFAULT_OPACITY_RULE],
         strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+        strokeDash: { signal: getChartSizeDashExpr(getStrokeDashFromLineType('shortDash')) },
       },
     },
   },
@@ -190,9 +191,7 @@ describe('getMetricRangeMark', () => {
       { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       defaultMetricRangeSpecOptions
     );
-    expect(Array.isArray((lineMark as { encode: { update: { opacity: unknown } } }).encode.update.opacity)).toBe(
-      true
-    );
+    expect(Array.isArray((lineMark as { encode: { update: { opacity: unknown } } }).encode.update.opacity)).toBe(true);
   });
 });
 

@@ -73,7 +73,7 @@ describe('Time comparison stories', () => {
       expect(bars).toHaveLength(112);
 
       testBarOpacity(bars[0], '0.5');
-      testBarStroke(bars[0], '3,4', '1.5');
+      testBarStroke(bars[0], '4,2', '1.5');
     });
 
     test('current series should have typical style', async () => {
@@ -101,11 +101,11 @@ describe('Time comparison stories', () => {
       expect(bars).toHaveLength(24);
 
       testBarOpacity(bars[0], '0.5');
-      testBarStroke(bars[0], '3,4', '1.5');
+      testBarStroke(bars[0], '4,2', '1.5');
 
       // dropoff bars
       testBarOpacity(bars[2], '0.5');
-      testBarStroke(bars[2], '3,4', '1.5');
+      testBarStroke(bars[2], '4,2', '1.5');
     });
 
     test('current series should have typical style', async () => {
@@ -140,7 +140,7 @@ describe('Time comparison stories', () => {
       expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '1');
 
       // stroke-dasharray
-      expect(legendSymbols[0]).toHaveAttribute('stroke-dasharray', '3,4');
+      expect(legendSymbols[0]).toHaveAttribute('stroke-dasharray', '4,2');
       expect(legendSymbols[1]).toHaveAttribute('stroke-dasharray', '');
 
       // fill
@@ -175,13 +175,13 @@ describe('Time comparison stories', () => {
       // previous period April
       for (let i = 0; i <= 3; i++) {
         testBarOpacity(bars[i], '0.5');
-        testBarStroke(bars[i], '3,4', '1.5');
+        testBarStroke(bars[i], '4,2', '1.5');
       }
 
       // previous period May
       for (let i = 8; i <= 11; i++) {
         testBarOpacity(bars[i], '0.5');
-        testBarStroke(bars[i], '3,4', '1.5');
+        testBarStroke(bars[i], '4,2', '1.5');
       }
     });
 
@@ -218,7 +218,7 @@ describe('Time comparison stories', () => {
       expect(bars).toHaveLength(112);
 
       testBarOpacity(bars[0], '0.5');
-      testBarStroke(bars[0], '3,4', '1.5');
+      testBarStroke(bars[0], '4,2', '1.5');
     });
 
     test('current series should have typical style', async () => {

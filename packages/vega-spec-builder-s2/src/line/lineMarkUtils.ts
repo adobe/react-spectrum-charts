@@ -33,6 +33,7 @@ import {
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
   HOVERED_ITEM,
+  LINE_TYPE_CHART_SIZE_SCALE,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SELECTED_SERIES,
@@ -41,20 +42,19 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils';
-import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils'
+import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils';
 import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
   getItemHoverArea,
   getOpacityProductionRule,
-  getStrokeDashProductionRule,
   getVoronoiPath,
   getXProductionRule,
   hasActionBar,
   hasPopover,
 } from '../marks/markUtils';
 import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getStrokeDashFromLineType } from '../specUtils';
+import { getChartSizeDashExpr, getStrokeDashFromLineType } from '../specUtils';
 import { ScaleType } from '../types';
 import { MIN_LABEL_GAP, getDirectLabelTextMarks } from './directLabelUtils';
 import { getPrimarySeriesOtherExpr } from './lineDataUtils';
@@ -164,27 +164,49 @@ const getGradientOpacity = (opacity: LineMarkOptions['opacity']): { value: numbe
 };
 
 /**
- * Returns the strokeDash encoding for a line mark that has alternateSegmentKey set.
- * When lineType is a static value, returns a signal expression that switches between
- * the base dash and the alternate dash based on the per-datum alternateFlag field.
- * Falls back to the standard scale/field lookup for data-driven lineType facets.
+ * Gets the chart-size dash expression for a line type facet.
+ * @param lineTypeFacet
+ * @returns vega expression string
  */
 const getLineTypeDashSignal = (lineTypeFacet: LineMarkOptions['lineType']): string => {
-  if (typeof lineTypeFacet === 'string') {
-    return `scale('${LINE_TYPE_SCALE}', datum['${lineTypeFacet}'])`;
-  }
-  return JSON.stringify(getStrokeDashFromLineType(lineTypeFacet.value));
+  if (typeof lineTypeFacet === 'string') return `scale('${LINE_TYPE_CHART_SIZE_SCALE}', datum['${lineTypeFacet}'])`;
+  return getChartSizeDashExpr(getStrokeDashFromLineType(lineTypeFacet.value));
 };
 
+/**
+ * Gets the strokeDash signal that switches between the base and alternate dash per datum.
+ * @param name
+ * @param lineType
+ * @param alternateSegmentLineType
+ * @returns ArrayValueRef
+ */
 export const getAlternateSegmentStrokeDash = (
   name: string,
   lineType: LineMarkOptions['lineType'],
   alternateSegmentLineType: LineMarkOptions['alternateSegmentLineType']
 ): ArrayValueRef | undefined => {
   if (!alternateSegmentLineType) return;
-  const altDash = JSON.stringify(getStrokeDashFromLineType(alternateSegmentLineType));
+  const altDash = getChartSizeDashExpr(getStrokeDashFromLineType(alternateSegmentLineType));
   const baseDash = getLineTypeDashSignal(lineType);
   return { signal: `datum.${name}_alternateFlag ? ${altDash} : ${baseDash}` };
+};
+
+/**
+ * Gets the strokeDash encoding for a line mark.
+ * @param lineMarkOptions
+ * @returns ArrayValueRef
+ */
+export const getLineStrokeDash = ({
+  alternateSegmentKey,
+  alternateSegmentLineType,
+  lineType,
+  name,
+}: LineMarkOptions): ArrayValueRef => {
+  if (alternateSegmentKey && alternateSegmentLineType) {
+    return getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType) as ArrayValueRef;
+  }
+  const signal = getLineTypeDashSignal(lineType);
+  return signal === '[]' ? { value: [] } : { signal };
 };
 
 /**
@@ -195,15 +217,12 @@ export const getAlternateSegmentStrokeDash = (
  */
 export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string): LineMark => {
   const {
-    alternateSegmentKey,
-    alternateSegmentLineType,
     chartPopovers,
     color,
     colorScheme,
     dimension,
     otherSeriesColor,
     lineCap = 'round',
-    lineType,
     metric,
     name,
     opacity,
@@ -228,18 +247,16 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
         ...(isDrawInAnimate ? {} : { y: getLineYEncoding(lineMarkOptions, metric) }),
         stroke: getStrokeEncoding(primarySeries, otherSeriesColor, color, colorScheme),
         strokeCap: { value: lineCap },
-        strokeDash: alternateSegmentKey
-          ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
-          : getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
       },
       update: {
-        // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
+        // x, strokeWidth and strokeDash must be in update: x and strokeDash change on resize, strokeWidth on hover
         x: isDrawInAnimate ? getLineDrawInXEncoding(lineMarkOptions) : getXProductionRule(scaleType, dimension),
         ...(isDrawInAnimate ? { y: getLineDrawInYEncoding(lineMarkOptions) } : {}),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
         strokeWidth: getLineStrokeWidth(lineMarkOptions),
+        strokeDash: getLineStrokeDash(lineMarkOptions),
       },
     },
   };
