@@ -23,6 +23,7 @@ import {
 
 interface TickerEntry {
   view: View;
+  /** Wrapper element passed to embed (not the svg/canvas), so visibility works for either renderer */
   container: Element;
   /** Has animation work; cleared only after a tick reports `animationActive` false */
   awake: boolean;
@@ -33,8 +34,9 @@ interface TickerEntry {
   onActiveChange: (name: string, active: boolean) => void;
 }
 
-// Map insertion order is the tick order; ticked entries are re-inserted at the back (round-robin)
+// Every chart attached to the ticker. Map insertion order is the tick order; ticked entries are re-inserted at the back (round-robin)
 const entries = new Map<View, TickerEntry>();
+// IntersectionObserver reports elements, so visibility updates look entries up by container
 const entriesByContainer = new Map<Element, TickerEntry>();
 let frameHandle: number | undefined;
 // true while a frame's async runs are pending; the next frame is requested after they finish, so frames never overlap
@@ -78,6 +80,11 @@ const readActive = (view: View): boolean => {
 // precise elapsed time within a frame for the budget; the spec's animation timer uses Date.now() separately
 const clock = (): number => (typeof performance === 'undefined' ? Date.now() : performance.now());
 
+/**
+ * One animation update for one chart: sets the timer signal, runs the view, and sleeps it once nothing is animating.
+ * @param entry - the chart to tick
+ * @param now - wall-clock time for the timer signal
+ */
 const tick = async (entry: TickerEntry, now: number): Promise<void> => {
   const { view } = entry;
   entry.running = true;
@@ -92,10 +99,16 @@ const tick = async (entry: TickerEntry, now: number): Promise<void> => {
   entry.running = false;
   // the view was detached or re-attached while the run was pending
   if (entries.get(view) !== entry) return;
-  // only sleep once the spec reports every animation (including its final grace tick) has settled
+  // sleep only after the spec settles, including hover's grace tick: one extra tick that lands it exactly on its resting value
   if (!readActive(view)) entry.awake = false;
 };
 
+/**
+ * Ticks due charts until the frame budget is spent, leaving the rest of the frame for paint and input.
+ * Skipped charts catch up next frame without slowing down, since animation progress is wall-clock.
+ * @param now - wall-clock time for every tick in this frame
+ * @param frameStart - clock() at frame start, for the budget
+ */
 const runFrame = async (now: number, frameStart: number): Promise<void> => {
   // snapshot, because the loop reorders entries
   const due = [...entries.values()].filter((entry) => entry.awake && entry.visible && !entry.running);
@@ -116,7 +129,7 @@ function frame(time: number): void {
   if (time - lastFrameTime >= ANIMATION_MIN_FRAME_INTERVAL) {
     lastFrameTime = time;
     frameRunning = true;
-    // wall-clock time to match the spec's now()-based animation timestamps
+    // Date.now(), not the rAF time: the spec compares the timer with its own now() values (e.g. hover's lastChange)
     runFrame(Date.now(), clock()).finally(() => {
       frameRunning = false;
       scheduleFrame();

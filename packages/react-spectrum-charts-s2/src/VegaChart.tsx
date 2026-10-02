@@ -146,6 +146,7 @@ export const VegaChart: FC<VegaChartProps> = ({
         // animated charts are driven by the shared animation ticker instead of Vega's always-on timer
         removeAnimationTimerEvents(specCopy);
       }
+      // captured so the async .then attaches the ticker to the element this view was embedded into
       const container = containerRef.current;
 
       embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
