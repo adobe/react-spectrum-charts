@@ -11,18 +11,6 @@
       "types": "./dist/@types/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./alpha": {
-      "types": "./dist/@types/alpha/index.d.ts",
-      "import": "./dist/alpha.js",
-      "require": "./dist/alpha.js",
-      "default": "./dist/alpha.js"
-    },
-    "./beta": {
-      "types": "./dist/@types/beta/index.d.ts",
-      "import": "./dist/beta.js",
-      "require": "./dist/beta.js",
-      "default": "./dist/beta.js"
-    },
     "./pre-alpha": {
       "types": "./dist/@types/pre-alpha/index.d.ts",
       "default": "./dist/pre-alpha/index.js"
@@ -67,7 +55,7 @@
   "scripts": {
     "prebuild": "echo 'This will run before build'",
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly --composite false --incremental false",
+    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly --composite false --incremental false && node ../../scripts/fixEsmDeclarations.mjs dist/@types",
     "clean": "rm -rf dist",
     "g": "plop component",
     "generate": "plop component",
@@ -133,5 +121,9 @@
   "sideEffects": [
     "*.css",
     "./dist/src/VegaChart.js"
-  ]
+  ],
+  "types": "./dist/@types/index.d.ts",
+  "engines": {
+    "node": ">=20.19.0"
+  }
 }

@@ -4,15 +4,23 @@
   "description": "Constants used in spectrum charts",
   "browser": "dist/index.js",
   "main": "dist/index.js",
-  "module": "dist/index.js",
+  "module": "dist/esm/index.mjs",
   "types": "dist/@types/index.d.ts",
   "exports": {
     ".": {
       "@spectrum-charts/source": "./index.ts",
-      "types": "./dist/@types/index.d.ts",
-      "import": "./dist/esm/index.mjs",
-      "require": "./dist/index.js",
-      "default": "./dist/index.js"
+      "import": {
+        "types": "./dist/esm/index.d.mts",
+        "default": "./dist/esm/index.mjs"
+      },
+      "require": {
+        "types": "./dist/@types/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "default": {
+        "types": "./dist/@types/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -27,7 +35,7 @@
     "url": "https://github.com/adobe/react-spectrum-charts.git"
   },
   "scripts": {
-    "build": "webpack --config ./webpack.config.js && rollup -c",
+    "build": "webpack --config ./webpack.config.js && rollup -c && node ../../scripts/fixEsmDeclarations.mjs dist/@types --out dist/esm --ext .mjs",
     "clean": "rm -rf dist",
     "pack-test": "yarn clean && yarn build &&cross-env NODE_ENV=development npm pack",
     "pack": "cross-env NODE_ENV=production npm pack",

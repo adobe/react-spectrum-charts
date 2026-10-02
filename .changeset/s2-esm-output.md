@@ -14,5 +14,9 @@ Ship the S2 packages as per-module ES modules built with Rollup so bundlers can 
 Breaking for S2 consumers:
 - `@spectrum-charts/react-spectrum-charts-s2` and `@spectrum-charts/vega-spec-builder-s2` are now ESM-only. `require()` and the UMD global are no longer supported.
 - Jest consumers must transform `@spectrum-charts/*` and stub CSS imports. See the "Module format" section of the S2 overview docs.
+- Both S2 packages declare `engines.node >=20.19.0`.
+- The `./alpha` and `./beta` subpath exports are removed; they never pointed at published files.
 
-The shared packages (`constants`, `locales`, `schemas`, `themes`, `utils`) add an ESM build under the `import` condition and keep their existing CommonJS/UMD build. They now declare an `exports` map, so deep imports into `dist/` are no longer resolvable.
+Type declarations for the S2 packages now resolve under `moduleResolution` `node16`/`nodenext` as well as `bundler`.
+
+The shared packages (`constants`, `locales`, `schemas`, `themes`, `utils`) add an ESM build under the `import` condition and keep their existing CommonJS/UMD build, with separate `.d.mts` declarations for the ESM build and `module` pointing at it. They now declare an `exports` map, so deep imports into `dist/` are no longer resolvable.
