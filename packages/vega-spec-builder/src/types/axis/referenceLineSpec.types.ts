@@ -36,11 +36,13 @@ export interface ReferenceLineOptions {
   labelColor?: SpectrumColor | string;
   /** Font weight of the label. */
   labelFontWeight?: FontWeight;
+  /** Where to draw the label. `axis` places it outside the chart area next to the axis. `start` and `end` place it inside the chart area at the start or end of the line. */
+  labelPosition?: 'axis' | 'start' | 'end';
   /** Line type of the reference line. */
   lineType?: LineType;
 }
 
-type ReferenceLineOptionsWithDefaults = 'color' | 'iconColor' | 'labelColor' | 'layer' | 'labelFontWeight' | 'lineType';
+type ReferenceLineOptionsWithDefaults = 'color' | 'iconColor' | 'labelColor' | 'layer' | 'labelFontWeight' | 'labelPosition' | 'lineType';
 
 export interface ReferenceLineSpecOptions
   extends PartiallyRequired<ReferenceLineOptions, ReferenceLineOptionsWithDefaults> {
