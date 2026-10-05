@@ -17,7 +17,12 @@ import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/constants';
 import { getLocale } from '@spectrum-charts/locales';
-import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import {
+  ChartData,
+  UserMeta,
+  applyUserMetaConfigPatches,
+  getVegaEmbedOptions,
+} from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useDebugSpec } from './hooks/useDebugSpec';
 import { extractValues, isVegaData } from './hooks/useSpec';
@@ -42,13 +47,35 @@ if (typeof window !== 'undefined') {
 }
 
 /**
+ * Logs a failed Vega embed or render so it isn't swallowed as an unhandled rejection.
+ * @param error
+ */
+const logRenderError = (error: unknown): void => {
+  console.error('Failed to render chart:', error);
+};
+
+/**
+ * Runs the view's dataflow and logs any failure.
+ * @param view
+ */
+const runView = (view: View): void => {
+  view.runAsync().catch(logRenderError);
+};
+
+/**
  * Resizes an existing Vega view without recreating it.
  */
 export const resizeView = (view: View | undefined, width: number, height: number): void => {
   if (view && width && height) {
     // Two passes: first updates width/height signals; second lets Vega re-settle layout
     // after dependent changes (e.g. legend column count → legend height → plot area height).
-    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
+    view
+      .width(width)
+      .height(height)
+      .resize()
+      .runAsync()
+      .then(() => view.runAsync())
+      .catch(logRenderError);
   }
 };
 
@@ -140,14 +167,16 @@ export const VegaChart: FC<VegaChartProps> = ({
       const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
       const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
 
-      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
-        chartView.current = view;
-        onNewView(view);
-        view.resize();
-        view.runAsync();
-        // One additional render to settle all resize calculations
-        setTimeout(() => view.runAsync(), 0);
-      });
+      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip })
+        .then(({ view }) => {
+          chartView.current = view;
+          onNewView(view);
+          view.resize();
+          // One additional render to settle all resize calculations
+          setTimeout(() => runView(view), 0);
+          return view.runAsync();
+        })
+        .catch(logRenderError);
     }
     return () => {
       // destroy the chart on unmount
@@ -156,7 +185,7 @@ export const VegaChart: FC<VegaChartProps> = ({
         chartView.current = undefined;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     chartData.table,
     config,
