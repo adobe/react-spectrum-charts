@@ -41,6 +41,7 @@ import {
   isDonutInteractive,
   getRingWidthScale,
   getRingWidthSignal,
+  getLabelRingGapSignals,
   getSliceGapScale,
   getSliceGapSignal,
   getSumData,
@@ -219,6 +220,7 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
     signals.push(getRingWidthSignal(options));
   }
   signals.push(
+    ...getLabelRingGapSignals(options),
     getSliceGapSignal(options),
     ...getDonutSummarySignals(options),
     ...getSegmentLabelSignals(options),

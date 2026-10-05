@@ -13,7 +13,7 @@ import { ReactElement, useState } from 'react';
 
 import {
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
-  DONUT_LABEL_RING_GAP,
+  DONUT_LABEL_RING_GAPS,
   DONUT_SIZE_TIER_CUTPOINTS,
 } from '@spectrum-charts/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
@@ -24,15 +24,25 @@ import { Donut } from '../../../pre-alpha';
 import { DonutProps } from '../../../types';
 
 const THUMB_HEIGHT = 32;
+const REACH_RATIO = 1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO;
 
-const getEffectiveDiameter = (containerWidth: number): number => {
+const getLabelRingGapForDiameter = (diameter: number): number =>
+  DONUT_LABEL_RING_GAPS[DONUT_SIZE_TIER_CUTPOINTS.filter((cutpoint) => diameter >= cutpoint).length];
+
+/** Mirrors the spec builder: use the highest tier whose own gap still keeps the donut in that tier. */
+export const getEffectiveDiameter = (containerWidth: number): number => {
   const rawRadius = containerWidth / 2 - 2;
-  const reservedRadius = (rawRadius - DONUT_LABEL_RING_GAP) / (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO);
-  return 2 * reservedRadius;
+  const getDiameter = (gap: number): number => (2 * (rawRadius - gap)) / REACH_RATIO;
+  const gap = DONUT_LABEL_RING_GAPS.reduce(
+    (selectedGap, tierGap, tier) =>
+      tier > 0 && getDiameter(tierGap) >= DONUT_SIZE_TIER_CUTPOINTS[tier - 1] ? tierGap : selectedGap,
+    DONUT_LABEL_RING_GAPS[0]
+  );
+  return getDiameter(gap);
 };
 
-const getContainerWidthForDiameter = (diameter: number): number =>
-  diameter * (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) + 4 + 2 * DONUT_LABEL_RING_GAP;
+export const getContainerWidthForDiameter = (diameter: number): number =>
+  diameter * REACH_RATIO + 4 + 2 * getLabelRingGapForDiameter(diameter);
 
 const lastCutpoint = DONUT_SIZE_TIER_CUTPOINTS.at(-1);
 if (lastCutpoint === undefined) {

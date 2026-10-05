@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 import {
-  DONUT_ADVANCED_LABEL_RING_GAP,
-  DONUT_LABEL_RING_GAP,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SEMICIRCLE_RADIUS,
@@ -28,6 +26,7 @@ import {
   getDonutInnerRadiusExpr,
   getDonutOuterRadiusExpr,
   getEmptyStateArcMark,
+  getLabelRingGapSignals,
   getRingWidthScale,
   getRingWidthSignal,
   getSliceGapScale,
@@ -129,19 +128,14 @@ describe('getDonutOuterRadiusExpr()', () => {
     ).toBe(DONUT_RADIUS);
   });
 
-  test('should reserve room using the direct-label ring gap when only SegmentLabel is present', () => {
+  test('should reserve room using the label ring gap signal when SegmentLabel is present', () => {
     const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{}] });
-    expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_LABEL_RING_GAP}) / (1 + 0.6))`);
+    expect(expr).toBe(`((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6))`);
   });
 
-  test('should reserve room using the rich SegmentLabel ring gap when swatch is enabled', () => {
+  test('should reserve room using the label ring gap signal for rich SegmentLabels', () => {
     const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_ADVANCED_LABEL_RING_GAP}) / (1 + 0.6))`);
-  });
-
-  test('should reserve room using the rich SegmentLabel ring gap when enabled', () => {
-    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(expr).toBe(`((${DONUT_RADIUS} - ${DONUT_ADVANCED_LABEL_RING_GAP}) / (1 + 0.6))`);
+    expect(expr).toBe(`((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6))`);
   });
 
   test('should use the semicircle base radius (full height/width) for a semicircle donut', () => {
@@ -156,6 +150,58 @@ describe('getDonutOuterRadiusExpr()', () => {
         segmentLabels: [{ swatch: true }],
       })
     ).toBe(DONUT_SEMICIRCLE_RADIUS);
+  });
+});
+
+describe('getLabelRingGapSignals()', () => {
+  const evaluate = (options: typeof defaultDonutOptions, size: number): number => {
+    const [{ update }] = getLabelRingGapSignals(options) as { update: string }[];
+    // eslint-disable-next-line no-new-func
+    return new Function('width', 'height', 'min', `return ${update};`)(size, size, Math.min);
+  };
+  const getOuterDiameter = (size: number, gap: number): number => (2 * (size / 2 - 2 - gap)) / 1.6;
+
+  test('should not add a signal when there are no segment labels', () => {
+    expect(getLabelRingGapSignals(defaultDonutOptions)).toEqual([]);
+  });
+
+  test('should only branch at cutpoints where the gap changes', () => {
+    const [signal] = getLabelRingGapSignals({ ...defaultDonutOptions, segmentLabels: [{}] });
+    const r = DONUT_RADIUS;
+    expect(signal).toHaveProperty(
+      'update',
+      `${r} >= 335 ? 15 : ${r} >= 138 ? 10 : 5`
+    );
+  });
+
+  test.each([
+    ['XS', 150, 5],
+    ['S', 250, 5],
+    ['M', 300, 10],
+    ['L', 400, 10],
+    ['XL', 700, 15],
+  ])('should use the %s tier gap when labels reserve space', (_tier, size, gap) => {
+    expect(evaluate({ ...defaultDonutOptions, segmentLabels: [{}] }, size)).toBe(gap);
+  });
+
+  test.each([
+    [160, 5, 10],
+    [400, 10, 15],
+  ])('should only step up to the larger gap once it keeps the donut at %spx (%s -> %s)', (cutpoint, lowerGap, upperGap) => {
+    const options = { ...defaultDonutOptions, segmentLabels: [{}] };
+    const stepSize = 2 * ((cutpoint * 1.6) / 2 + upperGap + 2);
+    for (let size = stepSize - 2 * (upperGap - lowerGap); size < stepSize; size += 1) {
+      expect(evaluate(options, size)).toBe(lowerGap);
+    }
+    expect(evaluate(options, stepSize)).toBe(upperGap);
+    expect(getOuterDiameter(stepSize, upperGap)).toBeGreaterThanOrEqual(cutpoint);
+  });
+
+  test('should tier by the raw diameter when label space is not reserved', () => {
+    const options = { ...defaultDonutOptions, isBoolean: true, segmentLabels: [{}] };
+    expect(evaluate(options, 104)).toBe(5);
+    expect(evaluate(options, 204)).toBe(10);
+    expect(evaluate(options, 404)).toBe(15);
   });
 });
 

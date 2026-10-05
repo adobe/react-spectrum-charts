@@ -276,14 +276,9 @@ export const DONUT_SUMMARY_LABEL_FONT_SIZES = [12, 14, 16, 20, 24];
 export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [7.5, 9, 10.5, 12, 15];
 /** S2 donut direct-label value font size per named size tier (XS/S/M/L/XL) */
 export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [10, 12, 14, 16, 20];
-/** Gap (px) between the ring's outer edge and a direct label's rendered bounding box */
-export const DONUT_LABEL_RING_GAP = 20;
+/** Gap (px) between the ring's outer edge and a direct/advanced label's rendered bounding box per named size tier (XS/S/M/L/XL) */
+export const DONUT_LABEL_RING_GAPS = [5, 5, 10, 10, 15];
 export const DONUT_LABEL_COLLISION_GAP = 4;
-/**
- * Gap (px) between the ring's outer edge and an advanced label's rendered bounding box - larger
- * than the direct-label ring gap since the taller swatch+multi-row block needs more breathing room.
- */
-export const DONUT_ADVANCED_LABEL_RING_GAP = 20;
 /** Font weight for donut direct-label segment name text */
 export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
 /** Font weight for donut direct-label value text */

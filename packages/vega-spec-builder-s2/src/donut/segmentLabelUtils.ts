@@ -30,7 +30,6 @@ import {
   DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
   DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT,
   DONUT_ADVANCED_LABEL_NAME_VALUE_GAP,
-  DONUT_ADVANCED_LABEL_RING_GAP,
   DONUT_ADVANCED_LABEL_SWATCH_GAP,
   DONUT_ADVANCED_LABEL_SWATCH_SIZE,
   DONUT_ADVANCED_LABEL_VALUE_DETAIL_GAP,
@@ -41,7 +40,6 @@ import {
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
-  DONUT_LABEL_RING_GAP,
   DONUT_RADIUS,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
   DONUT_SIZE_TIER_CUTPOINTS,
@@ -56,7 +54,12 @@ import { getPathFromSymbolShape } from '../specUtils';
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
 import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils';
-import { getDonutEmptyStateTest, getDonutOuterRadiusExpr, isDonutInteractive } from './donutUtils';
+import {
+  getDonutEmptyStateTest,
+  getDonutLabelRingGapSignalName,
+  getDonutOuterRadiusExpr,
+  isDonutInteractive,
+} from './donutUtils';
 
 const getSegmentLabelName = ({ donutOptions, labelMode }: SegmentLabelSpecOptions): string => {
   const suffix = labelMode ? `${labelMode}SegmentLabel` : 'segmentLabel';
@@ -307,7 +310,7 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
         ...getLabelPositionTransforms(
           fieldPrefix,
           arcThetaExpr,
-          `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_LABEL_RING_GAP}`,
+          `${getDonutOuterRadiusExpr(donutOptions)} + ${getDonutLabelRingGapSignalName(donutOptions.name)}`,
           labelHeightExpr
         ),
         ...getLabelHorizontalBoundsTransforms(fieldPrefix, cappedWidthExpr),
@@ -766,7 +769,7 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
           ...getLabelPositionTransforms(
             labelName,
             arcThetaExpr,
-            `${getDonutOuterRadiusExpr(donutOptions)} + ${DONUT_ADVANCED_LABEL_RING_GAP}`,
+            `${getDonutOuterRadiusExpr(donutOptions)} + ${getDonutLabelRingGapSignalName(donutOptions.name)}`,
             labelHeightExpr,
             inwardExtentExpr
           ),

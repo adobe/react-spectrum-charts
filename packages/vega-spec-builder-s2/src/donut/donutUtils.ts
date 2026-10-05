@@ -14,10 +14,9 @@ import { ArcMark, ColorValueRef, NumericValueRef, ProductionRule, Signal, Source
 import {
   BACKGROUND_COLOR,
   DEFAULT_HOLE_RATIO,
-  DONUT_ADVANCED_LABEL_RING_GAP,
   DONUT_BOOLEAN_SECONDARY_COLOR,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
-  DONUT_LABEL_RING_GAP,
+  DONUT_LABEL_RING_GAPS,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SEMICIRCLE_RADIUS,
@@ -111,24 +110,95 @@ const getDonutBaseRadiusExpr = ({ variant }: DonutSpecOptions): string =>
   variant === 'semicircle' ? DONUT_SEMICIRCLE_RADIUS : DONUT_RADIUS;
 
 /**
+ * Returns whether the donut's outer radius is reduced to make room for visible SegmentLabels.
+ * @param donutOptions
+ * @returns boolean
+ */
+const isDonutLabelSpaceReserved = ({
+  isBoolean,
+  segmentLabels,
+  hideDeemphasizedLabels,
+  emphasizedItems,
+  variant,
+}: DonutSpecOptions): boolean =>
+  !isBoolean &&
+  variant !== 'semicircle' &&
+  segmentLabels.some(
+    ({ labelMode }) => !(emphasizedItems?.length && hideDeemphasizedLabels && labelMode === 'deemphasized')
+  );
+
+/**
+ * Gets the name of the signal holding the size-tiered gap (px) between the ring and its segment labels.
+ * @param name donut name
+ * @returns signal name
+ */
+export const getDonutLabelRingGapSignalName = (name: string): string => `${name}_labelRingGap`;
+
+/**
  * Gets the donut's outer radius, reserving space for SegmentLabel content when needed.
  * @param donutOptions
  * @returns vega expression string
  */
 export const getDonutOuterRadiusExpr = (options: DonutSpecOptions): string => {
-  const { isBoolean, segmentLabels, hideDeemphasizedLabels, emphasizedItems, variant } = options;
   const baseRadius = getDonutBaseRadiusExpr(options);
   // baseRadius is already parenthesized; the reserved branch below self-parenthesizes too, so
   // callers can interpolate this result directly without adding their own wrapping parens
-  const visibleLabels = segmentLabels.filter(
-    ({ labelMode }) => !(emphasizedItems?.length && hideDeemphasizedLabels && labelMode === 'deemphasized')
-  );
-  if (isBoolean || variant === 'semicircle' || !visibleLabels.length) return baseRadius;
-  const ringGap = visibleLabels.some(({ swatch, showValueRow }) => swatch || showValueRow)
-    ? DONUT_ADVANCED_LABEL_RING_GAP
-    : DONUT_LABEL_RING_GAP;
+  if (!isDonutLabelSpaceReserved(options)) return baseRadius;
+  const ringGap = getDonutLabelRingGapSignalName(options.name);
   // solve R such that R + ringGap + R*capRatio == baseRadius (the worst-case label reach)
   return `((${baseRadius} - ${ringGap}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}))`;
+};
+
+/**
+ * Gets the tiered label ring gap, stepping up only once the larger gap still leaves the donut in the larger tier.
+ * @param baseRadius
+ * @returns vega expression string
+ */
+const getReservedLabelRingGapExpr = (baseRadius: string): string => {
+  // why: ring width, slice gap and fonts tier off the final diameter, so the gap must match that same tier
+  // a bigger gap makes the donut smaller, so check the chart size (baseRadius) rather than the donut's own diameter
+  let expr = `${DONUT_LABEL_RING_GAPS[0]}`;
+  DONUT_SIZE_TIER_CUTPOINTS.forEach((cutpoint, index) => {
+    const lowerGap = DONUT_LABEL_RING_GAPS[index];
+    const upperGap = DONUT_LABEL_RING_GAPS[index + 1];
+    // the gap doesn't change at this cutpoint (XS, S and M, L are the same), so no branch is needed
+    if (upperGap === lowerGap) return;
+    // chart size (baseRadius) needed for the donut to reach the minimum diameter, before adding the gap
+    const cutpointRadius = (cutpoint * (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO)) / 2;
+    // use the larger gap when the chart is big enough that it keeps the donut in the larger tier
+    // e.g. a 403px (XL) donut keeps the 10px gap, since 15px would shrink it to 396px (L)
+    expr = `${baseRadius} >= ${cutpointRadius + upperGap} ? ${upperGap} : ${expr}`;
+  });
+  return expr;
+};
+
+/**
+ * Gets the tiered label ring gap from the full base diameter, for donuts that don't reserve label space.
+ * @param baseRadius
+ * @returns vega expression string
+ */
+const getUnreservedLabelRingGapExpr = (baseRadius: string): string => {
+  let expr = `${DONUT_LABEL_RING_GAPS[0]}`;
+  DONUT_SIZE_TIER_CUTPOINTS.forEach((cutpoint, index) => {
+    const upperGap = DONUT_LABEL_RING_GAPS[index + 1];
+    if (upperGap === DONUT_LABEL_RING_GAPS[index]) return;
+    expr = `2 * ${baseRadius} >= ${cutpoint} ? ${upperGap} : ${expr}`;
+  });
+  return expr;
+};
+
+/**
+ * Gets the signal resolving the size-tiered gap (px) between the ring's outer edge and its segment labels.
+ * @param donutOptions
+ * @returns Signal[]
+ */
+export const getLabelRingGapSignals = (options: DonutSpecOptions): Signal[] => {
+  if (!options.segmentLabels.length) return [];
+  const baseRadius = getDonutBaseRadiusExpr(options);
+  const update = isDonutLabelSpaceReserved(options)
+    ? getReservedLabelRingGapExpr(baseRadius)
+    : getUnreservedLabelRingGapExpr(baseRadius);
+  return [{ name: getDonutLabelRingGapSignalName(options.name), update }];
 };
 
 /**

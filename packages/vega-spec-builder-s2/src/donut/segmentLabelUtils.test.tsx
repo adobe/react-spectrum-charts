@@ -313,12 +313,12 @@ describe('getSegmentLabelSignals()', () => {
       {
         name: 'testName_segmentLabelNameFontSize',
         update:
-          "scale('testName_segmentLabelNameFontSizeScale', 2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)))",
+          "scale('testName_segmentLabelNameFontSizeScale', 2 * (((min(width, height) / 2 - 2) - testName_labelRingGap) / (1 + 0.6)))",
       },
       {
         name: 'testName_segmentLabelValueFontSize',
         update:
-          "scale('testName_segmentLabelValueFontSizeScale', 2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)))",
+          "scale('testName_segmentLabelValueFontSizeScale', 2 * (((min(width, height) / 2 - 2) - testName_labelRingGap) / (1 + 0.6)))",
       },
     ]);
   });
@@ -346,7 +346,7 @@ describe('rich SegmentLabel', () => {
         range: DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES,
       },
     ]);
-    const donutDiameter = `2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6))`;
+    const donutDiameter = `2 * (((min(width, height) / 2 - 2) - testName_labelRingGap) / (1 + 0.6))`;
     expect(getRichSegmentLabelSignals(richDonutOptions)).toEqual([
       {
         name: 'testName_richSegmentLabelNameFontSize',
@@ -411,7 +411,7 @@ describe('rich SegmentLabel', () => {
     }
     expect(swatch.encode?.update?.size).toEqual([
       {
-        test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum'] || 2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) < 160",
+        test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum'] || 2 * (((min(width, height) / 2 - 2) - testName_labelRingGap) / (1 + 0.6)) < 160",
         value: 0,
       },
       { signal: '256' },
@@ -421,7 +421,7 @@ describe('rich SegmentLabel', () => {
     });
     expect(name.encode?.update?.dx).toEqual({
       signal:
-        "(datum['testName_richSegmentLabel_hemisphere'] === 'right' ? 1 : -1) * (2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) >= 160 ? 24 : 0)",
+        "(datum['testName_richSegmentLabel_hemisphere'] === 'right' ? 1 : -1) * (2 * (((min(width, height) / 2 - 2) - testName_labelRingGap) / (1 + 0.6)) >= 160 ? 24 : 0)",
     });
     expect(name.encode?.update?.dy).toEqual({ signal: '0' });
     expect(value.encode?.update?.dy).not.toHaveProperty(
@@ -621,7 +621,7 @@ describe('getSegmentLabelTextMark()', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     expect(mark.encode?.update?.fontSize).toEqual([
       {
-        test: `${getDonutEmptyStateTest('testName')} || 2 * (((min(width, height) / 2 - 2) - 20) / (1 + 0.6)) < 120`,
+        test: `${getDonutEmptyStateTest('testName')} || 2 * (((min(width, height) / 2 - 2) - testName_labelRingGap) / (1 + 0.6)) < 120`,
         value: 0,
       },
       { signal: 'testName_segmentLabelNameFontSize' },

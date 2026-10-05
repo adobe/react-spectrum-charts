@@ -13,10 +13,8 @@ import { View, expressionFunction, parse } from 'vega';
 
 import {
   COLOR_SCALE,
-  DONUT_ADVANCED_LABEL_RING_GAP,
   DONUT_LABEL_COLLISION_GAP,
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
-  DONUT_LABEL_RING_GAP,
   FILTERED_TABLE,
   HOVERED_ITEM,
   MARK_ID,
@@ -108,7 +106,8 @@ describe('addData', () => {
     labels.forEach((datum) => {
       expect(datum[`${prefix}_labelY`]).toBeCloseTo(datum[`${prefix}_idealY`]);
       expect(datum[`${prefix}_labelHalfWidth`]).toBeLessThanOrEqual(182);
-      const ringGap = _mode === 'advanced' ? DONUT_ADVANCED_LABEL_RING_GAP : DONUT_LABEL_RING_GAP;
+      // a 364px chart lands in the L tier, which uses a 10px label ring gap
+      const ringGap = 10;
       const outerRadius = (364 / 2 - 2 - ringGap) / (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO);
       const innerX =
         datum[`${prefix}_hemisphere`] === 'right'
@@ -351,7 +350,8 @@ describe('addSignals()', () => {
   test('should add rich SegmentLabel font size signals when swatch is enabled', () => {
     const baselineSignals = addSignals(defaultSignals, defaultDonutOptions);
     const signals = addSignals(defaultSignals, { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(signals).toHaveLength(baselineSignals.length + 4);
+    expect(signals).toHaveLength(baselineSignals.length + 5);
+    expect(signals.find((signal) => signal.name === 'testName_labelRingGap')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelNameFontSize')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelValueFontSize')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelDetailFontSize')).toBeDefined();

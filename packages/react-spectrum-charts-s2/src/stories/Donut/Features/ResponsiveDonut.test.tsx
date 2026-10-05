@@ -24,7 +24,7 @@ describe('ResponsiveDonut', () => {
 
     expect(await findChart()).toBeInTheDocument();
     expect(screen.getByText('300px')).toBeInTheDocument();
-    expect(screen.getByText('160px')).toBeInTheDocument();
+    expect(screen.getByText('173px')).toBeInTheDocument();
     expect(screen.getByText('M')).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: 'Chart width' })).toHaveValue('300');
   });
@@ -40,7 +40,7 @@ describe('ResponsiveDonut', () => {
     fireEvent.change(screen.getByRole('slider', { name: 'Chart width' }), { target: { value: 500 } });
 
     expect(screen.getByText('500px')).toBeInTheDocument();
-    expect(screen.getByText('285px')).toBeInTheDocument();
+    expect(screen.getByText('298px')).toBeInTheDocument();
     expect(screen.getByText('L')).toBeInTheDocument();
   });
 });
