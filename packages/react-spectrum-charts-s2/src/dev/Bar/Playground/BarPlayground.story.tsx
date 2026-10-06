@@ -14,36 +14,40 @@
 import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
-import { action } from 'storybook/actions';
 
 import { Chart } from '../../../Chart';
-import {
-  Axis,
-  Bar,
-  BarDirectLabel,
-  ChartInspect,
-  ChartPopover,
-  Legend,
-  ReferenceLine,
-  Title,
-} from '../../../components';
+import { Axis, Bar, BarDirectLabel, ReferenceLine } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { BarProps } from '../../../types';
 import { CartesianDataPreset, getCartesianData } from '../../playgroundData';
 import {
+  ContextMenuLabel,
+  PlaygroundInspectArgs,
+  PlaygroundLegendArgs,
+  PlaygroundPopoverArgs,
   axesArgTypes,
   category,
   chartArgTypes,
   chartArgs,
+  getContextMenuHandler,
+  inspectArgKeys,
   inspectArgTypes,
+  legendArgKeys,
   legendArgTypes,
+  omitArgs,
+  optionalAction,
+  popoverArgKeys,
   popoverArgTypes,
-  renderInspectContent,
-  renderPopoverContent,
+  renderPlaygroundInspect,
+  renderPlaygroundLegend,
+  renderPlaygroundPopover,
+  renderPlaygroundTitle,
 } from '../../playgroundUtils';
 
-interface BarPlaygroundArgs extends BarProps {
+const DATUM_KEYS = ['browser', 'operatingSystem', 'value'];
+
+interface BarPlaygroundArgs extends BarProps, PlaygroundInspectArgs, PlaygroundPopoverArgs, PlaygroundLegendArgs {
   dataPreset: CartesianDataPreset;
   chartTitle?: string;
   height: number;
@@ -133,134 +137,99 @@ export default {
   },
 };
 
-const BarPlaygroundStory: StoryFn<BarPlaygroundArgs> = ({
-  dataPreset,
-  chartTitle,
-  height,
-  maxWidth,
-  colorScheme,
-  backgroundColor,
-  showBottomAxis,
-  showLeftAxis,
-  bottomAxisTitle,
-  leftAxisTitle,
-  axisGrid,
-  axisBaseline,
-  axisLabelLimit,
-  showReferenceLine,
-  referenceLineLabel,
-  showLegend,
-  legendPosition,
-  legendTitle,
-  legendHighlight,
-  legendToggleable,
-  legendLabelLimit,
-  showInspect,
-  inspectHighlightBy,
-  inspectTargets,
-  showPopover,
-  popoverWidth,
-  popoverRightClick,
-  popoverHighlightBy,
-  showDirectLabel,
-  directLabelPosition,
-  directLabelFormat,
-  enableClickCallback,
-  enableHoverCallbacks,
-  enableContextMenuCallback,
-  ...barProps
-}): ReactElement => {
+const renderBarAxis = (position: 'bottom' | 'left', args: BarPlaygroundArgs): ReactElement | undefined => {
+  const isHorizontal = args.orientation === 'horizontal';
+  const isMetricAxis = (position === 'bottom') === isHorizontal;
+  const isBottom = position === 'bottom';
+  if (!(isBottom ? args.showBottomAxis : args.showLeftAxis)) return undefined;
+  const title = isBottom === isHorizontal ? args.leftAxisTitle : args.bottomAxisTitle;
+  return (
+    <Axis
+      position={position}
+      baseline={args.axisBaseline}
+      grid={args.axisGrid && isMetricAxis}
+      labelLimit={args.axisLabelLimit}
+      title={title}
+    >
+      {args.showReferenceLine && isMetricAxis ? (
+        <ReferenceLine value={50} label={args.referenceLineLabel} />
+      ) : undefined}
+    </Axis>
+  );
+};
+
+const BAR_PLAYGROUND_KEYS = [
+  'dataPreset',
+  'chartTitle',
+  'height',
+  'maxWidth',
+  'colorScheme',
+  'backgroundColor',
+  'showDirectLabel',
+  'directLabelPosition',
+  'directLabelFormat',
+  'enableClickCallback',
+  'enableHoverCallbacks',
+  'enableContextMenuCallback',
+  'showBottomAxis',
+  'showLeftAxis',
+  'bottomAxisTitle',
+  'leftAxisTitle',
+  'axisGrid',
+  'axisBaseline',
+  'axisLabelLimit',
+  'showReferenceLine',
+  'referenceLineLabel',
+  ...inspectArgKeys,
+  ...popoverArgKeys,
+  ...legendArgKeys,
+] as const;
+
+const BarPlaygroundStory: StoryFn<BarPlaygroundArgs> = (args): ReactElement => {
+  const {
+    dataPreset,
+    chartTitle,
+    height,
+    maxWidth,
+    colorScheme,
+    backgroundColor,
+    showDirectLabel,
+    directLabelPosition,
+    directLabelFormat,
+    enableClickCallback,
+    enableHoverCallbacks,
+    enableContextMenuCallback,
+  } = args;
+  const barProps = omitArgs(args, BAR_PLAYGROUND_KEYS);
   const [contextMenuLabel, setContextMenuLabel] = useState<string>();
   const data = getCartesianData(dataPreset);
   const chartProps = useChartProps({ data, height, maxWidth });
-  const isHorizontal = barProps.orientation === 'horizontal';
-  const metricAxis = isHorizontal ? 'bottom' : 'left';
-
   const legendColor = Array.isArray(barProps.color) ? 'operatingSystem' : barProps.color;
 
   return (
     <div style={{ position: 'relative' }}>
       <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
-        {chartTitle ? <Title text={chartTitle} /> : undefined}
-        {showBottomAxis ? (
-          <Axis
-            position="bottom"
-            baseline={axisBaseline}
-            grid={axisGrid && isHorizontal}
-            labelLimit={axisLabelLimit}
-            title={isHorizontal ? leftAxisTitle : bottomAxisTitle}
-          >
-            {showReferenceLine && metricAxis === 'bottom' ? (
-              <ReferenceLine value={50} label={referenceLineLabel} />
-            ) : undefined}
-          </Axis>
-        ) : undefined}
-        {showLeftAxis ? (
-          <Axis
-            position="left"
-            baseline={axisBaseline}
-            grid={axisGrid && !isHorizontal}
-            labelLimit={axisLabelLimit}
-            title={isHorizontal ? bottomAxisTitle : leftAxisTitle}
-          >
-            {showReferenceLine && metricAxis === 'left' ? (
-              <ReferenceLine value={50} label={referenceLineLabel} />
-            ) : undefined}
-          </Axis>
-        ) : undefined}
+        {renderPlaygroundTitle(chartTitle)}
+        {renderBarAxis('bottom', args)}
+        {renderBarAxis('left', args)}
         <Bar
           {...barProps}
-          onClick={enableClickCallback ? action('Bar:onClick') : undefined}
-          onContextMenu={
-            enableContextMenuCallback
-              ? (event, datum): void => {
-                  event.preventDefault();
-                  action('Bar:onContextMenu')({ event, datum });
-                  setContextMenuLabel(`Bar context menu: ${String(datum.browser ?? datum.series ?? datum.value)}`);
-                }
-              : undefined
-          }
-          onMouseOut={enableHoverCallbacks ? action('Bar:onMouseOut') : undefined}
-          onMouseOver={enableHoverCallbacks ? action('Bar:onMouseOver') : undefined}
+          onClick={optionalAction(enableClickCallback, 'Bar:onClick')}
+          onContextMenu={getContextMenuHandler(enableContextMenuCallback, 'Bar', setContextMenuLabel, [
+            'browser',
+            'series',
+            'value',
+          ])}
+          onMouseOut={optionalAction(enableHoverCallbacks, 'Bar:onMouseOut')}
+          onMouseOver={optionalAction(enableHoverCallbacks, 'Bar:onMouseOver')}
         >
-          {showInspect ? (
-            <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>
-              {renderInspectContent(['browser', 'operatingSystem', 'value'])}
-            </ChartInspect>
-          ) : undefined}
-          {showPopover ? (
-            <ChartPopover
-              width={popoverWidth}
-              rightClick={popoverRightClick}
-              UNSAFE_highlightBy={popoverHighlightBy}
-              onOpenChange={action('Bar ChartPopover:onOpenChange')}
-            >
-              {renderPopoverContent(['browser', 'operatingSystem', 'value'])}
-            </ChartPopover>
-          ) : undefined}
+          {renderPlaygroundInspect(args, DATUM_KEYS)}
+          {renderPlaygroundPopover(args, DATUM_KEYS, 'Bar')}
           {showDirectLabel ? <BarDirectLabel position={directLabelPosition} format={directLabelFormat} /> : undefined}
         </Bar>
-        {showLegend ? (
-          <Legend
-            color={legendColor}
-            position={legendPosition}
-            title={legendTitle}
-            highlight={legendHighlight}
-            isToggleable={legendToggleable}
-            labelLimit={legendLabelLimit}
-            onClick={action('Bar Legend:onClick')}
-            onMouseOver={action('Bar Legend:onMouseOver')}
-            onMouseOut={action('Bar Legend:onMouseOut')}
-          />
-        ) : undefined}
+        {renderPlaygroundLegend(args, legendColor, 'Bar')}
       </Chart>
-      {contextMenuLabel ? (
-        <div
-          style={{ position: 'absolute', top: 8, right: 8, background: 'white', border: '1px solid #999', padding: 8 }}
-        >
-          {contextMenuLabel}
-        </div>
-      ) : undefined}
+      <ContextMenuLabel label={contextMenuLabel} />
     </div>
   );
 };

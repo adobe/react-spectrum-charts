@@ -14,40 +14,47 @@
 import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
-import { action } from 'storybook/actions';
 
 import { Chart } from '../../../Chart';
 import {
   Axis,
   ChartActionBar,
-  ChartInspect,
-  ChartPopover,
-  Legend,
   Line,
   LineDirectLabel,
   LineForecast,
   LinePointAnnotation,
   ReferenceLine,
-  Title,
 } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { bindWithProps } from '../../../test-utils';
 import { LineProps } from '../../../types';
 import { CartesianDataPreset, playgroundTimeSeriesData } from '../../playgroundData';
 import {
+  ContextMenuLabel,
+  PlaygroundInspectArgs,
+  PlaygroundLegendArgs,
+  PlaygroundPopoverArgs,
   axesArgTypes,
   category,
   chartArgTypes,
   chartArgs,
+  getContextMenuHandler,
+  inspectArgKeys,
   inspectArgTypes,
+  legendArgKeys,
   legendArgTypes,
+  omitArgs,
+  optionalAction,
+  popoverArgKeys,
   popoverArgTypes,
   renderActionBarContent,
-  renderInspectContent,
-  renderPopoverContent,
+  renderPlaygroundInspect,
+  renderPlaygroundLegend,
+  renderPlaygroundPopover,
+  renderPlaygroundTitle,
 } from '../../playgroundUtils';
 
-interface LinePlaygroundArgs extends LineProps {
+interface LinePlaygroundArgs extends LineProps, PlaygroundInspectArgs, PlaygroundPopoverArgs, PlaygroundLegendArgs {
   dataPreset: CartesianDataPreset;
   chartTitle?: string;
   height: number;
@@ -186,158 +193,157 @@ export default {
   },
 };
 
-const LinePlaygroundStory: StoryFn<LinePlaygroundArgs> = ({
-  dataPreset,
-  chartTitle,
-  height,
-  maxWidth,
-  colorScheme,
-  backgroundColor,
-  showBottomAxis,
-  showLeftAxis,
-  bottomAxisTitle,
-  leftAxisTitle,
-  axisGrid,
-  axisBaseline,
-  axisLabelFormat,
-  axisLabelLimit,
-  showReferenceLine,
-  referenceLineLabel,
-  showLegend,
-  legendPosition,
-  legendTitle,
-  legendHighlight,
-  legendToggleable,
-  legendLabelLimit,
-  showInspect,
-  inspectHighlightBy,
-  inspectTargets,
-  showPopover,
-  popoverWidth,
-  popoverRightClick,
-  popoverHighlightBy,
-  showActionBar,
-  actionBarEmphasized,
-  actionBarMaxActions,
-  showForecast,
-  forecastMetric,
-  forecastLabel,
-  showDirectLabel,
-  directLabelValue,
-  directLabelPosition,
-  directLabelPrefix,
-  directLabelFormat,
-  showPointAnnotation,
-  pointAnnotationTextKey,
-  pointAnnotationAnchor,
-  pointAnnotationMatchLineColor,
-  enableClickCallback,
-  enableContextMenuCallback,
-  ...lineProps
-}): ReactElement => {
+const DATUM_KEYS = ['series', 'datetime', 'value'];
+
+const renderLineAxes = (args: LinePlaygroundArgs): ReactElement[] => {
+  const axes: ReactElement[] = [];
+  if (args.showBottomAxis) {
+    axes.push(
+      <Axis
+        key="bottom"
+        position="bottom"
+        baseline={args.axisBaseline}
+        labelFormat={args.axisLabelFormat}
+        labelLimit={args.axisLabelLimit}
+        title={args.bottomAxisTitle}
+      />
+    );
+  }
+  if (args.showLeftAxis) {
+    axes.push(
+      <Axis key="left" position="left" baseline={args.axisBaseline} grid={args.axisGrid} title={args.leftAxisTitle}>
+        {args.showReferenceLine ? <ReferenceLine value={50} label={args.referenceLineLabel} /> : undefined}
+      </Axis>
+    );
+  }
+  return axes;
+};
+
+const renderLineAnnotations = (args: LinePlaygroundArgs): ReactElement[] => {
+  const children: ReactElement[] = [];
+  if (args.showActionBar) {
+    children.push(
+      <ChartActionBar key="actionBar" isEmphasized={args.actionBarEmphasized} maxActions={args.actionBarMaxActions}>
+        {renderActionBarContent(['series', 'value'])}
+      </ChartActionBar>
+    );
+  }
+  if (args.showForecast) {
+    children.push(
+      <LineForecast
+        key="forecast"
+        metric={args.forecastMetric}
+        start={Date.UTC(2026, 0, 6)}
+        label={args.forecastLabel}
+      />
+    );
+  }
+  if (args.showDirectLabel) {
+    children.push(
+      <LineDirectLabel
+        key="directLabel"
+        value={args.directLabelValue}
+        position={args.directLabelPosition}
+        prefix={args.directLabelPrefix}
+        format={args.directLabelFormat}
+      />
+    );
+  }
+  if (args.showPointAnnotation) {
+    children.push(
+      <LinePointAnnotation
+        key="pointAnnotation"
+        textKey={args.pointAnnotationTextKey}
+        anchor={args.pointAnnotationAnchor}
+        matchLineColor={args.pointAnnotationMatchLineColor}
+      />
+    );
+  }
+  return children;
+};
+
+const LINE_PLAYGROUND_KEYS = [
+  'dataPreset',
+  'chartTitle',
+  'height',
+  'maxWidth',
+  'colorScheme',
+  'backgroundColor',
+  'showActionBar',
+  'popoverRightClick',
+  'enableClickCallback',
+  'enableContextMenuCallback',
+  'showBottomAxis',
+  'showLeftAxis',
+  'bottomAxisTitle',
+  'leftAxisTitle',
+  'axisGrid',
+  'axisBaseline',
+  'axisLabelFormat',
+  'axisLabelLimit',
+  'showReferenceLine',
+  'referenceLineLabel',
+  'actionBarEmphasized',
+  'actionBarMaxActions',
+  'showForecast',
+  'forecastMetric',
+  'forecastLabel',
+  'showDirectLabel',
+  'directLabelValue',
+  'directLabelPosition',
+  'directLabelPrefix',
+  'directLabelFormat',
+  'showPointAnnotation',
+  'pointAnnotationTextKey',
+  'pointAnnotationAnchor',
+  'pointAnnotationMatchLineColor',
+  ...inspectArgKeys,
+  ...popoverArgKeys,
+  ...legendArgKeys,
+] as const;
+
+const LinePlaygroundStory: StoryFn<LinePlaygroundArgs> = (args): ReactElement => {
+  const {
+    dataPreset,
+    chartTitle,
+    height,
+    maxWidth,
+    colorScheme,
+    backgroundColor,
+    showActionBar,
+    popoverRightClick,
+    enableClickCallback,
+    enableContextMenuCallback,
+  } = args;
+  const lineProps = omitArgs(args, LINE_PLAYGROUND_KEYS);
   const [contextMenuLabel, setContextMenuLabel] = useState<string>();
   const data =
     dataPreset === 'singleSeries'
       ? playgroundTimeSeriesData.filter((datum) => (datum as Record<string, unknown>).series === 'Create')
       : playgroundTimeSeriesData;
   const chartProps = useChartProps({ data, height, maxWidth });
-  const effectiveRightClick = showActionBar ? true : popoverRightClick;
+  const popoverArgs = { ...args, popoverRightClick: showActionBar || popoverRightClick };
 
   return (
     <div style={{ position: 'relative' }}>
       <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
-        {chartTitle ? <Title text={chartTitle} /> : undefined}
-        {showBottomAxis ? (
-          <Axis
-            position="bottom"
-            baseline={axisBaseline}
-            labelFormat={axisLabelFormat}
-            labelLimit={axisLabelLimit}
-            title={bottomAxisTitle}
-          />
-        ) : undefined}
-        {showLeftAxis ? (
-          <Axis position="left" baseline={axisBaseline} grid={axisGrid} title={leftAxisTitle}>
-            {showReferenceLine ? <ReferenceLine value={50} label={referenceLineLabel} /> : undefined}
-          </Axis>
-        ) : undefined}
+        {renderPlaygroundTitle(chartTitle)}
+        {renderLineAxes(args)}
         <Line
           {...lineProps}
-          onClick={enableClickCallback ? action('Line:onClick') : undefined}
-          onContextMenu={
-            enableContextMenuCallback
-              ? (event, datum): void => {
-                  event.preventDefault();
-                  action('Line:onContextMenu')({ event, datum });
-                  setContextMenuLabel(
-                    `Line context menu: ${String(
-                      (datum as Record<string, unknown>).series ?? (datum as Record<string, unknown>).value
-                    )}`
-                  );
-                }
-              : undefined
-          }
+          onClick={optionalAction(enableClickCallback, 'Line:onClick')}
+          onContextMenu={getContextMenuHandler(enableContextMenuCallback, 'Line', setContextMenuLabel, [
+            'series',
+            'value',
+          ])}
         >
-          {showInspect ? (
-            <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>
-              {renderInspectContent(['series', 'datetime', 'value'])}
-            </ChartInspect>
-          ) : undefined}
-          {showPopover ? (
-            <ChartPopover
-              width={popoverWidth}
-              rightClick={effectiveRightClick}
-              UNSAFE_highlightBy={popoverHighlightBy}
-              onOpenChange={action('Line ChartPopover:onOpenChange')}
-            >
-              {renderPopoverContent(['series', 'datetime', 'value'])}
-            </ChartPopover>
-          ) : undefined}
-          {showActionBar ? (
-            <ChartActionBar isEmphasized={actionBarEmphasized} maxActions={actionBarMaxActions}>
-              {renderActionBarContent(['series', 'value'])}
-            </ChartActionBar>
-          ) : undefined}
-          {showForecast ? (
-            <LineForecast metric={forecastMetric} start={Date.UTC(2026, 0, 6)} label={forecastLabel} />
-          ) : undefined}
-          {showDirectLabel ? (
-            <LineDirectLabel
-              value={directLabelValue}
-              position={directLabelPosition}
-              prefix={directLabelPrefix}
-              format={directLabelFormat}
-            />
-          ) : undefined}
-          {showPointAnnotation ? (
-            <LinePointAnnotation
-              textKey={pointAnnotationTextKey}
-              anchor={pointAnnotationAnchor}
-              matchLineColor={pointAnnotationMatchLineColor}
-            />
-          ) : undefined}
+          {renderPlaygroundInspect(args, DATUM_KEYS)}
+          {renderPlaygroundPopover(popoverArgs, DATUM_KEYS, 'Line')}
+          {renderLineAnnotations(args)}
         </Line>
-        {showLegend ? (
-          <Legend
-            color={lineProps.color}
-            position={legendPosition}
-            title={legendTitle}
-            highlight={legendHighlight}
-            isToggleable={legendToggleable}
-            labelLimit={legendLabelLimit}
-            onClick={action('Line Legend:onClick')}
-            onMouseOver={action('Line Legend:onMouseOver')}
-            onMouseOut={action('Line Legend:onMouseOut')}
-          />
-        ) : undefined}
+        {renderPlaygroundLegend(args, lineProps.color, 'Line')}
       </Chart>
-      {contextMenuLabel ? (
-        <div
-          style={{ position: 'absolute', top: 8, right: 8, background: 'white', border: '1px solid #999', padding: 8 }}
-        >
-          {contextMenuLabel}
-        </div>
-      ) : undefined}
+      <ContextMenuLabel label={contextMenuLabel} />
     </div>
   );
 };

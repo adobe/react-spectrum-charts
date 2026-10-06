@@ -23,8 +23,7 @@ import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';
 
-interface ChartPopoverStoryArgs extends ChartPopoverProps {
-  renderer?: ChartProps['renderer'];
+interface ChartPopoverStoryArgs extends ChartPopoverProps, Pick<ChartProps, 'renderer'> {
   type?: 'stacked' | 'dodged';
 }
 

@@ -17,32 +17,30 @@ import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
 import { Chart } from '../../../Chart';
-import {
-  Axis,
-  Bar,
-  BarDirectLabel,
-  ChartInspect,
-  ChartPopover,
-  Legend,
-  Line,
-  LineDirectLabel,
-  LineForecast,
-  Title,
-} from '../../../components';
+import { Axis, Bar, BarDirectLabel, Line, LineDirectLabel, LineForecast } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
 import { Combo } from '../../../pre-alpha';
 import { bindWithProps } from '../../../test-utils';
-import { ComboProps } from '../../../types';
+import { ComboProps, ContextMenuCallback } from '../../../types';
 import {
+  PlaygroundInspectArgs,
+  PlaygroundLegendArgs,
+  PlaygroundPopoverArgs,
   axesArgTypes,
   category,
   chartArgTypes,
   chartArgs,
+  inspectArgKeys,
   inspectArgTypes,
+  legendArgKeys,
   legendArgTypes,
+  omitArgs,
+  popoverArgKeys,
   popoverArgTypes,
-  renderInspectContent,
-  renderPopoverContent,
+  renderPlaygroundInspect,
+  renderPlaygroundLegend,
+  renderPlaygroundPopover,
+  renderPlaygroundTitle,
 } from '../../playgroundUtils';
 
 const comboPlaygroundData = [
@@ -67,7 +65,7 @@ const comboPlaygroundData = [
   { datetime: Date.UTC(2026, 0, 5), orders: 70, visits: 82, visitsForecast: 86, series: 'Orders', staticPoint: true },
 ];
 
-interface ComboPlaygroundArgs extends ComboProps {
+interface ComboPlaygroundArgs extends ComboProps, PlaygroundInspectArgs, PlaygroundPopoverArgs, PlaygroundLegendArgs {
   chartTitle?: string;
   height: number;
   maxWidth: number;
@@ -117,109 +115,94 @@ export default {
   },
 };
 
-const ComboPlaygroundStory: StoryFn<ComboPlaygroundArgs> = ({
-  chartTitle,
-  height,
-  maxWidth,
-  colorScheme,
-  backgroundColor,
-  showBottomAxis,
-  showLeftAxis,
-  axisGrid,
-  axisLabelFormat,
-  showLegend,
-  legendPosition,
-  legendTitle,
-  legendHighlight,
-  legendToggleable,
-  legendLabelLimit,
-  showBar,
-  barType,
-  showBarDirectLabel,
-  showLine,
-  showLineDirectLabel,
-  showLineForecast,
-  showInspect,
-  inspectHighlightBy,
-  inspectTargets,
-  showPopover,
-  popoverWidth,
-  popoverRightClick,
-  popoverHighlightBy,
-  ...comboProps
-}): ReactElement => {
+const preventContextMenu =
+  (name: string): ContextMenuCallback =>
+  (event, datum) => {
+    event.preventDefault();
+    action(`${name}:onContextMenu`)({ event, datum });
+  };
+
+const renderComboBar = (args: ComboPlaygroundArgs): ReactElement | undefined =>
+  args.showBar ? (
+    <Bar
+      metric="orders"
+      color={{ value: 'categorical-100' }}
+      type={args.barType}
+      onClick={action('Combo Bar:onClick')}
+      onContextMenu={preventContextMenu('Combo Bar')}
+      onMouseOver={action('Combo Bar:onMouseOver')}
+      onMouseOut={action('Combo Bar:onMouseOut')}
+    >
+      {args.showBarDirectLabel ? <BarDirectLabel position="end-outside" format=",.0f" /> : undefined}
+      {renderPlaygroundPopover(args, ['datetime', 'orders'], 'Combo Bar')}
+    </Bar>
+  ) : undefined;
+
+const renderComboLine = (args: ComboPlaygroundArgs): ReactElement | undefined =>
+  args.showLine ? (
+    <Line
+      metric="visits"
+      color={{ value: 'categorical-200' }}
+      scaleType="time"
+      staticPoint="staticPoint"
+      onClick={action('Combo Line:onClick')}
+      onContextMenu={preventContextMenu('Combo Line')}
+    >
+      {renderPlaygroundInspect(args, ['datetime', 'visits'])}
+      {args.showLineDirectLabel ? (
+        <LineDirectLabel value="last" position="end" prefix="Visits " format=",.0f" />
+      ) : undefined}
+      {args.showLineForecast ? (
+        <LineForecast metric="visitsForecast" start={Date.UTC(2026, 0, 4)} label="Forecast" />
+      ) : undefined}
+    </Line>
+  ) : undefined;
+
+const COMBO_PLAYGROUND_KEYS = [
+  'chartTitle',
+  'height',
+  'maxWidth',
+  'colorScheme',
+  'backgroundColor',
+  'showBottomAxis',
+  'showLeftAxis',
+  'axisGrid',
+  'axisLabelFormat',
+  'showBar',
+  'barType',
+  'showBarDirectLabel',
+  'showLine',
+  'showLineDirectLabel',
+  'showLineForecast',
+  ...inspectArgKeys,
+  ...popoverArgKeys,
+  ...legendArgKeys,
+] as const;
+
+const ComboPlaygroundStory: StoryFn<ComboPlaygroundArgs> = (args): ReactElement => {
+  const {
+    chartTitle,
+    height,
+    maxWidth,
+    colorScheme,
+    backgroundColor,
+    showBottomAxis,
+    showLeftAxis,
+    axisGrid,
+    axisLabelFormat,
+  } = args;
+  const comboProps = omitArgs(args, COMBO_PLAYGROUND_KEYS);
   const chartProps = useChartProps({ data: comboPlaygroundData, height, maxWidth });
   return (
     <Chart {...chartProps} colorScheme={colorScheme} backgroundColor={backgroundColor}>
-      {chartTitle ? <Title text={chartTitle} /> : undefined}
+      {renderPlaygroundTitle(chartTitle)}
       {showBottomAxis ? <Axis position="bottom" labelFormat={axisLabelFormat} title="Date" /> : undefined}
       {showLeftAxis ? <Axis position="left" grid={axisGrid} title="Volume" /> : undefined}
       <Combo {...comboProps}>
-        {showBar ? (
-          <Bar
-            metric="orders"
-            color={{ value: 'categorical-100' }}
-            type={barType}
-            onClick={action('Combo Bar:onClick')}
-            onContextMenu={(event, datum): void => {
-              event.preventDefault();
-              action('Combo Bar:onContextMenu')({ event, datum });
-            }}
-            onMouseOver={action('Combo Bar:onMouseOver')}
-            onMouseOut={action('Combo Bar:onMouseOut')}
-          >
-            {showBarDirectLabel ? <BarDirectLabel position="end-outside" format=",.0f" /> : undefined}
-            {showPopover ? (
-              <ChartPopover
-                width={popoverWidth}
-                rightClick={popoverRightClick}
-                UNSAFE_highlightBy={popoverHighlightBy}
-                onOpenChange={action('Combo Bar ChartPopover:onOpenChange')}
-              >
-                {renderPopoverContent(['datetime', 'orders'])}
-              </ChartPopover>
-            ) : undefined}
-          </Bar>
-        ) : undefined}
-        {showLine ? (
-          <Line
-            metric="visits"
-            color={{ value: 'categorical-200' }}
-            scaleType="time"
-            staticPoint="staticPoint"
-            onClick={action('Combo Line:onClick')}
-            onContextMenu={(event, datum): void => {
-              event.preventDefault();
-              action('Combo Line:onContextMenu')({ event, datum });
-            }}
-          >
-            {showInspect ? (
-              <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>
-                {renderInspectContent(['datetime', 'visits'])}
-              </ChartInspect>
-            ) : undefined}
-            {showLineDirectLabel ? (
-              <LineDirectLabel value="last" position="end" prefix="Visits " format=",.0f" />
-            ) : undefined}
-            {showLineForecast ? (
-              <LineForecast metric="visitsForecast" start={Date.UTC(2026, 0, 4)} label="Forecast" />
-            ) : undefined}
-          </Line>
-        ) : undefined}
+        {renderComboBar(args)}
+        {renderComboLine(args)}
       </Combo>
-      {showLegend ? (
-        <Legend
-          color="series"
-          position={legendPosition}
-          title={legendTitle}
-          highlight={legendHighlight}
-          isToggleable={legendToggleable}
-          labelLimit={legendLabelLimit}
-          onClick={action('Combo Legend:onClick')}
-          onMouseOver={action('Combo Legend:onMouseOver')}
-          onMouseOut={action('Combo Legend:onMouseOut')}
-        />
-      ) : undefined}
+      {renderPlaygroundLegend(args, 'series', 'Combo')}
     </Chart>
   );
 };

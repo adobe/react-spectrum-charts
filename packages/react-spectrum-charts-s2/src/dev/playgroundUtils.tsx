@@ -13,8 +13,13 @@
 /* eslint-disable react/display-name */
 import { ReactElement, ReactNode } from 'react';
 
+import { action } from 'storybook/actions';
+
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
 import { ColorScheme, Datum } from '@spectrum-charts/vega-spec-builder-s2';
+
+import { ChartInspect, ChartPopover, Legend, Title } from '../components';
+import { ContextMenuCallback, LegendProps } from '../types';
 
 export type PlaygroundArgTypes = Record<
   string,
@@ -131,3 +136,136 @@ export const renderActionBarContent =
 
 export const category = (categoryName: string, argNames: string[]): PlaygroundArgTypes =>
   Object.fromEntries(argNames.map((name) => [name, { table: { category: categoryName } }])) as PlaygroundArgTypes;
+
+type HighlightBy = 'item' | 'series' | 'dimension';
+
+export interface PlaygroundInspectArgs {
+  showInspect: boolean;
+  inspectHighlightBy: HighlightBy;
+  inspectTargets: ('item' | 'dimensionArea')[];
+}
+
+export interface PlaygroundPopoverArgs {
+  showPopover: boolean;
+  popoverWidth: number;
+  popoverRightClick: boolean;
+  popoverHighlightBy: HighlightBy;
+}
+
+export interface PlaygroundLegendArgs {
+  showLegend: boolean;
+  legendPosition: 'top' | 'bottom' | 'left' | 'right';
+  legendTitle?: string;
+  legendHighlight: boolean;
+  legendToggleable: boolean;
+  legendLabelLimit: number;
+}
+
+/** Returns the Storybook action for a callback when it is enabled. */
+export const optionalAction = (enabled: boolean, name: string): ReturnType<typeof action> | undefined =>
+  enabled ? action(name) : undefined;
+
+/** Returns a context menu handler that logs the action and reports a label for the clicked datum. */
+export const getContextMenuHandler = (
+  enabled: boolean,
+  name: string,
+  setLabel: (label: string) => void,
+  labelKeys: string[]
+): ContextMenuCallback | undefined => {
+  if (!enabled) return undefined;
+  return (event, datum) => {
+    event.preventDefault();
+    action(`${name}:onContextMenu`)({ event, datum });
+    const value = labelKeys.map((key) => getDatumValue(datum, key)).find((v) => v !== undefined && v !== null);
+    setLabel(`${name} context menu: ${formatDatumValue(value)}`);
+  };
+};
+
+export const renderPlaygroundTitle = (text?: string): ReactElement | undefined =>
+  text ? <Title text={text} /> : undefined;
+
+export const renderPlaygroundInspect = (
+  { showInspect, inspectHighlightBy, inspectTargets }: PlaygroundInspectArgs,
+  keys: string[]
+): ReactElement | undefined =>
+  showInspect ? (
+    <ChartInspect highlightBy={inspectHighlightBy} targets={inspectTargets}>
+      {renderInspectContent(keys)}
+    </ChartInspect>
+  ) : undefined;
+
+export const renderPlaygroundPopover = (
+  { showPopover, popoverWidth, popoverRightClick, popoverHighlightBy }: PlaygroundPopoverArgs,
+  keys: string[],
+  name: string
+): ReactElement | undefined =>
+  showPopover ? (
+    <ChartPopover
+      width={popoverWidth}
+      rightClick={popoverRightClick}
+      UNSAFE_highlightBy={popoverHighlightBy}
+      onOpenChange={action(`${name} ChartPopover:onOpenChange`)}
+    >
+      {renderPopoverContent(keys)}
+    </ChartPopover>
+  ) : undefined;
+
+export const renderPlaygroundLegend = (
+  {
+    showLegend,
+    legendPosition,
+    legendTitle,
+    legendHighlight,
+    legendToggleable,
+    legendLabelLimit,
+  }: PlaygroundLegendArgs,
+  color: LegendProps['color'],
+  name: string
+): ReactElement | undefined =>
+  showLegend ? (
+    <Legend
+      color={color}
+      position={legendPosition}
+      title={legendTitle}
+      highlight={legendHighlight}
+      isToggleable={legendToggleable}
+      labelLimit={legendLabelLimit}
+      onClick={action(`${name} Legend:onClick`)}
+      onMouseOver={action(`${name} Legend:onMouseOver`)}
+      onMouseOut={action(`${name} Legend:onMouseOut`)}
+    />
+  ) : undefined;
+
+export const ContextMenuLabel = ({ label }: { label?: string }): ReactElement | null =>
+  label ? (
+    <div style={{ position: 'absolute', top: 8, right: 8, background: 'white', border: '1px solid #999', padding: 8 }}>
+      {label}
+    </div>
+  ) : null;
+
+export const inspectArgKeys = [
+  'showInspect',
+  'inspectHighlightBy',
+  'inspectTargets',
+] as const satisfies readonly (keyof PlaygroundInspectArgs)[];
+export const popoverArgKeys = [
+  'showPopover',
+  'popoverWidth',
+  'popoverRightClick',
+  'popoverHighlightBy',
+] as const satisfies readonly (keyof PlaygroundPopoverArgs)[];
+export const legendArgKeys = [
+  'showLegend',
+  'legendPosition',
+  'legendTitle',
+  'legendHighlight',
+  'legendToggleable',
+  'legendLabelLimit',
+] as const satisfies readonly (keyof PlaygroundLegendArgs)[];
+
+/** Returns a copy of the story args without the given playground-only keys. */
+export const omitArgs = <T extends object, K extends keyof T>(args: T, keys: readonly K[]): Omit<T, K> => {
+  const result = { ...args };
+  keys.forEach((key) => delete result[key]);
+  return result;
+};
