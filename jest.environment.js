@@ -21,6 +21,21 @@ module.exports = class CustomTestEnvironment extends Environment {
     this.global.Response = Response;
     this.global.Request = Request;
     this.global.structuredClone = structuredClone;
-    this.global.MessageChannel = MessageChannel;
+    const channels = (this.messageChannels = []);
+    this.global.MessageChannel = class extends MessageChannel {
+      constructor() {
+        super();
+        channels.push(this);
+      }
+    };
+  }
+
+  // React's scheduler keeps a MessagePort open, which stops Jest from exiting after an in-band run.
+  async teardown() {
+    for (const channel of this.messageChannels) {
+      channel.port1.close();
+      channel.port2.close();
+    }
+    await super.teardown();
   }
 };
