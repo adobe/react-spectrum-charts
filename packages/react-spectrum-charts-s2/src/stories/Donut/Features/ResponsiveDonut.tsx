@@ -37,14 +37,17 @@ const getSizeTierIndex = (containerWidth: number): number =>
 
 export const getEffectiveDiameter = (containerWidth: number): number => {
   const tierIndex = getSizeTierIndex(containerWidth);
+  // half the container, minus 2px padding and the label gap, doubled back to a diameter
   const diameter = (2 * (containerWidth / 2 - 2 - DONUT_LABEL_RING_GAPS[tierIndex])) / REACH_RATIO;
   // capped at the next tier's min diameter, same as the spec builder
   return Math.min(diameter, DONUT_SIZE_TIER_CUTPOINTS[tierIndex] ?? Infinity);
 };
 
+// donut + widest labels, + 2px padding on both sides, + the label gap on both sides
 export const getContainerWidthForDiameter = (diameter: number): number =>
   diameter * REACH_RATIO + 4 + 2 * DONUT_LABEL_RING_GAPS[countReached(DONUT_SIZE_TIER_CUTPOINTS, diameter)];
 
+// 50px past the XL breakpoint so the slider can reach XL
 const CHART_SIZE = (DONUT_SIZE_TIER_LABELED_CHART_SIZES.at(-1) ?? 0) + 50;
 const MAX_WIDTH = CHART_SIZE + 100;
 

@@ -171,7 +171,7 @@ export const getDonutOuterRadiusExpr = (options: DonutSpecOptions): string => {
   // callers can interpolate this result directly without adding their own wrapping parens
   if (!isDonutLabelSpaceReserved(options)) return baseRadius;
   const ringGap = getDonutLabelRingGapSignalName(options.name);
-  // the next tier's min diameter; XL has no max
+  // the next tier's min diameter, halved below into a radius; XL has no max
   const maxDiameter = getSizeTierValueExpr(options.name, [...DONUT_SIZE_TIER_CUTPOINTS, 'MAX_VALUE']);
   // shrink the donut so its labels fit inside the chart, keeping it within its size tier
   // the radius + the label gap and the widest label (0.6 × radius) fills the base radius
@@ -199,6 +199,7 @@ export const getSizeTierScale = (options: DonutSpecOptions): ThresholdScale => (
   domain: isDonutLabelSpaceReserved(options)
     ? DONUT_SIZE_TIER_LABELED_CHART_SIZES
     : DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
+  // tier indexes 0-4 (XS-XL)
   range: [0, ...DONUT_SIZE_TIER_CUTPOINTS.map((_, index) => index + 1)],
 });
 
@@ -244,6 +245,7 @@ export const getRingWidthSignal = ({ name }: DonutSpecOptions): Signal => ({
  */
 export const getSliceGapSignal = ({ holeRatio, name }: DonutSpecOptions): Signal => ({
   name: `${name}_sliceGap`,
+  // pies always use a 1px gap
   update: holeRatio === 0 ? '1' : getSizeTierValueExpr(name, DONUT_SLICE_GAPS),
 });
 

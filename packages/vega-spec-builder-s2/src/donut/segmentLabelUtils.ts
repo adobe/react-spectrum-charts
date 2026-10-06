@@ -587,6 +587,7 @@ const getSegmentLabelFontSize = (
   // (getSegmentLabelData) entirely, so there's no need to zero their font size here too
   return [
     // hide all labels when there isn't any data to display, the empty state ring is shown instead
+    // also hide them below S (120px)
     {
       test: `${getDonutEmptyStateTest(name)} || ${getDonutSizeTierSignalName(name)} < ${getSizeTierIndexForDiameter(120)}`,
       value: 0,
@@ -780,6 +781,7 @@ const getRichSegmentLabelLayout = (
   const { donutOptions, labelKey, swatch } = options;
   const { color } = donutOptions;
   const nameTextExpr = `datum['${labelKey ?? color}']`;
+  // swatches only show at M (160px) and up
   const swatchVisibleExpr = `${getDonutSizeTierSignalName(donutOptions.name)} >= ${getSizeTierIndexForDiameter(160)}`;
   const swatchOffsetExpr = `${swatchVisibleExpr} ? ${
     DONUT_ADVANCED_LABEL_SWATCH_SIZE + DONUT_ADVANCED_LABEL_SWATCH_GAP
