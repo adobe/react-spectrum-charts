@@ -21,7 +21,7 @@ import {
   waitForMarksByGroupName,
   within,
 } from '../../../test-utils';
-import { BasicInspectOnDimensionArea } from './BarMovedTests.story';
+import { BasicInspectOnDimensionArea } from './BarDimensionArea.story';
 
 describe('BasicInspectOnDimensionArea', () => {
   test('hovering dimension area should apply highlight styling and show tooltip', async () => {

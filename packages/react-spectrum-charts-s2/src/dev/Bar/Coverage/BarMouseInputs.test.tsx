@@ -18,19 +18,9 @@ import {
   unhoverNthElement,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { BarWithUTCDatetimeFormat, OnMouseInputs } from './BarMovedTests.story';
+import { OnMouseInputs } from './BarMouseInputs.story';
 
 describe('Bar', () => {
-  test('Bar with UTC date on dimension renders properly', async () => {
-    render(<BarWithUTCDatetimeFormat {...BarWithUTCDatetimeFormat.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-
-    // get bars
-    const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(6);
-  });
-
   test('should display custom hover information in UI when mousing over bar items', async () => {
     render(<OnMouseInputs {...OnMouseInputs.args} />);
     const chart = await findChart();

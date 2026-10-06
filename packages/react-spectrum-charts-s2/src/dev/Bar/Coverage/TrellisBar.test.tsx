@@ -22,13 +22,13 @@ import {
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
-  TrellisHorizontalHorizontal,
   TrellisDodged,
+  TrellisHorizontalHorizontal,
   TrellisHorizontalVertical,
   TrellisVerticalHorizontal,
   TrellisVerticalVertical,
   TrellisWithCustomPadding,
-} from './BarMovedTests.story';
+} from './BarTrellis.story';
 
 describe('TrellisBar', () => {
   test('TrellisHorizontalHorizontal renders properly', async () => {

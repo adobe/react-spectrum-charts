@@ -20,7 +20,7 @@ import { bindWithProps } from '../../../test-utils';
 import { LineProps } from '../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Coverage/Moved Demo Variants',
+  title: 'React Spectrum Charts 2/Line/Coverage/Dual Metric Axis',
   component: Line,
   parameters: { controls: { include: ['dimension', 'metric', 'color', 'scaleType'] } },
 };

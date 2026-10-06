@@ -14,7 +14,7 @@ import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   DualMetricAxisWithSublabels as WithSublabels,
   DualMetricAxisWithThreeSeries as WithThreeSeries,
-} from './BarMovedTests.story';
+} from './BarDualMetricAxis.story';
 
 describe('Dual metric axis bar axis styling', () => {
   describe('Three series', () => {

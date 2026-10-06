@@ -22,7 +22,7 @@ import {
   waitForMarksByGroupName,
   within,
 } from '../../../test-utils';
-import { DodgedInspectOnDimensionArea } from './BarMovedTests.story';
+import { DodgedInspectOnDimensionArea } from './BarDimensionArea.story';
 
 describe('DodgedInspectOnDimensionArea', () => {
   test('hovering dimension area should apply highlight styling and show tooltip', async () => {

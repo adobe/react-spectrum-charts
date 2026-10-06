@@ -21,7 +21,7 @@ import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Coverage/Moved Demo Variants',
+  title: 'React Spectrum Charts 2/Line/Coverage/Axis And Legend',
   component: Line,
   parameters: { controls: { include: ['color', 'dimension', 'metric', 'scaleType'] } },
 };
