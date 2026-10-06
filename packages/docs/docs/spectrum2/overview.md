@@ -52,8 +52,20 @@ import { Chart, Axis, Line, Legend } from '@spectrum-charts/react-spectrum-chart
 
 The S2 package has these peer dependencies, which your app must install:
 
+| Package | Version |
+| --- | --- |
+| `@react-spectrum/s2` | `>=1.0.0` |
+| `react`, `react-dom` | `>=19.0.0` |
+| `react-aria-components` | `^1.14.0`, matching the version your `@react-spectrum/s2` depends on |
+| `vega` | `^6.2.0` |
+| `vega-lite` | `^6.4.2` |
+
+Since 1.3.0, `@react-spectrum/s2` pins an exact `react-aria-components` version. Install that same version so your app has one copy and charts share React Aria context with S2:
+
 ```bash
-npm install @react-spectrum/s2 react react-dom react-aria-components vega vega-lite
+npm install @react-spectrum/s2 react react-dom vega vega-lite
+npm ls react-aria-components   # shows the version @react-spectrum/s2 uses
+npm install react-aria-components@<that version>
 ```
 
 ### Module format
