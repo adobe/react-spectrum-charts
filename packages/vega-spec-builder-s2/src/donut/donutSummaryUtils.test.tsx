@@ -9,12 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { View, expressionFunction, parse } from 'vega';
+
 import {
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SUMMARY_LABEL_FONT_SIZES,
   DONUT_SUMMARY_VALUE_FONT_SIZES,
 } from '@spectrum-charts/constants';
-
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
 import { DonutSummarySpecOptions } from '../types';
@@ -28,6 +29,7 @@ import {
   getSummaryDeltaFill,
   getSummaryDeltaText,
   getSummaryLabelEncode,
+  getSummaryTextFontSize,
   getSummaryValueBaseline,
   getSummaryValueEncode,
   getSummaryValueLimit,
@@ -211,6 +213,75 @@ describe('getSummaryValueText()', () => {
   });
 });
 
+describe('getSummaryTextFontSize()', () => {
+  const originalGetLabelWidth = expressionFunction('getLabelWidth');
+
+  beforeAll(() => {
+    expressionFunction('getLabelWidth', (text: string) =>
+      Array.from(text).reduce((width, character) => width + (character === '\u2026' ? 12 : 8), 0)
+    );
+  });
+
+  afterAll(() => {
+    expressionFunction('getLabelWidth', originalGetLabelWidth);
+  });
+
+  test.each([
+    ['circle', '((min(width, height) / 2 - 2) - testName_ringWidth) < 40'],
+    ['semicircle', '((min(width / 2, height) - 2) - testName_ringWidth) < 40'],
+  ] as const)('should hide text below the minimum inner radius for a %s', (variant, test) => {
+    const fontSize = getSummaryTextFontSize(
+      { ...defaultDonutOptions, variant },
+      "datum['sum']",
+      'valueFontSize',
+      800,
+      'availableWidth'
+    );
+    expect(fontSize).toHaveProperty('0', { test, value: 0 });
+  });
+
+  test.each([
+    { scenario: 'only an ellipsis fits', text: '123', limit: 19, hidden: true },
+    { scenario: 'first character plus ellipsis exactly matches the limit', text: '123', limit: 20, hidden: true },
+    { scenario: 'first character plus ellipsis fits', text: '123', limit: 21, hidden: false },
+    { scenario: 'the full value fits', text: '123', limit: 25, hidden: false },
+    { scenario: 'numeric zero fits without an ellipsis', text: 0, limit: 9, hidden: false },
+    { scenario: 'a single character fits without an ellipsis', text: '1', limit: 9, hidden: false },
+    { scenario: 'the text is empty', text: '', limit: 19, hidden: false },
+    { scenario: 'the text is null', text: null, limit: 19, hidden: false },
+    { scenario: 'surrounding whitespace is ignored', text: ' 123 ', limit: 19, hidden: true },
+    { scenario: 'a zero limit disables truncation', text: '123', limit: 0, hidden: false },
+    { scenario: 'a negative limit disables truncation', text: '123', limit: -1, hidden: false },
+  ])('should select the correct font size when $scenario', async ({ text, limit, hidden }) => {
+    const result = getSummaryTextFontSize(defaultDonutOptions, 'text', 'summaryFontSize', 800, 'availableWidth');
+    if (!Array.isArray(result)) throw new Error('Expected summary font size production rules');
+    const hideRule = result[1];
+    const fallback = result[2];
+    if (!hideRule?.test || !('value' in hideRule) || !fallback || !('signal' in fallback)) {
+      throw new Error('Expected an ellipsis-only hiding rule and font size fallback');
+    }
+    const view = new View(
+      parse({
+        signals: [
+          { name: 'text', value: text },
+          { name: 'availableWidth', value: limit },
+          { name: 'summaryFontSize', value: 22 },
+          { name: 'shouldHide', update: hideRule.test },
+          { name: 'fontSize', update: `shouldHide ? ${hideRule.value} : ${fallback.signal}` },
+        ],
+      }),
+      { renderer: 'none' }
+    );
+    try {
+      await view.runAsync();
+      expect(view.signal('shouldHide')).toBe(hidden);
+      expect(view.signal('fontSize')).toBe(hidden ? 0 : 22);
+    } finally {
+      view.finalize();
+    }
+  });
+});
+
 describe('getSummaryValueBaseline()', () => {
   test('should return alphabetic if label is truthy', () => {
     const baseline = getSummaryValueBaseline('Visitors');
@@ -226,13 +297,15 @@ describe('getSummaryValueBaseline()', () => {
 describe('getSummaryValueLimit()', () => {
   test('should use full font size in signal if label is truthy', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: 'Visitors' })).toEqual({
-      signal: '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize) + (0), 2))',
+      signal:
+        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize) + (0), 2))',
     });
   });
 
   test('should use 1/2 font size in signal if label is falsey', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' })).toEqual({
-      signal: '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize * 0.5) + (0), 2))',
+      signal:
+        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize * 0.5) + (0), 2))',
     });
   });
 });
@@ -264,10 +337,11 @@ describe('getSummaryLabelEncode() with hideValue', () => {
       hideValue: false,
       label: 'Visitors',
     });
-    expect(encode.update?.fontSize).toEqual([
-      { test: '((min(width, height) / 2 - 2) - testName_ringWidth) < 40', value: 0 },
-      { signal: 'testName_summaryLabelFontSize' },
-    ]);
+    expect(encode).toHaveProperty('update.fontSize.0', {
+      test: '((min(width, height) / 2 - 2) - testName_ringWidth) < 40',
+      value: 0,
+    });
+    expect(encode).toHaveProperty('update.fontSize.2', { signal: 'testName_summaryLabelFontSize' });
   });
 
   test('should compute the limit from label height alone when hideValue is true', () => {
@@ -344,6 +418,19 @@ describe('semicircle summary anchoring', () => {
       signal:
         'height - (ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize) - (3 + (ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize) - (ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize))',
     });
+    expect(encode).toHaveProperty('update.limit.signal', 'width');
+  });
+
+  test.each([
+    { label: undefined, hideValue: false },
+    { label: 'Visitors', hideValue: true },
+    { label: undefined, hideValue: true },
+  ])('keeps hole-based limits for delta rows inside the semicircle: %s', (summary) => {
+    const encode = getSummaryDeltaEncode({ ...semicircleSummaryOptions, ...summary, delta: 0.025 });
+    expect(encode).toHaveProperty(
+      'update.limit.signal',
+      expect.stringContaining('2 * sqrt(pow(((min(width / 2, height) - 2) - testName_ringWidth), 2)')
+    );
   });
 
   test('a full circle still anchors directly at the arc center (no offset)', () => {
@@ -406,12 +493,13 @@ describe('getSummaryDeltaEncode() stacking', () => {
   test('value + label + delta: delta stacks below the label, past the value-to-label gap', () => {
     const encode = getSummaryDeltaEncode({ ...defaultDonutSummaryOptions, label: 'Visitors', delta: 0.025 });
     expect(encode.update?.dy).toEqual({
-      signal: 'ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25)',
+      signal:
+        'ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25)',
     });
     expect(encode.update?.baseline).toEqual({ value: 'top' });
   });
 
-  test('value + delta, no label: delta takes over the label\'s usual gap below the value', () => {
+  test("value + delta, no label: delta takes over the label's usual gap below the value", () => {
     const encode = getSummaryDeltaEncode({
       ...defaultDonutSummaryOptions,
       label: undefined,
@@ -446,10 +534,11 @@ describe('getSummaryDeltaEncode() stacking', () => {
 
   test('reuses the label font-size signal directly rather than a separate delta signal', () => {
     const encode = getSummaryDeltaEncode({ ...defaultDonutSummaryOptions, label: 'Visitors', delta: 0.025 });
-    expect(encode.update?.fontSize).toEqual([
-      { test: '((min(width, height) / 2 - 2) - testName_ringWidth) < 40', value: 0 },
-      { signal: 'testName_summaryLabelFontSize' },
-    ]);
+    expect(encode).toHaveProperty('update.fontSize.0', {
+      test: '((min(width, height) / 2 - 2) - testName_ringWidth) < 40',
+      value: 0,
+    });
+    expect(encode).toHaveProperty('update.fontSize.2', { signal: 'testName_summaryLabelFontSize' });
   });
 
   test('should always use fontWeight 800', () => {
