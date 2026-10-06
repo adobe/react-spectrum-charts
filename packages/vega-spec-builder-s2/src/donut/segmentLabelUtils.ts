@@ -58,6 +58,7 @@ import {
   getDonutEmptyStateTest,
   getDonutLabelRingGapSignalName,
   getDonutOuterRadiusExpr,
+  getDonutSizeTierDiameterExpr,
   isDonutInteractive,
 } from './donutUtils';
 
@@ -177,7 +178,7 @@ export const getSegmentLabelScales = (donutOptions: DonutSpecOptions): Threshold
 const getSegmentLabelSignalsForLabel = (segmentLabel: SegmentLabelSpecOptions): Signal[] => {
   if (!segmentLabel || isRichSegmentLabel(segmentLabel)) return [];
   const labelName = getSegmentLabelName(segmentLabel);
-  const donutDiameter = `2 * ${getDonutOuterRadiusExpr(segmentLabel.donutOptions)}`;
+  const donutDiameter = getDonutSizeTierDiameterExpr(segmentLabel.donutOptions);
   return [
     {
       name: `${labelName}NameFontSize`,
@@ -620,7 +621,7 @@ const getSegmentLabelFontSize = (
   return [
     // hide all labels when there isn't any data to display, the empty state ring is shown instead
     {
-      test: `${getDonutEmptyStateTest(name)} || 2 * ${getDonutOuterRadiusExpr(options.donutOptions)} < 120`,
+      test: `${getDonutEmptyStateTest(name)} || ${getDonutSizeTierDiameterExpr(options.donutOptions)} < 120`,
       value: 0,
     },
     { signal: fontSizeSignal },
@@ -707,7 +708,7 @@ export const getRichSegmentLabelScales = (donutOptions: DonutSpecOptions): Thres
 export const getRichSegmentLabelSignals = (donutOptions: DonutSpecOptions): Signal[] => {
   return getRichSegmentLabels(donutOptions).flatMap((segmentLabel) => {
     const { labelName } = segmentLabel;
-    const donutDiameter = `2 * ${getDonutOuterRadiusExpr(donutOptions)}`;
+    const donutDiameter = getDonutSizeTierDiameterExpr(donutOptions);
     return [
       {
         name: `${labelName}NameFontSize`,
@@ -849,7 +850,7 @@ const getRichSegmentLabelLayout = (
   const { donutOptions, labelKey, swatch } = options;
   const { color } = donutOptions;
   const nameTextExpr = `datum['${labelKey ?? color}']`;
-  const swatchVisibleExpr = `2 * ${getDonutOuterRadiusExpr(donutOptions)} >= 160`;
+  const swatchVisibleExpr = `${getDonutSizeTierDiameterExpr(donutOptions)} >= 160`;
   const swatchOffsetExpr = `${swatchVisibleExpr} ? ${
     DONUT_ADVANCED_LABEL_SWATCH_SIZE + DONUT_ADVANCED_LABEL_SWATCH_GAP
   } : 0`;
@@ -1023,7 +1024,7 @@ const getRichSegmentLabelFontSize = (
   minimumDiameter: number
 ) => [
   {
-    test: `${getDonutEmptyStateTest(options.donutOptions.name)} || 2 * ${getDonutOuterRadiusExpr(
+    test: `${getDonutEmptyStateTest(options.donutOptions.name)} || ${getDonutSizeTierDiameterExpr(
       options.donutOptions
     )} < ${minimumDiameter}`,
     value: 0,

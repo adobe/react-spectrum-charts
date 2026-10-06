@@ -35,7 +35,11 @@ import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
-import { getDonutCenterYSignal, getDonutInnerRadiusExpr, getDonutOuterRadiusExpr } from './donutUtils';
+import {
+  getDonutCenterYSignal,
+  getDonutInnerRadiusExpr,
+  getDonutSizeTierDiameterExpr,
+} from './donutUtils';
 
 type DonutSummaryLayoutOptions = Pick<DonutSummarySpecOptions, 'donutOptions' | 'hideValue' | 'label' | 'delta'>;
 
@@ -214,7 +218,7 @@ export const getDonutSummarySignals = (donutOptions: DonutSpecOptions): Signal[]
     return [];
   }
   const { name } = donutOptions;
-  const donutDiameter = `2 * ${getDonutOuterRadiusExpr(donutOptions)}`;
+  const donutDiameter = getDonutSizeTierDiameterExpr(donutOptions);
   const signals: Signal[] = [
     {
       name: `${name}_summaryValueFontSize`,

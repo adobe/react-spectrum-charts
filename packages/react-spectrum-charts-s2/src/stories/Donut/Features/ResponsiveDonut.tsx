@@ -29,17 +29,16 @@ const REACH_RATIO = 1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO;
 const getLabelRingGapForDiameter = (diameter: number): number =>
   DONUT_LABEL_RING_GAPS[DONUT_SIZE_TIER_CUTPOINTS.filter((cutpoint) => diameter >= cutpoint).length];
 
-/** Mirrors the spec builder: use the highest tier whose own gap still keeps the donut in that tier. */
-export const getEffectiveDiameter = (containerWidth: number): number => {
+/** Mirrors the spec builder: the highest tier whose own gap still keeps the donut in that tier. */
+const getSizeTierIndex = (containerWidth: number): number => {
   const rawRadius = containerWidth / 2 - 2;
-  const getDiameter = (gap: number): number => (2 * (rawRadius - gap)) / REACH_RATIO;
-  const gap = DONUT_LABEL_RING_GAPS.reduce(
-    (selectedGap, tierGap, tier) =>
-      tier > 0 && getDiameter(tierGap) >= DONUT_SIZE_TIER_CUTPOINTS[tier - 1] ? tierGap : selectedGap,
-    DONUT_LABEL_RING_GAPS[0]
-  );
-  return getDiameter(gap);
+  return DONUT_SIZE_TIER_CUTPOINTS.filter(
+    (cutpoint, index) => rawRadius >= (cutpoint * REACH_RATIO) / 2 + DONUT_LABEL_RING_GAPS[index + 1]
+  ).length;
 };
+
+export const getEffectiveDiameter = (containerWidth: number): number =>
+  (2 * (containerWidth / 2 - 2 - DONUT_LABEL_RING_GAPS[getSizeTierIndex(containerWidth)])) / REACH_RATIO;
 
 export const getContainerWidthForDiameter = (diameter: number): number =>
   diameter * REACH_RATIO + 4 + 2 * getLabelRingGapForDiameter(diameter);
@@ -98,16 +97,7 @@ const THRESHOLDS = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint, i) => ({
   diameter: cutpoint,
 }));
 
-const getSizeTier = (containerWidth: number): string => {
-  const diameter = getEffectiveDiameter(containerWidth);
-  const index = DONUT_SIZE_TIER_CUTPOINTS.findIndex((cutpoint) => diameter < cutpoint);
-  if (index !== -1) return TIER_LABELS[index];
-  const lastLabel = TIER_LABELS.at(-1);
-  if (lastLabel === undefined) {
-    throw new Error('TIER_LABELS must not be empty');
-  }
-  return lastLabel;
-};
+const getSizeTier = (containerWidth: number): string => TIER_LABELS[getSizeTierIndex(containerWidth)];
 
 export const ResponsiveDonut = ({
   data,

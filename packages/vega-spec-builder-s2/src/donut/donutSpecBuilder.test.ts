@@ -350,7 +350,8 @@ describe('addSignals()', () => {
   test('should add rich SegmentLabel font size signals when swatch is enabled', () => {
     const baselineSignals = addSignals(defaultSignals, defaultDonutOptions);
     const signals = addSignals(defaultSignals, { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(signals).toHaveLength(baselineSignals.length + 5);
+    expect(signals).toHaveLength(baselineSignals.length + 6);
+    expect(signals.find((signal) => signal.name === 'testName_sizeTierDiameter')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_labelRingGap')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelNameFontSize')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelValueFontSize')).toBeDefined();
@@ -394,10 +395,11 @@ describe('donutSpecBuilder', () => {
 
   test('should add rich SegmentLabel font size scales when swatch is enabled', () => {
     const scales = addScales([], { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(scales).toHaveLength(6);
-    expect(scales[3]).toHaveProperty('name', 'testName_richSegmentLabelNameFontSizeScale');
-    expect(scales[4]).toHaveProperty('name', 'testName_richSegmentLabelValueFontSizeScale');
-    expect(scales[5]).toHaveProperty('name', 'testName_richSegmentLabelDetailFontSizeScale');
+    expect(scales).toHaveLength(7);
+    expect(scales[2]).toHaveProperty('name', 'testName_labelRingGapScale');
+    expect(scales[4]).toHaveProperty('name', 'testName_richSegmentLabelNameFontSizeScale');
+    expect(scales[5]).toHaveProperty('name', 'testName_richSegmentLabelValueFontSizeScale');
+    expect(scales[6]).toHaveProperty('name', 'testName_richSegmentLabelDetailFontSizeScale');
   });
 });
 
