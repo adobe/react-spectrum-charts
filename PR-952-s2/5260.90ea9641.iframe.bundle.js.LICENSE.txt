@@ -1,7 +1,0 @@
-/*! @spectrum-charts/constants@v1.53.0 */
-
-/*! @spectrum-charts/locales@v1.52.0 */
-
-/*! @spectrum-charts/themes@v1.52.0 */
-
-/*! @spectrum-charts/vega-spec-builder-s2@v0.9.0 */
