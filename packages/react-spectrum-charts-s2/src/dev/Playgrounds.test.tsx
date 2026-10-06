@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ComponentType } from 'react';
+
 import { findChart, render } from '../test-utils';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { Playground as AreaPlayground } from './Area/Playground/AreaPlayground.story';
@@ -35,7 +37,9 @@ const playgrounds = {
 
 describe('Playgrounds', () => {
   test.each(Object.entries(playgrounds))('%s renders with its default args', async (_, Playground) => {
-    render(<Playground {...(Playground.args as object)} />);
+    // Each playground has its own args type, so render them through a common component type.
+    const Story = Playground as ComponentType<object>;
+    render(<Story {...Playground.args} />);
     expect(await findChart()).toBeInTheDocument();
   });
 });

@@ -14,8 +14,7 @@
 import { ReactElement, ReactNode } from 'react';
 
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
-import { ColorScheme } from '@spectrum-charts/vega-spec-builder-s2';
-import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
+import { ColorScheme, Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 export type PlaygroundArgTypes = Record<
   string,
