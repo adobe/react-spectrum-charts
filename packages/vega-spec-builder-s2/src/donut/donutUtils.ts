@@ -156,7 +156,7 @@ export const getSizeTierValueExpr = (name: string, values: (number | string)[]):
   `[${values.join(', ')}][${getDonutSizeTierSignalName(name)}]`;
 
 /**
- * Gets the donut's outer radius, reserving space for SegmentLabel content when needed.
+ * Gets the donut's outer radius; with labels, shrinks the donut so its labels fit inside the chart, keeping it within its size tier.
  * @param donutOptions
  * @returns vega expression string
  */
@@ -165,7 +165,6 @@ export const getDonutOuterRadiusExpr = (options: DonutSpecOptions): string => {
   if (!isDonutLabelSpaceReserved(options)) {
     return baseRadius;
   }
-  // shrink the donut so its labels fit inside the chart, keeping it within its size tier
 
   // the radius + the label gap + the minimum label space (radius × DONUT_LABEL_MIN_SPACE_RATIO) fills the base radius
   const ringGap = getDonutLabelRingGapSignalName(options.name);
