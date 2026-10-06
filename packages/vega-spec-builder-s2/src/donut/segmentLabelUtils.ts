@@ -21,7 +21,6 @@ import {
   TextEncodeEntry,
   TextMark,
   TextValueRef,
-  ThresholdScale,
 } from 'vega';
 
 import {
@@ -42,7 +41,6 @@ import {
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_RADIUS,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
-  DONUT_SIZE_TIER_CUTPOINTS,
   FILTERED_TABLE,
   HOVERED_ITEM,
   SERIES_ID,
@@ -58,7 +56,9 @@ import {
   getDonutEmptyStateTest,
   getDonutLabelRingGapSignalName,
   getDonutOuterRadiusExpr,
-  getDonutSizeTierDiameterExpr,
+  getDonutSizeTierSignalName,
+  getSizeTierIndexForDiameter,
+  getSizeTierValueExpr,
   isDonutInteractive,
 } from './donutUtils';
 
@@ -144,50 +144,17 @@ const getLabelModeFilter = ({ donutOptions, labelMode }: SegmentLabelSpecOptions
 };
 
 /**
- * Gets the threshold scales that snap a donut's outer diameter to its nearest named size tier's direct-label font sizes
- * @param donutOptions
- * @returns ThresholdScale[]
- */
-const getSegmentLabelScalesForLabel = (segmentLabel: SegmentLabelSpecOptions): ThresholdScale[] => {
-  if (!segmentLabel || isRichSegmentLabel(segmentLabel)) return [];
-  const labelName = getSegmentLabelName(segmentLabel);
-  return [
-    {
-      name: `${labelName}NameFontSizeScale`,
-      type: 'threshold',
-      domain: DONUT_SIZE_TIER_CUTPOINTS,
-      range: DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
-    },
-    {
-      name: `${labelName}ValueFontSizeScale`,
-      type: 'threshold',
-      domain: DONUT_SIZE_TIER_CUTPOINTS,
-      range: DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
-    },
-  ];
-};
-
-export const getSegmentLabelScales = (donutOptions: DonutSpecOptions): ThresholdScale[] =>
-  getSegmentLabels(donutOptions).flatMap(getSegmentLabelScalesForLabel);
-
-/**
- * Gets the signals that resolve a donut's direct-label font sizes from its outer diameter
+ * Gets the signals that resolve a donut's direct-label font sizes from its size tier
  * @param donutOptions
  * @returns Signal[]
  */
 const getSegmentLabelSignalsForLabel = (segmentLabel: SegmentLabelSpecOptions): Signal[] => {
   if (!segmentLabel || isRichSegmentLabel(segmentLabel)) return [];
   const labelName = getSegmentLabelName(segmentLabel);
-  const donutDiameter = getDonutSizeTierDiameterExpr(segmentLabel.donutOptions);
+  const { name } = segmentLabel.donutOptions;
   return [
-    {
-      name: `${labelName}NameFontSize`,
-      update: `scale('${labelName}NameFontSizeScale', ${donutDiameter})`,
-    },
-    {
-      name: `${labelName}ValueFontSize`,
-      update: `scale('${labelName}ValueFontSizeScale', ${donutDiameter})`,
-    },
+    { name: `${labelName}NameFontSize`, update: getSizeTierValueExpr(name, DONUT_DIRECT_LABEL_NAME_FONT_SIZES) },
+    { name: `${labelName}ValueFontSize`, update: getSizeTierValueExpr(name, DONUT_DIRECT_LABEL_VALUE_FONT_SIZES) },
   ];
 };
 
@@ -621,7 +588,7 @@ const getSegmentLabelFontSize = (
   return [
     // hide all labels when there isn't any data to display, the empty state ring is shown instead
     {
-      test: `${getDonutEmptyStateTest(name)} || ${getDonutSizeTierDiameterExpr(options.donutOptions)} < 120`,
+      test: `${getDonutEmptyStateTest(name)} || ${getDonutSizeTierSignalName(name)} < ${getSizeTierIndexForDiameter(120)}`,
       value: 0,
     },
     { signal: fontSizeSignal },
@@ -670,57 +637,20 @@ const getRichSegmentLabels = (options: DonutSpecOptions): RichSegmentLabelSpecOp
   getSegmentLabels(options).filter(isRichSegmentLabel).map(resolveRichSegmentLabel);
 
 /**
- * Gets the threshold scales that snap a donut's outer diameter to its rich SegmentLabel font sizes
- * @param donutOptions
- * @returns ThresholdScale[]
- */
-export const getRichSegmentLabelScales = (donutOptions: DonutSpecOptions): ThresholdScale[] => {
-  return getRichSegmentLabels(donutOptions).flatMap((segmentLabel) => {
-    const { labelName } = segmentLabel;
-    return [
-      {
-        name: `${labelName}NameFontSizeScale`,
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
-      },
-      {
-        name: `${labelName}ValueFontSizeScale`,
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES,
-      },
-      {
-        name: `${labelName}DetailFontSizeScale`,
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES,
-      },
-    ];
-  });
-};
-
-/**
- * Gets the signals that resolve rich SegmentLabel font sizes from the donut's outer diameter
+ * Gets the signals that resolve rich SegmentLabel font sizes from the donut's size tier
  * @param donutOptions
  * @returns Signal[]
  */
 export const getRichSegmentLabelSignals = (donutOptions: DonutSpecOptions): Signal[] => {
   return getRichSegmentLabels(donutOptions).flatMap((segmentLabel) => {
     const { labelName } = segmentLabel;
-    const donutDiameter = getDonutSizeTierDiameterExpr(donutOptions);
+    const { name } = donutOptions;
     return [
-      {
-        name: `${labelName}NameFontSize`,
-        update: `scale('${labelName}NameFontSizeScale', ${donutDiameter})`,
-      },
-      {
-        name: `${labelName}ValueFontSize`,
-        update: `scale('${labelName}ValueFontSizeScale', ${donutDiameter})`,
-      },
+      { name: `${labelName}NameFontSize`, update: getSizeTierValueExpr(name, DONUT_ADVANCED_LABEL_NAME_FONT_SIZES) },
+      { name: `${labelName}ValueFontSize`, update: getSizeTierValueExpr(name, DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES) },
       {
         name: `${labelName}DetailFontSize`,
-        update: `scale('${labelName}DetailFontSizeScale', ${donutDiameter})`,
+        update: getSizeTierValueExpr(name, DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES),
       },
     ];
   });
@@ -850,7 +780,7 @@ const getRichSegmentLabelLayout = (
   const { donutOptions, labelKey, swatch } = options;
   const { color } = donutOptions;
   const nameTextExpr = `datum['${labelKey ?? color}']`;
-  const swatchVisibleExpr = `${getDonutSizeTierDiameterExpr(donutOptions)} >= 160`;
+  const swatchVisibleExpr = `${getDonutSizeTierSignalName(donutOptions.name)} >= ${getSizeTierIndexForDiameter(160)}`;
   const swatchOffsetExpr = `${swatchVisibleExpr} ? ${
     DONUT_ADVANCED_LABEL_SWATCH_SIZE + DONUT_ADVANCED_LABEL_SWATCH_GAP
   } : 0`;
@@ -1024,9 +954,9 @@ const getRichSegmentLabelFontSize = (
   minimumDiameter: number
 ) => [
   {
-    test: `${getDonutEmptyStateTest(options.donutOptions.name)} || ${getDonutSizeTierDiameterExpr(
-      options.donutOptions
-    )} < ${minimumDiameter}`,
+    test: `${getDonutEmptyStateTest(options.donutOptions.name)} || ${getDonutSizeTierSignalName(
+      options.donutOptions.name
+    )} < ${getSizeTierIndexForDiameter(minimumDiameter)}`,
     value: 0,
   },
   { signal: fontSizeSignal },

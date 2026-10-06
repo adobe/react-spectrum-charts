@@ -18,7 +18,6 @@ import {
   DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
-  DONUT_SIZE_TIER_CUTPOINTS,
   HOVERED_ITEM,
   MARK_ID,
 } from '@spectrum-charts/constants';
@@ -29,12 +28,10 @@ import { getDonutEmptyStateTest } from './donutUtils';
 import {
   getRichSegmentLabelData,
   getRichSegmentLabelMarks,
-  getRichSegmentLabelScales,
   getRichSegmentLabelSignals,
   getRichSegmentLabelValueText,
   getSegmentLabelData,
   getSegmentLabelMarks,
-  getSegmentLabelScales,
   getSegmentLabelSignals,
   getSegmentLabelTextMark,
   getSegmentLabelValueText,
@@ -211,29 +208,7 @@ describe('getTextRuleExpr()', () => {
   });
 });
 
-describe('getSegmentLabelScales()', () => {
-  test('should return empty array if there is not a SegmentLabel on the Donut', () => {
-    expect(getSegmentLabelScales(defaultDonutOptions)).toEqual([]);
-  });
-
-  test('should snap outer diameter to the nearest named tier for name/value font sizes', () => {
-    const scales = getSegmentLabelScales(defaultDonutOptionsWithSegmentLabel);
-    expect(scales).toEqual([
-      {
-        name: 'testName_segmentLabelNameFontSizeScale',
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
-      },
-      {
-        name: 'testName_segmentLabelValueFontSizeScale',
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
-      },
-    ]);
-  });
-
+describe('segment label modes', () => {
   test('should create separate direct and rich labels for emphasized and de-emphasized segments', () => {
     const donutOptions = {
       ...defaultDonutOptions,
@@ -307,59 +282,21 @@ describe('getSegmentLabelSignals()', () => {
     expect(getSegmentLabelSignals(defaultDonutOptions)).toEqual([]);
   });
 
-  test('should resolve name/value font sizes from the outer diameter', () => {
+  test('should resolve name/value font sizes from the size tier', () => {
     const signals = getSegmentLabelSignals(defaultDonutOptionsWithSegmentLabel);
     expect(signals).toEqual([
-      {
-        name: 'testName_segmentLabelNameFontSize',
-        update:
-          "scale('testName_segmentLabelNameFontSizeScale', testName_sizeTierDiameter)",
-      },
-      {
-        name: 'testName_segmentLabelValueFontSize',
-        update:
-          "scale('testName_segmentLabelValueFontSizeScale', testName_sizeTierDiameter)",
-      },
+      { name: 'testName_segmentLabelNameFontSize', update: `[${DONUT_DIRECT_LABEL_NAME_FONT_SIZES.join(', ')}][testName_sizeTier]` },
+      { name: 'testName_segmentLabelValueFontSize', update: `[${DONUT_DIRECT_LABEL_VALUE_FONT_SIZES.join(', ')}][testName_sizeTier]` },
     ]);
   });
 });
 
 describe('rich SegmentLabel', () => {
-  test('should create font scales and signals for each rich label row', () => {
-    expect(getRichSegmentLabelScales(richDonutOptions)).toEqual([
-      {
-        name: 'testName_richSegmentLabelNameFontSizeScale',
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_ADVANCED_LABEL_NAME_FONT_SIZES,
-      },
-      {
-        name: 'testName_richSegmentLabelValueFontSizeScale',
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES,
-      },
-      {
-        name: 'testName_richSegmentLabelDetailFontSizeScale',
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES,
-      },
-    ]);
-    const donutDiameter = `testName_sizeTierDiameter`;
+  test('should create font size signals for each rich label row', () => {
     expect(getRichSegmentLabelSignals(richDonutOptions)).toEqual([
-      {
-        name: 'testName_richSegmentLabelNameFontSize',
-        update: `scale('testName_richSegmentLabelNameFontSizeScale', ${donutDiameter})`,
-      },
-      {
-        name: 'testName_richSegmentLabelValueFontSize',
-        update: `scale('testName_richSegmentLabelValueFontSizeScale', ${donutDiameter})`,
-      },
-      {
-        name: 'testName_richSegmentLabelDetailFontSize',
-        update: `scale('testName_richSegmentLabelDetailFontSizeScale', ${donutDiameter})`,
-      },
+      { name: 'testName_richSegmentLabelNameFontSize', update: `[${DONUT_ADVANCED_LABEL_NAME_FONT_SIZES.join(', ')}][testName_sizeTier]` },
+      { name: 'testName_richSegmentLabelValueFontSize', update: `[${DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES.join(', ')}][testName_sizeTier]` },
+      { name: 'testName_richSegmentLabelDetailFontSize', update: `[${DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES.join(', ')}][testName_sizeTier]` },
     ]);
   });
 
@@ -411,7 +348,7 @@ describe('rich SegmentLabel', () => {
     }
     expect(swatch.encode?.update?.size).toEqual([
       {
-        test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum'] || testName_sizeTierDiameter < 160",
+        test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum'] || testName_sizeTier < 2",
         value: 0,
       },
       { signal: '256' },
@@ -421,7 +358,7 @@ describe('rich SegmentLabel', () => {
     });
     expect(name.encode?.update?.dx).toEqual({
       signal:
-        "(datum['testName_richSegmentLabel_hemisphere'] === 'right' ? 1 : -1) * (testName_sizeTierDiameter >= 160 ? 24 : 0)",
+        "(datum['testName_richSegmentLabel_hemisphere'] === 'right' ? 1 : -1) * (testName_sizeTier >= 2 ? 24 : 0)",
     });
     expect(name.encode?.update?.dy).toEqual({ signal: '0' });
     expect(value.encode?.update?.dy).not.toHaveProperty(
@@ -486,7 +423,6 @@ describe('rich SegmentLabel', () => {
   });
 
   test('should not create rich content for direct labels or boolean donuts', () => {
-    expect(getRichSegmentLabelScales(defaultDonutOptionsWithSegmentLabel)).toEqual([]);
     expect(getRichSegmentLabelSignals(defaultDonutOptionsWithSegmentLabel)).toEqual([]);
     expect(getRichSegmentLabelData(defaultDonutOptionsWithSegmentLabel)).toEqual([]);
     expect(getRichSegmentLabelMarks({ ...richDonutOptions, isBoolean: true })).toEqual([]);
@@ -621,7 +557,7 @@ describe('getSegmentLabelTextMark()', () => {
     const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     expect(mark.encode?.update?.fontSize).toEqual([
       {
-        test: `${getDonutEmptyStateTest('testName')} || testName_sizeTierDiameter < 120`,
+        test: `${getDonutEmptyStateTest('testName')} || testName_sizeTier < 1`,
         value: 0,
       },
       { signal: 'testName_segmentLabelNameFontSize' },

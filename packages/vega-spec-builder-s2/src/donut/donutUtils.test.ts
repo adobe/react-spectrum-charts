@@ -10,29 +10,32 @@
  * governing permissions and limitations under the License.
  */
 import {
+  DONUT_LABEL_RING_GAPS,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SEMICIRCLE_RADIUS,
+  DONUT_SIZE_TIER_LABELED_CHART_SIZES,
+  DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
   FILTERED_TABLE,
 } from '@spectrum-charts/constants';
 import { spectrum2Colors } from '@spectrum-charts/themes';
 
+import { DonutSpecOptions } from '../types';
 import { defaultDonutOptions } from './donutTestUtils';
 import {
   getArcMark,
   getDonutEmptyStateTest,
   getDonutInnerRadiusExpr,
   getDonutOuterRadiusExpr,
-  getDonutSizeTierDiameterExpr,
   getEmptyStateArcMark,
-  getLabelRingGapScales,
   getLabelRingGapSignals,
-  getSizeTierDiameterSignals,
-  getRingWidthScale,
   getRingWidthSignal,
-  getSliceGapScale,
+  getSizeTierIndexForDiameter,
+  getSizeTierScale,
+  getSizeTierSignal,
+  getSizeTierValueExpr,
   getSliceGapSignal,
   getSliceStrokeWidthExpr,
   getSumData,
@@ -133,12 +136,12 @@ describe('getDonutOuterRadiusExpr()', () => {
 
   test('should reserve room using the label ring gap signal when SegmentLabel is present', () => {
     const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{}] });
-    expect(expr).toBe(`((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6))`);
+    expect(expr).toBe(`min((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6), [120, 160, 200, 400, MAX_VALUE][testName_sizeTier] / 2)`);
   });
 
   test('should reserve room using the label ring gap signal for rich SegmentLabels', () => {
     const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(expr).toBe(`((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6))`);
+    expect(expr).toBe(`min((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6), [120, 160, 200, 400, MAX_VALUE][testName_sizeTier] / 2)`);
   });
 
   test('should use the semicircle base radius (full height/width) for a semicircle donut', () => {
@@ -156,85 +159,137 @@ describe('getDonutOuterRadiusExpr()', () => {
   });
 });
 
-describe('getSizeTierDiameterSignals()', () => {
-  const evaluate = (size: number): number => {
-    const [{ update }] = getSizeTierDiameterSignals({ ...defaultDonutOptions, segmentLabels: [{}] }) as {
-      update: string;
-    }[];
+describe('getSizeTierScale() / getSizeTierSignal()', () => {
+  const evaluateExpr = (expr: string, scope: Record<string, unknown>): number =>
     // eslint-disable-next-line no-new-func
-    return new Function('width', 'height', 'min', `return ${update};`)(size, size, Math.min);
+    new Function(...Object.keys(scope), 'MAX_VALUE', `return ${expr};`)(...Object.values(scope), Number.MAX_VALUE);
+  const evaluateTier = (options: DonutSpecOptions, width: number, height = width): number => {
+    const { domain, range } = getSizeTierScale(options) as { domain: number[]; range: number[] };
+    const scale = (_: string, value: number) => range[domain.filter((breakpoint) => value >= breakpoint).length];
+    return evaluateExpr((getSizeTierSignal(options) as { update: string }).update, { width, height, min: Math.min, scale });
   };
-  const getOuterDiameter = (size: number, gap: number): number => (2 * (size / 2 - 2 - gap)) / 1.6;
 
-  test('should not add a signal when labels do not reserve space', () => {
-    expect(getSizeTierDiameterSignals(defaultDonutOptions)).toEqual([]);
-    expect(getSizeTierDiameterSignals({ ...defaultDonutOptions, isBoolean: true, segmentLabels: [{}] })).toEqual([]);
+  describe('without label space', () => {
+    test('should map chart size to the tier using the original diameter breakpoints', () => {
+      expect(DONUT_SIZE_TIER_UNLABELED_CHART_SIZES).toEqual([124, 164, 204, 404]);
+      for (const options of [defaultDonutOptions, { ...defaultDonutOptions, isBoolean: true, segmentLabels: [{}] }]) {
+        expect(getSizeTierScale(options)).toEqual({
+          name: 'testName_sizeTierScale',
+          type: 'threshold',
+          domain: DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
+          range: [0, 1, 2, 3, 4],
+        });
+        expect(getSizeTierSignal(options)).toEqual({
+          name: 'testName_sizeTier',
+          update: "scale('testName_sizeTierScale', min(width, height))",
+        });
+      }
+    });
+
+    test('should switch tiers exactly when the donut diameter reaches each cutpoint', () => {
+      DONUT_SIZE_TIER_CUTPOINTS.forEach((cutpoint, index) => {
+        // diameter = chart size - 4 (DONUT_RADIUS's 2px padding on each side)
+        expect(evaluateTier(defaultDonutOptions, cutpoint + 3, 1000)).toBe(index);
+        expect(evaluateTier(defaultDonutOptions, cutpoint + 4, 1000)).toBe(index + 1);
+      });
+    });
+
+    test('should use twice the height for a semicircle', () => {
+      const options: DonutSpecOptions = { ...defaultDonutOptions, variant: 'semicircle' };
+      expect(getSizeTierSignal(options)).toHaveProperty('update', "scale('testName_sizeTierScale', min(width, 2 * height))");
+      // a 404 x 202 semicircle has a 400px diameter
+      expect(evaluateTier(options, 404, 202)).toBe(4);
+      expect(evaluateTier(options, 404, 201)).toBe(3);
+    });
   });
 
-  test('should switch tiers once that tier gap still keeps the donut in the tier', () => {
-    const [signal] = getSizeTierDiameterSignals({ ...defaultDonutOptions, segmentLabels: [{}] });
-    const r = DONUT_RADIUS;
-    expect(signal).toHaveProperty(
-      'update',
-      `${r} >= 335 ? 400 : ${r} >= 170 ? 200 : ${r} >= 138 ? 160 : ${r} >= 101 ? 120 : 0`
+  describe('with label space', () => {
+    const labeledOptions = { ...defaultDonutOptions, segmentLabels: [{}] };
+    const getOuterDiameter = (size: number): number => {
+      const testName_sizeTier = evaluateTier(labeledOptions, size);
+      const testName_labelRingGap = DONUT_LABEL_RING_GAPS[testName_sizeTier];
+      const radius = evaluateExpr(getDonutOuterRadiusExpr(labeledOptions), {
+        width: size,
+        height: size,
+        min: Math.min,
+        testName_sizeTier,
+        testName_labelRingGap,
+      });
+      return 2 * radius;
+    };
+
+    test('should map chart size to the tier using the labeled breakpoints', () => {
+      expect(DONUT_SIZE_TIER_LABELED_CHART_SIZES).toEqual([206, 280, 344, 674]);
+      expect(getSizeTierScale(labeledOptions)).toHaveProperty('domain', DONUT_SIZE_TIER_LABELED_CHART_SIZES);
+    });
+
+    test.each([
+      [150, 0],
+      [250, 1],
+      [300, 2],
+      [400, 3],
+      [700, 4],
+    ])('should resolve chart size %s to tier %s', (size, tier) => {
+      expect(evaluateTier(labeledOptions, size)).toBe(tier);
+    });
+
+    test.each(DONUT_SIZE_TIER_LABELED_CHART_SIZES.map((breakpoint, index) => [breakpoint, DONUT_SIZE_TIER_CUTPOINTS[index]]))(
+      'should switch tiers and reach exactly the cutpoint at chart size %s (%spx)',
+      (breakpoint, cutpoint) => {
+        const tier = getSizeTierIndexForDiameter(cutpoint);
+        expect(evaluateTier(labeledOptions, breakpoint - 1)).toBe(tier - 1);
+        expect(evaluateTier(labeledOptions, breakpoint)).toBe(tier);
+        expect(getOuterDiameter(breakpoint)).toBe(cutpoint);
+      }
     );
-  });
 
-  test.each([
-    [150, 0],
-    [250, 120],
-    [300, 160],
-    [400, 200],
-    [700, 400],
-  ])('should resolve chart size %s to the %spx tier', (size, tierDiameter) => {
-    expect(evaluate(size)).toBe(tierDiameter);
-  });
+    test('should never let a tier diameter overlap the next tier', () => {
+      for (let size = 150; size <= 800; size += 0.5) {
+        const tier = evaluateTier(labeledOptions, size);
+        const diameter = getOuterDiameter(size);
+        expect(diameter).toBeLessThanOrEqual([...DONUT_SIZE_TIER_CUTPOINTS, Infinity][tier]);
+        expect(diameter).toBeGreaterThanOrEqual([0, ...DONUT_SIZE_TIER_CUTPOINTS][tier]);
+      }
+    });
 
-  test.each([
-    [160, 5, 10],
-    [400, 10, 15],
-  ])('should stay below the %spx tier until its %s -> %s gap step keeps the donut in it', (cutpoint, lowerGap, upperGap) => {
-    const stepSize = 2 * ((cutpoint * 1.6) / 2 + upperGap + 2);
-    // just before the step the donut is already past the cutpoint, but stays in the smaller tier
-    expect(getOuterDiameter(stepSize - 2, lowerGap)).toBeGreaterThan(cutpoint);
-    expect(evaluate(stepSize - 2)).toBeLessThan(cutpoint);
-    expect(evaluate(stepSize)).toBe(cutpoint);
-    expect(getOuterDiameter(stepSize, upperGap)).toBe(cutpoint);
+    test('should pause the donut at the cutpoint when the next tier has a bigger gap', () => {
+      // S -> M steps the gap from 5 to 10, so the donut holds at 160 until the chart reaches 280
+      expect(getOuterDiameter(270)).toBe(160);
+      expect(getOuterDiameter(279)).toBe(160);
+      expect(evaluateTier(labeledOptions, 279)).toBe(1);
+    });
   });
 });
 
-describe('getDonutSizeTierDiameterExpr()', () => {
-  test('should use the full base diameter when labels do not reserve space', () => {
-    expect(getDonutSizeTierDiameterExpr(defaultDonutOptions)).toBe(`2 * ${DONUT_RADIUS}`);
-  });
-
-  test('should use the shared size tier signal when labels reserve space', () => {
-    expect(getDonutSizeTierDiameterExpr({ ...defaultDonutOptions, segmentLabels: [{}] })).toBe(
-      'testName_sizeTierDiameter'
-    );
+describe('getSizeTierValueExpr()', () => {
+  test('should index the values by the size tier signal', () => {
+    expect(getSizeTierValueExpr('testName', [1, 2, 3, 4, 5])).toBe('[1, 2, 3, 4, 5][testName_sizeTier]');
   });
 });
 
-describe('getLabelRingGapScales() / getLabelRingGapSignals()', () => {
-  test('should not add a scale or signal without segment labels', () => {
-    expect(getLabelRingGapScales(defaultDonutOptions)).toEqual([]);
+describe('getSizeTierIndexForDiameter()', () => {
+  test.each([
+    [0, 0],
+    [119, 0],
+    [120, 1],
+    [160, 2],
+    [200, 3],
+    [399, 3],
+    [400, 4],
+  ])('should put a %spx diameter in tier %s', (diameter, tier) => {
+    expect(getSizeTierIndexForDiameter(diameter)).toBe(tier);
+  });
+});
+
+describe('getLabelRingGapSignals()', () => {
+  test('should not add a signal without segment labels', () => {
     expect(getLabelRingGapSignals(defaultDonutOptions)).toEqual([]);
   });
 
-  test('should map size tiers to label ring gaps', () => {
-    expect(getLabelRingGapScales({ ...defaultDonutOptions, segmentLabels: [{}] })).toEqual([
-      {
-        name: 'testName_labelRingGapScale',
-        type: 'threshold',
-        domain: DONUT_SIZE_TIER_CUTPOINTS,
-        range: [5, 5, 10, 10, 15],
-      },
-    ]);
-  });
-
-  test('should look up the gap from the shared size tier', () => {
+  test('should look up the gap from the size tier', () => {
+    expect(DONUT_LABEL_RING_GAPS).toEqual([5, 5, 10, 10, 15]);
     expect(getLabelRingGapSignals({ ...defaultDonutOptions, segmentLabels: [{}] })).toEqual([
-      { name: 'testName_labelRingGap', update: "scale('testName_labelRingGapScale', testName_sizeTierDiameter)" },
+      { name: 'testName_labelRingGap', update: '[5, 5, 10, 10, 15][testName_sizeTier]' },
     ]);
   });
 });
@@ -501,59 +556,25 @@ describe('getEmptyStateArcMark()', () => {
   });
 });
 
-describe('getRingWidthScale()', () => {
-  test('should snap outer diameter to the nearest named tier via the shared cutpoints', () => {
-    const scale = getRingWidthScale(defaultDonutOptions);
-    expect(scale).toEqual({
-      name: 'testName_ringWidthScale',
-      type: 'threshold',
-      domain: DONUT_SIZE_TIER_CUTPOINTS,
-      range: DONUT_RING_WIDTHS,
-    });
-  });
-});
-
 describe('getRingWidthSignal()', () => {
-  test('should resolve ring width from the outer diameter', () => {
-    const signal = getRingWidthSignal(defaultDonutOptions);
-    expect(signal).toEqual({
+  test('should resolve ring width from the size tier', () => {
+    expect(getRingWidthSignal(defaultDonutOptions)).toEqual({
       name: 'testName_ringWidth',
-      update: "scale('testName_ringWidthScale', 2 * (min(width, height) / 2 - 2))",
-    });
-  });
-
-  test('should resolve ring width from the shared size tier when labels reserve space', () => {
-    expect(getRingWidthSignal({ ...defaultDonutOptions, segmentLabels: [{}] })).toHaveProperty(
-      'update',
-      "scale('testName_ringWidthScale', testName_sizeTierDiameter)"
-    );
-  });
-});
-
-describe('getSliceGapScale()', () => {
-  test('should use a 1px gap for pies at every size tier', () => {
-    const scale = getSliceGapScale({ ...defaultDonutOptions, holeRatio: 0 });
-    expect(scale).toHaveProperty('range', DONUT_SLICE_GAPS.map(() => 1));
-  });
-
-  test('should snap outer diameter to the nearest named tier via the shared cutpoints', () => {
-    const scale = getSliceGapScale(defaultDonutOptions);
-    expect(scale).toEqual({
-      name: 'testName_sliceGapScale',
-      type: 'threshold',
-      domain: DONUT_SIZE_TIER_CUTPOINTS,
-      range: DONUT_SLICE_GAPS,
+      update: `[${DONUT_RING_WIDTHS.join(', ')}][testName_sizeTier]`,
     });
   });
 });
 
 describe('getSliceGapSignal()', () => {
-  test('should resolve the slice gap from the outer diameter', () => {
-    const signal = getSliceGapSignal(defaultDonutOptions);
-    expect(signal).toEqual({
+  test('should resolve the slice gap from the size tier', () => {
+    expect(getSliceGapSignal(defaultDonutOptions)).toEqual({
       name: 'testName_sliceGap',
-      update: "scale('testName_sliceGapScale', 2 * (min(width, height) / 2 - 2))",
+      update: `[${DONUT_SLICE_GAPS.join(', ')}][testName_sizeTier]`,
     });
+  });
+
+  test('should use a 1px gap for pies at every size tier', () => {
+    expect(getSliceGapSignal({ ...defaultDonutOptions, holeRatio: 0 })).toHaveProperty('update', '1');
   });
 });
 

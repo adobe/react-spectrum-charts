@@ -20,6 +20,8 @@ import {
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SEMICIRCLE_RADIUS,
+  DONUT_SIZE_TIER_LABELED_CHART_SIZES,
+  DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
   FADE_FACTOR,
@@ -135,6 +137,30 @@ const isDonutLabelSpaceReserved = ({
 export const getDonutLabelRingGapSignalName = (name: string): string => `${name}_labelRingGap`;
 
 /**
+ * Gets the name of the signal holding the donut's size tier index (0-4 for XS/S/M/L/XL).
+ * @param name donut name
+ * @returns signal name
+ */
+export const getDonutSizeTierSignalName = (name: string): string => `${name}_sizeTier`;
+
+/**
+ * Gets the size tier index a diameter falls in (e.g. 160 is M, index 2).
+ * @param diameter
+ * @returns size tier index
+ */
+export const getSizeTierIndexForDiameter = (diameter: number): number =>
+  DONUT_SIZE_TIER_CUTPOINTS.filter((cutpoint) => diameter >= cutpoint).length;
+
+/**
+ * Gets an expression that picks the value for the donut's size tier.
+ * @param name donut name
+ * @param values one value per size tier (XS/S/M/L/XL)
+ * @returns vega expression string
+ */
+export const getSizeTierValueExpr = (name: string, values: (number | string)[]): string =>
+  `[${values.join(', ')}][${getDonutSizeTierSignalName(name)}]`;
+
+/**
  * Gets the donut's outer radius, reserving space for SegmentLabel content when needed.
  * @param donutOptions
  * @returns vega expression string
@@ -145,137 +171,80 @@ export const getDonutOuterRadiusExpr = (options: DonutSpecOptions): string => {
   // callers can interpolate this result directly without adding their own wrapping parens
   if (!isDonutLabelSpaceReserved(options)) return baseRadius;
   const ringGap = getDonutLabelRingGapSignalName(options.name);
-  // solve R such that R + ringGap + R*capRatio == baseRadius (the worst-case label reach)
-  return `((${baseRadius} - ${ringGap}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}))`;
+  // the next tier's min diameter; XL has no max
+  const maxDiameter = getSizeTierValueExpr(options.name, [...DONUT_SIZE_TIER_CUTPOINTS, 'MAX_VALUE']);
+  // shrink the donut so its labels fit inside the chart, keeping it within its size tier
+  // the radius + the label gap and the widest label (0.6 × radius) fills the base radius
+  return `min((${baseRadius} - ${ringGap}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}), ${maxDiameter} / 2)`;
 };
 
 /**
- * Gets the name of the signal holding the min diameter of the donut's size tier (0 for XS).
- * @param name donut name
- * @returns signal name
- */
-const getSizeTierDiameterSignalName = (name: string): string => `${name}_sizeTierDiameter`;
-
-/**
- * Gets the diameter every size-tiered value (ring width, slice gap, fonts, label gap) looks up its tier from.
+ * Gets the chart size the donut's size tier is looked up from (the space its base radius is drawn in).
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutSizeTierDiameterExpr = (options: DonutSpecOptions): string =>
-  isDonutLabelSpaceReserved(options)
-    ? getSizeTierDiameterSignalName(options.name)
-    : `2 * ${getDonutBaseRadiusExpr(options)}`;
+const getDonutChartSizeExpr = ({ variant }: DonutSpecOptions): string =>
+  // a semicircle only sweeps the top half, so it can use twice the height
+  variant === 'semicircle' ? 'min(width, 2 * height)' : 'min(width, height)';
 
 /**
- * Gets the min diameter of the donut's size tier, moving up a tier only once that tier's label gap still fits.
- * @param baseRadius
- * @returns vega expression string
- */
-const getReservedSizeTierDiameterExpr = (baseRadius: string): string => {
-  // why: the label gap is tiered, so every tiered value must switch at the same point as the gap
-  // a bigger gap makes the donut smaller, so check the chart size (baseRadius) rather than the donut's own diameter
-  let expr = '0';
-  // wraps each tier around the smaller tiers' expression, so the largest tier is checked first
-  DONUT_SIZE_TIER_CUTPOINTS.forEach((cutpoint, index) => {
-    // chart size (baseRadius) needed for the donut to reach this tier's minimum diameter, before adding the gap
-    const cutpointRadius = (cutpoint * (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO)) / 2;
-    const tierGap = DONUT_LABEL_RING_GAPS[index + 1];
-    // move up a tier only when the chart is big enough that this tier's gap keeps the donut in it
-    // e.g. a donut that is 403px with the L gap (10px) stays L, since the XL gap (15px) would shrink it to 396px
-    expr = `${baseRadius} >= ${cutpointRadius + tierGap} ? ${cutpoint} : ${expr}`;
-  });
-  return expr;
-};
-
-/**
- * Gets the signal resolving the donut's size tier when labels reserve space out of its radius.
+ * Gets the threshold scale that maps chart size to the donut's size tier index.
  * @param donutOptions
- * @returns Signal[]
+ * @returns ThresholdScale
  */
-export const getSizeTierDiameterSignals = (options: DonutSpecOptions): Signal[] =>
-  isDonutLabelSpaceReserved(options)
-    ? [
-        {
-          name: getSizeTierDiameterSignalName(options.name),
-          update: getReservedSizeTierDiameterExpr(getDonutBaseRadiusExpr(options)),
-        },
-      ]
-    : [];
+export const getSizeTierScale = (options: DonutSpecOptions): ThresholdScale => ({
+  name: `${options.name}_sizeTierScale`,
+  type: 'threshold',
+  // labels need their own breakpoints, since the label gap and label space shrink the donut
+  domain: isDonutLabelSpaceReserved(options)
+    ? DONUT_SIZE_TIER_LABELED_CHART_SIZES
+    : DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
+  range: [0, ...DONUT_SIZE_TIER_CUTPOINTS.map((_, index) => index + 1)],
+});
 
 /**
- * Gets the threshold scale that maps a donut's size tier to its label ring gap.
+ * Gets the signal resolving the donut's size tier index from chart size, shared by every size-tiered value.
  * @param donutOptions
- * @returns ThresholdScale[]
+ * @returns Signal
  */
-export const getLabelRingGapScales = ({ name, segmentLabels }: DonutSpecOptions): ThresholdScale[] =>
-  segmentLabels.length
-    ? [
-        {
-          name: `${name}_labelRingGapScale`,
-          type: 'threshold',
-          domain: DONUT_SIZE_TIER_CUTPOINTS,
-          range: DONUT_LABEL_RING_GAPS,
-        },
-      ]
-    : [];
+export const getSizeTierSignal = (options: DonutSpecOptions): Signal => ({
+  name: getDonutSizeTierSignalName(options.name),
+  update: `scale('${options.name}_sizeTierScale', ${getDonutChartSizeExpr(options)})`,
+});
 
 /**
  * Gets the signal resolving the size-tiered gap (px) between the ring's outer edge and its segment labels.
  * @param donutOptions
  * @returns Signal[]
  */
-export const getLabelRingGapSignals = (options: DonutSpecOptions): Signal[] =>
-  options.segmentLabels.length
+export const getLabelRingGapSignals = ({ name, segmentLabels }: DonutSpecOptions): Signal[] =>
+  segmentLabels.length
     ? [
-        {
-          name: getDonutLabelRingGapSignalName(options.name),
-          update: `scale('${options.name}_labelRingGapScale', ${getDonutSizeTierDiameterExpr(options)})`,
-        },
-      ]
+      {
+        name: getDonutLabelRingGapSignalName(name),
+        update: getSizeTierValueExpr(name, DONUT_LABEL_RING_GAPS)
+      },
+    ]
     : [];
 
 /**
- * Gets the threshold scale that snaps a donut's outer diameter to its nearest named size tier's fixed ring width
- * @param donutOptions
- * @returns ThresholdScale
- */
-export const getRingWidthScale = ({ name }: DonutSpecOptions): ThresholdScale => ({
-  name: `${name}_ringWidthScale`,
-  type: 'threshold',
-  domain: DONUT_SIZE_TIER_CUTPOINTS,
-  range: DONUT_RING_WIDTHS,
-});
-
-/**
- * Gets the signal that resolves a donut's fixed ring width from its shared size tier
+ * Gets the signal that resolves a donut's fixed ring width from its size tier
  * @param donutOptions
  * @returns Signal
  */
-export const getRingWidthSignal = (options: DonutSpecOptions): Signal => ({
-  name: `${options.name}_ringWidth`,
-  update: `scale('${options.name}_ringWidthScale', ${getDonutSizeTierDiameterExpr(options)})`,
+export const getRingWidthSignal = ({ name }: DonutSpecOptions): Signal => ({
+  name: `${name}_ringWidth`,
+  update: getSizeTierValueExpr(name, DONUT_RING_WIDTHS),
 });
 
 /**
- * Gets size-tiered donut slice gaps, using a fixed 1px gap for pies.
- * @param donutOptions
- * @returns ThresholdScale
- */
-export const getSliceGapScale = ({ holeRatio, name }: DonutSpecOptions): ThresholdScale => ({
-  name: `${name}_sliceGapScale`,
-  type: 'threshold',
-  domain: DONUT_SIZE_TIER_CUTPOINTS,
-  range: holeRatio === 0 ? DONUT_SLICE_GAPS.map(() => 1) : DONUT_SLICE_GAPS,
-});
-
-/**
- * Gets the signal that resolves a donut's fixed segment gap (in px) from its shared size tier
+ * Gets the signal that resolves a donut's fixed segment gap (in px) from its size tier, using a fixed 1px gap for pies
  * @param donutOptions
  * @returns Signal
  */
-export const getSliceGapSignal = (options: DonutSpecOptions): Signal => ({
-  name: `${options.name}_sliceGap`,
-  update: `scale('${options.name}_sliceGapScale', ${getDonutSizeTierDiameterExpr(options)})`,
+export const getSliceGapSignal = ({ holeRatio, name }: DonutSpecOptions): Signal => ({
+  name: `${name}_sliceGap`,
+  update: holeRatio === 0 ? '1' : getSizeTierValueExpr(name, DONUT_SLICE_GAPS),
 });
 
 /**

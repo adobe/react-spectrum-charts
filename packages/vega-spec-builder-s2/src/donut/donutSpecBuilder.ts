@@ -31,7 +31,6 @@ import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } 
 import {
   getDonutSummaryData,
   getDonutSummaryMarks,
-  getDonutSummaryScales,
   getDonutSummarySignals,
 } from './donutSummaryUtils';
 import {
@@ -39,23 +38,19 @@ import {
   getDonutStartAngle,
   getEmptyStateArcMark,
   isDonutInteractive,
-  getRingWidthScale,
   getRingWidthSignal,
-  getLabelRingGapScales,
   getLabelRingGapSignals,
-  getSizeTierDiameterSignals,
-  getSliceGapScale,
+  getSizeTierScale,
+  getSizeTierSignal,
   getSliceGapSignal,
   getSumData,
 } from './donutUtils';
 import {
   getSegmentLabelData,
   getSegmentLabelMarks,
-  getSegmentLabelScales,
   getSegmentLabelSignals,
   getRichSegmentLabelData,
   getRichSegmentLabelMarks,
-  getRichSegmentLabelScales,
   getRichSegmentLabelSignals,
 } from './segmentLabelUtils';
 
@@ -193,18 +188,9 @@ const getPieTransforms = (options: DonutSpecOptions): (FormulaTransform | PieTra
 };
 
 export const addScales = produce<Scale[], [DonutSpecOptions]>((scales, options) => {
-  const { color, holeRatio } = options;
+  const { color } = options;
   addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-  if (holeRatio === DEFAULT_HOLE_RATIO) {
-    scales.push(getRingWidthScale(options));
-  }
-  scales.push(
-    ...getLabelRingGapScales(options),
-    getSliceGapScale(options),
-    ...getDonutSummaryScales(options),
-    ...getSegmentLabelScales(options),
-    ...getRichSegmentLabelScales(options)
-  );
+  scales.push(getSizeTierScale(options));
 });
 
 export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => {
@@ -223,7 +209,7 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
     signals.push(getRingWidthSignal(options));
   }
   signals.push(
-    ...getSizeTierDiameterSignals(options),
+    getSizeTierSignal(options),
     ...getLabelRingGapSignals(options),
     getSliceGapSignal(options),
     ...getDonutSummarySignals(options),

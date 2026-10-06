@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 import {
-  DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SUMMARY_LABEL_FONT_SIZES,
   DONUT_SUMMARY_VALUE_FONT_SIZES,
 } from '@spectrum-charts/constants';
@@ -22,7 +21,6 @@ import {
   getBooleanDonutSummaryGroupMark,
   getDonutSummaryData,
   getDonutSummaryGroupMark,
-  getDonutSummaryScales,
   getDonutSummarySignals,
   getSummaryDeltaEncode,
   getSummaryDeltaFill,
@@ -58,34 +56,6 @@ describe('getDonutSummaryData()', () => {
   });
 });
 
-describe('getDonutSummaryScales()', () => {
-  test('should return empty array if there is not a DonutSummary on the Donut', () => {
-    const scales = getDonutSummaryScales(defaultDonutOptions);
-    expect(scales).toHaveLength(0);
-  });
-
-  test('should return value and label font size scales if there is a DonutSummary on the Donut', () => {
-    const scales = getDonutSummaryScales({
-      ...defaultDonutOptions,
-      donutSummaries: [{ label: 'Visitors' }],
-    });
-    expect(scales).toHaveLength(2);
-    expect(scales[0].name).toEqual('testName_summaryValueFontSizeScale');
-    expect(scales[1].name).toEqual('testName_summaryLabelFontSizeScale');
-  });
-
-  test('should snap to the nearest named size tier via the shared cutpoints', () => {
-    const scales = getDonutSummaryScales({
-      ...defaultDonutOptions,
-      donutSummaries: [{ label: 'Visitors' }],
-    });
-    expect(scales[0]).toHaveProperty('domain', DONUT_SIZE_TIER_CUTPOINTS);
-    expect(scales[0]).toHaveProperty('range', DONUT_SUMMARY_VALUE_FONT_SIZES);
-    expect(scales[1]).toHaveProperty('domain', DONUT_SIZE_TIER_CUTPOINTS);
-    expect(scales[1]).toHaveProperty('range', DONUT_SUMMARY_LABEL_FONT_SIZES);
-  });
-});
-
 describe('getDonutSummarySignals()', () => {
   test('should return empty array if there is not a DonutSummary on the Donut', () => {
     const signals = getDonutSummarySignals(defaultDonutOptions);
@@ -100,11 +70,11 @@ describe('getDonutSummarySignals()', () => {
     expect(signals).toHaveLength(2);
     expect(signals[0]).toEqual({
       name: 'testName_summaryValueFontSize',
-      update: "scale('testName_summaryValueFontSizeScale', 2 * (min(width, height) / 2 - 2))",
+      update: `[${DONUT_SUMMARY_VALUE_FONT_SIZES.join(', ')}][testName_sizeTier]`,
     });
     expect(signals[1]).toEqual({
       name: 'testName_summaryLabelFontSize',
-      update: "scale('testName_summaryLabelFontSizeScale', 2 * (min(width, height) / 2 - 2))",
+      update: `[${DONUT_SUMMARY_LABEL_FONT_SIZES.join(', ')}][testName_sizeTier]`,
     });
   });
 

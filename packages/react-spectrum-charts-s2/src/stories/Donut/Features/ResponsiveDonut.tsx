@@ -14,6 +14,7 @@ import { ReactElement, useState } from 'react';
 import {
   DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
   DONUT_LABEL_RING_GAPS,
+  DONUT_SIZE_TIER_LABELED_CHART_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
 } from '@spectrum-charts/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
@@ -26,29 +27,25 @@ import { DonutProps } from '../../../types';
 const THUMB_HEIGHT = 32;
 const REACH_RATIO = 1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO;
 
-const getLabelRingGapForDiameter = (diameter: number): number =>
-  DONUT_LABEL_RING_GAPS[DONUT_SIZE_TIER_CUTPOINTS.filter((cutpoint) => diameter >= cutpoint).length];
+/** Counts how many breakpoints a size has reached, which is its size tier index (XS = 0). */
+const countReached = (breakpoints: number[], size: number): number =>
+  breakpoints.filter((breakpoint) => size >= breakpoint).length;
 
-/** Mirrors the spec builder: the highest tier whose own gap still keeps the donut in that tier. */
-const getSizeTierIndex = (containerWidth: number): number => {
-  const rawRadius = containerWidth / 2 - 2;
-  return DONUT_SIZE_TIER_CUTPOINTS.filter(
-    (cutpoint, index) => rawRadius >= (cutpoint * REACH_RATIO) / 2 + DONUT_LABEL_RING_GAPS[index + 1]
-  ).length;
+/** Mirrors the spec builder: the tier comes from chart size, not the donut's own diameter. */
+const getSizeTierIndex = (containerWidth: number): number =>
+  countReached(DONUT_SIZE_TIER_LABELED_CHART_SIZES, containerWidth);
+
+export const getEffectiveDiameter = (containerWidth: number): number => {
+  const tierIndex = getSizeTierIndex(containerWidth);
+  const diameter = (2 * (containerWidth / 2 - 2 - DONUT_LABEL_RING_GAPS[tierIndex])) / REACH_RATIO;
+  // capped at the next tier's min diameter, same as the spec builder
+  return Math.min(diameter, DONUT_SIZE_TIER_CUTPOINTS[tierIndex] ?? Infinity);
 };
 
-export const getEffectiveDiameter = (containerWidth: number): number =>
-  (2 * (containerWidth / 2 - 2 - DONUT_LABEL_RING_GAPS[getSizeTierIndex(containerWidth)])) / REACH_RATIO;
-
 export const getContainerWidthForDiameter = (diameter: number): number =>
-  diameter * REACH_RATIO + 4 + 2 * getLabelRingGapForDiameter(diameter);
+  diameter * REACH_RATIO + 4 + 2 * DONUT_LABEL_RING_GAPS[countReached(DONUT_SIZE_TIER_CUTPOINTS, diameter)];
 
-const lastCutpoint = DONUT_SIZE_TIER_CUTPOINTS.at(-1);
-if (lastCutpoint === undefined) {
-  throw new Error('DONUT_SIZE_TIER_CUTPOINTS must not be empty');
-}
-const MAX_TIER_CUTPOINT = lastCutpoint;
-const CHART_SIZE = getContainerWidthForDiameter(MAX_TIER_CUTPOINT) + 50;
+const CHART_SIZE = (DONUT_SIZE_TIER_LABELED_CHART_SIZES.at(-1) ?? 0) + 50;
 const MAX_WIDTH = CHART_SIZE + 100;
 
 const HANDLE_STYLES = `
@@ -92,7 +89,7 @@ const HANDLE_STYLES = `
 
 const TIER_LABELS = ['XS', 'S', 'M', 'L', 'XL'];
 const THRESHOLDS = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint, i) => ({
-  px: getContainerWidthForDiameter(cutpoint),
+  px: DONUT_SIZE_TIER_LABELED_CHART_SIZES[i],
   label: TIER_LABELS[i + 1],
   diameter: cutpoint,
 }));

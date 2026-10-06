@@ -320,7 +320,7 @@ describe('addSignals()', () => {
       ...defaultDonutOptions,
       chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
     });
-    expect(signals).toHaveLength(defaultSignals.length + 3);
+    expect(signals).toHaveLength(defaultSignals.length + 4);
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
@@ -350,8 +350,8 @@ describe('addSignals()', () => {
   test('should add rich SegmentLabel font size signals when swatch is enabled', () => {
     const baselineSignals = addSignals(defaultSignals, defaultDonutOptions);
     const signals = addSignals(defaultSignals, { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(signals).toHaveLength(baselineSignals.length + 6);
-    expect(signals.find((signal) => signal.name === 'testName_sizeTierDiameter')).toBeDefined();
+    expect(signals).toHaveLength(baselineSignals.length + 5);
+    expect(signals.find((signal) => signal.name === 'testName_sizeTier')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_labelRingGap')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelNameFontSize')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelValueFontSize')).toBeDefined();
@@ -387,19 +387,15 @@ describe('addMarks()', () => {
 describe('donutSpecBuilder', () => {
   test('should add scales correctly', () => {
     const scales = addScales([], defaultDonutOptions);
-    expect(scales).toHaveLength(3);
+    expect(scales).toHaveLength(2);
     expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
-    expect(scales[1]).toHaveProperty('name', 'testName_ringWidthScale');
-    expect(scales[2]).toHaveProperty('name', 'testName_sliceGapScale');
+    expect(scales[1]).toHaveProperty('name', 'testName_sizeTierScale');
   });
 
-  test('should add rich SegmentLabel font size scales when swatch is enabled', () => {
+  test('should only add the size tier scale when segment labels are present', () => {
     const scales = addScales([], { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(scales).toHaveLength(7);
-    expect(scales[2]).toHaveProperty('name', 'testName_labelRingGapScale');
-    expect(scales[4]).toHaveProperty('name', 'testName_richSegmentLabelNameFontSizeScale');
-    expect(scales[5]).toHaveProperty('name', 'testName_richSegmentLabelValueFontSizeScale');
-    expect(scales[6]).toHaveProperty('name', 'testName_richSegmentLabelDetailFontSizeScale');
+    expect(scales).toHaveLength(2);
+    expect(scales[1]).toHaveProperty('name', 'testName_sizeTierScale');
   });
 });
 

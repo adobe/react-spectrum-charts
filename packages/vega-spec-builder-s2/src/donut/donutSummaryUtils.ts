@@ -21,11 +21,9 @@ import {
   TextBaselineValueRef,
   TextEncodeEntry,
   TextValueRef,
-  ThresholdScale,
 } from 'vega';
 
 import {
-  DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SUMMARY_LABEL_FONT_SIZES,
   DONUT_SUMMARY_MIN_RADIUS_S2,
   DONUT_SUMMARY_VALUE_FONT_SIZES,
@@ -38,7 +36,7 @@ import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '
 import {
   getDonutCenterYSignal,
   getDonutInnerRadiusExpr,
-  getDonutSizeTierDiameterExpr,
+  getSizeTierValueExpr,
 } from './donutUtils';
 
 type DonutSummaryLayoutOptions = Pick<DonutSummarySpecOptions, 'donutOptions' | 'hideValue' | 'label' | 'delta'>;
@@ -180,34 +178,6 @@ export const getDonutSummaryData = (donutOptions: DonutSpecOptions): SourceData[
 };
 
 /**
- * Gets the required scales for the donut summary
- * @param donutOptions
- * @returns ThresholdScale[]
- */
-export const getDonutSummaryScales = (donutOptions: DonutSpecOptions): ThresholdScale[] => {
-  const donutSummary = getDonutSummary(donutOptions);
-  if (!donutSummary) {
-    return [];
-  }
-  const { name } = donutOptions;
-  // snaps the donut's outer diameter to the nearest named size tier's (XS/S/M/L/XL) font size
-  return [
-    {
-      name: `${name}_summaryValueFontSizeScale`,
-      type: 'threshold',
-      domain: DONUT_SIZE_TIER_CUTPOINTS,
-      range: DONUT_SUMMARY_VALUE_FONT_SIZES,
-    },
-    {
-      name: `${name}_summaryLabelFontSizeScale`,
-      type: 'threshold',
-      domain: DONUT_SIZE_TIER_CUTPOINTS,
-      range: DONUT_SUMMARY_LABEL_FONT_SIZES,
-    },
-  ];
-};
-
-/**
  * Gets the signals for the donut summary
  * @param donutOptions
  * @returns Signal[]
@@ -218,16 +188,9 @@ export const getDonutSummarySignals = (donutOptions: DonutSpecOptions): Signal[]
     return [];
   }
   const { name } = donutOptions;
-  const donutDiameter = getDonutSizeTierDiameterExpr(donutOptions);
   const signals: Signal[] = [
-    {
-      name: `${name}_summaryValueFontSize`,
-      update: `scale('${name}_summaryValueFontSizeScale', ${donutDiameter})`,
-    },
-    {
-      name: `${name}_summaryLabelFontSize`,
-      update: `scale('${name}_summaryLabelFontSizeScale', ${donutDiameter})`,
-    },
+    { name: `${name}_summaryValueFontSize`, update: getSizeTierValueExpr(name, DONUT_SUMMARY_VALUE_FONT_SIZES) },
+    { name: `${name}_summaryLabelFontSize`, update: getSizeTierValueExpr(name, DONUT_SUMMARY_LABEL_FONT_SIZES) },
   ];
   if (donutOptions.variant === 'semicircle') {
     signals.push({

@@ -31,7 +31,7 @@ import {
   useVariationSize,
   useVariationViewMode,
 } from '../../VariationDashboard';
-import { basicDonutData, booleanDonutData, zeroDonutData } from '../../components/Donut/data';
+import { booleanDonutData, zeroDonutData } from '../../components/Donut/data';
 import { getContainerWidthForDiameter, getEffectiveDiameter } from '../Features/ResponsiveDonut';
 import {
   DonutVariationDatum,
@@ -48,13 +48,8 @@ export default {
     controls: { disable: true },
     layout: 'fullscreen',
   },
-  tags: ['hidden']
+  // tags: ['hidden']
 };
-
-const alternateFieldData = basicDonutData.map(({ browser, count }) => ({
-  category: browser,
-  total: count,
-}));
 
 const donutSizePresets: VariationSizePreset[] = [
   { label: 'XS', size: 60 },
@@ -157,20 +152,6 @@ const variations: Variation[] = [
     dataset: 'canonical',
     coverage: ['metric=value', 'color=series', 'holeRatio=0.85', 'isBoolean=false'],
     render: () => <DonutVariationChart />,
-  },
-  {
-    id: 'alternate-fields-and-name',
-    title: 'Alternate fields and name',
-    description: 'Maps non-default data keys and assigns an explicit mark name.',
-    dataset: 'alternate-fields',
-    usesDashboardDataset: false,
-    coverage: ['metric=total', 'color=category', 'name'],
-    render: () => (
-      <DonutVariationChart
-        data={alternateFieldData}
-        donutProps={{ color: 'category', metric: 'total', name: 'alternate-fields-donut' }}
-      />
-    ),
   },
   {
     id: 'pie',
