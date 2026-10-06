@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 // Packs each built ESM package and validates its exports and types with publint and arethetypeswrong,
+// checks that published declarations only import packages whose types consumers will get,
 // then imports every export in plain Node to catch output that only works through a bundler.
 // Usage: node scripts/checkPackageExports.mjs (run after yarn build:s2)
 import { execFileSync } from 'node:child_process';
@@ -30,6 +31,38 @@ const PACKAGES = {
 const bin = (name) => path.join(root, 'node_modules', '.bin', name);
 const run = (command, args, options = {}) => execFileSync(command, args, { stdio: 'inherit', ...options });
 
+const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+const declarationFiles = (dir) =>
+  fs.readdirSync(dir, { recursive: true }).filter((file) => file.endsWith('.d.ts')).map((file) => path.join(dir, file));
+const packageNameOf = (specifier) => specifier.split('/').slice(0, specifier.startsWith('@') ? 2 : 1).join('/');
+const typesPackageOf = (name) => `@types/${name.replace(/^@/, '').replace('/', '__')}`;
+const shipsTypes = (name) => {
+  const dir = path.join(root, 'node_modules', name);
+  const manifest = readJson(path.join(dir, 'package.json'));
+  return Boolean(
+    manifest.types || manifest.typings || JSON.stringify(manifest.exports ?? {}).includes('"types"') || fs.existsSync(path.join(dir, 'index.d.ts'))
+  );
+};
+
+// Returns packages imported by published declarations that consumers would not get types for.
+const findUndeclaredTypeDependencies = (packageDir, manifest) => {
+  const dependencies = manifest.dependencies ?? {};
+  const peers = manifest.peerDependencies ?? {};
+  const specifiers = new Set();
+  for (const file of declarationFiles(path.join(packageDir, 'dist'))) {
+    for (const [, specifier] of fs.readFileSync(file, 'utf8').matchAll(/(?:from|import\(?)\s*['"]([^'"]+)['"]/g)) {
+      if (!specifier.startsWith('.') && !specifier.startsWith('node:')) specifiers.add(packageNameOf(specifier));
+    }
+  }
+  const problems = [];
+  for (const name of [...specifiers].filter((specifier) => specifier !== manifest.name).sort()) {
+    if (peers[name]) continue;
+    if (!dependencies[name]) problems.push(`${name} is not a dependency or peer dependency`);
+    else if (!shipsTypes(name) && !dependencies[typesPackageOf(name)]) problems.push(`${name} needs ${typesPackageOf(name)} as a dependency`);
+  }
+  return problems;
+};
+
 const packDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rsc-pack-'));
 const failures = [];
 try {
@@ -42,6 +75,11 @@ try {
       encoding: 'utf8',
     });
     const tarball = path.join(packDir, output.trim().split('\n').pop());
+    const manifest = readJson(path.join(packageDir, 'package.json'));
+    const typeProblems = findUndeclaredTypeDependencies(packageDir, manifest);
+    for (const problem of typeProblems) console.error(`declarations: ${problem}`);
+    if (typeProblems.length) failures.push(`${name}: declaration dependencies`);
+    else console.log('declaration dependencies: ok');
     for (const [tool, args] of [
       ['publint', [tarball, '--strict', '--level', 'warning']],
       ['attw', [tarball, '--profile', 'esm-only', '--format', 'table-flipped']],
@@ -53,8 +91,7 @@ try {
       }
     }
     if (!nodeImport) continue;
-    const { exports } = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
-    for (const subpath of Object.keys(exports).filter((key) => !key.endsWith('.json'))) {
+    for (const subpath of Object.keys(manifest.exports).filter((key) => !key.endsWith('.json'))) {
       const specifier = path.posix.join(packageName, subpath);
       try {
         run(process.execPath, ['--input-type=module', '--eval', `await import('${specifier}');`], { cwd: root });
