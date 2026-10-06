@@ -15,7 +15,7 @@ import {
   BACKGROUND_COLOR,
   DEFAULT_HOLE_RATIO,
   DONUT_BOOLEAN_SECONDARY_COLOR,
-  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_MIN_SPACE_RATIO,
   DONUT_LABEL_RING_GAPS,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
@@ -162,15 +162,20 @@ export const getSizeTierValueExpr = (name: string, values: (number | string)[]):
  */
 export const getDonutOuterRadiusExpr = (options: DonutSpecOptions): string => {
   const baseRadius = getDonutBaseRadiusExpr(options);
-  // baseRadius is already parenthesized; the reserved branch below self-parenthesizes too, so
-  // callers can interpolate this result directly without adding their own wrapping parens
-  if (!isDonutLabelSpaceReserved(options)) return baseRadius;
-  const ringGap = getDonutLabelRingGapSignalName(options.name);
-  // the next tier's min diameter, halved below into a radius; XL has no max
-  const maxDiameter = getSizeTierValueExpr(options.name, [...DONUT_SIZE_TIER_CUTPOINTS, 'MAX_VALUE']);
+  if (!isDonutLabelSpaceReserved(options)) {
+    return baseRadius;
+  }
   // shrink the donut so its labels fit inside the chart, keeping it within its size tier
-  // the radius + the label gap and the widest label (0.6 × radius) fills the base radius
-  return `min((${baseRadius} - ${ringGap}) / (1 + ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}), ${maxDiameter} / 2)`;
+
+  // the radius + the label gap + the minimum label space (radius × DONUT_LABEL_MIN_SPACE_RATIO) fills the base radius
+  const ringGap = getDonutLabelRingGapSignalName(options.name);
+  const labelFitRadius = `(${baseRadius} - ${ringGap}) / (1 + ${DONUT_LABEL_MIN_SPACE_RATIO})`;
+
+  // half the next tier's min diameter; XL has no max
+  const tierMaxDiameter = getSizeTierValueExpr(options.name, [...DONUT_SIZE_TIER_CUTPOINTS, 'MAX_VALUE']);
+  const tierMaxRadius = `${tierMaxDiameter} / 2`;
+
+  return `min(${labelFitRadius}, ${tierMaxRadius})`;
 };
 
 /**

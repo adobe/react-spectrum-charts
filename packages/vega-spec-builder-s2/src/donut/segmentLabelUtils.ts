@@ -38,7 +38,7 @@ import {
   DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT,
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT,
-  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_MIN_SPACE_RATIO,
   DONUT_RADIUS,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
   FILTERED_TABLE,
@@ -862,7 +862,7 @@ const getRichSegmentLabelRowDy = (
   const valueHeightExpr = hasValue ? ` + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${valueSize}` : '';
   const detailHeightExpr = hasDetail ? ` + ${detailGap} + ${detailSize}` : '';
   const totalHeightExpr = `${nameSize}${valueHeightExpr}${detailHeightExpr}`;
-  const maxHeightExpr = `${getDonutOuterRadiusExpr(donutOptions)} * ${DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO}`;
+  const maxHeightExpr = `${getDonutOuterRadiusExpr(donutOptions)} * ${DONUT_LABEL_MIN_SPACE_RATIO}`;
   const scaleExpr = `min(1, (${maxHeightExpr}) / (${totalHeightExpr}))`;
   let nameFollowingHeight = '0';
   if (hasValue) {

@@ -12,7 +12,7 @@
 import { ReactElement, useState } from 'react';
 
 import {
-  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_MIN_SPACE_RATIO,
   DONUT_LABEL_RING_GAPS,
   DONUT_SIZE_TIER_LABELED_CHART_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
@@ -25,7 +25,7 @@ import { Donut } from '../../../pre-alpha';
 import { DonutProps } from '../../../types';
 
 const THUMB_HEIGHT = 32;
-const REACH_RATIO = 1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO;
+const REACH_RATIO = 1 + DONUT_LABEL_MIN_SPACE_RATIO;
 
 /** Counts how many breakpoints a size has reached, which is its size tier index (XS = 0). */
 const countReached = (breakpoints: number[], size: number): number =>

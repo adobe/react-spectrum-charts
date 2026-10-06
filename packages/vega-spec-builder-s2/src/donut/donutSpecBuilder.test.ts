@@ -14,7 +14,7 @@ import { View, expressionFunction, parse } from 'vega';
 import {
   COLOR_SCALE,
   DONUT_LABEL_COLLISION_GAP,
-  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
+  DONUT_LABEL_MIN_SPACE_RATIO,
   FILTERED_TABLE,
   HOVERED_ITEM,
   MARK_ID,
@@ -108,7 +108,7 @@ describe('addData', () => {
       expect(datum[`${prefix}_labelHalfWidth`]).toBeLessThanOrEqual(182);
       // a 364px chart lands in the L tier, which uses a 10px label ring gap
       const ringGap = 10;
-      const outerRadius = (364 / 2 - 2 - ringGap) / (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO);
+      const outerRadius = (364 / 2 - 2 - ringGap) / (1 + DONUT_LABEL_MIN_SPACE_RATIO);
       const innerX =
         datum[`${prefix}_hemisphere`] === 'right'
           ? datum[`${prefix}_leftX`] - 182

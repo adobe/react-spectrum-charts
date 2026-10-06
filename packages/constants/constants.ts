@@ -283,17 +283,12 @@ export const DONUT_LABEL_COLLISION_GAP = 4;
 export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
 /** Font weight for donut direct-label value text */
 export const DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT = 700;
-/**
- * Max fraction of the donut's own radius that a direct label's hemisphere-mirrored shift offset may use.
- * Label text width (a handful of px per character) doesn't shrink with the donut, so an uncapped shift
- * can demand disproportionate space at small sizes, triggering runaway autosize 'fit' shrinkage. Bounding
- * it as a fraction of the current radius keeps the offset proportionate at every size instead of a fixed px cap.
- */
-export const DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO = 0.6;
+/** Minimum space reserved for segment label text on each side of an S2 donut, as a fraction of its radius (also caps a rich label's height) */
+export const DONUT_LABEL_MIN_SPACE_RATIO = 0.6;
 /** S2 labeled-donut chart size (min of width/height) where each tier starts, i.e. where the donut reaches the cutpoint with that tier's gap (206/280/344/674) */
 export const DONUT_SIZE_TIER_LABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map(
   // donut + widest labels on both sides, + the tier's label gap on both sides, + 2px padding on both sides
-  (cutpoint, index) => cutpoint * (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) + 2 * DONUT_LABEL_RING_GAPS[index + 1] + 4
+  (cutpoint, index) => cutpoint * (1 + DONUT_LABEL_MIN_SPACE_RATIO) + 2 * DONUT_LABEL_RING_GAPS[index + 1] + 4
 );
 /** S2 unlabeled-donut chart size where each tier starts: the cutpoint plus DONUT_RADIUS's 2px padding on each side (124/164/204/404) */
 export const DONUT_SIZE_TIER_UNLABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint) => cutpoint + 4);
