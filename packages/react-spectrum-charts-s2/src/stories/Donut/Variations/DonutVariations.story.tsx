@@ -48,7 +48,7 @@ export default {
     controls: { disable: true },
     layout: 'fullscreen',
   },
-  tags: ['hidden']
+  // tags: ['hidden']
 };
 
 const donutSizePresets: VariationSizePreset[] = [
