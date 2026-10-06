@@ -32,7 +32,6 @@ import {
   getEmptyStateArcMark,
   getLabelRingGapSignals,
   getRingWidthSignal,
-  getSizeTierIndexForDiameter,
   getSizeTierScale,
   getSizeTierSignal,
   getSizeTierValueExpr,
@@ -236,7 +235,7 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
     test.each(DONUT_SIZE_TIER_LABELED_CHART_SIZES.map((breakpoint, index) => [breakpoint, DONUT_SIZE_TIER_CUTPOINTS[index]]))(
       'should switch tiers and reach exactly the cutpoint at chart size %s (%spx)',
       (breakpoint, cutpoint) => {
-        const tier = getSizeTierIndexForDiameter(cutpoint);
+        const tier = DONUT_SIZE_TIER_CUTPOINTS.indexOf(cutpoint) + 1;
         expect(evaluateTier(labeledOptions, breakpoint - 1)).toBe(tier - 1);
         expect(evaluateTier(labeledOptions, breakpoint)).toBe(tier);
         expect(getOuterDiameter(breakpoint)).toBe(cutpoint);
@@ -264,20 +263,6 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
 describe('getSizeTierValueExpr()', () => {
   test('should index the values by the size tier signal', () => {
     expect(getSizeTierValueExpr('testName', [1, 2, 3, 4, 5])).toBe('[1, 2, 3, 4, 5][testName_sizeTier]');
-  });
-});
-
-describe('getSizeTierIndexForDiameter()', () => {
-  test.each([
-    [0, 0],
-    [119, 0],
-    [120, 1],
-    [160, 2],
-    [200, 3],
-    [399, 3],
-    [400, 4],
-  ])('should put a %spx diameter in tier %s', (diameter, tier) => {
-    expect(getSizeTierIndexForDiameter(diameter)).toBe(tier);
   });
 });
 

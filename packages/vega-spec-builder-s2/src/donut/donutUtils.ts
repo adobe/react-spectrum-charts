@@ -143,13 +143,8 @@ export const getDonutLabelRingGapSignalName = (name: string): string => `${name}
  */
 export const getDonutSizeTierSignalName = (name: string): string => `${name}_sizeTier`;
 
-/**
- * Gets the size tier index a diameter falls in (e.g. 160 is M, index 2).
- * @param diameter
- * @returns size tier index
- */
-export const getSizeTierIndexForDiameter = (diameter: number): number =>
-  DONUT_SIZE_TIER_CUTPOINTS.filter((cutpoint) => diameter >= cutpoint).length;
+/** Index of each donut size tier, as held by the size tier signal. */
+export const DONUT_SIZE_TIER = { XS: 0, S: 1, M: 2, L: 3, XL: 4 } as const;
 
 /**
  * Gets an expression that picks the value for the donut's size tier.
