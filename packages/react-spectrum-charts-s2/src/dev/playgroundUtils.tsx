@@ -92,8 +92,9 @@ export const formatDatumValue = (value: unknown): string => {
   if (typeof value === 'number' && value > 946_684_800_000) return new Date(value).toLocaleDateString();
   if (typeof value === 'number') return Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
   if (value === null || value === undefined) return '—';
-  if (typeof value === 'object') return JSON.stringify(value);
-  return String(value);
+  if (typeof value === 'string') return value;
+  if (typeof value === 'boolean' || typeof value === 'bigint') return value.toString();
+  return JSON.stringify(value) ?? '—';
 };
 
 export const datumRows = (datum: Datum, keys: string[]): ReactElement[] =>
