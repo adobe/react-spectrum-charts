@@ -77,6 +77,11 @@ jobs:
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         run: yarn build:s2
 
+      - name: Check Package Exports 📦
+        # Validates packed exports and types with publint and arethetypeswrong; requires the S2 build above
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        run: yarn check:packages
+
       - name: Build S2 Storybook
         # Don't run on PRs from forks
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}

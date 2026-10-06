@@ -55,7 +55,7 @@
   "scripts": {
     "prebuild": "echo 'This will run before build'",
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.build.json",
+    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.build.json && node ../../scripts/stripDeclarationCssImports.mjs dist/@types",
     "clean": "rm -rf dist",
     "g": "plop component",
     "generate": "plop component",

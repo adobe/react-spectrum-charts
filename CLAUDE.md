@@ -337,6 +337,8 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 
 When fixing a bug or refactoring behavior in an s1 package file, always check whether the corresponding s2 file needs the same change. The packages mirror each other structurally but s2 has no Venn support, no `s2` prop, and uses s2-specific imports (`vega-spec-builder-s2`, `react-spectrum-charts-s2`, and `@spectrum-charts/core-s2/*` instead of the shared `constants`/`themes`/`utils`/`locales` packages). A fix in one without the other leaves the packages inconsistent.
 
+The S2 packages (`core-s2`, `schemas`, `vega-spec-builder-s2`, `react-spectrum-charts-s2`) are ESM-only (`"type": "module"`), so relative imports must be fully specified: `./foo.js` for `foo.ts`/`foo.tsx`, `./dir/index.js` for a directory, and `with { type: 'json' }` on JSON imports. TypeScript (NodeNext) and ESLint enforce this; run `node scripts/addRelativeImportExtensions.mjs <package dir>...` to fix files in bulk (for example after merging main). Run `yarn check:packages` after `yarn build:s2` to validate the published exports and types.
+
 ---
 
 ## Before Implementing Any Feature or Bug Fix

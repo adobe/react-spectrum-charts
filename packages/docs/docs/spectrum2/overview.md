@@ -50,10 +50,68 @@ Import components from the S2 package instead of the base package:
 import { Chart, Axis, Line, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
 ```
 
-The S2 package requires `@adobe/react-spectrum` as a peer dependency for its popover and tooltip components:
+The S2 package has these peer dependencies, which your app must install:
 
 ```bash
-npm install @adobe/react-spectrum
+npm install @react-spectrum/s2 react react-dom react-aria-components vega vega-lite
+```
+
+### Module format
+
+The S2 packages ship ES modules only, one file per module, so bundlers include only what you import. `require()` and the UMD global are not supported, and Node.js 20.19 or later is required.
+
+#### Jest
+
+Jest runs CommonJS, so it must transform the package and its ES module dependencies (Vega and d3), and stub CSS. Works with Jest 29 and 30:
+
+```js
+// jest.config.js — transforms use your babel.config.js; a .babelrc does not apply to node_modules.
+module.exports = {
+  testEnvironment: './jest.environment.js',
+  transformIgnorePatterns: [
+    'node_modules/(?!(@spectrum-charts|vega|vega-[^/]+|d3-[^/]+|internmap|delaunator|robust-predicates|json-stringify-pretty-compact)/)',
+  ],
+  moduleNameMapper: {
+    '\\.css$': '<rootDir>/test/styleStub.js',
+    // Jest 30 otherwise loads vega-canvas's Node build, which uses top-level await.
+    '^vega-canvas$': '<rootDir>/node_modules/vega-canvas/build/vega-canvas.browser.js',
+  },
+};
+```
+
+```js
+// jest.environment.js — jsdom does not provide structuredClone, which Vega-Lite uses.
+const { TestEnvironment } = require('jest-environment-jsdom');
+
+module.exports = class extends TestEnvironment {
+  async setup() {
+    await super.setup();
+    this.global.structuredClone = structuredClone;
+  }
+};
+```
+
+```js
+// test/styleStub.js
+module.exports = {};
+```
+
+#### Vitest
+
+Vitest runs ES modules natively. Inline this package and `@react-spectrum/s2` so Vite handles their CSS imports:
+
+```js
+// vitest.config.js
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    server: {
+      deps: { inline: ['@spectrum-charts/react-spectrum-charts-s2', '@react-spectrum/s2'] },
+    },
+  },
+});
 ```
 
 ---
