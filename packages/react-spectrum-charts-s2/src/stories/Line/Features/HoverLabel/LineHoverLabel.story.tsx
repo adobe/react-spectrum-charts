@@ -14,85 +14,53 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart';
-import { Axis, Legend, Line } from '../../../../components';
+import { Axis, ChartPopover, Legend, Line } from '../../../../components';
 import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../data/data';
 import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
-
-const DATETIMES = [1667890800000, 1667977200000, 1668063600000, 1668150000000, 1668236400000, 1668322800000, 1668409200000];
-const manySeriesData = Array.from({ length: 25 }, (_, i) =>
-  DATETIMES.map((datetime, j) => ({
-    datetime,
-    series: `Series ${i + 1}`,
-    value: Math.round(1000 + Math.sin((i + j) * 0.8) * 800 + Math.cos(i * 0.5) * 500 + j * 120),
-  }))
-).flat();
+import { LineProps } from '../../../../types';
+import { visitsByChannelData } from '../../lineData';
+import { setControls } from '../../lineStoryUtils';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Features/HoverLabel',
+  title: 'React Spectrum Charts 2/Line/Features/Hover Label',
   component: Line,
 };
 
-const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400, maxWidth: 800, height: 400 };
-
+// Hover labels only render on interactive lines, so each story includes a popover.
 const HoverLabelStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+  const chartProps = useChartProps({ data: visitsByChannelData, minWidth: 400, maxWidth: 800, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid />
-      <Axis position="bottom" labelFormat="time" />
-      <Line {...args} />
-      <Legend lineWidth={{ value: 0 }} />
+      <Axis position="left" grid title="Visits" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args}>
+        <ChartPopover>
+          {(datum) => (
+            <div>
+              <div>{new Date(datum.datetime as number).toLocaleDateString()}</div>
+              <div>{datum.channel}</div>
+              <div>Visits: {Number(datum.visits).toLocaleString()}</div>
+            </div>
+          )}
+        </ChartPopover>
+      </Line>
+      <Legend highlight />
     </Chart>
   );
 };
 
-export const WithHoverLabel = bindWithProps(HoverLabelStory);
-WithHoverLabel.args = {
-  color: 'series',
-  dimension: 'datetime',
-  metric: 'value',
-  scaleType: 'time',
-  showHoverLabel: true,
-};
+const visitsProps: LineProps = { dimension: 'datetime', metric: 'visits', color: 'channel' };
 
-export const WithoutHoverLabel = bindWithProps(HoverLabelStory);
-WithoutHoverLabel.args = {
-  color: 'series',
-  dimension: 'datetime',
-  metric: 'value',
-  scaleType: 'time',
-  showHoverLabel: false,
-};
+const ShowHoverLabel = bindWithProps(HoverLabelStory);
+ShowHoverLabel.args = { ...visitsProps, showHoverLabel: true };
+setControls(ShowHoverLabel, ['showHoverLabel']);
 
-export const DimensionHover = bindWithProps(HoverLabelStory);
-DimensionHover.args = {
-  color: 'series',
-  dimension: 'datetime',
-  metric: 'value',
-  scaleType: 'time',
-  showHoverLabel: true,
-  dimensionHover: true,
-};
+const HoverLabelKey = bindWithProps(HoverLabelStory);
+HoverLabelKey.args = { ...visitsProps, hoverLabelKey: 'visitsLabel' };
+setControls(HoverLabelKey, ['hoverLabelKey']);
 
-const ManySeriesStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: manySeriesData, minWidth: 400, maxWidth: 800, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" grid />
-      <Axis position="bottom" labelFormat="time" />
-      <Line {...args} />
-    </Chart>
-  );
-};
+const DimensionHover = bindWithProps(HoverLabelStory);
+DimensionHover.args = { ...visitsProps, dimensionHover: true };
+setControls(DimensionHover, ['dimensionHover']);
 
-export const DimensionHoverManySeries = bindWithProps(ManySeriesStory);
-DimensionHoverManySeries.args = {
-  color: 'series',
-  dimension: 'datetime',
-  metric: 'value',
-  scaleType: 'time',
-  showHoverLabel: true,
-  dimensionHover: true,
-};
+export { ShowHoverLabel, HoverLabelKey, DimensionHover };

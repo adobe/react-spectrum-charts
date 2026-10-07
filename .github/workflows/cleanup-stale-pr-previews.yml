@@ -33,16 +33,16 @@ jobs:
           CUTOFF=$(date -u -d '60 days ago' +%s)
 
           gh pr list --repo "${{ github.repository }}" --state closed --limit 5000 \
-            --json number,closedAt,mergedAt > /tmp/closed_prs.json
+            --json number,closedAt,mergedAt > closed_prs.json
 
           REMOVED=0
-          for row in $(jq -c '.[]' /tmp/closed_prs.json); do
+          for row in $(jq -c '.[]' closed_prs.json); do
             NUM=$(echo "$row" | jq -r '.number')
             CLOSE_DATE=$(echo "$row" | jq -r '.closedAt // .mergedAt')
             [ "$CLOSE_DATE" = "null" ] && continue
             CLOSE_TS=$(date -u -d "$CLOSE_DATE" +%s)
             if [ "$CLOSE_TS" -lt "$CUTOFF" ]; then
-              for suffix in "" "-s2" "-docs"; do
+              for suffix in "" "-s2" "-s2-dev" "-docs"; do
                 DIR="PR-${NUM}${suffix}"
                 if [ -d "$DIR" ]; then
                   git rm -r --cached --quiet -- "$DIR"
@@ -52,6 +52,7 @@ jobs:
               done
             fi
           done
+          rm -f closed_prs.json
 
           echo "Removed ${REMOVED} stale preview directories"
 

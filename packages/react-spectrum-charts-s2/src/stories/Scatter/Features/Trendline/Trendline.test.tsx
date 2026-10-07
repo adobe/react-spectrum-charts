@@ -11,7 +11,7 @@
  */
 import { Trendline } from '../../../../pre-alpha/components/Trendline';
 import { findAllMarksByGroupName, findChart, render } from '../../../../test-utils';
-import { Basic } from './Trendline.story';
+import { Basic } from './TrendlineFeatures.story';
 
 describe('Trendline', () => {
   // Trendline is not a real React component. This is test just provides test coverage for sonarqube

@@ -1,0 +1,76 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+import React from 'react';
+
+import { SegmentLabel } from '../../../pre-alpha';
+import { findChart, render, screen } from '../../../test-utils';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { Basic, Percent, Value, ValueFormat } from './SegmentLabelVariants.story';
+
+describe('SegmentLabel', () => {
+  // SegmentLabel is not a real React component. This is test just provides test coverage for sonarqube
+  test('SegmentLabel pseudo element', () => {
+    render(<SegmentLabel />);
+  });
+
+  test('Basic renders properly', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    const labels = await screen.findAllByText('Chrome');
+    expect(labels.length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Safari')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Other')).length).toBeGreaterThan(0);
+  });
+
+  test('Percent renders properly', async () => {
+    render(<Percent {...Percent.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    expect(screen.getByText('26%')).toBeInTheDocument();
+    expect(screen.getByText('17%')).toBeInTheDocument();
+    expect(screen.getByText('10%')).toBeInTheDocument();
+  });
+
+  test('Value renders properly', async () => {
+    render(<Value {...Value.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    expect(screen.getByText('10,390')).toBeInTheDocument();
+    expect(screen.getByText('7,045')).toBeInTheDocument();
+    expect(screen.getByText('4,201')).toBeInTheDocument();
+  });
+
+  test('Should format segment metric values', async () => {
+    render(<ValueFormat {...ValueFormat.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    expect(screen.getByText('10K')).toBeInTheDocument();
+    expect(screen.getByText('7K')).toBeInTheDocument();
+    expect(screen.getByText('4.2K')).toBeInTheDocument();
+  });
+
+  test('Should hide labels for thin segments', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+
+    expect(screen.getAllByText('Safari').length).toBeGreaterThan(0);
+    // thin segments are excluded from the label data source entirely (so they don't consume a
+    // collision-rank slot), not rendered with font-size 0
+    expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
+  });
+});

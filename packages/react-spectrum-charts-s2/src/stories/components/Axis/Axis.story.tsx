@@ -9,412 +9,71 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
-
-import { action } from 'storybook/actions';
-import { StoryFn } from '@storybook/react';
-
-import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
-
-import useChartProps from '../../../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartInspect, Line } from '../../../index';
+import { Axis } from '../../../components';
 import { bindWithProps } from '../../../test-utils';
-import { stockPriceData, workspaceTrendsData } from '../../data/data';
-import { barData, barDataLongLabels } from '../Bar/data';
-import timeData from './timeData.json';
+import {
+  BrandHealthStory,
+  BrowserBarStory,
+  ConversionRateStory,
+  SessionsStory,
+  TimeAxisStory,
+  controls,
+  horizontalPositionArgType,
+  verticalPositionArgType,
+} from './axisStoryTemplates';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features',
   component: Axis,
-  argTypes: {
-    lineType: {
-      control: 'select',
-      options: ['solid', 'dashed', 'dotted', 'dotDash', 'shortDash', 'longDash', 'twoDash'],
-    },
-    lineWidth: {
-      control: 'inline-radio',
-      options: ['XS', 'S', 'M', 'L', 'XL'],
-    },
-    numberFormat: {
-      control: 'select',
-      options: ['currency', 'shortCurrency', 'shortNumber', 'standardNumber', '$,.2f', ',.2%', '.3s'],
-    },
-  },
+  argTypes: verticalPositionArgType,
 };
 
-const data = [
-  { x: 0, y: 0, series: 0 },
-  { x: 1, y: 1, series: 0 },
-];
+const Basic = bindWithProps(SessionsStory);
+Basic.args = { position: 'left', grid: true, title: 'Sessions', numberFormat: 'shortNumber' };
+Object.assign(Basic, controls());
 
-const AxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data, width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis {...args} />
-    </Chart>
-  );
-};
+const VerticalPosition = bindWithProps(SessionsStory);
+VerticalPosition.args = { position: 'right', grid: true, title: 'Sessions', numberFormat: 'shortNumber' };
+Object.assign(VerticalPosition, controls('position'));
 
-const TimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: timeData[args.granularity ?? DEFAULT_GRANULARITY], width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis {...args} />
-      <Line />
-    </Chart>
-  );
-};
+const HorizontalPosition = bindWithProps(TimeAxisStory);
+HorizontalPosition.args = { position: 'top', baseline: true, labelFormat: 'time', granularity: 'month' };
+Object.assign(HorizontalPosition, controls('position'), { argTypes: horizontalPositionArgType });
 
-const VerticalTimeAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({
-    data: timeData[args.granularity ?? DEFAULT_GRANULARITY],
-    width: 600,
-  });
-  return (
-    <Chart {...chartProps}>
-      <Axis {...args} />
-      <Bar orientation="horizontal" dimension="datetime" />
-    </Chart>
-  );
-};
-
-const TimeAxisBarStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({
-    data: timeData[args.granularity ?? DEFAULT_GRANULARITY],
-    width: 600,
-  });
-  return (
-    <Chart {...chartProps}>
-      <Axis {...args} />
-      <Bar orientation="vertical" dimension="datetime" />
-    </Chart>
-  );
-};
-
-const SubLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barData, width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis {...args} />
-      <Bar dimension="browser" metric="downloads" />
-    </Chart>
-  );
-};
-
-const TruncatedLabelStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barDataLongLabels, width: 450 });
-  return (
-    <Chart {...chartProps}>
-      <Axis {...args} />
-      <Bar dimension="browser" metric="downloads" />
-    </Chart>
-  );
-};
-
-const LinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="left" grid title="Users" />
-      <Axis {...args} />
-      <Line color="series" dimension="point" scaleType="linear" />
-    </Chart>
-  );
-};
-
-const LinearYAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" grid baseline ticks tickMinStep={5} baselineOffset={args?.range?.[0]} title="Users" />
-      <Axis {...args} />
-      <Line color="series" dimension="point" scaleType="linear" />
-    </Chart>
-  );
-};
-
-const DurationStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis {...args} />
-      <Axis position="bottom" labelFormat="time" />
-      <Line color="series" dimension="datetime" scaleType="time" />
-    </Chart>
-  );
-};
-
-const NonLinearAxisStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: workspaceTrendsData, width: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position="bottom" ticks baseline labelFormat="time" />
-      <Axis {...args} />
-      <Line color="series" lineType="period" scaleType="time" />
-    </Chart>
-  );
-};
-
-const SparkLineStory: StoryFn<typeof Axis> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: stockPriceData, width: 200, height: 100 });
-  return (
-    <Chart {...chartProps}>
-      <Axis {...args} />
-      <Line dimension="timestamp" metric="price" scaleType="point" padding={0}>
-        <ChartInspect>
-          {(item) => (
-            <>
-              <div>{item.stock}</div>
-              <div style={{ fontWeight: 'bold', fontSize: 24 }}>${(item.price as number).toFixed(2)}</div>
-              <div>{item.date}</div>
-            </>
-          )}
-        </ChartInspect>
-      </Line>
-    </Chart>
-  );
-};
-
-const Basic = bindWithProps(AxisStory);
-Basic.args = {
+const Title = bindWithProps(ConversionRateStory);
+Title.args = {
   position: 'left',
-  baseline: true,
   grid: true,
   labelFormat: 'percentage',
-  ticks: true,
-  title: 'Conversion Rate',
+  title: ['Conversion rate', '(orders ÷ sessions)'],
 };
+Object.assign(Title, controls('title'));
 
-const MultilineTitle = bindWithProps(AxisStory);
-MultilineTitle.args = {
-  position: 'left',
-  baseline: true,
-  grid: true,
-  labelFormat: 'percentage',
-  ticks: true,
-  title: ['Conversion Rate', '(converted users / total active users)'],
-};
+const Grid = bindWithProps(SessionsStory);
+Grid.args = { position: 'left', grid: true, title: 'Sessions', numberFormat: 'shortNumber' };
+Object.assign(Grid, controls('grid'));
 
-const DurationLabelFormat = bindWithProps(DurationStory);
-DurationLabelFormat.args = {
-  position: 'left',
-  grid: true,
-  labelFormat: 'duration',
-  title: 'Time spent',
-};
+const Baseline = bindWithProps(BrowserBarStory);
+Baseline.args = { position: 'bottom', baseline: true, title: 'Browser' };
+Object.assign(Baseline, controls('baseline'));
 
-const Time = bindWithProps(TimeAxisStory);
-Time.args = {
-  granularity: 'day',
+// Draws the bottom baseline at the benchmark value of 100 instead of at the bottom of the chart.
+const BaselineOffset = bindWithProps(BrandHealthStory);
+BaselineOffset.args = {
   position: 'bottom',
   baseline: true,
+  baselineOffset: 100,
   labelFormat: 'time',
-  ticks: true,
-  labelAlign: 'center',
+  granularity: 'month',
 };
+Object.assign(BaselineOffset, controls('baselineOffset'));
 
-const SecondGranularity = bindWithProps(TimeAxisBarStory);
-SecondGranularity.args = {
-  granularity: 'second',
-  position: 'bottom',
-  baseline: true,
-  labelFormat: 'time',
-  ticks: true,
-  labelAlign: 'center',
-};
+const Ticks = bindWithProps(TimeAxisStory);
+Ticks.args = { position: 'bottom', baseline: true, ticks: true, labelFormat: 'time', granularity: 'month' };
+Object.assign(Ticks, controls('ticks'));
 
-const SecondGranularityLine = bindWithProps(TimeAxisStory);
-SecondGranularityLine.args = {
-  granularity: 'second',
-  position: 'bottom',
-  baseline: true,
-  labelFormat: 'time',
-  ticks: true,
-  labelAlign: 'center',
-};
+const Range = bindWithProps(ConversionRateStory);
+Range.args = { position: 'left', grid: true, labelFormat: 'percentage', title: 'Conversion rate', range: [0, 0.08] };
+Object.assign(Range, controls('range'));
 
-const SubLabels = bindWithProps(SubLabelStory);
-SubLabels.args = {
-  position: 'bottom',
-  baseline: true,
-  title: 'Browser',
-  subLabels: [
-    { value: 'Chrome', subLabel: '80.1+' },
-    { value: 'Firefox', subLabel: '70.0+' },
-    { value: 'Safari', subLabel: '10.13 (High Sierra)+' },
-  ],
-  labelAlign: 'start',
-};
-
-const TruncateLabels = bindWithProps(TruncatedLabelStory);
-TruncateLabels.args = {
-  truncateLabels: true,
-  position: 'bottom',
-  baseline: true,
-  title: 'Browser',
-};
-
-const OnClick = bindWithProps(SubLabelStory);
-OnClick.args = {
-  position: 'bottom',
-  baseline: true,
-  title: 'Browser',
-  onClick: action('onClick'),
-};
-
-const TickMinStep = bindWithProps(LinearAxisStory);
-TickMinStep.args = {
-  position: 'bottom',
-  baseline: true,
-  labelFormat: 'linear',
-  ticks: true,
-  tickMinStep: 4,
-};
-
-const NonLinearAxis = bindWithProps(NonLinearAxisStory);
-NonLinearAxis.args = {
-  position: 'left',
-  tickMinStep: 5,
-  title: 'Events',
-  grid: true,
-};
-
-const NumberFormat = bindWithProps(AxisStory);
-NumberFormat.args = {
-  numberFormat: 'shortCurrency',
-  position: 'left',
-  baseline: true,
-  grid: true,
-  labelFormat: 'linear',
-  ticks: true,
-  title: 'Price',
-  range: [0, 2000000],
-};
-
-const CustomXRange = bindWithProps(LinearAxisStory);
-CustomXRange.args = {
-  position: 'bottom',
-  baseline: true,
-  labelFormat: 'linear',
-  ticks: true,
-  tickMinStep: 5,
-  range: [-5, 30],
-};
-
-const CustomYRange = bindWithProps(LinearYAxisStory);
-CustomYRange.args = {
-  position: 'left',
-  baseline: true,
-  grid: true,
-  labelFormat: 'linear',
-  ticks: true,
-  tickMinStep: 5,
-  range: [0, 9000],
-};
-
-const ControlledLabels = bindWithProps(SparkLineStory);
-ControlledLabels.args = {
-  position: 'bottom',
-  labels: [
-    { value: 1685577600000, label: 'Jun 1', align: 'start' },
-    { value: 1687996800000, label: 'Jun 29', align: 'end' },
-  ],
-};
-
-const VerticalTimeAxis = bindWithProps(VerticalTimeAxisStory);
-VerticalTimeAxis.args = {
-  granularity: 'day',
-  position: 'left',
-  baseline: true,
-  labelFormat: 'time',
-  ticks: true,
-  labelAlign: 'center',
-};
-
-const YearGranularity = bindWithProps(TimeAxisBarStory);
-YearGranularity.args = {
-  granularity: 'year',
-  position: 'bottom',
-  baseline: true,
-  labelFormat: 'time',
-  ticks: true,
-  labelAlign: 'center',
-};
-
-const CurrencyLocale = bindWithProps(AxisStory);
-CurrencyLocale.args = {
-  position: 'left',
-  baseline: true,
-  grid: true,
-  currencyCode: 'EUR',
-  currencyLocale: 'en-US',
-  numberFormat: 'currency',
-  ticks: true,
-  title: 'Conversion Rate',
-};
-
-const CurrencyFormatSpecifier = bindWithProps(AxisStory);
-CurrencyFormatSpecifier.args = {
-  position: 'left',
-  baseline: true,
-  grid: true,
-  currencyCode: 'EUR',
-  currencyLocale: 'en-US',
-  numberFormat: ',.6f',
-  ticks: true,
-  title: 'Conversion Rate',
-};
-
-const TickCountMinimum = bindWithProps(LinearYAxisStory);
-TickCountMinimum.args = {
-  position: 'left',
-  baseline: true,
-  grid: true,
-  labelFormat: 'linear',
-  ticks: true,
-  tickCountMinimum: 3,
-};
-
-const TickCountLimit = bindWithProps(TimeAxisBarStory);
-TickCountLimit.args = {
-  position: 'right',
-  tickCountLimit: 5,
-  ticks: true,
-  title: 'Y-Axis with Limited Ticks',
-};
-
-const VerticalSecondGranularity = bindWithProps(VerticalTimeAxisStory);
-VerticalSecondGranularity.args = {
-  granularity: 'second',
-  position: 'left',
-  baseline: true,
-  labelFormat: 'time',
-  ticks: true,
-  labelAlign: 'center',
-};
-
-export {
-  Basic,
-  ControlledLabels,
-  CustomXRange,
-  CustomYRange,
-  DurationLabelFormat,
-  MultilineTitle,
-  NonLinearAxis,
-  NumberFormat,
-  OnClick,
-  SecondGranularity,
-  SecondGranularityLine,
-  SubLabels,
-  TickMinStep,
-  Time,
-  VerticalSecondGranularity,
-  VerticalTimeAxis,
-  YearGranularity,
-  TruncateLabels,
-  CurrencyLocale,
-  CurrencyFormatSpecifier,
-  TickCountLimit,
-  TickCountMinimum,
-};
+export { Basic, VerticalPosition, HorizontalPosition, Title, Grid, Baseline, BaselineOffset, Ticks, Range };

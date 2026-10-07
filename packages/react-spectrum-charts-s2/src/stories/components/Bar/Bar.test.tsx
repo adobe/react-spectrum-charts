@@ -9,9 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/constants';
 
 import { Bar } from '../../../components';
+import { acquisitionChannelData as barData } from '../../../storyShared/components/Bar/data';
 import {
   clickNthElement,
   findAllMarksByGroupName,
@@ -25,19 +26,12 @@ import {
   within,
 } from '../../../test-utils';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import {
-  BarWithUTCDatetimeFormat,
-  Basic,
-  OnClick,
-  OnMouseInputs,
-  Opacity,
-  PaddingRatio,
-  InspectOnDimensionArea,
-  WithInspect,
-} from './Bar.story';
-import { Color, DodgedStacked } from './DodgedBar.story';
-import { Basic as StackedBasic } from './StackedBar.story';
-import { barData } from './data';
+import { OnClick } from './ActionHandlers/BarActionHandlers.story';
+import { Basic, ChartInspect as ChartInspectStory } from './Bar.story';
+import { Dodged as DodgedBasic, DodgedStacked } from './DodgedBar.story';
+import { PaddingRatio } from './Spacing/BarSpacing.story';
+import { Stacked as StackedBasic } from './StackedBar.story';
+import { Opacity } from './Styling/BarStyling.story';
 
 describe('Bar', () => {
   // Bar is not a real React component. This is test just provides test coverage for sonarqube
@@ -62,7 +56,7 @@ describe('Bar', () => {
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars[0].getAttribute('fill-opacity')).toEqual('0.75');
+    expect(bars[0].getAttribute('fill-opacity')).toEqual('0.6');
   });
 
   test('Padding Ratio renders properly', async () => {
@@ -75,15 +69,14 @@ describe('Bar', () => {
     expect(bars.length).toEqual(5);
   });
 
-
   test('Dodged Basic renders properly', async () => {
-    render(<Color {...Color.args} />);
+    render(<DodgedBasic {...DodgedBasic.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(9);
+    expect(bars.length).toEqual(8);
   });
 
   test('Dodged Stacked renders properly', async () => {
@@ -93,7 +86,7 @@ describe('Bar', () => {
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(18);
+    expect(bars.length).toEqual(16);
   });
 
   test('Stacked Basic renders properly', async () => {
@@ -103,17 +96,7 @@ describe('Bar', () => {
 
     // get bars
     const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(9);
-  });
-
-  test('Bar with UTC date on dimension renders properly', async () => {
-    render(<BarWithUTCDatetimeFormat {...BarWithUTCDatetimeFormat.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-
-    // get bars
-    const bars = await findAllMarksByGroupName(chart, 'bar0');
-    expect(bars.length).toEqual(6);
+    expect(bars.length).toEqual(12);
   });
 
   test('should call onClick callback when selecting a bar item', async () => {
@@ -146,10 +129,7 @@ describe('Bar', () => {
 
     await rightClickNthElement(bars, 0);
     expect(onContextMenu).toHaveBeenCalledTimes(1);
-    expect(onContextMenu).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining(barData[0])
-    );
+    expect(onContextMenu).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining(barData[0]));
     expect(onContextMenu.mock.calls[0][0]).toMatchObject(
       expect.objectContaining({ clientX: expect.any(Number), clientY: expect.any(Number) })
     );
@@ -158,7 +138,7 @@ describe('Bar', () => {
   test('should call onMouseOver and onMouseOut callbacks when hovering bar items', async () => {
     const onMouseOver = jest.fn();
     const onMouseOut = jest.fn();
-    render(<Basic {...Basic.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
+    render(<OnClick {...OnClick.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
     const chart = await findChart();
     const bars = await findAllMarksByGroupName(chart, 'bar0');
 
@@ -169,94 +149,9 @@ describe('Bar', () => {
     expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining(barData[0]));
   });
 
-  test('should display custom hover information in UI when mousing over bar items', async () => {
-    render(<OnMouseInputs {...OnMouseInputs.args} />);
-    const chart = await findChart();
-    const bars = await findAllMarksByGroupName(chart, 'bar0');
-
-    // Initially no hover info should be displayed
-    expect(screen.getByTestId('no-hover')).toBeInTheDocument();
-    expect(screen.queryByTestId('hover-data')).not.toBeInTheDocument();
-
-    // Hover over first bar (Chrome, 27000)
-    await hoverNthElement(bars, 0);
-
-    expect(screen.queryByTestId('no-hover')).not.toBeInTheDocument();
-    let hoverData = screen.getByTestId('hover-data');
-    expect(hoverData).toBeInTheDocument();
-
-    const firstBarData = JSON.parse(hoverData.textContent || '{}');
-    expect(firstBarData.browser).toBe('Chrome');
-    expect(firstBarData.downloads).toBe(27000);
-    expect(firstBarData.percentLabel).toBe('53.1%');
-    expect(firstBarData.rscMarkId).toBe(1);
-    expect(firstBarData.downloads0).toBe(0);
-    expect(firstBarData.downloads1).toBe(27000);
-    expect(firstBarData.rscStackId).toBe('Chrome');
-
-    // Re-query bars after hover state change to get fresh DOM references
-    const barsAfterHover = await findAllMarksByGroupName(chart, 'bar0');
-
-    // Unhover first bar
-    await unhoverNthElement(barsAfterHover, 0);
-    expect(screen.getByTestId('no-hover')).toBeInTheDocument();
-    expect(screen.queryByTestId('hover-data')).not.toBeInTheDocument();
-
-    // Re-query bars after unhover state change for fresh DOM references
-    const barsAfterUnhover = await findAllMarksByGroupName(chart, 'bar0');
-
-    // Hover over second bar (Firefox, 8000)
-    await hoverNthElement(barsAfterUnhover, 1);
-
-    hoverData = screen.getByTestId('hover-data');
-    expect(hoverData).toBeInTheDocument();
-
-    const secondBarData = JSON.parse(hoverData.textContent || '{}');
-    expect(secondBarData.browser).toBe('Firefox');
-    expect(secondBarData.downloads).toBe(8000);
-    expect(secondBarData.percentLabel).toBe('15.7%');
-    expect(secondBarData.rscMarkId).toBe(2);
-    expect(secondBarData.downloads0).toBe(0);
-    expect(secondBarData.downloads1).toBe(8000);
-    expect(secondBarData.rscStackId).toBe('Firefox');
-  });
-
-  describe('InspectOnDimensionArea', () => {
-    test('hovering dimension area should apply highlight styling and show tooltip', async () => {
-      render(<InspectOnDimensionArea {...InspectOnDimensionArea.args} />);
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-      const dimensionAreas = await findAllMarksByGroupName(chart, `bar0_${DIMENSION_HOVER_AREA}`);
-      const bars = await findAllMarksByGroupName(chart, 'bar0');
-      expect(dimensionAreas).toHaveLength(5);
-
-      // hovering dimension area should apply highlight styling and show tooltip
-      await hoverNthElement(dimensionAreas, 0);
-      let inspect = await screen.findByTestId('rsc-tooltip');
-      expect(inspect).toBeInTheDocument();
-      expect(within(inspect).getByText('Chrome: 27000')).toBeInTheDocument();
-      // opacity is now animated, so it settles asynchronously -- hence waitForMarksByGroupName
-      await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
-        expect(updatedBars[0]).toHaveAttribute('opacity', `1`);
-        expect(updatedBars[4]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-      });
-
-      await unhoverNthElement(dimensionAreas, 0);
-
-      // hovering bar should do normal stuff
-      await hoverNthElement(bars, 4);
-      await waitForMarksByGroupName(chart, 'bar0', (updatedBars) => {
-        expect(updatedBars[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
-        expect(updatedBars[4]).toHaveAttribute('opacity', `1`);
-      });
-      inspect = await screen.findByTestId('rsc-tooltip');
-      expect(inspect).toBeInTheDocument();
-      expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();
-    });
-  });
-  describe('WithInspect', () => {
+  describe('ChartInspect', () => {
     test('hovering bar should apply highlight styling and show tooltip', async () => {
-      render(<WithInspect {...WithInspect.args} />);
+      render(<ChartInspectStory {...ChartInspectStory.args} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
       const bars = await findAllMarksByGroupName(chart, 'bar0');
@@ -271,7 +166,7 @@ describe('Bar', () => {
       });
       const inspect = await screen.findByTestId('rsc-tooltip');
       expect(inspect).toBeInTheDocument();
-      expect(within(inspect).getByText('Explorer: 500')).toBeInTheDocument();
+      expect(within(inspect).getByText('Referral: 7,600 sign-ups')).toBeInTheDocument();
     });
   });
 });

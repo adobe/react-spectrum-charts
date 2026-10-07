@@ -9,139 +9,52 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
+import { Axis, Bar, ChartInspect, Legend } from '../../../components';
 import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
-import { barDataTwoSeries, barSeriesData } from './data';
+import { sessionsAndOrdersData } from '../../../storyShared/components/Bar/data';
+import { bindStory } from './storyUtils';
 
 export default {
-  title: 'React Spectrum Charts 2/Bar/Features/Dual Metric Axis',
+  title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
 };
 
-const dialogContent = (datum) => (
-  <div>
-    <div>Operating system: {datum.operatingSystem}</div>
-    <div>Browser: {datum.browser}</div>
-    <div>Users: {datum.value}</div>
-  </div>
-);
-
-const BasicStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barDataTwoSeries, width: 800, height: 600 });
+const DualMetricAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: sessionsAndOrdersData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis
-        position={args.orientation === 'horizontal' ? 'bottom' : 'left'}
-        ticks
-        tickMinStep={1}
-        title="Windows Downloads"
-      />
-      <Axis
-        position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
-        ticks
-        tickMinStep={1}
-        title="Mac Downloads"
-      />
+      <Axis position="bottom" baseline title="Acquisition channel" />
+      <Axis position="left" grid ticks title="Total sessions" />
+      <Axis position="right" ticks title="Total orders" />
       <Bar {...args}>
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover width={200}>{dialogContent}</ChartPopover>
+        <ChartInspect>
+          {(datum) => (
+            <div>
+              {datum.channel} {String(datum.series).toLowerCase()}: {Number(datum.value).toLocaleString()}
+            </div>
+          )}
+        </ChartInspect>
       </Bar>
-      <Legend title="Operating system" highlight />
+      <Legend title="Metric" highlight />
     </Chart>
   );
 };
 
-const WithSublabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barDataTwoSeries, width: 800, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis
-        position={args.orientation === 'horizontal' ? 'bottom' : 'left'}
-        ticks
-        tickMinStep={1}
-        title="Downloads"
-        subLabels={[
-          { value: '1', subLabel: 'Low' },
-          { value: '2', subLabel: 'Medium' },
-          { value: '5', subLabel: 'High' },
-        ]}
-      />
-      <Axis
-        position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
-        ticks
-        tickMinStep={1}
-        title="Mac Downloads"
-        subLabels={[
-          { value: '1', subLabel: 'Low' },
-          { value: '2', subLabel: 'Medium' },
-          { value: '3', subLabel: 'High' },
-        ]}
-      />
-      <Bar {...args}>
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover width={200}>{dialogContent}</ChartPopover>
-      </Bar>
-      <Legend title="Operating system" highlight />
-    </Chart>
-  );
-};
-
-const WithThreeSeriesStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} ticks tickMinStep={1} title="Downloads" />
-      <Axis
-        position={args.orientation === 'horizontal' ? 'bottom' : 'right'}
-        ticks
-        tickMinStep={1}
-        title="Other Downloads"
-      />
-      <Bar {...args}>
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover width={200}>{dialogContent}</ChartPopover>
-      </Bar>
-      <Legend title="Operating system" highlight />
-    </Chart>
-  );
-};
-
-const defaultProps: BarProps = {
-  dualMetricAxis: true,
+// The last series (Orders) is scaled against the right-hand axis.
+const DualMetricAxis = bindStory(DualMetricAxisStory);
+DualMetricAxis.args = {
   type: 'dodged',
-  dimension: 'browser',
-  onClick: undefined,
-};
-
-const Basic = bindWithProps(BasicStory);
-Basic.args = {
-  ...defaultProps,
+  dimension: 'channel',
+  metric: 'value',
+  color: 'series',
   order: 'order',
-  color: 'operatingSystem',
+  dualMetricAxis: true,
 };
+DualMetricAxis.parameters = { controls: { include: ['dualMetricAxis'] } };
 
-const WithSublabels = bindWithProps(WithSublabelsStory);
-WithSublabels.args = {
-  ...defaultProps,
-  order: 'order',
-  color: 'operatingSystem',
-};
-
-const WithThreeSeries = bindWithProps(WithThreeSeriesStory);
-WithThreeSeries.args = {
-  ...defaultProps,
-  order: 'order',
-  color: 'operatingSystem',
-};
-
-export { Basic, WithSublabels, WithThreeSeries };
+export { DualMetricAxis };

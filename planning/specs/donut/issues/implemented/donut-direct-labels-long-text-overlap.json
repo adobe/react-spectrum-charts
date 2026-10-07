@@ -63,7 +63,7 @@
       "lines": "existing direct and rich SegmentLabel encoding tests"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/DonutVariations.story.tsx",
+      "file": "packages/react-spectrum-charts-s2/src/dev/Donut/Dashboards/DonutVariations.story.tsx",
       "change": "Use the existing long-label dataset with Direct and Advanced label modes across responsive tiers to verify that the chart and card layout remain stable.",
       "lines": "Donut variation dashboard dataset and view controls"
     }

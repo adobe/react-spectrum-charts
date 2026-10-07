@@ -2,7 +2,7 @@ import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const config: StorybookConfig = {
   stories: [
-    '../packages/react-spectrum-charts-s2/src/**/*.story.@(js|jsx|ts|tsx)',
+    '../packages/react-spectrum-charts-s2/src/stories/**/*.story.@(js|jsx|ts|tsx)',
   ],
 
   addons: [

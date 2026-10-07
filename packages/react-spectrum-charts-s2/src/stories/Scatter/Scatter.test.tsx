@@ -11,7 +11,7 @@
  */
 import { Scatter } from '../../pre-alpha/components/Scatter';
 import { findAllMarksByGroupName, findChart, render } from '../../test-utils';
-import { Basic } from './Features/ScatterBasic.story';
+import { Basic } from './Features/ScatterFeatures.story';
 
 describe('Scatter', () => {
   // Scatter is not a real React component. This is test just provides test coverage for sonarqube
