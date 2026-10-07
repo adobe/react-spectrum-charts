@@ -1,7 +1,7 @@
 ---
 '@spectrum-charts/react-spectrum-charts-s2': minor
 '@spectrum-charts/vega-spec-builder-s2': minor
-'@spectrum-charts/utils': patch
+'@spectrum-charts/utils': minor
 ---
 
 Resolve a batch of SonarCloud maintainability findings in the S2 packages (S1 is in maintenance mode, so its existing findings are suppressed with line-level `NOSONAR` comments instead), with a couple of real bug fixes mixed in:
