@@ -34,28 +34,31 @@ export default function useChartImperativeHandle(forwardedRef: Ref<ChartHandle> 
  * @param props
  * @returns Promise<string>
  */
-const copy = ({ chartView }: ChartImperativeHandleProps) =>
-  new Promise<string>((resolve, reject) => {
-    if (chartView.current) {
-      chartView.current.toImageURL('png').then(
-        async (url) => {
-          try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(
-              () => resolve('Chart copied to clipboard'),
-              () => reject(new Error('Error occurred while writing to clipboard, copy to clipboard failed'))
-            );
-          } catch (error) {
-            reject(new Error('Error occurred while fetching image, copy to clipboard failed', { cause: error }));
-          }
-        },
-        () => reject(new Error('Error occurred while converting image to URL, copy to clipboard failed'))
-      );
-    } else {
-      reject(new Error("There isn't a chart to copy, copy to clipboard failed"));
-    }
-  });
+const copy = async ({ chartView }: ChartImperativeHandleProps): Promise<string> => {
+  if (!chartView.current) {
+    throw new Error("There isn't a chart to copy, copy to clipboard failed");
+  }
+  let url: string;
+  try {
+    url = await chartView.current.toImageURL('png');
+  } catch {
+    throw new Error('Error occurred while converting image to URL, copy to clipboard failed');
+  }
+  let item: ClipboardItem;
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    item = new ClipboardItem({ 'image/png': blob });
+  } catch (error) {
+    throw new Error('Error occurred while fetching image, copy to clipboard failed', { cause: error });
+  }
+  try {
+    await navigator.clipboard.write([item]);
+  } catch {
+    throw new Error('Error occurred while writing to clipboard, copy to clipboard failed');
+  }
+  return 'Chart copied to clipboard';
+};
 
 /**
  * Downloads the chart as a PNG to the users computer
