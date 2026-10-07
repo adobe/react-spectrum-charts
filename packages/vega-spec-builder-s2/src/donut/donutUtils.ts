@@ -13,6 +13,8 @@ import { ArcMark, ColorValueRef, NumericValueRef, ProductionRule, Signal, Source
 
 import {
   BACKGROUND_COLOR,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_HOLE_RATIO,
   DONUT_BOOLEAN_SECONDARY_COLOR,
   DONUT_LABEL_MIN_SPACE_RATIO,
@@ -26,12 +28,14 @@ import {
   DONUT_SLICE_GAPS,
   FADE_FACTOR,
   FILTERED_TABLE,
+  HOVERED_ITEM,
   SELECTED_ITEM,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 import { getS2ColorValue } from '@spectrum-charts/themes';
 
 import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils';
+import { getDeemphasisRamp, getHoverFractionSignal, HoverMatchRule } from '../marks/hoverAnimationUtils';
 import {
   getColorProductionRule,
   getCursor,
@@ -47,7 +51,43 @@ const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
 export const isDonutInteractive = (options: DonutSpecOptions): boolean =>
   isInteractive(options) || Boolean(options.legendHighlightSignals?.length);
 
-const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+export const getDonutAnimIdField = (name: string): string => `${name}_hoverId`;
+
+/** Builds per-segment hover targets using the same precedence as Line hover. */
+export const getDonutHoverRules = (options: DonutSpecOptions): HoverMatchRule[] => {
+  const { idKey, name, chartPopovers } = options;
+  const rules: HoverMatchRule[] = [];
+  if (isDonutInteractive(options)) {
+    rules.push({
+      as: 'hoveredMatch',
+      expr: `isValid(${name}_${HOVERED_ITEM}) ? (${name}_${HOVERED_ITEM}.${idKey} === datum.${idKey} ? 1 : 0) : null`,
+    });
+  }
+  rules.push(
+    {
+      as: 'controlledTableMatch',
+      expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) ? (indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1 ? 1 : 0) : null`,
+    },
+    {
+      as: 'controlledSeriesMatch',
+      expr: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`,
+    }
+  );
+  if (chartPopovers.length) {
+    rules.push({
+      as: 'popoverMatch',
+      expr: `isValid(${SELECTED_ITEM}) ? (${SELECTED_ITEM} === datum.${idKey} ? 1 : 0) : null`,
+    });
+  }
+  return rules;
+};
+
+/** Gets the shared arc and label opacity, animated when hover animations are enabled. */
+export const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+  if (options.isHoverAnimate) {
+    const ramp = getDeemphasisRamp(getHoverFractionSignal(options.name, getDonutAnimIdField(options.name)));
+    return [{ signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` }];
+  }
   const opacity = getMarkOpacity(options);
   if (!isInteractive(options) && options.legendHighlightSignals?.length) {
     addHoveredItemOpacityRules(opacity, options);
@@ -398,7 +438,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
         opacity: [
           { test: getDonutEmptyStateTest(name), value: 0 },
-          ...getLegendHighlightOpacityRules(legendHighlightSignals),
+          ...(options.isHoverAnimate ? [] : getLegendHighlightOpacityRules(legendHighlightSignals)),
           ...getDonutOpacity(options),
         ],
         cursor: getCursor(chartPopovers),

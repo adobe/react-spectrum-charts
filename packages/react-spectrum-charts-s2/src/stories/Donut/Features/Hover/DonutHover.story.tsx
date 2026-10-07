@@ -76,4 +76,19 @@ WithLegend.args = { value: true, valueFormat: 'shortNumber' };
 
 const InspectAndPopover = bindWithProps(InspectAndPopoverStory);
 
-export { InspectAndPopover, SimpleDirectLabel, WithLegend };
+const WithoutAnimationsStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => {
+  const chartProps = useChartProps(defaultChartProps);
+  return (
+    <Chart {...chartProps} animations={false}>
+      <Donut metric="count" color="browser">
+        <SegmentLabel {...args} />
+      </Donut>
+      <Legend highlight />
+    </Chart>
+  );
+};
+
+const WithoutAnimations = bindWithProps(WithoutAnimationsStory);
+WithoutAnimations.args = { value: true, valueFormat: 'shortNumber' };
+
+export { InspectAndPopover, SimpleDirectLabel, WithLegend, WithoutAnimations };

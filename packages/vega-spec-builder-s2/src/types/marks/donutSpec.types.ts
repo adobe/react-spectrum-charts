@@ -71,8 +71,11 @@ type DonutOptionsWithDefaults =
 export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutOptionsWithDefaults> {
   colorScheme: ColorScheme;
   highlightedItem?: HighlightedItem;
+  highlightedSeries?: string | number;
   idKey: string;
   index: number;
+  isHoverAnimate?: boolean;
+  segmentIds?: number[];
   legendHighlightSignals?: string[];
   markType: 'donut';
 }
