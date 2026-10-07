@@ -227,7 +227,7 @@ export const getPolynomialOrder = (method: TrendlineMethod): number => {
   }
 
   // method is of the form polynomial-<order>
-  const order = Number.parseInt(method.split('-')[1]);
+  const order = parseInt(method.split('-')[1]); // NOSONAR typescript:S7773 - S1 is in maintenance mode; no functional changes for Sonar findings
   if (order < 1) {
     throw new Error(`Invalid polynomial order: ${order}, order must be an interger greater than 0`);
   }

@@ -59,7 +59,8 @@ export const getTimeUnitsFromGranularity = (granularity?: Granularity): TimeUnit
 
 export const addTimeTransform = produce<Transforms[], [string, Granularity?]>(
   (transforms, dimension, granularity) => {
-    if (!transforms.some((transform) => transform.type === 'timeunit')) {
+    // prettier-ignore
+    if (transforms.findIndex((transform) => transform.type === 'timeunit') === -1) { // NOSONAR typescript:S7754 - S1 is in maintenance mode; no functional changes for Sonar findings
       transforms.push(
         {
           type: 'formula',

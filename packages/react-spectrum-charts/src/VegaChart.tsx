@@ -35,7 +35,8 @@ export const resizeView = (view: View | undefined, width: number, height: number
   if (view && width && height) {
     // Two passes: first updates width/height signals; second lets Vega re-settle layout
     // after dependent changes (e.g. legend column count → legend height → plot area height).
-    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
+    // prettier-ignore
+    view.width(width).height(height).resize().runAsync().then(() => view.runAsync()); // NOSONAR typescript:S9383 - S1 is in maintenance mode; no functional changes for Sonar findings
   }
 };
 
@@ -82,7 +83,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   // Need to de a deep copy of the data because vega tries to transform the data
   const chartData = useMemo(() => {
-    const clonedData = structuredClone(data);
+    const clonedData = JSON.parse(JSON.stringify(data)); // NOSONAR typescript:S7784 - S1 is in maintenance mode; no functional changes for Sonar findings
 
     // We received a full Vega data array with potentially multiple dataset objects
     if (isVegaData(clonedData)) {
@@ -112,7 +113,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   useEffect(() => {
     if (width && height && containerRef.current) {
-      const specCopy = structuredClone(spec);
+      const specCopy = JSON.parse(JSON.stringify(spec)) as Spec; // NOSONAR typescript:S7784 - S1 is in maintenance mode; no functional changes for Sonar findings
       const tableData = specCopy.data?.find((d) => d.name === TABLE);
       if (tableData && 'values' in tableData) {
         tableData.values = chartData.table;
@@ -129,11 +130,12 @@ export const VegaChart: FC<VegaChartProps> = ({
       const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
       const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
 
-      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
+      // prettier-ignore
+      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => { // NOSONAR typescript:S9383 - S1 is in maintenance mode; no functional changes for Sonar findings
         chartView.current = view;
         onNewView(view);
         view.resize();
-        view.runAsync();
+        view.runAsync(); // NOSONAR typescript:S9383 - S1 is in maintenance mode; no functional changes for Sonar findings
         // One additional render to settle all resize calculations
         setTimeout(() => view.runAsync(), 0);
       });

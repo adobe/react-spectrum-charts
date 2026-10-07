@@ -1,12 +1,10 @@
 ---
-'@adobe/react-spectrum-charts': patch
-'@spectrum-charts/vega-spec-builder': patch
 '@spectrum-charts/react-spectrum-charts-s2': patch
 '@spectrum-charts/vega-spec-builder-s2': patch
 '@spectrum-charts/utils': patch
 ---
 
-Resolve a batch of SonarCloud maintainability findings, with a couple of real bug fixes mixed in:
+Resolve a batch of SonarCloud maintainability findings in the S2 packages (S1 is in maintenance mode, so its findings are suppressed in `sonar-project.properties` instead), with a couple of real bug fixes mixed in:
 
 - Fixed worst-case quadratic regex backtracking in `toCamelCase` and a legend data-source name check, both reachable from a user-supplied chart/mark `name`.
 - Fixed the `Chart` `locale` prop silently breaking data-navigator's accessible color names when passed as an object (e.g. `{ number: 'de-DE' }`) instead of a plain locale string.

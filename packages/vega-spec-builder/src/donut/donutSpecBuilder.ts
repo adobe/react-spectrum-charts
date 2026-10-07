@@ -121,7 +121,8 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
     });
   }
   // used to detect the empty state (no data or all metric values are 0)
-  data.push(getSumData(options), ...getDonutSummaryData(options));
+  data.push(getSumData(options));
+  data.push(...getDonutSummaryData(options)); // NOSONAR typescript:S7778 - S1 is in maintenance mode; no functional changes for Sonar findings
 });
 
 const getPieTransforms = ({ startAngle, metric, name }: DonutSpecOptions): (FormulaTransform | PieTransform)[] => [

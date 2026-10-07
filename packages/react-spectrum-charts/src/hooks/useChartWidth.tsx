@@ -11,9 +11,12 @@
  */
 import { useMemo } from 'react';
 
-import { Width } from '@spectrum-charts/vega-spec-builder';
-
-export default function useChartWidth(containerWidth: number, maxWidth: number, minWidth: number, width: Width) {
+export default function useChartWidth(
+  containerWidth: number,
+  maxWidth: number,
+  minWidth: number,
+  width: number | 'auto' | string // NOSONAR typescript:S6571 - S1 is in maintenance mode; no functional changes for Sonar findings
+) {
   return useMemo(() => {
     let targetWidth = minWidth;
     if (typeof width === 'number') {
