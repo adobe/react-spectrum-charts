@@ -9,52 +9,62 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart.js';
-import { Axis, Line, ReferenceLine } from '../../../components/index.js';
+import { Axis, Legend, Line, ReferenceLine } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { workspaceTrendsData } from '../../../stories/data/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
-import { ChartProps } from '../../../types/index.js';
+import { channelPerformanceData } from './axisStoryData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Reference Line',
   component: ReferenceLine,
 };
 
-const defaultChartProps: ChartProps = {
-  data: workspaceTrendsData,
-  minWidth: 400,
-  maxWidth: 800,
-  height: 400,
-  backgroundColor: 'gray-50',
-};
+const controls = (...include: string[]) => ({ parameters: { controls: { include } } });
 
-const ReferenceLineStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+const ConversionTargetStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: channelPerformanceData, width: 700, height: 360 });
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid title="Users">
+      <Axis position="left" grid title="Conversion rate" labelFormat="percentage">
         <ReferenceLine {...args} />
       </Axis>
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time" />
+      <Axis position="bottom" labelFormat="time" granularity="month" baseline />
+      <Line dimension="datetime" metric="conversionRate" color="channel" scaleType="time" />
+      <Legend />
     </Chart>
   );
 };
 
-const Basic = bindWithProps(ReferenceLineStory);
-Basic.args = {
-  value: 5000,
+const PrimaryAndSecondaryStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: channelPerformanceData, width: 700, height: 360 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Conversion rate" labelFormat="percentage">
+        <ReferenceLine value={0.05} label="Target" />
+        <ReferenceLine {...args} />
+      </Axis>
+      <Axis position="bottom" labelFormat="time" granularity="month" baseline />
+      <Line dimension="datetime" metric="conversionRate" color="channel" scaleType="time" />
+      <Legend />
+    </Chart>
+  );
 };
 
-const Label = bindWithProps(ReferenceLineStory);
-Label.args = {
-  label: 'Target',
-  value: 5000,
-};
+const Basic = bindWithProps(ConversionTargetStory);
+Basic.args = { value: 0.04 };
+Object.assign(Basic, controls('value'));
 
-export { Basic, Label };
+const Label = bindWithProps(ConversionTargetStory);
+Label.args = { value: 0.04, label: 'Target' };
+Object.assign(Label, controls('label'));
+
+const Secondary = bindWithProps(PrimaryAndSecondaryStory);
+Secondary.args = { value: 0.035, label: 'Last year', secondary: true };
+Object.assign(Secondary, controls('secondary'));
+
+export { Basic, Label, Secondary };

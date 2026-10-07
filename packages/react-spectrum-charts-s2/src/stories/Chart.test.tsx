@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { createRef } from 'react';
+
 import { renderToString } from 'react-dom/server';
 
 import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
@@ -18,6 +19,7 @@ import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../Chart.js';
 import { Axis, Bar, ChartInspect, Line } from '../components/index.js';
+import { data } from '../storyShared/data/data.js';
 import {
   findChart,
   getAllMarksByGroupName,
@@ -29,17 +31,10 @@ import {
 } from '../test-utils/index.js';
 import '../test-utils/__mocks__/matchMedia.mock.js';
 import { getElement } from '../utils/index.js';
-import { BackgroundColor, Basic, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width } from './Chart.story.js';
-import {
-  CssColors,
-  Spectrum2CategoricalColorScheme,
-  Spectrum2ColorNames,
-  SpectrumColorNames,
-  SpectrumDivergentColorScheme,
-  SpectrumSequentialColorScheme,
-} from './ChartColors.story.js';
-import { EmptyState, LoadingState } from './ChartStates.story.js';
-import { data } from './data/data.js';
+import { BackgroundColor, Basic, Config, EmptyStateText, Loading, Locale, TooltipAnchor } from './Chart.story.js';
+import { Colors } from './Chart/Encodings/ChartEncodings.story.js';
+import { HighlightedItem } from './Chart/Highlight/ChartHighlight.story.js';
+import { Height, Width } from './Chart/Size/ChartSize.story.js';
 
 const PopoverTest = (
   <Chart data={[]} renderer="svg">
@@ -118,7 +113,7 @@ describe('Chart', () => {
   test('Chart does not render if the width or height are 0', () => {
     render(<Width {...Width.args} width={0} />);
     expect(screen.queryByRole('graphics-document')).not.toBeInTheDocument();
-    render(<Width {...Width.args} height={0} />);
+    render(<Height {...Height.args} height={0} />);
     expect(screen.queryByRole('graphics-document')).not.toBeInTheDocument();
   });
 
@@ -130,7 +125,7 @@ describe('Chart', () => {
 
   describe('Color stories', () => {
     test('Spectrum colors render correctly (light)', async () => {
-      render(<SpectrumColorNames {...SpectrumColorNames.args} />);
+      render(<Colors {...Colors.args} colors={['gray-800', 'gray-700', 'gray-600', 'gray-500']} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -143,7 +138,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum colors render correctly (dark)', async () => {
-      render(<SpectrumColorNames {...SpectrumColorNames.args} colorScheme="dark" />);
+      render(<Colors {...Colors.args} colors={['gray-800', 'gray-700', 'gray-600', 'gray-500']} colorScheme="dark" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -156,7 +151,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum diverging color scheme renders correctly', async () => {
-      render(<SpectrumDivergentColorScheme {...SpectrumDivergentColorScheme.args} />);
+      render(<Colors {...Colors.args} colors="divergentOrangeYellowSeafoam5" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -169,7 +164,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum sequential color scheme renders correctly', async () => {
-      render(<SpectrumSequentialColorScheme {...SpectrumSequentialColorScheme.args} />);
+      render(<Colors {...Colors.args} colors="sequentialCerulean5" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -182,7 +177,7 @@ describe('Chart', () => {
     });
 
     test('CSS colors renders correctly', async () => {
-      render(<CssColors {...CssColors.args} />);
+      render(<Colors {...Colors.args} colors={['purple', 'rgb(38, 142, 108)', '#0d66d0', 'hsl(32deg, 86%, 46%)']} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -195,7 +190,7 @@ describe('Chart', () => {
     });
 
     test('background color gets set', async () => {
-      render(<BackgroundColor {...BackgroundColor.args} />);
+      render(<BackgroundColor {...BackgroundColor.args} backgroundColor="gray-100" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -207,7 +202,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum diverging color scheme renders correctly', async () => {
-      render(<Spectrum2CategoricalColorScheme {...Spectrum2CategoricalColorScheme.args} />);
+      render(<Colors {...Colors.args} colors="s2Categorical12" />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -222,7 +217,7 @@ describe('Chart', () => {
     });
 
     test('Spectrum colors render correctly (light)', async () => {
-      render(<Spectrum2ColorNames {...Spectrum2ColorNames.args} />);
+      render(<Colors {...Colors.args} colors={['cinnamon-1200', 'cinnamon-1000', 'cinnamon-800', 'cinnamon-600']} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -237,7 +232,13 @@ describe('Chart', () => {
     });
 
     test('Spectrum colors render correctly (dark)', async () => {
-      render(<Spectrum2ColorNames {...Spectrum2ColorNames.args} colorScheme="dark" />);
+      render(
+        <Colors
+          {...Colors.args}
+          colors={['cinnamon-1200', 'cinnamon-1000', 'cinnamon-800', 'cinnamon-600']}
+          colorScheme="dark"
+        />
+      );
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
@@ -254,7 +255,7 @@ describe('Chart', () => {
 
   describe('State stories', () => {
     test('Empty state renders correctly', async () => {
-      const { container } = render(<EmptyState {...EmptyState.args} />);
+      const { container } = render(<EmptyStateText {...EmptyStateText.args} emptyStateText="No data found" />);
       const text = screen.getByText('No data found');
       expect(text).toBeInTheDocument();
       const icon = container.querySelector('svg.EmptyState-icon');
@@ -263,7 +264,7 @@ describe('Chart', () => {
     });
 
     test('Loading state renders correctly', async () => {
-      render(<LoadingState {...LoadingState.args} />);
+      render(<Loading {...Loading.args} />);
       const progressCircle = screen.getByRole('progressbar');
       expect(progressCircle).toBeInTheDocument();
     });
@@ -388,8 +389,8 @@ describe('Chart', () => {
       expect(inspectElement).toBeInTheDocument();
       if (!inspectElement) return;
 
-      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(187);
-      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(154);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(79);
     });
 
     test('should render the tooltip to the right of the mark if placement is right', async () => {
@@ -403,14 +404,14 @@ describe('Chart', () => {
       expect(inspectElement).toBeInTheDocument();
       if (!inspectElement) return;
 
-      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(225);
-      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(35);
+      expect(getPxValue(inspectElement.style.getPropertyValue('top'))).toBe(195);
+      expect(getPxValue(inspectElement.style.getPropertyValue('left'))).toBe(79);
     });
   });
 
   describe('HighlightedItem', () => {
     test('highlightedItem should be highlighted', async () => {
-      render(<HighlightedItem {...HighlightedItem.args} />);
+      render(<HighlightedItem {...HighlightedItem.args} highlightedItem={15} />);
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
       const bars = getAllMarksByGroupName(chart, 'bar0');

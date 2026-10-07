@@ -9,101 +9,29 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, useState } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/core-s2/constants';
-
 import { Chart } from '../../../../Chart.js';
-import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components/index.js';
+import { Axis, Legend, Line, LineDirectLabel } from '../../../../components/index.js';
 import useChartProps from '../../../../hooks/useChartProps.js';
-import { workspaceTrendsData } from '../../../../stories/data/data.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
-import { ChartProps } from '../../../../types/index.js';
-
-// Same as workspaceTrendsData but with "Add Line viz" adjusted to end at the same
-// y position as "Add Bar viz" (users ~3500 vs 3493), so its line terminates behind
-// the "Add Bar viz" label — a targeted test for highlight foreground behavior.
-const labelCollisionData = workspaceTrendsData.map((d) =>
-  d.series === 'Add Line viz' && d.datetime === 1668409200000 ? { ...d, users: 3500 } : d
-);
+import { visitsByChannelData } from '../../lineData.js';
+import { setArgTypes, setControls } from '../../lineStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Direct Label',
   component: LineDirectLabel,
-  argTypes: {
-    value: {
-      control: { type: 'select' },
-      options: ['last', 'average', 'series'],
-    },
-    position: {
-      control: { type: 'select' },
-      options: ['start', 'end'],
-    },
-    fontSize: { control: { type: 'number' } },
-  },
 };
 
-const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 100, maxWidth: 1000, height: 400, backgroundColor: 'gray-50' };
-
-const CHART_HEIGHT = 400;
-const MAX_WIDTH = CHART_SIZE_BREAKPOINTS.L + 200;
-const THUMB_HEIGHT = 32;
-
-const HANDLE_STYLES = `
-  .rsc-dl-size-handle {
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    border: none;
-    outline: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: ${CHART_HEIGHT}px;
-    pointer-events: none;
-    z-index: 20;
-  }
-  .rsc-dl-size-handle::-webkit-slider-runnable-track {
-    background: transparent;
-    height: ${CHART_HEIGHT}px;
-  }
-  .rsc-dl-size-handle::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 8px;
-    height: ${THUMB_HEIGHT}px;
-    border-radius: 4px;
-    background: #999;
-    cursor: ew-resize;
-    pointer-events: all;
-    margin-top: ${(CHART_HEIGHT - THUMB_HEIGHT) / 2}px;
-  }
-  .rsc-dl-size-handle::-moz-range-track { background: transparent; }
-  .rsc-dl-size-handle::-moz-range-thumb {
-    width: 8px;
-    height: ${THUMB_HEIGHT}px;
-    border-radius: 4px;
-    background: #999;
-    border: none;
-    cursor: ew-resize;
-  }
-`;
-
-const THRESHOLDS = [
-  { px: CHART_SIZE_BREAKPOINTS.M, label: 'M' },
-  { px: CHART_SIZE_BREAKPOINTS.L, label: 'L' },
-];
-
-// TEMPLATES
-
-const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+const DirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: visitsByChannelData, minWidth: 400, maxWidth: 800, height: 400 });
   return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Visits" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
+      <Line dimension="datetime" metric="visits" color="channel">
         <LineDirectLabel {...args} />
       </Line>
       <Legend highlight />
@@ -111,150 +39,34 @@ const LineDirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactEleme
   );
 };
 
-const LineDirectLabelWithInspectStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
+const Basic = bindWithProps(DirectLabelStory);
+Basic.args = {};
+setControls(Basic, []);
 
-const LineDirectLabelControlledHighlightStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, highlightedSeries: 'Add Freeform table' });
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
+const Value = bindWithProps(DirectLabelStory);
+Value.args = { value: 'series' };
+setControls(Value, ['value']);
+setArgTypes(Value, { value: { control: 'inline-radio', options: ['last', 'average', 'series'] } });
 
-const LineDirectLabelLabelCollisionStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps({ ...defaultChartProps, data: labelCollisionData });
-  return (
-    <Chart {...chartProps} debug>
-      <Axis position="left" grid title="Users" />
-      <Axis position="bottom" labelFormat="time" baseline ticks />
-      <Line dimension="datetime" metric="users" color="series" scaleType="time">
-        <LineDirectLabel {...args} />
-        <ChartInspect>{(datum: Record<string, string>) => <div>{datum.users}</div>}</ChartInspect>
-      </Line>
-      <Legend highlight />
-    </Chart>
-  );
-};
+const Position = bindWithProps(DirectLabelStory);
+Position.args = { position: 'start' };
+setControls(Position, ['position']);
+setArgTypes(Position, { position: { control: 'inline-radio', options: ['start', 'end'] } });
 
-const DirectLabelSizeScalingStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
-  const [width, setWidth] = useState(600);
+const Format = bindWithProps(DirectLabelStory);
+Format.args = { format: '.2s' };
+setControls(Format, ['format']);
 
-  let currentSize = 'L';
-  if (width < CHART_SIZE_BREAKPOINTS.M) currentSize = 'S';
-  else if (width < CHART_SIZE_BREAKPOINTS.L) currentSize = 'M';
+const Prefix = bindWithProps(DirectLabelStory);
+Prefix.args = { prefix: 'Last: ' };
+setControls(Prefix, ['prefix']);
 
-  return (
-    <div style={{ padding: '16px 0' }}>
-      <style>{HANDLE_STYLES}</style>
-      <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>
-        Width: <strong>{Math.round(width)}px</strong> — Size tier: <strong>{currentSize}</strong>
-      </div>
-      <div style={{ position: 'relative', minWidth: MAX_WIDTH }}>
-        {THRESHOLDS.map(({ px, label }) => (
-          <div
-            key={label}
-            style={{
-              position: 'absolute',
-              left: px,
-              top: 0,
-              bottom: 0,
-              width: 1,
-              background: 'rgba(220, 60, 60, 0.6)',
-              zIndex: 10,
-              pointerEvents: 'none',
-            }}
-          >
-            <span
-              style={{
-                position: 'absolute',
-                top: 2,
-                left: 3,
-                fontSize: 10,
-                color: 'rgba(220, 60, 60, 0.9)',
-                whiteSpace: 'nowrap',
-                lineHeight: 1,
-              }}
-            >
-              {label} ({px}px)
-            </span>
-          </div>
-        ))}
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <Chart {...chartProps} data={workspaceTrendsData} width={width} height={CHART_HEIGHT} debug> 
-            <Axis position="left" grid title="Users" />
-            <Axis position="bottom" labelFormat="time" baseline ticks />
-            <Line dimension="datetime" metric="users" color="series" scaleType="time">
-              <LineDirectLabel value="series" {...args} />
-            </Line>
-            <Legend highlight />
-          </Chart>
-          <input
-            type="range"
-            className="rsc-dl-size-handle"
-            aria-label="Chart width"
-            min={0}
-            max={MAX_WIDTH}
-            value={Math.round(width)}
-            onChange={(e) => setWidth(Math.max(100, Number(e.target.value)))}
-            style={{ width: MAX_WIDTH }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
+const ExcludeSeries = bindWithProps(DirectLabelStory);
+ExcludeSeries.args = { excludeSeries: ['Social'] };
+setControls(ExcludeSeries, ['excludeSeries']);
 
-const DirectLabelSizeScaling = DirectLabelSizeScalingStory;
+const FontSize = bindWithProps(DirectLabelStory);
+FontSize.args = { fontSize: 16 };
+setControls(FontSize, ['fontSize']);
 
-const DirectLabelDefault = bindWithProps(LineDirectLabelStory);
-DirectLabelDefault.args = { value: 'series' };
-
-const DirectLabelValueLast = bindWithProps(LineDirectLabelStory);
-DirectLabelValueLast.args = { value: 'last' };
-
-const DirectLabelValueAverage = bindWithProps(LineDirectLabelStory);
-DirectLabelValueAverage.args = { value: 'average' };
-
-const DirectLabelWithInspect = bindWithProps(LineDirectLabelWithInspectStory);
-DirectLabelWithInspect.args = { value: 'series' };
-
-const DirectLabelControlledHighlight = bindWithProps(LineDirectLabelControlledHighlightStory);
-DirectLabelControlledHighlight.args = { value: 'last' };
-
-const DirectLabelPositionStart = bindWithProps(LineDirectLabelStory);
-DirectLabelPositionStart.args = { value: 'series', position: 'start' };
-
-const DirectLabelLabelCollision = bindWithProps(LineDirectLabelLabelCollisionStory);
-DirectLabelLabelCollision.args = { value: 'series', excludeSeries: ['Add Line viz'] };
-
-export {
-  DirectLabelDefault,
-  DirectLabelValueLast,
-  DirectLabelValueAverage,
-  DirectLabelPositionStart,
-  DirectLabelWithInspect,
-  DirectLabelControlledHighlight,
-  DirectLabelLabelCollision,
-  DirectLabelSizeScaling,
-};
+export { Basic, Value, Position, Format, Prefix, ExcludeSeries, FontSize };

@@ -15,20 +15,14 @@ import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   findChart,
+  findMarksByGroupName,
   getAllLegendEntries,
-  getAllLegendSymbols,
   getAllMarksByGroupName,
   render,
   screen,
 } from '../test-utils/index.js';
 import '../test-utils/__mocks__/matchMedia.mock.js';
-import {
-  FunnelConversion,
-  FunnelTimeComparison,
-  TrendsTimeComparisonBar,
-  TrendsTimeComparisonStackedBar,
-  UserGrowthTimeComparisonBarGrowth,
-} from './ChartExamples.story.js';
+import { CheckoutErrorRateThresholds, EventTrendsPeriodComparison, FunnelConversion } from './ChartExamples.story.js';
 
 const colors = spectrum2Colors.light;
 
@@ -62,177 +56,56 @@ describe('Funnel stories', () => {
 });
 
 describe('Time comparison stories', () => {
-  describe('TrendsTimeComparisonBar', () => {
+  describe('EventTrendsPeriodComparison', () => {
     test('historical series should have special style', async () => {
-      render(<TrendsTimeComparisonBar {...TrendsTimeComparisonBar.args} />);
+      render(<EventTrendsPeriodComparison {...EventTrendsPeriodComparison.args} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 
       const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(112);
+      expect(bars).toHaveLength(16);
 
       testBarOpacity(bars[0], '0.5');
       testBarStroke(bars[0], '3,4', '1.5');
     });
 
     test('current series should have typical style', async () => {
-      render(<TrendsTimeComparisonBar {...TrendsTimeComparisonBar.args} />);
+      render(<EventTrendsPeriodComparison {...EventTrendsPeriodComparison.args} />);
 
       const chart = await findChart();
       expect(chart).toBeInTheDocument();
 
       const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(112);
+      expect(bars).toHaveLength(16);
 
       testBarOpacity(bars[1], '1');
       testBarStroke(bars[1], '', '1.5');
     });
   });
+});
 
-  describe('FunnelTimeComparison', () => {
-    test('historical series should have special style', async () => {
-      render(<FunnelTimeComparison {...FunnelTimeComparison.args} />);
+describe('CheckoutErrorRateThresholds', () => {
+  let chart: HTMLElement;
 
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
+  beforeEach(async () => {
+    render(<CheckoutErrorRateThresholds {...CheckoutErrorRateThresholds.args} />);
 
-      const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(24);
-
-      testBarOpacity(bars[0], '0.5');
-      testBarStroke(bars[0], '3,4', '1.5');
-
-      // dropoff bars
-      testBarOpacity(bars[2], '0.5');
-      testBarStroke(bars[2], '3,4', '1.5');
-    });
-
-    test('current series should have typical style', async () => {
-      render(<FunnelTimeComparison {...FunnelTimeComparison.args} />);
-
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-
-      const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(24);
-
-      testBarOpacity(bars[1], '1');
-      testBarStroke(bars[1], '', '1.5');
-
-      // dropoff bars
-      testBarOpacity(bars[3], '1');
-      testBarStroke(bars[3], '', '1.5');
-    });
-
-    test('legend symobls should be styled correctly', async () => {
-      render(<FunnelTimeComparison {...FunnelTimeComparison.args} />);
-
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-
-      const legendSymbols = getAllLegendSymbols(chart);
-
-      expect(legendSymbols).toHaveLength(4);
-
-      // fill-opacity
-      expect(legendSymbols[0]).toHaveAttribute('fill-opacity', '0.5');
-      expect(legendSymbols[1]).toHaveAttribute('fill-opacity', '1');
-
-      // stroke-dasharray
-      expect(legendSymbols[0]).toHaveAttribute('stroke-dasharray', '3,4');
-      expect(legendSymbols[1]).toHaveAttribute('stroke-dasharray', '');
-
-      // fill
-      expect(legendSymbols[0]).toHaveAttribute('fill', colors['categorical-100']);
-      expect(legendSymbols[2]).toHaveAttribute('fill', colors['categorical-200']);
-
-      // stroke
-      expect(legendSymbols[0]).toHaveAttribute('stroke', colors['categorical-100']);
-      expect(legendSymbols[2]).toHaveAttribute('stroke', colors['categorical-200']);
-    });
+    chart = await findChart();
+    expect(chart).toBeInTheDocument();
   });
 
-  describe('UserGrowthTimeComparison', () => {
-    test('has correct number of bars', async () => {
-      render(<UserGrowthTimeComparisonBarGrowth {...UserGrowthTimeComparisonBarGrowth.args} />);
+  test('should plot 3 reference lines with fixed S2 content neutral color', async () => {
+    const refLine0 = await findMarksByGroupName(chart, 'axis0ReferenceLine0', 'line');
+    expect(refLine0).toBeInTheDocument();
+    expect(refLine0).toHaveAttribute('stroke', colors['gray-800']);
 
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
+    const refLine1 = await findMarksByGroupName(chart, 'axis0ReferenceLine1', 'line');
+    expect(refLine1).toBeInTheDocument();
+    expect(refLine1).toHaveAttribute('stroke', colors['gray-800']);
 
-      const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(48);
-    });
-
-    test('historical series should have special style', async () => {
-      render(<UserGrowthTimeComparisonBarGrowth {...UserGrowthTimeComparisonBarGrowth.args} />);
-
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-
-      const bars = getAllMarksByGroupName(chart, 'bar0');
-
-      // previous period April
-      for (let i = 0; i <= 3; i++) {
-        testBarOpacity(bars[i], '0.5');
-        testBarStroke(bars[i], '3,4', '1.5');
-      }
-
-      // previous period May
-      for (let i = 8; i <= 11; i++) {
-        testBarOpacity(bars[i], '0.5');
-        testBarStroke(bars[i], '3,4', '1.5');
-      }
-    });
-
-    test('current series should have typical style', async () => {
-      render(<UserGrowthTimeComparisonBarGrowth {...UserGrowthTimeComparisonBarGrowth.args} />);
-
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-
-      const bars = getAllMarksByGroupName(chart, 'bar0');
-
-      // last period April
-      for (let i = 4; i <= 7; i++) {
-        testBarOpacity(bars[i], '1');
-        testBarStroke(bars[i], '', '1.5');
-      }
-
-      // last period May
-      for (let i = 12; i <= 15; i++) {
-        testBarOpacity(bars[i], '1');
-        testBarStroke(bars[i], '', '1.5');
-      }
-    });
+    const refLine2 = await findMarksByGroupName(chart, 'axis0ReferenceLine2', 'line');
+    expect(refLine2).toBeInTheDocument();
+    expect(refLine2).toHaveAttribute('stroke', colors['gray-800']);
   });
-
-  describe('TrendsTimeComparisonStackedBar', () => {
-    test('historical series should have special style', async () => {
-      render(<TrendsTimeComparisonStackedBar {...TrendsTimeComparisonStackedBar.args} />);
-
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-
-      const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(112);
-
-      testBarOpacity(bars[0], '0.5');
-      testBarStroke(bars[0], '3,4', '1.5');
-    });
-
-    test('current series should have typical style', async () => {
-      render(<TrendsTimeComparisonStackedBar {...TrendsTimeComparisonStackedBar.args} />);
-
-      const chart = await findChart();
-      expect(chart).toBeInTheDocument();
-
-      const bars = getAllMarksByGroupName(chart, 'bar0');
-      expect(bars).toHaveLength(112);
-
-      testBarOpacity(bars[1], '1');
-      testBarStroke(bars[1], '', '1.5');
-    });
-  });
-
 });

@@ -14,114 +14,71 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import useChartProps from '../hooks/useChartProps.js';
-import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../index.js';
+import { Axis, Chart, Legend, Line } from '../index.js';
+import { chartEngagementData, workspaceTrendsData } from '../storyShared/data/data.js';
 import { bindWithProps } from '../test-utils/index.js';
-import './Chart.story.css';
-import { ChartBarStory } from './ChartBarStory.js';
-import { ChartDynamicHeightBarStory } from './ChartDynamicHeightBarStory.js';
-import { data, workspaceTrendsData } from './data/data.js';
+import {
+  ChartBarInspectStory,
+  ChartBarStory,
+  ChartLineStory,
+  StoryWithParameters,
+  setControlInclude,
+} from './Chart/chartStoryTemplates.js';
 
 export default {
-  title: 'RSC/Chart',
+  title: 'React Spectrum Charts 2/Chart/Features',
   component: Chart,
-};
-
-const ChartLineStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  return (
-    <Chart {...props}>
-      <Axis position="bottom" baseline ticks />
-      <Axis position="left" grid />
-      <Line dimension="x" metric="y" color="series" scaleType="linear" />
-    </Chart>
-  );
 };
 
 const ChartTimeStory: StoryFn<typeof Chart> = (args): ReactElement => {
   const props = useChartProps(args);
   return (
-    <Chart {...props} width={500}>
-      <Axis position="bottom" baseline ticks labelFormat="time" />
-      <Axis position="left" grid numberFormat=",.2f" />
-      <Line dimension="datetime" metric="value" color="series" scaleType="time" />
-    </Chart>
-  );
-};
-
-const ChartBarInspectStory: StoryFn<typeof Chart> = (args): ReactElement => {
-  const props = useChartProps(args);
-  return (
     <Chart {...props}>
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid />
-      <Bar dimension="x" metric="y" color="series">
-        <ChartInspect>
-          {(datum) => (
-            <div className="bar-tooltip">
-              <div>x: {datum.x}</div>
-              <div>y: {datum.y}</div>
-            </div>
-          )}
-        </ChartInspect>
-      </Bar>
-      <Legend />
+      <Axis position="bottom" baseline ticks labelFormat="time" title="Day" />
+      <Axis position="left" grid numberFormat=",.2f" title="Events" />
+      <Line dimension="datetime" metric="value" color="series" scaleType="time" />
+      <Legend highlight />
     </Chart>
   );
 };
 
 const Basic = bindWithProps(ChartLineStory);
-Basic.args = { data };
+Basic.args = { data: chartEngagementData, description: 'Monthly accounts by lifecycle stage' };
+setControlInclude(Basic as StoryWithParameters, []);
 
 const BackgroundColor = bindWithProps(ChartLineStory);
-BackgroundColor.args = {
-  backgroundColor: 'gray-100',
-  padding: 32,
-  data,
-};
+BackgroundColor.args = { data: chartEngagementData, backgroundColor: 'gray-100' };
+setControlInclude(BackgroundColor as StoryWithParameters, ['backgroundColor']);
 
 const Config = bindWithProps(ChartBarStory);
 Config.args = {
-  config: {
-    rect: {
-      strokeWidth: 2,
-    },
-  },
-  data,
+  data: chartEngagementData,
+  config: { axis: { labelFontSize: 16, titleFontSize: 18, titleFontWeight: 'bold' } },
 };
+setControlInclude(Config as StoryWithParameters, ['config']);
+
+const EmptyStateText = bindWithProps(ChartBarStory);
+EmptyStateText.args = { data: [], height: 400, emptyStateText: 'No accounts match the selected filters' };
+setControlInclude(EmptyStateText as StoryWithParameters, ['emptyStateText']);
+
+const Loading = bindWithProps(ChartBarStory);
+Loading.args = { data: [], height: 400, loading: true };
+setControlInclude(Loading as StoryWithParameters, ['loading']);
 
 const Locale = bindWithProps(ChartTimeStory);
-Locale.args = {
-  locale: 'de-DE',
-  data: workspaceTrendsData,
-};
+Locale.args = { data: workspaceTrendsData, locale: 'de-DE', width: 600 };
+setControlInclude(Locale as StoryWithParameters, ['locale']);
 
-const Width = bindWithProps(ChartBarStory);
-Width.args = {
-  width: '50%',
-  minWidth: 300,
-  maxWidth: 600,
-  data,
-};
+const Renderer = bindWithProps(ChartLineStory);
+Renderer.args = { data: chartEngagementData, renderer: 'canvas' };
+setControlInclude(Renderer as StoryWithParameters, ['renderer']);
 
-const Height = bindWithProps(ChartDynamicHeightBarStory);
-Height.args = {
-  height: '50%',
-  minHeight: 300,
-  maxHeight: 600,
-  data,
-};
+const Title = bindWithProps(ChartLineStory);
+Title.args = { data: chartEngagementData, title: 'Accounts by lifecycle stage' };
+setControlInclude(Title as StoryWithParameters, ['title']);
 
 const TooltipAnchor = bindWithProps(ChartBarInspectStory);
-TooltipAnchor.args = {
-  tooltipAnchor: 'mark',
-  tooltipPlacement: 'top',
-  data,
-};
+TooltipAnchor.args = { data: chartEngagementData, tooltipAnchor: 'mark', tooltipPlacement: 'top' };
+setControlInclude(TooltipAnchor as StoryWithParameters, ['tooltipAnchor', 'tooltipPlacement']);
 
-const HighlightedItem = bindWithProps(ChartBarInspectStory);
-HighlightedItem.args = {
-  highlightedItem: 15,
-  data,
-};
-
-export { Basic, BackgroundColor, Config, Height, HighlightedItem, Locale, TooltipAnchor, Width };
+export { Basic, BackgroundColor, Config, EmptyStateText, Loading, Locale, Renderer, Title, TooltipAnchor };

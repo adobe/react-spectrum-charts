@@ -9,224 +9,69 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, useState } from 'react';
+import { ReactElement } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
-import { GROUP_DATA } from '@spectrum-charts/core-s2/constants';
-import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
-
 import { Chart } from '../../../Chart.js';
-import { Axis, Bar, ChartInspect } from '../../../components/index.js';
+import { Axis, Bar, ChartInspect, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { bindWithProps } from '../../../test-utils/index.js';
-import { BarProps } from '../../../types/index.js';
-import { barData, barDataWithUTC } from './data.js';
+import { acquisitionChannelData, monthlySignupsData } from '../../../storyShared/components/Bar/data.js';
+import { BarStory, defaultProps } from './barStoryTemplates.js';
+import { bindStory } from './storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
 };
 
-const BarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barDataWithUTC, width: 600, height: 600 });
+const MonthlyBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: monthlySignupsData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis
-        position={args.orientation === 'horizontal' ? 'left' : 'bottom'}
-        labelFormat="time"
-        granularity="day"
-        baseline
-        title="Browser"
-      />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Axis position="bottom" baseline labelFormat="time" granularity="month" title="Month" />
+      <Axis position="left" grid title="Sign-ups" />
       <Bar {...args} />
+      <Legend title="Metric" />
     </Chart>
   );
 };
 
-const OnMouseInputsStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const [hoveredData, setHoveredData] = useState<Datum | null>(null);
-  const [isHovering, setIsHovering] = useState(false);
-
-  const controlledMouseOver = (datum: Datum) => {
-    if (!isHovering) {
-      setHoveredData(datum);
-      setIsHovering(true);
-    }
-  };
-  const controlledMouseOut = () => {
-    if (isHovering) {
-      setIsHovering(false);
-    }
-  };
-
-  const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
-  return (
-    <div>
-      <div data-testid="hover-info">
-        {isHovering && hoveredData ? (
-          <div data-testid="hover-data">{JSON.stringify(hoveredData, null, 2)}</div>
-        ) : (
-          <div data-testid="no-hover">No bar hovered</div>
-        )}
-      </div>
-      <Chart {...chartProps}>
-        <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-        <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-        <Bar {...args} onMouseOver={controlledMouseOver} onMouseOut={controlledMouseOut} />
-      </Chart>
-    </div>
-  );
-};
-
-const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
+const ChartInspectStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: acquisitionChannelData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args} />
-    </Chart>
-  );
-};
-
-const BarWithInspectStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Axis position="bottom" baseline title="Acquisition channel" />
+      <Axis position="left" grid title="Sign-ups" />
       <Bar {...args}>
         <ChartInspect>
-          {(datum) => {
-            return (
-              <div>
-                {datum.browser}: {datum.downloads}
-              </div>
-            );
-          }}
+          {(datum) => (
+            <div>
+              {datum.channel}: {Number(datum.signups).toLocaleString()} sign-ups
+            </div>
+          )}
         </ChartInspect>
       </Bar>
+      <Legend title="Metric" />
     </Chart>
   );
 };
 
-const BarDimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barData, width: 600, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args}>
-        <ChartInspect targets={['item', 'dimensionArea']}>
-          {(datum) => {
-            const d = datum[GROUP_DATA]?.[0] ?? datum;
-            return (
-              <div>
-                {d.browser}: {d.downloads}
-              </div>
-            );
-          }}
-        </ChartInspect>
-      </Bar>
-    </Chart>
-  );
-};
+const Basic = bindStory(BarStory);
+Basic.args = { ...defaultProps };
+Basic.parameters = { controls: { include: ['dimension', 'metric', 'color'] } };
 
-const defaultProps: BarProps = {
-  dimension: 'browser',
-  metric: 'downloads',
-  onClick: undefined,
-};
+const Orientation = bindStory(BarStory);
+Orientation.args = { ...defaultProps, orientation: 'horizontal' };
+Orientation.parameters = { controls: { include: ['orientation'] } };
 
-const Basic = bindWithProps(BarStory);
-Basic.args = {
-  ...defaultProps,
-};
+const DimensionDataType = bindStory(MonthlyBarStory);
+DimensionDataType.args = { ...defaultProps, dimension: 'month', dimensionDataType: 'time' };
+DimensionDataType.parameters = { controls: { include: ['dimensionDataType'] } };
 
-const Horizontal = bindWithProps(BarStory);
-Horizontal.args = {
-  ...defaultProps,
-  orientation: 'horizontal',
-};
+// Hovering a bar or its axis label highlights the bar and shows the tooltip.
+const ChartInspectOnBar = bindStory(ChartInspectStory);
+ChartInspectOnBar.args = { ...defaultProps };
+ChartInspectOnBar.parameters = { controls: { include: [] } };
 
-const LineType = bindWithProps(BarStory);
-LineType.args = {
-  ...defaultProps,
-  opacity: { value: 0.75 },
-  lineType: { value: 'dashed' },
-  lineWidth: 2,
-};
-
-const Opacity = bindWithProps(BarStory);
-Opacity.args = {
-  ...defaultProps,
-  opacity: { value: 0.75 },
-};
-
-const PaddingRatio = bindWithProps(BarStory);
-PaddingRatio.args = {
-  ...defaultProps,
-  paddingRatio: 0.2,
-};
-
-const HasSquareCorners = bindWithProps(BarStory);
-HasSquareCorners.args = {
-  ...defaultProps,
-  hasSquareCorners: true,
-};
-
-const OnClick = bindWithProps(BarStory);
-OnClick.args = {
-  dimension: 'browser',
-  metric: 'downloads',
-  onClick: action('onClick'),
-};
-
-const OnMouseInputs = bindWithProps(OnMouseInputsStory);
-OnMouseInputs.args = {
-  dimension: 'browser',
-  metric: 'downloads',
-};
-
-const BarWithUTCDatetimeFormat = bindWithProps(BarStoryWithUTCData);
-BarWithUTCDatetimeFormat.args = {
-  ...defaultProps,
-  dimension: 'browser',
-  metric: 'downloads',
-  color: 'dataset_id',
-  dimensionDataType: 'time',
-};
-
-const WithInspect = bindWithProps(BarWithInspectStory);
-WithInspect.args = {
-  ...defaultProps,
-};
-
-const InspectOnDimensionArea = bindWithProps(BarDimensionAreaStory);
-InspectOnDimensionArea.args = {
-  ...defaultProps,
-};
-
-// Hovering an axis label highlights the matching bar, same as hovering the bar itself.
-const AxisLabelHighlight = bindWithProps(BarWithInspectStory);
-AxisLabelHighlight.args = {
-  ...defaultProps,
-};
-
-export {
-  BarWithUTCDatetimeFormat,
-  Basic,
-  HasSquareCorners,
-  Horizontal,
-  LineType,
-  OnClick,
-  OnMouseInputs,
-  Opacity,
-  PaddingRatio,
-  InspectOnDimensionArea,
-  AxisLabelHighlight,
-  WithInspect,
-};
+export { Basic, Orientation, DimensionDataType, ChartInspectOnBar as ChartInspect };

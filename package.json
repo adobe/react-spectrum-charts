@@ -87,6 +87,8 @@
     "storybook": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6009",
     "storybook:s2": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6010 --config-dir .storybook-s2",
     "build:storybook:s2": "storybook build --config-dir .storybook-s2 -o ./dist-storybook-s2 --quiet",
+    "storybook:s2:dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider && storybook dev -p 6011 --config-dir .storybook-s2-dev",
+    "build:storybook:s2:dev": "storybook build --config-dir .storybook-s2-dev -o ./dist-storybook-s2-dev --quiet",
     "test": "cross-env TZ=UTC BABEL_ENV=test jest",
     "test:quiet": "cross-env TZ=UTC BABEL_ENV=test jest --coverage=false",
     "watch": "cross-env TZ=UTC BABEL_ENV=test jest --watch",

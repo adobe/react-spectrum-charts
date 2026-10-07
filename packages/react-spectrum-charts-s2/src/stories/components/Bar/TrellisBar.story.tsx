@@ -9,131 +9,87 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { MARK_ID } from '@spectrum-charts/core-s2/constants';
-import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
+import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components/index.js';
+import { Axis, Bar, ChartInspect, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { bindWithProps } from '../../../test-utils/index.js';
+import { frequencyOfUseData } from '../../../storyShared/components/Bar/data.js';
 import { BarProps } from '../../../types/index.js';
-import { generateMockDataForTrellis } from './data.js';
+import { bindStory } from './storyUtils.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Bar/Features/Trellis',
+  title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
 };
 
-const colors: SpectrumColor[] = [
-  'categorical-100',
-  'categorical-200',
-  'categorical-300',
-  'categorical-400',
-  'categorical-500',
-  'categorical-600',
-  'categorical-700',
-];
+// Folds the 11-15 bucket into "6+ times" so the smaller events don't stack into thin slivers on the shared scale.
+const usageData = Object.values(
+  frequencyOfUseData.reduce<Record<string, (typeof frequencyOfUseData)[number]>>((usage, datum) => {
+    const bucket = datum.order === 0 ? datum.bucket : '6+ times';
+    const key = [datum.event, datum.segment, bucket].join('|');
+    const value = (usage[key]?.value ?? 0) + datum.value;
+    usage[key] = { ...datum, bucket, order: Math.min(datum.order, 1), value };
+    return usage;
+  }, {})
+);
 
-const BarStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
+// Stacking the trellis cells vertically splits the height three ways, so show fewer platforms and a taller chart.
+const topPlatformsData = usageData.filter(({ segment }) => ['All users', 'Roku', 'Chromecast'].includes(segment));
+
+const TrellisStory: StoryFn<typeof Bar> = (args: BarProps): ReactElement => {
+  const isHorizontal = args.orientation === 'horizontal';
+  const isVerticalTrellis = args.trellisOrientation === 'vertical';
   const chartProps = useChartProps({
-    data: generateMockDataForTrellis({
-      property1: ['All users', 'Roku', 'Chromecast', 'Amazon Fire', 'Apple TV'],
-      property2: ['A. Sign up', 'B. Watch a video', 'C. Add to MyList'],
-      property3: ['1-5 times', '6-10 times', '11-15 times', '16-20 times', '21-25 times', '26+ times'],
-      propertyNames: ['segment', 'event', 'bucket'],
-      randomizeSteps: false,
-      orderBy: 'bucket',
-    }),
-    colors,
-    width: 800,
-    height: 800,
+    data: isVerticalTrellis ? topPlatformsData : usageData,
+    width: 760,
+    height: isVerticalTrellis ? 600 : 480,
   });
-
-  const dialog = (item: Datum) => {
-    return (
-      <div>
-        <span>{item[MARK_ID]}</span>
-      </div>
-    );
-  };
 
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} title="Users, Count" grid />
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} title="Platform" baseline />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} title="Users" grid />
+      <Axis position={isHorizontal ? 'left' : 'bottom'} title="Platform" baseline />
       <Bar {...args}>
-        <ChartInspect>{dialog}</ChartInspect>
-        <ChartPopover>{dialog}</ChartPopover>
+        <ChartInspect>
+          {(item: Datum) => (
+            <div>
+              <div>{item.event}</div>
+              <div>
+                {item.segment}, {item.bucket}: {Number(item.value).toLocaleString()} users
+              </div>
+            </div>
+          )}
+        </ChartInspect>
       </Bar>
-      <Legend />
+      <Legend title="Usage frequency" />
     </Chart>
   );
 };
 
-const Dodged = bindWithProps<BarProps>(BarStory);
-Dodged.args = {
-  type: 'dodged',
-  dimension: 'segment',
-  onClick: undefined,
-  order: 'order',
-  color: 'bucket',
-  trellis: 'event',
-  trellisOrientation: 'horizontal',
-  orientation: 'horizontal',
-};
-
-const HorizontalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
-HorizontalBarHorizontalTrellis.storyName = 'Horizontal Bar, Horizontal Trellis';
-HorizontalBarHorizontalTrellis.args = {
+const defaultProps: BarProps = {
   type: 'stacked',
   trellis: 'event',
   dimension: 'segment',
-  onClick: undefined,
   color: 'bucket',
   order: 'order',
   orientation: 'horizontal',
-  trellisOrientation: 'horizontal',
 };
 
-const HorizontalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
-HorizontalBarVerticalTrellis.storyName = 'Horizontal Bar, Vertical Trellis';
-HorizontalBarVerticalTrellis.args = {
-  ...HorizontalBarHorizontalTrellis.args,
-  trellisOrientation: 'vertical',
-};
+const Trellis = bindStory<BarProps>(TrellisStory);
+Trellis.args = { ...defaultProps };
+Trellis.parameters = { controls: { include: ['trellis'] } };
 
-const VerticalBarHorizontalTrellis = bindWithProps<BarProps>(BarStory);
-VerticalBarHorizontalTrellis.storyName = 'Vertical Bar, Horizontal Trellis';
-VerticalBarHorizontalTrellis.args = {
-  ...HorizontalBarHorizontalTrellis.args,
-  orientation: 'vertical',
-  trellisOrientation: 'horizontal',
-};
+const TrellisOrientation = bindStory<BarProps>(TrellisStory);
+TrellisOrientation.args = { ...defaultProps, trellisOrientation: 'vertical' };
+TrellisOrientation.parameters = { controls: { include: ['trellisOrientation'] } };
 
-const VerticalBarVerticalTrellis = bindWithProps<BarProps>(BarStory);
-VerticalBarVerticalTrellis.storyName = 'Vertical Bar, Vertical Trellis';
-VerticalBarVerticalTrellis.args = {
-  ...HorizontalBarVerticalTrellis.args,
-  orientation: 'vertical',
-  trellisOrientation: 'vertical',
-};
+const TrellisPadding = bindStory<BarProps>(TrellisStory);
+TrellisPadding.args = { ...defaultProps, trellisPadding: 0.5 };
+TrellisPadding.parameters = { controls: { include: ['trellisPadding'] } };
 
-const WithCustomTrellisPadding = bindWithProps<BarProps>(BarStory);
-WithCustomTrellisPadding.args = {
-  ...HorizontalBarVerticalTrellis.args,
-  orientation: 'vertical',
-  trellisPadding: 0.33,
-};
-
-export {
-  Dodged,
-  HorizontalBarHorizontalTrellis,
-  HorizontalBarVerticalTrellis,
-  VerticalBarHorizontalTrellis,
-  VerticalBarVerticalTrellis,
-  WithCustomTrellisPadding,
-};
+export { Trellis, TrellisOrientation, TrellisPadding };

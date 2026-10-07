@@ -11,158 +11,46 @@
  */
 import { ReactElement } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
-import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
-
 import { Chart } from '../../../Chart.js';
-import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
+import { Axis, Bar, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { bindWithProps } from '../../../test-utils/index.js';
+import { channelDeviceData } from '../../../storyShared/components/Bar/data.js';
 import { BarProps } from '../../../types/index.js';
-import { DimensionAreaStory } from './SharedBarStories.js';
-import { barSeriesData, negativeBarSeriesData, stackedBarDataWithUTC } from './data.js';
+import { bindStory } from './storyUtils.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Bar/Features/Stacked Bar',
+  title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
 };
 
-const colors: SpectrumColor[] = [
-  'categorical-100',
-  'categorical-200',
-  'categorical-300',
-  'categorical-400',
-];
-
-const StackedBarStoryWithUTCData: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: stackedBarDataWithUTC, width: 600, height: 600 });
+const StackedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const isHorizontal = args.orientation === 'horizontal';
+  const chartProps = useChartProps({ data: channelDeviceData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis
-        position={args.orientation === 'horizontal' ? 'left' : 'bottom'}
-        labelFormat="time"
-        granularity="day"
-        baseline
-        title="Browser"
-      />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Acquisition channel" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Sign-ups" />
       <Bar {...args} />
-    </Chart>
-  );
-};
-
-const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args} />
-      <Legend title="Operating system" />
-    </Chart>
-  );
-};
-
-const NegativeBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: negativeBarSeriesData, width: 800, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args} />
-      <Legend title="Operating system" />
-    </Chart>
-  );
-};
-
-const dialogContent = (datum) => (
-  <div>
-    <div>Operating system: {datum.operatingSystem}</div>
-    <div>Browser: {datum.browser}</div>
-    <div>Downloads: {datum.value}</div>
-  </div>
-);
-
-const StackedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, colors, width: 800, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args}>
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover width={200}>{dialogContent}</ChartPopover>
-      </Bar>
-      <Legend title="Operating system" />
+      <Legend title="Device" highlight />
     </Chart>
   );
 };
 
 const defaultProps: BarProps = {
-  dimension: 'browser',
-  order: 'order',
-  color: 'operatingSystem',
-  onClick: undefined,
+  type: 'stacked',
+  dimension: 'channel',
+  metric: 'signups',
+  color: 'device',
 };
 
-const Basic = bindWithProps(BarStory);
-Basic.args = {
-  ...defaultProps,
-};
+const Stacked = bindStory(StackedBarStory);
+Stacked.args = { ...defaultProps };
+Stacked.parameters = { controls: { include: ['type'] } };
 
-const Popover = bindWithProps(StackedBarPopoverStory);
-Popover.args = {
-  ...defaultProps,
-};
+const Order = bindStory(StackedBarStory);
+Order.args = { ...defaultProps, order: 'order' };
+Order.parameters = { controls: { include: ['order'] } };
 
-const WithBarLabels = bindWithProps(BarStory);
-WithBarLabels.args = {
-  ...defaultProps,
-  // Annotation component removed from S2
-};
-
-const NegativeStack = bindWithProps(NegativeBarStory);
-NegativeStack.args = {
-  ...defaultProps,
-};
-
-const OnClick = bindWithProps(BarStory);
-OnClick.args = {
-  dimension: 'browser',
-  order: 'order',
-  color: 'operatingSystem',
-  onClick: action('onClick'),
-};
-
-const StackedBarWithUTCDatetimeFormat = bindWithProps(StackedBarStoryWithUTCData);
-StackedBarWithUTCDatetimeFormat.args = {
-  ...defaultProps,
-  dimension: 'browser',
-  metric: 'downloads',
-  color: 'dataset_id',
-  dimensionDataType: 'time',
-};
-
-const InspectOnDimensionArea = bindWithProps(DimensionAreaStory);
-InspectOnDimensionArea.args = {
-  ...defaultProps,
-};
-
-// Hovering an axis label highlights the matching stack, same as hovering the stack itself.
-const AxisLabelHighlight = bindWithProps(StackedBarPopoverStory);
-AxisLabelHighlight.args = {
-  ...defaultProps,
-};
-
-export {
-  Basic,
-  NegativeStack,
-  OnClick,
-  Popover,
-  StackedBarWithUTCDatetimeFormat,
-  InspectOnDimensionArea,
-  AxisLabelHighlight,
-  WithBarLabels,
-};
+export { Stacked, Order };

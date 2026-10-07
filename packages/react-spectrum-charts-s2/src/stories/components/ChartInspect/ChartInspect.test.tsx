@@ -26,7 +26,7 @@ import {
   within,
 } from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { DodgedBarChart, LineChart, StackedBarChart } from './ChartInspect.story.js';
+import { Basic, HighlightBy, OnLine } from './ChartInspect.story.js';
 
 describe('ChartInspect', () => {
   // ChartInspect is not a real React component. This test provides coverage for sonarqube.
@@ -35,7 +35,7 @@ describe('ChartInspect', () => {
   });
 
   test('StackedBarChart renders properly', async () => {
-    render(<StackedBarChart {...StackedBarChart.args} />);
+    render(<Basic {...Basic.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -53,7 +53,7 @@ describe('ChartInspect', () => {
   });
 
   test('Line renders properly and hover works as expected', async () => {
-    render(<LineChart {...LineChart.args} />);
+    render(<OnLine {...OnLine.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -75,7 +75,7 @@ describe('ChartInspect', () => {
   });
 
   test('Dodged bar inspect opens on hover and bar is highlighted correctly', async () => {
-    render(<DodgedBarChart {...DodgedBarChart.args} />);
+    render(<HighlightBy {...HighlightBy.args} highlightBy="item" />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();

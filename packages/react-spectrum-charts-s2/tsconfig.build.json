@@ -9,5 +9,5 @@
     "declarationMap": false,
     "types": []
   },
-  "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/*.story.tsx", "**/stories/**", "**/test-utils/**"]
+  "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/*.story.tsx", "**/stories/**", "**/storyShared/**", "**/dev/**", "**/test-utils/**"]
 }

@@ -11,160 +11,79 @@
  */
 import { ReactElement } from 'react';
 
-import { action } from 'storybook/actions';
 import { StoryFn } from '@storybook/react';
 
-import { s2Categorical6 } from '@spectrum-charts/core-s2/tokens';
+import { SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components/index.js';
+import { Axis, Bar, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { bindWithProps } from '../../../test-utils/index.js';
+import { channelDeviceData, channelDeviceVisitorData } from '../../../storyShared/components/Bar/data.js';
 import { BarProps } from '../../../types/index.js';
-import { DimensionAreaStory } from './SharedBarStories.js';
-import { barSeriesData, barSubSeriesData } from './data.js';
+import { bindStory } from './storyUtils.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Bar/Features/Dodged Bar',
+  title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
 };
 
+// Two devices per channel keeps the dodged bars wide.
+const desktopMobileData = channelDeviceData.filter(({ device }) => device !== 'Tablet');
+
 const DodgedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const { color } = args;
-  const colors = Array.isArray(color)
-    ? [
-        ['categorical-700', 'categorical-1000'],
-        ['categorical-400', 'categorical-500'],
-        ['categorical-300', 'categorical-1100'],
-      ]
-    : s2Categorical6;
-  const data = Array.isArray(color) ? barSubSeriesData : barSeriesData;
-  const chartProps = useChartProps({ data, width: 800, height: 600, colors });
+  const isHorizontal = args.orientation === 'horizontal';
+  const chartProps = useChartProps({ data: desktopMobileData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Acquisition channel" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Sign-ups" />
       <Bar {...args} />
-      <Legend title="Operating system" highlight />
+      <Legend title="Device" highlight />
     </Chart>
   );
 };
 
-const dialogContent = (datum) => (
-  <div>
-    <div>Operating system: {datum.operatingSystem}</div>
-    <div>Browser: {datum.browser}</div>
-    <div>Users: {datum.value}</div>
-  </div>
-);
+// One color pair per device: [new visitors, returning visitors].
+const deviceVisitorColors: SpectrumColor[][] = [
+  ['blue-900', 'blue-500'],
+  ['fuchsia-900', 'fuchsia-500'],
+];
 
-const DodgedBarPopoverStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
+const DodgedStackedBarStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    data: channelDeviceVisitorData,
+    colors: deviceVisitorColors,
+    width: 640,
+    height: 400,
+  });
   return (
     <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
-      <Bar {...args}>
-        <ChartInspect>{dialogContent}</ChartInspect>
-        <ChartPopover width={200}>{dialogContent}</ChartPopover>
-      </Bar>
-      <Legend title="Operating system" highlight />
-    </Chart>
-  );
-};
-
-const DodgedBarLineTypeStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });
-  return (
-    <Chart {...chartProps}>
-      <Axis position={args.orientation === 'horizontal' ? 'left' : 'bottom'} baseline title="Browser" />
-      <Axis position={args.orientation === 'horizontal' ? 'bottom' : 'left'} grid title="Downloads" />
+      <Axis position="bottom" baseline title="Acquisition channel" />
+      <Axis position="left" grid title="Sessions" />
       <Bar {...args} />
-      <Legend title="Operating system" opacity={{ value: 0.2 }} />
+      <Legend title="Device and visitor type" highlight />
     </Chart>
   );
 };
 
 const defaultProps: BarProps = {
   type: 'dodged',
-  dimension: 'browser',
-  onClick: undefined,
+  dimension: 'channel',
+  metric: 'signups',
+  color: 'device',
 };
 
-const Color = bindWithProps(DodgedBarStory);
-Color.args = {
-  ...defaultProps,
-  order: 'order',
-  color: 'operatingSystem',
-};
+const Dodged = bindStory(DodgedBarStory);
+Dodged.args = { ...defaultProps };
+Dodged.parameters = { controls: { include: ['type'] } };
 
-const DodgedStacked = bindWithProps(DodgedBarStory);
-DodgedStacked.args = {
-  ...defaultProps,
-  color: ['operatingSystem', 'version'],
-};
+const GroupedPadding = bindStory(DodgedBarStory);
+GroupedPadding.args = { ...defaultProps, groupedPadding: 0 };
+GroupedPadding.parameters = { controls: { include: ['groupedPadding'] } };
 
-const LineType = bindWithProps(DodgedBarLineTypeStory);
-LineType.args = {
-  ...defaultProps,
-  order: 'order',
-  lineType: 'operatingSystem',
-  lineWidth: 2,
-  opacity: { value: 0.2 },
-};
+// A two-key color facet dodges by the first key and stacks by the second.
+const DodgedStacked = bindStory(DodgedStackedBarStory);
+DodgedStacked.args = { type: 'dodged', dimension: 'channel', metric: 'sessions', color: ['device', 'visitor'] };
+DodgedStacked.parameters = { controls: { include: [] } };
 
-const Opacity = bindWithProps(DodgedBarStory);
-Opacity.args = {
-  ...defaultProps,
-  order: 'order',
-  opacity: 'operatingSystem',
-};
-
-const Popover = bindWithProps(DodgedBarPopoverStory);
-Popover.args = {
-  ...defaultProps,
-  order: 'order',
-  color: 'operatingSystem',
-};
-
-const DodgedStackedWithLabels = bindWithProps(DodgedBarStory);
-DodgedStackedWithLabels.args = {
-  ...defaultProps,
-  color: ['operatingSystem', 'version'],
-  // Annotation component removed from S2
-  paddingRatio: 0.1,
-};
-
-const OnClick = bindWithProps(DodgedBarStory);
-OnClick.args = {
-  type: 'dodged',
-  dimension: 'browser',
-  order: 'order',
-  color: 'operatingSystem',
-  onClick: action('onClick'),
-};
-
-const InspectOnDimensionArea = bindWithProps(DimensionAreaStory);
-InspectOnDimensionArea.args = {
-  ...defaultProps,
-  color: 'operatingSystem',
-};
-
-// Hovering an axis label highlights the matching dodged group, same as hovering the group itself.
-const AxisLabelHighlight = bindWithProps(DodgedBarPopoverStory);
-AxisLabelHighlight.args = {
-  ...defaultProps,
-  color: 'operatingSystem',
-};
-
-export {
-  Color,
-  DodgedStacked,
-  DodgedStackedWithLabels,
-  LineType,
-  OnClick,
-  Opacity,
-  Popover,
-  InspectOnDimensionArea,
-  AxisLabelHighlight,
-};
+export { Dodged, GroupedPadding, DodgedStacked };

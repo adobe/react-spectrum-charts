@@ -248,7 +248,7 @@ as the time/linear path does) — `getDrawInDataSourceName` tells `getLineDrawIn
 
 ## 6. Storybook coverage
 
-`packages/react-spectrum-charts-s2/src/stories/Line/Features/DrawInAnimation/LineDrawInAnimation.story.tsx`
+`packages/react-spectrum-charts-s2/src/dev/Line/Performance/DrawInAnimation/LineDrawInAnimation.story.tsx`
 exposes `animations` (master switch) and `animationTypes` (a check-control for `'hover'`/`'drawIn'`) as
 direct Storybook controls, with stories for: baseline
 time scale, linear scale, point scale (numeric dimension — uses the same single-field path as linear,

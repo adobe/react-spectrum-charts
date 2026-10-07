@@ -11,7 +11,7 @@
  */
 import { Area } from '../../pre-alpha/components/Area/index.js';
 import { findChart, render } from '../../test-utils/index.js';
-import { Basic } from './Features/AreaBasic.story.js';
+import { Basic } from './Features/AreaFeatures.story.js';
 
 describe('Area', () => {
   // Area is not a real React component. This test just provides test coverage for sonarqube
@@ -21,6 +21,12 @@ describe('Area', () => {
 
   test('Basic renders properly', async () => {
     render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    expect(chart).toBeInTheDocument();
+  });
+
+  test('renders with the default color when color is not set', async () => {
+    render(<Basic {...Basic.args} color={undefined} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
   });

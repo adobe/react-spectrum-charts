@@ -39,6 +39,9 @@ jobs:
       - name: Build S2 Storybook
         run: yarn build:storybook:s2
 
+      - name: Build S2 Dev Storybook
+        run: yarn build:storybook:s2:dev
+
       - name: Build S2 Docs
         run: yarn build:docs:s2
 
@@ -60,6 +63,11 @@ jobs:
         run: |
           mkdir -p s2
           cp -r dist-storybook-s2/* s2/
+
+      - name: Copy S2 Dev Storybook to 's2/dev/' on 'gh-pages' branch
+        run: |
+          mkdir -p s2/dev
+          cp -r dist-storybook-s2-dev/* s2/dev/
 
       - name: Copy S2 docs to 's2/docs/' on 'gh-pages' branch
         run: |

@@ -9,188 +9,51 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
-
-import { View } from '@adobe/react-spectrum';
-import { StoryFn } from '@storybook/react';
-
-import { Chart } from '../../../Chart.js';
-import { Axis, ChartPopover, Legend, Line } from '../../../components/index.js';
-import useChartProps from '../../../hooks/useChartProps.js';
+import { ChartPopover, Legend } from '../../../components/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
-import { LegendBarStory, LegendDisconnectedStory, LegendLineStory, defaultProps } from './LegendStoryUtils.js';
-
-const WEEK_DATETIMES = [
-  1780293600000, 1780380000000, 1780466400000, 1780552800000,
-  1780639200000, 1780725600000, 1780812000000,
-];
-
-const fiveSeriesNames = ['CJA Users', 'Accounts', 'Events', 'Page Views', 'Sessions'];
-const legendColumns5SeriesData = fiveSeriesNames.flatMap((series, si) =>
-  WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 180, series }))
-);
-
-const longLabelSeriesNames = [
-  'Users',
-  'Events',
-  'Conversion Rate From All Marketing Channel Sources',
-];
-const legendColumnsLongLabelData = longLabelSeriesNames.flatMap((series, si) =>
-  WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 1200 + di * 150, series }))
-);
-
-const twentySeriesNames = [
-  'DAU', 'MAU', 'CTR', 'CVR', 'Sessions',
-  'Accounts', 'Visitors', 'Pageviews', 'New Users', 'Returning',
-  'Unique Visitors', 'Time on Page', 'Bounce Rate', 'Revenue', 'Avg Session',
-  'Cart Abandonment', 'Email Open Rate', 'Customer LTV', 'Revenue Per Visit', 'Mobile Sessions',
-];
-const legendColumns20SeriesData = twentySeriesNames.flatMap((series, si) =>
-  WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 500 + si * 250 + di * 80, series }))
-);
-
-const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<typeof Legend> => {
-  const ResizableLegendLineStory: StoryFn<typeof Legend> = (args): ReactElement => {
-    const chartProps = useChartProps({ data, width: 'auto', height: '100%', padding: 2 });
-    return (
-      <View
-        backgroundColor="gray-50"
-        overflow="auto"
-        width={700}
-        minWidth={200}
-        maxWidth={1400}
-        height={350}
-        minHeight={200}
-        maxHeight={600}
-        borderColor="gray-400"
-        borderWidth="thick"
-        UNSAFE_style={{ resize: 'both' }}
-      >
-        <Chart {...chartProps}>
-          <Axis position="left" grid />
-          <Axis position="bottom" labelFormat="time" baseline ticks />
-          <Line color="series" dimension="datetime" metric="value" scaleType="time" />
-          <Legend {...args} />
-        </Chart>
-      </View>
-    );
-  };
-  return ResizableLegendLineStory;
-};
+import { RevenueStory, TrafficStory, controls } from './legendStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Features',
   component: Legend,
-};
-
-const Basic = bindWithProps(LegendBarStory);
-Basic.args = { ...defaultProps };
-
-const descriptions = [
-  {
-    seriesName: 'Windows',
-    description: 'Most popular operating system, especially in business',
+  argTypes: {
+    align: { control: 'inline-radio', options: ['start', 'middle', 'end'] },
+    position: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
   },
-  { seriesName: 'Mac', description: 'Popular for content creation, home and development' },
-  { seriesName: 'Other', description: 'Linux accounts for the majority of "other" operating systems' },
-];
-
-const Descriptions = bindWithProps(LegendBarStory);
-Descriptions.args = { descriptions, ...defaultProps };
-
-const Disconnected = bindWithProps(LegendDisconnectedStory);
-Disconnected.args = { ...defaultProps, color: 'series' };
-
-const legendLabels = [
-  { seriesName: 'Windows', label: 'Custom Windows' },
-  { seriesName: 'Mac', label: 'Custom Mac' },
-  { seriesName: 'Other', label: 'Custom Other' },
-];
-
-const truncatedLegendLabels = [
-  { seriesName: 'Windows', label: 'Very long Windows label that will be truncated without a custom labelLimit' },
-  { seriesName: 'Mac', label: 'Very long Mac label that will be truncated without a custom labelLimit' },
-  { seriesName: 'Other', label: 'Very long Other label that will be truncated without a custom labelLimit' },
-];
-
-const Labels = bindWithProps(LegendBarStory);
-Labels.args = { legendLabels, highlight: true, ...defaultProps };
-
-const LabelLimit = bindWithProps(LegendBarStory);
-LabelLimit.args = { legendLabels: truncatedLegendLabels, ...defaultProps };
-
-const TitleLimit = bindWithProps(LegendBarStory);
-TitleLimit.args = {
-  title: 'Very long legend title that should be truncated',
-  titleLimit: 250,
-  ...defaultProps,
 };
 
-const OnClick = bindWithProps(LegendBarStory);
-OnClick.args = {};
+const Basic = bindWithProps(TrafficStory);
+Basic.args = {};
+Object.assign(Basic, controls());
 
-const Popover = bindWithProps(LegendBarStory);
+const Position = bindWithProps(TrafficStory);
+Position.args = { position: 'right' };
+Object.assign(Position, controls('position'));
+
+const Align = bindWithProps(TrafficStory);
+Align.args = { align: 'start' };
+Object.assign(Align, controls('align'));
+
+// Only the `region` facet is listed; line type still distinguishes this year from last year.
+const Keys = bindWithProps(RevenueStory);
+Keys.args = { keys: ['region'] };
+Object.assign(Keys, controls('keys'));
+
+// Right-click a legend entry to open the popover.
+const Popover = bindWithProps(TrafficStory);
 Popover.args = {
-  children: <ChartPopover width="auto">{(datum) => <div>{datum.value}</div>}</ChartPopover>,
-  ...defaultProps,
-};
-
-const Position = bindWithProps(LegendBarStory);
-Position.args = { position: 'right', ...defaultProps };
-
-const Title = bindWithProps(LegendBarStory);
-Title.args = { title: 'Operating system', ...defaultProps };
-
-const Supreme = bindWithProps(LegendBarStory);
-Supreme.args = {
-  descriptions,
   highlight: true,
-  legendLabels,
-  position: 'right',
-  title: 'Operating system',
+  children: (
+    <ChartPopover rightClick width="auto">
+      {(datum) => (
+        <div>
+          <strong>{String(datum.value)}</strong>
+          <div>View source report</div>
+        </div>
+      )}
+    </ChartPopover>
+  ),
 };
+Object.assign(Popover, controls());
 
-const LegendColumns = bindWithProps(LegendLineStory);
-LegendColumns.args = {
-  labelLimit: 200,
-  highlight: true,
-};
-
-const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesData);
-const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
-LegendColumnsExtended.args = {
-  labelLimit: 200,
-  highlight: true,
-};
-
-const ResizableWithLongLabel = makeResizableLegendLineStory(legendColumnsLongLabelData);
-const LegendColumnsLongLabel = bindWithProps(ResizableWithLongLabel);
-LegendColumnsLongLabel.args = {
-  labelLimit: 500,
-  highlight: true,
-};
-
-const ResizableWith20Series = makeResizableLegendLineStory(legendColumns20SeriesData);
-const LegendColumns20Series = bindWithProps(ResizableWith20Series);
-LegendColumns20Series.args = {
-  labelLimit: 200,
-  highlight: true,
-};
-
-export {
-  Basic,
-  Descriptions,
-  Disconnected,
-  Labels,
-  LabelLimit,
-  TitleLimit,
-  OnClick,
-  Popover,
-  Position,
-  Title,
-  Supreme,
-  LegendColumns,
-  LegendColumnsExtended,
-  LegendColumnsLongLabel,
-  LegendColumns20Series,
-};
+export { Basic, Position, Align, Keys, Popover };
