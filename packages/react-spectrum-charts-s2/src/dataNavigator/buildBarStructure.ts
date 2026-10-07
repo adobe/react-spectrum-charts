@@ -350,44 +350,53 @@ const buildFieldValueParts = (
     });
 };
 
-/**
- * Fallback label for a node with no consumer-supplied semantics: a leaf's `field: value` pairs, a
- * division's dimension value plus an itemized summary of its own segments, or a "metric by dimension"
- * summary of the whole chart for the root — read verbatim from the consumer's `Chart.title` instead
- * whenever one is supplied (see `buildBarStructure`), so this fallback only ever applies without one.
- */
-export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {}): string => {
-  if (node.dimensionLevel === 1) {
-    const { dimension, metric, color, data: rows, fieldLabels = {}, locale = DEFAULT_DATA_NAVIGATOR_LOCALE } = options;
-    if (!dimension || !metric) return String(node.id);
-    const { formatMessage } = getDataNavigatorIntl(locale);
-    const count = rows ? new Set(rows.map((row) => row[dimension])).size : undefined;
-    const variables = { dimension: fieldLabels[dimension] ?? dimension, count: count ?? 0, metricLabel: fieldLabels[metric] ?? metric };
-    if (color) return formatMessage('bar.stackedDescription', { ...variables, color: fieldLabels[color] ?? color });
-    return formatMessage('bar.description', { ...variables, count: count ?? 0 });
-  }
+/** Fallback label for the whole-chart root: a "metric by dimension" summary. */
+const buildRootLabel = (node: NodeObject, options: NodeLabelOptions): string => {
+  const { dimension, metric, color, data: rows, fieldLabels = {}, locale = DEFAULT_DATA_NAVIGATOR_LOCALE } = options;
+  if (!dimension || !metric) return String(node.id);
+  const { formatMessage } = getDataNavigatorIntl(locale);
+  const count = rows ? new Set(rows.map((row) => row[dimension])).size : 0;
+  const variables = { dimension: fieldLabels[dimension] ?? dimension, count, metricLabel: fieldLabels[metric] ?? metric };
+  if (color) return formatMessage('bar.stackedDescription', { ...variables, color: fieldLabels[color] ?? color });
+  return formatMessage('bar.description', variables);
+};
 
-  if (node.dimensionLevel != null) {
-    const { dimension, data: rows, rowsByDimension, fieldLabels = {} } = options;
-    if (!dimension || !rows) return String(node.id);
-    // The division's own id is a data-navigator-internal composite, not the dimension value itself.
-    const dimensionValue = node.derivedNode ? (node.data as Record<string, unknown> | undefined)?.[node.derivedNode] : undefined;
-    const dimensionKey = toDimensionKey(dimensionValue);
-    if (dimensionKey === undefined) return String(node.id);
-    const groupRows = rowsByDimension?.get(dimensionKey) ?? rows.filter((row) => toDimensionKey(row[dimension]) === dimensionKey);
-    if (groupRows.length === 0) return String(node.id);
-    const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionKey}.`;
-    const segments = groupRows
-      .map((row) => buildFieldValueParts(row as Record<string, unknown>, options, [dimension]))
-      .filter((parts) => parts.length > 0)
-      .map((parts) => `${parts.join(', ')}.`);
-    return segments.length > 0 ? `${header} ${segments.join(' ')}` : header;
-  }
+/** Fallback label for a division (stack/group): its dimension value plus an itemized summary of its own segments. */
+const buildDivisionLabel = (node: NodeObject, options: NodeLabelOptions): string => {
+  const { dimension, data: rows, rowsByDimension, fieldLabels = {} } = options;
+  if (!dimension || !rows) return String(node.id);
+  // The division's own id is a data-navigator-internal composite, not the dimension value itself.
+  const dimensionValue = node.derivedNode ? (node.data as Record<string, unknown> | undefined)?.[node.derivedNode] : undefined;
+  const dimensionKey = toDimensionKey(dimensionValue);
+  if (dimensionKey === undefined) return String(node.id);
+  const groupRows = rowsByDimension?.get(dimensionKey) ?? rows.filter((row) => toDimensionKey(row[dimension]) === dimensionKey);
+  if (groupRows.length === 0) return String(node.id);
+  const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionKey}.`;
+  const segments = groupRows
+    .map((row) => buildFieldValueParts(row as Record<string, unknown>, options, [dimension]))
+    .filter((parts) => parts.length > 0)
+    .map((parts) => `${parts.join(', ')}.`);
+  return segments.length > 0 ? `${header} ${segments.join(' ')}` : header;
+};
 
+/** Fallback label for a leaf: its `field: value` pairs. */
+const buildLeafLabel = (node: NodeObject, options: NodeLabelOptions): string => {
   const data = node.data as Record<string, unknown> | undefined;
   if (!data) return String(node.id);
   const parts = buildFieldValueParts(data, options);
   return parts.length > 0 ? `${parts.join('. ')}.` : String(node.id);
+};
+
+/**
+ * Fallback label for a node with no consumer-supplied semantics (root, division, or leaf).
+ * @param node
+ * @param options
+ * @returns string
+ */
+export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {}): string => {
+  if (node.dimensionLevel === 1) return buildRootLabel(node, options);
+  if (node.dimensionLevel != null) return buildDivisionLabel(node, options);
+  return buildLeafLabel(node, options);
 };
 
 export const prepareNodeSemantics = (structure: Structure, options: NodeLabelOptions = {}): void => {
