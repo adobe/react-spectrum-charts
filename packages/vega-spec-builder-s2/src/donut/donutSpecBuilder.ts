@@ -20,12 +20,15 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
+  DRAW_IN_ANIM_CUTOFF,
+  DRAW_IN_ANIM_T,
   FILTERED_TABLE,
   SERIES_ID,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils';
+import { addDrawInClockSignals } from '../marks/drawInAnimationUtils';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -129,6 +132,8 @@ export const addDonut = produce<
       (isDonutInteractive(donutOptions) ||
         donutOptions.highlightedItem !== undefined ||
         donutOptions.highlightedSeries !== undefined);
+    donutOptions.isDrawInAnimate =
+      animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
 
     if (isDonutInteractive(donutOptions)) {
       spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, donutOptions.name);
@@ -257,6 +262,15 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   const { chartInspects, holeRatio, name } = options;
   if (options.isHoverAnimate) {
     addHoverAnimationSignals(signals, name);
+  }
+  if (options.isDrawInAnimate) {
+    addDrawInClockSignals(signals);
+    const sweep = options.variant === 'semicircle' ? 'PI' : '2 * PI';
+    const startAngle = getDonutStartAngle(options);
+    signals.push({
+      name: `${name}_${DRAW_IN_ANIM_CUTOFF}`,
+      update: `${startAngle} + (${sweep}) * pow(${DRAW_IN_ANIM_T}, 2)`,
+    });
   }
   if (holeRatio === DEFAULT_HOLE_RATIO) {
     signals.push(getRingWidthSignal(options));

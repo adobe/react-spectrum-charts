@@ -20,6 +20,7 @@ import {
   VariationFilter,
   VariationSizePreset,
   VariationViewMode,
+  useVariationAnimations,
   useVariationDataset,
   useVariationSize,
   useVariationViewMode,
@@ -68,6 +69,48 @@ const variations: Variation[] = [
 ];
 
 describe('VariationDashboard', () => {
+  test('toggles animations for every variation and preserves the setting across datasets', () => {
+    const AnimationProbe = (): ReactElement => {
+      const animations = useVariationAnimations();
+      return <output aria-label="Animation state">{String(animations)}</output>;
+    };
+    render(
+      <VariationDashboard
+        variations={variations.map((variation) => ({ ...variation, render: () => <AnimationProbe /> }))}
+        chartType="Test"
+        datasets={datasets}
+        showAnimationControls
+      />
+    );
+
+    const toggle = screen.getByRole('checkbox', { name: 'Test animations' });
+    expect(toggle).toHaveProperty('checked', true);
+    screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe('true'));
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveProperty('checked', false);
+    screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe('false'));
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'Test dataset' }), { target: { value: 'dense' } });
+    expect(toggle).toHaveProperty('checked', false);
+    screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe('false'));
+
+    fireEvent.click(toggle);
+    screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe('true'));
+  });
+
+  test('can initialize animations as disabled', () => {
+    render(
+      <VariationDashboard
+        variations={variations}
+        chartType="Test"
+        initialAnimations={false}
+        showAnimationControls
+      />
+    );
+    expect(screen.getByRole('checkbox', { name: 'Test animations' })).toHaveProperty('checked', false);
+  });
+
   test('preserves the selected effective size tier when the view mode changes', () => {
     render(
       <VariationDashboard
@@ -148,6 +191,7 @@ describe('VariationDashboard', () => {
     render(<VariationDashboard variations={fixedVariations} chartType="Test" />);
 
     expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.queryByRole('checkbox')).toBeNull();
     expect(screen.queryByText('View:')).toBeNull();
     expect(screen.getByText('data: fixed')).not.toBeNull();
   });

@@ -53,8 +53,9 @@ import { getTextNumberFormat } from '../textUtils';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
 import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils';
 import {
+  getDonutDrawInLabelVisibilityRules,
   getDonutEmptyStateTest,
-  getDonutOpacity,
+  getDonutLabelOpacity,
   getDonutLabelRingGapSignalName,
   getDonutOuterRadiusExpr,
   DONUT_SIZE_TIER,
@@ -441,7 +442,7 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
                 signal: `-${labelName}ValueFontSize / 2`,
               }
             : undefined,
-        opacity: getDonutOpacity(donutOptions),
+        opacity: getDonutLabelOpacity(donutOptions),
       },
     },
   };
@@ -476,7 +477,7 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
             signal: `${labelName}NameFontSize / 2`,
           },
           fill: getLabelValueFill(donutOptions, 'gray-700'),
-          opacity: getDonutOpacity(donutOptions),
+          opacity: getDonutLabelOpacity(donutOptions),
         },
       },
     },
@@ -585,6 +586,7 @@ const getSegmentLabelFontSize = (
   // segments below DONUT_SEGMENT_LABEL_MIN_ANGLE are already excluded from the label data source
   // (getSegmentLabelData) entirely, so there's no need to zero their font size here too
   return [
+    ...getDonutDrawInLabelVisibilityRules(options.donutOptions),
     // hide all labels below S, or when there isn't any data to display (the empty state ring is shown instead)
     {
       test: `${getDonutEmptyStateTest(name)} || ${getDonutSizeTierSignalName(name)} < ${DONUT_SIZE_TIER.S}`,
@@ -952,6 +954,7 @@ const getRichSegmentLabelFontSize = (
   fontSizeSignal: string,
   minimumTier: number
 ) => [
+  ...getDonutDrawInLabelVisibilityRules(options.donutOptions),
   {
     test: `${getDonutEmptyStateTest(options.donutOptions.name)} || ${getDonutSizeTierSignalName(
       options.donutOptions.name
@@ -993,7 +996,7 @@ const getRichSegmentLabelSwatchMark = (options: RichSegmentLabelSpecOptions): Sy
           `${DONUT_ADVANCED_LABEL_SWATCH_SIZE * DONUT_ADVANCED_LABEL_SWATCH_SIZE}`,
           DONUT_SIZE_TIER.M
         ),
-        opacity: getDonutOpacity(donutOptions),
+        opacity: getDonutLabelOpacity(donutOptions),
       },
     },
   };
@@ -1026,7 +1029,7 @@ const getRichSegmentLabelNameTextMark = (options: RichSegmentLabelSpecOptions): 
         limit: {
           signal: getRichSegmentLabelLimitExpr(options, layout.swatchReservedWidth),
         },
-        opacity: getDonutOpacity(donutOptions),
+        opacity: getDonutLabelOpacity(donutOptions),
       },
     },
   };
@@ -1059,7 +1062,7 @@ const getRichSegmentLabelValueTextMark = (
           fontSize: getRichSegmentLabelFontSize(options, valueRow.fontSize, DONUT_SIZE_TIER.S),
           limit: { signal: getRichSegmentLabelLimitExpr(options) },
           fill: getLabelValueFill(donutOptions, 'gray-800'),
-          opacity: getDonutOpacity(donutOptions),
+          opacity: getDonutLabelOpacity(donutOptions),
         },
       },
     },
@@ -1083,7 +1086,7 @@ const getRichSegmentLabelDetailTextMark = (
     ...shared,
     dy: { signal: detailRow.dy },
     fontSize: getRichSegmentLabelFontSize(options, detailRow.fontSize, DONUT_SIZE_TIER.L),
-    opacity: getDonutOpacity(donutOptions),
+    opacity: getDonutLabelOpacity(donutOptions),
   };
   const detailGap = DONUT_ADVANCED_LABEL_NAME_VALUE_GAP;
   const detailValueReservedWidth = suffix

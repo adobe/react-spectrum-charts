@@ -12,11 +12,13 @@
 import { ArcMark, ColorValueRef, NumericValueRef, ProductionRule, Signal, SourceData, ThresholdScale } from 'vega';
 
 import {
+  ANIMATION_TIMER,
   BACKGROUND_COLOR,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_HOLE_RATIO,
   DONUT_BOOLEAN_SECONDARY_COLOR,
+  DONUT_DRAW_IN_LABEL_FADE_DURATION_MS,
   DONUT_LABEL_MIN_SPACE_RATIO,
   DONUT_LABEL_RING_GAPS,
   DONUT_RADIUS,
@@ -26,6 +28,9 @@ import {
   DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
+  DRAW_IN_ANIM_CUTOFF,
+  DRAW_IN_ANIMATION_DURATION_MS,
+  DRAW_IN_START,
   FADE_FACTOR,
   FILTERED_TABLE,
   HOVERED_ITEM,
@@ -93,6 +98,35 @@ export const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } &
     addHoveredItemOpacityRules(opacity, options);
   }
   return opacity;
+};
+
+/** Gets the 0-1 linear label fade that starts when the label's slice finishes drawing. */
+export const getDonutLabelFadeProgressExpr = (options: DonutSpecOptions): string => {
+  const startAngle = `datum['${options.name}_startAngle']`;
+  const endAngle = `datum['${options.name}_endAngle']`;
+  const drawStartAngle = getDonutStartAngle(options);
+  const sweep = options.variant === 'semicircle' ? Math.PI : 2 * Math.PI;
+  const endProgress = `clamp((${endAngle} - ${drawStartAngle}) / ${sweep}, 0, 1)`;
+  const sliceEndTime = `${DRAW_IN_ANIMATION_DURATION_MS} * sqrt(${endProgress})`;
+  const elapsed = `${ANIMATION_TIMER} - ${DRAW_IN_START}`;
+  const linearFade = `clamp(((${elapsed}) - (${sliceEndTime})) / ${DONUT_DRAW_IN_LABEL_FADE_DURATION_MS}, 0, 1)`;
+  return `(${endAngle} > ${startAngle} ? ${linearFade} : 0)`;
+};
+
+/** Combines the draw-in label fade with the donut's existing highlight opacity rules. */
+export const getDonutLabelOpacity = (options: DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
+  const opacity = getDonutOpacity(options);
+  if (!options.isDrawInAnimate) return opacity;
+  const fadeProgress = getDonutLabelFadeProgressExpr(options);
+
+  return opacity.map((rule) => {
+    const baseOpacity = 'signal' in rule ? rule.signal : 'value' in rule ? rule.value : undefined;
+    if (baseOpacity === undefined) throw new Error('Expected a value or signal for donut label opacity');
+    return {
+      ...(rule.test !== undefined && { test: rule.test }),
+      signal: `(${baseOpacity}) * (${fadeProgress})`,
+    };
+  });
 };
 
 /**
@@ -308,10 +342,14 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
  * @returns vega expression string
  */
 export const getSliceStrokeWidthExpr = (options: DonutSpecOptions, requestedWidth: string): string => {
-  const { holeRatio, name } = options;
+  const { holeRatio, isDrawInAnimate, name } = options;
   if (holeRatio === 0) return requestedWidth;
   const radius = `max(0, ${getDonutInnerRadiusExpr(options)})`;
-  const arcAngle = `min(PI, max(0, datum['${name}_arcLength']))`;
+  const cutoff = `${name}_${DRAW_IN_ANIM_CUTOFF}`;
+  const drawnStart = `min(datum['${name}_startAngle'], ${cutoff})`;
+  const drawnEnd = `min(datum['${name}_endAngle'], ${cutoff})`;
+  const arcLength = isDrawInAnimate ? `(${drawnEnd}) - (${drawnStart})` : `datum['${name}_arcLength']`;
+  const arcAngle = `min(PI, max(0, ${arcLength}))`;
   const availableWidth = `2 * (${radius}) * sin((${arcAngle}) / 2)`;
   const visibleWidth = `max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH})`;
   return `min(${requestedWidth}, ${visibleWidth})`;
@@ -389,6 +427,21 @@ const getHoveredArcFillEncoding = (
 export const getDonutStartAngle = ({ variant }: Pick<DonutSpecOptions, 'variant'>): number =>
   variant === 'semicircle' ? -Math.PI / 2 : 0;
 
+/** Gets an arc angle clipped to the draw-in sweep when enabled. */
+export const getDonutAngleEncoding = (
+  { isDrawInAnimate, name }: DonutSpecOptions,
+  angle: 'startAngle' | 'endAngle'
+): NumericValueRef => {
+  const field = `${name}_${angle}`;
+  return isDrawInAnimate
+    ? { signal: `min(datum['${field}'], ${name}_${DRAW_IN_ANIM_CUTOFF})` }
+    : { field };
+};
+
+/** Hides labels until their draw-in fade begins. */
+export const getDonutDrawInLabelVisibilityRules = (options: DonutSpecOptions): ({ test: string } & NumericValueRef)[] =>
+  options.isDrawInAnimate ? [{ test: `${getDonutLabelFadeProgressExpr(options)} <= 0`, value: 0 }] : [];
+
 /**
  * Gets the y anchor signal for donut marks, placing a semicircle's flat edge below its diameter.
  * @param donutOptions
@@ -423,8 +476,8 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
       },
       update: {
         ...(hoveredArcFillEncoding ? { fill: hoveredArcFillEncoding } : {}),
-        startAngle: { field: `${name}_startAngle` },
-        endAngle: { field: `${name}_endAngle` },
+        startAngle: getDonutAngleEncoding(options, 'startAngle'),
+        endAngle: getDonutAngleEncoding(options, 'endAngle'),
         innerRadius:
           options.holeRatio === 0
             ? { value: 0 }
@@ -438,6 +491,9 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
         // hide the segments when there isn't any data to display, the empty state ring is shown instead
         opacity: [
           { test: getDonutEmptyStateTest(name), value: 0 },
+          ...(options.isDrawInAnimate
+            ? [{ test: `${name}_${DRAW_IN_ANIM_CUTOFF} <= datum['${name}_startAngle']`, value: 0 }]
+            : []),
           ...(options.isHoverAnimate ? [] : getLegendHighlightOpacityRules(legendHighlightSignals)),
           ...getDonutOpacity(options),
         ],

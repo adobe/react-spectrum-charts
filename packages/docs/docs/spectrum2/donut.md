@@ -58,6 +58,30 @@ replaces the default content.
 
 ---
 
+## Draw-in animation
+
+Add `'drawIn'` to the chart's `animationTypes` to sweep the segments clockwise over one
+second with a quadratic ease-in. Full-circle donuts and pies start at the top;
+semicircle donuts start at the left. Direct and advanced labels start a 50ms linear fade
+as soon as their own slice finishes drawing. All text rows and swatches fade together;
+the final label finishes about 50ms after the donut.
+Hover dimming and existing small-segment and collision rules still apply. The center
+summary stays visible throughout.
+
+```jsx
+<Chart data={data} animationTypes={['hover', 'drawIn']}>
+  <Donut metric="count" color="browser">
+    <SegmentLabel value />
+  </Donut>
+</Chart>
+```
+
+Draw-in is off by default. `animations={false}` disables it even when `'drawIn'` is
+listed. It runs when the Vega view is created, including after data or spec changes;
+resizing an existing view does not replay it. Empty-state rings remain static.
+
+---
+
 ## Center summary (DonutSummary)
 
 The `DonutSummary` component displays a label and aggregate value in the center of the
