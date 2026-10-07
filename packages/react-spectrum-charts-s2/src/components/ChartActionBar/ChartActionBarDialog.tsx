@@ -90,8 +90,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
     }
   }, [chartView, idKey, onClearSelection, selectedData, selectedDataName, setIsPopoverOpen, specSignalNames]);
 
-  const allActions =
-    renderDatum && renderDatum[COMPONENT_NAME] === name ? (children?.(renderDatum, closeActionBar) ?? []) : [];
+  const allActions = renderDatum?.[COMPONENT_NAME] === name ? (children?.(renderDatum, closeActionBar) ?? []) : [];
   const visibleActions = allActions.slice(0, visibleCount);
   const overflowActions = allActions.slice(visibleCount);
 
