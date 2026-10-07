@@ -77,9 +77,19 @@ export const getColumns = (position: Position, name: string, labelLimit?: number
   if (['left', 'right'].includes(position)) return;
 
   const symbolAndSpacingWidth = DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
+  return { signal: `max(1, floor(width / (${getMaxLabelWidthExpr(name, labelLimit)} + ${symbolAndSpacingWidth})))` };
+};
+
+/**
+ * Gets an expression for the legend's widest measured label, capped at the label limit.
+ * @param name legend name
+ * @param labelLimit
+ * @returns vega expression string
+ */
+export const getMaxLabelWidthExpr = (name: string, labelLimit?: number): string => {
   const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
   const maxWidthExpr = `length(data('${name}_maxLabelWidth')) > 0 ? data('${name}_maxLabelWidth')[0].maxLabelWidth : ${effectiveLabelLimit}`;
-  return { signal: `max(1, floor(width / (min(${maxWidthExpr}, ${effectiveLabelLimit}) + ${symbolAndSpacingWidth})))` };
+  return `min(${maxWidthExpr}, ${effectiveLabelLimit})`;
 };
 
 /**
