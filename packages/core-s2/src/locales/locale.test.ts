@@ -11,12 +11,12 @@
  */
 import { NumberLocale, TimeLocale } from 'vega';
 
-import { getLocale } from './locale';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locale.types';
-import enNumber from './numberLocales/en-US.json';
-import frNumber from './numberLocales/fr-FR.json';
-import enTime from './timeLocales/en-US.json';
-import frTime from './timeLocales/fr-FR.json';
+import { getLocale } from './locale.js';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode } from './locale.types.js';
+import enNumber from './numberLocales/en-US.json' with { type: 'json' };
+import frNumber from './numberLocales/fr-FR.json' with { type: 'json' };
+import enTime from './timeLocales/en-US.json' with { type: 'json' };
+import frTime from './timeLocales/fr-FR.json' with { type: 'json' };
 
 describe('getLocale()', () => {
   test('if locale code is provided, should return the number and time locale definition for that code', () => {

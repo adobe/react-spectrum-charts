@@ -15,12 +15,12 @@ import { StoryFn } from '@storybook/react';
 
 import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../stories/data/data';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
+import { Chart } from '../../../../Chart.js';
+import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { workspaceTrendsData } from '../../../../stories/data/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps } from '../../../../types/index.js';
 
 // Same as workspaceTrendsData but with "Add Line viz" adjusted to end at the same
 // y position as "Add Bar viz" (users ~3500 vs 3493), so its line terminates behind

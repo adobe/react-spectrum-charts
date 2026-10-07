@@ -12,9 +12,9 @@
 import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 import { TextMark } from 'vega';
 
-import { defaultBarOptions } from '../bar/barTestUtils';
-import { BarDirectLabelSpecOptions } from '../types';
-import { getBarDirectLabelMarks, getBarDirectLabelPositionEncodings, getBarDirectLabelSpecOptions } from './barDirectLabelUtils';
+import { defaultBarOptions } from '../bar/barTestUtils.js';
+import { BarDirectLabelSpecOptions } from '../types/index.js';
+import { getBarDirectLabelMarks, getBarDirectLabelPositionEncodings, getBarDirectLabelSpecOptions } from './barDirectLabelUtils.js';
 
 const defaultSpecOptions: BarDirectLabelSpecOptions = getBarDirectLabelSpecOptions({}, 0, defaultBarOptions);
 

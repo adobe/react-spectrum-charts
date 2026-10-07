@@ -11,8 +11,8 @@
  */
 import { FOCUSED_DIMENSION, FOCUSED_REGION, NAVIGATION_ID_SEPARATOR, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
 
-import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils';
-import { getBarFocusRing, getChartFocusRing, getDodgedGroupFocusRing, getStackFocusRing } from './barFocusRingUtils';
+import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils.js';
+import { getBarFocusRing, getChartFocusRing, getDodgedGroupFocusRing, getStackFocusRing } from './barFocusRingUtils.js';
 
 const { dimension, metric } = defaultBarOptions;
 

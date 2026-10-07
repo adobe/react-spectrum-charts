@@ -13,9 +13,9 @@ import React from 'react';
 
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { ReferenceLine } from '../../../components/ReferenceLine';
-import { findChart, findMarksByGroupName, render } from '../../../test-utils';
-import { Basic, Label } from './AxisReferenceLine.story';
+import { ReferenceLine } from '../../../components/ReferenceLine/index.js';
+import { findChart, findMarksByGroupName, render } from '../../../test-utils/index.js';
+import { Basic, Label } from './AxisReferenceLine.story.js';
 
 describe('AxisReferenceLine', () => {
   // Axis is not a real React component. This test just provides test coverage for sonarqube

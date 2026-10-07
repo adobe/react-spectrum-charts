@@ -15,7 +15,7 @@ import { FC } from 'react';
 
 import { DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 
-import { ComboProps } from '../../../types';
+import { ComboProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Combo: FC<ComboProps> = ({ name = 'combo0', dimension = DEFAULT_TIME_DIMENSION }) => {

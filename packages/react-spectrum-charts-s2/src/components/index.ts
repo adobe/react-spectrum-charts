@@ -10,19 +10,19 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Axis';
-export * from './AxisThumbnail';
-export * from './Bar';
-export * from './BarDirectLabel';
-export * from './ChartActionBar';
-export * from './ChartInspect';
-export * from './ChartPopover';
-export * from './EmptyState';
-export * from './Legend';
-export * from './Line';
-export * from './LineDirectLabel';
-export * from './LineForecast';
-export * from './LinePointAnnotation';
-export * from './LoadingState';
-export * from './ReferenceLine';
-export * from './Title';
+export * from './Axis/index.js';
+export * from './AxisThumbnail/index.js';
+export * from './Bar/index.js';
+export * from './BarDirectLabel/index.js';
+export * from './ChartActionBar/index.js';
+export * from './ChartInspect/index.js';
+export * from './ChartPopover/index.js';
+export * from './EmptyState/index.js';
+export * from './Legend/index.js';
+export * from './Line/index.js';
+export * from './LineDirectLabel/index.js';
+export * from './LineForecast/index.js';
+export * from './LinePointAnnotation/index.js';
+export * from './LoadingState/index.js';
+export * from './ReferenceLine/index.js';
+export * from './Title/index.js';

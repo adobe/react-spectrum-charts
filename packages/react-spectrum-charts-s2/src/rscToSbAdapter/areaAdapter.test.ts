@@ -13,10 +13,10 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartInspect } from '../components/ChartInspect';
-import { ChartPopover } from '../components/ChartPopover';
-import { getAreaOptions } from './areaAdapter';
-import { childrenToOptions } from './childrenAdapter';
+import { ChartInspect } from '../components/ChartInspect/index.js';
+import { ChartPopover } from '../components/ChartPopover/index.js';
+import { getAreaOptions } from './areaAdapter.js';
+import { childrenToOptions } from './childrenAdapter.js';
 
 describe('getAreaOptions()', () => {
   it('should return all basic options', () => {

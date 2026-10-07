@@ -13,11 +13,11 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Line, ReferenceLine } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import errorData from './errorData.json';
+import { Chart } from '../../../Chart.js';
+import { Axis, Line, ReferenceLine } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import errorData from './errorData.json' with { type: 'json' };
 
 export default {
   title: 'RSC/Chart/Examples',

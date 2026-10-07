@@ -40,7 +40,7 @@ import {
   getPathFromSymbolShape,
   getStrokeDashFromLineType,
   getVegaSymbolSizeFromRscSymbolSize,
-} from './specUtils';
+} from './specUtils.js';
 
 const defaultColorScale: OrdinalScale = {
   name: COLOR_SCALE,

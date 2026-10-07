@@ -13,11 +13,11 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { ScatterOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartPopoverElement, ChartInspectElement } from '../dialogs';
-import { Children } from '../util.types';
-import { ScatterAnnotationElement } from './supplemental/scatterAnnotation.types';
-import { ScatterPathElement } from './supplemental/scatterPath.types';
-import { TrendlineElement } from './supplemental/trendline.types';
+import { ChartPopoverElement, ChartInspectElement } from '../dialogs/index.js';
+import { Children } from '../util.types.js';
+import { ScatterAnnotationElement } from './supplemental/scatterAnnotation.types.js';
+import { ScatterPathElement } from './supplemental/scatterPath.types.js';
+import { TrendlineElement } from './supplemental/trendline.types.js';
 
 type ScatterChildElement =
   | ChartPopoverElement

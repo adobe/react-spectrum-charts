@@ -15,7 +15,7 @@ import { FC } from 'react';
 
 import { DEFAULT_TITLE_FONT_WEIGHT } from '@spectrum-charts/core-s2/constants';
 
-import { TitleProps } from '../../types';
+import { TitleProps } from '../../types/index.js';
 
 const Title: FC<TitleProps> = ({
   text,

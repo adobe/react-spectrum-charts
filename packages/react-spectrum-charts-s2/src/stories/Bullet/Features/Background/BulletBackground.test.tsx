@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, render } from '../../../../test-utils';
-import { ColoredMetric, Thresholds, Track } from './BulletBackground.story';
+import { findChart, render } from '../../../../test-utils/index.js';
+import { ColoredMetric, Thresholds, Track } from './BulletBackground.story.js';
 
 describe('Bullet Background', () => {
   test('Thresholds renders properly', async () => {

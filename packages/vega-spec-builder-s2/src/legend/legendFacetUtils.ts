@@ -20,8 +20,8 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { FacetType, SecondaryFacetType } from '../types';
-import { Facet } from './legendUtils';
+import { FacetType, SecondaryFacetType } from '../types/index.js';
+import { Facet } from './legendUtils.js';
 
 /**
  * These are all the scale names that are used for facets

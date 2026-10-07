@@ -12,7 +12,7 @@
 
 import { FC } from 'react';
 
-import { ChartActionBarProps } from '../../types';
+import { ChartActionBarProps } from '../../types/index.js';
 
 const ChartActionBar: FC<ChartActionBarProps> = ({
   children: _children,

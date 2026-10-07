@@ -9,11 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { FC } from 'react';
+import React, { FC, ReactNode } from 'react';
 
-import ChartBarVert from '@react-spectrum/s2/icons/ChartBarVert';
+import type { IconProps } from '@react-spectrum/s2';
+import ChartBarVertIcon from '@react-spectrum/s2/icons/ChartBarVert';
 
 import './EmptyState.css';
+
+// @react-spectrum/s2 icon typings are CommonJS-only, so NodeNext types this default import as the module object.
+const ChartBarVert = ChartBarVertIcon as unknown as (props: IconProps) => ReactNode;
 
 export interface EmptyStateProps {
   height?: number;

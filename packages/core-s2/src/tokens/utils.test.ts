@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getColorValue } from './utils';
+import { getColorValue } from './utils.js';
 
 describe('getColorValue()', () => {
   test('should return color values from spectrum names', () => {

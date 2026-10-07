@@ -2,28 +2,33 @@
   "name": "@spectrum-charts/core-s2",
   "version": "0.9.0",
   "description": "Constants, locales, design tokens, and utilities for Spectrum 2 charts",
-  "files": [
-    "dist"
-  ],
+  "type": "module",
   "exports": {
     "./constants": {
       "types": "./dist/types/constants/index.d.ts",
-      "default": "./dist/constants.js"
+      "default": "./dist/constants/index.js"
     },
     "./locales": {
       "types": "./dist/types/locales/index.d.ts",
-      "default": "./dist/locales.js"
+      "default": "./dist/locales/index.js"
     },
     "./tokens": {
       "types": "./dist/types/tokens/index.d.ts",
-      "default": "./dist/tokens.js"
+      "default": "./dist/tokens/index.js"
     },
     "./utils": {
       "types": "./dist/types/utils/index.d.ts",
-      "default": "./dist/utils.js"
+      "default": "./dist/utils/index.js"
     },
     "./package.json": "./package.json"
   },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "files": [
+    "dist"
+  ],
   "author": "c-lamoureux",
   "license": "Apache-2.0",
   "repository": {
@@ -32,7 +37,7 @@
   },
   "scripts": {
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "webpack --config ./webpack.config.js",
+    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "pack-test": "yarn clean && yarn build:s2 && cross-env NODE_ENV=development npm pack",
     "pack": "cross-env NODE_ENV=production npm pack",
@@ -42,9 +47,6 @@
     "vega": "^6.2.0"
   },
   "devDependencies": {
-    "ts-loader": "^9.4.2",
-    "typescript": "^5.4.5",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1"
+    "typescript": "^5.4.5"
   }
 }

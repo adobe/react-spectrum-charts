@@ -23,8 +23,8 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
-import { defaultLegendOptions } from './legendTestUtils';
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils.js';
+import { defaultLegendOptions } from './legendTestUtils.js';
 import {
   getClickEncodings,
   getColumns,
@@ -35,7 +35,7 @@ import {
   getSymbolEncodings,
   getSymbolType,
   mergeLegendEncodings,
-} from './legendUtils';
+} from './legendUtils.js';
 
 describe('getSymbolEncodings()', () => {
   test('no facets and no custom values, should return all the defaults', () => {

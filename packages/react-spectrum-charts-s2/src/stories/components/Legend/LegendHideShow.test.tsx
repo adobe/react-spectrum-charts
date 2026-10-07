@@ -23,9 +23,9 @@ import {
   rightClickNthElement,
   screen,
   waitFor,
-} from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock';
-import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story';
+} from '../../../test-utils/index.js';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story.js';
 
 const colors = spectrum2Colors.light;
 

@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, render } from '../../../../test-utils';
+import { findChart, render } from '../../../../test-utils/index.js';
 import {
   CustomLabels,
   CustomLabelsRowDirection,
   CustomLabelsSidePosition,
   CustomTargetLabel,
-} from './BulletCustomLabels.story';
+} from './BulletCustomLabels.story.js';
 
 describe('Bullet CustomLabels', () => {
   test('CustomLabels renders properly', async () => {

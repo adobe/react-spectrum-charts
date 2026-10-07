@@ -11,9 +11,9 @@
  */
 import { createElement } from 'react';
 
-import { ChartInspect } from '../components/ChartInspect';
-import { getBulletOptions } from './bulletAdapter';
-import { childrenToOptions } from './childrenAdapter';
+import { ChartInspect } from '../components/ChartInspect/index.js';
+import { getBulletOptions } from './bulletAdapter.js';
+import { childrenToOptions } from './childrenAdapter.js';
 
 describe('getBulletOptions()', () => {
   it('should return all basic options', () => {

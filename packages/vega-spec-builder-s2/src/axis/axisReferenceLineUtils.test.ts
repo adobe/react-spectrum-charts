@@ -36,7 +36,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { AxisSpecOptions, ReferenceLineSpecOptions } from '../types';
+import { AxisSpecOptions, ReferenceLineSpecOptions } from '../types/index.js';
 import {
   getPositionEncoding,
   getReferenceLineEndCapMark,
@@ -46,7 +46,7 @@ import {
   getReferenceLineTextMark,
   getReferenceLines,
   scaleTypeSupportsReferenceLines,
-} from './axisReferenceLineUtils';
+} from './axisReferenceLineUtils.js';
 
 const defaultReferenceLineOptions: ReferenceLineSpecOptions = {
   value: 10,

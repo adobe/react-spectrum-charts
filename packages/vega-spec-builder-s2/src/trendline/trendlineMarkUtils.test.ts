@@ -22,8 +22,8 @@ import {
   getTrendlineLineMark,
   getTrendlineMarks,
   getTrendlineRuleMark,
-} from './trendlineMarkUtils';
-import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
+} from './trendlineMarkUtils.js';
+import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils.js';
 
 describe('getTrendlineMarks()', () => {
   test('should return rule mark for aggregate methods', () => {

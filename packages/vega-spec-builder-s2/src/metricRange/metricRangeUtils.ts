@@ -21,11 +21,11 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { AreaMarkOptions, getAreaMark } from '../area/areaUtils';
-import { getLineMark } from '../line/lineMarkUtils';
-import { LineMarkOptions } from '../line/lineUtils';
-import { getFacetsFromOptions } from '../specUtils';
-import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
+import { AreaMarkOptions, getAreaMark } from '../area/areaUtils.js';
+import { getLineMark } from '../line/lineMarkUtils.js';
+import { LineMarkOptions } from '../line/lineUtils.js';
+import { getFacetsFromOptions } from '../specUtils.js';
+import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types/index.js';
 
 export type MetricRangeParentOptions = LineSpecOptions;
 

@@ -10,4 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export { LineForecast } from './LineForecast';
+export { LineForecast } from './LineForecast.js';

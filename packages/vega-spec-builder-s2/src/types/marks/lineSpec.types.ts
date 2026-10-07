@@ -11,10 +11,10 @@
  */
 import { INTERACTION_MODE } from '@spectrum-charts/core-s2/constants';
 
-import { ChartData, ColorScheme, HighlightedItem } from '../chartSpec.types';
-import { ChartActionBarOptions } from '../dialogs/chartActionBarSpec.types';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
+import { ChartData, ColorScheme, HighlightedItem } from '../chartSpec.types.js';
+import { ChartActionBarOptions } from '../dialogs/chartActionBarSpec.types.js';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
 import {
   ColorFacet,
   FacetRef,
@@ -24,12 +24,12 @@ import {
   OpacityFacet,
   PartiallyRequired,
   ScaleType,
-} from '../specUtil.types';
-import { LineForecastOptions } from './supplemental/lineForecastSpec.types';
-import { LineDirectLabelOptions } from './supplemental/lineDirectLabelSpec.types';
-import { LinePointAnnotationOptions } from './supplemental/linePointAnnotationSpec.types';
-import { MetricRangeOptions } from './supplemental/metricRangeSpec.types';
-import { TrendlineOptions } from './supplemental/trendlineSpec.types';
+} from '../specUtil.types.js';
+import { LineForecastOptions } from './supplemental/lineForecastSpec.types.js';
+import { LineDirectLabelOptions } from './supplemental/lineDirectLabelSpec.types.js';
+import { LinePointAnnotationOptions } from './supplemental/linePointAnnotationSpec.types.js';
+import { MetricRangeOptions } from './supplemental/metricRangeSpec.types.js';
+import { TrendlineOptions } from './supplemental/trendlineSpec.types.js';
 
 export type InteractionMode = `${INTERACTION_MODE}`;
 export type InterpolationType = 'basis' | 'cardinal' | 'catmull-rom' | 'linear' | 'monotone' | 'natural' | 'step' | 'step-after' | 'step-before';

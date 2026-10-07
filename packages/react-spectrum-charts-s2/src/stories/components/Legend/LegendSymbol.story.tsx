@@ -15,12 +15,12 @@ import { StoryFn } from '@storybook/react';
 
 import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../Chart';
-import { Bar, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { browserData as data } from '../../data/data';
-import { defaultProps } from './LegendStoryUtils';
+import { Chart } from '../../../Chart.js';
+import { Bar, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { browserData as data } from '../../data/data.js';
+import { defaultProps } from './LegendStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Features/Symbol',

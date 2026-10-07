@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme, HighlightedItem } from './chartSpec.types';
-import { ChartPopoverOptions } from './dialogs/chartPopoverSpec.types';
+import { ColorScheme, HighlightedItem } from './chartSpec.types.js';
+import { ChartPopoverOptions } from './dialogs/chartPopoverSpec.types.js';
 import {
   ColorFacet,
   FacetRef,
@@ -20,7 +20,7 @@ import {
   PartiallyRequired,
   Position,
   SymbolShapeFacet,
-} from './specUtil.types';
+} from './specUtil.types.js';
 
 export type LegendDescription = { seriesName: string; description: string; title?: string };
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };

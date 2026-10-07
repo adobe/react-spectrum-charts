@@ -38,9 +38,9 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils';
-import { getPopovers } from '../chartPopover/chartPopoverUtils';
-import { getDeemphasisRamp, getHoverFractionSignal, HoverMatchRule } from '../marks/hoverAnimationUtils';
+import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils.js';
+import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
+import { getDeemphasisRamp, getHoverFractionSignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
 import {
   getColorProductionRule,
   getCursor,
@@ -50,11 +50,11 @@ import {
   getInspectEncoding,
   hasPopover,
   isInteractive,
-} from '../marks/markUtils';
-import { getBandPadding } from '../scale/scaleSpecBuilder';
-import { getLineWidthPixelsFromLineWidth } from '../specUtils';
-import { BarSpecOptions, Orientation } from '../types';
-import { getTrellisProperties, isTrellised } from './trellisPropertyUtils';
+} from '../marks/markUtils.js';
+import { getBandPadding } from '../scale/scaleSpecBuilder.js';
+import { getLineWidthPixelsFromLineWidth } from '../specUtils.js';
+import { BarSpecOptions, Orientation } from '../types/index.js';
+import { getTrellisProperties, isTrellised } from './trellisPropertyUtils.js';
 
 /** Per-mark-namespaced field name for the composite per-bar hover-animation identity (see `BarSpecOptions.barIds`). */
 export const getBarAnimIdField = (name: string): string => `${name}_${BAR_ANIM_ID}`;

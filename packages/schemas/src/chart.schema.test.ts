@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { parseChartRequest } from '.';
-import { ChartSchema } from './chart.schema';
+import { parseChartRequest } from './index.js';
+import { ChartSchema } from './chart.schema.js';
 
 const validBarRequest = {
   component: 'Chart',

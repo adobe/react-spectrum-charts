@@ -18,7 +18,7 @@ import {
   findFocusedDimensionAreaSceneItem,
   hideFocusedItemTooltip,
   showFocusedItemTooltip,
-} from './focusedItemTooltip';
+} from './focusedItemTooltip.js';
 
 const MARK_NAME = 'bar0';
 const RING_NAME = `${MARK_NAME}_focusRing`;

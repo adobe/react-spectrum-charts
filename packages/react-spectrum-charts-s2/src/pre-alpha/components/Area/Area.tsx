@@ -15,7 +15,7 @@ import { FC } from 'react';
 
 import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 
-import { AreaProps } from '../../../types';
+import { AreaProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Area: FC<AreaProps> = ({

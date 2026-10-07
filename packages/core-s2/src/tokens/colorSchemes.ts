@@ -17,7 +17,7 @@ import {
   s2Categorical12,
   s2Categorical16,
   s2Categorical20,
-} from './categoricalColorPalette';
+} from './categoricalColorPalette.js';
 import {
   divergentOrangeYellowSeafoam5,
   divergentOrangeYellowSeafoam9,
@@ -28,7 +28,7 @@ import {
   divergentRedYellowBlue5,
   divergentRedYellowBlue9,
   divergentRedYellowBlue15,
-} from './divergingColorPalette';
+} from './divergingColorPalette.js';
 import {
   sequentialCerulean5,
   sequentialCerulean9,
@@ -45,7 +45,7 @@ import {
   sequentialViridis5,
   sequentialViridis9,
   sequentialViridis16,
-} from './sequentialColorPalette';
+} from './sequentialColorPalette.js';
 
 export const colorSchemes = {
   categorical6,

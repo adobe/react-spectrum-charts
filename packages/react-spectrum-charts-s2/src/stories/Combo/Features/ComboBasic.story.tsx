@@ -13,12 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Combo } from '../../../pre-alpha';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps, ComboProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Combo } from '../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps, ComboProps } from '../../../types/index.js';
 
 // orders and visits share a comparable scale, so both marks plot against a single shared axis
 const ordersAndVisitsComboData = [

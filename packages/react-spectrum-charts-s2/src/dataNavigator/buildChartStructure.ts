@@ -14,10 +14,10 @@ import { Structure } from 'data-navigator';
 import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/core-s2/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { AxisFieldType, buildAxisStructure } from './buildAxisStructure';
-import { buildBarStructure, segmentId } from './buildBarStructure';
-import { composeRegions, NamedRegion } from './composeRegions';
-import { getBaseNavigationRules } from './navigationRules';
+import { AxisFieldType, buildAxisStructure } from './buildAxisStructure.js';
+import { buildBarStructure, segmentId } from './buildBarStructure.js';
+import { composeRegions, NamedRegion } from './composeRegions.js';
+import { getBaseNavigationRules } from './navigationRules.js';
 
 export type NavigableChartType = 'bar';
 

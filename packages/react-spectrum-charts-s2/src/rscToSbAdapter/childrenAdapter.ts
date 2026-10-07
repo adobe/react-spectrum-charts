@@ -33,20 +33,20 @@ import {
   TrendlineOptions,
 } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Axis } from '../components/Axis';
-import { AxisThumbnail } from '../components/AxisThumbnail';
-import { Bar } from '../components/Bar';
-import { BarDirectLabel } from '../components/BarDirectLabel';
-import { ChartActionBar } from '../components/ChartActionBar';
-import { ChartInspect } from '../components/ChartInspect';
-import { ChartPopover } from '../components/ChartPopover';
-import { Legend } from '../components/Legend';
-import { Line } from '../components/Line';
-import { LineDirectLabel } from '../components/LineDirectLabel';
-import { LineForecast } from '../components/LineForecast';
-import { LinePointAnnotation } from '../components/LinePointAnnotation';
-import { ReferenceLine } from '../components/ReferenceLine';
-import { Title } from '../components/Title';
+import { Axis } from '../components/Axis/index.js';
+import { AxisThumbnail } from '../components/AxisThumbnail/index.js';
+import { Bar } from '../components/Bar/index.js';
+import { BarDirectLabel } from '../components/BarDirectLabel/index.js';
+import { ChartActionBar } from '../components/ChartActionBar/index.js';
+import { ChartInspect } from '../components/ChartInspect/index.js';
+import { ChartPopover } from '../components/ChartPopover/index.js';
+import { Legend } from '../components/Legend/index.js';
+import { Line } from '../components/Line/index.js';
+import { LineDirectLabel } from '../components/LineDirectLabel/index.js';
+import { LineForecast } from '../components/LineForecast/index.js';
+import { LinePointAnnotation } from '../components/LinePointAnnotation/index.js';
+import { ReferenceLine } from '../components/ReferenceLine/index.js';
+import { Title } from '../components/Title/index.js';
 import {
   Area,
   Bullet,
@@ -59,7 +59,7 @@ import {
   SegmentLabel,
   Trendline,
   TrendlineAnnotation,
-} from '../pre-alpha';
+} from '../pre-alpha/index.js';
 import {
   AreaProps,
   AxisProps,
@@ -86,22 +86,22 @@ import {
   TitleProps,
   TrendlineAnnotationProps,
   TrendlineProps,
-} from '../types';
-import { sanitizeChildren } from '../utils';
-import { getAreaOptions } from './areaAdapter';
-import { getAxisOptions } from './axisAdapter';
-import { getBarOptions } from './barAdapter';
-import { getBulletOptions } from './bulletAdapter';
-import { getChartActionBarOptions } from './chartActionBarAdapter';
-import { getChartPopoverOptions } from './chartPopoverAdapter';
-import { getChartInspectOptions } from './chartInspectAdapter';
-import { ChildrenToOptions } from './childOptions.types';
-import { getComboOptions } from './comboAdapter';
-import { getDonutOptions } from './donutAdapter';
-import { getLegendOptions } from './legendAdapter';
-import { getLineOptions } from './lineAdapter';
-import { getScatterOptions } from './scatterAdapter';
-import { getTrendlineOptions } from './trendlineAdapter';
+} from '../types/index.js';
+import { sanitizeChildren } from '../utils/index.js';
+import { getAreaOptions } from './areaAdapter.js';
+import { getAxisOptions } from './axisAdapter.js';
+import { getBarOptions } from './barAdapter.js';
+import { getBulletOptions } from './bulletAdapter.js';
+import { getChartActionBarOptions } from './chartActionBarAdapter.js';
+import { getChartPopoverOptions } from './chartPopoverAdapter.js';
+import { getChartInspectOptions } from './chartInspectAdapter.js';
+import { ChildrenToOptions } from './childOptions.types.js';
+import { getComboOptions } from './comboAdapter.js';
+import { getDonutOptions } from './donutAdapter.js';
+import { getLegendOptions } from './legendAdapter.js';
+import { getLineOptions } from './lineAdapter.js';
+import { getScatterOptions } from './scatterAdapter.js';
+import { getTrendlineOptions } from './trendlineAdapter.js';
 
 export const childrenToOptions: ChildrenToOptions = (children) => {
   const axes: AxisOptions[] = [];

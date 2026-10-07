@@ -21,14 +21,14 @@ import {
   DEFAULT_SYMBOL_SIZE,
   DEFAULT_SYMBOL_STROKE_WIDTH,
   ROUNDED_SQUARE_PATH,
-} from '../constants';
+} from '../constants/index.js';
 
-import { categorical16 } from './categoricalColorPalette';
-import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette';
-import { sequentialViridis16 } from './sequentialColorPalette';
-import { spectrum2Colors } from './spectrum2Colors';
-import { ADOBE_CLEAN_FONT } from './fonts';
-import { getS2ColorValue } from './utils';
+import { categorical16 } from './categoricalColorPalette.js';
+import { divergentOrangeYellowSeafoam15 } from './divergingColorPalette.js';
+import { sequentialViridis16 } from './sequentialColorPalette.js';
+import { spectrum2Colors } from './spectrum2Colors.js';
+import { ADOBE_CLEAN_FONT } from './fonts.js';
+import { getS2ColorValue } from './utils.js';
 
 export function getSpectrum2VegaConfig(colorScheme: 'light' | 'dark'): Config {
   const FONT_COLOR = getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme);

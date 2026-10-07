@@ -16,13 +16,13 @@ import { StoryFn } from '@storybook/react';
 import { s2Categorical12 } from '@spectrum-charts/core-s2/tokens';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Bar, Line } from '../../../components';
-import { ChartInspect } from '../../../components/ChartInspect';
-import useChartProps from '../../../hooks/useChartProps';
-import { browserData } from '../../../stories/data/data';
-import { formatTimestamp } from '../../../stories/storyUtils';
-import { bindWithProps } from '../../../test-utils';
+import { Chart } from '../../../Chart.js';
+import { Bar, Line } from '../../../components/index.js';
+import { ChartInspect } from '../../../components/ChartInspect/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { browserData } from '../../../stories/data/data.js';
+import { formatTimestamp } from '../../../stories/storyUtils.js';
+import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Chart Inspect/Features',

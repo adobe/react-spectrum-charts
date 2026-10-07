@@ -20,12 +20,12 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { ChartInspect, ChartPopover } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps, DonutProps, SegmentLabelProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { ChartInspect, ChartPopover } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps, DonutProps, SegmentLabelProps } from '../../../types/index.js';
 import {
   Variation,
   VariationDashboard,
@@ -35,15 +35,15 @@ import {
   useVariationDataset,
   useVariationSize,
   useVariationViewMode,
-} from '../../VariationDashboard';
-import { basicDonutData, booleanDonutData, zeroDonutData } from '../../components/Donut/data';
+} from '../../VariationDashboard.js';
+import { basicDonutData, booleanDonutData, zeroDonutData } from '../../components/Donut/data.js';
 import {
   DonutVariationDatum,
   DonutVariationDatasetName,
   donutDatasetOptions,
   donutVariationDatasets,
   getLargestDonutSeries,
-} from './donutVariationData';
+} from './donutVariationData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Dashboard',

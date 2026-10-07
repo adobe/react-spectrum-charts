@@ -11,7 +11,7 @@
  */
 import { MARK_ID } from '@spectrum-charts/core-s2/constants';
 
-import { DonutSpecOptions } from '../types';
+import { DonutSpecOptions } from '../types/index.js';
 
 export const defaultDonutOptions: DonutSpecOptions = {
   chartPopovers: [],

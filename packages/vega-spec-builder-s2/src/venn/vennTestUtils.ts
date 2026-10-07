@@ -11,7 +11,7 @@
  */
 import { DEFAULT_VENN_COLOR, DEFAULT_VENN_LABEL, DEFAULT_VENN_METRIC } from '@spectrum-charts/core-s2/constants';
 
-import { VennSpecOptions } from '../types';
+import { VennSpecOptions } from '../types/index.js';
 
 const { A, B, C } = {
   A: 'Instagram',

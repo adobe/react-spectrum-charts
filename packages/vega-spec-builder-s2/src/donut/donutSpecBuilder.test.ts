@@ -23,12 +23,12 @@ import {
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { buildSpec } from '../chartSpecBuilder';
-import { getExpressionFunctions } from '../expressionFunctions';
-import { defaultSignals } from '../specTestUtils';
-import { initializeSpec } from '../specUtils';
-import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
-import { defaultDonutOptions } from './donutTestUtils';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
+import { defaultSignals } from '../specTestUtils.js';
+import { initializeSpec } from '../specUtils.js';
+import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder.js';
+import { defaultDonutOptions } from './donutTestUtils.js';
 
 describe('addData', () => {
   test('positions direct-label data coordinates from the fixed circle start', async () => {

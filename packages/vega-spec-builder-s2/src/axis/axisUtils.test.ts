@@ -13,8 +13,8 @@ import { Scale } from 'vega';
 
 import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { AxisSpecOptions, DivergingBarMark, SubLabel } from '../types';
-import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils';
+import { AxisSpecOptions, DivergingBarMark, SubLabel } from '../types/index.js';
+import { defaultAxisOptions, defaultXBaselineMark, defaultYBaselineMark } from './axisTestUtils.js';
 import {
   DivergingBarContext,
   getBaselineRule,
@@ -30,7 +30,7 @@ import {
   getTickCount,
   getTimeAxes,
   productionRuleToExpr,
-} from './axisUtils';
+} from './axisUtils.js';
 
 describe('getBaselineRule', () => {
   describe('initial state', () => {

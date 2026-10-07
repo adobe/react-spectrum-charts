@@ -13,10 +13,10 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { SegmentLabel } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
-import { basicDonutData, sliveredDonutData } from '../../../components/Donut/data';
-import { ResponsiveDonut } from '../ResponsiveDonut';
+import { SegmentLabel } from '../../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { basicDonutData, sliveredDonutData } from '../../../components/Donut/data.js';
+import { ResponsiveDonut } from '../ResponsiveDonut.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Segment Label',

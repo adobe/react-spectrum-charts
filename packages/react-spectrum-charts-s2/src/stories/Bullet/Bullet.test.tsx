@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Bullet } from '../../pre-alpha/components/Bullet';
-import { findAllMarksByGroupName, findChart, render } from '../../test-utils';
-import { Basic } from './Features/BulletBasic.story';
+import { Bullet } from '../../pre-alpha/components/Bullet/index.js';
+import { findAllMarksByGroupName, findChart, render } from '../../test-utils/index.js';
+import { Basic } from './Features/BulletBasic.story.js';
 
 describe('Bullet', () => {
   // Bullet is not a real React component. This test just provides test coverage for sonarqube

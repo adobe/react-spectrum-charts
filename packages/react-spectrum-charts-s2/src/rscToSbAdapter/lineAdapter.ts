@@ -11,8 +11,8 @@
  */
 import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { LineProps } from '../types';
-import { ChildrenToOptions } from './childOptions.types';
+import { LineProps } from '../types/index.js';
+import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getLineOptions = (
   { children, onClick, onContextMenu, contextMenuMode: _contextMenuMode, ...lineProps }: LineProps,

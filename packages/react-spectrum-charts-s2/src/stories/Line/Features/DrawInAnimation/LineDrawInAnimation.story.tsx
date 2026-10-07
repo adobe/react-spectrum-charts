@@ -17,13 +17,13 @@ import { StoryFn } from '@storybook/react';
 
 import { AnimationType } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
-import { formatTimestamp } from '../../../storyUtils';
+import { Chart } from '../../../../Chart.js';
+import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../stories/data/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps } from '../../../../types/index.js';
+import { formatTimestamp } from '../../../storyUtils.js';
 import { Datum } from 'vega';
 
 

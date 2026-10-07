@@ -32,8 +32,8 @@ import {
   injectLegendHoverIntoData,
   setHoverOpacityForMarks,
   setHoverStrokeWidthForMarks,
-} from './legendHighlightUtils';
-import { defaultMark } from './legendTestUtils';
+} from './legendHighlightUtils.js';
+import { defaultMark } from './legendTestUtils.js';
 
 const defaultGroupMark: Mark = {
   type: 'group',

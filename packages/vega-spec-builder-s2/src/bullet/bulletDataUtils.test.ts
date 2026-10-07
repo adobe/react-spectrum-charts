@@ -11,9 +11,9 @@
  */
 import { Data } from 'vega';
 
-import { BulletSpecOptions, ThresholdBackground } from '../types';
-import { generateThresholdColorExpr, getBulletTableData, getBulletTransforms } from './bulletDataUtils';
-import { sampleOptionsColumn } from './bulletTestUtils';
+import { BulletSpecOptions, ThresholdBackground } from '../types/index.js';
+import { generateThresholdColorExpr, getBulletTableData, getBulletTransforms } from './bulletDataUtils.js';
+import { sampleOptionsColumn } from './bulletTestUtils.js';
 
 describe('getBulletTableData', () => {
   it('Should create a new table data if it does not exist', () => {

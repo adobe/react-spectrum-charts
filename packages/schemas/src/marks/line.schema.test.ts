@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { LineSchema } from './line.schema';
+import { LineSchema } from './line.schema.js';
 
 describe('LineSchema', () => {
   test('parses a minimal Line', () => {

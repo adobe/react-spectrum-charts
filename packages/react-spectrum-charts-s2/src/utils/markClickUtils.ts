@@ -16,11 +16,11 @@ import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega'
 import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
-import type { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails';
-import type { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails';
-import type { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails';
-import { ContextMenuMode } from '../types/marks/line.types';
-import { toggleStringArrayValue } from './utils';
+import type { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails.js';
+import type { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails.js';
+import type { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails.js';
+import { ContextMenuMode } from '../types/marks/line.types.js';
+import { toggleStringArrayValue } from './utils.js';
 
 export type ActionItem = Item | undefined | null;
 type ViewEventCallback = (event: ScenegraphEvent, item: ActionItem) => void;

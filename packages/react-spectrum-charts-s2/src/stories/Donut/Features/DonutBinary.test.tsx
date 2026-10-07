@@ -11,8 +11,8 @@
  */
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
-import { Binary, BooleanProp } from './DonutBinary.story';
+import { findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils/index.js';
+import { Binary, BooleanProp } from './DonutBinary.story.js';
 
 describe('DonutBinary', () => {
   // Boolean renders two charts: positive (green primary) and negative (red primary, reversed data)

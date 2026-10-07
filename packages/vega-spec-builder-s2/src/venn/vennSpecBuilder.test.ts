@@ -11,10 +11,10 @@
  */
 import { COLOR_SCALE, HOVERED_ITEM, TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { defaultSignals } from '../specTestUtils';
-import { initializeSpec } from '../specUtils';
-import { addData, addMarks, addScales, addSignals, addVenn } from './vennSpecBuilder';
-import { customVennOptions, defaultVennOptions, data as vennData } from './vennTestUtils';
+import { defaultSignals } from '../specTestUtils.js';
+import { initializeSpec } from '../specUtils.js';
+import { addData, addMarks, addScales, addSignals, addVenn } from './vennSpecBuilder.js';
+import { customVennOptions, defaultVennOptions, data as vennData } from './vennTestUtils.js';
 
 describe('addData', () => {
   test('should add data correctly to tables circles, intersections and table', () => {

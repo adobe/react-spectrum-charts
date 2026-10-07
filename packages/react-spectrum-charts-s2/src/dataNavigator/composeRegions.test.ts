@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { buildAxisStructure } from './buildAxisStructure';
-import { buildBarStructure } from './buildBarStructure';
-import { composeRegions, getNodeRegion } from './composeRegions';
+import { buildAxisStructure } from './buildAxisStructure.js';
+import { buildBarStructure } from './buildBarStructure.js';
+import { composeRegions, getNodeRegion } from './composeRegions.js';
 
 const data = [
   { browser: 'Chrome', downloads: 27000 },

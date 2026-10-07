@@ -15,7 +15,7 @@ import { FC } from 'react';
 
 import { DEFAULT_COLOR, DEFAULT_LINEAR_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SIZE } from '@spectrum-charts/core-s2/constants';
 
-import { ScatterProps } from '../../../types';
+import { ScatterProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Scatter: FC<ScatterProps> = ({

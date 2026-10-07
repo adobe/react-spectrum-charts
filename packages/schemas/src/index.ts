@@ -9,15 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartSchema } from './chart.schema';
+import { ChartSchema } from './chart.schema.js';
 
-export * from './axis.schema';
-export * from './chart.schema';
-export * from './dialogs/chartInspect.schema';
-export * from './marks/bar.schema';
-export * from './marks/line.schema';
-export * from './marks/supplemental/barDirectLabel.schema';
-export * from './marks/supplemental/lineDirectLabel.schema';
+export * from './axis.schema.js';
+export * from './chart.schema.js';
+export * from './dialogs/chartInspect.schema.js';
+export * from './marks/bar.schema.js';
+export * from './marks/line.schema.js';
+export * from './marks/supplemental/barDirectLabel.schema.js';
+export * from './marks/supplemental/lineDirectLabel.schema.js';
 
 /** Validates and types an agent-supplied chart request against the catalog contract. */
 export function parseChartRequest(payload: unknown) {

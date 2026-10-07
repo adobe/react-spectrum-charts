@@ -13,13 +13,13 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import useChartProps from '../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../index';
-import { bindWithProps } from '../test-utils';
+import useChartProps from '../hooks/useChartProps.js';
+import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../index.js';
+import { bindWithProps } from '../test-utils/index.js';
 import './Chart.story.css';
-import { ChartBarStory } from './ChartBarStory';
-import { ChartDynamicHeightBarStory } from './ChartDynamicHeightBarStory';
-import { data, workspaceTrendsData } from './data/data';
+import { ChartBarStory } from './ChartBarStory.js';
+import { ChartDynamicHeightBarStory } from './ChartDynamicHeightBarStory.js';
+import { data, workspaceTrendsData } from './data/data.js';
 
 export default {
   title: 'RSC/Chart',

@@ -10,4 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './EmptyState';
+export * from './EmptyState.js';

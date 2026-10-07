@@ -13,12 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Legend, Line, LineDirectLabel } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData, workspaceTrendsSixSeriesData } from '../../../stories/data/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Legend, Line, LineDirectLabel } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { workspaceTrendsData, workspaceTrendsSixSeriesData } from '../../../stories/data/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/PrimarySeries',

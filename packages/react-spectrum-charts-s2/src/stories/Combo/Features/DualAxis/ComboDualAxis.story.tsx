@@ -13,13 +13,13 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../../Chart';
-import { Axis, Bar, Line } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Combo } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps, ComboProps } from '../../../../types';
-import { peopleTotalComboData } from '../../../data/data';
+import { Chart } from '../../../../Chart.js';
+import { Axis, Bar, Line } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Combo } from '../../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps, ComboProps } from '../../../../types/index.js';
+import { peopleTotalComboData } from '../../../data/data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features/DualAxis',

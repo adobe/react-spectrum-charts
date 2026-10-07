@@ -11,8 +11,8 @@
  */
 import React from 'react';
 
-import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils';
-import { Basic, Label } from './ReferenceLineBar.story';
+import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils/index.js';
+import { Basic, Label } from './ReferenceLineBar.story.js';
 
 describe('ReferenceLineBar', () => {
   test('Reference line renders', async () => {

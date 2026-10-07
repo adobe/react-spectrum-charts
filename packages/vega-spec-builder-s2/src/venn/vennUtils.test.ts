@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { customVennOptions, data as vennData } from './vennTestUtils';
+import { customVennOptions, data as vennData } from './vennTestUtils.js';
 import {
   getCircleMark,
   getCircleStrokeMark,
@@ -18,7 +18,7 @@ import {
   getTextMark,
   getVennSolution,
   mapDataForVennHelper,
-} from './vennUtils';
+} from './vennUtils.js';
 
 describe('getVennSolution', () => {
   test('should return the correct object structure with defaultVennOptions', () => {

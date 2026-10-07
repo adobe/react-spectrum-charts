@@ -20,10 +20,10 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { defaultSignals } from '../specTestUtils';
-import { initializeSpec } from '../specUtils';
-import { addData, addSignals, setScales } from './scatterSpecBuilder';
-import { defaultScatterOptions } from './scatterTestUtils';
+import { defaultSignals } from '../specTestUtils.js';
+import { initializeSpec } from '../specUtils.js';
+import { addData, addSignals, setScales } from './scatterSpecBuilder.js';
+import { defaultScatterOptions } from './scatterTestUtils.js';
 
 describe('addData()', () => {
   test('should add time transform is dimensionScaleType === "time"', () => {

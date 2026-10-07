@@ -15,12 +15,12 @@ import { StoryFn } from '@storybook/react';
 
 import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../../Chart';
-import { Axis, Legend, Line, ReferenceLine } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../stories/data/data';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
+import { Chart } from '../../../../Chart.js';
+import { Axis, Legend, Line, ReferenceLine } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { workspaceTrendsData } from '../../../../stories/data/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps } from '../../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Reference Line',

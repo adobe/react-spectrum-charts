@@ -46,7 +46,7 @@ import {
   SymbolSize,
   SymbolSizeFacet,
   UserMeta,
-} from './types';
+} from './types/index.js';
 
 /**
  * gets all the keys that are used to facet by

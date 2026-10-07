@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { LegendProps } from '../../types';
+import { LegendProps } from '../../types/index.js';
 
 const Legend: FC<LegendProps> = ({
   align,

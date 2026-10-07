@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Chart } from '../Chart';
-import { bindWithProps } from '../test-utils';
-import { ChartBarStory } from './ChartBarStory';
+import { Chart } from '../Chart.js';
+import { bindWithProps } from '../test-utils/index.js';
+import { ChartBarStory } from './ChartBarStory.js';
 
 export default {
   title: 'RSC/Chart/States',

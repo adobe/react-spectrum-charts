@@ -13,8 +13,8 @@ import { FormulaTransform, Mark } from 'vega';
 
 import { BACKGROUND_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { getScaleName } from '../scale/scaleSpecBuilder';
-import { LineForecastOptions, LineForecastSpecOptions, LineSpecOptions } from '../types';
+import { getScaleName } from '../scale/scaleSpecBuilder.js';
+import { LineForecastOptions, LineForecastSpecOptions, LineSpecOptions } from '../types/index.js';
 
 export const getForecastAlternateFlagTransform = (name: string, dimension: string, start: LineForecastOptions['start']): FormulaTransform => ({
   type: 'formula',

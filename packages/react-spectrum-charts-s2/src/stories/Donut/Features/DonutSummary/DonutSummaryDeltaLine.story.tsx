@@ -13,10 +13,10 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../../Chart';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Donut, DonutSummary } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
+import { Chart } from '../../../../Chart.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Donut, DonutSummary } from '../../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Donut Summary',

@@ -16,9 +16,9 @@ import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
 import { TOOLTIP_DELAY } from '@spectrum-charts/core-s2/constants';
 
-import { Legend } from '../components';
-import { useChartContext } from '../context/RscChartContext';
-import { ChartChildElement, RscChartProps } from '../types';
+import { Legend } from '../components/index.js';
+import { useChartContext } from '../context/RscChartContext.js';
+import { ChartChildElement, RscChartProps } from '../types/index.js';
 import {
   getItemBounds,
   getOnAxisLabelClickCallback,
@@ -27,13 +27,13 @@ import {
   getOnMarkClickCallback,
   getOnMouseInputCallback,
   setSelectedSignals,
-} from '../utils';
-import useActionBars from './useActionBars';
-import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails';
-import { UseLegendProps } from './useLegend';
-import useMarkMouseInputDetails from './useMarkMouseInputDetails';
-import useMarkOnClickDetails from './useMarkOnClickDetails';
-import usePopovers from './usePopovers';
+} from '../utils/index.js';
+import useActionBars from './useActionBars.js';
+import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails.js';
+import { UseLegendProps } from './useLegend.js';
+import useMarkMouseInputDetails from './useMarkMouseInputDetails.js';
+import useMarkOnClickDetails from './useMarkOnClickDetails.js';
+import usePopovers from './usePopovers.js';
 
 const useNewChartView = (
   { idKey }: RscChartProps,
@@ -75,7 +75,7 @@ const useNewChartView = (
     (view: View) => {
       chartView.current = view;
       // Add a delay before displaying legend tooltips on hover.
-      let inspectTimeout: NodeJS.Timeout | undefined;
+      let inspectTimeout: ReturnType<typeof setTimeout> | undefined;
       view.tooltip((viewRef, event, item, value) => {
         const inspectHandler = new Handler(inspectOptions);
         // Cancel delayed tooltips if the mouse moves before the delay is resolved.

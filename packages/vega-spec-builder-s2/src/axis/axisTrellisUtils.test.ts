@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getTrellisAxisOptions } from './axisTrellisUtils';
+import { getTrellisAxisOptions } from './axisTrellisUtils.js';
 
 describe('getTrellisAxisOptions()', () => {
   test('should generate trellis axis options for x axis', () => {

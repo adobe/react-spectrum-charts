@@ -19,10 +19,10 @@ import {
   FILTERED_TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getOrientationProperties } from '../bar/barUtils';
-import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils';
-import { escapeD3FormatSpecifier, getD3FormatSpecifierFromNumberFormat } from '../specUtils';
-import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types';
+import { getOrientationProperties } from '../bar/barUtils.js';
+import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils.js';
+import { escapeD3FormatSpecifier, getD3FormatSpecifierFromNumberFormat } from '../specUtils.js';
+import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types/index.js';
 
 // Gap between the bar tip and an outside label
 const VERTICAL_LABEL_OFFSET = 6;

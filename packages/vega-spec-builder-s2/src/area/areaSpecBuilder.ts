@@ -33,16 +33,16 @@ import {
   addInspectSignals,
   isHighlightedByDimension,
   isHighlightedByGroup,
-} from '../chartInspect/chartInspectUtils';
-import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils';
-import { getInteractiveMarkName, hasPopover, hasInspect, isInteractive } from '../marks/markUtils';
-import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder';
+} from '../chartInspect/chartInspectUtils.js';
+import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils.js';
+import { getInteractiveMarkName, hasPopover, hasInspect, isInteractive } from '../marks/markUtils.js';
+import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
 import {
   addHoveredItemSignal,
   getControlledHoveredGroupSignal,
   getControlledHoveredIdSignal,
-} from '../signal/signalSpecBuilder';
-import { addUserMetaInteractiveMark } from '../specUtils';
+} from '../signal/signalSpecBuilder.js';
+import { addUserMetaInteractiveMark } from '../specUtils.js';
 import {
   AreaOptions,
   AreaSpecOptions,
@@ -51,8 +51,8 @@ import {
   HighlightedItem,
   ScSpec,
   ScaleType,
-} from '../types';
-import { getAreaMark, getX } from './areaUtils';
+} from '../types/index.js';
+import { getAreaMark, getX } from './areaUtils.js';
 
 export const addArea = produce<
   ScSpec,

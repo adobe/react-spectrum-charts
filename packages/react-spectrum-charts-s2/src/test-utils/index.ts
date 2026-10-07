@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './customQueries';
-export * from './utils';
-export * from './spectrumRender';
-export * from './bindWithProps';
+export * from './customQueries.js';
+export * from './utils.js';
+export * from './spectrumRender.js';
+export * from './bindWithProps.js';

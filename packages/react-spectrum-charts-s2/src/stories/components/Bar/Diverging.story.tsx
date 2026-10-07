@@ -13,16 +13,16 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, AxisThumbnail, Bar, BarDirectLabel, Title } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, AxisThumbnail, Bar, BarDirectLabel, Title } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarProps } from '../../../types/index.js';
 import {
   divergingConversionRateData,
   divergingConversionRateDataLongLabels,
   timeAxisDivergingData,
-} from './data';
+} from './data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Diverging',

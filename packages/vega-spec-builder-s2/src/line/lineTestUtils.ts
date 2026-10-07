@@ -17,8 +17,8 @@ import {
   MARK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { LineSpecOptions } from '../types';
-import { LineMarkOptions } from './lineUtils';
+import { LineSpecOptions } from '../types/index.js';
+import { LineMarkOptions } from './lineUtils.js';
 
 export const defaultLineMarkOptions: LineMarkOptions = {
   alternateSegmentLineType: 'dotted',

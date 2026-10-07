@@ -33,10 +33,10 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { isInteractive } from '../marks/markUtils';
-import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
-import { ChartData, ColorScheme, HighlightedItem, ScSpec, VennOptions, VennSpecOptions } from '../types';
+import { isInteractive } from '../marks/markUtils.js';
+import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
+import { ChartData, ColorScheme, HighlightedItem, ScSpec, VennOptions, VennSpecOptions } from '../types/index.js';
 import {
   SET_ID_DELIMITER,
   getCircleMark,
@@ -45,7 +45,7 @@ import {
   getInterserctionMark,
   getTextMark,
   getVennSolution,
-} from './vennUtils';
+} from './vennUtils.js';
 
 export const addVenn = produce<
   ScSpec,

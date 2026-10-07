@@ -19,9 +19,9 @@ import { TABLE } from '@spectrum-charts/core-s2/constants';
 import { getLocale } from '@spectrum-charts/core-s2/locales';
 import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { useDebugSpec } from './hooks/useDebugSpec';
-import { extractValues, isVegaData } from './hooks/useSpec';
-import { ChartProps } from './types';
+import { useDebugSpec } from './hooks/useDebugSpec.js';
+import { extractValues, isVegaData } from './hooks/useSpec.js';
+import { ChartProps } from './types/index.js';
 
 // Register a custom expression function that returns the full container width (including axis space).
 // `view._viewWidth` is the container width minus spec-level padding; adding padding back gives the

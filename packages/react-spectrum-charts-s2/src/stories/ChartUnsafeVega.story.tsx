@@ -15,12 +15,12 @@ import { StoryFn } from '@storybook/react';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../Chart';
-import useChartProps from '../hooks/useChartProps';
-import { bindWithProps } from '../test-utils';
-import { barData } from './components/Bar/data';
-import carsData from './data/cars.json';
-import { packedBubbleData } from './data/data';
+import { Chart } from '../Chart.js';
+import useChartProps from '../hooks/useChartProps.js';
+import { bindWithProps } from '../test-utils/index.js';
+import { barData } from './components/Bar/data.js';
+import carsData from './data/cars.json' with { type: 'json' };
+import { packedBubbleData } from './data/data.js';
 
 export default {
   title: 'RSC/Chart/UNSAFE_vegaSpec',

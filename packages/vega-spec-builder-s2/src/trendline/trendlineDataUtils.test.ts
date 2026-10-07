@@ -20,15 +20,15 @@ import {
   TRENDLINE_VALUE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { baseData } from '../specUtils';
+import { baseData } from '../specUtils.js';
 import {
   addTableDataTransforms,
   addTrendlineData,
   getAggregateTrendlineData,
   getRegressionTrendlineData,
   getTrendlineStatisticalTransforms,
-} from './trendlineDataUtils';
-import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
+} from './trendlineDataUtils.js';
+import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils.js';
 
 const getDefaultData = (): Data[] => JSON.parse(JSON.stringify(baseData));
 

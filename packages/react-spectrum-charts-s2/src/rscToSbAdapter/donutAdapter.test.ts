@@ -13,11 +13,11 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartPopover } from '../components/ChartPopover';
-import { ChartInspect } from '../components/ChartInspect';
-import { DonutSummary, SegmentLabel } from '../pre-alpha';
-import { childrenToOptions } from './childrenAdapter';
-import { getDonutOptions } from './donutAdapter';
+import { ChartPopover } from '../components/ChartPopover/index.js';
+import { ChartInspect } from '../components/ChartInspect/index.js';
+import { DonutSummary, SegmentLabel } from '../pre-alpha/index.js';
+import { childrenToOptions } from './childrenAdapter.js';
+import { getDonutOptions } from './donutAdapter.js';
 
 describe('getDonutOptions()', () => {
   it('should return all basic options', () => {

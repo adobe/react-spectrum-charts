@@ -10,12 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './categoricalColorPalette';
-export * from './colorSchemes';
-export * from './divergingColorPalette';
-export * from './sequentialColorPalette';
-export * from './spectrumColors';
-export * from './spectrum2Colors';
-export * from './fonts';
-export * from './spectrum2Theme';
-export * from './utils';
+export * from './categoricalColorPalette.js';
+export * from './colorSchemes.js';
+export * from './divergingColorPalette.js';
+export * from './sequentialColorPalette.js';
+export * from './spectrumColors.js';
+export * from './spectrum2Colors.js';
+export * from './fonts.js';
+export * from './spectrum2Theme.js';
+export * from './utils.js';

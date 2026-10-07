@@ -51,12 +51,12 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils';
-import { getPathFromSymbolShape } from '../specUtils';
-import { getTextNumberFormat } from '../textUtils';
-import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types';
-import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils';
-import { getDonutEmptyStateTest, getDonutOuterRadiusExpr, isDonutInteractive } from './donutUtils';
+import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils.js';
+import { getPathFromSymbolShape } from '../specUtils.js';
+import { getTextNumberFormat } from '../textUtils.js';
+import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types/index.js';
+import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils.js';
+import { getDonutEmptyStateTest, getDonutOuterRadiusExpr, isDonutInteractive } from './donutUtils.js';
 
 const getSegmentLabelName = ({ donutOptions, labelMode }: SegmentLabelSpecOptions): string => {
   const suffix = labelMode ? `${labelMode}SegmentLabel` : 'segmentLabel';

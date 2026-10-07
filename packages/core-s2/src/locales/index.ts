@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './locale';
-export * from './locale.types';
-export * from './numberLocales';
-export * from './timeLocales';
+export * from './locale.js';
+export * from './locale.types.js';
+export * from './numberLocales/index.js';
+export * from './timeLocales/index.js';

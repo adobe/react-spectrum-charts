@@ -21,8 +21,8 @@ import {
   waitFor,
   waitForMarksByGroupName,
   within,
-} from '../../../test-utils';
-import { InspectOnDimensionArea } from './DodgedBar.story';
+} from '../../../test-utils/index.js';
+import { InspectOnDimensionArea } from './DodgedBar.story.js';
 
 describe('InspectOnDimensionArea', () => {
   test('hovering dimension area should apply highlight styling and show tooltip', async () => {

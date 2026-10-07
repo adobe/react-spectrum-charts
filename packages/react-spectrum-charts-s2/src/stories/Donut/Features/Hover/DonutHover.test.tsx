@@ -18,9 +18,9 @@ import {
   screen,
   waitFor,
   within,
-} from '../../../../test-utils';
+} from '../../../../test-utils/index.js';
 import '../../../../test-utils/__mocks__/matchMedia.mock.js';
-import { InspectAndPopover } from './DonutHover.story';
+import { InspectAndPopover } from './DonutHover.story.js';
 
 describe('InspectAndPopover', () => {
   test('hovering a segment shows the default swatch, series, and percent with value', async () => {

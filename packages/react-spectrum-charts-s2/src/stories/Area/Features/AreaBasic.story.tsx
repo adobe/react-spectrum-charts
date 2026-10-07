@@ -13,13 +13,13 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Area } from '../../../pre-alpha';
-import { bindWithProps } from '../../../test-utils';
-import { AreaProps, ChartProps } from '../../../types';
-import { workspaceTrendsData } from '../../data/data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Area } from '../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { AreaProps, ChartProps } from '../../../types/index.js';
+import { workspaceTrendsData } from '../../data/data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Area/Features',

@@ -25,9 +25,9 @@ import { ActionButton, Popover } from '@react-spectrum/s2';
 import { COMPONENT_NAME } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { useChartContext } from '../../context/RscChartContext';
-import type { ActionBarDetail } from '../../hooks/useActionBars';
-import { clearHoverSignals, setSelectedSignals } from '../../utils';
+import { useChartContext } from '../../context/RscChartContext.js';
+import type { ActionBarDetail } from '../../hooks/useActionBars.js';
+import { clearHoverSignals, setSelectedSignals } from '../../utils/index.js';
 
 interface ChartActionBarDialogProps {
   actionBar: ActionBarDetail;

@@ -48,9 +48,9 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { defaultSignals } from '../specTestUtils';
-import { baseData, initializeSpec } from '../specUtils';
-import { ScSpec } from '../types/specUtil.types';
+import { defaultSignals } from '../specTestUtils.js';
+import { baseData, initializeSpec } from '../specUtils.js';
+import { ScSpec } from '../types/specUtil.types.js';
 import {
   addBar,
   addData,
@@ -63,15 +63,15 @@ import {
   getRepeatedScale,
   getStackAggregateData,
   getStackIdTransform,
-} from './barSpecBuilder';
+} from './barSpecBuilder.js';
 import {
   defaultBarOptions,
   defaultBarOptionsWithSecondayColor,
   defaultBarStrokeEncodings,
   defaultCornerRadiusEncodings,
   defaultStackedYEncodings,
-} from './barTestUtils';
-import { defaultDodgedMark } from './dodgedBarUtils.test';
+} from './barTestUtils.js';
+import { defaultDodgedMark } from './dodgedBarUtils.test.js';
 
 const startingSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],

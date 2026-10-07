@@ -17,8 +17,8 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { defaultTrendlineOptions } from '../trendline/trendlineTestUtils';
-import { TrendlineAnnotationSpecOptions } from '../types';
+import { defaultTrendlineOptions } from '../trendline/trendlineTestUtils.js';
+import { TrendlineAnnotationSpecOptions } from '../types/index.js';
 import {
   getColorKey,
   getTextFill,
@@ -29,7 +29,7 @@ import {
   getTrendlineAnnotationSpecOptions,
   getTrendlineAnnotationTextMark,
   getTrendlineAnnotations,
-} from './trendlineAnnotationUtils';
+} from './trendlineAnnotationUtils.js';
 
 const defaultAnnotationOptions: TrendlineAnnotationSpecOptions = {
   badge: false,

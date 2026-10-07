@@ -28,16 +28,16 @@ import {
   MARK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { BarSpecOptions } from '../types';
+import { BarSpecOptions } from '../types/index.js';
 import {
   defaultBarOptions,
   defaultBarStrokeEncodings,
   defaultCornerRadiusEncodings,
   defaultDodgedYEncodings,
   dodgedAnnotationMarks,
-} from './barTestUtils';
-import { getBarDimensionHoverArea } from './barUtils';
-import { getDodgedMarks } from './dodgedBarUtils';
+} from './barTestUtils.js';
+import { getBarDimensionHoverArea } from './barUtils.js';
+import { getDodgedMarks } from './dodgedBarUtils.js';
 
 const defaultDodgedOptions: BarSpecOptions = { ...defaultBarOptions, type: 'dodged' };
 

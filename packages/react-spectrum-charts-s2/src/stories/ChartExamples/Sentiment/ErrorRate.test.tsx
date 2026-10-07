@@ -11,8 +11,8 @@
  */
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { findChart, findMarksByGroupName, render } from '../../../test-utils';
-import { ErrorRate } from './ErrorRate.story';
+import { findChart, findMarksByGroupName, render } from '../../../test-utils/index.js';
+import { ErrorRate } from './ErrorRate.story.js';
 
 const colors = spectrum2Colors.light;
 

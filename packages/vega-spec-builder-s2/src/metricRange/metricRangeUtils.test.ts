@@ -22,13 +22,13 @@ import {
   MARK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types';
+import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types/index.js';
 import {
   applyMetricRangeOptionDefaults,
   getMetricRangeData,
   getMetricRangeGroupMarks,
   getMetricRangeMark,
-} from './metricRangeUtils';
+} from './metricRangeUtils.js';
 
 const defaultMetricRangeOptions: MetricRangeOptions = {
   lineType: 'shortDash',

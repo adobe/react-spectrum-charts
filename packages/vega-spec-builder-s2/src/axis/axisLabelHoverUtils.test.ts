@@ -13,13 +13,13 @@ import { Signal } from 'vega';
 
 import { DIMENSION_HOVER_AREA, FADE_FACTOR, HOVERED_ITEM } from '@spectrum-charts/core-s2/constants';
 
-import { InteractiveMark } from '../types';
+import { InteractiveMark } from '../types/index.js';
 import {
   addAxisLabelHoverSignalWiring,
   getAxisLabelDimensionFillOpacity,
   getAxisLabelMarkName,
   getMatchingInteractiveBarDimensionFields,
-} from './axisLabelHoverUtils';
+} from './axisLabelHoverUtils.js';
 
 const getDimensionHoverAreaSignal = (barName: string): Signal => ({
   description: `Tracks the hovered item for ${barName}_${DIMENSION_HOVER_AREA}`,

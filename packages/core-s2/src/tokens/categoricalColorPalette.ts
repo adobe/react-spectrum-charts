@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { spectrumColors } from './spectrumColors';
-import { spectrum2Colors } from './spectrum2Colors';
+import { spectrumColors } from './spectrumColors.js';
+import { spectrum2Colors } from './spectrum2Colors.js';
 
 const colors = spectrumColors.light;
 const s2Colors = spectrum2Colors.light;

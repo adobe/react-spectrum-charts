@@ -18,13 +18,13 @@ import { StoryFn } from '@storybook/react';
 import { AnimationType } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../../../Chart';
-import { Axis, ChartInspect, Line } from '../../../../../components';
-import useChartProps from '../../../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../../../stories/data/data';
-import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../../stories/storyUtils';
-import { bindWithProps } from '../../../../../test-utils';
-import { ChartProps } from '../../../../../types';
+import { Chart } from '../../../../../Chart.js';
+import { Axis, ChartInspect, Line } from '../../../../../components/index.js';
+import useChartProps from '../../../../../hooks/useChartProps.js';
+import { workspaceTrendsData } from '../../../../../stories/data/data.js';
+import { GeneratedTimeSeriesDatum, formatTimestamp, generateLargeData } from '../../../../../stories/storyUtils.js';
+import { bindWithProps } from '../../../../../test-utils/index.js';
+import { ChartProps } from '../../../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/HoverAnimation/Performance',

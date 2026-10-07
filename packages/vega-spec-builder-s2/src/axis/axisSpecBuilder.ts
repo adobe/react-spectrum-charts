@@ -35,10 +35,10 @@ import {
   addAxisAnnotationMarks,
   addAxisAnnotationSignals,
   getAxisAnnotationsFromChildren,
-} from '../axisAnnotation/axisAnnotationUtils';
-import { getCursor } from '../marks/markUtils';
-import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils';
-import { getGenericValueSignal } from '../signal/signalSpecBuilder';
+} from '../axisAnnotation/axisAnnotationUtils.js';
+import { getCursor } from '../marks/markUtils.js';
+import { getDualAxisScaleNames, getScaleField } from '../scale/scaleUtils.js';
+import { getGenericValueSignal } from '../signal/signalSpecBuilder.js';
 import {
   AxisOptions,
   AxisSpecOptions,
@@ -49,29 +49,29 @@ import {
   Position,
   ScSpec,
   UserMeta,
-} from '../types';
+} from '../types/index.js';
 import {
   addAxisLabelHoverSignalWiring,
   getAxisLabelDimensionFillOpacity,
   getAxisLabelMarkName,
   getMatchingInteractiveBarDimensionFields,
-} from './axisLabelHoverUtils';
+} from './axisLabelHoverUtils.js';
 import {
   getAxisLabelsEncoding,
   getAxisLabelTooltipRule,
   getControlledLabelAnchorValues,
   getLabelValue,
-} from './axisLabelUtils';
-import { isVerticalAxis } from './axisPositionUtils';
-import { getReferenceLineMarks, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils';
+} from './axisLabelUtils.js';
+import { isVerticalAxis } from './axisPositionUtils.js';
+import { getReferenceLineMarks, scaleTypeSupportsReferenceLines } from './axisReferenceLineUtils.js';
 import {
   addAxisThumbnailSignals,
   getAxisThumbnailLabelOffset,
   getAxisThumbnailMarks,
   getAxisThumbnails,
   scaleTypeSupportsThumbnails,
-} from './axisThumbnailUtils';
-import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils';
+} from './axisThumbnailUtils.js';
+import { encodeAxisTitle, getTrellisAxisOptions, isTrellisedChart } from './axisTrellisUtils.js';
 import {
   DivergingBarContext,
   getBaselineRule,
@@ -89,7 +89,7 @@ import {
   getTimeAxes,
   hasSubLabels,
   productionRuleToExpr,
-} from './axisUtils';
+} from './axisUtils.js';
 
 export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorScheme; index?: number }]>(
   (

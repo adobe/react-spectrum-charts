@@ -17,7 +17,7 @@ import {
   MARK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { LineSpecOptions, TrendlineSpecOptions } from '../types';
+import { LineSpecOptions, TrendlineSpecOptions } from '../types/index.js';
 
 export const defaultLineOptions: LineSpecOptions = {
   chartActionBars: [],

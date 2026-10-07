@@ -25,6 +25,8 @@ const config: StorybookConfig = {
 
   webpackFinal(config) {
     config.resolve ??= {};
+    // S2 packages are ESM with fully specified relative imports (`./foo.js`) that point at TypeScript sources.
+    config.resolve.extensionAlias = { ...config.resolve.extensionAlias, '.js': ['.ts', '.tsx', '.js'] };
     config.resolve.alias = {
       ...config.resolve.alias,
       '@spectrum-charts/core-s2': fileURLToPath(new URL('../packages/core-s2/src', import.meta.url)),

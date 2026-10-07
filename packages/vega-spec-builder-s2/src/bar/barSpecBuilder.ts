@@ -36,15 +36,15 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils';
+import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils.js';
 import {
   addInspectData,
   addInspectSignals,
   getGroupIdTransform,
   getInspects,
   isHighlightedByGroup,
-} from '../chartInspect/chartInspectUtils';
-import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils';
+} from '../chartInspect/chartInspectUtils.js';
+import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -52,8 +52,8 @@ import {
   getHoverFractionData,
   getHoverSeriesFractionData,
   getHoverTargetData,
-} from '../marks/hoverAnimationUtils';
-import { getInteractiveMarkName, isInteractive } from '../marks/markUtils';
+} from '../marks/hoverAnimationUtils.js';
+import { getInteractiveMarkName, isInteractive } from '../marks/markUtils.js';
 import {
   addDomainFields,
   addFieldToFacetScaleDomain,
@@ -62,24 +62,24 @@ import {
   getMetricScale,
   getScaleIndexByName,
   getScaleIndexByType,
-} from '../scale/scaleSpecBuilder';
-import { getDualAxisScaleNames } from '../scale/scaleUtils';
+} from '../scale/scaleSpecBuilder.js';
+import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
 import {
   addHoveredItemSignal,
   getFirstRscSeriesIdSignal,
   getGenericValueSignal,
   getLastRscSeriesIdSignal,
-} from '../signal/signalSpecBuilder';
+} from '../signal/signalSpecBuilder.js';
 import {
   addUserMetaAnimatedMark,
   addUserMetaDivergingBarMark,
   addUserMetaInteractiveMark,
   getFacetsFromOptions,
-} from '../specUtils';
-import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils';
-import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline';
-import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types';
-import { getChartFocusRing } from './barFocusRingUtils';
+} from '../specUtils.js';
+import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils.js';
+import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline/index.js';
+import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types/index.js';
+import { getChartFocusRing } from './barFocusRingUtils.js';
 import {
   getBarAnimIdField,
   getBarHoverRules,
@@ -90,11 +90,11 @@ import {
   getScaleValues,
   isDodgedAndStacked,
   isDualMetricAxis,
-} from './barUtils';
-import { getDodgedMarks } from './dodgedBarUtils';
-import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils';
-import { isTrellised } from './trellisPropertyUtils';
-import { addTrellisScale, getTrellisGroupMark } from './trellisedBarUtils';
+} from './barUtils.js';
+import { getDodgedMarks } from './dodgedBarUtils.js';
+import { getDodgedAndStackedBarMark, getStackedBarMarks } from './stackedBarUtils.js';
+import { isTrellised } from './trellisPropertyUtils.js';
+import { addTrellisScale, getTrellisGroupMark } from './trellisedBarUtils.js';
 
 export const addBar = produce<
   ScSpec,

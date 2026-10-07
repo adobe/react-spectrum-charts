@@ -11,9 +11,9 @@
  */
 import React from 'react';
 
-import { Title } from '../../../components';
-import { findChart, getAllMarksByGroupName, render } from '../../../test-utils';
-import { Basic, FontWeight, Orient, Position } from './Title.story';
+import { Title } from '../../../components/index.js';
+import { findChart, getAllMarksByGroupName, render } from '../../../test-utils/index.js';
+import { Basic, FontWeight, Orient, Position } from './Title.story.js';
 
 describe('Title', () => {
   test('Basic renders properly', async () => {

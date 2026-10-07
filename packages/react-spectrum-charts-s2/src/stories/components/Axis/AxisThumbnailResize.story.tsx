@@ -13,12 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, AxisThumbnail, Bar } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { AxisThumbnailProps } from '../../../types';
-import { barData } from '../Bar/data';
+import { Chart } from '../../../Chart.js';
+import { Axis, AxisThumbnail, Bar } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { AxisThumbnailProps } from '../../../types/index.js';
+import { barData } from '../Bar/data.js';
 
 export default {
 	title: 'React Spectrum Charts 2/Axis/Features/Thumbnail',

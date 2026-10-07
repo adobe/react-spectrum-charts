@@ -33,7 +33,7 @@ import {
   SELECTED_SERIES,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getGenericValueSignal } from './signal/signalSpecBuilder';
+import { getGenericValueSignal } from './signal/signalSpecBuilder.js';
 
 export const defaultHighlightedItemSignal = getGenericValueSignal(CONTROLLED_HIGHLIGHTED_ITEM);
 export const defaultHighlightedGroupSignal = getGenericValueSignal(HIGHLIGHTED_GROUP);

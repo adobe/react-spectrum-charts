@@ -26,9 +26,9 @@ import {
 
 import { MS_PER_DAY, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 
-import { getFacetsFromOptions } from '../specUtils';
-import { AggregateMethod, TrendlineMethod, TrendlineSpecOptions } from '../types';
-import { TrendlineParentOptions, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils';
+import { getFacetsFromOptions } from '../specUtils.js';
+import { AggregateMethod, TrendlineMethod, TrendlineSpecOptions } from '../types/index.js';
+import { TrendlineParentOptions, getPolynomialOrder, getRegressionExtent, isPolynomialMethod } from './trendlineUtils.js';
 
 /**
  * Gets the aggreagate transform used for calculating the average trendline

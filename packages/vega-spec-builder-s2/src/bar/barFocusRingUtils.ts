@@ -22,9 +22,9 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { BarSpecOptions } from '../types';
-import { getDualAxisScaleNames } from '../scale/scaleUtils';
-import { getOrientationProperties, isDodgedAndStacked, isDualMetricAxis, rotateRectClockwiseIfNeeded } from './barUtils';
+import { BarSpecOptions } from '../types/index.js';
+import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
+import { getOrientationProperties, isDodgedAndStacked, isDualMetricAxis, rotateRectClockwiseIfNeeded } from './barUtils.js';
 
 const FOCUS_RING_STROKE_WIDTH = 2;
 const FOCUS_RING_ROUNDED_RADIUS = 6;

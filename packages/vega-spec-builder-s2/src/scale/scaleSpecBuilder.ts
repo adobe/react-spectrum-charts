@@ -15,8 +15,8 @@ import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from '
 import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { getDimensionField } from '../specUtils';
-import { DualFacet, FacetRef, FacetType, Orientation } from '../types';
+import { getDimensionField } from '../specUtils.js';
+import { DualFacet, FacetRef, FacetType, Orientation } from '../types/index.js';
 
 type AxisType = 'x' | 'y';
 type SupportedScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';

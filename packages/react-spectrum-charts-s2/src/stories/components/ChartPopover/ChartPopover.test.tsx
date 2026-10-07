@@ -14,7 +14,7 @@ import userEvent from '@testing-library/user-event';
 import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { ChartPopover } from '../../../components';
+import { ChartPopover } from '../../../components/index.js';
 import {
   allElementsHaveAttributeValue,
   clickNthElement,
@@ -27,7 +27,7 @@ import {
   screen,
   waitFor,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   Canvas,
@@ -42,7 +42,7 @@ import {
   StackedBarChart,
   Svg,
   WithCloseCallback,
-} from './ChartPopover.story';
+} from './ChartPopover.story.js';
 
 describe('ChartPopover', () => {
   // ChartPopover is not a real React component. This is test just provides test coverage for sonarqube

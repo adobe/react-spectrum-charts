@@ -16,12 +16,12 @@ import { StoryFn } from '@storybook/react';
 import { MARK_ID } from '@spectrum-charts/core-s2/constants';
 import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
-import { generateMockDataForTrellis } from './data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartPopover, ChartInspect, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarProps } from '../../../types/index.js';
+import { generateMockDataForTrellis } from './data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Trellis',
