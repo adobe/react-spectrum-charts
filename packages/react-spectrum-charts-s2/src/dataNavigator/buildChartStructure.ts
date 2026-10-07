@@ -15,7 +15,7 @@ import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/core-s2/constant
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisFieldType, buildAxisStructure } from './buildAxisStructure.js';
-import { buildBarStructure, segmentId } from './buildBarStructure.js';
+import { buildBarStructure, segmentId, toDimensionKey } from './buildBarStructure.js';
 import { composeRegions, NamedRegion } from './composeRegions.js';
 import { getBaseNavigationRules } from './navigationRules.js';
 
@@ -83,13 +83,13 @@ export const getNodeIdForDatum = (
   { dimension = DEFAULT_CATEGORICAL_DIMENSION, color }: { dimension?: string; color?: string }
 ): string | undefined => {
   if (chartType !== 'bar') return undefined;
-  const dimensionValue = datum[dimension];
-  if (dimensionValue == null || typeof dimensionValue === 'object') return undefined;
+  const dimensionKey = toDimensionKey(datum[dimension]);
+  if (dimensionKey === undefined) return undefined;
   // Stacked leaves are keyed by dimension+series; a padding-area datum has no series, so it won't match.
   if (color !== undefined) {
-    return datum[color] == null ? undefined : segmentId(dimensionValue, datum[color]);
+    return datum[color] == null ? undefined : segmentId(dimensionKey, datum[color]);
   }
-  return String(dimensionValue);
+  return dimensionKey;
 };
 
 export const buildChartStructure = (options: ChartStructureOptions): ChartStructure | undefined => {

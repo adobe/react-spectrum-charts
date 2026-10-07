@@ -57,6 +57,17 @@ const SEGMENT_ID_KEY = '_dnId';
 export const segmentId = (dimensionValue: unknown, seriesValue: unknown): string =>
   `${dimensionValue}${NAVIGATION_ID_SEPARATOR}${seriesValue}`;
 
+/**
+ * Converts a dimension value to its navigator key, or undefined if it can't be one.
+ * @param value
+ * @returns string | undefined
+ */
+export const toDimensionKey = (value: unknown): string | undefined => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || value instanceof Date) return String(value);
+  return undefined;
+};
+
 export interface BarStructure {
   structure: Structure;
   entryPoint: string | undefined;
@@ -361,10 +372,11 @@ export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {})
     if (!dimension || !rows) return String(node.id);
     // The division's own id is a data-navigator-internal composite, not the dimension value itself.
     const dimensionValue = node.derivedNode ? (node.data as Record<string, unknown> | undefined)?.[node.derivedNode] : undefined;
-    if (dimensionValue == null || typeof dimensionValue === 'object') return String(node.id);
-    const groupRows = rowsByDimension?.get(String(dimensionValue)) ?? rows.filter((row) => String(row[dimension]) === String(dimensionValue));
+    const dimensionKey = toDimensionKey(dimensionValue);
+    if (dimensionKey === undefined) return String(node.id);
+    const groupRows = rowsByDimension?.get(dimensionKey) ?? rows.filter((row) => toDimensionKey(row[dimension]) === dimensionKey);
     if (groupRows.length === 0) return String(node.id);
-    const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionValue}.`;
+    const header = `${fieldLabels[dimension] ?? dimension}: ${dimensionKey}.`;
     const segments = groupRows
       .map((row) => buildFieldValueParts(row as Record<string, unknown>, options, [dimension]))
       .filter((parts) => parts.length > 0)

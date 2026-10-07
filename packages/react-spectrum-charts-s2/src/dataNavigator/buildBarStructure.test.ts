@@ -11,7 +11,7 @@
  */
 import { NodeObject, Structure } from 'data-navigator';
 
-import { buildBarStructure, buildNodeLabel, segmentId } from './buildBarStructure.js';
+import { buildBarStructure, buildNodeLabel, segmentId, toDimensionKey } from './buildBarStructure.js';
 
 const hasEdgeBetween = (structure: Structure, a: string, b: string): boolean =>
   Object.values(structure.edges).some((edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a));
@@ -532,5 +532,40 @@ describe('buildBarStructure() fieldLabels', () => {
     const { structure } = buildBarStructure({ data: groupData, dimension: 'browser', color: 'operatingSystem', order: 'order', fieldLabels });
     const chromeDivisionId = divisionIdFor(structure, 'browser', 'Chrome');
     expect(structure.nodes[chromeDivisionId].semantics?.label).toBe(expectedLabel);
+  });
+});
+
+describe('toDimensionKey()', () => {
+  test('returns strings as-is and stringifies numbers, booleans, and dates', () => {
+    const date = new Date('2024-01-01T00:00:00Z');
+    expect(toDimensionKey('Chrome')).toBe('Chrome');
+    expect(toDimensionKey(3)).toBe('3');
+    expect(toDimensionKey(false)).toBe('false');
+    expect(toDimensionKey(date)).toBe(String(date));
+  });
+
+  test('returns undefined for values that cannot be a key', () => {
+    expect(toDimensionKey(undefined)).toBeUndefined();
+    expect(toDimensionKey(null)).toBeUndefined();
+    expect(toDimensionKey({ a: 1 })).toBeUndefined();
+    expect(toDimensionKey(['a'])).toBeUndefined();
+  });
+});
+
+describe('buildNodeLabel() division keys', () => {
+  test('describes a division whose dimension value is a Date', () => {
+    const date = new Date('2024-01-01T00:00:00Z');
+    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'day', data: { day: date } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'day',
+      data: [{ day: new Date(date), downloads: 5 }],
+      fieldLabels: { day: 'Day', downloads: 'Downloads' },
+    });
+    expect(label).toBe(`Day: ${String(date)}. Downloads: 5.`);
+  });
+
+  test('falls back to the node id when the dimension value is a plain object', () => {
+    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'day', data: { day: { a: 1 } } } as unknown as NodeObject;
+    expect(buildNodeLabel(node, { dimension: 'day', data: [{ day: { a: 1 }, downloads: 5 }] })).toBe('dn-1');
   });
 });
