@@ -79,6 +79,38 @@ module.exports = {
             message: 'Relative imports in ESM packages must be fully specified (e.g. ./foo.js or ./dir/index.js).',
           },
         ],
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [
+              { name: 'types', message: 'Please use relative path import for types instead (ex. ../types).' },
+              {
+                name: 'types/locales',
+                message: 'Please use relative path import for types instead (ex. ../types/locales).',
+              },
+            ],
+            patterns: [
+              {
+                group: [
+                  '@spectrum-charts/constants',
+                  '@spectrum-charts/constants/*',
+                  '@spectrum-charts/themes',
+                  '@spectrum-charts/themes/*',
+                  '@spectrum-charts/utils',
+                  '@spectrum-charts/utils/*',
+                  '@spectrum-charts/locales',
+                  '@spectrum-charts/locales/*',
+                  '@spectrum-charts/vega-spec-builder',
+                  '@spectrum-charts/vega-spec-builder/*',
+                  '@adobe/react-spectrum-charts',
+                  '@adobe/react-spectrum-charts/*',
+                ],
+                message:
+                  'S2 packages must not import S1 packages. Use @spectrum-charts/core-s2/{constants,tokens,utils,locales} instead.',
+              },
+            ],
+          },
+        ],
       },
     },
     {
