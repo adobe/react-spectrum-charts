@@ -113,6 +113,18 @@ describe('rscContainerWidth expression function', () => {
 	});
 });
 
+describe('rscViewWidth expression function', () => {
+	const fn = expressionFunction('rscViewWidth') as (this: unknown) => number;
+
+	test('returns _viewWidth without padding', () => {
+		expect(fn.call({ context: { dataflow: { _viewWidth: 380 } } })).toBe(380);
+	});
+
+	test('returns 0 when _viewWidth is undefined', () => {
+		expect(fn.call({ context: { dataflow: {} } })).toBe(0);
+	});
+});
+
 // AN-445759: regression tests for the init render cycle fix
 describe('VegaChart init render cycle', () => {
 	beforeEach(() => {
