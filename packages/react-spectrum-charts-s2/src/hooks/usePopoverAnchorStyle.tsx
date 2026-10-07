@@ -13,7 +13,7 @@ import { CSSProperties, useMemo } from 'react';
 
 import { Padding } from 'vega';
 
-import { useChartContext } from '../context/RscChartContext';
+import { useChartContext } from '../context/RscChartContext.js';
 
 export default function usePopoverAnchorStyle(padding: Padding): CSSProperties {
   const { chartView, selectedDataBounds, isPopoverOpen } = useChartContext();

@@ -14,10 +14,10 @@ import { View, expressionFunction, parse } from 'vega';
 import {
   DONUT_SUMMARY_LABEL_FONT_SIZES,
   DONUT_SUMMARY_VALUE_FONT_SIZES,
-} from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { DonutSummarySpecOptions } from '../types';
+import { DonutSummarySpecOptions } from '../types/index.js';
 import {
   getBooleanDonutSummaryGroupMark,
   getDonutSummaryData,
@@ -32,8 +32,8 @@ import {
   getSummaryValueEncode,
   getSummaryValueLimit,
   getSummaryValueText,
-} from './donutSummaryUtils';
-import { defaultDonutOptions } from './donutTestUtils';
+} from './donutSummaryUtils.js';
+import { defaultDonutOptions } from './donutTestUtils.js';
 
 const defaultDonutSummaryOptions: DonutSummarySpecOptions = {
   donutOptions: defaultDonutOptions,

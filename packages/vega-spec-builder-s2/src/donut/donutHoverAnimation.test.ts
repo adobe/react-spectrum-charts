@@ -20,14 +20,14 @@ import {
   MARK_ID,
   SELECTED_ITEM,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { buildSpec } from '../chartSpecBuilder';
-import { getExpressionFunctions } from '../expressionFunctions';
-import { ChartOptions } from '../types';
-import { getArcMark, getDonutOpacity } from './donutUtils';
-import { defaultDonutOptions } from './donutTestUtils';
-import { getRichSegmentLabelMarks, getSegmentLabelMarks } from './segmentLabelUtils';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
+import { ChartOptions } from '../types/index.js';
+import { getArcMark, getDonutOpacity } from './donutUtils.js';
+import { defaultDonutOptions } from './donutTestUtils.js';
+import { getRichSegmentLabelMarks, getSegmentLabelMarks } from './segmentLabelUtils.js';
 
 const data = [
   { id: 'a', series: 'Chrome', value: 30 },

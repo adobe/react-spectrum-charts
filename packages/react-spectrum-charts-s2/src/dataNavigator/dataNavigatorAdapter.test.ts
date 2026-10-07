@@ -23,13 +23,13 @@ import {
   HOVERED_ITEM,
   MARK_ID,
   SELECTED_ITEM,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { getItemBounds, triggerPopover } from '../utils/markClickUtils';
-import { segmentId } from './buildBarStructure';
-import { NavigableChartType } from './buildChartStructure';
-import { attachDataNavigator } from './dataNavigatorAdapter';
+import { getItemBounds, triggerPopover } from '../utils/markClickUtils.js';
+import { segmentId } from './buildBarStructure.js';
+import { NavigableChartType } from './buildChartStructure.js';
+import { attachDataNavigator } from './dataNavigatorAdapter.js';
 
 jest.mock('../utils/markClickUtils', () => ({
   ...jest.requireActual('../utils/markClickUtils'),

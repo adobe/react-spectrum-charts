@@ -10,6 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './axis.types';
-export * from './axisThumbnail.types';
-export * from './referenceLine.types';
+export * from './axis.types.js';
+export * from './axisThumbnail.types.js';
+export * from './referenceLine.types.js';

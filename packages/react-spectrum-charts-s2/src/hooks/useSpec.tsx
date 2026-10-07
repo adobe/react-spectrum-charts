@@ -13,11 +13,11 @@ import { useMemo } from 'react';
 
 import { Data, Spec, ValuesData } from 'vega';
 
-import { getColorValue } from '@spectrum-charts/themes';
+import { getColorValue } from '@spectrum-charts/core-s2/tokens';
 import { ChartData, ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter';
-import { SanitizedSpecProps } from '../types';
+import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter/index.js';
+import { SanitizedSpecProps } from '../types/index.js';
 
 export default function useSpec({
   animations,

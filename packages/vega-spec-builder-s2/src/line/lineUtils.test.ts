@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getPopoverMarkName } from './lineUtils';
+import { getPopoverMarkName } from './lineUtils.js';
 
 describe('getPopoverMarkName()', () => {
   test('should return undefined if there are no popovers', () => {

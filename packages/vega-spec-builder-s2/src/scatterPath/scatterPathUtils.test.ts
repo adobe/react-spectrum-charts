@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_COLOR, SYMBOL_PATH_WIDTH_SCALE } from '@spectrum-charts/constants';
+import { DEFAULT_COLOR, SYMBOL_PATH_WIDTH_SCALE } from '@spectrum-charts/core-s2/constants';
 
-import { defaultScatterOptions } from '../scatter/scatterTestUtils';
-import { getPathWidth, getScatterPathMarks, getScatterPathSpecOptions } from './scatterPathUtils';
+import { defaultScatterOptions } from '../scatter/scatterTestUtils.js';
+import { getPathWidth, getScatterPathMarks, getScatterPathSpecOptions } from './scatterPathUtils.js';
 
 describe('getScatterPathSpecOptions()', () => {
   test('should apply defaults', () => {

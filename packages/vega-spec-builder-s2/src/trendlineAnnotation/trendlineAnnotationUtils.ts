@@ -11,17 +11,17 @@
  */
 import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getColorProductionRule, getColorProductionRuleSignalString } from '../marks/markUtils';
-import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getLineWidthPixelsFromLineWidth } from '../specUtils';
+import { getColorProductionRule, getColorProductionRuleSignalString } from '../marks/markUtils.js';
+import { getScaleName } from '../scale/scaleSpecBuilder.js';
+import { getLineWidthPixelsFromLineWidth } from '../specUtils.js';
 import {
   getEndDimensionExtentProductionRule,
   getStartDimensionExtentProductionRule,
-} from '../trendline/trendlineExtentUtils';
-import { ColorFacet, TrendlineAnnotationOptions, TrendlineAnnotationSpecOptions, TrendlineSpecOptions } from '../types';
+} from '../trendline/trendlineExtentUtils.js';
+import { ColorFacet, TrendlineAnnotationOptions, TrendlineAnnotationSpecOptions, TrendlineSpecOptions } from '../types/index.js';
 
 /**
  * Applies all trendline annotation defaults

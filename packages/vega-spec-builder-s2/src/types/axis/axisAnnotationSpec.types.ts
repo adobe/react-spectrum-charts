@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme } from '../chartSpec.types';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
-import { PartiallyRequired } from '../specUtil.types';
-import { SpectrumColor } from '../spectrumVizColor.types';
+import { ColorScheme } from '../chartSpec.types.js';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
+import { PartiallyRequired } from '../specUtil.types.js';
+import { SpectrumColor } from '../spectrumVizColor.types.js';
 
 export type AxisAnnotationFormat = 'span' | 'summary';
 

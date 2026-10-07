@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { ScatterPathProps } from '../../../types';
+import { ScatterPathProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const ScatterPath: FC<ScatterPathProps> = ({ color = 'gray-500', groupBy, pathWidth = { value: 'M' }, opacity = 0.5 }) => {

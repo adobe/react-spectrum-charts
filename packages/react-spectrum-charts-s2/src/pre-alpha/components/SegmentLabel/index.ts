@@ -9,5 +9,5 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-export { SegmentLabel } from './SegmentLabel';
+export { SegmentLabel } from './SegmentLabel.js';
 

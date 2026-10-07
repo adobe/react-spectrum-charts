@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './axisSpec.types';
-export * from './axisAnnotationSpec.types';
-export * from './axisThumbnailSpec.types';
-export * from './referenceLineSpec.types';
+export * from './axisSpec.types.js';
+export * from './axisAnnotationSpec.types.js';
+export * from './axisThumbnailSpec.types.js';
+export * from './referenceLineSpec.types.js';

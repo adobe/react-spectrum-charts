@@ -10,4 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export { BarDirectLabel } from './BarDirectLabel';
+export { BarDirectLabel } from './BarDirectLabel.js';

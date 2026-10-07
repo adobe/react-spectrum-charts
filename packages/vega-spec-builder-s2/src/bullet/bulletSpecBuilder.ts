@@ -18,18 +18,18 @@ import {
   DEFAULT_LABEL_POSITION,
   DEFAULT_SCALE_TYPE,
   DEFAULT_SCALE_VALUE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/themes';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils';
-import { getFilteredInspectData } from '../data/dataUtils';
-import { getInteractiveMarkName, isInteractive } from '../marks/markUtils';
-import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
-import { addUserMetaInteractiveMark } from '../specUtils';
-import { BulletOptions, BulletSpecOptions, ColorScheme, ScSpec } from '../types';
-import { getBulletTableData, getBulletTransforms } from './bulletDataUtils';
-import { addAxes, addMarks } from './bulletMarkUtils';
+import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils.js';
+import { getFilteredInspectData } from '../data/dataUtils.js';
+import { getInteractiveMarkName, isInteractive } from '../marks/markUtils.js';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
+import { addUserMetaInteractiveMark } from '../specUtils.js';
+import { BulletOptions, BulletSpecOptions, ColorScheme, ScSpec } from '../types/index.js';
+import { getBulletTableData, getBulletTransforms } from './bulletDataUtils.js';
+import { addAxes, addMarks } from './bulletMarkUtils.js';
 
 const DEFAULT_COLOR = spectrum2Colors.light['blue-900'];
 

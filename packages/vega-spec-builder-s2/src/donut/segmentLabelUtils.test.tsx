@@ -20,11 +20,11 @@ import {
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
   HOVERED_ITEM,
   MARK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types';
-import { defaultDonutOptions } from './donutTestUtils';
-import { getDonutEmptyStateTest } from './donutUtils';
+import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types/index.js';
+import { defaultDonutOptions } from './donutTestUtils.js';
+import { getDonutEmptyStateTest } from './donutUtils.js';
 import {
   getRichSegmentLabelData,
   getRichSegmentLabelMarks,
@@ -37,7 +37,7 @@ import {
   getSegmentLabelValueText,
   getSegmentLabelValueTextMark,
   getTextRuleExpr,
-} from './segmentLabelUtils';
+} from './segmentLabelUtils.js';
 
 const defaultDonutOptionsWithSegmentLabel: DonutSpecOptions = {
   ...defaultDonutOptions,

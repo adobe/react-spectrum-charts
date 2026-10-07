@@ -13,9 +13,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_METRIC } from '@spectrum-charts/constants';
+import { DEFAULT_COLOR, DEFAULT_METRIC } from '@spectrum-charts/core-s2/constants';
 
-import { DonutProps } from '../../../types';
+import { DonutProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Donut: FC<DonutProps> = ({

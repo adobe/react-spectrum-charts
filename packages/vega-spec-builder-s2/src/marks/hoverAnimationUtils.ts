@@ -27,9 +27,9 @@ import {
   ANIMATION_TIMER,
   SERIES_ID,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { hasSignalByName } from '../signal/signalSpecBuilder';
+import { hasSignalByName } from '../signal/signalSpecBuilder.js';
 
 /** One hover condition. expr must evaluate to 1 | 0 | null. */
 export interface HoverMatchRule {

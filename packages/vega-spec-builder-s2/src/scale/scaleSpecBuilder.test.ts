@@ -11,7 +11,7 @@
  */
 import { OrdinalScale, Scale } from 'vega';
 
-import { COLOR_SCALE, DEFAULT_COLOR, LINEAR_PADDING } from '@spectrum-charts/constants';
+import { COLOR_SCALE, DEFAULT_COLOR, LINEAR_PADDING } from '@spectrum-charts/core-s2/constants';
 
 import {
   addContinuousDimensionScale,
@@ -19,7 +19,7 @@ import {
   addFieldToFacetScaleDomain,
   getPadding,
   getScaleName,
-} from './scaleSpecBuilder';
+} from './scaleSpecBuilder.js';
 
 const defaultColorScale: OrdinalScale = {
   domain: { data: 'table', fields: [DEFAULT_COLOR] },

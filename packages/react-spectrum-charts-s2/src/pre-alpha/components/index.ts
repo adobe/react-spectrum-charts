@@ -10,14 +10,14 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Area';
-export * from './Bullet';
-export * from './Combo';
-export * from './Donut';
-export * from './DonutSummary';
-export * from './Scatter';
-export * from './ScatterAnnotation';
-export * from './ScatterPath';
-export * from './SegmentLabel';
-export * from './Trendline';
-export * from './TrendlineAnnotation';
+export * from './Area/index.js';
+export * from './Bullet/index.js';
+export * from './Combo/index.js';
+export * from './Donut/index.js';
+export * from './DonutSummary/index.js';
+export * from './Scatter/index.js';
+export * from './ScatterAnnotation/index.js';
+export * from './ScatterPath/index.js';
+export * from './SegmentLabel/index.js';
+export * from './Trendline/index.js';
+export * from './TrendlineAnnotation/index.js';

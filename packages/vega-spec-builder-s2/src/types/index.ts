@@ -10,12 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './chartSpec.types';
-export * from './legendSpec.types';
-export * from './spectrumVizColor.types';
-export * from './titleSpec.types';
-export * from './specUtil.types';
+export * from './chartSpec.types.js';
+export * from './legendSpec.types.js';
+export * from './spectrumVizColor.types.js';
+export * from './titleSpec.types.js';
+export * from './specUtil.types.js';
 
-export * from './axis';
-export * from './dialogs';
-export * from './marks';
+export * from './axis/index.js';
+export * from './dialogs/index.js';
+export * from './marks/index.js';

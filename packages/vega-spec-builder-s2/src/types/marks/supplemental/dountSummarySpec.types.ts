@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { NumberFormat, PartiallyRequired } from '../../specUtil.types';
-import { DonutSpecOptions } from '../donutSpec.types';
+import { NumberFormat, PartiallyRequired } from '../../specUtil.types.js';
+import { DonutSpecOptions } from '../donutSpec.types.js';
 
 export interface DonutSummaryOptions {
   /** d3 number format specifier.

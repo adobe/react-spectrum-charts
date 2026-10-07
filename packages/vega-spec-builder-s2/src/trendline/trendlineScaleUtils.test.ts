@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getTrendlineScales } from './trendlineScaleUtils';
-import { defaultLineOptions } from './trendlineTestUtils';
+import { getTrendlineScales } from './trendlineScaleUtils.js';
+import { defaultLineOptions } from './trendlineTestUtils.js';
 
 describe('getTrendlineScales()', () => {
   test('should return the xTrendline scale if the scaleType is time and there is a regression trendline', () => {

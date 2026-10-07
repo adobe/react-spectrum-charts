@@ -12,7 +12,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { findAllMarksByGroupName } from './customQueries';
+import { findAllMarksByGroupName } from './customQueries.js';
 
 export const findChart = async () => {
   return screen.findByRole('graphics-document');

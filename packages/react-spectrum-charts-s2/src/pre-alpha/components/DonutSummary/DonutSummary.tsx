@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DonutSummaryProps } from '../../../types';
+import { DonutSummaryProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const DonutSummary: FC<DonutSummaryProps> = ({ numberFormat = 'shortNumber', hideValue = false, label, delta }) => {

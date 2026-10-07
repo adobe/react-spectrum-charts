@@ -11,8 +11,8 @@
  */
 import { Facet, From, GroupMark, Mark } from 'vega';
 
-import { COLOR_SCALE, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { COLOR_SCALE, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   getLineXProductionRule,
@@ -22,8 +22,8 @@ import {
   getTrendlineLineMark,
   getTrendlineMarks,
   getTrendlineRuleMark,
-} from './trendlineMarkUtils';
-import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
+} from './trendlineMarkUtils.js';
+import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils.js';
 
 describe('getTrendlineMarks()', () => {
   test('should return rule mark for aggregate methods', () => {

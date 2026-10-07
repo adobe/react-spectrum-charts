@@ -11,7 +11,7 @@
  */
 import { createElement } from 'react';
 
-import { LinePointAnnotation } from '../components/LinePointAnnotation';
+import { LinePointAnnotation } from '../components/LinePointAnnotation/index.js';
 
 // sanitizeChildren pre-filters children based on a validDisplayNames allowlist, so the
 // "no displayName" and "unknown displayName" branches inside childrenToOptions are only
@@ -23,8 +23,8 @@ jest.mock('../utils', () => ({
 }));
 
 // Import after the mock is declared so childrenAdapter picks up the mocked sanitizeChildren.
-import { sanitizeChildren } from '../utils';
-import { childrenToOptions } from './childrenAdapter';
+import { sanitizeChildren } from '../utils/index.js';
+import { childrenToOptions } from './childrenAdapter.js';
 
 const mockSanitizeChildren = sanitizeChildren as jest.Mock;
 

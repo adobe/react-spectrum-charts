@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { PartiallyRequired } from '../../specUtil.types';
-import { BarSpecOptions } from '../barSpec.types';
+import { PartiallyRequired } from '../../specUtil.types.js';
+import { BarSpecOptions } from '../barSpec.types.js';
 
 export interface BarAnnotationStyleOptions {
   width?: number;

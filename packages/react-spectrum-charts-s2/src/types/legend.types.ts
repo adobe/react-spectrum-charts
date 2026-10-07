@@ -13,8 +13,8 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { LegendOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartPopoverElement } from './dialogs/chartPopover.types';
-import { Children } from './util.types';
+import { ChartPopoverElement } from './dialogs/chartPopover.types.js';
+import { Children } from './util.types.js';
 
 export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMouseInteraction'> {
   /** callback that will be run when a legend item is selected */

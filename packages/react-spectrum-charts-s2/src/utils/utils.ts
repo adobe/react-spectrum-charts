@@ -21,8 +21,8 @@ import {
   SELECTED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
-import { combineNames, toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { combineNames, toCamelCase } from '@spectrum-charts/core-s2/utils';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import {
@@ -40,7 +40,7 @@ import {
   LinePointAnnotation,
   ReferenceLine,
   Title,
-} from '../components';
+} from '../components/index.js';
 import {
   Area,
   Bullet,
@@ -53,7 +53,7 @@ import {
   SegmentLabel,
   Trendline,
   TrendlineAnnotation,
-} from '../pre-alpha';
+} from '../pre-alpha/index.js';
 import {
   AreaElement,
   AxisChildElement,
@@ -81,7 +81,7 @@ import {
   TitleElement,
   TrendlineAnnotationElement,
   TrendlineElement,
-} from '../types';
+} from '../types/index.js';
 
 type MarkChildElement =
   | BarAnnotationElement

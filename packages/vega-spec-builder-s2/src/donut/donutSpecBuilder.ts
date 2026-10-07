@@ -22,10 +22,10 @@ import {
   DEFAULT_METRIC,
   FILTERED_TABLE,
   SERIES_ID,
-} from '@spectrum-charts/constants';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { getSeriesIdTransform, getTableData } from '../data/dataUtils';
+import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -33,17 +33,17 @@ import {
   getHoverFractionData,
   getHoverSeriesFractionData,
   getHoverTargetData,
-} from '../marks/hoverAnimationUtils';
-import { isInteractive } from '../marks/markUtils';
-import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
-import { addUserMetaAnimatedMark, addUserMetaInteractiveMark } from '../specUtils';
-import { ChartData, ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types';
+} from '../marks/hoverAnimationUtils.js';
+import { isInteractive } from '../marks/markUtils.js';
+import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
+import { addUserMetaAnimatedMark, addUserMetaInteractiveMark } from '../specUtils.js';
+import { ChartData, ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types/index.js';
 import {
   getDonutSummaryData,
   getDonutSummaryMarks,
   getDonutSummarySignals,
-} from './donutSummaryUtils';
+} from './donutSummaryUtils.js';
 import {
   getArcMark,
   getDonutAnimIdField,
@@ -57,7 +57,7 @@ import {
   getSizeTierSignal,
   getSliceGapSignal,
   getSumData,
-} from './donutUtils';
+} from './donutUtils.js';
 import {
   getSegmentLabelData,
   getSegmentLabelMarks,
@@ -65,7 +65,7 @@ import {
   getRichSegmentLabelData,
   getRichSegmentLabelMarks,
   getRichSegmentLabelSignals,
-} from './segmentLabelUtils';
+} from './segmentLabelUtils.js';
 
 export const addDonut = produce<
   ScSpec,

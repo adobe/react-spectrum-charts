@@ -19,11 +19,11 @@ import {
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
   FILTERED_TABLE,
-} from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { DonutSpecOptions } from '../types';
-import { defaultDonutOptions } from './donutTestUtils';
+import { DonutSpecOptions } from '../types/index.js';
+import { defaultDonutOptions } from './donutTestUtils.js';
 import {
   getArcMark,
   getDonutEmptyStateTest,
@@ -38,7 +38,7 @@ import {
   getSliceGapSignal,
   getSliceStrokeWidthExpr,
   getSumData,
-} from './donutUtils';
+} from './donutUtils.js';
 
 describe('getDonutEmptyStateTest()', () => {
   test('should test for empty data and a metric sum of 0', () => {

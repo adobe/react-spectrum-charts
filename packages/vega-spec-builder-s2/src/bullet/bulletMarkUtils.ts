@@ -12,11 +12,11 @@
 import { produce } from 'immer';
 import { Axis, GroupMark, Mark, TextValueRef } from 'vega';
 
-import { getS2ColorValue } from '@spectrum-charts/themes';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getInspectEncoding } from '../marks/markUtils';
-import { getTextNumberFormat } from '../textUtils';
-import { BulletSpecOptions } from '../types';
+import { getInspectEncoding } from '../marks/markUtils.js';
+import { getTextNumberFormat } from '../textUtils.js';
+import { BulletSpecOptions } from '../types/index.js';
 
 export const addMarks = produce<Mark[], [BulletSpecOptions]>((marks, bulletOptions) => {
   const markGroupEncodeUpdateDirection = bulletOptions.direction === 'column' ? 'y' : 'x';

@@ -13,9 +13,9 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { TrendlineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartInspectElement } from '../../dialogs';
-import { Children } from '../../util.types';
-import { TrendlineAnnotationElement } from './trendlineAnnotation.types';
+import { ChartInspectElement } from '../../dialogs/index.js';
+import { Children } from '../../util.types.js';
+import { TrendlineAnnotationElement } from './trendlineAnnotation.types.js';
 
 export type TrendlineChildElement = ChartInspectElement | TrendlineAnnotationElement;
 

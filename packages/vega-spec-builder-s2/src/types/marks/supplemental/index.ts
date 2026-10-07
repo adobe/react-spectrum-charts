@@ -10,15 +10,15 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './barAnnotationSpec.types';
-export * from './barDirectLabelSpec.types';
-export * from './dountSummarySpec.types';
-export * from './metricRangeSpec.types';
-export * from './scatterAnnotationSpec.types';
-export * from './scatterPathSpec.types';
-export * from './segmentLabelSpec.types';
-export * from './lineDirectLabelSpec.types';
-export * from './trendlineSpec.types';
-export * from './trendlineAnnotationSpec.types';
-export * from './linePointAnnotationSpec.types';
-export * from './lineForecastSpec.types';
+export * from './barAnnotationSpec.types.js';
+export * from './barDirectLabelSpec.types.js';
+export * from './dountSummarySpec.types.js';
+export * from './metricRangeSpec.types.js';
+export * from './scatterAnnotationSpec.types.js';
+export * from './scatterPathSpec.types.js';
+export * from './segmentLabelSpec.types.js';
+export * from './lineDirectLabelSpec.types.js';
+export * from './trendlineSpec.types.js';
+export * from './trendlineAnnotationSpec.types.js';
+export * from './linePointAnnotationSpec.types.js';
+export * from './lineForecastSpec.types.js';

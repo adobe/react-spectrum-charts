@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { render } from '@testing-library/react';
 
 import { Provider } from '@react-spectrum/s2';
-import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
 
 type ColorScheme = 'light' | 'dark';
 

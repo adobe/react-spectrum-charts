@@ -11,11 +11,11 @@
  */
 import { Config, Locale, NumberLocale, Padding, Renderers, TimeLocale } from 'vega';
 
-import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale } from '@spectrum-charts/locales';
+import { DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
+import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale } from '@spectrum-charts/core-s2/locales';
 
-import { getExpressionFunctions } from './expressionFunctions';
-import { getChartConfig } from './specUtils';
+import { getExpressionFunctions } from './expressionFunctions/index.js';
+import { getChartConfig } from './specUtils.js';
 
 /**
  * WARNING: This is a last-resort escape hatch for working around gaps in Vega's functionality.

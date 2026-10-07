@@ -11,8 +11,8 @@
  */
 import { DonutOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { DonutProps } from '../types';
-import { ChildrenToOptions } from './childOptions.types';
+import { DonutProps } from '../types/index.js';
+import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getDonutOptions = (
   { children, ...donutProps }: DonutProps,

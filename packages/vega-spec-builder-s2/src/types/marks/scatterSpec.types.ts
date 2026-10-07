@@ -11,9 +11,9 @@
  */
 import { Blend } from 'vega';
 
-import { ColorScheme, HighlightedItem } from '../chartSpec.types';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
+import { ColorScheme, HighlightedItem } from '../chartSpec.types.js';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
 import {
   ColorFacet,
   LineTypeFacet,
@@ -22,10 +22,10 @@ import {
   PartiallyRequired,
   ScaleType,
   SymbolSizeFacet,
-} from '../specUtil.types';
-import { ScatterAnnotationOptions } from './supplemental';
-import { ScatterPathOptions } from './supplemental/scatterPathSpec.types';
-import { TrendlineOptions } from './supplemental/trendlineSpec.types';
+} from '../specUtil.types.js';
+import { ScatterAnnotationOptions } from './supplemental/index.js';
+import { ScatterPathOptions } from './supplemental/scatterPathSpec.types.js';
+import { TrendlineOptions } from './supplemental/trendlineSpec.types.js';
 
 export interface ScatterOptions {
   markType: 'scatter';

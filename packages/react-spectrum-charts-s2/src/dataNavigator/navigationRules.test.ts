@@ -11,7 +11,7 @@
  */
 import { Structure } from 'data-navigator';
 
-import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules';
+import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules.js';
 
 const structureWith = (edges: Structure['edges']): Structure => ({ nodes: {}, edges });
 

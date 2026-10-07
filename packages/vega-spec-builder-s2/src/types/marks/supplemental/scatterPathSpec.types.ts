@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme } from '../../chartSpec.types';
-import { PartiallyRequired, PathWidthFacet, ScaleType } from '../../specUtil.types';
-import { SpectrumColor } from '../../spectrumVizColor.types';
+import { ColorScheme } from '../../chartSpec.types.js';
+import { PartiallyRequired, PathWidthFacet, ScaleType } from '../../specUtil.types.js';
+import { SpectrumColor } from '../../spectrumVizColor.types.js';
 
 export interface ScatterPathOptions {
   /** The color of the links.*/

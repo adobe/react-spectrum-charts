@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_VENN_COLOR, DEFAULT_VENN_LABEL, DEFAULT_VENN_METRIC } from '@spectrum-charts/constants';
+import { DEFAULT_VENN_COLOR, DEFAULT_VENN_LABEL, DEFAULT_VENN_METRIC } from '@spectrum-charts/core-s2/constants';
 
-import { VennSpecOptions } from '../types';
+import { VennSpecOptions } from '../types/index.js';
 
 const { A, B, C } = {
   A: 'Instagram',

@@ -19,10 +19,10 @@ import {
   MARK_ID,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { addScatterMarks, getOpacity, getScatterHoverMarks, getScatterMark, getSelectRingSize } from './scatterMarkUtils';
-import { defaultScatterOptions } from './scatterTestUtils';
+import { addScatterMarks, getOpacity, getScatterHoverMarks, getScatterMark, getSelectRingSize } from './scatterMarkUtils.js';
+import { defaultScatterOptions } from './scatterTestUtils.js';
 
 describe('addScatterMarks()', () => {
   test('should add the scatter group with the symbol marks', () => {

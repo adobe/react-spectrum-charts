@@ -11,11 +11,11 @@
  */
 import { Signal } from 'vega';
 
-import { CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/core-s2/constants';
 
-import { defaultSignals } from '../specTestUtils';
-import { setTrendlineSignals } from './trendlineSignalUtils';
-import { defaultLineOptions } from './trendlineTestUtils';
+import { defaultSignals } from '../specTestUtils.js';
+import { setTrendlineSignals } from './trendlineSignalUtils.js';
+import { defaultLineOptions } from './trendlineTestUtils.js';
 
 describe('getTrendlineSignals()', () => {
   let signals: Signal[];

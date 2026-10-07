@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme } from '../../chartSpec.types';
-import { ColorFacet, NumberFormat, Orientation } from '../../specUtil.types';
-import { DualFacet } from '../barSpec.types';
+import { ColorScheme } from '../../chartSpec.types.js';
+import { ColorFacet, NumberFormat, Orientation } from '../../specUtil.types.js';
+import { DualFacet } from '../barSpec.types.js';
 
 export type BarDirectLabelPositionType = 'start' | 'middle' | 'end' | 'end-outside';
 

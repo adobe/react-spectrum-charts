@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { defaultScatterOptions } from '../scatterTestUtils';
-import { getScatterAnnotationMarks, getScatterAnnotationSpecOptions } from './scatterAnnotationUtils';
+import { defaultScatterOptions } from '../scatterTestUtils.js';
+import { getScatterAnnotationMarks, getScatterAnnotationSpecOptions } from './scatterAnnotationUtils.js';
 
 describe('getScatterAnnotationSpecOptions()', () => {
   test('should return default options if no options are provided', () => {

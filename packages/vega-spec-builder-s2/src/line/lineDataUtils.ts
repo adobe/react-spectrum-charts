@@ -11,13 +11,13 @@
  */
 import { SourceData } from 'vega';
 
-import { CONTROLLED_HIGHLIGHTED_ITEM, CONTROLLED_HIGHLIGHTED_SERIES, CONTROLLED_HIGHLIGHTED_TABLE, FILTERED_TABLE, GROUP_ID, HOVERED_ITEM, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/constants';
+import { CONTROLLED_HIGHLIGHTED_ITEM, CONTROLLED_HIGHLIGHTED_SERIES, CONTROLLED_HIGHLIGHTED_TABLE, FILTERED_TABLE, GROUP_ID, HOVERED_ITEM, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 
-import { getEffectiveMetricField } from '../lineForecast';
-import { HoverMatchRule } from '../marks/hoverAnimationUtils';
-import { hasPopover, isInteractive } from '../marks/markUtils';
-import { LineSpecOptions } from '../types';
-import { getCascadeTransforms } from './directLabelUtils';
+import { getEffectiveMetricField } from '../lineForecast/index.js';
+import { HoverMatchRule } from '../marks/hoverAnimationUtils.js';
+import { hasPopover, isInteractive } from '../marks/markUtils.js';
+import { LineSpecOptions } from '../types/index.js';
+import { getCascadeTransforms } from './directLabelUtils.js';
 
 
 /**

@@ -13,10 +13,10 @@ import { createElement, useMemo, useState } from 'react';
 
 import { LegendDescription } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Legend } from '../components/Legend';
-import { ChartChildElement, LegendElement } from '../types';
-import { getElement } from '../utils';
-import { ChartContainer } from './ChartContainer';
+import { Legend } from '../components/Legend/index.js';
+import { ChartChildElement, LegendElement } from '../types/index.js';
+import { getElement } from '../utils/index.js';
+import { ChartContainer } from './ChartContainer.js';
 
 export type UseLegendProps = {
   legendHiddenSeries: string[];

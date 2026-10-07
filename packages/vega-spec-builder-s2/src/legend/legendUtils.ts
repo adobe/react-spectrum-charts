@@ -46,10 +46,10 @@ import {
   SERIES_ID,
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { getPathFromSymbolShape } from '../specUtils';
+import { getPathFromSymbolShape } from '../specUtils.js';
 import {
   ColorValueV6,
   FacetRef,
@@ -60,8 +60,8 @@ import {
   Position,
   SecondaryFacetType,
   UserMeta,
-} from '../types';
-import { getDeemphasisRamp } from '../marks/hoverAnimationUtils';
+} from '../types/index.js';
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils.js';
 
 export interface Facet {
   facetType: FacetType | SecondaryFacetType;

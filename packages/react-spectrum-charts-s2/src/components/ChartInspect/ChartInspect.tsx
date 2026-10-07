@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { ChartInspectProps } from '../../types';
+import { ChartInspectProps } from '../../types/index.js';
 
 const ChartInspect: FC<ChartInspectProps> = ({
   children,

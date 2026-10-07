@@ -11,10 +11,10 @@
  */
 import { createElement } from 'react';
 
-import { AxisThumbnail, ReferenceLine } from '../components';
-import { AxisProps } from '../types';
-import { getAxisOptions } from './axisAdapter';
-import { childrenToOptions } from './childrenAdapter';
+import { AxisThumbnail, ReferenceLine } from '../components/index.js';
+import { AxisProps } from '../types/index.js';
+import { getAxisOptions } from './axisAdapter.js';
+import { childrenToOptions } from './childrenAdapter.js';
 
 const basicAxisProps: AxisProps = { position: 'bottom' };
 

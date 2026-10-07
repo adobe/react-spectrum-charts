@@ -11,10 +11,10 @@
  */
 import { createElement } from 'react';
 
-import { ChartInspect } from '../components/ChartInspect';
-import { TrendlineAnnotation } from '../pre-alpha';
-import { childrenToOptions } from './childrenAdapter';
-import { getTrendlineOptions } from './trendlineAdapter';
+import { ChartInspect } from '../components/ChartInspect/index.js';
+import { TrendlineAnnotation } from '../pre-alpha/index.js';
+import { childrenToOptions } from './childrenAdapter.js';
+import { getTrendlineOptions } from './trendlineAdapter.js';
 
 describe('getTrendlineOptions()', () => {
   it('should return all basic options', () => {

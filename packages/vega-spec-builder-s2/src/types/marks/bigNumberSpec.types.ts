@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Orientation } from '../specUtil.types';
-import { LineOptions } from './lineSpec.types';
+import { Orientation } from '../specUtil.types.js';
+import { LineOptions } from './lineSpec.types.js';
 
 export type BigNumberNumberType = 'linear' | 'percentage';
 export type BigNumberMethod = 'sum' | 'avg' | 'last';
