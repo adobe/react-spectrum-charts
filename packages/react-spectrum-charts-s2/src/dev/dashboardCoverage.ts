@@ -28,30 +28,48 @@ export interface DashboardDefinition {
 }
 
 /**
+ * Returns variation ids that appear more than once.
+ * @param variations
+ * @returns string[]
+ */
+const getDuplicateIds = (variations: Variation[]): string[] => {
+  const ids = variations.map(({ id }) => id);
+  return ids.filter((id, index) => ids.indexOf(id) !== index);
+};
+
+/**
+ * Returns the problems with a single prop's coverage entry.
+ * @param entry
+ * @param knownIds
+ * @returns string[]
+ */
+const getEntryErrors = (entry: CoverageEntry, knownIds: Set<string>): string[] => {
+  if ('skip' in entry) {
+    return entry.skip.trim() ? [] : ['skips coverage without a reason'];
+  }
+  if (entry.length === 0) {
+    return ['has no variations'];
+  }
+  const unknownIds = entry.filter((id) => !knownIds.has(id));
+  return unknownIds.map((id) => `references unknown variation "${id}"`);
+};
+
+/**
  * Returns human-readable problems with a dashboard's coverage map.
  * @param dashboard
  * @returns string[]
  */
 export const getDashboardCoverageErrors = ({ chartType, variations, coverage }: DashboardDefinition): string[] => {
-  const errors: string[] = [];
-  const ids = new Set<string>();
-  for (const { id } of variations) {
-    if (ids.has(id)) errors.push(`${chartType}: duplicate variation id "${id}"`);
-    ids.add(id);
-  }
-  for (const [component, props] of Object.entries(coverage)) {
-    for (const [prop, entry] of Object.entries(props)) {
-      const name = `${chartType}: ${component}.${prop}`;
-      if (!entry) continue;
-      if ('skip' in entry) {
-        if (!entry.skip.trim()) errors.push(`${name} skips coverage without a reason`);
-        continue;
-      }
-      if (entry.length === 0) errors.push(`${name} has no variations`);
-      for (const id of entry) {
-        if (!ids.has(id)) errors.push(`${name} references unknown variation "${id}"`);
-      }
-    }
-  }
-  return errors;
+  const knownIds = new Set(variations.map(({ id }) => id));
+
+  const duplicateErrors = getDuplicateIds(variations).map((id) => `${chartType}: duplicate variation id "${id}"`);
+
+  const entryErrors = Object.entries(coverage).flatMap(([component, props]) =>
+    Object.entries(props).flatMap(([prop, entry]) => {
+      if (!entry) return [];
+      return getEntryErrors(entry, knownIds).map((error) => `${chartType}: ${component}.${prop} ${error}`);
+    })
+  );
+
+  return [...duplicateErrors, ...entryErrors];
 };
