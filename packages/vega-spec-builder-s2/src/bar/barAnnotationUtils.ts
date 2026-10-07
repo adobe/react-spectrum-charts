@@ -113,7 +113,7 @@ const getAnnotationTextMark = ({
   dimensionField,
   dimensionScaleName,
   textKey,
-  style,
+  style, // NOSONAR typescript:S1874 - implementation of the deprecated field itself
 }: BarAnnotationSpecOptions): TextMark => {
   const { metricAxis, dimensionAxis } = getOrientationProperties(barOptions.orientation);
   const annotationWidth = getAnnotationWidth(textKey, padding, style);
@@ -158,7 +158,7 @@ const getAnnotationBackgroundMark = ({
   dimensionScaleName,
   padding,
   textKey,
-  style,
+  style, // NOSONAR typescript:S1874 - implementation of the deprecated field itself
 }: BarAnnotationSpecOptions): RectMark => ({
   name: `${barOptions.name}_annotationBackground`,
   description: `${barOptions.name}_annotationBackground`,
