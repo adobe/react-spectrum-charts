@@ -23,7 +23,7 @@ import { bindWithProps } from '../../../test-utils';
 import { ChartProps } from '../../../types';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Coverage/Gradient Multi Series',
+  title: 'React Spectrum Charts 2/Line/Coverage/Gradient',
   component: Line,
   parameters: { controls: { include: ['gradient', 'opacity', 'interpolate', 'lineType'] } },
 };
@@ -134,4 +134,11 @@ GradientWithInterpolate.args = {
   interpolate: 'step-after',
 };
 
-export { GradientMultiSeries };
+export {
+  GradientSingleSeries,
+  GradientMultiSeries,
+  GradientWithDialogs,
+  GradientStaticOpacity,
+  GradientMultiLineType,
+  GradientWithInterpolate,
+};

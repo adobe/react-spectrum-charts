@@ -123,4 +123,4 @@ DualMetricAxisWithThreeSeries.args = { ...defaultProps, color: 'series' };
 const DualMetricAxisItemInspect = bindWithProps(BasicStory);
 DualMetricAxisItemInspect.args = { ...defaultProps, color: 'series', interactionMode: 'item' };
 
-export { DualMetricAxisBasic, DualMetricAxisWithThreeSeries };
+export { DualMetricAxisBasic, DualMetricAxisWithThreeSeries, DualMetricAxisItemInspect };

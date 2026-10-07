@@ -108,7 +108,7 @@ export default {
   component: Line,
   argTypes: {
     ...chartArgTypes,
-    dataPreset: { ...chartArgTypes.dataPreset, options: ['timeSeries', 'multiSeries'] },
+    dataPreset: { ...chartArgTypes.dataPreset, options: ['multiSeries', 'singleSeries'] },
     ...axesArgTypes,
     ...legendArgTypes,
     ...inspectArgTypes,
@@ -351,7 +351,7 @@ const LinePlaygroundStory: StoryFn<LinePlaygroundArgs> = (args): ReactElement =>
 export const Playground = bindWithProps(LinePlaygroundStory);
 Playground.args = {
   ...chartArgs,
-  dataPreset: 'timeSeries',
+  dataPreset: 'multiSeries',
   chartTitle: 'Workspace activity forecast',
   height: 420,
   maxWidth: 780,

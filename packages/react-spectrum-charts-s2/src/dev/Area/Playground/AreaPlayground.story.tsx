@@ -69,7 +69,7 @@ export default {
   component: Area,
   argTypes: {
     ...chartArgTypes,
-    dataPreset: { ...chartArgTypes.dataPreset, options: ['timeSeries', 'multiSeries'] },
+    dataPreset: { ...chartArgTypes.dataPreset, options: ['multiSeries', 'singleSeries'] },
     ...axesArgTypes,
     ...legendArgTypes,
     ...inspectArgTypes,
@@ -173,7 +173,7 @@ const AreaPlaygroundStory: StoryFn<AreaPlaygroundArgs> = ({
 export const Playground = bindWithProps(AreaPlaygroundStory);
 Playground.args = {
   ...chartArgs,
-  dataPreset: 'timeSeries',
+  dataPreset: 'multiSeries',
   chartTitle: 'Area volume by workflow',
   height: 400,
   maxWidth: 760,
