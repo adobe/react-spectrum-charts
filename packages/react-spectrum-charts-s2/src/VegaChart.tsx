@@ -17,6 +17,7 @@ import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 import { getLocale } from '@spectrum-charts/core-s2/locales';
+import { jsonClone } from '@spectrum-charts/core-s2/utils';
 import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useDebugSpec } from './hooks/useDebugSpec.js';
@@ -93,7 +94,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   // Need to de a deep copy of the data because vega tries to transform the data
   const chartData = useMemo(() => {
-    const clonedData = structuredClone(data);
+    const clonedData = jsonClone(data);
 
     // We received a full Vega data array with potentially multiple dataset objects
     if (isVegaData(clonedData)) {
@@ -123,7 +124,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   useEffect(() => {
     if (width && height && containerRef.current) {
-      const specCopy = structuredClone(spec);
+      const specCopy = jsonClone(spec);
       const tableData = specCopy.data?.find((d) => d.name === TABLE);
       if (tableData && 'values' in tableData) {
         tableData.values = chartData.table;

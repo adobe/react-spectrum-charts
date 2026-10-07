@@ -23,6 +23,13 @@ export const combineNames = (parentName: string | null, childName: string | null
 };
 
 /**
+ * Deep-copies a JSON-serializable value, dropping `undefined` keys so Vega applies its config defaults.
+ * @param value - The value to copy
+ * @returns The copied value
+ */
+export const jsonClone = <T>(value: T): T => JSON.parse(JSON.stringify(value)); // NOSONAR typescript:S7784 - intentional: unlike structuredClone, drops undefined keys and normalizes to plain JSON
+
+/**
  * Converts a string to camel case
  * @param str - The string to convert
  * @returns The camel case string
