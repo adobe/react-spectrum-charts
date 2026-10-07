@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { coloredThresholdsData, quarterlyKpiThresholdsData } from '../../../storyShared/data/bulletData';
-import { findChart, render } from '../../../test-utils';
+import { coloredThresholdsData, quarterlyKpiThresholdsData } from '../../../storyShared/data/bulletData.js';
+import { findChart, render } from '../../../test-utils/index.js';
 import {
   ChartInspect,
   MetricLabel,
@@ -19,7 +19,7 @@ import {
   ThresholdBarColor,
   Thresholds,
   Track,
-} from './BulletFeatures.story';
+} from './BulletFeatures.story.js';
 
 const expectChart = async () => {
   const chart = await findChart();

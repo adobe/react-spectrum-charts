@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { formatTimestamp, generateLargeData } from './storyUtils';
+import { formatTimestamp, generateLargeData } from './storyUtils.js';
 
 describe('generateLargeData', () => {
   test('generates the requested number of series and points', () => {

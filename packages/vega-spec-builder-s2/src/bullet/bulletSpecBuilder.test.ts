@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BulletOptions, ScSpec } from '../types';
-import { addBullet, addData, addScales, addSignals } from './bulletSpecBuilder';
-import { sampleOptionsColumn, sampleOptionsRow, sampleOptionsWithInspect } from './bulletTestUtils';
+import { BulletOptions, ScSpec } from '../types/index.js';
+import { addBullet, addData, addScales, addSignals } from './bulletSpecBuilder.js';
+import { sampleOptionsColumn, sampleOptionsRow, sampleOptionsWithInspect } from './bulletTestUtils.js';
 
 describe('addBullet', () => {
   let spec: ScSpec;

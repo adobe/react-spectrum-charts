@@ -15,11 +15,11 @@ import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { barDataTwoSeries, barSeriesData } from '../../../storyShared/components/Bar/data';
-import { bindWithProps } from '../../../test-utils';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { barDataTwoSeries, barSeriesData } from '../../../storyShared/components/Bar/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Dual Metric Axis',

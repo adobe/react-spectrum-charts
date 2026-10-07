@@ -11,9 +11,9 @@
  */
 import { produce } from 'immer';
 
-import { DEFAULT_TITLE_FONT_WEIGHT } from '@spectrum-charts/constants';
+import { DEFAULT_TITLE_FONT_WEIGHT } from '@spectrum-charts/core-s2/constants';
 
-import { ScSpec, TitleOptions } from '../types';
+import { ScSpec, TitleOptions } from '../types/index.js';
 
 type TitleOptionsWithDefaults = 'fontWeight' | 'fontSize' | 'position' | 'orient';
 

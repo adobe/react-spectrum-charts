@@ -13,12 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, BarDirectLabel, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { newSubscribersData } from '../../../storyShared/components/Bar/data';
-import { BarDirectLabelProps } from '../../../types';
-import { bindStory } from './storyUtils';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, BarDirectLabel, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { newSubscribersData } from '../../../storyShared/components/Bar/data.js';
+import { BarDirectLabelProps } from '../../../types/index.js';
+import { bindStory } from './storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Direct Label',

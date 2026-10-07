@@ -13,10 +13,10 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { s2Categorical6 } from '@spectrum-charts/themes';
+import { s2Categorical6 } from '@spectrum-charts/core-s2/tokens';
 import { Datum, SpectrumColor } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
+import { Chart } from '../../../Chart.js';
 import {
   Axis,
   AxisThumbnail,
@@ -26,8 +26,8 @@ import {
   ChartPopover,
   Legend,
   Title,
-} from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
+} from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
 import {
   barDataWithSeries,
   barSeriesData,
@@ -36,9 +36,9 @@ import {
   mixedAcquisitionData,
   negativeBarSeriesData,
   timeAxisDivergingData,
-} from '../../../storyShared/components/Bar/data';
-import { bindWithProps } from '../../../test-utils';
-import { BarDirectLabelProps, BarProps } from '../../../types';
+} from '../../../storyShared/components/Bar/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarDirectLabelProps, BarProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Bar Variants',

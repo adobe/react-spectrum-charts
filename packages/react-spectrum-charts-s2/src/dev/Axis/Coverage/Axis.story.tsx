@@ -14,14 +14,14 @@ import React, { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { DEFAULT_GRANULARITY } from '@spectrum-charts/constants';
+import { DEFAULT_GRANULARITY } from '@spectrum-charts/core-s2/constants';
 
-import useChartProps from '../../../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../../../index';
-import { barData, barDataLongLabels } from '../../../storyShared/components/Bar/data';
-import { stockPriceData, workspaceTrendsData } from '../../../storyShared/data/data';
-import { bindWithProps } from '../../../test-utils';
-import timeData from './timeData.json';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../../../index.js';
+import { barData, barDataLongLabels } from '../../../storyShared/components/Bar/data.js';
+import { stockPriceData, workspaceTrendsData } from '../../../storyShared/data/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import timeData from './timeData.json' with { type: 'json' };
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Coverage/Axis',

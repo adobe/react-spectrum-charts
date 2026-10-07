@@ -15,13 +15,13 @@ import { StoryFn } from '@storybook/react';
 
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { ChartInspect, ChartPopover } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
-import { booleanDonutData, zeroDonutData } from '../../../storyShared/Donut/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps, DonutProps, SegmentLabelProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { ChartInspect, ChartPopover } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
+import { booleanDonutData, zeroDonutData } from '../../../storyShared/Donut/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps, DonutProps, SegmentLabelProps } from '../../../types/index.js';
 import {
   Variation,
   VariationDashboard,
@@ -31,15 +31,15 @@ import {
   useVariationDataset,
   useVariationSize,
   useVariationViewMode,
-} from '../../VariationDashboard';
-import { getContainerWidthForDiameter, getEffectiveDiameter } from '../Regressions/ResponsiveDonut';
+} from '../../VariationDashboard.js';
+import { getContainerWidthForDiameter, getEffectiveDiameter } from '../Regressions/ResponsiveDonut.js';
 import {
   DonutVariationDatasetName,
   DonutVariationDatum,
   donutDatasetOptions,
   donutVariationDatasets,
   getLargestDonutSeries,
-} from './donutVariationData';
+} from './donutVariationData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Dashboards',

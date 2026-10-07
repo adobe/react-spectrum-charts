@@ -16,10 +16,10 @@ import {
   getAllLegendEntries,
   render,
   waitFor,
-} from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock';
-import { Basic } from './Legend.story';
-import { HiddenSeries } from './SeriesVisibility/LegendSeriesVisibility.story';
+} from '../../../test-utils/index.js';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { Basic } from './Legend.story.js';
+import { HiddenSeries } from './SeriesVisibility/LegendSeriesVisibility.story.js';
 
 describe('Legend demo stories', () => {
   test('Basic renders a legend entry per traffic source', async () => {

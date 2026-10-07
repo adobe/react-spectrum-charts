@@ -12,8 +12,8 @@
 
 // S2-specific version of vega-spec-builder
 // Only exports modules for components included in react-spectrum-charts-s2
-export * from './chartSpecBuilder';
-export * from './specUtils';
-export * from './types';
-export * from './expressionFunctions';
-export * from './vegaEmbedUtils';
+export * from './chartSpecBuilder.js';
+export * from './specUtils.js';
+export * from './types/index.js';
+export * from './expressionFunctions/index.js';
+export * from './vegaEmbedUtils.js';

@@ -11,9 +11,9 @@
  */
 import { action } from 'storybook/actions';
 
-import { ChartPopover } from '../../../../components';
-import { bindWithProps } from '../../../../test-utils';
-import { BarPopoverStory, StoryWithParameters, dialogContent, setControlInclude } from '../chartPopoverStoryTemplates';
+import { ChartPopover } from '../../../../components/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { BarPopoverStory, StoryWithParameters, dialogContent, setControlInclude } from '../chartPopoverStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Chart Popover/Features/Action Handlers',

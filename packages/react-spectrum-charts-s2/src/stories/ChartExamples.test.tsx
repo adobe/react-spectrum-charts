@@ -11,7 +11,7 @@
  */
 import React from 'react';
 
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   findChart,
@@ -20,9 +20,9 @@ import {
   getAllMarksByGroupName,
   render,
   screen,
-} from '../test-utils';
+} from '../test-utils/index.js';
 import '../test-utils/__mocks__/matchMedia.mock.js';
-import { CheckoutErrorRateThresholds, EventTrendsPeriodComparison, FunnelConversion } from './ChartExamples.story';
+import { CheckoutErrorRateThresholds, EventTrendsPeriodComparison, FunnelConversion } from './ChartExamples.story.js';
 
 const colors = spectrum2Colors.light;
 

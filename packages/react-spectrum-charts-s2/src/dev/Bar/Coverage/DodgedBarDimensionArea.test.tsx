@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
 import {
   findAllMarksByGroupName,
@@ -21,8 +21,8 @@ import {
   waitFor,
   waitForMarksByGroupName,
   within,
-} from '../../../test-utils';
-import { DodgedInspectOnDimensionArea } from './BarDimensionArea.story';
+} from '../../../test-utils/index.js';
+import { DodgedInspectOnDimensionArea } from './BarDimensionArea.story.js';
 
 describe('DodgedInspectOnDimensionArea', () => {
   test('hovering dimension area should apply highlight styling and show tooltip', async () => {

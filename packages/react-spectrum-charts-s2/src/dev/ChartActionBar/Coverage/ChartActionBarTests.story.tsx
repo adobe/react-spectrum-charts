@@ -16,12 +16,12 @@ import Comment from '@react-spectrum/s2/icons/Comment';
 import Note from '@react-spectrum/s2/icons/StickyNote';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartActionBar } from '../../../components';
+import { ChartActionBar } from '../../../components/index.js';
 import {
   ActionBarLineStory,
   actionButton,
-} from '../../../storyShared/components/ChartActionBar/chartActionBarStoryShared';
-import { bindWithProps } from '../../../test-utils';
+} from '../../../storyShared/components/ChartActionBar/chartActionBarStoryShared.js';
+import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Chart Action Bar/Coverage',

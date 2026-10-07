@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { bindWithProps } from '../../../test-utils';
-import { ChartPopover, Legend } from '../../../components';
-import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartPopover, Legend } from '../../../components/index.js';
+import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './LegendStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Hide Show',

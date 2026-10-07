@@ -13,9 +13,9 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
 import {
   brandHealthData,
   campaignConversionsData,
@@ -23,7 +23,7 @@ import {
   downloadsByBrowserData,
   getDownloadsByGranularity,
   topBrowserDownloadsData,
-} from './axisStoryData';
+} from './axisStoryData.js';
 
 export const controls = (...include: string[]) => ({ parameters: { controls: { include } } });
 

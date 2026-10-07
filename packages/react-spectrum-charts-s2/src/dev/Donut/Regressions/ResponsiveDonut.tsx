@@ -16,13 +16,13 @@ import {
   DONUT_LABEL_RING_GAPS,
   DONUT_SIZE_TIER_LABELED_CHART_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import useChartProps from '../../../hooks/useChartProps';
-import { Donut } from '../../../pre-alpha';
-import { DonutProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Donut } from '../../../pre-alpha/index.js';
+import { DonutProps } from '../../../types/index.js';
 
 const THUMB_HEIGHT = 32;
 const REACH_RATIO = 1 + DONUT_LABEL_MIN_SPACE_RATIO;

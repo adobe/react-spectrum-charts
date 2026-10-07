@@ -21,15 +21,15 @@ import {
 	LINE_POINT_ANNOTATION_OFFSET,
 	SELECTED_SERIES,
 	SERIES_ID,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { defaultLineOptions } from '../lineTestUtils';
+import { defaultLineOptions } from '../lineTestUtils.js';
 import {
 	getLinePointAnnotationMarks,
 	getLinePointAnnotationOpacity,
 	getLinePointAnnotationSpecOptions,
-} from './linePointAnnotationUtils';
+} from './linePointAnnotationUtils.js';
 
 const lineOptionsWithAnnotations = {
 	...defaultLineOptions,

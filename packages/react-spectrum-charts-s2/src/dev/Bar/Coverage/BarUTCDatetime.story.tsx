@@ -13,11 +13,11 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { barDataWithUTCSeries, stackedBarDataWithUTCSeries } from '../../../storyShared/components/Bar/data';
-import { bindWithProps } from '../../../test-utils';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { barDataWithUTCSeries, stackedBarDataWithUTCSeries } from '../../../storyShared/components/Bar/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/UTC Datetime',

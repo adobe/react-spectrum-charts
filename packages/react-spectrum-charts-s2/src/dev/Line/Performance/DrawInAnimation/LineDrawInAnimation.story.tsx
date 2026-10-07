@@ -16,15 +16,15 @@ import { ComponentProps, ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { Datum } from 'vega';
 
-import { AnimationType } from '@spectrum-charts/constants';
+import { AnimationType } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../storyShared/data/data';
-import { formatTimestamp } from '../../../../storyShared/storyUtils';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
+import { Chart } from '../../../../Chart.js';
+import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../../storyShared/data/data.js';
+import { formatTimestamp } from '../../../../storyShared/storyUtils.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps } from '../../../../types/index.js';
 
 /**
  * Showcases the line draw-in animation across scale types and data shapes it does/doesn't support yet.

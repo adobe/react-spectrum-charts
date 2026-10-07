@@ -13,13 +13,13 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
+import { GROUP_DATA, MARK_ID } from '@spectrum-charts/core-s2/constants';
 import { Orientation } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../../Chart';
-import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { barData, barSeriesData } from '../../../../storyShared/components/Bar/data';
+import { Chart } from '../../../../Chart.js';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { barData, barSeriesData } from '../../../../storyShared/components/Bar/data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Accessible Navigation',

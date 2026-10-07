@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   clickNthElement,
@@ -23,9 +23,9 @@ import {
   rightClickNthElement,
   screen,
   waitFor,
-} from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock';
-import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story';
+} from '../../../test-utils/index.js';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { DefaultHiddenSeries, HiddenSeries, IsToggleable } from './LegendHideShow.story.js';
 
 const colors = spectrum2Colors.light;
 

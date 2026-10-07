@@ -13,12 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { workspaceTrendsData } from '../../../storyShared/data/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, ChartInspect, Legend, Line, LineDirectLabel } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { workspaceTrendsData } from '../../../storyShared/data/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps } from '../../../types/index.js';
 
 const labelCollisionData = workspaceTrendsData.map((d) =>
   d.series === 'Add Line viz' && d.datetime === 1668409200000 ? { ...d, users: 3500 } : d

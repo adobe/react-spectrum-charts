@@ -40,17 +40,17 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils';
-import { LineMarkOptions } from '../line/lineUtils';
-import { getScaleName } from '../scale/scaleSpecBuilder';
+import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils.js';
+import { LineMarkOptions } from '../line/lineUtils.js';
+import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import {
   getLineWidthPixelsFromLineWidth,
   getStrokeDashFromLineType,
   getVegaSymbolSizeFromRscSymbolSize,
-} from '../specUtils';
+} from '../specUtils.js';
 import {
   BarSpecOptions,
   ChartActionBarOptions,
@@ -72,8 +72,8 @@ import {
   SymbolSizeFacet,
   TrendlineOptions,
   VennSpecOptions,
-} from '../types';
-import { getHoverMarkName } from './hoverMarkUtils';
+} from '../types/index.js';
+import { getHoverMarkName } from './hoverMarkUtils.js';
 
 /**
  * If a popover, action bar, or hasOnClick exists on the mark, then set the cursor to a pointer.

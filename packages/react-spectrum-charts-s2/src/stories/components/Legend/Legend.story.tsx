@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartPopover, Legend } from '../../../components';
-import { bindWithProps } from '../../../test-utils';
-import { RevenueStory, TrafficStory, controls } from './legendStoryTemplates';
+import { ChartPopover, Legend } from '../../../components/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { RevenueStory, TrafficStory, controls } from './legendStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Features',

@@ -13,13 +13,13 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../../Chart';
-import { Axis, Legend } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Scatter, ScatterAnnotation } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
-import { ScatterAnnotationProps } from '../../../../types';
-import { characterData } from '../../../data/marioKartData';
+import { Chart } from '../../../../Chart.js';
+import { Axis, Legend } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Scatter, ScatterAnnotation } from '../../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ScatterAnnotationProps } from '../../../../types/index.js';
+import { characterData } from '../../../data/marioKartData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Scatter Annotation',

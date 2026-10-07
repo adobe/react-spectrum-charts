@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { workspaceTrendsData } from '../../../storyShared/data/data';
+import { workspaceTrendsData } from '../../../storyShared/data/data.js';
 import {
   clickNthElement,
   findAllMarksByGroupName,
@@ -18,9 +18,9 @@ import {
   hoverNthElement,
   render,
   rightClickNthElement,
-} from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock';
-import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './LineInteractions.story';
+} from '../../../test-utils/index.js';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { OnClick as OnClickStory, WithStaticPoints, WithStaticPointsAndDialogs } from './LineInteractions.story.js';
 
 describe('Line', () => {
   test('Static points render', async () => {

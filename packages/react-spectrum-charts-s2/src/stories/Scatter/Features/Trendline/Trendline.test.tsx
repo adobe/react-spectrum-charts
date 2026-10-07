@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Trendline } from '../../../../pre-alpha/components/Trendline';
-import { findAllMarksByGroupName, findChart, render } from '../../../../test-utils';
-import { Basic } from './TrendlineFeatures.story';
+import { Trendline } from '../../../../pre-alpha/components/Trendline/index.js';
+import { findAllMarksByGroupName, findChart, render } from '../../../../test-utils/index.js';
+import { Basic } from './TrendlineFeatures.story.js';
 
 describe('Trendline', () => {
   // Trendline is not a real React component. This is test just provides test coverage for sonarqube

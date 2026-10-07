@@ -13,9 +13,9 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { AxisOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { AxisLabelClickCallback, Children } from '../util.types';
-import { AxisThumbnailElement } from './axisThumbnail.types';
-import { ReferenceLineElement } from './referenceLine.types';
+import { AxisLabelClickCallback, Children } from '../util.types.js';
+import { AxisThumbnailElement } from './axisThumbnail.types.js';
+import { ReferenceLineElement } from './referenceLine.types.js';
 
 export type AxisChildElement = AxisThumbnailElement | ReferenceLineElement;
 

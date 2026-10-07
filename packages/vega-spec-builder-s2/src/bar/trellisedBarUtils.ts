@@ -11,12 +11,12 @@
  */
 import { GroupMark, Mark, Scale } from 'vega';
 
-import { FILTERED_TABLE } from '@spectrum-charts/constants';
+import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { addDomainFields, getScaleIndexByName } from '../scale/scaleSpecBuilder';
-import { BarSpecOptions } from '../types';
-import { getDodgedDimensionEncodings, getTrellisedDimensionEncodings, isDodgedAndStacked } from './barUtils';
-import { getTrellisProperties } from './trellisPropertyUtils';
+import { addDomainFields, getScaleIndexByName } from '../scale/scaleSpecBuilder.js';
+import { BarSpecOptions } from '../types/index.js';
+import { getDodgedDimensionEncodings, getTrellisedDimensionEncodings, isDodgedAndStacked } from './barUtils.js';
+import { getTrellisProperties } from './trellisPropertyUtils.js';
 
 /**
  * Generates the trellis group mark

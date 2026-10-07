@@ -13,13 +13,13 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-charts/constants';
+import { DEFAULT_LABEL_FONT_WEIGHT, DEFAULT_LABEL_ORIENTATION } from '@spectrum-charts/core-s2/constants';
 
-import { Axis, Bar, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Chart } from '../../../index';
-import { barDataLongLabels } from '../../../storyShared/components/Bar/data';
-import { bindWithProps } from '../../../test-utils';
+import { Axis, Bar, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Chart } from '../../../index.js';
+import { barDataLongLabels } from '../../../storyShared/components/Bar/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Coverage/Labels',

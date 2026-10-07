@@ -11,9 +11,9 @@
  */
 import { action } from 'storybook/actions';
 
-import { Axis } from '../../../../components';
-import { bindWithProps } from '../../../../test-utils';
-import { BrowserBarStory, controls } from '../axisStoryTemplates';
+import { Axis } from '../../../../components/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { BrowserBarStory, controls } from '../axisStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Action Handlers',

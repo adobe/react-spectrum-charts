@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { findChart, getAllLegendSymbols, getAllMarksByGroupName, render } from '../../../../test-utils';
+import { findChart, getAllLegendSymbols, getAllMarksByGroupName, render } from '../../../../test-utils/index.js';
 import '../../../../test-utils/__mocks__/matchMedia.mock.js';
-import { FunnelBar, TrendsStackedBar, UserGrowthBar } from './ChartTimeComparison.story';
+import { FunnelBar, TrendsStackedBar, UserGrowthBar } from './ChartTimeComparison.story.js';
 
 const colors = spectrum2Colors.light;
 

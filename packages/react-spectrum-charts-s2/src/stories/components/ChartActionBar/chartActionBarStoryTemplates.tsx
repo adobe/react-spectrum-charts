@@ -19,7 +19,7 @@ import More from '@react-spectrum/s2/icons/More';
 import Note from '@react-spectrum/s2/icons/StickyNote';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { actionButton } from '../../../storyShared/components/ChartActionBar/chartActionBarStoryShared';
+import { actionButton } from '../../../storyShared/components/ChartActionBar/chartActionBarStoryShared.js';
 
 export type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
 

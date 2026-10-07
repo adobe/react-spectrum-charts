@@ -19,20 +19,20 @@ import {
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
   FILTERED_TABLE,
-} from '@spectrum-charts/constants';
-import { toCamelCase } from '@spectrum-charts/utils';
+} from '@spectrum-charts/core-s2/constants';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { getSeriesIdTransform } from '../data/dataUtils';
-import { isInteractive } from '../marks/markUtils';
-import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { addHoveredItemSignal } from '../signal/signalSpecBuilder';
-import { addUserMetaInteractiveMark } from '../specUtils';
-import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types';
+import { getSeriesIdTransform } from '../data/dataUtils.js';
+import { isInteractive } from '../marks/markUtils.js';
+import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
+import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
+import { addUserMetaInteractiveMark } from '../specUtils.js';
+import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types/index.js';
 import {
   getDonutSummaryData,
   getDonutSummaryMarks,
   getDonutSummarySignals,
-} from './donutSummaryUtils';
+} from './donutSummaryUtils.js';
 import {
   getArcMark,
   getDonutStartAngle,
@@ -44,7 +44,7 @@ import {
   getSizeTierSignal,
   getSliceGapSignal,
   getSumData,
-} from './donutUtils';
+} from './donutUtils.js';
 import {
   getSegmentLabelData,
   getSegmentLabelMarks,
@@ -52,7 +52,7 @@ import {
   getRichSegmentLabelData,
   getRichSegmentLabelMarks,
   getRichSegmentLabelSignals,
-} from './segmentLabelUtils';
+} from './segmentLabelUtils.js';
 
 export const addDonut = produce<
   ScSpec,

@@ -14,7 +14,7 @@ import dataNavigator, { NodeObject, Structure, StructureOptions } from 'data-nav
 
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { addSiblingKeySynonyms, baseNavigationRules } from './navigationRules';
+import { addSiblingKeySynonyms, baseNavigationRules } from './navigationRules.js';
 
 /** Approximate tick count for a numerical axis; the live Vega scale may render a different count. */
 const APPROXIMATE_TICK_COUNT = 5;

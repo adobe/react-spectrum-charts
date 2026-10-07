@@ -11,11 +11,11 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { Axis } from '../components/Axis';
-import { AxisElement, ChartChildElement } from '../types';
-import { AxisLabelClickCallback } from '../types/util.types';
-import { getAllElements } from '../utils';
-import { ChartContainer } from './ChartContainer';
+import { Axis } from '../components/Axis/index.js';
+import { AxisElement, ChartChildElement } from '../types/index.js';
+import { AxisLabelClickCallback } from '../types/util.types.js';
+import { getAllElements } from '../utils/index.js';
+import { ChartContainer } from './ChartContainer.js';
 
 type MappedAxisElement = { name: string; element: AxisElement };
 

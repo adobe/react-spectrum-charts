@@ -11,10 +11,10 @@
  */
 import userEvent from '@testing-library/user-event';
 
-import { FADE_FACTOR, TOOLTIP_DELAY } from '@spectrum-charts/constants';
+import { FADE_FACTOR, TOOLTIP_DELAY } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../Chart';
-import { Legend } from '../../../components';
+import { Chart } from '../../../Chart.js';
+import { Legend } from '../../../components/index.js';
 import {
   clickNthElement,
   findChart,
@@ -25,7 +25,7 @@ import {
   rightClickNthElement,
   screen,
   waitFor,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   Basic,
@@ -39,7 +39,7 @@ import {
   Supreme,
   Title,
   TitleLimit,
-} from './Legend.story';
+} from './Legend.story.js';
 
 /**
  * Wait for the the duration of the legend tooltip hover delay.

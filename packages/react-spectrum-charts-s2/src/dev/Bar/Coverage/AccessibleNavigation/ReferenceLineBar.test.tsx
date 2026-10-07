@@ -11,8 +11,8 @@
  */
 import { fireEvent } from '@testing-library/react';
 
-import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../../test-utils';
-import { ReferenceLineBarNavigation } from './ReferenceLineBar.story';
+import { findAllMarksByGroupName, findChart, render, waitFor } from '../../../../test-utils/index.js';
+import { ReferenceLineBarNavigation } from './ReferenceLineBar.story.js';
 
 test('Reference-line bar navigation focuses a bar', async () => {
   render(<ReferenceLineBarNavigation {...ReferenceLineBarNavigation.args} />);

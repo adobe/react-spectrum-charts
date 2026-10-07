@@ -13,14 +13,14 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Combo } from '../../../pre-alpha';
-import { peopleAdoptionComboData, peopleTotalComboData } from '../../../storyShared/data/data';
-import { formatTimestamp } from '../../../storyShared/storyUtils';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps, ComboProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartInspect, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Combo } from '../../../pre-alpha/index.js';
+import { peopleAdoptionComboData, peopleTotalComboData } from '../../../storyShared/data/data.js';
+import { formatTimestamp } from '../../../storyShared/storyUtils.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps, ComboProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features',

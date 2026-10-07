@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme } from '../../chartSpec.types';
-import { ChartInspectOptions } from '../../dialogs/chartInspectSpec.types';
-import { ColorFacet, LineType, LineWidth, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types';
-import { SpectrumColor } from '../../spectrumVizColor.types';
-import { TrendlineAnnotationOptions } from './trendlineAnnotationSpec.types';
+import { ColorScheme } from '../../chartSpec.types.js';
+import { ChartInspectOptions } from '../../dialogs/chartInspectSpec.types.js';
+import { ColorFacet, LineType, LineWidth, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types.js';
+import { SpectrumColor } from '../../spectrumVizColor.types.js';
+import { TrendlineAnnotationOptions } from './trendlineAnnotationSpec.types.js';
 
 /** trendline methods that use a joinaggregate transform */
 export type AggregateMethod = 'average' | 'median';

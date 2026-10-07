@@ -15,18 +15,18 @@ import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { ChartInspect } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Bullet } from '../../../pre-alpha';
+import { Chart } from '../../../Chart.js';
+import { ChartInspect } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Bullet } from '../../../pre-alpha/index.js';
 import {
   customLabelBulletData,
   quarterlyKpiData,
   quarterlyKpiThresholdsData,
   regionalRevenueData,
-} from '../../../storyShared/data/bulletData';
-import { bindWithProps } from '../../../test-utils';
-import { BulletProps, ChartProps } from '../../../types';
+} from '../../../storyShared/data/bulletData.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BulletProps, ChartProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features',

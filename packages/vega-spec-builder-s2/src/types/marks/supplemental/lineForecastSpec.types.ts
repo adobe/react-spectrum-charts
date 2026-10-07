@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
-import { ColorScheme } from '../../chartSpec.types';
-import { ColorFacet, ScaleType } from '../../specUtil.types';
+import { ColorScheme } from '../../chartSpec.types.js';
+import { ColorFacet, ScaleType } from '../../specUtil.types.js';
 
 export interface LineForecastOptions {
   /** Data field containing the forecasted metric values */

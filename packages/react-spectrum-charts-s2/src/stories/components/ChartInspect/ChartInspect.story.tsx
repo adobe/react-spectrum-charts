@@ -15,13 +15,13 @@ import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend, Line } from '../../../components';
-import { ChartInspect } from '../../../components/ChartInspect';
-import useChartProps from '../../../hooks/useChartProps';
-import { browserData } from '../../../storyShared/data/data';
-import { formatTimestamp } from '../../../storyShared/storyUtils';
-import { bindWithProps } from '../../../test-utils';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend, Line } from '../../../components/index.js';
+import { ChartInspect } from '../../../components/ChartInspect/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { browserData } from '../../../storyShared/data/data.js';
+import { formatTimestamp } from '../../../storyShared/storyUtils.js';
+import { bindWithProps } from '../../../test-utils/index.js';
 
 type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
 

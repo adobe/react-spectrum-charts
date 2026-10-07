@@ -11,7 +11,7 @@
  */
 import { TextMark } from 'vega';
 
-import { ScatterAnnotationOptions, ScatterAnnotationSpecOptions, ScatterSpecOptions } from '../../types';
+import { ScatterAnnotationOptions, ScatterAnnotationSpecOptions, ScatterSpecOptions } from '../../types/index.js';
 
 export const getScatterAnnotationSpecOptions = (
   { anchor = ['right', 'top', 'bottom', 'left'], textKey }: ScatterAnnotationOptions,

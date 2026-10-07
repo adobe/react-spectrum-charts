@@ -10,4 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './ReferenceLine';
+export * from './ReferenceLine.js';

@@ -17,9 +17,9 @@ import {
   screen,
   waitFor,
   within,
-} from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock';
-import { Inspect, ItemInspect } from './LineInspect.story';
+} from '../../../test-utils/index.js';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { Inspect, ItemInspect } from './LineInspect.story.js';
 
 describe('Line', () => {
   describe('Inspect', () => {

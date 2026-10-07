@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { ChartPopoverProps } from '../../types';
+import { ChartPopoverProps } from '../../types/index.js';
 
 const ChartPopover: FC<ChartPopoverProps> = ({
   children,

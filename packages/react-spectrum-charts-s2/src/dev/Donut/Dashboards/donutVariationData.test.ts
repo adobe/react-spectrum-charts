@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { donutDatasetOptions, donutVariationDatasets, getLargestDonutSeries } from './donutVariationData';
+import { donutDatasetOptions, donutVariationDatasets, getLargestDonutSeries } from './donutVariationData.js';
 
 describe('Donut variation datasets', () => {
   test('provides a selector option for every fixture', () => {

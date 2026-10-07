@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { Donut } from '../../pre-alpha/components/Donut';
-import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render, screen } from '../../test-utils';
-import { Basic, EmptyState } from './Features/DonutFeatures.story';
+import { Donut } from '../../pre-alpha/components/Donut/index.js';
+import { allElementsHaveAttributeValue, findAllMarksByGroupName, findChart, render, screen } from '../../test-utils/index.js';
+import { Basic, EmptyState } from './Features/DonutFeatures.story.js';
 
 describe('Donut', () => {
   // Donut is not a real React component. This is test just provides test coverage for sonarqube

@@ -13,14 +13,14 @@ import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/constants';
+import { CHART_SIZE_BREAKPOINTS } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, BarDirectLabel } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { barData } from '../../../storyShared/components/Bar/data';
-import { bindWithProps } from '../../../test-utils';
-import { BarDirectLabelProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, BarDirectLabel } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { barData } from '../../../storyShared/components/Bar/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarDirectLabelProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Direct Label Size Scaling',

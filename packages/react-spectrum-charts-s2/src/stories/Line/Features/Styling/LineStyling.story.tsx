@@ -13,13 +13,13 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../../Chart';
-import { Axis, Legend, Line } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { bindWithProps } from '../../../../test-utils';
-import { searchVisitsData } from '../../lineData';
-import { setControls } from '../../lineStoryUtils';
-import { VisitsStory, visitsProps } from '../lineStoryTemplates';
+import { Chart } from '../../../../Chart.js';
+import { Axis, Legend, Line } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { searchVisitsData } from '../../lineData.js';
+import { setControls } from '../../lineStoryUtils.js';
+import { VisitsStory, visitsProps } from '../lineStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Styling',

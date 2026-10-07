@@ -11,9 +11,9 @@
  */
 import { action } from 'storybook/actions';
 
-import { Legend } from '../../../../components';
-import { bindWithProps } from '../../../../test-utils';
-import { TrafficStory, controls } from '../legendStoryTemplates';
+import { Legend } from '../../../../components/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { TrafficStory, controls } from '../legendStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Features/Action Handlers',

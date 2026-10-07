@@ -14,13 +14,13 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { s2Categorical6 } from '@spectrum-charts/themes';
+import { s2Categorical6 } from '@spectrum-charts/core-s2/tokens';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { barSeriesData, barSubSeriesData } from '../../../storyShared/components/Bar/data';
-import { bindWithProps } from '../../../test-utils';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { barSeriesData, barSubSeriesData } from '../../../storyShared/components/Bar/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Dodged And Stacked',

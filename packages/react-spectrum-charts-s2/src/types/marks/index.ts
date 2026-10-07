@@ -10,12 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './area.types';
-export * from './bar.types';
-export * from './bullet.types';
-export * from './combo.types';
-export * from './donut.types';
-export * from './line.types';
-export * from './scatter.types';
+export * from './area.types.js';
+export * from './bar.types.js';
+export * from './bullet.types.js';
+export * from './combo.types.js';
+export * from './donut.types.js';
+export * from './line.types.js';
+export * from './scatter.types.js';
 
-export * from './supplemental';
+export * from './supplemental/index.js';

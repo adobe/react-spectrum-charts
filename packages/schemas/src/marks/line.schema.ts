@@ -11,7 +11,7 @@
  */
 import { z } from 'zod';
 
-import { LineDirectLabelSchema } from './supplemental/lineDirectLabel.schema';
+import { LineDirectLabelSchema } from './supplemental/lineDirectLabel.schema.js';
 
 // FacetRef<T> = string (data field name) | { value: T }, see specUtil.types.ts in vega-spec-builder.
 const facetRef = <T extends z.ZodTypeAny>(value: T) => z.union([z.string(), z.object({ value })]);

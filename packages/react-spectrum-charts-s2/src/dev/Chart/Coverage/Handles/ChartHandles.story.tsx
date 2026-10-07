@@ -17,12 +17,12 @@ import { action } from 'storybook/actions';
 import { ActionButton } from '@react-spectrum/s2';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../../Chart';
-import { Axis, Line } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
+import { Chart } from '../../../../Chart.js';
+import { Axis, Line } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
 import '../../../../storyShared/Chart.story.css';
-import { data } from '../../../../storyShared/data/data';
-import { bindWithProps } from '../../../../test-utils';
+import { data } from '../../../../storyShared/data/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Coverage/Handles',

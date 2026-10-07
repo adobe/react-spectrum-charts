@@ -30,13 +30,13 @@ import {
   SELECTED_ITEM,
   SELECTED_SERIES,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { getGenericValueSignal } from '../signal/signalSpecBuilder';
-import { defaultSignals } from '../specTestUtils';
-import { initializeSpec } from '../specUtils';
-import { AreaSpecOptions, ScSpec } from '../types';
-import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';
+import { getGenericValueSignal } from '../signal/signalSpecBuilder.js';
+import { defaultSignals } from '../specTestUtils.js';
+import { initializeSpec } from '../specUtils.js';
+import { AreaSpecOptions, ScSpec } from '../types/index.js';
+import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder.js';
 
 const startingSpec: ScSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],

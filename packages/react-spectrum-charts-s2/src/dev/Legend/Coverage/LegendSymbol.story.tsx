@@ -13,14 +13,14 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/constants';
+import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { browserData as data } from '../../../storyShared/data/data';
-import { bindWithProps } from '../../../test-utils';
-import { defaultProps } from './LegendStoryUtils';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { browserData as data } from '../../../storyShared/data/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { defaultProps } from './LegendStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Symbol',

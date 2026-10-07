@@ -13,11 +13,11 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend, Line, Title } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { browserData as data } from '../../../storyShared/data/data';
-import { LegendProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend, Line, Title } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { browserData as data } from '../../../storyShared/data/data.js';
+import { LegendProps } from '../../../types/index.js';
 
 // Jun 1–7 2026 daily data, 3 series mirroring a CJA multi-metric line chart
 export const legendColumnsData = [

@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Line, LinePointAnnotation } from '../../components';
-import { findAllMarksByGroupName, findChart, render } from '../../test-utils';
-import '../../test-utils/__mocks__/matchMedia.mock';
-import { Basic } from './Features/Line.story';
-import { LineType, Opacity } from './Features/Styling/LineStyling.story';
+import { Line, LinePointAnnotation } from '../../components/index.js';
+import { findAllMarksByGroupName, findChart, render } from '../../test-utils/index.js';
+import '../../test-utils/__mocks__/matchMedia.mock.js';
+import { Basic } from './Features/Line.story.js';
+import { LineType, Opacity } from './Features/Styling/LineStyling.story.js';
 
 describe('LinePointAnnotation', () => {
   // LinePointAnnotation is not a real React component. This test provides coverage for sonarqube

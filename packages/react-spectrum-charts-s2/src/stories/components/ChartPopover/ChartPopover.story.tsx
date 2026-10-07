@@ -16,20 +16,20 @@ import { StoryFn } from '@storybook/react';
 import { Button } from '@react-spectrum/s2';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary } from '../../../pre-alpha';
-import { basicDonutData } from '../../../storyShared/Donut/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';
+import { Chart } from '../../../Chart.js';
+import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Donut, DonutSummary } from '../../../pre-alpha/index.js';
+import { basicDonutData } from '../../../storyShared/Donut/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types.js';
 import {
   BarPopoverStory,
   StoryWithParameters,
   defaultChartProps,
   dialogContent,
   setControlInclude,
-} from './chartPopoverStoryTemplates';
+} from './chartPopoverStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Chart Popover/Features',

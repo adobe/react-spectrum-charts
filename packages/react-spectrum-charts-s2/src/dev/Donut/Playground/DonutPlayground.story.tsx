@@ -16,13 +16,13 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { Chart } from '../../../Chart';
-import { ChartInspect, ChartPopover, Legend, Title } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
-import { bindWithProps } from '../../../test-utils';
-import { DonutProps } from '../../../types';
-import { DonutDataPreset, getDonutData } from '../../playgroundData';
+import { Chart } from '../../../Chart.js';
+import { ChartInspect, ChartPopover, Legend, Title } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { DonutProps } from '../../../types/index.js';
+import { DonutDataPreset, getDonutData } from '../../playgroundData.js';
 import {
   category,
   chartArgTypes,
@@ -32,7 +32,7 @@ import {
   popoverArgTypes,
   renderInspectContent,
   renderPopoverContent,
-} from '../../playgroundUtils';
+} from '../../playgroundUtils.js';
 
 interface DonutPlaygroundArgs extends DonutProps {
   dataPreset: DonutDataPreset;

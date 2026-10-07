@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, render } from '../../../test-utils';
-import { ChartInspect, ChartPopover } from './ScatterFeatures.story';
+import { findChart, render } from '../../../test-utils/index.js';
+import { ChartInspect, ChartPopover } from './ScatterFeatures.story.js';
 
 describe('Scatter dialogs', () => {
   test('ChartInspect renders properly', async () => {

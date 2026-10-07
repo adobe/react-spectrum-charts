@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, render, screen } from '../../../test-utils';
+import { findChart, render, screen } from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { HideDeemphasizedLabels } from './DonutFeatures.story';
+import { HideDeemphasizedLabels } from './DonutFeatures.story.js';
 
 describe('Donut features', () => {
   test('HideDeemphasizedLabels hides de-emphasized segment labels', async () => {

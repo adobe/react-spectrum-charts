@@ -12,10 +12,10 @@
 import { produce } from 'immer';
 import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
-import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/constants';
-import { spectrumColors } from '@spectrum-charts/themes';
+import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
+import { spectrumColors } from '@spectrum-charts/core-s2/tokens';
 
-import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils';
+import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils.js';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
@@ -27,11 +27,11 @@ import {
   getXProductionRule,
   hasPopover,
   isInteractive,
-} from '../marks/markUtils';
-import { getScatterPathMarks } from '../scatterPath/scatterPathUtils';
-import { getTrendlineMarks } from '../trendline';
-import { ScatterSpecOptions, SymbolSizeFacet } from '../types';
-import { getScatterAnnotationMarks } from './scatterAnnotation';
+} from '../marks/markUtils.js';
+import { getScatterPathMarks } from '../scatterPath/scatterPathUtils.js';
+import { getTrendlineMarks } from '../trendline/index.js';
+import { ScatterSpecOptions, SymbolSizeFacet } from '../types/index.js';
+import { getScatterAnnotationMarks } from './scatterAnnotation/index.js';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
   const { name } = options;

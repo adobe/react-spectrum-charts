@@ -11,12 +11,12 @@
  */
 import { renderHook } from '@testing-library/react';
 
-import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/constants';
+import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP_ID } from '@spectrum-charts/core-s2/constants';
 
-import { useChartContext } from '../context/RscChartContext';
-import { RscChartProps } from '../types';
-import useChartInspectInteractions from './useChartInspectInteractions';
-import useChartInspects, { InspectDetail } from './useChartInspects';
+import { useChartContext } from '../context/RscChartContext.js';
+import { RscChartProps } from '../types/index.js';
+import useChartInspectInteractions from './useChartInspectInteractions.js';
+import useChartInspects, { InspectDetail } from './useChartInspects.js';
 
 jest.mock('../context/RscChartContext', () => ({
   useChartContext: jest.fn(),

@@ -13,13 +13,13 @@ import { createRef } from 'react';
 
 import { renderToString } from 'react-dom/server';
 
-import { FADE_FACTOR } from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../Chart';
-import { Axis, Bar, ChartInspect, Line } from '../components';
-import { data } from '../storyShared/data/data';
+import { Chart } from '../Chart.js';
+import { Axis, Bar, ChartInspect, Line } from '../components/index.js';
+import { data } from '../storyShared/data/data.js';
 import {
   findChart,
   getAllMarksByGroupName,
@@ -28,13 +28,13 @@ import {
   render,
   screen,
   waitFor,
-} from '../test-utils';
+} from '../test-utils/index.js';
 import '../test-utils/__mocks__/matchMedia.mock.js';
-import { getElement } from '../utils';
-import { BackgroundColor, Basic, Config, EmptyStateText, Loading, Locale, TooltipAnchor } from './Chart.story';
-import { Colors } from './Chart/Encodings/ChartEncodings.story';
-import { HighlightedItem } from './Chart/Highlight/ChartHighlight.story';
-import { Height, Width } from './Chart/Size/ChartSize.story';
+import { getElement } from '../utils/index.js';
+import { BackgroundColor, Basic, Config, EmptyStateText, Loading, Locale, TooltipAnchor } from './Chart.story.js';
+import { Colors } from './Chart/Encodings/ChartEncodings.story.js';
+import { HighlightedItem } from './Chart/Highlight/ChartHighlight.story.js';
+import { Height, Width } from './Chart/Size/ChartSize.story.js';
 
 const PopoverTest = (
   <Chart data={[]} renderer="svg">

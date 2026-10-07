@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Chart } from '../../../../index';
+import { Chart } from '../../../../index.js';
 import {
   FunnelTimeComparisonStory,
   TrendsTimeComparisonLineStory,
@@ -17,10 +17,10 @@ import {
   UserGrowthBarTimeComparisonStory,
   funnelColors,
   userGrowthColors,
-} from '../../../../storyShared/ChartExamples/ChartExamplesUtils';
-import { funnelConversionTimeComparisonData, userGrowthTimeComparisonData } from '../../../../storyShared/data/data';
-import { trendsTimeComparisonData } from '../../../../storyShared/data/trendsTimeComparisonData';
-import { bindWithProps } from '../../../../test-utils';
+} from '../../../../storyShared/ChartExamples/ChartExamplesUtils.js';
+import { funnelConversionTimeComparisonData, userGrowthTimeComparisonData } from '../../../../storyShared/data/data.js';
+import { trendsTimeComparisonData } from '../../../../storyShared/data/trendsTimeComparisonData.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Coverage/Time Comparison',

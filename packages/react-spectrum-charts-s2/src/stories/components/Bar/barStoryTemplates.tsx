@@ -13,11 +13,11 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { acquisitionChannelData } from '../../../storyShared/components/Bar/data';
-import { BarProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { acquisitionChannelData } from '../../../storyShared/components/Bar/data.js';
+import { BarProps } from '../../../types/index.js';
 
 export const BarStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const isHorizontal = args.orientation === 'horizontal';

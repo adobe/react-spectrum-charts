@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis } from '../../../components';
-import { bindWithProps } from '../../../test-utils';
+import { Axis } from '../../../components/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
 import {
   BrandHealthStory,
   BrowserBarStory,
@@ -20,7 +20,7 @@ import {
   controls,
   horizontalPositionArgType,
   verticalPositionArgType,
-} from './axisStoryTemplates';
+} from './axisStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features',

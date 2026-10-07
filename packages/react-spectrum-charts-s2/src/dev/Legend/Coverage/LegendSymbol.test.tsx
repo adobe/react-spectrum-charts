@@ -11,11 +11,11 @@
  */
 import React from 'react';
 
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { findChart, getAllLegendSymbols, render, screen } from '../../../test-utils';
+import { findChart, getAllLegendSymbols, render, screen } from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Color, LineType, LineWidth, Opacity, Supreme, Symbols } from './LegendSymbol.story';
+import { Color, LineType, LineWidth, Opacity, Supreme, Symbols } from './LegendSymbol.story.js';
 
 const colors = spectrum2Colors.light;
 

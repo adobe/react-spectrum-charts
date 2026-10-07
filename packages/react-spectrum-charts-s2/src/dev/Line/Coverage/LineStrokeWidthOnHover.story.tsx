@@ -15,11 +15,11 @@ import {
   CHART_SIZE_BREAKPOINTS,
   CHART_SIZE_HOVER_STROKE_WIDTHS,
   CHART_SIZE_STROKE_WIDTHS,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartInspect, Legend, Line } from '../../../components';
-import { workspaceTrendsData } from '../../../storyShared/data/data';
+import { Chart } from '../../../Chart.js';
+import { Axis, ChartInspect, Legend, Line } from '../../../components/index.js';
+import { workspaceTrendsData } from '../../../storyShared/data/data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Stroke Width On Hover',

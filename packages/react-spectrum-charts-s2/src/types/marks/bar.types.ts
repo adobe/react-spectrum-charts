@@ -13,9 +13,9 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { BarOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartPopoverElement, ChartInspectElement } from '../dialogs';
-import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
-import { BarAnnotationElement, BarDirectLabelElement } from './supplemental';
+import { ChartPopoverElement, ChartInspectElement } from '../dialogs/index.js';
+import { Children, ContextMenuCallback, MarkCallback } from '../util.types.js';
+import { BarAnnotationElement, BarDirectLabelElement } from './supplemental/index.js';
 
 export interface BarProps
   extends Omit<

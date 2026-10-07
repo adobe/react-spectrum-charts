@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
 import {
   allElementsHaveAttributeValue,
@@ -20,8 +20,8 @@ import {
   hoverNthElement,
   render,
   waitForMarksByGroupName,
-} from '../../../../test-utils';
-import '../../../../test-utils/__mocks__/matchMedia.mock';
+} from '../../../../test-utils/index.js';
+import '../../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   ControlledHighlight as HoverAnimationControlledHighlight,
   GroupedLegendHover as HoverAnimationGroupedLegendHover,
@@ -29,7 +29,7 @@ import {
   OnClick as HoverAnimationOnClick,
   PointHover as HoverAnimationPointHover,
   PopoverSelection as HoverAnimationPopoverSelection,
-} from './LineHoverAnimation.story';
+} from './LineHoverAnimation.story.js';
 
 describe('Line', () => {
   describe('HoverAnimation', () => {

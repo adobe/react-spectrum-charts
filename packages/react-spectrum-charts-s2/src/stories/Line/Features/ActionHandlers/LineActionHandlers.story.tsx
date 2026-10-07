@@ -11,10 +11,10 @@
  */
 import { action } from 'storybook/actions';
 
-import { Line } from '../../../../components';
-import { bindWithProps } from '../../../../test-utils';
-import { setControls } from '../../lineStoryUtils';
-import { VisitsStory, visitsProps } from '../lineStoryTemplates';
+import { Line } from '../../../../components/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { setControls } from '../../lineStoryUtils.js';
+import { VisitsStory, visitsProps } from '../lineStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Action Handlers',

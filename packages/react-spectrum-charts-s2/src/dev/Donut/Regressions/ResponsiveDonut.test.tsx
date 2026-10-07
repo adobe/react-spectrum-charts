@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SegmentLabel } from '../../../pre-alpha';
-import { basicDonutData } from '../../../storyShared/Donut/data';
-import { findChart, fireEvent, render, screen } from '../../../test-utils';
-import { ResponsiveDonut } from './ResponsiveDonut';
+import { SegmentLabel } from '../../../pre-alpha/index.js';
+import { basicDonutData } from '../../../storyShared/Donut/data.js';
+import { findChart, fireEvent, render, screen } from '../../../test-utils/index.js';
+import { ResponsiveDonut } from './ResponsiveDonut.js';
 
 describe('ResponsiveDonut', () => {
   test('reports the label-reserved diameter and size tier for its initial width', async () => {

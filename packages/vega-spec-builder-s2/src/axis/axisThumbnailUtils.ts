@@ -11,11 +11,11 @@
  */
 import { ImageMark, ScaleType, Signal, TextEncodeEntry } from 'vega';
 
-import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/core-s2/constants';
 
-import { getGenericUpdateSignal } from '../signal/signalSpecBuilder';
-import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, Position } from '../types';
-import { DivergingBarContext } from './axisUtils';
+import { getGenericUpdateSignal } from '../signal/signalSpecBuilder.js';
+import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, Position } from '../types/index.js';
+import { DivergingBarContext } from './axisUtils.js';
 
 /**
  * Extracts and processes axis thumbnail options from the main axis options.

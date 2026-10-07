@@ -16,9 +16,9 @@ import {
   render,
   screen,
   unhoverNthElement,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { OnMouseInputs } from './BarMouseInputs.story';
+import { OnMouseInputs } from './BarMouseInputs.story.js';
 
 describe('Bar', () => {
   test('should display custom hover information in UI when mousing over bar items', async () => {

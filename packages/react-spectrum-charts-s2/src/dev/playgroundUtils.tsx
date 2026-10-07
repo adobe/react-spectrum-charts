@@ -15,11 +15,11 @@ import { ReactElement, ReactNode } from 'react';
 
 import { action } from 'storybook/actions';
 
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/constants';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
 import { ColorScheme, Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartInspect, ChartPopover, Legend, Title } from '../components';
-import { ContextMenuCallback, LegendProps } from '../types';
+import { ChartInspect, ChartPopover, Legend, Title } from '../components/index.js';
+import { ContextMenuCallback, LegendProps } from '../types/index.js';
 
 export type PlaygroundArgTypes = Record<
   string,

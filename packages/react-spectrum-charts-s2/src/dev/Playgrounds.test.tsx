@@ -11,17 +11,17 @@
  */
 import { ComponentType } from 'react';
 
-import { findChart, render } from '../test-utils';
+import { findChart, render } from '../test-utils/index.js';
 import '../test-utils/__mocks__/matchMedia.mock.js';
-import { Playground as AreaPlayground } from './Area/Playground/AreaPlayground.story';
-import { Playground as AxisPlayground } from './Axis/Playground/AxisPlayground.story';
-import { Playground as BarPlayground } from './Bar/Playground/BarPlayground.story';
-import { Playground as BulletPlayground } from './Bullet/Playground/BulletPlayground.story';
-import { Playground as ComboPlayground } from './Combo/Playground/ComboPlayground.story';
-import { Playground as DonutPlayground } from './Donut/Playground/DonutPlayground.story';
-import { Playground as LegendPlayground } from './Legend/Playground/LegendPlayground.story';
-import { Playground as LinePlayground } from './Line/Playground/LinePlayground.story';
-import { Playground as ScatterPlayground } from './Scatter/Playground/ScatterPlayground.story';
+import { Playground as AreaPlayground } from './Area/Playground/AreaPlayground.story.js';
+import { Playground as AxisPlayground } from './Axis/Playground/AxisPlayground.story.js';
+import { Playground as BarPlayground } from './Bar/Playground/BarPlayground.story.js';
+import { Playground as BulletPlayground } from './Bullet/Playground/BulletPlayground.story.js';
+import { Playground as ComboPlayground } from './Combo/Playground/ComboPlayground.story.js';
+import { Playground as DonutPlayground } from './Donut/Playground/DonutPlayground.story.js';
+import { Playground as LegendPlayground } from './Legend/Playground/LegendPlayground.story.js';
+import { Playground as LinePlayground } from './Line/Playground/LinePlayground.story.js';
+import { Playground as ScatterPlayground } from './Scatter/Playground/ScatterPlayground.story.js';
 
 const playgrounds = {
   AreaPlayground,

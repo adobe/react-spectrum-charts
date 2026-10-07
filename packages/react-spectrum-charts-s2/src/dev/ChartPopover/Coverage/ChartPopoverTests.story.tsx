@@ -15,13 +15,13 @@ import { StoryFn } from '@storybook/react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { browserData as data } from '../../../storyShared/data/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
-import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { browserData as data } from '../../../storyShared/data/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps } from '../../../types/index.js';
+import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types.js';
 
 interface ChartPopoverStoryArgs extends ChartPopoverProps, Pick<ChartProps, 'renderer'> {
   type?: 'stacked' | 'dodged';

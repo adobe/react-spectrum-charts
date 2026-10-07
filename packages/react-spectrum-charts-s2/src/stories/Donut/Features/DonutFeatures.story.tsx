@@ -13,21 +13,21 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { sequentialCerulean9 } from '@spectrum-charts/themes';
+import { sequentialCerulean9 } from '@spectrum-charts/core-s2/tokens';
 import { ChartColors } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart';
-import { ChartInspect, ChartPopover, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha';
+import { Chart } from '../../../Chart.js';
+import { ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
 import {
   basicDonutData,
   surveyResponseDonutData,
   taskCompletionDonutData,
   zeroDonutData,
-} from '../../../storyShared/Donut/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps, DonutProps } from '../../../types';
+} from '../../../storyShared/Donut/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps, DonutProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features',

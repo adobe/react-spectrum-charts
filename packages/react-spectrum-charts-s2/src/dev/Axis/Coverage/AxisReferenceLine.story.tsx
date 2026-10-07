@@ -13,11 +13,11 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Legend, Line, ReferenceLine } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { ChartProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Legend, Line, ReferenceLine } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Coverage/Reference Line',

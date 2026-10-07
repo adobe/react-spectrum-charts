@@ -15,12 +15,12 @@ import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, BarDirectLabel, ReferenceLine } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
-import { CartesianDataPreset, getCartesianData } from '../../playgroundData';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, BarDirectLabel, ReferenceLine } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BarProps } from '../../../types/index.js';
+import { CartesianDataPreset, getCartesianData } from '../../playgroundData.js';
 import {
   ContextMenuLabel,
   PlaygroundInspectArgs,
@@ -43,7 +43,7 @@ import {
   renderPlaygroundLegend,
   renderPlaygroundPopover,
   renderPlaygroundTitle,
-} from '../../playgroundUtils';
+} from '../../playgroundUtils.js';
 
 const DATUM_KEYS = ['browser', 'operatingSystem', 'value'];
 

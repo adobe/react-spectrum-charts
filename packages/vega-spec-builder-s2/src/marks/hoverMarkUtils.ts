@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { HOVER_SHAPE_COUNT } from '@spectrum-charts/constants';
+import { HOVER_SHAPE_COUNT } from '@spectrum-charts/core-s2/constants';
 
 export const getHoverMarkName = (name: string, index: number): string => `${name}_hover${index}`;
 

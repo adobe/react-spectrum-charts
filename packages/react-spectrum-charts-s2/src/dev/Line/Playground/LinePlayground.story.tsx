@@ -15,7 +15,7 @@ import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
+import { Chart } from '../../../Chart.js';
 import {
   Axis,
   ChartActionBar,
@@ -24,11 +24,11 @@ import {
   LineForecast,
   LinePointAnnotation,
   ReferenceLine,
-} from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { LineProps } from '../../../types';
-import { CartesianDataPreset, playgroundTimeSeriesData } from '../../playgroundData';
+} from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { LineProps } from '../../../types/index.js';
+import { CartesianDataPreset, playgroundTimeSeriesData } from '../../playgroundData.js';
 import {
   ContextMenuLabel,
   PlaygroundInspectArgs,
@@ -52,7 +52,7 @@ import {
   renderPlaygroundLegend,
   renderPlaygroundPopover,
   renderPlaygroundTitle,
-} from '../../playgroundUtils';
+} from '../../playgroundUtils.js';
 
 interface LinePlaygroundArgs extends LineProps, PlaygroundInspectArgs, PlaygroundPopoverArgs, PlaygroundLegendArgs {
   dataPreset: CartesianDataPreset;

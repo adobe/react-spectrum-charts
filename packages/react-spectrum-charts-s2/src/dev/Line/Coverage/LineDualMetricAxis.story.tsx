@@ -13,11 +13,11 @@ import React, { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { LineProps } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { LineProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Dual Metric Axis',

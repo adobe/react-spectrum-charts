@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { render, screen, within } from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock';
-import { LineWithAxisAndLegend } from './LineWithAxisAndLegend.story';
+import { render, screen, within } from '../../../test-utils/index.js';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { LineWithAxisAndLegend } from './LineWithAxisAndLegend.story.js';
 
 describe('Line', () => {
   test('Line with axis and legend renders', async () => {

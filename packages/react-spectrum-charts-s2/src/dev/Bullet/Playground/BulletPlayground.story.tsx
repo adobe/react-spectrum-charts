@@ -16,14 +16,14 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { Chart } from '../../../Chart';
-import { ChartInspect, Title } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Bullet } from '../../../pre-alpha';
-import { bindWithProps } from '../../../test-utils';
-import { BulletProps } from '../../../types';
-import { BulletDataPreset, getBulletData, playgroundThresholds } from '../../playgroundData';
-import { category, chartArgTypes, chartArgs, inspectArgTypes, renderInspectContent } from '../../playgroundUtils';
+import { Chart } from '../../../Chart.js';
+import { ChartInspect, Title } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Bullet } from '../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { BulletProps } from '../../../types/index.js';
+import { BulletDataPreset, getBulletData, playgroundThresholds } from '../../playgroundData.js';
+import { category, chartArgTypes, chartArgs, inspectArgTypes, renderInspectContent } from '../../playgroundUtils.js';
 
 interface BulletPlaygroundArgs extends BulletProps {
   dataPreset: BulletDataPreset;

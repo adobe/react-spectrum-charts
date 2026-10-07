@@ -24,7 +24,7 @@ import {
   MARK_ID,
   SERIES_ID,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   addHoverAnimLastChangeData,
@@ -36,7 +36,7 @@ import {
   getHoverFractionSignal,
   getHoverSeriesFractionData,
   getHoverTargetData,
-} from './hoverAnimationUtils';
+} from './hoverAnimationUtils.js';
 
 describe('getHoverTargetData()', () => {
   test('aggregates by the identity field, adds one formula per rule, and composes the target', () => {

@@ -11,12 +11,12 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { ChartInspect } from '../components/ChartInspect';
-import { Donut } from '../pre-alpha';
-import { DefaultDonutContent, getDefaultDonutContent } from '../pre-alpha/components/Donut/DonutDialogContent';
-import { ChartChildElement, ChartInspectElement, ChartInspectProps, DonutElement, InspectHandler } from '../types';
-import { getAllElements, getAllMarkElements } from '../utils';
-import { ChartContainer } from './ChartContainer';
+import { ChartInspect } from '../components/ChartInspect/index.js';
+import { Donut } from '../pre-alpha/index.js';
+import { DefaultDonutContent, getDefaultDonutContent } from '../pre-alpha/components/Donut/DonutDialogContent.js';
+import { ChartChildElement, ChartInspectElement, ChartInspectProps, DonutElement, InspectHandler } from '../types/index.js';
+import { getAllElements, getAllMarkElements } from '../utils/index.js';
+import { ChartContainer } from './ChartContainer.js';
 
 type MappedInspect = { name: string; element: ChartInspectElement; parent?: string };
 type MappedDonut = { name: string; element: DonutElement };

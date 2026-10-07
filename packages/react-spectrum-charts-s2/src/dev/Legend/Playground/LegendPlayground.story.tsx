@@ -16,13 +16,13 @@ import { ReactElement, useState } from 'react';
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartPopover, Legend, Line, Title } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { LegendProps } from '../../../types';
-import { playgroundTimeSeriesData } from '../../playgroundData';
-import { category, chartArgTypes, chartArgs, popoverArgTypes, renderPopoverContent } from '../../playgroundUtils';
+import { Chart } from '../../../Chart.js';
+import { Axis, ChartPopover, Legend, Line, Title } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { LegendProps } from '../../../types/index.js';
+import { playgroundTimeSeriesData } from '../../playgroundData.js';
+import { category, chartArgTypes, chartArgs, popoverArgTypes, renderPopoverContent } from '../../playgroundUtils.js';
 
 interface LegendPlaygroundArgs extends LegendProps {
   chartTitle?: string;

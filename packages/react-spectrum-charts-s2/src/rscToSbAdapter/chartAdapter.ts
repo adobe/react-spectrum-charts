@@ -11,8 +11,8 @@
  */
 import { ChartOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { SanitizedSpecProps } from '../types';
-import { childrenToOptions } from './childrenAdapter';
+import { SanitizedSpecProps } from '../types/index.js';
+import { childrenToOptions } from './childrenAdapter.js';
 
 export const rscPropsToSpecBuilderOptions = ({ children, ...specProps }: SanitizedSpecProps): ChartOptions => {
   const { axes, marks, legends, titles } = childrenToOptions(children);

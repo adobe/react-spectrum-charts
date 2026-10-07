@@ -13,9 +13,9 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { ComboOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Children } from '../util.types';
-import { BarElement } from './bar.types';
-import { LineElement } from './line.types';
+import { Children } from '../util.types.js';
+import { BarElement } from './bar.types.js';
+import { LineElement } from './line.types.js';
 
 export type ComboChildElement = BarElement | LineElement;
 

@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
-import { getLineDeemphasisOpacitySignal } from './lineEncodingUtils';
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
+import { getLineDeemphasisOpacitySignal } from './lineEncodingUtils.js';
 
 describe('getLineDeemphasisOpacitySignal()', () => {
   test('returns the shared deemphasis-ramp opacity signal for the given mark name', () => {

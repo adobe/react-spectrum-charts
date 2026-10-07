@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis } from '../../../../components';
-import { bindWithProps } from '../../../../test-utils';
-import { CampaignBarStory, controls } from '../axisStoryTemplates';
+import { Axis } from '../../../../components/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { CampaignBarStory, controls } from '../axisStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Tooltips',

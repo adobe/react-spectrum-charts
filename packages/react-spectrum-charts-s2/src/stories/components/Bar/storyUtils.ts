@@ -11,7 +11,7 @@
  */
 import type { ArgTypes, StoryFn } from '@storybook/react';
 
-import { bindWithProps } from '../../../test-utils';
+import { bindWithProps } from '../../../test-utils/index.js';
 
 type StoryConfig = { parameters?: { controls: { include: string[] } }; argTypes?: Partial<ArgTypes> };
 

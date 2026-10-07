@@ -11,7 +11,7 @@
  */
 import { SignalRef } from 'vega';
 
-import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, MS_PER_DAY, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 
 import {
   AggregateMethod,
@@ -27,7 +27,7 @@ import {
   TrendlineOptions,
   TrendlineSpecOptions,
   WindowMethod,
-} from '../types';
+} from '../types/index.js';
 
 /** These are all the spec options that currently support trendlines */
 export type TrendlineParentOptions = LineSpecOptions | ScatterSpecOptions | BarSpecOptions;

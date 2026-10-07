@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/constants';
-import { sequentialCerulean5 } from '@spectrum-charts/themes';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
+import { sequentialCerulean5 } from '@spectrum-charts/core-s2/tokens';
 
 import {
   allElementsHaveAttributeValue,
@@ -20,8 +20,8 @@ import {
   render,
   screen,
   waitFor,
-} from '../../../test-utils';
-import { SemicircleBoolean, SemicircleOrdinal } from './DonutSemicircleVariants.story';
+} from '../../../test-utils/index.js';
+import { SemicircleBoolean, SemicircleOrdinal } from './DonutSemicircleVariants.story.js';
 
 describe('DonutSemicircle', () => {
   test('passes hideValue to the boolean DonutSummary', async () => {

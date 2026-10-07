@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme } from '../chartSpec.types';
-import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
-import { NumberFormat, PartiallyRequired } from '../specUtil.types';
+import { ColorScheme } from '../chartSpec.types.js';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
+import { NumberFormat, PartiallyRequired } from '../specUtil.types.js';
 
 export type ThresholdBackground = { thresholdMin?: number; thresholdMax?: number; fill?: string };
 

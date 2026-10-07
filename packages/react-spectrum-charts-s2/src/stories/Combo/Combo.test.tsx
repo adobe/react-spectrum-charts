@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Combo } from '../../pre-alpha/components/Combo';
-import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '../../test-utils';
-import { Basic, ChartInspect, MetricAxis } from './Features/ComboFeatures.story';
+import { Combo } from '../../pre-alpha/components/Combo/index.js';
+import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '../../test-utils/index.js';
+import { Basic, ChartInspect, MetricAxis } from './Features/ComboFeatures.story.js';
 
 describe('Combo', () => {
   // Combo is not a real React component. This test just provides test coverage for sonarqube

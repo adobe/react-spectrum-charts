@@ -13,13 +13,13 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../../Chart';
-import { Legend } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Donut, SegmentLabel } from '../../../../pre-alpha';
-import { basicDonutData, browserVendorDonutData } from '../../../../storyShared/Donut/data';
-import { bindWithProps } from '../../../../test-utils';
-import { SegmentLabelProps } from '../../../../types';
+import { Chart } from '../../../../Chart.js';
+import { Legend } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Donut, SegmentLabel } from '../../../../pre-alpha/index.js';
+import { basicDonutData, browserVendorDonutData } from '../../../../storyShared/Donut/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { SegmentLabelProps } from '../../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/Segment Label',

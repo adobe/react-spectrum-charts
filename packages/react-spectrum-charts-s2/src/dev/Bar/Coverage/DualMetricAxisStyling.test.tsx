@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, render, screen } from '../../../test-utils';
+import { findChart, render, screen } from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   DualMetricAxisWithSublabels as WithSublabels,
   DualMetricAxisWithThreeSeries as WithThreeSeries,
-} from './BarDualMetricAxis.story';
+} from './BarDualMetricAxis.story.js';
 
 describe('Dual metric axis bar axis styling', () => {
   describe('Three series', () => {

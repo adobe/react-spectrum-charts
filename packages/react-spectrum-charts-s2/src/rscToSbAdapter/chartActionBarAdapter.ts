@@ -11,7 +11,7 @@
  */
 import { ChartActionBarOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartActionBarProps } from '../types';
+import { ChartActionBarProps } from '../types/index.js';
 
 export const getChartActionBarOptions = ({
   children: _children,

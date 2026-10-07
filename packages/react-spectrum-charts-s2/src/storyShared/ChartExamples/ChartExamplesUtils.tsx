@@ -28,8 +28,8 @@ import {
   SubLabel,
 } from '@spectrum-charts/vega-spec-builder-s2';
 
-import useChartProps from '../../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartInspect, ChartPopover, Legend, Line, s2Categorical16 } from '../../index';
+import useChartProps from '../../hooks/useChartProps.js';
+import { Axis, Bar, Chart, ChartInspect, ChartPopover, Legend, Line, s2Categorical16 } from '../../index.js';
 import '../Chart.story.css';
 
 export const userGrowthColors: SpectrumColor[] = [

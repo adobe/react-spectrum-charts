@@ -11,12 +11,12 @@
  */
 import { ReactElement, useState } from 'react';
 
-import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_POINT_SIZES } from '@spectrum-charts/constants';
+import { CHART_SIZE_BREAKPOINTS, CHART_SIZE_POINT_SIZES } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartInspect, Legend, Line, ReferenceLine } from '../../../components';
-import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../storyShared/data/data';
-import { formatTimestamp } from '../../../storyShared/storyUtils';
+import { Chart } from '../../../Chart.js';
+import { Axis, ChartInspect, Legend, Line, ReferenceLine } from '../../../components/index.js';
+import { workspaceTrendsData, workspaceTrendsDataWithVisiblePoints } from '../../../storyShared/data/data.js';
+import { formatTimestamp } from '../../../storyShared/storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Size Auto Detect',

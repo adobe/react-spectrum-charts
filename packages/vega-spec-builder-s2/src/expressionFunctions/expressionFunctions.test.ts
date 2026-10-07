@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { numberLocales } from '@spectrum-charts/locales';
+import { numberLocales } from '@spectrum-charts/core-s2/locales';
 
 import {
   LabelDatum,
@@ -21,7 +21,7 @@ import {
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
   isDonutLabelVisible,
-} from './expressionFunctions';
+} from './expressionFunctions.js';
 
 describe('isDonutLabelVisible()', () => {
   const data = [

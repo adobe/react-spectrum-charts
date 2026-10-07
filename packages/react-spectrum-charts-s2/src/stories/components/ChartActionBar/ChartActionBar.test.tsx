@@ -11,7 +11,7 @@
  */
 import userEvent from '@testing-library/user-event';
 
-import { ChartActionBar } from '../../../components';
+import { ChartActionBar } from '../../../components/index.js';
 import {
   clickNthElement,
   findAllMarksByGroupName,
@@ -20,10 +20,10 @@ import {
   screen,
   waitFor,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { OnClearSelection } from './ActionHandlers/ChartActionBarActionHandlers.story';
-import { Basic, IsEmphasized, MaxActions } from './ChartActionBar.story';
+import { OnClearSelection } from './ActionHandlers/ChartActionBarActionHandlers.story.js';
+import { Basic, IsEmphasized, MaxActions } from './ChartActionBar.story.js';
 
 // jsdom doesn't implement the Pointer Events capture API used for dragging.
 beforeAll(() => {

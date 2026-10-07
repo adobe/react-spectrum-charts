@@ -16,7 +16,7 @@ import { View } from 'vega';
 
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Navigator } from './Navigator';
+import { Navigator } from './Navigator.js';
 
 const data: SimpleData[] = [
   { browser: 'Chrome', downloads: 27000 },

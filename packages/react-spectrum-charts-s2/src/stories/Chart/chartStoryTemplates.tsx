@@ -13,8 +13,8 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import useChartProps from '../../hooks/useChartProps';
-import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../../index';
+import useChartProps from '../../hooks/useChartProps.js';
+import { Axis, Bar, Chart, ChartInspect, Legend, Line } from '../../index.js';
 
 export type StoryWithParameters = { parameters?: { controls: { include: string[] } } };
 

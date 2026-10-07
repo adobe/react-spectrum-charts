@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/constants';
-import { spectrum2Colors } from '@spectrum-charts/themes';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   clickNthElement,
@@ -20,9 +20,9 @@ import {
   screen,
   waitFor,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { DodgedBar, DodgedBarHighlightByDimension, Renderer } from './ChartPopoverTests.story';
+import { DodgedBar, DodgedBarHighlightByDimension, Renderer } from './ChartPopoverTests.story.js';
 
 describe('ChartPopover tests', () => {
   test('Renders properly on canvas', async () => {

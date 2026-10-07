@@ -11,10 +11,10 @@
  */
 import { Data, FormulaTransform, ValuesData } from 'vega';
 
-import { TABLE } from '@spectrum-charts/constants';
+import { TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { getTableData } from '../data/dataUtils';
-import { BulletSpecOptions, ThresholdBackground } from '../types';
+import { getTableData } from '../data/dataUtils.js';
+import { BulletSpecOptions, ThresholdBackground } from '../types/index.js';
 
 /**
  * Retrieves the bullet table data from the provided data array.

@@ -13,11 +13,11 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { LineProps } from '../../../types';
-import { visitsByChannelData } from '../lineData';
+import { Chart } from '../../../Chart.js';
+import { Axis, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { LineProps } from '../../../types/index.js';
+import { visitsByChannelData } from '../lineData.js';
 
 export const VisitsStory: StoryFn<typeof Line> = (args): ReactElement => {
   const chartProps = useChartProps({ data: visitsByChannelData, minWidth: 400, maxWidth: 800, height: 400 });

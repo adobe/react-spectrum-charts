@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DONUT_SUMMARY_MIN_RADIUS } from '@spectrum-charts/constants';
+import { DONUT_SUMMARY_MIN_RADIUS } from '@spectrum-charts/core-s2/constants';
 
-import { DonutSummary } from '../../../pre-alpha';
-import { render, screen } from '../../../test-utils';
-import { Basic, NoLabel, NumberFormat } from './DonutSummaryVariants.story';
+import { DonutSummary } from '../../../pre-alpha/index.js';
+import { render, screen } from '../../../test-utils/index.js';
+import { Basic, NoLabel, NumberFormat } from './DonutSummaryVariants.story.js';
 
 describe('DonutSummary renders properly', () => {
   // Donut is not a real React component. This is test just provides test coverage for sonarqube

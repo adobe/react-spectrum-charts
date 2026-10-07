@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findAllMarksByGroupName, findChart, render } from '../../../test-utils';
+import { findAllMarksByGroupName, findChart, render } from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { BarWithUTCDatetimeFormat } from './BarUTCDatetime.story';
+import { BarWithUTCDatetimeFormat } from './BarUTCDatetime.story.js';
 
 describe('Bar', () => {
   test('Bar with UTC date on dimension renders properly', async () => {

@@ -10,9 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './components';
-export * from './Chart';
-export * from '@spectrum-charts/locales';
-export * from '@spectrum-charts/themes';
-export * from './types/';
+export * from './components/index.js';
+export * from './Chart.js';
+export * from '@spectrum-charts/core-s2/locales';
+export * from '@spectrum-charts/core-s2/tokens';
+export * from './types/index.js';
 export * from '@spectrum-charts/vega-spec-builder-s2';

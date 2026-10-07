@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
 import {
   allElementsHaveAttributeValue,
@@ -21,7 +21,7 @@ import {
   hoverNthElement,
   render,
   screen,
-} from '../../../../test-utils';
+} from '../../../../test-utils/index.js';
 import '../../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   DodgedStackedLegendHover,
@@ -32,7 +32,7 @@ import {
   StackedPointHover,
   StackedPopoverSelection,
   TrellisPointHover,
-} from './BarHoverAnimation.story';
+} from './BarHoverAnimation.story.js';
 
 // `animations={false}` restores the original instant, synchronous highlighting for every trigger.
 describe('animations={false}', () => {

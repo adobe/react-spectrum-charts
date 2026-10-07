@@ -18,9 +18,9 @@ import {
   screen,
   waitFor,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { ChartInspect, ChartPopover } from './DonutFeatures.story';
+import { ChartInspect, ChartPopover } from './DonutFeatures.story.js';
 
 describe('Donut dialogs', () => {
   test('ChartInspect shows the default swatch, series, and percent with value on hover', async () => {

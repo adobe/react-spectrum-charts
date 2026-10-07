@@ -11,8 +11,8 @@
  */
 import React from 'react';
 
-import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils';
-import { ConversionsVsTarget as Basic } from './BarExamples.story';
+import { findAllMarksByGroupName, findChart, findMarksByGroupName, render } from '../../../test-utils/index.js';
+import { ConversionsVsTarget as Basic } from './BarExamples.story.js';
 
 describe('Bar examples: ConversionsVsTarget', () => {
   test('Reference line renders', async () => {

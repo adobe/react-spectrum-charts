@@ -9,16 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils';
+import { findAllMarksByGroupName, findChart, render, screen } from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { OnContextMenu } from './ActionHandlers/BarActionHandlers.story';
-import { DimensionDataType } from './Bar.story';
-import { Basic as DirectLabelBasic, Format, Position } from './BarDirectLabel.story';
-import { Diverging } from './Diverging.story';
-import { GroupedPadding } from './DodgedBar.story';
-import { Order } from './StackedBar.story';
-import { ColorOverride } from './Styling/BarStyling.story';
-import { Trellis, TrellisOrientation } from './TrellisBar.story';
+import { OnContextMenu } from './ActionHandlers/BarActionHandlers.story.js';
+import { DimensionDataType } from './Bar.story.js';
+import { Basic as DirectLabelBasic, Format, Position } from './BarDirectLabel.story.js';
+import { Diverging } from './Diverging.story.js';
+import { GroupedPadding } from './DodgedBar.story.js';
+import { Order } from './StackedBar.story.js';
+import { ColorOverride } from './Styling/BarStyling.story.js';
+import { Trellis, TrellisOrientation } from './TrellisBar.story.js';
 
 describe('Bar feature stories', () => {
   test('ColorOverride fills bars from the override field', async () => {

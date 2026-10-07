@@ -11,7 +11,7 @@
  */
 import { Data, GroupMark } from 'vega';
 
-import { colorSchemes, spectrum2Colors } from '@spectrum-charts/themes';
+import { colorSchemes, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   BACKGROUND_COLOR,
@@ -41,7 +41,7 @@ import {
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   addData,
@@ -57,10 +57,10 @@ import {
   getTwoDimensionalColorScheme,
   getTwoDimensionalLineTypes,
   getTwoDimensionalOpacities,
-} from './chartSpecBuilder';
-import { defaultSignals } from './specTestUtils';
-import { baseData } from './specUtils';
-import { BarOptions, ChartSpecOptions, LineType } from './types';
+} from './chartSpecBuilder.js';
+import { defaultSignals } from './specTestUtils.js';
+import { baseData } from './specUtils.js';
+import { BarOptions, ChartSpecOptions, LineType } from './types/index.js';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 

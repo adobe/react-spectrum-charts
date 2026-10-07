@@ -30,7 +30,7 @@ import {
   TrendlineOptions,
   InterpolationType,
   LineCap,
-} from '../types';
+} from '../types/index.js';
 
 export const getPopoverMarkName = (
   chartPopovers: ChartPopoverOptions[],

@@ -11,10 +11,10 @@
  */
 import { ScaleType, Signal } from 'vega';
 
-import { MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/constants';
+import { MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/core-s2/constants';
 
-import { AxisSpecOptions, AxisThumbnailOptions } from '../types';
-import { defaultAxisOptions } from './axisTestUtils';
+import { AxisSpecOptions, AxisThumbnailOptions } from '../types/index.js';
+import { defaultAxisOptions } from './axisTestUtils.js';
 import {
   addAxisThumbnailSignals,
   getAxisThumbnailLabelOffset,
@@ -22,8 +22,8 @@ import {
   getAxisThumbnailPosition,
   getAxisThumbnails,
   scaleTypeSupportsThumbnails,
-} from './axisThumbnailUtils';
-import { DivergingBarContext } from './axisUtils';
+} from './axisThumbnailUtils.js';
+import { DivergingBarContext } from './axisUtils.js';
 
 describe('axisThumbnailUtils', () => {
   describe('getAxisThumbnails', () => {

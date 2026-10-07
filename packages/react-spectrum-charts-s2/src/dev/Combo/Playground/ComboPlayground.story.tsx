@@ -16,12 +16,12 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, BarDirectLabel, Line, LineDirectLabel, LineForecast } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Combo } from '../../../pre-alpha';
-import { bindWithProps } from '../../../test-utils';
-import { ComboProps, ContextMenuCallback } from '../../../types';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, BarDirectLabel, Line, LineDirectLabel, LineForecast } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Combo } from '../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ComboProps, ContextMenuCallback } from '../../../types/index.js';
 import {
   PlaygroundInspectArgs,
   PlaygroundLegendArgs,
@@ -41,7 +41,7 @@ import {
   renderPlaygroundLegend,
   renderPlaygroundPopover,
   renderPlaygroundTitle,
-} from '../../playgroundUtils';
+} from '../../playgroundUtils.js';
 
 const comboPlaygroundData = [
   {

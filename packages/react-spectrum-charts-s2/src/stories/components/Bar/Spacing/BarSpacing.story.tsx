@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Bar } from '../../../../components';
-import { BarStory, defaultProps } from '../barStoryTemplates';
-import { bindStory } from '../storyUtils';
+import { Bar } from '../../../../components/index.js';
+import { BarStory, defaultProps } from '../barStoryTemplates.js';
+import { bindStory } from '../storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Spacing',

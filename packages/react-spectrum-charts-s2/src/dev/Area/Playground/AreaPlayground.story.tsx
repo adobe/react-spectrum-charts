@@ -16,13 +16,13 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { Chart } from '../../../Chart';
-import { Axis, ChartInspect, ChartPopover, Legend, Title } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { Area } from '../../../pre-alpha';
-import { bindWithProps } from '../../../test-utils';
-import { AreaProps } from '../../../types';
-import { CartesianDataPreset, playgroundTimeSeriesData } from '../../playgroundData';
+import { Chart } from '../../../Chart.js';
+import { Axis, ChartInspect, ChartPopover, Legend, Title } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Area } from '../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { AreaProps } from '../../../types/index.js';
+import { CartesianDataPreset, playgroundTimeSeriesData } from '../../playgroundData.js';
 import {
   axesArgTypes,
   category,
@@ -33,7 +33,7 @@ import {
   popoverArgTypes,
   renderInspectContent,
   renderPopoverContent,
-} from '../../playgroundUtils';
+} from '../../playgroundUtils.js';
 
 interface AreaPlaygroundArgs extends AreaProps {
   dataPreset: CartesianDataPreset;

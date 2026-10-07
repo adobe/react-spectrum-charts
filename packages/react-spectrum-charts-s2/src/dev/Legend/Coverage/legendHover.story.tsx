@@ -11,9 +11,9 @@
  */
 import { action } from 'storybook/actions';
 
-import { Legend } from '../../../components';
-import { bindWithProps } from '../../../test-utils';
-import { LegendBarStory, defaultProps } from './LegendStoryUtils';
+import { Legend } from '../../../components/index.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { LegendBarStory, defaultProps } from './LegendStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Hover',

@@ -13,11 +13,11 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import useChartProps from '../../../hooks/useChartProps';
-import { Axis, Chart, Legend, Line } from '../../../index';
-import { chartEngagementData } from '../../../storyShared/data/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartBarStory, StoryWithParameters, setControlInclude } from '../chartStoryTemplates';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { Axis, Chart, Legend, Line } from '../../../index.js';
+import { chartEngagementData } from '../../../storyShared/data/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartBarStory, StoryWithParameters, setControlInclude } from '../chartStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/Encodings',

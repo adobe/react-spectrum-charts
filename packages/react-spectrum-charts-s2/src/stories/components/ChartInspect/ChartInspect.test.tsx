@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartInspect } from '../../../components';
+import { ChartInspect } from '../../../components/index.js';
 import {
   allElementsHaveAttributeValue,
   findAllMarksByGroupName,
@@ -24,9 +24,9 @@ import {
   unhoverNthElement,
   waitFor,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, HighlightBy, OnLine } from './ChartInspect.story';
+import { Basic, HighlightBy, OnLine } from './ChartInspect.story.js';
 
 describe('ChartInspect', () => {
   // ChartInspect is not a real React component. This test provides coverage for sonarqube.

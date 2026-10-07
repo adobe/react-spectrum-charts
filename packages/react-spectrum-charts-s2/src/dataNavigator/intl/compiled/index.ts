@@ -13,7 +13,7 @@
 // AUTO-GENERATED from intl/*.json. Do not edit by hand.
 import type { LocalizedString } from '@internationalized/string';
 
-import enUS from './en-US';
+import enUS from './en-US.js';
 
 export type DataNavigatorMessageKey = 'bar.description' | 'bar.stackedDescription';
 

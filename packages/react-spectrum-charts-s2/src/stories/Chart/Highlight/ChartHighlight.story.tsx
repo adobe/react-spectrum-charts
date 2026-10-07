@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Chart } from '../../../index';
-import { chartEngagementData } from '../../../storyShared/data/data';
-import { bindWithProps } from '../../../test-utils';
-import { ChartBarInspectStory, ChartLineStory, StoryWithParameters, setControlInclude } from '../chartStoryTemplates';
+import { Chart } from '../../../index.js';
+import { chartEngagementData } from '../../../storyShared/data/data.js';
+import { bindWithProps } from '../../../test-utils/index.js';
+import { ChartBarInspectStory, ChartLineStory, StoryWithParameters, setControlInclude } from '../chartStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/Highlight',

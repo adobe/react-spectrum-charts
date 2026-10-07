@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { render, screen } from '../../../test-utils';
-import '../../../test-utils/__mocks__/matchMedia.mock';
-import { LinearTrendScale, TrendScale } from './LineTrendScale.story';
+import { render, screen } from '../../../test-utils/index.js';
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
+import { LinearTrendScale, TrendScale } from './LineTrendScale.story.js';
 
 describe('Line', () => {
   test('Trend scale renders', async () => {

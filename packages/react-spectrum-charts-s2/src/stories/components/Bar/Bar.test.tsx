@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
-import { Bar } from '../../../components';
-import { acquisitionChannelData as barData } from '../../../storyShared/components/Bar/data';
+import { Bar } from '../../../components/index.js';
+import { acquisitionChannelData as barData } from '../../../storyShared/components/Bar/data.js';
 import {
   clickNthElement,
   findAllMarksByGroupName,
@@ -24,14 +24,14 @@ import {
   unhoverNthElement,
   waitForMarksByGroupName,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { OnClick } from './ActionHandlers/BarActionHandlers.story';
-import { Basic, ChartInspect as ChartInspectStory } from './Bar.story';
-import { Dodged as DodgedBasic, DodgedStacked } from './DodgedBar.story';
-import { PaddingRatio } from './Spacing/BarSpacing.story';
-import { Stacked as StackedBasic } from './StackedBar.story';
-import { Opacity } from './Styling/BarStyling.story';
+import { OnClick } from './ActionHandlers/BarActionHandlers.story.js';
+import { Basic, ChartInspect as ChartInspectStory } from './Bar.story.js';
+import { Dodged as DodgedBasic, DodgedStacked } from './DodgedBar.story.js';
+import { PaddingRatio } from './Spacing/BarSpacing.story.js';
+import { Stacked as StackedBasic } from './StackedBar.story.js';
+import { Opacity } from './Styling/BarStyling.story.js';
 
 describe('Bar', () => {
   // Bar is not a real React component. This is test just provides test coverage for sonarqube

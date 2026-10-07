@@ -13,10 +13,10 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, Legend, Line } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { revenueByRegionAndPeriodData, trafficBySourceData } from './legendStoryData';
+import { Chart } from '../../../Chart.js';
+import { Axis, Legend, Line } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { revenueByRegionAndPeriodData, trafficBySourceData } from './legendStoryData.js';
 
 export const controls = (...include: string[]) => ({ parameters: { controls: { include } } });
 

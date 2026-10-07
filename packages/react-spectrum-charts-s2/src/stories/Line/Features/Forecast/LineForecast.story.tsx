@@ -13,12 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../../Chart';
-import { Axis, Legend, Line, LineForecast } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { bindWithProps } from '../../../../test-utils';
-import { FORECAST_START, monthlyVisitsForecastData } from '../../lineData';
-import { setControls } from '../../lineStoryUtils';
+import { Chart } from '../../../../Chart.js';
+import { Axis, Legend, Line, LineForecast } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { FORECAST_START, monthlyVisitsForecastData } from '../../lineData.js';
+import { setControls } from '../../lineStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Forecast',

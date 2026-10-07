@@ -14,17 +14,17 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { AxisThumbnail } from '../../../components';
+import { AxisThumbnail } from '../../../components/index.js';
 import {
   allElementsHaveAttributeValue,
   findAllMarksByGroupName,
   findChart,
   getPopoverTriggerButtons,
   render,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Basic, Popover, YAxis } from './AxisThumbnail.story';
-import { Resizable } from './AxisThumbnailResize.story';
+import { Basic, Popover, YAxis } from './AxisThumbnail.story.js';
+import { Resizable } from './AxisThumbnailResize.story.js';
 
 describe('AxisThumbnail', () => {
   // AxisThumbnail is not a real React component. This is test just provides test coverage for sonarqube

@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { findChart, getAllAxisLabels, hoverNthElement, render, screen, unhoverNthElement } from '../../../test-utils';
-import { CustomTooltipText, LabelAlign, LabelOrientation, TruncatedLabelWithTooltip } from './AxisLabels.story';
+import { findChart, getAllAxisLabels, hoverNthElement, render, screen, unhoverNthElement } from '../../../test-utils/index.js';
+import { CustomTooltipText, LabelAlign, LabelOrientation, TruncatedLabelWithTooltip } from './AxisLabels.story.js';
 
 describe('LabelAlign', () => {
   test('anchor should be on the left side of text for labelAlign="start" and labelOrientation="horizontal"', async () => {

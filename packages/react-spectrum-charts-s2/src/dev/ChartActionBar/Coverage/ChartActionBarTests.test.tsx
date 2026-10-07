@@ -15,9 +15,9 @@ import {
   findChart,
   render,
   screen,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { FewActions } from './ChartActionBarTests.story';
+import { FewActions } from './ChartActionBarTests.story.js';
 
 // jsdom doesn't implement the Pointer Events capture API used for dragging.
 beforeAll(() => {

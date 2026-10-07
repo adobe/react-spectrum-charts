@@ -14,12 +14,12 @@ import { ReactElement, useState } from 'react';
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
-import { Chart } from '../../../../Chart';
-import { Axis, Legend, Line } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { bindWithProps } from '../../../../test-utils';
-import { trafficBySourceData } from '../legendStoryData';
-import { TrafficStory, controls } from '../legendStoryTemplates';
+import { Chart } from '../../../../Chart.js';
+import { Axis, Legend, Line } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { trafficBySourceData } from '../legendStoryData.js';
+import { TrafficStory, controls } from '../legendStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Features/Series Visibility',

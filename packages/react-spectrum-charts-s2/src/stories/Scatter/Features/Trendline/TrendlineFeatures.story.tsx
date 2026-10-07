@@ -13,16 +13,16 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../../Chart';
-import { Axis, ChartInspect, Legend } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Scatter, Trendline } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps, TrendlineProps } from '../../../../types';
-import { characterData } from '../../../data/marioKartData';
+import { Chart } from '../../../../Chart.js';
+import { Axis, ChartInspect, Legend } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Scatter, Trendline } from '../../../../pre-alpha/index.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps, TrendlineProps } from '../../../../types/index.js';
+import { characterData } from '../../../data/marioKartData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Trendline',

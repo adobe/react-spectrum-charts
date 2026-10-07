@@ -11,9 +11,9 @@
  */
 import { action } from 'storybook/actions';
 
-import { Bar } from '../../../../components';
-import { BarStory, defaultProps } from '../barStoryTemplates';
-import { bindStory } from '../storyUtils';
+import { Bar } from '../../../../components/index.js';
+import { BarStory, defaultProps } from '../barStoryTemplates.js';
+import { bindStory } from '../storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Action Handlers',

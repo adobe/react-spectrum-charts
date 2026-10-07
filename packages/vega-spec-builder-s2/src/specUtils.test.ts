@@ -21,11 +21,11 @@ import {
   ROUNDED_SQUARE_PATH,
   TABLE,
   VISIBILITY_OFF_PATH,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import {
   getSpectrum2VegaConfig,
   spectrum2Colors,
-} from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/tokens';
 
 import {
   addUserMetaInteractiveMark,
@@ -40,7 +40,7 @@ import {
   getPathFromSymbolShape,
   getStrokeDashFromLineType,
   getVegaSymbolSizeFromRscSymbolSize,
-} from './specUtils';
+} from './specUtils.js';
 
 const defaultColorScale: OrdinalScale = {
   name: COLOR_SCALE,

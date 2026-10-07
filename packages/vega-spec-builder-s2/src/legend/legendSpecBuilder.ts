@@ -23,13 +23,13 @@ import {
   SERIES_ID,
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getTableData } from '../data/dataUtils';
-import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { addHighlightSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder';
-import { getLineWidthPixelsFromLineWidth, getPathFromSymbolShape, getStrokeDashFromLineType } from '../specUtils';
+import { getTableData } from '../data/dataUtils.js';
+import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
+import { addHighlightSignalLegendHoverEvents, getGenericValueSignal } from '../signal/signalSpecBuilder.js';
+import { getLineWidthPixelsFromLineWidth, getPathFromSymbolShape, getStrokeDashFromLineType } from '../specUtils.js';
 import {
   ColorFacet,
   ColorScheme,
@@ -42,10 +42,10 @@ import {
   ScSpec,
   SymbolShapeFacet,
   UserMeta,
-} from '../types';
-import { getFacets, getFacetsFromKeys } from './legendFacetUtils';
-import { injectLegendHoverIntoData, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils';
-import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils';
+} from '../types/index.js';
+import { getFacets, getFacetsFromKeys } from './legendFacetUtils.js';
+import { injectLegendHoverIntoData, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils.js';
+import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils.js';
 
 export const addLegend = produce<
   ScSpec,
