@@ -39,6 +39,10 @@ if (typeof window !== 'undefined') {
     const viewWidth = (view as unknown as { _viewWidth?: number })._viewWidth ?? 0;
     return viewWidth + (p.left ?? 0) + (p.right ?? 0);
   });
+  // Container width minus spec-level padding; independent of how autosize splits it between plot and legends.
+  expressionFunction('rscViewWidth', function (this: { context: { dataflow: View } }) {
+    return (this.context.dataflow as unknown as { _viewWidth?: number })._viewWidth ?? 0;
+  });
 }
 
 /**

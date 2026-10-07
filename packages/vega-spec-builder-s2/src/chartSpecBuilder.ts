@@ -58,6 +58,7 @@ import { addBar } from './bar/barSpecBuilder';
 import { addBullet } from './bullet/bulletSpecBuilder';
 import { addCombo } from './combo/comboSpecBuilder';
 import { getSeriesIdTransform } from './data/dataUtils';
+import { addDonutLegendLayout } from './donut/donutLegendLayoutUtils';
 import { addDonut } from './donut/donutSpecBuilder';
 import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils';
 import { addLegend } from './legend/legendSpecBuilder';
@@ -83,6 +84,7 @@ import {
   ColorScale,
   ColorScheme,
   Colors,
+  DonutOptions,
   LineType,
   LineTypes,
   LineWidth,
@@ -224,6 +226,9 @@ export function buildSpec({
   if (titles.length) {
     spec = addTitle(spec, titles[0]);
   }
+
+  const donut = marks.find((mark): mark is DonutOptions => mark.markType === 'donut');
+  spec = addDonutLegendLayout(spec, donut, legends);
 
   // copy the spec so we don't mutate the original
   spec = JSON.parse(JSON.stringify(spec));
