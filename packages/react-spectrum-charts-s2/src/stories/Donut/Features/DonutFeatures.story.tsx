@@ -140,12 +140,26 @@ const Variant = bindWithProps(SemicircleStory);
 Variant.args = { ...defaultArgs, variant: 'semicircle' };
 Object.assign(Variant, { parameters: { controls: { include: ['variant'] } } });
 
+// hideDeemphasizedLabels only applies to a SegmentLabel with labelMode="deemphasized"
+const EmphasizedLabelModesStory: StoryFn<DonutProps> = (args): ReactElement => {
+  const chartProps = useChartProps({ ...defaultChartProps, width: 560, height: 400 });
+  return (
+    <Chart {...chartProps}>
+      <Donut {...args}>
+        <SegmentLabel labelMode="emphasized" swatch showValueRow percent value={false} />
+        <SegmentLabel labelMode="deemphasized" value valueFormat="shortNumber" />
+      </Donut>
+      <Legend title="Browsers" position="right" highlight />
+    </Chart>
+  );
+};
+
 const EmphasizedItems = bindWithProps(LabeledDonutStory);
 EmphasizedItems.args = { ...defaultArgs, emphasizedItems: ['Chrome', 'Firefox'] };
 Object.assign(EmphasizedItems, { parameters: { controls: { include: ['emphasizedItems'] } } });
 
-const HideDeemphasizedLabels = bindWithProps(LabeledDonutStory);
-HideDeemphasizedLabels.args = { ...defaultArgs, emphasizedItems: ['Chrome', 'Firefox'], hideDeemphasizedLabels: true };
+const HideDeemphasizedLabels = bindWithProps(EmphasizedLabelModesStory);
+HideDeemphasizedLabels.args = { ...defaultArgs, emphasizedItems: ['Chrome'], hideDeemphasizedLabels: true };
 Object.assign(HideDeemphasizedLabels, { parameters: { controls: { include: ['hideDeemphasizedLabels'] } } });
 
 // default inspect content shows the swatch, series, and percent with value
