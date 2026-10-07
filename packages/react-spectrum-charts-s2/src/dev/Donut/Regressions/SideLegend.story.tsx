@@ -51,6 +51,7 @@ LegendLeft.args = { ...LegendRight.args, legendPosition: 'left' };
 const regression = {
   description:
     'When a donut chart grew wider than it was tall, a left or right legend drifted toward the chart edge, leaving a growing gap between it and the donut.',
+  pr: 974,
 };
 LegendRight.parameters = { ...LegendRight.parameters, regression };
 LegendLeft.parameters = { ...LegendLeft.parameters, regression };
