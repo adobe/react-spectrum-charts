@@ -228,7 +228,7 @@ export function buildSpec({
   }
 
   const donut = marks.find((mark): mark is DonutOptions => mark.markType === 'donut');
-  spec = addDonutLegendLayout(spec, { donut, legends });
+  spec = addDonutLegendLayout(spec, donut, legends);
 
   // copy the spec so we don't mutate the original
   spec = JSON.parse(JSON.stringify(spec));
