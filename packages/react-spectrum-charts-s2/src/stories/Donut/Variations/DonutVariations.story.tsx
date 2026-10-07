@@ -13,11 +13,6 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import {
-  DONUT_ADVANCED_LABEL_RING_GAP,
-  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
-  DONUT_LABEL_RING_GAP,
-} from '@spectrum-charts/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart';
@@ -36,7 +31,8 @@ import {
   useVariationSize,
   useVariationViewMode,
 } from '../../VariationDashboard';
-import { basicDonutData, booleanDonutData, zeroDonutData } from '../../components/Donut/data';
+import { booleanDonutData, zeroDonutData } from '../../components/Donut/data';
+import { getContainerWidthForDiameter, getEffectiveDiameter } from '../Features/ResponsiveDonut';
 import {
   DonutVariationDatum,
   DonutVariationDatasetName,
@@ -52,13 +48,8 @@ export default {
     controls: { disable: true },
     layout: 'fullscreen',
   },
-  tags: ['hidden']
+  // tags: ['hidden']
 };
-
-const alternateFieldData = basicDonutData.map(({ browser, count }) => ({
-  category: browser,
-  total: count,
-}));
 
 const donutSizePresets: VariationSizePreset[] = [
   { label: 'XS', size: 60 },
@@ -94,23 +85,18 @@ const segmentLabelScenarioIds: Record<keyof SegmentLabelProps, string> = {
   showTotal: 'segment-label-total',
 };
 
-const getDonutLabelRingGap = (viewMode?: string): number =>
-  viewMode === 'advanced' ? DONUT_ADVANCED_LABEL_RING_GAP : DONUT_LABEL_RING_GAP;
-
 const getDonutContainerSize = (diameter: number, viewMode?: string): number => {
   if (viewMode === 'none') {
     return diameter + 4;
   }
-  return diameter * (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) + 4 + 2 * getDonutLabelRingGap(viewMode);
+  return getContainerWidthForDiameter(diameter);
 };
 
 const getEffectiveDonutDiameter = (containerSize: number, viewMode?: string): number => {
   if (viewMode === 'none') {
     return containerSize - 4;
   }
-  const rawRadius = containerSize / 2 - 2;
-  const reservedRadius = (rawRadius - getDonutLabelRingGap(viewMode)) / (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO);
-  return Math.max(0, 2 * reservedRadius);
+  return Math.max(0, getEffectiveDiameter(containerSize));
 };
 
 interface DonutVariationChartProps extends Pick<DonutProps, 'children'> {
@@ -166,20 +152,6 @@ const variations: Variation[] = [
     dataset: 'canonical',
     coverage: ['metric=value', 'color=series', 'holeRatio=0.85', 'isBoolean=false'],
     render: () => <DonutVariationChart />,
-  },
-  {
-    id: 'alternate-fields-and-name',
-    title: 'Alternate fields and name',
-    description: 'Maps non-default data keys and assigns an explicit mark name.',
-    dataset: 'alternate-fields',
-    usesDashboardDataset: false,
-    coverage: ['metric=total', 'color=category', 'name'],
-    render: () => (
-      <DonutVariationChart
-        data={alternateFieldData}
-        donutProps={{ color: 'category', metric: 'total', name: 'alternate-fields-donut' }}
-      />
-    ),
   },
   {
     id: 'pie',

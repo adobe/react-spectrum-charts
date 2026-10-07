@@ -12,8 +12,9 @@
 import { ReactElement, useState } from 'react';
 
 import {
-  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
-  DONUT_LABEL_RING_GAP,
+  DONUT_LABEL_MIN_SPACE_RATIO,
+  DONUT_LABEL_RING_GAPS,
+  DONUT_SIZE_TIER_LABELED_CHART_SIZES,
   DONUT_SIZE_TIER_CUTPOINTS,
 } from '@spectrum-charts/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
@@ -24,22 +25,30 @@ import { Donut } from '../../../pre-alpha';
 import { DonutProps } from '../../../types';
 
 const THUMB_HEIGHT = 32;
+const REACH_RATIO = 1 + DONUT_LABEL_MIN_SPACE_RATIO;
 
-const getEffectiveDiameter = (containerWidth: number): number => {
-  const rawRadius = containerWidth / 2 - 2;
-  const reservedRadius = (rawRadius - DONUT_LABEL_RING_GAP) / (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO);
-  return 2 * reservedRadius;
+/** Counts how many breakpoints a size has reached, which is its size tier index (XS = 0). */
+const countReached = (breakpoints: number[], size: number): number =>
+  breakpoints.filter((breakpoint) => size >= breakpoint).length;
+
+/** Mirrors the spec builder: the tier comes from chart size, not the donut's own diameter. */
+const getSizeTierIndex = (containerWidth: number): number =>
+  countReached(DONUT_SIZE_TIER_LABELED_CHART_SIZES, containerWidth);
+
+export const getEffectiveDiameter = (containerWidth: number): number => {
+  const tierIndex = getSizeTierIndex(containerWidth);
+  // half the container, minus 2px padding and the label gap, doubled back to a diameter
+  const diameter = (2 * (containerWidth / 2 - 2 - DONUT_LABEL_RING_GAPS[tierIndex])) / REACH_RATIO;
+  // capped at the next tier's min diameter, same as the spec builder
+  return Math.min(diameter, DONUT_SIZE_TIER_CUTPOINTS[tierIndex] ?? Infinity);
 };
 
-const getContainerWidthForDiameter = (diameter: number): number =>
-  diameter * (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO) + 4 + 2 * DONUT_LABEL_RING_GAP;
+// donut + widest labels, + 2px padding on both sides, + the label gap on both sides
+export const getContainerWidthForDiameter = (diameter: number): number =>
+  diameter * REACH_RATIO + 4 + 2 * DONUT_LABEL_RING_GAPS[countReached(DONUT_SIZE_TIER_CUTPOINTS, diameter)];
 
-const lastCutpoint = DONUT_SIZE_TIER_CUTPOINTS.at(-1);
-if (lastCutpoint === undefined) {
-  throw new Error('DONUT_SIZE_TIER_CUTPOINTS must not be empty');
-}
-const MAX_TIER_CUTPOINT = lastCutpoint;
-const CHART_SIZE = getContainerWidthForDiameter(MAX_TIER_CUTPOINT) + 50;
+// 50px past the XL breakpoint so the slider can reach XL
+const CHART_SIZE = (DONUT_SIZE_TIER_LABELED_CHART_SIZES.at(-1) ?? 0) + 50;
 const MAX_WIDTH = CHART_SIZE + 100;
 
 const HANDLE_STYLES = `
@@ -83,21 +92,12 @@ const HANDLE_STYLES = `
 
 const TIER_LABELS = ['XS', 'S', 'M', 'L', 'XL'];
 const THRESHOLDS = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint, i) => ({
-  px: getContainerWidthForDiameter(cutpoint),
+  px: DONUT_SIZE_TIER_LABELED_CHART_SIZES[i],
   label: TIER_LABELS[i + 1],
   diameter: cutpoint,
 }));
 
-const getSizeTier = (containerWidth: number): string => {
-  const diameter = getEffectiveDiameter(containerWidth);
-  const index = DONUT_SIZE_TIER_CUTPOINTS.findIndex((cutpoint) => diameter < cutpoint);
-  if (index !== -1) return TIER_LABELS[index];
-  const lastLabel = TIER_LABELS.at(-1);
-  if (lastLabel === undefined) {
-    throw new Error('TIER_LABELS must not be empty');
-  }
-  return lastLabel;
-};
+const getSizeTier = (containerWidth: number): string => TIER_LABELS[getSizeTierIndex(containerWidth)];
 
 export const ResponsiveDonut = ({
   data,
