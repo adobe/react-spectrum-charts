@@ -23,6 +23,7 @@ import { Donut, DonutSummary } from '../../../pre-alpha/index.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types.js';
+import { ChartProps } from '../../../types/index.js';
 import {
   BarPopoverStory,
   StoryWithParameters,
@@ -63,10 +64,15 @@ const dialogContentWithClose = (datum: Datum, close?: () => void) => (
   </div>
 );
 
-const LineStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
+type ChartPopoverStoryProps = ChartPopoverProps & { animations?: ChartProps['animations'] };
+
+const LineStory: StoryFn<ChartPopoverStoryProps> = ({
+  animations,
+  ...args
+}: ChartPopoverStoryProps): ReactElement => {
   const chartProps = useChartProps(defaultChartProps);
   return (
-    <Chart {...chartProps}>
+    <Chart {...chartProps} animations={animations}>
       <Axis position="bottom" baseline title="Browser" />
       <Axis position="left" grid title="Users" />
       <Line scaleType="point" dimension="category" color="series">
@@ -78,10 +84,13 @@ const LineStory: StoryFn<ChartPopoverProps> = (args): ReactElement => {
   );
 };
 
-const DonutStory: StoryFn<typeof ChartPopover> = (args): ReactElement => {
+const DonutStory: StoryFn<ChartPopoverStoryProps> = ({
+  animations,
+  ...args
+}: ChartPopoverStoryProps): ReactElement => {
   const chartProps = useChartProps({ data: basicDonutData, width: 350, height: 350 });
   return (
-    <Chart {...chartProps}>
+    <Chart {...chartProps} animations={animations}>
       <Donut metric="count" color="browser">
         <DonutSummary label="Visitors" />
         <ChartInspect />

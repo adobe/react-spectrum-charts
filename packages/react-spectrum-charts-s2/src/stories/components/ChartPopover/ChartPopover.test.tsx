@@ -225,7 +225,7 @@ describe('ChartPopover', () => {
   });
 
   test('Line popover opens and closes corectly when clicking on the chart', async () => {
-    render(<OnLine {...OnLine.args} />);
+    render(<OnLine {...OnLine.args} animations={false} />);
     // validate that the line drew
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -254,7 +254,7 @@ describe('ChartPopover', () => {
   });
 
   test('should highlight the selected line by fading other lines', async () => {
-    render(<OnLine {...OnLine.args} />);
+    render(<OnLine {...OnLine.args} animations={false} />);
     // validate that the line drew
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
@@ -268,13 +268,8 @@ describe('ChartPopover', () => {
     const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
     await clickNthElement(points, 0);
 
-    // validate the first line is still full opacity, but the other lines are faded — the hover-
-    // animation system fades opacity over ~100ms rather than snapping instantly, so this needs to
-    // poll for the settled value instead of asserting synchronously right after the click
-    await waitFor(() => {
-      expect(lines[0]).toHaveAttribute('opacity', '1');
-      expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
-    });
+    expect(lines[0]).toHaveAttribute('opacity', '1');
+    expect(allElementsHaveAttributeValue(lines.slice(1), 'opacity', FADE_FACTOR)).toBeTruthy();
   });
 
   test('should call onClick callback when selecting a legend entry', async () => {
@@ -294,11 +289,11 @@ describe('ChartPopover', () => {
   });
 
   test('Donut popover renders default content', async () => {
-    render(<OnDonut {...OnDonut.args} />);
+    render(<OnDonut {...OnDonut.args} animations={false} />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
-    let segments = getAllMarksByGroupName(chart, 'donut0');
+    const segments = getAllMarksByGroupName(chart, 'donut0');
     expect(segments).toHaveLength(7);
 
     // clicking the bar should open the popover
@@ -310,12 +305,13 @@ describe('ChartPopover', () => {
     expect(within(popover).getByText('Other')).toBeInTheDocument();
     expect(within(popover).getByText('10.4% (4.2K)')).toBeInTheDocument();
 
-    segments = getAllMarksByGroupName(chart, 'donut0');
-
-    // validate the highlight visuals are present
     expect(segments[0]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
     expect(segments[4]).toHaveAttribute('opacity', '1');
     expect(segments[4]).toHaveAttribute('stroke', spectrum2Colors.light['static-blue']);
     expect(segments[4]).toHaveAttribute('stroke-width', '2');
+
+    await userEvent.click(chart);
+    await waitFor(() => expect(popover).not.toBeInTheDocument());
+    expect(allElementsHaveAttributeValue(getAllMarksByGroupName(chart, 'donut0'), 'opacity', 1)).toBeTruthy();
   });
 });

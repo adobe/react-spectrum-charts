@@ -415,7 +415,7 @@ describe('donutSpecBuilder', () => {
   });
 
   test('should register a donut paired with a highlighted legend as interactive', () => {
-    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
+    const spec = { data: [{ name: TABLE, values: [] }, { name: FILTERED_TABLE }], usermeta: {} };
     const result = addDonut(spec, {
       ...defaultDonutOptions,
       legendHighlightSignals: ['legend0_hoveredSeries'],

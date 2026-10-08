@@ -47,13 +47,14 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getColorProductionRule, getMarkOpacity } from '../marks/markUtils.js';
+import { getColorProductionRule } from '../marks/markUtils.js';
 import { getPathFromSymbolShape } from '../specUtils.js';
 import { getTextNumberFormat } from '../textUtils.js';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types/index.js';
 import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils.js';
 import {
   getDonutEmptyStateTest,
+  getDonutOpacity,
   getDonutLabelRingGapSignalName,
   getDonutOuterRadiusExpr,
   DONUT_SIZE_TIER,
@@ -440,9 +441,7 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
                 signal: `-${labelName}ValueFontSize / 2`,
               }
             : undefined,
-        // fades in step with the arc's own hover/controlled-highlight fade (getMarkOpacity is the
-        // exact mechanism getArcMark uses) - the name line's color never switches, only its opacity
-        opacity: getMarkOpacity(donutOptions),
+        opacity: getDonutOpacity(donutOptions),
       },
     },
   };
@@ -477,7 +476,7 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
             signal: `${labelName}NameFontSize / 2`,
           },
           fill: getLabelValueFill(donutOptions, 'gray-700'),
-          opacity: getMarkOpacity(donutOptions),
+          opacity: getDonutOpacity(donutOptions),
         },
       },
     },
@@ -994,7 +993,7 @@ const getRichSegmentLabelSwatchMark = (options: RichSegmentLabelSpecOptions): Sy
           `${DONUT_ADVANCED_LABEL_SWATCH_SIZE * DONUT_ADVANCED_LABEL_SWATCH_SIZE}`,
           DONUT_SIZE_TIER.M
         ),
-        opacity: getMarkOpacity(donutOptions),
+        opacity: getDonutOpacity(donutOptions),
       },
     },
   };
@@ -1027,7 +1026,7 @@ const getRichSegmentLabelNameTextMark = (options: RichSegmentLabelSpecOptions): 
         limit: {
           signal: getRichSegmentLabelLimitExpr(options, layout.swatchReservedWidth),
         },
-        opacity: getMarkOpacity(donutOptions),
+        opacity: getDonutOpacity(donutOptions),
       },
     },
   };
@@ -1060,7 +1059,7 @@ const getRichSegmentLabelValueTextMark = (
           fontSize: getRichSegmentLabelFontSize(options, valueRow.fontSize, DONUT_SIZE_TIER.S),
           limit: { signal: getRichSegmentLabelLimitExpr(options) },
           fill: getLabelValueFill(donutOptions, 'gray-800'),
-          opacity: getMarkOpacity(donutOptions),
+          opacity: getDonutOpacity(donutOptions),
         },
       },
     },
@@ -1084,7 +1083,7 @@ const getRichSegmentLabelDetailTextMark = (
     ...shared,
     dy: { signal: detailRow.dy },
     fontSize: getRichSegmentLabelFontSize(options, detailRow.fontSize, DONUT_SIZE_TIER.L),
-    opacity: getMarkOpacity(donutOptions),
+    opacity: getDonutOpacity(donutOptions),
   };
   const detailGap = DONUT_ADVANCED_LABEL_NAME_VALUE_GAP;
   const detailValueReservedWidth = suffix

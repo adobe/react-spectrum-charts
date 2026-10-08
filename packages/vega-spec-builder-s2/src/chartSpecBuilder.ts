@@ -182,7 +182,7 @@ export function buildSpec({
         return addCombo(acc, { ...mark, ...specOptions, index: comboCount });
       case 'donut':
         donutCount++;
-        return addDonut(acc, { ...mark, ...specOptions, index: donutCount });
+        return addDonut(acc, { ...mark, ...specOptions, index: donutCount, data });
       case 'line':
         lineCount++;
         return addLine(acc, { ...mark, ...specOptions, index: lineCount, data });

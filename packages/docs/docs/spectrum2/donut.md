@@ -32,6 +32,12 @@ import { Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectr
 Unlike the base package, S2 does not have a `ChartTooltip` component — use `ChartInspect`
 instead.
 
+Interactive donut segments and their direct or advanced labels animate opacity on hover. 
+Legend hover, controlled highlights, and popover selection share the animation state.
+Set `animations={false}` or `animationTypes={[]}`
+on `Chart` to keep instant opacity changes instead. A donut without interactive children
+or highlighting remains static.
+
 Inside a `Donut`, both render default content without children: the segment's color swatch and
 series name, followed by its share of the visible total and short-number value (e.g.
 `65.2% (23K)`), formatted with the chart `locale`. When children are provided, their content

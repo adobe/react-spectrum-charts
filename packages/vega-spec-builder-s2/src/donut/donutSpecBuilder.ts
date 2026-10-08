@@ -13,21 +13,32 @@ import { produce } from 'immer';
 import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal } from 'vega';
 
 import {
+  AnimationType,
   COLOR_SCALE,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
   FILTERED_TABLE,
+  SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { getSeriesIdTransform } from '../data/dataUtils.js';
+import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
+import {
+  addHoverAnimLastChangeData,
+  addHoverAnimationSignals,
+  getHoverAnimStateData,
+  getHoverFractionData,
+  getHoverSeriesFractionData,
+  getHoverTargetData,
+} from '../marks/hoverAnimationUtils.js';
 import { isInteractive } from '../marks/markUtils.js';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
-import { addUserMetaInteractiveMark } from '../specUtils.js';
-import { ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types/index.js';
+import { addUserMetaAnimatedMark, addUserMetaInteractiveMark } from '../specUtils.js';
+import { ChartData, ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types/index.js';
 import {
   getDonutSummaryData,
   getDonutSummaryMarks,
@@ -35,6 +46,8 @@ import {
 } from './donutSummaryUtils.js';
 import {
   getArcMark,
+  getDonutAnimIdField,
+  getDonutHoverRules,
   getDonutStartAngle,
   getEmptyStateArcMark,
   isDonutInteractive,
@@ -58,8 +71,12 @@ export const addDonut = produce<
   ScSpec,
   [
     DonutOptions & {
+      animations?: boolean;
+      animationTypes?: AnimationType[];
       colorScheme?: ColorScheme;
+      data?: ChartData[];
       highlightedItem?: HighlightedItem;
+      highlightedSeries?: string | number;
       index?: number;
       idKey: string;
       legendHighlightSignals?: string[];
@@ -69,11 +86,14 @@ export const addDonut = produce<
   (
     spec,
     {
+      animations,
+      animationTypes,
       chartPopovers = [],
       chartInspects = [],
       color = DEFAULT_COLOR,
       colorScheme = DEFAULT_COLOR_SCHEME,
       donutSummaries = [],
+      data,
       index = 0,
       metric = DEFAULT_METRIC,
       name,
@@ -100,11 +120,21 @@ export const addDonut = produce<
       segmentLabels,
       sortOrder,
       variant,
+      segmentIds: data?.map((_, index) => index + 1) ?? [],
       ...options,
     };
+    donutOptions.isHoverAnimate =
+      animations !== false &&
+      (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
+      (isDonutInteractive(donutOptions) ||
+        donutOptions.highlightedItem !== undefined ||
+        donutOptions.highlightedSeries !== undefined);
 
     if (isDonutInteractive(donutOptions)) {
       spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, donutOptions.name);
+    }
+    if (donutOptions.isHoverAnimate) {
+      spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, donutOptions.name);
     }
     spec.data = addData(spec.data ?? [], donutOptions);
     spec.scales = addScales(spec.scales ?? [], donutOptions);
@@ -128,6 +158,26 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
   // fade this mark's arcs - donut rows don't have SERIES_ID by default like Line/Bar do
   if (isInteractive(options) || legendHighlightSignals?.length) {
     data[filteredTableIndex].transform?.push(...getSeriesIdTransform([color]));
+  }
+  if (options.isHoverAnimate) {
+    const keyField = getDonutAnimIdField(name);
+    const table = getTableData(data);
+    table.transform = [
+      ...(table.transform ?? []),
+      ...getSeriesIdTransform([color]),
+      { type: 'window', ops: ['row_number'], as: [keyField] },
+    ];
+    data.push(
+      getHoverTargetData({
+        name,
+        groupby: [keyField, options.idKey, SERIES_ID],
+        rules: getDonutHoverRules(options),
+      }),
+      getHoverAnimStateData({ name, keys: options.segmentIds ?? [], keyField }),
+      getHoverFractionData(name),
+      getHoverSeriesFractionData(name, keyField)
+    );
+    addHoverAnimLastChangeData(data, name);
   }
 
   if (isBoolean) {
@@ -205,6 +255,9 @@ export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => 
 
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {
   const { chartInspects, holeRatio, name } = options;
+  if (options.isHoverAnimate) {
+    addHoverAnimationSignals(signals, name);
+  }
   if (holeRatio === DEFAULT_HOLE_RATIO) {
     signals.push(getRingWidthSignal(options));
   }

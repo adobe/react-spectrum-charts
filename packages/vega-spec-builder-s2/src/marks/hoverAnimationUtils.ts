@@ -86,7 +86,7 @@ export const getHoverTargetData = ({
 
 export interface HoverAnimStateOptions {
   name: string;
-  keys: string[];
+  keys: (string | number)[];
   keyField?: string;
 }
 
