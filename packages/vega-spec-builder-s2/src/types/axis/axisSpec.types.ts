@@ -11,11 +11,11 @@
  */
 import { Align, Baseline, FontWeight, NumberValue, ScaleType } from 'vega';
 
-import { ColorScheme } from '../chartSpec.types';
-import { NumberFormat, Orientation, PartiallyRequired, Position } from '../specUtil.types';
-import { AxisAnnotationOptions } from './axisAnnotationSpec.types';
-import { AxisThumbnailOptions } from './axisThumbnailSpec.types';
-import { ReferenceLineOptions } from './referenceLineSpec.types';
+import { ColorScheme } from '../chartSpec.types.js';
+import { NumberFormat, Orientation, PartiallyRequired, Position } from '../specUtil.types.js';
+import { AxisAnnotationOptions } from './axisAnnotationSpec.types.js';
+import { AxisThumbnailOptions } from './axisThumbnailSpec.types.js';
+import { ReferenceLineOptions } from './referenceLineSpec.types.js';
 
 export type Granularity = 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year';
 /**

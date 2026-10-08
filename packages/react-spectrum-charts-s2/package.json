@@ -2,51 +2,35 @@
   "name": "@spectrum-charts/react-spectrum-charts-s2",
   "version": "0.9.0",
   "description": "Declarative library for composing Spectrum 2 visualizations in React.",
-  "browser": "./dist/index.js",
-  "module": "./dist/index.js",
+  "type": "module",
   "main": "./dist/index.js",
+  "types": "./dist/@types/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/@types/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./alpha": {
-      "types": "./dist/@types/alpha/index.d.ts",
-      "import": "./dist/alpha.js",
-      "require": "./dist/alpha.js",
-      "default": "./dist/alpha.js"
-    },
-    "./beta": {
-      "types": "./dist/@types/beta/index.d.ts",
-      "import": "./dist/beta.js",
-      "require": "./dist/beta.js",
-      "default": "./dist/beta.js"
     },
     "./pre-alpha": {
       "types": "./dist/@types/pre-alpha/index.d.ts",
-      "import": "./dist/pre-alpha.js",
-      "require": "./dist/pre-alpha.js",
-      "default": "./dist/pre-alpha.js"
+      "default": "./dist/pre-alpha/index.js"
     },
     "./ai-catalog": {
       "types": "./dist/@types/src/ai-catalog/index.d.ts",
-      "import": "./dist/ai-catalog.js",
-      "require": "./dist/ai-catalog.js",
-      "default": "./dist/ai-catalog.js"
-    }
+      "default": "./dist/src/ai-catalog/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "*.css",
+    "./dist/src/VegaChart.js"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
   },
   "typesVersions": {
     "*": {
       "*": [
         "./dist/@types/index.d.ts"
-      ],
-      "alpha": [
-        "./dist/@types/alpha/index.d.ts"
-      ],
-      "beta": [
-        "./dist/@types/beta/index.d.ts"
       ],
       "pre-alpha": [
         "./dist/@types/pre-alpha/index.d.ts"
@@ -71,11 +55,11 @@
   "scripts": {
     "prebuild": "echo 'This will run before build'",
     "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
-    "build:s2": "webpack --config webpack.config.js",
+    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.build.json && node ../../scripts/stripDeclarationCssImports.mjs dist/@types",
     "clean": "rm -rf dist",
     "g": "plop component",
     "generate": "plop component",
-    "pack-test": "yarn clean && yarn build && cross-env NODE_ENV=development npm pack",
+    "pack-test": "yarn clean && yarn build:s2 && cross-env NODE_ENV=development npm pack",
     "pack": "cross-env NODE_ENV=production npm pack",
     "sonar": "node ./scripts/runSonarOnBranch.js",
     "sonar-fork-pr": "node ./scripts/runSonarOnFork.js",
@@ -86,11 +70,8 @@
   },
   "dependencies": {
     "@internationalized/string": "^3.2.1",
-    "@spectrum-charts/constants": "^1.53.0",
-    "@spectrum-charts/locales": "^1.52.0",
+    "@spectrum-charts/core-s2": "0.9.0",
     "@spectrum-charts/schemas": "^1.52.0",
-    "@spectrum-charts/themes": "^1.52.0",
-    "@spectrum-charts/utils": "^1.52.0",
     "@spectrum-charts/vega-spec-builder-s2": "0.9.0",
     "d3-array": "^3.2.4",
     "d3-format": "^3.1.0",
@@ -104,6 +85,7 @@
   "peerDependencies": {
     "@react-spectrum/s2": ">=1.0.0",
     "react": ">= 19.0.0",
+    "react-aria-components": "^1.14.0",
     "react-dom": ">= 19.0.0",
     "vega": "^6.2.0",
     "vega-lite": "^6.4.2"

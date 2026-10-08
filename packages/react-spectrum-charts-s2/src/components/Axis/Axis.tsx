@@ -18,9 +18,9 @@ import {
   DEFAULT_LABEL_ALIGN,
   DEFAULT_LABEL_FONT_WEIGHT,
   DEFAULT_LABEL_ORIENTATION,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { AxisProps } from '../../types';
+import { AxisProps } from '../../types/index.js';
 
 const Axis: FC<AxisProps> = ({
   position,

@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme, HighlightedItem } from '../chartSpec.types';
-import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { PartiallyRequired } from '../specUtil.types';
-import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types';
-import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types';
+import { ColorScheme, HighlightedItem } from '../chartSpec.types.js';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
+import { PartiallyRequired } from '../specUtil.types.js';
+import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types.js';
+import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types.js';
 
 export interface DonutOptions {
   markType: 'donut';

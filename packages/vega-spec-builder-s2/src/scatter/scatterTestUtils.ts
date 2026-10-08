@@ -15,9 +15,9 @@ import {
   DEFAULT_LINEAR_DIMENSION,
   DEFAULT_METRIC,
   MARK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { ScatterSpecOptions } from '../types';
+import { ScatterSpecOptions } from '../types/index.js';
 
 export const defaultScatterOptions: ScatterSpecOptions = {
   chartPopovers: [],

@@ -18,8 +18,8 @@ import {
   getLabelOffset,
   getLabelValue,
   labelIsParallelToAxis,
-} from './axisLabelUtils';
-import { defaultAxisOptions } from './axisTestUtils';
+} from './axisLabelUtils.js';
+import { defaultAxisOptions } from './axisTestUtils.js';
 
 describe('getLabelValue()', () => {
   test('should return the value key if an object', () => {

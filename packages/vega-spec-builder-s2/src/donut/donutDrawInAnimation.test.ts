@@ -22,15 +22,15 @@ import {
   FILTERED_TABLE,
   SELECTED_ITEM,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { buildSpec } from '../chartSpecBuilder';
-import { getExpressionFunctions } from '../expressionFunctions';
-import { addDrawInClockSignals } from '../marks/drawInAnimationUtils';
-import { ChartOptions, DonutOptions } from '../types';
-import { addSignals } from './donutSpecBuilder';
-import { getDonutSummaryMarks } from './donutSummaryUtils';
-import { defaultDonutOptions } from './donutTestUtils';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
+import { addDrawInClockSignals } from '../marks/drawInAnimationUtils.js';
+import { ChartOptions, DonutOptions } from '../types/index.js';
+import { addSignals } from './donutSpecBuilder.js';
+import { getDonutSummaryMarks } from './donutSummaryUtils.js';
+import { defaultDonutOptions } from './donutTestUtils.js';
 import {
   getArcMark,
   getDonutDrawInLabelVisibilityRules,
@@ -38,8 +38,8 @@ import {
   getDonutLabelOpacity,
   getDonutOpacity,
   getSliceStrokeWidthExpr,
-} from './donutUtils';
-import { getRichSegmentLabelMarks, getSegmentLabelMarks } from './segmentLabelUtils';
+} from './donutUtils.js';
+import { getRichSegmentLabelMarks, getSegmentLabelMarks } from './segmentLabelUtils.js';
 
 interface SceneNode {
   name?: string;

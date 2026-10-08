@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { LineDirectLabelProps } from '../../types';
+import { LineDirectLabelProps } from '../../types/index.js';
 
 const LineDirectLabel: FC<LineDirectLabelProps> = ({
   value = 'last',

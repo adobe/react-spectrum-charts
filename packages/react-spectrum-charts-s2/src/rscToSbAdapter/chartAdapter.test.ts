@@ -16,17 +16,17 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
   MARK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 import { LineType } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Axis } from '../components/Axis';
-import { Bar } from '../components/Bar';
-import { Legend } from '../components/Legend';
-import { Line } from '../components/Line';
-import { LineDirectLabel } from '../components/LineDirectLabel';
-import { Title } from '../components/Title';
-import { SanitizedSpecProps } from '../types';
-import { rscPropsToSpecBuilderOptions } from './chartAdapter';
+import { Axis } from '../components/Axis/index.js';
+import { Bar } from '../components/Bar/index.js';
+import { Legend } from '../components/Legend/index.js';
+import { Line } from '../components/Line/index.js';
+import { LineDirectLabel } from '../components/LineDirectLabel/index.js';
+import { Title } from '../components/Title/index.js';
+import { SanitizedSpecProps } from '../types/index.js';
+import { rscPropsToSpecBuilderOptions } from './chartAdapter.js';
 
 const chartProps: SanitizedSpecProps = {
   backgroundColor: DEFAULT_BACKGROUND_COLOR,

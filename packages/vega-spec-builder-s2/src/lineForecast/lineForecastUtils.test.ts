@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { getEffectiveMetricField, getForecastEffectiveValueTransform } from './lineForecastUtils';
+import { getEffectiveMetricField, getForecastEffectiveValueTransform } from './lineForecastUtils.js';
 
 describe('getForecastEffectiveValueTransform', () => {
   test('builds a formula that uses the historical metric when valid, falling back to forecast', () => {

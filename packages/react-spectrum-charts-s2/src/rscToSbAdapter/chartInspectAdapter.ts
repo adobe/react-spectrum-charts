@@ -11,7 +11,7 @@
  */
 import { ChartInspectOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartInspectProps } from '../types';
+import { ChartInspectProps } from '../types/index.js';
 
 export const getChartInspectOptions = ({
   children: _,

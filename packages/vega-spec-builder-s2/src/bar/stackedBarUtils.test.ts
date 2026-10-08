@@ -19,10 +19,10 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
   FILTERED_TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { defaultBarEnterEncodings, defaultBarOptions, defaultBarStrokeEncodings } from './barTestUtils';
-import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils';
+import { defaultBarEnterEncodings, defaultBarOptions, defaultBarStrokeEncodings } from './barTestUtils.js';
+import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils.js';
 
 const defaultStackedBarXEncondings: RectEncodeEntry = {
   x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },

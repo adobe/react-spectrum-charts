@@ -13,9 +13,9 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { DonutOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartInspectElement, ChartPopoverElement } from '../dialogs';
-import { Children } from '../util.types';
-import { DonutSummaryElement, SegmentLabelElement } from './supplemental';
+import { ChartInspectElement, ChartPopoverElement } from '../dialogs/index.js';
+import { Children } from '../util.types.js';
+import { DonutSummaryElement, SegmentLabelElement } from './supplemental/index.js';
 
 export interface DonutProps
   extends Omit<DonutOptions, 'chartPopovers' | 'chartInspects' | 'donutSummaries' | 'markType' | 'segmentLabels'> {

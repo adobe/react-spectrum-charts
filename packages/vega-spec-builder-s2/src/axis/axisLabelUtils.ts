@@ -23,9 +23,9 @@ import {
   TickCount,
 } from 'vega';
 
-import { getTextNumberFormat } from '../textUtils';
-import { AxisSpecOptions, Granularity, Label, LabelAlign, Orientation, Position } from '../types';
-import { isVerticalAxis } from './axisPositionUtils';
+import { getTextNumberFormat } from '../textUtils.js';
+import { AxisSpecOptions, Granularity, Label, LabelAlign, Orientation, Position } from '../types/index.js';
+import { isVerticalAxis } from './axisPositionUtils.js';
 
 /**
  * Gets the display value of the label. If it's an object, it will return the value property, otherwise it will return the label.

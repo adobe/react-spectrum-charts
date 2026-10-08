@@ -13,9 +13,9 @@ import { createElement } from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { Axis } from '../components';
-import { ChartChildElement } from '../types';
-import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails';
+import { Axis } from '../components/index.js';
+import { ChartChildElement } from '../types/index.js';
+import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails.js';
 
 describe('useAxisLabelOnClickDetails()', () => {
   it('should return an empty array when there are no Axis children', () => {

@@ -28,13 +28,13 @@ import {
   DONUT_SUMMARY_MIN_RADIUS_S2,
   DONUT_SUMMARY_VALUE_FONT_SIZES,
   FILTERED_TABLE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getTextNumberFormat } from '../textUtils';
-import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types';
-import { getDonutCenterYSignal, getDonutInnerRadiusExpr, getSizeTierValueExpr } from './donutUtils';
-import { getTextRuleExpr } from './segmentLabelUtils';
+import { getTextNumberFormat } from '../textUtils.js';
+import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '../types/index.js';
+import { getDonutCenterYSignal, getDonutInnerRadiusExpr, getSizeTierValueExpr } from './donutUtils.js';
+import { getTextRuleExpr } from './segmentLabelUtils.js';
 
 type DonutSummaryLayoutOptions = Pick<DonutSummarySpecOptions, 'donutOptions' | 'hideValue' | 'label' | 'delta'>;
 

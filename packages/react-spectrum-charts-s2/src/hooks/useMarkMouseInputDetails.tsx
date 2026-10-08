@@ -13,10 +13,10 @@ import { createElement, useMemo } from 'react';
 
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Bar } from '../components/Bar';
-import { BarElement, ChartChildElement } from '../types';
-import { getAllMarkElements } from '../utils';
-import { ChartContainer } from './ChartContainer';
+import { Bar } from '../components/Bar/index.js';
+import { BarElement, ChartChildElement } from '../types/index.js';
+import { getAllMarkElements } from '../utils/index.js';
+import { ChartContainer } from './ChartContainer.js';
 
 type MappedMarkElement = { name: string; element: BarElement };
 

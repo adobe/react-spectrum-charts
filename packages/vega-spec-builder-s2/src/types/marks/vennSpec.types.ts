@@ -16,7 +16,7 @@ import {
   ColorScheme,
   HighlightedItem,
   PartiallyRequired,
-} from '../../types';
+} from '../../types/index.js';
 
 export interface VennOptions {
   markType: 'venn';

@@ -21,9 +21,9 @@ import {
   FADE_FACTOR,
   FILTERED_TABLE,
   HOVERED_SERIES,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { LegendSpecOptions } from '../types';
+import { LegendSpecOptions } from '../types/index.js';
 
 export const opacityEncoding = [
   {

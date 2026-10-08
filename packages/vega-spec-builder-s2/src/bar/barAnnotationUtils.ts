@@ -16,7 +16,7 @@ import {
   ANNOTATION_FONT_WEIGHT,
   ANNOTATION_PADDING,
   BACKGROUND_COLOR,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   BarAnnotationOptions,
@@ -24,8 +24,8 @@ import {
   BarAnnotationStyleOptions,
   BarSpecOptions,
   Orientation,
-} from '../types';
-import { getOrientationProperties, isDodgedAndStacked } from './barUtils';
+} from '../types/index.js';
+import { getOrientationProperties, isDodgedAndStacked } from './barUtils.js';
 
 type AnnotationWidth = { value: number } | { signal: string };
 

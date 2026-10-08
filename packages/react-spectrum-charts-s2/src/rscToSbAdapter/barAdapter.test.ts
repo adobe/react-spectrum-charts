@@ -11,13 +11,13 @@
  */
 import { createElement } from 'react';
 
-import { DEFAULT_COLOR } from '@spectrum-charts/constants';
+import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { BarDirectLabel } from '../components/BarDirectLabel';
-import { ChartInspect } from '../components/ChartInspect';
-import { ChartPopover } from '../components/ChartPopover';
-import { getBarOptions } from './barAdapter';
-import { childrenToOptions } from './childrenAdapter';
+import { BarDirectLabel } from '../components/BarDirectLabel/index.js';
+import { ChartInspect } from '../components/ChartInspect/index.js';
+import { ChartPopover } from '../components/ChartPopover/index.js';
+import { getBarOptions } from './barAdapter.js';
+import { childrenToOptions } from './childrenAdapter.js';
 
 describe('getBarOptions()', () => {
   it('should return all basic options', () => {

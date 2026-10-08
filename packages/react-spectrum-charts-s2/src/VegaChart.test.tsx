@@ -13,7 +13,7 @@ import { render, waitFor } from '@testing-library/react';
 import { Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 
-import { VegaChart, VegaChartProps, resizeView } from './VegaChart';
+import { VegaChart, VegaChartProps, resizeView } from './VegaChart.js';
 
 jest.mock('vega-embed');
 

@@ -21,12 +21,12 @@ import {
   SELECTED_SERIES,
   SERIES_ID,
   TRENDLINE_VALUE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { getSeriesIdTransform, getTableData } from '../data/dataUtils';
-import { isInteractive } from '../marks/markUtils';
-import { getFacetsFromOptions } from '../specUtils';
-import { TrendlineMethod, TrendlineSpecOptions } from '../types';
+import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
+import { isInteractive } from '../marks/markUtils.js';
+import { getFacetsFromOptions } from '../specUtils.js';
+import { TrendlineMethod, TrendlineSpecOptions } from '../types/index.js';
 import {
   getAggregateTransform,
   getMetricFilterTransform,
@@ -39,7 +39,7 @@ import {
   getTrendlineParamFormulaTransforms,
   getTrendlineParamLookupTransform,
   getWindowTransform,
-} from './trendlineDataTransformUtils';
+} from './trendlineDataTransformUtils.js';
 import {
   TrendlineParentOptions,
   getTrendlineDimensionMetric,
@@ -47,7 +47,7 @@ import {
   isAggregateMethod,
   isRegressionMethod,
   isWindowMethod,
-} from './trendlineUtils';
+} from './trendlineUtils.js';
 
 /**
  * Adds the necessary data sources and transforms for the trendlines

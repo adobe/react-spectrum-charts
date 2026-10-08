@@ -10,5 +10,5 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './utils';
-export * from './markClickUtils';
+export * from './utils.js';
+export * from './markClickUtils.js';

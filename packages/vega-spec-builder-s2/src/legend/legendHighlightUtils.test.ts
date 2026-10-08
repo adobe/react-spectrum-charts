@@ -23,7 +23,7 @@ import {
   HOVER_FRACTION_DATA,
   HOVERED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   encodingUsesScale,
@@ -32,8 +32,8 @@ import {
   injectLegendHoverIntoData,
   setHoverOpacityForMarks,
   setHoverStrokeWidthForMarks,
-} from './legendHighlightUtils';
-import { defaultMark } from './legendTestUtils';
+} from './legendHighlightUtils.js';
+import { defaultMark } from './legendTestUtils.js';
 
 const defaultGroupMark: Mark = {
   type: 'group',

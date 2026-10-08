@@ -18,9 +18,9 @@ import {
   DEFAULT_LABEL_POSITION,
   DEFAULT_SCALE_TYPE,
   DEFAULT_SCALE_VALUE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { BulletProps } from '../../../types';
+import { BulletProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const Bullet: FC<BulletProps> = ({

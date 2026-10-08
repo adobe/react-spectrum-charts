@@ -14,13 +14,13 @@ import { ComponentProps, ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../../Chart';
-import { ChartInspect, ChartPopover, Legend } from '../../../../components';
-import useChartProps from '../../../../hooks/useChartProps';
-import { Donut, DonutSummary, SegmentLabel } from '../../../../pre-alpha';
-import { bindWithProps } from '../../../../test-utils';
-import { ChartProps } from '../../../../types';
-import { basicDonutData, booleanDonutData, sliveredDonutData } from '../../../components/Donut/data';
+import { Chart } from '../../../../Chart.js';
+import { ChartInspect, ChartPopover, Legend } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { Donut, DonutSummary, SegmentLabel } from '../../../../pre-alpha/index.js';
+import { basicDonutData, booleanDonutData, sliveredDonutData } from '../../../../storyShared/Donut/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps } from '../../../../types/index.js';
 
 type DrawInAnimationArgs = ComponentProps<typeof Donut> &
   Pick<ChartProps, 'animations' | 'animationTypes'> & {

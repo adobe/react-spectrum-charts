@@ -11,7 +11,7 @@
  */
 import { NodeObject, Structure } from 'data-navigator';
 
-import { buildBarStructure, buildNodeLabel, segmentId } from './buildBarStructure';
+import { buildBarStructure, buildNodeLabel, segmentId } from './buildBarStructure.js';
 
 const hasEdgeBetween = (structure: Structure, a: string, b: string): boolean =>
   Object.values(structure.edges).some((edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a));

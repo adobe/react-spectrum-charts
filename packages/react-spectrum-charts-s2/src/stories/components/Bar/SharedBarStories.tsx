@@ -13,12 +13,12 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { GROUP_DATA, MARK_ID } from '@spectrum-charts/constants';
+import { GROUP_DATA, MARK_ID } from '@spectrum-charts/core-s2/constants';
 
-import { Chart } from '../../../Chart';
-import { Axis, Bar, ChartInspect, Legend } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { barSeriesData } from './data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, ChartInspect, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { barSeriesData } from '../../../storyShared/components/Bar/data.js';
 
 export const DimensionAreaStory: StoryFn<typeof Bar> = (args): ReactElement => {
   const chartProps = useChartProps({ data: barSeriesData, width: 800, height: 600 });

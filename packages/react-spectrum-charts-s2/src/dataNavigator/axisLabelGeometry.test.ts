@@ -11,7 +11,7 @@
  */
 import { View } from 'vega';
 
-import { clearAxisFocusRing, getVisibleAxisLabelColumns, setAxisFocusRing } from './axisLabelGeometry';
+import { clearAxisFocusRing, getVisibleAxisLabelColumns, setAxisFocusRing } from './axisLabelGeometry.js';
 
 interface Bounds {
   x1: number;

@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme, HighlightedItem } from '../chartSpec.types';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
-import { PartiallyRequired, ScaleType } from '../specUtil.types';
+import { ColorScheme, HighlightedItem } from '../chartSpec.types.js';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
+import { PartiallyRequired, ScaleType } from '../specUtil.types.js';
 
 export interface AreaOptions {
   markType: 'area';

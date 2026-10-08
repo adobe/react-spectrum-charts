@@ -11,8 +11,8 @@
  */
 import { renderHook } from '@testing-library/react';
 
-import { useChartContext } from '../context/RscChartContext';
-import useAxisLabelTooltipAnchorStyle from './useAxisLabelTooltipAnchorStyle';
+import { useChartContext } from '../context/RscChartContext.js';
+import useAxisLabelTooltipAnchorStyle from './useAxisLabelTooltipAnchorStyle.js';
 
 jest.mock('../context/RscChartContext', () => ({
   useChartContext: jest.fn(),

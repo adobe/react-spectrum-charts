@@ -10,4 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './Donut';
+export * from './Donut.js';

@@ -1,8 +1,10 @@
+import { fileURLToPath } from 'node:url';
+
 import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const config: StorybookConfig = {
   stories: [
-    '../packages/react-spectrum-charts-s2/src/**/*.story.@(js|jsx|ts|tsx)',
+    '../packages/react-spectrum-charts-s2/src/stories/**/*.story.@(js|jsx|ts|tsx)',
   ],
 
   addons: [
@@ -22,6 +24,13 @@ const config: StorybookConfig = {
   ],
 
   webpackFinal(config) {
+    config.resolve ??= {};
+    // S2 packages are ESM with fully specified relative imports (`./foo.js`) that point at TypeScript sources.
+    config.resolve.extensionAlias = { ...config.resolve.extensionAlias, '.js': ['.ts', '.tsx', '.js'] };
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@spectrum-charts/core-s2': fileURLToPath(new URL('../packages/core-s2/src', import.meta.url)),
+    };
     return config;
   },
 

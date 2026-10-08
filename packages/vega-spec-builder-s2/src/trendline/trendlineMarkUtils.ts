@@ -11,22 +11,22 @@
  */
 import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 
-import { getLineHoverMarks, getLineOpacity } from '../line/lineMarkUtils';
-import { LineMarkOptions } from '../line/lineUtils';
+import { getLineHoverMarks, getLineOpacity } from '../line/lineMarkUtils.js';
+import { LineMarkOptions } from '../line/lineUtils.js';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
   hasInspect,
-} from '../marks/markUtils';
-import { getScaleName } from '../scale/scaleSpecBuilder';
-import { getFacetsFromOptions } from '../specUtils';
-import { getTrendlineAnnotationMarks } from '../trendlineAnnotation';
-import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../types';
-import { getEndDimensionExtentProductionRule, getStartDimensionExtentProductionRule } from './trendlineExtentUtils';
+} from '../marks/markUtils.js';
+import { getScaleName } from '../scale/scaleSpecBuilder.js';
+import { getFacetsFromOptions } from '../specUtils.js';
+import { getTrendlineAnnotationMarks } from '../trendlineAnnotation/index.js';
+import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../types/index.js';
+import { getEndDimensionExtentProductionRule, getStartDimensionExtentProductionRule } from './trendlineExtentUtils.js';
 import {
   TrendlineParentOptions,
   getTrendlineColorFromMarkOptions,
@@ -34,7 +34,7 @@ import {
   getTrendlines,
   isAggregateMethod,
   isRegressionMethod,
-} from './trendlineUtils';
+} from './trendlineUtils.js';
 
 export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMark | RuleMark)[] => {
   const { color, lineType } = markOptions;

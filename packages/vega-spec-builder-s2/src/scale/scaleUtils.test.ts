@@ -11,7 +11,7 @@
  */
 import { Scale } from 'vega';
 
-import { getDualAxisScaleNames, getScaleField } from './scaleUtils';
+import { getDualAxisScaleNames, getScaleField } from './scaleUtils.js';
 
 describe('getDualAxisScaleNames()', () => {
   test('should return correct scale names for "xLinear" base scale', () => {

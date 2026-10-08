@@ -23,6 +23,9 @@ module.exports = {
   },
   moduleDirectories: ['packages', 'node_modules'],
   moduleNameMapper: {
+    // ESM packages use fully specified relative imports (`./foo.js`) that point at TypeScript sources.
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@spectrum-charts/(schemas|vega-spec-builder-s2)$': '<rootDir>/packages/$1/index.ts',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '<rootDir>/__mocks__/fileMock.ts',
     '\\.(css)$': 'identity-obj-proxy',
@@ -31,7 +34,7 @@ module.exports = {
     '^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
     '^vega$': '<rootDir>/node_modules/vega/build/vega.js',
     '^(storybook/actions|storybook-dark-mode)$': '<rootDir>/jest.storybookMock.js',
-    ...pathsToModuleNameMapper(compilerOptions.paths),
+    ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
   },
   transformIgnorePatterns: [
     'node_modules/(?!(vega|vega-.*|d3-.*|internmap|json-stringify-pretty-compact)/)',

@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Bullet } from '../../pre-alpha/components/Bullet';
-import { findAllMarksByGroupName, findChart, render } from '../../test-utils';
-import { Basic } from './Features/BulletBasic.story';
+import { Bullet } from '../../pre-alpha/components/Bullet/index.js';
+import { findAllMarksByGroupName, findChart, render } from '../../test-utils/index.js';
+import { Basic } from './Features/BulletFeatures.story.js';
 
 describe('Bullet', () => {
   // Bullet is not a real React component. This test just provides test coverage for sonarqube
@@ -24,8 +24,8 @@ describe('Bullet', () => {
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
-    // basicBulletData has 2 rows, so 2 metric bar rects should be drawn (rect marks render as <path> in SVG)
+    // quarterlyKpiData has 3 rows, so 3 metric bar rects should be drawn (rect marks render as <path> in SVG)
     const rects = await findAllMarksByGroupName(chart, `${Basic.args?.name ?? 'bullet0'}Rect`);
-    expect(rects.length).toEqual(2);
+    expect(rects.length).toEqual(3);
   });
 });

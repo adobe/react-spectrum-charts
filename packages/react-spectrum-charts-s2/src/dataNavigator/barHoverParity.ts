@@ -12,7 +12,7 @@
 import { NodeObject } from 'data-navigator';
 import { View } from 'vega';
 
-import { DIMENSION_HOVER_AREA, FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, FILTERED_TABLE, HOVERED_ITEM } from '@spectrum-charts/core-s2/constants';
 
 export interface BarHoverParityOptions {
   /** The bar mark's own name (e.g. `bar0`) — signals are namespaced off of it, same as mouse hover. */

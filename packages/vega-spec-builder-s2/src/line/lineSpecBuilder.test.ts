@@ -32,14 +32,14 @@ import {
   SERIES_ID,
   TABLE,
   TRENDLINE_VALUE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import * as signalSpecBuilder from '../signal/signalSpecBuilder';
-import { defaultSignals } from '../specTestUtils';
-import { initializeSpec } from '../specUtils';
-import { ScSpec } from '../types';
-import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder';
-import { defaultLineOptions } from './lineTestUtils';
+import * as signalSpecBuilder from '../signal/signalSpecBuilder.js';
+import { defaultSignals } from '../specTestUtils.js';
+import { initializeSpec } from '../specUtils.js';
+import { ScSpec } from '../types/index.js';
+import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder.js';
+import { defaultLineOptions } from './lineTestUtils.js';
 
 const startingSpec: ScSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],

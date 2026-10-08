@@ -11,15 +11,15 @@
  */
 import { createElement } from 'react';
 
-import { DEFAULT_COLOR } from '@spectrum-charts/constants';
+import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartActionBar } from '../components/ChartActionBar';
-import { ChartInspect } from '../components/ChartInspect';
-import { ChartPopover } from '../components/ChartPopover';
-import { LineForecast } from '../components/LineForecast';
-import { LinePointAnnotation } from '../components/LinePointAnnotation';
-import { childrenToOptions } from './childrenAdapter';
-import { getLineOptions } from './lineAdapter';
+import { ChartActionBar } from '../components/ChartActionBar/index.js';
+import { ChartInspect } from '../components/ChartInspect/index.js';
+import { ChartPopover } from '../components/ChartPopover/index.js';
+import { LineForecast } from '../components/LineForecast/index.js';
+import { LinePointAnnotation } from '../components/LinePointAnnotation/index.js';
+import { childrenToOptions } from './childrenAdapter.js';
+import { getLineOptions } from './lineAdapter.js';
 
 describe('getLineOptions()', () => {
   it('should return all basic options', () => {

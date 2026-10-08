@@ -11,9 +11,9 @@
  */
 import { Data, FormulaTransform, SourceData } from 'vega';
 
-import { FILTERED_TABLE, SELECTED_GROUP, SERIES_ID } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, SELECTED_GROUP, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 
-import { getFilteredTableData } from '../data/dataUtils';
+import { getFilteredTableData } from '../data/dataUtils.js';
 import {
   AreaSpecOptions,
   BarSpecOptions,
@@ -22,7 +22,7 @@ import {
   DonutSpecOptions,
   LineSpecOptions,
   ScatterSpecOptions,
-} from '../types';
+} from '../types/index.js';
 
 type PopoverParentOptions = AreaSpecOptions | BarSpecOptions | DonutSpecOptions | LineSpecOptions | ScatterSpecOptions;
 
