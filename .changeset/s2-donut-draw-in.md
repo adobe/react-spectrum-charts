@@ -1,7 +1,6 @@
 ---
 "@spectrum-charts/react-spectrum-charts-s2": patch
 "@spectrum-charts/vega-spec-builder-s2": patch
-"@spectrum-charts/constants": patch
 "@spectrum-charts/core-s2": patch
 ---
 
