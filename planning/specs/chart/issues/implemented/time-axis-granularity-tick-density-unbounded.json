@@ -71,8 +71,8 @@
       "lines": "n/a"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Line/Features/TimeGranularity/LineTimeGranularity.story.tsx",
-      "change": "Provide five deterministic, horizontally resizable local-time stories for hour/day/month/quarter/year windows. Each story uses a fixed maximum two-series dataset, a Spectrum NumberField that selects how many source periods are displayed, a highlighted legend, top/bottom axis-position controls, and a granularity selector that changes only axis presentation and still includes week. Construct and display dates in the same local calendar system as the time scale.",
+      "file": "packages/react-spectrum-charts-s2/src/stories/Line/granularityPickerStory.tsx",
+      "change": "Provide a single GranularityPicker example (Line/Examples) with S2 preset Picker and DateRangePicker controls over deterministic 2016-2026 local-time data. Granularity (hour/day/week/month/year) is chosen automatically so each ~50px major tick interval holds at most one parent calendar period of points at the default 800px width; resizing the chart changes only the axis, not the data. Includes a highlighted legend, top/bottom axis-position controls, and a horizontal width-resize handle.",
       "lines": "n/a"
     }
   ],
