@@ -77,6 +77,11 @@ jobs:
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         run: yarn build:s2
 
+      - name: Type Check 🔎
+        # Covers stories, dev dashboards and tests, which the package builds exclude; requires the S2 build above
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        run: yarn tsc
+
       - name: Check Package Exports 📦
         # Validates packed exports and types with publint and arethetypeswrong; requires the S2 build above
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}

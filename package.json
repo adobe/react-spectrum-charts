@@ -97,7 +97,8 @@
     "changeset:empty": "changeset add --empty",
     "changeset:status": "node ./scripts/checkChangeset.js",
     "release": "node ./scripts/buildUnpublishedPackages.js && changeset publish",
-    "check:packages": "node scripts/checkPackageExports.mjs"
+    "check:packages": "node scripts/checkPackageExports.mjs",
+    "verify": "yarn changeset:status && yarn lint --quiet && yarn build:s2 && yarn tsc && yarn check:packages && yarn test:quiet --changedSince=origin/main --forceExit"
   },
   "devDependencies": {
     "@adobe/react-spectrum": "3.34.1",
