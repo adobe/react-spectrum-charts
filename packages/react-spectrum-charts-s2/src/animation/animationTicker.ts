@@ -130,7 +130,8 @@ function frame(time: number): void {
     lastFrameTime = time;
     frameRunning = true;
     // Date.now(), not the rAF time: the spec compares the timer with its own now() values (e.g. hover's lastChange)
-    runFrame(Date.now(), clock()).finally(() => {
+    // void: runFrame never rejects, since tick catches every run failure
+    void runFrame(Date.now(), clock()).finally(() => {
       frameRunning = false;
       scheduleFrame();
     });

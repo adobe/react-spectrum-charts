@@ -150,7 +150,7 @@ export const VegaChart: FC<VegaChartProps> = ({
       // captured so the async .then attaches the ticker to the element this view was embedded into
       const container = containerRef.current;
 
-      embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
+      void embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
         // cleanup already ran (unmount or re-embed) before embed resolved, so discard this view
         if (cancelled) {
           view.finalize();
