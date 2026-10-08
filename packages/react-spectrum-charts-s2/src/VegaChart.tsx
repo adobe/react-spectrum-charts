@@ -19,10 +19,10 @@ import { TABLE } from '@spectrum-charts/core-s2/constants';
 import { getLocale } from '@spectrum-charts/core-s2/locales';
 import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from './animation/animationTicker.js';
 import { useDebugSpec } from './hooks/useDebugSpec.js';
 import { extractValues, isVegaData } from './hooks/useSpec.js';
 import { ChartProps } from './types/index.js';
-import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from './animation/animationTicker.js';
 
 // Register a custom expression function that returns the full container width (including axis space).
 // `view._viewWidth` is the container width minus spec-level padding; adding padding back gives the
@@ -49,7 +49,12 @@ export const resizeView = (view: View | undefined, width: number, height: number
   if (view && width && height) {
     // Two passes: first updates width/height signals; second lets Vega re-settle layout
     // after dependent changes (e.g. legend column count → legend height → plot area height).
-    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
+    void view
+      .width(width)
+      .height(height)
+      .resize()
+      .runAsync()
+      .then(() => view.runAsync());
   }
 };
 
@@ -162,7 +167,7 @@ export const VegaChart: FC<VegaChartProps> = ({
         }
         onNewView(view);
         view.resize();
-        view.runAsync();
+        void view.runAsync();
         // One additional render to settle all resize calculations
         setTimeout(() => view.runAsync(), 0);
       });

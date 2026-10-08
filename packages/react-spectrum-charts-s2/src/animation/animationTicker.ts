@@ -41,7 +41,7 @@ const entriesByContainer = new Map<Element, TickerEntry>();
 let frameHandle: number | undefined;
 // true while a frame's async runs are pending; the next frame is requested after they finish, so frames never overlap
 let frameRunning = false;
-let lastFrameTime = -Infinity;
+let lastFrameTime = Number.NEGATIVE_INFINITY;
 let observer: IntersectionObserver | undefined;
 
 // setTimeout fallback for environments without rAF (SSR, some test runners)

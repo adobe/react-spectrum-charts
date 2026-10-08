@@ -32,13 +32,13 @@ const createMockView = ({ activeTicks = 3, hasSignals = true } = {}) => {
       ticksLeft -= 1;
       return view;
     }),
-    runAsync: jest.fn(async () => {
+    runAsync: jest.fn(() => {
       const next = ticksLeft > 0;
       if (next !== active) {
         active = next;
         listeners.forEach((l) => l(ANIMATION_ACTIVE, active));
       }
-      return view;
+      return Promise.resolve(view);
     }),
     addSignalListener: jest.fn((name: string, listener: Listener) => {
       if (!hasSignals) throw new Error(`Unrecognized signal name: ${name}`);
@@ -187,7 +187,7 @@ describe('animationTicker', () => {
       expect(detach).not.toThrow();
     });
 
-    test('re-attaching the same view replaces its previous registration', async () => {
+    test('re-attaching the same view replaces its previous registration', () => {
       const { view, listeners } = createMockView({ activeTicks: 1 });
       attach(view);
       attach(view);
@@ -213,9 +213,9 @@ describe('animationTicker', () => {
       views.forEach(({ view, mock }) => {
         attach(view);
         const run = mock.runAsync.getMockImplementation();
-        mock.runAsync.mockImplementation(async () => {
+        mock.runAsync.mockImplementation(() => {
           clockMs += ANIMATION_FRAME_BUDGET_MS;
-          return run?.() ?? view;
+          return run?.() ?? Promise.resolve(view);
         });
       });
       await flushFrames(1);
