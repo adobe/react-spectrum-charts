@@ -205,7 +205,7 @@ S2-exclusive components (like `BarDirectLabel`, `LineDirectLabel`) only exist in
 - [ ] `chartAdapter.test.ts` — snapshots updated with `<names>: []`
 - [ ] Story and integration test created
 - [ ] S2 parity applied where parent mark exists in S2
-- [ ] `yarn tsc --noEmit` passes
+- [ ] `yarn verify` passes
 
 ---
 

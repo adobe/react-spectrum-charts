@@ -102,4 +102,4 @@ Every bug fix must include a test that would have caught the bug:
 
 **For data bugs**: Test `addData` directly with `initializeSpec()` and assert the transform array. Prefer unit tests on spec builder functions over integration tests for data pipeline issues.
 
-Once the fix is complete, run `yarn tsc --noEmit` (see CLAUDE.md's Test Completeness Checklist) — test passes do not imply type correctness. Don't run it proactively after every change.
+Once the fix is complete, run `yarn verify` before pushing (see CLAUDE.md's Test Completeness Checklist) — test passes do not imply type correctness. Don't run it proactively after every change.
