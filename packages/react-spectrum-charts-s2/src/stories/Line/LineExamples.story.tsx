@@ -18,6 +18,7 @@ import { Axis, Legend, Line, LineDirectLabel, ReferenceLine, Title } from '../..
 import useChartProps from '../../hooks/useChartProps.js';
 import { bindWithProps } from '../../test-utils/index.js';
 import { ChartProps } from '../../types/index.js';
+import { GranularityPickerStory } from './granularityPickerStory.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Examples',
@@ -174,3 +175,7 @@ TotalVisitsVsTarget.args = {
   metric: 'percentChange',
   scaleType: 'time',
 };
+
+export const GranularityPicker = bindWithProps(GranularityPickerStory);
+GranularityPicker.args = { baseline: true, position: 'bottom', ticks: true };
+GranularityPicker.argTypes = { position: { control: 'select', options: ['top', 'bottom'] } };
