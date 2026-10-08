@@ -14,9 +14,6 @@ import { ReactElement } from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { DashboardDefinition } from './dashboardCoverage.js';
-import { stubS2BrowserApis } from './dashboardTestUtils.js';
-
 import {
   Variation,
   VariationDashboard,
@@ -26,9 +23,12 @@ import {
   VariationViewMode,
   useVariationAnimations,
   useVariationDataset,
+  useVariationRenderer,
   useVariationSize,
   useVariationViewMode,
 } from './VariationDashboard.js';
+import { DashboardDefinition } from './dashboardCoverage.js';
+import { stubS2BrowserApis } from './dashboardTestUtils.js';
 
 const sizePresets: VariationSizePreset[] = [{ label: 'L', size: 200 }];
 const viewModes: VariationViewMode[] = [
@@ -73,6 +73,7 @@ const variations: Variation[] = [
 ];
 
 beforeAll(stubS2BrowserApis);
+beforeEach(() => localStorage.clear());
 
 describe('VariationDashboard', () => {
   test('toggles animations for every variation and preserves the setting across datasets', async () => {
@@ -108,12 +109,7 @@ describe('VariationDashboard', () => {
 
   test('can initialize animations as disabled', () => {
     render(
-      <VariationDashboard
-        variations={variations}
-        chartType="Test"
-        initialAnimations={false}
-        showAnimationControls
-      />
+      <VariationDashboard variations={variations} chartType="Test" initialAnimations={false} showAnimationControls />
     );
     expect(screen.getByRole('switch', { name: 'Test animations' })).toHaveProperty('checked', false);
   });
@@ -217,7 +213,9 @@ describe('VariationDashboard', () => {
     expect(screen.getByRole('heading', { name: 'Probe' })).not.toBeNull();
     expect(screen.getByRole('heading', { name: 'Other' })).not.toBeNull();
 
-    await userEvent.click(within(screen.getByRole('radiogroup', { name: 'Variant' })).getByRole('radio', { name: 'Probe' }));
+    await userEvent.click(
+      within(screen.getByRole('radiogroup', { name: 'Variant' })).getByRole('radio', { name: 'Probe' })
+    );
 
     expect(screen.getByRole('heading', { name: 'Probe' })).not.toBeNull();
     expect(screen.queryByRole('heading', { name: 'Other' })).toBeNull();
@@ -253,5 +251,57 @@ describe('VariationDashboard', () => {
     await userEvent.click(within(screen.getByRole('grid', { name: 'Active prop filters' })).getByRole('button'));
 
     expect(screen.getByText('Showing 2 of 2')).not.toBeNull();
+  });
+
+  test('selects every covered prop and clears them', async () => {
+    const coverage: DashboardDefinition['coverage'] = {
+      Test: { size: ['probe'], skipped: { skip: 'Not yet covered' } },
+    };
+    render(<VariationDashboard variations={variations} chartType="Test" coverage={coverage} />);
+    const clear = screen.getByRole('button', { name: 'Clear' });
+    expect(clear).toHaveProperty('disabled', true);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Select all' }));
+
+    expect(screen.getByText('Showing 1 of 2')).not.toBeNull();
+    expect(within(screen.getByRole('grid', { name: 'Active prop filters' })).getAllByRole('row')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Select all' })).toHaveProperty('disabled', true);
+
+    await userEvent.click(clear);
+
+    expect(screen.getByText('Showing 2 of 2')).not.toBeNull();
+    expect(screen.queryByRole('grid', { name: 'Active prop filters' })).toBeNull();
+  });
+
+  test('restores dashboard settings after a remount and ignores stale stored values', async () => {
+    localStorage.setItem('rsc-s2-variation-dashboard:Test:dataset', JSON.stringify('removed-dataset'));
+    const { unmount } = render(<VariationDashboard variations={variations} chartType="Test" datasets={datasets} />);
+    expect(screen.getByRole('button', { name: /Dataset/ }).textContent).toContain('Standard');
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Canvas' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Hide controls' }));
+    unmount();
+    render(<VariationDashboard variations={variations} chartType="Test" datasets={datasets} />);
+
+    expect(screen.getByRole('button', { name: 'Show controls' })).not.toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Show controls' }));
+    expect(screen.getByRole('radio', { name: 'Canvas' }).getAttribute('aria-checked')).toBe('true');
+  });
+
+  test('switches every variation between svg and canvas renderers', async () => {
+    const RendererProbe = (): ReactElement => (
+      <output aria-label="Renderer state">{String(useVariationRenderer())}</output>
+    );
+    render(
+      <VariationDashboard
+        variations={variations.map((variation) => ({ ...variation, render: () => <RendererProbe /> }))}
+        chartType="Test"
+      />
+    );
+    screen.getAllByLabelText('Renderer state').forEach((output) => expect(output.textContent).toBe('svg'));
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Canvas' }));
+
+    screen.getAllByLabelText('Renderer state').forEach((output) => expect(output.textContent).toBe('canvas'));
   });
 });

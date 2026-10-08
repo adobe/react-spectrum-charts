@@ -32,6 +32,7 @@ jest.mock('../../../hooks/useChartProps.js', () => ({
 }));
 
 beforeAll(stubS2BrowserApis);
+beforeEach(() => localStorage.clear());
 
 test('wires the dashboard animation toggle into all donut charts while switching datasets', async () => {
   render(<PropVariations />);

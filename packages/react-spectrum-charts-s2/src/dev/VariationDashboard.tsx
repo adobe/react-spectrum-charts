@@ -9,15 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, ReactNode, createContext, useContext, useMemo, useState } from 'react';
+import { ReactElement, ReactNode, createContext, useContext, useMemo } from 'react';
 
-import type { DashboardDefinition } from './dashboardCoverage.js';
 import { VariationDashboardHeader } from './VariationDashboardHeader.js';
+import type { DashboardDefinition } from './dashboardCoverage.js';
+import { usePersistedState } from './usePersistedState.js';
 
 const DEFAULT_SIZE = 280;
 const VariationDatasetContext = createContext<string | undefined>(undefined);
 const VariationSizeContext = createContext(DEFAULT_SIZE);
-const VariationDisplayContext = createContext<{ viewMode?: string; animations?: boolean }>({});
+export type VariationRenderer = 'svg' | 'canvas';
+
+const VariationDisplayContext = createContext<{
+  viewMode?: string;
+  animations?: boolean;
+  renderer?: VariationRenderer;
+}>({});
 
 export interface VariationDataset {
   description?: string;
@@ -116,6 +123,7 @@ export const useVariationSize = (): number => useContext(VariationSizeContext);
 export const useVariationDataset = (): string | undefined => useContext(VariationDatasetContext);
 export const useVariationViewMode = (): string | undefined => useContext(VariationDisplayContext).viewMode;
 export const useVariationAnimations = (): boolean | undefined => useContext(VariationDisplayContext).animations;
+export const useVariationRenderer = (): VariationRenderer | undefined => useContext(VariationDisplayContext).renderer;
 
 export const VariationDashboard = ({
   chartType,
@@ -134,16 +142,46 @@ export const VariationDashboard = ({
   showAnimationControls = false,
   viewModes = [],
 }: VariationDashboardProps): ReactElement => {
-  const [dataset, setDataset] = useState(initialDataset ?? datasets[0]?.value);
-  const [animations, setAnimations] = useState(initialAnimations);
-  const [filter, setFilter] = useState(initialFilter ?? filters[0]?.value);
-  const [size, setSize] = useState(initialSize);
-  const [viewMode, setViewMode] = useState(initialViewMode ?? viewModes[0]?.value);
-  const displayContextValue = useMemo(
-    () => ({ viewMode, animations: showAnimationControls ? animations : undefined }),
-    [viewMode, animations, showAnimationControls]
+  const storageKey = `rsc-s2-variation-dashboard:${chartType}`;
+  const isOneOf =
+    (values: string[]) =>
+    (value: unknown): boolean =>
+      typeof value === 'string' && values.includes(value);
+  const [dataset, setDataset] = usePersistedState(
+    `${storageKey}:dataset`,
+    initialDataset ?? datasets[0]?.value,
+    isOneOf(datasets.map(({ value }) => value))
   );
-  const [selectedProps, setSelectedProps] = useState<Set<string>>(new Set());
+  const [animations, setAnimations] = usePersistedState(`${storageKey}:animations`, initialAnimations);
+  const [renderer, setRenderer] = usePersistedState<VariationRenderer>(
+    `${storageKey}:renderer`,
+    'svg',
+    isOneOf(['svg', 'canvas'])
+  );
+  const [filter, setFilter] = usePersistedState(
+    `${storageKey}:filter`,
+    initialFilter ?? filters[0]?.value,
+    isOneOf(filters.map(({ value }) => value))
+  );
+  const [size, setSize] = usePersistedState(`${storageKey}:size`, initialSize);
+  const [viewMode, setViewMode] = usePersistedState(
+    `${storageKey}:viewMode`,
+    initialViewMode ?? viewModes[0]?.value,
+    isOneOf(viewModes.map(({ value }) => value))
+  );
+  const displayContextValue = useMemo(
+    () => ({ viewMode, animations: showAnimationControls ? animations : undefined, renderer }),
+    [viewMode, animations, showAnimationControls, renderer]
+  );
+  const coveredPropKeys = Object.entries(coverage ?? {}).flatMap(([component, props]) =>
+    Object.keys(props).map((prop) => `${component}.${prop}`)
+  );
+  const [selectedPropList, setSelectedPropList] = usePersistedState<string[]>(
+    `${storageKey}:selectedProps`,
+    [],
+    (value) => Array.isArray(value) && value.every(isOneOf(coveredPropKeys))
+  );
+  const selectedProps = useMemo(() => new Set(selectedPropList), [selectedPropList]);
   const presetSizes = sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
   const minSize = Math.min(...presetSizes, initialSize);
   const maxSize = Math.max(...presetSizes, initialSize);
@@ -189,9 +227,11 @@ export const VariationDashboard = ({
           onFilterChange={setFilter}
           coverage={coverage}
           selectedProps={selectedProps}
-          onSelectedPropsChange={setSelectedProps}
+          onSelectedPropsChange={(props) => setSelectedPropList([...props])}
           animations={showAnimationControls ? animations : undefined}
           onAnimationsChange={setAnimations}
+          renderer={renderer}
+          onRendererChange={setRenderer}
         />
         <VariationDatasetContext.Provider value={dataset}>
           <VariationDisplayContext.Provider value={displayContextValue}>
