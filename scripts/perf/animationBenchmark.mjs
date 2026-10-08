@@ -12,7 +12,7 @@
  */
 
 /**
- * Animation performance benchmark against a running S2 Storybook (`yarn storybook:s2`, packages built).
+ * Animation performance benchmark against a running S2 dev Storybook (`yarn storybook:s2:dev`, packages built).
  * Requires the Playwright Chromium browser (`yarn playwright install chromium`).
  *
  * Scenarios:
@@ -40,12 +40,12 @@ import { chromium } from 'playwright';
 
 const PRESETS = {
   'line-hover': {
-    story: 'react-spectrum-charts-2-line-features-hoveranimation-performance--dashboard',
+    story: 'react-spectrum-charts-2-line-performance-hover--dashboard',
     args: 'chartCount:20;seriesPerChart:30',
     scenarios: ['hover', 'idle'],
   },
   'line-draw-in': {
-    story: 'react-spectrum-charts-2-line-features-drawinanimation-performance--dashboard',
+    story: 'react-spectrum-charts-2-line-performance-drawin--dashboard',
     args: 'chartCount:20;seriesPerChart:10;pointsPerSeries:10',
     scenarios: ['drawIn', 'idle'],
   },
@@ -64,7 +64,7 @@ const OPTIONS = {
   args: { type: 'string' },
   scenarios: { type: 'string' },
   label: { type: 'string' },
-  url: { type: 'string', default: 'http://localhost:6010' },
+  url: { type: 'string', default: 'http://localhost:6011' },
   runs: { type: 'string', default: '3' },
   cpu: { type: 'string', default: '4' },
   duration: { type: 'string', default: '5000' },
