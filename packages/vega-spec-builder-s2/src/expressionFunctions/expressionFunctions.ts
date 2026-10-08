@@ -229,7 +229,9 @@ const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: 
   context.font = font;
   const width = context.measureText(text).width;
   if (document.fonts?.status !== 'loading') {
-    if (labelWidthCache.size >= LABEL_WIDTH_CACHE_MAX_SIZE) labelWidthCache.clear();
+    if (labelWidthCache.size >= LABEL_WIDTH_CACHE_MAX_SIZE) {
+      labelWidthCache.delete(labelWidthCache.keys().next().value as string);
+    }
     labelWidthCache.set(key, width);
   }
   return width;

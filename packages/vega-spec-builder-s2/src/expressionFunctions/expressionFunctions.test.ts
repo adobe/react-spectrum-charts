@@ -170,6 +170,17 @@ describe('getLabelWidth()', () => {
     expect(measureText).toHaveBeenCalledTimes(3);
   });
 
+  test('should evict only the oldest entry when the cache is full', () => {
+    for (let i = 0; i < 5000; i++) getLabelWidth(`label ${i}`, 'bold', 12);
+    getLabelWidth('overflow', 'bold', 12);
+    measureText.mockClear();
+
+    getLabelWidth('label 1', 'bold', 12);
+    expect(measureText).not.toHaveBeenCalled();
+    getLabelWidth('label 0', 'bold', 12);
+    expect(measureText).toHaveBeenCalledTimes(1);
+  });
+
   describe('with document.fonts', () => {
     const listeners: Record<string, () => void> = {};
     const fonts = {
