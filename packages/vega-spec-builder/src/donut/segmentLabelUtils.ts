@@ -190,7 +190,7 @@ export const getSegmentLabelValueText = ({
       // rules will be an array so we need to add the percent to each signal
       return rules.map((rule) => ({
         ...rule,
-        signal: String.raw`${percentSignal} + "\u00a0\u00a0" + ${rule.signal}`,
+        signal: `${percentSignal} + "\\u00a0\\u00a0" + ${rule.signal}`, // NOSONAR typescript:S7780 - S1 is in maintenance mode; no functional changes for Sonar findings
       }));
     }
     return rules;

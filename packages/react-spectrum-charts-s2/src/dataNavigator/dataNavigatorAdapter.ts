@@ -180,6 +180,10 @@ const nodeFocusSignals = (node: NodeObject): FocusSignals => {
   return { ...CLEARED_FOCUS, dimension };
 };
 
+const logFocusError = (error: unknown): void => {
+  console.error('Failed to update accessible navigation focus:', error);
+};
+
 const applyFocusSignals = (view: View | undefined, { item, region, dimension }: FocusSignals): Promise<unknown> | undefined => {
   if (!view) return undefined;
   try {
@@ -283,7 +287,9 @@ const guardHoverParityAgainstMouseClear = (
       return;
     }
     view.runAfter((v) => {
-      v.runAsync().then(() => showTooltipForFocusedNode(container, v, node, context));
+      v.runAsync()
+        .then(() => showTooltipForFocusedNode(container, v, node, context))
+        .catch(logFocusError);
     });
   };
   try {
@@ -616,7 +622,8 @@ export const attachDataNavigator = ({
             fieldLabels: fieldLabels ?? {},
             hasChartInspect: hasChartInspect ?? false,
           });
-        });
+        })
+        .catch(logFocusError);
     });
 
     // Set before input.focus(): it synchronously fires the 'focus' listener above, which can
@@ -642,7 +649,7 @@ export const attachDataNavigator = ({
       applyHoverParitySignals(view, { markName, dimension, color }, null);
     }
     clearAxisFocusRing(focusRing);
-    applyFocusSignals(view, CLEARED_FOCUS);
+    applyFocusSignals(view, CLEARED_FOCUS)?.catch(logFocusError);
   };
 
   // Full teardown: removes the focused node, restores the entry button to tab order, and clears the

@@ -203,7 +203,7 @@ export function buildSpec({
   }
 
   // copy the spec so we don't mutate the original
-  spec = JSON.parse(JSON.stringify(spec));
+  spec = JSON.parse(JSON.stringify(spec)); // NOSONAR typescript:S7784 - S1 is in maintenance mode; no functional changes for Sonar findings
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
@@ -214,7 +214,7 @@ export function buildSpec({
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);
 
-  return JSON.parse(JSON.stringify(spec));
+  return safeClone(spec);
 }
 
 export const removeUnusedScales = produce<ScSpec>((spec) => {
@@ -455,4 +455,11 @@ export const isNumberArray = (opacities: Opacities): opacities is number[] => {
 
 export const isSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is ChartSymbolShape[] => {
   return !symbolShapes.some((symbolShape) => Array.isArray(symbolShape));
+};
+
+const safeClone = <T>(obj: T): T => {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj);
+  }
+  return JSON.parse(JSON.stringify(obj));
 };

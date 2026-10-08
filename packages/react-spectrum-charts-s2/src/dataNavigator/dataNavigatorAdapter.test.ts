@@ -11,7 +11,7 @@
  */
 import { RefObject } from 'react';
 
-import { fireEvent } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
 import { View } from 'vega';
 
 import {
@@ -330,6 +330,21 @@ describe('attachDataNavigator()', () => {
     tooltipCallback.mockClear();
     fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' });
     expect(tooltipCallback).toHaveBeenCalledWith(undefined, undefined, undefined, null);
+  });
+
+  test('logs instead of rejecting when applying focus signals fails', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const error = new Error('runAsync failed');
+    (view.runAsync as jest.Mock).mockRejectedValue(error);
+    attach({ markName: 'bar0' });
+    entryButton().click();
+    fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+    await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith('Failed to update accessible navigation focus:', error));
+
+    consoleSpy.mockClear();
+    fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' });
+    await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith('Failed to update accessible navigation focus:', error));
+    consoleSpy.mockRestore();
   });
 
   test('ArrowDown moves to the next bar, the same as ArrowRight', () => {
@@ -789,6 +804,20 @@ describe('attachDataNavigator()', () => {
       await Promise.resolve(); // flush the .then() chained after runAfter's runAsync()
 
       expect(lastTooltipValue()).not.toBeUndefined();
+    });
+
+    test('logs instead of rejecting when the re-render after a mouseout clear fails', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      attachWithMarkName();
+      entryButton().click();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      const error = new Error('runAsync failed');
+      (view.runAsync as jest.Mock).mockRejectedValue(error);
+
+      simulateMouseoutClear('bar0_dimensionHoverArea_hoveredItem');
+
+      await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith('Failed to update accessible navigation focus:', error));
+      consoleSpy.mockRestore();
     });
 
     test('does nothing when no node is keyboard-focused', () => {

@@ -51,6 +51,7 @@ import {
   DIRECT_LABEL_FONT_SIZE_L,
 } from '@spectrum-charts/core-s2/constants';
 import { colorSchemes, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
+import { jsonClone } from '@spectrum-charts/core-s2/utils';
 
 import { addArea } from './area/areaSpecBuilder.js';
 import { addAxis } from './axis/axisSpecBuilder.js';
@@ -226,7 +227,7 @@ export function buildSpec({
   }
 
   // copy the spec so we don't mutate the original
-  spec = JSON.parse(JSON.stringify(spec));
+  spec = jsonClone(spec);
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
 
   // sibling axes paint in array order, so move the diverging axis last or a later grid axis paints over its labels
@@ -243,7 +244,7 @@ export function buildSpec({
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);
 
-  return JSON.parse(JSON.stringify(spec));
+  return structuredClone(spec);
 }
 
 export const removeUnusedScales = produce<ScSpec>((spec) => {

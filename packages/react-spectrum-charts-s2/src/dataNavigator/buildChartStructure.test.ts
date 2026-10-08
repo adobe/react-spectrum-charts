@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { buildBarStructure } from './buildBarStructure.js';
-import { buildChartStructure } from './buildChartStructure.js';
+import { buildBarStructure, segmentId } from './buildBarStructure.js';
+import { buildChartStructure, getNodeIdForDatum } from './buildChartStructure.js';
 import { getNavigableChartType } from './navigableMarks.js';
 
 const data = [
@@ -92,5 +92,28 @@ describe('buildChartStructure()', () => {
       const axisNodes = Object.keys(composed?.structure.nodes ?? {}).filter((id) => id.startsWith('xAxis::'));
       expect(axisNodes).toHaveLength(0);
     });
+  });
+});
+
+describe('getNodeIdForDatum()', () => {
+  test('returns the dimension key for a single-series bar', () => {
+    expect(getNodeIdForDatum('bar', { browser: 'Chrome' }, { dimension: 'browser' })).toBe('Chrome');
+    expect(getNodeIdForDatum('bar', { browser: 3 }, { dimension: 'browser' })).toBe('3');
+  });
+
+  test('returns the segment id for a multi-series bar', () => {
+    expect(getNodeIdForDatum('bar', { browser: 'Chrome', os: 'Mac' }, { dimension: 'browser', color: 'os' })).toBe(
+      segmentId('Chrome', 'Mac')
+    );
+  });
+
+  test('keys Date dimension values the same way the structure does', () => {
+    const date = new Date('2024-01-01T00:00:00Z');
+    expect(getNodeIdForDatum('bar', { day: date }, { dimension: 'day' })).toBe(String(date));
+  });
+
+  test('returns undefined when the dimension value cannot be a key', () => {
+    expect(getNodeIdForDatum('bar', {}, { dimension: 'browser' })).toBeUndefined();
+    expect(getNodeIdForDatum('bar', { browser: { a: 1 } }, { dimension: 'browser' })).toBeUndefined();
   });
 });
