@@ -51,7 +51,7 @@ import { getColorProductionRule } from '../marks/markUtils.js';
 import { getPathFromSymbolShape } from '../specUtils.js';
 import { getTextNumberFormat } from '../textUtils.js';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types/index.js';
-import { getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils.js';
+import { LabelFieldSuffix, getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils.js';
 import {
   getDonutDrawInLabelVisibilityRules,
   getDonutEmptyStateTest,
@@ -246,7 +246,7 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
   const fieldPrefix = getSegmentLabelFieldPrefix(segmentLabel);
   const candidateDataName = getSegmentLabelCandidateDataName(segmentLabel);
   const labelHeightExpr = getSegmentLabelHeightExpr(segmentLabel);
-  const { nameWidthExpr, valueWidthExpr, maxReachExpr, cappedWidthExpr } = getWidthExprs(segmentLabel);
+  const { widthTransforms, nameWidthExpr, valueWidthExpr, maxReachExpr, cappedWidthExpr } = getWidthExprs(segmentLabel);
   const labelYExpr = `datum['${getLabelField(fieldPrefix, 'labelY')}']`;
   const hasValue = segmentLabel.value || segmentLabel.percent;
   const nameCenterYExpr = hasValue
@@ -283,6 +283,7 @@ const getSegmentLabelDataForLabel = (segmentLabel: SegmentLabelSpecOptions): Sou
           `${getDonutOuterRadiusExpr(donutOptions)} + ${getDonutLabelRingGapSignalName(donutOptions.name)}`,
           labelHeightExpr
         ),
+        ...widthTransforms,
         ...getLabelHorizontalBoundsTransforms(fieldPrefix, cappedWidthExpr),
         { type: 'formula', as: getCollisionBoxesField(fieldPrefix), expr: `[${collisionBoxes.join(', ')}]` },
       ],
@@ -345,6 +346,7 @@ export const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined):
 const getWidthExprs = (
   options: SegmentLabelSpecOptions
 ): {
+  widthTransforms: FormulaTransform[];
   nameWidthExpr: string;
   valueWidthExpr: string;
   widerWidthExpr: string;
@@ -355,13 +357,29 @@ const getWidthExprs = (
   const { color } = donutOptions;
   const labelName = getSegmentLabelName(options);
   const nameTextExpr = `datum['${labelKey ?? color}']`;
-  const nameWidthExpr = `getLabelWidth(${nameTextExpr}, ${DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT}, ${labelName}NameFontSize)`;
-  const valueWidthExpr =
-    value || percent
-      ? `getLabelWidth(${getTextRuleExpr(
-          getSegmentLabelValueText(options)
-        )}, ${DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT}, ${labelName}ValueFontSize)`
-      : '0';
+  const nameWidthField = getLabelField(labelName, 'nameWidth');
+  const valueWidthField = getLabelField(labelName, 'valueWidth');
+  const hasValue = value || percent;
+  const widthTransforms: FormulaTransform[] = [
+    {
+      type: 'formula',
+      as: nameWidthField,
+      expr: `getLabelWidth(${nameTextExpr}, ${DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT}, ${labelName}NameFontSize)`,
+    },
+    ...(hasValue
+      ? [
+          {
+            type: 'formula' as const,
+            as: valueWidthField,
+            expr: `getLabelWidth(${getTextRuleExpr(
+              getSegmentLabelValueText(options)
+            )}, ${DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT}, ${labelName}ValueFontSize)`,
+          },
+        ]
+      : []),
+  ];
+  const nameWidthExpr = `datum['${nameWidthField}']`;
+  const valueWidthExpr = hasValue ? `datum['${valueWidthField}']` : '0';
   const widerWidthExpr = `max(${nameWidthExpr}, ${valueWidthExpr})`;
   // the cap is per-label, not a flat outerRadius*ratio - it's however much horizontal room remains
   // between this label's own anchor point (labelHalfWidth, which shrinks away from the ring's
@@ -371,6 +389,7 @@ const getWidthExprs = (
   const halfWidthField = getLabelField(getSegmentLabelFieldPrefix(options), 'labelHalfWidth');
   const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
   return {
+    widthTransforms,
     nameWidthExpr,
     valueWidthExpr,
     widerWidthExpr,
@@ -613,6 +632,7 @@ interface RichSegmentLabelDetailLayout {
 }
 
 interface RichSegmentLabelLayout {
+  widthTransforms: FormulaTransform[];
   widths: Record<RichSegmentLabelRowKey, string> & {
     widest: string;
     maxReach: string;
@@ -715,6 +735,7 @@ export const getRichSegmentLabelData = (donutOptions: DonutSpecOptions): SourceD
             as: getLabelField(labelName, 'bottomY'),
             expr: `datum['${getLabelField(labelName, 'labelY')}'] + (${bottomRow.dy}) + ${bottomRow.fontSize} / 2`,
           },
+          ...richSegmentLabel.layout.widthTransforms,
           ...getLabelHorizontalBoundsTransforms(labelName, widths.capped),
           { type: 'formula', as: getCollisionBoxesField(labelName), expr: `[${collisionBoxes.join(', ')}]` },
         ],
@@ -788,22 +809,42 @@ const getRichSegmentLabelLayout = (
   const swatchReservedWidth = swatch
     ? `(${swatchVisibleExpr} ? ${DONUT_ADVANCED_LABEL_SWATCH_SIZE + DONUT_ADVANCED_LABEL_SWATCH_GAP} : 0)`
     : '0';
-  const nameWidth = `${swatchReservedWidth} + getLabelWidth(${nameTextExpr}, ${DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT}, ${labelName}NameFontSize)`;
-  const valueWidth = hasValue
-    ? `getLabelWidth(${getTextRuleExpr(
-        getRichSegmentLabelValueText(options)
-      )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}ValueFontSize)`
-    : '0';
   const detailParts = hasDetail ? getRichSegmentLabelDetailTextParts(options) : undefined;
+  const widthTransforms: FormulaTransform[] = [];
+  // Measures text once per data update so per-frame encodes read a field instead of re-measuring.
+  const addWidthField = (suffix: LabelFieldSuffix, expr: string): string => {
+    const field = getLabelField(labelName, suffix);
+    widthTransforms.push({ type: 'formula', as: field, expr });
+    return `datum['${field}']`;
+  };
+  const nameTextWidth = addWidthField(
+    'nameWidth',
+    `getLabelWidth(${nameTextExpr}, ${DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT}, ${labelName}NameFontSize)`
+  );
+  const nameWidth = `${swatchReservedWidth} + ${nameTextWidth}`;
+  const valueWidth = hasValue
+    ? addWidthField(
+        'valueWidth',
+        `getLabelWidth(${getTextRuleExpr(
+          getRichSegmentLabelValueText(options)
+        )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}ValueFontSize)`
+      )
+    : '0';
   const detailValueWidth = detailParts
-    ? `getLabelWidth(${getTextRuleExpr(
-        detailParts.value
-      )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}DetailFontSize)`
+    ? addWidthField(
+        'detailValueWidth',
+        `getLabelWidth(${getTextRuleExpr(
+          detailParts.value
+        )}, ${DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT}, ${labelName}DetailFontSize)`
+      )
     : '0';
   const detailSuffixWidth = detailParts?.suffix
-    ? `getLabelWidth(${getTextRuleExpr(
-        detailParts.suffix
-      )}, ${DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT}, ${labelName}DetailFontSize)`
+    ? addWidthField(
+        'detailSuffixWidth',
+        `getLabelWidth(${getTextRuleExpr(
+          detailParts.suffix
+        )}, ${DONUT_ADVANCED_LABEL_DETAIL_FONT_WEIGHT}, ${labelName}DetailFontSize)`
+      )
     : '0';
   const detailWidth = detailParts?.suffix
     ? `${detailValueWidth} + ${DONUT_ADVANCED_LABEL_NAME_VALUE_GAP} + ${detailSuffixWidth}`
@@ -812,6 +853,7 @@ const getRichSegmentLabelLayout = (
   const halfWidthField = getLabelField(labelName, 'labelHalfWidth');
   const maxReach = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
   return {
+    widthTransforms,
     widths: {
       name: nameWidth,
       value: valueWidth,
