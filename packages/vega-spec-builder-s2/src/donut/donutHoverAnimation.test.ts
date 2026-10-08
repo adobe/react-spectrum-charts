@@ -13,6 +13,7 @@ import { View, expressionFunction, parse } from 'vega';
 
 import {
   ANIMATION_TIMER,
+  COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   FADE_FACTOR,
@@ -25,8 +26,8 @@ import {
 import { buildSpec } from '../chartSpecBuilder.js';
 import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { ChartOptions } from '../types/index.js';
-import { getArcMark, getDonutOpacity } from './donutUtils.js';
 import { defaultDonutOptions } from './donutTestUtils.js';
+import { getArcMark, getDonutOpacity } from './donutUtils.js';
 import { getRichSegmentLabelMarks, getSegmentLabelMarks } from './segmentLabelUtils.js';
 
 const data = [
@@ -82,9 +83,7 @@ describe('donut hover animations', () => {
 
   const getArcOpacities = async (chart: View) => {
     const svg = new DOMParser().parseFromString(await chart.toSVG(), 'image/svg+xml');
-    return Array.from(svg.querySelectorAll('g.donut path')).map((arc) =>
-      Number(arc.getAttribute('opacity') ?? '1')
-    );
+    return Array.from(svg.querySelectorAll('g.donut path')).map((arc) => Number(arc.getAttribute('opacity') ?? '1'));
   };
 
   test.each([
@@ -124,10 +123,7 @@ describe('donut hover animations', () => {
       segmentLabels: [{ value: true }],
     };
     const opacity = getDonutOpacity(options);
-    expect(getArcMark(options).encode?.update?.opacity).toEqual([
-      expect.objectContaining({ value: 0 }),
-      ...opacity,
-    ]);
+    expect(getArcMark(options).encode?.update?.opacity).toEqual([expect.objectContaining({ value: 0 }), ...opacity]);
     const directLabels = getSegmentLabelMarks(options).flatMap((group) => group.marks ?? []);
     const richLabels = getRichSegmentLabelMarks({
       ...options,
@@ -135,11 +131,114 @@ describe('donut hover animations', () => {
     }).flatMap((group) => group.marks ?? []);
     expect(directLabels.length).toBeGreaterThan(0);
     expect(richLabels.length).toBeGreaterThan(3);
-    [...directLabels, ...richLabels].forEach((mark) =>
-      expect(mark.encode?.update).toHaveProperty('opacity', opacity)
-    );
+    [...directLabels, ...richLabels].forEach((mark) => expect(mark.encode?.update).toHaveProperty('opacity', opacity));
     expect(getDonutOpacity(defaultDonutOptions)).toEqual([{ value: 1 }]);
   });
+
+  test.each([
+    { value: false },
+    { value: true },
+    { percent: true, swatch: true, showValueRow: true, showTotal: true },
+  ])('label hover shows the parent donut inspect and clears it on leave: %o', async (label) => {
+    const chart = await createView({
+      marks: [{ markType: 'donut', name: 'donut', color: 'series', segmentLabels: [label], chartInspects: [{}] }],
+    });
+    const container = document.createElement('div');
+    chart.renderer('svg').initialize(container);
+    let tooltipValue: unknown;
+    chart.tooltip((_view, _event, _item, value) => {
+      tooltipValue = value;
+    });
+    await chart.runAsync();
+    const nodes = Array.from(container.querySelectorAll('g.mark-text, g.mark-symbol'))
+      .filter((group) => Array.from(group.classList).some((name) => name.startsWith('donut_')))
+      .flatMap((group) => Array.from(group.children));
+    expect(nodes.length).toBeGreaterThan(0);
+    for (const node of nodes) {
+      node.dispatchEvent(new MouseEvent('pointermove', { bubbles: true }));
+      expect(tooltipValue).toEqual(
+        expect.objectContaining({ [COMPONENT_NAME]: 'donut', id: expect.any(String), value: expect.any(Number) })
+      );
+      node.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+      expect(tooltipValue).toBeNull();
+    }
+  });
+
+  test.each(
+    [
+      { value: false },
+      { value: true },
+      { value: false, percent: true },
+      { percent: true, swatch: true, showValueRow: true, showTotal: true },
+    ].flatMap((label) => [true, false].map((animations) => ({ label, animations })))
+  )(
+    'label mouse events highlight the slice and legend and restore opacity on leave: %o',
+    async ({ label, animations }) => {
+      const chart = await createView({
+        animations,
+        animationTypes: ['hover'],
+        marks: [{ markType: 'donut', name: 'donut', color: 'series', segmentLabels: [label] }],
+        legends: [{}],
+      });
+      const container = document.createElement('div');
+      chart.renderer('svg').initialize(container);
+      await chart.runAsync();
+      const settleHover = async () => {
+        if (animations) await settle(chart);
+        else await chart.runAsync();
+      };
+      await settleHover();
+      const labelGroups = Array.from(container.querySelectorAll('g.mark-text, g.mark-symbol')).filter((group) =>
+        Array.from(group.classList).some((name) => name.startsWith('donut_'))
+      );
+      const labelNodes = labelGroups.flatMap((group) => Array.from(group.children));
+      expect(labelNodes.length).toBeGreaterThan(0);
+
+      for (const node of labelNodes) {
+        node.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+        await chart.runAsync();
+        const hovered = chart.signal('donut_hoveredItem');
+        expect(hovered).toHaveProperty('id');
+        const expected = data.map(({ id }) => (id === hovered.id ? 1 : 0));
+        if (animations) {
+          expect(chart.data('donut_hoverTargetData').map((row) => row.target)).toEqual(expected);
+          const dimmedIndex = expected.indexOf(0);
+          now = chart.data('donut_hoverAnimStateData')[dimmedIndex].startTime + 50;
+          await chart.signal(ANIMATION_TIMER, now).runAsync();
+          const fraction = chart.data('donut_hoverFractionData')[dimmedIndex].fraction;
+          expect(fraction).toBeGreaterThan(0);
+          expect(fraction).toBeLessThan(0.5);
+        }
+        await settleHover();
+        expect(await getArcOpacities(chart)).toEqual(expected.map((match) => (match ? 1 : FADE_FACTOR)));
+        const legendLabels = Array.from(container.querySelectorAll('g.mark-text.role-legend-label text'));
+        expect(legendLabels.length).toBeGreaterThan(0);
+        legendLabels.forEach((legendLabel) => {
+          expect(Number(legendLabel.getAttribute('opacity') ?? '1')).toBe(
+            legendLabel.textContent === hovered.series ? 1 : FADE_FACTOR
+          );
+        });
+        expect(Number(node.getAttribute('opacity') ?? '1')).toBe(1);
+        const labelDataName = 'swatch' in label ? 'donut_richSegmentLabelData' : 'donut_segmentLabelData';
+        const labelData = chart.data(labelDataName);
+        labelGroups.forEach((group) => {
+          Array.from(group.children).forEach((labelNode, index) => {
+            expect(Number(labelNode.getAttribute('opacity') ?? '1')).toBe(
+              labelData[index].id === hovered.id ? 1 : FADE_FACTOR
+            );
+          });
+        });
+
+        node.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+        await chart.runAsync();
+        expect(chart.signal('donut_hoveredItem')).toBeNull();
+        await settleHover();
+        expect(await getArcOpacities(chart)).toEqual([1, 1, 1]);
+        legendLabels.forEach((legendLabel) => expect(Number(legendLabel.getAttribute('opacity') ?? '1')).toBe(1));
+        labelNodes.forEach((labelNode) => expect(Number(labelNode.getAttribute('opacity') ?? '1')).toBe(1));
+      }
+    }
+  );
 
   test('animates each segment independently, including duplicate color categories, and restores neutral on leave', async () => {
     const chart = await createView();

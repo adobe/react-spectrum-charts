@@ -24,7 +24,7 @@ import {
 
 import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types/index.js';
 import { defaultDonutOptions } from './donutTestUtils.js';
-import { getDonutEmptyStateTest } from './donutUtils.js';
+import { getArcMark, getDonutEmptyStateTest } from './donutUtils.js';
 import {
   getRichSegmentLabelData,
   getRichSegmentLabelMarks,
@@ -69,6 +69,33 @@ const richSegmentLabelOptions: SegmentLabelSpecOptions = {
   swatch: true,
   value: true,
 };
+
+describe('SegmentLabel interactions', () => {
+  test.each([
+    { chartInspects: [] },
+    { chartInspects: [{}] },
+    { chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }] },
+  ])('uses the slice tooltip encoding for every label row and swatch: %o', ({ chartInspects }) => {
+    const options = { ...richDonutOptions, chartInspects };
+    const marks = [
+      ...getSegmentLabelMarks({ ...options, segmentLabels: [{ value: true }] }),
+      ...getRichSegmentLabelMarks(options),
+    ].flatMap((group) => group.marks ?? []);
+    expect(marks).toHaveLength(7);
+    marks.forEach((mark) => {
+      expect(mark.encode?.enter).toHaveProperty('tooltip', getArcMark(options).encode?.enter?.tooltip);
+    });
+  });
+
+  test('uses the pointer cursor on labels when a popover is configured', () => {
+    const options = { ...richDonutOptions, chartPopovers: [{}] };
+    const marks = [
+      ...getSegmentLabelMarks({ ...options, segmentLabels: [{ value: true }] }),
+      ...getRichSegmentLabelMarks(options),
+    ].flatMap((group) => group.marks ?? []);
+    marks.forEach((mark) => expect(mark.encode?.enter).toHaveProperty('cursor', { value: 'pointer' }));
+  });
+});
 
 const getOnlyRichLabelGroup = (options: DonutSpecOptions) => {
   const groups = getRichSegmentLabelMarks(options);
@@ -690,11 +717,13 @@ describe('hovered label reveal', () => {
     expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringContaining(`, ${hoveredIdExpr})`));
   });
 
-  test('non-interactive direct labels keep the plain min-angle filter and pass a null hovered id', () => {
+  test('name-only direct labels use the same hovered-label wiring', () => {
     const [candidates, visible] = getSegmentLabelData({ ...defaultDonutOptions, segmentLabels: [{ value: false }] });
-    expect(candidates.transform?.[0]).toHaveProperty('expr', minAngleExpr);
-    expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringMatching(/, null\)$/));
-    expect(visible.transform?.[0]).not.toHaveProperty('expr', expect.stringContaining(HOVERED_ITEM));
+    expect(candidates.transform?.[0]).toHaveProperty(
+      'expr',
+      `${minAngleExpr} || datum.${MARK_ID} === (${hoveredIdExpr})`
+    );
+    expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringContaining(`, ${hoveredIdExpr})`));
   });
 
   test('rich labels use the same hovered-label wiring', () => {

@@ -47,7 +47,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getColorProductionRule } from '../marks/markUtils.js';
+import { getColorProductionRule, getCursor, getInspectEncoding } from '../marks/markUtils.js';
 import { getPathFromSymbolShape } from '../specUtils.js';
 import { getTextNumberFormat } from '../textUtils.js';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types/index.js';
@@ -73,6 +73,11 @@ const getRichSegmentLabelName = ({ donutOptions, labelMode }: SegmentLabelSpecOp
   const suffix = labelMode ? `${labelMode}RichSegmentLabel` : 'richSegmentLabel';
   return `${donutOptions.name}_${suffix}`;
 };
+
+const getSegmentLabelInteractionEncode = ({ chartInspects, chartPopovers, name }: DonutSpecOptions) => ({
+  tooltip: getInspectEncoding(chartInspects, name),
+  cursor: getCursor(chartPopovers),
+});
 
 /** Unique field/data-source prefix for direct labels' collision fields, distinct from rich labels' */
 const getSegmentLabelFieldPrefix = (options: SegmentLabelSpecOptions): string => getSegmentLabelName(options);
@@ -430,6 +435,7 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
     from: { data: getSegmentLabelDataName(options) },
     encode: {
       enter: {
+        ...getSegmentLabelInteractionEncode(donutOptions),
         // drop all labels when there isn't any data to display, the empty state ring is shown instead
         text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
@@ -467,6 +473,7 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
       from: { data: getSegmentLabelDataName(options) },
       encode: {
         enter: {
+          ...getSegmentLabelInteractionEncode(donutOptions),
           // drop all labels when there isn't any data to display, the empty state ring is shown instead
           text: [{ test: getDonutEmptyStateTest(donutOptions.name), value: '' }, ...valueTextRules],
           fontWeight: { value: 'bold' },
@@ -981,6 +988,7 @@ const getRichSegmentLabelSwatchMark = (options: RichSegmentLabelSpecOptions): Sy
     from: { data: `${labelName}Data` },
     encode: {
       enter: {
+        ...getSegmentLabelInteractionEncode(donutOptions),
         shape: { value: getPathFromSymbolShape('rounded-square') },
         fill: getColorProductionRule(color, colorScheme),
       },
@@ -1014,6 +1022,7 @@ const getRichSegmentLabelNameTextMark = (options: RichSegmentLabelSpecOptions): 
     from: { data: `${labelName}Data` },
     encode: {
       enter: {
+        ...getSegmentLabelInteractionEncode(donutOptions),
         text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
       },
@@ -1053,6 +1062,7 @@ const getRichSegmentLabelValueTextMark = (
       from: { data: `${labelName}Data` },
       encode: {
         enter: {
+          ...getSegmentLabelInteractionEncode(donutOptions),
           text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...valueTextRules],
           fontWeight: { value: DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT },
         },
@@ -1102,6 +1112,7 @@ const getRichSegmentLabelDetailTextMark = (
         from: { data: `${labelName}Data` },
         encode: {
           enter: {
+            ...getSegmentLabelInteractionEncode(donutOptions),
             text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...(suffixTextRules ?? [])],
             fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
           },
@@ -1122,6 +1133,7 @@ const getRichSegmentLabelDetailTextMark = (
       from: { data: `${labelName}Data` },
       encode: {
         enter: {
+          ...getSegmentLabelInteractionEncode(donutOptions),
           text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...valueTextRules],
           fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
           fontWeight: { value: DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT },
