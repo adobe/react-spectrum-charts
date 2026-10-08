@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.8.0">
 <title data-rh="true">Donut (S2) | React Spectrum Charts</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensource.adobe.com/react-spectrum-charts/PR-977-docs/docs/spectrum2/donut"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Donut (S2) | React Spectrum Charts"><meta data-rh="true" name="description" content="Donut is a pre-alpha component — it has no finalized Spectrum 2 design yet"><meta data-rh="true" property="og:description" content="Donut is a pre-alpha component — it has no finalized Spectrum 2 design yet"><link data-rh="true" rel="icon" href="https://www.adobe.com/favicon.ico"><link data-rh="true" rel="canonical" href="https://opensource.adobe.com/react-spectrum-charts/PR-977-docs/docs/spectrum2/donut"><link data-rh="true" rel="alternate" href="https://opensource.adobe.com/react-spectrum-charts/PR-977-docs/docs/spectrum2/donut" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensource.adobe.com/react-spectrum-charts/PR-977-docs/docs/spectrum2/donut" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Donut (S2)","item":"https://opensource.adobe.com/react-spectrum-charts/PR-977-docs/docs/spectrum2/donut"}]}</script><link rel="stylesheet" href="/react-spectrum-charts/PR-977-docs/assets/css/styles.381048a3.css">
-<script src="/react-spectrum-charts/PR-977-docs/assets/js/runtime~main.3c8f8651.js" defer="defer"></script>
+<script src="/react-spectrum-charts/PR-977-docs/assets/js/runtime~main.5538f0cc.js" defer="defer"></script>
 <script src="/react-spectrum-charts/PR-977-docs/assets/js/main.36b818e5.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -23,6 +23,11 @@ becomes a segment sized by <code>metric</code> and colored by <code>color</code>
 <p><code>Donut</code> supports <code>ChartInspect</code> and <code>ChartPopover</code> like other S2 chart mark components.
 Unlike the base package, S2 does not have a <code>ChartTooltip</code> component — use <code>ChartInspect</code>
 instead.</p>
+<p>Interactive donut segments and their direct or advanced labels animate opacity on hover.
+Legend hover, controlled highlights, and popover selection share the animation state.
+Set <code>animations={false}</code> or <code>animationTypes={[]}</code>
+on <code>Chart</code> to keep instant opacity changes instead. A donut without interactive children
+or highlighting remains static.</p>
 <p>Inside a <code>Donut</code>, both render default content without children: the segment&#x27;s color swatch and
 series name, followed by its share of the visible total and short-number value (e.g.
 <code>65.2% (23K)</code>), formatted with the chart <code>locale</code>. When children are provided, their content
