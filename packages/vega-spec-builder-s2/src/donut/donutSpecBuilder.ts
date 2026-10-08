@@ -52,6 +52,7 @@ import {
   getDonutAnimIdField,
   getDonutHoverRules,
   getDonutStartAngle,
+  getDonutSweepExpr,
   getEmptyStateArcMark,
   isDonutInteractive,
   getRingWidthSignal,
@@ -213,9 +214,9 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
 });
 
 const getPieTransforms = (options: DonutSpecOptions): (FormulaTransform | PieTransform)[] => {
-  const { metric, name, variant } = options;
+  const { metric, name } = options;
   const startAngle = getDonutStartAngle(options);
-  const sweep = variant === 'semicircle' ? 'PI' : '2 * PI';
+  const sweep = getDonutSweepExpr(options);
   return [
     {
       type: 'pie',
@@ -265,7 +266,7 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   }
   if (options.isDrawInAnimate) {
     addDrawInClockSignals(signals);
-    const sweep = options.variant === 'semicircle' ? 'PI' : '2 * PI';
+    const sweep = getDonutSweepExpr(options);
     const startAngle = getDonutStartAngle(options);
     signals.push({
       name: `${name}_${DRAW_IN_ANIM_CUTOFF}`,

@@ -18,7 +18,7 @@ import { Chart } from '../../../../Chart.js';
 import { ChartInspect, ChartPopover, Legend } from '../../../../components/index.js';
 import useChartProps from '../../../../hooks/useChartProps.js';
 import { Donut, DonutSummary, SegmentLabel } from '../../../../pre-alpha/index.js';
-import { basicDonutData, booleanDonutData, sliveredDonutData } from '../../../../storyShared/Donut/data.js';
+import { basicDonutData, booleanDonutData } from '../../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
 import { ChartProps } from '../../../../types/index.js';
 
@@ -103,28 +103,13 @@ const WithHoverStory: StoryFn<DrawInAnimationArgs> = ({
   );
 };
 
-const Circle = bindWithProps(DrawInStory);
-Circle.args = { ...defaultArgs };
-
-const Pie = bindWithProps(DrawInStory);
-Pie.args = { ...defaultArgs, holeRatio: 0 };
-
 const Semicircle = bindWithProps(DrawInStory);
 Semicircle.args = { ...defaultArgs, variant: 'semicircle' };
-
-const BooleanDonut = bindWithProps(DrawInStory);
-BooleanDonut.args = { color: 'id', metric: 'value', isBoolean: true };
-
-const DirectLabels = bindWithProps(DrawInStory);
-DirectLabels.args = { ...defaultArgs, labelStyle: 'direct' };
 
 const AdvancedLabels = bindWithProps(DrawInStory);
 AdvancedLabels.args = { ...defaultArgs, labelStyle: 'advanced' };
 
-const SmallSlices = bindWithProps(DrawInStory);
-SmallSlices.args = { ...defaultArgs, data: sliveredDonutData, labelStyle: 'advanced' };
-
 const WithHover = bindWithProps(WithHoverStory);
 WithHover.args = { ...defaultArgs };
 
-export { AdvancedLabels, BooleanDonut, Circle, DirectLabels, Pie, Semicircle, SmallSlices, WithHover };
+export { AdvancedLabels, Semicircle, WithHover };

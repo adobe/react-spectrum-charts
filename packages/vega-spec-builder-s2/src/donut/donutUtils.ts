@@ -105,8 +105,8 @@ export const getDonutLabelFadeProgressExpr = (options: DonutSpecOptions): string
   const startAngle = `datum['${options.name}_startAngle']`;
   const endAngle = `datum['${options.name}_endAngle']`;
   const drawStartAngle = getDonutStartAngle(options);
-  const sweep = options.variant === 'semicircle' ? Math.PI : 2 * Math.PI;
-  const endProgress = `clamp((${endAngle} - ${drawStartAngle}) / ${sweep}, 0, 1)`;
+  const sweep = getDonutSweepExpr(options);
+  const endProgress = `clamp((${endAngle} - ${drawStartAngle}) / (${sweep}), 0, 1)`;
   const sliceEndTime = `${DRAW_IN_ANIMATION_DURATION_MS} * sqrt(${endProgress})`;
   const elapsed = `${ANIMATION_TIMER} - ${DRAW_IN_START}`;
   const linearFade = `clamp(((${elapsed}) - (${sliceEndTime})) / ${DONUT_DRAW_IN_LABEL_FADE_DURATION_MS}, 0, 1)`;
@@ -428,6 +428,10 @@ const getHoveredArcFillEncoding = (
 export const getDonutStartAngle = ({ variant }: Pick<DonutSpecOptions, 'variant'>): number =>
   variant === 'semicircle' ? -Math.PI / 2 : 0;
 
+/** Gets the total angular sweep expression for a donut's variant. */
+export const getDonutSweepExpr = ({ variant }: Pick<DonutSpecOptions, 'variant'>): string =>
+  variant === 'semicircle' ? 'PI' : '2 * PI';
+
 /** Gets an arc angle clipped to the draw-in sweep when enabled. */
 export const getDonutAngleEncoding = (
   { isDrawInAnimate, name }: DonutSpecOptions,
@@ -518,10 +522,10 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
  * @returns ArcMark
  */
 export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { colorScheme, name, variant } = options;
+  const { colorScheme, name } = options;
   const startAngle = getDonutStartAngle(options);
   const outerRadius = getDonutOuterRadiusExpr(options);
-  const sweep = variant === 'semicircle' ? 'PI' : '2 * PI';
+  const sweep = getDonutSweepExpr(options);
   return {
     type: 'arc',
     name: `${name}_emptyState`,
