@@ -14,11 +14,9 @@
 export const stubS2BrowserApis = (): void => {
   Element.prototype.getAnimations ??= () => [];
   globalThis.IntersectionObserver ??= class {
-    observe(): void {}
-    unobserve(): void {}
-    disconnect(): void {}
-    takeRecords(): IntersectionObserverEntry[] {
-      return [];
-    }
+    observe = jest.fn();
+    unobserve = jest.fn();
+    disconnect = jest.fn();
+    takeRecords = jest.fn(() => []);
   } as unknown as typeof IntersectionObserver;
 };
