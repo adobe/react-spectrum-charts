@@ -120,7 +120,8 @@ export const getDonutLabelOpacity = (options: DonutSpecOptions): ({ test?: strin
   const fadeProgress = getDonutLabelFadeProgressExpr(options);
 
   return opacity.map((rule) => {
-    const baseOpacity = 'signal' in rule ? rule.signal : 'value' in rule ? rule.value : undefined;
+    const opacityValue = 'value' in rule ? rule.value : undefined;
+    const baseOpacity = 'signal' in rule ? rule.signal : opacityValue;
     if (baseOpacity === undefined) throw new Error('Expected a value or signal for donut label opacity');
     return {
       ...(rule.test !== undefined && { test: rule.test }),

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, ReactNode, createContext, useContext, useState } from 'react';
+import { ReactElement, ReactNode, createContext, useContext, useMemo, useState } from 'react';
 
 const DEFAULT_SIZE = 280;
 const VariationDatasetContext = createContext<string | undefined>(undefined);
@@ -114,6 +114,10 @@ export const VariationDashboard = ({
   const [filter, setFilter] = useState(initialFilter ?? filters[0]?.value);
   const [size, setSize] = useState(initialSize);
   const [viewMode, setViewMode] = useState(initialViewMode ?? viewModes[0]?.value);
+  const displayContextValue = useMemo(
+    () => ({ viewMode, animations: showAnimationControls ? animations : undefined }),
+    [viewMode, animations, showAnimationControls]
+  );
   const presetSizes = sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
   const minSize = Math.min(...presetSizes, initialSize);
   const maxSize = Math.max(...presetSizes, initialSize);
@@ -275,9 +279,7 @@ export const VariationDashboard = ({
           </div>
         </header>
         <VariationDatasetContext.Provider value={dataset}>
-          <VariationDisplayContext.Provider
-            value={{ viewMode, animations: showAnimationControls ? animations : undefined }}
-          >
+          <VariationDisplayContext.Provider value={displayContextValue}>
             <div
               style={{
                 alignItems: 'start',
