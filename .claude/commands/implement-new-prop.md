@@ -160,6 +160,10 @@ Read the existing story file first to understand ordering and grouping. Add the 
 
 Check whether the mark exists in S2 (`packages/vega-spec-builder-s2/src/` and `packages/react-spectrum-charts-s2/src/`). If it does, apply the same changes. S2 files mirror S1 structurally but use S2-specific imports. S2 does not have Venn, does not have the `s2` boolean prop, and some marks have intentional behavioral differences (e.g., `staticPoint` in S2 only supports `true`, not `'hollow'`/`'solid'`).
 
+### Step 10: Variation Dashboards (S2)
+
+For S2 props, add or adjust a variation in the mark's dashboard and map the prop in its coverage map. If the prop is on a sibling (Axis, Legend, Chart), update every dashboard where it interacts with the chart. See CLAUDE.md's "Variation Dashboards".
+
 ---
 
 ## Checklist by Prop Type
@@ -172,6 +176,7 @@ Check whether the mark exists in S2 (`packages/vega-spec-builder-s2/src/` and `p
 - [ ] `<Mark>.tsx` — add to destructure with default
 - [ ] Story
 - [ ] S2 parity
+- [ ] S2 variation dashboard variation + coverage entry
 
 **Plain value prop without default (optional behavior):**
 - [ ] Same as above, but omit `OptionsWithDefaults` entry

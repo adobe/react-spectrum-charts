@@ -276,6 +276,16 @@ The dev Storybook is the demo plus extra per-chart folders (`src/dev/<Chart>/<Fo
 
 Never put two files with the same `title` and overlapping export names — Storybook will throw a duplicate story ID error.
 
+### Variation Dashboards
+
+Each S2 chart type has a variation dashboard at `src/dev/<Chart>/Dashboards/<chart>.dashboard.tsx` that renders every prop variation side by side. It exports a `dashboard` with a coverage map from each component's props to the variation ids that exercise them (types in `src/dev/dashboardCoverage.ts`):
+
+- **Mark and child components** use `PropCoverage<Props>`, which is exhaustive — `tsc` fails until every prop is mapped.
+- **Siblings** (Axis, Legend, Chart, etc.) use `SiblingCoverage<Props>`, which is partial — only map props that interact with the chart type. These are not enforced, so check them by hand.
+- A prop with no variation yet uses `{ skip: '<reason>' }`; `dashboardCoverage.test.ts` fails on unknown variation ids or empty skip reasons.
+
+**Whenever you add or change a prop, child component, or visual behavior on an S2 mark**, check that mark's dashboard and every dashboard where the affected sibling appears: add or adjust a variation for the new behavior and point the coverage entry at it. New S2 chart types get a new dashboard modeled on the Donut one.
+
 ---
 
 ## Code Style

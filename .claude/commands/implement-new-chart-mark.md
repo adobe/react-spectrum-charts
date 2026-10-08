@@ -260,6 +260,7 @@ If the mark ships in S2:
 3. Create the S2 React component in `packages/react-spectrum-charts-s2/src/components/Widget/`
 4. Register in `packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts`
 5. Build with `yarn build:s2`
+6. Create `packages/react-spectrum-charts-s2/src/dev/Widget/Dashboards/widget.dashboard.tsx` modeled on the Donut dashboard, with variations and a coverage map for the mark, its child components, and relevant siblings (see CLAUDE.md's "Variation Dashboards")
 
 S2 differences: uses `getS2ColorValue` instead of `getColorValue`, no `s2` boolean prop (always S2), no Venn support.
 
@@ -291,6 +292,7 @@ S2 differences: uses `getS2ColorValue` instead of `getColorValue`, no `s2` boole
 - [ ] `utils/utils.ts` — sanitizeRscChartChildren updated
 - [ ] `stories/components/Widget/Widget.story.tsx` — created
 - [ ] `stories/components/Widget/Widget.test.tsx` — created
+- [ ] S2: `dev/Widget/Dashboards/widget.dashboard.tsx` — created with coverage map
 - [ ] `yarn verify` — passes
 
 ---

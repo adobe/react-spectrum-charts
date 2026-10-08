@@ -57,6 +57,7 @@ module.exports = {
     '@typescript-eslint/no-redundant-type-constituents': 'error', // S6571
     '@typescript-eslint/require-await': 'error', // S7503
     '@typescript-eslint/prefer-optional-chain': 'error', // S6582
+    '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }], // S1186
 
     'unicorn/prefer-at': 'error', // S7755
     'unicorn/prefer-native-coercion-functions': 'error', // S7770

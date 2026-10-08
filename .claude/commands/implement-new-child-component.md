@@ -183,6 +183,10 @@ If the parent mark exists in S2, mirror the changes in:
 
 S2-exclusive components (like `BarDirectLabel`, `LineDirectLabel`) only exist in S2 — they have no S1 equivalent.
 
+### Step 10: Variation Dashboards (S2)
+
+Add variations for the child component to the parent mark's dashboard and add a `PropCoverage<NameProps>` entry to its coverage map. See CLAUDE.md's "Variation Dashboards".
+
 ---
 
 ## Checklist
@@ -205,6 +209,7 @@ S2-exclusive components (like `BarDirectLabel`, `LineDirectLabel`) only exist in
 - [ ] `chartAdapter.test.ts` — snapshots updated with `<names>: []`
 - [ ] Story and integration test created
 - [ ] S2 parity applied where parent mark exists in S2
+- [ ] S2 parent mark dashboard — variations and coverage map updated
 - [ ] `yarn verify` passes
 
 ---
