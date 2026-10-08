@@ -52,9 +52,11 @@ import { DonutSpecOptions } from '../types/index.js';
 
 const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
 
-/** Returns whether a donut needs hover state for its own interactions or a highlighted legend. */
+/** Returns whether a donut needs hover state for its labels, interactions, or a highlighted legend. */
 export const isDonutInteractive = (options: DonutSpecOptions): boolean =>
-  isInteractive(options) || Boolean(options.legendHighlightSignals?.length);
+  isInteractive(options) ||
+  Boolean(options.legendHighlightSignals?.length) ||
+  (!options.isBoolean && options.variant === 'circle' && options.segmentLabels.length > 0);
 
 export const getDonutAnimIdField = (name: string): string => `${name}_hoverId`;
 
@@ -94,7 +96,7 @@ export const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } &
     return [{ signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` }];
   }
   const opacity = getMarkOpacity(options);
-  if (!isInteractive(options) && options.legendHighlightSignals?.length) {
+  if (!isInteractive(options) && isDonutInteractive(options)) {
     addHoveredItemOpacityRules(opacity, options);
   }
   return opacity;

@@ -9,9 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Item, View } from 'vega';
+import { Item, View, expressionFunction, parse } from 'vega';
 
-import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA } from '@spectrum-charts/core-s2/constants';
+import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, TABLE } from '@spectrum-charts/core-s2/constants';
+import { buildSpec, getExpressionFunctions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ContextMenuMode } from '../types/marks/line.types.js';
 import {
@@ -267,6 +268,86 @@ describe('getOnMarkClickCallback() mark click with markHasPopover', () => {
       foo: 1,
     });
   });
+});
+
+describe('donut label popovers', () => {
+  test.each(
+    [
+      { value: false },
+      { value: true },
+      { percent: true, swatch: true, showValueRow: true, showTotal: true },
+    ].flatMap((label) => (['click', 'contextmenu'] as const).map((trigger) => ({ label, trigger })))
+  )(
+    'routes every label row and swatch to the donut popover: %o',
+    async ({ label, trigger }) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', (width: number) => width);
+      const data = [
+        { series: 'Chrome', value: 70 },
+        { series: 'Safari', value: 30 },
+      ];
+      const spec = buildSpec({
+        data,
+        animations: false,
+        marks: [
+          {
+            markType: 'donut',
+            color: 'series',
+            segmentLabels: [label],
+            chartPopovers: [{ rightClick: trigger === 'contextmenu' }],
+          },
+        ],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const container = document.createElement('div');
+      const view = new View(parse(spec), { renderer: 'svg' }).width(500).height(500).initialize(container);
+      const selectedData: GetOnMarkClickCallbackArgs['selectedData'] = { current: null };
+      const buttonId = trigger === 'contextmenu' ? 'donut0-contextmenu-button' : 'donut0-popover-button';
+      document.body.innerHTML = `<div id="test"><div><button id="${buttonId}"></button></div></div>`;
+      const button = document.getElementById(buttonId);
+      if (!button) throw new Error('Expected the popover trigger button');
+      const onOpen = jest.fn();
+      button.addEventListener('click', onOpen);
+      view.addEventListener(
+        trigger,
+        getOnMarkClickCallback({
+          ...defaultMarkClickArgs,
+          chartView: { current: view },
+          selectedData,
+          selectedDataBounds: { current: undefined },
+          selectedDataName: { current: undefined },
+          trigger,
+          markHasPopover: true,
+        })
+      );
+      try {
+        await view.runAsync();
+        const nodes = Array.from(container.querySelectorAll('g.mark-text, g.mark-symbol'))
+          .filter((group) => Array.from(group.classList).some((name) => name.startsWith('donut0_')))
+          .flatMap((group) => Array.from(group.children));
+        expect(nodes.length).toBeGreaterThan(0);
+        for (const node of nodes) {
+          selectedData.current = null;
+          onOpen.mockClear();
+          node.dispatchEvent(new MouseEvent(trigger, { bubbles: true }));
+          expect(selectedData.current).toEqual(
+            expect.objectContaining({
+              [COMPONENT_NAME]: 'donut0',
+              series: expect.any(String),
+              value: expect.any(Number),
+              donut0_arcPercent: expect.any(Number),
+            })
+          );
+          expect(onOpen).toHaveBeenCalledTimes(1);
+        }
+      } finally {
+        view.finalize();
+        document.body.innerHTML = '';
+      }
+    }
+  );
 });
 
 describe('getOnChartMarkContextMenuCallback()', () => {

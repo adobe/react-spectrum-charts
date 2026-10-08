@@ -286,4 +286,12 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   );
   if (!isDonutInteractive(options)) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
+  const labelMarks = [...getSegmentLabelMarks(options), ...getRichSegmentLabelMarks(options)].flatMap(
+    (group) => group.marks ?? []
+  );
+  for (const mark of labelMarks) {
+    if (mark.name) {
+      addHoveredItemSignal(signals, name, mark.name);
+    }
+  }
 });
