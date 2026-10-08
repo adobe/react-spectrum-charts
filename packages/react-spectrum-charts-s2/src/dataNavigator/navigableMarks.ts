@@ -10,8 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
-import { Bar } from '../components/Bar';
-import { NavigableChartType } from './buildChartStructure';
+import { Bar } from '../components/Bar/index.js';
+import { NavigableChartType } from './buildChartStructure.js';
 
 export const getNavigableChartType = (displayName: unknown): NavigableChartType | undefined => {
   if (displayName === Bar.displayName) return 'bar';

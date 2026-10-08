@@ -31,9 +31,9 @@ import {
   SELECTED_ITEM,
   SERIES_ID,
   STACK_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { BarSpecOptions } from '../types';
+import { BarSpecOptions } from '../types/index.js';
 import {
   defaultBarEnterEncodings,
   defaultBarOptions,
@@ -42,7 +42,7 @@ import {
   defaultDodgedCornerRadiusEncodings,
   defaultDodgedYEncodings,
   defaultStackedYEncodings,
-} from './barTestUtils';
+} from './barTestUtils.js';
 import {
   getBarAnimIdField,
   getBarDimensionAreaPositionEncodings,
@@ -67,7 +67,7 @@ import {
   getStrokeDash,
   getStrokeWidth,
   shouldShowItemSelectionRing,
-} from './barUtils';
+} from './barUtils.js';
 
 const defaultDodgedXEncodings: RectEncodeEntry = {
   x: { scale: 'bar0_position', field: 'bar0_dodgeGroup' },

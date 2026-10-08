@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './trendlineDataUtils';
-export * from './trendlineMarkUtils';
-export * from './trendlineScaleUtils';
-export * from './trendlineSignalUtils';
+export * from './trendlineDataUtils.js';
+export * from './trendlineMarkUtils.js';
+export * from './trendlineScaleUtils.js';
+export * from './trendlineSignalUtils.js';

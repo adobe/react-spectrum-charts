@@ -11,7 +11,7 @@
  */
 import { Edges, NodeObject, Nodes, Structure } from 'data-navigator';
 
-import { baseNavigationRules } from './navigationRules';
+import { baseNavigationRules } from './navigationRules.js';
 
 /** Separator used to namespace an auxiliary region's node/edge ids; unlikely to collide with real data values. */
 const REGION_SEPARATOR = '::';

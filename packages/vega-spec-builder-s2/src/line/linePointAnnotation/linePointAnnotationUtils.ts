@@ -19,10 +19,10 @@ import {
 	LINE_POINT_ANNOTATION_OFFSET,
 	SELECTED_SERIES,
 	SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { LinePointAnnotationOptions, LinePointAnnotationSpecOptions, LineSpecOptions } from '../../types';
-import { getLabelTransformTextMarks } from '../directLabelUtils';
+import { LinePointAnnotationOptions, LinePointAnnotationSpecOptions, LineSpecOptions } from '../../types/index.js';
+import { getLabelTransformTextMarks } from '../directLabelUtils.js';
 
 export const getLinePointAnnotationSpecOptions = (
 	{ anchor = ['right', 'top', 'bottom', 'left'], matchLineColor = false, textKey }: LinePointAnnotationOptions,

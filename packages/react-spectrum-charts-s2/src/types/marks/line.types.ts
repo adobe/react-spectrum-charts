@@ -13,11 +13,11 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartActionBarElement, ChartInspectElement, ChartPopoverElement } from '../dialogs';
-import { LineForecastElement } from './supplemental/lineForecast.types';
-import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types';
-import { LinePointAnnotationElement } from './supplemental/linePointAnnotation.types';
-import { Children, ContextMenuCallback, MarkCallback } from '../util.types';
+import { ChartActionBarElement, ChartInspectElement, ChartPopoverElement } from '../dialogs/index.js';
+import { LineForecastElement } from './supplemental/lineForecast.types.js';
+import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types.js';
+import { LinePointAnnotationElement } from './supplemental/linePointAnnotation.types.js';
+import { Children, ContextMenuCallback, MarkCallback } from '../util.types.js';
 
 /**
  * Controls which interaction marks can trigger `onContextMenu`.

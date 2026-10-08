@@ -16,9 +16,9 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { getAreaMark } from './areaUtils';
+import { getAreaMark } from './areaUtils.js';
 
 describe('getAreaMark', () => {
   test('basic options', () => {

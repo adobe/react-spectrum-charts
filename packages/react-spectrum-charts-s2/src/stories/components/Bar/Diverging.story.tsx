@@ -13,33 +13,27 @@ import { ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { Chart } from '../../../Chart';
-import { Axis, AxisThumbnail, Bar, BarDirectLabel, Title } from '../../../components';
-import useChartProps from '../../../hooks/useChartProps';
-import { bindWithProps } from '../../../test-utils';
-import { BarProps } from '../../../types';
-import {
-  divergingConversionRateData,
-  divergingConversionRateDataLongLabels,
-  timeAxisDivergingData,
-} from './data';
+import { Chart } from '../../../Chart.js';
+import { Axis, Bar, Legend } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
+import { divergingConversionRateDataWithDirection } from '../../../storyShared/components/Bar/data.js';
+import { BarProps } from '../../../types/index.js';
+import { bindStory } from './storyUtils.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Bar/Features/Diverging',
+  title: 'React Spectrum Charts 2/Bar/Features',
   component: Bar,
 };
 
-/** Canonical single-series horizontal diverging; value labels use adaptive `position="start"` — inside near the axis, spilling outside when they don't fit. */
-const HorizontalStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: divergingConversionRateData, width: 700, height: 400 });
+const DivergingStory: StoryFn<typeof Bar> = (args): ReactElement => {
+  const isHorizontal = args.orientation === 'horizontal';
+  const chartProps = useChartProps({ data: divergingConversionRateDataWithDirection, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
-      <Title text="Single-series horizontal — axis at zero, labels flip opposite each bar" fontSize={16} />
-      <Axis position="left" baseline />
-      <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} diverging>
-        <BarDirectLabel position="start" format="percentage" />
-      </Bar>
+      <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Channel" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid labelFormat="percentage" title="Conversion rate change" />
+      <Bar {...args} />
+      <Legend title="Change direction" />
     </Chart>
   );
 };
@@ -48,131 +42,12 @@ const defaultProps: BarProps = {
   dimension: 'channel',
   metric: 'changeRate',
   orientation: 'horizontal',
-  colorOverride: 'barColor',
+  color: 'changeDirection',
 };
 
-const Horizontal = bindWithProps(HorizontalStory);
-Horizontal.args = {
-  ...defaultProps,
-};
+// Category labels sit on the zero baseline, on the opposite side of each bar.
+const Diverging = bindStory(DivergingStory);
+Diverging.args = { ...defaultProps, diverging: true };
+Diverging.parameters = { controls: { include: ['diverging'] } };
 
-const thumbnails = ['/chrome.png', '/firefox.png', '/safari.png', '/edge.png', '/explorer.png'];
-
-const divergingConversionRateDataWithThumbnails = divergingConversionRateData.map((datum, index) => ({
-  ...datum,
-  thumbnail: thumbnails[index % thumbnails.length],
-}));
-
-/** Same as `Horizontal`, but with an `AxisThumbnail` on the dimension axis instead of a `BarDirectLabel` — thumbnails must move to the zero baseline along with the axis. */
-const HorizontalWithThumbnailStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: divergingConversionRateDataWithThumbnails, width: 700, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Single-series horizontal — axis thumbnails follow the axis to the zero line" fontSize={16} />
-      <Axis position="left" baseline>
-        <AxisThumbnail urlKey="thumbnail" />
-      </Axis>
-      <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} diverging />
-    </Chart>
-  );
-};
-
-const HorizontalWithThumbnail = bindWithProps(HorizontalWithThumbnailStory);
-HorizontalWithThumbnail.args = {
-  ...defaultProps,
-};
-
-/** Single-series diverging, vertical — dimension on the bottom axis (baseline/dy flip). Value labels forced outside via `position="end-outside"`. */
-const VerticalStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: divergingConversionRateData, width: 500, height: 500 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Single-series vertical — axis at zero, labels flip opposite each bar" fontSize={16} />
-      <Axis position="bottom" baseline />
-      <Axis position="left" grid labelFormat="percentage" />
-      <Bar {...args} diverging>
-        <BarDirectLabel position="end-outside" format="percentage" />
-      </Bar>
-    </Chart>
-  );
-};
-
-const Vertical = bindWithProps(VerticalStory);
-Vertical.args = {
-  dimension: 'channel',
-  metric: 'changeRate',
-  orientation: 'vertical',
-  colorOverride: 'barColor',
-} satisfies BarProps;
-
-/** Same as `Vertical`, but with an `AxisThumbnail` on the dimension axis instead of a `BarDirectLabel` — thumbnails must move to the zero baseline along with the axis. */
-const VerticalWithThumbnailStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: divergingConversionRateDataWithThumbnails, width: 500, height: 500 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Single-series vertical — axis thumbnails follow the axis to the zero line" fontSize={16} />
-      <Axis position="bottom" baseline>
-        <AxisThumbnail urlKey="thumbnail" />
-      </Axis>
-      <Axis position="left" grid labelFormat="percentage" />
-      <Bar {...args} diverging />
-    </Chart>
-  );
-};
-
-const VerticalWithThumbnail = bindWithProps(VerticalWithThumbnailStory);
-VerticalWithThumbnail.args = {
-  dimension: 'channel',
-  metric: 'changeRate',
-  orientation: 'vertical',
-  colorOverride: 'barColor',
-} satisfies BarProps;
-
-/** `labelFormat="time"` makes a primary+secondary axis pair; diverging flips both rows together via `extraOutwardOffset`. */
-const TimeAxisStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: timeAxisDivergingData, width: 700, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Time axis (labelFormat=time) — primary/secondary rows both move and flip" fontSize={16} />
-      <Axis position="bottom" baseline labelFormat="time" granularity="month" />
-      <Axis position="left" grid labelFormat="percentage" />
-      <Bar {...args} diverging />
-    </Chart>
-  );
-};
-
-const TimeAxis = bindWithProps(TimeAxisStory);
-TimeAxis.args = {
-  dimension: 'day',
-  metric: 'changeRate',
-  orientation: 'vertical',
-  dimensionDataType: 'time',
-} satisfies BarProps;
-
-/** Same as `Horizontal` with long names — checks the interior (data-dependent) axis position doesn't clip long labels. */
-const LongLabelsStory: StoryFn<typeof Bar> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: divergingConversionRateDataLongLabels, width: 700, height: 400 });
-  return (
-    <Chart {...chartProps}>
-      <Title text="Long labels: same data as Horizontal, longer category names" fontSize={16} />
-      <Axis position="left" baseline />
-      <Axis position="bottom" grid labelFormat="percentage" />
-      <Bar {...args} diverging />
-    </Chart>
-  );
-};
-
-const LongLabels = bindWithProps(LongLabelsStory);
-LongLabels.args = {
-  ...defaultProps,
-};
-
-export {
-  Horizontal,
-  HorizontalWithThumbnail,
-  Vertical,
-  VerticalWithThumbnail,
-  TimeAxis,
-  LongLabels,
-};
+export { Diverging };

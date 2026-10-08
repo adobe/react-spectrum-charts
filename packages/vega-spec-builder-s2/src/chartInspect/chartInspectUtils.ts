@@ -21,10 +21,10 @@ import {
   HOVERED_ITEM,
   INTERACTION_MODE,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { getFilteredTableData } from '../data/dataUtils';
-import { getHoverMarkNames } from '../marks/hoverMarkUtils';
+import { getFilteredTableData } from '../data/dataUtils.js';
+import { getHoverMarkNames } from '../marks/hoverMarkUtils.js';
 import {
   AreaSpecOptions,
   BarSpecOptions,
@@ -35,7 +35,7 @@ import {
   LineSpecOptions,
   ScatterSpecOptions,
   VennSpecOptions,
-} from '../types';
+} from '../types/index.js';
 
 type InspectParentOptions =
   | AreaSpecOptions

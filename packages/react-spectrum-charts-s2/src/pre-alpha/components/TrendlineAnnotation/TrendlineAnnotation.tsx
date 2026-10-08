@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { TrendlineAnnotationProps } from '../../../types';
+import { TrendlineAnnotationProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const TrendlineAnnotation: FC<TrendlineAnnotationProps> = ({

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { PartiallyRequired } from '../specUtil.types';
+import { PartiallyRequired } from '../specUtil.types.js';
 
 export interface AxisThumbnailOptions {
   /** The data field key that contains the URL of the thumbnail image. Defaults to 'thumbnail'. */

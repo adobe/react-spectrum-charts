@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Chart } from './Chart';
-import { Line } from './components';
-import usePrefersReducedMotion from './hooks/usePrefersReducedMotion';
-import { render } from './test-utils';
-import { RscChartProps } from './types';
+import { Chart } from './Chart.js';
+import { Line } from './components/index.js';
+import usePrefersReducedMotion from './hooks/usePrefersReducedMotion.js';
+import { render } from './test-utils/index.js';
+import { RscChartProps } from './types/index.js';
 
 const mockRscChart = jest.fn((_props: RscChartProps) => null);
 

@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { AxisThumbnailProps } from '../../types';
+import { AxisThumbnailProps } from '../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 const AxisThumbnail: FC<AxisThumbnailProps> = ({ urlKey }) => {

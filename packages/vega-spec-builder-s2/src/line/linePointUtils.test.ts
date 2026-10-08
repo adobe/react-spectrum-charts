@@ -18,9 +18,9 @@ import {
   FADE_FACTOR,
   HOVERED_ITEM,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils';
+import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
 import {
   getHighlightBackgroundPoint,
   getHighlightPoint,
@@ -28,8 +28,8 @@ import {
   getLineStaticPointBackground,
   getSecondaryHighlightPoint,
   getSelectionPoint,
-} from './linePointUtils';
-import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils';
+} from './linePointUtils.js';
+import { defaultLineMarkOptions, defaultLineOptions } from './lineTestUtils.js';
 
 describe('getHighlightPoint()', () => {
   test('should return symbol mark with correct name and description', () => {

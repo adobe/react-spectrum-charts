@@ -10,11 +10,11 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './chart.types';
-export * from './legend.types';
-export * from './title.types';
-export * from './util.types';
+export * from './chart.types.js';
+export * from './legend.types.js';
+export * from './title.types.js';
+export * from './util.types.js';
 
-export * from './axis';
-export * from './dialogs';
-export * from './marks';
+export * from './axis/index.js';
+export * from './dialogs/index.js';
+export * from './marks/index.js';

@@ -12,7 +12,7 @@
 import { renderHook } from '@testing-library/react';
 import { buildSpec } from '@spectrum-charts/vega-spec-builder-s2';
 
-import useSpec from './useSpec';
+import useSpec from './useSpec.js';
 
 jest.mock('@spectrum-charts/vega-spec-builder-s2', () => ({
 	buildSpec: jest.fn(() => ({ $schema: 'mocked-spec' })),

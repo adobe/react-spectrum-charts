@@ -24,9 +24,9 @@ import {
   PADDING_RATIO,
   STACK_ID,
   TRELLIS_PADDING,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { BarSpecOptions } from '../types';
+import { BarSpecOptions } from '../types/index.js';
 
 export const defaultBarOptions: BarSpecOptions = {
   barAnnotations: [],

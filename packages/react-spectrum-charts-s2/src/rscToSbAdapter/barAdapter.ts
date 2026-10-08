@@ -11,8 +11,8 @@
  */
 import { BarOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { BarProps } from '../types';
-import { ChildrenToOptions } from './childOptions.types';
+import { BarProps } from '../types/index.js';
+import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getBarOptions = (
   { children, onClick, ...barProps }: BarProps,

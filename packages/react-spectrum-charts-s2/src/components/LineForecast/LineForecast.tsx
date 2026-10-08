@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { LineForecastProps } from '../../types';
+import { LineForecastProps } from '../../types/index.js';
 
 const LineForecast: FC<LineForecastProps> = ({ metric, start, label }: LineForecastProps) => {
   return null;

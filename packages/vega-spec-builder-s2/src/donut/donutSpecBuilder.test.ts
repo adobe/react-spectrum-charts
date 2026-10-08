@@ -13,22 +13,20 @@ import { View, expressionFunction, parse } from 'vega';
 
 import {
   COLOR_SCALE,
-  DONUT_ADVANCED_LABEL_RING_GAP,
   DONUT_LABEL_COLLISION_GAP,
-  DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO,
-  DONUT_LABEL_RING_GAP,
+  DONUT_LABEL_MIN_SPACE_RATIO,
   FILTERED_TABLE,
   HOVERED_ITEM,
   MARK_ID,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { buildSpec } from '../chartSpecBuilder';
-import { getExpressionFunctions } from '../expressionFunctions';
-import { defaultSignals } from '../specTestUtils';
-import { initializeSpec } from '../specUtils';
-import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder';
-import { defaultDonutOptions } from './donutTestUtils';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
+import { defaultSignals } from '../specTestUtils.js';
+import { initializeSpec } from '../specUtils.js';
+import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder.js';
+import { defaultDonutOptions } from './donutTestUtils.js';
 
 describe('addData', () => {
   test('positions direct-label data coordinates from the fixed circle start', async () => {
@@ -108,8 +106,9 @@ describe('addData', () => {
     labels.forEach((datum) => {
       expect(datum[`${prefix}_labelY`]).toBeCloseTo(datum[`${prefix}_idealY`]);
       expect(datum[`${prefix}_labelHalfWidth`]).toBeLessThanOrEqual(182);
-      const ringGap = _mode === 'advanced' ? DONUT_ADVANCED_LABEL_RING_GAP : DONUT_LABEL_RING_GAP;
-      const outerRadius = (364 / 2 - 2 - ringGap) / (1 + DONUT_LABEL_MAX_ANCHOR_OFFSET_RATIO);
+      // a 364px chart lands in the L tier, which uses a 10px label ring gap
+      const ringGap = 10;
+      const outerRadius = (364 / 2 - 2 - ringGap) / (1 + DONUT_LABEL_MIN_SPACE_RATIO);
       const innerX =
         datum[`${prefix}_hemisphere`] === 'right'
           ? datum[`${prefix}_leftX`] - 182
@@ -321,7 +320,7 @@ describe('addSignals()', () => {
       ...defaultDonutOptions,
       chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
     });
-    expect(signals).toHaveLength(defaultSignals.length + 3);
+    expect(signals).toHaveLength(defaultSignals.length + 4);
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
@@ -351,7 +350,9 @@ describe('addSignals()', () => {
   test('should add rich SegmentLabel font size signals when swatch is enabled', () => {
     const baselineSignals = addSignals(defaultSignals, defaultDonutOptions);
     const signals = addSignals(defaultSignals, { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(signals).toHaveLength(baselineSignals.length + 4);
+    expect(signals).toHaveLength(baselineSignals.length + 5);
+    expect(signals.find((signal) => signal.name === 'testName_sizeTier')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'testName_labelRingGap')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelNameFontSize')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelValueFontSize')).toBeDefined();
     expect(signals.find((signal) => signal.name === 'testName_richSegmentLabelDetailFontSize')).toBeDefined();
@@ -386,18 +387,15 @@ describe('addMarks()', () => {
 describe('donutSpecBuilder', () => {
   test('should add scales correctly', () => {
     const scales = addScales([], defaultDonutOptions);
-    expect(scales).toHaveLength(3);
+    expect(scales).toHaveLength(2);
     expect(scales[0]).toHaveProperty('name', COLOR_SCALE);
-    expect(scales[1]).toHaveProperty('name', 'testName_ringWidthScale');
-    expect(scales[2]).toHaveProperty('name', 'testName_sliceGapScale');
+    expect(scales[1]).toHaveProperty('name', 'testName_sizeTierScale');
   });
 
-  test('should add rich SegmentLabel font size scales when swatch is enabled', () => {
+  test('should only add the size tier scale when segment labels are present', () => {
     const scales = addScales([], { ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(scales).toHaveLength(6);
-    expect(scales[3]).toHaveProperty('name', 'testName_richSegmentLabelNameFontSizeScale');
-    expect(scales[4]).toHaveProperty('name', 'testName_richSegmentLabelValueFontSizeScale');
-    expect(scales[5]).toHaveProperty('name', 'testName_richSegmentLabelDetailFontSizeScale');
+    expect(scales).toHaveLength(2);
+    expect(scales[1]).toHaveProperty('name', 'testName_sizeTierScale');
   });
 });
 

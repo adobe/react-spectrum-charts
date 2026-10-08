@@ -10,6 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-export * from './chartActionBar.types';
-export * from './chartInspect.types';
-export * from './chartPopover.types';
+export * from './chartActionBar.types.js';
+export * from './chartInspect.types.js';
+export * from './chartPopover.types.js';

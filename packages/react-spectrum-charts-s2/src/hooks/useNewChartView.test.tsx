@@ -13,14 +13,14 @@ import { renderHook } from '@testing-library/react';
 import { View } from 'vega';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
-import { useChartContext } from '../context/RscChartContext';
-import { RscChartProps } from '../types';
-import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails';
-import { UseLegendProps } from './useLegend';
-import useMarkMouseInputDetails from './useMarkMouseInputDetails';
-import useMarkOnClickDetails from './useMarkOnClickDetails';
-import useNewChartView from './useNewChartView';
-import usePopovers from './usePopovers';
+import { useChartContext } from '../context/RscChartContext.js';
+import { RscChartProps } from '../types/index.js';
+import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails.js';
+import { UseLegendProps } from './useLegend.js';
+import useMarkMouseInputDetails from './useMarkMouseInputDetails.js';
+import useMarkOnClickDetails from './useMarkOnClickDetails.js';
+import useNewChartView from './useNewChartView.js';
+import usePopovers from './usePopovers.js';
 
 jest.mock('../context/RscChartContext', () => ({
   useChartContext: jest.fn(),

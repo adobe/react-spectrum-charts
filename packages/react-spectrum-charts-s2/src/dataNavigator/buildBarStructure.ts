@@ -12,11 +12,11 @@
 import dataNavigator, { NodeObject, Structure, StructureOptions } from 'data-navigator';
 import { parseColor } from 'react-stately';
 
-import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/constants';
+import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/core-s2/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules';
-import { DEFAULT_DATA_NAVIGATOR_LOCALE, getDataNavigatorIntl } from './dataNavigatorIntl';
+import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules.js';
+import { DEFAULT_DATA_NAVIGATOR_LOCALE, getDataNavigatorIntl } from './dataNavigatorIntl.js';
 
 export interface BuildBarStructureOptions {
   /** The chart data (plain objects). */

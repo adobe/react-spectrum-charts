@@ -72,12 +72,12 @@
       "lines": "slice stroke-width tests"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/donutVariationData.ts",
+      "file": "packages/react-spectrum-charts-s2/src/dev/Donut/Dashboards/donutVariationData.ts",
       "change": "Retain the extreme dominant-segment fixture, document its expected clamped-halo behavior, and add a roughly 80% dominant fixture for less extreme visual verification.",
       "lines": "dominant variation fixtures and selector descriptions"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/donutVariationData.test.ts",
+      "file": "packages/react-spectrum-charts-s2/src/dev/Donut/Dashboards/donutVariationData.test.ts",
       "change": "Verify the moderate dominant fixture remains available and retains its intended approximate 80% proportion.",
       "lines": "Donut variation dataset tests"
     }

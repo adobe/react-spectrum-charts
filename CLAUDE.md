@@ -12,10 +12,11 @@ packages/
   vega-spec-builder/           # Vega spec generation logic (@spectrum-charts/vega-spec-builder)
   vega-spec-builder-s2/        # Spectrum 2 variant of the spec builder
   react-spectrum-charts-s2/    # Spectrum 2 React component variant
-  constants/                   # Shared string constants (signal names, data field names, defaults)
-  themes/                      # Color schemes and runtime token resolution
-  utils/                       # Shared utility functions
-  locales/                     # i18n strings
+  core-s2/                     # S2-only constants, locales, tokens, utils (subpath exports)
+  constants/                   # S1 shared string constants (signal names, data field names, defaults)
+  themes/                      # S1 color schemes and runtime token resolution
+  utils/                       # S1 shared utility functions
+  locales/                     # S1 i18n strings
   dev-tools/                   # Internal contributor CLI tools (not published)
   mcp/                         # MCP server
 ```
@@ -88,7 +89,7 @@ Each of those four functions is exported and tested independently.
 
 ---
 
-## Key Constants (`packages/constants/constants.ts`)
+## Key Constants (`packages/constants/constants.ts`; S2 copy in `packages/core-s2/src/constants/constants.ts`)
 
 | Constant | Value | Purpose |
 |---|---|---|
@@ -202,6 +203,9 @@ yarn start
 # Storybook S2 variant (port 6010)
 yarn storybook:s2
 
+# Storybook S2 dev variant (port 6011)
+yarn storybook:s2:dev
+
 # Build all packages (respects dependency order)
 yarn build
 
@@ -245,14 +249,26 @@ WithMyFeature.args = {
 
 ## S2 Storybook Directory Structure
 
-S2 stories live in `packages/react-spectrum-charts-s2/src/stories/<ComponentName>/`:
+S2 has two Storybooks:
 
-- `<ComponentName>Examples.story.tsx` — Figma design equivalents only. These match specific Figma frames and use `title: 'React Spectrum Charts 2/<ComponentName>/Examples'`.
-- `Features/` — Granular per-prop and test-case stories. Title prefix: `'React Spectrum Charts 2/<ComponentName>/Features'`.
-  - **Single-story files** (one named export): Storybook hoists them flat into the sidebar — no folder node is created. Use for simple prop showcases (e.g. `LineType.story.tsx`).
-  - **Multi-story groups** (two or more related stories): Place in a named subdirectory with a matching title segment. Example: `Features/Tooltip/LineTooltip.story.tsx` with `title: 'React Spectrum Charts 2/Line/Features/Tooltip'`. This creates a `Tooltip` folder node in the sidebar.
-  - Never put two files with the same `title` and overlapping export names — Storybook will throw a duplicate story ID error.
-- **Pre-alpha components** (any mark exported from `pre-alpha/components/index.ts` — currently Area, Bullet, Combo, Donut, DonutSummary, Scatter, ScatterAnnotation, ScatterPath, SegmentLabel, Trendline, TrendlineAnnotation) get an extra `Pre-Alpha` segment right after `React Spectrum Charts 2/`, e.g. `'React Spectrum Charts 2/Pre-Alpha/Bullet/Features'`. This groups every pre-alpha mark's stories under one `Pre-Alpha` sidebar folder, separate from stable S2 components (Line, Bar, Legend, Axis) which keep the plain `'React Spectrum Charts 2/<ComponentName>/...'` prefix.
+- **Demo** (`yarn storybook:s2`, build `yarn build:storybook:s2`) loads only `packages/react-spectrum-charts-s2/src/stories/**`. Demo stories should be polished public examples: realistic data, no debug UI, no `UNSAFE_`/`unstable_` APIs, limited controls, and no duplicate variations.
+- **Dev** (`yarn storybook:s2:dev`, build `yarn build:storybook:s2:dev`) loads both `src/stories/**` and `src/dev/**`. Dev-only stories live in `packages/react-spectrum-charts-s2/src/dev/<Chart>/<Category>/...`.
+
+Demo stories in `src/stories/<ComponentName>/` use:
+
+- `<ComponentName>Examples.story.tsx` — realistic app examples or Figma design equivalents with `title: 'React Spectrum Charts 2/<ComponentName>/Examples'`.
+- `Features/` — one representative story per feature. Title prefix: `'React Spectrum Charts 2/<ComponentName>/Features'`.
+- **Pre-alpha components** keep the `React Spectrum Charts 2/Pre-Alpha/<ComponentName>/...` title prefix.
+
+The dev Storybook is the demo plus extra per-chart folders (`src/dev/<Chart>/<Folder>/`, titled `React Spectrum Charts 2/<Chart>/<Folder>/...`):
+
+- `Playground` — one story per chart/component exposing broad controls.
+- `Performance` — animation, large-data, timing, and stress stories.
+- `Dashboards` — variation dashboards and other internal review dashboards.
+- `Regressions` — real bug reproductions only; each story sets `parameters.regression = { description, pr }` (one-sentence bug description + fixing PR number), which the dev preview renders above the story; add it in the fix PR.
+- `Coverage` — test-specific and feature-coverage stories (stories used by tests, edge cases, former demo variants, size/stress checks).
+
+Never put two files with the same `title` and overlapping export names — Storybook will throw a duplicate story ID error.
 
 ---
 
@@ -334,7 +350,9 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
 
-When fixing a bug or refactoring behavior in an s1 package file, always check whether the corresponding s2 file needs the same change. The packages mirror each other structurally but s2 has no Venn support, no `s2` prop, and uses s2-specific imports (`vega-spec-builder-s2`, `react-spectrum-charts-s2`). A fix in one without the other leaves the packages inconsistent.
+When fixing a bug or refactoring behavior in an s1 package file, always check whether the corresponding s2 file needs the same change. The packages mirror each other structurally but s2 has no Venn support, no `s2` prop, and uses s2-specific imports (`vega-spec-builder-s2`, `react-spectrum-charts-s2`, and `@spectrum-charts/core-s2/*` instead of the shared `constants`/`themes`/`utils`/`locales` packages). A fix in one without the other leaves the packages inconsistent.
+
+The S2 packages (`core-s2`, `schemas`, `vega-spec-builder-s2`, `react-spectrum-charts-s2`) are ESM-only (`"type": "module"`), so relative imports must be fully specified: `./foo.js` for `foo.ts`/`foo.tsx`, `./dir/index.js` for a directory, and `with { type: 'json' }` on JSON imports. TypeScript (NodeNext) and ESLint enforce this; run `node scripts/addRelativeImportExtensions.mjs <package dir>...` to fix files in bulk (for example after merging main). Run `yarn check:packages` after `yarn build:s2` to validate the published exports and types. S2 packages must not import S1 packages (`@spectrum-charts/constants`, `themes`, `utils`, `locales`, `vega-spec-builder`, `@adobe/react-spectrum-charts`); use `@spectrum-charts/core-s2/{constants,tokens,utils,locales}`. ESLint enforces this.
 
 ---
 
@@ -358,8 +376,8 @@ Before writing any code, always:
 
 Chart-level props (on `<Chart>` itself, not a mark) follow a different file path than mark props:
 
-1. **`packages/constants/constants.ts`** — add the type and any associated runtime constants (breakpoints, lookup maps)
-2. **`vega-spec-builder/src/types/chartSpec.types.ts`** and **`vega-spec-builder-s2/src/types/chartSpec.types.ts`** — add to `ChartOptions` (import the type from `@spectrum-charts/constants`)
+1. **`packages/constants/constants.ts`** (S1) and/or **`packages/core-s2/src/constants/constants.ts`** (S2) — add the type and any associated runtime constants (breakpoints, lookup maps)
+2. **`vega-spec-builder/src/types/chartSpec.types.ts`** and **`vega-spec-builder-s2/src/types/chartSpec.types.ts`** — add to `ChartOptions` (import the type from `@spectrum-charts/constants` in S1, `@spectrum-charts/core-s2/constants` in S2)
 3. **`react-spectrum-charts-s2/src/chartUtils.ts`** — add helper functions and update `applyChartPropsDefaults` if there's a default
 4. **`react-spectrum-charts-s2/src/Chart.tsx`** — compute the effective value (explicit prop vs. auto-derived), override in `rscChartProps`
 5. **`react-spectrum-charts-s2/src/RscChart.tsx`** — destructure and pass to `useSpec`

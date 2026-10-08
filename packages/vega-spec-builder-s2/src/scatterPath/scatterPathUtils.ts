@@ -20,13 +20,13 @@ import {
   SELECTED_ITEM,
   SELECTED_SERIES,
   SYMBOL_PATH_WIDTH_SCALE,
-} from '@spectrum-charts/constants';
-import { getS2ColorValue } from '@spectrum-charts/themes';
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getXProductionRule } from '../marks/markUtils';
-import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder';
-import { getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '../specUtils';
-import { LineWidthFacet, ScatterPathOptions, ScatterPathSpecOptions, ScatterSpecOptions } from '../types';
+import { getXProductionRule } from '../marks/markUtils.js';
+import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
+import { getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '../specUtils.js';
+import { LineWidthFacet, ScatterPathOptions, ScatterPathSpecOptions, ScatterSpecOptions } from '../types/index.js';
 
 /**
  * Gets the path spec options, applying defaults.

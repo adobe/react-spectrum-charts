@@ -13,8 +13,8 @@ import { JSXElementConstructor, ReactElement } from 'react';
 
 import { AreaOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartInspectElement, ChartPopoverElement } from '../dialogs';
-import { Children } from '../util.types';
+import { ChartInspectElement, ChartPopoverElement } from '../dialogs/index.js';
+import { Children } from '../util.types.js';
 
 type AreaChildElement = ChartInspectElement | ChartPopoverElement;
 

@@ -18,13 +18,13 @@ import {
   GROUP_ID,
   HIGHLIGHTED_GROUP,
   HOVERED_ITEM,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { defaultBarOptions } from '../bar/barTestUtils';
-import { defaultScatterOptions } from '../scatter/scatterTestUtils';
-import { defaultSignals } from '../specTestUtils';
-import { baseData } from '../specUtils';
-import { BarSpecOptions, ChartInspectOptions, LineSpecOptions } from '../types';
+import { defaultBarOptions } from '../bar/barTestUtils.js';
+import { defaultScatterOptions } from '../scatter/scatterTestUtils.js';
+import { defaultSignals } from '../specTestUtils.js';
+import { baseData } from '../specUtils.js';
+import { BarSpecOptions, ChartInspectOptions, LineSpecOptions } from '../types/index.js';
 import {
   addHoverdDimenstionAreaOpacityRules,
   addHoveredItemOpacityRules,
@@ -33,7 +33,7 @@ import {
   applyInspectPropDefaults,
   getInspects,
   isHighlightedByGroup,
-} from './chartInspectUtils';
+} from './chartInspectUtils.js';
 
 const getDefaultMarkOptions = (inspectOptions: ChartInspectOptions = {}): BarSpecOptions => ({
   ...defaultBarOptions,

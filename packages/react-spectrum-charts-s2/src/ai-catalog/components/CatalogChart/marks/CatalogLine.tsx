@@ -13,7 +13,7 @@ import { ReactElement } from 'react';
 
 import { LineDecorationInput, LineInput } from '@spectrum-charts/schemas';
 
-import { Line, LineDirectLabel } from '../../../../components';
+import { Line, LineDirectLabel } from '../../../../components/index.js';
 
 function renderLineDecoration(decoration: LineDecorationInput, key: number): ReactElement | null {
   if (decoration.component === 'LineDirectLabel') {

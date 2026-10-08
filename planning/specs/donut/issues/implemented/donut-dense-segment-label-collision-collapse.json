@@ -89,12 +89,12 @@
       "lines": "dense Direct and Advanced runtime tests"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/donutVariationData.ts",
+      "file": "packages/react-spectrum-charts-s2/src/dev/Donut/Dashboards/donutVariationData.ts",
       "change": "Provide numeric and semantic dense datasets for visual verification of label selection and spacing.",
       "lines": "dense variation fixtures"
     },
     {
-      "file": "packages/react-spectrum-charts-s2/src/stories/Donut/Variations/donutVariationData.test.ts",
+      "file": "packages/react-spectrum-charts-s2/src/dev/Donut/Dashboards/donutVariationData.test.ts",
       "change": "Verify the dense variation fixtures remain available through the dataset selector.",
       "lines": "Donut variation dataset tests"
     }

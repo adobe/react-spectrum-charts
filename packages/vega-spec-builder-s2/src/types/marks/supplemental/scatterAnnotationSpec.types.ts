@@ -11,8 +11,8 @@
  */
 import { LabelAnchor } from 'vega';
 
-import { PartiallyRequired } from '../../specUtil.types';
-import { ScatterSpecOptions } from '../scatterSpec.types';
+import { PartiallyRequired } from '../../specUtil.types.js';
+import { ScatterSpecOptions } from '../scatterSpec.types.js';
 
 export interface ScatterAnnotationOptions {
   /** Specifies where to position the annotation relative to the data point. When an array is provided, each position is tried in order until one fits within the chart bounds and doesn't overlap with other annotations or points. If no position fits, the annotation is not displayed. */

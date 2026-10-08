@@ -11,9 +11,9 @@
  */
 import { createElement } from 'react';
 
-import { Bar, Line } from '../components';
-import { childrenToOptions } from './childrenAdapter';
-import { getComboOptions } from './comboAdapter';
+import { Bar, Line } from '../components/index.js';
+import { childrenToOptions } from './childrenAdapter.js';
+import { getComboOptions } from './comboAdapter.js';
 
 describe('getComboOptions()', () => {
   it('should return all basic options', () => {

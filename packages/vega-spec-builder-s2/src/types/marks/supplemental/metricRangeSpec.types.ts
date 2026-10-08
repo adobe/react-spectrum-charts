@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ChartInspectOptions } from '../../dialogs/chartInspectSpec.types';
-import { LineType, LineWidth, PartiallyRequired } from '../../specUtil.types';
-import { SpectrumColor } from '../../spectrumVizColor.types';
+import { ChartInspectOptions } from '../../dialogs/chartInspectSpec.types.js';
+import { LineType, LineWidth, PartiallyRequired } from '../../specUtil.types.js';
+import { SpectrumColor } from '../../spectrumVizColor.types.js';
 
 export interface MetricRangeOptions {
   /** The color of the metric line and range. If undefined, will default to the color of the series that it represents. */

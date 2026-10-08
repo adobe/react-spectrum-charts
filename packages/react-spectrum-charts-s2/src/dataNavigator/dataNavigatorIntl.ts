@@ -11,7 +11,7 @@
  */
 import { LocalizedStringDictionary, LocalizedStringFormatter } from '@internationalized/string';
 
-import { DataNavigatorMessageKey, dataNavigatorStrings } from './intl/compiled';
+import { DataNavigatorMessageKey, dataNavigatorStrings } from './intl/compiled/index.js';
 
 export const DEFAULT_DATA_NAVIGATOR_LOCALE = 'en-US';
 

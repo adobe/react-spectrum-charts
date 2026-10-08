@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/constants';
+import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartInspect } from '../../../components';
+import { ChartInspect } from '../../../components/index.js';
 import {
   allElementsHaveAttributeValue,
   findAllMarksByGroupName,
@@ -24,9 +24,9 @@ import {
   unhoverNthElement,
   waitFor,
   within,
-} from '../../../test-utils';
+} from '../../../test-utils/index.js';
 import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { DodgedBarChart, LineChart, StackedBarChart } from './ChartInspect.story';
+import { Basic, HighlightBy, OnLine } from './ChartInspect.story.js';
 
 describe('ChartInspect', () => {
   // ChartInspect is not a real React component. This test provides coverage for sonarqube.
@@ -35,7 +35,7 @@ describe('ChartInspect', () => {
   });
 
   test('StackedBarChart renders properly', async () => {
-    render(<StackedBarChart {...StackedBarChart.args} />);
+    render(<Basic {...Basic.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -53,7 +53,7 @@ describe('ChartInspect', () => {
   });
 
   test('Line renders properly and hover works as expected', async () => {
-    render(<LineChart {...LineChart.args} />);
+    render(<OnLine {...OnLine.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -75,7 +75,7 @@ describe('ChartInspect', () => {
   });
 
   test('Dodged bar inspect opens on hover and bar is highlighted correctly', async () => {
-    render(<DodgedBarChart {...DodgedBarChart.args} />);
+    render(<HighlightBy {...HighlightBy.args} highlightBy="item" />);
 
     const chart = await findChart();
     expect(chart).toBeInTheDocument();

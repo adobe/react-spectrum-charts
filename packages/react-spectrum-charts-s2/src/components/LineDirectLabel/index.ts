@@ -10,4 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-export { LineDirectLabel } from './LineDirectLabel';
+export { LineDirectLabel } from './LineDirectLabel.js';

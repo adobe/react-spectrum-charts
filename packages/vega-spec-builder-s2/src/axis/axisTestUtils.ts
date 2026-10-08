@@ -17,9 +17,9 @@ import {
   DEFAULT_LABEL_ALIGN,
   DEFAULT_LABEL_FONT_WEIGHT,
   DEFAULT_LABEL_ORIENTATION,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { AxisSpecOptions } from '../types';
+import { AxisSpecOptions } from '../types/index.js';
 
 export const defaultXBaselineMark: Mark = {
   name: 'xBaseline',

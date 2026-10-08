@@ -20,7 +20,7 @@ import {
   HOVERED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   getBorderStrokeEncodings,
@@ -28,7 +28,7 @@ import {
   getCursor,
   getInspectEncoding,
   isInteractive,
-} from '../marks/markUtils';
+} from '../marks/markUtils.js';
 import {
   ChartPopoverOptions,
   ChartInspectOptions,
@@ -36,7 +36,7 @@ import {
   ColorScheme,
   HighlightedItem,
   ScaleType,
-} from '../types';
+} from '../types/index.js';
 
 export interface AreaMarkOptions {
   color: ColorFacet;

@@ -14,9 +14,9 @@ import { FC, ReactElement } from 'react';
 
 import { AxisInput, MarkInput, parseChartRequest } from '@spectrum-charts/schemas';
 
-import { Chart } from '../../../Chart';
-import { Axis } from '../../../components';
-import { renderCatalogBar, renderCatalogLine } from './marks';
+import { Chart } from '../../../Chart.js';
+import { Axis } from '../../../components/index.js';
+import { renderCatalogBar, renderCatalogLine } from './marks/index.js';
 
 export interface CatalogChartProps {
   /** Raw agent-supplied payload, validated against @spectrum-charts/schemas' ChartSchema. */

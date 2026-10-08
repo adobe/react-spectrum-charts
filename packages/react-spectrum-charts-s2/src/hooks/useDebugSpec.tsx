@@ -15,7 +15,7 @@ import { Config, Spec } from 'vega';
 
 import { mergeValuesIntoData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { debugLog } from '../utils';
+import { debugLog } from '../utils/index.js';
 
 export const useDebugSpec = (
   debug: boolean,

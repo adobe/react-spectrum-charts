@@ -12,7 +12,7 @@
 import { NodeObject } from 'data-navigator';
 import { View } from 'vega';
 
-import { applyHoverParitySignals, findFocusedStackRow } from './barHoverParity';
+import { applyHoverParitySignals, findFocusedStackRow } from './barHoverParity.js';
 
 const rows = [
   { browser: 'Chrome', os: 'Windows', value: 18000, rscMarkId: 0 },

@@ -11,9 +11,9 @@
  */
 import { NumericValueRef, ProductionRule, Signal } from 'vega';
 
-import { DIMENSION_HOVER_AREA, HOVERED_ITEM, FADE_FACTOR } from '@spectrum-charts/constants';
+import { DIMENSION_HOVER_AREA, HOVERED_ITEM, FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
 
-import { InteractiveMark } from '../types';
+import { InteractiveMark } from '../types/index.js';
 
 type MatchedInteractiveMark = Required<InteractiveMark>;
 

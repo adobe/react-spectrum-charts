@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@spectrum-charts/constants';
+import { DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 
 import {
   getAggregateTransform,
@@ -18,8 +18,8 @@ import {
   getTrendlineDimensionRangeTransforms,
   getTrendlineParamFormulaTransforms,
   getWindowTransform,
-} from './trendlineDataTransformUtils';
-import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils';
+} from './trendlineDataTransformUtils.js';
+import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils.js';
 
 describe('getAggregateTransform()', () => {
   test('should return the correct method', () => {

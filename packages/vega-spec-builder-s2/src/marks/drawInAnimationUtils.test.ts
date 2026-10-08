@@ -19,10 +19,10 @@ import {
   FILTERED_TABLE,
   LAST_RSC_SERIES_ID,
   SERIES_ID,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
-import { defaultLineMarkOptions, defaultLineOptions } from '../line/lineTestUtils';
-import { LineSpecOptions } from '../types';
+import { defaultLineMarkOptions, defaultLineOptions } from '../line/lineTestUtils.js';
+import { LineSpecOptions } from '../types/index.js';
 import {
   addDrawInClockSignals,
   addLineDrawInAnimationSignals,
@@ -35,7 +35,7 @@ import {
   getLineDrawInSortField,
   getLineDrawInXEncoding,
   getLineDrawInYEncoding,
-} from './drawInAnimationUtils';
+} from './drawInAnimationUtils.js';
 
 describe('getLineDrawInSortField()', () => {
   test('returns the numeric-ms field for time scales', () => {

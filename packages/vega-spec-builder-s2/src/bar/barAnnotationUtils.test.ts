@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ANNOTATION_PADDING, FILTERED_TABLE } from '@spectrum-charts/constants';
+import { ANNOTATION_PADDING, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
 import {
   getAnnotationMarks,
@@ -18,8 +18,8 @@ import {
   getAnnotationWidth,
   getAnnotationXEncode,
   getMinBandwidth,
-} from './barAnnotationUtils';
-import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils';
+} from './barAnnotationUtils.js';
+import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils.js';
 
 describe('getAnnotationMarks()', () => {
   test('should retrun an empty array if there is no annotation on the bar', () => {

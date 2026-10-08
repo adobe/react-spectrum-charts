@@ -11,12 +11,12 @@
  */
 import { Scale } from 'vega';
 
-import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@spectrum-charts/constants';
+import { FILTERED_TABLE, TABLE, TRELLIS_PADDING } from '@spectrum-charts/core-s2/constants';
 
-import { BarSpecOptions } from '../types';
-import { defaultBarOptions } from './barTestUtils';
-import { getTrellisProperties, isTrellised } from './trellisPropertyUtils';
-import { getTrellisGroupMark, getTrellisedEncodeEntries } from './trellisedBarUtils';
+import { BarSpecOptions } from '../types/index.js';
+import { defaultBarOptions } from './barTestUtils.js';
+import { getTrellisProperties, isTrellised } from './trellisPropertyUtils.js';
+import { getTrellisGroupMark, getTrellisedEncodeEntries } from './trellisedBarUtils.js';
 
 const defaultTrellisOptions: BarSpecOptions = { ...defaultBarOptions, trellis: 'trellisProperty' };
 const defaultRepeatedScale: Scale = { name: 'xLinear', type: 'linear', domain: { data: TABLE, field: 'x' } };

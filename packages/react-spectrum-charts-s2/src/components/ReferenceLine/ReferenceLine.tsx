@@ -13,7 +13,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { ReferenceLineProps } from '../../types';
+import { ReferenceLineProps } from '../../types/index.js';
 
 const ReferenceLine: FC<ReferenceLineProps> = ({ value }) => {
   return null;

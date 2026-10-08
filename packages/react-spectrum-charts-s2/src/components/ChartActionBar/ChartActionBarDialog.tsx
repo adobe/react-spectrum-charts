@@ -22,12 +22,12 @@ import {
 } from 'react';
 
 import { ActionButton, Popover } from '@react-spectrum/s2';
-import { COMPONENT_NAME } from '@spectrum-charts/constants';
+import { COMPONENT_NAME } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { useChartContext } from '../../context/RscChartContext';
-import type { ActionBarDetail } from '../../hooks/useActionBars';
-import { clearHoverSignals, setSelectedSignals } from '../../utils';
+import { useChartContext } from '../../context/RscChartContext.js';
+import type { ActionBarDetail } from '../../hooks/useActionBars.js';
+import { clearHoverSignals, setSelectedSignals } from '../../utils/index.js';
 
 interface ChartActionBarDialogProps {
   actionBar: ActionBarDetail;
@@ -90,8 +90,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
     }
   }, [chartView, idKey, onClearSelection, selectedData, selectedDataName, setIsPopoverOpen, specSignalNames]);
 
-  const allActions =
-    renderDatum && renderDatum[COMPONENT_NAME] === name ? (children?.(renderDatum, closeActionBar) ?? []) : [];
+  const allActions = renderDatum?.[COMPONENT_NAME] === name ? (children?.(renderDatum, closeActionBar) ?? []) : [];
   const visibleActions = allActions.slice(0, visibleCount);
   const overflowActions = allActions.slice(visibleCount);
 

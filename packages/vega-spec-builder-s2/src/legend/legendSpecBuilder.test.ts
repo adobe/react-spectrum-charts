@@ -23,7 +23,7 @@ import {
   LINEAR_COLOR_SCALE,
   SERIES_ID,
   TABLE,
-} from '@spectrum-charts/constants';
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   defaultChartSizeFontSizeSignal,
@@ -38,11 +38,11 @@ import {
   defaultSelectedItemSignal,
   defaultSelectedSeriesSignal,
   defaultSignals,
-} from '../specTestUtils';
-import { baseData } from '../specUtils';
-import { ScSpec } from '../types';
-import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder';
-import { defaultLegendOptions, opacityEncoding } from './legendTestUtils';
+} from '../specTestUtils.js';
+import { baseData } from '../specUtils.js';
+import { ScSpec } from '../types/index.js';
+import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder.js';
+import { defaultLegendOptions, opacityEncoding } from './legendTestUtils.js';
 
 const defaultSpec: ScSpec = {
   signals: defaultSignals,

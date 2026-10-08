@@ -11,7 +11,7 @@
  */
 import { ChartPopoverOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartPopoverProps } from '../types';
+import { ChartPopoverProps } from '../types/index.js';
 
 export const getChartPopoverOptions = ({
   children: _,

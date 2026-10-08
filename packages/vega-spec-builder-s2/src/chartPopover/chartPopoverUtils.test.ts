@@ -11,11 +11,11 @@
  */
 import { Data } from 'vega';
 
-import { defaultBarOptions } from '../bar/barTestUtils';
-import { defaultLineOptions } from '../line/lineTestUtils';
-import { baseData } from '../specUtils';
-import { BarSpecOptions, ChartPopoverOptions } from '../types';
-import { addPopoverData, applyPopoverPropDefaults, getPopovers } from './chartPopoverUtils';
+import { defaultBarOptions } from '../bar/barTestUtils.js';
+import { defaultLineOptions } from '../line/lineTestUtils.js';
+import { baseData } from '../specUtils.js';
+import { BarSpecOptions, ChartPopoverOptions } from '../types/index.js';
+import { addPopoverData, applyPopoverPropDefaults, getPopovers } from './chartPopoverUtils.js';
 
 const getDefautltMarkOptions = (popoverOptions: ChartPopoverOptions = {}): BarSpecOptions => ({
   ...defaultBarOptions,

@@ -9,11 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Combo } from '../../pre-alpha/components/Combo';
-import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '../../test-utils';
-import { Basic } from './Features/ComboBasic.story';
-import { DualAxis } from './Features/DualAxis/ComboDualAxis.story';
-import { Inspect } from './Features/Inspect/ComboInspect.story';
+import { Combo } from '../../pre-alpha/components/Combo/index.js';
+import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '../../test-utils/index.js';
+import { Basic, ChartInspect, MetricAxis } from './Features/ComboFeatures.story.js';
 
 describe('Combo', () => {
   // Combo is not a real React component. This test just provides test coverage for sonarqube
@@ -33,8 +31,8 @@ describe('Combo', () => {
     expect(lines.length).toEqual(1);
   });
 
-  test('DualAxis renders each mark against its own named axis', async () => {
-    render(<DualAxis {...DualAxis.args} />);
+  test('MetricAxis renders each mark against its own named axis', async () => {
+    render(<MetricAxis {...MetricAxis.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 
@@ -45,8 +43,8 @@ describe('Combo', () => {
     expect(bars.length).toEqual(7);
   });
 
-  test('Inspect shows each child mark\'s own inspect content on hover', async () => {
-    render(<Inspect {...Inspect.args} />);
+  test("ChartInspect shows each child mark's own inspect content on hover", async () => {
+    render(<ChartInspect {...ChartInspect.args} />);
     const chart = await findChart();
     expect(chart).toBeInTheDocument();
 

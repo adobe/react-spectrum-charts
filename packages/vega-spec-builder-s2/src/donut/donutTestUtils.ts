@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID } from '@spectrum-charts/constants';
+import { MARK_ID } from '@spectrum-charts/core-s2/constants';
 
-import { DonutSpecOptions } from '../types';
+import { DonutSpecOptions } from '../types/index.js';
 
 export const defaultDonutOptions: DonutSpecOptions = {
   chartPopovers: [],

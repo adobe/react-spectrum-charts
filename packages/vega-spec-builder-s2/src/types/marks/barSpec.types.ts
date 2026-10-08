@@ -9,13 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme, HighlightedItem } from '../chartSpec.types';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
-import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types';
-import { ColorFacet, LineTypeFacet, LineWidth, OpacityFacet, Orientation, PartiallyRequired } from '../specUtil.types';
-import { BarAnnotationOptions } from './supplemental/barAnnotationSpec.types';
-import { BarDirectLabelOptions } from './supplemental/barDirectLabelSpec.types';
-import { TrendlineOptions } from './supplemental/trendlineSpec.types';
+import { ColorScheme, HighlightedItem } from '../chartSpec.types.js';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
+import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
+import { ColorFacet, LineTypeFacet, LineWidth, OpacityFacet, Orientation, PartiallyRequired } from '../specUtil.types.js';
+import { BarAnnotationOptions } from './supplemental/barAnnotationSpec.types.js';
+import { BarDirectLabelOptions } from './supplemental/barDirectLabelSpec.types.js';
+import { TrendlineOptions } from './supplemental/trendlineSpec.types.js';
 
 export type DualFacet = [string, string]; // two keys used for a secondary facet on Bar charts
 export type BarType = 'dodged' | 'stacked';

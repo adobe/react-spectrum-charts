@@ -11,13 +11,13 @@
  */
 import { type FC } from 'react';
 
-import type { ArgsStoryFn } from 'storybook/internal/types';
 import { ReactRenderer, StoryFn } from '@storybook/react';
+import type { ArgsStoryFn, Parameters } from 'storybook/internal/types';
 
 type StoryArgsTypes<T> = T extends ArgsStoryFn<ReactRenderer, infer Return> ? Return : T;
 
 // FC<T> satisfies React 19's stricter JSX type check; StoryFn<T>'s 2-arg signature does not
-type RequiredProps<T> = FC<T> & { args: T; storyName?: string };
+type RequiredProps<T> = FC<T> & { args: T; storyName?: string; parameters?: Parameters };
 
 /**
  * Will make the props in a story required (by default Storybook makes all props optional).

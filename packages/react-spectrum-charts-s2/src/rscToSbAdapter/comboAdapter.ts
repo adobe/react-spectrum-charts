@@ -11,8 +11,8 @@
  */
 import { ComboOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ComboProps } from '../types';
-import { ChildrenToOptions } from './childOptions.types';
+import { ComboProps } from '../types/index.js';
+import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getComboOptions = (
   { children, ...comboProps }: ComboProps,

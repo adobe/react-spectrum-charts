@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { applyChartPropsDefaults, resolveAnimations } from './chartUtils';
+import { applyChartPropsDefaults, resolveAnimations } from './chartUtils.js';
 
 describe('applyChartPropsDefaults', () => {
   test('should return default props', () => {
