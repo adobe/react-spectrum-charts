@@ -14,7 +14,7 @@
 import { ComponentProps, Key, ReactElement, useMemo, useState } from 'react';
 
 import { CalendarDate } from '@internationalized/date';
-import { DateRangePicker, Picker, PickerItem } from '@react-spectrum/s2';
+import { DateRangePicker, DateValue, Picker, PickerItem, RangeValue } from '@react-spectrum/s2';
 import { Granularity } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../Chart.js';
@@ -70,16 +70,20 @@ const RESIZE_HANDLE_STYLES = `
   }
 `;
 
-type DateRange = { start: CalendarDate; end: CalendarDate };
+type DateRange = RangeValue<DateValue>;
+
+// Typed as S2's DateValue so it matches the picker's copy of @internationalized/date.
+const createDate = (year: number, month: number, day: number): DateValue =>
+  new CalendarDate(year, month, day) as unknown as DateValue;
 
 export type GranularityPickerArgs = Omit<ComponentProps<typeof Axis>, 'granularity' | 'labelFormat'>;
 
-const DATA_START = new CalendarDate(2016, 1, 1);
-const DATA_END = new CalendarDate(2026, 6, 30);
+const DATA_START = createDate(2016, 1, 1);
+const DATA_END = createDate(2026, 6, 30);
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const SERIES = ['Desktop', 'Mobile'];
 
-type Preset = { id: string; label: string; getStart?: (end: CalendarDate) => CalendarDate };
+type Preset = { id: string; label: string; getStart?: (end: DateValue) => DateValue };
 
 const PRESETS: Preset[] = [
   { id: 'today', label: 'Today', getStart: (end) => end },
@@ -102,7 +106,7 @@ const getPresetRange = (presetId: string): DateRange | undefined => {
   return getStart ? { start: getStart(DATA_END), end: DATA_END } : undefined;
 };
 
-const toDate = ({ year, month, day }: CalendarDate): Date => new Date(year, month - 1, day);
+const toDate = ({ year, month, day }: DateValue): Date => new Date(year, month - 1, day);
 
 const getDayCount = ({ start, end }: DateRange): number =>
   Math.round((toDate(end).getTime() - toDate(start).getTime()) / MS_PER_DAY) + 1;
