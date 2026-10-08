@@ -178,4 +178,4 @@ TotalVisitsVsTarget.args = {
 
 export const GranularityPicker = bindWithProps(GranularityPickerStory);
 GranularityPicker.args = { baseline: true, position: 'bottom', ticks: true };
-GranularityPicker.argTypes = { position: { control: 'select', options: ['top', 'bottom'] } };
+Object.assign(GranularityPicker, { argTypes: { position: { control: 'select', options: ['top', 'bottom'] } } });
