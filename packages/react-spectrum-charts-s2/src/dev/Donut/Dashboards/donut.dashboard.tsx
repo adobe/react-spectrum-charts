@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, ReactNode } from 'react';
 
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { ChartInspect, ChartPopover } from '../../../components/index.js';
+import { ChartInspect, ChartPopover, Legend, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
 import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
 import { booleanDonutData, zeroDonutData } from '../../../storyShared/Donut/data.js';
@@ -26,6 +26,7 @@ import {
   DonutSummaryProps,
   LegendProps,
   SegmentLabelProps,
+  TitleProps,
 } from '../../../types/index.js';
 import {
   Variation,
@@ -35,6 +36,7 @@ import {
   VariationViewMode,
   useVariationAnimations,
   useVariationDataset,
+  useVariationRenderer,
   useVariationSize,
   useVariationViewMode,
 } from '../../VariationDashboard.js';
@@ -66,6 +68,19 @@ const dashboardAnimationTypes: ChartProps['animationTypes'] = ['hover', 'drawIn'
 
 const isSemicircleVariation = ({ coverage }: Variation): boolean => coverage.includes('variant=semicircle');
 
+const getLargestSeries = (data: DonutVariationDatum[]): string => getLargestDonutSeries(data, 1)[0];
+const getSmallestSeries = (data: DonutVariationDatum[]): string =>
+  [...data].sort((a, b) => a.value - b.value)[0]?.series;
+
+const standardDonutData = donutVariationDatasets.standard as DonutVariationDatum[];
+const unsortedDonutData = ['Safari', 'Other', 'Chrome', 'Unknown', 'Firefox', 'Brave', 'Opera'].map(
+  (series) => standardDonutData.find((datum) => datum.series === series) as DonutVariationDatum
+);
+const inspectExcludedDonutData = standardDonutData.map((datum) => ({
+  ...datum,
+  excludeFromInspect: datum.series === 'Other',
+}));
+
 const donutVariationFilters: VariationFilter[] = [
   { label: 'All', value: 'all', matches: () => true },
   { label: 'Full', value: 'full', matches: (variation) => !isSemicircleVariation(variation) },
@@ -86,11 +101,16 @@ const getEffectiveDonutDiameter = (containerSize: number, viewMode?: string): nu
   return Math.max(0, getEffectiveDiameter(containerSize));
 };
 
+type DonutChartOverrides = Omit<Partial<ChartProps>, 'children' | 'data'>;
+
 interface DonutVariationChartProps extends Pick<DonutProps, 'children'> {
   data?: ChartData[];
   donutProps?: DonutProps;
-  colors?: ChartProps['colors'];
+  /** Chart prop overrides; functions receive the active dataset. */
+  chartProps?: DonutChartOverrides | ((data: DonutVariationDatum[]) => DonutChartOverrides);
   emphasizedItemCount?: number;
+  /** Chart-level siblings (Legend, Title) rendered next to the Donut. */
+  siblings?: (data: DonutVariationDatum[]) => ReactNode;
   size?: number;
 }
 
@@ -98,14 +118,16 @@ const DonutVariationChart = ({
   data,
   donutProps,
   children,
-  colors,
+  chartProps: chartPropOverrides,
   emphasizedItemCount,
+  siblings,
   size,
 }: DonutVariationChartProps): ReactElement => {
   const selectedDataset = useVariationDataset();
   const dashboardSize = useVariationSize();
   const viewMode = useVariationViewMode();
   const animations = useVariationAnimations();
+  const renderer = useVariationRenderer();
   if (!selectedDataset || !(selectedDataset in donutVariationDatasets)) {
     throw new Error(`Unknown Donut variation dataset: ${selectedDataset}`);
   }
@@ -115,7 +137,11 @@ const DonutVariationChart = ({
     emphasizedItemCount === undefined
       ? donutProps?.emphasizedItems
       : getLargestDonutSeries(chartData as DonutVariationDatum[], emphasizedItemCount);
-  const chartProps = useChartProps({ data: chartData, width: chartSize, height: chartSize, colors });
+  const chartProps = useChartProps({ data: chartData, width: chartSize, height: chartSize });
+  const overrides =
+    typeof chartPropOverrides === 'function'
+      ? chartPropOverrides(chartData as DonutVariationDatum[])
+      : chartPropOverrides;
   let dashboardSegmentLabel: ReactElement | null = null;
   if (viewMode === 'direct') {
     dashboardSegmentLabel = <SegmentLabel value valueFormat="shortNumber" />;
@@ -127,7 +153,10 @@ const DonutVariationChart = ({
       {...chartProps}
       animations={animations}
       animationTypes={animations === undefined ? undefined : dashboardAnimationTypes}
+      renderer={renderer}
+      {...overrides}
     >
+      {siblings?.(chartData as DonutVariationDatum[])}
       <Donut {...donutProps} emphasizedItems={emphasizedItems}>
         {children}
         {dashboardSegmentLabel}
@@ -136,7 +165,7 @@ const DonutVariationChart = ({
   );
 };
 
-export const donutVariations: Variation[] = [
+const baseDonutVariations: Variation[] = [
   {
     id: 'defaults',
     title: 'Defaults',
@@ -171,7 +200,7 @@ export const donutVariations: Variation[] = [
     render: () => (
       <DonutVariationChart
         data={booleanDonutData}
-        colors={['green-800']}
+        chartProps={{ colors: ['green-800'] }}
         donutProps={{ color: 'id', isBoolean: true, metric: 'value' }}
       >
         <DonutSummary label="Success rate" />
@@ -393,6 +422,44 @@ export const donutVariations: Variation[] = [
     ),
   },
   {
+    id: 'named-interactive',
+    title: 'Named donut with inspect',
+    description: 'Sets a custom mark name; hover and click must still drive inspect and popover.',
+    dataset: 'canonical',
+    coverage: ['name=browserShare', 'ChartInspect', 'ChartPopover'],
+    render: () => (
+      <DonutVariationChart donutProps={{ name: 'browserShare' }}>
+        <ChartInspect />
+        <ChartPopover width="auto" />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'inspect-exclude-keys',
+    title: 'Inspect with excluded data',
+    description: 'Hovering the "Other" segment shows no inspect because its excludeFromInspect flag is true.',
+    dataset: 'standard',
+    usesDashboardDataset: false,
+    coverage: ['ChartInspect.excludeDataKeys=[excludeFromInspect]'],
+    render: () => (
+      <DonutVariationChart data={inspectExcludedDonutData}>
+        <ChartInspect excludeDataKeys={['excludeFromInspect']} />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'popover-right-click',
+    title: 'Right-click popover',
+    description: 'Opens the popover on right click instead of left click.',
+    dataset: 'canonical',
+    coverage: ['ChartPopover.rightClick=true'],
+    render: () => (
+      <DonutVariationChart>
+        <ChartPopover rightClick width="auto" />
+      </DonutVariationChart>
+    ),
+  },
+  {
     id: 'zero-values',
     title: 'All-zero values',
     description: 'Confirms child configurations remain legible when every metric value is zero.',
@@ -458,6 +525,195 @@ export const donutVariations: Variation[] = [
   },
 ];
 
+const legendVariations: Variation[] = [
+  {
+    id: 'legend-default',
+    title: 'Legend defaults',
+    description: 'Adds a Legend with every default; it renders below the donut.',
+    dataset: 'canonical',
+    coverage: ['Legend', 'Legend.position=bottom'],
+    render: () => <DonutVariationChart siblings={() => <Legend />} />,
+  },
+  {
+    id: 'legend-right-title',
+    title: 'Side legend with title',
+    description: 'Places a titled legend to the right of the donut.',
+    dataset: 'canonical',
+    coverage: ['Legend.position=right', 'Legend.title'],
+    render: () => <DonutVariationChart siblings={() => <Legend position="right" title="Browsers" />} />,
+  },
+  {
+    id: 'legend-highlight',
+    title: 'Legend highlight',
+    description: 'Hovering a legend entry highlights the matching segment.',
+    dataset: 'canonical',
+    coverage: ['Legend.highlight=true'],
+    render: () => <DonutVariationChart siblings={() => <Legend highlight />} />,
+  },
+  {
+    id: 'legend-toggleable',
+    title: 'Toggleable legend',
+    description: 'Starts with the largest series hidden; click entries to hide or show segments.',
+    dataset: 'canonical',
+    coverage: ['Legend.isToggleable=true', 'Legend.defaultHiddenSeries=[largest]'],
+    render: () => (
+      <DonutVariationChart
+        siblings={(data) => <Legend defaultHiddenSeries={[getLargestSeries(data)]} isToggleable />}
+      />
+    ),
+  },
+  {
+    id: 'legend-labels',
+    title: 'Custom legend labels',
+    description: 'Replaces series names with display names truncated at 80px.',
+    dataset: 'canonical',
+    coverage: ['Legend.legendLabels', 'Legend.labelLimit=80'],
+    render: () => (
+      <DonutVariationChart
+        siblings={(data) => (
+          <Legend
+            labelLimit={80}
+            legendLabels={data.map(({ series, displayName }) => ({ seriesName: series, label: displayName }))}
+          />
+        )}
+      />
+    ),
+  },
+  {
+    id: 'legend-hidden-entries',
+    title: 'Hidden legend entry',
+    description: 'Omits the smallest series from the legend while its segment still renders.',
+    dataset: 'canonical',
+    coverage: ['Legend.hiddenEntries=[smallest]'],
+    render: () => <DonutVariationChart siblings={(data) => <Legend hiddenEntries={[getSmallestSeries(data)]} />} />,
+  },
+  {
+    id: 'legend-descriptions',
+    title: 'Legend descriptions',
+    description: 'Hover a legend entry to see its description tooltip.',
+    dataset: 'canonical',
+    coverage: ['Legend.descriptions'],
+    render: () => (
+      <DonutVariationChart
+        siblings={(data) => (
+          <Legend
+            descriptions={data.map(({ series, displayName }) => ({
+              seriesName: series,
+              description: `${displayName} share of visits`,
+            }))}
+          />
+        )}
+      />
+    ),
+  },
+];
+
+const chartVariations: Variation[] = [
+  {
+    id: 'chart-title',
+    title: 'Chart title',
+    description: 'Adds a Title sibling above the donut.',
+    dataset: 'canonical',
+    coverage: ['Title.text'],
+    render: () => <DonutVariationChart siblings={() => <Title text="Browser share" />} />,
+  },
+  {
+    id: 'controlled-hidden-series',
+    title: 'Controlled hidden series',
+    description: 'Hides the largest series through the Chart hiddenSeries prop.',
+    dataset: 'canonical',
+    coverage: ['Chart.hiddenSeries=[largest]'],
+    render: () => (
+      <DonutVariationChart
+        chartProps={(data) => ({ hiddenSeries: [getLargestSeries(data)] })}
+        siblings={() => <Legend />}
+      />
+    ),
+  },
+  {
+    id: 'controlled-highlighted-series',
+    title: 'Controlled highlighted series',
+    description: 'Highlights the largest series through the Chart highlightedSeries prop.',
+    dataset: 'canonical',
+    coverage: ['Chart.highlightedSeries=largest'],
+    render: () => <DonutVariationChart chartProps={(data) => ({ highlightedSeries: getLargestSeries(data) })} />,
+  },
+  {
+    id: 'controlled-highlighted-item',
+    title: 'Controlled highlighted item',
+    description: 'Highlights the largest segment by id using idKey="series" and highlightedItem.',
+    dataset: 'canonical',
+    coverage: ['Chart.idKey=series', 'Chart.highlightedItem=largest'],
+    render: () => (
+      <DonutVariationChart chartProps={(data) => ({ idKey: 'series', highlightedItem: getLargestSeries(data) })} />
+    ),
+  },
+  {
+    id: 'dark-background',
+    title: 'Dark color scheme',
+    description: 'Renders labels and summary on a dark background.',
+    dataset: 'canonical',
+    coverage: ['Chart.colorScheme=dark', 'Chart.backgroundColor=gray-25'],
+    render: () => (
+      <DonutVariationChart chartProps={{ backgroundColor: 'gray-25', colorScheme: 'dark' }}>
+        <DonutSummary label="Visitors" />
+        <SegmentLabel percent />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'locale',
+    title: 'German locale',
+    description: 'Formats summary and segment values with de-DE separators.',
+    dataset: 'canonical',
+    coverage: ['Chart.locale=de-DE'],
+    render: () => (
+      <DonutVariationChart chartProps={{ locale: 'de-DE' }}>
+        <DonutSummary label="Besucher" numberFormat="standardNumber" />
+        <SegmentLabel percent percentFormat=".1%" />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'empty-state',
+    title: 'Empty data',
+    description: 'Shows the empty state text when data is an empty array.',
+    dataset: 'empty',
+    usesDashboardDataset: false,
+    coverage: ['Chart.emptyStateText', 'data=[]'],
+    render: () => <DonutVariationChart chartProps={{ emptyStateText: 'No browser data' }} data={[]} />,
+  },
+  {
+    id: 'loading',
+    title: 'Loading',
+    description: 'Shows the loading spinner in place of the donut.',
+    dataset: 'canonical',
+    coverage: ['Chart.loading=true'],
+    render: () => <DonutVariationChart chartProps={{ loading: true }} />,
+  },
+];
+
+const semicircleVariations: Variation[] = [
+  {
+    id: 'semicircle-sort-order-data',
+    title: 'Semicircle in data order',
+    description: 'Keeps the unsorted source order instead of sorting segments largest-first.',
+    dataset: 'unsorted',
+    usesDashboardDataset: false,
+    coverage: ['variant=semicircle', 'sortOrder=data'],
+    render: () => (
+      <DonutVariationChart data={unsortedDonutData} donutProps={{ sortOrder: 'data', variant: 'semicircle' }} />
+    ),
+  },
+];
+
+export const donutVariations: Variation[] = [
+  ...baseDonutVariations,
+  ...semicircleVariations,
+  ...legendVariations,
+  ...chartVariations,
+];
+
 export const DonutDashboard = (): ReactElement => (
   <VariationDashboard
     variations={donutVariations}
@@ -487,8 +743,8 @@ const donutCoverage: PropCoverage<DonutProps> = {
   holeRatio: ['defaults', 'pie', 'wide-ring'],
   isBoolean: ['boolean'],
   metric: ['defaults', 'boolean'],
-  name: { skip: 'TODO: no variation sets name yet' },
-  sortOrder: { skip: 'TODO: no variation for sortOrder="data" yet' },
+  name: ['named-interactive'],
+  sortOrder: ['semicircle', 'semicircle-sort-order-data'],
   variant: ['semicircle'],
 };
 
@@ -496,14 +752,14 @@ const donutSummaryCoverage: PropCoverage<DonutSummaryProps> = {
   delta: ['summary-positive-delta', 'summary-negative-delta', 'semicircle-hidden-value-summary'],
   hideValue: ['summary-hidden-value', 'semicircle-hidden-value-summary'],
   label: ['summary-format', 'summary-negative-delta'],
-  numberFormat: ['summary-format', 'semicircle-formatted-summary'],
+  numberFormat: ['summary-format', 'semicircle-formatted-summary', 'locale'],
 };
 
 const segmentLabelCoverage: PropCoverage<SegmentLabelProps> = {
   labelKey: ['segment-label-key'],
   labelMode: ['segment-label-modes', 'hidden-deemphasized-labels'],
   percent: ['segment-label-percent'],
-  percentFormat: ['segment-label-percent-format'],
+  percentFormat: ['segment-label-percent-format', 'locale'],
   showTotal: ['segment-label-total'],
   showValueRow: ['segment-label-value-row'],
   swatch: ['segment-label-swatch'],
@@ -512,23 +768,48 @@ const segmentLabelCoverage: PropCoverage<SegmentLabelProps> = {
 };
 
 const chartInspectCoverage: SiblingCoverage<ChartInspectProps> = {
-  children: ['interactive-children'],
+  children: ['interactive-children', 'named-interactive'],
+  excludeDataKeys: ['inspect-exclude-keys'],
+  highlightBy: { skip: 'Not read by the Donut spec builder' },
+  targets: { skip: 'Not read by the Donut spec builder' },
 };
 
 const chartPopoverCoverage: SiblingCoverage<ChartPopoverProps> = {
-  children: ['interactive-children'],
+  children: ['interactive-children', 'named-interactive'],
+  rightClick: ['popover-right-click'],
   width: ['interactive-children'],
 };
 
 const legendCoverage: SiblingCoverage<LegendProps> = {
-  highlight: { skip: 'TODO: no Legend variation yet' },
-  isToggleable: { skip: 'TODO: no Legend variation yet' },
+  defaultHiddenSeries: ['legend-toggleable'],
+  descriptions: ['legend-descriptions'],
+  hiddenEntries: ['legend-hidden-entries'],
+  highlight: ['legend-highlight'],
+  isToggleable: ['legend-toggleable'],
+  labelLimit: ['legend-labels'],
+  legendLabels: ['legend-labels'],
+  position: ['legend-default', 'legend-right-title'],
+  title: ['legend-right-title'],
+};
+
+const titleCoverage: SiblingCoverage<TitleProps> = {
+  text: ['chart-title'],
 };
 
 const chartCoverage: SiblingCoverage<ChartProps> = {
+  animations: { skip: 'Covered by the dashboard Animations switch' },
+  animationTypes: { skip: 'Covered by the dashboard Animations switch' },
+  backgroundColor: ['dark-background'],
   colors: ['boolean'],
-  hiddenSeries: { skip: 'TODO: no hidden-series variation yet' },
-  highlightedItem: { skip: 'TODO: no controlled-highlight variation yet' },
+  colorScheme: ['dark-background'],
+  emptyStateText: ['empty-state'],
+  hiddenSeries: ['controlled-hidden-series'],
+  highlightedItem: ['controlled-highlighted-item'],
+  highlightedSeries: ['controlled-highlighted-series'],
+  idKey: ['controlled-highlighted-item'],
+  loading: ['loading'],
+  locale: ['locale'],
+  renderer: { skip: 'Covered by the dashboard Renderer control' },
 };
 
 export const dashboard: DashboardDefinition = {
@@ -541,6 +822,7 @@ export const dashboard: DashboardDefinition = {
     ChartInspect: chartInspectCoverage,
     ChartPopover: chartPopoverCoverage,
     Legend: legendCoverage,
+    Title: titleCoverage,
     Chart: chartCoverage,
   },
 };

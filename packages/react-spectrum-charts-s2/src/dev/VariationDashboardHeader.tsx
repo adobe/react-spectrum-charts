@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { CSSProperties, ReactElement, ReactNode, useState } from 'react';
+import { CSSProperties, ReactElement, ReactNode } from 'react';
 
 import {
   ActionButton,
@@ -36,8 +36,15 @@ import ChevronDown from '@react-spectrum/s2/icons/ChevronDown';
 import ChevronUp from '@react-spectrum/s2/icons/ChevronUp';
 import FilterIcon from '@react-spectrum/s2/icons/Filter';
 
+import type {
+  VariationDataset,
+  VariationFilter,
+  VariationRenderer,
+  VariationSizePreset,
+  VariationViewMode,
+} from './VariationDashboard.js';
 import type { DashboardDefinition } from './dashboardCoverage.js';
-import type { VariationDataset, VariationFilter, VariationSizePreset, VariationViewMode } from './VariationDashboard.js';
+import { usePersistedState } from './usePersistedState.js';
 
 export interface VariationDashboardHeaderProps {
   chartType: string;
@@ -66,6 +73,8 @@ export interface VariationDashboardHeaderProps {
   /** Animation toggle state; the toggle is hidden when undefined. */
   animations?: boolean;
   onAnimationsChange: (animations: boolean) => void;
+  renderer: VariationRenderer;
+  onRendererChange: (renderer: VariationRenderer) => void;
 }
 
 const groupStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 };
@@ -115,14 +124,19 @@ export const VariationDashboardHeader = ({
   onSelectedPropsChange,
   animations,
   onAnimationsChange,
+  renderer,
+  onRendererChange,
 }: VariationDashboardHeaderProps): ReactElement => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = usePersistedState(`rsc-s2-variation-dashboard:${chartType}:expanded`, true);
   const coverageSections = Object.entries(coverage).map(([component, componentCoverage]) => ({
     component,
     entries: Object.entries(componentCoverage).flatMap(([prop, entry]) => (entry ? [{ prop, entry }] : [])),
   }));
   const skippedProps = coverageSections.flatMap(({ component, entries }) =>
     entries.filter(({ entry }) => 'skip' in entry).map(({ prop }) => `${component}.${prop}`)
+  );
+  const selectableProps = coverageSections.flatMap(({ component, entries }) =>
+    entries.filter(({ entry }) => !('skip' in entry)).map(({ prop }) => `${component}.${prop}`)
   );
   const datasetDescription = datasets.find((option) => option.value === dataset)?.description;
 
@@ -174,11 +188,7 @@ export const VariationDashboardHeader = ({
         <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
           <ControlGroup title="Data">
             {datasets.length > 0 && (
-              <Picker
-                label="Dataset"
-                onChange={(key) => onDatasetChange(String(key))}
-                value={dataset}
-              >
+              <Picker label="Dataset" onChange={(key) => onDatasetChange(String(key))} value={dataset}>
                 {datasets.map((option) => (
                   <PickerItem key={option.value} id={option.value}>
                     {option.label}
@@ -222,6 +232,14 @@ export const VariationDashboardHeader = ({
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
+            <SegmentedControl
+              aria-label="Renderer"
+              onSelectionChange={(key) => onRendererChange(key as VariationRenderer)}
+              selectedKey={renderer}
+            >
+              <SegmentedControlItem id="svg">SVG</SegmentedControlItem>
+              <SegmentedControlItem id="canvas">Canvas</SegmentedControlItem>
+            </SegmentedControl>
             {animations !== undefined && (
               <Switch aria-label={`${chartType} animations`} isSelected={animations} onChange={onAnimationsChange}>
                 Animations (hover and draw-in)
@@ -243,33 +261,49 @@ export const VariationDashboardHeader = ({
               </SegmentedControl>
             )}
             {coverageSections.length > 0 && (
-              <MenuTrigger>
-                <ActionButton>
-                  <FilterIcon />
-                  <Text>Props{selectedProps.size > 0 ? ` (${selectedProps.size})` : ''}</Text>
-                </ActionButton>
-                <Menu
-                  aria-label="Filter by prop"
-                  disabledKeys={skippedProps}
-                  onSelectionChange={(keys) => onSelectedPropsChange(new Set([...keys].map(String)))}
-                  selectedKeys={selectedProps}
-                  selectionMode="multiple"
+              <div style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                <MenuTrigger>
+                  <ActionButton>
+                    <FilterIcon />
+                    <Text>Props{selectedProps.size > 0 ? ` (${selectedProps.size})` : ''}</Text>
+                  </ActionButton>
+                  <Menu
+                    aria-label="Filter by prop"
+                    disabledKeys={skippedProps}
+                    onSelectionChange={(keys) => onSelectedPropsChange(new Set([...keys].map(String)))}
+                    selectedKeys={selectedProps}
+                    selectionMode="multiple"
+                  >
+                    {coverageSections.map(({ component, entries }) => (
+                      <MenuSection key={component}>
+                        <Header>
+                          <Heading>{component}</Heading>
+                        </Header>
+                        {entries.map(({ prop, entry }) => (
+                          <MenuItem key={prop} id={`${component}.${prop}`} textValue={prop}>
+                            <Text slot="label">{prop}</Text>
+                            {'skip' in entry && <Text slot="description">{entry.skip}</Text>}
+                          </MenuItem>
+                        ))}
+                      </MenuSection>
+                    ))}
+                  </Menu>
+                </MenuTrigger>
+                <ActionButton
+                  isDisabled={selectedProps.size === selectableProps.length}
+                  isQuiet
+                  onPress={() => onSelectedPropsChange(new Set(selectableProps))}
                 >
-                  {coverageSections.map(({ component, entries }) => (
-                    <MenuSection key={component}>
-                      <Header>
-                        <Heading>{component}</Heading>
-                      </Header>
-                      {entries.map(({ prop, entry }) => (
-                        <MenuItem key={prop} id={`${component}.${prop}`} textValue={prop}>
-                          <Text slot="label">{prop}</Text>
-                          {'skip' in entry && <Text slot="description">{entry.skip}</Text>}
-                        </MenuItem>
-                      ))}
-                    </MenuSection>
-                  ))}
-                </Menu>
-              </MenuTrigger>
+                  Select all
+                </ActionButton>
+                <ActionButton
+                  isDisabled={selectedProps.size === 0}
+                  isQuiet
+                  onPress={() => onSelectedPropsChange(new Set())}
+                >
+                  Clear
+                </ActionButton>
+              </div>
             )}
             {selectedProps.size > 0 && (
               <TagGroup aria-label="Active prop filters" onRemove={removeProps}>
