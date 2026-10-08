@@ -137,6 +137,71 @@ describe('formatLocaleCurrency()', () => {
   });
 });
 
+describe('getLabelWidth()', () => {
+  let measureText: jest.SpyInstance;
+  let getLabelWidth: typeof expressionFunctions.getLabelWidth;
+
+  beforeEach(() => {
+    measureText = jest.spyOn(CanvasRenderingContext2D.prototype, 'measureText');
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      ({ getLabelWidth } = require('./expressionFunctions.js').expressionFunctions);
+    });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  test('should reuse one canvas and cache repeated measurements', () => {
+    const createElement = jest.spyOn(document, 'createElement');
+    const first = getLabelWidth('cache me', 'bold', 13);
+    const second = getLabelWidth('cache me', 'bold', 13);
+    getLabelWidth('cache me too', 'bold', 13);
+
+    expect(second).toBe(first);
+    expect(measureText).toHaveBeenCalledTimes(2);
+    expect(createElement.mock.calls.filter(([tag]) => tag === 'canvas')).toHaveLength(1);
+  });
+
+  test('should cache by font as well as text', () => {
+    getLabelWidth('font key', 'bold', 14);
+    getLabelWidth('font key', 'normal', 14);
+    getLabelWidth('font key', 'bold', 16);
+    getLabelWidth('font key', 'bold', 16);
+
+    expect(measureText).toHaveBeenCalledTimes(3);
+  });
+
+  describe('with document.fonts', () => {
+    const listeners: Record<string, () => void> = {};
+    const fonts = {
+      status: 'loaded',
+      addEventListener: (type: string, listener: () => void) => (listeners[type] = listener),
+    };
+    beforeEach(() => {
+      fonts.status = 'loaded';
+      Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
+    });
+    afterEach(() => {
+      delete (document as { fonts?: unknown }).fonts;
+    });
+
+    test('should not cache while fonts are loading', () => {
+      fonts.status = 'loading';
+      getLabelWidth('loading', 'bold', 12);
+      getLabelWidth('loading', 'bold', 12);
+
+      expect(measureText).toHaveBeenCalledTimes(2);
+    });
+
+    test('should clear the cache when fonts finish loading', () => {
+      getLabelWidth('font swap', 'bold', 12);
+      listeners.loadingdone();
+      getLabelWidth('font swap', 'bold', 12);
+
+      expect(measureText).toHaveBeenCalledTimes(2);
+    });
+  });
+});
+
 describe('truncateText()', () => {
   const longText =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit.';
