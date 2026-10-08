@@ -176,8 +176,8 @@ export const VariationDashboardHeader = ({
             {datasets.length > 0 && (
               <Picker
                 label="Dataset"
-                onSelectionChange={(key) => onDatasetChange(String(key))}
-                selectedKey={dataset}
+                onChange={(key) => onDatasetChange(String(key))}
+                value={dataset}
               >
                 {datasets.map((option) => (
                   <PickerItem key={option.value} id={option.value}>
