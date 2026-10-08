@@ -192,7 +192,7 @@ jobs:
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         run: |
           PR_NUMBER="${{ github.event.number }}"
-          COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}\n\n🎨 S2 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}-s2\n\n🎨 S2 Dev Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}-s2-dev\n\n📚 Docs -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}-docs/"
+          COMMENT_BODY="🎨 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}/\n\n🎨 S2 Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}-s2/\n\n🎨 S2 Dev Storybook -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}-s2-dev/\n\n📚 Docs -> https://opensource.adobe.com/react-spectrum-charts/PR-${PR_NUMBER}-docs/"
 
           curl -sSL \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
