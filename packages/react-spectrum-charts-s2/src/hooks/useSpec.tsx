@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { Data, Spec, ValuesData } from 'vega';
 
@@ -41,7 +41,9 @@ export default function useSpec({
   title,
   UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-  return useMemo(() => {
+  const previousSpec = useRef<{ spec: Spec; json: string } | null>(null);
+
+  const builtSpec = useMemo(() => {
     if (UNSAFE_vegaSpec) {
       const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
         backgroundColor,
@@ -98,6 +100,14 @@ export default function useSpec({
     symbolSizes,
     title,
   ]);
+
+  // Keep the previous spec object when the rebuilt spec is identical so downstream effects don't re-embed.
+  return useMemo(() => {
+    const json = JSON.stringify(builtSpec);
+    if (previousSpec.current?.json === json) return previousSpec.current.spec;
+    previousSpec.current = { spec: builtSpec, json };
+    return builtSpec;
+  }, [builtSpec]);
 }
 
 const initializeSpec = (
