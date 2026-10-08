@@ -128,6 +128,14 @@ The code is linted with eslint.
 yarn lint
 ```
 
+SonarCloud runs on every PR. To catch its most common findings before pushing, run the local approximation against the files you changed (vs. `origin/main`). `yarn verify` includes this check.
+
+```
+yarn lint:sonar
+```
+
+Use `yarn lint:sonar --all` to check every package, or `--base <ref>` to diff against a different branch. Rules live in `.eslintrc.sonar.cjs`, each tagged with its SonarCloud rule key.
+
 ### Storybook
 
 We use Storybook for local development. Run the following command to start it:

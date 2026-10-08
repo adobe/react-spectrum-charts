@@ -177,7 +177,7 @@ Run `yarn changeset:status` before finishing. See `PUBLISHING.md`.
 # If `cross-env: command not found` appears, run `yarn install` first, then retry.
 yarn install
 
-# Before pushing: the PR checks that catch code problems, minus Storybook/docs builds and Sonar
+# Before pushing: the PR checks that catch code problems (plus a local Sonar approximation), minus Storybook/docs builds
 yarn verify
 
 # Run tests, targeted (default for agents/dev — no coverage, quiet)
@@ -192,6 +192,9 @@ yarn watch
 # Lint — append --quiet yourself for a quieter run (errors only); leave the
 # shared script as-is so CI and other developers still see warnings by default
 yarn lint --quiet
+
+# Local SonarCloud approximation on files changed vs. origin/main (included in yarn verify)
+yarn lint:sonar            # --all for every package, --base <ref> for another base
 
 # TypeScript check (no emit) — append --pretty false yourself for compact,
 # uncolored output; don't bake this into the shared script (humans want the
@@ -335,7 +338,7 @@ When adding a new mark, verify its encodings follow the same conventions as comp
 - Cross-check against one or two similar existing marks (e.g. `barAnnotationUtils.ts`, `linePointUtils.ts`) to catch any other conventions
 
 ### 6. TypeScript and `yarn verify`
-Run `yarn verify` once before pushing — not after every file or every test written. It runs the PR checks that catch code problems (changeset, lint, `build:s2`, `tsc`, package exports, and tests related to the branch's changes) in about a minute and a half. `yarn test` passing does not imply the files are type-correct, and `tsc` is the only check that type-checks stories, dev dashboards, and tests.
+Run `yarn verify` once before pushing — not after every file or every test written. It runs the PR checks that catch code problems (changeset, lint, `lint:sonar`, `build:s2`, `tsc`, package exports, and tests related to the branch's changes) in about a minute and a half. `yarn test` passing does not imply the files are type-correct, and `tsc` is the only check that type-checks stories, dev dashboards, and tests.
 
 ---
 
