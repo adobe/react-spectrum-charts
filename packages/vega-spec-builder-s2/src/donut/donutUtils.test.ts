@@ -29,6 +29,7 @@ import {
   getDonutEmptyStateTest,
   getDonutInnerRadiusExpr,
   getDonutOuterRadiusExpr,
+  getDonutSweepExpr,
   getEmptyStateArcMark,
   getLabelRingGapSignals,
   getRingWidthSignal,
@@ -44,6 +45,16 @@ describe('getDonutEmptyStateTest()', () => {
   test('should test for empty data and a metric sum of 0', () => {
     const test = getDonutEmptyStateTest('testName');
     expect(test).toBe(`length(data('${FILTERED_TABLE}')) === 0 || !data('testName_sumData')[0]['sum']`);
+  });
+});
+
+describe('getDonutSweepExpr()', () => {
+  test('should sweep a full circle', () => {
+    expect(getDonutSweepExpr({ variant: 'circle' })).toBe('2 * PI');
+  });
+
+  test('should sweep half a circle for a semicircle', () => {
+    expect(getDonutSweepExpr({ variant: 'semicircle' })).toBe('PI');
   });
 });
 

@@ -9,12 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, ReactNode, createContext, useContext, useState } from 'react';
+import { ReactElement, ReactNode, createContext, useContext, useMemo, useState } from 'react';
 
 const DEFAULT_SIZE = 280;
 const VariationDatasetContext = createContext<string | undefined>(undefined);
 const VariationSizeContext = createContext(DEFAULT_SIZE);
-const VariationViewModeContext = createContext<string | undefined>(undefined);
+const VariationDisplayContext = createContext<{ viewMode?: string; animations?: boolean }>({});
 
 export interface VariationDataset {
   description?: string;
@@ -62,11 +62,13 @@ interface VariationDashboardProps {
   filters?: VariationFilter[];
   getSizeDescription?: (size: number, viewMode?: string) => string;
   initialDataset?: string;
+  initialAnimations?: boolean;
   initialFilter?: string;
   initialSize?: number;
   initialViewMode?: string;
   resolvePresetSize?: (size: number, viewMode?: string) => number;
   sizePresets?: VariationSizePreset[];
+  showAnimationControls?: boolean;
   viewModes?: VariationViewMode[];
 }
 
@@ -88,7 +90,8 @@ const badgeStyle = {
 
 export const useVariationSize = (): number => useContext(VariationSizeContext);
 export const useVariationDataset = (): string | undefined => useContext(VariationDatasetContext);
-export const useVariationViewMode = (): string | undefined => useContext(VariationViewModeContext);
+export const useVariationViewMode = (): string | undefined => useContext(VariationDisplayContext).viewMode;
+export const useVariationAnimations = (): boolean | undefined => useContext(VariationDisplayContext).animations;
 
 export const VariationDashboard = ({
   chartType,
@@ -96,18 +99,25 @@ export const VariationDashboard = ({
   datasets = [],
   filters = [],
   getSizeDescription,
+  initialAnimations = true,
   initialDataset,
   initialFilter,
   initialSize = DEFAULT_SIZE,
   initialViewMode,
   resolvePresetSize = (size) => size,
   sizePresets = defaultSizePresets,
+  showAnimationControls = false,
   viewModes = [],
 }: VariationDashboardProps): ReactElement => {
   const [dataset, setDataset] = useState(initialDataset ?? datasets[0]?.value);
+  const [animations, setAnimations] = useState(initialAnimations);
   const [filter, setFilter] = useState(initialFilter ?? filters[0]?.value);
   const [size, setSize] = useState(initialSize);
   const [viewMode, setViewMode] = useState(initialViewMode ?? viewModes[0]?.value);
+  const displayContextValue = useMemo(
+    () => ({ viewMode, animations: showAnimationControls ? animations : undefined }),
+    [viewMode, animations, showAnimationControls]
+  );
   const presetSizes = sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
   const minSize = Math.min(...presetSizes, initialSize);
   const maxSize = Math.max(...presetSizes, initialSize);
@@ -239,6 +249,18 @@ export const VariationDashboard = ({
                 </button>
               ))}
             </div>
+            {showAnimationControls && (
+              <label style={{ alignItems: 'center', display: 'flex', gap: 8, gridColumn: '1 / -1' }}>
+                <input
+                  aria-label={`${chartType} animations`}
+                  checked={animations}
+                  onChange={(event) => setAnimations(event.target.checked)}
+                  type="checkbox"
+                />
+                <strong>Animations</strong>
+                <span style={{ fontSize: 13 }}>Hover and draw-in</span>
+              </label>
+            )}
             <label style={{ alignItems: 'center', display: 'flex', gap: 12, gridColumn: '1 / -1' }}>
               <span style={{ minWidth: 120 }}>Container: {size}px</span>
               <input
@@ -257,7 +279,7 @@ export const VariationDashboard = ({
           </div>
         </header>
         <VariationDatasetContext.Provider value={dataset}>
-          <VariationViewModeContext.Provider value={viewMode}>
+          <VariationDisplayContext.Provider value={displayContextValue}>
             <div
               style={{
                 alignItems: 'start',
@@ -316,7 +338,7 @@ export const VariationDashboard = ({
                 )
               )}
             </div>
-          </VariationViewModeContext.Provider>
+          </VariationDisplayContext.Provider>
         </VariationDatasetContext.Provider>
       </main>
     </VariationSizeContext.Provider>

@@ -74,6 +74,7 @@ export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutO
   highlightedSeries?: string | number;
   idKey: string;
   index: number;
+  isDrawInAnimate?: boolean;
   isHoverAnimate?: boolean;
   segmentIds?: number[];
   legendHighlightSignals?: string[];

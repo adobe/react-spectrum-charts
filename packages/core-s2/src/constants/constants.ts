@@ -228,6 +228,8 @@ export const HOVER_NEUTRAL_TARGET = 0.5;
 // draw-in animation constants
 /** Time in ms it takes to animate the draw-in animation */
 export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
+/** Duration of the linear fade-in for donut labels after their slice finishes drawing. */
+export const DONUT_DRAW_IN_LABEL_FADE_DURATION_MS = 50;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */

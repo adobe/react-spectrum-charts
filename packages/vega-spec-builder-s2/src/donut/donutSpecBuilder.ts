@@ -20,12 +20,15 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
+  DRAW_IN_ANIM_CUTOFF,
+  DRAW_IN_ANIM_T,
   FILTERED_TABLE,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
+import { addDrawInClockSignals } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -49,6 +52,7 @@ import {
   getDonutAnimIdField,
   getDonutHoverRules,
   getDonutStartAngle,
+  getDonutSweepExpr,
   getEmptyStateArcMark,
   isDonutInteractive,
   getRingWidthSignal,
@@ -129,6 +133,8 @@ export const addDonut = produce<
       (isDonutInteractive(donutOptions) ||
         donutOptions.highlightedItem !== undefined ||
         donutOptions.highlightedSeries !== undefined);
+    donutOptions.isDrawInAnimate =
+      animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
 
     if (isDonutInteractive(donutOptions)) {
       spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, donutOptions.name);
@@ -208,9 +214,9 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
 });
 
 const getPieTransforms = (options: DonutSpecOptions): (FormulaTransform | PieTransform)[] => {
-  const { metric, name, variant } = options;
+  const { metric, name } = options;
   const startAngle = getDonutStartAngle(options);
-  const sweep = variant === 'semicircle' ? 'PI' : '2 * PI';
+  const sweep = getDonutSweepExpr(options);
   return [
     {
       type: 'pie',
@@ -257,6 +263,15 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   const { chartInspects, holeRatio, name } = options;
   if (options.isHoverAnimate) {
     addHoverAnimationSignals(signals, name);
+  }
+  if (options.isDrawInAnimate) {
+    addDrawInClockSignals(signals);
+    const sweep = getDonutSweepExpr(options);
+    const startAngle = getDonutStartAngle(options);
+    signals.push({
+      name: `${name}_${DRAW_IN_ANIM_CUTOFF}`,
+      update: `${startAngle} + (${sweep}) * pow(${DRAW_IN_ANIM_T}, 2)`,
+    });
   }
   if (holeRatio === DEFAULT_HOLE_RATIO) {
     signals.push(getRingWidthSignal(options));

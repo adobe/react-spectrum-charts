@@ -95,7 +95,9 @@ describe('donut hover animations', () => {
     const spec = buildSpec({ ...chartOptions, ...options });
     expect(spec.usermeta?.animatedMarks).toBeUndefined();
     expect(spec.data?.some(({ name }) => name === 'donut_hoverFractionData')).toBe(false);
-    expect(spec.signals?.some(({ name }) => name === ANIMATION_TIMER)).toBe(false);
+    if (!options.animationTypes?.includes('drawIn')) {
+      expect(spec.signals?.some(({ name }) => name === ANIMATION_TIMER)).toBe(false);
+    }
   });
 
   test('does not animate a noninteractive donut', () => {

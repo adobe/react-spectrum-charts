@@ -33,6 +33,7 @@ import {
   VariationFilter,
   VariationSizePreset,
   VariationViewMode,
+  useVariationAnimations,
   useVariationDataset,
   useVariationSize,
   useVariationViewMode,
@@ -60,6 +61,8 @@ const donutViewModes: VariationViewMode[] = [
   { label: 'Direct labels', value: 'direct' },
   { label: 'Advanced labels', value: 'advanced' },
 ];
+
+const dashboardAnimationTypes: ChartProps['animationTypes'] = ['hover', 'drawIn'];
 
 const isSemicircleVariation = ({ coverage }: Variation): boolean => coverage.includes('variant=semicircle');
 
@@ -102,6 +105,7 @@ const DonutVariationChart = ({
   const selectedDataset = useVariationDataset();
   const dashboardSize = useVariationSize();
   const viewMode = useVariationViewMode();
+  const animations = useVariationAnimations();
   if (!selectedDataset || !(selectedDataset in donutVariationDatasets)) {
     throw new Error(`Unknown Donut variation dataset: ${selectedDataset}`);
   }
@@ -119,7 +123,11 @@ const DonutVariationChart = ({
     dashboardSegmentLabel = <SegmentLabel percent showValueRow swatch value={false} />;
   }
   return (
-    <Chart {...chartProps}>
+    <Chart
+      {...chartProps}
+      animations={animations}
+      animationTypes={animations === undefined ? undefined : dashboardAnimationTypes}
+    >
       <Donut {...donutProps} emphasizedItems={emphasizedItems}>
         {children}
         {dashboardSegmentLabel}
@@ -465,6 +473,7 @@ export const DonutDashboard = (): ReactElement => (
     initialViewMode="none"
     resolvePresetSize={getDonutContainerSize}
     sizePresets={donutSizePresets}
+    showAnimationControls
     viewModes={donutViewModes}
   />
 );
