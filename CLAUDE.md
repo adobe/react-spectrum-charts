@@ -149,7 +149,7 @@ Always implement in this order:
 - `initializeSpec()` from `specUtils.ts` creates a minimal starting spec for tests
 - `defaultSignals` from `specTestUtils.ts` is the baseline signal array all specs start with
 - Run timezone-normalized: `cross-env TZ=UTC` is set in all test scripts
-- Default to `yarn test:quiet --testPathPattern=<pattern>` for a targeted, coverage-free run during development — never `yarn workspace ... test` (not a valid command in this monorepo) or a bare `npx jest`. Reserve the full `yarn test` (collects coverage, feeds Sonar) for CI or an explicit "run all"/final-validation request. A broad run isn't needed to catch unrelated regressions — the pipeline catches those.
+- Default to `yarn test:quiet --testPathPattern=<pattern>` for a targeted, coverage-free run during development — never `yarn workspace ... test` (not a valid command in this monorepo) or a bare `npx jest`. Reserve the full `yarn test` (collects coverage, feeds Sonar) for CI or an explicit "run all"/final-validation request. A broad run isn't needed to catch unrelated regressions — `yarn verify` and the pipeline catch those.
 
 ---
 
@@ -176,6 +176,9 @@ Run `yarn changeset:status` before finishing. See `PUBLISHING.md`.
 # Before running tests in a fresh worktree or after cloning, verify node_modules are installed.
 # If `cross-env: command not found` appears, run `yarn install` first, then retry.
 yarn install
+
+# Before pushing: the PR checks that catch code problems, minus Storybook/docs builds and Sonar
+yarn verify
 
 # Run tests, targeted (default for agents/dev — no coverage, quiet)
 yarn test:quiet --testPathPattern=line
@@ -331,8 +334,8 @@ When adding a new mark, verify its encodings follow the same conventions as comp
 - Opacity must use `getMarkOpacity()` rather than a hardcoded value
 - Cross-check against one or two similar existing marks (e.g. `barAnnotationUtils.ts`, `linePointUtils.ts`) to catch any other conventions
 
-### 6. TypeScript
-Run `yarn tsc --noEmit` once, when the whole task is complete — not proactively after every file or every test written. `yarn test` passing does not imply the files are type-correct. For iterative/multi-step work, defer this to task completion or let CI catch it rather than re-running it after each change.
+### 6. TypeScript and `yarn verify`
+Run `yarn verify` once before pushing — not after every file or every test written. It runs the PR checks that catch code problems (changeset, lint, `build:s2`, `tsc`, package exports, and tests related to the branch's changes) in about a minute and a half. `yarn test` passing does not imply the files are type-correct, and `tsc` is the only check that type-checks stories, dev dashboards, and tests.
 
 ---
 

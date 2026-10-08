@@ -291,7 +291,7 @@ S2 differences: uses `getS2ColorValue` instead of `getColorValue`, no `s2` boole
 - [ ] `utils/utils.ts` — sanitizeRscChartChildren updated
 - [ ] `stories/components/Widget/Widget.story.tsx` — created
 - [ ] `stories/components/Widget/Widget.test.tsx` — created
-- [ ] `yarn tsc --noEmit` — passes
+- [ ] `yarn verify` — passes
 
 ---
 
@@ -305,7 +305,7 @@ S2 differences: uses `getS2ColorValue` instead of `getColorValue`, no `s2` boole
 
 **`interactiveMarkName` vs mark name** — The interactive mark name is what Vega event listeners attach to. For most marks it equals the mark name. For marks with a separate hover layer (like a voronoi overlay), it should reference the voronoi mark name so events fire on the overlay, not the data mark.
 
-**Failing TypeScript but not tests** — `yarn test` doesn't type-check. Run `yarn tsc --noEmit` once the whole task is complete (see CLAUDE.md's Test Completeness Checklist) — don't run it proactively after each change.
+**Failing TypeScript but not tests** — `yarn test` doesn't type-check. Run `yarn verify` (includes `tsc`) once the whole task is complete, before pushing (see CLAUDE.md's Test Completeness Checklist) — don't run it proactively after each change.
 
 **Cognitive complexity** — SonarQube flags functions whose cognitive complexity exceeds the threshold. Spec builder functions with many conditionals are the most common trigger. When a function grows complex, extract inline conditional chains or loops into named helper functions rather than inlining them. The `addData` and `addMarks` functions are the most likely candidates.
 
