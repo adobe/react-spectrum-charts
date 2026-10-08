@@ -9,9 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { ChartProps } from '../../../types/index.js';
+import { stubS2BrowserApis } from '../../dashboardTestUtils.js';
 import { PropVariations } from './DonutVariations.story.js';
 
 jest.mock('../../../Chart.js', () => ({
@@ -29,9 +31,11 @@ jest.mock('../../../hooks/useChartProps.js', () => ({
   default: (props: ChartProps) => props,
 }));
 
-test('wires the dashboard animation toggle into all donut charts while switching datasets', () => {
+beforeAll(stubS2BrowserApis);
+
+test('wires the dashboard animation toggle into all donut charts while switching datasets', async () => {
   render(<PropVariations />);
-  const toggle = screen.getByRole('checkbox', { name: 'Donut animations' });
+  const toggle = screen.getByRole('switch', { name: 'Donut animations' });
   const expectAnimations = (enabled: boolean) => {
     const charts = screen.getAllByTestId('variation-chart');
     expect(charts.length).toBeGreaterThan(1);
@@ -42,16 +46,13 @@ test('wires the dashboard animation toggle into all donut charts while switching
   };
   expectAnimations(true);
 
-  fireEvent.click(toggle);
+  await userEvent.click(toggle);
   expectAnimations(false);
 
-  const dataset = screen.getByRole('combobox', { name: 'Donut dataset' });
-  if (!(dataset instanceof HTMLSelectElement) || !dataset.options[1]) {
-    throw new Error('Expected multiple dashboard datasets');
-  }
-  fireEvent.change(dataset, { target: { value: dataset.options[1].value } });
+  await userEvent.click(screen.getByRole('button', { name: /Dataset/ }));
+  await userEvent.click(screen.getAllByRole('option')[1]);
   expectAnimations(false);
 
-  fireEvent.click(toggle);
+  await userEvent.click(toggle);
   expectAnimations(true);
 });

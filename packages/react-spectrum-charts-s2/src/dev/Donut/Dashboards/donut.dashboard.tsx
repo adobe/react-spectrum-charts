@@ -461,6 +461,7 @@ export const donutVariations: Variation[] = [
 export const DonutDashboard = (): ReactElement => (
   <VariationDashboard
     variations={donutVariations}
+    coverage={dashboard.coverage}
     chartType="Donut"
     datasets={donutDatasetOptions}
     filters={donutVariationFilters}
