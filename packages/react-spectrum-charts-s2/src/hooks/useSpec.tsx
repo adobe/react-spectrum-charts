@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useMemo, useRef } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Data, Spec, ValuesData } from 'vega';
 
@@ -18,6 +18,7 @@ import { ChartData, ChartSpecOptions, baseData, buildSpec } from '@spectrum-char
 
 import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter/index.js';
 import { SanitizedSpecProps } from '../types/index.js';
+import { createSpecDeduper } from '../utils/specDeduper.js';
 
 export default function useSpec({
   animations,
@@ -41,7 +42,7 @@ export default function useSpec({
   title,
   UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
-  const previousSpec = useRef<{ spec: Spec; json: string } | null>(null);
+  const [dedupeSpec] = useState(createSpecDeduper);
 
   const builtSpec = useMemo(() => {
     if (UNSAFE_vegaSpec) {
@@ -102,12 +103,7 @@ export default function useSpec({
   ]);
 
   // Keep the previous spec object when the rebuilt spec is identical so downstream effects don't re-embed.
-  return useMemo(() => {
-    const json = JSON.stringify(builtSpec);
-    if (previousSpec.current?.json === json) return previousSpec.current.spec;
-    previousSpec.current = { spec: builtSpec, json };
-    return builtSpec;
-  }, [builtSpec]);
+  return useMemo(() => dedupeSpec(builtSpec), [builtSpec, dedupeSpec]);
 }
 
 const initializeSpec = (
