@@ -153,6 +153,11 @@ describe('getScatterMark() stroke', () => {
     // fill and stroke should be different
     expect(mark.encode?.enter?.fill).not.toEqual(mark.encode?.enter?.stroke);
   });
+
+  test('should use round stroke caps so zero-length dotted dashes render', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, lineType: { value: 'dotted' } });
+    expect(mark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
+  });
 });
 
 describe('getScatterMark() blend', () => {

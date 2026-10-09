@@ -148,6 +148,17 @@ describe('addSignals()', () => {
   });
 });
 
+describe('addSignals() with a controlled highlighted item', () => {
+  test('should add the hovered item signal when highlightedItem is set without interactive children', () => {
+    const signals = addSignals(defaultSignals, { ...defaultScatterOptions, highlightedItem: 'a' });
+    expect(signals.find((signal) => signal.name === `${defaultScatterOptions.name}_${HOVERED_ITEM}`)).toBeDefined();
+  });
+  test('should not add the hovered item signal when there is no interactivity or highlightedItem', () => {
+    const signals = addSignals(defaultSignals, defaultScatterOptions);
+    expect(signals.find((signal) => signal.name.includes(HOVERED_ITEM))).toBeUndefined();
+  });
+});
+
 describe('setScales()', () => {
   test('should add all the correct scales', () => {
     const scales = setScales([], defaultScatterOptions);
@@ -159,6 +170,21 @@ describe('setScales()', () => {
     const scales = setScales([], { ...defaultScatterOptions, color: DEFAULT_COLOR });
     expect(scales).toHaveLength(3);
     expect(scales[2].name).toBe(COLOR_SCALE);
+  });
+  test('should add the stroke field to the color scale domain', () => {
+    const scales = setScales([], { ...defaultScatterOptions, color: { value: 'gray-300' }, stroke: 'segment' });
+    const colorScale = scales.find((scale) => scale.name === COLOR_SCALE);
+    expect(colorScale?.domain).toHaveProperty('fields', ['segment']);
+  });
+  test('should add both color and stroke fields to the linear color scale domain', () => {
+    const scales = setScales([], {
+      ...defaultScatterOptions,
+      color: DEFAULT_COLOR,
+      colorScaleType: 'linear',
+      stroke: 'weight',
+    });
+    const colorScale = scales.find((scale) => scale.name === LINEAR_COLOR_SCALE);
+    expect(colorScale?.domain).toHaveProperty('fields', [DEFAULT_COLOR, 'weight']);
   });
   test('should add color to linear color scale if the colorScaleType is linear', () => {
     const scales = setScales([], { ...defaultScatterOptions, color: DEFAULT_COLOR, colorScaleType: 'linear' });
