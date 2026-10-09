@@ -11,7 +11,7 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { NumberFormat } from '@spectrum-charts/vega-spec-builder-s2';
+import { BarDirectLabelOverflow, NumberFormat } from '@spectrum-charts/vega-spec-builder-s2';
 
 export type BarDirectLabelPosition = 'start' | 'middle' | 'end' | 'end-outside';
 
@@ -21,12 +21,22 @@ export interface BarDirectLabelProps {
    * - 'end-outside': always outside the bar tip (default)
    * - 'end': inside the bar, 8px from the tip
    * - 'middle': centered within the bar
-   * - 'start': inside near the baseline when the label fits, spilling outside the tip when it doesn't
+   * - 'start': inside near the baseline
    * @default 'end-outside'
    */
   position?: BarDirectLabelPosition;
   /** Number format for the label value — a named preset or custom d3-format specifier. @default ',.2~f' */
   format?: NumberFormat;
+  /**
+   * Data key that selects which bars get a label; only rows where this field is truthy are labeled.
+   */
+  dataKey?: string;
+  /**
+   * Inside positions: `hide` hides labels that don't fit inside the bar, `spill` moves them outside the bar tip.
+   * Outside labels are hidden if they would overlap a bar or another label.
+   * @default 'spill' for `start`, otherwise 'hide'
+   */
+  overflow?: BarDirectLabelOverflow;
 }
 
 export type BarDirectLabelElement = ReactElement<

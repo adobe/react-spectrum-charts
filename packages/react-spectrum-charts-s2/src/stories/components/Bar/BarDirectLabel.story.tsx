@@ -25,8 +25,10 @@ export default {
   component: BarDirectLabel,
 };
 
+const calloutData = newSubscribersData.map((datum) => ({ ...datum, callout: datum.channel === 'Social' }));
+
 const BarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: newSubscribersData, width: 640, height: 400 });
+  const chartProps = useChartProps({ data: calloutData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" baseline title="Acquisition channel" />
@@ -59,4 +61,33 @@ Format.argTypes = {
   format: { control: 'select', options: ['.2~s', 'standardNumber', ',.0f', 'currency'] },
 };
 
-export { Basic, Position, Format };
+// Narrow chart so the smaller bars are too short to hold their labels.
+const OverflowStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: calloutData, width: 320, height: 240 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" baseline />
+      <Axis position="bottom" grid />
+      <Bar dimension="channel" metric="subscribers" orientation="horizontal">
+        <BarDirectLabel {...args} />
+      </Bar>
+    </Chart>
+  );
+};
+
+const Overflow = bindStory(OverflowStory);
+Overflow.args = { position: 'end', overflow: 'spill' };
+Overflow.parameters = { controls: { include: ['position', 'overflow'] } };
+Overflow.argTypes = {
+  position: { control: 'select', options: ['start', 'middle', 'end'] },
+  overflow: { control: 'select', options: ['hide', 'spill'] },
+};
+
+const DataKey = bindStory(BarDirectLabelStory);
+DataKey.args = { dataKey: 'callout' };
+DataKey.parameters = { controls: { include: ['position'] } };
+DataKey.argTypes = {
+  position: { control: 'select', options: ['start', 'middle', 'end', 'end-outside'] },
+};
+
+export { Basic, Position, Format, Overflow, DataKey };

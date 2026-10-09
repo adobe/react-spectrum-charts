@@ -9,247 +9,398 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorValueRef, Mark, TextMark } from 'vega';
+import { Mark, RectMark, Signal, TextEncodeEntry, TextMark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
-  DEFAULT_FONT_SIZE,
+  CHART_SIZE_FONT_SIZE,
   DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
   DIRECT_LABEL_FONT_WEIGHT,
-  FILTERED_TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getOrientationProperties } from '../bar/barUtils.js';
-import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils.js';
 import { getNumberFormatExpression } from '../specUtils.js';
-import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types/index.js';
+import {
+  BarDirectLabelOptions,
+  BarDirectLabelOverflow,
+  BarDirectLabelSpecOptions,
+  BarSpecOptions,
+} from '../types/index.js';
 
 // Gap between the bar tip and an outside label
 const VERTICAL_LABEL_OFFSET = 6;
 const HORIZONTAL_LABEL_OFFSET = 8;
 // Gap between an inside label and the bar edge
 const INSIDE_LABEL_OFFSET = 8;
-// Clearance each side of the label needed to count as "fits inside"
+// Clearance along the bar's length needed to count as "fits inside"
 const FIT_PADDING = 2 * INSIDE_LABEL_OFFSET;
+// Clearance across the bar's thickness needed to count as "fits inside"
+const THICKNESS_PADDING = 4;
 const DEFAULT_NUMBER_FORMAT = ',.2~f';
+const FONT_SIZE = CHART_SIZE_FONT_SIZE;
+
+export interface LabelGeometry {
+  x: string;
+  y: string;
+  align: string;
+  baseline: string;
+}
 
 /**
- * Returns position-specific Vega encoding values for a bar direct label.
- * @param position - where to place the label relative to the bar
- * @param isVertical - whether the bar is vertically oriented
+ * Builds the expressions describing a bar item's edges. `bar` is the expression path to the bar's scenegraph item.
+ * @param bar - expression path to the bar item (e.g. `datum`)
  * @param metric - the metric field name
- * @param metricScaleKey - the Vega scale name for the metric axis
- * @param fillEncoding - the series color encoding used for labels placed outside the bar
- * @param textSignal - the Vega signal expression that produces the label's text
  */
-export const getBarDirectLabelPositionEncodings = (
-  position: BarDirectLabelPositionType,
-  isVertical: boolean,
-  metric: string,
-  metricScaleKey: string,
-  fillEncoding: ColorValueRef,
-  textSignal: string
-) => {
-  if (position === 'middle') {
-    const midSignal = `(scale('${metricScaleKey}', 0) + scale('${metricScaleKey}', datum['${metric}'])) / 2`;
-    return {
-      metricAxisEncoding: { signal: midSignal },
-      verticalBaseline: { value: 'middle' as const },
-      horizontalAlign: { value: 'center' as const },
-      seriesFill: { signal: BACKGROUND_COLOR },
-      isInsideTest: undefined as string | undefined,
-    };
-  }
+const getBarEdges = (bar: string, metric: string) => ({
+  negative: `${bar}.datum[${JSON.stringify(metric)}] < 0`,
+  left: `${bar}.x`,
+  right: `(${bar}.x + ${bar}.width)`,
+  top: `${bar}.y`,
+  bottom: `(${bar}.y + ${bar}.height)`,
+  centerX: `(${bar}.x + ${bar}.width / 2)`,
+  centerY: `(${bar}.y + ${bar}.height / 2)`,
+});
 
-  if (position === 'start') {
-    // opt-in adaptive inside: near the baseline when the label fits, spilling outside the tip otherwise
-    return getAdaptiveEndPositionEncodings(isVertical, metric, metricScaleKey, fillEncoding, textSignal);
-  }
+/**
+ * Gets the label text expression for a bar item.
+ * @param bar - expression path to the bar item
+ * @param labelOptions
+ */
+export const getBarDirectLabelText = (bar: string, { format, metric }: BarDirectLabelSpecOptions): string =>
+  getNumberFormatExpression(`${bar}.datum[${JSON.stringify(metric)}]`, format || DEFAULT_NUMBER_FORMAT);
 
-  // 'end' (inside) and 'end-outside' (always outside) both anchor at the bar tip
-  const isEndInside = position === 'end';
-  const isEndOutside = position === 'end-outside';
-  const directionMultiplier = isEndInside ? -1 : 1;
-  const verticalOffset = isEndOutside ? VERTICAL_LABEL_OFFSET : INSIDE_LABEL_OFFSET;
-  const horizontalOffset = isEndOutside ? HORIZONTAL_LABEL_OFFSET : INSIDE_LABEL_OFFSET;
-  const anchor = { field: metric };
+const getTextWidth = (text: string) => `getLabelWidth(${text}, ${DIRECT_LABEL_FONT_WEIGHT}, ${FONT_SIZE})`;
 
-  const [negBaseline, posBaseline] = isEndInside
-    ? ['bottom' as const, 'top' as const]
-    : ['top' as const, 'bottom' as const];
-
-  const [negAlign, posAlign] = isEndInside
-    ? ['left' as const, 'right' as const]
-    : ['right' as const, 'left' as const];
-
-  return {
-    metricAxisEncoding: isVertical
-      ? [
-          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: directionMultiplier * verticalOffset },
-          { scale: metricScaleKey, ...anchor, offset: -directionMultiplier * verticalOffset },
-        ]
-      : [
-          { test: `datum["${metric}"] < 0`, scale: metricScaleKey, ...anchor, offset: -directionMultiplier * horizontalOffset },
-          { scale: metricScaleKey, ...anchor, offset: directionMultiplier * horizontalOffset },
-        ],
-    verticalBaseline: [
-      { test: `datum["${metric}"] < 0`, value: negBaseline },
-      { value: posBaseline },
-    ],
-    horizontalAlign: [
-      { test: `datum["${metric}"] < 0`, value: negAlign },
-      { value: posAlign },
-    ],
-    seriesFill: isEndOutside ? fillEncoding : { signal: BACKGROUND_COLOR },
-    isInsideTest: undefined as string | undefined,
-  };
+/**
+ * Gets the expression that tests whether the label fits inside its bar.
+ * @param bar - expression path to the bar item
+ * @param labelOptions
+ */
+export const getBarDirectLabelFitsTest = (bar: string, labelOptions: BarDirectLabelSpecOptions): string => {
+  const textWidth = getTextWidth(getBarDirectLabelText(bar, labelOptions));
+  return labelOptions.orientation === 'vertical'
+    ? `${bar}.height >= ${FONT_SIZE} + ${FIT_PADDING} && ${bar}.width >= ${textWidth} + ${THICKNESS_PADDING}`
+    : `${bar}.width >= ${textWidth} + ${FIT_PADDING} && ${bar}.height >= ${FONT_SIZE} + ${THICKNESS_PADDING}`;
 };
 
-/** The `start` position: inside near the baseline when the label fits, spilling outside the tip otherwise. */
-const getAdaptiveEndPositionEncodings = (
-  isVertical: boolean,
-  metric: string,
-  metricScaleKey: string,
-  fillEncoding: ColorValueRef,
-  textSignal: string
-) => {
-  const barLength = `abs(scale('${metricScaleKey}', datum["${metric}"]) - scale('${metricScaleKey}', 0))`;
-  const requiredSpace = isVertical
-    ? `${DEFAULT_FONT_SIZE + FIT_PADDING}`
-    : `(getLabelWidth(${textSignal}, ${DIRECT_LABEL_FONT_WEIGHT}, ${DEFAULT_FONT_SIZE}) + ${FIT_PADDING})`;
-  const fitsInside = `${barLength} > ${requiredSpace}`;
-  const negativeAndFits = `datum["${metric}"] < 0 && ${fitsInside}`;
-  const negative = `datum["${metric}"] < 0`;
-
-  const seriesFill = [{ test: fitsInside, signal: BACKGROUND_COLOR }, fillEncoding];
-
-  if (isVertical) {
+/**
+ * Gets the label geometry for a label placed inside its bar.
+ * @param bar - expression path to the bar item
+ * @param labelOptions
+ */
+export const getInsideLabelGeometry = (bar: string, { metric, orientation, position }: BarDirectLabelSpecOptions): LabelGeometry => {
+  const { negative, left, right, top, bottom, centerX, centerY } = getBarEdges(bar, metric);
+  const atStart = position === 'start';
+  if (orientation === 'vertical') {
+    if (position === 'middle') return { x: centerX, y: centerY, align: "'center'", baseline: "'middle'" };
+    const [negY, posY] = atStart ? [top, bottom] : [bottom, top];
+    const sign = atStart ? 1 : -1;
+    const [negBaseline, posBaseline] = atStart ? ["'top'", "'bottom'"] : ["'bottom'", "'top'"];
     return {
-      metricAxisEncoding: [
-        // fits: inside at the baseline
-        { test: negativeAndFits, scale: metricScaleKey, value: 0, offset: INSIDE_LABEL_OFFSET },
-        // doesn't fit: outside at the tip
-        { test: negative, scale: metricScaleKey, field: metric, offset: VERTICAL_LABEL_OFFSET },
-        { test: fitsInside, scale: metricScaleKey, value: 0, offset: -INSIDE_LABEL_OFFSET },
-        { scale: metricScaleKey, field: metric, offset: -VERTICAL_LABEL_OFFSET },
-      ],
-      verticalBaseline: [
-        { test: negative, value: 'top' as const },
-        { value: 'bottom' as const },
-      ],
-      horizontalAlign: { value: 'center' as const },
-      seriesFill,
-      isInsideTest: fitsInside,
+      x: centerX,
+      y: `(${negative} ? ${negY} + ${sign * INSIDE_LABEL_OFFSET} : ${posY} - ${sign * INSIDE_LABEL_OFFSET})`,
+      align: "'center'",
+      baseline: `(${negative} ? ${negBaseline} : ${posBaseline})`,
     };
   }
-
+  if (position === 'middle') return { x: centerX, y: centerY, align: "'center'", baseline: "'middle'" };
+  const [negX, posX] = atStart ? [right, left] : [left, right];
+  const sign = atStart ? 1 : -1;
+  const [negAlign, posAlign] = atStart ? ["'right'", "'left'"] : ["'left'", "'right'"];
   return {
-    metricAxisEncoding: [
-      { test: negativeAndFits, scale: metricScaleKey, value: 0, offset: -INSIDE_LABEL_OFFSET },
-      { test: negative, scale: metricScaleKey, field: metric, offset: -HORIZONTAL_LABEL_OFFSET },
-      { test: fitsInside, scale: metricScaleKey, value: 0, offset: INSIDE_LABEL_OFFSET },
-      { scale: metricScaleKey, field: metric, offset: HORIZONTAL_LABEL_OFFSET },
-    ],
-    verticalBaseline: { value: 'middle' as const },
-    horizontalAlign: [
-      { test: negative, value: 'right' as const },
-      { value: 'left' as const },
-    ],
-    seriesFill,
-    isInsideTest: fitsInside,
+    x: `(${negative} ? ${negX} - ${sign * INSIDE_LABEL_OFFSET} : ${posX} + ${sign * INSIDE_LABEL_OFFSET})`,
+    y: centerY,
+    align: `(${negative} ? ${negAlign} : ${posAlign})`,
+    baseline: "'middle'",
   };
 };
 
 /**
- * Text marks: background stroke halo + foreground fill, placed outside the tip of each bar.
- * Vertical bars: label above (positive) or below (negative) the bar, horizontally centered.
- * Horizontal bars: label to the right (positive) or left (negative) of the bar, vertically centered.
- *
- * No separate data source is needed — each row in FILTERED_TABLE is already one bar.
+ * Gets the label geometry for a label placed outside the tip of its bar.
+ * @param bar - expression path to the bar item
+ * @param labelOptions
  */
-export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, barOptions: BarSpecOptions): Mark[] => {
-  const { barName, color, colorOverride, colorScheme, dimension, format, index, metric, metricAxis, orientation, position } =
-    labelOptions;
+export const getOutsideLabelGeometry = (bar: string, { metric, orientation }: BarDirectLabelSpecOptions): LabelGeometry => {
+  const { negative, left, right, top, bottom, centerX, centerY } = getBarEdges(bar, metric);
+  if (orientation === 'vertical') {
+    return {
+      x: centerX,
+      y: `(${negative} ? ${bottom} + ${VERTICAL_LABEL_OFFSET} : ${top} - ${VERTICAL_LABEL_OFFSET})`,
+      align: "'center'",
+      baseline: `(${negative} ? 'top' : 'bottom')`,
+    };
+  }
+  return {
+    x: `(${negative} ? ${left} - ${HORIZONTAL_LABEL_OFFSET} : ${right} + ${HORIZONTAL_LABEL_OFFSET})`,
+    y: centerY,
+    align: `(${negative} ? 'right' : 'left')`,
+    baseline: "'middle'",
+  };
+};
 
-  const { metricScaleKey, dimensionScaleKey } = getOrientationProperties(orientation, metricAxis);
-  const isVertical = orientation === 'vertical';
+/**
+ * Gets the bottom-center point of an outside label, used as the anchor for collision layout.
+ * @param bar - expression path to the bar item
+ * @param labelOptions
+ */
+const getOutsideAnchorPoint = (bar: string, labelOptions: BarDirectLabelSpecOptions) => {
+  const { negative, left, right, top, bottom, centerX, centerY } = getBarEdges(bar, labelOptions.metric);
+  if (labelOptions.orientation === 'vertical') {
+    return {
+      x: centerX,
+      y: `(${negative} ? ${bottom} + ${VERTICAL_LABEL_OFFSET} + ${FONT_SIZE} : ${top} - ${VERTICAL_LABEL_OFFSET})`,
+    };
+  }
+  const halfWidth = `${getTextWidth(getBarDirectLabelText(bar, labelOptions))} / 2`;
+  return {
+    x: `(${negative} ? ${left} - ${HORIZONTAL_LABEL_OFFSET} - ${halfWidth} : ${right} + ${HORIZONTAL_LABEL_OFFSET} + ${halfWidth})`,
+    y: `${centerY} + ${FONT_SIZE} / 2`,
+  };
+};
 
-  const fillEncoding = colorOverride
-    ? { signal: `datum[${JSON.stringify(colorOverride)}]` }
-    : getColorProductionRule(color, colorScheme);
+const selectGeometry = (test: string, ifTrue: LabelGeometry, ifFalse: LabelGeometry): LabelGeometry => ({
+  x: `(${test}) ? ${ifTrue.x} : ${ifFalse.x}`,
+  y: `(${test}) ? ${ifTrue.y} : ${ifFalse.y}`,
+  align: `(${test}) ? ${ifTrue.align} : ${ifFalse.align}`,
+  baseline: `(${test}) ? ${ifTrue.baseline} : ${ifFalse.baseline}`,
+});
 
-  const fontSizeEncoding = getDirectLabelFontSizeProductionRule();
+const getGeometryEncoding = ({ x, y, align, baseline }: LabelGeometry): TextEncodeEntry => ({
+  x: { signal: x },
+  y: { signal: y },
+  align: { signal: align },
+  baseline: { signal: baseline },
+});
 
-  // Label text computed inline — no derived dataset needed
-  const resolvedFormat = format || DEFAULT_NUMBER_FORMAT;
-  const textSignal = getNumberFormatExpression(`datum["${metric}"]`, resolvedFormat);
+const getFontSizeEncoding = (tests: (string | undefined)[]): TextEncodeEntry['fontSize'] => {
+  const definedTests = tests.filter(Boolean);
+  if (!definedTests.length) return { signal: FONT_SIZE };
+  return { signal: `(${definedTests.join(') && (')}) ? ${FONT_SIZE} : 0` };
+};
 
-  // Dimension axis: center of the bar's band
-  const dimensionBandCenter = { scale: dimensionScaleKey, field: dimension, band: 0.5 };
-
-  const { metricAxisEncoding, verticalBaseline, horizontalAlign, seriesFill, isInsideTest } =
-    getBarDirectLabelPositionEncodings(position, isVertical, metric, metricScaleKey, fillEncoding, textSignal);
-
-  const baseEnter = isVertical
-    ? {
-        x: dimensionBandCenter,
-        y: metricAxisEncoding,
-        align: { value: 'center' as const },
-        baseline: verticalBaseline,
-        text: { signal: textSignal },
-        fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
-      }
-    : {
-        y: dimensionBandCenter,
-        x: metricAxisEncoding,
-        baseline: { value: 'middle' as const },
-        align: horizontalAlign,
-        text: { signal: textSignal },
-        fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
-      };
-
-  const backgroundMark: TextMark = {
-    name: `${barName}DirectLabel${index}_bg`,
-    type: 'text',
-    from: { data: FILTERED_TABLE },
-    interactive: false,
-    encode: {
-      enter: {
-        ...baseEnter,
-        stroke: { signal: BACKGROUND_COLOR },
-        // inside labels already contrast against the bar, so only halo the outside ones
-        strokeWidth: isInsideTest
-          ? [{ test: isInsideTest, value: 0 }, { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH }]
-          : { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
-        fill: { value: 'transparent' },
-      },
-      update: {
-        fontSize: fontSizeEncoding,
-      },
+const getHaloMark = (name: string, from: string, update: TextEncodeEntry, strokeWidth: TextEncodeEntry['strokeWidth']): TextMark => ({
+  name: `${name}_bg`,
+  type: 'text',
+  from: { data: from },
+  interactive: false,
+  encode: {
+    update: {
+      ...update,
+      stroke: { signal: BACKGROUND_COLOR },
+      strokeWidth,
+      fill: { value: 'transparent' },
     },
+  },
+});
+
+/**
+ * Gets the mark name for a bar direct label.
+ * @param labelOptions
+ */
+export const getBarDirectLabelMarkName = ({ barName, index }: BarDirectLabelSpecOptions) =>
+  `${barName}DirectLabel${index}`;
+
+/**
+ * Whether outside labels for this direct label are laid out with collision detection.
+ * @param labelOptions
+ */
+export const usesCollisionLayout = ({ overflow, position }: BarDirectLabelSpecOptions) =>
+  position === 'end-outside' || overflow === 'spill';
+
+/**
+ * Gets the expression that tests whether the bar's data row is selected by `dataKey`.
+ * @param bar - expression for the bar mark item
+ * @param labelOptions
+ */
+const getRowTest = (bar: string, { dataKey }: BarDirectLabelSpecOptions): string | undefined =>
+  dataKey ? `${bar}.datum[${JSON.stringify(dataKey)}]` : undefined;
+
+/**
+ * Gets direct label marks derived from the bar mark's geometry, with no collision detection.
+ * @param labelOptions
+ */
+const getStaticLabelMarks = (labelOptions: BarDirectLabelSpecOptions): Mark[] => {
+  const { barName, overflow, position } = labelOptions;
+  const name = getBarDirectLabelMarkName(labelOptions);
+  const isEndOutside = position === 'end-outside';
+  const canSpill = isEndOutside || overflow === 'spill';
+  const fits = getBarDirectLabelFitsTest('datum', labelOptions);
+  const isOutside = isEndOutside ? 'true' : `!(${fits})`;
+
+  const inside = getInsideLabelGeometry('datum', labelOptions);
+  const outside = getOutsideLabelGeometry('datum', labelOptions);
+  let geometry = inside;
+  if (isEndOutside) geometry = outside;
+  else if (canSpill) geometry = selectGeometry(isOutside, outside, inside);
+
+  const update: TextEncodeEntry = {
+    ...getGeometryEncoding(geometry),
+    text: { signal: getBarDirectLabelText('datum', labelOptions) },
+    fontSize: getFontSizeEncoding([getRowTest('datum', labelOptions), canSpill ? undefined : fits]),
+    fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+    opacity: { signal: 'datum.opacity' },
   };
 
   const mainMark: TextMark = {
-    name: `${barName}DirectLabel${index}`,
+    name,
     type: 'text',
-    from: { data: FILTERED_TABLE },
+    from: { data: barName },
     interactive: false,
     encode: {
-      enter: {
-        ...baseEnter,
-        fill: seriesFill,
-      },
       update: {
-        opacity: getMarkOpacity(barOptions),
-        fontSize: fontSizeEncoding,
+        ...update,
+        fill: canSpill ? { signal: `${isOutside} ? datum.fill : ${BACKGROUND_COLOR}` } : { signal: BACKGROUND_COLOR },
       },
     },
   };
+  if (!canSpill) return [mainMark];
 
-  // background halo only needed where a label can sit outside the bar: end-outside, or adaptive when it spills
-  const hasOutsideLabel = position === 'end-outside' || Boolean(isInsideTest);
-  return hasOutsideLabel ? [backgroundMark, mainMark] : [mainMark];
+  const strokeWidth = isEndOutside
+    ? { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH }
+    : { signal: `${isOutside} ? ${DIRECT_LABEL_BACKGROUND_STROKE_WIDTH} : 0` };
+  return [getHaloMark(name, barName, update, strokeWidth), mainMark];
 };
+
+/**
+ * Gets direct label marks where outside labels are hidden if they collide with bars or previously placed labels.
+ * @param labelOptions
+ * @param avoidMarks - names of marks that outside labels must not overlap
+ */
+const getCollisionLabelMarks = (labelOptions: BarDirectLabelSpecOptions, avoidMarks: string[]): Mark[] => {
+  const { barName, position } = labelOptions;
+  const name = getBarDirectLabelMarkName(labelOptions);
+  const isEndOutside = position === 'end-outside';
+  const marks: Mark[] = [];
+
+  if (!isEndOutside) {
+    marks.push({
+      name: `${name}_inside`,
+      type: 'text',
+      from: { data: barName },
+      interactive: false,
+      encode: {
+        update: {
+          ...getGeometryEncoding(getInsideLabelGeometry('datum', labelOptions)),
+          text: { signal: getBarDirectLabelText('datum', labelOptions) },
+          fontSize: getFontSizeEncoding([getRowTest('datum', labelOptions), getBarDirectLabelFitsTest('datum', labelOptions)]),
+          fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+          fill: { signal: BACKGROUND_COLOR },
+          opacity: { signal: 'datum.opacity' },
+        },
+      },
+    });
+  }
+
+  const anchorPoint = getOutsideAnchorPoint('datum', labelOptions);
+  const anchorMark: RectMark = {
+    name: `${name}_anchor`,
+    type: 'rect',
+    from: { data: barName },
+    interactive: false,
+    encode: {
+      update: { x: { signal: anchorPoint.x }, y: { signal: anchorPoint.y }, width: { value: 0 }, height: { value: 0 } },
+    },
+  };
+
+  // datum is the anchor item, datum.datum is the bar item
+  const isOutside = isEndOutside ? undefined : `!(${getBarDirectLabelFitsTest('datum.datum', labelOptions)})`;
+  const placementMark: TextMark = {
+    name: `${name}_placement`,
+    type: 'text',
+    from: { data: anchorMark.name as string },
+    interactive: false,
+    encode: {
+      update: {
+        text: { signal: getBarDirectLabelText('datum.datum', labelOptions) },
+        fontSize: getFontSizeEncoding([getRowTest('datum.datum', labelOptions), isOutside]),
+        fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+        fill: { value: 'transparent' },
+      },
+    },
+    transform: [
+      {
+        type: 'label',
+        size: { signal: getBarDirectLabelLayoutSizeSignalName(barName) },
+        anchor: ['top'],
+        offset: [0],
+        avoidBaseMark: false,
+        avoidMarks,
+        padding: null,
+      },
+    ],
+  };
+
+  // datum is the placed label, datum.datum.datum is the bar item
+  const update: TextEncodeEntry = {
+    x: { field: 'x' },
+    y: { field: 'y' },
+    align: { field: 'align' },
+    baseline: { field: 'baseline' },
+    text: { field: 'text' },
+    fontSize: { field: 'fontSize' },
+    fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+    opacity: { signal: 'datum.opacity * datum.datum.datum.opacity' },
+  };
+
+  marks.push(
+    anchorMark,
+    placementMark,
+    getHaloMark(name, `${name}_placement`, update, { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH }),
+    {
+      name,
+      type: 'text',
+      from: { data: `${name}_placement` },
+      interactive: false,
+      encode: { update: { ...update, fill: { signal: 'datum.datum.datum.fill' } } },
+    }
+  );
+  return marks;
+};
+
+const getBarDirectLabelLayoutSizeSignalName = (barName: string) => `${barName}_directLabelLayoutSize`;
+
+/**
+ * Gets the chart size signal for label collision layout; defined at the top level because `width` is the band width inside dodged groups.
+ * @param barName
+ * @returns Signal
+ */
+export const getBarDirectLabelLayoutSizeSignal = (barName: string): Signal => ({
+  name: getBarDirectLabelLayoutSizeSignalName(barName),
+  update: '[width, height]',
+});
+
+/**
+ * Whether any direct label on the bar uses collision layout.
+ * @param barOptions
+ */
+export const hasCollisionDirectLabels = (barOptions: BarSpecOptions): boolean =>
+  barOptions.barDirectLabels.some((label, i) => usesCollisionLayout(getBarDirectLabelSpecOptions(label, i, barOptions)));
+
+/**
+ * Gets the marks for a single bar direct label. Marks read the rendered bar items, so they must share the bar's scope.
+ * @param labelOptions
+ * @param avoidMarks - names of marks that outside labels must not overlap
+ */
+export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, avoidMarks: string[]): Mark[] =>
+  usesCollisionLayout(labelOptions)
+    ? getCollisionLabelMarks(labelOptions, avoidMarks)
+    : getStaticLabelMarks(labelOptions);
+
+/**
+ * Gets the marks for every direct label on a bar. Later labels avoid earlier ones.
+ * @param barOptions
+ */
+export const getBarDirectLabelsMarks = (barOptions: BarSpecOptions): Mark[] => {
+  const labels = barOptions.barDirectLabels.map((label, i) => getBarDirectLabelSpecOptions(label, i, barOptions));
+  const placedMarks: string[] = [];
+  return labels.flatMap((label) => {
+    const marks = getBarDirectLabelMarks(label, [barOptions.name, ...placedMarks]);
+    placedMarks.push(getBarDirectLabelMarkName(label));
+    return marks;
+  });
+};
+
+const getDefaultOverflow = (labelOptions: BarDirectLabelOptions): BarDirectLabelOverflow =>
+  labelOptions.position === 'start' ? 'spill' : 'hide';
 
 /**
  * Applies defaults and inherits context from the parent bar, producing BarDirectLabelSpecOptions.
@@ -260,14 +411,11 @@ export const getBarDirectLabelSpecOptions = (
   barOptions: BarSpecOptions
 ): BarDirectLabelSpecOptions => ({
   barName: barOptions.name,
-  color: barOptions.color,
-  colorOverride: barOptions.colorOverride,
-  colorScheme: barOptions.colorScheme,
-  dimension: barOptions.dimension,
+  dataKey: labelOptions.dataKey,
   format: labelOptions.format ?? '',
   index,
   metric: barOptions.metric,
-  metricAxis: barOptions.metricAxis,
   orientation: barOptions.orientation,
+  overflow: labelOptions.overflow ?? getDefaultOverflow(labelOptions),
   position: labelOptions.position ?? 'end-outside',
 });
