@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, GroupMark } from 'vega';
+import { Data, GroupMark, SourceData } from 'vega';
 
 import { colorSchemes, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
@@ -23,6 +23,8 @@ import {
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTHS,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   DEFAULT_BACKGROUND_COLOR,
@@ -391,6 +393,16 @@ describe('Chart spec builder', () => {
       expect(
         addData(defaultData, { facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })[0].transform?.at(-1)
       ).toStrictEqual({ as: SERIES_ID, expr: 'datum.series + " | " + datum.subSeries', type: 'formula' });
+    });
+
+    test('should filter the controlled highlighted table by the idKey', () => {
+      const controlledTable = addData(baseData, { facets: [], idKey: 'id' }).find(
+        (d) => d.name === CONTROLLED_HIGHLIGHTED_TABLE
+      ) as SourceData;
+      expect(controlledTable.transform?.[0]).toHaveProperty(
+        'expr',
+        `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.id) > -1`
+      );
     });
   });
 

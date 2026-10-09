@@ -42,6 +42,7 @@ export interface HoverTargetDataOptions {
   groupby: string[];
   rules: HoverMatchRule[];
   source?: string; // defaults to TABLE
+  formulas?: FormulaTransform[]; // applied after the aggregate, before the rules
 }
 
 /**
@@ -72,9 +73,11 @@ export const getHoverTargetData = ({
   groupby,
   rules,
   source = TABLE,
+  formulas = [],
 }: HoverTargetDataOptions): SourceData => {
   const transforms: (AggregateTransform | FormulaTransform)[] = [
     { type: 'aggregate', groupby: groupby },
+    ...formulas,
     ...rules.map<FormulaTransform>((r) => ({ type: 'formula', as: r.as, expr: r.expr })),
   ];
   const targetExpr =

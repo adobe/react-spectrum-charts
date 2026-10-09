@@ -227,7 +227,7 @@ export function buildSpec({
 
   // copy the spec so we don't mutate the original
   spec = JSON.parse(JSON.stringify(spec));
-  spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
+  spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales), idKey });
 
   // sibling axes paint in array order, so move the diverging axis last or a later grid axis paints over its labels
   if (spec.usermeta?.divergingBarMarks?.length && spec.axes) {
@@ -477,14 +477,14 @@ function getPathsFromSymbolShapes(symbolShapes: ChartSymbolShape[]) {
 /**
  * Adds a formula transform to the TABLE data that combines all the facets into a single key
  */
-export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
+export const addData = produce<Data[], [{ facets: string[]; idKey?: string }]>((data, { facets, idKey = MARK_ID }) => {
   data.splice(2, 0, {
     name: CONTROLLED_HIGHLIGHTED_TABLE,
     source: FILTERED_TABLE,
     transform: [
       {
         type: 'filter',
-        expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) > -1`,
+        expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`,
       },
     ],
   });
