@@ -1263,6 +1263,11 @@ describe('lineSpecBuilder', () => {
       expect(addSignals([], defaultLineOptions)).toStrictEqual([]);
     });
 
+    test('adds the hovered item signal when only highlightedItem is set', () => {
+      const signals = addSignals([], { ...defaultLineOptions, highlightedItem: 'a1' });
+      expect(signals.some((signal) => signal.name === `${defaultLineOptions.name}_${HOVERED_ITEM}`)).toBe(true);
+    });
+
     test('does not add selected series if it already exists', () => {
       const hasSignalByNameSpy = jest.spyOn(signalSpecBuilder, 'hasSignalByName');
       expect(

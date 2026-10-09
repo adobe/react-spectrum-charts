@@ -214,7 +214,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
   }
 
-  if (!isInteractive(options)) return;
+  if (!isInteractive(options) && options.highlightedItem === undefined) return;
 
   if (options.interactionMode === INTERACTION_MODE.DIMENSION) {
     addHoveredItemSignal(signals, `${name}_${DIMENSION_HOVER_AREA}`, `${name}_xAxisVoronoi`, 2);

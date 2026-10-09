@@ -414,7 +414,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     addLineDrawInAnimationSignals(signals, options);
   }
 
-  if (!isInteractive(options)) return;
+  if (!isInteractive(options) && options.highlightedItem === undefined) return;
   const { primarySeries } = options;
   // datum.datum because the voronoi mark uses datumOrder=2
   addHoveredItemSignal(
