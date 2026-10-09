@@ -63,7 +63,7 @@ export default {
 type DashboardArgs = {
   animations?: boolean;
   animationTypes?: AnimationType[];
-  renderer?: ChartProps['renderer'];
+  renderer?: NonNullable<ChartProps['renderer']>;
   chartCount: number;
   seriesPerChart: number;
   pointsPerSeries: number;
@@ -92,7 +92,7 @@ type DashboardChartProps = {
   data: GeneratedTimeSeriesDatum[];
   animations?: boolean;
   animationTypes?: AnimationType[];
-  renderer?: ChartProps['renderer'];
+  renderer?: NonNullable<ChartProps['renderer']>;
 };
 
 /**
