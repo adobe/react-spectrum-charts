@@ -75,7 +75,11 @@ import {
   addUserMetaInteractiveMark,
   getFacetsFromOptions,
 } from '../specUtils.js';
-import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils.js';
+import {
+  getBarDirectLabelLayoutSizeSignal,
+  getBarDirectLabelsMarks,
+  hasCollisionDirectLabels,
+} from '../barDirectLabel/barDirectLabelUtils.js';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline/index.js';
 import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types/index.js';
 import { getChartFocusRing } from './barFocusRingUtils.js';
@@ -265,6 +269,10 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   // We use this value to calculate ReferenceLine positions.
   const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
   signals.push(getGenericValueSignal('paddingInner', paddingInner));
+
+  if (hasCollisionDirectLabels(options)) {
+    signals.push(getBarDirectLabelLayoutSizeSignal(name));
+  }
 
   if (options.accessibleNavigation) {
     signals.push(getGenericValueSignal(FOCUSED_ITEM), getGenericValueSignal(FOCUSED_REGION), getGenericValueSignal(FOCUSED_DIMENSION));
@@ -580,6 +588,12 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
     barMarks.push(...getDodgedMarks(options));
   }
 
+  // direct labels read the rendered bar items, so they live in the same scope as the bar mark
+  const labelMarks = getBarDirectLabelsMarks(options);
+  if (labelMarks.length && !insertAfterMark(barMarks, name, labelMarks)) {
+    barMarks.push(...labelMarks);
+  }
+
   const popovers = getPopovers(chartPopovers, name);
   if (popovers.some((popover) => popover.UNSAFE_highlightBy === 'dimension')) {
     barMarks.push(getDimensionSelectionRing(options));
@@ -595,14 +609,28 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
 
   marks.push(...getTrendlineMarks(options));
 
-  for (const [i, label] of options.barDirectLabels.entries()) {
-    marks.push(...getBarDirectLabelMarks(getBarDirectLabelSpecOptions(label, i, options), options));
-  }
-
   if (options.accessibleNavigation) {
     marks.push(getChartFocusRing(options));
   }
 });
+
+/**
+ * Inserts marks directly after the mark with the given name, searching nested group marks.
+ * @param marks
+ * @param name
+ * @param marksToInsert
+ * @returns whether the named mark was found
+ */
+export const insertAfterMark = (marks: Mark[], name: string, marksToInsert: Mark[]): boolean => {
+  for (const [i, mark] of marks.entries()) {
+    if (mark.name === name) {
+      marks.splice(i + 1, 0, ...marksToInsert);
+      return true;
+    }
+    if (mark.type === 'group' && mark.marks && insertAfterMark(mark.marks, name, marksToInsert)) return true;
+  }
+  return false;
+};
 
 export const getRepeatedScale = (options: BarSpecOptions): Scale => {
   const { orientation, trellisOrientation } = options;

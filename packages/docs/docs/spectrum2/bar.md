@@ -20,7 +20,9 @@ import { Chart, Axis, Bar } from '@spectrum-charts/react-spectrum-charts-s2';
 
 ## Bar direct labels (BarDirectLabel)
 
-The `BarDirectLabel` component is an S2-exclusive child of `Bar`. It places a numeric label outside the tip of each bar, reading directly from the metric value. Labels are positioned automatically based on orientation — above or below the bar for vertical charts, left or right for horizontal charts — and flip to the opposite side for negative values.
+The `BarDirectLabel` component is an S2-exclusive child of `Bar`. It places a numeric label on each bar, reading directly from the metric value. By default, labels sit outside the bar tip — above or below the bar for vertical charts, left or right for horizontal charts — and flip to the opposite side for negative values. Labels follow each bar in dodged and stacked layouts.
+
+Labels never overlap other labels or bars. Outside labels that would collide are hidden, and inside labels that do not fit within their bar are hidden (or moved outside with `overflow="spill"`). Hidden values remain available through tooltips.
 
 ```jsx
 <Chart data={data}>
@@ -52,6 +54,21 @@ The same component works for horizontal bar charts. Labels appear to the right o
 ![Bar direct label horizontal light](/img/s2_bar_directLabel_horizontal_light.png#gh-light-mode-only)
 ![Bar direct label horizontal dark](/img/s2_bar_directLabel_horizontal_dark.png#gh-dark-mode-only)
 
+### Labeling specific bars
+
+Set `dataKey` to a boolean field in your data to label only the rows where that field is truthy. These labels follow the same fit and collision rules as other labels.
+
+```jsx
+const data = [
+  { channel: 'Email', subscribers: 12600, callout: false },
+  { channel: 'Social', subscribers: 6200, callout: true },
+];
+
+<Bar dimension="channel" metric="subscribers">
+  <BarDirectLabel dataKey="callout" />
+</Bar>;
+```
+
 ### BarDirectLabel props
 
 The label text is derived automatically from the parent Bar's metric, dimension, and orientation.
@@ -77,6 +94,18 @@ The label text is derived automatically from the parent Bar's metric, dimension,
             <td>'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | 'percentage' | string</td>
             <td>',.2~f'</td>
             <td>Number format for the label value. Accepts a named preset or a custom d3-format specifier string (e.g. <code>'.1f'</code>).</td>
+        </tr>
+        <tr>
+            <td>overflow</td>
+            <td>'hide' | 'spill'</td>
+            <td>'spill' for <code>'start'</code>, otherwise 'hide'</td>
+            <td>What happens to an inside label (<code>'start'</code>, <code>'middle'</code>, <code>'end'</code>) that does not fit in its bar. <code>'hide'</code> hides it; <code>'spill'</code> moves it outside the bar tip, where it is hidden if it would collide with another label or bar.</td>
+        </tr>
+        <tr>
+            <td>dataKey</td>
+            <td>string</td>
+            <td>–</td>
+            <td>Boolean data field. Only rows where it is truthy are labeled.</td>
         </tr>
     </tbody>
 </table>

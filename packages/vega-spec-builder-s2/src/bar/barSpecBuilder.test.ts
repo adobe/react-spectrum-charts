@@ -64,6 +64,7 @@ import {
   getRepeatedScale,
   getStackAggregateData,
   getStackIdTransform,
+  insertAfterMark,
 } from './barSpecBuilder.js';
 import {
   defaultBarOptions,
@@ -546,6 +547,10 @@ describe('barSpecBuilder', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
+    });
+    test('should add the direct label layout size signal when a label uses collision layout', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, barDirectLabels: [{}] });
+      expect(signals.at(-1)).toHaveProperty('name', 'bar0_directLabelLayoutSize');
     });
     test('should add focus signals when accessibleNavigation is enabled', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
@@ -1159,20 +1164,31 @@ describe('barSpecBuilder', () => {
     });
 
     describe('with direct labels', () => {
-      test('should add direct label marks for each barDirectLabels entry', () => {
+      test('should insert direct label marks right after the bar mark', () => {
         const marks = addMarks([], {
           ...defaultBarOptions,
-          barDirectLabels: [{}],
+          barDirectLabels: [{ position: 'end' }],
         });
 
-        // getBarDirectLabelMarks returns 2 marks (halo + label text) per entry
-        expect(marks).toHaveLength(defaultStackedBarMarks.length + 2);
-        expect(marks.at(-2)?.name).toEqual('bar0DirectLabel0_bg');
-        expect(marks.at(-1)?.name).toEqual('bar0DirectLabel0');
+        expect(marks).toHaveLength(defaultStackedBarMarks.length + 1);
+        const barIndex = marks.findIndex((mark) => mark.name === 'bar0');
+        expect(marks[barIndex + 1].name).toEqual('bar0DirectLabel0');
+      });
+
+      test('should insert direct label marks inside the dodged group', () => {
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          type: 'dodged',
+          barDirectLabels: [{ position: 'end' }],
+        });
+
+        const groupMarks = (marks[0] as GroupMark).marks ?? [];
+        const barIndex = groupMarks.findIndex((mark) => mark.name === 'bar0');
+        expect(groupMarks[barIndex + 1].name).toEqual('bar0DirectLabel0');
       });
     });
 
-    test('stacked and dodged with annotations', () => {
+        test('stacked and dodged with annotations', () => {
       const addedMarks = addMarks([], {
         ...defaultBarOptions,
         color: ['#000', '#fff'],
@@ -1658,5 +1674,19 @@ describe('barSpecBuilder', () => {
         getRepeatedScale({ ...defaultBarOptions, orientation: 'vertical', trellisOrientation: 'horizontal' })
       ).toHaveProperty('type', 'band');
     });
+  });
+});
+
+describe('insertAfterMark()', () => {
+  test('should insert marks after a nested mark', () => {
+    const marks: Mark[] = [{ name: 'group', type: 'group', marks: [{ name: 'a', type: 'rect' }, { name: 'b', type: 'rect' }] }];
+    expect(insertAfterMark(marks, 'a', [{ name: 'c', type: 'text' }])).toBe(true);
+    expect((marks[0] as GroupMark).marks?.map((mark) => mark.name)).toEqual(['a', 'c', 'b']);
+  });
+
+  test('should return false if the mark is not found', () => {
+    const marks: Mark[] = [{ name: 'a', type: 'rect' }];
+    expect(insertAfterMark(marks, 'missing', [{ name: 'c', type: 'text' }])).toBe(false);
+    expect(marks).toHaveLength(1);
   });
 });
