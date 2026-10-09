@@ -107,6 +107,17 @@ describe('addSignals()', () => {
   });
 });
 
+describe('addSignals() with a controlled highlighted item', () => {
+  test('should add the hovered item signal when highlightedItem is set without interactive children', () => {
+    const signals = addSignals(defaultSignals, { ...defaultScatterOptions, highlightedItem: 'a' });
+    expect(signals.find((signal) => signal.name === `${defaultScatterOptions.name}_${HOVERED_ITEM}`)).toBeDefined();
+  });
+  test('should not add the hovered item signal when there is no interactivity or highlightedItem', () => {
+    const signals = addSignals(defaultSignals, defaultScatterOptions);
+    expect(signals.find((signal) => signal.name.includes(HOVERED_ITEM))).toBeUndefined();
+  });
+});
+
 describe('setScales()', () => {
   test('should add all the correct scales', () => {
     const scales = setScales([], defaultScatterOptions);
