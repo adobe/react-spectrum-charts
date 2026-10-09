@@ -118,7 +118,7 @@ describe('getLineDrawInClip()', () => {
     expect(getLineDrawInClip('line0')).toStrictEqual({
       path: {
         signal:
-          "'M-1000,-1000H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + (height + 1000) + 'H-1000Z'",
+          "'M-1000,-1000' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + (height + 1000) + 'H-1000' + 'Z'",
       },
     });
   });

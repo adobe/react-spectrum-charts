@@ -63,6 +63,7 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
       },
       update: {
         x: getXProductionRule(scaleType, dimension),
+        // not clipped like the line (the edge would cut points in half); each point pops in once the edge passes it
         opacity: lineOptions.isDrawInAnimate
           ? applyDrawInReveal(getOpacity(lineOptions), getLineDrawInRevealExpr(name, scaleType, dimension))
           : getOpacity(lineOptions),

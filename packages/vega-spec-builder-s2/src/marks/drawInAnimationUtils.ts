@@ -100,9 +100,13 @@ export const addLineDrawInAnimationSignals = (signals: Signal[], { name, scaleTy
  * @returns Clip
  */
 export const getLineDrawInClip = (name: string): Clip => {
+  // overflow past the plot edges so strokes and points on an edge aren't cut in half
   const o = DRAW_IN_CLIP_OVERFLOW;
+  // the sweeping edge while animating, then the full plot width so nothing stays clipped
   const right = `(${DRAW_IN_ANIM_T} >= 1 ? width + ${o} : ${name}_${DRAW_IN_CLIP_X})`;
-  return { path: { signal: `'M-${o},-${o}H' + ${right} + 'V' + (height + ${o}) + 'H-${o}Z'` } };
+  const bottom = `(height + ${o})`;
+  // SVG path for the rectangle (-o, -o) to (right, bottom): move to top-left, right, down, left, close
+  return { path: { signal: `'M-${o},-${o}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` } };
 };
 
 /**
@@ -120,8 +124,26 @@ export const getLineDrawInRevealExpr = (name: string, scaleType: ScaleType, dime
 };
 
 /**
- * Multiplies an opacity production rule by a reveal fraction.
- * @param rule - opacity production rule
+ * Multiplies one opacity rule entry by a reveal expression, keeping its test and other properties.
+ * @param ref - opacity rule entry
+ * @param reveal - 0-1 reveal expression
+ * @returns NumericValueRef
+ */
+const multiplyRefByReveal = (ref: NumericValueRef, reveal: string): NumericValueRef => {
+  if ('signal' in ref && typeof ref.signal === 'string') {
+    return { ...ref, signal: `(${ref.signal}) * ${reveal}` };
+  }
+  if ('value' in ref && typeof ref.value === 'number') {
+    // a value can't hold an expression, so swap it for an equivalent signal
+    const { value, ...otherProps } = ref;
+    return { ...otherProps, signal: `${value} * ${reveal}` };
+  }
+  return ref;
+};
+
+/**
+ * Hides a mark until the draw-in reaches it by multiplying every entry of its opacity rule by the reveal.
+ * @param rule - opacity production rule (a single entry or a list of tested entries)
  * @param reveal - 0-1 reveal expression
  * @returns ProductionRule<NumericValueRef>
  */
@@ -129,13 +151,8 @@ export const applyDrawInReveal = (
   rule: ProductionRule<NumericValueRef>,
   reveal: string
 ): ProductionRule<NumericValueRef> => {
-  const applyToRef = <T extends NumericValueRef>(ref: T): T => {
-    if ('signal' in ref && typeof ref.signal === 'string') return { ...ref, signal: `(${ref.signal}) * ${reveal}` };
-    if ('value' in ref && typeof ref.value === 'number') {
-      const { value, ...rest } = ref;
-      return { ...rest, signal: `${value} * ${reveal}` } as T;
-    }
-    return ref;
-  };
-  return Array.isArray(rule) ? rule.map(applyToRef) : applyToRef(rule as NumericValueRef);
+  // multiply instead of replacing the rule so hover and highlight opacity still apply
+  const entries = Array.isArray(rule) ? rule : [rule];
+  const revealed = entries.map((ref) => multiplyRefByReveal(ref, reveal));
+  return Array.isArray(rule) ? revealed : revealed[0];
 };
