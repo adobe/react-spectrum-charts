@@ -21,6 +21,22 @@ module.exports = class CustomTestEnvironment extends Environment {
     this.global.Response = Response;
     this.global.Request = Request;
     this.global.structuredClone = structuredClone;
-    this.global.MessageChannel = MessageChannel;
+    // React's scheduler opens a MessageChannel; close every port on teardown so in-band runs can exit.
+    const channels = [];
+    this.channels = channels;
+    this.global.MessageChannel = class TrackedMessageChannel extends MessageChannel {
+      constructor() {
+        super();
+        channels.push(this);
+      }
+    };
+  }
+
+  async teardown() {
+    this.channels?.forEach(({ port1, port2 }) => {
+      port1.close();
+      port2.close();
+    });
+    await super.teardown();
   }
 };
