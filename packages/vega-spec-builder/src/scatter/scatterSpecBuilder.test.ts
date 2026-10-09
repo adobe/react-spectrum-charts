@@ -171,6 +171,21 @@ describe('setScales()', () => {
     expect(scales).toHaveLength(3);
     expect(scales[2].name).toBe(COLOR_SCALE);
   });
+  test('should add the stroke field to the color scale domain', () => {
+    const scales = setScales([], { ...defaultScatterOptions, color: { value: 'gray-300' }, stroke: 'segment' });
+    const colorScale = scales.find((scale) => scale.name === COLOR_SCALE);
+    expect(colorScale?.domain).toHaveProperty('fields', ['segment']);
+  });
+  test('should add both color and stroke fields to the linear color scale domain', () => {
+    const scales = setScales([], {
+      ...defaultScatterOptions,
+      color: DEFAULT_COLOR,
+      colorScaleType: 'linear',
+      stroke: 'weight',
+    });
+    const colorScale = scales.find((scale) => scale.name === LINEAR_COLOR_SCALE);
+    expect(colorScale?.domain).toHaveProperty('fields', [DEFAULT_COLOR, 'weight']);
+  });
   test('should add color to linear color scale if the colorScaleType is linear', () => {
     const scales = setScales([], { ...defaultScatterOptions, color: DEFAULT_COLOR, colorScaleType: 'linear' });
     expect(scales).toHaveLength(3);
