@@ -90,7 +90,7 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation/index.js';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils.js';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils.js';
-import { addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData } from '../marks/drawInAnimationUtils.js';
+import { addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData, getLineFacetSourceName } from '../marks/drawInAnimationUtils.js';
 
 export const addLine = produce<
   ScSpec,
@@ -284,7 +284,8 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
       addLineDrawInLeadTransform(pointIndexData, options);
       data.push(pointIndexData, ...getLineDrawInData(options));
     } else {
-      addLineDrawInLeadTransform(getFilteredTableData(data), options);
+      const facetSource = data.find((d) => d.name === getLineFacetSourceName(options)) ?? getFilteredTableData(data);
+      addLineDrawInLeadTransform(facetSource, options);
       data.push(...getLineDrawInData(options));
     }
   }
@@ -414,7 +415,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     addLineDrawInAnimationSignals(signals, options);
   }
 
-  if (!isInteractive(options)) return;
+  if (!isInteractive(options) && options.highlightedItem === undefined) return;
   const { primarySeries } = options;
   // datum.datum because the voronoi mark uses datumOrder=2
   addHoveredItemSignal(
@@ -493,7 +494,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
 const getLineFacetContext = (
   options: LineSpecOptions
 ): { facetData: string; facetGroupby: string[]; markOptions: LineSpecOptions } => {
-  const { alternateSegmentKey, color, lineType, name, opacity, primarySeries } = options;
+  const { alternateSegmentKey, color, lineType, name, opacity } = options;
   const forecasts = options.forecasts ?? [];
   const hasForecast = !alternateSegmentKey && forecasts.length > 0;
 
@@ -501,12 +502,8 @@ const getLineFacetContext = (
   // when alternateSegmentKey or forecasts are active, facet by segmentId so each contiguous run
   // gets its own path with its own strokeDash
   const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
-  // when primarySeries is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
-  const defaultFacetData = primarySeries ? `${name}_primarySeriesFacetData` : FILTERED_TABLE;
-  const alternateSegmentsFacetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
-  // when animated, facet from the draw-in lerp source (prev + tip) so the line renders clipped to
-  // the animated cutoff instead of the full series
-  const facetData = options.isDrawInAnimate ? `${name}_drawInLerp` : alternateSegmentsFacetData;
+  // when animated, facet from the draw-in lerp source (prev + tip), which derives from the facet source
+  const facetData = options.isDrawInAnimate ? `${name}_drawInLerp` : getLineFacetSourceName(options);
   const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
 
   const markOptions = hasForecast
