@@ -43,6 +43,7 @@ export const getExpressionFunctions = (
     formatLocaleCurrency: formatLocaleCurrency(numberLocale),
     formatShortNumber: formatShortNumber(localeCode),
     consoleLog,
+    donutSliceStrokeWidth,
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
@@ -365,8 +366,34 @@ export const hoverFraction = (
   return (index.get(key)?.[field] as number | undefined) ?? fallback;
 };
 
+const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
+
+/**
+ * Clamps a slice's stroke width so a sliver of fill stays visible at the inner radius.
+ * @param requestedWidth
+ * @param innerRadius
+ * @param startAngle
+ * @param endAngle
+ * @param cutoff - draw-in sweep angle; omit when not animating
+ * @returns stroke width in px
+ */
+export const donutSliceStrokeWidth = (
+  requestedWidth: number,
+  innerRadius: number,
+  startAngle: number,
+  endAngle: number,
+  cutoff?: number
+): number => {
+  const arcLength =
+    cutoff === undefined ? endAngle - startAngle : Math.min(endAngle, cutoff) - Math.min(startAngle, cutoff);
+  const arcAngle = Math.min(Math.PI, Math.max(0, arcLength));
+  const availableWidth = 2 * Math.max(0, innerRadius) * Math.sin(arcAngle / 2);
+  return Math.min(requestedWidth, Math.max(0, availableWidth - DONUT_MIN_VISIBLE_SLICE_WIDTH));
+};
+
 export const expressionFunctions = {
   consoleLog,
+  donutSliceStrokeWidth,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   getLabelWidth,

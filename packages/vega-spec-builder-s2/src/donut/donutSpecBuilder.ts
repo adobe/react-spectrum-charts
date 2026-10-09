@@ -59,6 +59,7 @@ import {
   getDonutSweepExpr,
   getEmptyStateArcMark,
   isDonutInteractive,
+  getDonutRadiusSignals,
   getRingWidthSignal,
   getLabelRingGapSignals,
   getSizeTierScale,
@@ -288,6 +289,7 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   }
   signals.push(
     getSizeTierSignal(options),
+    ...getDonutRadiusSignals(options),
     ...getLabelRingGapSignals(options),
     getSliceGapSignal(options),
     ...getDonutSummarySignals(options),

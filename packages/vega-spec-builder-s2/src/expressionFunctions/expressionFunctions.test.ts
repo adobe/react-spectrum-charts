@@ -16,7 +16,9 @@ import { numberLocales } from '@spectrum-charts/core-s2/locales';
 
 import {
   LabelDatum,
+  donutSliceStrokeWidth,
   expressionFunctions,
+  getExpressionFunctions,
   formatHorizontalTimeAxisLabels,
   formatLocaleCurrency,
   formatPercentWithValue,
@@ -75,6 +77,37 @@ describe('isDonutLabelVisible()', () => {
         expect(isVisibleWhileHovering(datum, hoveredId)).toBe(isVisible(datum));
       });
     });
+  });
+});
+
+describe('donutSliceStrokeWidth()', () => {
+  test('should be registered as an expression function', () => {
+    expect(expressionFunctions.donutSliceStrokeWidth).toBe(donutSliceStrokeWidth);
+    expect(getExpressionFunctions()).toHaveProperty('donutSliceStrokeWidth', donutSliceStrokeWidth);
+  });
+
+  test('should return the requested width for wide slices', () => {
+    expect(donutSliceStrokeWidth(2, 152, 0, 0.5)).toBe(2);
+    expect(donutSliceStrokeWidth(2, 152, 1, 1 + 2 * Math.PI)).toBe(2);
+  });
+
+  test('should clamp the width toward 0 for tiny slices', () => {
+    const width = donutSliceStrokeWidth(2, 152, 0, 0.01);
+    expect(width).toBeGreaterThan(0);
+    expect(width).toBeLessThan(2);
+    expect(width).toBeCloseTo(2 * 152 * Math.sin(0.005) - 1);
+    expect(donutSliceStrokeWidth(2, 152, 0, 0.001)).toBe(0);
+    expect(donutSliceStrokeWidth(2, 152, 0.5, 0.5)).toBe(0);
+  });
+
+  test('should clip the arc to the draw-in cutoff', () => {
+    expect(donutSliceStrokeWidth(2, 152, 0, 0.5, 1)).toBe(2);
+    expect(donutSliceStrokeWidth(2, 152, 0, 0.5, 0.01)).toBe(donutSliceStrokeWidth(2, 152, 0, 0.01));
+    expect(donutSliceStrokeWidth(2, 152, 1, 1.5, 0.5)).toBe(0);
+  });
+
+  test('should treat a negative inner radius as 0', () => {
+    expect(donutSliceStrokeWidth(2, -10, 0, 0.5)).toBe(0);
   });
 });
 

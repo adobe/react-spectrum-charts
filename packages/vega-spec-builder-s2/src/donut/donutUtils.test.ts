@@ -22,6 +22,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
+import { donutSliceStrokeWidth } from '../expressionFunctions/expressionFunctions.js';
 import { DonutSpecOptions } from '../types/index.js';
 import { defaultDonutOptions } from './donutTestUtils.js';
 import {
@@ -29,6 +30,7 @@ import {
   getDonutEmptyStateTest,
   getDonutInnerRadiusExpr,
   getDonutOuterRadiusExpr,
+  getDonutRadiusSignals,
   getDonutSweepExpr,
   getEmptyStateArcMark,
   getLabelRingGapSignals,
@@ -40,6 +42,17 @@ import {
   getSliceStrokeWidthExpr,
   getSumData,
 } from './donutUtils.js';
+
+const evaluateExpr = (expr: string, scope: Record<string, unknown>): number =>
+  // eslint-disable-next-line no-new-func
+  new Function(...Object.keys(scope), 'MAX_VALUE', `return ${expr};`)(...Object.values(scope), Number.MAX_VALUE);
+
+/** Evaluates the outer then inner radius signals, returning the scope with both radii added. */
+const evaluateRadiusSignals = (options: DonutSpecOptions, scope: Record<string, unknown>): Record<string, number> =>
+  (getDonutRadiusSignals(options) as { name: string; update: string }[]).reduce<Record<string, number>>(
+    (acc, { name, update }) => ({ ...acc, [name]: evaluateExpr(update, acc) }),
+    scope as Record<string, number>
+  );
 
 describe('getDonutEmptyStateTest()', () => {
   test('should test for empty data and a metric sum of 0', () => {
@@ -59,8 +72,14 @@ describe('getDonutSweepExpr()', () => {
 });
 
 describe('getDonutOuterRadiusExpr()', () => {
+  const getOuterRadiusUpdate = (options: DonutSpecOptions) => (getDonutRadiusSignals(options)[0] as { update: string }).update;
+
+  test('should return the outer radius signal name', () => {
+    expect(getDonutOuterRadiusExpr(defaultDonutOptions)).toBe('testName_outerRadius');
+  });
+
   test('should return the raw donut radius when no labels are present', () => {
-    expect(getDonutOuterRadiusExpr(defaultDonutOptions)).toBe(DONUT_RADIUS);
+    expect(getOuterRadiusUpdate(defaultDonutOptions)).toBe(DONUT_RADIUS);
   });
 
   describe('getSliceStrokeWidthExpr()', () => {
@@ -72,20 +91,38 @@ describe('getDonutOuterRadiusExpr()', () => {
       requestedWidth = 'testName_sliceGap'
     ): number => {
       const expression = getSliceStrokeWidthExpr(options, requestedWidth);
-      // eslint-disable-next-line no-new-func
-      return new Function(
-        'width',
-        'height',
-        'datum',
-        'testName_ringWidth',
-        'testName_sliceGap',
-        'PI',
-        'min',
-        'max',
-        'sin',
-        `return ${expression};`
-      )(size, size, { testName_arcLength: arcLength }, 28, sliceGap, Math.PI, Math.min, Math.max, Math.sin);
+      const scope = evaluateRadiusSignals(options, {
+        width: size,
+        height: size,
+        min: Math.min,
+        testName_ringWidth: 28,
+        testName_sizeTier: 4,
+        testName_labelRingGap: 15,
+      } as Record<string, unknown>);
+      return evaluateExpr(expression, {
+        ...scope,
+        datum: { testName_startAngle: 0, testName_endAngle: arcLength },
+        testName_sliceGap: sliceGap,
+        donutSliceStrokeWidth,
+      });
     };
+
+    test('should pass the inner radius signal and slice angles to donutSliceStrokeWidth', () => {
+      expect(getSliceStrokeWidthExpr(defaultDonutOptions, 'testName_sliceGap')).toBe(
+        "donutSliceStrokeWidth(testName_sliceGap, testName_innerRadius, datum['testName_startAngle'], datum['testName_endAngle'])"
+      );
+    });
+
+    test('should only pass the draw-in cutoff when isDrawInAnimate', () => {
+      expect(getSliceStrokeWidthExpr(defaultDonutOptions, '2')).not.toContain('drawInAnimCutoff');
+      expect(getSliceStrokeWidthExpr({ ...defaultDonutOptions, isDrawInAnimate: true }, '2')).toBe(
+        "donutSliceStrokeWidth(2, testName_innerRadius, datum['testName_startAngle'], datum['testName_endAngle'], testName_drawInAnimCutoff)"
+      );
+    });
+
+    test('should return the requested width unchanged for pies, even when animating', () => {
+      expect(getSliceStrokeWidthExpr({ ...defaultDonutOptions, holeRatio: 0, isDrawInAnimate: true }, '2')).toBe('2');
+    });
 
     test('preserves the configured gap for ordinary slices', () => {
       expect(evaluate(0.5)).toBe(2);
@@ -140,27 +177,27 @@ describe('getDonutOuterRadiusExpr()', () => {
 
   test('should return the raw donut radius for isBoolean donuts, even with labels configured', () => {
     expect(
-      getDonutOuterRadiusExpr({ ...defaultDonutOptions, isBoolean: true, segmentLabels: [{ swatch: true }] })
+      getOuterRadiusUpdate({ ...defaultDonutOptions, isBoolean: true, segmentLabels: [{ swatch: true }] })
     ).toBe(DONUT_RADIUS);
   });
 
   test('should reserve room using the label ring gap signal when SegmentLabel is present', () => {
-    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{}] });
+    const expr = getOuterRadiusUpdate({ ...defaultDonutOptions, segmentLabels: [{}] });
     expect(expr).toBe(`min((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6), [120, 160, 200, 400, MAX_VALUE][testName_sizeTier] / 2)`);
   });
 
   test('should reserve room using the label ring gap signal for rich SegmentLabels', () => {
-    const expr = getDonutOuterRadiusExpr({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
+    const expr = getOuterRadiusUpdate({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
     expect(expr).toBe(`min((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6), [120, 160, 200, 400, MAX_VALUE][testName_sizeTier] / 2)`);
   });
 
   test('should use the semicircle base radius (full height/width) for a semicircle donut', () => {
-    expect(getDonutOuterRadiusExpr({ ...defaultDonutOptions, variant: 'semicircle' })).toBe(DONUT_SEMICIRCLE_RADIUS);
+    expect(getOuterRadiusUpdate({ ...defaultDonutOptions, variant: 'semicircle' })).toBe(DONUT_SEMICIRCLE_RADIUS);
   });
 
   test('should not reserve label space for a semicircle donut because its labels are omitted', () => {
     expect(
-      getDonutOuterRadiusExpr({
+      getOuterRadiusUpdate({
         ...defaultDonutOptions,
         variant: 'semicircle',
         segmentLabels: [{ swatch: true }],
@@ -170,9 +207,6 @@ describe('getDonutOuterRadiusExpr()', () => {
 });
 
 describe('getSizeTierScale() / getSizeTierSignal()', () => {
-  const evaluateExpr = (expr: string, scope: Record<string, unknown>): number =>
-    // eslint-disable-next-line no-new-func
-    new Function(...Object.keys(scope), 'MAX_VALUE', `return ${expr};`)(...Object.values(scope), Number.MAX_VALUE);
   const evaluateTier = (options: DonutSpecOptions, width: number, height = width): number => {
     const { domain, range } = getSizeTierScale(options) as { domain: number[]; range: number[] };
     const scale = (_: string, value: number) => range[domain.filter((breakpoint) => value >= breakpoint).length];
@@ -218,14 +252,15 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
     const getOuterDiameter = (size: number): number => {
       const testName_sizeTier = evaluateTier(labeledOptions, size);
       const testName_labelRingGap = DONUT_LABEL_RING_GAPS[testName_sizeTier];
-      const radius = evaluateExpr(getDonutOuterRadiusExpr(labeledOptions), {
+      const { testName_outerRadius } = evaluateRadiusSignals(labeledOptions, {
         width: size,
         height: size,
         min: Math.min,
         testName_sizeTier,
         testName_labelRingGap,
-      });
-      return 2 * radius;
+        testName_ringWidth: 0,
+      } as Record<string, unknown>);
+      return 2 * testName_outerRadius;
     };
 
     test('should map chart size to the tier using the labeled breakpoints', () => {
@@ -334,11 +369,15 @@ describe('getArcMark()', () => {
     const strokeWidth = getSliceStrokeWidthExpr(defaultDonutOptions, 'testName_sliceGap');
     const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
     expect(arcMark.encode?.update?.innerRadius).toEqual({
-      signal: `(((min(width, height) / 2 - 2) - testName_ringWidth)) + (${inset})`,
+      signal: `(testName_innerRadius) + (${inset})`,
     });
     expect(arcMark.encode?.update?.outerRadius).toEqual({
-      signal: `((min(width, height) / 2 - 2)) - (${inset})`,
+      signal: `(testName_outerRadius) - (${inset})`,
     });
+    expect(getDonutRadiusSignals(defaultDonutOptions)[1]).toHaveProperty(
+      'update',
+      '(testName_outerRadius - testName_ringWidth)'
+    );
   });
 
   test('should use a proportional ring when holeRatio is explicitly customized', () => {
@@ -347,8 +386,9 @@ describe('getArcMark()', () => {
     const strokeWidth = getSliceStrokeWidthExpr(options, 'testName_sliceGap');
     const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
     expect(arcMark.encode?.update?.innerRadius).toEqual({
-      signal: `(0.5 * (min(width, height) / 2 - 2)) + (${inset})`,
+      signal: `(testName_innerRadius) + (${inset})`,
     });
+    expect(getDonutRadiusSignals(options)[1]).toHaveProperty('update', '0.5 * testName_outerRadius');
   });
 
   test('should not add the slice inset to a pie inner radius', () => {
@@ -358,8 +398,9 @@ describe('getArcMark()', () => {
     const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
     expect(arcMark.encode?.update).toHaveProperty('innerRadius', { value: 0 });
     expect(arcMark.encode?.update).toHaveProperty('outerRadius', {
-      signal: `(${DONUT_RADIUS}) - (${inset})`,
+      signal: `(testName_outerRadius) - (${inset})`,
     });
+    expect(getDonutRadiusSignals(options)[0]).toHaveProperty('update', DONUT_RADIUS);
     expect(arcMark.encode?.update).toHaveProperty('strokeWidth', [
       { test: 'selectedItem === datum.rscMarkId', signal: getSliceStrokeWidthExpr(options, '2') },
       { signal: strokeWidth },
@@ -392,11 +433,11 @@ describe('getArcMark()', () => {
       {
         test: 'selectedItem === datum.rscMarkId',
         signal:
-          "min(2, max(0, (2 * (max(0, ((min(width, height) / 2 - 2) - testName_ringWidth))) * sin((min(PI, max(0, datum['testName_arcLength']))) / 2)) - 1))",
+          "donutSliceStrokeWidth(2, testName_innerRadius, datum['testName_startAngle'], datum['testName_endAngle'])",
       },
       {
         signal:
-          "min(testName_sliceGap, max(0, (2 * (max(0, ((min(width, height) / 2 - 2) - testName_ringWidth))) * sin((min(PI, max(0, datum['testName_arcLength']))) / 2)) - 1))",
+          "donutSliceStrokeWidth(testName_sliceGap, testName_innerRadius, datum['testName_startAngle'], datum['testName_endAngle'])",
       },
     ]);
   });
@@ -575,13 +616,49 @@ describe('getSliceGapSignal()', () => {
 });
 
 describe('getDonutInnerRadiusExpr()', () => {
+  const getInnerRadiusUpdate = (options: DonutSpecOptions) => (getDonutRadiusSignals(options)[1] as { update: string }).update;
+
+  test('should return the inner radius signal name', () => {
+    expect(getDonutInnerRadiusExpr(defaultDonutOptions)).toBe('testName_innerRadius');
+  });
+
   test('should use the fixed per-tier ring width at the default holeRatio', () => {
-    expect(getDonutInnerRadiusExpr(defaultDonutOptions)).toBe('((min(width, height) / 2 - 2) - testName_ringWidth)');
+    expect(getInnerRadiusUpdate(defaultDonutOptions)).toBe('(testName_outerRadius - testName_ringWidth)');
   });
 
   test('should use a proportional ring when holeRatio is explicitly customized', () => {
-    expect(getDonutInnerRadiusExpr({ ...defaultDonutOptions, holeRatio: 0.5 })).toBe(
-      '0.5 * (min(width, height) / 2 - 2)'
-    );
+    expect(getInnerRadiusUpdate({ ...defaultDonutOptions, holeRatio: 0.5 })).toBe('0.5 * testName_outerRadius');
+  });
+});
+
+describe('getDonutRadiusSignals()', () => {
+  test('should resolve the outer radius before the inner radius at the default holeRatio', () => {
+    expect(getDonutRadiusSignals(defaultDonutOptions)).toEqual([
+      { name: 'testName_outerRadius', update: DONUT_RADIUS },
+      { name: 'testName_innerRadius', update: '(testName_outerRadius - testName_ringWidth)' },
+    ]);
+  });
+
+  test('should use a proportional inner radius when holeRatio is customized', () => {
+    expect(getDonutRadiusSignals({ ...defaultDonutOptions, holeRatio: 0.5 })).toEqual([
+      { name: 'testName_outerRadius', update: DONUT_RADIUS },
+      { name: 'testName_innerRadius', update: '0.5 * testName_outerRadius' },
+    ]);
+  });
+
+  test('should reserve label space in the outer radius when segment labels are present', () => {
+    expect(getDonutRadiusSignals({ ...defaultDonutOptions, segmentLabels: [{}] })).toEqual([
+      {
+        name: 'testName_outerRadius',
+        update: `min((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6), [120, 160, 200, 400, MAX_VALUE][testName_sizeTier] / 2)`,
+      },
+      { name: 'testName_innerRadius', update: '(testName_outerRadius - testName_ringWidth)' },
+    ]);
+  });
+
+  test('should evaluate the inner radius from the evaluated outer radius', () => {
+    const radii = evaluateRadiusSignals(defaultDonutOptions, { width: 364, height: 364, min: Math.min, testName_ringWidth: 28 });
+    expect(radii.testName_outerRadius).toBe(180);
+    expect(radii.testName_innerRadius).toBe(152);
   });
 });
