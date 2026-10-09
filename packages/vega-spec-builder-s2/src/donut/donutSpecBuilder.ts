@@ -20,14 +20,18 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
+  DONUT_DRAW_IN_LABEL_FADE_DURATION_MS,
   DRAW_IN_ANIM_CUTOFF,
   DRAW_IN_ANIM_T,
+  DRAW_IN_ANIMATION_DURATION_MS,
+  DRAW_IN_START,
   FILTERED_TABLE,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
+import { addAnimationTimerSignal } from '../marks/animationTimerUtils.js';
 import { addDrawInClockSignals } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
@@ -259,6 +263,10 @@ export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => 
   );
 });
 
+/** Gets the condition that keeps the draw-in active until the last label has faded in. */
+export const getDonutDrawInActiveCondition = (clock: string): string =>
+  `${clock} - ${DRAW_IN_START} < ${DRAW_IN_ANIMATION_DURATION_MS + DONUT_DRAW_IN_LABEL_FADE_DURATION_MS}`;
+
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {
   const { chartInspects, holeRatio, name } = options;
   if (options.isHoverAnimate) {
@@ -266,6 +274,8 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   }
   if (options.isDrawInAnimate) {
     addDrawInClockSignals(signals);
+    // keep ticking past the sweep so the last label's fade can finish
+    addAnimationTimerSignal(signals, getDonutDrawInActiveCondition, true);
     const sweep = getDonutSweepExpr(options);
     const startAngle = getDonutStartAngle(options);
     signals.push({

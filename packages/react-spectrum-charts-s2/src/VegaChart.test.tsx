@@ -14,8 +14,18 @@ import { Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 
 import { VegaChart, VegaChartProps, resizeView } from './VegaChart.js';
+import { ANIMATION_TIMER } from '@spectrum-charts/core-s2/constants';
+
+import { attachAnimationTicker } from './animation/animationTicker.js';
 
 jest.mock('vega-embed');
+jest.mock('./animation/animationTicker', () => ({
+	...jest.requireActual('./animation/animationTicker'),
+	attachAnimationTicker: jest.fn(),
+}));
+
+const mockAttachAnimationTicker = jest.mocked(attachAnimationTicker);
+const mockDetachAnimationTicker = jest.fn();
 
 const mockEmbed = jest.mocked(embed);
 
@@ -118,6 +128,7 @@ describe('VegaChart init render cycle', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockEmbed.mockResolvedValue({ view: createMockView() } as unknown as Awaited<ReturnType<typeof embed>>);
+		mockAttachAnimationTicker.mockReturnValue(mockDetachAnimationTicker);
 	});
 
 	test('calls embed on initial mount with valid dimensions', async () => {
@@ -139,5 +150,53 @@ describe('VegaChart init render cycle', () => {
 		rerender(<VegaChart {...defaultProps} width={800} height={600} />);
 
 		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+	});
+
+	describe('animation ticker', () => {
+		const animatedSpec: Spec = {
+			signals: [{ name: ANIMATION_TIMER, value: 0, on: [{ events: { type: 'timer', throttle: 33 }, update: 'now()' }] }],
+		};
+
+		test('removes the vega timer event and attaches the ticker for animated specs', async () => {
+			const { container } = render(<VegaChart {...defaultProps} spec={animatedSpec} />);
+
+			await waitFor(() => expect(mockAttachAnimationTicker).toHaveBeenCalledTimes(1));
+			expect((mockEmbed.mock.calls[0][1] as Spec).signals).toEqual([{ name: ANIMATION_TIMER, value: 0 }]);
+			// the original spec is not mutated
+			expect(animatedSpec.signals?.[0]).toHaveProperty('on');
+			expect(mockAttachAnimationTicker).toHaveBeenCalledWith(expect.anything(), container.querySelector('.rsc'));
+		});
+
+		test('detaches the ticker on unmount', async () => {
+			const { unmount } = render(<VegaChart {...defaultProps} spec={animatedSpec} />);
+			await waitFor(() => expect(mockAttachAnimationTicker).toHaveBeenCalledTimes(1));
+
+			unmount();
+
+			expect(mockDetachAnimationTicker).toHaveBeenCalledTimes(1);
+		});
+
+		test('discards a view whose embed resolves after unmount', async () => {
+			let resolveEmbed: (value: Awaited<ReturnType<typeof embed>>) => void = () => {};
+			mockEmbed.mockReturnValueOnce(new Promise((resolve) => (resolveEmbed = resolve)));
+			const view = createMockView();
+			const { unmount } = render(<VegaChart {...defaultProps} spec={animatedSpec} />);
+			await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+
+			unmount();
+			resolveEmbed({ view } as unknown as Awaited<ReturnType<typeof embed>>);
+			await Promise.resolve();
+
+			expect(view.finalize).toHaveBeenCalledTimes(1);
+			expect(mockAttachAnimationTicker).not.toHaveBeenCalled();
+			expect(defaultProps.onNewView).not.toHaveBeenCalled();
+		});
+
+		test('does not attach the ticker for non-animated specs', async () => {
+			render(<VegaChart {...defaultProps} />);
+
+			await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+			expect(mockAttachAnimationTicker).not.toHaveBeenCalled();
+		});
 	});
 });

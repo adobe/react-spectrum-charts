@@ -19,6 +19,7 @@ import { TABLE } from '@spectrum-charts/core-s2/constants';
 import { getLocale } from '@spectrum-charts/core-s2/locales';
 import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from './animation/animationTicker.js';
 import { useDebugSpec } from './hooks/useDebugSpec.js';
 import { extractValues, isVegaData } from './hooks/useSpec.js';
 import { ChartProps } from './types/index.js';
@@ -48,7 +49,12 @@ export const resizeView = (view: View | undefined, width: number, height: number
   if (view && width && height) {
     // Two passes: first updates width/height signals; second lets Vega re-settle layout
     // after dependent changes (e.g. legend column count → legend height → plot area height).
-    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
+    void view
+      .width(width)
+      .height(height)
+      .resize()
+      .runAsync()
+      .then(() => view.runAsync());
   }
 };
 
@@ -84,6 +90,7 @@ export const VegaChart: FC<VegaChartProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartView = useRef<View | undefined>(undefined);
+  const detachAnimationTicker = useRef<(() => void) | undefined>(undefined);
   const hasMounted = useRef(false);
   // AN-445759: flipped to true when dimensions become valid post-mount with no existing view,
   // forcing the embed effect to run even though width/height are not in its deps.
@@ -122,6 +129,7 @@ export const VegaChart: FC<VegaChartProps> = ({
   }, [width, height]);
 
   useEffect(() => {
+    let cancelled = false;
     if (width && height && containerRef.current) {
       const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
       const tableData = specCopy.data?.find((d) => d.name === TABLE);
@@ -139,18 +147,36 @@ export const VegaChart: FC<VegaChartProps> = ({
       const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
       const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
       const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
+      const isAnimated = isAnimatedSpec(specCopy);
+      if (isAnimated) {
+        // animated charts are driven by the shared animation ticker instead of Vega's always-on timer
+        removeAnimationTimerEvents(specCopy);
+      }
+      // captured so the async .then attaches the ticker to the element this view was embedded into
+      const container = containerRef.current;
 
-      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
+      void embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
+        // cleanup already ran (unmount or re-embed) before embed resolved, so discard this view
+        if (cancelled) {
+          view.finalize();
+          return;
+        }
         chartView.current = view;
+        if (isAnimated) {
+          detachAnimationTicker.current = attachAnimationTicker(view, container);
+        }
         onNewView(view);
         view.resize();
-        view.runAsync();
+        void view.runAsync();
         // One additional render to settle all resize calculations
         setTimeout(() => view.runAsync(), 0);
       });
     }
     return () => {
+      cancelled = true;
       // destroy the chart on unmount
+      detachAnimationTicker.current?.();
+      detachAnimationTicker.current = undefined;
       if (chartView.current) {
         chartView.current.finalize();
         chartView.current = undefined;
