@@ -41,7 +41,7 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
-import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils.js'
+import { getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
 import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
@@ -210,7 +210,6 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     scaleType,
     primarySeries,
     interpolate,
-    isDrawInAnimate,
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
   const popoverWithDimensionHighlightExists = popovers.some(
@@ -225,7 +224,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     interactive: false,
     encode: {
       enter: {
-        ...(isDrawInAnimate ? {} : { y: getLineYEncoding(lineMarkOptions, metric) }),
+        y: getLineYEncoding(lineMarkOptions, metric),
         stroke: getStrokeEncoding(primarySeries, otherSeriesColor, color, colorScheme),
         strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
@@ -235,8 +234,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
       },
       update: {
         // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
-        x: isDrawInAnimate ? getLineDrawInXEncoding(lineMarkOptions) : getXProductionRule(scaleType, dimension),
-        ...(isDrawInAnimate ? { y: getLineDrawInYEncoding(lineMarkOptions) } : {}),
+        x: getXProductionRule(scaleType, dimension),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
         strokeWidth: getLineStrokeWidth(lineMarkOptions),
@@ -609,6 +607,7 @@ export const getLineHighlightOverlayGroup = (
     name: `${name}_highlightOverlay_group`,
     type: 'group',
     interactive: false,
+    ...(markOptions.isDrawInAnimate ? { clip: getLineDrawInClip(name) } : {}),
     from: {
       facet: {
         name: `${name}_highlightOverlay_facet`,

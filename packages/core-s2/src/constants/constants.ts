@@ -125,12 +125,6 @@ export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
 export const HOVER_FRACTION_DATA = 'hoverFractionData';
 /** Series-level (max) aggregate of a per-item-animated mark's hoverFractionData, for ungrouped legends that need one fraction per series */
 export const HOVER_SERIES_FRACTION_DATA = 'hoverSeriesFractionData';
-/** Draw-in animation: the already-drawn portion, the single lerping tip point, and their merge (source the line mark renders from) */
-export const DRAW_IN_PREV_DATA = 'drawInPrev'; // suffix: ${name}_drawInPrev
-export const DRAW_IN_TIP_DATA = 'drawInTip'; // suffix: ${name}_drawInTip
-export const DRAW_IN_LERP_DATA = 'drawInLerp'; // suffix: ${name}_drawInLerp
-/** Point-scale-only: derived source carrying each row's ordinal index (see DRAW_IN_POINT_INDEX_FIELD) */
-export const DRAW_IN_POINT_INDEX_DATA = 'drawInIndexed'; // suffix: ${name}_drawInIndexed
 
 // vega data field names
 export const DIMENSION_FIELD = 'rscDimensionField';
@@ -143,19 +137,6 @@ export const BAR_ANIM_ID = 'rscBarAnimId';
 export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
-/** Numeric-ms formula field added to `table` for time-scale lines so draw-in cutoff/tween math can compare raw numbers */
-export const DRAW_IN_TIME_MS_FIELD = 'rscDrawInTimeMs';
-/** Lead-window fields on filteredTable: each row's next point's dimension/metric value */
-export const DRAW_IN_NEXT_DIM_FIELD = 'drawInNextDimValue'; // suffix: ${name}_drawInNextDimValue
-export const DRAW_IN_NEXT_METRIC_FIELD = 'drawInNextMetricValue'; // suffix: ${name}_drawInNextMetricValue
-/** Point-scale-only: this row's ordinal index within the x scale's domain — a numeric sort key standing
- *  in for the (usually non-numeric) category value, since draw-in's cutoff/tween math needs raw numbers */
-export const DRAW_IN_POINT_INDEX_FIELD = 'drawInPointIndex'; // suffix: ${name}_drawInPointIndex
-/** Point-scale-only: next point's actual category value (for scale lookup), separate from
- *  DRAW_IN_NEXT_DIM_FIELD (next ordinal index, for cutoff/tween math) since the two diverge for point scales */
-export const DRAW_IN_NEXT_CATEGORY_FIELD = 'drawInNextCategoryValue'; // suffix: ${name}_drawInNextCategoryValue
-/** Flag marking the tip row within DRAW_IN_TIP_DATA/DRAW_IN_LERP_DATA */
-export const DRAW_IN_TIP_FLAG = 'isDrawInTip';
 
 // signal names
 export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
@@ -177,9 +158,8 @@ export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's on
 export const DRAW_IN_START = 'drawInStart'; // timestamp of the first animation timer tick, captured once
 export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
 export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-out) progress
-export const DRAW_IN_DOMAIN_MIN = 'drawInDomainMin'; // draw-in animation: dimension scale domain min, captured once at mount
-export const DRAW_IN_DOMAIN_MAX = 'drawInDomainMax'; // draw-in animation: dimension scale domain max, captured once at mount
 export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
+export const DRAW_IN_CLIP_X = 'drawInClipX'; // suffix: ${name}_drawInClipX — line draw-in clip edge, in pixels
 export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
 export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
 export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
@@ -233,6 +213,8 @@ export const HOVER_NEUTRAL_TARGET = 0.5;
 // draw-in animation constants
 /** Time in ms it takes to animate the draw-in animation */
 export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
+/** Pixels the line draw-in clip extends past the plot so strokes and points at the edges aren't cut off. */
+export const DRAW_IN_CLIP_OVERFLOW = 1000;
 /** Duration of the linear fade-in for donut labels after their slice finishes drawing. */
 export const DONUT_DRAW_IN_LABEL_FADE_DURATION_MS = 50;
 

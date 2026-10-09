@@ -21,6 +21,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
+import { applyDrawInReveal, getLineDrawInRevealExpr } from '../marks/drawInAnimationUtils.js';
 import {
   getColorProductionRule,
   getXProductionRule,
@@ -62,7 +63,9 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
       },
       update: {
         x: getXProductionRule(scaleType, dimension),
-        opacity: getOpacity(lineOptions),
+        opacity: lineOptions.isDrawInAnimate
+          ? applyDrawInReveal(getOpacity(lineOptions), getLineDrawInRevealExpr(name, scaleType, dimension))
+          : getOpacity(lineOptions),
       },
     },
   };
@@ -100,7 +103,7 @@ const getOpacity = (lineOptions: LineSpecOptions): ProductionRule<NumericValueRe
 
 /**
  * Gets a background mark for static points to prevent opacity from revealing the line behind the point.
- * This mark stays fully opaque (no opacity rules) so it always covers the line underneath.
+ * It has no hover opacity rules so it always covers the line underneath.
  * @param lineOptions
  * @returns SymbolMark
  */
@@ -121,6 +124,9 @@ export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): Symb
       },
       update: {
         x: getXProductionRule(scaleType, dimension),
+        ...(lineOptions.isDrawInAnimate
+          ? { opacity: { signal: getLineDrawInRevealExpr(name, scaleType, dimension) } }
+          : {}),
       },
     },
   };

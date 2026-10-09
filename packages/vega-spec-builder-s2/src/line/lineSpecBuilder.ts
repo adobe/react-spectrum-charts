@@ -19,7 +19,6 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
-  DRAW_IN_PREV_DATA,
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -36,7 +35,7 @@ import {
   isHighlightedByGroup,
 } from '../chartInspect/chartInspectUtils.js';
 import { addPopoverData } from '../chartPopover/chartPopoverUtils.js';
-import { addTimeTransform, getFilteredInspectData, getFilteredTableData, getTableData } from '../data/dataUtils.js';
+import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils.js';
 import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel/index.js';
 import {
   getEffectiveMetricField,
@@ -90,7 +89,7 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation/index.js';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils.js';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils.js';
-import { addLineDrawInAnimationSignals, addLineDrawInLeadTransform, addLineDrawInTimeMsTransform, getLineDrawInData, getLineDrawInPointIndexData } from '../marks/drawInAnimationUtils.js';
+import { addLineDrawInAnimationSignals, getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
 
 export const addLine = produce<
   ScSpec,
@@ -270,31 +269,13 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   const tableData = getTableData(data);
   if (scaleType === 'time') {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
-    if (options.isDrawInAnimate) {
-      tableData.transform = addLineDrawInTimeMsTransform(tableData.transform ?? [], dimension);
-    }
   }
   addDimensionHoverGroupTransform(tableData, chartInspects, dimensionHover, dimension, name);
   addSegmentData(data, tableData, options);
   addLineHoverData(data, options);
 
-  if (options.isDrawInAnimate) {
-    if (scaleType === 'point') {
-      const pointIndexData = getLineDrawInPointIndexData(options);
-      addLineDrawInLeadTransform(pointIndexData, options);
-      data.push(pointIndexData, ...getLineDrawInData(options));
-    } else {
-      addLineDrawInLeadTransform(getFilteredTableData(data), options);
-      data.push(...getLineDrawInData(options));
-    }
-  }
-
   if (staticPoint || isSparkline) {
-    if (options.isDrawInAnimate){
-      data.push(getLineStaticPointData(name, staticPoint, `${name}_${DRAW_IN_PREV_DATA}`, isSparkline, isMethodLast));
-    } else {
-      data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
-    }
+    data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
   }
 
   addDualMetricAxisData(data, options);
@@ -503,10 +484,7 @@ const getLineFacetContext = (
   const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
   // when primarySeries is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
   const defaultFacetData = primarySeries ? `${name}_primarySeriesFacetData` : FILTERED_TABLE;
-  const alternateSegmentsFacetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
-  // when animated, facet from the draw-in lerp source (prev + tip) so the line renders clipped to
-  // the animated cutoff instead of the full series
-  const facetData = options.isDrawInAnimate ? `${name}_drawInLerp` : alternateSegmentsFacetData;
+  const facetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
   const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
 
   const markOptions = hasForecast
@@ -540,6 +518,7 @@ const addLineGroupMark = (
   marks.push({
     name: `${name}_group`,
     type: 'group',
+    ...(markOptions.isDrawInAnimate ? { clip: getLineDrawInClip(name) } : {}),
     from: {
       facet: {
         name: `${name}_facet`,
