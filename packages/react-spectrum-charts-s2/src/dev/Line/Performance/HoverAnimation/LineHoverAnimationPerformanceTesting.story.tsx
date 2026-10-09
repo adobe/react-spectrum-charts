@@ -39,6 +39,11 @@ export default {
       options: ['hover'],
       description: "Which animation types are enabled (only 'hover' is relevant to this story group).",
     },
+    renderer: {
+      control: { type: 'inline-radio' },
+      options: ['svg', 'canvas'],
+      description: 'Vega renderer used by every chart in the dashboard.',
+    },
     chartCount: {
       control: { type: 'number', min: 1, max: 40, step: 1 },
       description: 'Number of independent line charts to render in the dashboard grid.',
@@ -58,6 +63,7 @@ export default {
 type DashboardArgs = {
   animations?: boolean;
   animationTypes?: AnimationType[];
+  renderer?: ChartProps['renderer'];
   chartCount: number;
   seriesPerChart: number;
   pointsPerSeries: number;
@@ -86,6 +92,7 @@ type DashboardChartProps = {
   data: GeneratedTimeSeriesDatum[];
   animations?: boolean;
   animationTypes?: AnimationType[];
+  renderer?: ChartProps['renderer'];
 };
 
 /**
@@ -93,8 +100,8 @@ type DashboardChartProps = {
  * makes the Line interactive (wires up the voronoi hover overlay + hoveredItem signal), which is
  * what the hover-animation system needs to trigger at all.
  */
-const DashboardChart = ({ data, animations, animationTypes }: DashboardChartProps): ReactElement => {
-  const chartProps: ChartProps = useChartProps({ data, animations, animationTypes, width: 'auto', height: '100%' });
+const DashboardChart = ({ data, animations, animationTypes, renderer }: DashboardChartProps): ReactElement => {
+  const chartProps: ChartProps = useChartProps({ data, animations, animationTypes, renderer, width: 'auto', height: '100%' });
   return (
     <div style={{ height: CHART_HEIGHT, overflow: 'hidden', border: '1px solid var(--spectrum-gray-300)' }}>
       <Chart {...chartProps}>
@@ -117,6 +124,7 @@ const DashboardChart = ({ data, animations, animationTypes }: DashboardChartProp
 const DashboardStory: StoryFn<DashboardArgs> = ({
   animations,
   animationTypes,
+  renderer,
   chartCount,
   seriesPerChart,
   pointsPerSeries,
@@ -149,7 +157,13 @@ const DashboardStory: StoryFn<DashboardArgs> = ({
       }}
     >
       {chartData.map(({ id, data }) => (
-        <DashboardChart key={id} data={data} animations={animations} animationTypes={animationTypes} />
+        <DashboardChart
+          key={id}
+          data={data}
+          animations={animations}
+          animationTypes={animationTypes}
+          renderer={renderer}
+        />
       ))}
     </div>
   );
