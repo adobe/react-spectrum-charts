@@ -105,7 +105,7 @@ export const getLineDrawInClip = (name: string): Clip => {
   // the sweeping edge while animating, then the full plot width so nothing stays clipped
   const right = `(${DRAW_IN_ANIM_T} >= 1 ? width + ${o} : ${name}_${DRAW_IN_CLIP_X})`;
   const bottom = `(height + ${o})`;
-  // SVG path for the rectangle (-o, -o) to (right, bottom): move to top-left, right, down, left, close
+  // the clip is a rectangle from (-o, -o) to (right, bottom), written as an SVG path
   return { path: { signal: `'M-${o},-${o}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` } };
 };
 
@@ -124,7 +124,7 @@ export const getLineDrawInRevealExpr = (name: string, scaleType: ScaleType, dime
 };
 
 /**
- * Multiplies one opacity rule entry by a reveal expression, keeping its test and other properties.
+ * Hides one opacity rule entry until revealed, keeping its test so hover and highlight opacity still apply.
  * @param ref - opacity rule entry
  * @param reveal - 0-1 reveal expression
  * @returns NumericValueRef
