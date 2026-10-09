@@ -152,6 +152,7 @@ export function getBulletMarkTarget(bulletOptions: BulletSpecOptions): Mark {
         x: { scale: 'xscale', field: `${bulletOptions.target}` },
         y: { signal: bulletMarkTargetEncodeUpdateY },
         y2: { signal: bulletMarkTargetEncodeUpdateY2 },
+        strokeOpacity: [{ test: `!isValid(datum.${bulletOptions.target})`, value: 0 }, { value: 1 }],
       },
     },
   };
@@ -478,7 +479,11 @@ export function getBulletScaleAxes(bulletOptions: BulletSpecOptions): Axis {
 }
 
 export const addAxes = produce<Axis[], [BulletSpecOptions]>((axes, bulletOptions) => {
-  if (bulletOptions.metricAxis && bulletOptions.direction === 'column' && !bulletOptions.showTargetValue) {
+  if (
+    bulletOptions.metricAxis &&
+    bulletOptions.direction === 'column' &&
+    !(bulletOptions.showTargetValue && bulletOptions.showTarget)
+  ) {
     axes.push(getBulletScaleAxes(bulletOptions));
   }
 

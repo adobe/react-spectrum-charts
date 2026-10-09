@@ -148,7 +148,7 @@ export const addSignals = produce<Signal[], [BulletSpecOptions]>((signals, optio
   if (options.direction === 'column') {
     signals.push({ name: 'paddingRatio', update: 'gap / (gap + bulletGroupHeight)' });
 
-    if (options.metricAxis && !options.showTargetValue) {
+    if (options.metricAxis && !(options.showTargetValue && options.showTarget)) {
       signals.push(
         {
           name: 'bulletChartHeight',
