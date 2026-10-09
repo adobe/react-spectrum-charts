@@ -430,6 +430,33 @@ describe('lineSpecBuilder', () => {
         // so a highlightedItem-only line still gets both controlled-highlight rules wired.
         const rules = (hoverTargetData?.transform as { as?: string }[] | undefined)?.map((t) => t.as);
         expect(rules).toEqual(expect.arrayContaining(['controlledTableMatch', 'controlledSeriesMatch']));
+
+        // encodings and hoveredMatch reference line0_hoveredItem even with no hover UI
+        const hoveredItemSignal = spec.signals?.find((s) => s.name === `line0_${HOVERED_ITEM}`);
+        expect(hoveredItemSignal).toEqual(
+          expect.objectContaining({
+            name: `line0_${HOVERED_ITEM}`,
+            value: null,
+          })
+        );
+        expect(hoveredItemSignal?.on).toBeUndefined();
+      });
+
+      test('highlightedItem alone with animations off still declares a null hoveredItem signal', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          highlightedItem: 'abc123',
+          animations: false,
+        });
+        expect(spec.usermeta?.animatedMarks).toBeUndefined();
+        expect(spec.signals?.find((s) => s.name === `line0_${HOVERED_ITEM}`)).toEqual(
+          expect.objectContaining({
+            name: `line0_${HOVERED_ITEM}`,
+            value: null,
+          })
+        );
       });
     });
 
@@ -1297,6 +1324,21 @@ describe('lineSpecBuilder', () => {
 
     test('adds hover signals when displayPointMark is not undefined', () => {
       expect(addSignals([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual([]);
+    });
+
+    test('declares a null hoveredItem signal when highlightedItem makes the line the interactive mark target', () => {
+      const signals = addSignals([], {
+        ...defaultLineOptions,
+        interactiveMarkName: 'line0',
+        highlightedItem: 'abc123',
+      });
+      expect(signals).toEqual([
+        {
+          description: 'Tracks the hovered item for line0',
+          name: `line0_${HOVERED_ITEM}`,
+          value: null,
+        },
+      ]);
     });
 
     test('adds hover signals with metric range when displayPointMark is not undefined', () => {

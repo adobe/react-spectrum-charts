@@ -21,6 +21,7 @@ import {
   DEFAULT_TIME_DIMENSION,
   DRAW_IN_PREV_DATA,
   FILTERED_TABLE,
+  HOVERED_ITEM,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
@@ -59,7 +60,12 @@ import { getInteractiveMarkName, isInteractive } from '../marks/markUtils.js';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils.js';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
-import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder.js';
+import {
+  addHoveredItemSignal,
+  getFirstRscSeriesIdSignal,
+  getLastRscSeriesIdSignal,
+  hasSignalByName,
+} from '../signal/signalSpecBuilder.js';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils.js';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
 import {
@@ -414,7 +420,19 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     addLineDrawInAnimationSignals(signals, options);
   }
 
-  if (!isInteractive(options)) return;
+  if (!isInteractive(options)) {
+    // highlightedItem makes this the interactive mark target, so opacity rules and
+    // hover animation reference `${name}_hoveredItem`. Declare a null placeholder
+    // since there is no hover UI to drive the signal.
+    if (options.interactiveMarkName === name && !hasSignalByName(signals, `${name}_${HOVERED_ITEM}`)) {
+      signals.push({
+        description: `Tracks the hovered item for ${name}`,
+        name: `${name}_${HOVERED_ITEM}`,
+        value: null,
+      });
+    }
+    return;
+  }
   const { primarySeries } = options;
   // datum.datum because the voronoi mark uses datumOrder=2
   addHoveredItemSignal(
