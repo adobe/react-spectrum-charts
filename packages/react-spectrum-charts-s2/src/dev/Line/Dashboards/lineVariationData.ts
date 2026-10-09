@@ -14,7 +14,7 @@ import { VariationDataset } from '../../VariationDashboard.js';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const START_DATE = Date.UTC(2024, 10, 2);
 /** Share of each series' points treated as actuals; the remainder is forecast/estimated. */
-const ACTUAL_SHARE = 0.75;
+const ACTUAL_SHARE = 0.6;
 
 export interface LineVariationDatum extends Record<string, unknown> {
   /** Unique row id for `Chart.idKey`. */
