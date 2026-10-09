@@ -148,7 +148,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView } = useChartInteractions(
+  const { signals, targetStyle, axisLabelTooltipAnchorStyle, tooltip, onNewView } = useChartInteractions(
     props,
     sanitizedChildren
   );
@@ -367,7 +367,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
           locale={locale}
           padding={padding}
           signals={signals}
-          tooltip={inspectOptions} // legend show/hide relies on this
+          tooltip={tooltip}
           onNewView={handleNewView}
         />
         {accessibleNavigation && navChartType && (

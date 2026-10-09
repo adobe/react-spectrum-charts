@@ -11,9 +11,8 @@
  */
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Config, Padding, Renderers, Spec, View, expressionFunction } from 'vega';
+import { Config, Padding, Renderers, Spec, TooltipHandler, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
-import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 import { getLocale } from '@spectrum-charts/core-s2/locales';
@@ -64,7 +63,8 @@ export interface VegaChartProps {
   renderer: Renderers;
   signals?: Record<string, unknown>;
   spec: Spec;
-  tooltip: TooltipOptions;
+  /** Set at embed, before the renderer exists; changing it on a live view makes Vega rebuild the renderer */
+  tooltip: TooltipHandler;
   width: number;
 }
 
