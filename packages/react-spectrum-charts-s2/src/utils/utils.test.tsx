@@ -13,10 +13,11 @@ import { Fragment, createElement } from 'react';
 
 import { Chart } from '../Chart.js';
 import { Bar, ChartInspect, Line } from '../components/index.js';
-import { Area, Bullet, Donut, Scatter, Trendline } from '../pre-alpha/index.js';
+import { Area, Bullet, Combo, Donut, Scatter, Trendline } from '../pre-alpha/index.js';
 import {
   debugLog,
   getAllElements,
+  getAllMarkElements,
   getComponentName,
   shouldClearHoverSignalsOnClose,
   toggleStringArrayValue,
@@ -99,6 +100,24 @@ describe('utils', () => {
       expect(matches[5].name).toBe('scatter1Trendline');
       expect(matches[6].name).toBe('area0');
       expect(matches[7].name).toBe('bullet0');
+    });
+
+    test('should use the unprefixed name for named combo children', () => {
+      const element = (
+        <Chart data={[]}>
+          <Combo>
+            <Bar name="orders">
+              <ChartInspect />
+            </Bar>
+            <Line>
+              <ChartInspect />
+            </Line>
+          </Combo>
+        </Chart>
+      );
+
+      expect(getAllElements(element, ChartInspect).map(({ name }) => name)).toEqual(['orders', 'combo0Line0']);
+      expect(getAllMarkElements(element, Bar).map(({ name }) => name)).toEqual(['orders']);
     });
   });
 

@@ -313,10 +313,8 @@ export const getAllMarkElements = (
   const elementCounts = initElementCounts();
   const desiredElements: MappedElement[] = [];
   for (const child of toArray(target.props.children)) {
-    const childName = getElementName(child, elementCounts);
-    desiredElements.push(
-      ...getAllMarkElements(child, source, elements, combineNames(name, childName), target.type.displayName)
-    );
+    const childName = getChildElementName(target.type.displayName, child, name, getElementName(child, elementCounts));
+    desiredElements.push(...getAllMarkElements(child, source, elements, childName, target.type.displayName));
   }
 
   // no element matches found, give up all hope...
@@ -363,13 +361,32 @@ export const getAllElements = (
   const elementCounts = initElementCounts();
   const desiredElements: MappedElement[] = [];
   for (const child of toArray(target.props.children)) {
-    const childName = getElementName(child, elementCounts);
-    desiredElements.push(
-      ...getAllElements(child, source, elements, combineNames(name, childName), target.type.displayName)
-    );
+    const childName = getChildElementName(target.type.displayName, child, name, getElementName(child, elementCounts));
+    desiredElements.push(...getAllElements(child, source, elements, childName, target.type.displayName));
   }
   // no element matches found, give up all hope...
   return [...elements, ...desiredElements];
+};
+
+/**
+ * Gets the full name of a child element, using a named Combo child's own name to match the spec builder's mark name.
+ * @param parentDisplayName
+ * @param child
+ * @param parentName
+ * @param childName
+ * @returns string
+ */
+const getChildElementName = (parentDisplayName: string, child: unknown, parentName: string, childName: string) => {
+  const isNamedComboChild =
+    parentDisplayName === Combo.displayName &&
+    typeof child === 'object' &&
+    child !== null &&
+    'props' in child &&
+    typeof child.props === 'object' &&
+    child.props !== null &&
+    'name' in child.props &&
+    Boolean(child.props.name);
+  return isNamedComboChild ? childName : combineNames(parentName, childName);
 };
 
 const getElementName = (element: unknown, elementCounts: ElementCounts) => {

@@ -567,6 +567,20 @@ describe('barSpecBuilder', () => {
         signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
       ).toBeDefined();
     });
+    test('should add a null dimension hover area signal when only highlightedItem is set', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, highlightedItem: 'a' });
+      expect(
+        signals.find((signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`)
+      ).toEqual({ name: `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`, value: null });
+    });
+    test('should not add a null dimension hover area signal when the bar is interactive', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, highlightedItem: 'a', hasOnClick: true });
+      const dimensionSignals = signals.filter(
+        (signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
+      );
+      expect(dimensionSignals).toHaveLength(1);
+      expect(dimensionSignals[0].on?.length).toBeGreaterThan(0);
+    });
     test('should not add hoveredItem signals by default with no interactivity and no accessibleNavigation', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals.find((signal) => signal.name === 'bar0_hoveredItem')).toBeUndefined();
