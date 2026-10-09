@@ -102,6 +102,11 @@ export const getDodgedAndStackedBarMark = (options: BarSpecOptions): GroupMark =
     marks.push(getBarItemSelectionRing(options, ringDataSource, ringDimensionEncodings));
   }
 
+  // inside the group so it can read the bar mark's bounds, as for dodged bars
+  if (options.accessibleNavigation) {
+    marks.push(getBarFocusRing(options));
+  }
+
   return { ...getDodgedGroupMark(options), marks };
 };
 

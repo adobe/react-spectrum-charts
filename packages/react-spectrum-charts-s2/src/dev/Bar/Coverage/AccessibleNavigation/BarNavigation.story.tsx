@@ -19,7 +19,8 @@ import { Orientation } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../../Chart.js';
 import { Axis, Bar, ChartInspect, ChartPopover, Legend } from '../../../../components/index.js';
 import useChartProps from '../../../../hooks/useChartProps.js';
-import { barData, barSeriesData } from '../../../../storyShared/components/Bar/data.js';
+import { barData, barDataWithUTC, barSeriesData } from '../../../../storyShared/components/Bar/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Accessible Navigation',
@@ -124,8 +125,86 @@ const StackedBarNavigationStory: StoryFn<BarNavigationArgs> = (args): ReactEleme
   );
 };
 
+/** Time dimension from date strings (`dimensionDataType: 'time'`): stack and segment focus rings show, and labels read the original dates. */
+const TimeDimensionBarNavigationStory: StoryFn<BarNavigationArgs> = (args): ReactElement => {
+  const { orientation } = args;
+  const isHorizontal = orientation === 'horizontal';
+  const chartProps = useChartProps({ data: barDataWithUTC, width: 700, height: 500, accessibleNavigation: true });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={isHorizontal ? 'left' : 'bottom'} labelFormat="time" granularity="day" baseline title="Day" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar dimension="browser" metric="downloads" color="dataset_id" dimensionDataType="time" orientation={orientation}>
+        <ChartInspect>{(datum) => <div>Downloads: {datum.downloads}</div>}</ChartInspect>
+      </Bar>
+      <Legend title="Dataset" />
+    </Chart>
+  );
+};
+
+const hourData = [0, 1, 2, 3].map((hour) => ({ hour, downloads: [12, 8, 15, 5][hour] }));
+const hourSeriesData = hourData.flatMap(({ hour, downloads }) => [
+  { hour, platform: 'Desktop', downloads },
+  { hour, platform: 'Mobile', downloads: Math.round(downloads / 2) },
+]);
+
+/** Number dimension starting at 0, with and without a series: every bar, including hour 0, is reachable and shows its ring. */
+const NumberDimensionBarNavigationStory: StoryFn<BarNavigationArgs & { stacked: boolean }> = (args): ReactElement => {
+  const { orientation, stacked } = args;
+  const isHorizontal = orientation === 'horizontal';
+  const chartProps = useChartProps({ data: stacked ? hourSeriesData : hourData, width: 700, height: 500, accessibleNavigation: true });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Hour" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar dimension="hour" metric="downloads" color={stacked ? 'platform' : undefined} orientation={orientation} />
+      {stacked && <Legend title="Platform" />}
+    </Chart>
+  );
+};
+
+const emptyCategoryData = [
+  { category: '', platform: 'Desktop', downloads: 6 },
+  { category: '', platform: 'Mobile', downloads: 3 },
+  { category: 'Chrome', platform: 'Desktop', downloads: 12 },
+  { category: 'Chrome', platform: 'Mobile', downloads: 7 },
+  { category: 'Firefox', platform: 'Desktop', downloads: 9 },
+  { category: 'Firefox', platform: 'Mobile', downloads: 4 },
+];
+
+/** Empty-string category: the empty bar or stack is navigable, and no stack ring shows until one is focused. */
+const EmptyCategoryBarNavigationStory: StoryFn<BarNavigationArgs & { stacked: boolean }> = (args): ReactElement => {
+  const { orientation, stacked } = args;
+  const isHorizontal = orientation === 'horizontal';
+  const data = stacked ? emptyCategoryData : emptyCategoryData.filter((row) => row.platform === 'Desktop');
+  const chartProps = useChartProps({ data, width: 700, height: 500, accessibleNavigation: true });
+  return (
+    <Chart {...chartProps}>
+      <Axis position={isHorizontal ? 'left' : 'bottom'} baseline title="Browser" />
+      <Axis position={isHorizontal ? 'bottom' : 'left'} grid title="Downloads" />
+      <Bar dimension="category" metric="downloads" color={stacked ? 'platform' : undefined} orientation={orientation} />
+      {stacked && <Legend title="Platform" />}
+    </Chart>
+  );
+};
+
 export const NonInteractiveBarNavigation = NonInteractiveBarNavigationStory.bind({});
 NonInteractiveBarNavigation.args = { orientation: 'vertical' };
 
 export const StackedBarNavigation = StackedBarNavigationStory.bind({});
 StackedBarNavigation.args = { orientation: 'vertical' };
+
+export const TimeDimensionBarNavigation = bindWithProps(TimeDimensionBarNavigationStory);
+TimeDimensionBarNavigation.args = { orientation: 'vertical' };
+
+export const NumberDimensionBarNavigation = bindWithProps(NumberDimensionBarNavigationStory);
+NumberDimensionBarNavigation.args = { orientation: 'vertical', stacked: false };
+
+export const StackedNumberDimensionBarNavigation = bindWithProps(NumberDimensionBarNavigationStory);
+StackedNumberDimensionBarNavigation.args = { orientation: 'vertical', stacked: true };
+
+export const EmptyCategoryBarNavigation = bindWithProps(EmptyCategoryBarNavigationStory);
+EmptyCategoryBarNavigation.args = { orientation: 'vertical', stacked: true };
+
+export const UnfacetedEmptyCategoryBarNavigation = bindWithProps(EmptyCategoryBarNavigationStory);
+UnfacetedEmptyCategoryBarNavigation.args = { orientation: 'vertical', stacked: false };

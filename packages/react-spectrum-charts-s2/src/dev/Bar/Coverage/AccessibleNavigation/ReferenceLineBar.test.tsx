@@ -18,8 +18,8 @@ test('Reference-line bar navigation focuses a bar', async () => {
   render(<ReferenceLineBarNavigation {...ReferenceLineBarNavigation.args} />);
   const chart = await findChart();
   const container = chart.closest('.rsc-container') as HTMLElement;
-  await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
-  (container.querySelector('button') as HTMLButtonElement).click();
+  await waitFor(() => expect(container.querySelector('.dn-entry-button')).toBeTruthy());
+  (container.querySelector('.dn-entry-button') as HTMLButtonElement).click();
   await waitFor(() => {
     expect(container.querySelector('.dn-node')).toBeTruthy();
   });
