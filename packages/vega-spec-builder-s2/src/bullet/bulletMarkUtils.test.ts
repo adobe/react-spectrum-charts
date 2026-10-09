@@ -557,6 +557,17 @@ describe('ChartInspect support', () => {
     expect(hoverArea.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - bulletThresholdHeight' });
   });
 
+  test('getBulletHoverArea ignores showTargetValue when thresholds are present and showTarget is false', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsWithInspect,
+      showTarget: false,
+      showTargetValue: true,
+      track: false,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+    });
+    expect(hoverArea.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - bulletThresholdHeight' });
+  });
+
   test('getBulletHoverArea offsets for the target value label when track is present', () => {
     const hoverArea = getBulletHoverArea({
       ...sampleOptionsWithInspect,
