@@ -53,7 +53,7 @@ export interface LineVariationDatum extends Record<string, unknown> {
 const toRows = (valuesBySeries: Record<string, (number | null)[]>, stepMs = DAY_MS): LineVariationDatum[] =>
   Object.entries(valuesBySeries).flatMap(([series, values], seriesIndex) => {
     const forecastStart = Math.max(1, Math.floor(values.length * ACTUAL_SHARE));
-    const peak = Math.max(...values.map((value) => value ?? -Infinity));
+    const peak = Math.max(...values.map((value) => value ?? Number.NEGATIVE_INFINITY));
     const peakIndex = Math.max(0, values.indexOf(peak));
     return values.map((value, index) => {
       const isForecast = index >= forecastStart;
