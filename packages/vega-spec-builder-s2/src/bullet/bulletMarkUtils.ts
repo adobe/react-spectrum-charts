@@ -301,10 +301,7 @@ function getHoverAreaSignalsForThresholds(options: BulletSpecOptions): { y: stri
     return { y, height: 'targetHeight' };
   }
 
-  const y = options.showTargetValue
-    ? 'bulletGroupHeight - targetValueLabelHeight - 3 - bulletThresholdHeight'
-    : 'bulletGroupHeight - 3 - bulletThresholdHeight';
-  return { y, height: 'bulletThresholdHeight' };
+  return { y: 'bulletGroupHeight - 3 - bulletThresholdHeight', height: 'bulletThresholdHeight' };
 }
 
 function getHoverAreaSignalsForTrack(options: BulletSpecOptions): { y: string; height: string } {
