@@ -288,6 +288,18 @@ describe('getBulletAxes', () => {
     expect(axes).toStrictEqual([]);
   });
 
+  test('Should return the scale axis when showTargetValue is true but showTarget is false', () => {
+    const options = { ...sampleOptionsColumn, metricAxis: true, showTarget: false, showTargetValue: true };
+    const axes = addAxes([], options);
+    expect(axes.find((axis) => axis.orient === 'bottom')).toBeDefined();
+  });
+
+  test('Should not return the scale axis when the target value label is shown', () => {
+    const options = { ...sampleOptionsColumn, metricAxis: true, showTarget: true, showTargetValue: true };
+    const axes = addAxes([], options);
+    expect(axes.find((axis) => axis.orient === 'bottom')).toBeUndefined();
+  });
+
   test('Should return the scale axis when axis is true, row mode is enabled, and showtarget is false', () => {
     const options = { ...sampleOptionsColumn, metricAxis: true };
     const axes = addAxes([], options);
