@@ -180,6 +180,16 @@ describe('getBulletSignals', () => {
     });
   });
 
+  test('Should include the axis offset signals when showTargetValue is true but showTarget is false', () => {
+    const options = { ...sampleOptionsColumn, metricAxis: true, showTarget: false, showTargetValue: true };
+    const signals = addSignals([], options);
+    expect(signals.find((signal) => signal.name === 'axisOffset')).toBeDefined();
+    expect(signals.find((signal) => signal.name === 'bulletChartHeight')).toHaveProperty(
+      'update',
+      expect.stringContaining('+ 10')
+    );
+  });
+
   test('Should include correct bulletChartHeight signal when options.axis is true and showTargetValue is false', () => {
     const options = {
       ...sampleOptionsColumn,

@@ -471,7 +471,11 @@ export function getBulletScaleAxes(bulletOptions: BulletSpecOptions): Axis {
 }
 
 export const addAxes = produce<Axis[], [BulletSpecOptions]>((axes, bulletOptions) => {
-  if (bulletOptions.metricAxis && bulletOptions.direction === 'column' && !bulletOptions.showTargetValue) {
+  if (
+    bulletOptions.metricAxis &&
+    bulletOptions.direction === 'column' &&
+    !(bulletOptions.showTargetValue && bulletOptions.showTarget)
+  ) {
     axes.push(getBulletScaleAxes(bulletOptions));
   }
 
