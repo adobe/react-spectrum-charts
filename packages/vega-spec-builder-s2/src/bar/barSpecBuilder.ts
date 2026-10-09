@@ -24,7 +24,6 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   FOCUSED_REGION,
-  GROUP_ID,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -285,7 +284,8 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     !chartInspects.length &&
     !trendlines.length &&
     !hasOnClick &&
-    !options.accessibleNavigation
+    !options.accessibleNavigation &&
+    options.highlightedItem === undefined
   ) {
     return;
   }
@@ -310,8 +310,6 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
 
-  addBarHoverData(data, options);
-
   const index = data.findIndex((d) => d.name === FILTERED_TABLE);
   data[index].transform = data[index].transform ?? [];
   if (type === 'stacked' || isDodgedAndStacked(options)) {
@@ -335,6 +333,8 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
   addTrendlineData(data, options);
   addInspectData(data, options);
   addPopoverData(data, options);
+  // after addInspectData so the hover target formulas can read the highlighted data
+  addBarHoverData(data, options);
 });
 
 /** Adds the hover-animation engine's data sources for a bar mark (see `marks/hoverAnimationUtils.ts`). */
@@ -356,16 +356,13 @@ const addBarHoverData = (data: Data[], options: BarSpecOptions): void => {
 
   // dimension must be its own groupby field since dimensionHoverMatch compares datum.${dimension} directly
   const groupby = [barAnimIdField, options.idKey, SERIES_ID, dimension];
-  if (highlightedByGroup) {
-    const groupFields = getGroupHighlightFields(options);
-    if (groupFields) {
-      tableData.transform.push(getGroupIdTransform(groupFields, name));
-      groupby.push(`${name}_${GROUP_ID}`);
-    }
-  }
+  const groupFields = highlightedByGroup ? getGroupHighlightFields(options) : undefined;
+  // SERIES_ID isn't on the table until after the mark transforms, so the group id is derived post-aggregate
+  const formulas = groupFields ? [getGroupIdTransform(groupFields, name)] : [];
+  groupby.push(...(groupFields ?? []).filter((field) => !groupby.includes(field)));
 
   data.push(
-    getHoverTargetData({ name, groupby, rules: getBarHoverRules(options) }),
+    getHoverTargetData({ name, groupby, rules: getBarHoverRules(options), formulas }),
     getHoverAnimStateData({ name, keys: options.barIds ?? [], keyField: barAnimIdField }),
     getHoverFractionData(name),
     getHoverSeriesFractionData(name, barAnimIdField)
