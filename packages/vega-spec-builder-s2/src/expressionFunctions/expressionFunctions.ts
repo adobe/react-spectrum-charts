@@ -13,7 +13,13 @@ import { formatLocale } from 'd3-format';
 import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 
 import { DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/core-s2/constants';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/core-s2/locales';
+import {
+  LocaleCode,
+  NumberLocaleCode,
+  TimeLocaleCode,
+  getLocale,
+  numberLocales,
+} from '@spectrum-charts/core-s2/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/core-s2/tokens';
 
 import { NumberFormat } from '../types/index.js';
@@ -75,7 +81,7 @@ export const formatShortNumber = (numberLocale?: string | NumberLocale) => {
 export const formatPercentWithValue = (locale: Parameters<typeof getLocale>[0] = 'en-US') => {
   const { number: numberLocale } = getLocale(locale);
   const localeCode = typeof locale === 'string' ? locale : locale?.number;
-  const formatPercent = formatLocale((numberLocale ?? numberLocales['en-US'])).format('.1%');
+  const formatPercent = formatLocale(numberLocale ?? numberLocales['en-US']).format('.1%');
   // matches getTextNumberFormat's 'shortNumber' so the value reads the same as the segment label
   const formatValue = formatShortNumber(localeCode);
   return (percent: number, value: number) => `${formatPercent(percent)} (${formatValue(value)})`;
@@ -187,6 +193,23 @@ const consoleLog = (value) => {
   return value;
 };
 
+const LABEL_WIDTH_CACHE_MAX_SIZE = 5000;
+const labelWidthCache = new Map<string, number>();
+let measureContext: CanvasRenderingContext2D | null | undefined;
+
+/**
+ * Gets the shared canvas context used to measure text, creating it on first use.
+ * @returns canvas 2d context or null if unavailable
+ */
+const getMeasureContext = (): CanvasRenderingContext2D | null => {
+  if (measureContext === undefined) {
+    measureContext = document.createElement('canvas').getContext('2d');
+    // Widths measured before a web font loads use the fallback font, so drop them once fonts finish loading.
+    document.fonts?.addEventListener?.('loadingdone', () => labelWidthCache.clear());
+  }
+  return measureContext;
+};
+
 /**
  * Figures out the rendered width of text by drawing it on a canvas
  * @param text
@@ -195,12 +218,23 @@ const consoleLog = (value) => {
  * @returns width in pixels
  */
 const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: number = 12) => {
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
+  const font = `${fontWeight} ${fontSize}px ${ADOBE_CLEAN_FONT}`;
+  const key = `${font}|${text}`;
+  const cached = labelWidthCache.get(key);
+  if (cached !== undefined) return cached;
+
+  const context = getMeasureContext();
   if (context === null) return 0;
 
-  context.font = `${fontWeight} ${fontSize}px ${ADOBE_CLEAN_FONT}`;
-  return context.measureText(text).width;
+  context.font = font;
+  const width = context.measureText(text).width;
+  if (document.fonts?.status !== 'loading') {
+    if (labelWidthCache.size >= LABEL_WIDTH_CACHE_MAX_SIZE) {
+      labelWidthCache.delete(labelWidthCache.keys().next().value as string);
+    }
+    labelWidthCache.set(key, width);
+  }
+  return width;
 };
 
 /**
