@@ -200,7 +200,7 @@ export const getAreaHighlightedData = (
 
 export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOptions) => {
   const { chartTooltips, name } = areaOptions;
-  if (!isInteractive(areaOptions)) return;
+  if (!isInteractive(areaOptions) && areaOptions.highlightedItem === undefined) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartTooltips[0]?.excludeDataKeys);
   if (areaOptions.highlightedItem) {
     addHighlightedItemEvents(signals, name);
@@ -304,10 +304,18 @@ export const addAreaMarks = produce<Mark[], [AreaSpecOptions]>((marks, areaOptio
 });
 
 /**
+ * Gets the field for the top edge of the area, used to position hover and anchor points.
+ * @param areaOptions
+ * @returns string
+ */
+export const getHoverPointMetric = ({ metric, metricEnd, metricStart }: AreaSpecOptions): string =>
+  metricStart && metricEnd ? metricEnd : `${metric}1`;
+
+/**
  * returns a transparent point that gets used by the popover to anchor to
  */
 const getAnchorPointMark = (areaOptions: AreaSpecOptions): Mark[] => {
-  const { name, dimension, metric, scaleType } = areaOptions;
+  const { name, dimension, scaleType } = areaOptions;
   if (!isInteractive(areaOptions)) return [];
   return [
     {
@@ -317,7 +325,7 @@ const getAnchorPointMark = (areaOptions: AreaSpecOptions): Mark[] => {
       interactive: false,
       encode: {
         enter: {
-          y: { scale: 'yLinear', field: `${metric}1` },
+          y: { scale: 'yLinear', field: getHoverPointMetric(areaOptions) },
           stroke: { value: 'transparent' },
           fill: { value: 'transparent' },
         },
@@ -333,7 +341,7 @@ const getAnchorPointMark = (areaOptions: AreaSpecOptions): Mark[] => {
  * returns a circle symbol and a rule on the hovered/selected point
  */
 const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
-  const { name, dimension, highlightedItem, metric, scaleType, color } = areaOptions;
+  const { name, dimension, highlightedItem, scaleType, color } = areaOptions;
   if (!isInteractive(areaOptions) && highlightedItem === undefined) return [];
   const highlightMarks: Mark[] = [
     {
@@ -343,7 +351,7 @@ const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
       interactive: false,
       encode: {
         enter: {
-          y: { scale: 'yLinear', field: `${metric}1` },
+          y: { scale: 'yLinear', field: getHoverPointMetric(areaOptions) },
           stroke: { scale: COLOR_SCALE, field: color },
           fill: { signal: BACKGROUND_COLOR },
         },

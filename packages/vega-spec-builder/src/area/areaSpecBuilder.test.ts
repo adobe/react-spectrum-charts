@@ -36,7 +36,15 @@ import { getGenericValueSignal } from '../signal/signalSpecBuilder';
 import { defaultSignals } from '../specTestUtils';
 import { initializeSpec } from '../specUtils';
 import { AreaSpecOptions, ScSpec } from '../types';
-import { addArea, addAreaMarks, addData, addHighlightedItemEvents, addSignals, setScales } from './areaSpecBuilder';
+import {
+  addArea,
+  addAreaMarks,
+  addData,
+  addHighlightedItemEvents,
+  addSignals,
+  getHoverPointMetric,
+  setScales,
+} from './areaSpecBuilder';
 
 const startingSpec: ScSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -251,6 +259,14 @@ describe('areaSpecBuilder', () => {
     });
   });
 
+  describe('addSignals() with highlightedItem and no children', () => {
+    test('should add the hovered item and controlled hovered id signals referenced by the area opacity', () => {
+      const signals = addSignals(defaultSignals, { ...defaultAreaOptions, highlightedItem: 'highlightedItem' });
+      expect(signals.find((signal) => signal.name === `area0_${HOVERED_ITEM}`)).toBeDefined();
+      expect(signals.find((signal) => signal.name === 'area0_controlledHoveredId')).toBeDefined();
+    });
+  });
+
   describe('addHighlightedItemEvents()', () => {
     test('should do nothing if there is no highlightedItem signal', () => {
       const signals = [];
@@ -324,6 +340,32 @@ describe('areaSpecBuilder', () => {
           ],
         },
       ]);
+    });
+  });
+
+  describe('getHoverPointMetric()', () => {
+    test('should use the stacked top edge for a stacked area', () => {
+      expect(getHoverPointMetric(defaultAreaOptions)).toBe(`${DEFAULT_METRIC}1`);
+    });
+
+    test('should use metricEnd for a floating band', () => {
+      expect(getHoverPointMetric({ ...defaultAreaOptions, metricStart: 'low', metricEnd: 'high' })).toBe('high');
+    });
+  });
+
+  describe('hover marks on a floating band', () => {
+    test('should position the hover and anchor points on metricEnd', () => {
+      const marks = addAreaMarks([], {
+        ...defaultAreaOptions,
+        chartTooltips: [{}],
+        metricStart: 'low',
+        metricEnd: 'high',
+      });
+      const groupMark = marks[0] as GroupMark;
+      const anchorPoint = groupMark.marks?.find((mark) => mark.name === 'area0_anchorPoint');
+      const hoverPoint = marks.find((mark) => mark.name === 'area0_point');
+      expect(anchorPoint?.encode?.enter).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
+      expect(hoverPoint?.encode?.enter).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
     });
   });
 });
