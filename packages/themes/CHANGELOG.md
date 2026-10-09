@@ -1,4 +1,4 @@
-# @adobe/react-spectrum-charts
+# @spectrum-charts/themes
 
 ## 1.53.0
 
@@ -8,21 +8,7 @@
 
 ### Patch Changes
 
-- Updated dependencies [25dbb44]
 - Updated dependencies [4ec4e4d]
 - Updated dependencies [0e60423]
-- Updated dependencies [c70b1c4]
 - Updated dependencies [fd19202]
-  - @spectrum-charts/vega-spec-builder@1.53.0
   - @spectrum-charts/constants@1.54.0
-  - @spectrum-charts/themes@1.53.0
-
-## 1.52.1
-
-### Patch Changes
-
-- Updated dependencies [bbb5b70]
-- Updated dependencies [bbb5b70]
-- Updated dependencies [bbb5b70]
-  - @spectrum-charts/constants@1.53.0
-  - @spectrum-charts/vega-spec-builder@1.52.1

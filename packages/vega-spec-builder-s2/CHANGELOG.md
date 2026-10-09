@@ -1,5 +1,80 @@
 # @spectrum-charts/vega-spec-builder-s2
 
+## 0.10.0
+
+### Minor Changes
+
+- bf42a3d: Improve S2 bar accessible navigation:
+  Updated focus element position accuracy for screen magnifiers.
+
+  Added keyboard and focus ring support for dodged bars.
+
+  Added meaningful summaries of focused regions for screen readers while focusing elements in dodged and stacked bars.
+  (e.g. "Browser: Chrome. Operating system: Windows, Downloads: 5. Operating system: Mac, Downloads: 3.")
+
+  Whole-chart focus provides a "metric by dimension" summary (e.g. "Downloads by Browser chart, grouped by Operating system. 3 groups.") instead of a raw field-name id.
+
+  Tabbing out of the chart now keeps the focused node so Shift+Tab returns to it (rather than resetting to the "Enter navigation area" button)
+
+  Leaving the chart reverts the focus dimming so the non-focused marks return to full opacity.
+
+- 9922dc7: S2 Donut: hovering a segment now shows its label even when it was hidden by label collision or because the segment is below the minimum label angle. Labels that would collide with the hovered label are hidden while it is hovered. (AN-495008)
+- ef12f11: Add `ChartActionBar`, a new Line child component for Spectrum 2 charts. Clicking a data point shows a floating contextual toolbar with consumer-defined actions, overflow handling for actions that don't fit inline, drag-to-reposition, and an emphasized visual style option. (#797)
+- 6a66423: Add `@spectrum-charts/core-s2`, an S2-only package with `constants`, `locales`, `tokens`, and `utils` subpath exports. The S2 packages now depend on it instead of the shared `@spectrum-charts/constants`, `themes`, `utils`, and `locales` packages, so S2 no longer has to stay in sync with S1. `@spectrum-charts/react-spectrum-charts-s2` no longer re-exports the S1-only `getSpectrumVegaConfig`.
+- 0e60423: S2 Donut `ChartInspect` and `ChartPopover` now render default content (color swatch, series name, and share of the visible total with its short-number value, e.g. `65.2% (23K)`, formatted with the chart locale) without requiring children.
+
+  When children are provided inside a `Donut`, their content replaces the default content.
+
+  `@spectrum-charts/vega-spec-builder-s2` exports a new `formatPercentWithValue(locale)` formatter used for this content.
+
+- 7363290: Ship the S2 packages as per-module ES modules built with Rollup, so bundlers share dependencies with the app and tree-shake unused code. In a consumer webpack build this cuts what `@spectrum-charts/react-spectrum-charts-s2` adds to an app that already uses React Spectrum S2 from about 350 KB to about 175 KB gzip, mostly by no longer bundling private copies of `@react-spectrum/s2` and React Aria.
+
+  Breaking changes:
+
+  - `@spectrum-charts/core-s2`, `@spectrum-charts/schemas`, `@spectrum-charts/vega-spec-builder-s2` and `@spectrum-charts/react-spectrum-charts-s2` are ESM-only (`"type": "module"` with an `exports` map). `require()`, the UMD global, and deep imports into `dist/` are no longer supported.
+  - The packages declare `engines.node >=20.19.0`.
+  - `@spectrum-charts/react-spectrum-charts-s2` adds `react-aria-components` `^1.14.0` as a peer dependency, so it shares React Aria context with `@react-spectrum/s2`.
+  - The `./alpha` and `./beta` subpath exports of `@spectrum-charts/react-spectrum-charts-s2` are removed; they never pointed at published files.
+  - Jest consumers must transform `@spectrum-charts/*` and stub CSS imports. See "Module format" in the S2 overview docs.
+
+  Type declarations now resolve under `moduleResolution` `node16`/`nodenext` as well as `bundler`.
+
+- c70b1c4: S2 legends positioned at the bottom or top are now left-aligned (`align: 'start'`) by default instead of centered. This also applies to S1 charts using the `s2` prop; S1 charts without it are unchanged. Pass `align="middle"` to keep the previous centered layout.
+- 904b468: Hide text in the DonutSummary if it truncates down all the way to `...`
+- d7e5b00: Adjust slice gap so the pie variation of a Donut has a 1px gap.
+
+### Patch Changes
+
+- 25dbb44: Bullet value labels always use gray-900 instead of the threshold color when `thresholdBarColor` is enabled, matching side labels.
+- 2ff88a7: Donut segment labels measure their text once per data update instead of on every animation frame, and `getLabelWidth` reuses one canvas and caches widths. Speeds up donut draw-in with labels.
+- 4ec4e4d: S2 Donut: the gap between the ring and its segment labels now scales with donut size (5px for small, 10px for medium/large, 15px for extra large) instead of a fixed 20px. Donut size is now based on chart size.
+- 7426d40: The chart animations will respect the "reduce motion" setting on a users operating system.
+- 9cfd99c: Remove the startAngle and otherItemColor prop from the S2 Donut.
+- 5147cc4: S2 animations run on a shared on-demand ticker instead of each chart's always-on Vega timer.
+
+  - Idle charts do no animation work; off-screen charts pause.
+  - Animations run at the display's native refresh rate, within an 8ms per-frame budget across charts.
+  - Draw-in starts on the first painted frame, so slow mounts no longer skip most of the animation.
+
+- 3454151: Import `mergeConfig` from `vega-util` instead of `vega`. This was the package's only runtime import of `vega`, and it pulled a second copy of Vega and d3 into consumer apps. The code S2 charts add to a production app drops by about 19% (501 KB minified, 170 KB gzip), with no behavior change.
+- 6106b65: Add opt-in clockwise draw-in animations for S2 donuts with labels fading in linearly over 50ms after their slices finish drawing.
+- 0571b96: Animate S2 donut segment and label opacity with the shared hover animation system.
+- b042f60: Match S2 donut label interactions to their slices, including animated hover highlighting, inspect tooltips, and popovers.
+- e404467: S2 Line, Bar and Donut: smoother hover animations on charts with many points.
+- eee0b6e: S2 Line, Bar, Donut and Legend: smoother hover animations on charts with many series.
+- 778d18a: S2 Line: draw-in animation is about 3× smoother on dashboards with many line charts. Lines with alternate (dashed) segments or a primary series now keep their styling while drawing in.
+
+  `core-s2` no longer exports the internal line draw-in data/field constants (`DRAW_IN_PREV_DATA`, `DRAW_IN_TIP_DATA`, `DRAW_IN_LERP_DATA`, `DRAW_IN_POINT_INDEX_DATA`, `DRAW_IN_TIME_MS_FIELD`, `DRAW_IN_NEXT_*_FIELD`, `DRAW_IN_POINT_INDEX_FIELD`, `DRAW_IN_TIP_FLAG`, `DRAW_IN_DOMAIN_MIN/MAX`).
+
+- 2fe8a2c: Fix S2 line charts reflowing by a pixel when hovering a point at the chart edge
+- fd19202: Pre-Alpha S2 Donut fixes for label positioning, truncation, spacing, and dense collision handling; fixing visibility of tiny segments; and fixing semicircle summary delta overlap.
+- Updated dependencies [5147cc4]
+- Updated dependencies [6a66423]
+- Updated dependencies [6106b65]
+- Updated dependencies [7363290]
+- Updated dependencies [778d18a]
+  - @spectrum-charts/core-s2@0.10.0
+
 ## 0.9.0
 
 ### Minor Changes
