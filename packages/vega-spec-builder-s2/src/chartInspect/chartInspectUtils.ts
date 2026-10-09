@@ -222,7 +222,6 @@ export const addHoveredItemOpacityRules = (
     const test = markOptions.comboSiblingNames
       .map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`)
       .join(' || ');
-    console.log('test', test);
     rules.push({ test, value: FADE_FACTOR });
   }
 
