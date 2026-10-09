@@ -83,4 +83,36 @@ describe('useSpec memoization', () => {
 
 		expect(mockBuildSpec).toHaveBeenCalledTimes(2);
 	});
+
+	test('returns the previous spec object when the rebuilt spec is identical', () => {
+		mockBuildSpec.mockImplementation(() => ({ signals: [{ name: 'a', value: 1 }] }) as ReturnType<typeof buildSpec>);
+		const { result, rerender } = renderHook(
+			({ children }: { children: unknown[] }) =>
+				useSpec({ ...baseProps, children } as unknown as Parameters<typeof useSpec>[0]),
+			{ initialProps: { children: [] } }
+		);
+		const initialSpec = result.current;
+
+		rerender({ children: [] });
+
+		expect(mockBuildSpec).toHaveBeenCalledTimes(2);
+		expect(result.current).toBe(initialSpec);
+	});
+
+	test('returns the new spec object when the rebuilt spec differs', () => {
+		let value = 1;
+		mockBuildSpec.mockImplementation(() => ({ signals: [{ name: 'a', value }] }) as ReturnType<typeof buildSpec>);
+		const { result, rerender } = renderHook(
+			({ children }: { children: unknown[] }) =>
+				useSpec({ ...baseProps, children } as unknown as Parameters<typeof useSpec>[0]),
+			{ initialProps: { children: [] } }
+		);
+		const initialSpec = result.current;
+
+		value = 2;
+		rerender({ children: [] });
+
+		expect(result.current).not.toBe(initialSpec);
+		expect(result.current).toEqual({ signals: [{ name: 'a', value: 2 }] });
+	});
 });
