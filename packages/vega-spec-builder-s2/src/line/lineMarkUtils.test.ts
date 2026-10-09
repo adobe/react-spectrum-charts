@@ -26,7 +26,7 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils.js';
+import { getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
 import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
 import {
   getAlternateSegmentStrokeDash,
@@ -134,20 +134,10 @@ describe('getLineMark()', () => {
     expect(Array.isArray(notAnimated.encode?.update?.opacity)).toBe(true);
   });
 
-  describe('isDrawInAnimate', () => {
-    test('omits the enter y encoding and uses the draw-in x/y encodings in update when true', () => {
-      const lineMark = getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: true }, 'line0_facet');
-      expect(lineMark.encode?.enter).not.toHaveProperty('y');
-      expect(lineMark.encode?.update?.x).toStrictEqual(getLineDrawInXEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true }));
-      expect(lineMark.encode?.update?.y).toStrictEqual(getLineDrawInYEncoding({ ...defaultLineMarkOptions, isDrawInAnimate: true }));
-    });
-
-    test('keeps the static enter y encoding and the scale-based update x, with no update y, when false', () => {
-      const lineMark = getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: false }, 'line0_facet');
-      expect(lineMark.encode?.enter).toHaveProperty('y');
-      expect(lineMark.encode?.update).not.toHaveProperty('y');
-      expect(lineMark.encode?.update?.x).toStrictEqual({ field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' });
-    });
+  test('isDrawInAnimate does not change the line encoding', () => {
+    expect(getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: true }, 'line0_facet')).toStrictEqual(
+      getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: false }, 'line0_facet')
+    );
   });
 });
 
@@ -609,17 +599,13 @@ describe('getLineHighlightOverlayGroup()', () => {
     expect(Array.isArray(marks[0].encode.update.opacity)).toBe(true);
   });
 
-  test('overlay line does not use draw-in x/y encoding, even when the parent line is draw-in animated', () => {
-    // the overlay mark is renamed to `${name}_highlightOverlayLine`, but the draw-in cutoff signal is
-    // only ever registered under the original line's name — using draw-in encoding here would reference
-    // a signal that doesn't exist (e.g. "line0_highlightOverlayLine_drawInAnimCutoff")
+  test('overlay group uses the line draw-in clip when the line is draw-in animated', () => {
     const group = getLineHighlightOverlayGroup(
       { ...defaultLineMarkOptions, isDrawInAnimate: true },
       'filteredTable',
       [SERIES_ID]
     );
-    const marks = (group as { marks: { encode: { update: { x: { signal?: string } } } }[] }).marks;
-    expect(marks[0].encode.update.x).not.toHaveProperty('signal');
-    expect(marks[0].encode.update).not.toHaveProperty('y');
+    expect(group).toHaveProperty('clip', getLineDrawInClip('line0'));
+    expect(getLineHighlightOverlayGroup(defaultLineMarkOptions, 'filteredTable', [SERIES_ID])).not.toHaveProperty('clip');
   });
 });

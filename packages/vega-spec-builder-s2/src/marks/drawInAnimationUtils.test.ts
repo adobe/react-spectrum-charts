@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Signal, SourceData, Transforms } from 'vega';
+import { Signal } from 'vega';
 
 import {
   ANIMATION_ACTIVE,
@@ -17,201 +17,16 @@ import {
   ANIMATION_TIMER,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIMATION_DURATION_MS,
-  FILTERED_TABLE,
-  LAST_RSC_SERIES_ID,
-  SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { defaultLineMarkOptions, defaultLineOptions } from '../line/lineTestUtils.js';
-import { LineSpecOptions } from '../types/index.js';
+import { defaultLineOptions } from '../line/lineTestUtils.js';
 import {
   addDrawInClockSignals,
   addLineDrawInAnimationSignals,
-  addLineDrawInLeadTransform,
-  addLineDrawInTimeMsTransform,
-  getDualAxisDrawInRule,
-  getLineDrawInData,
-  getLineDrawInDataSourceName,
-  getLineDrawInPointIndexData,
-  getLineDrawInSortField,
-  getLineDrawInXEncoding,
-  getLineDrawInYEncoding,
+  applyDrawInReveal,
+  getLineDrawInClip,
+  getLineDrawInRevealExpr,
 } from './drawInAnimationUtils.js';
-
-describe('getLineDrawInSortField()', () => {
-  test('returns the numeric-ms field for time scales', () => {
-    expect(getLineDrawInSortField('time', 'datetime', 'line0')).toEqual('rscDrawInTimeMs');
-  });
-
-  test('returns a name-scoped ordinal index field for point scales', () => {
-    expect(getLineDrawInSortField('point', 'category', 'line0')).toEqual('line0_drawInPointIndex');
-  });
-
-  test('returns the dimension field itself for linear scales', () => {
-    expect(getLineDrawInSortField('linear', 'x', 'line0')).toEqual('x');
-  });
-});
-
-describe('getLineDrawInDataSourceName()', () => {
-  test('returns the name-scoped indexed source for point scales', () => {
-    expect(getLineDrawInDataSourceName({ name: 'line0', scaleType: 'point' } as LineSpecOptions)).toEqual(
-      'line0_drawInIndexed'
-    );
-  });
-
-  test('returns filteredTable for non-point scales', () => {
-    expect(getLineDrawInDataSourceName({ name: 'line0', scaleType: 'time' } as LineSpecOptions)).toEqual(
-      FILTERED_TABLE
-    );
-    expect(getLineDrawInDataSourceName({ name: 'line0', scaleType: 'linear' } as LineSpecOptions)).toEqual(
-      FILTERED_TABLE
-    );
-  });
-});
-
-describe('getLineDrawInPointIndexData()', () => {
-  test('builds a formula source indexing each row within the x scale domain', () => {
-    const options: LineSpecOptions = {
-      ...defaultLineOptions,
-      name: 'line0',
-      dimension: 'category',
-      scaleType: 'point',
-    };
-    expect(getLineDrawInPointIndexData(options)).toStrictEqual({
-      name: 'line0_drawInIndexed',
-      source: FILTERED_TABLE,
-      transform: [
-        {
-          type: 'formula',
-          as: 'line0_drawInPointIndex',
-          expr: `indexof(domain('xPoint'), datum.category)`,
-        },
-      ],
-    });
-  });
-});
-
-describe('addLineDrawInTimeMsTransform()', () => {
-  test('adds a formula transform converting the dimension to numeric ms', () => {
-    const transforms: Transforms[] = [];
-    expect(addLineDrawInTimeMsTransform(transforms, 'datetime')).toStrictEqual([
-      { type: 'formula', expr: 'toNumber(datum.datetime)', as: 'rscDrawInTimeMs' },
-    ]);
-  });
-
-  test('does not add a second transform when one already exists', () => {
-    const transforms: Transforms[] = [{ type: 'formula', expr: 'toNumber(datum.datetime)', as: 'rscDrawInTimeMs' }];
-    const result = addLineDrawInTimeMsTransform(transforms, 'datetime');
-    expect(result).toHaveLength(1);
-    expect(result).toBe(transforms);
-  });
-});
-
-describe('addLineDrawInLeadTransform()', () => {
-  test('adds a lead window transform keyed to the sort field for a time scale', () => {
-    const sourceData: Data = { name: 'filteredTable' };
-    const options: LineSpecOptions = {
-      ...defaultLineOptions,
-      name: 'line0',
-      dimension: 'datetime',
-      metric: 'value',
-      scaleType: 'time',
-    };
-    addLineDrawInLeadTransform(sourceData, options);
-    expect(sourceData.transform).toStrictEqual([
-      {
-        type: 'window',
-        sort: { field: 'rscDrawInTimeMs', order: 'ascending' },
-        groupby: [SERIES_ID],
-        ops: ['lead', 'lead'],
-        fields: ['rscDrawInTimeMs', 'value'],
-        as: ['line0_drawInNextDimValue', 'line0_drawInNextMetricValue'],
-      },
-    ]);
-  });
-
-  test('also carries the next point real category value for point scales', () => {
-    const sourceData: Data = { name: 'line0_drawInIndexed' };
-    const options: LineSpecOptions = {
-      ...defaultLineOptions,
-      name: 'line0',
-      dimension: 'category',
-      metric: 'value',
-      scaleType: 'point',
-    };
-    addLineDrawInLeadTransform(sourceData, options);
-    expect(sourceData.transform).toStrictEqual([
-      {
-        type: 'window',
-        sort: { field: 'line0_drawInPointIndex', order: 'ascending' },
-        groupby: [SERIES_ID],
-        ops: ['lead', 'lead', 'lead'],
-        fields: ['line0_drawInPointIndex', 'category', 'value'],
-        as: ['line0_drawInNextDimValue', 'line0_drawInNextCategoryValue', 'line0_drawInNextMetricValue'],
-      },
-    ]);
-  });
-
-  test('initializes transform when the source has none yet', () => {
-    const sourceData: Data = { name: 'filteredTable' };
-    const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', scaleType: 'time' };
-    addLineDrawInLeadTransform(sourceData, options);
-    expect(sourceData.transform).toHaveLength(1);
-  });
-
-  test('does not add a duplicate lead transform for the same mark', () => {
-    const sourceData: Data = { name: 'filteredTable' };
-    const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', scaleType: 'time' };
-    addLineDrawInLeadTransform(sourceData, options);
-    addLineDrawInLeadTransform(sourceData, options);
-    expect(sourceData.transform).toHaveLength(1);
-  });
-});
-
-describe('getLineDrawInData()', () => {
-  test('builds prev/tip/lerp sources reading from filteredTable for a time scale', () => {
-    const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', dimension: 'datetime', scaleType: 'time' };
-    const [prevData, tipData, lerpData] = getLineDrawInData(options) as SourceData[];
-
-    expect(prevData).toStrictEqual({
-      name: 'line0_drawInPrev',
-      source: FILTERED_TABLE,
-      transform: [{ type: 'filter', expr: 'datum.rscDrawInTimeMs <= line0_drawInAnimCutoff' }],
-    });
-
-    expect(tipData).toStrictEqual({
-      name: 'line0_drawInTip',
-      source: FILTERED_TABLE,
-      transform: [
-        {
-          type: 'filter',
-          expr: 'datum.rscDrawInTimeMs <= line0_drawInAnimCutoff && isValid(datum.line0_drawInNextDimValue) && datum.line0_drawInNextDimValue > line0_drawInAnimCutoff',
-        },
-        { type: 'formula', as: 'isDrawInTip', expr: 'true' },
-      ],
-    });
-
-    expect(lerpData).toStrictEqual({
-      name: 'line0_drawInLerp',
-      source: ['line0_drawInPrev', 'line0_drawInTip'],
-    });
-  });
-
-  test('reads from the name-scoped indexed source for a point scale', () => {
-    const options: LineSpecOptions = {
-      ...defaultLineOptions,
-      name: 'line0',
-      dimension: 'category',
-      scaleType: 'point',
-    };
-    const [prevData, tipData] = getLineDrawInData(options) as SourceData[];
-    expect(prevData.source).toEqual('line0_drawInIndexed');
-    expect(tipData.source).toEqual('line0_drawInIndexed');
-    expect(prevData.transform).toStrictEqual([
-      { type: 'filter', expr: 'datum.line0_drawInPointIndex <= line0_drawInAnimCutoff' },
-    ]);
-  });
-});
 
 describe('addDrawInClockSignals()', () => {
   test('adds the shared mount-timer chain', () => {
@@ -263,146 +78,75 @@ describe('addDrawInClockSignals()', () => {
 });
 
 describe('addLineDrawInAnimationSignals()', () => {
-  test('adds the clock chain plus a domain-min/max/cutoff triplet scoped to the scale, for a time scale', () => {
+  test('adds the clock chain and a clip edge sweeping the time scale range', () => {
     const signals: Signal[] = [];
-    const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', scaleType: 'time' };
-    addLineDrawInAnimationSignals(signals, options);
+    addLineDrawInAnimationSignals(signals, defaultLineOptions);
     expect(signals.map((s) => s.name)).toEqual([
       ANIMATION_TIMER,
       ANIMATION_ACTIVE,
       'drawInStart',
       'drawInAnimT',
       'drawInAnimTEased',
-      'line0_drawInDomainMin',
-      'line0_drawInDomainMax',
-      'line0_drawInAnimCutoff',
+      'line0_drawInClipX',
     ]);
-    expect(signals.find((s) => s.name === 'line0_drawInDomainMin')).toStrictEqual({
-      name: 'line0_drawInDomainMin',
-      init: `toNumber(extent(domain('xTime'))[0])`,
-    });
-    expect(signals.find((s) => s.name === 'line0_drawInDomainMax')).toStrictEqual({
-      name: 'line0_drawInDomainMax',
-      init: `toNumber(extent(domain('xTime'))[1])`,
-    });
-    expect(signals.find((s) => s.name === 'line0_drawInAnimCutoff')).toStrictEqual({
-      name: 'line0_drawInAnimCutoff',
-      update: 'drawInAnimTEased * (line0_drawInDomainMax - line0_drawInDomainMin) + line0_drawInDomainMin',
+    expect(signals[5]).toStrictEqual({
+      name: 'line0_drawInClipX',
+      update:
+        "lerp([scale('xTime', extent(domain('xTime'))[0]), scale('xTime', extent(domain('xTime'))[1])], drawInAnimTEased)",
     });
   });
 
-  test('sweeps an ordinal index range instead of the domain values for a point scale', () => {
+  test('uses the first and last domain values for point scales', () => {
     const signals: Signal[] = [];
-    const options: LineSpecOptions = { ...defaultLineOptions, name: 'line0', scaleType: 'point' };
-    addLineDrawInAnimationSignals(signals, options);
-    expect(signals.find((s) => s.name === 'line0_drawInDomainMin')).toStrictEqual({
-      name: 'line0_drawInDomainMin',
-      init: '0',
-    });
-    expect(signals.find((s) => s.name === 'line0_drawInDomainMax')).toStrictEqual({
-      name: 'line0_drawInDomainMax',
-      init: `length(domain('xPoint')) - 1`,
-    });
+    addLineDrawInAnimationSignals(signals, { ...defaultLineOptions, scaleType: 'point' });
+    expect(signals.at(-1)).toHaveProperty(
+      'update',
+      "lerp([scale('xPoint', domain('xPoint')[0]), scale('xPoint', peek(domain('xPoint')))], drawInAnimTEased)"
+    );
   });
 
-  test('shares one clock chain across marks but gives each mark its own domain/cutoff signals', () => {
+  test('does not add duplicate signals', () => {
     const signals: Signal[] = [];
-    addLineDrawInAnimationSignals(signals, { ...defaultLineOptions, name: 'line0', scaleType: 'time' });
-    addLineDrawInAnimationSignals(signals, { ...defaultLineOptions, name: 'line1', scaleType: 'time' });
-    expect(signals.filter((s) => s.name === ANIMATION_TIMER)).toHaveLength(1);
-    expect(signals.filter((s) => s.name === 'drawInStart')).toHaveLength(1);
-    expect(signals.filter((s) => s.name === 'drawInAnimT')).toHaveLength(1);
-    expect(signals.filter((s) => s.name === 'drawInAnimTEased')).toHaveLength(1);
-    expect(signals.filter((s) => s.name === 'line0_drawInAnimCutoff')).toHaveLength(1);
-    expect(signals.filter((s) => s.name === 'line1_drawInAnimCutoff')).toHaveLength(1);
+    addLineDrawInAnimationSignals(signals, defaultLineOptions);
+    addLineDrawInAnimationSignals(signals, defaultLineOptions);
+    expect(signals).toHaveLength(6);
   });
 });
 
-describe('getDualAxisDrawInRule()', () => {
-  test('branches onto the secondary scale for the last series and the primary scale otherwise', () => {
-    const buildExpr = (scaleName: string) => `EXPR(${scaleName})`;
-    expect(getDualAxisDrawInRule('yLinear', buildExpr)).toStrictEqual([
-      { test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`, signal: 'EXPR(yLinearSecondary)' },
-      { signal: 'EXPR(yLinearPrimary)' },
-    ]);
-  });
-});
-
-describe('getLineDrawInXEncoding()', () => {
-  test('lerps the flagged tip point toward its lead position for a time scale', () => {
-    const result = getLineDrawInXEncoding({
-      ...defaultLineMarkOptions,
-      name: 'line0',
-      dimension: 'datetime',
-      scaleType: 'time',
-    });
-    const currentPos = `scale('xTime', datum.${DEFAULT_TRANSFORMED_TIME_DIMENSION})`;
-    const nextPos = `scale('xTime', datum.line0_drawInNextDimValue)`;
-    const tween =
-      'clamp((line0_drawInAnimCutoff - datum.rscDrawInTimeMs) / (datum.line0_drawInNextDimValue - datum.rscDrawInTimeMs), 0, 1)';
-    expect(result).toStrictEqual({
-      signal: `isValid(datum.isDrawInTip) ? lerp([${currentPos}, ${nextPos}], ${tween}) : ${currentPos}`,
-    });
-  });
-
-  test('looks up the lead position via the real category value for a point scale', () => {
-    const result = getLineDrawInXEncoding({
-      ...defaultLineMarkOptions,
-      name: 'line0',
-      dimension: 'category',
-      scaleType: 'point',
-    });
-    const currentPos = `scale('xPoint', datum.category)`;
-    const nextPos = `scale('xPoint', datum.line0_drawInNextCategoryValue)`;
-    const tween =
-      'clamp((line0_drawInAnimCutoff - datum.line0_drawInPointIndex) / (datum.line0_drawInNextDimValue - datum.line0_drawInPointIndex), 0, 1)';
-    expect(result).toStrictEqual({
-      signal: `isValid(datum.isDrawInTip) ? lerp([${currentPos}, ${nextPos}], ${tween}) : ${currentPos}`,
+describe('getLineDrawInClip()', () => {
+  test('clips to the sweeping edge and covers the whole plot once finished', () => {
+    expect(getLineDrawInClip('line0')).toStrictEqual({
+      path: {
+        signal:
+          "'M-1000,-1000' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + (height + 1000) + 'H-1000' + 'Z'",
+      },
     });
   });
 });
 
-describe('getLineDrawInYEncoding()', () => {
-  test('returns a single production rule against yLinear when there is no dual metric axis', () => {
-    const result = getLineDrawInYEncoding({
-      ...defaultLineMarkOptions,
-      name: 'line0',
-      metric: 'value',
-      scaleType: 'time',
-    });
-    const currentPos = `scale('yLinear', datum.value)`;
-    const nextPos = `scale('yLinear', datum.line0_drawInNextMetricValue)`;
-    expect(result).toStrictEqual({
-      signal: `isValid(datum.isDrawInTip) ? lerp([${currentPos}, ${nextPos}], clamp((line0_drawInAnimCutoff - datum.rscDrawInTimeMs) / (datum.line0_drawInNextDimValue - datum.rscDrawInTimeMs), 0, 1)) : ${currentPos}`,
-    });
+describe('getLineDrawInRevealExpr()', () => {
+  test('uses the transformed time field for time scales', () => {
+    expect(getLineDrawInRevealExpr('line0', 'time', 'datetime')).toBe(
+      `(line0_drawInClipX >= scale('xTime', datum.${DEFAULT_TRANSFORMED_TIME_DIMENSION}) - 0.5 ? 1 : 0)`
+    );
   });
 
-  test('honors a custom metricAxis name when not a dual axis', () => {
-    const result = getLineDrawInYEncoding({
-      ...defaultLineMarkOptions,
-      name: 'line0',
-      metric: 'value',
-      scaleType: 'time',
-      metricAxis: 'customAxis',
-    });
-    expect(result).toStrictEqual({
-      signal: expect.stringContaining(`scale('customAxis', datum.value)`),
-    });
-  });
-
-  test('branches per series onto the primary/secondary scale when dualMetricAxis is set', () => {
-    const result = getLineDrawInYEncoding({
-      ...defaultLineMarkOptions,
-      name: 'line0',
-      metric: 'value',
-      scaleType: 'time',
-      dualMetricAxis: true,
-    });
-    expect(Array.isArray(result)).toBe(true);
-    const rules = result as { test?: string; signal: string }[];
-    expect(rules).toHaveLength(2);
-    expect(rules[0].test).toEqual(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
-    expect(rules[0].signal).toContain(`scale('yLinearSecondary', datum.value)`);
-    expect(rules[1].signal).toContain(`scale('yLinearPrimary', datum.value)`);
+  test('uses the dimension for other scales', () => {
+    expect(getLineDrawInRevealExpr('line0', 'linear', 'x')).toBe(
+      "(line0_drawInClipX >= scale('xLinear', datum.x) - 0.5 ? 1 : 0)"
+    );
   });
 });
+
+describe('applyDrawInReveal()', () => {
+  test('multiplies signal and value refs and leaves other refs alone', () => {
+    expect(
+      applyDrawInReveal([{ test: 'a', signal: 'b' }, { test: 'c', value: 0.5 }, { field: 'd' }], 'r')
+    ).toStrictEqual([{ test: 'a', signal: '(b) * r' }, { test: 'c', signal: '0.5 * r' }, { field: 'd' }]);
+  });
+
+  test('handles a single ref', () => {
+    expect(applyDrawInReveal({ value: 1 }, 'r')).toStrictEqual({ signal: '1 * r' });
+  });
+});
+
