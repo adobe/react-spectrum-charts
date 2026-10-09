@@ -49,6 +49,11 @@ const PRESETS = {
     args: 'chartCount:20;seriesPerChart:10;pointsPerSeries:10',
     scenarios: ['drawIn', 'idle'],
   },
+  'donut-draw-in': {
+    story: 'react-spectrum-charts-2-pre-alpha-donut-dashboards--prop-variations',
+    args: '',
+    scenarios: ['drawIn', 'idle'],
+  },
 };
 
 const SCENARIOS = ['drawIn', 'hover', 'idle'];
@@ -112,21 +117,44 @@ const percentile = (values, p) => {
 };
 const median = (values) => percentile(values, 50);
 
-/** Runs in the page before any app code: collects rAF frame deltas and DOM mutation counts while recording. */
-const instrumentPage = () => {
-  const perf = { recording: false, frames: [], updates: 0 };
+/**
+ * Runs in the page before any app code: collects rAF frame deltas, DOM mutation counts, and which frames
+ * each chart changed in while recording.
+ */
+const instrumentPage = (chartSelector) => {
+  const perf = { recording: false, frames: [], updates: 0, chartFrames: new Map() };
   window.__perf = perf;
+  const dirtyCharts = new Set();
   let last = performance.now();
   const onFrame = (now) => {
-    if (perf.recording) perf.frames.push(now - last);
+    if (perf.recording) {
+      perf.frames.push(now - last);
+      dirtyCharts.forEach((chart) => {
+        const frames = perf.chartFrames.get(chart) ?? [];
+        frames.push(now);
+        perf.chartFrames.set(chart, frames);
+      });
+    }
+    dirtyCharts.clear();
     last = now;
     requestAnimationFrame(onFrame);
   };
   requestAnimationFrame(onFrame);
-  new MutationObserver(() => {
-    if (perf.recording) perf.updates++;
+  new MutationObserver((records) => {
+    if (!perf.recording) return;
+    perf.updates += records.length;
+    records.forEach(({ target }) => {
+      const chart = (target instanceof Element ? target : target.parentElement)?.closest(chartSelector);
+      if (chart) dirtyCharts.add(chart);
+    });
   }).observe(document, { subtree: true, attributes: true, childList: true });
 };
+
+/** Per-chart draw rate: frames a chart changed in, over the span from its first to last changed frame. */
+const getChartFps = (chartFrames) =>
+  chartFrames
+    .filter((frames) => frames.length > 1)
+    .map((frames) => ((frames.length - 1) * 1000) / (frames.at(-1) - frames[0]));
 
 const getCpuTime = async (cdp) => {
   const { metrics } = await cdp.send('Performance.getMetrics');
@@ -137,14 +165,23 @@ const getCpuTime = async (cdp) => {
 /** Stops recording and converts the raw page data and CPU deltas into per-second stats. */
 const finishRecording = async (page, cdp, cpuBefore, refreshIntervalMs) => {
   const cpuAfter = await getCpuTime(cdp);
-  const { frames, updates, elapsedMs } = await page.evaluate(() => {
+  const { frames, updates, elapsedMs, chartFrames } = await page.evaluate(() => {
     const perf = window.__perf;
     perf.recording = false;
-    return { frames: perf.frames, updates: perf.updates, elapsedMs: performance.now() - perf.startedAt };
+    return {
+      frames: perf.frames,
+      updates: perf.updates,
+      elapsedMs: performance.now() - perf.startedAt,
+      chartFrames: [...perf.chartFrames.values()],
+    };
   });
   const seconds = elapsedMs / 1000;
+  const chartFps = getChartFps(chartFrames);
   return {
     fps: frames.length / seconds,
+    chartFps: median(chartFps),
+    chartFpsP10: percentile(chartFps, 10),
+    chartsDrawn: chartFps.length,
     frameP95: percentile(frames, 95),
     jankPct: (frames.filter((f) => f > refreshIntervalMs * 1.5).length / Math.max(frames.length, 1)) * 100,
     scriptMsPerSec: ((cpuAfter.script - cpuBefore.script) * 1000) / seconds,
@@ -154,7 +191,15 @@ const finishRecording = async (page, cdp, cpuBefore, refreshIntervalMs) => {
 };
 
 const startRecording = (page) =>
-  page.evaluate(() => Object.assign(window.__perf, { recording: true, frames: [], updates: 0, startedAt: performance.now() }));
+  page.evaluate(() =>
+    Object.assign(window.__perf, {
+      recording: true,
+      frames: [],
+      updates: 0,
+      chartFrames: new Map(),
+      startedAt: performance.now(),
+    })
+  );
 
 /** Moves the mouse across each fully visible chart in horizontal passes until `durationMs` elapses. */
 const sweepCharts = async (page, durationMs) => {
@@ -181,7 +226,7 @@ const runOnce = async (browser, config) => {
   const context = await browser.newContext({ viewport: VIEWPORT });
   const page = await context.newPage();
   const measureDrawIn = config.scenarios.includes('drawIn');
-  await page.addInitScript(instrumentPage);
+  await page.addInitScript(instrumentPage, CHART_SELECTOR);
   const cdp = await context.newCDPSession(page);
   await cdp.send('Performance.enable');
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: config.cpu });
@@ -201,17 +246,18 @@ const runOnce = async (browser, config) => {
   }
   await page.waitForTimeout(2000);
   const refreshIntervalMs = await page.evaluate(
-    () => new Promise((resolve) => {
-      const deltas = [];
-      let last = performance.now();
-      const onFrame = (now) => {
-        deltas.push(now - last);
-        last = now;
-        if (deltas.length < 30) requestAnimationFrame(onFrame);
-        else resolve(deltas.sort((a, b) => a - b)[15]);
-      };
-      requestAnimationFrame(onFrame);
-    })
+    () =>
+      new Promise((resolve) => {
+        const deltas = [];
+        let last = performance.now();
+        const onFrame = (now) => {
+          deltas.push(now - last);
+          last = now;
+          if (deltas.length < 30) requestAnimationFrame(onFrame);
+          else resolve(deltas.sort((a, b) => a - b)[15]);
+        };
+        requestAnimationFrame(onFrame);
+      })
   );
 
   for (const scenario of config.scenarios.filter((s) => s !== 'drawIn')) {
@@ -243,7 +289,10 @@ const printTables = (results) => {
           const stats = medianOfRuns(runs, scenario);
           return {
             label,
-            fps: fmt(stats.fps),
+            'page fps': fmt(stats.fps),
+            'chart fps': fmt(stats.chartFps),
+            'chart fps p10': fmt(stats.chartFpsP10),
+            charts: fmt(stats.chartsDrawn, 0),
             'frame p95 ms': fmt(stats.frameP95),
             'jank %': fmt(stats.jankPct),
             'script ms/s': fmt(stats.scriptMsPerSec, 0),
@@ -253,7 +302,11 @@ const printTables = (results) => {
         })
     );
   }
-  console.log('script/task ms/s = main-thread time per second (1000 = saturated). jank = frames > 1.5x refresh.');
+  console.log(
+    'page fps = browser frames; chart fps = frames each chart redrew in while animating (median, slowest 10%).'
+  );
+  console.log('charts = charts that redrew in 2+ frames. jank = page frames > 1.5x refresh.');
+  console.log('script/task ms/s = main-thread time per second (1000 = saturated).');
 };
 
 const compare = (files) => {
@@ -266,7 +319,9 @@ const compare = (files) => {
 
 const measure = async (config) => {
   console.log(`[${config.label}] ${config.story}`);
-  console.log(`args: ${config.args || '-'} | ${config.scenarios.join(', ')} | CPU ${config.cpu}x | ${config.runs} run(s)`);
+  console.log(
+    `args: ${config.args || '-'} | ${config.scenarios.join(', ')} | CPU ${config.cpu}x | ${config.runs} run(s)`
+  );
 
   const browser = await chromium.launch({ headless: !config.headed, channel: 'chromium' });
   const runs = [];
@@ -289,7 +344,8 @@ const measure = async (config) => {
 const main = async () => {
   const config = getConfig();
   if (config.list) {
-    for (const [name, preset] of Object.entries(PRESETS)) console.log(`${name}: ${preset.scenarios.join(', ')} — ${preset.story}`);
+    for (const [name, preset] of Object.entries(PRESETS))
+      console.log(`${name}: ${preset.scenarios.join(', ')} — ${preset.story}`);
   } else if (config.compare) compare(config.files);
   else await measure(config);
 };
