@@ -16,7 +16,7 @@ import { View } from 'vega';
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisRegionOptions, NavigableChartType } from './buildChartStructure.js';
-import { attachDataNavigator } from './dataNavigatorAdapter.js';
+import { LegendNavigationOptions, attachDataNavigator } from './dataNavigatorAdapter.js';
 
 export interface NavigatorProps {
   /** The chart type to build navigation for. */
@@ -55,8 +55,14 @@ export interface NavigatorProps {
   markName?: string;
   /** Optional chart title for the accessible description. */
   title?: string;
-  /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
+  /** When provided, adds an x-axis region below chart content (Down moves to it, Up comes back). */
   xAxis?: AxisRegionOptions;
+  /** When provided (and the bar has a series), adds a legend region: series, then that series' bars. Must be memoized. */
+  legend?: LegendNavigationOptions;
+  /** Series toggled off via the legend; skipped by chart content and not drillable from the legend. */
+  hiddenSeries?: string[];
+  /** Bumped whenever Vega embeds a new view (e.g. after a legend toggle), so navigation re-attaches to it. */
+  viewVersion?: number;
   /** Ref to the positioned container that wraps the chart. */
   containerRef: RefObject<HTMLElement | null>;
   /** Stable id used to namespace the rendered nav elements. */
@@ -71,6 +77,8 @@ export interface NavigatorProps {
   keyboardPopoverComponentName?: RefObject<string | null>;
   /** Fires the focused mark's `onClick` on Enter/Space, mirroring a real click. */
   onNodeClick?: (datum: Datum) => void;
+  /** Fires the focused mark's `onContextMenu` on Shift+F10 or the ContextMenu key, mirroring a right-click. */
+  onNodeContextMenu?: (event: MouseEvent, datum: Datum) => void;
   /** Whether the mark has a ChartPopover — so a click that focuses a node retains focus through the popover it opens. */
   hasChartPopover?: boolean;
 }
@@ -95,6 +103,9 @@ export const Navigator = ({
   markName,
   title,
   xAxis,
+  legend,
+  hiddenSeries,
+  viewVersion,
   containerRef,
   chartId,
   getView,
@@ -103,6 +114,7 @@ export const Navigator = ({
   selectedDataName,
   keyboardPopoverComponentName,
   onNodeClick,
+  onNodeContextMenu,
   hasChartPopover,
 }: NavigatorProps): null => {
   useEffect(() => {
@@ -132,6 +144,8 @@ export const Navigator = ({
         markName,
         title,
         xAxis,
+        legend,
+        hiddenSeries,
         chartId,
         getView,
         selectedData,
@@ -139,6 +153,7 @@ export const Navigator = ({
         selectedDataName,
         keyboardPopoverComponentName,
         onNodeClick,
+        onNodeContextMenu,
         hasChartPopover,
       });
     let raf: number | undefined;
@@ -175,6 +190,9 @@ export const Navigator = ({
     markName,
     title,
     xAxis,
+    legend,
+    hiddenSeries,
+    viewVersion,
     chartId,
     containerRef,
     getView,
@@ -183,6 +201,7 @@ export const Navigator = ({
     selectedDataName,
     keyboardPopoverComponentName,
     onNodeClick,
+    onNodeContextMenu,
     hasChartPopover,
   ]);
 

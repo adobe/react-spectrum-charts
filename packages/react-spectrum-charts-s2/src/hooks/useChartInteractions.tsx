@@ -20,7 +20,7 @@ import { getColorValue } from '@spectrum-charts/core-s2/tokens';
 import { useChartContext } from '../context/RscChartContext.js';
 import { ChartChildElement, RscChartProps } from '../types/index.js';
 import useAxisLabelTooltipAnchorStyle from './useAxisLabelTooltipAnchorStyle.js';
-import useLegend from './useLegend.js';
+import useLegend, { UseLegendProps } from './useLegend.js';
 import useNewChartView from './useNewChartView.js';
 import usePopoverAnchorStyle from './usePopoverAnchorStyle.js';
 import useChartInspectInteractions from './useChartInspectInteractions.js';
@@ -31,6 +31,7 @@ export interface ChartInteractions {
   axisLabelTooltipAnchorStyle: CSSProperties;
   inspectOptions: TooltipOptions;
   onNewView: (view: View) => void;
+  legendProps: UseLegendProps;
 }
 
 export const useChartInteractions = (
@@ -59,5 +60,5 @@ export const useChartInteractions = (
 
   const onNewView = useNewChartView(props, sanitizedChildren, inspectOptions, legendProps);
 
-  return { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView };
+  return { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView, legendProps };
 };
