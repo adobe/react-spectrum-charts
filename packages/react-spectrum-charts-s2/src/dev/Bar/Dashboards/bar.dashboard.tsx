@@ -99,6 +99,7 @@ const negativeBarData = barVariationDatasets.negative;
 const largeBarData = barVariationDatasets.largeValues;
 const longLabelBarData = barVariationDatasets.longLabels;
 const manyCategoryBarData = barVariationDatasets.manyCategories;
+const denseBarData = barVariationDatasets.dense;
 
 const formatDatum = (datum: Datum): string =>
   `${String(datum.series)} · ${String(datum.category)} · ${Number(datum.value).toLocaleString('en-US')}`;
@@ -538,7 +539,7 @@ const childVariations: Variation[] = [
     dataset: 'standard',
     coverage: ['BarDirectLabel.position=middle', 'type=stacked'],
     render: () => (
-      <BarVariationChart>
+      <BarVariationChart barProps={{ orientation: 'horizontal' }}>
         <BarDirectLabel position="middle" />
       </BarVariationChart>
     ),
@@ -547,10 +548,11 @@ const childVariations: Variation[] = [
     id: 'direct-label-end',
     title: 'Direct labels inside the tip',
     description: 'Horizontal bars labeled inside, 8px from the tip.',
-    dataset: 'standard',
+    dataset: 'single',
+    usesDashboardDataset: false,
     coverage: ['BarDirectLabel.position=end', 'orientation=horizontal'],
     render: () => (
-      <BarVariationChart barProps={{ orientation: 'horizontal', type: 'dodged' }}>
+      <BarVariationChart data={singleBarData} barProps={{ orientation: 'horizontal' }}>
         <BarDirectLabel position="end" />
       </BarVariationChart>
     ),
@@ -578,6 +580,44 @@ const childVariations: Variation[] = [
     render: () => (
       <BarVariationChart data={getFirstSeries(negativeBarData)} barProps={{ diverging: true }}>
         <BarDirectLabel format=",.0f" />
+      </BarVariationChart>
+    ),
+  },
+  {
+    id: 'direct-label-overflow-hide',
+    title: 'Direct labels hide when they do not fit',
+    description: 'Middle labels on thin dodged bars hide instead of overflowing.',
+    dataset: 'dense',
+    usesDashboardDataset: false,
+    coverage: ['BarDirectLabel.overflow=hide'],
+    render: () => (
+      <BarVariationChart data={denseBarData} barProps={{ type: 'dodged' }}>
+        <BarDirectLabel position="middle" />
+      </BarVariationChart>
+    ),
+  },
+  {
+    id: 'direct-label-overflow-spill',
+    title: 'Direct labels spill past the tip',
+    description: 'Labels that do not fit move outside the tip; ones that would overlap hide.',
+    dataset: 'dense',
+    usesDashboardDataset: false,
+    coverage: ['BarDirectLabel.overflow=spill'],
+    render: () => (
+      <BarVariationChart data={denseBarData} barProps={{ type: 'dodged' }}>
+        <BarDirectLabel position="end" overflow="spill" />
+      </BarVariationChart>
+    ),
+  },
+  {
+    id: 'direct-label-data-key',
+    title: 'Direct label on one bar',
+    description: 'Only the bar flagged by `callout` is labeled.',
+    dataset: 'standard',
+    coverage: ['BarDirectLabel.dataKey'],
+    render: () => (
+      <BarVariationChart barProps={{ type: 'dodged' }}>
+        <BarDirectLabel dataKey="callout" />
       </BarVariationChart>
     ),
   },
@@ -1159,7 +1199,9 @@ const barCoverage: PropCoverage<BarProps> = {
 };
 
 const barDirectLabelCoverage: PropCoverage<BarDirectLabelProps> = {
+  dataKey: ['direct-label-data-key'],
   format: ['direct-label-start-format', 'direct-label-diverging', 'locale'],
+  overflow: ['direct-label-overflow-hide', 'direct-label-overflow-spill'],
   position: ['direct-label-default', 'direct-label-stacked', 'direct-label-end', 'direct-label-start-format'],
 };
 

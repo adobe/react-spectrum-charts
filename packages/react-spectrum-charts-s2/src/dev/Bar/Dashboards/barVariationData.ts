@@ -35,6 +35,8 @@ export interface BarVariationDatum extends Record<string, unknown> {
   displayValue: string;
   /** Truthy for the first series so ChartInspect `excludeDataKeys` can skip it. */
   excludeFromInspect: boolean;
+  /** Truthy for one bar (first series, third category) so BarDirectLabel `dataKey` can call it out. */
+  callout: boolean;
 }
 
 /**
@@ -58,6 +60,7 @@ const toRows = (categories: string[], valuesBySeries: Record<string, number[]>):
         barColor: value < 0 ? NEGATIVE_COLOR : POSITIVE_COLOR,
         displayValue: `${value.toLocaleString('en-US')} sign-ups`,
         excludeFromInspect: seriesIndex === 0,
+        callout: seriesIndex === 0 && index === 2,
       };
     })
   );
