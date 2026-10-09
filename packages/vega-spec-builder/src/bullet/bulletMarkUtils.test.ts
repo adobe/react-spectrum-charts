@@ -366,7 +366,15 @@ describe('getBulletMarkTarget', () => {
     const data = getBulletMarkTarget(sampleOptionsColumn);
     expect(data).toBeDefined();
     expect(data.encode?.update).toBeDefined();
-    expect(Object.keys(data.encode?.update ?? {}).length).toBe(3);
+    expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
+  });
+
+  test('Should hide the target line when the target value is missing', () => {
+    const data = getBulletMarkTarget(sampleOptionsColumn);
+    expect(data.encode?.update).toHaveProperty('strokeOpacity', [
+      { test: `!isValid(datum.${sampleOptionsColumn.target})`, value: 0 },
+      { value: 1 },
+    ]);
   });
 
   describe('getBulletMarkTarget tooltip logic', () => {
