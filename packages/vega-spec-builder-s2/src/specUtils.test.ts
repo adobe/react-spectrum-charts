@@ -33,6 +33,7 @@ import {
   escapeD3FormatSpecifier,
   getChartConfig,
   getD3FormatSpecifierFromNumberFormat,
+  getNumberFormatExpression,
   getDimensionField,
   getFacetsFromOptions,
   getFacetsFromScales,
@@ -196,6 +197,21 @@ describe('getD3FormatSpecifierFromNumberFormat()', () => {
     expect(getD3FormatSpecifierFromNumberFormat('standardNumber')).toEqual(',');
     expect(getD3FormatSpecifierFromNumberFormat('percentage')).toEqual('~%');
     expect(getD3FormatSpecifierFromNumberFormat(',.2f')).toEqual(',.2f');
+  });
+});
+
+describe('getNumberFormatExpression()', () => {
+  test('should use formatShortNumber for shortNumber', () => {
+    expect(getNumberFormatExpression('datum.value', 'shortNumber')).toEqual('formatShortNumber(datum.value)');
+  });
+  test('should abbreviate large values for shortCurrency', () => {
+    expect(getNumberFormatExpression('datum.value', 'shortCurrency')).toEqual(
+      String.raw`abs(datum.value) >= 1000 ? upper(replace(format(datum.value, '$.3~s'), /(\d+)G/, '$1B')) : format(datum.value, '$')`
+    );
+  });
+  test('should resolve named formats and escape d3 specifiers', () => {
+    expect(getNumberFormatExpression('datum.value', 'currency')).toEqual('format(datum.value, "$,.2f")');
+    expect(getNumberFormatExpression('datum.value', 'a"b')).toEqual(String.raw`format(datum.value, "a\"b")`);
   });
 });
 

@@ -273,6 +273,15 @@ describe('getBarDirectLabelMarks()', () => {
       );
     });
 
+    it('resolves the "shortNumber" preset to formatShortNumber', () => {
+      const options = getBarDirectLabelSpecOptions({ format: 'shortNumber' }, 0, defaultBarOptions);
+      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
+      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
+        'signal',
+        `formatShortNumber(datum["${defaultBarOptions.metric}"])`
+      );
+    });
+
     it('escapes embedded quotes and backslashes so the generated expression stays a single well-formed call', () => {
       const maliciousFormat = '.1f\\"'; // ends with a literal backslash followed by a quote
       const options = getBarDirectLabelSpecOptions({ format: maliciousFormat }, 0, defaultBarOptions);
