@@ -103,6 +103,14 @@ describe('getTrendlineRuleMark()', () => {
     });
     expect(mark.encode?.enter?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
   });
+  test('should use round stroke caps so zero-length dotted dashes render', () => {
+    const mark = getTrendlineRuleMark(defaultLineOptions, {
+      ...defaultTrendlineOptions,
+      lineType: 'dotted',
+      method: 'median',
+    });
+    expect(mark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
+  });
 
   test('opacity stays the static instant-rule array even when the parent line is animated', () => {
     // the trendline renders under its own mark name (`${parentName}Trendline${index}`), which has no
@@ -203,6 +211,10 @@ describe('getTrendlineLineMark()', () => {
       trendlineColor: { value: 'gray-500' },
     });
     expect(mark.encode?.enter?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
+  });
+  test('should use round stroke caps so zero-length dotted dashes render', () => {
+    const mark = getTrendlineLineMark(defaultLineOptions, { ...defaultTrendlineOptions, lineType: 'dotted' });
+    expect(mark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
   });
 
   test('opacity stays the static instant-rule array even when the parent line is animated', () => {

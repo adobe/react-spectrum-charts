@@ -121,6 +121,7 @@ export const getTrendlineRuleMark = (
       enter: {
         ...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
         stroke: getColorProductionRule(trendlineColor, colorScheme),
+        strokeCap: { value: 'round' },
         strokeDash: getStrokeDashProductionRule({ value: lineType }),
         strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
         strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
@@ -209,6 +210,7 @@ export const getTrendlineLineMark = (
       enter: {
         y: getLineYProductionRule(trendlineDimension, orientation),
         stroke: getColorProductionRule(trendlineColor, colorScheme),
+        strokeCap: { value: 'round' },
         strokeDash: getStrokeDashProductionRule({ value: lineType }),
         strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
         strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
