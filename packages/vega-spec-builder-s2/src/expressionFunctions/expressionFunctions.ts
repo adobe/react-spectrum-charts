@@ -338,18 +338,20 @@ type HoverFractionRow = Record<string, unknown> & { fraction?: number };
 const hoverFractionIndexes = new WeakMap<HoverFractionRow[], Map<unknown, HoverFractionRow>>();
 
 /**
- * Returns the hover fraction for `key`, indexing the rows once per data array instead of scanning per item.
+ * Returns a hover animation value (the fraction by default) for `key`, indexing the rows once per data array.
  * @param rows - the hoverFractionData values
  * @param keyField - the identity field the rows are keyed by
  * @param key - the identity of the item being encoded
- * @param fallback - the fraction to use when no row matches
+ * @param fallback - the value to use when no row matches
+ * @param field - the row field to read
  * @returns number
  */
 export const hoverFraction = (
   rows: HoverFractionRow[] | undefined,
   keyField: string,
   key: unknown,
-  fallback: number
+  fallback: number,
+  field = 'fraction'
 ): number => {
   if (!rows) return fallback;
   let index = hoverFractionIndexes.get(rows);
@@ -360,7 +362,7 @@ export const hoverFraction = (
     }
     hoverFractionIndexes.set(rows, index);
   }
-  return index.get(key)?.fraction ?? fallback;
+  return (index.get(key)?.[field] as number | undefined) ?? fallback;
 };
 
 export const expressionFunctions = {

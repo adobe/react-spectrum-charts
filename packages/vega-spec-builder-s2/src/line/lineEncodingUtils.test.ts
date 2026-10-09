@@ -9,23 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FADE_FACTOR } from '@spectrum-charts/core-s2/constants';
-
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
+import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import { getLineDeemphasisOpacitySignal } from './lineEncodingUtils.js';
 
 describe('getLineDeemphasisOpacitySignal()', () => {
   test('returns the shared deemphasis-ramp opacity signal for the given mark name', () => {
-    const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
     expect(getLineDeemphasisOpacitySignal('line0')).toStrictEqual({
-      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+      signal: getHoverDeemphasisOpacitySignal('line0'),
     });
   });
 
   test('uses the given mark name in the fraction lookup, not a hardcoded one', () => {
-    const ramp = getDeemphasisRamp(getHoverFractionSignal('bar0'));
     expect(getLineDeemphasisOpacitySignal('bar0')).toStrictEqual({
-      signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+      signal: getHoverDeemphasisOpacitySignal('bar0'),
     });
   });
 });

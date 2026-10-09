@@ -22,17 +22,20 @@ import {
   HOVER_NEUTRAL_TARGET,
   HOVER_TARGETS,
   ANIMATION_TIMER,
+  FADE_FACTOR,
   MARK_ID,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
 import {
+  HOVER_DEEMPHASIS_OPACITY,
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
   getDeemphasisRamp,
   getEmphasisRamp,
   getHoverAnimStateData,
+  getHoverDeemphasisOpacitySignal,
   getHoverFractionData,
   getHoverFractionSignal,
   getHoverSeriesFractionData,
@@ -150,6 +153,23 @@ describe('getHoverFractionData()', () => {
   });
 });
 
+describe('getHoverFractionData() deemphasis opacity', () => {
+  const evalDeemphasisOpacity = (fraction: number): number => {
+    const formula = getHoverFractionData('line0').transform?.[2] as { as: string; expr: string };
+    expect(formula.as).toBe(HOVER_DEEMPHASIS_OPACITY);
+    const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+    // eslint-disable-next-line no-new-func
+    return new Function('clamp', 'datum', `return ${formula.expr};`)(clamp, { fraction });
+  };
+
+  test('fades to FADE_FACTOR when deemphasized and stays opaque from neutral upward', () => {
+    expect(evalDeemphasisOpacity(0)).toBeCloseTo(FADE_FACTOR);
+    expect(evalDeemphasisOpacity(HOVER_NEUTRAL_TARGET / 2)).toBeCloseTo((FADE_FACTOR + 1) / 2);
+    expect(evalDeemphasisOpacity(HOVER_NEUTRAL_TARGET)).toBe(1);
+    expect(evalDeemphasisOpacity(1)).toBe(1);
+  });
+});
+
 describe('getHoverSeriesFractionData()', () => {
   test('defaults to SERIES_ID as the keyField (line: hoverFractionData is already keyed by series, so the lookup is a no-op)', () => {
     expect(getHoverSeriesFractionData('line0')).toStrictEqual({
@@ -198,6 +218,20 @@ describe('getHoverFractionSignal()', () => {
   test('honors a custom keyField', () => {
     expect(getHoverFractionSignal('bar0', MARK_ID)).toEqual(
       `hoverFraction(data('bar0_hoverFractionData'), '${MARK_ID}', datum.${MARK_ID}, ${HOVER_NEUTRAL_TARGET})`
+    );
+  });
+});
+
+describe('getHoverDeemphasisOpacitySignal()', () => {
+  test('looks up the precomputed deemphasis opacity, defaulting to fully opaque', () => {
+    expect(getHoverDeemphasisOpacitySignal('line0')).toEqual(
+      `hoverFraction(data('line0_hoverFractionData'), '${SERIES_ID}', datum.${SERIES_ID}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`
+    );
+  });
+
+  test('honors a custom keyField', () => {
+    expect(getHoverDeemphasisOpacitySignal('bar0', MARK_ID)).toEqual(
+      `hoverFraction(data('bar0_hoverFractionData'), '${MARK_ID}', datum.${MARK_ID}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`
     );
   });
 });

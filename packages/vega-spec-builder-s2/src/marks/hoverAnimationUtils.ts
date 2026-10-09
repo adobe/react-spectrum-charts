@@ -25,12 +25,16 @@ import {
   HOVER_TARGET_DATA,
   HOVER_TARGETS,
   ANIMATION_TIMER,
+  FADE_FACTOR,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
 import { hasSignalByName } from '../signal/signalSpecBuilder.js';
 import { addAnimationTimerSignal } from './animationTimerUtils.js';
+
+/** hoverFractionData field holding each item's animated deemphasis opacity. */
+export const HOVER_DEEMPHASIS_OPACITY = 'deemphasisOpacity';
 
 /** One hover condition. expr must evaluate to 1 | 0 | null. */
 export interface HoverMatchRule {
@@ -145,6 +149,11 @@ export const getHoverFractionData = (name: string): SourceData => {
         as: 'fraction',
         expr: `lerp([datum.startValue, datum.target], ${easedProgress})`,
       },
+      {
+        type: 'formula',
+        as: HOVER_DEEMPHASIS_OPACITY,
+        expr: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${getDeemphasisRamp('datum.fraction')}`,
+      },
     ],
   };
 };
@@ -219,6 +228,15 @@ export const getHoverFractionSignal = (name: string, keyField: string = SERIES_I
   // falls back to the neutral emphasis level when this datum has no animation row
   return `hoverFraction(data('${name}_${HOVER_FRACTION_DATA}'), '${keyField}', datum.${keyField}, ${HOVER_NEUTRAL_TARGET})`;
 };
+
+/**
+ * Returns a Vega expression for `datum`'s animated deemphasis opacity, computed once per item in hoverFractionData.
+ * @param name - the name of the mark
+ * @param keyField - the identity field used to match the animation row (defaults to SERIES_ID)
+ * @returns string
+ */
+export const getHoverDeemphasisOpacitySignal = (name: string, keyField: string = SERIES_ID): string =>
+  `hoverFraction(data('${name}_${HOVER_FRACTION_DATA}'), '${keyField}', datum.${keyField}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`;
 
 /**
  * Reads emphasis level expression (0 = deemphasized, neutral in the middle, 1 = emphasized)

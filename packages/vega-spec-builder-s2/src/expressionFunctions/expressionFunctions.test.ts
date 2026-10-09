@@ -373,6 +373,12 @@ describe('hoverFraction()', () => {
     expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.1);
   });
 
+  test('reads the requested field instead of the fraction', () => {
+    const rows = [{ id: 'a', fraction: 0.2, deemphasisOpacity: 0.6 }];
+    expect(hoverFraction(rows, 'id', 'a', 1, 'deemphasisOpacity')).toBe(0.6);
+    expect(hoverFraction(rows, 'id', 'z', 1, 'deemphasisOpacity')).toBe(1);
+  });
+
   test('reads fractions live when rows are modified in place', () => {
     const rows = [{ id: 'a', fraction: 0.2 }];
     expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.2);

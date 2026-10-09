@@ -20,7 +20,6 @@ import {
   DEFAULT_COLOR,
   DEFAULT_METRIC,
   DIMENSION_HOVER_AREA,
-  FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
@@ -33,6 +32,7 @@ import {
   STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
   defaultBarEnterEncodings,
@@ -1007,10 +1007,7 @@ describe('getBarAnimIdField()', () => {
 describe('getBarOpacity()', () => {
   test('returns the animated deemphasis signal when isHoverAnimate', () => {
     const opacity = getBarOpacity({ ...defaultBarOptions, isHoverAnimate: true });
-    expect(opacity).toStrictEqual({
-      signal: expect.stringContaining(`${FADE_FACTOR} + (1 - ${FADE_FACTOR}) *`),
-    });
-    expect((opacity as { signal: string }).signal).toContain('bar0_rscBarAnimId');
+    expect(opacity).toStrictEqual({ signal: getHoverDeemphasisOpacitySignal('bar0', 'bar0_rscBarAnimId') });
   });
 
   test('falls back to the instant getMarkOpacity rules when not isHoverAnimate', () => {

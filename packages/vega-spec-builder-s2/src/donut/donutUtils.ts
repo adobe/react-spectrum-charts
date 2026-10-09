@@ -40,7 +40,7 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils.js';
-import { getDeemphasisRamp, getHoverFractionSignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
+import { getHoverDeemphasisOpacitySignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
 import {
   getColorProductionRule,
   getCursor,
@@ -92,8 +92,7 @@ export const getDonutHoverRules = (options: DonutSpecOptions): HoverMatchRule[] 
 /** Gets the shared arc and label opacity, animated when hover animations are enabled. */
 export const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
   if (options.isHoverAnimate) {
-    const ramp = getDeemphasisRamp(getHoverFractionSignal(options.name, getDonutAnimIdField(options.name)));
-    return [{ signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` }];
+    return [{ signal: getHoverDeemphasisOpacitySignal(options.name, getDonutAnimIdField(options.name)) }];
   }
   const opacity = getMarkOpacity(options);
   if (!isInteractive(options) && isDonutInteractive(options)) {
