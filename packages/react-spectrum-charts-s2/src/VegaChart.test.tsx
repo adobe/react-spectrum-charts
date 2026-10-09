@@ -45,7 +45,7 @@ const defaultProps: VegaChartProps = {
 	padding: 0,
 	renderer: 'svg',
 	spec: defaultSpec,
-	tooltip: {},
+	tooltip: jest.fn(),
 	width: 800,
 };
 
@@ -124,6 +124,13 @@ describe('VegaChart init render cycle', () => {
 		render(<VegaChart {...defaultProps} />);
 
 		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+	});
+
+	test('passes the tooltip handler to embed so it is set before the renderer is created', async () => {
+		render(<VegaChart {...defaultProps} />);
+
+		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
+		expect(mockEmbed.mock.calls[0][2]).toHaveProperty('tooltip', defaultProps.tooltip);
 	});
 
 	test('does not call embed on initial mount with zero dimensions', () => {

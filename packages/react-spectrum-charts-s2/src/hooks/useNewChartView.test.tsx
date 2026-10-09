@@ -11,7 +11,6 @@
  */
 import { renderHook } from '@testing-library/react';
 import { View } from 'vega';
-import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { useChartContext } from '../context/RscChartContext.js';
 import { RscChartProps } from '../types/index.js';
@@ -54,10 +53,9 @@ const mockUseAxisLabelOnClickDetails = jest.mocked(useAxisLabelOnClickDetails);
 
 const baseProps = { idKey: 'rscMarkId' } as unknown as RscChartProps;
 const legendProps: UseLegendProps = { legendHiddenSeries: [], setLegendHiddenSeries: jest.fn() };
-const inspectOptions = {} as TooltipOptions;
 
 const getOnNewView = () => {
-  const { result } = renderHook(() => useNewChartView(baseProps, [], inspectOptions, legendProps));
+  const { result } = renderHook(() => useNewChartView(baseProps, [], legendProps));
   return result.current;
 };
 
@@ -66,8 +64,6 @@ const makeFakeView = () =>
     tooltip: jest.fn(),
     addEventListener: jest.fn(),
   } as unknown as View);
-
-const mockSetHoveredAxisLabel = jest.fn();
 
 describe('useNewChartView - axis label click wiring', () => {
   beforeEach(() => {
@@ -78,7 +74,6 @@ describe('useNewChartView - axis label click wiring', () => {
       selectedDataBounds: { current: undefined },
       selectedDataName: { current: undefined },
       chartId: 'test-chart',
-      setHoveredAxisLabel: mockSetHoveredAxisLabel,
     } as unknown as ReturnType<typeof useChartContext>);
     mockUsePopovers.mockReturnValue([]);
     mockUseMarkOnClickDetails.mockReturnValue([]);
@@ -95,6 +90,13 @@ describe('useNewChartView - axis label click wiring', () => {
     expect(clickListenerCount).toBe(2);
   });
 
+  test('does not set a tooltip on the view, since that rebuilds the renderer', () => {
+    mockUseAxisLabelOnClickDetails.mockReturnValue([]);
+    const view = makeFakeView();
+    getOnNewView()(view);
+    expect(view.tooltip).not.toHaveBeenCalled();
+  });
+
   test('does not register an axis label click listener when there are no axis onClick details', () => {
     mockUseAxisLabelOnClickDetails.mockReturnValue([]);
     const view = makeFakeView();
@@ -103,53 +105,5 @@ describe('useNewChartView - axis label click wiring', () => {
       ([eventName]) => eventName === 'click'
     ).length;
     expect(clickListenerCount).toBe(1);
-  });
-});
-
-describe('useNewChartView - axis label tooltip wiring', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseChartContext.mockReturnValue({
-      chartView: { current: undefined },
-      selectedData: { current: null },
-      selectedDataBounds: { current: undefined },
-      selectedDataName: { current: undefined },
-      chartId: 'test-chart',
-      setHoveredAxisLabel: mockSetHoveredAxisLabel,
-    } as unknown as ReturnType<typeof useChartContext>);
-    mockUsePopovers.mockReturnValue([]);
-    mockUseMarkOnClickDetails.mockReturnValue([]);
-    mockUseMarkMouseInputDetails.mockReturnValue([]);
-    mockUseAxisLabelOnClickDetails.mockReturnValue([]);
-  });
-
-  const axisLabelItem = {
-    mark: { role: 'axis-label', group: {} },
-    bounds: { x1: 0, x2: 10, y1: 0, y2: 20 },
-    datum: {},
-  };
-
-  test('hovering an axis label sets hoveredAxisLabel with the item bounds and tooltip content', () => {
-    const view = makeFakeView();
-    getOnNewView()(view);
-    const tooltipCallback = (view.tooltip as jest.Mock).mock.calls[0][0];
-
-    tooltipCallback(view, { type: 'pointermove' }, axisLabelItem, 'Category A');
-
-    expect(mockSetHoveredAxisLabel).toHaveBeenCalledWith({
-      bounds: { x1: 0, x2: 10, y1: 0, y2: 20 },
-      content: 'Category A',
-    });
-  });
-
-  test('hovering a non-axis-label item clears hoveredAxisLabel', () => {
-    const view = makeFakeView();
-    getOnNewView()(view);
-    const tooltipCallback = (view.tooltip as jest.Mock).mock.calls[0][0];
-    const barItem = { mark: { name: 'bar0' }, bounds: { x1: 0, x2: 0, y1: 0, y2: 0 }, datum: {} };
-
-    tooltipCallback(view, { type: 'mouseout' }, barItem, 'value');
-
-    expect(mockSetHoveredAxisLabel).toHaveBeenCalledWith(null);
   });
 });
