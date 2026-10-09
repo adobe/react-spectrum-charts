@@ -151,6 +151,7 @@ export function getBulletMarkTarget(bulletOptions: BulletSpecOptions): Mark {
         x: { scale: 'xscale', field: `${bulletOptions.target}` },
         y: { signal: bulletMarkTargetEncodeUpdateY },
         y2: { signal: bulletMarkTargetEncodeUpdateY2 },
+        strokeOpacity: [{ test: `!isValid(datum.${bulletOptions.target})`, value: 0 }, { value: 1 }],
       },
     },
   };
