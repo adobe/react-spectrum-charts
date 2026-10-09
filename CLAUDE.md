@@ -164,6 +164,7 @@ Always use `yarn` for all package management and script execution — never `npm
 Every PR that changes anything under `packages/` needs a `.changeset/*.md` file, or the PR's `changeset` check fails. Add it in the same PR:
 
 - Release-worthy change: write `.changeset/<slug>.md` with frontmatter listing each changed package and its bump (`patch`, `minor`, `major`), then one consumer-facing summary line. Keep change descriptions brief and relevant. The S1 pair (`@adobe/react-spectrum-charts`, `@spectrum-charts/vega-spec-builder`) and S2 pair (`@spectrum-charts/react-spectrum-charts-s2`, `@spectrum-charts/vega-spec-builder-s2`) release together; list both, as existing changesets do.
+- Describe what consumers will notice (a new prop, a fixed behavior, a smoother animation), not how it was done. Don't name internal functions, signals, or data sources. Do list removed or renamed exports by name, since consumers may import them.
 - No release needed (tests, stories, docs, CI, internal refactor): `yarn changeset:empty`.
 
 Run `yarn changeset:status` before finishing. See `PUBLISHING.md`.
