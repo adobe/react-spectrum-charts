@@ -7,9 +7,13 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License. -->
 
+<!-- Process: planning/README.md. Save as rfcs/<slug>.md (no number). -->
+
+- Status: Draft | Accepted | Implemented
 - Start Date: (fill me in with today's date, YYYY-MM-DD)
 - RFC PR: (leave this empty, to be filled in later)
 - Authors: (the names of everyone contributing to this RFC)
+- Parent Issue: (the GitHub issue tracking this RFC's scope, once accepted)
 
 # (RFC title goes here)
 
@@ -31,6 +35,25 @@ outcome? -->
    can implement it by reading this document. Please get into specifics
    of your approach, corner cases, and examples of how the change will be
    used. Be sure to define any new terms in this section.
+-->
+
+## Scope
+
+<!--
+    One row per piece of work, each linked to a GitHub issue (a sub-issue of the parent
+    issue). Stage is when it ships: alpha, beta, rc, stable, or deferred (out of scope).
+
+    | Issue | Description | Stage |
+    |---|---|---|
+    | #123 | ... | alpha |
+-->
+
+## Cross-Cutting Concerns
+
+<!--
+    Which of these does the design touch, and how? See planning/README.md.
+    Hover animation, controlled highlight, legend interaction, tooltip/popover,
+    new signal or scale, S1/S2 parity.
 -->
 
 ## Documentation

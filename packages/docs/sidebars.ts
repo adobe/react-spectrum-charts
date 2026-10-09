@@ -71,6 +71,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'spectrum2/overview',
+        'spectrum2/stages',
         'spectrum2/line',
         'spectrum2/bar',
         'spectrum2/axis',
