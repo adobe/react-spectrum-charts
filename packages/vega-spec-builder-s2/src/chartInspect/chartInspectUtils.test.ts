@@ -201,7 +201,10 @@ describe('addHoveredItemOpacityRules()', () => {
     const opacityRules: ({ test?: string; signal?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
     const options = getDefaultMarkOptions();
     options.comboSiblingNames = ['combo0Bar0', 'combo0Line0'];
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     addHoveredItemOpacityRules(opacityRules, options);
+    expect(consoleLogSpy).not.toHaveBeenCalled();
+    consoleLogSpy.mockRestore();
     expect(opacityRules).toHaveLength(5);
     expect(opacityRules[2]).toHaveProperty('test', `isValid(bar0_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM})`);
     expect(opacityRules[3].test).toContain('combo0Bar0_');

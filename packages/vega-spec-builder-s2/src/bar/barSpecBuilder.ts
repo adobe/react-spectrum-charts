@@ -24,6 +24,7 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   FOCUSED_REGION,
+  HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -276,6 +277,11 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 
   if (isHoverAnimate) {
     addHoverAnimationSignals(signals, name);
+  }
+
+  // the highlightedItem opacity rule reads the dimension hover area signal even when the bar isn't interactive
+  if (options.highlightedItem !== undefined && !isInteractive(options) && !options.accessibleNavigation) {
+    signals.push(getGenericValueSignal(`${name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`));
   }
 
   if (

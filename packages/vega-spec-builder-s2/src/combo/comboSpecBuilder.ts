@@ -11,11 +11,12 @@
  */
 import { produce } from 'immer';
 
-import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
+import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION, HOVERED_ITEM } from '@spectrum-charts/core-s2/constants';
 import { combineNames, toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addBar } from '../bar/barSpecBuilder.js';
 import { addLine } from '../line/lineSpecBuilder.js';
+import { getGenericValueSignal, hasSignalByName } from '../signal/signalSpecBuilder.js';
 import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions, ScSpec } from '../types/index.js';
 
 export const addCombo = produce<
@@ -93,9 +94,26 @@ export const addCombo = produce<
       }
     }, spec);
 
-    return spec;
+    return addMissingSiblingHoveredItemSignals(spec, allMarkNames);
   }
 );
+
+/**
+ * Adds a null hovered item signal for any combo mark that doesn't define one, since sibling opacity rules reference it.
+ * @param spec
+ * @param markNames
+ * @returns ScSpec
+ */
+export const addMissingSiblingHoveredItemSignals = (spec: ScSpec, markNames: string[]): ScSpec => {
+  const signals = spec.signals ?? [];
+  const missingSignals = markNames
+    .filter(Boolean)
+    .map((markName) => `${markName}_${HOVERED_ITEM}`)
+    .filter((signalName) => !hasSignalByName(signals, signalName))
+    .map((signalName) => getGenericValueSignal(signalName));
+  if (!missingSignals.length) return spec;
+  return { ...spec, signals: [...signals, ...missingSignals] };
+};
 
 const initializeComponentCounts = () => {
   return { barCount: -1, lineCount: -1 };
