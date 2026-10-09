@@ -21,7 +21,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { applyDrawInReveal, getLineDrawInRevealExpr } from '../marks/drawInAnimationUtils.js';
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
+import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import {
   getHighlightBackgroundPoint,
   getHighlightPoint,
@@ -248,9 +248,8 @@ describe('getLineStaticPoint()', () => {
   describe('when isHoverAnimate is true', () => {
     test('returns the animated deemphasis-ramp signal instead of the instant production rules', () => {
       const mark = getLineStaticPoint({ ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true });
-      const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
       expect(mark.encode?.update?.opacity).toStrictEqual({
-        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+        signal: getHoverDeemphasisOpacitySignal('line0'),
       });
     });
 
@@ -261,9 +260,8 @@ describe('getLineStaticPoint()', () => {
         isHighlightedByGroup: true,
         isHoverAnimate: true,
       });
-      const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
       expect(mark.encode?.update?.opacity).toStrictEqual({
-        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+        signal: getHoverDeemphasisOpacitySignal('line0'),
       });
     });
   });

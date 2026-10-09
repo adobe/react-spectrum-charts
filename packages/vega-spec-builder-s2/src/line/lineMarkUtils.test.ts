@@ -27,7 +27,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
+import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import {
   getAlternateSegmentStrokeDash,
   getHighlightedSeriesOpacityRules,
@@ -281,8 +281,7 @@ describe('getLineOpacity()', () => {
         interactiveMarkName: 'line0',
         isHoverAnimate: true,
       });
-      const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
-      expect(opacityRule).toStrictEqual({ signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` });
+      expect(opacityRule).toStrictEqual({ signal: getHoverDeemphasisOpacitySignal('line0') });
     });
 
     test('displayOnHover still short-circuits to the default opacity rule, even when animated', () => {
