@@ -1,5 +1,20 @@
 # @spectrum-charts/constants
 
+## 1.54.0
+
+### Minor Changes
+
+- 4ec4e4d: S2 Donut: the gap between the ring and its segment labels now scales with donut size (5px for small, 10px for medium/large, 15px for extra large) instead of a fixed 20px. Donut size is now based on chart size.
+- 0e60423: S2 Donut `ChartInspect` and `ChartPopover` now render default content (color swatch, series name, and share of the visible total with its short-number value, e.g. `65.2% (23K)`, formatted with the chart locale) without requiring children.
+
+  When children are provided inside a `Donut`, their content replaces the default content.
+
+  `@spectrum-charts/vega-spec-builder-s2` exports a new `formatPercentWithValue(locale)` formatter used for this content.
+
+### Patch Changes
+
+- fd19202: Pre-Alpha S2 Donut fixes for label positioning, truncation, spacing, and dense collision handling; fixing visibility of tiny segments; and fixing semicircle summary delta overlap.
+
 ## 1.53.0
 
 ### Minor Changes

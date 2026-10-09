@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/core-s2",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Constants, locales, design tokens, and utilities for Spectrum 2 charts",
   "type": "module",
   "exports": {

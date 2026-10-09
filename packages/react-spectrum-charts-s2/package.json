@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/react-spectrum-charts-s2",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Declarative library for composing Spectrum 2 visualizations in React.",
   "type": "module",
   "main": "./dist/index.js",
@@ -70,9 +70,9 @@
   },
   "dependencies": {
     "@internationalized/string": "^3.2.1",
-    "@spectrum-charts/core-s2": "0.9.0",
-    "@spectrum-charts/schemas": "^1.52.0",
-    "@spectrum-charts/vega-spec-builder-s2": "0.9.0",
+    "@spectrum-charts/core-s2": "0.10.0",
+    "@spectrum-charts/schemas": "^2.0.0",
+    "@spectrum-charts/vega-spec-builder-s2": "0.10.0",
     "d3-array": "^3.2.4",
     "d3-format": "^3.1.0",
     "data-navigator": "^2.4.1",
