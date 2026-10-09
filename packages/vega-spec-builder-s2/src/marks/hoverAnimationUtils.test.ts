@@ -189,15 +189,15 @@ describe('getHoverSeriesFractionData()', () => {
 });
 
 describe('getHoverFractionSignal()', () => {
-  test('looks up the row for datum by series identity, defaulting to the neutral level when absent', () => {
+  test('looks up the fraction for datum by series identity, defaulting to the neutral level', () => {
     expect(getHoverFractionSignal('line0')).toEqual(
-      `(data('line0_hoverFractionData')[indexof(pluck(data('line0_hoverFractionData'), '${SERIES_ID}'), datum.${SERIES_ID})] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`
+      `hoverFraction(data('line0_hoverFractionData'), '${SERIES_ID}', datum.${SERIES_ID}, ${HOVER_NEUTRAL_TARGET})`
     );
   });
 
   test('honors a custom keyField', () => {
     expect(getHoverFractionSignal('bar0', MARK_ID)).toEqual(
-      `(data('bar0_hoverFractionData')[indexof(pluck(data('bar0_hoverFractionData'), '${MARK_ID}'), datum.${MARK_ID})] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`
+      `hoverFraction(data('bar0_hoverFractionData'), '${MARK_ID}', datum.${MARK_ID}, ${HOVER_NEUTRAL_TARGET})`
     );
   });
 });

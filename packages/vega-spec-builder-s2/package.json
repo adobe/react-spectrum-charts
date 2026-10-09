@@ -43,6 +43,7 @@
     "venn-helper": "^2.3.6"
   },
   "devDependencies": {
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vega-interpreter": "^2.0.0"
   }
 }
