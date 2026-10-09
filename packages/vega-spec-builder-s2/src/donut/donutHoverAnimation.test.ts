@@ -116,6 +116,12 @@ describe('donut hover animations', () => {
     expect(spec.usermeta?.animatedMarks).toHaveLength(1);
   });
 
+  test('looks up each slice hover fraction with the indexed hoverFraction function', () => {
+    const [opacity] = getDonutOpacity({ ...defaultDonutOptions, isHoverAnimate: true });
+    expect(opacity).toHaveProperty('signal', expect.stringContaining("hoverFraction(data('testName_hoverFractionData')"));
+    expect(opacity).toHaveProperty('signal', expect.not.stringContaining('indexof(pluck('));
+  });
+
   test('shares animated opacity across arcs, direct labels, and every rich label row', () => {
     const options = {
       ...defaultDonutOptions,

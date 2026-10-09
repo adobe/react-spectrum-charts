@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Spec, View, changeset, expressionFunction, parse } from 'vega';
+import { expressionInterpreter } from 'vega-interpreter';
+
 import { numberLocales } from '@spectrum-charts/core-s2/locales';
 
 import {
@@ -20,6 +23,7 @@ import {
   formatShortNumber,
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
+  hoverFraction,
   isDonutLabelVisible,
 } from './expressionFunctions.js';
 
@@ -344,5 +348,85 @@ describe('formatPercentWithValue()', () => {
   });
   test('should fall back to en-US percent formatting when only a time locale is provided', () => {
     expect(formatPercentWithValue({ time: 'fr-FR' })(0.652, 900)).toBe('65.2% (900)');
+  });
+});
+
+describe('hoverFraction()', () => {
+  test('returns the fraction for the matching row', () => {
+    const rows = [
+      { id: 'a', fraction: 0.2 },
+      { id: 'b', fraction: 0.8 },
+    ];
+    expect(hoverFraction(rows, 'id', 'b', 0.5)).toBe(0.8);
+  });
+
+  test('returns the fallback when there are no rows or no match', () => {
+    expect(hoverFraction(undefined, 'id', 'a', 0.5)).toBe(0.5);
+    expect(hoverFraction([{ id: 'a', fraction: 0.2 }], 'id', 'z', 0.5)).toBe(0.5);
+  });
+
+  test('uses the first row when keys repeat, matching indexof', () => {
+    const rows = [
+      { id: 'a', fraction: 0.1 },
+      { id: 'a', fraction: 0.9 },
+    ];
+    expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.1);
+  });
+
+  test('reads fractions live when rows are modified in place', () => {
+    const rows = [{ id: 'a', fraction: 0.2 }];
+    expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.2);
+    rows[0].fraction = 0.7;
+    expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.7);
+  });
+
+  describe('in a Vega view with the CSP-safe interpreter', () => {
+    let view: View | undefined;
+
+    beforeEach(() => {
+      expressionFunction('hoverFraction', hoverFraction);
+    });
+
+    afterEach(() => {
+      view?.finalize();
+      view = undefined;
+    });
+
+    const spec: Spec = {
+      data: [
+        { name: 'items', values: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] },
+        {
+          name: 'fractions',
+          values: [
+            { id: 'a', fraction: 0.5 },
+            { id: 'b', fraction: 0.5 },
+          ],
+        },
+      ],
+      marks: [
+        {
+          type: 'rect',
+          name: 'rects',
+          from: { data: 'items' },
+          encode: { update: { opacity: { signal: "hoverFraction(data('fractions'), 'id', datum.id, 0.25)" } } },
+        },
+      ],
+    };
+
+    type SceneRoot = { items: { items: { items: { opacity: number }[] }[] }[] };
+    const getOpacities = (chart: View) =>
+      (chart as unknown as { scenegraph: () => { root: SceneRoot } }).scenegraph().root.items[0].items[0].items.map(({ opacity }) => opacity);
+
+    test('re-encodes when the fraction data is modified or grows', async () => {
+      view = new View(parse(spec, undefined, { ast: true }), { renderer: 'none', expr: expressionInterpreter });
+      await view.runAsync();
+      expect(getOpacities(view)).toEqual([0.5, 0.5, 0.25]);
+
+      await view.change('fractions', changeset().modify((d: { id: string }) => d.id === 'b', 'fraction', 0.1)).runAsync();
+      expect(getOpacities(view)).toEqual([0.5, 0.1, 0.25]);
+
+      await view.change('fractions', changeset().insert({ id: 'c', fraction: 0.9 })).runAsync();
+      expect(getOpacities(view)).toEqual([0.5, 0.1, 0.9]);
+    });
   });
 });

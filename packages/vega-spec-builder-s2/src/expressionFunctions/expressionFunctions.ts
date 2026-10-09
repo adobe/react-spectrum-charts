@@ -46,6 +46,7 @@ export const getExpressionFunctions = (
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
+    hoverFraction,
     isDonutLabelVisible,
     truncateText,
   };
@@ -333,11 +334,41 @@ const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = '
   return truncatedText + '\u2026';
 };
 
+type HoverFractionRow = Record<string, unknown> & { fraction?: number };
+const hoverFractionIndexes = new WeakMap<HoverFractionRow[], Map<unknown, HoverFractionRow>>();
+
+/**
+ * Returns the hover fraction for `key`, indexing the rows once per data array instead of scanning per item.
+ * @param rows - the hoverFractionData values
+ * @param keyField - the identity field the rows are keyed by
+ * @param key - the identity of the item being encoded
+ * @param fallback - the fraction to use when no row matches
+ * @returns number
+ */
+export const hoverFraction = (
+  rows: HoverFractionRow[] | undefined,
+  keyField: string,
+  key: unknown,
+  fallback: number
+): number => {
+  if (!rows) return fallback;
+  let index = hoverFractionIndexes.get(rows);
+  if (!index) {
+    index = new Map();
+    for (const row of rows) {
+      if (!index.has(row[keyField])) index.set(row[keyField], row);
+    }
+    hoverFractionIndexes.set(rows, index);
+  }
+  return index.get(key)?.fraction ?? fallback;
+};
+
 export const expressionFunctions = {
   consoleLog,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   getLabelWidth,
+  hoverFraction,
   isDonutLabelVisible,
   truncateText,
 };

@@ -188,9 +188,8 @@ export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta)
     const fractionDataName = isGrouped ? `${markName}_hoverGroupFractionData` : `${markName}_hoverSeriesFractionData`;
     const fractionData = `data('${fractionDataName}')`;
     const lookupField = isGrouped ? `${options.name}_${GROUP_ID}` : SERIES_ID;
-    const seriesLookup = `indexof(pluck(${fractionData}, '${lookupField}'), datum.value)`;
     // default to the neutral emphasis level when a legend entry has no animation row
-    const fraction = `(${fractionData}[${seriesLookup}] || {fraction: ${FADE_FACTOR}}).fraction`;
+    const fraction = `hoverFraction(${fractionData}, '${lookupField}', datum.value, ${FADE_FACTOR})`;
     // fade deemphasized entries to FADE_FACTOR; neutral and emphasized both stay fully opaque
     const ramp = getDeemphasisRamp(fraction);
     rules.push({

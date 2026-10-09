@@ -216,10 +216,8 @@ export const addHoverAnimLastChangeData = (data: Data[], name: string): void => 
  * @returns string - the signal for the hover fraction
  */
 export const getHoverFractionSignal = (name: string, keyField: string = SERIES_ID): string => {
-  const fractionData = `data('${name}_${HOVER_FRACTION_DATA}')`;
-  const lookup = `indexof(pluck(${fractionData}, '${keyField}'), datum.${keyField})`;
-  // default to the neutral emphasis level when this datum has no animation row
-  return `(${fractionData}[${lookup}] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`;
+  // falls back to the neutral emphasis level when this datum has no animation row
+  return `hoverFraction(data('${name}_${HOVER_FRACTION_DATA}'), '${keyField}', datum.${keyField}, ${HOVER_NEUTRAL_TARGET})`;
 };
 
 /**
