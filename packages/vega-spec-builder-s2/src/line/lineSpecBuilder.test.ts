@@ -12,6 +12,7 @@
 import { Data } from 'vega';
 
 import {
+  ANIMATION_TIMER,
   BACKGROUND_COLOR,
   CHART_SIZE_POINT_SIZE,
   COLOR_SCALE,
@@ -26,7 +27,6 @@ import {
   HOVERED_ITEM,
   HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_TARGETS,
-  ANIMATION_TIMER,
   LINEAR_PADDING,
   MARK_ID,
   SERIES_ID,
@@ -785,6 +785,34 @@ describe('lineSpecBuilder', () => {
         expect(filteredTableData?.transform?.some((t) => t.type === 'window') ?? false).toBe(false);
         expect(resultData.find((d) => d.name === 'line0_drawInPrev')).toHaveProperty('source', 'line0_drawInIndexed');
         expect(resultData.find((d) => d.name === 'line0_drawInLerp')).toBeDefined();
+      });
+
+      test('with forecasts, draws in from the segmented source, leading the effective metric per segment', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          isDrawInAnimate: true,
+          scaleType: 'linear',
+          forecasts: [{ metric: 'forecast', start: 3 }],
+        });
+        expect(resultData.find((d) => d.name === 'line0_drawInPrev')).toHaveProperty('source', 'line0_with_bridges');
+        const lead = resultData
+          .find((d) => d.name === 'line0_with_bridges')
+          ?.transform?.find((t) => t.type === 'window');
+        expect(lead).toHaveProperty('groupby', [SERIES_ID, 'line0_segmentId']);
+        expect(lead).toHaveProperty('fields', [DEFAULT_TIME_DIMENSION, 'line0_effectiveValue']);
+      });
+
+      test('with primarySeries, draws in from the primary series facet source', () => {
+        const resultData = addData(baseData, {
+          ...defaultLineOptions,
+          isDrawInAnimate: true,
+          scaleType: 'linear',
+          primarySeries: 1,
+        });
+        expect(resultData.find((d) => d.name === 'line0_drawInPrev')).toHaveProperty(
+          'source',
+          'line0_primarySeriesFacetData'
+        );
       });
 
       test('does not add any draw-in data sources when isDrawInAnimate is false', () => {

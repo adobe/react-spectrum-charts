@@ -16,10 +16,10 @@ import {
   ANIMATION_THROTTLE,
   ANIMATION_TIMER,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  DRAW_IN_ANIMATION_DURATION_MS,
   DRAW_IN_ANIM_CUTOFF,
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
-  DRAW_IN_ANIMATION_DURATION_MS,
   DRAW_IN_DOMAIN_MAX,
   DRAW_IN_DOMAIN_MIN,
   DRAW_IN_LERP_DATA,
@@ -39,7 +39,8 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { hasTransformByAs } from '../data/dataUtils.js';
-import { isDualMetricAxis, LineMarkOptions } from '../line/lineUtils.js';
+import { LineMarkOptions, isDualMetricAxis } from '../line/lineUtils.js';
+import { getEffectiveMetricField } from '../lineForecast/lineForecastUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
 import { hasSignalByName } from '../signal/signalSpecBuilder.js';
@@ -58,11 +59,30 @@ export const getLineDrawInSortField = (scaleType: ScaleType, dimension: string, 
 };
 
 /**
- * The data source draw-in should read from for a given line: the derived per-name indexed source
- * for point scales (`getLineDrawInPointIndexData`), or `filteredTable` for everything else.
+ * Whether the line is split into dashed/solid segments (alternateSegmentKey or forecasts).
+ * @param options
+ * @returns boolean
  */
-export const getLineDrawInDataSourceName = ({ name, scaleType }: LineSpecOptions): string =>
-  scaleType === 'point' ? `${name}_${DRAW_IN_POINT_INDEX_DATA}` : FILTERED_TABLE;
+export const isLineSegmented = ({ alternateSegmentKey, forecasts }: LineSpecOptions): boolean =>
+  !!alternateSegmentKey || !!forecasts?.length;
+
+/**
+ * The source the line facets from before draw-in: segmented data, primary series data, or `filteredTable`.
+ * @param options
+ * @returns string
+ */
+export const getLineFacetSourceName = (options: LineSpecOptions): string => {
+  if (isLineSegmented(options)) return `${options.name}_with_bridges`;
+  if (options.primarySeries) return `${options.name}_primarySeriesFacetData`;
+  return FILTERED_TABLE;
+};
+
+/**
+ * The data source draw-in should read from for a given line: the derived per-name indexed source
+ * for point scales (`getLineDrawInPointIndexData`), or the line's facet source for everything else.
+ */
+export const getLineDrawInDataSourceName = (options: LineSpecOptions): string =>
+  options.scaleType === 'point' ? `${options.name}_${DRAW_IN_POINT_INDEX_DATA}` : getLineFacetSourceName(options);
 
 /**
  * Point-scale-only: derived source adding each row's ordinal index within the x scale's domain.
@@ -74,7 +94,7 @@ export const getLineDrawInPointIndexData = (options: LineSpecOptions): SourceDat
   const scaleName = getScaleName('x', scaleType);
   return {
     name: `${name}_${DRAW_IN_POINT_INDEX_DATA}`,
-    source: FILTERED_TABLE,
+    source: getLineFacetSourceName(options),
     transform: [
       {
         type: 'formula',
@@ -105,12 +125,18 @@ export const addLineDrawInTimeMsTransform = produce<Transforms[], [string]>((tra
  * isn't valid for an x-scale lookup.
  */
 export const addLineDrawInLeadTransform = (sourceData: Data, options: LineSpecOptions): void => {
-  const { dimension, metric, name, scaleType } = options;
+  const { dimension, name, scaleType } = options;
+  const metric = getEffectiveMetricField(options);
   const sortField = getLineDrawInSortField(scaleType, dimension, name);
   const fields = scaleType === 'point' ? [sortField, dimension, metric] : [sortField, metric];
+  const groupby = isLineSegmented(options) ? [SERIES_ID, `${name}_segmentId`] : [SERIES_ID];
   const asFields =
     scaleType === 'point'
-      ? [`${name}_${DRAW_IN_NEXT_DIM_FIELD}`, `${name}_${DRAW_IN_NEXT_CATEGORY_FIELD}`, `${name}_${DRAW_IN_NEXT_METRIC_FIELD}`]
+      ? [
+          `${name}_${DRAW_IN_NEXT_DIM_FIELD}`,
+          `${name}_${DRAW_IN_NEXT_CATEGORY_FIELD}`,
+          `${name}_${DRAW_IN_NEXT_METRIC_FIELD}`,
+        ]
       : [`${name}_${DRAW_IN_NEXT_DIM_FIELD}`, `${name}_${DRAW_IN_NEXT_METRIC_FIELD}`];
   sourceData.transform = sourceData.transform ?? [];
   const alreadyAdded = sourceData.transform.some(
@@ -124,7 +150,7 @@ export const addLineDrawInLeadTransform = (sourceData: Data, options: LineSpecOp
     sourceData.transform.push({
       type: 'window',
       sort: { field: sortField, order: 'ascending' },
-      groupby: [SERIES_ID],
+      groupby,
       ops: fields.map((): 'lead' => 'lead'),
       fields,
       as: asFields,
@@ -199,7 +225,7 @@ export const addDrawInClockSignals = (signals: Signal[]): void => {
     signals.push({
       name: DRAW_IN_ANIM_T,
       value: 0,
-      update: `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START}) / ${DRAW_IN_ANIMATION_DURATION_MS}, 0, 1)`
+      update: `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START}) / ${DRAW_IN_ANIMATION_DURATION_MS}, 0, 1)`,
     });
   }
   if (!hasSignalByName(signals, DRAW_IN_ANIM_T_EASED)) {
@@ -284,7 +310,8 @@ export const getLineDrawInXEncoding = ({ dimension, name, scaleType }: LineMarkO
   const scale = getScaleName('x', scaleType);
   const dimField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
   const sortField = getLineDrawInSortField(scaleType, dimension, name);
-  const nextLookupField = scaleType === 'point' ? `${name}_${DRAW_IN_NEXT_CATEGORY_FIELD}` : `${name}_${DRAW_IN_NEXT_DIM_FIELD}`;
+  const nextLookupField =
+    scaleType === 'point' ? `${name}_${DRAW_IN_NEXT_CATEGORY_FIELD}` : `${name}_${DRAW_IN_NEXT_DIM_FIELD}`;
   const currentPos = `scale('${scale}', datum.${dimField})`;
   const nextPos = `scale('${scale}', datum.${nextLookupField})`;
   const tween = getLineDrawInTweenExpr(name, sortField);
