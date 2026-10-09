@@ -4,31 +4,19 @@ Use this skill when fixing a bug. Read `.claude/architecture-core.md` first, the
 
 ---
 
-## Step 0: Check for a Filed Bug Spec
+## Step 0: Check for a Linked Issue
 
-Look for `planning/specs/<chartType>/issues/<slug>.json` matching this bug, checking both
-the base `issues/` directory (still open) and its `implemented/` subfolder (already fixed —
-still useful context, e.g. to check whether this is a regression of a previously-fixed bug).
-If one exists and `status` is `"approved"` or `"implemented"`, read it and start from its
-`symptom`, `rootCause`, `crossCutting`, and `implementationPlan` instead of rediscovering
-them from scratch — `crossCutting` tells you up front whether the fix needs to interact with
-hover animation, controlled highlight, legend interaction, or tooltip/popover wiring, and
-whether S1/S2 parity applies. Use `implementationPlan` as a starting file checklist,
-re-locating by symbol name if its line numbers have drifted.
+If this bug has a GitHub issue (`gh issue view <number> --repo adobe/react-spectrum-charts`),
+read it and start from its symptom, root cause, cross-cutting checklist, and implementation
+plan instead of rediscovering them. Also search closed issues for the same symptom: this may
+be a regression of an earlier fix.
 
-Treat `rootCause` as a starting hypothesis, not gospel — re-verify it against the current
-code before implementing, since the spec may have been filed before other changes landed. If
-the code no longer matches the spec's description, update the spec (`status:
-"needs-revision"` or a corrected `rootCause`) as part of the fix PR. If no spec exists,
-proceed as below.
+Treat the root cause as a starting hypothesis, not gospel. Re-verify it against the current
+code, since other changes may have landed since it was filed; re-locate files by symbol name
+if line numbers have drifted. If your understanding changes, update the issue body so it
+stays accurate. If no issue exists, proceed as below.
 
-Before setting `status` to `"implemented"`, reconcile the whole spec against the final diff —
-see README.md's "Reconcile the whole spec before marking implemented." A discovery made
-mid-implementation (a second file that needed fixing, a `crossCutting` flag that turns out to
-be true) must be reflected everywhere it's relevant, not just in `rootCause`. Any time you
-touch a field, re-stamp `lastUpdated` with the output of `date +%Y-%m-%d` — never a
-hand-written guess. Then `git mv` the file into
-`planning/specs/<chartType>/issues/implemented/<slug>.json` as part of the same PR.
+The PR description says `Fixes #<number>` so merging closes the issue.
 
 ---
 

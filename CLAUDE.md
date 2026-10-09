@@ -383,7 +383,7 @@ Before writing any code, always:
    - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
    - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
    - New prop on an existing component → `.claude/commands/implement-new-prop.md`
-4. Check for an approved spec matching the work — features at `planning/specs/<chartType>/`, bugs at `planning/specs/<chartType>/issues/` — if one exists, the matched skill file's Step 0 has you read it and treat it as authoritative
+4. Check for a linked GitHub issue or an accepted RFC in `rfcs/` — if one exists, the matched skill file's Step 0 has you read it and start from it
 5. Follow the steps in the matched skill file
 
 ---
@@ -405,34 +405,22 @@ Chart-level props (on `<Chart>` itself, not a mark) follow a different file path
 
 ---
 
-## Issue Tracking
+## Planning: Issues, RFCs, and Research
 
-Known bugs that are not being acted on immediately go in
-`planning/specs/<chartType>/issues/<slug>.json` as a `kind: "bug"` spec, validated against
-`planning/specs/schema.json`. When the user describes a bug or observation and says they
-want to note it for later, use the `file-issue` skill (`.claude/commands/file-issue.md`) —
-it investigates the root cause and writes the spec without being asked for the exact format.
+The full process is in `planning/README.md`. In short:
 
----
-
-## Chart Feature & Bug Spec System
-
-Specs live in `planning/specs/<chartType>/<slug>.json` (features) or
-`planning/specs/<chartType>/issues/<slug>.json` (bugs), one JSON file per feature/bug,
-validated against `planning/specs/schema.json`. Features: gather design tokens/requirements
-informally, convert them into a spec via the `generate-chart-spec` skill
-(`.claude/commands/generate-chart-spec.md`), submit the spec as a PR for review, then
-implement against the approved spec — the `implement-new-*` skills check for one first.
-Bugs: investigate and file via the `file-issue` skill
-(`.claude/commands/file-issue.md`), submit as a PR, then `implement-bug-fix` checks for one
-first. Full field-by-field guidance, the complexity rubric, and the `crossCutting` flag
-definitions are in `planning/specs/README.md`.
-
-When implementing a whole batch of related specs for one chart type as a sequence of stacked
-PRs (rather than a single spec in isolation), use the `implement-spec-cluster` skill
-(`.claude/commands/implement-spec-cluster.md`) — it covers clustering specs by dependency,
-the parent spec-batch PR, per-chart-type design-token checks, S1-reuse checks, and keeping
-every PR linked into the GitHub stack.
+- **Bugs and small features** are GitHub issues. When the user describes a bug or
+  observation and wants to note it for later, use the `file-issue` skill
+  (`.claude/commands/file-issue.md`). It investigates the root cause and drafts the issue for
+  the user's approval before creating it.
+- **Significant or uncertain changes** (new chart types, new subsystems, cross-chart API or
+  behavior changes, stage graduations) get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use
+  the `write-rfc` skill (`.claude/commands/write-rfc.md`). An RFC is accepted when two
+  maintainers approve and it merges; its scope becomes sub-issues of a parent issue.
+- **Implementing an accepted RFC's scope** as stacked PRs uses the `implement-rfc` skill
+  (`.claude/commands/implement-rfc.md`).
+- **Open-ended investigation** goes in `planning/research/` (see `TEMPLATE.md`), and feeds an
+  RFC or issues once it reaches a recommendation.
 
 ---
 

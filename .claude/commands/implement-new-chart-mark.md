@@ -6,25 +6,18 @@ Read `.claude/architecture-core.md`, plus `.claude/architecture-mark-internals.m
 
 ---
 
-## Step 0: Check for an Approved Spec
+## Step 0: Check for a Linked Issue or Accepted RFC
 
-Look for `planning/specs/<chartType>/<slug>.json` matching this feature, checking both the
-base directory (not yet implemented) and its `implemented/` subfolder (already shipped —
-still useful context, e.g. for a regression). If one exists and `status` is `"approved"` or
-`"implemented"`, read it and treat its `requirements`, `edgeCases`, and `crossCutting` flags
-as authoritative instead of re-deriving them — `crossCutting` in particular tells you up
-front whether this mark needs to interact with hover animation, controlled highlight, legend
-interaction, or tooltip/popover wiring, and whether S1/S2 parity is required. Use
-`implementationPlan` as a starting file checklist, re-locating by symbol name if its line
-numbers have drifted. If no spec exists, proceed as below.
+If this work has a GitHub issue (`gh issue view <number> --repo adobe/react-spectrum-charts`)
+or comes from an accepted RFC in `rfcs/`, read it and treat it as the requirements: the
+design, defaults, cross-cutting concerns, and implementation plan. Re-verify file and
+function references against the current code; the issue may have been written before other
+changes landed.
 
-Before setting `status` to `"implemented"`, reconcile the whole spec against the final diff —
-see README.md's "Reconcile the whole spec before marking implemented." A discovery made
-mid-implementation must be reflected everywhere it's relevant (`crossCutting`,
-`implementationPlan`), not just wherever you first noted it. Any time you touch a field,
-re-stamp `lastUpdated` with the output of `date +%Y-%m-%d` — never a hand-written guess. Then
-`git mv` the file into `planning/specs/<chartType>/implemented/<slug>.json` as part of the
-same PR.
+If the implementation diverges from the issue, update the issue body. If it diverges from
+an accepted RFC's design, stop and tell the user. If neither exists, proceed as below.
+
+The PR description says `Closes #<number>` so merging closes the issue.
 
 ---
 
