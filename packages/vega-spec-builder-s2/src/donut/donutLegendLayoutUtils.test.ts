@@ -23,24 +23,24 @@ const donut: DonutOptions = { markType: 'donut', color: 'series', metric: 'value
 const getSpacerXs = (spec: ScSpec) => spec.marks?.map((mark) => mark.encode?.update?.x);
 
 describe('addDonutLegendLayout()', () => {
-  test('pads before the donut and past a right legend', () => {
+  const outer = `${DONUT_LEGEND_MARGIN} + ${DONUT_LEGEND_EXTENT} / 2`;
+  const centeredSpacers = [
+    { signal: `${DONUT_LEGEND_MARGIN} > 0 ? -(${outer}) : 0` },
+    { signal: `${DONUT_LEGEND_MARGIN} > 0 ? width + ${outer} : width` },
+  ];
+
+  test('centers the donut by padding half the legend width past it on each side, for a right legend', () => {
     const spec = addDonutLegendLayout(initializeSpec(), donut, [{ position: 'bottom' }, { position: 'right' }]);
     expect(spec.signals?.map(({ name }) => name)).toEqual([DONUT_LEGEND_EXTENT, DONUT_LEGEND_MARGIN]);
     expect(spec.signals?.[0]).toHaveProperty('update', expect.stringContaining(`data('legend1_maxLabelWidth')`));
     expect(spec.marks).toHaveLength(2);
     spec.marks?.forEach((mark) => expect(mark).toHaveProperty('interactive', false));
-    expect(getSpacerXs(spec)).toEqual([
-      { signal: `-${DONUT_LEGEND_MARGIN}` },
-      { signal: `${DONUT_LEGEND_MARGIN} > 0 ? width + ${DONUT_LEGEND_EXTENT} + ${DONUT_LEGEND_MARGIN} : width` },
-    ]);
+    expect(getSpacerXs(spec)).toEqual(centeredSpacers);
   });
 
-  test('mirrors the padding for a left legend', () => {
+  test('uses the same centered spacers for a left legend', () => {
     const spec = addDonutLegendLayout(initializeSpec(), donut, [{ position: 'left' }]);
-    expect(getSpacerXs(spec)).toEqual([
-      { signal: `${DONUT_LEGEND_MARGIN} > 0 ? -(${DONUT_LEGEND_EXTENT} + ${DONUT_LEGEND_MARGIN}) : 0` },
-      { signal: `width + ${DONUT_LEGEND_MARGIN}` },
-    ]);
+    expect(getSpacerXs(spec)).toEqual(centeredSpacers);
   });
 
   test('uses the title width when it is wider than the labels', () => {
@@ -108,10 +108,34 @@ describe('buildSpec() donut side legend layout', () => {
     table.values = data;
     const view = new View(parse(spec), { renderer: 'none' }).width(viewWidth).height(300).padding(padding);
     await view.runAsync();
-    return { margin: view.signal(DONUT_LEGEND_MARGIN), extent: view.signal(DONUT_LEGEND_EXTENT) };
+    return { view, margin: view.signal(DONUT_LEGEND_MARGIN), extent: view.signal(DONUT_LEGEND_EXTENT) };
   };
 
-  test('splits the leftover width evenly around the donut and legend', async () => {
+  const getDonutCenterX = (view: View): number => {
+    const arcs: { x: number; mark: { group: { x?: number } } }[] = [];
+    const walk = (node: { items?: unknown[]; mark?: { marktype?: string } }) => {
+      (node.items ?? []).forEach((item) => {
+        const it = item as { mark?: { marktype?: string } };
+        if (it.mark?.marktype === 'arc') arcs.push(it as never);
+        walk(it as never);
+      });
+    };
+    walk(view.scenegraph().root as never);
+    const arc = arcs[0];
+    return (arc.mark.group.x ?? 0) + arc.x;
+  };
+
+  test('centers the donut in the chart, with the legend beside it', async () => {
+    const { view } = await getSignals(1000);
+    expect(getDonutCenterX(view)).toBeCloseTo(500, 0);
+  });
+
+  test('centers the donut for a left legend too', async () => {
+    const { view } = await getSignals(1000, { position: 'left' });
+    expect(getDonutCenterX(view)).toBeCloseTo(500, 0);
+  });
+
+  test('sets the leftover-margin signal to half the width left after the donut and legend', async () => {
     const { margin, extent } = await getSignals(1000);
     expect(extent).toBeGreaterThan(24);
     expect(margin).toBeCloseTo((1000 - extent - 300) / 2);

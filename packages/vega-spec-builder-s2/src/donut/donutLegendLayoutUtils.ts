@@ -57,12 +57,13 @@ export const addDonutLegendLayout = produce<ScSpec, [DonutOptions | undefined, L
   (spec, donut, legends) => {
     const index = legends.findIndex(({ position }) => position === 'left' || position === 'right');
     if (!donut || index === -1) return;
-    const { position } = legends[index];
     // theme legend offset (24) + legend padding (2 * 8) + widest content
     const extent = `${24 + 16} + ${getLegendContentWidthExpr(index, legends[index])}`;
     const donutWidth = donut.variant === 'semicircle' ? '2 * height' : 'height';
     const m = DONUT_LEGEND_MARGIN;
-    const outer = `${DONUT_LEGEND_EXTENT} + ${m}`;
+    // Half the legend width past the donut on each side keeps the bounds the same total width as before
+    // (so the donut keeps its size) while recentering them on the donut rather than the donut-plus-legend.
+    const outer = `${m} + ${DONUT_LEGEND_EXTENT} / 2`;
     const innerWidth = 'rscContainerWidth(width) - padding.left - padding.right';
 
     spec.signals = [
@@ -70,8 +71,10 @@ export const addDonutLegendLayout = produce<ScSpec, [DonutOptions | undefined, L
       { name: DONUT_LEGEND_EXTENT, update: extent },
       { name: DONUT_LEGEND_MARGIN, update: `max(0, (${innerWidth} - ${DONUT_LEGEND_EXTENT} - ${donutWidth}) / 2)` },
     ];
-    const [leftX, rightX] =
-      position === 'left' ? [`${m} > 0 ? -(${outer}) : 0`, `width + ${m}`] : [`-${m}`, `${m} > 0 ? width + ${outer} : width`];
+    // Symmetric spacers keep the donut (not the donut-plus-legend group) centered: the legend extends the
+    // bounds past the donut on its side, so an equal spacer on the far side balances it around the donut.
+    const leftX = `${m} > 0 ? -(${outer}) : 0`;
+    const rightX = `${m} > 0 ? width + ${outer} : width`;
     spec.marks = [
       ...(spec.marks ?? []),
       getSpacer('rscDonutLegendSpacerLeft', leftX),
