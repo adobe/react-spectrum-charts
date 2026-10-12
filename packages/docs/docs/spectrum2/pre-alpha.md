@@ -7,7 +7,7 @@ sidebar_position: 6
 Pre-alpha components are chart types and child components that are functional and available
 for use, but don't yet have a finalized Spectrum 2 visual design. Their API and visual
 behavior may undergo significant changes before they graduate to a stable, designed S2
-component.
+component. See [Component Stages](./stages.md) for what comes after pre-alpha.
 
 Pre-alpha components:
 - **Are functional** — full prop support for the underlying chart type, ported from the base
