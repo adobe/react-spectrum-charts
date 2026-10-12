@@ -9,19 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { MARK_ID } from '@spectrum-charts/core-s2/constants';
+import { HOVERED_ITEM, MARK_ID } from '@spectrum-charts/core-s2/constants';
 
 import { addBar } from '../bar/barSpecBuilder.js';
 import { addLine } from '../line/lineSpecBuilder.js';
 import { BarOptions, LineOptions } from '../types/index.js';
-import { addCombo, getComboMarkName } from './comboSpecBuilder.js';
+import { addCombo, addMissingSiblingHoveredItemSignals, getComboMarkName } from './comboSpecBuilder.js';
 
 jest.mock('../bar/barSpecBuilder', () => ({
-  addBar: jest.fn(),
+  addBar: jest.fn((spec) => spec),
 }));
 
 jest.mock('../line/lineSpecBuilder', () => ({
-  addLine: jest.fn(),
+  addLine: jest.fn((spec) => spec),
 }));
 
 describe('comboSpecBuilder', () => {
@@ -56,6 +56,47 @@ describe('comboSpecBuilder', () => {
 
       expect(addBar).not.toHaveBeenCalled();
       expect(addLine).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('addMissingSiblingHoveredItemSignals', () => {
+    it('should add a null hovered item signal for marks without one', () => {
+      const spec = addMissingSiblingHoveredItemSignals(
+        { usermeta: {}, signals: [{ name: `combo0Bar0_${HOVERED_ITEM}`, value: null, on: [] }] },
+        ['combo0Bar0', 'combo0Line0']
+      );
+      expect(spec.signals).toHaveLength(2);
+      expect(spec.signals?.[0]).toHaveProperty('on');
+      expect(spec.signals?.[1]).toEqual({ name: `combo0Line0_${HOVERED_ITEM}`, value: null });
+    });
+
+    it('should return the same spec when every mark has a hovered item signal', () => {
+      const spec = { usermeta: {}, signals: [{ name: `combo0Line0_${HOVERED_ITEM}`, value: null }] };
+      expect(addMissingSiblingHoveredItemSignals(spec, ['combo0Line0'])).toBe(spec);
+    });
+
+    it('should create signals when the spec has none', () => {
+      expect(addMissingSiblingHoveredItemSignals({ usermeta: {} }, ['combo0Bar0']).signals).toEqual([
+        { name: `combo0Bar0_${HOVERED_ITEM}`, value: null },
+      ]);
+    });
+
+    it('should add hovered item signals for non-interactive combo children', () => {
+      const spec = addCombo(
+        { usermeta: {} },
+        {
+          idKey: MARK_ID,
+          marks: [
+            { markType: 'bar', metric: 'people' },
+            { markType: 'line', metric: 'adoptionRate' },
+          ],
+          markType: 'combo',
+        }
+      );
+      expect(spec.signals?.map(({ name }) => name)).toEqual([
+        `combo0Bar0_${HOVERED_ITEM}`,
+        `combo0Line0_${HOVERED_ITEM}`,
+      ]);
     });
   });
 
