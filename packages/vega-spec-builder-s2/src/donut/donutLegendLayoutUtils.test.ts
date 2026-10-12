@@ -11,13 +11,13 @@
  */
 import { View, expressionFunction, parse } from 'vega';
 
-import { TABLE } from '@spectrum-charts/constants';
+import { TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { buildSpec } from '../chartSpecBuilder';
-import { getExpressionFunctions } from '../expressionFunctions';
-import { initializeSpec } from '../specUtils';
-import { DonutOptions, LegendOptions, ScSpec } from '../types';
-import { DONUT_LEGEND_EXTENT, DONUT_LEGEND_MARGIN, addDonutLegendLayout } from './donutLegendLayoutUtils';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/expressionFunctions.js';
+import { initializeSpec } from '../specUtils.js';
+import { DonutOptions, LegendOptions, ScSpec } from '../types/index.js';
+import { DONUT_LEGEND_EXTENT, DONUT_LEGEND_MARGIN, addDonutLegendLayout } from './donutLegendLayoutUtils.js';
 
 const donut: DonutOptions = { markType: 'donut', color: 'series', metric: 'value' };
 const getSpacerXs = (spec: ScSpec) => spec.marks?.map((mark) => mark.encode?.update?.x);

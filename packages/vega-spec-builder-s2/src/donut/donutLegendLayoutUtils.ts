@@ -12,10 +12,10 @@
 import { produce } from 'immer';
 import { RectMark } from 'vega';
 
-import { DEFAULT_LEGEND_SYMBOL_WIDTH } from '@spectrum-charts/constants';
+import { DEFAULT_LEGEND_SYMBOL_WIDTH } from '@spectrum-charts/core-s2/constants';
 
-import { getMaxLabelWidthExpr } from '../legend/legendUtils';
-import { DonutOptions, LegendOptions, ScSpec } from '../types';
+import { getMaxLabelWidthExpr } from '../legend/legendUtils.js';
+import { DonutOptions, LegendOptions, ScSpec } from '../types/index.js';
 
 export const DONUT_LEGEND_EXTENT = 'rscDonutLegendExtent';
 export const DONUT_LEGEND_MARGIN = 'rscDonutLegendMargin';
@@ -40,7 +40,8 @@ export const addDonutLegendLayout = produce<ScSpec, [DonutOptions | undefined, L
     if (!donut || index === -1) return;
     const { position, labelLimit } = legends[index];
     // theme legend offset (24) + legend padding (2 * 8) + symbol + label offset (4) + widest label
-    const extent = `${24 + 16 + DEFAULT_LEGEND_SYMBOL_WIDTH + 4} + ${getMaxLabelWidthExpr(`legend${index}`, labelLimit)}`;
+    const maxLabelWidth = getMaxLabelWidthExpr(`legend${index}`, labelLimit);
+    const extent = `${24 + 16 + DEFAULT_LEGEND_SYMBOL_WIDTH + 4} + ${maxLabelWidth}`;
     const donutWidth = donut.variant === 'semicircle' ? '2 * height' : 'height';
     const m = DONUT_LEGEND_MARGIN;
     const outer = `${DONUT_LEGEND_EXTENT} + ${m}`;
