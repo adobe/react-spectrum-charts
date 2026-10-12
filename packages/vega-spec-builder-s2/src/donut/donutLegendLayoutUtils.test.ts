@@ -43,6 +43,21 @@ describe('addDonutLegendLayout()', () => {
     ]);
   });
 
+  test('uses the title width when it is wider than the labels', () => {
+    const spec = addDonutLegendLayout(initializeSpec(), donut, [
+      { position: 'right', title: 'Browser "share"', titleLimit: 120 },
+    ]);
+    expect(spec.signals?.[0]).toHaveProperty(
+      'update',
+      expect.stringContaining(`min(getLabelWidth("Browser \\"share\\"", 'bold', 14), 120))`)
+    );
+  });
+
+  test('ignores the title when there is none', () => {
+    const spec = addDonutLegendLayout(initializeSpec(), donut, [{ position: 'right' }]);
+    expect(spec.signals?.[0]).not.toHaveProperty('update', expect.stringContaining('getLabelWidth'));
+  });
+
   test('sizes a semicircle to twice the chart height', () => {
     const spec = addDonutLegendLayout(initializeSpec(), { ...donut, variant: 'semicircle' }, [{ position: 'right' }]);
     expect(spec.signals?.[1]).toHaveProperty('update', expect.stringContaining('- 2 * height) / 2)'));
@@ -71,11 +86,11 @@ describe('buildSpec() donut side legend layout', () => {
     { series: 'Safari', value: 24 },
   ];
 
-  const getSignals = async (viewWidth: number) => {
+  const getSignals = async (viewWidth: number, legend: LegendOptions = { position: 'right' }) => {
     Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
     expressionFunction('rscContainerWidth', (width: number) => width);
     expressionFunction('rscViewWidth', () => viewWidth);
-    const spec = buildSpec({ data, marks: [donut], legends: [{ position: 'right' }] });
+    const spec = buildSpec({ data, marks: [donut], legends: [legend] });
     const table = spec.data?.find(({ name }) => name === TABLE);
     if (!table || !('values' in table)) throw new Error('Expected inline table data');
     table.values = data;
@@ -88,6 +103,12 @@ describe('buildSpec() donut side legend layout', () => {
     const { margin, extent } = await getSignals(1000);
     expect(extent).toBeGreaterThan(24);
     expect(margin).toBeCloseTo((1000 - extent - 300) / 2);
+  });
+
+  test('widens the extent for a title wider than the labels', async () => {
+    const { extent } = await getSignals(1000);
+    const titled = await getSignals(1000, { position: 'right', title: 'Browser share of all visitors' });
+    expect(titled.extent).toBeGreaterThan(extent);
   });
 
   test('has no margin when the chart is not wider than the donut and legend', async () => {

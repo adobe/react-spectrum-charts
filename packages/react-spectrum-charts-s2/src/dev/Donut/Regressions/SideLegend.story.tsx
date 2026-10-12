@@ -26,18 +26,22 @@ export default {
   component: Donut,
 };
 
-type SideLegendArgs = DonutProps & { legendPosition: LegendProps['position']; width: number | string };
+type SideLegendArgs = DonutProps & {
+  legendPosition: LegendProps['position'];
+  legendTitle?: string;
+  width: number | string;
+};
 
 // the chart is much wider than tall, so the donut and legend should stay together in the middle
 const SideLegendStory: StoryFn<SideLegendArgs> = (storyArgs): ReactElement => {
-  const { legendPosition, width, ...args } = storyArgs;
+  const { legendPosition, legendTitle = 'Browser', width, ...args } = storyArgs;
   const chartProps = useChartProps({ data: basicDonutData, width, height: 300 });
   return (
     <Chart {...chartProps}>
       <Donut {...args}>
         <DonutSummary label="Visitors" />
       </Donut>
-      <Legend position={legendPosition} title="Browser" />
+      <Legend position={legendPosition} title={legendTitle} />
     </Chart>
   );
 };
@@ -52,6 +56,10 @@ LegendLeft.args = { ...LegendRight.args, legendPosition: 'left' };
 const Responsive = bindWithProps(SideLegendStory);
 Responsive.args = { ...LegendRight.args, width: '100%' };
 
+// the title is wider than every label, so it sets the legend width
+const LongTitle = bindWithProps(SideLegendStory);
+LongTitle.args = { ...LegendRight.args, legendTitle: 'Browser share of visitors' };
+
 const regression = {
   description:
     'When a donut chart grew wider than it was tall, a left or right legend drifted toward the chart edge, leaving a growing gap between it and the donut.',
@@ -60,5 +68,6 @@ const regression = {
 LegendRight.parameters = { ...LegendRight.parameters, regression };
 LegendLeft.parameters = { ...LegendLeft.parameters, regression };
 Responsive.parameters = { ...Responsive.parameters, regression };
+LongTitle.parameters = { ...LongTitle.parameters, regression };
 
-export { LegendRight, LegendLeft, Responsive };
+export { LegendRight, LegendLeft, Responsive, LongTitle };

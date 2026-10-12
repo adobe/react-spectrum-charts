@@ -12,13 +12,32 @@
 import { produce } from 'immer';
 import { RectMark } from 'vega';
 
-import { DEFAULT_LEGEND_SYMBOL_WIDTH } from '@spectrum-charts/core-s2/constants';
+import { DEFAULT_FONT_SIZE, DEFAULT_LEGEND_SYMBOL_WIDTH } from '@spectrum-charts/core-s2/constants';
 
 import { getMaxLabelWidthExpr } from '../legend/legendUtils.js';
 import { DonutOptions, LegendOptions, ScSpec } from '../types/index.js';
 
 export const DONUT_LEGEND_EXTENT = 'rscDonutLegendExtent';
 export const DONUT_LEGEND_MARGIN = 'rscDonutLegendMargin';
+
+// Vega defaults for legend symbol stroke width and title limit
+const LEGEND_SYMBOL_STROKE_WIDTH = 1.5;
+const LEGEND_TITLE_LIMIT = 180;
+
+/**
+ * Gets an expression for the legend's widest content: its widest label, or its title if wider.
+ * @param index legend index
+ * @param legend
+ * @returns vega expression string
+ */
+const getLegendContentWidthExpr = (index: number, { labelLimit, title, titleLimit }: LegendOptions): string => {
+  const symbolColumn = DEFAULT_LEGEND_SYMBOL_WIDTH + LEGEND_SYMBOL_STROKE_WIDTH + 4;
+  const legendName = `legend${index}`;
+  const labels = `${symbolColumn} + ${getMaxLabelWidthExpr(legendName, labelLimit)}`;
+  if (!title) return labels;
+  const titleWidth = `min(getLabelWidth(${JSON.stringify(title)}, 'bold', ${DEFAULT_FONT_SIZE}), ${titleLimit ?? LEGEND_TITLE_LIMIT})`;
+  return `max(${labels}, ${titleWidth})`;
+};
 
 const getSpacer = (name: string, x: string): RectMark => ({
   name,
@@ -38,10 +57,9 @@ export const addDonutLegendLayout = produce<ScSpec, [DonutOptions | undefined, L
   (spec, donut, legends) => {
     const index = legends.findIndex(({ position }) => position === 'left' || position === 'right');
     if (!donut || index === -1) return;
-    const { position, labelLimit } = legends[index];
-    // theme legend offset (24) + legend padding (2 * 8) + symbol + label offset (4) + widest label
-    const maxLabelWidth = getMaxLabelWidthExpr(`legend${index}`, labelLimit);
-    const extent = `${24 + 16 + DEFAULT_LEGEND_SYMBOL_WIDTH + 4} + ${maxLabelWidth}`;
+    const { position } = legends[index];
+    // theme legend offset (24) + legend padding (2 * 8) + widest content
+    const extent = `${24 + 16} + ${getLegendContentWidthExpr(index, legends[index])}`;
     const donutWidth = donut.variant === 'semicircle' ? '2 * height' : 'height';
     const m = DONUT_LEGEND_MARGIN;
     const outer = `${DONUT_LEGEND_EXTENT} + ${m}`;
