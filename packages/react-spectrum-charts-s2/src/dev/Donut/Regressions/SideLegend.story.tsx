@@ -26,7 +26,7 @@ export default {
   component: Donut,
 };
 
-type SideLegendArgs = DonutProps & { legendPosition: LegendProps['position']; width: number };
+type SideLegendArgs = DonutProps & { legendPosition: LegendProps['position']; width: number | string };
 
 // the chart is much wider than tall, so the donut and legend should stay together in the middle
 const SideLegendStory: StoryFn<SideLegendArgs> = (storyArgs): ReactElement => {
@@ -48,6 +48,10 @@ LegendRight.args = { metric: 'count', color: 'browser', legendPosition: 'right',
 const LegendLeft = bindWithProps(SideLegendStory);
 LegendLeft.args = { ...LegendRight.args, legendPosition: 'left' };
 
+// resize the window to check the donut and legend stay together as the chart width changes
+const Responsive = bindWithProps(SideLegendStory);
+Responsive.args = { ...LegendRight.args, width: '100%' };
+
 const regression = {
   description:
     'When a donut chart grew wider than it was tall, a left or right legend drifted toward the chart edge, leaving a growing gap between it and the donut.',
@@ -55,5 +59,6 @@ const regression = {
 };
 LegendRight.parameters = { ...LegendRight.parameters, regression };
 LegendLeft.parameters = { ...LegendLeft.parameters, regression };
+Responsive.parameters = { ...Responsive.parameters, regression };
 
-export { LegendRight, LegendLeft };
+export { LegendRight, LegendLeft, Responsive };
