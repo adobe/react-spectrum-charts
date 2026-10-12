@@ -50,8 +50,6 @@ import {
 } from '../marks/markUtils.js';
 import { DonutSpecOptions } from '../types/index.js';
 
-const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
-
 /** Returns whether a donut needs hover state for its labels, interactions, or a highlighted legend. */
 export const isDonutInteractive = (options: DonutSpecOptions): boolean =>
   isInteractive(options) ||
@@ -232,11 +230,25 @@ export const getSizeTierValueExpr = (name: string, values: (number | string)[]):
   `[${values.join(', ')}][${getDonutSizeTierSignalName(name)}]`;
 
 /**
+ * Gets the name of the signal holding the donut's outer radius.
+ * @param donutOptions
+ * @returns signal name
+ */
+export const getDonutOuterRadiusExpr = ({ name }: Pick<DonutSpecOptions, 'name'>): string => `${name}_outerRadius`;
+
+/**
+ * Gets the name of the signal holding the donut's inner radius.
+ * @param donutOptions
+ * @returns signal name
+ */
+export const getDonutInnerRadiusExpr = ({ name }: Pick<DonutSpecOptions, 'name'>): string => `${name}_innerRadius`;
+
+/**
  * Gets the donut's outer radius; with labels, shrinks the donut so its labels fit inside the chart, keeping it within its size tier.
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutOuterRadiusExpr = (options: DonutSpecOptions): string => {
+const getDonutOuterRadiusUpdate = (options: DonutSpecOptions): string => {
   const baseRadius = getDonutBaseRadiusExpr(options);
   if (!isDonutLabelSpaceReserved(options)) {
     return baseRadius;
@@ -325,17 +337,25 @@ export const getSliceGapSignal = ({ holeRatio, name }: DonutSpecOptions): Signal
 });
 
 /**
- * Gets the donut's inner radius expression, relative to the label-reserved outer radius. Uses the
- * fixed per-tier ring width when holeRatio is left at its default, otherwise honors an explicitly
- * customized holeRatio as a proportional ring.
+ * Gets the donut's inner radius: the fixed per-tier ring width at the default holeRatio, otherwise a proportional ring.
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
+const getDonutInnerRadiusUpdate = (options: DonutSpecOptions): string => {
   const { holeRatio, name } = options;
   const outerRadius = getDonutOuterRadiusExpr(options);
   return holeRatio === DEFAULT_HOLE_RATIO ? `(${outerRadius} - ${name}_ringWidth)` : `${holeRatio} * ${outerRadius}`;
 };
+
+/**
+ * Gets the signals resolving the donut's outer and inner radius once per chart size.
+ * @param donutOptions
+ * @returns Signal[]
+ */
+export const getDonutRadiusSignals = (options: DonutSpecOptions): Signal[] => [
+  { name: getDonutOuterRadiusExpr(options), update: getDonutOuterRadiusUpdate(options) },
+  { name: getDonutInnerRadiusExpr(options), update: getDonutInnerRadiusUpdate(options) },
+];
 
 /**
  * Preserves fixed pie outlines and clamps donut outlines to preserve fill at the inner radius.
@@ -346,15 +366,8 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
 export const getSliceStrokeWidthExpr = (options: DonutSpecOptions, requestedWidth: string): string => {
   const { holeRatio, isDrawInAnimate, name } = options;
   if (holeRatio === 0) return requestedWidth;
-  const radius = `max(0, ${getDonutInnerRadiusExpr(options)})`;
-  const cutoff = `${name}_${DRAW_IN_ANIM_CUTOFF}`;
-  const drawnStart = `min(datum['${name}_startAngle'], ${cutoff})`;
-  const drawnEnd = `min(datum['${name}_endAngle'], ${cutoff})`;
-  const arcLength = isDrawInAnimate ? `(${drawnEnd}) - (${drawnStart})` : `datum['${name}_arcLength']`;
-  const arcAngle = `min(PI, max(0, ${arcLength}))`;
-  const availableWidth = `2 * (${radius}) * sin((${arcAngle}) / 2)`;
-  const visibleWidth = `max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH})`;
-  return `min(${requestedWidth}, ${visibleWidth})`;
+  const cutoff = isDrawInAnimate ? `, ${name}_${DRAW_IN_ANIM_CUTOFF}` : '';
+  return `donutSliceStrokeWidth(${requestedWidth}, ${getDonutInnerRadiusExpr(options)}, datum['${name}_startAngle'], datum['${name}_endAngle']${cutoff})`;
 };
 
 /**

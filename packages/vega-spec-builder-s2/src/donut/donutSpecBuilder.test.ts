@@ -320,7 +320,7 @@ describe('addSignals()', () => {
       ...defaultDonutOptions,
       chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }],
     });
-    expect(signals).toHaveLength(defaultSignals.length + 4);
+    expect(signals).toHaveLength(defaultSignals.length + 6);
 
     const hoveredItemSignal = signals.find((signal) => signal.name.includes(HOVERED_ITEM));
 
@@ -329,6 +329,17 @@ describe('addSignals()', () => {
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('events', '@testName:mouseover');
     expect(hoveredItemSignal?.on?.[0]).toHaveProperty('update', '(datum.excludeFromTooltip) ? null : datum');
     expect(hoveredItemSignal?.on?.[1]).toHaveProperty('events', '@testName:mouseout');
+  });
+
+  test('should add the outer then inner radius signals right after the size tier signal', () => {
+    const names = addSignals(defaultSignals, defaultDonutOptions).map((signal) => signal.name);
+    const sizeTierIndex = names.indexOf('testName_sizeTier');
+    expect(names.slice(sizeTierIndex, sizeTierIndex + 3)).toEqual([
+      'testName_sizeTier',
+      'testName_outerRadius',
+      'testName_innerRadius',
+    ]);
+    expect(names.indexOf('testName_ringWidth')).toBeLessThan(names.indexOf('testName_innerRadius'));
   });
 
   test('should preserve normal hover behavior when emphasizedItems is set', () => {

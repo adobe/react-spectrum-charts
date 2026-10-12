@@ -197,8 +197,8 @@ describe('getSummaryTextFontSize()', () => {
   });
 
   test.each([
-    ['circle', '((min(width, height) / 2 - 2) - testName_ringWidth) < 40'],
-    ['semicircle', '((min(width / 2, height) - 2) - testName_ringWidth) < 40'],
+    ['circle', 'testName_innerRadius < 40'],
+    ['semicircle', 'testName_innerRadius < 40'],
   ] as const)('should hide text below the minimum inner radius for a %s', (variant, test) => {
     const fontSize = getSummaryTextFontSize(
       { ...defaultDonutOptions, variant },
@@ -268,14 +268,14 @@ describe('getSummaryValueLimit()', () => {
   test('should use full font size in signal if label is truthy', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: 'Visitors' })).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize) + (0), 2))',
+        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryValueFontSize) + (0), 2))',
     });
   });
 
   test('should use 1/2 font size in signal if label is falsey', () => {
     expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' })).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize * 0.5) + (0), 2))',
+        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryValueFontSize * 0.5) + (0), 2))',
     });
   });
 });
@@ -308,7 +308,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
       label: 'Visitors',
     });
     expect(encode).toHaveProperty('update.fontSize.0', {
-      test: '((min(width, height) / 2 - 2) - testName_ringWidth) < 40',
+      test: 'testName_innerRadius < 40',
       value: 0,
     });
     expect(encode).toHaveProperty('update.fontSize.2', { signal: 'testName_summaryLabelFontSize' });
@@ -318,7 +318,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
     const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: true, label: 'Visitors' });
     expect(encode.update?.limit).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryLabelFontSize * 0.5) + (0), 2))',
+        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryLabelFontSize * 0.5) + (0), 2))',
     });
   });
 
@@ -326,7 +326,7 @@ describe('getSummaryLabelEncode() with hideValue', () => {
     const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: false, label: 'Visitors' });
     expect(encode.update?.limit).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize) + (0), 2))',
+        '2 * sqrt(pow(testName_innerRadius, 2) - pow((ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize) + (0), 2))',
     });
   });
 });
@@ -399,7 +399,7 @@ describe('semicircle summary anchoring', () => {
     const encode = getSummaryDeltaEncode({ ...semicircleSummaryOptions, ...summary, delta: 0.025 });
     expect(encode).toHaveProperty(
       'update.limit.signal',
-      expect.stringContaining('2 * sqrt(pow(((min(width / 2, height) - 2) - testName_ringWidth), 2)')
+      expect.stringContaining('2 * sqrt(pow(testName_innerRadius, 2)')
     );
   });
 
@@ -412,7 +412,7 @@ describe('semicircle summary anchoring', () => {
     const limit = getSummaryValueLimit({ ...semicircleSummaryOptions, label: 'Visitors' });
     expect(limit).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width / 2, height) - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize) + (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize), 2))',
+        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryValueFontSize) + (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize), 2))',
     });
   });
 });
@@ -505,7 +505,7 @@ describe('getSummaryDeltaEncode() stacking', () => {
   test('reuses the label font-size signal directly rather than a separate delta signal', () => {
     const encode = getSummaryDeltaEncode({ ...defaultDonutSummaryOptions, label: 'Visitors', delta: 0.025 });
     expect(encode).toHaveProperty('update.fontSize.0', {
-      test: '((min(width, height) / 2 - 2) - testName_ringWidth) < 40',
+      test: 'testName_innerRadius < 40',
       value: 0,
     });
     expect(encode).toHaveProperty('update.fontSize.2', { signal: 'testName_summaryLabelFontSize' });
@@ -527,7 +527,7 @@ describe('interaction: value/label baseline when delta is present without a labe
     const limit = getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: undefined, delta: 0.025 });
     expect(limit).toEqual({
       signal:
-        '2 * sqrt(pow(((min(width, height) / 2 - 2) - testName_ringWidth), 2) - pow((testName_summaryValueFontSize) + (0), 2))',
+        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryValueFontSize) + (0), 2))',
     });
   });
 
