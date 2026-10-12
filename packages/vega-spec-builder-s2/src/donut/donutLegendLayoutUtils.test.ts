@@ -78,6 +78,19 @@ describe('addDonutLegendLayout()', () => {
     const spec = initializeSpec();
     expect(addDonutLegendLayout(spec, donutOptions, legends)).toEqual(spec);
   });
+
+  test('only appends to a built spec, leaving legends, data, scales and existing signals and marks untouched', () => {
+    const legends: LegendOptions[] = [{ position: 'right', title: 'Browser', highlight: true, hiddenEntries: ['Safari'] }];
+    const built = buildSpec({ data: [], marks: [donut], legends });
+    const before = { ...built, signals: built.signals?.filter(({ name }) => !name.startsWith('rscDonutLegend')) };
+    before.marks = built.marks?.filter(({ name }) => !name?.startsWith('rscDonutLegendSpacer'));
+    const after = addDonutLegendLayout(before, donut, legends);
+    expect(after.legends).toEqual(before.legends);
+    expect(after.data).toEqual(before.data);
+    expect(after.scales).toEqual(before.scales);
+    expect(after.signals?.slice(0, before.signals?.length)).toEqual(before.signals);
+    expect(after.marks?.slice(0, before.marks?.length)).toEqual(before.marks);
+  });
 });
 
 describe('buildSpec() donut side legend layout', () => {
@@ -86,15 +99,14 @@ describe('buildSpec() donut side legend layout', () => {
     { series: 'Safari', value: 24 },
   ];
 
-  const getSignals = async (viewWidth: number, legend: LegendOptions = { position: 'right' }) => {
+  const getSignals = async (viewWidth: number, legend: LegendOptions = { position: 'right' }, padding = 0) => {
     Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
-    expressionFunction('rscContainerWidth', (width: number) => width);
-    expressionFunction('rscViewWidth', () => viewWidth);
+    expressionFunction('rscContainerWidth', () => viewWidth + 2 * padding);
     const spec = buildSpec({ data, marks: [donut], legends: [legend] });
     const table = spec.data?.find(({ name }) => name === TABLE);
     if (!table || !('values' in table)) throw new Error('Expected inline table data');
     table.values = data;
-    const view = new View(parse(spec), { renderer: 'none' }).width(viewWidth).height(300);
+    const view = new View(parse(spec), { renderer: 'none' }).width(viewWidth).height(300).padding(padding);
     await view.runAsync();
     return { margin: view.signal(DONUT_LEGEND_MARGIN), extent: view.signal(DONUT_LEGEND_EXTENT) };
   };
@@ -109,6 +121,11 @@ describe('buildSpec() donut side legend layout', () => {
     const { extent } = await getSignals(1000);
     const titled = await getSignals(1000, { position: 'right', title: 'Browser share of all visitors' });
     expect(titled.extent).toBeGreaterThan(extent);
+  });
+
+  test('excludes view padding from the available width', async () => {
+    const { margin, extent } = await getSignals(1000, { position: 'right' }, 20);
+    expect(margin).toBeCloseTo((1000 - extent - 300) / 2);
   });
 
   test('has no margin when the chart is not wider than the donut and legend', async () => {
