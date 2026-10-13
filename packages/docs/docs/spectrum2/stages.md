@@ -30,10 +30,16 @@ Feature requests that come in during RC are scheduled after the stable release.
 
 ## Lab
 
-Lab components are usable but have no finalized Spectrum 2 design and no commitment to
-graduate. They can change or be removed in any release. They're imported from a separate
-subpath so their status is visible in your code. A lab component enters alpha once it has a
-design and the team commits to it.
+Every new chart type starts in lab. Lab components are usable but have no finalized
+Spectrum 2 design and no commitment to graduate. They can change in any release, and they're
+imported from a separate subpath so their status is visible in your code.
+
+- **Proposing one:** anyone can open an issue or PR for a new chart type. Maintainers decide
+  whether it fits the library.
+- **Graduating:** a lab component enters alpha once it has a finalized design and the
+  maintainers commit to it.
+- **Removal:** a lab component can be removed if it doesn't fit the project's goals and its
+  usage is low. Removals are announced in the changelog.
 
 Lab components are currently imported from `@spectrum-charts/react-spectrum-charts-s2/pre-alpha`
 (see [Pre-Alpha Components](./pre-alpha.md)). That subpath will be renamed `lab`.

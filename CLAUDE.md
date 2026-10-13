@@ -414,8 +414,9 @@ The full process is in `planning/README.md`. In short:
   observation and wants to note it for later, use the `file-issue` skill
   (`.claude/commands/file-issue.md`). It investigates the root cause and drafts the issue for
   the user's approval before creating it.
-- **Significant or uncertain changes** (new chart types, new subsystems, cross-chart API or
-  behavior changes, stage graduations) get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use
+- **New chart types** start in lab (no RFC); see `planning/README.md`.
+- **Significant or uncertain changes** (new subsystems, cross-chart API or behavior changes,
+  moving a component from lab to alpha) get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use
   the `write-rfc` skill (`.claude/commands/write-rfc.md`). An RFC is accepted when two
   maintainers approve and it merges; its scope becomes issues in per-component stage
   milestones (e.g. `Line beta`).

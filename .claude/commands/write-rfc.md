@@ -1,8 +1,9 @@
 # Write an RFC
 
-Use when a change needs design agreement before it's built: a new chart type, a new
-subsystem or cross-chart API, a behavior change across many components, or graduating a
-component to its next stage. Bugs and small features don't need an RFC; use `file-issue`.
+Use when a change needs design agreement before it's built: a new subsystem or cross-chart
+API, a behavior change across many components, or moving a component from lab to alpha. New
+chart types start in lab and don't need an RFC. Bugs and small features don't need one
+either; use `file-issue`.
 
 Read `planning/README.md` first, particularly "RFCs," "Stages," and "Cross-cutting
 concerns." Start from `rfcs/template.md`.

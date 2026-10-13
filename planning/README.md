@@ -6,7 +6,8 @@ How work is proposed, tracked, and recorded in react-spectrum-charts.
 |---|---|
 | Bug | GitHub issue |
 | Small feature (a prop, an option, a contained behavior change) | GitHub issue |
-| Significant or uncertain change (new chart type, new subsystem, cross-chart API, stage graduation) | RFC in [`rfcs/`](../rfcs) |
+| New chart type | GitHub issue or PR; it starts in [lab](#stages) |
+| Significant or uncertain change (new subsystem, cross-chart API, moving a component from lab to alpha) | RFC in [`rfcs/`](../rfcs) |
 | Open-ended research before a proposal exists | Research note in [`planning/research/`](./research) |
 | Durable architecture knowledge | `.claude/architecture-*.md` |
 
@@ -48,9 +49,9 @@ Issues close when the fix or feature merges, or when the stage they're scheduled
 
 ## RFCs
 
-Write an RFC when a change needs design agreement before it's built: a new chart type, a
-new subsystem or cross-chart API, a behavior change that affects many components, or
-graduating a component to its next [stage](#stages). Bugs and small features don't need one.
+Write an RFC when a change needs design agreement before it's built: a new subsystem or
+cross-chart API, a behavior change that affects many components, or moving a component from
+lab to alpha (see [Stages](#stages)). Bugs and small features don't need one.
 
 RFCs live in `rfcs/<slug>.md`, for example `rfcs/s2-remove-vega-embed.md`. Use a short,
 descriptive slug with no number. Start from [`rfcs/template.md`](../rfcs/template.md).
@@ -109,8 +110,17 @@ and no commitment to graduate live in **lab**, outside the pipeline. The definit
 period rules, and what counts as a blocking issue are user-facing and live in the docs:
 [Component Stages](../packages/docs/docs/spectrum2/stages.md).
 
-Moving a component from lab into alpha needs a design and an RFC. Later graduations need an
-RFC only if the scope changes.
+### Lab
+
+Every new chart type starts in lab, even one expected to graduate. Anyone can propose one
+with an issue or PR; maintainers decide whether it fits the library. Lab components don't
+need an RFC.
+
+Moving a component from lab into alpha needs a finalized design and an RFC. Later graduations
+need an RFC only if the scope changes.
+
+A lab component can be removed when maintainers decide it doesn't fit the project's goals and
+its usage is low. Announce the removal in a changeset.
 
 ### Milestones
 
