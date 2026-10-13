@@ -40,7 +40,7 @@ export const getEffectiveDiameter = (containerWidth: number): number => {
   // half the container, minus 2px padding and the label gap, doubled back to a diameter
   const diameter = (2 * (containerWidth / 2 - 2 - DONUT_LABEL_RING_GAPS[tierIndex])) / REACH_RATIO;
   // capped at the next tier's min diameter, same as the spec builder
-  return Math.min(diameter, DONUT_SIZE_TIER_CUTPOINTS[tierIndex] ?? Infinity);
+  return Math.min(diameter, DONUT_SIZE_TIER_CUTPOINTS[tierIndex] ?? Number.POSITIVE_INFINITY);
 };
 
 // donut + widest labels, + 2px padding on both sides, + the label gap on both sides

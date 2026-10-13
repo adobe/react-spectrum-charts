@@ -64,7 +64,7 @@ const dialogContentWithClose = (datum: Datum, close?: () => void) => (
   </div>
 );
 
-type ChartPopoverStoryProps = ChartPopoverProps & { animations?: ChartProps['animations'] };
+type ChartPopoverStoryProps = ChartPopoverProps & { animations?: NonNullable<ChartProps['animations']> };
 
 const LineStory: StoryFn<ChartPopoverStoryProps> = ({
   animations,
