@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.8.0">
 <title data-rh="true">Component Stages | React Spectrum Charts</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensource.adobe.com/react-spectrum-charts/PR-1005-docs/docs/spectrum2/stages"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Component Stages | React Spectrum Charts"><meta data-rh="true" name="description" content="Spectrum 2 components move through four stages on the way to stable. The stage tells you how"><meta data-rh="true" property="og:description" content="Spectrum 2 components move through four stages on the way to stable. The stage tells you how"><link data-rh="true" rel="icon" href="https://www.adobe.com/favicon.ico"><link data-rh="true" rel="canonical" href="https://opensource.adobe.com/react-spectrum-charts/PR-1005-docs/docs/spectrum2/stages"><link data-rh="true" rel="alternate" href="https://opensource.adobe.com/react-spectrum-charts/PR-1005-docs/docs/spectrum2/stages" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensource.adobe.com/react-spectrum-charts/PR-1005-docs/docs/spectrum2/stages" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Component Stages","item":"https://opensource.adobe.com/react-spectrum-charts/PR-1005-docs/docs/spectrum2/stages"}]}</script><link rel="stylesheet" href="/react-spectrum-charts/PR-1005-docs/assets/css/styles.381048a3.css">
-<script src="/react-spectrum-charts/PR-1005-docs/assets/js/runtime~main.34bb1d75.js" defer="defer"></script>
+<script src="/react-spectrum-charts/PR-1005-docs/assets/js/runtime~main.d2dd9127.js" defer="defer"></script>
 <script src="/react-spectrum-charts/PR-1005-docs/assets/js/main.9c187f27.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -28,10 +28,17 @@ fixed after stable without a breaking change.</li>
 <li>Other bugs become known issues, fixed in patch releases after stable.</li>
 </ul>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="lab">Lab<a href="#lab" class="hash-link" aria-label="Direct link to Lab" title="Direct link to Lab">​</a></h2>
-<p>Lab components are usable but have no finalized Spectrum 2 design and no commitment to
-graduate. They can change or be removed in any release. They&#x27;re imported from a separate
-subpath so their status is visible in your code. A lab component enters alpha once it has a
-design and the team commits to it.</p>
+<p>Every new chart type starts in lab. Lab components are usable but have no finalized
+Spectrum 2 design and no commitment to graduate. They can change in any release, and they&#x27;re
+imported from a separate subpath so their status is visible in your code.</p>
+<ul>
+<li><strong>Proposing one:</strong> anyone can open an issue or PR for a new chart type. Maintainers decide
+whether it fits the library.</li>
+<li><strong>Graduating:</strong> a lab component enters alpha once it has a finalized design and the
+maintainers commit to it.</li>
+<li><strong>Removal:</strong> a lab component can be removed if it doesn&#x27;t fit the project&#x27;s goals and its
+usage is low. Removals are announced in the changelog.</li>
+</ul>
 <p>Lab components are currently imported from <code>@spectrum-charts/react-spectrum-charts-s2/pre-alpha</code>
 (see <a href="/react-spectrum-charts/PR-1005-docs/docs/spectrum2/pre-alpha">Pre-Alpha Components</a>). That subpath will be renamed <code>lab</code>.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-tell-a-components-stage">How to tell a component&#x27;s stage<a href="#how-to-tell-a-components-stage" class="hash-link" aria-label="Direct link to How to tell a component&#x27;s stage" title="Direct link to How to tell a component&#x27;s stage">​</a></h2>
