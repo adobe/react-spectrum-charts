@@ -224,6 +224,11 @@ yarn build:s2
 
 # Build a single package
 yarn workspace @spectrum-charts/vega-spec-builder build
+
+# S2 animation refactors that should not change rendering: record on the base branch, compare on yours
+# (yarn build:s2 after each checkout). Exits 1 if any sampled scenegraph frame differs; also reports µs/frame.
+yarn perf:parity --out perf-results/parity-before.json
+yarn perf:parity --compare perf-results/parity-before.json
 ```
 
 ---

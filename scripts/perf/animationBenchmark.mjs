@@ -49,6 +49,11 @@ const PRESETS = {
     args: 'chartCount:20;seriesPerChart:10;pointsPerSeries:10',
     scenarios: ['drawIn', 'idle'],
   },
+  'bar-hover': {
+    story: 'react-spectrum-charts-2-bar-performance-hover-animation--dashboard',
+    args: 'chartCount:20;seriesPerChart:5;barsPerChart:12',
+    scenarios: ['hover', 'idle'],
+  },
   'donut-draw-in': {
     story: 'react-spectrum-charts-2-pre-alpha-donut-dashboards--prop-variations',
     args: '',
