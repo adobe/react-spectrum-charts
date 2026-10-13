@@ -120,7 +120,7 @@ describe('buildSpec() donut side legend layout', () => {
         walk(it as never);
       });
     };
-    walk(view.scenegraph().root as never);
+    walk((view.scenegraph() as unknown as { root: unknown }).root as never);
     const arc = arcs[0];
     return (arc.mark.group.x ?? 0) + arc.x;
   };

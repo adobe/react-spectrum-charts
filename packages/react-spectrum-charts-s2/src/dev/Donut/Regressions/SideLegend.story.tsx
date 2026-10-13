@@ -34,7 +34,7 @@ type SideLegendArgs = DonutProps & {
   legendPosition: LegendProps['position'];
   legendTitle?: string;
   chartTitle?: string;
-  titlePosition?: TitleProps['position'];
+  titlePosition?: NonNullable<TitleProps['position']>;
   width: number | string;
 };
 
