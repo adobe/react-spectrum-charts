@@ -16,7 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart.js';
 import { Legend, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
+import { Donut, DonutSummary } from '../../../pre-alpha/index.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { DonutProps, LegendProps, TitleProps } from '../../../types/index.js';
@@ -36,29 +36,17 @@ type SideLegendArgs = DonutProps & {
   chartTitle?: string;
   titlePosition?: NonNullable<TitleProps['position']>;
   width: number | string;
-  height?: number;
-  showSegmentLabels?: boolean;
 };
 
 // the chart is much wider than tall, so the donut and legend should stay together in the middle
 const SideLegendStory: StoryFn<SideLegendArgs> = (storyArgs): ReactElement => {
-  const {
-    legendPosition,
-    legendTitle = 'Browser',
-    chartTitle,
-    titlePosition,
-    width,
-    height,
-    showSegmentLabels,
-    ...args
-  } = storyArgs;
-  const chartProps = useChartProps({ data: basicDonutData, width, ...(height === undefined ? {} : { height }) });
+  const { legendPosition, legendTitle = 'Browser', chartTitle, titlePosition, width, ...args } = storyArgs;
+  const chartProps = useChartProps({ data: basicDonutData, width, height: 300 });
   return (
     <Chart {...chartProps}>
       {chartTitle && <Title text={chartTitle} position={titlePosition} />}
       <Donut {...args}>
         <DonutSummary label="Visitors" />
-        {showSegmentLabels && <SegmentLabel value percent showValueRow swatch />}
       </Donut>
       <Legend position={legendPosition} title={legendTitle} />
     </Chart>
