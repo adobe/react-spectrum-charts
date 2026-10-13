@@ -35,7 +35,9 @@ const getLegendContentWidthExpr = (index: number, { labelLimit, title, titleLimi
   const legendName = `legend${index}`;
   const labels = `${symbolColumn} + ${getMaxLabelWidthExpr(legendName, labelLimit)}`;
   if (!title) return labels;
-  const titleWidth = `min(getLabelWidth(${JSON.stringify(title)}, 'bold', ${DEFAULT_FONT_SIZE}), ${titleLimit ?? LEGEND_TITLE_LIMIT})`;
+  const titleWidth = `min(getLabelWidth(${JSON.stringify(title)}, 'bold', ${DEFAULT_FONT_SIZE}), ${
+    titleLimit ?? LEGEND_TITLE_LIMIT
+  })`;
   return `max(${labels}, ${titleWidth})`;
 };
 
@@ -59,22 +61,21 @@ export const addDonutLegendLayout = produce<ScSpec, [DonutOptions | undefined, L
     if (!donut || index === -1) return;
     // theme legend offset (24) + legend padding (2 * 8) + widest content
     const extent = `${24 + 16} + ${getLegendContentWidthExpr(index, legends[index])}`;
-    const donutWidth = donut.variant === 'semicircle' ? '2 * height' : 'height';
-    const m = DONUT_LEGEND_MARGIN;
-    // Half the legend width past the donut on each side keeps the bounds the same total width as before
-    // (so the donut keeps its size) while recentering them on the donut rather than the donut-plus-legend.
-    const outer = `${m} + ${DONUT_LEGEND_EXTENT} / 2`;
+    const containerHeight = 'rscContainerHeight(height) - padding.top - padding.bottom';
+    const donutWidth = donut.variant === 'semicircle' ? `2 * (${containerHeight})` : `(${containerHeight})`;
     const innerWidth = 'rscContainerWidth(width) - padding.left - padding.right';
+    const m = DONUT_LEGEND_MARGIN;
+    const spareWidth = `max(0, (${innerWidth} - ${donutWidth}) / 2)`;
+    // Keep the wide-chart reservation, tapering it to zero when the donut fills the container.
+    const outer = `${m} + min(${DONUT_LEGEND_EXTENT} / 2, ${spareWidth})`;
 
     spec.signals = [
       ...(spec.signals ?? []),
       { name: DONUT_LEGEND_EXTENT, update: extent },
       { name: DONUT_LEGEND_MARGIN, update: `max(0, (${innerWidth} - ${DONUT_LEGEND_EXTENT} - ${donutWidth}) / 2)` },
     ];
-    // Symmetric spacers keep the donut (not the donut-plus-legend group) centered: the legend extends the
-    // bounds past the donut on its side, so an equal spacer on the far side balances it around the donut.
-    const leftX = `${m} > 0 ? -(${outer}) : 0`;
-    const rightX = `${m} > 0 ? width + ${outer} : width`;
+    const leftX = `-(${outer})`;
+    const rightX = `width + ${outer}`;
     spec.marks = [
       ...(spec.marks ?? []),
       getSpacer('rscDonutLegendSpacerLeft', leftX),

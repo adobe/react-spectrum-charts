@@ -40,6 +40,13 @@ if (typeof window !== 'undefined') {
     const viewWidth = (view as unknown as { _viewWidth?: number })._viewWidth ?? 0;
     return viewWidth + (p.left ?? 0) + (p.right ?? 0);
   });
+  // Container height stays fixed while Vega autosizes the plot.
+  expressionFunction('rscContainerHeight', function (this: { context: { dataflow: View & { _viewHeight: number } } }) {
+    const view = this.context.dataflow;
+    const padding = view.padding();
+    const verticalPadding = typeof padding === 'number' ? 2 * padding : (padding.top ?? 0) + (padding.bottom ?? 0);
+    return view._viewHeight + verticalPadding;
+  });
 }
 
 /**
