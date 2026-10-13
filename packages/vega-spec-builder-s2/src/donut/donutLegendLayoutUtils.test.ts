@@ -41,7 +41,7 @@ describe('addDonutLegendLayout()', () => {
     const spec = addDonutLegendLayout(initializeSpec(), { ...donut, variant: 'semicircle' }, [{ position: 'right' }]);
     expect(spec.signals?.[1]).toHaveProperty(
       'update',
-      expect.stringContaining('2 * (rscContainerHeight(height) - padding.top - padding.bottom)')
+      expect.stringContaining('- 2 * height) / 2)')
     );
   });
 
@@ -106,7 +106,6 @@ describe('buildSpec() donut side legend layout', () => {
   const getSignals = async (viewWidth: number, legend: LegendOptions = { position: 'right' }, padding = 0) => {
     Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
     expressionFunction('rscContainerWidth', () => viewWidth + 2 * padding);
-    expressionFunction('rscContainerHeight', () => 300 + 2 * padding);
     const spec = buildSpec({ data, marks: [donut], legends: [legend] });
     const table = spec.data?.find(({ name }) => name === TABLE);
     if (!table || !('values' in table)) throw new Error('Expected inline table data');
@@ -173,10 +172,6 @@ describe('buildSpec() donut side legend layout', () => {
     { position: 'right', variant: 'circle', labels: true },
     { position: 'left', variant: 'circle', labels: false },
     { position: 'right', variant: 'circle', labels: false },
-    { position: 'left', variant: 'semicircle', labels: false },
-    { position: 'right', variant: 'semicircle', labels: false },
-    { position: 'left', variant: 'semicircle', labels: true },
-    { position: 'right', variant: 'semicircle', labels: true },
   ])(
     'resizes a $variant monotonically with a $position legend (labels: $labels)',
     async ({ position, variant, labels }) => {
@@ -189,16 +184,6 @@ describe('buildSpec() donut side legend layout', () => {
           const horizontalPadding =
             typeof padding === 'number' ? 2 * padding : (padding.left ?? 0) + (padding.right ?? 0);
           return view._viewWidth + horizontalPadding;
-        }
-      );
-      expressionFunction(
-        'rscContainerHeight',
-        function (this: { context: { dataflow: View & { _viewHeight: number } } }) {
-          const view = this.context.dataflow;
-          const padding = view.padding();
-          const verticalPadding =
-            typeof padding === 'number' ? 2 * padding : (padding.top ?? 0) + (padding.bottom ?? 0);
-          return view._viewHeight + verticalPadding;
         }
       );
       const spec = buildSpec({

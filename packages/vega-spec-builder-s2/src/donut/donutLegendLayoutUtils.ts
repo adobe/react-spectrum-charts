@@ -61,8 +61,7 @@ export const addDonutLegendLayout = produce<ScSpec, [DonutOptions | undefined, L
     if (!donut || index === -1) return;
     // theme legend offset (24) + legend padding (2 * 8) + widest content
     const extent = `${24 + 16} + ${getLegendContentWidthExpr(index, legends[index])}`;
-    const containerHeight = 'rscContainerHeight(height) - padding.top - padding.bottom';
-    const donutWidth = donut.variant === 'semicircle' ? `2 * (${containerHeight})` : `(${containerHeight})`;
+    const donutWidth = donut.variant === 'semicircle' ? '2 * height' : 'height';
     const innerWidth = 'rscContainerWidth(width) - padding.left - padding.right';
     const m = DONUT_LEGEND_MARGIN;
 

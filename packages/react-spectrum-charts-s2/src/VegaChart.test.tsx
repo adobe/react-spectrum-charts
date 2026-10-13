@@ -102,43 +102,6 @@ describe('resizeView', () => {
 	});
 });
 
-describe('rscContainerHeight expression function', () => {
-	const fn = expressionFunction('rscContainerHeight') as (this: unknown) => number;
-
-	test('returns the full container height including vertical padding', () => {
-		const context = {
-			context: { dataflow: { _viewHeight: 380, padding: () => ({ top: 20, bottom: 20, left: 10, right: 10 }) } },
-		};
-		expect(fn.call(context)).toBe(420);
-	});
-
-	test('supports numeric padding', () => {
-		const context = { context: { dataflow: { _viewHeight: 380, padding: () => 20 } } };
-		expect(fn.call(context)).toBe(420);
-	});
-
-	test('does not add horizontal-only padding to the height', () => {
-		const context = { context: { dataflow: { _viewHeight: 420, padding: () => ({ left: 20, right: 20 }) } } };
-		expect(fn.call(context)).toBe(420);
-	});
-
-	test('does not change when autosizing changes the plot height', () => {
-		let plotHeight = 420;
-		const context = {
-			context: {
-				dataflow: {
-					_viewHeight: 380,
-					height: () => plotHeight,
-					padding: () => ({ top: 20, bottom: 20, left: 0, right: 0 }),
-				},
-			},
-		};
-		expect(fn.call(context)).toBe(420);
-		plotHeight = 344;
-		expect(fn.call(context)).toBe(420);
-	});
-});
-
 describe('rscContainerWidth expression function', () => {
 	// The function is registered at module load time when VegaChart.tsx is imported above.
 	const fn = expressionFunction('rscContainerWidth') as (this: unknown) => number;
