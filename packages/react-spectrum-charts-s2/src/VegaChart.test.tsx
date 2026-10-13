@@ -123,6 +123,7 @@ describe('rscContainerWidth expression function', () => {
 	});
 });
 
+
 // AN-445759: regression tests for the init render cycle fix
 describe('VegaChart init render cycle', () => {
 	beforeEach(() => {
