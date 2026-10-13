@@ -13,17 +13,20 @@ Read `planning/README.md` first for the RFC and stage process.
 
 ## Step 1 — Confirm the RFC is accepted
 
-Read the RFC. Its status must be `Accepted` and it must be merged. Don't build against a
-draft: review comments can change the design, and building early risks working from a stale
+Read the RFC. It must be merged; merged means accepted. Don't build against an open RFC
+PR: review comments can change the design, and building early risks working from a stale
 version. If it's still a draft, stop and tell the user.
 
-Collect the scope issues for the stage being built, from the RFC's Scope table or the parent
-issue's sub-issues:
+Collect the open issues for the stage being built from the milestone on the RFC's `Tracking`
+line, not from the Scope table (it's a record of what was agreed; the milestone is the live
+plan):
 
 ```bash
-gh issue view <parent-issue> --repo adobe/react-spectrum-charts
 gh issue list --repo adobe/react-spectrum-charts --milestone "<Component> <stage>" --state open
 ```
+
+If `Tracking` names a parent issue instead, use its sub-issues
+(`gh issue view <parent-issue> --repo adobe/react-spectrum-charts`).
 
 ## Step 2 — Order the issues and confirm with the user
 
@@ -151,5 +154,5 @@ After each issue (or at natural checkpoints), report which issues are done, whic
 landed in, and confirm the next issue in the order still makes sense. A discovery partway
 through (Step 2's deferral case) may have changed it.
 
-When every issue for the stage has merged, tell the user the stage is ready to ship. When
-the RFC's whole scope has shipped, its status changes to `Implemented`.
+When every issue in the milestone has merged, tell the user the stage is ready to ship. The
+graduation PR then updates the stage markers listed in `planning/README.md`.

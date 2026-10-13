@@ -417,7 +417,8 @@ The full process is in `planning/README.md`. In short:
 - **Significant or uncertain changes** (new chart types, new subsystems, cross-chart API or
   behavior changes, stage graduations) get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use
   the `write-rfc` skill (`.claude/commands/write-rfc.md`). An RFC is accepted when two
-  maintainers approve and it merges; its scope becomes sub-issues of a parent issue.
+  maintainers approve and it merges; its scope becomes issues in per-component stage
+  milestones (e.g. `Line beta`).
 - **Implementing an accepted RFC's scope** as stacked PRs uses the `implement-rfc` skill
   (`.claude/commands/implement-rfc.md`).
 - **Open-ended investigation** goes in `planning/research/` (see `TEMPLATE.md`), and feeds an

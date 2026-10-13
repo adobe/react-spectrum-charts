@@ -57,16 +57,17 @@ descriptive slug with no number. Start from [`rfcs/template.md`](../rfcs/templat
 
 ### Lifecycle
 
-1. **Draft.** Open a PR that adds `rfcs/<slug>.md` with `Status: Draft`. Discussion happens on
-   the PR. Opening it early is fine.
+1. **Draft.** Open a PR that adds `rfcs/<slug>.md`. Discussion happens on the PR. Opening it
+   early is fine.
 2. **Review.** Reviewers comment on the PR, and the author updates the doc in place.
 3. **Decision.** Two maintainers approve.
-   - **Accepted:** set `Status: Accepted` and merge. The doc is now frozen.
+   - **Accepted:** merge. The doc is now frozen.
    - **Rejected:** close the PR without merging. The PR is the record.
-4. **Implementation.** Each item in the RFC's **Scope** table is a GitHub issue. Create a parent
-   issue for the RFC and add the scope issues as its sub-issues. Assign each issue to the
-   milestone of the stage it ships in. Progress is tracked on the issues, not in the RFC.
-5. **Done.** When every in-scope issue has shipped, set `Status: Implemented`.
+4. **Implementation.** Create an issue for each row of the RFC's **Scope** table and assign it
+   to the milestone for its stage (see [Stages](#stages)). List the milestones on the RFC's
+   `Tracking` line. If the scope spans several components and doesn't map to milestones,
+   create a parent issue with the scope issues as sub-issues, and link that instead.
+5. **Done.** The RFC is implemented when its milestones (or parent issue) are closed.
 
 Prototype PRs can be opened before an RFC is accepted, but they don't merge until it is.
 
@@ -75,7 +76,12 @@ Prototype PRs can be opened before an RFC is accepted, but they don't merge unti
 An accepted RFC doesn't change, except for:
 
 - typo fixes and clarifications that don't change the design
-- the `Status` line
+- the `Tracking` line
+
+The Scope table is a record of what was agreed, not a tracker. After acceptance, the
+milestones are the live plan: moving an issue to another milestone doesn't need an RFC edit.
+If a move changes what a stage delivers (for example, deferring accessibility out of beta),
+explain why in a comment on the issue.
 
 New requirements become new issues in the right milestone. A real design change needs a
 short follow-up RFC that links back to the original.
@@ -98,13 +104,34 @@ stage.
 
 ## Stages
 
-Components move through pre-alpha, alpha, beta, RC, and stable. The definitions are
-user-facing and live in the docs:
+Components move through alpha, beta, RC, and stable. Components without a finalized design
+and no commitment to graduate live in **lab**, outside the pipeline. The definitions, the RC
+period rules, and what counts as a blocking issue are user-facing and live in the docs:
 [Component Stages](../packages/docs/docs/spectrum2/stages.md).
 
-Each stage has a GitHub milestone per component, e.g. `Donut alpha`, created when the first
-issue needs it. Graduating a component to alpha needs an RFC. Later graduations need one only
-if the scope changes.
+Moving a component from lab into alpha needs a design and an RFC. Later graduations need an
+RFC only if the scope changes.
+
+### Milestones
+
+Each component has a GitHub milestone for its **next** stage, named for the stage the work
+unlocks: `<Component> <stage>`, e.g. `Line beta`. Work done while a component is in alpha that
+the beta definition requires (such as finishing accessibility) goes in `Line beta`. When the
+component graduates, close the milestone and create the next one. Lab components don't have
+milestones.
+
+### Marking a component's stage
+
+A graduation PR updates every place the stage shows:
+
+- the TSDoc tag on the component and its props type: `@alpha`, `@beta`, or `@beta` with
+  "Release candidate" for RC; stable components have none
+- the Storybook `tags` in the default export of every story file for the component (e.g.
+  `tags: ['beta']`; use `'lab'` for lab components), which show as a badge in the sidebar
+- the stage badge on the component's docs page
+- a changeset announcing the stage change
+
+Experimental props on otherwise stable components use an `UNSAFE_` prefix instead.
 
 ---
 

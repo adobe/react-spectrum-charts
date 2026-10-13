@@ -40,7 +40,7 @@ guessing.
 
 ## Step 3 — Write the RFC
 
-Write `rfcs/<slug>.md` from the template, with `Status: Draft`. Use a short, descriptive slug
+Write `rfcs/<slug>.md` from the template. Use a short, descriptive slug
 with no number (e.g. `s2-donut-alpha`).
 
 - **Detailed Design:** the proposed API (props, types, defaults) with examples, the behavior,
@@ -61,5 +61,7 @@ plans go in the issues.
 Summarize the RFC for the user: the design in a few sentences, the scope table, and the open
 questions. Open a PR only after the user approves.
 
-Once the RFC is accepted, create the parent issue and the scope issues (sub-issues of the
-parent), assign each to its stage milestone, and fill in the RFC's `Parent Issue` field.
+Once the RFC is accepted (merged), create the scope issues, assign each to its stage
+milestone (creating the milestone if needed), and fill in the RFC's `Tracking` line. Use a
+parent issue with sub-issues instead only if the scope spans several components; see
+`planning/README.md`.
