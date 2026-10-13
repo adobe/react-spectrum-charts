@@ -19,7 +19,8 @@ import {
   FILTERED_TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getOrientationProperties } from '../bar/barUtils.js';
+import { getBarDrawInLabelFadeExpr, getOrientationProperties } from '../bar/barUtils.js';
+import { applyDrawInReveal } from '../marks/drawInAnimationUtils.js';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils.js';
 import { escapeD3FormatSpecifier, getD3FormatSpecifierFromNumberFormat } from '../specUtils.js';
 import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types/index.js';
@@ -190,6 +191,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
 
   const { metricAxisEncoding, verticalBaseline, horizontalAlign, seriesFill, isInsideTest } =
     getBarDirectLabelPositionEncodings(position, isVertical, metric, metricScaleKey, fillEncoding, textSignal);
+  const drawInReveal = getBarDrawInLabelFadeExpr(barOptions, true);
 
   const baseEnter = isVertical
     ? {
@@ -226,6 +228,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
       },
       update: {
         fontSize: fontSizeEncoding,
+        ...(barOptions.isDrawInAnimate ? { opacity: { signal: drawInReveal } } : {}),
       },
     },
   };
@@ -241,7 +244,9 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
         fill: seriesFill,
       },
       update: {
-        opacity: getMarkOpacity(barOptions),
+        opacity: barOptions.isDrawInAnimate
+          ? applyDrawInReveal(getMarkOpacity(barOptions), drawInReveal)
+          : getMarkOpacity(barOptions),
         fontSize: fontSizeEncoding,
       },
     },

@@ -16,6 +16,7 @@ import { numberLocales } from '@spectrum-charts/core-s2/locales';
 
 import {
   LabelDatum,
+  cubicBezier,
   donutSliceStrokeWidth,
   expressionFunctions,
   getExpressionFunctions,
@@ -28,6 +29,39 @@ import {
   hoverFraction,
   isDonutLabelVisible,
 } from './expressionFunctions.js';
+
+describe('cubicBezier()', () => {
+  test('maps the endpoints to themselves and clamps outside 0-1', () => {
+    expect(cubicBezier(0.45, 0, 0.4, 1, 0)).toBe(0);
+    expect(cubicBezier(0.45, 0, 0.4, 1, 1)).toBe(1);
+    expect(cubicBezier(0.45, 0, 0.4, 1, -1)).toBe(0);
+    expect(cubicBezier(0.45, 0, 0.4, 1, 2)).toBe(1);
+  });
+
+  test('is the identity for a linear curve', () => {
+    [0.1, 0.25, 0.5, 0.9].forEach((t) => expect(cubicBezier(0.25, 0.25, 0.75, 0.75, t)).toBeCloseTo(t, 5));
+  });
+
+  test('matches CSS cubic-bezier values for the S2 curves', () => {
+    // symmetric control points give an exact midpoint
+    expect(cubicBezier(0.42, 0, 0.58, 1, 0.5)).toBeCloseTo(0.5, 5);
+    // S2 out front-loads progress; S2 in-out starts slow
+    expect(cubicBezier(0, 0, 0.4, 1, 0.5)).toBeGreaterThan(0.75);
+    expect(cubicBezier(0.45, 0, 0.4, 1, 0.2)).toBeLessThan(0.1);
+  });
+
+  test('is undone by swapping the x and y control points', () => {
+    [0.05, 0.3, 0.6, 0.95].forEach((t) => {
+      expect(cubicBezier(0, 0, 1, 0.4, cubicBezier(0, 0, 0.4, 1, t))).toBeCloseTo(t, 4);
+      expect(cubicBezier(0, 0.45, 1, 0.4, cubicBezier(0.45, 0, 0.4, 1, t))).toBeCloseTo(t, 4);
+    });
+  });
+
+  test('handles flat-sloped curves where Newton-Raphson stalls', () => {
+    expect(cubicBezier(1, 0, 1, 0, 0.5)).toBeGreaterThanOrEqual(0);
+    expect(cubicBezier(0, 1, 0, 1, 0.5)).toBeLessThanOrEqual(1);
+  });
+});
 
 describe('isDonutLabelVisible()', () => {
   const data = [

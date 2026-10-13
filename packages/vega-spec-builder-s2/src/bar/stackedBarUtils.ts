@@ -13,12 +13,15 @@ import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
+import { getBarMarkDataSource } from '../marks/drawInAnimationUtils.js';
 import { isInteractive } from '../marks/markUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import { getAnnotationMarks } from './barAnnotationUtils.js';
 import { getBarFocusRing, getStackFocusRing } from './barFocusRingUtils.js';
 import {
+  getBarBackgroundDrawInUpdateEncodings,
   getBarDimensionHoverArea,
+  getBarDrawInUpdateEncodings,
   getBarEnterEncodings,
   getBarItemSelectionBackdrop,
   getBarItemSelectionRing,
@@ -121,6 +124,7 @@ export const getStackedBackgroundBar = (options: BarSpecOptions): RectMark => {
       },
       update: {
         ...getStackedDimensionEncodings(options),
+        ...getBarBackgroundDrawInUpdateEncodings(options),
       },
     },
   };
@@ -132,7 +136,7 @@ export const getStackedBar = (options: BarSpecOptions): RectMark => {
     name,
     description: name,
     type: 'rect',
-    from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBaseDataSourceName(options) },
+    from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBarDataSourceName(options) },
     interactive: isInteractive(options),
     encode: {
       enter: {
@@ -141,6 +145,7 @@ export const getStackedBar = (options: BarSpecOptions): RectMark => {
       },
       update: {
         ...getStackedDimensionEncodings(options),
+        ...getBarDrawInUpdateEncodings(options),
         ...getBarUpdateEncodings(options),
       },
     },
@@ -164,4 +169,9 @@ export const getStackedDimensionEncodings = (options: BarSpecOptions): RectEncod
 const getBaseDataSourceName = (options: BarSpecOptions) => {
   if (isTrellised(options)) return getTrellisProperties(options).facetName;
   return FILTERED_TABLE;
+};
+
+const getBarDataSourceName = (options: BarSpecOptions) => {
+  if (isTrellised(options)) return getTrellisProperties(options).facetName;
+  return getBarMarkDataSource(options);
 };

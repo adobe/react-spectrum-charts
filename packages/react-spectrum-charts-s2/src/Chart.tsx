@@ -19,7 +19,7 @@ import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { RscChart } from './RscChart.js';
-import { applyChartPropsDefaults, resolveAnimations } from './chartUtils.js';
+import { applyChartPropsDefaults, resolveAnimationTypes } from './chartUtils.js';
 import { EmptyState } from './components/index.js';
 import { LoadingState } from './components/LoadingState/index.js';
 import { ChartProvider } from './context/RscChartContext.js';
@@ -109,7 +109,7 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
     UNSAFE_vegaSpec,
     onVegaViewReady,
     ...otherProps,
-    animations: resolveAnimations(otherProps.animations, prefersReducedMotion),
+    animationTypes: resolveAnimationTypes(otherProps.animationTypes, prefersReducedMotion),
   };
 
   const chartContent = <RscChart {...rscChartProps}>{props.children}</RscChart>;

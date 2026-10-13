@@ -76,7 +76,7 @@ const getDynamicFocusRingCorners = (options: BarSpecOptions): RectEncodeEntry =>
 };
 
 export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
-  const { color, colorScheme, dimension, name } = options;
+  const { color, colorScheme, dimension, isDrawInAnimate, name } = options;
   const focusedItemId =
     typeof color === 'string'
       ? `datum.datum.${dimension} + "${NAVIGATION_ID_SEPARATOR}" + datum.datum.${color}`
@@ -86,7 +86,8 @@ export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
   return {
     name: `${name}_focusRing`,
     type: 'rect',
-    from: { data: name },
+    // the background keeps final geometry during draw-in, so the ring doesn't track growing bars
+    from: { data: isDrawInAnimate ? `${name}_background` : name },
     interactive: false,
     encode: {
       enter: {

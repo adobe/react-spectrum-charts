@@ -33,27 +33,29 @@ describe('Chart reduced motion', () => {
     jest.clearAllMocks();
   });
 
-  test('disables animations when reduced motion is preferred', () => {
+  test('keeps fade animations and drops motion when reduced motion is preferred', () => {
     mockUsePrefersReducedMotion.mockReturnValue(true);
 
     render(
-      <Chart data={[{ x: 1, y: 1 }]} animations>
+      <Chart data={[{ x: 1, y: 1 }]} animations animationTypes={['hover', 'drawIn']}>
         <Line dimension="x" metric="y" />
       </Chart>
     );
 
-    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animations: false }));
+    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animations: true, animationTypes: ['hover'] }));
   });
 
-  test('preserves the animations prop when reduced motion is not preferred', () => {
+  test('preserves the animation props when reduced motion is not preferred', () => {
     mockUsePrefersReducedMotion.mockReturnValue(false);
 
     render(
-      <Chart data={[{ x: 1, y: 1 }]}>
+      <Chart data={[{ x: 1, y: 1 }]} animationTypes={['hover', 'drawIn']}>
         <Line dimension="x" metric="y" />
       </Chart>
     );
 
-    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animations: undefined }));
+    expect(mockRscChart).toHaveBeenCalledWith(
+      expect.objectContaining({ animations: undefined, animationTypes: ['hover', 'drawIn'] })
+    );
   });
 });

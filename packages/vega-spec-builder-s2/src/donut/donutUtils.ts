@@ -12,13 +12,11 @@
 import { ArcMark, ColorValueRef, NumericValueRef, ProductionRule, Signal, SourceData, ThresholdScale } from 'vega';
 
 import {
-  ANIMATION_TIMER,
   BACKGROUND_COLOR,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_HOLE_RATIO,
   DONUT_BOOLEAN_SECONDARY_COLOR,
-  DONUT_DRAW_IN_LABEL_FADE_DURATION_MS,
   DONUT_LABEL_MIN_SPACE_RATIO,
   DONUT_LABEL_RING_GAPS,
   DONUT_RADIUS,
@@ -29,8 +27,6 @@ import {
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
   DRAW_IN_ANIM_CUTOFF,
-  DRAW_IN_ANIMATION_DURATION_MS,
-  DRAW_IN_START,
   FADE_FACTOR,
   FILTERED_TABLE,
   HOVERED_ITEM,
@@ -40,6 +36,7 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils.js';
+import { getDrawInLabelFadeExpr } from '../marks/drawInAnimationUtils.js';
 import { getHoverDeemphasisOpacitySignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
 import {
   getColorProductionRule,
@@ -106,10 +103,7 @@ export const getDonutLabelFadeProgressExpr = (options: DonutSpecOptions): string
   const drawStartAngle = getDonutStartAngle(options);
   const sweep = getDonutSweepExpr(options);
   const endProgress = `clamp((${endAngle} - ${drawStartAngle}) / (${sweep}), 0, 1)`;
-  const sliceEndTime = `${DRAW_IN_ANIMATION_DURATION_MS} * sqrt(${endProgress})`;
-  const elapsed = `${ANIMATION_TIMER} - ${DRAW_IN_START}`;
-  const linearFade = `clamp(((${elapsed}) - (${sliceEndTime})) / ${DONUT_DRAW_IN_LABEL_FADE_DURATION_MS}, 0, 1)`;
-  return `(${endAngle} > ${startAngle} ? ${linearFade} : 0)`;
+  return `(${endAngle} > ${startAngle} ? ${getDrawInLabelFadeExpr(endProgress, 'out')} : 0)`;
 };
 
 /** Combines the draw-in label fade with the donut's existing highlight opacity rules. */

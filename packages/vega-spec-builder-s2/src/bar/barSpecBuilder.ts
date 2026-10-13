@@ -10,12 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal } from 'vega';
+import { BandScale, Data, FormulaTransform, JoinAggregateTransform, Mark, OrdinalScale, Scale, Signal } from 'vega';
 
 import {
   AnimationType,
   COLOR_SCALE,
   DEFAULT_ANIMATION_TYPES,
+  DRAW_IN_GROW_DURATION_MS,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
@@ -45,6 +46,13 @@ import {
   isHighlightedByGroup,
 } from '../chartInspect/chartInspectUtils.js';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils.js';
+import {
+  addDrawInClockSignals,
+  addDrawInDoneSignal,
+  addDrawInLabelFadeTimer,
+  getBarDrawInData,
+  getBarDrawInStackFields,
+} from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -88,6 +96,7 @@ import {
   getDimensionSelectionRing,
   getOrientationProperties,
   getScaleValues,
+  isBarStacked,
   isDodgedAndStacked,
   isDualMetricAxis,
 } from './barUtils.js';
@@ -188,6 +197,8 @@ export const addBar = produce<
     };
     barOptions.isHighlightedByGroup = isHighlightedByGroup(barOptions);
     barOptions.isHoverAnimate = usesBarHoverAnimation(animations, animationTypes, barOptions);
+    barOptions.isDrawInAnimate =
+      animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
 
     spec.usermeta = {
       ...spec.usermeta,
@@ -254,6 +265,7 @@ const getUniqueBarIds = (
 export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options) => {
   const {
     barAnnotations,
+    barDirectLabels,
     chartInspects,
     chartPopovers,
     hasOnClick,
@@ -273,6 +285,12 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
 
   if (isDualMetricAxis(options)) {
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
+  }
+
+  if (options.isDrawInAnimate) {
+    addDrawInClockSignals(signals, DRAW_IN_GROW_DURATION_MS, 'out');
+    addDrawInDoneSignal(signals);
+    if (barAnnotations.length || barDirectLabels.length) addDrawInLabelFadeTimer(signals);
   }
 
   if (isHoverAnimate) {
@@ -314,7 +332,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
 
   const index = data.findIndex((d) => d.name === FILTERED_TABLE);
   data[index].transform = data[index].transform ?? [];
-  if (type === 'stacked' || isDodgedAndStacked(options)) {
+  if (isBarStacked(options)) {
     data[index].transform?.push({
       type: 'stack',
       groupby: getStackFields(options),
@@ -324,11 +342,15 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     });
 
     data[index].transform?.push(getStackIdTransform(options));
+    if (options.isDrawInAnimate) data[index].transform?.push(getDrawInStackTotalsTransform(options));
     data.push(getStackAggregateData(options));
   }
   if (type === 'dodged' || isDodgedAndStacked(options)) {
     data.push(getDodgedGroupAggregateData(options));
     data[index].transform?.push(getDodgeGroupTransform(options));
+  }
+  if (options.isDrawInAnimate) {
+    data.push(getBarDrawInData(options.name, metric, isBarStacked(options)));
   }
 
   addDualMetricAxisData(data, options);
@@ -404,6 +426,18 @@ export const getStackAggregateData = (options: BarSpecOptions): Data => {
       },
       getStackIdTransform(options),
     ],
+  };
+};
+
+/** Adds each stack's positive and negative totals to every row so stacked segments can draw in sequentially. */
+const getDrawInStackTotalsTransform = (options: BarSpecOptions): JoinAggregateTransform => {
+  const { metric, name } = options;
+  return {
+    type: 'joinaggregate',
+    groupby: getStackFields(options),
+    fields: [`${metric}1`, `${metric}1`],
+    ops: ['max', 'min'],
+    as: getBarDrawInStackFields(name),
   };
 };
 

@@ -15,7 +15,7 @@ import { ComponentProps, ReactElement, useMemo, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
-import { AnimationType, DRAW_IN_ANIMATION_DURATION_MS } from '@spectrum-charts/core-s2/constants';
+import { AnimationType, DRAW_IN_SWEEP_DURATION_MS } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart.js';
@@ -208,7 +208,7 @@ type ResizeDuringAnimationArgs = ComponentProps<typeof Line> & {
 /**
  * Performance stress test — a single resizable chart with draw-in animation enabled. Click "Replay"
  * then immediately drag the container's resize handle to resize while the line is still drawing in
- * (draw-in only runs for DRAW_IN_ANIMATION_DURATION_MS after mount), checking that the animated x/y
+ * (draw-in only runs for DRAW_IN_SWEEP_DURATION_MS after mount), checking that the animated x/y
  * encoding stays in sync with the container's new dimensions instead of desyncing or jumping.
  */
 const ResizeDuringAnimationStory: StoryFn<ResizeDuringAnimationArgs> = ({
@@ -231,7 +231,7 @@ const ResizeDuringAnimationStory: StoryFn<ResizeDuringAnimationArgs> = ({
   return (
     <div>
       <button type="button" onClick={() => setReplayKey((key) => key + 1)} style={{ marginBottom: 8 }}>
-        Replay ({DRAW_IN_ANIMATION_DURATION_MS}ms window — start dragging the resize handle right after clicking)
+        Replay ({DRAW_IN_SWEEP_DURATION_MS}ms window — start dragging the resize handle right after clicking)
       </button>
       <div
         style={{

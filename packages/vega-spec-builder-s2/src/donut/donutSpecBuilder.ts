@@ -20,19 +20,16 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
-  DONUT_DRAW_IN_LABEL_FADE_DURATION_MS,
   DRAW_IN_ANIM_CUTOFF,
-  DRAW_IN_ANIM_T,
-  DRAW_IN_ANIMATION_DURATION_MS,
-  DRAW_IN_START,
+  DRAW_IN_ANIM_T_EASED_OUT,
+  DRAW_IN_DONUT_DURATION_MS,
   FILTERED_TABLE,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
-import { addAnimationTimerSignal } from '../marks/animationTimerUtils.js';
-import { addDrawInClockSignals } from '../marks/drawInAnimationUtils.js';
+import { addDrawInClockSignals, addDrawInLabelFadeTimer } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -264,24 +261,19 @@ export const addMarks = produce<Mark[], [DonutSpecOptions]>((marks, options) => 
   );
 });
 
-/** Gets the condition that keeps the draw-in active until the last label has faded in. */
-export const getDonutDrawInActiveCondition = (clock: string): string =>
-  `${clock} - ${DRAW_IN_START} < ${DRAW_IN_ANIMATION_DURATION_MS + DONUT_DRAW_IN_LABEL_FADE_DURATION_MS}`;
-
 export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, options) => {
   const { chartInspects, holeRatio, name } = options;
   if (options.isHoverAnimate) {
     addHoverAnimationSignals(signals, name);
   }
   if (options.isDrawInAnimate) {
-    addDrawInClockSignals(signals);
-    // keep ticking past the sweep so the last label's fade can finish
-    addAnimationTimerSignal(signals, getDonutDrawInActiveCondition, true);
+    addDrawInClockSignals(signals, DRAW_IN_DONUT_DURATION_MS, 'out');
+    addDrawInLabelFadeTimer(signals);
     const sweep = getDonutSweepExpr(options);
     const startAngle = getDonutStartAngle(options);
     signals.push({
       name: `${name}_${DRAW_IN_ANIM_CUTOFF}`,
-      update: `${startAngle} + (${sweep}) * pow(${DRAW_IN_ANIM_T}, 2)`,
+      update: `${startAngle} + (${sweep}) * ${DRAW_IN_ANIM_T_EASED_OUT}`,
     });
   }
   if (holeRatio === DEFAULT_HOLE_RATIO) {
