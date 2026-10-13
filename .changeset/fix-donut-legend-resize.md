@@ -3,4 +3,4 @@
 '@spectrum-charts/vega-spec-builder-s2': patch
 ---
 
-Fix donuts with side legends unexpectedly growing when the chart is resized smaller.
+Fix donuts growing during resize and retaining unnecessary side padding when there is no surplus width for a side legend.

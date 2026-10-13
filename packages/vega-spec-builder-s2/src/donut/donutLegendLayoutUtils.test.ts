@@ -32,14 +32,8 @@ describe('addDonutLegendLayout()', () => {
       expect(spec.legends).toEqual(before.legends);
       expect(spec.marks).toHaveLength(2);
       spec.marks?.forEach((mark) => expect(mark).toHaveProperty('interactive', false));
-      expect(spec.marks?.[0]).toHaveProperty(
-        'encode.update.x.signal',
-        expect.stringContaining('min(rscDonutLegendExtent / 2, max(0,')
-      );
-      expect(spec.marks?.[1]).toHaveProperty(
-        'encode.update.x.signal',
-        expect.stringContaining('width + rscDonutLegendMargin')
-      );
+      expect(spec.marks?.[0]).toHaveProperty('encode.update.x.signal', `-${DONUT_LEGEND_MARGIN}`);
+      expect(spec.marks?.[1]).toHaveProperty('encode.update.x.signal', `width + ${DONUT_LEGEND_MARGIN}`);
     }
   );
 

@@ -65,17 +65,14 @@ export const addDonutLegendLayout = produce<ScSpec, [DonutOptions | undefined, L
     const donutWidth = donut.variant === 'semicircle' ? `2 * (${containerHeight})` : `(${containerHeight})`;
     const innerWidth = 'rscContainerWidth(width) - padding.left - padding.right';
     const m = DONUT_LEGEND_MARGIN;
-    const spareWidth = `max(0, (${innerWidth} - ${donutWidth}) / 2)`;
-    // Keep the wide-chart reservation, tapering it to zero when the donut fills the container.
-    const outer = `${m} + min(${DONUT_LEGEND_EXTENT} / 2, ${spareWidth})`;
 
     spec.signals = [
       ...(spec.signals ?? []),
       { name: DONUT_LEGEND_EXTENT, update: extent },
       { name: DONUT_LEGEND_MARGIN, update: `max(0, (${innerWidth} - ${DONUT_LEGEND_EXTENT} - ${donutWidth}) / 2)` },
     ];
-    const leftX = `-(${outer})`;
-    const rightX = `width + ${outer}`;
+    const leftX = `-${m}`;
+    const rightX = `width + ${m}`;
     spec.marks = [
       ...(spec.marks ?? []),
       getSpacer('rscDonutLegendSpacerLeft', leftX),

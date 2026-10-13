@@ -48,11 +48,11 @@ const SideLegendStory: StoryFn<SideLegendArgs> = (storyArgs): ReactElement => {
     chartTitle,
     titlePosition,
     width,
-    height = 300,
+    height,
     showSegmentLabels,
     ...args
   } = storyArgs;
-  const chartProps = useChartProps({ data: basicDonutData, width, height });
+  const chartProps = useChartProps({ data: basicDonutData, width, ...(height === undefined ? {} : { height }) });
   return (
     <Chart {...chartProps}>
       {chartTitle && <Title text={chartTitle} position={titlePosition} />}
@@ -71,12 +71,23 @@ LegendRight.args = { metric: 'count', color: 'browser', legendPosition: 'right',
 const LegendLeft = bindWithProps(SideLegendStory);
 LegendLeft.args = { ...LegendRight.args, legendPosition: 'left' };
 
+const DefaultHeight = bindWithProps(SideLegendStory);
+DefaultHeight.args = { ...LegendRight.args, width: 340 };
+DefaultHeight.parameters = {
+  ...DefaultHeight.parameters,
+  regression: {
+    description:
+      'A side legend kept extra spacer padding when no surplus width remained, shrinking donuts with unset height.',
+    pr: 1006,
+  },
+};
+
 // resize the window to check the donut and legend stay together as the chart width changes
 const Responsive = bindWithProps(SideLegendStory);
 Responsive.args = {
   ...LegendRight.args,
   width: '100%',
-  height: 420,
+  // height: 420,
   showSegmentLabels: true,
   chartTitle: 'Browser share',
 };
@@ -105,4 +116,4 @@ LongTitle.parameters = { ...LongTitle.parameters, regression };
 ChartTitleLeftLegend.parameters = { ...ChartTitleLeftLegend.parameters, regression };
 ChartTitleCentered.parameters = { ...ChartTitleCentered.parameters, regression };
 
-export { LegendRight, LegendLeft, Responsive, LongTitle, ChartTitleLeftLegend, ChartTitleCentered };
+export { LegendRight, LegendLeft, DefaultHeight, Responsive, LongTitle, ChartTitleLeftLegend, ChartTitleCentered };
