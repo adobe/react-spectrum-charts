@@ -7,7 +7,8 @@ How work is proposed, tracked, and recorded in react-spectrum-charts.
 | Bug | GitHub issue |
 | Small feature (a prop, an option, a contained behavior change) | GitHub issue |
 | New chart type | GitHub issue or PR; it starts in [lab](#stages) |
-| Significant or uncertain change (new subsystem, cross-chart API, moving a component from lab to alpha) | RFC in [`rfcs/`](../rfcs) |
+| Significant or uncertain change (new subsystem, cross-chart API) | RFC in [`rfcs/`](../rfcs) |
+| What a component's next stage includes | GitHub milestone (see [Stages](#stages)) |
 | Open-ended research before a proposal exists | Research note in [`planning/research/`](./research) |
 | Durable architecture knowledge | `.claude/architecture-*.md` |
 
@@ -50,8 +51,8 @@ Issues close when the fix or feature merges, or when the stage they're scheduled
 ## RFCs
 
 Write an RFC when a change needs design agreement before it's built: a new subsystem or
-cross-chart API, a behavior change that affects many components, or moving a component from
-lab to alpha (see [Stages](#stages)). Bugs and small features don't need one.
+cross-chart API, or a behavior change that affects many components. Bugs and small features
+don't need one, and neither does planning a component's stages (see [Stages](#stages)).
 
 RFCs live in `rfcs/<slug>.md`, for example `rfcs/s2-remove-vega-embed.md`. Use a short,
 descriptive slug with no number. Start from [`rfcs/template.md`](../rfcs/template.md).
@@ -64,11 +65,9 @@ descriptive slug with no number. Start from [`rfcs/template.md`](../rfcs/templat
 3. **Decision.** Two maintainers approve.
    - **Accepted:** merge. The doc is now frozen.
    - **Rejected:** close the PR without merging. The PR is the record.
-4. **Implementation.** Create an issue for each row of the RFC's **Scope** table and assign it
-   to the milestone for its stage (see [Stages](#stages)). List the milestones on the RFC's
-   `Tracking` line. If the scope spans several components and doesn't map to milestones,
-   create a parent issue with the scope issues as sub-issues, and link that instead.
-5. **Done.** The RFC is implemented when its milestones (or parent issue) are closed.
+4. **Implementation.** Create an issue for each row of the RFC's **Scope** table, linking
+   back to the RFC. Maintainers schedule the issues into milestones (see [Stages](#stages)).
+5. **Done.** The RFC is implemented when its scope issues are closed.
 
 Prototype PRs can be opened before an RFC is accepted, but they don't merge until it is.
 
@@ -77,29 +76,22 @@ Prototype PRs can be opened before an RFC is accepted, but they don't merge unti
 An accepted RFC doesn't change, except for:
 
 - typo fixes and clarifications that don't change the design
-- the `Tracking` line
+- issue links in the Scope table
 
-The Scope table is a record of what was agreed, not a tracker. After acceptance, the
-milestones are the live plan: moving an issue to another milestone doesn't need an RFC edit.
-If a move changes what a stage delivers (for example, deferring accessibility out of beta),
-explain why in a comment on the issue.
+The Scope table is a record of what was agreed, not a tracker. Scheduling happens in
+milestones and doesn't need an RFC edit.
 
 New requirements become new issues in the right milestone. A real design change needs a
 short follow-up RFC that links back to the original.
 
 ### Scope
 
-An RFC's Scope table maps each piece of work to a linked issue and the stage it ships in.
-For example:
+An RFC's Scope table lists each piece of work with a linked issue. For example:
 
-| Issue | Description | Stage |
-|---|---|---|
-| #123 | Benchmark marker | alpha |
-| #124 | Trellis layout | beta |
-| #125 | Connector lines | deferred |
-
-`deferred` items are out of scope for this RFC. Their issues stay open for a future RFC or
-stage.
+| Issue | Description |
+|---|---|
+| #123 | Benchmark marker |
+| #124 | Trellis layout |
 
 ---
 
@@ -113,19 +105,19 @@ period rules, and what counts as a blocking issue are user-facing and live in th
 ### Lab
 
 Every new chart type starts in lab, even one expected to graduate. Anyone can propose one
-with an issue or PR; maintainers decide whether it fits the library. Lab components don't
-need an RFC.
+with an issue or PR; maintainers decide whether it fits the library.
 
-Moving a component from lab into alpha needs a finalized design and an RFC. Later graduations
-need an RFC only if the scope changes.
+Moving a component from lab into alpha needs a finalized design. Maintainers decide when a
+component moves and create its alpha milestone.
 
 A lab component can be removed when maintainers decide it doesn't fit the project's goals and
 its usage is low. Announce the removal in a changeset.
 
 ### Milestones
 
-Each component has a GitHub milestone for its **next** stage, named for the stage the work
-unlocks: `<Component> <stage>`, e.g. `Line beta`. Work done while a component is in alpha that
+Maintainers plan what each stage includes and record it as a GitHub milestone; stage
+planning doesn't need an RFC. Each component has a milestone for its **next** stage, named
+for the stage the work unlocks: `<Component> <stage>`, e.g. `Line beta`. Work done while a component is in alpha that
 the beta definition requires (such as finishing accessibility) goes in `Line beta`. When the
 component graduates, close the milestone and create the next one. Lab components don't have
 milestones.

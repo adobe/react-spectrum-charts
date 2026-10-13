@@ -12,8 +12,6 @@ governing permissions and limitations under the License. -->
 - Start Date: (fill me in with today's date, YYYY-MM-DD)
 - RFC PR: (leave this empty, to be filled in later)
 - Authors: (the names of everyone contributing to this RFC)
-- Tracking: (once accepted: the milestones for this RFC's scope, e.g. `Donut alpha`, or a
-  parent issue if the scope spans several components)
 
 # (RFC title goes here)
 
@@ -40,13 +38,12 @@ outcome? -->
 ## Scope
 
 <!--
-    One row per piece of work, each linked to a GitHub issue. Stage is when it ships: alpha,
-    beta, rc, stable, or deferred (out of scope). This table records what was agreed; after
-    acceptance, milestones track the live plan.
+    One row per piece of work, each linked to a GitHub issue. This table records what was
+    agreed; after acceptance, milestones track scheduling.
 
-    | Issue | Description | Stage |
-    |---|---|---|
-    | #123 | ... | alpha |
+    | Issue | Description |
+    |---|---|
+    | #123 | ... |
 -->
 
 ## Cross-Cutting Concerns
