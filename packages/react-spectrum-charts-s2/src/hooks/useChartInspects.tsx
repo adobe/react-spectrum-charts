@@ -12,8 +12,8 @@
 import { createElement, useMemo } from 'react';
 
 import { ChartInspect } from '../components/ChartInspect/index.js';
-import { Donut } from '../pre-alpha/index.js';
-import { DefaultDonutContent, getDefaultDonutContent } from '../pre-alpha/components/Donut/DonutDialogContent.js';
+import { Donut } from '../components/Donut/index.js';
+import { DefaultDonutContent, getDefaultDonutContent } from '../components/Donut/DonutDialogContent.js';
 import { ChartChildElement, ChartInspectElement, ChartInspectProps, DonutElement, InspectHandler } from '../types/index.js';
 import { getAllElements, getAllMarkElements } from '../utils/index.js';
 import { ChartContainer } from './ChartContainer.js';

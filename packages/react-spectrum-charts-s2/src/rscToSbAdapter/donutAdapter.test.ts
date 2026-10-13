@@ -15,7 +15,8 @@ import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
 import { ChartPopover } from '../components/ChartPopover/index.js';
 import { ChartInspect } from '../components/ChartInspect/index.js';
-import { DonutSummary, SegmentLabel } from '../pre-alpha/index.js';
+import { DonutSummary } from '../components/DonutSummary/index.js';
+import { SegmentLabel } from '../components/SegmentLabel/index.js';
 import { childrenToOptions } from './childrenAdapter.js';
 import { getDonutOptions } from './donutAdapter.js';
 

@@ -4,6 +4,8 @@ sidebar_position: 3
 
 # Bar (S2)
 
+[<span className="badge badge--primary">Alpha</span>](./stages.md)
+
 The `Bar` component in the S2 package supports nearly all props from the [base Bar component](/docs/api/visualizations/Bar) plus S2-exclusive features: inline direct labels and Spectrum 2 styled visuals.
 
 :::note

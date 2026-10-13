@@ -13,9 +13,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DonutSummaryProps } from '../../../types/index.js';
+import { DonutSummaryProps } from '../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Shows a summary metric in the center of its parent donut.
+ * @alpha
+ */
 const DonutSummary: FC<DonutSummaryProps> = ({ numberFormat = 'shortNumber', hideValue = false, label, delta }) => {
   return null;
 };

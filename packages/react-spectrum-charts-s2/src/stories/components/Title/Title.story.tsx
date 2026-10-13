@@ -21,6 +21,7 @@ import { downloadsByBrowserData } from '../Axis/axisStoryData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Title/Features',
+  tags: ['alpha'],
   component: Title,
   argTypes: {
     position: { control: 'inline-radio', options: ['start', 'middle', 'end'] },

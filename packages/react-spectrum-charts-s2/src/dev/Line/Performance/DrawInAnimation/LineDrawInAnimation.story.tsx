@@ -32,6 +32,7 @@ import { ChartProps } from '../../../../types/index.js';
  */
 export default {
   title: 'React Spectrum Charts 2/Line/Performance/DrawIn',
+  tags: ['alpha'],
   component: Line,
   argTypes: {
     animations: {

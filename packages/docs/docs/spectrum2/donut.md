@@ -4,17 +4,13 @@ sidebar_position: 10
 
 # Donut (S2)
 
-:::note Pre-alpha component
-`Donut` is a [pre-alpha component](./pre-alpha) — it has no finalized Spectrum 2 design yet
-and is imported from the `pre-alpha` subpath.
-:::
+[<span className="badge badge--primary">Alpha</span>](./stages.md)
 
 The `Donut` component displays a donut (or pie, via `holeRatio={0}`) chart. Each data point
 becomes a segment sized by `metric` and colored by `color`.
 
 ```jsx
-import { Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+import { Chart, Donut, DonutSummary, Legend, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
 ```
 
 ```jsx

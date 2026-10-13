@@ -15,6 +15,10 @@ import { FC } from 'react';
 
 import { LineForecastProps } from '../../types/index.js';
 
+/**
+ * Draws forecasted values for its parent line, starting at a dimension value.
+ * @alpha
+ */
 const LineForecast: FC<LineForecastProps> = ({ metric, start, label }: LineForecastProps) => {
   return null;
 };

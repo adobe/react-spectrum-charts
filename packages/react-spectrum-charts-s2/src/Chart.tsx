@@ -37,6 +37,10 @@ interface PlaceholderContentProps {
   emptyStateText: string;
 }
 
+/**
+ * Root container that renders a Spectrum 2 chart from its child components.
+ * @alpha
+ */
 export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }) => {
   const {
     backgroundColor,

@@ -25,6 +25,7 @@ import { AxisThumbnailProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Coverage/Thumbnail',
+  tags: ['alpha'],
   component: AxisThumbnail,
   parameters: {
     controls: {

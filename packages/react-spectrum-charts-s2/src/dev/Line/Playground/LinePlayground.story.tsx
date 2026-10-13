@@ -105,6 +105,7 @@ interface LinePlaygroundArgs extends LineProps, PlaygroundInspectArgs, Playgroun
 
 export default {
   title: 'React Spectrum Charts 2/Line/Playground',
+  tags: ['alpha'],
   component: Line,
   argTypes: {
     ...chartArgTypes,

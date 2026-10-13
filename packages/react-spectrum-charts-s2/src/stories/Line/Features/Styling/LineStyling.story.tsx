@@ -23,6 +23,7 @@ import { VisitsStory, visitsProps } from '../lineStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Styling',
+  tags: ['alpha'],
   component: Line,
 };
 

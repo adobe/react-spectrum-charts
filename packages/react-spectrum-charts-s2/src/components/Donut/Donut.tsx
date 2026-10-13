@@ -15,9 +15,13 @@ import { FC } from 'react';
 
 import { DEFAULT_COLOR, DEFAULT_METRIC } from '@spectrum-charts/core-s2/constants';
 
-import { DonutProps } from '../../../types/index.js';
+import { DonutProps } from '../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Renders a donut or pie chart from the metric values of each data point.
+ * @alpha
+ */
 const Donut: FC<DonutProps> = ({
   children,
   color = DEFAULT_COLOR,

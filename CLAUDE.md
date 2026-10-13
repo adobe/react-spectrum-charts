@@ -368,6 +368,16 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 
 ---
 
+## S2 Component Stage Markers
+
+Every exported S2 component outside `pre-alpha` shows its stage (see `packages/docs/docs/spectrum2/stages.md`) in three places. Add all three for a new component, and update all three when a component changes stage:
+
+1. **TSDoc** — a one-line description plus `@alpha` (or `@beta`) on the component declaration, e.g. `components/Line/Line.tsx`.
+2. **Storybook** — `tags: ['alpha']` (or `'beta'`, `'rc'`) in the meta of every story file for the component, in both `src/stories/` and `src/dev/`. `.storybook-s2/stageBadge.ts` renders the sidebar badge from this tag.
+3. **Docs** — a badge line under the page's H1: `[<span className="badge badge--primary">Alpha</span>](./stages.md)`.
+
+---
+
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.

@@ -20,6 +20,7 @@ import { formatTimestamp } from '../../../storyShared/storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Size Auto Detect',
+  tags: ['alpha'],
   component: Line,
 };
 

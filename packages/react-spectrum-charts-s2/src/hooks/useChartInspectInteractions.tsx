@@ -30,7 +30,7 @@ import { COMPONENT_NAME, DIMENSION_HOVER_AREA, FILTERED_TABLE, GROUP_DATA, GROUP
 import { ColorScheme, Datum, LegendDescription, TooltipAnchor, TooltipPlacement } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../context/RscChartContext.js';
-import { DefaultDonutContent, DonutDialogContent, getDonutSwatchColor } from '../pre-alpha/components/Donut/DonutDialogContent.js';
+import { DefaultDonutContent, DonutDialogContent, getDonutSwatchColor } from '../components/Donut/DonutDialogContent.js';
 import { ChartChildElement, RscChartProps } from '../types/index.js';
 import { debugLog } from '../utils/index.js';
 import useLegend from './useLegend.js';

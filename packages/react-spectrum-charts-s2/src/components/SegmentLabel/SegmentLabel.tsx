@@ -13,9 +13,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { SegmentLabelProps } from '../../../types/index.js';
+import { SegmentLabelProps } from '../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Adds labels to the segments of its parent donut.
+ * @alpha
+ */
 const SegmentLabel: FC<SegmentLabelProps> = ({
   labelMode,
   labelKey,
