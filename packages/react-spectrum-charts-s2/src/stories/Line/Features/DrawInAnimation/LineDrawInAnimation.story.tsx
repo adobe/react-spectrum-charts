@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics */
-import { ComponentProps, ReactElement, useState } from 'react';
+import { ComponentProps, ReactElement } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
@@ -37,18 +37,14 @@ export default {
 };
 
 const DrawInStory: StoryFn<DrawInArgs> = ({ animations, animationTypes, data, ...args }): ReactElement => {
-  const [replay, setReplay] = useState(0);
   const chartProps = useChartProps({ data, width: 640, height: 400 });
   return (
-    <div>
-      <button onClick={() => setReplay((count) => count + 1)}>Replay</button>
-      <Chart key={replay} {...chartProps} animations={animations} animationTypes={animationTypes}>
-        <Axis position="left" grid title="Visits" />
-        <Axis position="bottom" labelFormat="time" baseline ticks />
-        <Line {...args} />
-        {args.color ? <Legend highlight /> : null}
-      </Chart>
-    </div>
+    <Chart {...chartProps} animations={animations} animationTypes={animationTypes}>
+      <Axis position="left" grid title="Visits" />
+      <Axis position="bottom" labelFormat="time" baseline ticks />
+      <Line {...args} />
+      {args.color ? <Legend highlight /> : null}
+    </Chart>
   );
 };
 
