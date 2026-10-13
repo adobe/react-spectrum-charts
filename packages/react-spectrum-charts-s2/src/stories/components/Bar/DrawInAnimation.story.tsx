@@ -58,7 +58,7 @@ const DrawInStory: StoryFn<DrawInArgs> = ({
   ...args
 }): ReactElement => {
   const [replay, setReplay] = useState(0);
-  const chartProps = useChartProps({ data, colors, width: 640, height: 400 });
+  const chartProps = useChartProps({ data, width: 640, height: 400, ...(colors ? { colors } : {}) });
   const isHorizontal = args.orientation === 'horizontal';
   return (
     <div>
