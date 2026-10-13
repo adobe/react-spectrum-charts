@@ -404,7 +404,7 @@ const BEZIER_EPSILON = 1e-6;
  * @returns eased progress
  */
 export const cubicBezier = (x1: number, y1: number, x2: number, y2: number, t: number): number => {
-  if (!(t > 0)) return 0;
+  if (Number.isNaN(t) || t <= 0) return 0;
   if (t >= 1) return 1;
   const cx = 3 * x1;
   const bx = 3 * (x2 - x1) - cx;
