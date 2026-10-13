@@ -373,7 +373,7 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 Every exported S2 component outside `pre-alpha` shows its stage (see `packages/docs/docs/spectrum2/stages.md`) in three places. Add all three for a new component, and update all three when a component changes stage:
 
 1. **TSDoc** — a one-line description plus `@alpha` (or `@beta`) on the component declaration, e.g. `components/Line/Line.tsx`.
-2. **Storybook** — `tags: ['alpha']` (or `'beta'`, `'rc'`) in the meta of every story file for the component, in both `src/stories/` and `src/dev/`. `.storybook-s2/stageBadge.ts` renders the sidebar badge from this tag.
+2. **Storybook** — `tags: ['alpha']` (or `'beta'`, `'rc'`) in the meta of every story file for the component, in both `src/stories/` and `src/dev/`. This one tag drives the sidebar and canvas-toolbar badges (`.storybook-s2/stageBadge.ts`) and the autodocs page badge (`.storybook-s2/StageDocsPage.tsx`); stage labels live in `.storybook-s2/stages.ts`.
 3. **Docs** — a badge line under the page's H1: `[<span className="badge badge--primary">Alpha</span>](./stages.md)`.
 
 ---

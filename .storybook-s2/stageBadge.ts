@@ -11,27 +11,13 @@
  */
 import { createElement } from 'react';
 
+import { addons, types, useStorybookApi, useStorybookState } from 'storybook/manager-api';
 import type { API_HashEntry } from 'storybook/internal/types';
 
-// Story tags that mark a component's stage, mapped to the badge label.
-const STAGE_LABELS: Record<string, string> = {
-  lab: 'Lab',
-  alpha: 'Alpha',
-  beta: 'Beta',
-  rc: 'RC',
-};
+import { STAGE_BADGE_STYLE, getStageLabel } from './stages';
 
-const badgeStyle = {
-  marginLeft: 6,
-  padding: '0 5px',
-  border: '1px solid currentColor',
-  borderRadius: 8,
-  fontSize: 10,
-  fontWeight: 700,
-  lineHeight: '14px',
-  opacity: 0.7,
-  textTransform: 'uppercase' as const,
-};
+const badge = (label: string) =>
+  createElement('span', { style: STAGE_BADGE_STYLE, title: `${label} component` }, label);
 
 /**
  * Renders a sidebar label with a stage badge on top-level component folders.
@@ -40,12 +26,23 @@ const badgeStyle = {
  */
 export const renderStageLabel = (item: API_HashEntry) => {
   if (item.depth !== 1 || item.type === 'story' || item.type === 'docs') return item.name;
-  const stage = Object.keys(STAGE_LABELS).find((tag) => item.tags?.includes(tag));
-  if (!stage) return item.name;
-  return createElement(
-    'span',
-    null,
-    item.name,
-    createElement('span', { style: badgeStyle, title: `${STAGE_LABELS[stage]} component` }, STAGE_LABELS[stage]),
-  );
+  const label = getStageLabel(item.tags);
+  if (!label) return item.name;
+  return createElement('span', null, item.name, createElement('span', { style: { marginLeft: 6 } }, badge(label)));
 };
+
+const StageTool = () => {
+  const { storyId, refId } = useStorybookState();
+  const label = getStageLabel(useStorybookApi().getData(storyId, refId)?.tags);
+  if (!label) return null;
+  return createElement('span', { style: { display: 'flex', alignItems: 'center', padding: '0 8px' } }, badge(label));
+};
+
+addons.register('rsc/stage-badge', () => {
+  addons.add('rsc/stage-badge/tool', {
+    type: types.TOOL,
+    title: 'Component stage',
+    match: ({ viewMode }) => viewMode === 'story',
+    render: StageTool,
+  });
+});
