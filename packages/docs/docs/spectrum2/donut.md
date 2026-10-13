@@ -61,7 +61,7 @@ replaces the default content.
 ## Draw-in animation
 
 Add `'drawIn'` to the chart's `animationTypes` to sweep the segments clockwise over 750ms
-with the Spectrum 2 ease-out curve. Full-circle donuts and pies start at the top;
+with the Spectrum 2 ease-in-out curve. Full-circle donuts and pies start at the top;
 semicircle donuts start at the left. Direct and advanced labels start a 150ms linear fade
 as soon as their own slice finishes drawing. All text rows and swatches fade together;
 the final label finishes about 150ms after the donut.

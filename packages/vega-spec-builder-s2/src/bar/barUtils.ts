@@ -89,7 +89,7 @@ export const isBarStacked = (options: BarSpecOptions): boolean =>
  */
 export const getBarDrawInLabelFadeExpr = (options: BarSpecOptions, perSegment: boolean): string => {
   const stacked = perSegment && isBarStacked(options);
-  return getDrawInLabelFadeExpr(getBarDrawInSettleProgressExpr(options.name, options.metric, stacked), 'out');
+  return getDrawInLabelFadeExpr(getBarDrawInSettleProgressExpr(options.name, options.metric, stacked));
 };
 
 /**

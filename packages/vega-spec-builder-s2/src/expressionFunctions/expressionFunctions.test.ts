@@ -45,7 +45,7 @@ describe('cubicBezier()', () => {
   test('matches CSS cubic-bezier values for the S2 curves', () => {
     // symmetric control points give an exact midpoint
     expect(cubicBezier(0.42, 0, 0.58, 1, 0.5)).toBeCloseTo(0.5, 5);
-    // S2 out front-loads progress; S2 in-out starts slow
+    // an ease-out front-loads progress; S2 in-out starts slow
     expect(cubicBezier(0, 0, 0.4, 1, 0.5)).toBeGreaterThan(0.75);
     expect(cubicBezier(0.45, 0, 0.4, 1, 0.2)).toBeLessThan(0.1);
   });

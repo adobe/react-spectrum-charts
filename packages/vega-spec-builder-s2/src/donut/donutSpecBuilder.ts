@@ -21,7 +21,7 @@ import {
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
   DRAW_IN_ANIM_CUTOFF,
-  DRAW_IN_ANIM_T_EASED_OUT,
+  DRAW_IN_ANIM_T_EASED,
   DRAW_IN_DONUT_DURATION_MS,
   FILTERED_TABLE,
   SERIES_ID,
@@ -267,13 +267,13 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
     addHoverAnimationSignals(signals, name);
   }
   if (options.isDrawInAnimate) {
-    addDrawInClockSignals(signals, DRAW_IN_DONUT_DURATION_MS, 'out');
+    addDrawInClockSignals(signals, DRAW_IN_DONUT_DURATION_MS);
     addDrawInLabelFadeTimer(signals);
     const sweep = getDonutSweepExpr(options);
     const startAngle = getDonutStartAngle(options);
     signals.push({
       name: `${name}_${DRAW_IN_ANIM_CUTOFF}`,
-      update: `${startAngle} + (${sweep}) * ${DRAW_IN_ANIM_T_EASED_OUT}`,
+      update: `${startAngle} + (${sweep}) * ${DRAW_IN_ANIM_T_EASED}`,
     });
   }
   if (holeRatio === DEFAULT_HOLE_RATIO) {

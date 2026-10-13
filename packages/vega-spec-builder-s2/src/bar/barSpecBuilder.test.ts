@@ -32,7 +32,7 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
   DIMENSION_HOVER_AREA,
-  DRAW_IN_ANIM_T_EASED_OUT,
+  DRAW_IN_ANIM_T_EASED,
   DRAW_IN_DONE,
   FILTERED_TABLE,
   FOCUSED_DIMENSION,
@@ -378,7 +378,7 @@ describe('barSpecBuilder', () => {
 
       test('animationTypes with "drawIn" adds the clock, the draw-in data, and points the bars at it', () => {
         const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
-        expect(spec.signals?.some((s) => s.name === DRAW_IN_ANIM_T_EASED_OUT)).toBe(true);
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_ANIM_T_EASED)).toBe(true);
         expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(true);
         expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(true);
         expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: 'bar0_drawInData' });

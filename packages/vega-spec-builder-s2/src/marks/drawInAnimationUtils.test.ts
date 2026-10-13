@@ -19,7 +19,7 @@ import {
   DRAW_IN_DONE,
   DRAW_IN_LABEL_FADE_DURATION_MS,
   FILTERED_TABLE,
-  S2_EASE_OUT,
+  S2_EASE_IN_OUT,
 } from '@spectrum-charts/core-s2/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils.js';
@@ -37,7 +37,6 @@ import {
   getBarDrawInStackFields,
   getBarMarkDataSource,
   getCubicBezierExpr,
-  getDrawInEasedSignal,
   getDrawInLabelFadeExpr,
   getInverseCubicBezierExpr,
   getLineDrawInClip,
@@ -64,23 +63,16 @@ describe('getInverseCubicBezierExpr()', () => {
   test('swaps x and y control points so it undoes the curve', () => {
     expect(getInverseCubicBezierExpr([0, 0, 0.4, 1], 'p')).toBe('cubicBezier(0, 0, 1, 0.4, p)');
     [0.1, 0.5, 0.9].forEach((t) => {
-      const eased = cubicBezier(...S2_EASE_OUT, t);
-      expect(evalExpr(getInverseCubicBezierExpr(S2_EASE_OUT, 'p'), { p: eased })).toBeCloseTo(t, 4);
+      const eased = cubicBezier(...S2_EASE_IN_OUT, t);
+      expect(evalExpr(getInverseCubicBezierExpr(S2_EASE_IN_OUT, 'p'), { p: eased })).toBeCloseTo(t, 4);
     });
-  });
-});
-
-describe('getDrawInEasedSignal()', () => {
-  test('maps each easing to its signal', () => {
-    expect(getDrawInEasedSignal('inOut')).toBe('drawInAnimTEased');
-    expect(getDrawInEasedSignal('out')).toBe('drawInAnimTEasedOut');
   });
 });
 
 describe('addDrawInClockSignals()', () => {
   test('adds the shared mount-timer chain', () => {
     const signals: Signal[] = [];
-    addDrawInClockSignals(signals, 850, 'inOut');
+    addDrawInClockSignals(signals, 850);
     expect(signals).toStrictEqual([
       {
         name: ANIMATION_TIMER,
@@ -105,25 +97,24 @@ describe('addDrawInClockSignals()', () => {
 
   test('does not add a second clock chain when one already exists', () => {
     const signals: Signal[] = [];
-    addDrawInClockSignals(signals, 850, 'inOut');
-    addDrawInClockSignals(signals, 850, 'inOut');
+    addDrawInClockSignals(signals, 850);
+    addDrawInClockSignals(signals, 850);
     expect(signals).toHaveLength(6);
   });
 
-  test('keeps the longest duration and adds each requested easing once', () => {
+  test('keeps the longest duration so mixed marks finish together', () => {
     const signals: Signal[] = [];
-    addDrawInClockSignals(signals, 700, 'out');
-    addDrawInClockSignals(signals, 850, 'inOut');
-    addDrawInClockSignals(signals, 750, 'out');
+    addDrawInClockSignals(signals, 700);
+    addDrawInClockSignals(signals, 850);
+    addDrawInClockSignals(signals, 750);
     expect(signals.find((s) => s.name === 'drawInDuration')).toHaveProperty('value', 850);
-    expect(signals.filter((s) => s.name === 'drawInAnimTEasedOut')).toHaveLength(1);
     expect(signals.filter((s) => s.name === 'drawInAnimTEased')).toHaveLength(1);
   });
 
   test('eases 0 -> 0 and 1 -> 1', () => {
     const signals: Signal[] = [];
-    addDrawInClockSignals(signals, 700, 'out');
-    const eased = signals.find((s) => s.name === 'drawInAnimTEasedOut') as { update: string };
+    addDrawInClockSignals(signals, 700);
+    const eased = signals.find((s) => s.name === 'drawInAnimTEased') as { update: string };
     expect(evalExpr(eased.update, { drawInAnimT: 0 })).toBe(0);
     expect(evalExpr(eased.update, { drawInAnimT: 1 })).toBe(1);
   });
@@ -144,16 +135,15 @@ describe('getDrawInLabelFadeExpr()', () => {
   const scope = (elapsed: number) => ({ animationTimer: 1000 + elapsed, drawInStart: 1000, drawInDuration: 700 });
 
   test('fades in linearly once the mark settles', () => {
-    const expr = getDrawInLabelFadeExpr('1', 'out');
+    const expr = getDrawInLabelFadeExpr('1');
     expect(evalExpr(expr, scope(700))).toBeCloseTo(0);
     expect(evalExpr(expr, scope(700 + DRAW_IN_LABEL_FADE_DURATION_MS / 2))).toBeCloseTo(0.5);
     expect(evalExpr(expr, scope(700 + DRAW_IN_LABEL_FADE_DURATION_MS))).toBe(1);
   });
 
   test('starts earlier for marks that settle partway through the draw-in', () => {
-    const expr = getDrawInLabelFadeExpr('0.5', 'out');
-    const settleTime = 700 * cubicBezier(0, 0, 1, 0.4, 0.5);
-    expect(settleTime).toBeLessThan(700 / 2);
+    const expr = getDrawInLabelFadeExpr('0.3');
+    const settleTime = 700 * cubicBezier(0, 0.45, 1, 0.4, 0.3);
     expect(evalExpr(expr, scope(settleTime))).toBeCloseTo(0);
     expect(evalExpr(expr, scope(settleTime + DRAW_IN_LABEL_FADE_DURATION_MS))).toBeCloseTo(1);
   });
@@ -237,7 +227,7 @@ describe('applyDrawInReveal()', () => {
 /** Evaluates a bar draw-in expression for a given eased progress and datum. */
 const evalBarDrawInExpr = (expr: string, eased: number, datum: Record<string, number> = {}): number =>
   // eslint-disable-next-line no-new-func
-  new Function('drawInAnimTEasedOut', 'datum', 'clamp', 'min', 'max', `return ${expr};`)(
+  new Function('drawInAnimTEased', 'datum', 'clamp', 'min', 'max', `return ${expr};`)(
     eased,
     datum,
     (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi),
@@ -293,7 +283,7 @@ describe('getBarDrawInData()', () => {
     expect(getBarDrawInData('bar0', 'value', false)).toStrictEqual({
       name: 'bar0_drawInData',
       source: FILTERED_TABLE,
-      transform: [{ type: 'formula', as: 'bar0_drawInValue', expr: 'datum.value * drawInAnimTEasedOut' }],
+      transform: [{ type: 'formula', as: 'bar0_drawInValue', expr: 'datum.value * drawInAnimTEased' }],
     });
   });
 });

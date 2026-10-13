@@ -159,7 +159,6 @@ export const DRAW_IN_START = 'drawInStart'; // timestamp of the first animation 
 export const DRAW_IN_DURATION = 'drawInDuration'; // ms the chart's draw-in lasts: the longest of its marks' durations
 export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
 export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // progress eased with S2_EASE_IN_OUT
-export const DRAW_IN_ANIM_T_EASED_OUT = 'drawInAnimTEasedOut'; // progress eased with S2_EASE_OUT
 export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
 export const DRAW_IN_DONE = 'drawInDone'; // true once draw-in finishes; flips once so dependents re-encode once
 export const DRAW_IN_CLIP_X = 'drawInClipX'; // suffix: ${name}_drawInClipX — line draw-in clip edge, in pixels
@@ -217,15 +216,13 @@ export const HOVER_NEUTRAL_TARGET = 0.5;
 export type CubicBezierEasing = [number, number, number, number];
 /** Spectrum 2 ease-in-out curve. */
 export const S2_EASE_IN_OUT: CubicBezierEasing = [0.45, 0, 0.4, 1];
-/** Spectrum 2 ease-out curve. */
-export const S2_EASE_OUT: CubicBezierEasing = [0, 0, 0.4, 1];
 
 // draw-in animation constants
 /** Line draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
 export const DRAW_IN_SWEEP_DURATION_MS = 850;
-/** Bar draw-in duration in ms; the growth is eased with S2_EASE_OUT. */
+/** Bar draw-in duration in ms; the growth is eased with S2_EASE_IN_OUT. */
 export const DRAW_IN_GROW_DURATION_MS = 700;
-/** Donut draw-in duration in ms; the sweep is eased with S2_EASE_OUT. */
+/** Donut draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
 export const DRAW_IN_DONUT_DURATION_MS = 750;
 /** Pixels the line draw-in clip extends past the plot so strokes and points at the edges aren't cut off. */
 export const DRAW_IN_CLIP_OVERFLOW = 1000;

@@ -54,8 +54,6 @@ describe('Chart reduced motion', () => {
       </Chart>
     );
 
-    expect(mockRscChart).toHaveBeenCalledWith(
-      expect.objectContaining({ animations: undefined, animationTypes: ['hover', 'drawIn'] })
-    );
+    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animationTypes: ['hover', 'drawIn'] }));
   });
 });

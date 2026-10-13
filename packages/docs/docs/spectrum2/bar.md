@@ -106,7 +106,7 @@ Set `diverging` on `Bar` for a metric that spans positive and negative values (e
 ## Draw-in animation
 
 Add `'drawIn'` to the chart's `animationTypes` to grow the bars from the baseline over 700ms with the
-Spectrum 2 ease-out curve. Stacked segments fill in order from the baseline outward. Direct labels and
+Spectrum 2 ease-in-out curve. Stacked segments fill in order from the baseline outward. Direct labels and
 annotations start a 150ms linear fade as soon as their own bar or segment finishes drawing.
 
 ```jsx

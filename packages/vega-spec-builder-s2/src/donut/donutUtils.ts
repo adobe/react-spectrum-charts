@@ -103,7 +103,7 @@ export const getDonutLabelFadeProgressExpr = (options: DonutSpecOptions): string
   const drawStartAngle = getDonutStartAngle(options);
   const sweep = getDonutSweepExpr(options);
   const endProgress = `clamp((${endAngle} - ${drawStartAngle}) / (${sweep}), 0, 1)`;
-  return `(${endAngle} > ${startAngle} ? ${getDrawInLabelFadeExpr(endProgress, 'out')} : 0)`;
+  return `(${endAngle} > ${startAngle} ? ${getDrawInLabelFadeExpr(endProgress)} : 0)`;
 };
 
 /** Combines the draw-in label fade with the donut's existing highlight opacity rules. */

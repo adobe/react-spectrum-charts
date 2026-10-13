@@ -288,7 +288,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   }
 
   if (options.isDrawInAnimate) {
-    addDrawInClockSignals(signals, DRAW_IN_GROW_DURATION_MS, 'out');
+    addDrawInClockSignals(signals, DRAW_IN_GROW_DURATION_MS);
     addDrawInDoneSignal(signals);
     if (barAnnotations.length || barDirectLabels.length) addDrawInLabelFadeTimer(signals);
   }

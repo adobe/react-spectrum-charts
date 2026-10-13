@@ -17,7 +17,6 @@ import {
   CubicBezierEasing,
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
-  DRAW_IN_ANIM_T_EASED_OUT,
   DRAW_IN_CLIP_OVERFLOW,
   DRAW_IN_CLIP_X,
   DRAW_IN_DONE,
@@ -27,7 +26,6 @@ import {
   DRAW_IN_SWEEP_DURATION_MS,
   FILTERED_TABLE,
   S2_EASE_IN_OUT,
-  S2_EASE_OUT,
 } from '@spectrum-charts/core-s2/constants';
 
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
@@ -40,21 +38,6 @@ import { addAnimationTimerSignal } from './animationTimerUtils.js';
  * @returns string
  */
 export const getDrawInAnimationActiveCondition = (): string => `${DRAW_IN_ANIM_T} < 1`;
-
-/** Easing curve a draw-in animated mark reads its progress with. */
-export type DrawInEasing = 'inOut' | 'out';
-
-const DRAW_IN_EASINGS: Record<DrawInEasing, { signal: string; curve: CubicBezierEasing }> = {
-  inOut: { signal: DRAW_IN_ANIM_T_EASED, curve: S2_EASE_IN_OUT },
-  out: { signal: DRAW_IN_ANIM_T_EASED_OUT, curve: S2_EASE_OUT },
-};
-
-/**
- * Gets the name of the signal holding draw-in progress eased with `easing`.
- * @param easing
- * @returns signal name
- */
-export const getDrawInEasedSignal = (easing: DrawInEasing): string => DRAW_IN_EASINGS[easing].signal;
 
 /**
  * Gets an expression that eases `t` along a cubic-bezier curve.
@@ -78,9 +61,8 @@ export const getInverseCubicBezierExpr = ([x1, y1, x2, y2]: CubicBezierEasing, p
  * reads from. The chart's draw-in lasts as long as its longest mark so mixed marks finish together.
  * @param signals
  * @param durationMs - this mark's draw-in duration
- * @param easing - the easing curve this mark reads
  */
-export const addDrawInClockSignals = (signals: Signal[], durationMs: number, easing: DrawInEasing): void => {
+export const addDrawInClockSignals = (signals: Signal[], durationMs: number): void => {
   addAnimationTimerSignal(signals, getDrawInAnimationActiveCondition, true);
   if (!hasSignalByName(signals, DRAW_IN_START)) {
     // starts on the first timer tick (the first painted frame) so a slow mount doesn't consume the animation
@@ -103,9 +85,8 @@ export const addDrawInClockSignals = (signals: Signal[], durationMs: number, eas
       update: `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START}) / ${DRAW_IN_DURATION}, 0, 1)`,
     });
   }
-  const { signal, curve } = DRAW_IN_EASINGS[easing];
-  if (!hasSignalByName(signals, signal)) {
-    signals.push({ name: signal, value: 0, update: getCubicBezierExpr(curve, DRAW_IN_ANIM_T) });
+  if (!hasSignalByName(signals, DRAW_IN_ANIM_T_EASED)) {
+    signals.push({ name: DRAW_IN_ANIM_T_EASED, value: 0, update: getCubicBezierExpr(S2_EASE_IN_OUT, DRAW_IN_ANIM_T) });
   }
 };
 
@@ -127,11 +108,10 @@ export const addDrawInLabelFadeTimer = (signals: Signal[]): void =>
 /**
  * Gets a label's linear 0-1 fade-in, which starts once its own mark has finished drawing.
  * @param settleProgress - expression for the eased progress at which the label's mark finishes
- * @param easing - the easing curve the label's mark draws with
  * @returns expression string
  */
-export const getDrawInLabelFadeExpr = (settleProgress: string, easing: DrawInEasing): string => {
-  const settleTime = `${DRAW_IN_DURATION} * ${getInverseCubicBezierExpr(DRAW_IN_EASINGS[easing].curve, settleProgress)}`;
+export const getDrawInLabelFadeExpr = (settleProgress: string): string => {
+  const settleTime = `${DRAW_IN_DURATION} * ${getInverseCubicBezierExpr(S2_EASE_IN_OUT, settleProgress)}`;
   const elapsed = `${ANIMATION_TIMER} - ${DRAW_IN_START}`;
   return `clamp((${elapsed} - ${settleTime}) / ${DRAW_IN_LABEL_FADE_DURATION_MS}, 0, 1)`;
 };
@@ -168,7 +148,7 @@ const getDrawInPixelExtent = (scaleType: ScaleType): [string, string] => {
  * @param options
  */
 export const addLineDrawInAnimationSignals = (signals: Signal[], { name, scaleType }: LineSpecOptions): void => {
-  addDrawInClockSignals(signals, DRAW_IN_SWEEP_DURATION_MS, 'inOut');
+  addDrawInClockSignals(signals, DRAW_IN_SWEEP_DURATION_MS);
   const clipXSignal = `${name}_${DRAW_IN_CLIP_X}`;
   if (hasSignalByName(signals, clipXSignal)) return;
   const [start, end] = getDrawInPixelExtent(scaleType);
@@ -256,12 +236,12 @@ export const getBarDrawInStackFields = (name: string): [string, string] => [
  * @returns expression string
  */
 export const getBarDrawInMetricExpr = (name: string, metric: string, stacked: boolean): string => {
-  if (!stacked) return `datum.${metric} * ${DRAW_IN_ANIM_T_EASED_OUT}`;
+  if (!stacked) return `datum.${metric} * ${DRAW_IN_ANIM_T_EASED}`;
   const [stackMax, stackMin] = getBarDrawInStackFields(name);
   const v0 = `datum.${metric}0`;
   const v1 = `datum.${metric}1`;
   // the stack's top grows toward its total; each segment shows only the part of that reach inside its own range
-  const reach = `${DRAW_IN_ANIM_T_EASED_OUT} * (${v1} > 0 ? datum.${stackMax} : datum.${stackMin})`;
+  const reach = `${DRAW_IN_ANIM_T_EASED} * (${v1} > 0 ? datum.${stackMax} : datum.${stackMin})`;
   return `clamp(${reach}, min(${v0}, ${v1}), max(${v0}, ${v1}))`;
 };
 

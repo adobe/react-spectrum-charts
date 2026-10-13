@@ -16,14 +16,13 @@ import {
   ANIMATION_TIMER,
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
-  DRAW_IN_ANIM_T_EASED_OUT,
   DRAW_IN_DONUT_DURATION_MS,
   DRAW_IN_LABEL_FADE_DURATION_MS,
   DRAW_IN_START,
   FADE_FACTOR,
   FILTERED_TABLE,
   SELECTED_ITEM,
-  S2_EASE_OUT,
+  S2_EASE_IN_OUT,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
@@ -74,7 +73,7 @@ const getMarkItems = (chart: View, name: string): SceneNode[] => {
 };
 
 /** Eased sweep progress at linear progress `t`. */
-const easeOut = (t: number) => cubicBezier(...S2_EASE_OUT, t);
+const ease = (t: number) => cubicBezier(...S2_EASE_IN_OUT, t);
 
 const data = [
   { id: 'a', series: 'A', value: 2 },
@@ -139,18 +138,18 @@ describe('donut draw-in animations', () => {
 
   test('shares the clock with Line draw-in and hover without duplicate timer signals', () => {
     const signals = [];
-    addDrawInClockSignals(signals, 850, 'inOut');
+    addDrawInClockSignals(signals, 850);
     const result = addSignals(signals, {
       ...defaultDonutOptions,
       isHoverAnimate: true,
       isDrawInAnimate: true,
     });
-    [ANIMATION_TIMER, DRAW_IN_START, DRAW_IN_ANIM_T, DRAW_IN_ANIM_T_EASED, DRAW_IN_ANIM_T_EASED_OUT].forEach((signal) =>
+    [ANIMATION_TIMER, DRAW_IN_START, DRAW_IN_ANIM_T, DRAW_IN_ANIM_T_EASED].forEach((signal) =>
       expect(result.filter(({ name }) => name === signal)).toHaveLength(1)
     );
     expect(result.find(({ name }) => name === 'testName_drawInAnimCutoff')).toHaveProperty(
       'update',
-      `0 + (2 * PI) * ${DRAW_IN_ANIM_T_EASED_OUT}`
+      `0 + (2 * PI) * ${DRAW_IN_ANIM_T_EASED}`
     );
   });
 
@@ -182,7 +181,7 @@ describe('donut draw-in animations', () => {
     });
 
     await advance(chart, DRAW_IN_DONUT_DURATION_MS / 4);
-    const partialAngle = start + sweep * easeOut(0.25);
+    const partialAngle = start + sweep * ease(0.25);
     const items = getMarkItems(chart, 'donut');
     expect(chart.signal('donut_drawInAnimCutoff')).toBeCloseTo(partialAngle);
     expect(items[0].startAngle).toBe(start);
@@ -207,8 +206,7 @@ describe('donut draw-in animations', () => {
     const options = { ...defaultDonutOptions, name: 'donut', isDrawInAnimate: true };
     expect(getSliceStrokeWidthExpr(options, '2')).toContain('donut_drawInAnimCutoff');
     const chart = await createView();
-    // ease-out starts fast, so a sub-millisecond tick keeps the first slice narrower than the separator
-    await advance(chart, 0.05);
+    await advance(chart, 1);
     expect(getMarkItems(chart, 'donut')[0].strokeWidth).toBe(0);
     expect(getArcMark(defaultDonutOptions).encode?.update?.endAngle).toEqual({
       field: 'testName_endAngle',
@@ -223,13 +221,13 @@ describe('donut draw-in animations', () => {
   test('draws a single segment from zero to a complete circle', async () => {
     const chart = await createView({ data: [data[0]] });
     await advance(chart, DRAW_IN_DONUT_DURATION_MS / 2);
-    expect(getMarkItems(chart, 'donut')[0].endAngle).toBeCloseTo(2 * Math.PI * easeOut(0.5));
+    expect(getMarkItems(chart, 'donut')[0].endAngle).toBeCloseTo(2 * Math.PI * ease(0.5));
     await advance(chart, 1000);
     expect(getMarkItems(chart, 'donut')[0].endAngle).toBe(2 * Math.PI);
     expect(getMarkItems(chart, 'donut')[0].opacity).toBe(1);
   });
   const getCompletionMs = (progress: number) =>
-    DRAW_IN_DONUT_DURATION_MS * cubicBezier(0, 0, 1, 0.4, progress);
+    DRAW_IN_DONUT_DURATION_MS * cubicBezier(0, 0.45, 1, 0.4, progress);
 
   test('hides all label rows and swatches until their fade begins', () => {
     const options = { ...defaultDonutOptions, isDrawInAnimate: true };
@@ -277,9 +275,13 @@ describe('donut draw-in animations', () => {
       await advance(chart, finish - 1);
       expectLabels(index, 0);
       for (const fraction of [0.25, 0.5, 0.75, 1]) {
-        await advance(chart, finish + fade * fraction);
+        const now = finish + fade * fraction;
+        await advance(chart, now);
         expectLabels(index, fraction);
-        finishes.slice(0, index).forEach((_, previous) => expectLabels(previous, 1));
+        // earlier fades can still be running, since neighbouring slices may finish less than a fade apart
+        finishes
+          .slice(0, index)
+          .forEach((previousFinish, previous) => expectLabels(previous, Math.min((now - previousFinish) / fade, 1)));
       }
     }
     await advance(chart, DRAW_IN_DONUT_DURATION_MS + 500);
