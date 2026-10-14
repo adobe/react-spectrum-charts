@@ -65,8 +65,6 @@ export default {
       'labelOrientation',
       'labelLimit',
       'labels',
-      'tickCountMinimum',
-      'tickCountLimit',
       'numberFormat',
       'range',
       'subLabels',
@@ -170,8 +168,6 @@ Playground.args = {
   labelLimit: 120,
   numberFormat: 'shortNumber',
   ticks: true,
-  tickCountLimit: 8,
-  tickCountMinimum: 2,
   title: 'Browser',
   truncateLabels: true,
 } satisfies AxisPlaygroundArgs;

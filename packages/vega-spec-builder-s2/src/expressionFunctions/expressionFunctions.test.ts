@@ -18,13 +18,13 @@ import {
   LabelDatum,
   donutSliceStrokeWidth,
   expressionFunctions,
-  getExpressionFunctions,
   formatHorizontalTimeAxisLabels,
   formatLocaleCurrency,
   formatPercentWithValue,
   formatShortNumber,
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
+  getExpressionFunctions,
   hoverFraction,
   isDonutLabelVisible,
 } from './expressionFunctions.js';
@@ -108,6 +108,22 @@ describe('donutSliceStrokeWidth()', () => {
 
   test('should treat a negative inner radius as 0', () => {
     expect(donutSliceStrokeWidth(2, -10, 0, 0.5)).toBe(0);
+  });
+});
+
+describe('getExpressionFunctions()', () => {
+  test('registers the responsive time-axis helpers used by time axis signals', () => {
+    expect(Object.keys(getExpressionFunctions())).toEqual(expect.arrayContaining(Object.keys(expressionFunctions)));
+    expect(expressionFunctions).toEqual(
+      expect.objectContaining({
+        getTimeAxisLabelFormat: expect.any(Function),
+        getTimeAxisMajorTicks: expect.any(Function),
+        getTimeAxisMinorTicks: expect.any(Function),
+        getTimeAxisPrimaryLabelFormat: expect.any(Function),
+        getTimeAxisPrimaryTicks: expect.any(Function),
+        getTimeAxisTickCount: expect.any(Function),
+      })
+    );
   });
 });
 
@@ -454,14 +470,21 @@ describe('hoverFraction()', () => {
 
     type SceneRoot = { items: { items: { items: { opacity: number }[] }[] }[] };
     const getOpacities = (chart: View) =>
-      (chart as unknown as { scenegraph: () => { root: SceneRoot } }).scenegraph().root.items[0].items[0].items.map(({ opacity }) => opacity);
+      (chart as unknown as { scenegraph: () => { root: SceneRoot } })
+        .scenegraph()
+        .root.items[0].items[0].items.map(({ opacity }) => opacity);
 
     test('re-encodes when the fraction data is modified or grows', async () => {
       view = new View(parse(spec, undefined, { ast: true }), { renderer: 'none', expr: expressionInterpreter });
       await view.runAsync();
       expect(getOpacities(view)).toEqual([0.5, 0.5, 0.25]);
 
-      await view.change('fractions', changeset().modify((d: { id: string }) => d.id === 'b', 'fraction', 0.1)).runAsync();
+      await view
+        .change(
+          'fractions',
+          changeset().modify((d: { id: string }) => d.id === 'b', 'fraction', 0.1)
+        )
+        .runAsync();
       expect(getOpacities(view)).toEqual([0.5, 0.1, 0.25]);
 
       await view.change('fractions', changeset().insert({ id: 'c', fraction: 0.9 })).runAsync();
