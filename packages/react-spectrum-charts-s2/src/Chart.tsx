@@ -64,6 +64,11 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const prefersReducedMotion = usePrefersReducedMotion();
+  // Stable reference so parent re-renders don't rebuild the spec and replay draw-in.
+  const animationTypes = useMemo(
+    () => resolveAnimationTypes(otherProps.animationTypes, prefersReducedMotion),
+    [otherProps.animationTypes, prefersReducedMotion]
+  );
 
   useChartImperativeHandle(ref, { chartView, title });
 
@@ -109,7 +114,7 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
     UNSAFE_vegaSpec,
     onVegaViewReady,
     ...otherProps,
-    animationTypes: resolveAnimationTypes(otherProps.animationTypes, prefersReducedMotion),
+    animationTypes,
   };
 
   const chartContent = <RscChart {...rscChartProps}>{props.children}</RscChart>;

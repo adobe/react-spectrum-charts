@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Provider } from '@react-spectrum/s2';
+import { AnimationType, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
+
 import { Chart } from './Chart.js';
 import { Line } from './components/index.js';
 import usePrefersReducedMotion from './hooks/usePrefersReducedMotion.js';
@@ -43,6 +46,24 @@ describe('Chart reduced motion', () => {
     );
 
     expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animations: true, animationTypes: ['hover'] }));
+  });
+
+  test('keeps the same animation types reference across parent re-renders', () => {
+    mockUsePrefersReducedMotion.mockReturnValue(true);
+    const animationTypes: AnimationType[] = ['hover', 'drawIn'];
+    const renderChart = (title: string) => (
+      <Chart data={[{ x: 1, y: 1 }]} title={title} animationTypes={animationTypes}>
+        <Line dimension="x" metric="y" />
+      </Chart>
+    );
+
+    const { rerender } = render(renderChart('first'));
+    const mountedAnimationTypes = mockRscChart.mock.calls.at(-1)?.[0].animationTypes;
+    mockRscChart.mockClear();
+    rerender(<Provider colorScheme={DEFAULT_COLOR_SCHEME}>{renderChart('second')}</Provider>);
+
+    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ title: 'second' }));
+    expect(mockRscChart.mock.calls.at(-1)?.[0].animationTypes).toBe(mountedAnimationTypes);
   });
 
   test('preserves the animation props when reduced motion is not preferred', () => {
