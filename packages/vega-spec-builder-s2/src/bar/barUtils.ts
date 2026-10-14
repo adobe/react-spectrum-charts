@@ -26,7 +26,6 @@ import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DIMENSION_HOVER_AREA,
-  FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
@@ -40,7 +39,7 @@ import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils.js';
 import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
-import { getDeemphasisRamp, getHoverFractionSignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
+import { getHoverDeemphasisOpacitySignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
 import {
   getColorProductionRule,
   getCursor,
@@ -360,10 +359,9 @@ export const getBarHoverRules = (options: BarSpecOptions): HoverMatchRule[] => {
 };
 
 /** Animated deemphasis-opacity signal for a per-item-keyed mark. Mirrors line's `getLineDeemphasisOpacitySignal`. */
-const getBarDeemphasisOpacitySignal = (name: string, keyField: string): ProductionRule<NumericValueRef> => {
-  const ramp = getDeemphasisRamp(getHoverFractionSignal(name, keyField));
-  return { signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` };
-};
+const getBarDeemphasisOpacitySignal = (name: string, keyField: string): ProductionRule<NumericValueRef> => ({
+  signal: getHoverDeemphasisOpacitySignal(name, keyField),
+});
 
 /**
  * Bar's opacity encoding: the animated per-bar fraction when hover-animated, else `getMarkOpacity`.

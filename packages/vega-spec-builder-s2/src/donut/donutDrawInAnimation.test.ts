@@ -12,6 +12,7 @@
 import { View, expressionFunction, parse } from 'vega';
 
 import {
+  ANIMATION_ACTIVE,
   ANIMATION_TIMER,
   DONUT_DRAW_IN_LABEL_FADE_DURATION_MS,
   DRAW_IN_ANIMATION_DURATION_MS,
@@ -107,6 +108,8 @@ describe('donut draw-in animations', () => {
     view?.finalize();
     view = new View(parse(spec), { renderer: 'none' }).width(600).height(600);
     await view.runAsync();
+    // first tick starts the draw-in clock, like the ticker's first painted frame
+    if (spec.signals?.some(({ name }) => name === ANIMATION_TIMER)) await view.signal(ANIMATION_TIMER, now).runAsync();
     return view;
   };
 
@@ -143,6 +146,17 @@ describe('donut draw-in animations', () => {
       'update',
       `0 + (2 * PI) * pow(${DRAW_IN_ANIM_T}, 2)`
     );
+  });
+
+  test('stays active until the last label fade finishes', async () => {
+    const chart = await createView();
+    const fadeEnd = DRAW_IN_ANIMATION_DURATION_MS + DONUT_DRAW_IN_LABEL_FADE_DURATION_MS;
+    await advance(chart, DRAW_IN_ANIMATION_DURATION_MS);
+    expect(chart.signal(ANIMATION_ACTIVE)).toBe(true);
+    await advance(chart, fadeEnd - 1);
+    expect(chart.signal(ANIMATION_ACTIVE)).toBe(true);
+    await advance(chart, fadeEnd);
+    expect(chart.signal(ANIMATION_ACTIVE)).toBe(false);
   });
 
   test.each([

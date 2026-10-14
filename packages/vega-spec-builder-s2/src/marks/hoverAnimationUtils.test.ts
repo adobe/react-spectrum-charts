@@ -12,6 +12,7 @@
 import { Data, Signal, ValuesData } from 'vega';
 
 import {
+  ANIMATION_ACTIVE,
   ANIMATION_HOVER_SPEED,
   ANIMATION_THROTTLE,
   HOVER_ACTIVE_TIMER,
@@ -21,20 +22,24 @@ import {
   HOVER_NEUTRAL_TARGET,
   HOVER_TARGETS,
   ANIMATION_TIMER,
+  FADE_FACTOR,
   MARK_ID,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
 import {
+  HOVER_DEEMPHASIS_OPACITY,
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
   getDeemphasisRamp,
   getEmphasisRamp,
   getHoverAnimStateData,
+  getHoverDeemphasisOpacitySignal,
   getHoverFractionData,
   getHoverFractionSignal,
   getHoverSeriesFractionData,
+  getHoverAnimationActiveCondition,
   getHoverTargetData,
 } from './hoverAnimationUtils.js';
 
@@ -148,6 +153,23 @@ describe('getHoverFractionData()', () => {
   });
 });
 
+describe('getHoverFractionData() deemphasis opacity', () => {
+  const evalDeemphasisOpacity = (fraction: number): number => {
+    const formula = getHoverFractionData('line0').transform?.[2] as { as: string; expr: string };
+    expect(formula.as).toBe(HOVER_DEEMPHASIS_OPACITY);
+    const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+    // eslint-disable-next-line no-new-func
+    return new Function('clamp', 'datum', `return ${formula.expr};`)(clamp, { fraction });
+  };
+
+  test('fades to FADE_FACTOR when deemphasized and stays opaque from neutral upward', () => {
+    expect(evalDeemphasisOpacity(0)).toBeCloseTo(FADE_FACTOR);
+    expect(evalDeemphasisOpacity(HOVER_NEUTRAL_TARGET / 2)).toBeCloseTo((FADE_FACTOR + 1) / 2);
+    expect(evalDeemphasisOpacity(HOVER_NEUTRAL_TARGET)).toBe(1);
+    expect(evalDeemphasisOpacity(1)).toBe(1);
+  });
+});
+
 describe('getHoverSeriesFractionData()', () => {
   test('defaults to SERIES_ID as the keyField (line: hoverFractionData is already keyed by series, so the lookup is a no-op)', () => {
     expect(getHoverSeriesFractionData('line0')).toStrictEqual({
@@ -187,15 +209,29 @@ describe('getHoverSeriesFractionData()', () => {
 });
 
 describe('getHoverFractionSignal()', () => {
-  test('looks up the row for datum by series identity, defaulting to the neutral level when absent', () => {
+  test('looks up the fraction for datum by series identity, defaulting to the neutral level', () => {
     expect(getHoverFractionSignal('line0')).toEqual(
-      `(data('line0_hoverFractionData')[indexof(pluck(data('line0_hoverFractionData'), '${SERIES_ID}'), datum.${SERIES_ID})] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`
+      `hoverFraction(data('line0_hoverFractionData'), '${SERIES_ID}', datum.${SERIES_ID}, ${HOVER_NEUTRAL_TARGET})`
     );
   });
 
   test('honors a custom keyField', () => {
     expect(getHoverFractionSignal('bar0', MARK_ID)).toEqual(
-      `(data('bar0_hoverFractionData')[indexof(pluck(data('bar0_hoverFractionData'), '${MARK_ID}'), datum.${MARK_ID})] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`
+      `hoverFraction(data('bar0_hoverFractionData'), '${MARK_ID}', datum.${MARK_ID}, ${HOVER_NEUTRAL_TARGET})`
+    );
+  });
+});
+
+describe('getHoverDeemphasisOpacitySignal()', () => {
+  test('looks up the precomputed deemphasis opacity, defaulting to fully opaque', () => {
+    expect(getHoverDeemphasisOpacitySignal('line0')).toEqual(
+      `hoverFraction(data('line0_hoverFractionData'), '${SERIES_ID}', datum.${SERIES_ID}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`
+    );
+  });
+
+  test('honors a custom keyField', () => {
+    expect(getHoverDeemphasisOpacitySignal('bar0', MARK_ID)).toEqual(
+      `hoverFraction(data('bar0_hoverFractionData'), '${MARK_ID}', datum.${MARK_ID}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`
     );
   });
 });
@@ -240,8 +276,14 @@ describe('addHoverAnimationSignals()', () => {
       {
         name: ANIMATION_TIMER,
         value: 0,
-        on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
+        on: [
+          {
+            events: { type: 'timer', throttle: ANIMATION_THROTTLE, filter: `(${getHoverAnimationActiveCondition('now()')})` },
+            update: 'now()',
+          },
+        ],
       },
+      { name: ANIMATION_ACTIVE, value: true, update: `(${getHoverAnimationActiveCondition(ANIMATION_TIMER)})` },
       {
         name: HOVER_ANIMATING,
         value: false,
@@ -277,6 +319,7 @@ describe('addHoverAnimationSignals()', () => {
     expect(signals.filter((s) => s.name === HOVER_ACTIVE_TIMER)).toHaveLength(1);
     expect(signals.map((s) => s.name)).toEqual([
       ANIMATION_TIMER,
+      ANIMATION_ACTIVE,
       HOVER_ANIMATING,
       HOVER_IDLE_TICKS,
       HOVER_ACTIVE_TIMER,
@@ -353,6 +396,21 @@ describe('addHoverAnimationSignals()', () => {
   });
 });
 
+describe('getHoverAnimationActiveCondition()', () => {
+  const evalCondition = (row: { lastChange: number; settled: boolean }, now: number): boolean =>
+    // eslint-disable-next-line no-new-func
+    new Function('data', 'clock', `return ${getHoverAnimationActiveCondition('clock')};`)(() => [row], now);
+
+  test('stays active until the grace tick has settled the animation', () => {
+    expect(evalCondition({ lastChange: 0, settled: false }, 10000)).toBe(true);
+    expect(evalCondition({ lastChange: 0, settled: true }, 10000)).toBe(false);
+  });
+
+  test('stays active within the nominal duration of the last change even if marked settled', () => {
+    expect(evalCondition({ lastChange: 1000, settled: true }, 1000 + ANIMATION_HOVER_SPEED)).toBe(true);
+  });
+});
+
 describe('addHoverAnimLastChangeData()', () => {
   test('creates the shared tracker data source, seeded at rest, with an on-trigger for the mark', () => {
     const data: Data[] = [];
@@ -360,12 +418,17 @@ describe('addHoverAnimLastChangeData()', () => {
     expect(data).toStrictEqual([
       {
         name: HOVER_ANIM_LAST_CHANGE_DATA,
-        values: [{ lastChange: 0 }],
+        values: [{ lastChange: 0, settled: false }],
         on: [
+          {
+            trigger: HOVER_IDLE_TICKS,
+            modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
+            values: `{settled: ${HOVER_IDLE_TICKS} >= 2}`,
+          },
           {
             trigger: `line0_${HOVER_TARGETS}`,
             modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
-            values: '{lastChange: now()}',
+            values: '{lastChange: now(), settled: false}',
           },
         ],
       },
@@ -378,9 +441,9 @@ describe('addHoverAnimLastChangeData()', () => {
     addHoverAnimLastChangeData(data, 'line1');
     expect(data.filter((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toHaveLength(1);
     const [tracker] = data as ValuesData[];
-    expect(tracker.on).toHaveLength(2);
-    expect(tracker.on?.[0].trigger).toEqual(`line0_${HOVER_TARGETS}`);
-    expect(tracker.on?.[1].trigger).toEqual(`line1_${HOVER_TARGETS}`);
+    expect(tracker.on).toHaveLength(3);
+    expect(tracker.on?.[1].trigger).toEqual(`line0_${HOVER_TARGETS}`);
+    expect(tracker.on?.[2].trigger).toEqual(`line1_${HOVER_TARGETS}`);
   });
 
   test('initializes `on` when an existing entry was constructed without one', () => {

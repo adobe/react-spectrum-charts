@@ -65,7 +65,7 @@ describe('variation dashboards', () => {
   });
 
   test.each(files.map((file) => [path.relative(__dirname, file), file]))('%s has a valid coverage map', (_, file) => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { dashboard } = require(file) as { dashboard?: DashboardDefinition };
     expect(dashboard).toBeDefined();
     expect(getDashboardCoverageErrors(dashboard as DashboardDefinition)).toEqual([]);

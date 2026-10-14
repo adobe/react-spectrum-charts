@@ -57,6 +57,30 @@ const ReferenceLineHorizontalStory: StoryFn<typeof ReferenceLine> = (args): Reac
   );
 };
 
+const usageData = [
+  { month: "Dec '23", value: 165000 },
+  { month: "Jan '24", value: 196000 },
+  { month: "Feb '24", value: 199000 },
+  { month: "Mar '24", value: 222000 },
+  { month: "Apr '24", value: 219000 },
+  { month: "May '24", value: 243000 },
+  { month: "Jun '24", value: 226000 },
+  { month: "Jul '24", value: 241000 },
+];
+
+const ReferenceLineLongLabelStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: usageData, width: 600 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" title="Commerce Transactions" labelFormat="linear" grid>
+        <ReferenceLine {...args} />
+      </Axis>
+      <Axis position="bottom" baseline />
+      <Bar dimension="month" metric="value" />
+    </Chart>
+  );
+};
+
 const Basic = bindWithProps(ReferenceLineStory);
 Basic.args = {
   value: 3,
@@ -113,6 +137,31 @@ HorizontalSupreme.args = {
   position: 'center',
 };
 
+// label is wider than the tick labels, as reported in #670
+const HorizontalLongLabel = bindWithProps(ReferenceLineLongLabelStory);
+HorizontalLongLabel.args = {
+  value: 280000,
+  label: 'Entitlement',
+  lineType: 'dashed',
+};
+
+const HorizontalLabelInside = bindWithProps(ReferenceLineHorizontalStory);
+HorizontalLabelInside.args = {
+  value: 3,
+  icon: 'date',
+  label: 'Entitlement',
+  labelPosition: 'end',
+  position: 'center',
+};
+
+const LabelInside = bindWithProps(ReferenceLineStory);
+LabelInside.args = {
+  value: 3,
+  label: 'Entitlement',
+  labelPosition: 'start',
+  position: 'center',
+};
+
 const ReferenceLineDashed = bindWithProps(ReferenceLineStory);
 ReferenceLineDashed.args = {
   value: 3,
@@ -128,5 +177,8 @@ export {
   HorizontalIcon,
   HorizontalLabel,
   HorizontalSupreme,
+  HorizontalLongLabel,
+  HorizontalLabelInside,
+  LabelInside,
   ReferenceLineDashed,
 };

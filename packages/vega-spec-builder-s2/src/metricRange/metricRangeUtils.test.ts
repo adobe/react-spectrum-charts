@@ -196,6 +196,13 @@ describe('getMetricRangeMark', () => {
   });
 });
 
+describe('getMetricRangeMark draw-in', () => {
+  test('boundary line does not reference draw-in signals when the parent line draws in', () => {
+    const marks = getMetricRangeMark({ ...defaultLineOptions, isDrawInAnimate: true }, defaultMetricRangeSpecOptions);
+    expect(JSON.stringify(marks)).not.toContain('drawInAnim');
+  });
+});
+
 describe('getMetricRangeGroupMarks', () => {
   test('creates MetricRange group mark from basic input', () => {
     expect(getMetricRangeGroupMarks(defaultLineOptions)).toEqual([

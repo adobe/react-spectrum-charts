@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('path');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
