@@ -14,7 +14,7 @@
 import { ComponentProps, Key, ReactElement, useMemo, useState } from 'react';
 
 import { CalendarDate } from '@internationalized/date';
-import { DateRangePicker, DateValue, Picker, PickerItem, RangeValue } from '@react-spectrum/s2';
+import { DateRangePicker, DateValue, Picker, PickerItem, RangeValue, TextField } from '@react-spectrum/s2';
 import { Granularity } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../Chart.js';
@@ -261,8 +261,8 @@ export const GranularityPickerStory = ({ position, ...axisProps }: GranularityPi
           minValue={DATA_START}
           maxValue={DATA_END}
         />
-        <div aria-live="polite" style={{ paddingBlockEnd: 8 }}>
-          Granularity: <strong>{granularity}</strong> ({data.length / SERIES.length} points)
+        <div aria-live="polite">
+          <TextField label="Granularity" isReadOnly value={`${granularity} (${data.length / SERIES.length} points)`} />
         </div>
       </div>
       <div style={{ position: 'relative', display: 'inline-block', alignSelf: 'flex-start' }}>
