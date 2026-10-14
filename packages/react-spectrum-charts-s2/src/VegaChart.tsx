@@ -155,22 +155,24 @@ export const VegaChart: FC<VegaChartProps> = ({
       // captured so the async .then attaches the ticker to the element this view was embedded into
       const container = containerRef.current;
 
-      void embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
-        // cleanup already ran (unmount or re-embed) before embed resolved, so discard this view
-        if (cancelled) {
-          view.finalize();
-          return;
-        }
-        chartView.current = view;
-        if (isAnimated) {
-          detachAnimationTicker.current = attachAnimationTicker(view, container);
-        }
-        onNewView(view);
-        view.resize();
-        void view.runAsync();
-        // One additional render to settle all resize calculations
-        setTimeout(() => view.runAsync(), 0);
-      });
+      void embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip })
+        .then(({ view }) => {
+          // cleanup already ran (unmount or re-embed) before embed resolved, so discard this view
+          if (cancelled) {
+            view.finalize();
+            return;
+          }
+          chartView.current = view;
+          if (isAnimated) {
+            detachAnimationTicker.current = attachAnimationTicker(view, container);
+          }
+          onNewView(view);
+          view.resize();
+          void view.runAsync();
+          // One additional render to settle all resize calculations
+          setTimeout(() => view.runAsync(), 0);
+        })
+        .catch((error: unknown) => console.error('Failed to render chart:', error));
     }
     return () => {
       cancelled = true;
