@@ -58,8 +58,8 @@ import {
   addScales,
   addSecondaryScales,
   addSignals,
-  getDodgedGroupAggregateData,
   getDodgeGroupTransform,
+  getDodgedGroupAggregateData,
   getRepeatedScale,
   getStackAggregateData,
   getStackIdTransform,
@@ -434,9 +434,7 @@ describe('barSpecBuilder', () => {
           animations: true,
           data,
         });
-        const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as
-          | SourceData
-          | undefined;
+        const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as SourceData | undefined;
         const aggregateTransform = hoverTargetData?.transform?.find(
           (t): t is AggregateTransform => t.type === 'aggregate'
         );
@@ -494,9 +492,7 @@ describe('barSpecBuilder', () => {
             as: `bar0_${GROUP_ID}`,
             expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
           });
-          const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as
-            | SourceData
-            | undefined;
+          const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as SourceData | undefined;
           const aggregateTransform = hoverTargetData?.transform?.find(
             (t): t is AggregateTransform => t.type === 'aggregate'
           );
@@ -804,9 +800,7 @@ describe('barSpecBuilder', () => {
         const signal = signals.find(
           (signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
         );
-        expect(signal?.on).toContainEqual(
-          expect.objectContaining({ events: `@${defaultBarOptions.name}:mouseover` })
-        );
+        expect(signal?.on).toContainEqual(expect.objectContaining({ events: `@${defaultBarOptions.name}:mouseover` }));
       });
 
       test('should not add dimension hover area signal if the bar is not interactive', () => {
@@ -1123,16 +1117,30 @@ describe('barSpecBuilder', () => {
         expect(marks.find((mark) => mark.name === 'bar0_focusRing')).toBeUndefined();
       });
       test('should add the per-stack group focus ring when enabled on a stacked bar', () => {
-        const marks = addMarks([], { ...defaultBarOptions, type: 'stacked', accessibleNavigation: true, color: 'series' });
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          type: 'stacked',
+          accessibleNavigation: true,
+          color: 'series',
+        });
         expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeDefined();
       });
       test('should not add the stack group focus ring on a basic (single-series) bar', () => {
         // a static {value} color (no series field) → basic bar, so no per-stack group ring
-        const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          accessibleNavigation: true,
+          color: { value: 'categorical-100' },
+        });
         expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
       });
       test('should add the per-group focus ring when enabled on a dodged bar', () => {
-        const marks = addMarks([], { ...defaultBarOptions, type: 'dodged', accessibleNavigation: true, color: 'series' });
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          type: 'dodged',
+          accessibleNavigation: true,
+          color: 'series',
+        });
         const ring = marks.find((mark) => mark.name === 'bar0_stackFocusRing');
         expect(ring).toBeDefined();
         expect(ring?.from).toEqual({ data: 'bar0_groups' });
@@ -1308,17 +1316,17 @@ describe('barSpecBuilder', () => {
         const data = addData(defaultData, { ...defaultBarOptions, type: 'dodged' });
         expect(data).toHaveLength(3);
         expect(data[2].name).toEqual('bar0_groups');
-      }),
-        test('should add dodged group aggregate if stacked and dodged', () => {
-          const data = addData(defaultData, {
-            ...defaultBarOptions,
-            type: 'stacked',
-            color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-          });
-          expect(data).toHaveLength(4);
-          expect(data[2].name).toEqual('bar0_stacks');
-          expect(data[3].name).toEqual('bar0_groups');
+      });
+      test('should add dodged group aggregate if stacked and dodged', () => {
+        const data = addData(defaultData, {
+          ...defaultBarOptions,
+          type: 'stacked',
+          color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
         });
+        expect(data).toHaveLength(4);
+        expect(data[2].name).toEqual('bar0_stacks');
+        expect(data[3].name).toEqual('bar0_groups');
+      });
     });
 
     describe('transform already exists', () => {
@@ -1595,7 +1603,11 @@ describe('barSpecBuilder', () => {
     // one, or it undershoots a group whose secondary-axis bar is actually taller.
     test('aggregates separate raw extrema for dual-metric-axis series', () => {
       const data = getDodgedGroupAggregateData({ ...defaultBarOptions, type: 'dodged', dualMetricAxis: true });
-      const [primary, secondary, aggregate] = data.transform as [FormulaTransform, FormulaTransform, AggregateTransform];
+      const [primary, secondary, aggregate] = data.transform as [
+        FormulaTransform,
+        FormulaTransform,
+        AggregateTransform
+      ];
       expect(primary.expr).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
       expect(secondary.expr).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
       expect(aggregate.fields).toEqual([

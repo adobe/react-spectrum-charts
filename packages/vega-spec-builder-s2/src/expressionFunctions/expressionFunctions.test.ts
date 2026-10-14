@@ -181,7 +181,7 @@ describe('getLabelWidth()', () => {
   beforeEach(() => {
     measureText = jest.spyOn(CanvasRenderingContext2D.prototype, 'measureText');
     jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       ({ getLabelWidth } = require('./expressionFunctions.js').expressionFunctions);
     });
   });

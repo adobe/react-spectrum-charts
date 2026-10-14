@@ -46,7 +46,7 @@ const copy = ({ chartView }: ChartImperativeHandleProps) =>
               () => resolve('Chart copied to clipboard'),
               () => reject(new Error('Error occurred while writing to clipboard, copy to clipboard failed'))
             );
-          } catch (error) {
+          } catch {
             reject(new Error('Error occurred while fetching image, copy to clipboard failed'));
           }
         },
@@ -103,7 +103,7 @@ const getBase64Png = ({ chartView }: ChartImperativeHandleProps) =>
             } else {
               reject(new Error('Error occurred while converting image to base64, get base64 PNG failed'));
             }
-          } catch (error) {
+          } catch {
             reject(new Error('Error occurred while fetching image, get base64 PNG failed'));
           }
         },

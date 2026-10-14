@@ -29,7 +29,7 @@ import { sampleOptionsColumn, sampleOptionsRow } from './bulletTestUtils';
 describe('getBulletMarks', () => {
   test('Should return the correct marks object for column mode', () => {
     const data = addMarks([], sampleOptionsColumn)[0] as GroupMark;
-    expect(data).toBeDefined;
+    expect(data).toBeDefined();
     expect(data?.marks).toHaveLength(4);
     expect(data?.marks?.[0]?.type).toBe('rect');
     expect(data?.marks?.[1]?.type).toBe('rule');
@@ -42,7 +42,7 @@ describe('getBulletMarks', () => {
 
   test('Should return the correct marks object for row mode', () => {
     const data = addMarks([], sampleOptionsRow)[0] as GroupMark;
-    expect(data).toBeDefined;
+    expect(data).toBeDefined();
     expect(data?.marks).toHaveLength(4);
     expect(data?.marks?.[0]?.type).toBe('rect');
     expect(data?.marks?.[1]?.type).toBe('rule');
