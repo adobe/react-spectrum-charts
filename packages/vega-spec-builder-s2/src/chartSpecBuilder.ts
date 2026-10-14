@@ -181,13 +181,13 @@ export function buildSpec({
         return addBullet(acc, { ...mark, ...specOptions, index: bulletCount });
       case 'combo':
         comboCount++;
-        return addCombo(acc, { ...mark, ...specOptions, index: comboCount });
+        return addCombo(acc, { ...mark, ...specOptions, axes, index: comboCount });
       case 'donut':
         donutCount++;
         return addDonut(acc, { ...mark, ...specOptions, index: donutCount, data });
       case 'line':
         lineCount++;
-        return addLine(acc, { ...mark, ...specOptions, index: lineCount, data });
+        return addLine(acc, { ...mark, ...specOptions, axes, index: lineCount, data });
       case 'scatter':
         scatterCount++;
         return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });

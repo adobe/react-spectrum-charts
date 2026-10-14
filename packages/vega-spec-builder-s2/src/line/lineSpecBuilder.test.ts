@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, GroupMark } from 'vega';
+import { Data, GroupMark, View, expressionFunction, parse } from 'vega';
 
 import {
   ANIMATION_TIMER,
@@ -34,13 +34,105 @@ import {
   TRENDLINE_VALUE,
 } from '@spectrum-charts/core-s2/constants';
 
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { initializeSpec } from '../specUtils.js';
-import { ScSpec } from '../types/index.js';
+import { LineOptions, ScSpec } from '../types/index.js';
 import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder.js';
 import { defaultLineOptions } from './lineTestUtils.js';
+
+describe('fixed metric range hover', () => {
+  test.each<[string, number[], Partial<LineOptions>, boolean, [number, number]?]>([
+    [
+      'sparse data above the range',
+      [512000, 534000, 575000, 604000, 421000, 428000, 402000, 391000],
+      { chartInspects: [{}] },
+      false,
+    ],
+    ['data below the range', [-12000, -15000, -20000, -30000], { chartInspects: [{}], interactionMode: 'item' }, false],
+    ['crossing lines with hover labels', [-20000, 5000, 20000, 1000], { chartPopovers: [{}] }, false],
+    ['points on the range boundaries', [-100, 0, 10000, 10100], { chartInspects: [{}] }, false],
+    [
+      'static points and labels',
+      [-20000, 5000, 20000, 1000],
+      { chartInspects: [{}], staticPoint: 'showPoint', lineDirectLabels: [{}] },
+      false,
+    ],
+    ['Combo line', [512000, 534000, 575000, 604000], { chartInspects: [{}] }, true],
+    [
+      'positive range excluding zero',
+      [512000, 534000, 575000, 604000, 421000, 428000, 402000, 391000],
+      { chartInspects: [{}] },
+      false,
+      [400000, 550000],
+    ],
+    [
+      'negative range excluding zero',
+      [-512000, -534000, -575000, -604000, -421000, -428000, -402000, -391000],
+      { chartInspects: [{}] },
+      false,
+      [-550000, -400000],
+    ],
+  ])('preserves plot dimensions through hovering %s', async (_name, values, lineOptions, combo, range = [0, 10000]) => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', () => 360);
+    const data = values.map((value, index) => ({
+      datetime: Date.UTC(2026, index % 4, 1),
+      value,
+      series: index < 4 ? 'Mobile' : 'Desktop',
+      showPoint: true,
+    }));
+    const line: LineOptions = { markType: 'line', name: 'line0', color: 'series', ...lineOptions };
+    const spec = buildSpec({
+      animations: false,
+      data,
+      axes: [
+        { position: 'left', name: lineOptions.metricAxis, range, grid: true },
+        { position: 'bottom', labelFormat: 'time', baseline: true, ticks: true },
+      ],
+      marks: combo ? [{ markType: 'combo', marks: [line] }] : [line],
+    });
+    spec.autosize = { type: 'fit', contains: 'padding', resize: true };
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const plot = spec.marks?.find((mark): mark is GroupMark => mark.type === 'group' && mark.name === 'line0_plot');
+    if (lineOptions.interactionMode === 'item') {
+      const hoverGroup = plot?.marks?.find(
+        (mark): mark is GroupMark => mark.type === 'group' && mark.name === 'line0_hoverGroup'
+      );
+      expect(hoverGroup?.marks).not.toHaveLength(0);
+      hoverGroup?.marks?.forEach((mark) => expect(mark.from).toHaveProperty('data', 'line0_visibleHoverData'));
+    } else {
+      const hoverPoints = plot?.marks?.find((mark) => mark.name === 'line0_pointsForVoronoi');
+      expect(hoverPoints?.from).toHaveProperty('data', 'line0_visibleHoverData');
+    }
+    const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+    try {
+      await view.runAsync();
+      expect(view.width()).toBeGreaterThan(0);
+      expect(view.height()).toBeGreaterThan(0);
+      await view.resize().runAsync();
+      const initialSize = [view.width(), view.height()];
+      expect(view.scale(lineOptions.metricAxis || 'yLinear').domain()).toEqual(range);
+      const hoverData = view.data('line0_visibleHoverData');
+      expect(hoverData.map((datum) => datum.value)).toEqual(
+        values.filter((value) => value >= range[0] && value <= range[1])
+      );
+      for (const datum of hoverData) {
+        await view.signal(`line0_${HOVERED_ITEM}`, datum).runAsync();
+        expect([view.width(), view.height()]).toEqual(initialSize);
+        await view.signal(`line0_${HOVERED_ITEM}`, null).runAsync();
+        expect([view.width(), view.height()]).toEqual(initialSize);
+      }
+    } finally {
+      view.finalize();
+    }
+  });
+});
 
 const startingSpec: ScSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
@@ -1136,7 +1228,11 @@ describe('lineSpecBuilder', () => {
     });
 
     test('with isDrawInAnimate keeps the normal facet data and clips the group', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, isDrawInAnimate: true, alternateSegmentKey: 'isEstimated' });
+      const marks = addLineMarks([], {
+        ...defaultLineOptions,
+        isDrawInAnimate: true,
+        alternateSegmentKey: 'isEstimated',
+      });
       const groupMark = marks[0] as GroupMark & { from: { facet: { data: string } } };
       expect(groupMark.from.facet.data).toBe('line0_with_bridges');
       expect(groupMark.clip).toStrictEqual(getLineDrawInClip('line0'));

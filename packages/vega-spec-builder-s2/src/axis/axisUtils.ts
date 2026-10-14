@@ -518,10 +518,10 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
     x: {
       x: { value: 0 },
       x2: { signal: 'width' },
-      y: { scale: 'yLinear', value: baselineOffset },
+      y: { signal: `clamp(scale('yLinear', ${baselineOffset}), 0, height)` },
     },
     y: {
-      x: { scale: 'xLinear', value: baselineOffset },
+      x: { signal: `clamp(scale('xLinear', ${baselineOffset}), 0, width)` },
       y: { value: 0 },
       y2: { signal: 'height' },
     },

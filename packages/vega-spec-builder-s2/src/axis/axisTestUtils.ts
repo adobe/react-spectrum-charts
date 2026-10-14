@@ -30,7 +30,7 @@ export const defaultXBaselineMark: Mark = {
     update: {
       x: { value: 0 },
       x2: { signal: 'width' },
-      y: { scale: 'yLinear', value: 0 },
+      y: { signal: "clamp(scale('yLinear', 0), 0, height)" },
     },
   },
 };
@@ -44,7 +44,7 @@ export const defaultYBaselineMark: Mark = {
     update: {
       y: { value: 0 },
       y2: { signal: 'height' },
-      x: { scale: 'xLinear', value: 0 },
+      x: { signal: "clamp(scale('xLinear', 0), 0, width)" },
     },
   },
 };

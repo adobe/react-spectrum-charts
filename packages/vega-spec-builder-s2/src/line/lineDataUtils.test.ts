@@ -21,8 +21,44 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getHoverLabelData, getLineHighlightedData, getLineHoverRules, getPrimarySeriesOtherExpr } from './lineDataUtils.js';
+import {
+  getHoverLabelData,
+  getInBoundsHoverData,
+  getLineHighlightedData,
+  getLineHoverRules,
+  getPrimarySeriesOtherExpr,
+} from './lineDataUtils.js';
 import { defaultLineOptions } from './lineTestUtils.js';
+
+describe('getInBoundsHoverData()', () => {
+  test('filters invalid and out-of-bounds metrics without filtering the rendered line data', () => {
+    expect(getInBoundsHoverData(defaultLineOptions, 'filteredTableForInspect')).toEqual({
+      name: 'line0_visibleHoverData',
+      source: 'filteredTableForInspect',
+      transform: [
+        {
+          type: 'filter',
+          expr: 'isValid(datum["value"]) && isFinite(datum["value"]) && inrange(scale(\'yLinear\', datum["value"]), [0, height])',
+        },
+      ],
+    });
+  });
+
+  test('uses the forecast metric and custom metric scale', () => {
+    const data = getInBoundsHoverData(
+      {
+        ...defaultLineOptions,
+        metricAxis: 'customMetric',
+        forecasts: [{ metric: 'forecastValue', start: 5 }],
+      },
+      'filteredTableForInspect'
+    );
+    expect(data.transform?.[0]).toHaveProperty(
+      'expr',
+      expect.stringContaining(`scale('customMetric', datum["line0_effectiveValue"])`)
+    );
+  });
+});
 
 describe('getLineHighlightedData()', () => {
   test('should include select signal if hasPopover', () => {

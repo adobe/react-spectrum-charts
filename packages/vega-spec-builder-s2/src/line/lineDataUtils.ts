@@ -19,6 +19,22 @@ import { hasPopover, isInteractive } from '../marks/markUtils.js';
 import { LineSpecOptions } from '../types/index.js';
 import { getCascadeTransforms } from './directLabelUtils.js';
 
+/** Gets hover candidates whose metric positions are inside the plot. */
+export const getInBoundsHoverData = (options: LineSpecOptions, source: string): SourceData => {
+  const metric = getEffectiveMetricField(options);
+  const metricScale = options.metricAxis || 'yLinear';
+  const scaledMetric = `scale('${metricScale}', datum["${metric}"])`;
+  return {
+    name: `${options.name}_visibleHoverData`,
+    source,
+    transform: [
+      {
+        type: 'filter',
+        expr: `isValid(datum["${metric}"]) && isFinite(datum["${metric}"]) && inrange(${scaledMetric}, [0, height])`,
+      },
+    ],
+  };
+};
 
 /**
  * gets the data used for highlighting hovered data points
