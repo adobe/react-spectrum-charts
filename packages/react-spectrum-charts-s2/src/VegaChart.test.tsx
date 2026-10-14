@@ -153,6 +153,30 @@ describe('VegaChart init render cycle', () => {
 		await waitFor(() => expect(mockEmbed).toHaveBeenCalledTimes(1));
 	});
 
+	test('logs instead of rejecting when embed fails', async () => {
+		const error = new Error('embed failed');
+		const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+		mockEmbed.mockRejectedValueOnce(error);
+
+		render(<VegaChart {...defaultProps} />);
+
+		await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith('Failed to render chart:', error));
+		consoleSpy.mockRestore();
+	});
+
+	test('logs instead of rejecting when onNewView throws', async () => {
+		const error = new Error('onNewView failed');
+		const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+		const onNewView = jest.fn(() => {
+			throw error;
+		});
+
+		render(<VegaChart {...defaultProps} onNewView={onNewView} />);
+
+		await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith('Failed to render chart:', error));
+		consoleSpy.mockRestore();
+	});
+
 	describe('animation ticker', () => {
 		const animatedSpec: Spec = {
 			signals: [{ name: ANIMATION_TIMER, value: 0, on: [{ events: { type: 'timer', throttle: 33 }, update: 'now()' }] }],
