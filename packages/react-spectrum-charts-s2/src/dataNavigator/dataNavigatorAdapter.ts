@@ -22,6 +22,7 @@ import {
   FOCUSED_ITEM,
   FOCUSED_REGION,
   HOVERED_ITEM,
+  HOVERED_SERIES,
   MARK_ID,
   SELECTED_ITEM,
   SERIES_ID,
@@ -29,21 +30,32 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils.js';
+import { ActionItem, getItemBounds, getPopoverButton, triggerPopover } from '../utils/markClickUtils.js';
 import { clearAxisFocusRing, getVisibleAxisLabelColumns, padAxisBounds, positionOverlayAtBounds, setAxisFocusRing } from './axisLabelGeometry.js';
 import { withViewKeys } from './barSeries.js';
 import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, getNodeFieldValues, Row } from './barHoverParity.js';
 import { toNavigationKey } from './buildBarStructure.js';
-import { AxisRegionOptions, NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure.js';
-import { getNodeRegion, stripRegionPrefix } from './composeRegions.js';
+import { AxisRegionOptions, LegendRegionOptions, NavigableChartType, buildChartStructure, getNodeIdForDatum } from './buildChartStructure.js';
 import {
+  getLegendNodeContentId,
+  getLegendNodeLevel,
+  getLegendNodeSeries,
+  getLegendNodeToggledLabel,
+  isLegendNodeHidden,
+  legendSeriesId,
+} from './buildLegendStructure.js';
+import { getNodeRegion, prefixed, stripRegionPrefix } from './composeRegions.js';
+import {
+  SceneNode,
   findFocusedBarSceneItem,
   findFocusedDimensionAreaSceneItem,
   hideFocusedItemTooltip,
   pageBoundsForItem,
   showAxisLabelTooltip,
   showFocusedItemTooltip,
+  showSceneItemTooltip,
 } from './focusedItemTooltip.js';
+import { ArrowKey, LegendEntry, findLegendNeighbor, getLegendBounds, getLegendEntries } from './legendGeometry.js';
 import './dataNavigator.css';
 
 /*
@@ -63,6 +75,33 @@ interface DataNavigatorInput {
   move: (current: string | null, direction: string) => NodeObject | undefined;
   keydownValidator: (event: KeyboardEvent) => string | undefined;
   focus: (renderId: string) => void;
+}
+
+export interface LegendNavigationOptions {
+  /** The legend's name (e.g. `legend0`) — its hover signal, entry mark and popover are namespaced off of it. */
+  name: string;
+  /** Legend title for the region's accessible name. */
+  title?: string;
+  /** Series value → the label the legend displays for it (from `legendLabels`). */
+  labels?: LegendRegionOptions['labels'];
+  /** Series value → its legend description and optional title (from `descriptions`). */
+  descriptions?: LegendRegionOptions['descriptions'];
+  /** The legend's `keys`: entries are groups of rows sharing these fields' values rather than `color` values. */
+  keys?: string[];
+  /** The legend's `onMouseOver`, called when keyboard focus moves onto a series, the same as hovering its entry. */
+  onMouseOver?: (seriesName: string) => void;
+  /** The legend's `onMouseOut`, called when keyboard focus leaves a series, the same as un-hovering its entry. */
+  onMouseOut?: (seriesName: string) => void;
+  /** Where the legend sits relative to the plot; the arrow pointing that way from the chart moves to it. */
+  position?: LegendRegionOptions['position'];
+  /** Whether the legend highlights the hovered series — focus then drives the same highlight. */
+  highlight?: boolean;
+  /** Series the legend doesn't render; used for the series list when the legend's scenegraph isn't readable. */
+  hiddenEntries?: string[];
+  /** Runs the legend's own click behavior (popover, onClick, toggle) for a rendered entry scene item. */
+  onActivate?: (item: unknown) => void;
+  /** Runs the legend's own right-click behavior (its `rightClick` popover) for a rendered entry scene item. */
+  onContextMenu?: (item: unknown) => void;
 }
 
 export interface AttachDataNavigatorOptions {
@@ -104,8 +143,12 @@ export interface AttachDataNavigatorOptions {
   markName?: string;
   /** Optional chart title for the accessible description. */
   title?: string;
-  /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
+  /** When provided, adds an x-axis region below chart content (Down moves to it, Up comes back). */
   xAxis?: AxisRegionOptions;
+  /** When provided (and the bar has a `color` series), adds a legend region: series, then that series' bars. */
+  legend?: LegendNavigationOptions;
+  /** Series toggled off via the legend; skipped by chart content and not drillable from the legend. */
+  hiddenSeries?: string[];
   /** Stable id used to namespace the rendered nav elements. */
   chartId: string;
   /** Accessor for the live Vega view; focus signals are set on it as the user navigates. */
@@ -118,6 +161,8 @@ export interface AttachDataNavigatorOptions {
   keyboardPopoverComponentName?: RefObject<string | null>;
   /** Fires the focused mark's `onClick` (if it declares one) on Enter/Space, mirroring a real click, which runs onClick alongside opening any popover. */
   onNodeClick?: (datum: Datum) => void;
+  /** Fires the focused mark's `onContextMenu` (if it declares one) on Shift+F10 or the ContextMenu key, mirroring a right-click. */
+  onNodeContextMenu?: (event: MouseEvent, datum: Datum) => void;
   /** Whether the mark has a ChartPopover — a click that focuses a node also opens it, so focus must be retained through the popover. */
   hasChartPopover?: boolean;
 }
@@ -177,6 +222,7 @@ const CHART_INSPECT_TOOLTIP_ID = 'vg-tooltip-element';
  * Maps the focused node to the chart's focus signals:
  *  - x-axis region             → drives its own DOM ring + dimension-hover parity; must not also
  *    activate the bar/stack focus ring
+ *  - legend root/series         → drives its own DOM ring + legend-hover parity; legend bar → its content bar's ring
  *  - leaf (no dimensionLevel)   → a single bar/segment (`item` = node id)
  *  - dimension root (level 1)   → the chart overview (`region` = 'chart')
  *  - division (level 2)         → a dimension group / stack (`dimension` = the column value)
@@ -184,6 +230,11 @@ const CHART_INSPECT_TOOLTIP_ID = 'vg-tooltip-element';
 const nodeFocusSignals = (node: NodeObject): FocusSignals => {
   if (getNodeRegion(node) === 'xAxis') {
     return CLEARED_FOCUS;
+  }
+  if (getNodeRegion(node) === 'legend') {
+    // A legend bar mirrors its chart-content bar, so it reuses that bar's focus ring.
+    const contentId = getLegendNodeContentId(node);
+    return contentId ? { ...CLEARED_FOCUS, item: contentId } : CLEARED_FOCUS;
   }
   if (node.dimensionLevel == null) {
     return { ...CLEARED_FOCUS, item: node.id };
@@ -296,6 +347,8 @@ const guardHoverParityAgainstMouseClear = (
     const node = getFocusedNode();
     // The chart root and axis root have no specific row to restore — nothing to guard.
     if (!node || node.dimensionLevel === 1) return;
+    // Legend root/series drive the legend's own hover signal instead (see guardLegendHoverAgainstMouseClear).
+    if (getNodeRegion(node) === 'legend' && getLegendNodeLevel(node) !== 'bar') return;
     const isAxisNode = getNodeRegion(node) === 'xAxis';
     applyHoverParitySignals(view, { markName, dimension, color: series.field }, node, isAxisNode);
     // Axis ticks don't drive the chart tooltip (matching real axis-label hover), only the bar/stack does.
@@ -319,13 +372,125 @@ const guardHoverParityAgainstMouseClear = (
   }
 };
 
-/** Reads a view's rows for a data set, or undefined when the view doesn't have it. */
+/** One legend-hover guard handler per view, mirroring `hoverGuardHandlers`. */
+const legendHoverGuardHandlers = new WeakMap<View, { signal: string; handler: SignalListenerHandler }>();
+
+/** The last node focused in each container, so focus can be restored onto the rebuilt structure after a re-attach. */
+const lastFocusedNodeIds = new WeakMap<HTMLElement, string>();
+
+/** The legend series each container last reported through `onMouseOver`, so `onMouseOut` pairs with it across re-attaches. */
+const keyboardHoveredLegendSeries = new WeakMap<HTMLElement, string>();
+
+/** A legend series activated with Space and whether it was hidden then, so the restored focus can announce a toggle. */
+const pendingLegendToggles = new WeakMap<HTMLElement, { nodeId: string; wasHidden: boolean }>();
+
+/** Sets the legend's hover signal (only present when the legend highlights), mirroring real legend-entry hover. */
+const setLegendHoveredSeries = (view: View, legend: LegendNavigationOptions | undefined, value: string | null): void => {
+  if (!legend?.highlight) return;
+  try {
+    view.signal(`${legend.name}_${HOVERED_SERIES}`, value);
+  } catch {
+    // The signal is absent on a rebuilding view; keyboard focus still drives the legend ring.
+  }
+};
+
+/**
+ * Real legend-entry mouseout nulls `${legend}_hoveredSeries`, clobbering the keyboard-focused series'
+ * highlight. Reapplies it whenever this happens while a legend series is still keyboard-focused.
+ */
+const guardLegendHoverAgainstMouseClear = (
+  view: View,
+  legend: LegendNavigationOptions,
+  hiddenSeries: string[] | undefined,
+  getFocusedNode: () => NodeObject | undefined
+): void => {
+  const previous = legendHoverGuardHandlers.get(view);
+  if (previous) view.removeSignalListener(previous.signal, previous.handler);
+  if (!legend.highlight) return;
+  const signal = `${legend.name}_${HOVERED_SERIES}`;
+  const handler: SignalListenerHandler = (_name, value) => {
+    if (value != null) return;
+    const node = getFocusedNode();
+    const series = node && getNodeRegion(node) === 'legend' && getLegendNodeLevel(node) === 'series' ? getLegendNodeSeries(node) : undefined;
+    if (series === undefined || hiddenSeries?.includes(series)) return;
+    view.runAfter((v) => {
+      setLegendHoveredSeries(v, legend, series);
+      v.runAsync();
+    });
+  };
+  try {
+    view.addSignalListener(signal, handler);
+    legendHoverGuardHandlers.set(view, { signal, handler });
+  } catch {
+    // Mirrors guardHoverParityAgainstMouseClear: skip on a view that doesn't expose the signal yet.
+  }
+};
+
+/** The legend's series, in rendered order; falls back to the data's series when the legend isn't in the scenegraph. */
+const resolveLegendSeries = (
+  view: View | undefined,
+  container: HTMLElement,
+  legend: LegendNavigationOptions,
+  data: SimpleData[],
+  entryFields: string[]
+): string[] => {
+  const entries = view ? getLegendEntries(view, container, legend.name) : [];
+  if (entries.length) return entries.map((entry) => entry.value);
+  const hidden = new Set(legend.hiddenEntries ?? []);
+  const entryOf = (row: SimpleData) => entryFields.map((field) => String(row[field])).join(' | ');
+  return [...new Set(data.map(entryOf))].filter((value) => !hidden.has(value));
+};
+
+/** Reads a view's rows for a data set, or undefined when the view doesn't have it (e.g. mid-rebuild). */
 const readViewData = (view: View | undefined, name: string): Row[] | undefined => {
   try {
     return view ? (view.data(name) as Row[]) : undefined;
   } catch {
     return undefined;
   }
+};
+
+/**
+ * The fields a legend's entries join, read from its `${name}Aggregate` rows (grouped by those fields, each
+ * with the joined `${name}Entries` value), so rows match entries exactly however the legend faceted them.
+ */
+export const getLegendEntryFields = (view: View | undefined, legendName: string): string[] | undefined => {
+  const entriesField = `${legendName}Entries`;
+  const row = readViewData(view, `${legendName}Aggregate`)?.[0];
+  if (!row) return undefined;
+  const candidates = Object.keys(row).filter((key) => key !== entriesField);
+  const joins = (fields: string[]) => fields.length > 0 && fields.map((field) => String(row[field])).join(' | ') === String(row[entriesField]);
+  // A groupby-only aggregate also emits a `count` field.
+  const withoutCount = candidates.filter((key) => key !== 'count');
+  if (joins(withoutCount)) return withoutCount;
+  return joins(candidates) ? candidates : undefined;
+};
+
+const ARROW_KEYS = new Set<string>(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']);
+
+/** The platform keyboard equivalents of a right-click: Shift+F10 and the ContextMenu key. */
+export const isContextMenuKey = (event: KeyboardEvent): boolean => event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
+
+/** A synthetic right-click at the center of a mark's viewport bounds, for `onContextMenu` consumers positioning a menu. */
+const contextMenuEventAt = (bounds: Bounds | undefined): MouseEvent =>
+  new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: bounds ? (bounds.x1 + bounds.x2) / 2 : 0,
+    clientY: bounds ? (bounds.y1 + bounds.y2) / 2 : 0,
+  });
+
+type LegendClickItem = { mark?: { role?: string; name?: string }; datum?: { value?: unknown }; items?: { items?: LegendClickItem[] }[] };
+
+/** The series a clicked legend scene item (entry group, symbol or label) belongs to. */
+const legendValueForSceneItem = (item: unknown, legendName: string): string | undefined => {
+  const sceneItem = item as LegendClickItem | null | undefined;
+  const mark = sceneItem?.mark;
+  const isEntryGroup = mark?.name === `${legendName}_legendEntry`;
+  if (!isEntryGroup && mark?.role !== 'legend-symbol' && mark?.role !== 'legend-label') return undefined;
+  // An entry group's own datum only carries its index; its symbol/label children carry the value.
+  const value = isEntryGroup ? sceneItem?.items?.[0]?.items?.[0]?.datum?.value : sceneItem?.datum?.value;
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : undefined;
 };
 
 /**
@@ -354,6 +519,8 @@ export const attachDataNavigator = ({
   markName,
   title,
   xAxis,
+  legend,
+  hiddenSeries,
   chartId,
   getView,
   selectedData,
@@ -361,6 +528,7 @@ export const attachDataNavigator = ({
   selectedDataName,
   keyboardPopoverComponentName,
   onNodeClick,
+  onNodeContextMenu,
   hasChartPopover,
 }: AttachDataNavigatorOptions): void => {
   // Restrict x-axis navigation to labels Vega actually painted, so overlap-hidden ticks are skipped
@@ -379,6 +547,20 @@ export const attachDataNavigator = ({
   const seriesField = navData.some((row) => SERIES_ID in row) ? SERIES_ID : color;
   const colorLabelFields = color ? [color] : [];
   const series: SeriesLookup = { field: seriesField, labelFields: seriesFields.length ? seriesFields : colorLabelFields };
+  const legendEntryFields =
+    legend && (getLegendEntryFields(initialView, legend.name) ?? (legend.keys?.length ? legend.keys : series.labelFields));
+
+  const legendRegion =
+    legend && seriesField && legendEntryFields?.length
+      ? {
+          series: resolveLegendSeries(initialView, container, legend, navData, legendEntryFields),
+          title: legend.title,
+          position: legend.position,
+          labels: legend.labels,
+          descriptions: legend.descriptions,
+          entryFields: legendEntryFields,
+        }
+      : undefined;
 
   const built = buildChartStructure({
     chartType,
@@ -399,6 +581,8 @@ export const attachDataNavigator = ({
     dimensionLabels,
     metricTitleBySeries,
     xAxis: xAxisRegion,
+    legend: legendRegion,
+    hiddenSeries,
   });
   if (!built) return;
   const { structure, entryPoint } = built;
@@ -407,8 +591,16 @@ export const attachDataNavigator = ({
     container.id = `dn-root-${chartId}`;
   }
 
+  // A re-attach (new data, size, or a legend toggle re-embedding the view) replaces every node; if one
+  // was focused, restore focus onto its rebuilt counterpart rather than dropping it to <body>.
+  const activeElement = document.activeElement;
+  const restoreId =
+    activeElement instanceof HTMLElement && activeElement.classList.contains('dn-node') && container.contains(activeElement)
+      ? lastFocusedNodeIds.get(container)
+      : undefined;
+
   container.querySelectorAll('.dn-wrapper, .dn-exit-position, .dn-exit').forEach((node) => node.remove());
-  container.querySelectorAll('.dn-axis-focus-ring').forEach((node) => node.remove());
+  container.querySelectorAll('.dn-axis-focus-ring, .dn-legend-focus-ring').forEach((node) => node.remove());
 
   let current: string | null = null;
   // The persisted node stays in the DOM after focus leaves the widget (so Shift+Tab returns to it), so
@@ -422,13 +614,17 @@ export const attachDataNavigator = ({
   const height = container.clientHeight || 300;
 
   const view = getView();
+  const getFocusedNode = () => (focusInsideWidget && current ? structure.nodes[current] : undefined);
   if (view && markName && dimension) {
     guardHoverParityAgainstMouseClear(
       container,
       view,
       { markName, dimension, series, metric, fieldLabels: fieldLabels ?? {}, hasChartInspect: hasChartInspect ?? false },
-      () => (focusInsideWidget && current ? structure.nodes[current] : undefined)
+      getFocusedNode
     );
+  }
+  if (view && legendRegion) {
+    guardLegendHoverAgainstMouseClear(view, legend as LegendNavigationOptions, hiddenSeries, getFocusedNode);
   }
 
   const rendering: DataNavigatorRenderer = dataNavigator.rendering({
@@ -458,6 +654,12 @@ export const attachDataNavigator = ({
   focusRing.className = 'dn-axis-focus-ring';
   focusRing.setAttribute('aria-hidden', 'true');
   container.appendChild(focusRing);
+
+  // Same DOM-overlay approach for the legend ring: Vega's legend has no focusable mark to ring.
+  const legendFocusRing = document.createElement('div');
+  legendFocusRing.className = 'dn-legend-focus-ring';
+  legendFocusRing.setAttribute('aria-hidden', 'true');
+  container.appendChild(legendFocusRing);
 
   const input: DataNavigatorInput = dataNavigator.input({
     structure,
@@ -526,14 +728,112 @@ export const attachDataNavigator = ({
     showAxisLabelTooltip(view, value);
   }
 
+  /** The legend's live rendered entries (re-read each time, so wrapping/resizing is always current). */
+  function currentLegendEntries(): LegendEntry[] {
+    const view = getView();
+    return view && legend ? getLegendEntries(view, container, legend.name) : [];
+  }
+
+  /**
+   * Rings the focused legend root (whole legend) or series (its entry) with a DOM overlay, sizes the
+   * `.dn-node` to it, and drives legend-hover parity. A legend bar instead reuses its content bar's ring
+   * and hover parity.
+   */
+  function applyLegendFocus(node: NodeObject, el: HTMLElement) {
+    const view = getView();
+    if (!view || !legend) return;
+    const level = getLegendNodeLevel(node);
+    if (level === 'bar') {
+      clearAxisFocusRing(legendFocusRing);
+      setLegendHoveredSeries(view, legend, null);
+      if (markName && dimension) applyHoverParitySignals(view, { markName, dimension, color: seriesField }, node);
+      return;
+    }
+    if (markName && dimension) applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null);
+    const series = getLegendNodeSeries(node);
+    const bounds =
+      level === 'series'
+        ? currentLegendEntries().find((entry) => entry.value === series)?.bounds
+        : getLegendBounds(view, container, legend.name);
+    if (bounds) {
+      setAxisFocusRing(legendFocusRing, bounds);
+      const padded = padAxisBounds(bounds);
+      if (padded) positionOverlayAtBounds(el, padded);
+    } else {
+      clearAxisFocusRing(legendFocusRing);
+    }
+    // Real legend hover doesn't highlight a toggled-off series either.
+    const highlighted = level === 'series' && series !== undefined && !hiddenSeries?.includes(series) ? series : null;
+    setLegendHoveredSeries(view, legend, highlighted);
+  }
+
+  /** Shows the focused series' legend description tooltip (if any), matching legend-entry hover. */
+  function showLegendEntryTooltip(view: View, node: NodeObject) {
+    const series = getLegendNodeSeries(node);
+    const entry = currentLegendEntries().find((candidate) => candidate.value === series);
+    if (!entry || !showSceneItemTooltip(container, view, entry.item as SceneNode, entry.item.tooltip)) {
+      hideFocusedItemTooltip(view);
+    }
+  }
+
+  /** Reports keyboard focus entering/leaving a legend series through the legend's onMouseOver/onMouseOut, like hover. */
+  function setKeyboardHoveredLegendSeries(series: string | undefined) {
+    const previous = keyboardHoveredLegendSeries.get(container);
+    if (previous === series) return;
+    if (previous !== undefined) {
+      keyboardHoveredLegendSeries.delete(container);
+      legend?.onMouseOut?.(previous);
+    }
+    if (series !== undefined) {
+      keyboardHoveredLegendSeries.set(container, series);
+      legend?.onMouseOver?.(series);
+    }
+  }
+
+  /** Runs the legend's own click behavior for the focused series: popover, onClick, and/or toggle. */
+  function activateLegendEntry(node: NodeObject) {
+    if (!legend?.onActivate) return;
+    const series = getLegendNodeSeries(node);
+    const entry = currentLegendEntries().find((candidate) => candidate.value === series);
+    if (!entry) return;
+    pendingLegendToggles.set(container, { nodeId: node.id, wasHidden: isLegendNodeHidden(node) });
+    if (getPopoverButton(chartId, legend.name)) {
+      suppressNextLeave = true;
+      if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = legend.name;
+    }
+    legend.onActivate(entry.item);
+  }
+
+  /** Runs the legend's own right-click behavior for the focused series: its `rightClick` popover. */
+  function openLegendContextMenu(node: NodeObject) {
+    if (!legend?.onContextMenu) return;
+    const series = getLegendNodeSeries(node);
+    const entry = currentLegendEntries().find((candidate) => candidate.value === series);
+    if (!entry) return;
+    if (getPopoverButton(chartId, legend.name, 'contextmenu')) {
+      suppressNextLeave = true;
+      if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = legend.name;
+    }
+    legend.onContextMenu(entry.item);
+  }
+
+  /** Moves between legend series following the legend's live rendered grid (rows/columns wrap with its size). */
+  function moveLegendSeries(node: NodeObject, key: ArrowKey) {
+    const series = getLegendNodeSeries(node);
+    if (series === undefined) return;
+    const next = findLegendNeighbor(currentLegendEntries(), series, key);
+    const nextNode = next === undefined ? undefined : structure.nodes[prefixed('legend', legendSeriesId(next))];
+    if (nextNode) navigate(nextNode);
+  }
+
   /** Sets the shared context refs and triggers the popover through the same DOM-button-click a real click uses. */
-  function triggerBarPopover(row: Row, sceneItem: unknown) {
+  function triggerBarPopover(row: Row, sceneItem: unknown, trigger: 'click' | 'contextmenu' = 'click') {
     if (!markName || !selectedData || !selectedDataBounds || !selectedDataName) return;
     selectedData.current = { ...row, [COMPONENT_NAME]: markName } as unknown as Datum;
     selectedDataBounds.current = getItemBounds(sceneItem as ActionItem);
     selectedDataName.current = markName;
     if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = markName;
-    if (triggerPopover(chartId, markName, 'click')) {
+    if (triggerPopover(chartId, markName, trigger)) {
       suppressNextLeave = true;
       const view = getView();
       if (view) {
@@ -556,6 +856,17 @@ export const attachDataNavigator = ({
     const sceneItem = findFocusedBarSceneItem(view, markName, row[MARK_ID]);
     if (sceneItem) triggerBarPopover(row, sceneItem);
     onNodeClick?.(row as unknown as Datum);
+  }
+
+  /** Right-clicks the focused leaf bar/segment — opens its `rightClick` popover (if any) and fires its `onContextMenu` (if any). */
+  function openBarContextMenu(node: NodeObject) {
+    const view = getView();
+    if (!view || !markName || !dimension) return;
+    const row = findFocusedRow(view, node, dimension, seriesField);
+    if (!row) return;
+    const sceneItem = findFocusedBarSceneItem(view, markName, row[MARK_ID]);
+    if (sceneItem && getPopoverButton(chartId, markName, 'contextmenu')) triggerBarPopover(row, sceneItem, 'contextmenu');
+    onNodeContextMenu?.(contextMenuEventAt(sceneItem ? pageBoundsForItem(view, container, sceneItem) : undefined), row as unknown as Datum);
   }
 
   /** Opens the focused whole-stack (dimension area) popover — same one a real click on the stack's exposed padding already opens. */
@@ -590,9 +901,10 @@ export const attachDataNavigator = ({
     // whole chart. An x-axis node gets its bounds from applyAxisFocus below (its own scenegraph read);
     // the dimension-root (whole-chart) node has no single mark, so it keeps the full-container default.
     const isAxisNode = getNodeRegion(node) === 'xAxis';
+    const isLegendOverviewNode = getNodeRegion(node) === 'legend' && getLegendNodeLevel(node) !== 'bar';
     const view = getView();
     const contentBounds =
-      !isAxisNode && view && markName && dimension
+      !isAxisNode && !isLegendOverviewNode && view && markName && dimension
         ? resolveContentFocusBounds(view, container, node, markName, dimension, seriesField)
         : undefined;
     if (contentBounds) {
@@ -607,7 +919,32 @@ export const attachDataNavigator = ({
     el.style.boxShadow = 'none';
 
     el.addEventListener('keydown', (event) => {
-      const isChartNode = getNodeRegion(node) !== 'xAxis';
+      // Any further key press ends the toggle announcement a legend Space may set below.
+      pendingLegendToggles.delete(container);
+      // Legend series: Space runs the entry's own click, arrows follow the legend's rendered grid, and
+      // Enter/Escape fall through to the structure (Enter drills into the series' bars unless it's hidden).
+      const isLegendSeries = getNodeRegion(node) === 'legend' && getLegendNodeLevel(node) === 'series';
+      const isChartLeaf = getNodeRegion(node) !== 'xAxis' && !isLegendOverviewNode && node.dimensionLevel == null;
+      // Shift+F10 / ContextMenu: the keyboard right-click, for `rightClick` popovers and `onContextMenu`.
+      if (isContextMenuKey(event) && (isLegendSeries || isChartLeaf)) {
+        event.preventDefault();
+        if (isLegendSeries) openLegendContextMenu(node);
+        else openBarContextMenu(node);
+        return;
+      }
+      if (isLegendSeries) {
+        if (event.code === 'Space') {
+          event.preventDefault();
+          activateLegendEntry(node);
+          return;
+        }
+        if (ARROW_KEYS.has(event.key)) {
+          event.preventDefault();
+          moveLegendSeries(node, event.key as ArrowKey);
+          return;
+        }
+      }
+      const isChartNode = getNodeRegion(node) !== 'xAxis' && !isLegendOverviewNode;
       // Enter/Space activate a focused leaf bar/segment — open its popover and fire its onClick, the
       // same as a real click. Enter still drills into non-leaves (they own a 'child' edge); leaves don't.
       if ((event.code === 'Enter' || event.code === 'Space') && isChartNode && node.dimensionLevel == null) {
@@ -654,19 +991,33 @@ export const attachDataNavigator = ({
       focusInsideWidget = true;
       const view = getView();
       const isAxisNode = getNodeRegion(node) === 'xAxis';
+      const isLegendNode = getNodeRegion(node) === 'legend';
       // Set before applyFocusSignals's runAsync() so both flush together in one dataflow pulse.
       if (isAxisNode) {
+        clearAxisFocusRing(legendFocusRing);
+        if (view) setLegendHoveredSeries(view, legend, null);
         applyAxisFocus(node, el);
+      } else if (isLegendNode) {
+        clearAxisFocusRing(focusRing);
+        applyLegendFocus(node, el);
       } else {
         clearAxisFocusRing(focusRing);
+        clearAxisFocusRing(legendFocusRing);
+        if (view) setLegendHoveredSeries(view, legend, null);
         if (view && markName && dimension) {
           applyHoverParitySignals(view, { markName, dimension, color: seriesField }, node);
         }
       }
+      setKeyboardHoveredLegendSeries(isLegendNode && getLegendNodeLevel(node) === 'series' ? getLegendNodeSeries(node) : undefined);
       const signals = nodeFocusSignals(node);
       applyFocusSignals(view, signals)
         ?.then(() => {
           if (!view || isAxisNode) return;
+          if (isLegendOverviewNode) {
+            if (getLegendNodeLevel(node) === 'series') showLegendEntryTooltip(view, node);
+            else hideFocusedItemTooltip(view);
+            return;
+          }
           if (!markName || !dimension) {
             showFocusedItemTooltip(container, view, `${markName ?? 'bar0'}_focusRing`, null);
             return;
@@ -687,6 +1038,7 @@ export const attachDataNavigator = ({
     // synchronously flush signal listeners (e.g. the mouse-hover guard) — current must already
     // reflect this node or a listener firing mid-transition reapplies the previous node's values.
     current = node.id;
+    lastFocusedNodeIds.set(container, node.id);
     input.focus(renderId);
 
     // Remove the previous node AFTER moving focus, so its focusout carries the new node as
@@ -705,7 +1057,10 @@ export const attachDataNavigator = ({
     if (view && markName && dimension) {
       applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null);
     }
+    if (view) setLegendHoveredSeries(view, legend, null);
+    setKeyboardHoveredLegendSeries(undefined);
     clearAxisFocusRing(focusRing);
+    clearAxisFocusRing(legendFocusRing);
     applyFocusSignals(view, CLEARED_FOCUS)?.catch(logFocusError);
   };
 
@@ -714,6 +1069,7 @@ export const attachDataNavigator = ({
   const clearFocusState = () => {
     if (current) rendering.remove(current);
     current = null;
+    lastFocusedNodeIds.delete(container);
     if (rendering.entryButton) {
       (rendering.entryButton as HTMLButtonElement).tabIndex = 0;
     }
@@ -743,6 +1099,11 @@ export const attachDataNavigator = ({
     const previous = clickToFocusHandlers.get(view);
     if (previous) view.removeEventListener('mousedown', previous);
     const handleMousedown: ViewEventHandler = (event, item) => {
+      const legendValue = legend && legendRegion ? legendValueForSceneItem(item, legend.name) : undefined;
+      if (legendValue !== undefined) {
+        focusLegendSeriesFromClick(event, legendValue);
+        return;
+      }
       const datum = item?.datum;
       if (!datum) return;
       // Overlay marks (e.g. a voronoi cell) wrap the real datum one level deeper.
@@ -766,5 +1127,41 @@ export const attachDataNavigator = ({
     };
     view.addEventListener('mousedown', handleMousedown);
     clickToFocusHandlers.set(view, handleMousedown);
+  }
+
+  /** Clicking a legend entry focuses its series node, the same as clicking a bar focuses the bar. */
+  function focusLegendSeriesFromClick(event: unknown, value: string) {
+    const node = structure.nodes[prefixed('legend', legendSeriesId(value))];
+    if (!node || node.id === current) return;
+    (event as { preventDefault?: () => void })?.preventDefault?.();
+    navigate(node);
+    // The ensuing click may open the legend's popover; keep the node alive through it, as for bars.
+    if (legend && getPopoverButton(chartId, legend.name)) {
+      suppressNextLeave = true;
+      if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = legend.name;
+    }
+  }
+
+  // Kept across re-attaches (a toggle can re-render more than once) until the next key press or a restore elsewhere.
+  const pendingToggle = pendingLegendToggles.get(container);
+  if (pendingToggle && pendingToggle.nodeId !== restoreId) pendingLegendToggles.delete(container);
+  if (restoreId) {
+    const restoreNode = structure.nodes[restoreId] ?? (entryPoint ? structure.nodes[entryPoint] : undefined);
+    if (restoreNode) navigateRestored(restoreNode, pendingToggle);
+  }
+
+  /** Restores focus after a re-attach; right after a toggle, the node's name says what changed so it's announced once. */
+  function navigateRestored(node: NodeObject, toggle: { nodeId: string; wasHidden: boolean } | undefined) {
+    const toggledLabel = getLegendNodeToggledLabel(node);
+    const wasToggled = toggle?.nodeId === node.id && toggle.wasHidden !== isLegendNodeHidden(node) && toggledLabel;
+    if (!wasToggled || !node.semantics) {
+      navigate(node);
+      return;
+    }
+    const label = node.semantics.label;
+    node.semantics.label = toggledLabel;
+    navigate(node);
+    // Only the restored node reads the toggle message; moving away and back reads the normal name.
+    node.semantics.label = label;
   }
 };

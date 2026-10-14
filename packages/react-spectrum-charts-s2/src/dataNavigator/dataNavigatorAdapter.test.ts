@@ -74,6 +74,8 @@ let axisLabelItems: {
 // Handlers registered via addSignalListener, keyed by signal name — lets tests simulate a real
 // mouseout (which drives these signals directly, bypassing `signal()`) by invoking them directly.
 let signalListeners: Record<string, ((name: string, value: unknown) => void)[]>;
+// The rendered legend scenegraph marks, read by getLegendEntries()/getLegendBounds().
+let legendMarks: unknown[];
 // Handlers registered via view.addEventListener (view events like 'mousedown'), keyed by event type.
 let eventListeners: Record<string, ((event: unknown, item: unknown) => void)[]>;
 
@@ -88,6 +90,7 @@ const mockView = () => {
   barItems = [];
   dimensionAreaItems = [];
   axisLabelItems = [];
+  legendMarks = [];
   signalListeners = {};
   eventListeners = {};
   tooltipCallback = jest.fn();
@@ -119,6 +122,7 @@ const mockView = () => {
           { marktype: 'rect', name: 'bar0', items: barItems },
           { marktype: 'rect', name: 'bar0_dimensionHoverArea', items: dimensionAreaItems },
           { marktype: 'text', role: 'axis-label', items: axisLabelItems },
+          ...legendMarks,
         ],
       },
     }),
@@ -1320,4 +1324,204 @@ describe('attachDataNavigator()', () => {
     });
   });
 
+  describe('legend region', () => {
+    const legendRing = (): HTMLElement => container.querySelector('.dn-legend-focus-ring') as HTMLElement;
+    const label = (): string | null | undefined => focused()?.querySelector('.dn-node-text')?.getAttribute('aria-label');
+    const onActivate = jest.fn();
+
+    /** Vega's legend scene: legend item → `legend-entry` container → per-entry group mark → one group per entry, in a single row. */
+    const setLegendEntries = (values: string[]) => {
+      const legendItem = { x: 0, y: 300, bounds: { x1: 0, y1: 0, x2: values.length * 60, y2: 40 } };
+      const containerItem: Record<string, unknown> = { x: 0, y: 20, mark: { role: 'legend-entry', group: legendItem } };
+      const entriesMark = {
+        marktype: 'group',
+        role: 'scope',
+        name: 'legend0_legendEntry',
+        group: containerItem,
+        items: values.map((value, index) => ({
+          datum: { index },
+          tooltip: `${value} description`,
+          bounds: { x1: index * 60, y1: 0, x2: index * 60 + 50, y2: 12 },
+          mark: { role: 'scope', name: 'legend0_legendEntry', group: containerItem },
+          items: [{ marktype: 'symbol', role: 'legend-symbol', items: [{ datum: { value } }] }],
+        })),
+      };
+      containerItem.items = [entriesMark];
+      legendMarks.length = 0;
+      legendMarks.push({ marktype: 'group', role: 'legend', items: [{ ...legendItem, items: [{ marktype: 'group', role: 'legend-entry', items: [containerItem] }] }] });
+      return entriesMark.items;
+    };
+
+    const attachWithLegend = (overrides = {}) => {
+      (view.data as jest.Mock).mockReturnValue(stackedData);
+      const entries = setLegendEntries(['Windows', 'Mac']);
+      attachDataNavigator({
+        container,
+        chartType: 'bar',
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        metric: 'downloads',
+        markName: 'bar0',
+        legend: { name: 'legend0', title: 'OS', highlight: true, onActivate },
+        chartId: 'legend-chart',
+        getView: () => view,
+        ...overrides,
+      });
+      return entries;
+    };
+
+    const enterLegendRoot = (overrides = {}) => {
+      const entries = attachWithLegend(overrides);
+      entryButton().click(); // chart root
+      fireEvent.keyDown(focused(), { key: 'ArrowDown', code: 'ArrowDown' }); // chart root -> legend root
+      return entries;
+    };
+
+    beforeEach(() => onActivate.mockClear());
+
+    test('rings the whole legend on the legend root, without a bar focus ring', () => {
+      enterLegendRoot();
+      expect(label()).toBe('OS legend. 2 series.');
+      expect(legendRing().style.display).toBe('block');
+      expect(signaledWith(FOCUSED_ITEM, null)).toBe(true);
+    });
+
+    test('focusing a series rings its entry, highlights it and shows its description', async () => {
+      const entries = enterLegendRoot();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      await Promise.resolve();
+
+      expect(label()).toBe('OS: Windows. browser: Chrome, downloads: 18000. browser: Firefox, downloads: 5000.');
+      expect(legendRing().style.display).toBe('block');
+      expect(signaledWith('legend0_hoveredSeries', 'Windows')).toBe(true);
+      expect(tooltipCallback).toHaveBeenCalledWith(expect.anything(), expect.anything(), entries[0], 'Windows description');
+    });
+
+    test('reports keyboard focus on a series through the legend\'s onMouseOver/onMouseOut', () => {
+      const onMouseOver = jest.fn();
+      const onMouseOut = jest.fn();
+      enterLegendRoot({ legend: { name: 'legend0', onActivate, onMouseOver, onMouseOut } });
+      expect(onMouseOver).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      expect(onMouseOver).toHaveBeenLastCalledWith('Windows');
+
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+      expect(onMouseOut).toHaveBeenLastCalledWith('Windows');
+      expect(onMouseOver).toHaveBeenLastCalledWith('Mac');
+
+      fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' });
+      expect(onMouseOut).toHaveBeenLastCalledWith('Mac');
+      expect(onMouseOver).toHaveBeenCalledTimes(2);
+      expect(onMouseOut).toHaveBeenCalledTimes(2);
+    });
+
+    test('does not drive the legend hover signal without highlight', () => {
+      enterLegendRoot({ legend: { name: 'legend0', onActivate } });
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      expect(signal.mock.calls.some(([name]) => name === 'legend0_hoveredSeries')).toBe(false);
+    });
+
+    test('arrow keys move between rendered entries', () => {
+      enterLegendRoot();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+      expect(label()).toBe('OS: Mac. browser: Chrome, downloads: 9000. browser: Firefox, downloads: 3000.');
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' }); // no wraparound
+      expect(label()).toBe('OS: Mac. browser: Chrome, downloads: 9000. browser: Firefox, downloads: 3000.');
+    });
+
+    test('Space runs the legend click behavior for the focused entry', () => {
+      const entries = enterLegendRoot();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      fireEvent.keyDown(focused(), { key: ' ', code: 'Space' });
+      expect(onActivate).toHaveBeenCalledWith(entries[0]);
+    });
+
+    test('Enter on a series focuses its first bar with the bar\'s own focus ring and hover parity', () => {
+      enterLegendRoot();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      signal.mockClear();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+
+      expect(signaledWith(FOCUSED_ITEM, segmentId('Chrome', 'Windows'))).toBe(true);
+      expect(signaledWith('legend0_hoveredSeries', null)).toBe(true);
+      expect(signaledWith(`bar0_${HOVERED_ITEM}`, stackedData[0])).toBe(true);
+      expect(legendRing().style.display).toBe('none');
+    });
+
+    test('a hidden series is not highlighted and not drillable', () => {
+      enterLegendRoot({ hiddenSeries: ['Windows'] });
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      expect(label()).toBe('OS: Windows. Hidden.');
+      expect(signaledWith('legend0_hoveredSeries', 'Windows')).toBe(false);
+
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      expect(label()).toBe('OS: Windows. Hidden.');
+    });
+
+    test('reapplies the focused series highlight when a real mouseout clears it', () => {
+      enterLegendRoot();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      signal.mockClear();
+
+      simulateMouseoutClear('legend0_hoveredSeries');
+
+      expect(signaledWith('legend0_hoveredSeries', 'Windows')).toBe(true);
+    });
+
+    test('clicking a legend entry focuses its series', () => {
+      const entries = attachWithLegend();
+      fireViewEvent('mousedown', entries[1]);
+      expect(label()).toBe('OS: Mac. browser: Chrome, downloads: 9000. browser: Firefox, downloads: 3000.');
+    });
+
+    test('clicking a legend symbol focuses its series', () => {
+      attachWithLegend();
+      fireViewEvent('mousedown', { mark: { role: 'legend-symbol' }, datum: { value: 'Windows' } });
+      expect(label()).toBe('OS: Windows. browser: Chrome, downloads: 18000. browser: Firefox, downloads: 5000.');
+    });
+
+    test('restores focus onto the rebuilt series node after a re-attach', () => {
+      enterLegendRoot();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+      focused().focus();
+
+      attachWithLegend({ hiddenSeries: ['Mac'] });
+
+      expect(label()).toBe('OS: Mac. Hidden.');
+    });
+
+    test('announces a Space toggle once, through the restored node\'s name', () => {
+      enterLegendRoot();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      focused().focus();
+      fireEvent.keyDown(focused(), { key: ' ', code: 'Space' });
+
+      attachWithLegend({ hiddenSeries: ['Windows'] }); // the toggle re-embeds the view
+      expect(label()).toBe('OS: Windows. Hidden.');
+
+      // Moving away and back reads the normal name.
+      fireEvent.keyDown(focused(), { key: 'ArrowRight', code: 'ArrowRight' });
+      fireEvent.keyDown(focused(), { key: 'ArrowLeft', code: 'ArrowLeft' });
+      expect(label()).toBe('OS: Windows. Hidden.');
+
+      focused().focus();
+      fireEvent.keyDown(focused(), { key: ' ', code: 'Space' });
+      attachWithLegend();
+      expect(label()).toBe('OS: Windows. Shown. browser: Chrome, downloads: 18000. browser: Firefox, downloads: 5000.');
+    });
+
+    test('a rebuild without a toggle restores the normal name', () => {
+      enterLegendRoot();
+      fireEvent.keyDown(focused(), { key: 'Enter', code: 'Enter' });
+      focused().focus();
+      fireEvent.keyDown(focused(), { key: ' ', code: 'Space' }); // e.g. onClick only; nothing toggled
+
+      attachWithLegend();
+      expect(label()).toBe('OS: Windows. browser: Chrome, downloads: 18000. browser: Firefox, downloads: 5000.');
+    });
+  });
 });

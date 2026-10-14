@@ -14,7 +14,7 @@ import { View } from 'vega';
 /** Padding around the label content, on all sides of the focus ring. */
 const AXIS_FOCUS_RING_PAD = 6;
 
-interface Bounds {
+export interface Bounds {
   x1: number;
   y1: number;
   x2: number;
@@ -31,7 +31,7 @@ export interface AxisLabelColumn {
 export type AxisOrient = 'bottom' | 'top' | 'left' | 'right';
 
 /* Vega scenegraph nodes are loosely typed; narrow the few fields we read. */
-type SceneNode = {
+export type SceneNode = {
   marktype?: string;
   role?: string;
   items?: SceneNode[];
@@ -44,7 +44,7 @@ type SceneNode = {
   mark?: { role?: string; group?: SceneNode };
 };
 
-const union = (a: Bounds, b: Bounds): Bounds => ({
+export const unionBounds = (a: Bounds, b: Bounds): Bounds => ({
   x1: Math.min(a.x1, b.x1),
   y1: Math.min(a.y1, b.y1),
   x2: Math.max(a.x2, b.x2),
@@ -76,7 +76,7 @@ const collectAxisLabelItems = (view: View, orient: AxisOrient): SceneNode[] => {
  * from the scenegraph (Vega's own layout model) rather than the DOM, so this works identically under
  * both the `svg` and `canvas` renderers.
  */
-const viewRelativeBounds = (item: SceneNode): Bounds | undefined => {
+export const viewRelativeBounds = (item: SceneNode): Bounds | undefined => {
   const b = item.bounds;
   if (!b) return undefined;
   let dx = 0;
@@ -110,7 +110,7 @@ const recordColumn = (
     byTick.set(key, { value, primary: rowStart, bounds });
     return;
   }
-  existing.bounds = union(existing.bounds, bounds);
+  existing.bounds = unionBounds(existing.bounds, bounds);
   // Keep the primary row's value (topmost for a bottom axis; outermost for a side axis).
   if (rowStart < existing.primary) {
     existing.primary = rowStart;
