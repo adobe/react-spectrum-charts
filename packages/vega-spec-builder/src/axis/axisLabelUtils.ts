@@ -259,7 +259,7 @@ export const getLabelFormat = (
   return [
     ...getTextNumberFormat(numberFormat, undefined, currencyLocale, currencyCode),
     ...(truncateLabels && scaleName.includes('Band') && labelIsParallelToAxis(position, labelOrientation)
-      ? [{ signal: 'truncateText(datum.value, bandwidth("xBand")/(1- paddingInner), "normal", 14)' }]
+      ? [{ signal: `truncateText(datum.value, bandwidth("${scaleName}")/(1- paddingInner), "normal", 14)` }]
       : [{ signal: 'datum.value' }]),
   ];
 };
