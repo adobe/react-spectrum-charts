@@ -109,6 +109,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
         fillOpacity: getOpacityProductionRule(opacity),
         shape: { value: 'circle' },
         size: getSymbolSizeProductionRule(size),
+        strokeCap: { value: 'round' },
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeWidth: getLineWidthProductionRule(lineWidth),
         stroke: getColorProductionRule(stroke ?? color, colorScheme, colorScaleType),
