@@ -11,6 +11,9 @@
  */
 import { NodeObject, Structure } from 'data-navigator';
 
+import { SERIES_ID } from '@spectrum-charts/core-s2/constants';
+
+import { withViewKeys } from './barSeries.js';
 import { buildBarStructure, buildNodeLabel, segmentId, toDimensionKey } from './buildBarStructure.js';
 
 const hasEdgeBetween = (structure: Structure, a: string, b: string): boolean =>
@@ -192,7 +195,7 @@ describe('buildBarStructure()', () => {
         const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(true);
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
-        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Windows'))).toBe(false);
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Mac'))).toBe(false);
       });
 
       test('the corresponding bar in the adjacent group navigates on Up/Down', () => {
@@ -209,9 +212,16 @@ describe('buildBarStructure()', () => {
         expect(edge?.navigationRules).toContain('right');
       });
 
+      test('bars within a group follow the series order in the data, as Vega lays them out', () => {
+        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged', order: 'downloads' });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Chrome', 'Mac'));
+        // Windows (first in the data) is the source, so Right moves Windows -> Mac regardless of `order`.
+        expect(edge?.source).toBe(segmentId('Chrome', 'Windows'));
+      });
+
       test('the last bar in a group advances to the first bar in the next group', () => {
         const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
-        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Mac'));
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Windows'));
         expect(edge?.navigationRules).toEqual(['left', 'right']);
       });
 
@@ -567,5 +577,56 @@ describe('buildNodeLabel() division keys', () => {
   test('falls back to the node id when the dimension value is a plain object', () => {
     const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'day', data: { day: { a: 1 } } } as unknown as NodeObject;
     expect(buildNodeLabel(node, { dimension: 'day', data: [{ day: { a: 1 }, downloads: 5 }] })).toBe('dn-1');
+  });
+});
+
+describe('buildBarStructure() dodged-and-stacked', () => {
+  // Dodged by series into side-by-side stacks, each stacked by outcome.
+  const rows = withViewKeys(
+    ['Launch', 'Signup'].flatMap((step) =>
+      ['All', 'US'].flatMap((series) => ['kept', 'lost'].map((outcome) => ({ step, series, outcome, users: 10 })))
+    ),
+    undefined,
+    { seriesFields: ['series', 'outcome'] }
+  ).data;
+  const { structure } = buildBarStructure({
+    data: rows,
+    dimension: 'step',
+    metric: 'users',
+    color: 'series',
+    seriesField: SERIES_ID,
+    dodgeFields: ['series'],
+    stackFields: ['outcome'],
+    type: 'dodged',
+  });
+  const id = (step: string, series: string, outcome: string) => segmentId(step, `${series} | ${outcome}`);
+
+  test('keys each bar by its full series, so every segment is distinct', () => {
+    expect(structure.nodes[id('Launch', 'All', 'kept')]).toBeDefined();
+    expect(structure.nodes[id('Launch', 'All', 'lost')]).toBeDefined();
+    expect(structure.nodes[id('Launch', 'US', 'kept')]).toBeDefined();
+  });
+
+  test('moves up and down within a stack', () => {
+    expect(edgeBetween(structure, id('Launch', 'All', 'kept'), id('Launch', 'All', 'lost'))?.navigationRules).toEqual(['up', 'down']);
+    expect(hasEdgeBetween(structure, id('Launch', 'All', 'kept'), id('Launch', 'US', 'lost'))).toBe(false);
+  });
+
+  test('moves left and right to the same segment of the neighboring stack, across categories too', () => {
+    expect(edgeBetween(structure, id('Launch', 'All', 'lost'), id('Launch', 'US', 'lost'))?.navigationRules).toEqual(['left', 'right']);
+    expect(edgeBetween(structure, id('Launch', 'US', 'kept'), id('Signup', 'All', 'kept'))?.navigationRules).toEqual(['left', 'right']);
+  });
+});
+
+describe('buildBarStructure() dimensionLabels', () => {
+  test('reads a parsed dimension as the value the consumer supplied', () => {
+    const day = Date.parse('2024-01-01');
+    const { structure } = buildBarStructure({
+      data: [{ day, downloads: 5 }],
+      dimension: 'day',
+      metric: 'downloads',
+      dimensionLabels: new Map([[String(day), '2024-01-01']]),
+    });
+    expect(structure.nodes[String(day)].semantics?.label).toBe('day: 2024-01-01. downloads: 5.');
   });
 });

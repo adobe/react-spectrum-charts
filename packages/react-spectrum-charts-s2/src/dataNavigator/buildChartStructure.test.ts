@@ -93,6 +93,7 @@ describe('buildChartStructure()', () => {
       expect(axisNodes).toHaveLength(0);
     });
   });
+
 });
 
 describe('getNodeIdForDatum()', () => {
@@ -102,7 +103,7 @@ describe('getNodeIdForDatum()', () => {
   });
 
   test('returns the segment id for a multi-series bar', () => {
-    expect(getNodeIdForDatum('bar', { browser: 'Chrome', os: 'Mac' }, { dimension: 'browser', color: 'os' })).toBe(
+    expect(getNodeIdForDatum('bar', { browser: 'Chrome', os: 'Mac' }, { dimension: 'browser', seriesField: 'os' })).toBe(
       segmentId('Chrome', 'Mac')
     );
   });

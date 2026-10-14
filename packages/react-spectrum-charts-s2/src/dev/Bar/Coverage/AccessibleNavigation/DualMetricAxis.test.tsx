@@ -18,26 +18,36 @@ test('Dual-metric-axis navigation focuses a bar', async () => {
   render(<DualMetricAxisBarNavigation {...DualMetricAxisBarNavigation.args} />);
   const chart = await findChart();
   const container = chart.closest('.rsc-container') as HTMLElement;
-  await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
-  (container.querySelector('button') as HTMLButtonElement).click();
+  await waitFor(() => expect(container.querySelector('.dn-entry-button')).toBeTruthy());
+  (container.querySelector('.dn-entry-button') as HTMLButtonElement).click();
   await waitFor(() => {
     expect(container.querySelector('.dn-node')).toBeTruthy();
   });
   const node = container.querySelector('.dn-node') as HTMLElement;
   fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
-  const groupRings = await findAllMarksByGroupName(chart, 'bar0_stackFocusRing');
-  expect(groupRings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
-  fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
-  const rings = await findAllMarksByGroupName(chart, 'bar0_focusRing');
-  expect(rings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+  await waitFor(
+    async () => {
+      const groupRings = await findAllMarksByGroupName(chart, 'bar0_stackFocusRing');
+      expect(groupRings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+    },
+    { timeout: 3000 }
+  );
+  fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Enter', code: 'Enter' });
+  await waitFor(
+    async () => {
+      const rings = await findAllMarksByGroupName(chart, 'bar0_focusRing');
+      expect(rings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+    },
+    { timeout: 3000 }
+  );
 });
 
 test('Dual-metric-axis navigation moves within a group and to the corresponding bar in the next group', async () => {
   render(<DualMetricAxisBarNavigation {...DualMetricAxisBarNavigation.args} />);
   const chart = await findChart();
   const container = chart.closest('.rsc-container') as HTMLElement;
-  await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
-  (container.querySelector('button') as HTMLButtonElement).click();
+  await waitFor(() => expect(container.querySelector('.dn-entry-button')).toBeTruthy());
+  (container.querySelector('.dn-entry-button') as HTMLButtonElement).click();
 
   await waitFor(() => {
     expect(container.querySelector('.dn-node')).toBeTruthy();

@@ -18,26 +18,30 @@ test('Dodged bar navigation focuses a group and its bars', async () => {
   render(<DodgedBarNavigation {...DodgedBarNavigation.args} />);
   const chart = await findChart();
   const container = chart.closest('.rsc-container') as HTMLElement;
-  await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
-  (container.querySelector('button') as HTMLButtonElement).click();
+  await waitFor(() => expect(container.querySelector('.dn-entry-button')).toBeTruthy());
+  (container.querySelector('.dn-entry-button') as HTMLButtonElement).click();
   await waitFor(() => {
     expect(container.querySelector('.dn-node')).toBeTruthy();
   });
-  const node = container.querySelector('.dn-node') as HTMLElement;
-  fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
-  const groupRings = await findAllMarksByGroupName(chart, 'bar0_stackFocusRing');
-  expect(groupRings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
-  fireEvent.keyDown(node, { key: 'Enter', code: 'Enter' });
-  const rings = await findAllMarksByGroupName(chart, 'bar0_focusRing');
-  expect(rings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+  const focusedNode = (): HTMLElement => container.querySelector('.dn-node') as HTMLElement;
+  fireEvent.keyDown(focusedNode(), { key: 'Enter', code: 'Enter' });
+  await waitFor(async () => {
+    const groupRings = await findAllMarksByGroupName(chart, 'bar0_stackFocusRing');
+    expect(groupRings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+  });
+  fireEvent.keyDown(focusedNode(), { key: 'Enter', code: 'Enter' });
+  await waitFor(async () => {
+    const rings = await findAllMarksByGroupName(chart, 'bar0_focusRing');
+    expect(rings.some((ring) => ring.getAttribute('opacity') === '1')).toBe(true);
+  });
 });
 
 test('Dodged bar navigation moves within a group and to the corresponding bar in the next group', async () => {
   render(<DodgedBarNavigation {...DodgedBarNavigation.args} />);
   const chart = await findChart();
   const container = chart.closest('.rsc-container') as HTMLElement;
-  await waitFor(() => expect(container.querySelector('button')).toBeTruthy());
-  (container.querySelector('button') as HTMLButtonElement).click();
+  await waitFor(() => expect(container.querySelector('.dn-entry-button')).toBeTruthy());
+  (container.querySelector('.dn-entry-button') as HTMLButtonElement).click();
 
   await waitFor(() => {
     expect(container.querySelector('.dn-node')).toBeTruthy();

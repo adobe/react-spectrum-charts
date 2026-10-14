@@ -25,8 +25,14 @@ export interface NavigatorProps {
   data: SimpleData[];
   /** Primary categorical / x-axis field. */
   dimension?: string;
-  /** Series / color field (set for stacked bars). */
+  /** Series / color field (set for stacked bars), read as the series' name in labels. */
   color?: string;
+  /** Every field dividing the bar into series, in the chart's series-id order. Must be memoized. */
+  seriesFields?: string[];
+  /** For a dodged-and-stacked bar, the fields splitting each category into side-by-side stacks. Must be memoized. */
+  dodgeFields?: string[];
+  /** For a dodged-and-stacked bar, the fields that tell a stack's segments apart. Must be memoized. */
+  stackFields?: string[];
   /** Bar layout type. */
   type?: 'dodged' | 'stacked';
   /** Per-datum color override field used in accessible bar labels. */
@@ -74,6 +80,9 @@ export const Navigator = ({
   data,
   dimension,
   color,
+  seriesFields,
+  dodgeFields,
+  stackFields,
   type,
   colorOverride,
   locale,
@@ -108,6 +117,9 @@ export const Navigator = ({
         data,
         dimension,
         color,
+        seriesFields,
+        dodgeFields,
+        stackFields,
         type,
         colorOverride,
         locale,
@@ -148,6 +160,9 @@ export const Navigator = ({
     data,
     dimension,
     color,
+    seriesFields,
+    dodgeFields,
+    stackFields,
     type,
     colorOverride,
     locale,
