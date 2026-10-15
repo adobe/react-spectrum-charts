@@ -41,8 +41,8 @@ imported from a separate subpath so their status is visible in your code.
 - **Removal:** a lab component can be removed if it doesn't fit the project's goals and its
   usage is low. Removals are announced in the changelog.
 
-Lab components are currently imported from `@spectrum-charts/react-spectrum-charts-s2/pre-alpha`
-(see [Pre-Alpha Components](./pre-alpha.md)). That subpath will be renamed `lab`.
+Lab components are imported from `@spectrum-charts/react-spectrum-charts-s2/lab`
+(see [Lab Components](./lab.md)).
 
 ## How to tell a component's stage
 

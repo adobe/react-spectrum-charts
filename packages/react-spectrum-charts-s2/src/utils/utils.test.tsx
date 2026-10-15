@@ -13,7 +13,7 @@ import { Fragment, createElement } from 'react';
 
 import { Chart } from '../Chart.js';
 import { Bar, ChartInspect, Donut, Line } from '../components/index.js';
-import { Area, Bullet, Scatter, Trendline } from '../pre-alpha/index.js';
+import { Area, Bullet, Scatter, Trendline } from '../lab/index.js';
 import {
   debugLog,
   getAllElements,

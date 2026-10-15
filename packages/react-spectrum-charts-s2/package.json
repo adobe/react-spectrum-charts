@@ -10,9 +10,9 @@
       "types": "./dist/@types/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./pre-alpha": {
-      "types": "./dist/@types/pre-alpha/index.d.ts",
-      "default": "./dist/pre-alpha/index.js"
+    "./lab": {
+      "types": "./dist/@types/lab/index.d.ts",
+      "default": "./dist/lab/index.js"
     },
     "./ai-catalog": {
       "types": "./dist/@types/src/ai-catalog/index.d.ts",
@@ -32,8 +32,8 @@
       "*": [
         "./dist/@types/index.d.ts"
       ],
-      "pre-alpha": [
-        "./dist/@types/pre-alpha/index.d.ts"
+      "lab": [
+        "./dist/@types/lab/index.d.ts"
       ],
       "ai-catalog": [
         "./dist/@types/src/ai-catalog/index.d.ts"

@@ -2,21 +2,21 @@
 sidebar_position: 6
 ---
 
-# Pre-Alpha Components
+# Lab Components
 
-Pre-alpha components are chart types and child components that are functional and available
+Lab components are chart types and child components that are functional and available
 for use, but don't yet have a finalized Spectrum 2 visual design. Their API and visual
-behavior may undergo significant changes before they graduate to a stable, designed S2
-component. Pre-alpha components are what [Component Stages](./stages.md#lab) calls lab components.
+behavior may change significantly in any release. See [Component Stages](./stages.md#lab)
+for how lab components graduate to alpha.
 
-Pre-alpha components:
+Lab components:
 - **Are functional** — full prop support for the underlying chart type, ported from the base
   `@adobe/react-spectrum-charts` package
 - **Have no finalized Spectrum 2 design** — visual styling may change once a design is available
 - **May have breaking API changes** in future releases without following semver
 - **Are open for feedback** — please report issues or suggest improvements
 
-## Current pre-alpha components
+## Current lab components
 
 - `Area` — area charts
 - `Scatter` — scatter plots, with `ScatterPath`, `ScatterAnnotation`, and `Trendline`
@@ -24,13 +24,13 @@ Pre-alpha components:
 - `Bullet` — bullet charts for KPI progress against targets, with `ChartInspect` support
 - `Combo` — overlays a `Bar` mark and a `Line` mark in the same chart
 
-## Importing pre-alpha components
+## Importing lab components
 
-Pre-alpha components are imported from a separate `pre-alpha` export:
+Lab components are imported from a separate `lab` export:
 
 ```jsx
 import { Chart, Axis } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Scatter, ScatterPath } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+import { Scatter, ScatterPath } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 <Chart data={data}>
   <Axis position="bottom" />
@@ -43,10 +43,9 @@ import { Scatter, ScatterPath } from '@spectrum-charts/react-spectrum-charts-s2/
 
 ## Providing feedback
 
-If you use pre-alpha components and have feedback, please:
+If you use lab components and have feedback, please:
 - Open an issue on GitHub
 - Share your use case and requirements
 - Report any bugs or unexpected behavior
 
-Your feedback helps shape these components before they graduate to stable, designed S2
-components.
+Your feedback helps shape these components before they graduate to alpha.

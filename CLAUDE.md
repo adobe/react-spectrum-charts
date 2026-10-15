@@ -270,7 +270,7 @@ Demo stories in `src/stories/<ComponentName>/` use:
 
 - `<ComponentName>Examples.story.tsx` — realistic app examples or Figma design equivalents with `title: 'React Spectrum Charts 2/<ComponentName>/Examples'`.
 - `Features/` — one representative story per feature. Title prefix: `'React Spectrum Charts 2/<ComponentName>/Features'`.
-- **Pre-alpha components** keep the `React Spectrum Charts 2/Pre-Alpha/<ComponentName>/...` title prefix.
+- **Lab components** (exported from `src/lab/`) use the `React Spectrum Charts 2/Lab/<ComponentName>/...` title prefix and `tags: ['lab']`.
 
 The dev Storybook is the demo plus extra per-chart folders (`src/dev/<Chart>/<Folder>/`, titled `React Spectrum Charts 2/<Chart>/<Folder>/...`):
 
@@ -370,7 +370,7 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 
 ## S2 Component Stage Markers
 
-Every exported S2 component outside `pre-alpha` shows its stage (see `packages/docs/docs/spectrum2/stages.md`) in three places. Add all three for a new component, and update all three when a component changes stage:
+Every exported S2 component outside `lab` shows its stage (see `packages/docs/docs/spectrum2/stages.md`) in three places. Add all three for a new component, and update all three when a component changes stage:
 
 1. **TSDoc** — a one-line description plus `@alpha` (or `@beta`) on the component declaration, e.g. `components/Line/Line.tsx`.
 2. **Storybook** — `tags: ['alpha']` (or `'beta'`, `'rc'`) in the meta of every story file for the component, in both `src/stories/` and `src/dev/`. This one tag drives the sidebar and canvas-toolbar badges (`.storybook-s2/stageBadge.ts`) and the autodocs page badge (`.storybook-s2/StageDocsPage.tsx`); stage labels live in `.storybook-s2/stages.ts`.

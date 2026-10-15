@@ -18,14 +18,15 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Area } from '../../../pre-alpha/index.js';
+import { Area } from '../../../lab/index.js';
 import { formatTimestamp } from '../../../storyShared/storyUtils.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { AreaProps, ChartProps } from '../../../types/index.js';
 import { dailyTemperatureData, installsSinceLaunchData, sessionsByChannelData } from '../areaData.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Area/Features',
+  title: 'React Spectrum Charts 2/Lab/Area/Features',
+  tags: ['lab'],
   component: Area,
 };
 

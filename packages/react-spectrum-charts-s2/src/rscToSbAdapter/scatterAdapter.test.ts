@@ -15,7 +15,7 @@ import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
 import { ChartPopover } from '../components/ChartPopover/index.js';
 import { ChartInspect } from '../components/ChartInspect/index.js';
-import { ScatterAnnotation, ScatterPath, Trendline } from '../pre-alpha/index.js';
+import { ScatterAnnotation, ScatterPath, Trendline } from '../lab/index.js';
 import { childrenToOptions } from './childrenAdapter.js';
 import { getScatterOptions } from './scatterAdapter.js';
 
