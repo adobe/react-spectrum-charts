@@ -109,7 +109,7 @@ export function buildSpec({
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
   chartHeight,
   chartWidth,
-  colors = 'categorical12',
+  colors = 's2Categorical20',
   colorScheme = DEFAULT_COLOR_SCHEME,
   data,
   description,
