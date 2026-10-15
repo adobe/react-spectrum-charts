@@ -18,6 +18,10 @@ import { DEFAULT_COLOR, DEFAULT_LINEAR_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL
 import { ScatterProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Renders a scatter plot of points positioned by a dimension and a metric.
+ * @experimental
+ */
 const Scatter: FC<ScatterProps> = ({
   blend,
   color = DEFAULT_COLOR,

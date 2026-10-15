@@ -16,6 +16,10 @@ import { FC } from 'react';
 import { TrendlineProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Adds a trendline computed from its parent mark's data.
+ * @experimental
+ */
 const Trendline: FC<TrendlineProps> = ({
   children,
   color,

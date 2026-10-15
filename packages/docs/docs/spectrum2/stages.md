@@ -46,8 +46,9 @@ Lab components are imported from `@spectrum-charts/react-spectrum-charts-s2/lab`
 
 ## How to tell a component's stage
 
-- **In your editor:** the component's documentation comment has an `@alpha` or `@beta` tag.
-  Release candidates use `@beta` and say "Release candidate." Stable components have no tag.
+- **In your editor:** the component's documentation comment has an `@experimental` (lab), `@alpha`,
+  or `@beta` tag. Release candidates use `@beta` and say "Release candidate." Stable components
+  have no tag.
 - **In these docs and in Storybook:** the component shows a stage badge.
 - **In the changelog:** stage changes are announced in the release notes.
 

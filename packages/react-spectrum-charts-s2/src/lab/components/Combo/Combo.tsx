@@ -18,6 +18,10 @@ import { DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 import { ComboProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Combines bar and line marks that share a dimension in one chart.
+ * @experimental
+ */
 const Combo: FC<ComboProps> = ({ name = 'combo0', dimension = DEFAULT_TIME_DIMENSION }) => {
   return null;
 };

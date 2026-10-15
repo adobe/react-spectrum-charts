@@ -18,6 +18,10 @@ import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum
 import { AreaProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Renders an area chart, filled from the baseline to a metric or between two metrics.
+ * @experimental
+ */
 const Area: FC<AreaProps> = ({
   children,
   name,

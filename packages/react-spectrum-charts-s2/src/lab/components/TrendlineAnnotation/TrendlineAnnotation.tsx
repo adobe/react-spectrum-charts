@@ -16,6 +16,10 @@ import { FC } from 'react';
 import { TrendlineAnnotationProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Adds a value label to a trendline.
+ * @experimental
+ */
 const TrendlineAnnotation: FC<TrendlineAnnotationProps> = ({
   badge = false,
   dimensionValue = 'end',

@@ -23,6 +23,10 @@ import {
 import { BulletProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Renders a bullet chart that compares each metric against a target.
+ * @experimental
+ */
 const Bullet: FC<BulletProps> = ({
   name = 'bullet0',
   metric = 'currentAmount',

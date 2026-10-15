@@ -16,6 +16,10 @@ import { FC } from 'react';
 import { ScatterAnnotationProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Adds text labels to the points of a scatter plot.
+ * @experimental
+ */
 const ScatterAnnotation: FC<ScatterAnnotationProps> = ({
   anchor = ['right', 'top', 'bottom', 'left'],
   textKey = 'annotation',
