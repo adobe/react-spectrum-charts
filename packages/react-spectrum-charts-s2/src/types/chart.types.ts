@@ -57,7 +57,7 @@ export type MarkChildElement = BarAnnotationElement | ChartInspectElement | Char
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {
   // children is optional because it is a pain to make this required with how children get defined in stories
   // we have a check at the beginning of Chart to make sure this isn't undefined
-  // if it is undefined, we log an error and render a fragment
+  // if it is undefined, we log an error and render nothing
   children?: Children<ChartChildElement>;
   /** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
   config?: Config;
