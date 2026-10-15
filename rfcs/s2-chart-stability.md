@@ -9,7 +9,7 @@ governing permissions and limitations under the License. -->
 
 - Status: Draft
 - Start Date: 2026-10-14
-- RFC PR:
+- RFC PR: https://github.com/adobe/react-spectrum-charts/pull/1022
 - Authors: Connor Lamoureux
 - Parent Issue:
 
