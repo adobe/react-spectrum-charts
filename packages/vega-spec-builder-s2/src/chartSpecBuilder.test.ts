@@ -394,6 +394,18 @@ describe('Chart spec builder', () => {
     });
   });
 
+  describe('buildSpec()', () => {
+    test('defaults colors to s2Categorical20', () => {
+      const { colors: _colors, ...options } = defaultSpecOptions;
+      const spec = buildSpec({ ...options, marks: [defaultBarOptions] });
+
+      expect(spec.scales?.find((scale) => scale.name === COLOR_SCALE)).toHaveProperty(
+        'range',
+        colorSchemes.s2Categorical20
+      );
+    });
+  });
+
   describe('controlled highlighting', () => {
     test('adds highlightedSeries signal if there is a highlighted series', () => {
       const spec = buildSpec({
