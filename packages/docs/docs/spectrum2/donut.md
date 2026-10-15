@@ -242,6 +242,8 @@ circle. By default, data is sorted descending by `metric`, so the largest segmen
 leftmost. Set `sortOrder="data"` to preserve source order for ordinal categories.
 Semicircles start at 9 o'clock and sweep clockwise through 12 to 3 o'clock.
 Circle donuts start at 12 o'clock. These start positions are fixed.
+Both variants select their size tier from the smaller of the chart's width and height.
+The semicircle's visible arc is centered vertically and horizontally within the chart.
 
 ```jsx
 <Donut metric="count" color="browser" variant="semicircle">
@@ -255,9 +257,9 @@ Circle donuts start at 12 o'clock. These start positions are fixed.
 </Donut>
 ```
 
-:::note Segment labels unsupported
-`SegmentLabel` children are not supported for `variant="semicircle"` and are silently
-omitted.
+:::note Unsupported semicircle features
+`SegmentLabel` children and the `DonutSummary` `delta` prop are not supported for
+`variant="semicircle"` and are omitted.
 :::
 
 ---
@@ -326,7 +328,7 @@ omitted.
             <td>sortOrder</td>
             <td>'valueDescending' | 'data'</td>
             <td>'valueDescending'</td>
-            <td>Controls semicircle segment ordering. <code>'data'</code> preserves source order for ordinal categories.</td>
+            <td>Sorts categorical segments largest-first in both variants. <code>'data'</code> preserves source order. Boolean donuts always preserve source order.</td>
         </tr>
         <tr>
             <td>variant</td>

@@ -76,6 +76,19 @@ beforeAll(stubS2BrowserApis);
 beforeEach(() => localStorage.clear());
 
 describe('VariationDashboard', () => {
+  test('reserves only card borders and leaves the chart area unpadded', () => {
+    const { container } = render(
+      <VariationDashboard variations={variations} chartType="Test" initialSize={674} />
+    );
+    const card = container.querySelector('section[data-variation-id="probe"]');
+    const grid = card?.parentElement;
+    expect(grid).toHaveStyle({
+      gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 676px), 1fr))',
+    });
+    expect(card?.firstElementChild).toHaveStyle({ minHeight: '674px' });
+    expect(card?.firstElementChild).not.toHaveStyle({ padding: '8px' });
+  });
+
   test('toggles animations for every variation and preserves the setting across datasets', async () => {
     const AnimationProbe = (): ReactElement => {
       const animations = useVariationAnimations();

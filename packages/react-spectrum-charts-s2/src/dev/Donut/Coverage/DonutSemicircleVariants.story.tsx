@@ -30,7 +30,7 @@ export default {
 
 type SemicircleMode = 'browser' | 'ordinal' | 'boolean';
 type SemicircleStoryProps = DonutProps &
-  Pick<DonutSummaryProps, 'hideValue' | 'numberFormat' | 'delta'> & { mode?: SemicircleMode };
+  Pick<DonutSummaryProps, 'hideValue' | 'numberFormat'> & { mode?: SemicircleMode };
 
 const browserData: ChartData[] = [
   { browser: 'Chrome', count: 55 },
@@ -80,7 +80,7 @@ const modeConfig: Record<
 };
 
 const SemicircleStory: StoryFn<SemicircleStoryProps> = (args): ReactElement => {
-  const { hideValue, numberFormat, delta, mode = 'ordinal', ...donutOnlyProps } = args;
+  const { hideValue, numberFormat, mode = 'ordinal', ...donutOnlyProps } = args;
   const config = modeConfig[mode];
   const chartProps = useChartProps({
     data: config.data,
@@ -92,7 +92,7 @@ const SemicircleStory: StoryFn<SemicircleStoryProps> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Donut variant="semicircle" {...config.donutProps} {...donutOnlyProps}>
-        <DonutSummary hideValue={hideValue} label={config.label} numberFormat={numberFormat} delta={delta} />
+        <DonutSummary hideValue={hideValue} label={config.label} numberFormat={numberFormat} />
       </Donut>
       <Legend title={config.legendTitle} position="right" highlight />
     </Chart>

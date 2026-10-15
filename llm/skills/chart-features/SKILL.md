@@ -224,7 +224,7 @@ Shows a formatted metric total/summary in the donut's center hole.
 - **Related tokens**: _none_
 - **RSC support**: S1 ✅, S2 ✅
 - **Maturity**: S1 via `rc` import path, S2 via `rc` import path — not yet in the stable barrel, but alpha/rc components are considered supported
-- **Canonical parameter shape**: `DonutSummaryOptions` in `packages/vega-spec-builder-s2/src/types/marks/supplemental/dountSummarySpec.types.ts`
+- **Canonical parameter shape**: `DonutSummaryOptions` in `packages/vega-spec-builder-s2/src/types/marks/supplemental/donutSummarySpec.types.ts`
 
 ### Segment Label (`segment-label`)
 
@@ -287,5 +287,4 @@ Renders the chart's title text at a configurable position/orientation with size/
 - **RSC support**: S1 ✅, S2 ✅
 - **Canonical parameter shape**: `TitleOptions` in `packages/vega-spec-builder-s2/src/types/titleSpec.types.ts`
 - **Builder implementation**: `packages/vega-spec-builder-s2/src/title/titleSpecBuilder.ts`
-
 

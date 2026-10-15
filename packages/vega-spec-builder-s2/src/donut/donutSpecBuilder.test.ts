@@ -28,7 +28,172 @@ import { initializeSpec } from '../specUtils.js';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder.js';
 import { defaultDonutOptions } from './donutTestUtils.js';
 
+interface DonutSceneNode {
+  name?: string;
+  text?: string;
+  limit?: number;
+  x?: number;
+  y?: number;
+  outerRadius?: number;
+  innerRadius?: number;
+  strokeWidth?: number;
+  items?: DonutSceneNode[];
+}
+
 describe('addData', () => {
+  test.each([false, true])('centers semicircles and preserves visible ring width on resize: isBoolean=%s', async (isBoolean) => {
+    const functions = getExpressionFunctions('en-US');
+    Object.entries(functions).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = [{ series: 'Complete', value: 0.7 }, { series: 'Remaining', value: 0.3 }];
+    const spec = buildSpec({
+      data,
+      marks: [{
+        markType: 'donut',
+        name: 'centeredDonut',
+        color: 'series',
+        metric: 'value',
+        variant: 'semicircle',
+        isBoolean,
+        donutSummaries: [{ label: 'Total' }],
+      }],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(1200).height(420);
+    const getMarkItems = (name: string): DonutSceneNode[] => {
+      const scene: DonutSceneNode & { root?: DonutSceneNode } = view.scenegraph();
+      if (!scene.root) throw new Error('Expected scenegraph root');
+      const nodes = [scene.root];
+      for (const node of nodes) {
+        if (node.name === name && node.items) return node.items;
+        nodes.push(...(node.items ?? []));
+      }
+      throw new Error(`Expected scenegraph mark ${name}`);
+    };
+    try {
+      await view.runAsync();
+      const initialArc = getMarkItems('centeredDonut')[0];
+      expect(view.signal('centeredDonut_ringWidth')).toBe(40);
+      for (const [width, height] of [[1200, 420], [420, 420], [1000, 300], [1200, 420]]) {
+        await view.width(width).height(height).runAsync();
+        const outerRadius = view.signal('centeredDonut_outerRadius');
+        const top = (height - outerRadius) / 2;
+        const centerY = height - top;
+        expect(top).toBeGreaterThanOrEqual(10);
+        expect(width / 2 - outerRadius).toBeGreaterThanOrEqual(10);
+        for (const name of ['centeredDonut', 'centeredDonut_emptyState']) {
+          for (const item of getMarkItems(name)) {
+            expect(item.x).toBe(width / 2);
+            expect(item.y).toBe(centerY);
+          }
+        }
+        for (const item of getMarkItems('centeredDonut')) {
+          if (item.outerRadius === undefined || item.innerRadius === undefined || item.strokeWidth === undefined) {
+            throw new Error('Expected resolved arc radii and stroke width');
+          }
+          expect(item.outerRadius - item.innerRadius - item.strokeWidth).toBeCloseTo(
+            view.signal('centeredDonut_ringWidth'), 10
+          );
+          expect(item.outerRadius - item.strokeWidth / 2).toBeCloseTo(outerRadius, 10);
+        }
+        const summaryName = isBoolean ? 'centeredDonut_booleanSummaryLabel' : 'centeredDonut_summaryLabel';
+        const summary = getMarkItems(summaryName)[0];
+        expect(summary.y).toBeLessThan(centerY);
+        expect(getMarkItems('centeredDonut')[0]).toBe(initialArc);
+      }
+    } finally {
+      view.finalize();
+    }
+  });
+
+  test.each([
+    ['direct', { value: true }],
+    ['advanced', { percent: true, showValueRow: true, swatch: true, value: false }],
+  ])('keeps %s labels within a 10px inset and the ring centered on resize', async (mode, label) => {
+    const functions = getExpressionFunctions('en-US');
+    Object.entries(functions).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    expressionFunction('getLabelWidth', (text: string) => String(text).length * 8);
+    const data = [
+      { series: 'North America enterprise customers', value: 50 },
+      { series: 'International enterprise customers', value: 50 },
+    ];
+    const spec = buildSpec({
+      data,
+      marks: [
+        { markType: 'donut', name: 'wideDonut', color: 'series', metric: 'value', segmentLabels: [label] },
+      ],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(1200).height(674);
+    const prefix = mode === 'advanced' ? 'wideDonut_richSegmentLabel' : 'wideDonut_segmentLabel';
+    const getMarkItems = (name: string): DonutSceneNode[] => {
+      const find = (node: DonutSceneNode): DonutSceneNode | undefined => {
+        if (node.name === name) return node;
+        for (const child of node.items ?? []) {
+          const found = find(child);
+          if (found) return found;
+        }
+        return undefined;
+      };
+      const scene: DonutSceneNode & { root?: DonutSceneNode } = view.scenegraph();
+      if (!scene.root) throw new Error('Expected scenegraph root');
+      const mark = find(scene.root);
+      if (!mark?.items) throw new Error(`Expected scenegraph mark ${name}`);
+      return mark.items;
+    };
+    try {
+      await view.runAsync();
+      const initialArc = getMarkItems('wideDonut')[0];
+      const assertLayout = (truncated: boolean) => {
+        for (const name of ['wideDonut', 'wideDonut_emptyState']) {
+          getMarkItems(name).forEach((item) => {
+            expect(item.x).toBe(view.width() / 2);
+            expect(item.y).toBe(view.height() / 2);
+          });
+        }
+        const labels = view.data(`${prefix}Data`);
+        expect(labels).toHaveLength(2);
+        expect(new Set(labels.map((datum) => datum[`${prefix}_hemisphere`]))).toEqual(new Set(['left', 'right']));
+        labels.forEach((datum) => {
+          expect(datum[`${prefix}_leftX`]).toBeGreaterThanOrEqual(10);
+          expect(datum[`${prefix}_rightX`]).toBeLessThanOrEqual(view.width() - 10);
+          if (truncated) {
+            const edge = datum[`${prefix}_hemisphere`] === 'left' ? 'leftX' : 'rightX';
+            expect(datum[`${prefix}_${edge}`]).toBeCloseTo(edge === 'leftX' ? 10 : view.width() - 10);
+          }
+        });
+        const nameMark = mode === 'advanced' ? `${prefix}Name` : prefix;
+        getMarkItems(nameMark).forEach((item) => {
+          expect(data.map(({ series }) => series)).toContain(item.text);
+          if (truncated) {
+            expect(item.limit).toBeGreaterThan(0);
+          } else {
+            expect(item.limit).toBe(0);
+          }
+        });
+      };
+      expect(view.signal('wideDonut_sizeTier')).toBe(4);
+      expect(view.signal('wideDonut_outerRadius')).toBe(200);
+      assertLayout(false);
+      await view.width(674).runAsync();
+      assertLayout(true);
+      await view.width(1400).height(700).runAsync();
+      assertLayout(false);
+      await view.width(1200).height(674).runAsync();
+      assertLayout(false);
+      expect(view.signal('wideDonut_outerRadius')).toBe(200);
+      expect(getMarkItems('wideDonut')[0]).toBe(initialArc);
+    } finally {
+      view.finalize();
+      expressionFunction('getLabelWidth', functions.getLabelWidth);
+    }
+  });
+
   test('positions direct-label data coordinates from the fixed circle start', async () => {
     Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
     expressionFunction('rscContainerWidth', (width: number) => width);

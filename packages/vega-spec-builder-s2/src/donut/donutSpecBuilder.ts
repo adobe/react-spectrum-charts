@@ -152,13 +152,12 @@ export const addDonut = produce<
 );
 
 export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
-  const { color, legendHighlightSignals, name, isBoolean, metric, sortOrder, variant } = options;
+  const { color, legendHighlightSignals, name, isBoolean, metric, sortOrder } = options;
   const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
   //set up transform
   data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
-  // Semicircles default to largest-first but can preserve source order for ordinal data.
-  if (variant === 'semicircle' && sortOrder === 'valueDescending') {
+  if (!isBoolean && sortOrder === 'valueDescending') {
     data[filteredTableIndex].transform?.push({ type: 'collect', sort: { field: metric, order: 'descending' } });
   }
   data[filteredTableIndex].transform?.push(...getPieTransforms(options));

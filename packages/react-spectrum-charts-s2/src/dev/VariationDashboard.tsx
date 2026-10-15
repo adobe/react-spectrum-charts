@@ -186,7 +186,7 @@ export const VariationDashboard = ({
   const minSize = Math.min(...presetSizes, initialSize);
   const maxSize = Math.max(...presetSizes, initialSize);
   const selectedPreset = sizePresets.find((preset) => resolvePresetSize(preset.size, viewMode) === size);
-  const minimumCardWidth = Math.max(320, size + 16);
+  const minimumCardWidth = Math.max(320, size + 2);
   const activeFilter = filters.find((option) => option.value === filter);
   const propVariationIds = getPropVariationIds(coverage, selectedProps);
   const visibleVariations = variations.filter(
@@ -260,9 +260,8 @@ export const VariationDashboard = ({
                         alignItems: 'center',
                         display: 'flex',
                         justifyContent: 'center',
-                        minHeight: size + 16,
+                        minHeight: size,
                         overflow: 'auto',
-                        padding: 8,
                       }}
                     >
                       {render()}

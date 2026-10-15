@@ -11,6 +11,7 @@
  */
 import { ReactElement, ReactNode } from 'react';
 
+import { DONUT_BASE_PADDING, DONUT_SIZE_TIER_CUTPOINTS } from '@spectrum-charts/core-s2/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
@@ -59,10 +60,10 @@ import {
 
 const donutSizePresets: VariationSizePreset[] = [
   { label: 'XS', size: 60 },
-  { label: 'S', size: 120 },
-  { label: 'M', size: 160 },
-  { label: 'L', size: 200 },
-  { label: 'XL', size: 400 },
+  { label: 'S', size: DONUT_SIZE_TIER_CUTPOINTS[0] },
+  { label: 'M', size: DONUT_SIZE_TIER_CUTPOINTS[1] },
+  { label: 'L', size: DONUT_SIZE_TIER_CUTPOINTS[2] },
+  { label: 'XL', size: DONUT_SIZE_TIER_CUTPOINTS[3] },
 ];
 
 const donutViewModes: VariationViewMode[] = [
@@ -87,6 +88,10 @@ const inspectExcludedDonutData = standardDonutData.map((datum) => ({
   ...datum,
   excludeFromInspect: datum.series === 'Other',
 }));
+const wideLabelDonutData = [
+  { series: 'North America enterprise customers', value: 50 },
+  { series: 'International enterprise customers', value: 50 },
+];
 
 const donutVariationFilters: VariationFilter[] = [
   { label: 'All', value: 'all', matches: () => true },
@@ -96,14 +101,14 @@ const donutVariationFilters: VariationFilter[] = [
 
 const getDonutContainerSize = (diameter: number, viewMode?: string): number => {
   if (viewMode === 'none') {
-    return diameter + 4;
+    return diameter + 2 * DONUT_BASE_PADDING;
   }
   return getContainerWidthForDiameter(diameter);
 };
 
 const getEffectiveDonutDiameter = (containerSize: number, viewMode?: string): number => {
   if (viewMode === 'none') {
-    return containerSize - 4;
+    return containerSize - 2 * DONUT_BASE_PADDING;
   }
   return Math.max(0, getEffectiveDiameter(containerSize));
 };
@@ -144,7 +149,7 @@ const DonutVariationChart = ({
     emphasizedItemCount === undefined
       ? donutProps?.emphasizedItems
       : getLargestDonutSeries(chartData as DonutVariationDatum[], emphasizedItemCount);
-  const chartProps = useChartProps({ data: chartData, width: chartSize, height: chartSize });
+  const chartProps = useChartProps({ data: chartData, width: 'auto', height: chartSize });
   const overrides =
     typeof chartPropOverrides === 'function'
       ? chartPropOverrides(chartData as DonutVariationDatum[])
@@ -156,19 +161,21 @@ const DonutVariationChart = ({
     dashboardSegmentLabel = <SegmentLabel percent showValueRow swatch value={false} />;
   }
   return (
-    <Chart
-      {...chartProps}
-      animations={animations}
-      animationTypes={animations === undefined ? undefined : dashboardAnimationTypes}
-      renderer={renderer}
-      {...overrides}
-    >
-      {siblings?.(chartData as DonutVariationDatum[])}
-      <Donut {...donutProps} emphasizedItems={emphasizedItems}>
-        {children}
-        {dashboardSegmentLabel}
-      </Donut>
-    </Chart>
+    <div style={{ width: '100%', minWidth: chartSize }}>
+      <Chart
+        {...chartProps}
+        animations={animations}
+        animationTypes={animations === undefined ? undefined : dashboardAnimationTypes}
+        renderer={renderer}
+        {...overrides}
+      >
+        {siblings?.(chartData as DonutVariationDatum[])}
+        <Donut {...donutProps} emphasizedItems={emphasizedItems}>
+          {children}
+          {dashboardSegmentLabel}
+        </Donut>
+      </Chart>
+    </div>
   );
 };
 
@@ -180,6 +187,15 @@ const baseDonutVariations: Variation[] = [
     dataset: 'canonical',
     coverage: ['metric=value', 'color=series', 'holeRatio=0.85', 'isBoolean=false'],
     render: () => <DonutVariationChart />,
+  },
+  {
+    id: 'sort-order-data',
+    title: 'Source segment order',
+    description: 'Keeps the original segment order instead of sorting largest-first.',
+    dataset: 'unsorted',
+    usesDashboardDataset: false,
+    coverage: ['sortOrder=data'],
+    render: () => <DonutVariationChart data={unsortedDonutData} donutProps={{ sortOrder: 'data' }} />,
   },
   {
     id: 'pie',
@@ -315,6 +331,30 @@ const baseDonutVariations: Variation[] = [
     render: () => (
       <DonutVariationChart>
         <SegmentLabel />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'segment-label-wide-xl',
+    title: 'XL direct labels in a wide chart',
+    description: 'Long labels use the available space on both sides of the XL ring.',
+    dataset: 'canonical',
+    coverage: ['labelKey=series', 'value=true', 'Chart.width=1200', 'Chart.height=700'],
+    render: () => (
+      <DonutVariationChart data={wideLabelDonutData} chartProps={{ width: 1200, height: 700 }}>
+        <SegmentLabel value valueFormat="shortNumber" />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'segment-label-wide-xl-advanced',
+    title: 'XL advanced labels in a wide chart',
+    description: 'Long labels with swatches and detail rows use the available space on both sides of the XL ring.',
+    dataset: 'canonical',
+    coverage: ['labelKey=series', 'swatch=true', 'showValueRow=true', 'Chart.width=1200', 'Chart.height=700'],
+    render: () => (
+      <DonutVariationChart data={wideLabelDonutData} chartProps={{ width: 1200, height: 700 }}>
+        <SegmentLabel percent showValueRow swatch value={false} />
       </DonutVariationChart>
     ),
   },
@@ -483,7 +523,7 @@ const baseDonutVariations: Variation[] = [
   {
     id: 'semicircle',
     title: 'Semicircle',
-    description: 'Renders the selected dataset across the lower half of the donut.',
+    description: 'Centers a top-half arc using the same size-tier breakpoints as a full-circle donut.',
     dataset: 'canonical',
     coverage: ['variant=semicircle'],
     render: () => <DonutVariationChart donutProps={{ variant: 'semicircle' }} />,
@@ -502,31 +542,30 @@ const baseDonutVariations: Variation[] = [
   },
   {
     id: 'semicircle-hidden-value-summary',
-    title: 'Semicircle with label and delta',
-    description: 'Hides the summary value while retaining its label and sentiment delta.',
+    title: 'Semicircle with label only',
+    description: 'Hides the summary value while retaining its label.',
     dataset: 'canonical',
-    coverage: ['variant=semicircle', 'DonutSummary.label', 'DonutSummary.hideValue=true', 'DonutSummary.delta'],
+    coverage: ['variant=semicircle', 'DonutSummary.label', 'DonutSummary.hideValue=true'],
     render: () => (
       <DonutVariationChart donutProps={{ variant: 'semicircle' }}>
-        <DonutSummary delta={0.025} hideValue label="Visitors" />
+        <DonutSummary hideValue label="Visitors" />
       </DonutVariationChart>
     ),
   },
   {
     id: 'semicircle-all-summary-options',
     title: 'Semicircle with all summary options',
-    description: 'Renders a semicircle with every DonutSummary option configured.',
+    description: 'Renders a semicircle with every supported DonutSummary option configured.',
     dataset: 'canonical',
     coverage: [
       'variant=semicircle',
       'DonutSummary.label',
       'DonutSummary.numberFormat',
       'DonutSummary.hideValue=false',
-      'DonutSummary.delta',
     ],
     render: () => (
       <DonutVariationChart donutProps={{ variant: 'semicircle' }}>
-        <DonutSummary delta={0.025} hideValue={false} label="Visitors" numberFormat="standardNumber" />
+        <DonutSummary hideValue={false} label="Visitors" numberFormat="standardNumber" />
       </DonutVariationChart>
     ),
   },
@@ -751,26 +790,26 @@ const donutCoverage: PropCoverage<DonutProps> = {
   isBoolean: ['boolean'],
   metric: ['defaults', 'boolean'],
   name: ['named-interactive'],
-  sortOrder: ['semicircle', 'semicircle-sort-order-data'],
+  sortOrder: ['defaults', 'sort-order-data', 'semicircle', 'semicircle-sort-order-data'],
   variant: ['semicircle'],
 };
 
 const donutSummaryCoverage: PropCoverage<DonutSummaryProps> = {
-  delta: ['summary-positive-delta', 'summary-negative-delta', 'semicircle-hidden-value-summary'],
+  delta: ['summary-positive-delta', 'summary-negative-delta'],
   hideValue: ['summary-hidden-value', 'semicircle-hidden-value-summary'],
   label: ['summary-format', 'summary-negative-delta'],
   numberFormat: ['summary-format', 'semicircle-formatted-summary', 'locale'],
 };
 
 const segmentLabelCoverage: PropCoverage<SegmentLabelProps> = {
-  labelKey: ['segment-label-key'],
+  labelKey: ['segment-label-key', 'segment-label-wide-xl', 'segment-label-wide-xl-advanced'],
   labelMode: ['segment-label-modes', 'hidden-deemphasized-labels'],
   percent: ['segment-label-percent'],
   percentFormat: ['segment-label-percent-format', 'locale'],
   showTotal: ['segment-label-total'],
-  showValueRow: ['segment-label-value-row'],
-  swatch: ['segment-label-swatch'],
-  value: ['segment-label-value'],
+  showValueRow: ['segment-label-value-row', 'segment-label-wide-xl-advanced'],
+  swatch: ['segment-label-swatch', 'segment-label-wide-xl-advanced'],
+  value: ['segment-label-value', 'segment-label-wide-xl'],
   valueFormat: ['segment-label-value-format'],
 };
 

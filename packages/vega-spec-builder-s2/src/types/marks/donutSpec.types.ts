@@ -13,7 +13,7 @@ import { ColorScheme, HighlightedItem } from '../chartSpec.types.js';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
 import { PartiallyRequired } from '../specUtil.types.js';
-import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types.js';
+import { DonutSummaryOptions } from './supplemental/donutSummarySpec.types.js';
 import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types.js';
 
 export interface DonutOptions {
@@ -30,7 +30,7 @@ export interface DonutOptions {
   metric?: string;
   /** Sets the name of the component. */
   name?: string;
-  /** Segment ordering for semicircle donuts. Use `data` to preserve ordinal source order. */
+  /** Categorical segment ordering. Use `data` to preserve source order; boolean donuts always preserve source order. */
   sortOrder?: 'valueDescending' | 'data';
   /**
    * Designates which segments (by their `color` facet value) render with full categorical color.

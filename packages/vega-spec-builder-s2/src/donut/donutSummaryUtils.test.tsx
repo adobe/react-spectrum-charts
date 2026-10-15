@@ -22,6 +22,7 @@ import {
   getBooleanDonutSummaryGroupMark,
   getDonutSummaryData,
   getDonutSummaryGroupMark,
+  getDonutSummaryMarks,
   getDonutSummarySignals,
   getSummaryDeltaEncode,
   getSummaryDeltaFill,
@@ -80,31 +81,22 @@ describe('getDonutSummarySignals()', () => {
     });
   });
 
-  test('should reserve the delta row below a semicircle with summary content above it', () => {
-    const signals = getDonutSummarySignals({
-      ...defaultDonutOptions,
-      variant: 'semicircle',
-      donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
-    });
-    expect(signals[2]).toEqual({
-      name: 'testName_summaryBottomOffset',
-      update: 'ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize',
-    });
-  });
-
   test.each([
-    [{ delta: 0.025 }, 'value and delta'],
-    [{ delta: 0.025, hideValue: true, label: 'Visitors' }, 'label and delta'],
-  ])('should not reserve space below a semicircle with only %s', (summary, _description) => {
+    { delta: 0.025, label: 'Visitors' },
+    { delta: 0.025 },
+    { delta: 0.025, hideValue: true, label: 'Visitors' },
+    { delta: 0.025, hideValue: true },
+  ])('should not reserve delta space below a semicircle: %o', (summary) => {
     const signals = getDonutSummarySignals({
       ...defaultDonutOptions,
       variant: 'semicircle',
       donutSummaries: [summary],
     });
-    expect(signals[2]).toEqual({
-      name: 'testName_summaryBottomOffset',
-      update: '0',
-    });
+    expect(signals).toHaveLength(2);
+    expect(signals.map(({ name }) => name)).toEqual([
+      'testName_summaryValueFontSize',
+      'testName_summaryLabelFontSize',
+    ]);
   });
 });
 
@@ -361,14 +353,14 @@ describe('semicircle summary anchoring', () => {
   test('getSummaryValueEncode bottom-aligns the value and label stack', () => {
     const encode = getSummaryValueEncode(semicircleSummaryOptions);
     expect(encode.update?.y).toEqual({
-      signal: 'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
+      signal: '(height + testName_outerRadius) / 2 - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
     });
   });
 
   test('getSummaryLabelEncode uses the same bottom-aligned anchor', () => {
     const encode = getSummaryLabelEncode({ ...semicircleSummaryOptions, label: 'Visitors' });
     expect(encode.update?.y).toEqual({
-      signal: 'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
+      signal: '(height + testName_outerRadius) / 2 - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
     });
   });
 
@@ -378,29 +370,24 @@ describe('semicircle summary anchoring', () => {
     expect(groupMark.marks?.[0]).toHaveProperty('name', 'testName_summaryLabel');
     expect(groupMark.marks?.[0]).toHaveProperty(
       'encode.update.y.signal',
-      'height - (3 + testName_summaryLabelFontSize * 0.5)'
+      '(height + testName_outerRadius) / 2 - (3 + testName_summaryLabelFontSize * 0.5)'
     );
   });
 
-  test('getSummaryDeltaEncode aligns the complete three-line stack to the flat edge', () => {
-    const encode = getSummaryDeltaEncode({ ...semicircleSummaryOptions, delta: 0.025 });
-    expect(encode.update?.y).toEqual({
-      signal:
-        'height - (ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize) - (3 + (ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize) - (ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize))',
-    });
-    expect(encode).toHaveProperty('update.limit.signal', 'width');
-  });
-
-  test.each([
-    { label: undefined, hideValue: false },
-    { label: 'Visitors', hideValue: true },
-    { label: undefined, hideValue: true },
-  ])('keeps hole-based limits for delta rows inside the semicircle: %s', (summary) => {
-    const encode = getSummaryDeltaEncode({ ...semicircleSummaryOptions, ...summary, delta: 0.025 });
-    expect(encode).toHaveProperty(
-      'update.limit.signal',
-      expect.stringContaining('2 * sqrt(pow(testName_innerRadius, 2)')
-    );
+  test.each([false, true])('ignores delta without changing summary layout when isBoolean=%s', (isBoolean) => {
+    for (const summary of [
+      { label: 'Visitors' },
+      {},
+      { hideValue: true, label: 'Visitors' },
+      { hideValue: true },
+    ]) {
+      const options = { ...semicircleDonutOptions, isBoolean, donutSummaries: [summary] };
+      const expectedMarks = getDonutSummaryMarks(options);
+      for (const delta of [0.025, -0.074, 0]) {
+        const marks = getDonutSummaryMarks({ ...options, donutSummaries: [{ ...summary, delta }] });
+        expect(marks).toEqual(expectedMarks);
+      }
+    }
   });
 
   test('a full circle still anchors directly at the arc center (no offset)', () => {

@@ -104,7 +104,11 @@ export default {
     summaryLabel: { control: 'text', table: { category: 'Summary' } },
     summaryNumberFormat: { control: 'text', table: { category: 'Summary' } },
     summaryHideValue: { control: 'boolean', table: { category: 'Summary' } },
-    summaryDelta: { control: { type: 'range', min: -1, max: 1, step: 0.01 }, table: { category: 'Summary' } },
+    summaryDelta: {
+      control: { type: 'range', min: -1, max: 1, step: 0.01 },
+      if: { arg: 'variant', neq: 'semicircle' },
+      table: { category: 'Summary' },
+    },
     showSegmentLabel: { control: 'boolean', table: { category: 'Segment label' } },
     segmentLabelMode: {
       control: 'select',
@@ -182,7 +186,7 @@ const DonutPlaygroundStory: StoryFn<DonutPlaygroundArgs> = ({
             label={summaryLabel}
             numberFormat={summaryNumberFormat}
             hideValue={summaryHideValue}
-            delta={summaryDelta}
+            delta={donutProps.variant === 'semicircle' ? undefined : summaryDelta}
           />
         ) : undefined}
         {showSegmentLabel ? (

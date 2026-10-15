@@ -230,10 +230,14 @@ export const DRAW_IN_CLIP_OVERFLOW = 1000;
 export const DRAW_IN_LABEL_FADE_DURATION_MS = 150;
 
 // donut constants
-/** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
-export const DONUT_RADIUS = '(min(width, height) / 2 - 2)';
-/** Calculation for a semicircle donut's radius - the arc still spans the full width from center (so it's bounded by width / 2, same as a full circle), but can use the full height since only the top half sweeps, unlike the full-circle radius which halves it */
-export const DONUT_SEMICIRCLE_RADIUS = '(min(width / 2, height) - 2)';
+/** Base inset (px) around a donut without segment labels. */
+export const DONUT_BASE_PADDING = 10;
+/** Radius of a donut without segment labels. */
+export const DONUT_RADIUS = `(min(width, height) / 2 - ${DONUT_BASE_PADDING})`;
+/** Radius of a semicircle donut with base insets on every edge. */
+export const DONUT_SEMICIRCLE_RADIUS = `(min(width / 2 - ${DONUT_BASE_PADDING}, height - ${2 * DONUT_BASE_PADDING}))`;
+/** Base radius used when reserving space for segment labels. */
+export const DONUT_LABELED_RADIUS = '(min(width, height) / 2 - 2)';
 /** Fill color of a boolean donut's secondary segment */
 export const DONUT_BOOLEAN_SECONDARY_COLOR = 'gray-400';
 /** Min arc angle radians to display a segment label. If the arc angle is less than this, the segment label will be hidden. */
@@ -249,9 +253,9 @@ export const DEFAULT_HOLE_RATIO = 0.85;
  * of 121px is S and stays S up to 159px, not just at values nearest 120. Shared by every donut
  * feature that scales by size tier (ring width, slice gap, donut summary, direct/advanced labels).
  */
-export const DONUT_SIZE_TIER_CUTPOINTS = [120, 160, 200, 400];
+export const DONUT_SIZE_TIER_CUTPOINTS = [120, 200, 280, 400];
 /** S2 donut fixed ring (hole) width per named size tier (XS/S/M/L/XL), used only when holeRatio is left at DEFAULT_HOLE_RATIO */
-export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 24];
+export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 40];
 /** S2 donut gap between adjacent segments per named size tier (XS/S/M/L/XL), per chart.donut.size.slice-gap */
 export const DONUT_SLICE_GAPS = [1, 2, 2, 2, 2];
 /**
@@ -269,6 +273,8 @@ export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [7.5, 9, 10.5, 12, 15];
 export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [10, 12, 14, 16, 20];
 /** Gap (px) between the ring's outer edge and a direct/advanced label's rendered bounding box per named size tier (XS/S/M/L/XL) */
 export const DONUT_LABEL_RING_GAPS = [5, 5, 10, 10, 15];
+/** Minimum horizontal inset (px) between segment labels and the chart edge. */
+export const DONUT_LABEL_EDGE_PADDING = 10;
 export const DONUT_LABEL_COLLISION_GAP = 4;
 /** Font weight for donut direct-label segment name text */
 export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
@@ -281,8 +287,10 @@ export const DONUT_SIZE_TIER_LABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map
   // donut + widest labels on both sides, + the tier's label gap on both sides, + 2px padding on both sides
   (cutpoint, index) => cutpoint * (1 + DONUT_LABEL_MIN_SPACE_RATIO) + 2 * DONUT_LABEL_RING_GAPS[index + 1] + 4
 );
-/** S2 unlabeled-donut chart size where each tier starts: the cutpoint plus DONUT_RADIUS's 2px padding on each side (124/164/204/404) */
-export const DONUT_SIZE_TIER_UNLABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint) => cutpoint + 4);
+/** Chart size where each unlabeled donut tier starts, including the base inset on both sides. */
+export const DONUT_SIZE_TIER_UNLABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map(
+  (cutpoint) => cutpoint + 2 * DONUT_BASE_PADDING
+);
 /** S2 donut advanced-label segment-name font size per named size tier (XS/S/M/L/XL) */
 export const DONUT_ADVANCED_LABEL_NAME_FONT_SIZES = [8, 10, 12, 14, 16];
 /** S2 donut advanced-label value/% font size per named size tier (XS/S/M/L/XL) */
