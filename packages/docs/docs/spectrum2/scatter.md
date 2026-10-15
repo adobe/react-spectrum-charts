@@ -4,9 +4,11 @@ sidebar_position: 7
 
 # Scatter (S2)
 
-:::note Pre-alpha component
-`Scatter` is a [pre-alpha component](./pre-alpha) — it has no finalized Spectrum 2 design yet
-and is imported from the `pre-alpha` subpath.
+[<span className="badge badge--secondary">Lab</span>](./stages.md#lab)
+
+:::note Lab component
+`Scatter` is a [lab component](./lab) — it has no finalized Spectrum 2 design yet
+and is imported from the `lab` subpath.
 :::
 
 The `Scatter` component displays scatter plots. Scatter plots use continuous data for both
@@ -14,7 +16,7 @@ the x and y axes and are most useful for comparing two continuous values across 
 
 ```jsx
 import { Chart, Axis, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 ```
 
 ```jsx

@@ -13,19 +13,32 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { TrendlineAnnotationProps } from '../../../types/index.js';
+import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
+
+import { AreaProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
-const TrendlineAnnotation: FC<TrendlineAnnotationProps> = ({
-  badge = false,
-  dimensionValue = 'end',
-  numberFormat = '',
-  prefix = '',
+/**
+ * Renders an area chart, filled from the baseline to a metric or between two metrics.
+ * @experimental
+ */
+const Area: FC<AreaProps> = ({
+  children,
+  name,
+  opacity = 0.8,
+  order,
+  scaleType = 'time',
+  color = DEFAULT_COLOR,
+  dimension = DEFAULT_TIME_DIMENSION,
+  metric = DEFAULT_METRIC,
+  metricEnd,
+  metricStart,
+  padding,
 }) => {
   return null;
 };
 
 // displayName is used to validate the component type in the spec builder
-TrendlineAnnotation.displayName = 'TrendlineAnnotation';
+Area.displayName = 'Area';
 
-export { TrendlineAnnotation };
+export { Area };

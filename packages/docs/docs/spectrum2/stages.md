@@ -41,13 +41,14 @@ imported from a separate subpath so their status is visible in your code.
 - **Removal:** a lab component can be removed if it doesn't fit the project's goals and its
   usage is low. Removals are announced in the changelog.
 
-Lab components are currently imported from `@spectrum-charts/react-spectrum-charts-s2/pre-alpha`
-(see [Pre-Alpha Components](./pre-alpha.md)). That subpath will be renamed `lab`.
+Lab components are imported from `@spectrum-charts/react-spectrum-charts-s2/lab`
+(see [Lab Components](./lab.md)).
 
 ## How to tell a component's stage
 
-- **In your editor:** the component's documentation comment has an `@alpha` or `@beta` tag.
-  Release candidates use `@beta` and say "Release candidate." Stable components have no tag.
+- **In your editor:** the component's documentation comment has an `@experimental` (lab), `@alpha`,
+  or `@beta` tag. Release candidates use `@beta` and say "Release candidate." Stable components
+  have no tag.
 - **In these docs and in Storybook:** the component shows a stage badge.
 - **In the changelog:** stage changes are announced in the release notes.
 

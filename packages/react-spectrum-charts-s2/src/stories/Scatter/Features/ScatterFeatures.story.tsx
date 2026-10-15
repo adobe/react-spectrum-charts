@@ -18,14 +18,15 @@ import { ChartColors, Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Scatter } from '../../../pre-alpha/index.js';
+import { Scatter } from '../../../lab/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartProps, ScatterProps } from '../../../types/index.js';
 import { characterData, overlappingPointsData } from '../../data/marioKartData.js';
 import { releaseBugReportsData } from '../scatterData.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features',
+  title: 'React Spectrum Charts 2/Lab/Scatter/Features',
+  tags: ['lab'],
   component: Scatter,
 };
 

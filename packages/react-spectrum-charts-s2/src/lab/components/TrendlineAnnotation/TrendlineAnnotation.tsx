@@ -13,28 +13,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { TrendlineProps } from '../../../types/index.js';
+import { TrendlineAnnotationProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
-const Trendline: FC<TrendlineProps> = ({
-  children,
-  color,
-  dimensionExtent,
-  dimensionRange = [null, null],
-  displayOnHover = false,
-  excludeDataKeys,
-  hidePartialWindows = false,
-  highlightRawPoint = false,
-  lineType = 'dashed',
-  lineWidth = 'M',
-  method = 'linear',
-  opacity = 1,
-  orientation,
+/**
+ * Adds a value label to a trendline.
+ * @experimental
+ */
+const TrendlineAnnotation: FC<TrendlineAnnotationProps> = ({
+  badge = false,
+  dimensionValue = 'end',
+  numberFormat = '',
+  prefix = '',
 }) => {
   return null;
 };
 
 // displayName is used to validate the component type in the spec builder
-Trendline.displayName = 'Trendline';
+TrendlineAnnotation.displayName = 'TrendlineAnnotation';
 
-export { Trendline };
+export { TrendlineAnnotation };

@@ -13,28 +13,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
+import { DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 
-import { AreaProps } from '../../../types/index.js';
+import { ComboProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
-const Area: FC<AreaProps> = ({
-  children,
-  name,
-  opacity = 0.8,
-  order,
-  scaleType = 'time',
-  color = DEFAULT_COLOR,
-  dimension = DEFAULT_TIME_DIMENSION,
-  metric = DEFAULT_METRIC,
-  metricEnd,
-  metricStart,
-  padding,
-}) => {
+/**
+ * Combines bar and line marks that share a dimension in one chart.
+ * @experimental
+ */
+const Combo: FC<ComboProps> = ({ name = 'combo0', dimension = DEFAULT_TIME_DIMENSION }) => {
   return null;
 };
 
 // displayName is used to validate the component type in the spec builder
-Area.displayName = 'Area';
+Combo.displayName = 'Combo';
 
-export { Area };
+export { Combo };

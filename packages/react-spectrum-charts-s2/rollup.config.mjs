@@ -13,6 +13,6 @@ import { createEsmConfig } from '../../scripts/rollup/createEsmConfig.mjs';
 
 export default createEsmConfig({
   root: import.meta.dirname,
-  input: { index: 'index.ts', 'pre-alpha/index': 'pre-alpha/index.ts', 'src/ai-catalog/index': 'src/ai-catalog/index.ts' },
+  input: { index: 'index.ts', 'lab/index': 'lab/index.ts', 'src/ai-catalog/index': 'src/ai-catalog/index.ts' },
   sideEffects: ['src/VegaChart.tsx'],
 });

@@ -59,7 +59,7 @@ import {
   ScatterPath,
   Trendline,
   TrendlineAnnotation,
-} from '../pre-alpha/index.js';
+} from '../lab/index.js';
 import {
   AreaProps,
   AxisProps,

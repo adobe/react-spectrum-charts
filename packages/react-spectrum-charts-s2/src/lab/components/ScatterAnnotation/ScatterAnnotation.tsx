@@ -13,14 +13,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { ScatterPathProps } from '../../../types/index.js';
+import { ScatterAnnotationProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
-const ScatterPath: FC<ScatterPathProps> = ({ color = 'gray-500', groupBy, pathWidth = { value: 'M' }, opacity = 0.5 }) => {
+/**
+ * Adds text labels to the points of a scatter plot.
+ * @experimental
+ */
+const ScatterAnnotation: FC<ScatterAnnotationProps> = ({
+  anchor = ['right', 'top', 'bottom', 'left'],
+  textKey = 'annotation',
+}) => {
   return null;
 };
 
 // displayName is used to validate the component type in the spec builder
-ScatterPath.displayName = 'ScatterPath';
+ScatterAnnotation.displayName = 'ScatterAnnotation';
 
-export { ScatterPath };
+export { ScatterAnnotation };

@@ -9,12 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Scatter } from '../../../pre-alpha/index.js';
+import { Scatter } from '../../../lab/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ScatterDashboard } from './scatter.dashboard.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Dashboards',
+  title: 'React Spectrum Charts 2/Lab/Scatter/Dashboards',
+  tags: ['lab'],
   component: Scatter,
   parameters: {
     controls: { disable: true },

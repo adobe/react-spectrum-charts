@@ -82,10 +82,10 @@ const sidebars: SidebarsConfig = {
         'spectrum2/react-server-components',
         {
           type: 'category',
-          label: 'Pre-Alpha Components',
+          label: 'Lab Components',
           collapsed: true,
           items: [
-            'spectrum2/pre-alpha',
+            'spectrum2/lab',
             'spectrum2/area',
             'spectrum2/bullet',
             'spectrum2/combo',

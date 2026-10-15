@@ -10,19 +10,4 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { FC } from 'react';
-
-import { DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
-
-import { ComboProps } from '../../../types/index.js';
-
-// destructure props here and set defaults so that storybook can pick them up
-const Combo: FC<ComboProps> = ({ name = 'combo0', dimension = DEFAULT_TIME_DIMENSION }) => {
-  return null;
-};
-
-// displayName is used to validate the component type in the spec builder
-Combo.displayName = 'Combo';
-
-export { Combo };
+export * from '../src/lab/index.js';

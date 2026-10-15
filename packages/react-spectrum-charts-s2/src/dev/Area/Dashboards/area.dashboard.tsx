@@ -16,7 +16,7 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend, Line, ReferenceLine, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Area } from '../../../pre-alpha/index.js';
+import { Area } from '../../../lab/index.js';
 import {
   AreaProps,
   AxisProps,

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Scatter } from '../../pre-alpha/components/Scatter/index.js';
+import { Scatter } from '../../lab/components/Scatter/index.js';
 import { findAllMarksByGroupName, findChart, render } from '../../test-utils/index.js';
 import { Basic } from './Features/ScatterFeatures.story.js';
 

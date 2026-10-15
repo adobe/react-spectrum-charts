@@ -13,17 +13,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { ScatterAnnotationProps } from '../../../types/index.js';
+import { DEFAULT_COLOR, DEFAULT_LINEAR_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SIZE } from '@spectrum-charts/core-s2/constants';
+
+import { ScatterProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
-const ScatterAnnotation: FC<ScatterAnnotationProps> = ({
-  anchor = ['right', 'top', 'bottom', 'left'],
-  textKey = 'annotation',
+/**
+ * Renders a scatter plot of points positioned by a dimension and a metric.
+ * @experimental
+ */
+const Scatter: FC<ScatterProps> = ({
+  blend,
+  color = DEFAULT_COLOR,
+  colorScaleType,
+  dimension = DEFAULT_LINEAR_DIMENSION,
+  children,
+  lineType = { value: 'solid' },
+  lineWidth = { value: 0 },
+  metric = DEFAULT_METRIC,
+  name,
+  opacity = { value: 1 },
+  size = { value: DEFAULT_SYMBOL_SIZE },
+  stroke,
 }) => {
   return null;
 };
 
 // displayName is used to validate the component type in the spec builder
-ScatterAnnotation.displayName = 'ScatterAnnotation';
+Scatter.displayName = 'Scatter';
 
-export { ScatterAnnotation };
+export { Scatter };
