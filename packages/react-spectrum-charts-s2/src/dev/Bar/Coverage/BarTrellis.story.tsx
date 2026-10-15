@@ -24,6 +24,7 @@ import { BarProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Trellis',
+  tags: ['alpha'],
   component: Bar,
 };
 

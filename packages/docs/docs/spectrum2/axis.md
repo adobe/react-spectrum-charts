@@ -4,6 +4,8 @@ sidebar_position: 4
 
 # Axis (S2)
 
+[<span className="badge badge--primary">Alpha</span>](./stages.md)
+
 The `Axis` component in the S2 package supports nearly all props from the [base Axis component](/docs/api/components/Axis) plus S2-exclusive features: axis label hover tooltips and axis label click callbacks.
 
 ```jsx

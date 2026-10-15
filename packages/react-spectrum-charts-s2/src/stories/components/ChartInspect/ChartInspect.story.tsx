@@ -31,6 +31,7 @@ const setControlInclude = (story: StoryWithParameters, include: string[]) => {
 
 export default {
   title: 'React Spectrum Charts 2/Chart Inspect/Features',
+  tags: ['alpha'],
   component: ChartInspect,
   argTypes: {
     targets: { control: 'check', options: ['item', 'dimensionArea'] },

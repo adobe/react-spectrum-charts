@@ -29,6 +29,7 @@ interface ChartPopoverStoryArgs extends ChartPopoverProps, Pick<ChartProps, 'ren
 
 export default {
   title: 'React Spectrum Charts 2/Chart Popover/Coverage',
+  tags: ['alpha'],
   component: ChartPopover,
 };
 

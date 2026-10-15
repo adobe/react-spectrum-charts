@@ -17,14 +17,14 @@ import { sequentialCerulean5 } from '@spectrum-charts/core-s2/tokens';
 import { ChartColors, ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { Legend } from '../../../components/index.js';
+import { Donut, DonutSummary, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary } from '../../../pre-alpha/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { DonutProps, DonutSummaryProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Coverage/Semicircle Variants',
+  title: 'React Spectrum Charts 2/Donut/Coverage/Semicircle Variants',
+  tags: ['alpha'],
   component: Donut,
 };
 

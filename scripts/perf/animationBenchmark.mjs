@@ -55,7 +55,7 @@ const PRESETS = {
     scenarios: ['hover', 'idle'],
   },
   'donut-draw-in': {
-    story: 'react-spectrum-charts-2-pre-alpha-donut-dashboards--prop-variations',
+    story: 'react-spectrum-charts-2-donut-dashboards--prop-variations',
     args: '',
     scenarios: ['drawIn', 'idle'],
   },

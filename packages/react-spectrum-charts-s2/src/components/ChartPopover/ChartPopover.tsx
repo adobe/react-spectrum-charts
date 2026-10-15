@@ -15,6 +15,10 @@ import { FC } from 'react';
 
 import { ChartPopoverProps } from '../../types/index.js';
 
+/**
+ * Opens a popover with custom content when a data point is clicked.
+ * @alpha
+ */
 const ChartPopover: FC<ChartPopoverProps> = ({
   children,
   width = 250,

@@ -14,9 +14,16 @@ import { ReactElement, ReactNode } from 'react';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { ChartInspect, ChartPopover, Legend, Title } from '../../../components/index.js';
+import {
+  ChartInspect,
+  ChartPopover,
+  Donut,
+  DonutSummary,
+  Legend,
+  SegmentLabel,
+  Title,
+} from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
 import { booleanDonutData, zeroDonutData } from '../../../storyShared/Donut/data.js';
 import {
   ChartInspectProps,

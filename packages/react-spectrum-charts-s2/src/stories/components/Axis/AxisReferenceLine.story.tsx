@@ -21,6 +21,7 @@ import { channelPerformanceData } from './axisStoryData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Reference Line',
+  tags: ['alpha'],
   component: ReferenceLine,
 };
 

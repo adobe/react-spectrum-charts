@@ -14,15 +14,15 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart.js';
-import { Legend, Title } from '../../../components/index.js';
+import { Donut, DonutSummary, Legend, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary } from '../../../pre-alpha/index.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { DonutProps, LegendProps, TitleProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Regressions/Side Legend',
+  title: 'React Spectrum Charts 2/Donut/Regressions/Side Legend',
+  tags: ['alpha'],
   component: Donut,
   argTypes: {
     legendPosition: { control: 'inline-radio', options: ['left', 'right'] },

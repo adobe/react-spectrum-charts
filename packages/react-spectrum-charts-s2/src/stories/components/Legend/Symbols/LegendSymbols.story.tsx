@@ -15,6 +15,7 @@ import { RevenueStory, TrafficStory, controls } from '../legendStoryTemplates.js
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Features/Symbols',
+  tags: ['alpha'],
   component: Legend,
 };
 

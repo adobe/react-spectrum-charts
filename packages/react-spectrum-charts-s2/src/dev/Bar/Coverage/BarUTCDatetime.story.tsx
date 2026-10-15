@@ -21,6 +21,7 @@ import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/UTC Datetime',
+  tags: ['alpha'],
   component: Bar,
 };
 

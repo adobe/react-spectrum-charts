@@ -40,23 +40,23 @@ import { BarDirectLabel } from '../components/BarDirectLabel/index.js';
 import { ChartActionBar } from '../components/ChartActionBar/index.js';
 import { ChartInspect } from '../components/ChartInspect/index.js';
 import { ChartPopover } from '../components/ChartPopover/index.js';
+import { Donut } from '../components/Donut/index.js';
+import { DonutSummary } from '../components/DonutSummary/index.js';
 import { Legend } from '../components/Legend/index.js';
 import { Line } from '../components/Line/index.js';
 import { LineDirectLabel } from '../components/LineDirectLabel/index.js';
 import { LineForecast } from '../components/LineForecast/index.js';
 import { LinePointAnnotation } from '../components/LinePointAnnotation/index.js';
 import { ReferenceLine } from '../components/ReferenceLine/index.js';
+import { SegmentLabel } from '../components/SegmentLabel/index.js';
 import { Title } from '../components/Title/index.js';
 import {
   Area,
   Bullet,
   Combo,
-  Donut,
-  DonutSummary,
   Scatter,
   ScatterAnnotation,
   ScatterPath,
-  SegmentLabel,
   Trendline,
   TrendlineAnnotation,
 } from '../pre-alpha/index.js';
