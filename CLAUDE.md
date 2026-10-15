@@ -429,12 +429,15 @@ The full process is in `planning/README.md`. In short:
   observation and wants to note it for later, use the `file-issue` skill
   (`.claude/commands/file-issue.md`). It investigates the root cause and drafts the issue for
   the user's approval before creating it.
-- **Significant or uncertain changes** (new chart types, new subsystems, cross-chart API or
-  behavior changes, stage graduations) get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use
-  the `write-rfc` skill (`.claude/commands/write-rfc.md`). An RFC is accepted when two
-  maintainers approve and it merges; its scope becomes sub-issues of a parent issue.
-- **Implementing an accepted RFC's scope** as stacked PRs uses the `implement-rfc` skill
-  (`.claude/commands/implement-rfc.md`).
+- **New chart types** start in lab (no RFC); see `planning/README.md`.
+- **Significant or uncertain changes** (new subsystems, cross-chart API or behavior changes)
+  get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use the `write-rfc` skill
+  (`.claude/commands/write-rfc.md`). An RFC is accepted when two maintainers approve and it
+  merges; its scope becomes issues.
+- **Stage planning** (what a component's alpha, beta, or RC includes) is done by maintainers
+  as per-component milestones (e.g. `Line beta`), not RFCs.
+- **Implementing a milestone** as stacked PRs uses the `implement-milestone` skill
+  (`.claude/commands/implement-milestone.md`).
 - **Open-ended investigation** goes in `planning/research/` (see `TEMPLATE.md`), and feeds an
   RFC or issues once it reaches a recommendation.
 

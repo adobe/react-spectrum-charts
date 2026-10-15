@@ -1,34 +1,29 @@
-# Implementing an RFC's Scope
+# Implementing a Milestone
 
-Use this skill when implementing the issues in an accepted RFC's scope for one stage (e.g.
-everything marked `alpha` in `rfcs/s2-donut-alpha.md`) as a sequence of stacked PRs. For a
-single issue, use `implement-new-prop.md` / `implement-new-chart-mark.md` /
-`implement-new-child-component.md` / `implement-bug-fix.md` directly. This skill is the layer
-above those: it sequences them, keeps them on a shared branch stack, and applies the
-design-token and S1-reuse checks across the whole batch.
+Use this skill when implementing the open issues in a component's stage milestone (e.g.
+`Donut alpha`) as a sequence of stacked PRs. For a single issue, use `implement-new-prop.md` /
+`implement-new-chart-mark.md` / `implement-new-child-component.md` / `implement-bug-fix.md`
+directly. This skill is the layer above those: it sequences them, keeps them on a shared
+branch stack, and applies the design-token and S1-reuse checks across the whole batch.
 
-Read `planning/README.md` first for the RFC and stage process.
+Read `planning/README.md` first for the stage and milestone process.
 
 ---
 
-## Step 1 — Confirm the RFC is accepted
-
-Read the RFC. Its status must be `Accepted` and it must be merged. Don't build against a
-draft: review comments can change the design, and building early risks working from a stale
-version. If it's still a draft, stop and tell the user.
-
-Collect the scope issues for the stage being built, from the RFC's Scope table or the parent
-issue's sub-issues:
+## Step 1 — Collect the issues
 
 ```bash
-gh issue view <parent-issue> --repo adobe/react-spectrum-charts
 gh issue list --repo adobe/react-spectrum-charts --milestone "<Component> <stage>" --state open
 ```
+
+If an issue comes from an RFC, read the RFC. It must be merged; merged means accepted. Don't
+build against an open RFC PR: review comments can change the design. If it's still a draft,
+stop and tell the user.
 
 ## Step 2 — Order the issues and confirm with the user
 
 Don't implement issues in listing order by default. Read each issue's implementation plan
-and the RFC's design:
+and any RFC it comes from:
 
 - If issue B reuses a utility that issue A introduces, A must be implemented, and its utility
   merged and working, before B starts.
@@ -56,9 +51,9 @@ The first issue in the cluster branches from `main`. Every later issue branches 
 diff shows only its own changes, reviewable independently, even though the branches depend
 on each other.
 
-### 3b. Read the issue and the RFC (Step 0 pattern)
+### 3b. Read the issue (Step 0 pattern)
 
-Follow the matched `implement-*` skill's own Step 0: read the issue and the RFC section it
+Follow the matched `implement-*` skill's own Step 0: read the issue and any RFC section it
 implements, and treat them as the requirements instead of rediscovering them.
 
 ### 3c. Check the chart type's S2 design-token skill *before* Figma-measuring or guessing any value
@@ -71,7 +66,7 @@ re-verify them against the skill file rather than trusting they were transcribed
 especially any value marked "derived" (computed, not individually measured).
 
 If no such skill file exists yet for this chart type, that's a signal to build one (via
-whatever Figma-token-gathering process produced the Donut one) before writing RFCs that
+whatever Figma-token-gathering process produced the Donut one) before writing issues that
 depend on precise values, rather than guessing per issue.
 
 ### 3d. Check what already exists in S1 before building new logic
@@ -83,7 +78,7 @@ Before implementing a new mark, prop, or behavior in `vega-spec-builder-s2` /
 approach rather than re-deriving it from scratch — it's already been through review and
 production use.
 
-This is a starting assumption, not a rule to apply blindly. Check the RFC's S1/S2 parity
+This is a starting assumption, not a rule to apply blindly. Check the issue's S1/S2 parity
 note first:
 
 - If the work is S2-only by design (e.g. a mark that never existed in S1), still *read* S1
@@ -113,7 +108,7 @@ just checking preset breakpoints) surfaces bugs that fixed-size snapshots miss.
 If the implementation diverged from the issue's plan (a different file, a cross-cutting
 concern that turned out to apply, an approach tried and reverted), update the issue body so
 it's accurate and add a comment explaining what changed. If the change departs from the
-RFC's design, stop and tell the user: that may need a follow-up RFC.
+design of an RFC it comes from, stop and tell the user: that may need a follow-up RFC.
 
 ### 3h. Push, open the PR against the previous branch in the stack, and link it into the GitHub stack immediately
 
@@ -151,5 +146,5 @@ After each issue (or at natural checkpoints), report which issues are done, whic
 landed in, and confirm the next issue in the order still makes sense. A discovery partway
 through (Step 2's deferral case) may have changed it.
 
-When every issue for the stage has merged, tell the user the stage is ready to ship. When
-the RFC's whole scope has shipped, its status changes to `Implemented`.
+When every issue in the milestone has merged, tell the user the stage is ready to ship. The
+graduation PR then updates the stage markers listed in `planning/README.md`.

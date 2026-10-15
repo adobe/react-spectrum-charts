@@ -250,7 +250,7 @@ To graduate from alpha to stable later: move the component to `components/`, upd
 If the mark ships in S2:
 1. Create an S2 spec builder in `packages/vega-spec-builder-s2/src/widget/` (often identical to S1 except using S2 color utilities)
 2. Register it in `packages/vega-spec-builder-s2/src/chartSpecBuilder.ts`
-3. Create the S2 React component in `packages/react-spectrum-charts-s2/src/components/Widget/`
+3. Create the S2 React component in the lab subpath, `packages/react-spectrum-charts-s2/src/pre-alpha/components/Widget/` (to be renamed `lab`), and export it from `pre-alpha/components/index.ts`. Every new chart type starts in lab; see `planning/README.md`
 4. Register in `packages/react-spectrum-charts-s2/src/rscToSbAdapter/childrenAdapter.ts`
 5. Build with `yarn build:s2`
 6. Create `packages/react-spectrum-charts-s2/src/dev/Widget/Dashboards/widget.dashboard.tsx` modeled on the Donut dashboard, with variations and a coverage map for the mark, its child components, and relevant siblings (see CLAUDE.md's "Variation Dashboards")

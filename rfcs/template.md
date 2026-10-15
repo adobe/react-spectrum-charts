@@ -9,11 +9,9 @@ governing permissions and limitations under the License. -->
 
 <!-- Process: planning/README.md. Save as rfcs/<slug>.md (no number). -->
 
-- Status: Draft | Accepted | Implemented
 - Start Date: (fill me in with today's date, YYYY-MM-DD)
 - RFC PR: (leave this empty, to be filled in later)
 - Authors: (the names of everyone contributing to this RFC)
-- Parent Issue: (the GitHub issue tracking this RFC's scope, once accepted)
 
 # (RFC title goes here)
 
@@ -40,12 +38,12 @@ outcome? -->
 ## Scope
 
 <!--
-    One row per piece of work, each linked to a GitHub issue (a sub-issue of the parent
-    issue). Stage is when it ships: alpha, beta, rc, stable, or deferred (out of scope).
+    One row per piece of work, each linked to a GitHub issue. This table records what was
+    agreed; after acceptance, milestones track scheduling.
 
-    | Issue | Description | Stage |
-    |---|---|---|
-    | #123 | ... | alpha |
+    | Issue | Description |
+    |---|---|
+    | #123 | ... |
 -->
 
 ## Cross-Cutting Concerns
