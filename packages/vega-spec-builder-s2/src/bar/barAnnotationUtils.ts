@@ -25,7 +25,7 @@ import {
   BarSpecOptions,
   Orientation,
 } from '../types/index.js';
-import { getOrientationProperties, isDodgedAndStacked } from './barUtils.js';
+import { getBarDrawInLabelFadeExpr, getOrientationProperties, isDodgedAndStacked } from './barUtils.js';
 
 type AnnotationWidth = { value: number } | { signal: string };
 
@@ -144,6 +144,7 @@ const getAnnotationTextMark = ({
         baseline: { value: 'middle' },
         align: { value: 'center' },
       },
+      ...getDrawInRevealUpdate(barOptions),
     },
   };
 };
@@ -181,8 +182,17 @@ const getAnnotationBackgroundMark = ({
         },
       ],
     },
+    ...getDrawInRevealUpdate(barOptions),
   },
 });
+
+/**
+ * Gets an update encoding that fades a mark in once its bar finishes drawing.
+ * @param barOptions
+ * @returns update encode entry, or nothing when draw-in is off
+ */
+const getDrawInRevealUpdate = (barOptions: BarSpecOptions) =>
+  barOptions.isDrawInAnimate ? { update: { opacity: { signal: getBarDrawInLabelFadeExpr(barOptions, false) } } } : {};
 
 /**
  * Gets the minimum band width needed to display the annotations based on the bar orientation

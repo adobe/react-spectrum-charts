@@ -32,6 +32,8 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
   DIMENSION_HOVER_AREA,
+  DRAW_IN_ANIM_T_EASED,
+  DRAW_IN_DONE,
   FILTERED_TABLE,
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
@@ -354,6 +356,64 @@ describe('barSpecBuilder', () => {
           opacity: 'tier',
         }).usermeta;
         expect(usermeta.divergingBarMarks).toBeUndefined();
+      });
+    });
+
+    describe('isDrawInAnimate gate', () => {
+      const findMark = (marks: Mark[] | undefined, name: string): Mark | undefined => {
+        for (const mark of marks ?? []) {
+          if (mark.name === name) return mark;
+          const nested = findMark((mark as GroupMark).marks, name);
+          if (nested) return nested;
+        }
+        return undefined;
+      };
+
+      test('a bar does not draw in by default', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' });
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(false);
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(false);
+        expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: FILTERED_TABLE });
+      });
+
+      test('animationTypes with "drawIn" adds the clock, the draw-in data, and points the bars at it', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_ANIM_T_EASED)).toBe(true);
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(true);
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(true);
+        expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: 'bar0_drawInData' });
+        // the background keeps final geometry so it never animates
+        expect(findMark(spec.marks, 'bar0_background')?.from).toStrictEqual({ data: FILTERED_TABLE });
+      });
+
+      test('stacked bars get each stack\'s totals so segments can fill in order', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
+        const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
+        expect(filteredTable.transform).toContainEqual(
+          expect.objectContaining({ type: 'joinaggregate', as: ['bar0_drawInStackMax', 'bar0_drawInStackMin'] })
+        );
+      });
+
+      test('dodged bars facet the draw-in data', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          type: 'dodged',
+          animationTypes: ['drawIn'],
+        });
+        expect(findMark(spec.marks, 'bar0_group')?.from).toHaveProperty('facet.data', 'bar0_drawInData');
+        const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
+        expect(filteredTable.transform?.some((t) => t.type === 'joinaggregate')).toBe(false);
+      });
+
+      test('the chart-level animations: false master switch disables draw-in', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          animations: false,
+          animationTypes: ['drawIn'],
+        });
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(false);
       });
     });
 

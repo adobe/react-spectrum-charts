@@ -43,6 +43,7 @@ export const getExpressionFunctions = (
     formatLocaleCurrency: formatLocaleCurrency(numberLocale),
     formatShortNumber: formatShortNumber(localeCode),
     consoleLog,
+    cubicBezier,
     donutSliceStrokeWidth,
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
@@ -391,8 +392,56 @@ export const donutSliceStrokeWidth = (
   return Math.min(requestedWidth, Math.max(0, availableWidth - DONUT_MIN_VISIBLE_SLICE_WIDTH));
 };
 
+const BEZIER_EPSILON = 1e-6;
+
+/**
+ * Evaluates a CSS-style cubic-bezier easing curve (P0 = 0,0 and P3 = 1,1) at progress `t`.
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @param t - linear progress, clamped to 0-1
+ * @returns eased progress
+ */
+export const cubicBezier = (x1: number, y1: number, x2: number, y2: number, t: number): number => {
+  if (Number.isNaN(t) || t <= 0) return 0;
+  if (t >= 1) return 1;
+  const cx = 3 * x1;
+  const bx = 3 * (x2 - x1) - cx;
+  const ax = 1 - cx - bx;
+  const cy = 3 * y1;
+  const by = 3 * (y2 - y1) - cy;
+  const ay = 1 - cy - by;
+  const sampleX = (s: number) => ((ax * s + bx) * s + cx) * s;
+  const sampleY = (s: number) => ((ay * s + by) * s + cy) * s;
+
+  // Newton-Raphson converges in a few steps for typical curves
+  let s = t;
+  for (let i = 0; i < 8; i++) {
+    const error = sampleX(s) - t;
+    if (Math.abs(error) < BEZIER_EPSILON) return sampleY(s);
+    const slope = (3 * ax * s + 2 * bx) * s + cx;
+    if (Math.abs(slope) < BEZIER_EPSILON) break;
+    s -= error / slope;
+  }
+
+  // bisection fallback for flat slopes, where Newton can't make progress
+  let low = 0;
+  let high = 1;
+  s = t;
+  for (let i = 0; i < 30; i++) {
+    const x = sampleX(s);
+    if (Math.abs(x - t) < BEZIER_EPSILON) break;
+    if (x < t) low = s;
+    else high = s;
+    s = (low + high) / 2;
+  }
+  return sampleY(s);
+};
+
 export const expressionFunctions = {
   consoleLog,
+  cubicBezier,
   donutSliceStrokeWidth,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),

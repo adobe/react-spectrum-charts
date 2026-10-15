@@ -11,8 +11,7 @@
  */
 import { GroupMark, Mark, Scale } from 'vega';
 
-import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
-
+import { getBarMarkDataSource } from '../marks/drawInAnimationUtils.js';
 import { addDomainFields, getScaleIndexByName } from '../scale/scaleSpecBuilder.js';
 import { BarSpecOptions } from '../types/index.js';
 import { getDodgedDimensionEncodings, getTrellisedDimensionEncodings, isDodgedAndStacked } from './barUtils.js';
@@ -43,7 +42,7 @@ export const getTrellisGroupMark = (options: BarSpecOptions, marks: Mark[], repe
     // Define data source for this trellis
     from: {
       facet: {
-        data: FILTERED_TABLE,
+        data: getBarMarkDataSource(options),
         name: facetName,
         groupby: trellis,
       },

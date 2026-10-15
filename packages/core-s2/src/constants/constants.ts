@@ -156,9 +156,11 @@ export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
 export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's one-tick grace period after hoverAnimating goes false
 export const DRAW_IN_START = 'drawInStart'; // timestamp of the first animation timer tick, captured once
+export const DRAW_IN_DURATION = 'drawInDuration'; // ms the chart's draw-in lasts: the longest of its marks' durations
 export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
-export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-out) progress
+export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // progress eased with S2_EASE_IN_OUT
 export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
+export const DRAW_IN_DONE = 'drawInDone'; // true once draw-in finishes; flips once so dependents re-encode once
 export const DRAW_IN_CLIP_X = 'drawInClipX'; // suffix: ${name}_drawInClipX — line draw-in clip edge, in pixels
 export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
 export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
@@ -201,7 +203,7 @@ export const ANIMATION_MIN_FRAME_INTERVAL = 0;
 /** Per-frame time budget (ms) for ticking animated charts; charts past the budget tick on the next frame */
 export const ANIMATION_FRAME_BUDGET_MS = 8;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
-export const ANIMATION_HOVER_SPEED = 250;
+export const ANIMATION_HOVER_SPEED = 150;
 /**
  * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
  * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
@@ -210,13 +212,22 @@ export const ANIMATION_HOVER_SPEED = 250;
  */
 export const HOVER_NEUTRAL_TARGET = 0.5;
 
+/** Cubic-bezier control points (x1, y1, x2, y2) for an animation easing curve. */
+export type CubicBezierEasing = [number, number, number, number];
+/** Spectrum 2 ease-in-out curve. */
+export const S2_EASE_IN_OUT: CubicBezierEasing = [0.45, 0, 0.4, 1];
+
 // draw-in animation constants
-/** Time in ms it takes to animate the draw-in animation */
-export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
+/** Line draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_SWEEP_DURATION_MS = 850;
+/** Bar draw-in duration in ms; the growth is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_GROW_DURATION_MS = 700;
+/** Donut draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_DONUT_DURATION_MS = 750;
 /** Pixels the line draw-in clip extends past the plot so strokes and points at the edges aren't cut off. */
 export const DRAW_IN_CLIP_OVERFLOW = 1000;
-/** Duration of the linear fade-in for donut labels after their slice finishes drawing. */
-export const DONUT_DRAW_IN_LABEL_FADE_DURATION_MS = 50;
+/** Duration of the linear fade-in for labels after their own mark finishes drawing. */
+export const DRAW_IN_LABEL_FADE_DURATION_MS = 150;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */

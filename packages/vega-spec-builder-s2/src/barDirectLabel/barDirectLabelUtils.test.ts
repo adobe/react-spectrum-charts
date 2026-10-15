@@ -14,7 +14,11 @@ import { TextMark } from 'vega';
 
 import { defaultBarOptions } from '../bar/barTestUtils.js';
 import { BarDirectLabelSpecOptions } from '../types/index.js';
-import { getBarDirectLabelMarks, getBarDirectLabelPositionEncodings, getBarDirectLabelSpecOptions } from './barDirectLabelUtils.js';
+import {
+  getBarDirectLabelMarks,
+  getBarDirectLabelPositionEncodings,
+  getBarDirectLabelSpecOptions,
+} from './barDirectLabelUtils.js';
 
 const defaultSpecOptions: BarDirectLabelSpecOptions = getBarDirectLabelSpecOptions({}, 0, defaultBarOptions);
 
@@ -283,5 +287,29 @@ describe('getBarDirectLabelMarks()', () => {
       const [, escapedSpec] = match as RegExpMatchArray;
       expect(JSON.parse(`"${escapedSpec}"`)).toEqual(maliciousFormat);
     });
+  });
+});
+
+describe('getBarDirectLabelMarks() draw-in', () => {
+  const drawInBarOptions = { ...defaultBarOptions, isDrawInAnimate: true };
+
+  test('fades the label and its halo in with the draw-in', () => {
+    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, drawInBarOptions) as TextMark[];
+    expect(JSON.stringify(bg.encode?.update?.opacity)).toContain('drawInDuration');
+    expect(JSON.stringify(main.encode?.update?.opacity)).toContain('drawInDuration');
+  });
+
+  test('fades stacked segment labels in once their own segment settles', () => {
+    const [, main] = getBarDirectLabelMarks(defaultSpecOptions, {
+      ...drawInBarOptions,
+      type: 'stacked',
+    }) as TextMark[];
+    expect(JSON.stringify(main.encode?.update?.opacity)).toContain('bar0_drawInStackMax');
+  });
+
+  test('does not fade labels when draw-in is off', () => {
+    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions) as TextMark[];
+    expect(bg.encode?.update).not.toHaveProperty('opacity');
+    expect(JSON.stringify(main.encode?.update?.opacity)).not.toContain('drawInDuration');
   });
 });

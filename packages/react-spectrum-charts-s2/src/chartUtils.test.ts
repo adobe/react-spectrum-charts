@@ -11,7 +11,7 @@
  */
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
 
-import { applyChartPropsDefaults, resolveAnimations } from './chartUtils.js';
+import { applyChartPropsDefaults, resolveAnimationTypes } from './chartUtils.js';
 
 describe('applyChartPropsDefaults', () => {
   test('should return default props', () => {
@@ -57,15 +57,18 @@ describe('applyChartPropsDefaults', () => {
   });
 });
 
-describe('resolveAnimations', () => {
-  test('disables animations when reduced motion is preferred', () => {
-    expect(resolveAnimations(undefined, true)).toBe(false);
-    expect(resolveAnimations(true, true)).toBe(false);
+describe('resolveAnimationTypes', () => {
+  test('keeps fades and drops motion when reduced motion is preferred', () => {
+    expect(resolveAnimationTypes(['hover', 'drawIn'], true)).toEqual(['hover']);
+    expect(resolveAnimationTypes(['drawIn'], true)).toEqual([]);
   });
 
-  test('preserves the animations prop when reduced motion is not preferred', () => {
-    expect(resolveAnimations(undefined, false)).toBeUndefined();
-    expect(resolveAnimations(false, false)).toBe(false);
-    expect(resolveAnimations(true, false)).toBe(true);
+  test('applies the defaults before filtering when animation types are unset', () => {
+    expect(resolveAnimationTypes(undefined, true)).toEqual(['hover']);
+  });
+
+  test('preserves the animation types when reduced motion is not preferred', () => {
+    expect(resolveAnimationTypes(undefined, false)).toBeUndefined();
+    expect(resolveAnimationTypes(['hover', 'drawIn'], false)).toEqual(['hover', 'drawIn']);
   });
 });

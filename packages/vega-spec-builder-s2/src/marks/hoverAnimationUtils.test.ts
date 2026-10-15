@@ -143,12 +143,12 @@ describe('getHoverFractionData()', () => {
     });
   });
 
-  test('eases progress quadratically in and out before lerping startValue -> target', () => {
+  test('eases progress with the S2 in-out curve before lerping startValue -> target', () => {
     const result = getHoverFractionData('line0');
     expect(result.transform?.[1]).toStrictEqual({
       type: 'formula',
       as: 'fraction',
-      expr: `lerp([datum.startValue, datum.target], datum.progress < 0.5 ? 2 * pow(datum.progress, 2) : 1 - pow(-2 * datum.progress + 2, 2) / 2)`,
+      expr: 'lerp([datum.startValue, datum.target], cubicBezier(0.45, 0, 0.4, 1, datum.progress))',
     });
   });
 });

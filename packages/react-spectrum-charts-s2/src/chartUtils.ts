@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 import {
+  AnimationType,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_HIDDEN_SERIES,
@@ -80,7 +82,24 @@ export const applyChartPropsDefaults = (props: ChartProps): PartiallyRequired<Ch
   };
 };
 
-export const resolveAnimations = (
-  animations: boolean | undefined,
+/** Whether an animation only changes appearance (`fade`) or moves/resizes marks (`motion`, WCAG 2.3.3). */
+type AnimationEffect = 'fade' | 'motion';
+
+const ANIMATION_EFFECTS = {
+  hover: 'fade',
+  drawIn: 'motion',
+} as const satisfies Record<AnimationType, AnimationEffect>;
+
+/**
+ * Gets the animation types to run, dropping motion effects when the user prefers reduced motion.
+ * @param animationTypes
+ * @param prefersReducedMotion
+ * @returns animation types
+ */
+export const resolveAnimationTypes = (
+  animationTypes: AnimationType[] | undefined,
   prefersReducedMotion: boolean
-): boolean | undefined => (prefersReducedMotion ? false : animations);
+): AnimationType[] | undefined => {
+  if (!prefersReducedMotion) return animationTypes;
+  return (animationTypes ?? DEFAULT_ANIMATION_TYPES).filter((type) => ANIMATION_EFFECTS[type] === 'fade');
+};

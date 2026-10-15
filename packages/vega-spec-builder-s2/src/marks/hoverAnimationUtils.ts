@@ -26,12 +26,14 @@ import {
   HOVER_TARGETS,
   ANIMATION_TIMER,
   FADE_FACTOR,
+  S2_EASE_IN_OUT,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
 import { hasSignalByName } from '../signal/signalSpecBuilder.js';
 import { addAnimationTimerSignal } from './animationTimerUtils.js';
+import { getCubicBezierExpr } from './drawInAnimationUtils.js';
 
 /** hoverFractionData field holding each item's animated deemphasis opacity. */
 export const HOVER_DEEMPHASIS_OPACITY = 'deemphasisOpacity';
@@ -133,7 +135,7 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
  * @returns SourceData - the source data for the hover fraction data
  */
 export const getHoverFractionData = (name: string): SourceData => {
-  const easedProgress = `datum.progress < 0.5 ? 2 * pow(datum.progress, 2) : 1 - pow(-2 * datum.progress + 2, 2) / 2`;
+  const easedProgress = getCubicBezierExpr(S2_EASE_IN_OUT, 'datum.progress');
 
   return {
     name: `${name}_${HOVER_FRACTION_DATA}`,

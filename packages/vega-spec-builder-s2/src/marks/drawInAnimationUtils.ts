@@ -9,22 +9,28 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Clip, NumericValueRef, ProductionRule, Signal } from 'vega';
+import { Clip, NewSignal, NumericValueRef, ProductionRule, Signal, SourceData } from 'vega';
 
 import {
   ANIMATION_TIMER,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  CubicBezierEasing,
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
-  DRAW_IN_ANIMATION_DURATION_MS,
   DRAW_IN_CLIP_OVERFLOW,
   DRAW_IN_CLIP_X,
+  DRAW_IN_DONE,
+  DRAW_IN_DURATION,
+  DRAW_IN_LABEL_FADE_DURATION_MS,
   DRAW_IN_START,
+  DRAW_IN_SWEEP_DURATION_MS,
+  FILTERED_TABLE,
+  S2_EASE_IN_OUT,
 } from '@spectrum-charts/core-s2/constants';
 
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { hasSignalByName } from '../signal/signalSpecBuilder.js';
-import { LineSpecOptions, ScaleType } from '../types/index.js';
+import { BarSpecOptions, LineSpecOptions, ScaleType } from '../types/index.js';
 import { addAnimationTimerSignal } from './animationTimerUtils.js';
 
 /**
@@ -34,13 +40,29 @@ import { addAnimationTimerSignal } from './animationTimerUtils.js';
 export const getDrawInAnimationActiveCondition = (): string => `${DRAW_IN_ANIM_T} < 1`;
 
 /**
- * Adds the shared mount-timer chain (`drawInStart` -> `drawInAnimT` -> `drawInAnimTEased`) every
- * draw-in animated mark reads from.
- * `drawInStart` - captures the animation timer's first tick
- * `drawInAnimT` - the animation progess (t) from 0-1
- * `drawInAnimTEased` - the animation progress with easing applied. Current easing formula is in-out quadratic
+ * Gets an expression that eases `t` along a cubic-bezier curve.
+ * @param curve
+ * @param t - expression for linear 0-1 progress
+ * @returns expression string
  */
-export const addDrawInClockSignals = (signals: Signal[]): void => {
+export const getCubicBezierExpr = (curve: CubicBezierEasing, t: string): string => `cubicBezier(${curve.join(', ')}, ${t})`;
+
+/**
+ * Gets an expression for the linear progress at which the curve reaches eased progress `p` (the curve mirrored on y = x).
+ * @param curve
+ * @param p - expression for eased 0-1 progress
+ * @returns expression string
+ */
+export const getInverseCubicBezierExpr = ([x1, y1, x2, y2]: CubicBezierEasing, p: string): string =>
+  getCubicBezierExpr([y1, x1, y2, x2], p);
+
+/**
+ * Adds the shared mount-timer chain (`drawInStart` -> `drawInAnimT` -> eased progress) every draw-in animated mark
+ * reads from. The chart's draw-in lasts as long as its longest mark so mixed marks finish together.
+ * @param signals
+ * @param durationMs - this mark's draw-in duration
+ */
+export const addDrawInClockSignals = (signals: Signal[], durationMs: number): void => {
   addAnimationTimerSignal(signals, getDrawInAnimationActiveCondition, true);
   if (!hasSignalByName(signals, DRAW_IN_START)) {
     // starts on the first timer tick (the first painted frame) so a slow mount doesn't consume the animation
@@ -50,18 +72,57 @@ export const addDrawInClockSignals = (signals: Signal[]): void => {
       on: [{ events: { signal: ANIMATION_TIMER }, update: `${DRAW_IN_START} || ${ANIMATION_TIMER}` }],
     });
   }
+  const duration = signals.find((signal): signal is NewSignal => signal.name === DRAW_IN_DURATION && 'value' in signal);
+  if (duration) {
+    duration.value = Math.max(Number(duration.value), durationMs);
+  } else {
+    signals.push({ name: DRAW_IN_DURATION, value: durationMs });
+  }
   if (!hasSignalByName(signals, DRAW_IN_ANIM_T)) {
     signals.push({
       name: DRAW_IN_ANIM_T,
       value: 0,
-      update: `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START}) / ${DRAW_IN_ANIMATION_DURATION_MS}, 0, 1)`,
+      update: `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START}) / ${DRAW_IN_DURATION}, 0, 1)`,
     });
   }
   if (!hasSignalByName(signals, DRAW_IN_ANIM_T_EASED)) {
-    signals.push({
-      name: DRAW_IN_ANIM_T_EASED,
-      update: `${DRAW_IN_ANIM_T} < 0.5 ? 2 * pow(${DRAW_IN_ANIM_T}, 2) : 1 - pow(-2 * ${DRAW_IN_ANIM_T} + 2, 2) / 2`,
-    });
+    signals.push({ name: DRAW_IN_ANIM_T_EASED, value: 0, update: getCubicBezierExpr(S2_EASE_IN_OUT, DRAW_IN_ANIM_T) });
+  }
+};
+
+/**
+ * Gets the condition that keeps the timer ticking until labels finish fading in after the draw-in.
+ * @param clock - expression for the current time
+ * @returns string
+ */
+export const getDrawInLabelFadeActiveCondition = (clock: string): string =>
+  `${clock} - ${DRAW_IN_START} < ${DRAW_IN_DURATION} + ${DRAW_IN_LABEL_FADE_DURATION_MS}`;
+
+/**
+ * Keeps the animation timer running past the draw-in so the last label's fade can finish.
+ * @param signals
+ */
+export const addDrawInLabelFadeTimer = (signals: Signal[]): void =>
+  addAnimationTimerSignal(signals, getDrawInLabelFadeActiveCondition, true);
+
+/**
+ * Gets a label's linear 0-1 fade-in, which starts once its own mark has finished drawing.
+ * @param settleProgress - expression for the eased progress at which the label's mark finishes
+ * @returns expression string
+ */
+export const getDrawInLabelFadeExpr = (settleProgress: string): string => {
+  const settleTime = `${DRAW_IN_DURATION} * ${getInverseCubicBezierExpr(S2_EASE_IN_OUT, settleProgress)}`;
+  const elapsed = `${ANIMATION_TIMER} - ${DRAW_IN_START}`;
+  return `clamp((${elapsed} - ${settleTime}) / ${DRAW_IN_LABEL_FADE_DURATION_MS}, 0, 1)`;
+};
+
+/**
+ * Adds the signal that flips once when draw-in finishes, for marks that should only update at the end.
+ * @param signals
+ */
+export const addDrawInDoneSignal = (signals: Signal[]): void => {
+  if (!hasSignalByName(signals, DRAW_IN_DONE)) {
+    signals.push({ name: DRAW_IN_DONE, value: false, update: `${DRAW_IN_ANIM_T} >= 1` });
   }
 };
 
@@ -87,7 +148,7 @@ const getDrawInPixelExtent = (scaleType: ScaleType): [string, string] => {
  * @param options
  */
 export const addLineDrawInAnimationSignals = (signals: Signal[], { name, scaleType }: LineSpecOptions): void => {
-  addDrawInClockSignals(signals);
+  addDrawInClockSignals(signals, DRAW_IN_SWEEP_DURATION_MS);
   const clipXSignal = `${name}_${DRAW_IN_CLIP_X}`;
   if (hasSignalByName(signals, clipXSignal)) return;
   const [start, end] = getDrawInPixelExtent(scaleType);
@@ -155,4 +216,81 @@ export const applyDrawInReveal = (
   const entries = Array.isArray(rule) ? rule : [rule];
   const revealed = entries.map((ref) => multiplyRefByReveal(ref, reveal));
   return Array.isArray(rule) ? revealed : revealed[0];
+};
+
+/**
+ * Gets the field names a bar's draw-in reads for the totals of the positive and negative sides of each stack.
+ * @param name - bar name
+ * @returns [stackMaxField, stackMinField]
+ */
+export const getBarDrawInStackFields = (name: string): [string, string] => [
+  `${name}_drawInStackMax`,
+  `${name}_drawInStackMin`,
+];
+
+/**
+ * Gets the animated metric value a bar's draw-in grows toward; stacked segments fill in order up the stack.
+ * @param name - bar name
+ * @param metric
+ * @param stacked - whether the bar is stacked
+ * @returns expression string
+ */
+export const getBarDrawInMetricExpr = (name: string, metric: string, stacked: boolean): string => {
+  if (!stacked) return `datum.${metric} * ${DRAW_IN_ANIM_T_EASED}`;
+  const [stackMax, stackMin] = getBarDrawInStackFields(name);
+  const v0 = `datum.${metric}0`;
+  const v1 = `datum.${metric}1`;
+  // the stack's top grows toward its total; each segment shows only the part of that reach inside its own range
+  const reach = `${DRAW_IN_ANIM_T_EASED} * (${v1} > 0 ? datum.${stackMax} : datum.${stackMin})`;
+  return `clamp(${reach}, min(${v0}, ${v1}), max(${v0}, ${v1}))`;
+};
+
+/**
+ * Gets the name of the data source bar marks read during draw-in.
+ * @param name - bar name
+ * @returns string
+ */
+export const getBarDrawInDataName = (name: string): string => `${name}_drawInData`;
+
+/**
+ * Gets the field holding a bar's animated draw-in metric value.
+ * @param name - bar name
+ * @returns string
+ */
+export const getBarDrawInValueField = (name: string): string => `${name}_drawInValue`;
+
+/**
+ * Gets the data source animated bar marks (and the facets that hold them) read from.
+ * @param options
+ * @returns string
+ */
+export const getBarMarkDataSource = ({ name, isDrawInAnimate }: BarSpecOptions): string =>
+  isDrawInAnimate ? getBarDrawInDataName(name) : FILTERED_TABLE;
+
+/**
+ * Gets the data source that computes each bar's animated metric once per tick so mark encodings stay cheap.
+ * @param name - bar name
+ * @param metric
+ * @param stacked - whether the bar is stacked
+ * @returns SourceData
+ */
+export const getBarDrawInData = (name: string, metric: string, stacked: boolean): SourceData => ({
+  name: getBarDrawInDataName(name),
+  source: FILTERED_TABLE,
+  transform: [{ type: 'formula', as: getBarDrawInValueField(name), expr: getBarDrawInMetricExpr(name, metric, stacked) }],
+});
+
+/**
+ * Gets the eased progress at which a bar's row finishes drawing; stacked segments finish in order up the stack.
+ * @param name - bar name
+ * @param metric
+ * @param stacked - whether the bar is stacked
+ * @returns expression string
+ */
+export const getBarDrawInSettleProgressExpr = (name: string, metric: string, stacked: boolean): string => {
+  if (!stacked) return '1';
+  const [stackMax, stackMin] = getBarDrawInStackFields(name);
+  const v1 = `datum.${metric}1`;
+  const total = `(${v1} > 0 ? datum.${stackMax} : datum.${stackMin})`;
+  return `(${total} ? ${v1} / ${total} : 1)`;
 };

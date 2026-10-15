@@ -105,6 +105,24 @@ Set `diverging` on `Bar` for a metric that spans positive and negative values (e
 
 ---
 
+## Draw-in animation
+
+Add `'drawIn'` to the chart's `animationTypes` to grow the bars from the baseline over 700ms with the
+Spectrum 2 ease-in-out curve. Stacked segments fill in order from the baseline outward. Direct labels and
+annotations start a 150ms linear fade as soon as their own bar or segment finishes drawing.
+
+```jsx
+<Chart data={data} animationTypes={['hover', 'drawIn']}>
+  <Bar dimension="browser" metric="downloads" />
+</Chart>
+```
+
+Draw-in is off by default. `animations={false}` disables it even when `'drawIn'` is listed. When a chart
+draws in more than one mark type, every mark uses the longest duration so they finish together. When the
+user prefers reduced motion, draw-in is skipped and hover fades still run.
+
+---
+
 ## Bar props (S2)
 
 <table>
