@@ -17,9 +17,16 @@ import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
 
 import { Chart } from '../../../Chart.js';
-import { ChartInspect, ChartPopover, Legend, Title } from '../../../components/index.js';
+import {
+  ChartInspect,
+  ChartPopover,
+  Donut,
+  DonutSummary,
+  Legend,
+  SegmentLabel,
+  Title,
+} from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { DonutProps } from '../../../types/index.js';
 import { DonutDataPreset, getDonutData } from '../../playgroundData.js';
@@ -70,7 +77,8 @@ interface DonutPlaygroundArgs extends DonutProps {
 }
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Playground',
+  title: 'React Spectrum Charts 2/Donut/Playground',
+  tags: ['alpha'],
   component: Donut,
   argTypes: {
     ...chartArgTypes,
@@ -96,7 +104,10 @@ export default {
     summaryLabel: { control: 'text', table: { category: 'Summary' } },
     summaryNumberFormat: { control: 'text', table: { category: 'Summary' } },
     summaryHideValue: { control: 'boolean', table: { category: 'Summary' } },
-    summaryDelta: { control: { type: 'range', min: -1, max: 1, step: 0.01 }, table: { category: 'Summary' } },
+    summaryDelta: {
+      control: { type: 'range', min: -1, max: 1, step: 0.01 },
+      table: { category: 'Summary' },
+    },
     showSegmentLabel: { control: 'boolean', table: { category: 'Segment label' } },
     segmentLabelMode: {
       control: 'select',

@@ -6,7 +6,9 @@ How work is proposed, tracked, and recorded in react-spectrum-charts.
 |---|---|
 | Bug | GitHub issue |
 | Small feature (a prop, an option, a contained behavior change) | GitHub issue |
-| Significant or uncertain change (new chart type, new subsystem, cross-chart API, stage graduation) | RFC in [`rfcs/`](../rfcs) |
+| New chart type | GitHub issue or PR; it starts in [lab](#stages) |
+| Significant or uncertain change (new subsystem, cross-chart API) | RFC in [`rfcs/`](../rfcs) |
+| What a component's next stage includes | GitHub milestone (see [Stages](#stages)) |
 | Open-ended research before a proposal exists | Research note in [`planning/research/`](./research) |
 | Durable architecture knowledge | `.claude/architecture-*.md` |
 
@@ -48,25 +50,24 @@ Issues close when the fix or feature merges, or when the stage they're scheduled
 
 ## RFCs
 
-Write an RFC when a change needs design agreement before it's built: a new chart type, a
-new subsystem or cross-chart API, a behavior change that affects many components, or
-graduating a component to its next [stage](#stages). Bugs and small features don't need one.
+Write an RFC when a change needs design agreement before it's built: a new subsystem or
+cross-chart API, or a behavior change that affects many components. Bugs and small features
+don't need one, and neither does planning a component's stages (see [Stages](#stages)).
 
 RFCs live in `rfcs/<slug>.md`, for example `rfcs/s2-remove-vega-embed.md`. Use a short,
 descriptive slug with no number. Start from [`rfcs/template.md`](../rfcs/template.md).
 
 ### Lifecycle
 
-1. **Draft.** Open a PR that adds `rfcs/<slug>.md` with `Status: Draft`. Discussion happens on
-   the PR. Opening it early is fine.
+1. **Draft.** Open a PR that adds `rfcs/<slug>.md`. Discussion happens on the PR. Opening it
+   early is fine.
 2. **Review.** Reviewers comment on the PR, and the author updates the doc in place.
 3. **Decision.** Two maintainers approve.
-   - **Accepted:** set `Status: Accepted` and merge. The doc is now frozen.
+   - **Accepted:** merge. The doc is now frozen.
    - **Rejected:** close the PR without merging. The PR is the record.
-4. **Implementation.** Each item in the RFC's **Scope** table is a GitHub issue. Create a parent
-   issue for the RFC and add the scope issues as its sub-issues. Assign each issue to the
-   milestone of the stage it ships in. Progress is tracked on the issues, not in the RFC.
-5. **Done.** When every in-scope issue has shipped, set `Status: Implemented`.
+4. **Implementation.** Create an issue for each row of the RFC's **Scope** table, linking
+   back to the RFC. Maintainers schedule the issues into milestones (see [Stages](#stages)).
+5. **Done.** The RFC is implemented when its scope issues are closed.
 
 Prototype PRs can be opened before an RFC is accepted, but they don't merge until it is.
 
@@ -75,36 +76,64 @@ Prototype PRs can be opened before an RFC is accepted, but they don't merge unti
 An accepted RFC doesn't change, except for:
 
 - typo fixes and clarifications that don't change the design
-- the `Status` line
+- issue links in the Scope table
+
+The Scope table is a record of what was agreed, not a tracker. Scheduling happens in
+milestones and doesn't need an RFC edit.
 
 New requirements become new issues in the right milestone. A real design change needs a
 short follow-up RFC that links back to the original.
 
 ### Scope
 
-An RFC's Scope table maps each piece of work to a linked issue and the stage it ships in.
-For example:
+An RFC's Scope table lists each piece of work with a linked issue. For example:
 
-| Issue | Description | Stage |
-|---|---|---|
-| #123 | Benchmark marker | alpha |
-| #124 | Trellis layout | beta |
-| #125 | Connector lines | deferred |
-
-`deferred` items are out of scope for this RFC. Their issues stay open for a future RFC or
-stage.
+| Issue | Description |
+|---|---|
+| #123 | Benchmark marker |
+| #124 | Trellis layout |
 
 ---
 
 ## Stages
 
-Components move through pre-alpha, alpha, beta, RC, and stable. The definitions are
-user-facing and live in the docs:
+Components move through alpha, beta, RC, and stable. Components without a finalized design
+and no commitment to graduate live in **lab**, outside the pipeline. The definitions, the RC
+period rules, and what counts as a blocking issue are user-facing and live in the docs:
 [Component Stages](../packages/docs/docs/spectrum2/stages.md).
 
-Each stage has a GitHub milestone per component, e.g. `Donut alpha`, created when the first
-issue needs it. Graduating a component to alpha needs an RFC. Later graduations need one only
-if the scope changes.
+### Lab
+
+Every new chart type starts in lab, even one expected to graduate. Anyone can propose one
+with an issue or PR; maintainers decide whether it fits the library.
+
+Moving a component from lab into alpha needs a finalized design. Maintainers decide when a
+component moves and create its alpha milestone.
+
+A lab component can be removed when maintainers decide it doesn't fit the project's goals and
+its usage is low. Announce the removal in a changeset.
+
+### Milestones
+
+Maintainers plan what each stage includes and record it as a GitHub milestone; stage
+planning doesn't need an RFC. Each component has a milestone for its **next** stage, named
+for the stage the work unlocks: `<Component> <stage>`, e.g. `Line beta`. Work done while a component is in alpha that
+the beta definition requires (such as finishing accessibility) goes in `Line beta`. When the
+component graduates, close the milestone and create the next one. Lab components don't have
+milestones.
+
+### Marking a component's stage
+
+A graduation PR updates every place the stage shows:
+
+- the TSDoc tag on the component and its props type: `@alpha`, `@beta`, or `@beta` with
+  "Release candidate" for RC; stable components have none
+- the Storybook `tags` in the default export of every story file for the component (e.g.
+  `tags: ['beta']`; use `'lab'` for lab components), which show as a badge in the sidebar
+- the stage badge on the component's docs page
+- a changeset announcing the stage change
+
+Experimental props on otherwise stable components use an `UNSAFE_` prefix instead.
 
 ---
 

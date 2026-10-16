@@ -22,6 +22,10 @@ import {
 
 import { BarProps } from '../../types/index.js';
 
+/**
+ * Renders bars for each data point, optionally stacked or dodged by series.
+ * @alpha
+ */
 const Bar: FC<BarProps> = ({
   dimension = DEFAULT_CATEGORICAL_DIMENSION,
   color = { value: 'categorical-100' },

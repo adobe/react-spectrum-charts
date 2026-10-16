@@ -17,7 +17,7 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend, ReferenceLine, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Scatter, ScatterAnnotation, ScatterPath, Trendline, TrendlineAnnotation } from '../../../pre-alpha/index.js';
+import { Scatter, ScatterAnnotation, ScatterPath, Trendline, TrendlineAnnotation } from '../../../lab/index.js';
 import {
   AxisProps,
   ChartInspectProps,

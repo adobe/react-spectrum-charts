@@ -11,6 +11,7 @@
  */
 import {
   DONUT_LABEL_RING_GAPS,
+  DONUT_LABELED_RADIUS,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
   DONUT_SEMICIRCLE_RADIUS,
@@ -27,6 +28,7 @@ import { DonutSpecOptions } from '../types/index.js';
 import { defaultDonutOptions } from './donutTestUtils.js';
 import {
   getArcMark,
+  getDonutCenterYSignal,
   getDonutEmptyStateTest,
   getDonutInnerRadiusExpr,
   getDonutOuterRadiusExpr,
@@ -80,6 +82,15 @@ describe('getDonutOuterRadiusExpr()', () => {
 
   test('should return the raw donut radius when no labels are present', () => {
     expect(getOuterRadiusUpdate(defaultDonutOptions)).toBe(DONUT_RADIUS);
+  });
+
+  test.each([
+    { width: 420, height: 420, variant: 'circle' as const },
+    { width: 600, height: 420, variant: 'circle' as const },
+    { width: 420, height: 220, variant: 'semicircle' as const },
+  ])('reserves a 10px base inset without labels: %o', ({ width, height, variant }) => {
+    const expression = getOuterRadiusUpdate({ ...defaultDonutOptions, variant });
+    expect(evaluateExpr(expression, { width, height, min: Math.min })).toBe(200);
   });
 
   describe('getSliceStrokeWidthExpr()', () => {
@@ -183,12 +194,12 @@ describe('getDonutOuterRadiusExpr()', () => {
 
   test('should reserve room using the label ring gap signal when SegmentLabel is present', () => {
     const expr = getOuterRadiusUpdate({ ...defaultDonutOptions, segmentLabels: [{}] });
-    expect(expr).toBe(`min((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6), [120, 160, 200, 400, MAX_VALUE][testName_sizeTier] / 2)`);
+    expect(expr).toBe(`min((${DONUT_LABELED_RADIUS} - testName_labelRingGap) / (1 + 0.6), [${DONUT_SIZE_TIER_CUTPOINTS.join(', ')}, MAX_VALUE][testName_sizeTier] / 2)`);
   });
 
   test('should reserve room using the label ring gap signal for rich SegmentLabels', () => {
     const expr = getOuterRadiusUpdate({ ...defaultDonutOptions, segmentLabels: [{ swatch: true }] });
-    expect(expr).toBe(`min((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6), [120, 160, 200, 400, MAX_VALUE][testName_sizeTier] / 2)`);
+    expect(expr).toBe(`min((${DONUT_LABELED_RADIUS} - testName_labelRingGap) / (1 + 0.6), [${DONUT_SIZE_TIER_CUTPOINTS.join(', ')}, MAX_VALUE][testName_sizeTier] / 2)`);
   });
 
   test('should use the semicircle base radius (full height/width) for a semicircle donut', () => {
@@ -215,7 +226,7 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
 
   describe('without label space', () => {
     test('should map chart size to the tier using the original diameter breakpoints', () => {
-      expect(DONUT_SIZE_TIER_UNLABELED_CHART_SIZES).toEqual([124, 164, 204, 404]);
+      expect(DONUT_SIZE_TIER_UNLABELED_CHART_SIZES).toEqual([140, 220, 300, 420]);
       for (const options of [defaultDonutOptions, { ...defaultDonutOptions, isBoolean: true, segmentLabels: [{}] }]) {
         expect(getSizeTierScale(options)).toEqual({
           name: 'testName_sizeTierScale',
@@ -230,20 +241,73 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
       }
     });
 
-    test('should switch tiers exactly when the donut diameter reaches each cutpoint', () => {
-      DONUT_SIZE_TIER_CUTPOINTS.forEach((cutpoint, index) => {
-        // diameter = chart size - 4 (DONUT_RADIUS's 2px padding on each side)
-        expect(evaluateTier(defaultDonutOptions, cutpoint + 3, 1000)).toBe(index);
-        expect(evaluateTier(defaultDonutOptions, cutpoint + 4, 1000)).toBe(index + 1);
+    describe('getDonutCenterYSignal()', () => {
+      test.each([
+        { width: 420, height: 220 },
+        { width: 600, height: 420 },
+        { width: 1200, height: 420 },
+        { width: 420, height: 674 },
+        { width: 1000, height: 80 },
+      ])('bottom-aligns the semicircle with at least 10px above and beside it: %o', ({ width, height }) => {
+        const options: DonutSpecOptions = { ...defaultDonutOptions, variant: 'semicircle' };
+        const scope = evaluateRadiusSignals(options, {
+          width,
+          height,
+          min: Math.min,
+          testName_ringWidth: 40,
+        });
+        const outerRadius = scope.testName_outerRadius;
+        const centerY = evaluateExpr(getDonutCenterYSignal(options), { ...scope, width, height });
+        const top = centerY - outerRadius;
+        expect(centerY).toBe(height);
+        expect(top).toBeGreaterThanOrEqual(10);
+        expect(width / 2 - outerRadius).toBeGreaterThanOrEqual(10);
+        expect(evaluateExpr(getDonutCenterYSignal(defaultDonutOptions), { height })).toBe(height / 2);
       });
     });
 
-    test('should use twice the height for a semicircle', () => {
+    test('should switch tiers exactly when the donut diameter reaches each cutpoint', () => {
+      DONUT_SIZE_TIER_CUTPOINTS.forEach((cutpoint, index) => {
+        expect(evaluateTier(defaultDonutOptions, cutpoint + 19, 1000)).toBe(index);
+        expect(evaluateTier(defaultDonutOptions, cutpoint + 20, 1000)).toBe(index + 1);
+      });
+    });
+
+    test('should use the same diameter cutpoints for a semicircle while allowing its full height', () => {
       const options: DonutSpecOptions = { ...defaultDonutOptions, variant: 'semicircle' };
-      expect(getSizeTierSignal(options)).toHaveProperty('update', "scale('testName_sizeTierScale', min(width, 2 * height))");
-      // a 404 x 202 semicircle has a 400px diameter
-      expect(evaluateTier(options, 404, 202)).toBe(4);
-      expect(evaluateTier(options, 404, 201)).toBe(3);
+      expect(getSizeTierScale(options)).toEqual(getSizeTierScale(defaultDonutOptions));
+      DONUT_SIZE_TIER_CUTPOINTS.forEach((cutpoint, index) => {
+        expect(evaluateTier(options, 1000, (cutpoint + 19) / 2)).toBe(index);
+        expect(evaluateTier(options, 1000, (cutpoint + 20) / 2)).toBe(index + 1);
+      });
+    });
+
+    test.each([
+      [60, 0, 16],
+      [139, 0, 16],
+      [140, 1, 18],
+      [141, 1, 18],
+      [219, 1, 18],
+      [220, 2, 20],
+      [221, 2, 20],
+      [299, 2, 20],
+      [300, 3, 22],
+      [301, 3, 22],
+      [419, 3, 22],
+      [420, 4, 40],
+      [421, 4, 40],
+    ])('uses diameter space %s to select tier %s and a %spx ring for both variants', (size, tier, ringWidth) => {
+      for (const variant of ['circle', 'semicircle'] as const) {
+        const options = { ...defaultDonutOptions, variant };
+        const signal = getRingWidthSignal(options);
+        if (!('update' in signal) || !signal.update) throw new Error('Expected a ring width update expression');
+        const chartHeight = variant === 'semicircle' ? size / 2 : size;
+        for (const [width, height] of [[1000, chartHeight], [size, 1000], [size, chartHeight]]) {
+          const resolvedTier = evaluateTier(options, width, height);
+          expect(resolvedTier).toBe(tier);
+          expect(evaluateExpr(signal.update, { testName_sizeTier: resolvedTier })).toBe(ringWidth);
+        }
+      }
     });
   });
 
@@ -264,15 +328,16 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
     };
 
     test('should map chart size to the tier using the labeled breakpoints', () => {
-      expect(DONUT_SIZE_TIER_LABELED_CHART_SIZES).toEqual([206, 280, 344, 674]);
+      expect(DONUT_SIZE_TIER_LABELED_CHART_SIZES).toEqual([206, 344, 472, 674]);
       expect(getSizeTierScale(labeledOptions)).toHaveProperty('domain', DONUT_SIZE_TIER_LABELED_CHART_SIZES);
     });
 
     test.each([
       [150, 0],
       [250, 1],
-      [300, 2],
-      [400, 3],
+      [300, 1],
+      [400, 2],
+      [500, 3],
       [700, 4],
     ])('should resolve chart size %s to tier %s', (size, tier) => {
       expect(evaluateTier(labeledOptions, size)).toBe(tier);
@@ -298,10 +363,10 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
     });
 
     test('should pause the donut at the cutpoint when the next tier has a bigger gap', () => {
-      // S -> M steps the gap from 5 to 10, so the donut holds at 160 until the chart reaches 280
-      expect(getOuterDiameter(270)).toBe(160);
-      expect(getOuterDiameter(279)).toBe(160);
-      expect(evaluateTier(labeledOptions, 279)).toBe(1);
+      // S -> M steps the gap from 5 to 10, so the donut holds at 200 until the chart reaches 344
+      expect(getOuterDiameter(334)).toBe(200);
+      expect(getOuterDiameter(343)).toBe(200);
+      expect(evaluateTier(labeledOptions, 343)).toBe(1);
     });
   });
 });
@@ -367,12 +432,12 @@ describe('getArcMark()', () => {
   test('should use the per-tier fixed ring width at the default holeRatio', () => {
     const arcMark = getArcMark(defaultDonutOptions);
     const strokeWidth = getSliceStrokeWidthExpr(defaultDonutOptions, 'testName_sliceGap');
-    const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
+    const offset = `(${strokeWidth}) / 2`;
     expect(arcMark.encode?.update?.innerRadius).toEqual({
-      signal: `(testName_innerRadius) + (${inset})`,
+      signal: `max(0, (testName_innerRadius) - (${offset}))`,
     });
     expect(arcMark.encode?.update?.outerRadius).toEqual({
-      signal: `(testName_outerRadius) - (${inset})`,
+      signal: `(testName_outerRadius) + (${offset})`,
     });
     expect(getDonutRadiusSignals(defaultDonutOptions)[1]).toHaveProperty(
       'update',
@@ -384,27 +449,55 @@ describe('getArcMark()', () => {
     const options = { ...defaultDonutOptions, holeRatio: 0.5 };
     const arcMark = getArcMark(options);
     const strokeWidth = getSliceStrokeWidthExpr(options, 'testName_sliceGap');
-    const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
+    const offset = `(${strokeWidth}) / 2`;
     expect(arcMark.encode?.update?.innerRadius).toEqual({
-      signal: `(testName_innerRadius) + (${inset})`,
+      signal: `max(0, (testName_innerRadius) - (${offset}))`,
     });
     expect(getDonutRadiusSignals(options)[1]).toHaveProperty('update', '0.5 * testName_outerRadius');
   });
 
-  test('should not add the slice inset to a pie inner radius', () => {
+  test('should preserve pie radii without stroke compensation', () => {
     const options = { ...defaultDonutOptions, holeRatio: 0 };
     const arcMark = getArcMark(options);
     const strokeWidth = getSliceStrokeWidthExpr(options, 'testName_sliceGap');
-    const inset = `(testName_sliceGap - (${strokeWidth})) / 2`;
     expect(arcMark.encode?.update).toHaveProperty('innerRadius', { value: 0 });
     expect(arcMark.encode?.update).toHaveProperty('outerRadius', {
-      signal: `(testName_outerRadius) - (${inset})`,
+      signal: 'testName_outerRadius',
     });
     expect(getDonutRadiusSignals(options)[0]).toHaveProperty('update', DONUT_RADIUS);
     expect(arcMark.encode?.update).toHaveProperty('strokeWidth', [
       { test: 'selectedItem === datum.rscMarkId', signal: getSliceStrokeWidthExpr(options, '2') },
       { signal: strokeWidth },
     ]);
+  });
+
+  test.each([16, 18, 20, 22, 40])('preserves a visible %spx ring after separator strokes', (ringWidth) => {
+    for (const variant of ['circle', 'semicircle'] as const) {
+      const options = { ...defaultDonutOptions, variant };
+      const mark = getArcMark(options);
+      for (const angle of [0.5, 0.01, 0.001]) {
+        const scope = {
+          testName_outerRadius: 200,
+          testName_innerRadius: 200 - ringWidth,
+          testName_sliceGap: 2,
+          datum: { testName_startAngle: 0, testName_endAngle: angle },
+          donutSliceStrokeWidth,
+          max: Math.max,
+        };
+        const evaluateRadius = (encoding: unknown): number => {
+          if (!encoding || typeof encoding !== 'object' || !('signal' in encoding) || typeof encoding.signal !== 'string') {
+            throw new Error('Expected a radius signal expression');
+          }
+          return evaluateExpr(encoding.signal, scope);
+        };
+        const outerRadius = evaluateRadius(mark.encode?.update?.outerRadius);
+        const innerRadius = evaluateRadius(mark.encode?.update?.innerRadius);
+        const strokeWidth = evaluateExpr(getSliceStrokeWidthExpr(options, 'testName_sliceGap'), scope);
+        expect(outerRadius - innerRadius - strokeWidth).toBeCloseTo(ringWidth, 10);
+        expect(outerRadius - strokeWidth / 2).toBeCloseTo(200, 10);
+        expect(innerRadius + strokeWidth / 2).toBeCloseTo(200 - ringWidth, 10);
+      }
+    }
   });
 
   test('should bevel pie stroke joins without changing gaps or selected outlines', () => {
@@ -519,35 +612,35 @@ describe('getArcMark()', () => {
 
   test('should anchor at the vertical center for a circle donut', () => {
     const arcMark = getArcMark(defaultDonutOptions);
-    expect(arcMark.encode?.enter?.x).toEqual({ signal: 'width / 2' });
-    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height / 2' });
+    expect(arcMark.encode?.update).toHaveProperty('x', { signal: 'width / 2' });
+    expect(arcMark.encode?.update).toHaveProperty('y', { signal: 'height / 2' });
   });
 
-  test('should anchor at the bottom edge for a semicircle donut', () => {
+  test('should anchor a semicircle donut at the bottom', () => {
     const arcMark = getArcMark({ ...defaultDonutOptions, variant: 'semicircle' });
-    expect(arcMark.encode?.enter?.x).toEqual({ signal: 'width / 2' });
-    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height' });
+    expect(arcMark.encode?.update).toHaveProperty('x', { signal: 'width / 2' });
+    expect(arcMark.encode?.update).toHaveProperty('y', { signal: 'height' });
   });
 
-  test('should reserve space below a semicircle for a summary delta', () => {
+  test('should remain bottom-aligned when a semicircle summary specifies a delta', () => {
     const arcMark = getArcMark({
       ...defaultDonutOptions,
       variant: 'semicircle',
       donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
     });
-    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height - testName_summaryBottomOffset' });
+    expect(arcMark.encode?.update).toHaveProperty('y', { signal: 'height' });
   });
 
   test.each([
     [{ delta: 0.025 }, 'value and delta'],
     [{ delta: 0.025, hideValue: true, label: 'Visitors' }, 'label and delta'],
-  ])('should remain bottom-anchored with only %s', (summary, _description) => {
+  ])('should remain bottom-aligned with only %s', (summary, _description) => {
     const arcMark = getArcMark({
       ...defaultDonutOptions,
       variant: 'semicircle',
       donutSummaries: [summary],
     });
-    expect(arcMark.encode?.enter?.y).toEqual({ signal: 'height' });
+    expect(arcMark.encode?.update).toHaveProperty('y', { signal: 'height' });
   });
 });
 
@@ -561,19 +654,19 @@ describe('getEmptyStateArcMark()', () => {
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: 0 });
     expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: '0 + 2 * PI' });
   });
-  test('should mirror the semicircle sweep and bottom-edge anchor', () => {
+  test('should mirror the semicircle sweep and bottom anchor', () => {
     const emptyStateMark = getEmptyStateArcMark({ ...defaultDonutOptions, variant: 'semicircle' });
-    expect(emptyStateMark.encode?.enter?.y).toEqual({ signal: 'height' });
+    expect(emptyStateMark.encode?.update).toHaveProperty('y', { signal: 'height' });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
     expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
   });
-  test('should reserve the same summary-delta space for the semicircle empty state', () => {
+  test('should not reserve summary-delta space for the semicircle empty state', () => {
     const emptyStateMark = getEmptyStateArcMark({
       ...defaultDonutOptions,
       variant: 'semicircle',
       donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
     });
-    expect(emptyStateMark.encode?.enter?.y).toEqual({ signal: 'height - testName_summaryBottomOffset' });
+    expect(emptyStateMark.encode?.update).toHaveProperty('y', { signal: 'height' });
   });
   test('should only be visible when the donut is in the empty state', () => {
     const emptyStateMark = getEmptyStateArcMark(defaultDonutOptions);
@@ -594,6 +687,18 @@ describe('getEmptyStateArcMark()', () => {
 });
 
 describe('getRingWidthSignal()', () => {
+  test.each([
+    { tier: 0, width: 16 },
+    { tier: 1, width: 18 },
+    { tier: 2, width: 20 },
+    { tier: 3, width: 22 },
+    { tier: 4, width: 40 },
+  ])('uses a $width px ring at size tier $tier', ({ tier, width }) => {
+    const signal = getRingWidthSignal(defaultDonutOptions);
+    if (!('update' in signal) || !signal.update) throw new Error('Expected a ring width update expression');
+    expect(evaluateExpr(signal.update, { testName_sizeTier: tier })).toBe(width);
+  });
+
   test('should resolve ring width from the size tier', () => {
     expect(getRingWidthSignal(defaultDonutOptions)).toEqual({
       name: 'testName_ringWidth',
@@ -650,7 +755,7 @@ describe('getDonutRadiusSignals()', () => {
     expect(getDonutRadiusSignals({ ...defaultDonutOptions, segmentLabels: [{}] })).toEqual([
       {
         name: 'testName_outerRadius',
-        update: `min((${DONUT_RADIUS} - testName_labelRingGap) / (1 + 0.6), [120, 160, 200, 400, MAX_VALUE][testName_sizeTier] / 2)`,
+        update: `min((${DONUT_LABELED_RADIUS} - testName_labelRingGap) / (1 + 0.6), [${DONUT_SIZE_TIER_CUTPOINTS.join(', ')}, MAX_VALUE][testName_sizeTier] / 2)`,
       },
       { name: 'testName_innerRadius', update: '(testName_outerRadius - testName_ringWidth)' },
     ]);
@@ -658,7 +763,7 @@ describe('getDonutRadiusSignals()', () => {
 
   test('should evaluate the inner radius from the evaluated outer radius', () => {
     const radii = evaluateRadiusSignals(defaultDonutOptions, { width: 364, height: 364, min: Math.min, testName_ringWidth: 28 });
-    expect(radii.testName_outerRadius).toBe(180);
-    expect(radii.testName_innerRadius).toBe(152);
+    expect(radii.testName_outerRadius).toBe(172);
+    expect(radii.testName_innerRadius).toBe(144);
   });
 });

@@ -90,7 +90,15 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation/index.js';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils.js';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils.js';
-import { addLineDrawInAnimationSignals, getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
+import {
+  addDrawInDoneSignal,
+  addLineDrawInAnimationSignals,
+  getLineDrawInClip,
+  getLineDrawInExtentData,
+  getLineDrawInExtentDataName,
+  getLineDrawInVoronoiData,
+  getLineDrawInVoronoiDataName,
+} from '../marks/drawInAnimationUtils.js';
 
 export const addLine = produce<
   ScSpec,
@@ -341,6 +349,12 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
     if (showHoverLabel) {
       data.push(getHoverLabelData(options));
     }
+    if (options.isDrawInAnimate) {
+      data.push(
+        getLineDrawInVoronoiData(name),
+        getLineDrawInExtentData({ ...options, metric: getEffectiveMetricField(options) })
+      );
+    }
   }
   if (isHoverAnimate) {
     data.push(
@@ -403,6 +417,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
 
   if (options.isDrawInAnimate) {
     addLineDrawInAnimationSignals(signals, options);
+    addDrawInDoneSignal(signals);
   }
 
   if (!isInteractive(options) && options.highlightedItem === undefined) return;
@@ -470,7 +485,10 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   }
   // hover marks are last so hollow points and interaction marks always render above everything
   if (hasInteractiveHighlight) {
-    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`));
+    const drawInVoronoi = options.isDrawInAnimate
+      ? { points: getLineDrawInVoronoiDataName(name), extent: getLineDrawInExtentDataName(name) }
+      : undefined;
+    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`, undefined, drawInVoronoi));
   }
   // forecast labels are drawn last so they appear on top of other marks
   addLineForecastLabelMarks(marks, forecasts, options);

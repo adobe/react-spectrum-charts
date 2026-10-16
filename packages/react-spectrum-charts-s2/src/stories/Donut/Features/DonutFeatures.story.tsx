@@ -17,9 +17,8 @@ import { sequentialCerulean9 } from '@spectrum-charts/core-s2/tokens';
 import { ChartColors } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
+import { ChartInspect, ChartPopover, Donut, DonutSummary, Legend, SegmentLabel } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary, SegmentLabel } from '../../../pre-alpha/index.js';
 import {
   basicDonutData,
   surveyResponseDonutData,
@@ -30,7 +29,8 @@ import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartProps, DonutProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features',
+  title: 'React Spectrum Charts 2/Donut/Features',
+  tags: ['alpha'],
   component: Donut,
 };
 

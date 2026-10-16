@@ -27,6 +27,7 @@ import { ChartProps } from '../../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Performance/Hover Animation',
+  tags: ['alpha'],
   component: Bar,
   argTypes: {
     animations: {

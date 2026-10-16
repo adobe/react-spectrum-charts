@@ -37,6 +37,11 @@ export interface VariationSizePreset {
   size: number;
 }
 
+export interface VariationSizePresetGroup {
+  label: string;
+  resolvePresetSize: (size: number, viewMode?: string) => number;
+}
+
 export interface VariationViewMode {
   label: string;
   value: string;
@@ -79,6 +84,8 @@ interface VariationDashboardProps {
   initialSize?: number;
   initialViewMode?: string;
   resolvePresetSize?: (size: number, viewMode?: string) => number;
+  sizeAxis?: 'width' | 'height';
+  sizePresetGroups?: VariationSizePresetGroup[];
   sizePresets?: VariationSizePreset[];
   showAnimationControls?: boolean;
   viewModes?: VariationViewMode[];
@@ -138,6 +145,8 @@ export const VariationDashboard = ({
   initialSize = DEFAULT_SIZE,
   initialViewMode,
   resolvePresetSize = (size) => size,
+  sizeAxis,
+  sizePresetGroups,
   sizePresets = defaultSizePresets,
   showAnimationControls = false,
   viewModes = [],
@@ -182,11 +191,16 @@ export const VariationDashboard = ({
     (value) => Array.isArray(value) && value.every(isOneOf(coveredPropKeys))
   );
   const selectedProps = useMemo(() => new Set(selectedPropList), [selectedPropList]);
-  const presetSizes = sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
+  const presetViewModes = viewModes.length ? viewModes.map((mode) => mode.value) : [viewMode];
+  const presetSizes = sizePresetGroups
+    ? sizePresetGroups.flatMap((group) =>
+        sizePresets.flatMap((preset) => presetViewModes.map((mode) => group.resolvePresetSize(preset.size, mode)))
+      )
+    : sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
   const minSize = Math.min(...presetSizes, initialSize);
   const maxSize = Math.max(...presetSizes, initialSize);
-  const selectedPreset = sizePresets.find((preset) => resolvePresetSize(preset.size, viewMode) === size);
-  const minimumCardWidth = Math.max(320, size + 16);
+  const minimumCardWidth = sizeAxis === 'width' ? size + 2 : Math.max(320, size + 2);
+  const maximumCardWidth = sizeAxis === 'width' ? `${minimumCardWidth}px` : '1fr';
   const activeFilter = filters.find((option) => option.value === filter);
   const propVariationIds = getPropVariationIds(coverage, selectedProps);
   const visibleVariations = variations.filter(
@@ -196,7 +210,8 @@ export const VariationDashboard = ({
 
   const updateViewMode = (nextViewMode: string): void => {
     setViewMode(nextViewMode);
-    if (selectedPreset) {
+    const selectedPreset = sizePresets.find((preset) => size === resolvePresetSize(preset.size, viewMode));
+    if (!sizePresetGroups && selectedPreset) {
       setSize(resolvePresetSize(selectedPreset.size, nextViewMode));
     }
   };
@@ -213,9 +228,10 @@ export const VariationDashboard = ({
           maxSize={maxSize}
           onSizeChange={setSize}
           sizeDescription={getSizeDescription?.(size, viewMode)}
+          sizeAxis={sizeAxis}
+          sizePresetGroups={sizePresetGroups}
           sizePresets={sizePresets}
-          selectedPreset={selectedPreset?.label}
-          getPresetSize={(preset) => resolvePresetSize(preset.size, viewMode)}
+          resolvePresetSize={resolvePresetSize}
           datasets={datasets}
           dataset={dataset}
           onDatasetChange={setDataset}
@@ -240,7 +256,7 @@ export const VariationDashboard = ({
                 alignItems: 'start',
                 display: 'grid',
                 gap: 16,
-                gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minimumCardWidth}px), 1fr))`,
+                gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minimumCardWidth}px), ${maximumCardWidth}))`,
               }}
             >
               {visibleVariations.map(
@@ -260,9 +276,8 @@ export const VariationDashboard = ({
                         alignItems: 'center',
                         display: 'flex',
                         justifyContent: 'center',
-                        minHeight: size + 16,
+                        minHeight: sizeAxis === 'width' ? 0 : size,
                         overflow: 'auto',
-                        padding: 8,
                       }}
                     >
                       {render()}

@@ -12,7 +12,7 @@
 import { createElement } from 'react';
 
 import { ChartInspect } from '../components/ChartInspect/index.js';
-import { TrendlineAnnotation } from '../pre-alpha/index.js';
+import { TrendlineAnnotation } from '../lab/index.js';
 import { childrenToOptions } from './childrenAdapter.js';
 import { getTrendlineOptions } from './trendlineAdapter.js';
 

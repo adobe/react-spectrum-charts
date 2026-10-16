@@ -18,7 +18,9 @@ import {
   HOVER_ANIMATING,
   HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_ANIM_STATE_DATA,
+  HOVER_ANIM_STATE_ROWS,
   HOVER_FRACTION_DATA,
+  HOVER_FRACTION_ROWS,
   HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
   HOVER_SERIES_FRACTION_DATA,
@@ -26,12 +28,14 @@ import {
   HOVER_TARGETS,
   ANIMATION_TIMER,
   FADE_FACTOR,
+  S2_EASE_IN_OUT,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
 import { hasSignalByName } from '../signal/signalSpecBuilder.js';
 import { addAnimationTimerSignal } from './animationTimerUtils.js';
+import { getCubicBezierExpr } from './drawInAnimationUtils.js';
 
 /** hoverFractionData field holding each item's animated deemphasis opacity. */
 export const HOVER_DEEMPHASIS_OPACITY = 'deemphasisOpacity';
@@ -47,6 +51,7 @@ export interface HoverTargetDataOptions {
   groupby: string[];
   rules: HoverMatchRule[];
   source?: string; // defaults to TABLE
+  formulas?: FormulaTransform[]; // applied after the aggregate, before the rules
 }
 
 /**
@@ -77,9 +82,11 @@ export const getHoverTargetData = ({
   groupby,
   rules,
   source = TABLE,
+  formulas = [],
 }: HoverTargetDataOptions): SourceData => {
   const transforms: (AggregateTransform | FormulaTransform)[] = [
     { type: 'aggregate', groupby: groupby },
+    ...formulas,
     ...rules.map<FormulaTransform>((r) => ({ type: 'formula', as: r.as, expr: r.expr })),
   ];
   const targetExpr =
@@ -115,9 +122,9 @@ export const getHoverAnimStateData = ({ name, keys, keyField = SERIES_ID }: Hove
  * @returns OnTrigger - the on trigger entry for the hoverable item
  */
 const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
-  const animRef = `data('${name}_${HOVER_ANIM_STATE_DATA}')[${i}]`;
+  const animRef = `${name}_${HOVER_ANIM_STATE_ROWS}[${i}]`;
   const targetSigRef = `${name}_${HOVER_TARGETS}[${i}]`;
-  const fracRef = `(data('${name}_${HOVER_FRACTION_DATA}') || [])[${i}]`;
+  const fracRef = `(${name}_${HOVER_FRACTION_ROWS} || [])[${i}]`;
   const hasChanged = `${targetSigRef} !== ${animRef}.target`;
   const fracExpr = `(${fracRef} || {fraction: 1}).fraction`;
   return {
@@ -133,7 +140,7 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
  * @returns SourceData - the source data for the hover fraction data
  */
 export const getHoverFractionData = (name: string): SourceData => {
-  const easedProgress = `datum.progress < 0.5 ? 2 * pow(datum.progress, 2) : 1 - pow(-2 * datum.progress + 2, 2) / 2`;
+  const easedProgress = getCubicBezierExpr(S2_EASE_IN_OUT, 'datum.progress');
 
   return {
     name: `${name}_${HOVER_FRACTION_DATA}`,
@@ -307,8 +314,10 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
     });
   }
 
-  signals.push({
-    name: `${name}_${HOVER_TARGETS}`,
-    update: `pluck(data('${name}_${HOVER_TARGET_DATA}'), 'target')`,
-  });
+  signals.push(
+    { name: `${name}_${HOVER_TARGETS}`, update: `pluck(data('${name}_${HOVER_TARGET_DATA}'), 'target')` },
+    // signal updates are parsed after data, so triggers can read these without referencing unregistered data
+    { name: `${name}_${HOVER_ANIM_STATE_ROWS}`, update: `data('${name}_${HOVER_ANIM_STATE_DATA}')` },
+    { name: `${name}_${HOVER_FRACTION_ROWS}`, update: `data('${name}_${HOVER_FRACTION_DATA}')` }
+  );
 };

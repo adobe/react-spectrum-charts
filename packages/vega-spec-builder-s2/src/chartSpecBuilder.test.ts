@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, GroupMark, View, expressionFunction, parse } from 'vega';
+import { Data, GroupMark, SourceData, View, expressionFunction, parse } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -21,6 +21,7 @@ import {
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTHS,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_BACKGROUND_COLOR,
@@ -513,6 +514,28 @@ describe('Chart spec builder', () => {
       expect(
         addData(defaultData, { facets: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })[0].transform?.at(-1)
       ).toStrictEqual({ as: SERIES_ID, expr: 'datum.series + " | " + datum.subSeries', type: 'formula' });
+    });
+
+    test('should filter the controlled highlighted table by the idKey', () => {
+      const controlledTable = addData(baseData, { facets: [], idKey: 'id' }).find(
+        (d) => d.name === CONTROLLED_HIGHLIGHTED_TABLE
+      ) as SourceData;
+      expect(controlledTable.transform?.[0]).toHaveProperty(
+        'expr',
+        `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.id) > -1`
+      );
+    });
+  });
+
+  describe('buildSpec()', () => {
+    test('defaults colors to s2Categorical20', () => {
+      const { colors: _colors, ...options } = defaultSpecOptions;
+      const spec = buildSpec({ ...options, marks: [defaultBarOptions] });
+
+      expect(spec.scales?.find((scale) => scale.name === COLOR_SCALE)).toHaveProperty(
+        'range',
+        colorSchemes.s2Categorical20
+      );
     });
   });
 

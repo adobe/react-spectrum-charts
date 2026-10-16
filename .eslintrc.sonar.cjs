@@ -65,6 +65,7 @@ module.exports = {
     'unicorn/prefer-number-properties': 'error', // S7773
     'unicorn/no-useless-fallback-in-spread': 'error', // S7744
     'unicorn/no-abusive-eslint-disable': 'error', // S7724
+    'unicorn/no-array-push-push': 'error', // S7778
 
     'react/no-unused-prop-types': 'error', // S6767
     'jsx-a11y/prefer-tag-over-role': 'error', // S6819

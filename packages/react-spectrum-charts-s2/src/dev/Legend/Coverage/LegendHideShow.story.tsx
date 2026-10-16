@@ -15,6 +15,7 @@ import { LegendBarHiddenSeriesStory, LegendBarStory, defaultProps } from './Lege
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Hide Show',
+  tags: ['alpha'],
   component: Legend,
 };
 

@@ -38,8 +38,8 @@ import {
   DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT,
   DONUT_DIRECT_LABEL_VALUE_FONT_SIZES,
   DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT,
+  DONUT_LABEL_EDGE_PADDING,
   DONUT_LABEL_MIN_SPACE_RATIO,
-  DONUT_RADIUS,
   DONUT_SEGMENT_LABEL_MIN_ANGLE,
   FILTERED_TABLE,
   HOVERED_ITEM,
@@ -341,10 +341,7 @@ export const getTextRuleExpr = (rule: ProductionRule<TextValueRef> | undefined):
 };
 
 /**
- * Gets the pieces behind the widest-line-capped pixel width shared by a label's name/value lines:
- * the real (uncapped) widest-line width, the max horizontal reach available before hitting the
- * container's edge, and the smaller of the two. Returned separately (not just the final capped
- * value) so callers can tell whether the cap actually did anything - see getLimitExpr.
+ * Gets measured and available widths shared by a label's name/value lines.
  * @param segmentLabelOptions
  * @returns vega expression strings for the widest real line width, the max available reach, and the capped result
  */
@@ -386,13 +383,8 @@ const getWidthExprs = (
   const nameWidthExpr = `datum['${nameWidthField}']`;
   const valueWidthExpr = hasValue ? `datum['${valueWidthField}']` : '0';
   const widerWidthExpr = `max(${nameWidthExpr}, ${valueWidthExpr})`;
-  // the cap is per-label, not a flat outerRadius*ratio - it's however much horizontal room remains
-  // between this label's own anchor point (labelHalfWidth, which shrinks away from the ring's
-  // equator) and the container's actual edge (DONUT_RADIUS). A flat ratio-based cap matches this
-  // exactly only at the equator (the original worst-case it was derived for); away from the equator
-  // it leaves real, visible unused space between the label and the container edge.
   const halfWidthField = getLabelField(getSegmentLabelFieldPrefix(options), 'labelHalfWidth');
-  const maxReachExpr = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
+  const maxReachExpr = `(width / 2 - ${DONUT_LABEL_EDGE_PADDING}) - datum['${halfWidthField}']`;
   return {
     widthTransforms,
     nameWidthExpr,
@@ -858,7 +850,7 @@ const getRichSegmentLabelLayout = (
     : detailValueWidth;
   const widest = `max(${nameWidth}, max(${valueWidth}, ${detailWidth}))`;
   const halfWidthField = getLabelField(labelName, 'labelHalfWidth');
-  const maxReach = `${DONUT_RADIUS} - datum['${halfWidthField}']`;
+  const maxReach = `(width / 2 - ${DONUT_LABEL_EDGE_PADDING}) - datum['${halfWidthField}']`;
   return {
     widthTransforms,
     widths: {

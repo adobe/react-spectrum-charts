@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SegmentLabel } from '../../../pre-alpha/index.js';
+import { SegmentLabel } from '../../../components/index.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { findChart, fireEvent, render, screen } from '../../../test-utils/index.js';
 import { ResponsiveDonut } from './ResponsiveDonut.js';
@@ -24,8 +24,8 @@ describe('ResponsiveDonut', () => {
 
     expect(await findChart()).toBeInTheDocument();
     expect(screen.getByText('300px')).toBeInTheDocument();
-    expect(screen.getByText('173px')).toBeInTheDocument();
-    expect(screen.getByText('M')).toBeInTheDocument();
+    expect(screen.getByText('179px')).toBeInTheDocument();
+    expect(screen.getByText('S')).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: 'Chart width' })).toHaveValue('300');
   });
 

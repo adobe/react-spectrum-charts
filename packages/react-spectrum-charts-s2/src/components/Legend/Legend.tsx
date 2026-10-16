@@ -15,6 +15,10 @@ import { FC } from 'react';
 
 import { LegendProps } from '../../types/index.js';
 
+/**
+ * Adds a legend for the series in the chart.
+ * @alpha
+ */
 const Legend: FC<LegendProps> = ({
   align,
   color,

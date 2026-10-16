@@ -15,12 +15,13 @@ import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary } from '../../../pre-alpha/index.js';
+import { Donut, DonutSummary } from '../../../components/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/DonutSummary/Coverage',
+  title: 'React Spectrum Charts 2/DonutSummary/Coverage',
+  tags: ['alpha'],
   component: DonutSummary,
 };
 

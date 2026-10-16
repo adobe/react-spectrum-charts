@@ -20,6 +20,7 @@ import {
   DEFAULT_COLOR,
   DEFAULT_METRIC,
   DIMENSION_HOVER_AREA,
+  DRAW_IN_DONE,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
@@ -45,7 +46,9 @@ import {
 } from './barTestUtils.js';
 import {
   getBarAnimIdField,
+  getBarBackgroundDrawInUpdateEncodings,
   getBarDimensionAreaPositionEncodings,
+  getBarDrawInUpdateEncodings,
   getBarDimensionHoverArea,
   getBarFillEncoding,
   getBarHoverRules,
@@ -1013,5 +1016,52 @@ describe('getBarOpacity()', () => {
   test('falls back to the instant getMarkOpacity rules when not isHoverAnimate', () => {
     const opacity = getBarOpacity(defaultBarOptions);
     expect(opacity).toStrictEqual([{ value: 1 }]);
+  });
+});
+
+describe('bar draw-in encodings', () => {
+  const drawInOptions: BarSpecOptions = { ...defaultBarOptions, isDrawInAnimate: true };
+
+  test('getBaseBarEnterEncodings() leaves the metric out of enter so it can animate', () => {
+    expect(getBaseBarEnterEncodings(drawInOptions)).not.toHaveProperty('y');
+    expect(getBaseBarEnterEncodings(drawInOptions)).not.toHaveProperty('y2');
+    expect(getBaseBarEnterEncodings(defaultBarOptions)).toHaveProperty('y2');
+  });
+
+  test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for stacked bars', () => {
+    const encodings = getBarDrawInUpdateEncodings(drawInOptions);
+    expect(encodings).toHaveProperty('y2', { scale: 'yLinear', field: 'bar0_drawInValue' });
+    expect(JSON.stringify(encodings.y)).toContain('datum.bar0_drawInValue > 0');
+  });
+
+  test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for non-stacked bars', () => {
+    expect(getBarDrawInUpdateEncodings({ ...drawInOptions, type: 'dodged' })).toStrictEqual({
+      y: { scale: 'yLinear', value: 0 },
+      y2: { scale: 'yLinear', field: 'bar0_drawInValue' },
+    });
+  });
+
+  test('getBarDrawInUpdateEncodings() reads the draw-in value on both dual metric axes', () => {
+    const encodings = getBarDrawInUpdateEncodings({ ...drawInOptions, type: 'dodged', dualMetricAxis: true });
+    expect(encodings.y2).toEqual([
+      expect.objectContaining({ scale: 'yLinearSecondary', field: 'bar0_drawInValue' }),
+      expect.objectContaining({ scale: 'yLinearPrimary', field: 'bar0_drawInValue' }),
+    ]);
+  });
+
+  test('getBarDrawInUpdateEncodings() is empty when draw-in is off', () => {
+    expect(getBarDrawInUpdateEncodings(defaultBarOptions)).toStrictEqual({});
+  });
+
+  test('getBarBackgroundDrawInUpdateEncodings() uses the final geometry and stays hidden until draw-in is done', () => {
+    const encodings = getBarBackgroundDrawInUpdateEncodings(drawInOptions);
+    expect(encodings).toHaveProperty('y2', { scale: 'yLinear', field: 'value1' });
+    expect(encodings).toHaveProperty('opacity', { signal: `${DRAW_IN_DONE} ? 1 : 0` });
+    expect(getBarBackgroundDrawInUpdateEncodings(defaultBarOptions)).toStrictEqual({});
+  });
+
+  test('getDodgedGroupMark() facets the draw-in data when draw-in is on', () => {
+    expect(getDodgedGroupMark(drawInOptions).from).toHaveProperty('facet.data', 'bar0_drawInData');
+    expect(getDodgedGroupMark(defaultBarOptions).from).toHaveProperty('facet.data', FILTERED_TABLE);
   });
 });

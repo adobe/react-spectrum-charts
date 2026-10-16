@@ -14,7 +14,11 @@ import { TextMark } from 'vega';
 
 import { defaultBarOptions } from '../bar/barTestUtils.js';
 import { BarDirectLabelSpecOptions } from '../types/index.js';
-import { getBarDirectLabelMarks, getBarDirectLabelPositionEncodings, getBarDirectLabelSpecOptions } from './barDirectLabelUtils.js';
+import {
+  getBarDirectLabelMarks,
+  getBarDirectLabelPositionEncodings,
+  getBarDirectLabelSpecOptions,
+} from './barDirectLabelUtils.js';
 
 const defaultSpecOptions: BarDirectLabelSpecOptions = getBarDirectLabelSpecOptions({}, 0, defaultBarOptions);
 
@@ -273,6 +277,15 @@ describe('getBarDirectLabelMarks()', () => {
       );
     });
 
+    it('resolves the "shortNumber" preset to formatShortNumber', () => {
+      const options = getBarDirectLabelSpecOptions({ format: 'shortNumber' }, 0, defaultBarOptions);
+      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
+      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
+        'signal',
+        `formatShortNumber(datum["${defaultBarOptions.metric}"])`
+      );
+    });
+
     it('escapes embedded quotes and backslashes so the generated expression stays a single well-formed call', () => {
       const maliciousFormat = '.1f\\"'; // ends with a literal backslash followed by a quote
       const options = getBarDirectLabelSpecOptions({ format: maliciousFormat }, 0, defaultBarOptions);
@@ -283,5 +296,29 @@ describe('getBarDirectLabelMarks()', () => {
       const [, escapedSpec] = match as RegExpMatchArray;
       expect(JSON.parse(`"${escapedSpec}"`)).toEqual(maliciousFormat);
     });
+  });
+});
+
+describe('getBarDirectLabelMarks() draw-in', () => {
+  const drawInBarOptions = { ...defaultBarOptions, isDrawInAnimate: true };
+
+  test('fades the label and its halo in with the draw-in', () => {
+    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, drawInBarOptions) as TextMark[];
+    expect(JSON.stringify(bg.encode?.update?.opacity)).toContain('drawInDuration');
+    expect(JSON.stringify(main.encode?.update?.opacity)).toContain('drawInDuration');
+  });
+
+  test('fades stacked segment labels in once their own segment settles', () => {
+    const [, main] = getBarDirectLabelMarks(defaultSpecOptions, {
+      ...drawInBarOptions,
+      type: 'stacked',
+    }) as TextMark[];
+    expect(JSON.stringify(main.encode?.update?.opacity)).toContain('bar0_drawInStackMax');
+  });
+
+  test('does not fade labels when draw-in is off', () => {
+    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions) as TextMark[];
+    expect(bg.encode?.update).not.toHaveProperty('opacity');
+    expect(JSON.stringify(main.encode?.update?.opacity)).not.toContain('drawInDuration');
   });
 });

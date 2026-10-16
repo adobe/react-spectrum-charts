@@ -15,9 +15,8 @@ import { ComponentProps, ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../../Chart.js';
-import { ChartInspect, ChartPopover, Legend } from '../../../../components/index.js';
+import { ChartInspect, ChartPopover, Donut, DonutSummary, Legend, SegmentLabel } from '../../../../components/index.js';
 import useChartProps from '../../../../hooks/useChartProps.js';
-import { Donut, DonutSummary, SegmentLabel } from '../../../../pre-alpha/index.js';
 import { basicDonutData, booleanDonutData } from '../../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
 import { ChartProps } from '../../../../types/index.js';
@@ -29,7 +28,8 @@ type DrawInAnimationArgs = ComponentProps<typeof Donut> &
   };
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Features/DrawInAnimation',
+  title: 'React Spectrum Charts 2/Donut/Features/DrawInAnimation',
+  tags: ['alpha'],
   component: Donut,
   argTypes: {
     animations: { control: 'boolean' },

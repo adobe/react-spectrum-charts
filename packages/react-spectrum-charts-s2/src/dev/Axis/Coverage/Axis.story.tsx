@@ -25,6 +25,7 @@ import timeData from './timeData.json' with { type: 'json' };
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Coverage/Axis',
+  tags: ['alpha'],
   component: Axis,
   argTypes: {
     lineType: {

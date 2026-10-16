@@ -270,7 +270,7 @@ Demo stories in `src/stories/<ComponentName>/` use:
 
 - `<ComponentName>Examples.story.tsx` — realistic app examples or Figma design equivalents with `title: 'React Spectrum Charts 2/<ComponentName>/Examples'`.
 - `Features/` — one representative story per feature. Title prefix: `'React Spectrum Charts 2/<ComponentName>/Features'`.
-- **Pre-alpha components** keep the `React Spectrum Charts 2/Pre-Alpha/<ComponentName>/...` title prefix.
+- **Lab components** (exported from `src/lab/`) use the `React Spectrum Charts 2/Lab/<ComponentName>/...` title prefix and `tags: ['lab']`.
 
 The dev Storybook is the demo plus extra per-chart folders (`src/dev/<Chart>/<Folder>/`, titled `React Spectrum Charts 2/<Chart>/<Folder>/...`):
 
@@ -368,6 +368,16 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 
 ---
 
+## S2 Component Stage Markers
+
+Every exported S2 component, including `lab`, shows its stage (see `packages/docs/docs/spectrum2/stages.md`) in three places. Add all three for a new component, and update all three when a component changes stage:
+
+1. **TSDoc** — a one-line description plus `@experimental` (lab), `@alpha`, or `@beta` on the component declaration, e.g. `components/Line/Line.tsx` or `lab/components/Scatter/Scatter.tsx`.
+2. **Storybook** — `tags: ['alpha']` (or `'lab'`, `'beta'`, `'rc'`) in the meta of every story file for the component, in both `src/stories/` and `src/dev/`. This one tag drives the sidebar and canvas-toolbar badges (`.storybook-s2/stageBadge.ts`) and the autodocs page badge (`.storybook-s2/StageDocsPage.tsx`); stage labels live in `.storybook-s2/stages.ts`.
+3. **Docs** — a badge line under the page's H1: `[<span className="badge badge--primary">Alpha</span>](./stages.md)`, or `[<span className="badge badge--secondary">Lab</span>](./stages.md#lab)` for lab.
+
+---
+
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
@@ -419,12 +429,15 @@ The full process is in `planning/README.md`. In short:
   observation and wants to note it for later, use the `file-issue` skill
   (`.claude/commands/file-issue.md`). It investigates the root cause and drafts the issue for
   the user's approval before creating it.
-- **Significant or uncertain changes** (new chart types, new subsystems, cross-chart API or
-  behavior changes, stage graduations) get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use
-  the `write-rfc` skill (`.claude/commands/write-rfc.md`). An RFC is accepted when two
-  maintainers approve and it merges; its scope becomes sub-issues of a parent issue.
-- **Implementing an accepted RFC's scope** as stacked PRs uses the `implement-rfc` skill
-  (`.claude/commands/implement-rfc.md`).
+- **New chart types** start in lab (no RFC); see `planning/README.md`.
+- **Significant or uncertain changes** (new subsystems, cross-chart API or behavior changes)
+  get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use the `write-rfc` skill
+  (`.claude/commands/write-rfc.md`). An RFC is accepted when two maintainers approve and it
+  merges; its scope becomes issues.
+- **Stage planning** (what a component's alpha, beta, or RC includes) is done by maintainers
+  as per-component milestones (e.g. `Line beta`), not RFCs.
+- **Implementing a milestone** as stacked PRs uses the `implement-milestone` skill
+  (`.claude/commands/implement-milestone.md`).
 - **Open-ended investigation** goes in `planning/research/` (see `TEMPLATE.md`), and feeds an
   RFC or issues once it reaches a recommendation.
 

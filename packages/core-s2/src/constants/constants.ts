@@ -152,14 +152,20 @@ export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-a
 export const ANIMATION_TIMER = 'animationTimer'; // main animation timer signal
 export const ANIMATION_ACTIVE = 'animationActive'; // true while any animation (or its final grace tick) still needs timer ticks
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
+export const HOVER_ANIM_STATE_ROWS = 'hoverAnimStateRows'; // mirrors hoverAnimStateData rows for the per-item triggers
+export const HOVER_FRACTION_ROWS = 'hoverFractionRows'; // mirrors hoverFractionData rows for the per-item triggers
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
 export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's one-tick grace period after hoverAnimating goes false
 export const DRAW_IN_START = 'drawInStart'; // timestamp of the first animation timer tick, captured once
+export const DRAW_IN_DURATION = 'drawInDuration'; // ms the chart's draw-in lasts: the longest of its marks' durations
 export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
-export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-out) progress
+export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // progress eased with S2_EASE_IN_OUT
 export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
+export const DRAW_IN_DONE = 'drawInDone'; // true once draw-in finishes; flips once so dependents re-encode once
 export const DRAW_IN_CLIP_X = 'drawInClipX'; // suffix: ${name}_drawInClipX — line draw-in clip edge, in pixels
+export const DRAW_IN_VORONOI_DATA = 'drawInVoronoiData'; // suffix: ${name}_drawInVoronoiData — line voronoi points, empty until draw-in finishes
+export const DRAW_IN_EXTENT_DATA = 'drawInExtentData'; // suffix: ${name}_drawInExtentData — each series' extreme points, reserves the voronoi points' bounds during draw-in
 export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
 export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
 export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
@@ -201,7 +207,7 @@ export const ANIMATION_MIN_FRAME_INTERVAL = 0;
 /** Per-frame time budget (ms) for ticking animated charts; charts past the budget tick on the next frame */
 export const ANIMATION_FRAME_BUDGET_MS = 8;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
-export const ANIMATION_HOVER_SPEED = 250;
+export const ANIMATION_HOVER_SPEED = 150;
 /**
  * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
  * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
@@ -210,19 +216,32 @@ export const ANIMATION_HOVER_SPEED = 250;
  */
 export const HOVER_NEUTRAL_TARGET = 0.5;
 
+/** Cubic-bezier control points (x1, y1, x2, y2) for an animation easing curve. */
+export type CubicBezierEasing = [number, number, number, number];
+/** Spectrum 2 ease-in-out curve. */
+export const S2_EASE_IN_OUT: CubicBezierEasing = [0.45, 0, 0.4, 1];
+
 // draw-in animation constants
-/** Time in ms it takes to animate the draw-in animation */
-export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
+/** Line draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_SWEEP_DURATION_MS = 850;
+/** Bar draw-in duration in ms; the growth is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_GROW_DURATION_MS = 700;
+/** Donut draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_DONUT_DURATION_MS = 750;
 /** Pixels the line draw-in clip extends past the plot so strokes and points at the edges aren't cut off. */
 export const DRAW_IN_CLIP_OVERFLOW = 1000;
-/** Duration of the linear fade-in for donut labels after their slice finishes drawing. */
-export const DONUT_DRAW_IN_LABEL_FADE_DURATION_MS = 50;
+/** Duration of the linear fade-in for labels after their own mark finishes drawing. */
+export const DRAW_IN_LABEL_FADE_DURATION_MS = 150;
 
 // donut constants
-/** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
-export const DONUT_RADIUS = '(min(width, height) / 2 - 2)';
-/** Calculation for a semicircle donut's radius - the arc still spans the full width from center (so it's bounded by width / 2, same as a full circle), but can use the full height since only the top half sweeps, unlike the full-circle radius which halves it */
-export const DONUT_SEMICIRCLE_RADIUS = '(min(width / 2, height) - 2)';
+/** Base inset (px) around a donut without segment labels. */
+export const DONUT_BASE_PADDING = 10;
+/** Radius of a donut without segment labels. */
+export const DONUT_RADIUS = `(min(width, height) / 2 - ${DONUT_BASE_PADDING})`;
+/** Radius of a bottom-aligned semicircle donut with top and side insets. */
+export const DONUT_SEMICIRCLE_RADIUS = `(min(width / 2, height) - ${DONUT_BASE_PADDING})`;
+/** Base radius used when reserving space for segment labels. */
+export const DONUT_LABELED_RADIUS = '(min(width, height) / 2 - 2)';
 /** Fill color of a boolean donut's secondary segment */
 export const DONUT_BOOLEAN_SECONDARY_COLOR = 'gray-400';
 /** Min arc angle radians to display a segment label. If the arc angle is less than this, the segment label will be hidden. */
@@ -238,9 +257,9 @@ export const DEFAULT_HOLE_RATIO = 0.85;
  * of 121px is S and stays S up to 159px, not just at values nearest 120. Shared by every donut
  * feature that scales by size tier (ring width, slice gap, donut summary, direct/advanced labels).
  */
-export const DONUT_SIZE_TIER_CUTPOINTS = [120, 160, 200, 400];
+export const DONUT_SIZE_TIER_CUTPOINTS = [120, 200, 280, 400];
 /** S2 donut fixed ring (hole) width per named size tier (XS/S/M/L/XL), used only when holeRatio is left at DEFAULT_HOLE_RATIO */
-export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 24];
+export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 40];
 /** S2 donut gap between adjacent segments per named size tier (XS/S/M/L/XL), per chart.donut.size.slice-gap */
 export const DONUT_SLICE_GAPS = [1, 2, 2, 2, 2];
 /**
@@ -258,6 +277,8 @@ export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [7.5, 9, 10.5, 12, 15];
 export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [10, 12, 14, 16, 20];
 /** Gap (px) between the ring's outer edge and a direct/advanced label's rendered bounding box per named size tier (XS/S/M/L/XL) */
 export const DONUT_LABEL_RING_GAPS = [5, 5, 10, 10, 15];
+/** Minimum horizontal inset (px) between segment labels and the chart edge. */
+export const DONUT_LABEL_EDGE_PADDING = 10;
 export const DONUT_LABEL_COLLISION_GAP = 4;
 /** Font weight for donut direct-label segment name text */
 export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
@@ -270,8 +291,10 @@ export const DONUT_SIZE_TIER_LABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map
   // donut + widest labels on both sides, + the tier's label gap on both sides, + 2px padding on both sides
   (cutpoint, index) => cutpoint * (1 + DONUT_LABEL_MIN_SPACE_RATIO) + 2 * DONUT_LABEL_RING_GAPS[index + 1] + 4
 );
-/** S2 unlabeled-donut chart size where each tier starts: the cutpoint plus DONUT_RADIUS's 2px padding on each side (124/164/204/404) */
-export const DONUT_SIZE_TIER_UNLABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint) => cutpoint + 4);
+/** Chart size where each unlabeled donut tier starts, including the base inset on both sides. */
+export const DONUT_SIZE_TIER_UNLABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map(
+  (cutpoint) => cutpoint + 2 * DONUT_BASE_PADDING
+);
 /** S2 donut advanced-label segment-name font size per named size tier (XS/S/M/L/XL) */
 export const DONUT_ADVANCED_LABEL_NAME_FONT_SIZES = [8, 10, 12, 14, 16];
 /** S2 donut advanced-label value/% font size per named size tier (XS/S/M/L/XL) */

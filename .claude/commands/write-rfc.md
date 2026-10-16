@@ -1,8 +1,9 @@
 # Write an RFC
 
-Use when a change needs design agreement before it's built: a new chart type, a new
-subsystem or cross-chart API, a behavior change across many components, or graduating a
-component to its next stage. Bugs and small features don't need an RFC; use `file-issue`.
+Use when a change needs design agreement before it's built: a new subsystem or cross-chart
+API, or a behavior change across many components. New chart types start in lab, and stage
+planning is done with milestones; neither needs an RFC. Bugs and small features don't need
+one either; use `file-issue`.
 
 Read `planning/README.md` first, particularly "RFCs," "Stages," and "Cross-cutting
 concerns." Start from `rfcs/template.md`.
@@ -40,15 +41,14 @@ guessing.
 
 ## Step 3 — Write the RFC
 
-Write `rfcs/<slug>.md` from the template, with `Status: Draft`. Use a short, descriptive slug
-with no number (e.g. `s2-donut-alpha`).
+Write `rfcs/<slug>.md` from the template. Use a short, descriptive slug
+with no number (e.g. `s2-remove-vega-embed`).
 
 - **Detailed Design:** the proposed API (props, types, defaults) with examples, the behavior,
   and how it fits the existing architecture. Cover the edge cases in `planning/README.md`
   that apply.
-- **Scope:** one row per piece of work, each with an existing or proposed issue and a stage
-  (`alpha`, `beta`, `rc`, `stable`, or `deferred`). Mark proposed issues as "new" until they
-  exist.
+- **Scope:** one row per piece of work, each with an existing or proposed issue. Mark
+  proposed issues as "new" until they exist.
 - **Cross-Cutting Concerns:** say which subsystems the design touches and how.
 - **Alternatives** and **Drawbacks:** include the options you rejected and why.
 - **Open Questions:** anything reviewers need to decide.
@@ -61,5 +61,5 @@ plans go in the issues.
 Summarize the RFC for the user: the design in a few sentences, the scope table, and the open
 questions. Open a PR only after the user approves.
 
-Once the RFC is accepted, create the parent issue and the scope issues (sub-issues of the
-parent), assign each to its stage milestone, and fill in the RFC's `Parent Issue` field.
+Once the RFC is accepted (merged), create the scope issues, link them back to the RFC, and
+fill in their numbers in the Scope table. Maintainers schedule them into milestones.

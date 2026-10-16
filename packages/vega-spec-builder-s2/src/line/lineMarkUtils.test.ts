@@ -217,6 +217,45 @@ describe('getLineOpacity()', () => {
     ]);
   });
 
+  test('should not thicken a single series', () => {
+    expect(
+      getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}], seriesIds: ['a'] })
+    ).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+  });
+
+  test('should not thicken on hover when highlighting by dimension', () => {
+    const hoverTest = `isValid(line0_${HOVERED_ITEM})`;
+    const groupTest = `length(data('line0_highlightedData'))`;
+    for (const options of [
+      { dimensionHover: true },
+      { chartInspects: [{ highlightBy: 'dimension' as const }], isHighlightedByGroup: true },
+      { chartPopovers: [{ UNSAFE_highlightBy: 'dimension' as const }] },
+    ]) {
+      const tests = (
+        getLineStrokeWidth({
+          ...defaultLineMarkOptions,
+          interactiveMarkName: 'line0',
+          seriesIds: ['a', 'b'],
+          ...options,
+        }) as { test?: string }[]
+      ).map((rule) => rule.test);
+      expect(tests).not.toContain(hoverTest);
+      expect(tests).not.toContain(groupTest);
+    }
+  });
+
+  test('should thicken the hovered series when there are several', () => {
+    const tests = (
+      getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        seriesIds: ['a', 'b'],
+      }) as { test?: string }[]
+    ).map((rule) => rule.test);
+    expect(tests).toContain(`isValid(line0_${HOVERED_ITEM})`);
+  });
+
   test('should include select rules if line has a popover', () => {
     const opacityRule = getLineOpacity({
       ...defaultLineMarkOptions,

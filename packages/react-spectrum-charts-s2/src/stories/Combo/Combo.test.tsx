@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Combo } from '../../pre-alpha/components/Combo/index.js';
+import { Combo } from '../../lab/components/Combo/index.js';
 import { findAllMarksByGroupName, findChart, hoverNthElement, render, screen, within } from '../../test-utils/index.js';
 import { Basic, ChartInspect, MetricAxis } from './Features/ComboFeatures.story.js';
 

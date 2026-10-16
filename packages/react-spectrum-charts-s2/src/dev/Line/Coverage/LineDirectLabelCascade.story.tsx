@@ -22,6 +22,7 @@ import { ChartProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Direct Label Cascade',
+  tags: ['alpha'],
   component: LineDirectLabel,
   parameters: { controls: { include: ['value', 'position', 'fontSize', 'excludeSeries'] } },
   argTypes: {
