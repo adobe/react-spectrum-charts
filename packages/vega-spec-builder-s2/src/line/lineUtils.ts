@@ -83,6 +83,7 @@ export interface LineMarkOptions {
   popoverMarkName?: string;
   scaleType: ScaleType;
   scatterPaths?: ScatterPathOptions[];
+  seriesIds?: string[];
   segmentLabels?: SegmentLabelOptions[];
   dimensionHover?: boolean;
   hoverLabelKey?: string;
