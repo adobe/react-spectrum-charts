@@ -20,6 +20,8 @@ import {
   HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
+  HOVER_ANIM_STATE_ROWS,
+  HOVER_FRACTION_ROWS,
   HOVER_TARGETS,
   ANIMATION_TIMER,
   FADE_FACTOR,
@@ -116,8 +118,13 @@ describe('getHoverAnimStateData()', () => {
     expect(result.on).toHaveLength(2);
     const [first, second] = result.on ?? [];
     expect(first.trigger).toEqual(`line0_${HOVER_TARGETS}`);
-    expect(first.modify).toEqual(`data('line0_hoverAnimStateData')[0]`);
-    expect(second.modify).toEqual(`data('line0_hoverAnimStateData')[1]`);
+    expect(first.modify).toEqual(`line0_${HOVER_ANIM_STATE_ROWS}[0]`);
+    expect(second.modify).toEqual(`line0_${HOVER_ANIM_STATE_ROWS}[1]`);
+  });
+
+  test('on-triggers read state through signals instead of data()', () => {
+    const { on } = getHoverAnimStateData({ name: 'line0', keys: ['a', 'b'] });
+    on?.forEach((trigger) => expect(JSON.stringify(trigger)).not.toContain('data('));
   });
 
   test('on-trigger restarts the clock (now()) and captures the current fraction as startValue when the target changes', () => {
@@ -127,9 +134,9 @@ describe('getHoverAnimStateData()', () => {
     expect(values).toContain('now()');
     expect(values).toContain(`target: line0_${HOVER_TARGETS}[0]`);
     // startValue is snapshotted from the live fraction so mid-animation reversals are smooth
-    // the outer `|| []` guards against `data(...)` itself resolving before hoverFractionData's
+    // the outer `|| []` guards against the rows signal resolving before hoverFractionData's
     // first computation, not just an out-of-range index
-    expect(values).toContain(`((data('line0_hoverFractionData') || [])[0] || {fraction: 1}).fraction`);
+    expect(values).toContain(`((line0_${HOVER_FRACTION_ROWS} || [])[0] || {fraction: 1}).fraction`);
   });
 });
 
@@ -305,6 +312,8 @@ describe('addHoverAnimationSignals()', () => {
         name: `line0_${HOVER_TARGETS}`,
         update: `pluck(data('line0_hoverTargetData'), 'target')`,
       },
+      { name: `line0_${HOVER_ANIM_STATE_ROWS}`, update: `data('line0_hoverAnimStateData')` },
+      { name: `line0_${HOVER_FRACTION_ROWS}`, update: `data('line0_hoverFractionData')` },
     ]);
   });
 
@@ -324,7 +333,11 @@ describe('addHoverAnimationSignals()', () => {
       HOVER_IDLE_TICKS,
       HOVER_ACTIVE_TIMER,
       `line0_${HOVER_TARGETS}`,
+      `line0_${HOVER_ANIM_STATE_ROWS}`,
+      `line0_${HOVER_FRACTION_ROWS}`,
       `line1_${HOVER_TARGETS}`,
+      `line1_${HOVER_ANIM_STATE_ROWS}`,
+      `line1_${HOVER_FRACTION_ROWS}`,
     ]);
   });
 

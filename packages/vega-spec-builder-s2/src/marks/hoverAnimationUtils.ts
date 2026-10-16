@@ -18,7 +18,9 @@ import {
   HOVER_ANIMATING,
   HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_ANIM_STATE_DATA,
+  HOVER_ANIM_STATE_ROWS,
   HOVER_FRACTION_DATA,
+  HOVER_FRACTION_ROWS,
   HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
   HOVER_SERIES_FRACTION_DATA,
@@ -120,9 +122,9 @@ export const getHoverAnimStateData = ({ name, keys, keyField = SERIES_ID }: Hove
  * @returns OnTrigger - the on trigger entry for the hoverable item
  */
 const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
-  const animRef = `data('${name}_${HOVER_ANIM_STATE_DATA}')[${i}]`;
+  const animRef = `${name}_${HOVER_ANIM_STATE_ROWS}[${i}]`;
   const targetSigRef = `${name}_${HOVER_TARGETS}[${i}]`;
-  const fracRef = `(data('${name}_${HOVER_FRACTION_DATA}') || [])[${i}]`;
+  const fracRef = `(${name}_${HOVER_FRACTION_ROWS} || [])[${i}]`;
   const hasChanged = `${targetSigRef} !== ${animRef}.target`;
   const fracExpr = `(${fracRef} || {fraction: 1}).fraction`;
   return {
@@ -312,8 +314,10 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
     });
   }
 
-  signals.push({
-    name: `${name}_${HOVER_TARGETS}`,
-    update: `pluck(data('${name}_${HOVER_TARGET_DATA}'), 'target')`,
-  });
+  signals.push(
+    { name: `${name}_${HOVER_TARGETS}`, update: `pluck(data('${name}_${HOVER_TARGET_DATA}'), 'target')` },
+    // signal updates are parsed after data, so triggers can read these without referencing unregistered data
+    { name: `${name}_${HOVER_ANIM_STATE_ROWS}`, update: `data('${name}_${HOVER_ANIM_STATE_DATA}')` },
+    { name: `${name}_${HOVER_FRACTION_ROWS}`, update: `data('${name}_${HOVER_FRACTION_DATA}')` }
+  );
 };
