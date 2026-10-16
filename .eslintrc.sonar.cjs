@@ -51,6 +51,16 @@ module.exports = {
     'sonarjs/no-ignored-exceptions': 'error', // S2486
     'sonarjs/no-identical-functions': 'error', // S4144
     'max-params': ['error', 7], // S107
+    'sonarjs/pseudo-random': 'error', // S2245
+    'no-restricted-syntax': [
+      'error',
+      {
+        // S7784
+        selector:
+          "CallExpression[callee.object.name='JSON'][callee.property.name='parse'] > CallExpression.arguments[callee.object.name='JSON'][callee.property.name='stringify']",
+        message: 'Prefer `structuredClone(…)` over `JSON.parse(JSON.stringify(…))` to create a deep clone.',
+      },
+    ],
 
     '@typescript-eslint/no-base-to-string': 'error', // S6551
     '@typescript-eslint/no-floating-promises': 'error', // S9383
@@ -59,6 +69,7 @@ module.exports = {
     '@typescript-eslint/prefer-optional-chain': 'error', // S6582
     '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }], // S1186
 
+    'unicorn/new-for-builtins': 'error', // S7723
     'unicorn/prefer-at': 'error', // S7755
     'unicorn/prefer-native-coercion-functions': 'error', // S7770
     'unicorn/prefer-array-some': 'error', // S7754
@@ -68,6 +79,8 @@ module.exports = {
     'unicorn/no-array-push-push': 'error', // S7778
 
     'react/no-unused-prop-types': 'error', // S6767
+    'react/no-array-index-key': 'error', // S6479
+    'react/hook-use-state': 'error', // S6754
     'jsx-a11y/prefer-tag-over-role': 'error', // S6819
   },
 };
