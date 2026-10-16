@@ -19,6 +19,7 @@ import {
   DRAW_IN_ANIM_T,
   DRAW_IN_DONUT_DURATION_MS,
   DRAW_IN_GROW_DURATION_MS,
+  DRAW_IN_PAINT_FADE_MS,
   DRAW_IN_START,
   DRAW_IN_SWEEP_DURATION_MS,
 } from '@spectrum-charts/core-s2/constants';
@@ -331,5 +332,52 @@ describe('draw-in continuity edge cases', () => {
     const view = await rebuild(rerender, combo('Rebuilt'));
 
     expect(startOf(view)).toBe(start);
+  });
+});
+
+describe('first paint fade', () => {
+  const animate = jest.fn();
+
+  beforeEach(() => {
+    animate.mockClear();
+    Element.prototype.animate = animate;
+  });
+
+  afterEach(() => {
+    delete (Element.prototype as Partial<Element>).animate;
+  });
+
+  test('fades in a fresh draw-in once and leaves no inline opacity', async () => {
+    const { rerender, container } = await mount(chart('bar'));
+    expect(animate).toHaveBeenCalledTimes(1);
+    expect(animate).toHaveBeenCalledWith([{ opacity: 0 }, { opacity: 1 }], {
+      duration: DRAW_IN_PAINT_FADE_MS,
+      easing: 'cubic-bezier(0, 0, 0.4, 1)',
+    });
+    const rsc = container.querySelector<HTMLElement>('.rsc');
+    expect(animate.mock.contexts[0]).toBe(rsc);
+    expect(rsc?.style.opacity).toBe('');
+
+    await rebuild(rerender, chart('bar', { title: 'Rebuilt' }));
+    await rebuild(rerender, chart('bar', { title: 'Rebuilt again' }));
+    expect(animate).toHaveBeenCalledTimes(1);
+  });
+
+  test.each<[string, Partial<ChartProps>]>([
+    ['animations are off', { animations: false }],
+    ['draw-in is off', { animationTypes: ['hover'] }],
+    ['there is no data', { data: [], loading: false }],
+  ])('does not fade when %s', async (_, props) => {
+    const { container } = render(chart('bar', props));
+    await waitForView();
+    expect(animate).not.toHaveBeenCalled();
+    expect(container.querySelector<HTMLElement>('.rsc')?.style.opacity).toBe('');
+  });
+
+  test('fades again when data arrives after being emptied', async () => {
+    const { rerender } = await mount(chart('bar', { loading: false }));
+    await rebuild(rerender, chart('bar', { loading: false, data: [] }));
+    await rebuild(rerender, chart('bar', { loading: false }));
+    expect(animate).toHaveBeenCalledTimes(2);
   });
 });
