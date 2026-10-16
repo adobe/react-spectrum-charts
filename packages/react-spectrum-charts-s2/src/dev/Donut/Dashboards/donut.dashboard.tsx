@@ -89,10 +89,6 @@ const inspectExcludedDonutData = standardDonutData.map((datum) => ({
   ...datum,
   excludeFromInspect: datum.series === 'Other',
 }));
-const wideLabelDonutData = [
-  { series: 'North America enterprise customers', value: 50 },
-  { series: 'International enterprise customers', value: 50 },
-];
 
 const donutVariationFilters: VariationFilter[] = [
   { label: 'All', value: 'all', matches: () => true },
@@ -334,30 +330,6 @@ const baseDonutVariations: Variation[] = [
     render: () => (
       <DonutVariationChart>
         <SegmentLabel />
-      </DonutVariationChart>
-    ),
-  },
-  {
-    id: 'segment-label-wide-xl',
-    title: 'XL direct labels in a wide chart',
-    description: 'Long labels use the available space on both sides of the XL ring.',
-    dataset: 'canonical',
-    coverage: ['labelKey=series', 'value=true', 'Chart.width=1200', 'Chart.height=700'],
-    render: () => (
-      <DonutVariationChart data={wideLabelDonutData} chartProps={{ width: 1200, height: 700 }}>
-        <SegmentLabel value valueFormat="shortNumber" />
-      </DonutVariationChart>
-    ),
-  },
-  {
-    id: 'segment-label-wide-xl-advanced',
-    title: 'XL advanced labels in a wide chart',
-    description: 'Long labels with swatches and detail rows use the available space on both sides of the XL ring.',
-    dataset: 'canonical',
-    coverage: ['labelKey=series', 'swatch=true', 'showValueRow=true', 'Chart.width=1200', 'Chart.height=700'],
-    render: () => (
-      <DonutVariationChart data={wideLabelDonutData} chartProps={{ width: 1200, height: 700 }}>
-        <SegmentLabel percent showValueRow swatch value={false} />
       </DonutVariationChart>
     ),
   },
@@ -784,7 +756,7 @@ export const DonutDashboard = (): ReactElement => (
     datasets={donutDatasetOptions}
     filters={donutVariationFilters}
     getSizeDescription={(size, viewMode) =>
-      `Full-circle diameter: ${Math.round(getEffectiveDonutDiameter(size, viewMode))}px; both variants fill the container width.`
+      `Full-circle diameter: ${Math.round(getEffectiveDonutDiameter(size, viewMode))}px; both variants fill the container width, with ${DONUT_BASE_PADDING}px minimum padding on each side.`
     }
     initialSize={getDonutContainerSize(200, 'none')}
     initialDataset="standard"
@@ -819,14 +791,14 @@ const donutSummaryCoverage: PropCoverage<DonutSummaryProps> = {
 };
 
 const segmentLabelCoverage: PropCoverage<SegmentLabelProps> = {
-  labelKey: ['segment-label-key', 'segment-label-wide-xl', 'segment-label-wide-xl-advanced'],
+  labelKey: ['segment-label-key'],
   labelMode: ['segment-label-modes', 'hidden-deemphasized-labels'],
   percent: ['segment-label-percent'],
   percentFormat: ['segment-label-percent-format', 'locale'],
   showTotal: ['segment-label-total'],
-  showValueRow: ['segment-label-value-row', 'segment-label-wide-xl-advanced'],
-  swatch: ['segment-label-swatch', 'segment-label-wide-xl-advanced'],
-  value: ['segment-label-value', 'segment-label-wide-xl'],
+  showValueRow: ['segment-label-value-row'],
+  swatch: ['segment-label-swatch'],
+  value: ['segment-label-value'],
   valueFormat: ['segment-label-value-format'],
 };
 

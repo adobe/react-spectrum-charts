@@ -58,7 +58,11 @@ test.each([
   expect(screen.getByRole('slider', { name: 'Container width (px)' })).toHaveValue(String(width));
   expect(getSizeButton('Full', label)).toHaveAttribute('aria-checked', 'true');
   expect(getSizeButton('Semicircle', label)).toHaveAttribute('aria-checked', 'true');
-  expect(screen.getByText(`Full-circle diameter: ${diameter}px;`, { exact: false })).toBeInTheDocument();
+  expect(
+    screen.getByText(
+      `Full-circle diameter: ${diameter}px; both variants fill the container width, with 10px minimum padding on each side.`
+    )
+  ).toBeInTheDocument();
   const circle = container.querySelector('[data-variation-id="defaults"] [data-testid="variation-chart"]');
   const semicircle = container.querySelector('[data-variation-id="semicircle"] [data-testid="variation-chart"]');
   expect(circle?.parentElement).toHaveStyle({ width: '100%', minWidth: '0' });
