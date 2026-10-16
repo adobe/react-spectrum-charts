@@ -59,19 +59,35 @@ export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined
 };
 
 /**
- * S2 reference lines are horizontal only — only emits marks for vertical axes (left/right).
+ * Returns true if the axis is the base (dimension) axis: top/bottom, or a left/right band, point or time axis.
+ * @param axisOptions
+ * @returns boolean
+ */
+export const isBaseAxis = ({ position, scaleType }: AxisSpecOptions): boolean =>
+  !isVerticalAxis(position) || ['band', 'point', 'time', 'utc'].includes(scaleType ?? '');
+
+/**
+ * Gets the reference line marks. Value axes get capped lines; base axes get full-length lines without caps.
+ * @param axisOptions
+ * @param scaleName
+ * @returns Mark[]
  */
 export const getReferenceLineMarks = (
   axisOptions: AxisSpecOptions,
   scaleName: string
 ): Mark[] => {
-  if (!isVerticalAxis(axisOptions.position)) {
-    return [];
-  }
-
   const marks: Mark[] = [];
+  const baseAxis = isBaseAxis(axisOptions);
+  const vertical = !isVerticalAxis(axisOptions.position);
   for (const referenceLine of getReferenceLines(axisOptions)) {
     const positionEncoding = getPositionEncoding(axisOptions, referenceLine, scaleName);
+    if (baseAxis) {
+      marks.push(
+        getBaseReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding, vertical),
+        ...getReferenceLineTextMark(referenceLine, positionEncoding, vertical)
+      );
+      continue;
+    }
     marks.push(
       getReferenceLineRuleMark(axisOptions, referenceLine, positionEncoding),
       ...getReferenceLineStartCapMark(axisOptions, referenceLine, positionEncoding),
@@ -159,6 +175,41 @@ export const getReferenceLineRuleMark = (
 };
 
 /**
+ * Gets a full-length reference line rule for a base axis, vertical on top/bottom axes and horizontal on left/right.
+ * @param axisOptions
+ * @param referenceLineOptions
+ * @param positionEncoding
+ * @param vertical
+ * @returns RuleMark
+ */
+export const getBaseReferenceLineRuleMark = (
+  { colorScheme }: AxisSpecOptions,
+  { name, secondary, size }: ReferenceLineSpecOptions,
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef,
+  vertical: boolean
+): RuleMark => {
+  const stroke = secondary
+    ? { value: getSecondaryStrokeColor(size, colorScheme) }
+    : { value: getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) };
+  const primaryStrokeWidth =
+    size === undefined ? { signal: CHART_SIZE_STROKE_WIDTH } : { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] };
+  const strokeWidth = secondary ? { value: REFERENCE_LINE_SECONDARY_STROKE_WIDTH } : primaryStrokeWidth;
+  const position = positionEncoding as NumericValueRef;
+  const update = vertical
+    ? { x: position, y: { value: 0 }, y2: { signal: 'height' } }
+    : { x: { value: 0 }, x2: { signal: 'width' }, y: position };
+  return {
+    name,
+    type: 'rule',
+    interactive: false,
+    encode: {
+      enter: { stroke, strokeWidth },
+      update,
+    },
+  };
+};
+
+/**
  * Left-pointing arrow caps at the left edge of the chart area.
  * Explicit size: one mark with the size-specific path.
  * Auto mode: three marks (S/M/L) with reactive opacity, so the caret tier matches the chart width.
@@ -241,25 +292,64 @@ export const getReferenceLineEndCapMark = (
 };
 
 /**
- * Two text marks: background halo then foreground.
- * Label is below the line, right-aligned, with S2 typography.
+ * Gets the x position of a reference line as a Vega expression.
+ * @param position
+ * @returns string
+ */
+const getPositionExpression = (position: NumericValueRef): string => {
+  if ('signal' in position) return String(position.signal);
+  const { scale, value } = position as { scale: string; value: unknown };
+  const valueExpression = typeof value === 'string' ? JSON.stringify(value) : String(value);
+  return `scale('${scale}', ${valueExpression})`;
+};
+
+/**
+ * Places a vertical reference line label to the right of the line, flipping left if it doesn't fit and hiding if neither side fits.
+ * @param label
+ * @param position
+ * @returns placement encodings
+ */
+const getVerticalLabelPlacement = (label: string, position: NumericValueRef) => {
+  const x = getPositionExpression(position);
+  const labelWidth = `getLabelWidth(${JSON.stringify(label)}, 'bold', ${CHART_SIZE_FONT_SIZE})`;
+  const gap = REFERENCE_LINE_LABEL_OFFSET_FROM_LINE;
+  const fitsRight = `${x} + ${gap} + ${labelWidth} <= width`;
+  const fitsLeft = `${x} - ${gap} - ${labelWidth} >= 0`;
+  return {
+    x: position,
+    y: { value: 0 },
+    dx: { signal: `${fitsRight} ? ${gap} : -${gap}` },
+    align: { signal: `${fitsRight} ? 'left' : 'right'` },
+    opacity: { signal: `${fitsRight} || ${fitsLeft} ? 1 : 0` },
+  };
+};
+
+/**
+ * Two text marks: background halo then foreground. Below and right-aligned on horizontal lines, right of vertical lines (or left when the right side doesn't fit).
+ * @param referenceLineOptions
+ * @param positionEncoding
+ * @param vertical
+ * @returns TextMark[]
  */
 export const getReferenceLineTextMark = (
   { colorScheme, label, name, secondary, size }: ReferenceLineSpecOptions,
-  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef,
+  vertical = false
 ): TextMark[] => {
   if (!label) return [];
 
+  const position = positionEncoding as NumericValueRef;
+  const placement = vertical
+    ? getVerticalLabelPlacement(label, position)
+    : { x: { signal: 'width' }, y: position, dy: { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE } };
   const sharedEnter = {
     text: { value: label },
-    x: { signal: 'width' },
-    y: positionEncoding as NumericValueRef,
-    dy: { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE },
     baseline: { value: 'top' as const },
-    align: { value: 'right' as const },
+    ...(vertical ? {} : { align: { value: 'right' as const } }),
   };
 
   const sharedUpdate = {
+    ...placement,
     fontWeight: { value: REFERENCE_LINE_LABEL_FONT_WEIGHT },
     fontSize: { signal: CHART_SIZE_FONT_SIZE },
   };
