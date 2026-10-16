@@ -552,8 +552,9 @@ const addLineGroupMark = (
 };
 
 const addLineStaticPointMarks = (marks: Mark[], options: LineSpecOptions): void => {
-  const { isSparkline, linePointAnnotations, staticPoint } = options;
-  if (!staticPoint && !isSparkline) return;
+  const { interpolate, isSparkline, linePointAnnotations, staticPoint } = options;
+  // a basis curve doesn't pass through the data, so points would sit off the line
+  if ((!staticPoint && !isSparkline) || interpolate === 'basis') return;
   marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
   if (linePointAnnotations.length > 0) {
     marks.push(...getLinePointAnnotationMarks(options));

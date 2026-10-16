@@ -413,10 +413,11 @@ export const getLineHoverMarks = (
   secondaryHighlightedMetric?: string,
   drawInVoronoi?: LineDrawInVoronoiSources
 ): Mark[] => {
-  const { dimension, isHighlightedByGroup, name, scaleType, showHoverLabel = true } = lineOptions;
+  const { dimension, interpolate, isHighlightedByGroup, name, scaleType, showHoverLabel = true } = lineOptions;
   // highlighting by series (or other keys) emphasizes whole lines, not a single point
   const highlightsBySeries = Boolean(isHighlightedByGroup) && !isLineHighlightedByDimension(lineOptions);
-  const showsPoints = !highlightsBySeries;
+  // a basis curve doesn't pass through the data, so points and their labels would sit off the line
+  const showsPoints = interpolate !== 'basis' && !highlightsBySeries;
   return [
     // vertical rule shown for the hovered or selected point
     ...(highlightsBySeries ? [] : [getHoverRule(dimension, name, scaleType)]),
