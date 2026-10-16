@@ -48,7 +48,6 @@ export const getExpressionFunctions = (
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
-    getLabelBounds,
     hoverFraction,
     isDonutLabelVisible,
     truncateText,
@@ -199,7 +198,6 @@ const consoleLog = (value) => {
 
 const LABEL_WIDTH_CACHE_MAX_SIZE = 5000;
 const labelWidthCache = new Map<string, number>();
-const labelBoundsCache = new Map<string, { top: number; bottom: number }>();
 let measureContext: CanvasRenderingContext2D | null | undefined;
 
 /**
@@ -212,7 +210,6 @@ const getMeasureContext = (): CanvasRenderingContext2D | null => {
     // Widths measured before a web font loads use the fallback font, so drop them once fonts finish loading.
     document.fonts?.addEventListener?.('loadingdone', () => {
       labelWidthCache.clear();
-      labelBoundsCache.clear();
     });
   }
   return measureContext;
@@ -243,33 +240,6 @@ const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: 
     labelWidthCache.set(key, width);
   }
   return width;
-};
-
-/** Gets vertical font bounds relative to Vega's text baseline. */
-const getLabelBounds = (
-  fontWeight: FontWeight,
-  fontSize: number,
-  baseline: 'alphabetic' | 'top' | 'middle'
-): { top: number; bottom: number } => {
-  const font = `${fontWeight} ${fontSize}px ${ADOBE_CLEAN_FONT}`;
-  const key = `${font}|${baseline}`;
-  const cached = labelBoundsCache.get(key);
-  if (cached) return cached;
-  const context = getMeasureContext();
-  if (!context) throw new Error('A 2D canvas context is required to measure text bounds.');
-  context.font = font;
-  const metrics = context.measureText('Mg');
-  const ascent = metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent;
-  const descent = metrics.fontBoundingBoxDescent ?? metrics.actualBoundingBoxDescent;
-  const offset = baseline === 'top' ? Math.round(fontSize * 0.79) : baseline === 'middle' ? Math.round(fontSize * 0.3) : 0;
-  const bounds = { top: offset - ascent, bottom: offset + descent };
-  if (document.fonts?.status !== 'loading') {
-    if (labelBoundsCache.size >= LABEL_WIDTH_CACHE_MAX_SIZE) {
-      labelBoundsCache.delete(labelBoundsCache.keys().next().value as string);
-    }
-    labelBoundsCache.set(key, bounds);
-  }
-  return bounds;
 };
 
 /**
