@@ -159,7 +159,15 @@ describe('getBulletMarkTarget', () => {
     const data = getBulletMarkTarget(sampleOptionsColumn);
     expect(data).toBeDefined();
     expect(data.encode?.update).toBeDefined();
-    expect(Object.keys(data.encode?.update ?? {}).length).toBe(3);
+    expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
+  });
+
+  test('Should hide the target line when the target value is missing', () => {
+    const data = getBulletMarkTarget(sampleOptionsColumn);
+    expect(data.encode?.update).toHaveProperty('strokeOpacity', [
+      { test: `!isValid(datum.${sampleOptionsColumn.target})`, value: 0 },
+      { value: 1 },
+    ]);
   });
 });
 
@@ -286,6 +294,18 @@ describe('getBulletAxes', () => {
     const options = { ...sampleOptionsColumn };
     const axes = addAxes([], options);
     expect(axes).toStrictEqual([]);
+  });
+
+  test('Should return the scale axis when showTargetValue is true but showTarget is false', () => {
+    const options = { ...sampleOptionsColumn, metricAxis: true, showTarget: false, showTargetValue: true };
+    const axes = addAxes([], options);
+    expect(axes.find((axis) => axis.orient === 'bottom')).toBeDefined();
+  });
+
+  test('Should not return the scale axis when the target value label is shown', () => {
+    const options = { ...sampleOptionsColumn, metricAxis: true, showTarget: true, showTargetValue: true };
+    const axes = addAxes([], options);
+    expect(axes.find((axis) => axis.orient === 'bottom')).toBeUndefined();
   });
 
   test('Should return the scale axis when axis is true, row mode is enabled, and showtarget is false', () => {
@@ -534,6 +554,17 @@ describe('ChartInspect support', () => {
       thresholds: [{ thresholdMax: 100, fill: 'red' }],
     });
     expect(hoverArea.encode?.update?.height).toStrictEqual({ signal: 'bulletThresholdHeight' });
+    expect(hoverArea.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - bulletThresholdHeight' });
+  });
+
+  test('getBulletHoverArea ignores showTargetValue when thresholds are present and showTarget is false', () => {
+    const hoverArea = getBulletHoverArea({
+      ...sampleOptionsWithInspect,
+      showTarget: false,
+      showTargetValue: true,
+      track: false,
+      thresholds: [{ thresholdMax: 100, fill: 'red' }],
+    });
     expect(hoverArea.encode?.update?.y).toStrictEqual({ signal: 'bulletGroupHeight - 3 - bulletThresholdHeight' });
   });
 

@@ -151,6 +151,7 @@ export function getBulletMarkTarget(bulletOptions: BulletSpecOptions): Mark {
         x: { scale: 'xscale', field: `${bulletOptions.target}` },
         y: { signal: bulletMarkTargetEncodeUpdateY },
         y2: { signal: bulletMarkTargetEncodeUpdateY2 },
+        strokeOpacity: [{ test: `!isValid(datum.${bulletOptions.target})`, value: 0 }, { value: 1 }],
       },
     },
   };
@@ -300,10 +301,7 @@ function getHoverAreaSignalsForThresholds(options: BulletSpecOptions): { y: stri
     return { y, height: 'targetHeight' };
   }
 
-  const y = options.showTargetValue
-    ? 'bulletGroupHeight - targetValueLabelHeight - 3 - bulletThresholdHeight'
-    : 'bulletGroupHeight - 3 - bulletThresholdHeight';
-  return { y, height: 'bulletThresholdHeight' };
+  return { y: 'bulletGroupHeight - 3 - bulletThresholdHeight', height: 'bulletThresholdHeight' };
 }
 
 function getHoverAreaSignalsForTrack(options: BulletSpecOptions): { y: string; height: string } {
@@ -471,7 +469,11 @@ export function getBulletScaleAxes(bulletOptions: BulletSpecOptions): Axis {
 }
 
 export const addAxes = produce<Axis[], [BulletSpecOptions]>((axes, bulletOptions) => {
-  if (bulletOptions.metricAxis && bulletOptions.direction === 'column' && !bulletOptions.showTargetValue) {
+  if (
+    bulletOptions.metricAxis &&
+    bulletOptions.direction === 'column' &&
+    !(bulletOptions.showTargetValue && bulletOptions.showTarget)
+  ) {
     axes.push(getBulletScaleAxes(bulletOptions));
   }
 
