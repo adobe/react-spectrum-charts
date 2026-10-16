@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SourceData } from 'vega';
+import { FilterTransform, SourceData } from 'vega';
 
 import { CONTROLLED_HIGHLIGHTED_ITEM, CONTROLLED_HIGHLIGHTED_SERIES, CONTROLLED_HIGHLIGHTED_TABLE, FILTERED_TABLE, GROUP_ID, HOVERED_ITEM, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 
@@ -20,19 +20,27 @@ import { LineSpecOptions } from '../types/index.js';
 import { getCascadeTransforms } from './directLabelUtils.js';
 
 /** Gets hover candidates whose metric positions are inside the plot. */
-export const getInBoundsHoverData = (options: LineSpecOptions, source: string): SourceData => {
-  const metric = getEffectiveMetricField(options);
+export const getInBoundsHoverData = (options: LineSpecOptions, source: string): SourceData => ({
+  name: `${options.name}_visibleHoverData`,
+  source,
+  transform: [getInPlotMetricFilter(options)],
+});
+
+/**
+ * Gets a filter that keeps rows whose metric position is inside the plot.
+ * @param options - line spec options
+ * @param metric - metric field to check
+ * @returns FilterTransform
+ */
+export const getInPlotMetricFilter = (
+  options: LineSpecOptions,
+  metric = getEffectiveMetricField(options)
+): FilterTransform => {
   const metricScale = options.metricAxis || 'yLinear';
   const scaledMetric = `scale('${metricScale}', datum["${metric}"])`;
   return {
-    name: `${options.name}_visibleHoverData`,
-    source,
-    transform: [
-      {
-        type: 'filter',
-        expr: `isValid(datum["${metric}"]) && isFinite(datum["${metric}"]) && inrange(${scaledMetric}, [0, height])`,
-      },
-    ],
+    type: 'filter',
+    expr: `isValid(datum["${metric}"]) && isFinite(datum["${metric}"]) && inrange(${scaledMetric}, [0, height])`,
   };
 };
 

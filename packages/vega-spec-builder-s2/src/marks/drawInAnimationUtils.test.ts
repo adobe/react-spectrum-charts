@@ -26,6 +26,7 @@ import {
   applyDrawInReveal,
   getLineDrawInClip,
   getLineDrawInRevealExpr,
+  getLineGeometryClip,
 } from './drawInAnimationUtils.js';
 
 describe('addDrawInClockSignals()', () => {
@@ -122,6 +123,26 @@ describe('getLineDrawInClip()', () => {
       },
     });
   });
+
+  test('clips vertically at the plot edges when requested', () => {
+    expect(getLineDrawInClip('line0', true)).toStrictEqual({
+      path: {
+        signal:
+          "'M-1000,0' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + height + 'H-1000' + 'Z'",
+      },
+    });
+  });
+});
+
+describe('getLineGeometryClip()', () => {
+  test.each([
+    [{}, {}],
+    [{ hasFixedMetricAxis: true }, { clip: true }],
+    [{ isDrawInAnimate: true }, { clip: getLineDrawInClip('line0') }],
+    [{ isDrawInAnimate: true, hasFixedMetricAxis: true }, { clip: getLineDrawInClip('line0', true) }],
+  ])('returns the clip for %j', (options, expected) => {
+    expect(getLineGeometryClip({ name: 'line0', ...options })).toStrictEqual(expected);
+  });
 });
 
 describe('getLineDrawInRevealExpr()', () => {
@@ -149,4 +170,3 @@ describe('applyDrawInReveal()', () => {
     expect(applyDrawInReveal({ value: 1 }, 'r')).toStrictEqual({ signal: '1 * r' });
   });
 });
-

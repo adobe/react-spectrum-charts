@@ -97,16 +97,36 @@ export const addLineDrawInAnimationSignals = (signals: Signal[], { name, scaleTy
 /**
  * Gets the clip for marks revealed by the line draw-in; it covers the whole plot once the animation finishes.
  * @param name - line name
+ * @param clipToPlotHeight - clip vertically at the plot edges instead of overflowing them
  * @returns Clip
  */
-export const getLineDrawInClip = (name: string): Clip => {
+export const getLineDrawInClip = (name: string, clipToPlotHeight = false): Clip => {
   // overflow past the plot edges so strokes and points on an edge aren't cut in half
   const o = DRAW_IN_CLIP_OVERFLOW;
   // the sweeping edge while animating, then the full plot width so nothing stays clipped
   const right = `(${DRAW_IN_ANIM_T} >= 1 ? width + ${o} : ${name}_${DRAW_IN_CLIP_X})`;
-  const bottom = `(height + ${o})`;
-  // the clip is a rectangle from (-o, -o) to (right, bottom), written as an SVG path
-  return { path: { signal: `'M-${o},-${o}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` } };
+  const top = clipToPlotHeight ? '0' : `-${o}`;
+  const bottom = clipToPlotHeight ? 'height' : `(height + ${o})`;
+  // the clip is a rectangle from (-o, top) to (right, bottom), written as an SVG path
+  return { path: { signal: `'M-${o},${top}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` } };
+};
+
+/**
+ * Gets the clip for a line's path group, if it needs one.
+ * @param options - line spec options
+ * @returns clip properties to spread onto the group mark
+ */
+export const getLineGeometryClip = ({
+  name,
+  isDrawInAnimate,
+  hasFixedMetricAxis,
+}: {
+  name: string;
+  isDrawInAnimate?: boolean;
+  hasFixedMetricAxis?: boolean;
+}): { clip?: Clip } => {
+  if (isDrawInAnimate) return { clip: getLineDrawInClip(name, hasFixedMetricAxis) };
+  return hasFixedMetricAxis ? { clip: true } : {};
 };
 
 /**

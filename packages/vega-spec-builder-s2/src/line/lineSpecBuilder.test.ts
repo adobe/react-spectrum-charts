@@ -44,7 +44,7 @@ import { LineOptions, ScSpec } from '../types/index.js';
 import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder.js';
 import { defaultLineOptions } from './lineTestUtils.js';
 
-describe('fixed metric range hover', () => {
+describe('fixed metric axis hover', () => {
   test.each<[string, number[], Partial<LineOptions>, boolean, [number, number]?]>([
     [
       'sparse data above the range',
@@ -106,17 +106,20 @@ describe('fixed metric range hover', () => {
     const table = spec.data?.find(({ name }) => name === TABLE);
     if (!table || !('values' in table)) throw new Error('Expected inline table data');
     table.values = data;
-    const plot = spec.marks?.find((mark): mark is GroupMark => mark.type === 'group' && mark.name === 'line0_plot');
     if (lineOptions.interactionMode === 'item') {
-      const hoverGroup = plot?.marks?.find(
+      const hoverGroup = spec.marks?.find(
         (mark): mark is GroupMark => mark.type === 'group' && mark.name === 'line0_hoverGroup'
       );
       expect(hoverGroup?.marks).not.toHaveLength(0);
       hoverGroup?.marks?.forEach((mark) => expect(mark.from).toHaveProperty('data', 'line0_visibleHoverData'));
     } else {
-      const hoverPoints = plot?.marks?.find((mark) => mark.name === 'line0_pointsForVoronoi');
+      const hoverPoints = spec.marks?.find((mark) => mark.name === 'line0_pointsForVoronoi');
       expect(hoverPoints?.from).toHaveProperty('data', 'line0_visibleHoverData');
     }
+    const lineGroups = new Set(['line0_group', 'line0_highlightOverlay_group']);
+    spec.marks
+      ?.filter((mark) => mark.name?.startsWith('line0'))
+      .forEach((mark) => expect(mark.clip).toBe(lineGroups.has(mark.name ?? '') || undefined));
     const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
     try {
       await view.runAsync();
@@ -139,6 +142,22 @@ describe('fixed metric range hover', () => {
     } finally {
       view.finalize();
     }
+  });
+});
+
+describe('without a fixed metric axis', () => {
+  test('does not clip or filter line marks', () => {
+    const spec = buildSpec({
+      animations: false,
+      data: [{ datetime: 0, value: 1, showPoint: true }],
+      axes: [{ position: 'left' }],
+      marks: [{ markType: 'line', name: 'line0', staticPoint: 'showPoint', lineDirectLabels: [{}], chartInspects: [{}] }],
+    });
+    spec.marks?.forEach((mark) => expect(mark).not.toHaveProperty('clip'));
+    expect(spec.data?.find(({ name }) => name === 'line0_visibleHoverData')).toBeUndefined();
+    expect(spec.data?.find(({ name }) => name === 'line0_staticPointData')?.transform).toHaveLength(1);
+    const labelData = spec.data?.find(({ name }) => name === 'line0DirectLabel0_data');
+    labelData?.transform?.forEach((transform) => expect(transform).not.toHaveProperty('expr', expect.stringContaining('inrange')));
   });
 });
 

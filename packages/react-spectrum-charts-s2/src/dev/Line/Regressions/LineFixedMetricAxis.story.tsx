@@ -21,7 +21,7 @@ import { LineProps } from '../../../types/index.js';
 import { lineVariationDatasets } from '../Dashboards/lineVariationData.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Line/Regressions/Fixed Metric Range',
+  title: 'React Spectrum Charts 2/Line/Regressions/Fixed Metric Axis',
   component: Line,
   parameters: {
     regression: {
@@ -31,16 +31,16 @@ export default {
   },
 };
 
-type FixedMetricRangeProps = LineProps & { metricRange?: [number, number] };
+type FixedMetricAxisProps = LineProps & { axisRange?: [number, number] };
 
-const FixedMetricRangeStory: StoryFn<FixedMetricRangeProps> = ({
-  metricRange = [0, 10000],
+const FixedMetricAxisStory: StoryFn<FixedMetricAxisProps> = ({
+  axisRange = [0, 10000],
   ...args
-}: FixedMetricRangeProps): ReactElement => {
+}: FixedMetricAxisProps): ReactElement => {
   const chartProps = useChartProps({ data: lineVariationDatasets.sparse, width: 360, height: 216 });
   return (
     <Chart {...chartProps}>
-      <Axis position="left" grid numberFormat="shortNumber" range={metricRange} />
+      <Axis position="left" grid numberFormat="shortNumber" range={axisRange} />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line {...args}>
         <ChartInspect>{(datum) => <div>{String(datum.value)}</div>}</ChartInspect>
@@ -49,10 +49,10 @@ const FixedMetricRangeStory: StoryFn<FixedMetricRangeProps> = ({
   );
 };
 
-const SparseFixedMetricRange = bindWithProps(FixedMetricRangeStory);
-SparseFixedMetricRange.args = { color: 'series' };
+const SparseFixedMetricAxis = bindWithProps(FixedMetricAxisStory);
+SparseFixedMetricAxis.args = { color: 'series' };
 
-const PartiallyOutOfBoundsFixedMetricRange = bindWithProps(FixedMetricRangeStory);
-PartiallyOutOfBoundsFixedMetricRange.args = { color: 'series', metricRange: [400000, 550000] };
+const PartiallyOutOfBoundsFixedMetricAxis = bindWithProps(FixedMetricAxisStory);
+PartiallyOutOfBoundsFixedMetricAxis.args = { color: 'series', axisRange: [400000, 550000] };
 
-export { SparseFixedMetricRange, PartiallyOutOfBoundsFixedMetricRange };
+export { SparseFixedMetricAxis, PartiallyOutOfBoundsFixedMetricAxis };

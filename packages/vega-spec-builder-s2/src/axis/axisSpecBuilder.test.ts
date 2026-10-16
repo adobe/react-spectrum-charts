@@ -914,6 +914,7 @@ describe('Spec builder, Axis', () => {
       expect(marks).toEqual([
         {
           ...defaultXBaselineMark,
+          clip: { signal: "!inrange(10, domain('yLinear'))" },
           encode: {
             update: {
               ...defaultXBaselineMark.encode?.update,
@@ -958,6 +959,7 @@ describe('Spec builder, Axis', () => {
       expect((marks[0] as GroupMark).marks).toEqual([
         {
           ...defaultXBaselineMark,
+          clip: { signal: "!inrange(10, domain('yLinear'))" },
           encode: {
             update: {
               ...defaultXBaselineMark.encode?.update,

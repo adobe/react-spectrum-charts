@@ -24,6 +24,7 @@ import {
 import {
   getHoverLabelData,
   getInBoundsHoverData,
+  getInPlotMetricFilter,
   getLineHighlightedData,
   getLineHoverRules,
   getPrimarySeriesOtherExpr,
@@ -56,6 +57,15 @@ describe('getInBoundsHoverData()', () => {
     expect(data.transform?.[0]).toHaveProperty(
       'expr',
       expect.stringContaining(`scale('customMetric', datum["line0_effectiveValue"])`)
+    );
+  });
+});
+
+describe('getInPlotMetricFilter()', () => {
+  test('uses the provided metric field', () => {
+    expect(getInPlotMetricFilter(defaultLineOptions, 'other')).toHaveProperty(
+      'expr',
+      'isValid(datum["other"]) && isFinite(datum["other"]) && inrange(scale(\'yLinear\', datum["other"]), [0, height])'
     );
   });
 });

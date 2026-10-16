@@ -50,7 +50,7 @@ import {
   getLineForecastLabelMarks,
   getLineForecastSpecOptions,
 } from '../lineForecast/index.js';
-import { addLineDrawInAnimationSignals, getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
+import { addLineDrawInAnimationSignals, getLineGeometryClip } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -85,6 +85,7 @@ import {
 import {
   getHoverLabelData,
   getInBoundsHoverData,
+  getInPlotMetricFilter,
   getLineHighlightedData,
   getLineHoverRules,
   getLineStaticPointData,
@@ -221,44 +222,46 @@ export const addLine = produce<
     lineOptions.isDrawInAnimate = isLineDrawInSupported(animations, animationTypes, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     if (lineOptions.isHoverAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
+    const scales = setScales(spec.scales ?? [], lineOptions);
+    lineOptions.hasFixedMetricAxis = hasFixedMetricAxis(axes, scales, lineOptions);
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
-    spec.scales = setScales(spec.scales ?? [], lineOptions);
-    const metricScaleName = metricAxis || 'yLinear';
-    const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleName);
-    const metricScaleNames = dualMetricAxis ? [primaryScale, secondaryScale] : [metricScaleName];
-    const hasFixedMetricRange = axes.some(
-      (axis) =>
-        axis.range &&
-        ['left', 'right'].includes(axis.position) &&
-        metricScaleNames.includes(getScale(spec.scales ?? [], axis.position).name)
-    );
+    spec.scales = scales;
     const hoverDataSource =
-      hasFixedMetricRange && (isInteractive(lineOptions) || lineOptions.highlightedItem !== undefined)
+      lineOptions.hasFixedMetricAxis && (isInteractive(lineOptions) || lineOptions.highlightedItem !== undefined)
         ? `${lineName}_visibleHoverData`
         : undefined;
     if (hoverDataSource) {
       spec.data = [...(spec.data ?? []), getInBoundsHoverData(lineOptions, `${FILTERED_TABLE}ForInspect`)];
     }
-    const lineMarks = addLineMarks([], lineOptions, hoverDataSource);
-    spec.marks = [
-      ...(spec.marks ?? []),
-      ...(hasFixedMetricRange
-        ? [
-            {
-              name: `${lineName}_plot`,
-              type: 'group' as const,
-              clip: true,
-              encode: { update: { width: { signal: 'width' }, height: { signal: 'height' } } },
-              marks: lineMarks,
-            },
-          ]
-        : lineMarks),
-    ];
+    spec.marks = addLineMarks(spec.marks ?? [], lineOptions, hoverDataSource);
 
     return spec;
   }
 );
+
+/**
+ * Whether an axis fixes the range of one of the line's metric scales.
+ * @param axes - chart axes
+ * @param scales - chart scales
+ * @param options - line spec options
+ * @returns boolean
+ */
+const hasFixedMetricAxis = (
+  axes: AxisOptions[],
+  scales: Scale[],
+  { dualMetricAxis, metricAxis }: LineSpecOptions
+): boolean => {
+  const metricScaleName = metricAxis || 'yLinear';
+  const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleName);
+  const metricScaleNames = dualMetricAxis ? [primaryScale, secondaryScale] : [metricScaleName];
+  return axes.some(
+    (axis) =>
+      Boolean(axis.range) &&
+      ['left', 'right'].includes(axis.position) &&
+      metricScaleNames.includes(getScale([...scales], axis.position).name)
+  );
+};
 
 /**
  * Whether the line participates in the hover-animation system.
@@ -318,7 +321,11 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   addLineHoverData(data, options);
 
   if (staticPoint || isSparkline) {
-    data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    const staticPointData = getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast);
+    if (options.hasFixedMetricAxis) {
+      staticPointData.transform = [...(staticPointData.transform ?? []), getInPlotMetricFilter(options)];
+    }
+    data.push(staticPointData);
   }
 
   addDualMetricAxisData(data, options);
@@ -563,7 +570,7 @@ const addLineGroupMark = (
   marks.push({
     name: `${name}_group`,
     type: 'group',
-    ...(markOptions.isDrawInAnimate ? { clip: getLineDrawInClip(name) } : {}),
+    ...getLineGeometryClip(markOptions),
     from: {
       facet: {
         name: `${name}_facet`,

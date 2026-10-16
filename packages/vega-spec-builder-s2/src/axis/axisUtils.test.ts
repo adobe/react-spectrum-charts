@@ -68,8 +68,9 @@ describe('getBaselineRule', () => {
       ['left', [-100, 100], 25, 125],
       ['left', [-500, 10000], 0, 200 / 21],
       ['left', [-500, 10000], -500, 0],
-    ])('clips the %s baseline without moving it for domain %j at offset %s', async (position, domain, offset, coordinate) => {
+    ])('clips the %s baseline only outside domain %j at offset %s', async (position, domain, offset, coordinate) => {
       const horizontal = position === 'bottom';
+      const inDomain = offset >= Math.min(...domain) && offset <= Math.max(...domain);
       const view = new View(
         parse({
           width: 200,
@@ -93,15 +94,26 @@ describe('getBaselineRule', () => {
         const { root } = view.scenegraph() as Scene & { root: Scene };
         const baseline = root.items[0].items[0].items[0];
         expect(baseline[horizontal ? 'y' : 'x']).toBeCloseTo(coordinate);
-        expect(baseline.mark.clip).toBe(true);
-        expect(root.items[0].bounds.x1).toBeGreaterThanOrEqual(0);
-        expect(root.items[0].bounds.y1).toBeGreaterThanOrEqual(0);
-        expect(root.items[0].bounds.x2).toBeLessThanOrEqual(200);
-        expect(root.items[0].bounds.y2).toBeLessThanOrEqual(100);
+        const expectBounds = (width: number, height: number, scale: number) => {
+          const { bounds } = root.items[0];
+          if (inDomain) {
+            const position = coordinate * scale;
+            expect(horizontal ? bounds.y1 : bounds.x1).toBeLessThan(position);
+            expect(horizontal ? bounds.y2 : bounds.x2).toBeGreaterThan(position);
+            expect(horizontal ? bounds.x2 - bounds.x1 : bounds.y2 - bounds.y1).toBeGreaterThan(
+              horizontal ? width : height
+            );
+          } else {
+            expect(bounds.x1).toBeGreaterThanOrEqual(0);
+            expect(bounds.y1).toBeGreaterThanOrEqual(0);
+            expect(bounds.x2).toBeLessThanOrEqual(width);
+            expect(bounds.y2).toBeLessThanOrEqual(height);
+          }
+        };
+        expectBounds(200, 100, 1);
         await view.width(300).height(150).resize().runAsync();
         expect(baseline[horizontal ? 'y' : 'x']).toBeCloseTo(coordinate * 1.5);
-        expect(root.items[0].bounds.x2).toBeLessThanOrEqual(300);
-        expect(root.items[0].bounds.y2).toBeLessThanOrEqual(150);
+        expectBounds(300, 150, 1.5);
       } finally {
         view.finalize();
       }
