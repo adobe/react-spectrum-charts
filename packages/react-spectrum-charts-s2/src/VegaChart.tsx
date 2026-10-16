@@ -17,9 +17,15 @@ import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 import { getLocale } from '@spectrum-charts/core-s2/locales';
-import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import {
+  ChartData,
+  UserMeta,
+  applyUserMetaConfigPatches,
+  getVegaEmbedOptions,
+} from '@spectrum-charts/vega-spec-builder-s2';
 
 import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from './animation/animationTicker.js';
+import { getDrawInStart, hasTableRows, restoreDrawInStart } from './animation/drawInContinuity.js';
 import { useDebugSpec } from './hooks/useDebugSpec.js';
 import { extractValues, isVegaData } from './hooks/useSpec.js';
 import { ChartProps } from './types/index.js';
@@ -92,6 +98,8 @@ export const VegaChart: FC<VegaChartProps> = ({
   const chartView = useRef<View | undefined>(undefined);
   const detachAnimationTicker = useRef<(() => void) | undefined>(undefined);
   const hasMounted = useRef(false);
+  // carried across rebuilds so draw-in plays once per mount
+  const drawInStart = useRef<number | undefined>(undefined);
   // AN-445759: flipped to true when dimensions become valid post-mount with no existing view,
   // forcing the embed effect to run even though width/height are not in its deps.
   const [needsInitEmbed, setNeedsInitEmbed] = useState(false);
@@ -100,6 +108,8 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   // Need to de a deep copy of the data because vega tries to transform the data
   const chartData = useMemo(() => {
+    // JSON round-trip on purpose: Dates must become strings, as before
+    // eslint-disable-next-line no-restricted-syntax
     const clonedData = JSON.parse(JSON.stringify(data));
 
     // We received a full Vega data array with potentially multiple dataset objects
@@ -130,8 +140,10 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   useEffect(() => {
     let cancelled = false;
+    let specCopy: Spec | undefined;
+    const embeddedAt = Date.now();
     if (width && height && containerRef.current) {
-      const specCopy = JSON.parse(JSON.stringify(spec)) as Spec;
+      specCopy = structuredClone(spec);
       const tableData = specCopy.data?.find((d) => d.name === TABLE);
       if (tableData && 'values' in tableData) {
         tableData.values = chartData.table;
@@ -148,6 +160,9 @@ export const VegaChart: FC<VegaChartProps> = ({
       const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
       const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
       const isAnimated = isAnimatedSpec(specCopy);
+      // an empty chart has nothing drawn, so the next data draws in fresh
+      if (!hasTableRows(specCopy)) drawInStart.current = undefined;
+      restoreDrawInStart(specCopy, drawInStart.current, embeddedAt);
       if (isAnimated) {
         // animated charts are driven by the shared animation ticker instead of Vega's always-on timer
         removeAnimationTimerEvents(specCopy);
@@ -179,12 +194,15 @@ export const VegaChart: FC<VegaChartProps> = ({
       // destroy the chart on unmount
       detachAnimationTicker.current?.();
       detachAnimationTicker.current = undefined;
+      if (specCopy) {
+        drawInStart.current ??= getDrawInStart(chartView.current, specCopy, embeddedAt);
+      }
       if (chartView.current) {
         chartView.current.finalize();
         chartView.current = undefined;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     chartData.table,
     config,
