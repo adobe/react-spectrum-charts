@@ -413,18 +413,23 @@ export const getLineHoverMarks = (
   secondaryHighlightedMetric?: string,
   drawInVoronoi?: LineDrawInVoronoiSources
 ): Mark[] => {
-  const { dimension, name, scaleType, showHoverLabel = true } = lineOptions;
+  const { dimension, isHighlightedByGroup, name, scaleType, showHoverLabel = true } = lineOptions;
+  // highlighting by series (or other keys) emphasizes whole lines, not a single point
+  const highlightsBySeries = Boolean(isHighlightedByGroup) && !isLineHighlightedByDimension(lineOptions);
+  const showsPoints = !highlightsBySeries;
   return [
     // vertical rule shown for the hovered or selected point
-    getHoverRule(dimension, name, scaleType),
+    ...(highlightsBySeries ? [] : [getHoverRule(dimension, name, scaleType)]),
     // if has popover or action bar, add selection point
-    ...(hasPopover(lineOptions) || hasActionBar(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
+    ...(showsPoints && (hasPopover(lineOptions) || hasActionBar(lineOptions)) ? [getSelectionPoint(lineOptions)] : []),
     // hover or select point
-    getHighlightPoint(lineOptions),
+    ...(showsPoints ? [getHighlightPoint(lineOptions)] : []),
     // additional point that gets highlighted like the trendline or raw line point
-    ...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
+    ...(showsPoints && secondaryHighlightedMetric
+      ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)]
+      : []),
     // hover value label: background halo + foreground text — omitted when showHoverLabel is false
-    ...(showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
+    ...(showsPoints && showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
     // get interactive marks for the line
     ...getInteractiveMarks(dataSource, lineOptions, drawInVoronoi),
   ];

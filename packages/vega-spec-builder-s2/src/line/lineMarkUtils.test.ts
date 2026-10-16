@@ -142,6 +142,24 @@ describe('getLineMark()', () => {
 });
 
 describe('getLineHoverMarks()', () => {
+  test('should omit the rule, points and hover label when highlighting by series', () => {
+    const marks = getLineHoverMarks(
+      { ...defaultLineMarkOptions, chartInspects: [{ highlightBy: 'series' }], isHighlightedByGroup: true },
+      'line0_facet'
+    );
+    const names = marks.map((mark) => mark.name);
+    expect(names).not.toContain('line0_hoverRule');
+    expect(marks.some((mark) => mark.type === 'text')).toBe(false);
+    expect(names).toEqual(['line0_pointsForVoronoi', 'line0_voronoi']);
+  });
+  test('should keep the rule and points when highlighting by dimension', () => {
+    const marks = getLineHoverMarks(
+      { ...defaultLineMarkOptions, dimensionHover: true, isHighlightedByGroup: true },
+      'line0_facet'
+    );
+    expect(marks[0]).toHaveProperty('type', 'rule');
+    expect(marks.some((mark) => mark.type === 'symbol')).toBe(true);
+  });
   test('should return 6 marks by default', () => {
     expect(
       getLineHoverMarks({ ...defaultLineMarkOptions, isHighlightedByDimension: true }, 'line0_facet')
