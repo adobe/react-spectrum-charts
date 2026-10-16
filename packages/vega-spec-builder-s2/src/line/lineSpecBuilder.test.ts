@@ -758,6 +758,29 @@ describe('lineSpecBuilder', () => {
         const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, staticPoint: 'point' });
         expect(resultData.find((d) => d.name === 'line0_staticPointData')).toHaveProperty('source', FILTERED_TABLE);
       });
+
+      test('an interactive line adds voronoi data gated on drawInDone', () => {
+        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, hasOnClick: true });
+        expect(resultData.find((d) => d.name === 'line0_drawInVoronoiData')).toStrictEqual({
+          name: 'line0_drawInVoronoiData',
+          source: `${FILTERED_TABLE}ForInspect`,
+          transform: [{ type: 'filter', expr: 'drawInDone' }],
+        });
+      });
+
+      test('an interactive line adds extent data from the inspect data', () => {
+        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, hasOnClick: true });
+        expect(resultData.find((d) => d.name === 'line0_drawInExtentData')).toHaveProperty(
+          'source',
+          `${FILTERED_TABLE}ForInspect`
+        );
+      });
+
+      test('an interactive line without draw-in adds no voronoi or extent data', () => {
+        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: false, hasOnClick: true });
+        expect(resultData.find((d) => d.name === 'line0_drawInVoronoiData')).toBeUndefined();
+        expect(resultData.find((d) => d.name === 'line0_drawInExtentData')).toBeUndefined();
+      });
     });
   });
 
@@ -949,6 +972,40 @@ describe('lineSpecBuilder', () => {
 
       const voronoiPointsMark = marks.at(-2);
       expect(voronoiPointsMark?.description).toBe('line0_pointsForVoronoi');
+    });
+
+    test('with draw-in, only the voronoi points read the draw-in voronoi data', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true, isDrawInAnimate: true });
+      expect(marks.find((mark) => mark.name === 'line0_pointsForVoronoi')?.from).toStrictEqual({
+        data: 'line0_drawInVoronoiData',
+      });
+      expect(marks.find((mark) => mark.name === 'line0_point_highlight')?.from).toStrictEqual({
+        data: 'line0_highlightedData',
+      });
+    });
+
+    test('with draw-in, non-interactive extent marks precede the voronoi marks', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true, isDrawInAnimate: true });
+      expect(marks.slice(-4).map((mark) => mark.name)).toEqual([
+        'line0_drawInExtentPoints',
+        'line0_drawInExtentVoronoi',
+        'line0_pointsForVoronoi',
+        'line0_voronoi',
+      ]);
+      const extentPoints = marks.find((mark) => mark.name === 'line0_drawInExtentPoints');
+      const extentVoronoi = marks.find((mark) => mark.name === 'line0_drawInExtentVoronoi');
+      expect(extentPoints?.from).toStrictEqual({ data: 'line0_drawInExtentData' });
+      expect(extentPoints?.encode).toStrictEqual(marks.find((mark) => mark.name === 'line0_pointsForVoronoi')?.encode);
+      expect(extentVoronoi?.from).toStrictEqual({ data: 'line0_drawInExtentPoints' });
+      expect(extentVoronoi).toHaveProperty('interactive', false);
+    });
+
+    test('without draw-in, voronoi points read the inspect data and there are no extent marks', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true });
+      expect(marks.find((mark) => mark.name === 'line0_pointsForVoronoi')?.from).toStrictEqual({
+        data: `${FILTERED_TABLE}ForInspect`,
+      });
+      expect(marks.some((mark) => mark.name?.includes('drawInExtent'))).toBe(false);
     });
 
     test('voronoi points should reserve the same extent as the highlight point', () => {
@@ -1308,7 +1365,7 @@ describe('lineSpecBuilder', () => {
       test('adds the shared clock chain plus the clip edge signal when isDrawInAnimate is true', () => {
         const signals = addSignals([], { ...defaultLineOptions, isDrawInAnimate: true });
         expect(signals.map((s) => s.name)).toEqual(
-          expect.arrayContaining(['drawInStart', 'drawInAnimT', 'drawInAnimTEased', 'line0_drawInClipX'])
+          expect.arrayContaining(['drawInStart', 'drawInAnimT', 'drawInAnimTEased', 'line0_drawInClipX', 'drawInDone'])
         );
       });
 
