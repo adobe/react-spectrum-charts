@@ -70,7 +70,7 @@ export type MarkOptions =
 export interface ChartOptions {
   /** Master kill switch for all chart animations. Reduced motion preferences disable motion (e.g. draw-in) automatically. */
   animations?: boolean;
-  /** Which animation types are enabled. Defaults to `['hover']`. */
+  /** Which animation types are enabled. Defaults to `['hover', 'drawIn']`. */
   animationTypes?: AnimationType[];
   /** Background color of the chart. */
   backgroundColor?: string;
