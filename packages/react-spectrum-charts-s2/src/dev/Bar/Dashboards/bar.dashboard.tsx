@@ -41,7 +41,7 @@ import {
   VariationFilter,
   VariationSizePreset,
   VariationViewMode,
-  useVariationAnimations,
+  useVariationAnimationTypes,
   useVariationDataset,
   useVariationRenderer,
   useVariationSize,
@@ -73,7 +73,6 @@ const barViewModes: VariationViewMode[] = [
   { label: 'Bars only', value: 'none' },
 ];
 
-const dashboardAnimationTypes: ChartProps['animationTypes'] = ['hover'];
 const BAR_ASPECT_RATIO = 0.6;
 
 const BAR_CHILDREN = new Set(['BarDirectLabel', 'ChartInspect', 'ChartPopover']);
@@ -161,7 +160,7 @@ const BarVariationChart = ({
   const selectedDataset = useVariationDataset();
   const size = useVariationSize();
   const viewMode = useVariationViewMode();
-  const animations = useVariationAnimations();
+  const animationTypes = useVariationAnimationTypes();
   const renderer = useVariationRenderer();
   if (!selectedDataset || !(selectedDataset in barVariationDatasets)) {
     throw new Error(`Unknown Bar variation dataset: ${selectedDataset}`);
@@ -184,8 +183,7 @@ const BarVariationChart = ({
   return (
     <Chart
       {...chartProps}
-      animations={animations}
-      animationTypes={animations === undefined ? undefined : dashboardAnimationTypes}
+      animationTypes={animationTypes}
       renderer={renderer}
       {...resolve(chartPropOverrides, chartData)}
     >
@@ -1122,7 +1120,7 @@ export const BarDashboard = (): ReactElement => (
     initialFilter="all"
     initialViewMode="axes"
     sizePresets={barSizePresets}
-    showAnimationControls
+    animationControls={['hover', 'drawIn']}
     viewModes={barViewModes}
   />
 );
@@ -1226,8 +1224,8 @@ const titleCoverage: SiblingCoverage<TitleProps> = {
 };
 
 const chartCoverage: SiblingCoverage<ChartProps> = {
-  animations: { skip: 'Covered by the dashboard Animations switch' },
-  animationTypes: { skip: 'Covered by the dashboard Animations switch' },
+  animations: { skip: 'Covered by the dashboard animation switches' },
+  animationTypes: { skip: 'Covered by the dashboard animation switches' },
   backgroundColor: ['dark-background'],
   colors: ['chart-colors'],
   colorScheme: ['dark-background'],

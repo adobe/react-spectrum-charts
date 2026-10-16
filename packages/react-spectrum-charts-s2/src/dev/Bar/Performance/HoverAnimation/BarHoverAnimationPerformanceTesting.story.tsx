@@ -36,8 +36,8 @@ export default {
     },
     animationTypes: {
       control: { type: 'check' },
-      options: ['hover'],
-      description: "Which animation types are enabled (only 'hover' is relevant to this story group).",
+      options: ['hover', 'drawIn'],
+      description: 'Which animation types are enabled.',
     },
     renderer: {
       control: { type: 'inline-radio' },
@@ -168,7 +168,7 @@ const DashboardStory: StoryFn<DashboardArgs> = ({
 export const Dashboard = bindWithProps(DashboardStory);
 Dashboard.args = {
   animations: true,
-  animationTypes: ['hover'],
+  animationTypes: ['hover', 'drawIn'],
   chartCount: 20,
   seriesPerChart: 5,
   barsPerChart: 12,

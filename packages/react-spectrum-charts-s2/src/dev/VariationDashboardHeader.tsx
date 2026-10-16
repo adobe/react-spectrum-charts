@@ -35,6 +35,7 @@ import {
 import ChevronDown from '@react-spectrum/s2/icons/ChevronDown';
 import ChevronUp from '@react-spectrum/s2/icons/ChevronUp';
 import FilterIcon from '@react-spectrum/s2/icons/Filter';
+import { AnimationType } from '@spectrum-charts/core-s2/constants';
 
 import type {
   VariationDataset,
@@ -72,9 +73,10 @@ export interface VariationDashboardHeaderProps {
   coverage?: DashboardDefinition['coverage'];
   selectedProps: Set<string>;
   onSelectedPropsChange: (selectedProps: Set<string>) => void;
-  /** Animation toggle state; the toggle is hidden when undefined. */
-  animations?: boolean;
-  onAnimationsChange: (animations: boolean) => void;
+  /** Animation types that get a switch; no switches render when undefined. */
+  animationControls?: AnimationType[];
+  animationTypes: AnimationType[];
+  onAnimationTypesChange: (animationTypes: AnimationType[]) => void;
   renderer: VariationRenderer;
   onRendererChange: (renderer: VariationRenderer) => void;
 }
@@ -87,6 +89,8 @@ const groupTitleStyle: CSSProperties = {
   margin: 0,
   textTransform: 'uppercase',
 };
+
+const animationLabels: Record<AnimationType, string> = { hover: 'Hover opacity', drawIn: 'Draw-in' };
 
 const ControlGroup = ({ title, children }: { title: string; children: ReactNode }): ReactElement => (
   <section aria-label={title} style={groupStyle}>
@@ -125,8 +129,9 @@ export const VariationDashboardHeader = ({
   coverage = {},
   selectedProps,
   onSelectedPropsChange,
-  animations,
-  onAnimationsChange,
+  animationControls,
+  animationTypes,
+  onAnimationTypesChange,
   renderer,
   onRendererChange,
 }: VariationDashboardHeaderProps): ReactElement => {
@@ -143,6 +148,10 @@ export const VariationDashboardHeader = ({
   );
   const datasetDescription = datasets.find((option) => option.value === dataset)?.description;
   const presetGroups = sizePresetGroups ?? [{ label: 'Size presets', resolvePresetSize }];
+
+  const toggleAnimationType = (type: AnimationType, isOn: boolean): void => {
+    onAnimationTypesChange((animationControls ?? []).filter((t) => (t === type ? isOn : animationTypes.includes(t))));
+  };
 
   const removeProps = (keys: Set<string | number>): void => {
     onSelectedPropsChange(new Set([...selectedProps].filter((key) => !keys.has(key))));
@@ -255,11 +264,16 @@ export const VariationDashboardHeader = ({
               <SegmentedControlItem id="svg">SVG</SegmentedControlItem>
               <SegmentedControlItem id="canvas">Canvas</SegmentedControlItem>
             </SegmentedControl>
-            {animations !== undefined && (
-              <Switch aria-label={`${chartType} animations`} isSelected={animations} onChange={onAnimationsChange}>
-                Animations (hover and draw-in)
+            {animationControls?.map((type) => (
+              <Switch
+                key={type}
+                aria-label={`${chartType} ${animationLabels[type].toLowerCase()} animation`}
+                isSelected={animationTypes.includes(type)}
+                onChange={(isOn) => toggleAnimationType(type, isOn)}
+              >
+                {animationLabels[type]}
               </Switch>
-            )}
+            ))}
           </ControlGroup>
           <ControlGroup title="Filter">
             {filters.length > 0 && (

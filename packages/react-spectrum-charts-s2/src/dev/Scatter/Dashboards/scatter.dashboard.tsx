@@ -38,7 +38,7 @@ import {
   VariationFilter,
   VariationSizePreset,
   VariationViewMode,
-  useVariationAnimations,
+  useVariationAnimationTypes,
   useVariationDataset,
   useVariationRenderer,
   useVariationSize,
@@ -68,7 +68,6 @@ const scatterViewModes: VariationViewMode[] = [
   { label: 'Points only', value: 'none' },
 ];
 
-const dashboardAnimationTypes: ChartProps['animationTypes'] = ['hover'];
 const SCATTER_ASPECT_RATIO = 0.75;
 
 const SCATTER_CHILDREN = new Set([
@@ -168,7 +167,7 @@ const ScatterVariationChart = ({
   const selectedDataset = useVariationDataset();
   const size = useVariationSize();
   const viewMode = useVariationViewMode();
-  const animations = useVariationAnimations();
+  const animationTypes = useVariationAnimationTypes();
   const renderer = useVariationRenderer();
   if (!selectedDataset || !(selectedDataset in scatterVariationDatasets)) {
     throw new Error(`Unknown Scatter variation dataset: ${selectedDataset}`);
@@ -190,8 +189,7 @@ const ScatterVariationChart = ({
   return (
     <Chart
       {...chartProps}
-      animations={animations}
-      animationTypes={animations === undefined ? undefined : dashboardAnimationTypes}
+      animationTypes={animationTypes}
       renderer={renderer}
       {...resolve(chartPropOverrides, chartData)}
     >
@@ -1555,7 +1553,7 @@ export const ScatterDashboard = (): ReactElement => (
     initialFilter="all"
     initialViewMode="axes"
     sizePresets={scatterSizePresets}
-    showAnimationControls
+    animationControls={['hover']}
     viewModes={scatterViewModes}
   />
 );
@@ -1684,8 +1682,8 @@ const titleCoverage: SiblingCoverage<TitleProps> = {
 };
 
 const chartCoverage: SiblingCoverage<ChartProps> = {
-  animations: { skip: 'Covered by the dashboard Animations switch' },
-  animationTypes: { skip: 'Covered by the dashboard Animations switch' },
+  animations: { skip: 'Covered by the dashboard animation switches' },
+  animationTypes: { skip: 'Covered by the dashboard animation switches' },
   backgroundColor: ['dark-background', 'dark-path'],
   colors: ['chart-colors', 'color-linear'],
   colorScheme: ['dark-background', 'dark-path'],

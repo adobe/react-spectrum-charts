@@ -19,10 +19,9 @@ import { stubS2BrowserApis } from '../../dashboardTestUtils.js';
 import { PropVariations } from './DonutVariations.story.js';
 
 jest.mock('../../../Chart.js', () => ({
-  Chart: ({ animations, animationTypes, height, minHeight, minWidth, width }: ChartProps) => (
+  Chart: ({ animationTypes, height, minHeight, minWidth, width }: ChartProps) => (
     <div
       data-testid="variation-chart"
-      data-animations={String(animations)}
       data-animation-types={animationTypes?.join(',')}
       data-height={height}
       data-min-height={minHeight}
@@ -261,24 +260,28 @@ test('keeps the container width and slider range when switching label modes at X
 
 test('wires the dashboard animation toggle into all donut charts while switching datasets', async () => {
   render(<PropVariations />);
-  const toggle = screen.getByRole('switch', { name: 'Donut animations' });
-  const expectAnimations = (enabled: boolean) => {
+  const hover = screen.getByRole('switch', { name: 'Donut hover opacity animation' });
+  const drawIn = screen.getByRole('switch', { name: 'Donut draw-in animation' });
+  const expectAnimationTypes = (types: string) => {
     const charts = screen.getAllByTestId('variation-chart');
     expect(charts.length).toBeGreaterThan(1);
-    charts.forEach((chart) => {
-      expect(chart.getAttribute('data-animations')).toBe(String(enabled));
-      expect(chart.getAttribute('data-animation-types')).toBe('hover,drawIn');
-    });
+    charts.forEach((chart) => expect(chart.getAttribute('data-animation-types')).toBe(types));
   };
-  expectAnimations(true);
+  expectAnimationTypes('hover,drawIn');
 
-  await userEvent.click(toggle);
-  expectAnimations(false);
+  await userEvent.click(drawIn);
+  expectAnimationTypes('hover');
+
+  await userEvent.click(hover);
+  expectAnimationTypes('');
 
   await userEvent.click(screen.getByRole('button', { name: /Dataset/ }));
   await userEvent.click(screen.getAllByRole('option')[1]);
-  expectAnimations(false);
+  expectAnimationTypes('');
 
-  await userEvent.click(toggle);
-  expectAnimations(true);
+  await userEvent.click(drawIn);
+  expectAnimationTypes('drawIn');
+
+  await userEvent.click(hover);
+  expectAnimationTypes('hover,drawIn');
 });

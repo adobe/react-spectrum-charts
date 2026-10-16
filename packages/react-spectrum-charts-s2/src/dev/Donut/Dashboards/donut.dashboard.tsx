@@ -43,7 +43,7 @@ import {
   VariationSizePreset,
   VariationSizePresetGroup,
   VariationViewMode,
-  useVariationAnimations,
+  useVariationAnimationTypes,
   useVariationDataset,
   useVariationRenderer,
   useVariationSize,
@@ -72,8 +72,6 @@ const donutViewModes: VariationViewMode[] = [
   { label: 'Direct labels', value: 'direct' },
   { label: 'Advanced labels', value: 'advanced' },
 ];
-
-const dashboardAnimationTypes: ChartProps['animationTypes'] = ['hover', 'drawIn'];
 
 const isSemicircleVariation = ({ coverage }: Variation): boolean => coverage.includes('variant=semicircle');
 
@@ -136,7 +134,7 @@ const DonutVariationChart = ({
   const selectedDataset = useVariationDataset();
   const dashboardSize = useVariationSize();
   const viewMode = useVariationViewMode();
-  const animations = useVariationAnimations();
+  const animationTypes = useVariationAnimationTypes();
   const renderer = useVariationRenderer();
   if (!selectedDataset || !(selectedDataset in donutVariationDatasets)) {
     throw new Error(`Unknown Donut variation dataset: ${selectedDataset}`);
@@ -163,8 +161,7 @@ const DonutVariationChart = ({
     <div style={{ width: '100%', minWidth: 0 }}>
       <Chart
         {...chartProps}
-        animations={animations}
-        animationTypes={animations === undefined ? undefined : dashboardAnimationTypes}
+        animationTypes={animationTypes}
         renderer={renderer}
         {...overrides}
       >
@@ -765,7 +762,7 @@ export const DonutDashboard = (): ReactElement => (
     sizeAxis="width"
     sizePresetGroups={donutSizePresetGroups}
     sizePresets={donutSizePresets}
-    showAnimationControls
+    animationControls={['hover', 'drawIn']}
     viewModes={donutViewModes}
   />
 );
@@ -832,8 +829,8 @@ const titleCoverage: SiblingCoverage<TitleProps> = {
 };
 
 const chartCoverage: SiblingCoverage<ChartProps> = {
-  animations: { skip: 'Covered by the dashboard Animations switch' },
-  animationTypes: { skip: 'Covered by the dashboard Animations switch' },
+  animations: { skip: 'Covered by the dashboard animation switches' },
+  animationTypes: { skip: 'Covered by the dashboard animation switches' },
   backgroundColor: ['dark-background'],
   colors: ['boolean'],
   colorScheme: ['dark-background'],
