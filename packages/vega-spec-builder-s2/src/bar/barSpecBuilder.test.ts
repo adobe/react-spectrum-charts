@@ -269,8 +269,10 @@ const defaultSpec: ScSpec = {
 
 describe('barSpecBuilder', () => {
   describe('addBar()', () => {
-    test('no options', () => {
-      expect(addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' })).toStrictEqual(defaultSpec);
+    test('no options with draw-in off', () => {
+      expect(addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['hover'] })).toStrictEqual(
+        defaultSpec
+      );
     });
 
     describe('usermeta', () => {
@@ -370,8 +372,15 @@ describe('barSpecBuilder', () => {
         return undefined;
       };
 
-      test('a bar does not draw in by default', () => {
+      test('a bar draws in by default', () => {
         const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' });
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(true);
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(true);
+        expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: 'bar0_drawInData' });
+      });
+
+      test('animationTypes without "drawIn" keeps the bars static', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['hover'] });
         expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(false);
         expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(false);
         expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: FILTERED_TABLE });
