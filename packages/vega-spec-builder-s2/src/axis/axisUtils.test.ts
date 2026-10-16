@@ -252,9 +252,14 @@ describe('getTickCount()', () => {
     });
   });
 
-  test('when neither maxTicks nor grid is provided, it should return undefined', () => {
-    expect(getTickCount('left')).toBeUndefined();
+  test('when neither maxTicks nor grid is provided, vertical axes still space ticks by height', () => {
+    expect(getTickCount('left')).toEqual({ signal: 'clamp(ceil(height/100), 2, 10)' });
+    expect(getTickCount('right')).toEqual({ signal: 'clamp(ceil(height/100), 2, 10)' });
+  });
+
+  test('when neither maxTicks nor grid is provided, horizontal axes return undefined', () => {
     expect(getTickCount('bottom')).toBeUndefined();
+    expect(getTickCount('top')).toBeUndefined();
   });
 });
 
