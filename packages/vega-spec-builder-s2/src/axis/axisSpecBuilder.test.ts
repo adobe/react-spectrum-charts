@@ -208,6 +208,7 @@ describe('Spec builder, Axis', () => {
               scale: 'yLinear',
               labelAlign: 'right',
               labelBaseline: 'middle',
+              tickCount: { signal: 'clamp(ceil(height/100), 2, 10)' },
             },
           ],
           signals: [],
@@ -228,6 +229,7 @@ describe('Spec builder, Axis', () => {
               scale: 'yLinear',
               labelAlign: 'right',
               labelBaseline: 'middle',
+              tickCount: { signal: 'clamp(ceil(height/100), 2, 10)' },
               encode: {
                 labels: {
                   interactive: false,
