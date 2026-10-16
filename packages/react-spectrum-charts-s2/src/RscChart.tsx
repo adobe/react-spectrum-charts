@@ -39,7 +39,7 @@ import './Chart.css';
 import { VegaChart } from './VegaChart.js';
 import { DonutDialogContent, getDonutSwatchColor } from './components/Donut/DonutDialogContent.js';
 import { Axis } from './components/Axis/index.js';
-import { ChartActionBarDialog } from './components/ChartActionBar/ChartActionBarDialog.js';
+import { ChartActionBarDialog } from './lab/components/ChartActionBar/ChartActionBarDialog.js';
 import { ChartInspect } from './components/ChartInspect/index.js';
 import { Legend } from './components/Legend/index.js';
 import { AxisRegionOptions } from './dataNavigator/buildChartStructure.js';

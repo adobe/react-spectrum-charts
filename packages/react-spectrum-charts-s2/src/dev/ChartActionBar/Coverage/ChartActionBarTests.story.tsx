@@ -16,7 +16,7 @@ import Comment from '@react-spectrum/s2/icons/Comment';
 import Note from '@react-spectrum/s2/icons/StickyNote';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartActionBar } from '../../../components/index.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import {
   ActionBarLineStory,
   actionButton,
@@ -24,8 +24,8 @@ import {
 import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Chart Action Bar/Coverage',
-  tags: ['alpha'],
+  title: 'React Spectrum Charts 2/Lab/Chart Action Bar/Coverage',
+  tags: ['lab'],
   component: ChartActionBar,
 };
 

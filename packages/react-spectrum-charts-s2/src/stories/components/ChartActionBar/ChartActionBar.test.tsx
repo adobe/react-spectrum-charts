@@ -11,7 +11,7 @@
  */
 import userEvent from '@testing-library/user-event';
 
-import { ChartActionBar } from '../../../components/index.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import {
   clickNthElement,
   findAllMarksByGroupName,

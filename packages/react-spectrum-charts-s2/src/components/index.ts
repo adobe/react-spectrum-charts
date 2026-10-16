@@ -14,7 +14,6 @@ export * from './Axis/index.js';
 export * from './AxisThumbnail/index.js';
 export * from './Bar/index.js';
 export * from './BarDirectLabel/index.js';
-export * from './ChartActionBar/index.js';
 export * from './ChartInspect/index.js';
 export * from './ChartPopover/index.js';
 export * from './Donut/index.js';

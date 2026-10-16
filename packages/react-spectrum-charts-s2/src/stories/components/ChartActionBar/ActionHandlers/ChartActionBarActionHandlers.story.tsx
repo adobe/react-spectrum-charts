@@ -11,14 +11,14 @@
  */
 import { action } from 'storybook/actions';
 
-import { ChartActionBar } from '../../../../components/index.js';
+import { ChartActionBar } from '../../../../lab/index.js';
 import { ActionBarLineStory } from '../../../../storyShared/components/ChartActionBar/chartActionBarStoryShared.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
 import { StoryWithParameters, actionBarContent, setControlInclude } from '../chartActionBarStoryTemplates.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Chart Action Bar/Features/Action Handlers',
-  tags: ['alpha'],
+  title: 'React Spectrum Charts 2/Lab/Chart Action Bar/Features/Action Handlers',
+  tags: ['lab'],
   component: ChartActionBar,
 };
 
