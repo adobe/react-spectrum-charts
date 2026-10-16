@@ -918,7 +918,8 @@ describe('Spec builder, Axis', () => {
             update: {
               ...defaultXBaselineMark.encode?.update,
               y: {
-                signal: "clamp(scale('yLinear', 10), 0, height)",
+                scale: 'yLinear',
+                value: 10,
               },
             },
           },
@@ -961,7 +962,8 @@ describe('Spec builder, Axis', () => {
             update: {
               ...defaultXBaselineMark.encode?.update,
               y: {
-                signal: "clamp(scale('yLinear', 10), 0, height)",
+                scale: 'yLinear',
+                value: 10,
               },
             },
           },

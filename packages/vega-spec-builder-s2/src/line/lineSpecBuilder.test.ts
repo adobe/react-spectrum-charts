@@ -56,6 +56,13 @@ describe('fixed metric range hover', () => {
     ['crossing lines with hover labels', [-20000, 5000, 20000, 1000], { chartPopovers: [{}] }, false],
     ['points on the range boundaries', [-100, 0, 10000, 10100], { chartInspects: [{}] }, false],
     [
+      'range crossing zero',
+      [-1000, -500, -250, 0, 5000, 10000, 11000],
+      { chartInspects: [{}] },
+      false,
+      [-500, 10000],
+    ],
+    [
       'static points and labels',
       [-20000, 5000, 20000, 1000],
       { chartInspects: [{}], staticPoint: 'showPoint', lineDirectLabels: [{}] },
@@ -118,6 +125,7 @@ describe('fixed metric range hover', () => {
       await view.resize().runAsync();
       const initialSize = [view.width(), view.height()];
       expect(view.scale(lineOptions.metricAxis || 'yLinear').domain()).toEqual(range);
+      expect(view.scale(lineOptions.metricAxis || 'yLinear')(range[0])).toBeCloseTo(view.height());
       const hoverData = view.data('line0_visibleHoverData');
       expect(hoverData.map((datum) => datum.value)).toEqual(
         values.filter((value) => value >= range[0] && value <= range[1])

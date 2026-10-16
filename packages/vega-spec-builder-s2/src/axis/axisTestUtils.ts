@@ -26,11 +26,12 @@ export const defaultXBaselineMark: Mark = {
   description: 'xBaseline',
   type: 'rule',
   interactive: false,
+  clip: true,
   encode: {
     update: {
       x: { value: 0 },
       x2: { signal: 'width' },
-      y: { signal: "clamp(scale('yLinear', 0), 0, height)" },
+      y: { scale: 'yLinear', value: 0 },
     },
   },
 };
@@ -40,11 +41,12 @@ export const defaultYBaselineMark: Mark = {
   description: 'yBaseline',
   type: 'rule',
   interactive: false,
+  clip: true,
   encode: {
     update: {
       y: { value: 0 },
       y2: { signal: 'height' },
-      x: { signal: "clamp(scale('xLinear', 0), 0, width)" },
+      x: { scale: 'xLinear', value: 0 },
     },
   },
 };

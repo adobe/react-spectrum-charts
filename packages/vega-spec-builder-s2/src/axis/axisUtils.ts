@@ -518,10 +518,10 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
     x: {
       x: { value: 0 },
       x2: { signal: 'width' },
-      y: { signal: `clamp(scale('yLinear', ${baselineOffset}), 0, height)` },
+      y: { scale: 'yLinear', value: baselineOffset },
     },
     y: {
-      x: { signal: `clamp(scale('xLinear', ${baselineOffset}), 0, width)` },
+      x: { scale: 'xLinear', value: baselineOffset },
       y: { value: 0 },
       y2: { signal: 'height' },
     },
@@ -532,6 +532,7 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
     description: `${orientation}Baseline`,
     type: 'rule',
     interactive: false,
+    clip: true,
     encode: {
       update: {
         ...positionOptions[orientation],

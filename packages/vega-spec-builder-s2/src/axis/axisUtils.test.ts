@@ -45,24 +45,30 @@ describe('getBaselineRule', () => {
     test('should apply offset', () => {
       for (const offset of [1, 100, -100]) {
         expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty(
-          'signal',
-          `clamp(scale('yLinear', ${offset}), 0, height)`
+          'scale',
+          'yLinear'
         );
+        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty('value', offset);
         expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty(
-          'signal',
-          `clamp(scale('xLinear', ${offset}), 0, width)`
+          'scale',
+          'xLinear'
         );
+        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty('value', offset);
       }
     });
 
     test.each<['bottom' | 'left', [number, number], number, number]>([
-      ['bottom', [400, 550], 0, 100],
-      ['bottom', [-550, -400], 0, 0],
+      ['bottom', [400, 550], 0, 1100 / 3],
+      ['bottom', [-550, -400], 0, -800 / 3],
       ['bottom', [-100, 100], 25, 37.5],
-      ['left', [400, 550], 0, 0],
-      ['left', [-550, -400], 0, 200],
+      ['bottom', [-500, 10000], 0, 2000 / 21],
+      ['bottom', [-500, 10000], -500, 100],
+      ['left', [400, 550], 0, -1600 / 3],
+      ['left', [-550, -400], 0, 2200 / 3],
       ['left', [-100, 100], 25, 125],
-    ])('keeps the %s baseline inside domain %j at offset %s', async (position, domain, offset, coordinate) => {
+      ['left', [-500, 10000], 0, 200 / 21],
+      ['left', [-500, 10000], -500, 0],
+    ])('clips the %s baseline without moving it for domain %j at offset %s', async (position, domain, offset, coordinate) => {
       const horizontal = position === 'bottom';
       const view = new View(
         parse({
@@ -87,8 +93,15 @@ describe('getBaselineRule', () => {
         const { root } = view.scenegraph() as Scene & { root: Scene };
         const baseline = root.items[0].items[0].items[0];
         expect(baseline[horizontal ? 'y' : 'x']).toBeCloseTo(coordinate);
+        expect(baseline.mark.clip).toBe(true);
+        expect(root.items[0].bounds.x1).toBeGreaterThanOrEqual(0);
+        expect(root.items[0].bounds.y1).toBeGreaterThanOrEqual(0);
+        expect(root.items[0].bounds.x2).toBeLessThanOrEqual(200);
+        expect(root.items[0].bounds.y2).toBeLessThanOrEqual(100);
         await view.width(300).height(150).resize().runAsync();
         expect(baseline[horizontal ? 'y' : 'x']).toBeCloseTo(coordinate * 1.5);
+        expect(root.items[0].bounds.x2).toBeLessThanOrEqual(300);
+        expect(root.items[0].bounds.y2).toBeLessThanOrEqual(150);
       } finally {
         view.finalize();
       }

@@ -1045,7 +1045,7 @@ const axisVariations: Variation[] = [
   },
   {
     id: 'axis-range',
-    title: 'Fixed metric range',
+    title: 'Fixed metric axis',
     description: 'Pins the metric axis to 0–10,000.',
     dataset: 'standard',
     coverage: ['Axis.range=[0,10000]'],
