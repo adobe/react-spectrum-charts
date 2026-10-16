@@ -105,27 +105,21 @@ export interface HoverAnimStateOptions {
 export const getHoverAnimStateData = ({ name, keys, keyField = SERIES_ID }: HoverAnimStateOptions): ValuesData => ({
   name: `${name}_${HOVER_ANIM_STATE_DATA}`,
   values: keys.map((id) => ({ [keyField]: id, startTime: 0, startValue: 1, target: 1 })),
-  on: keys.map((_, i) => getOnTriggerEntry(name, i)),
+  on: keys.length ? [getOnTriggerEntry(name)] : [],
 });
 
 /**
- * Helper function to get the on-trigger entry for each hoverable item. Records the startTime, startValue, and
- * target for each hoverable item, triggered by the hover target signal. This is used by HoverFractionData to
- * calculate the linear interpolation between the startValue and target.
+ * Gets the on-trigger that replaces every row with its next state (see `hoverAnimState`) whenever the hover targets change.
  * @param name - the name of the mark
- * @param i - the index of the hoverable item
- * @returns OnTrigger - the on trigger entry for the hoverable item
+ * @returns OnTrigger
  */
-const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
-  const animRef = `data('${name}_${HOVER_ANIM_STATE_DATA}')[${i}]`;
-  const targetSigRef = `${name}_${HOVER_TARGETS}[${i}]`;
-  const fracRef = `(data('${name}_${HOVER_FRACTION_DATA}') || [])[${i}]`;
-  const hasChanged = `${targetSigRef} !== ${animRef}.target`;
-  const fracExpr = `(${fracRef} || {fraction: 1}).fraction`;
+const getOnTriggerEntry = (name: string): OnTrigger => {
+  const stateRows = `data('${name}_${HOVER_ANIM_STATE_DATA}')`;
   return {
     trigger: `${name}_${HOVER_TARGETS}`,
-    modify: animRef,
-    values: `{startTime: ${hasChanged} ? now() : ${animRef}.startTime, startValue: ${hasChanged} ? ${fracExpr} : ${animRef}.startValue, target: ${targetSigRef}}`,
+    // removes exactly the rows being replaced, so nothing is cleared if the trigger fires before the data loads
+    remove: stateRows,
+    insert: `hoverAnimState(${stateRows}, ${name}_${HOVER_TARGETS}, data('${name}_${HOVER_FRACTION_DATA}'), now())`,
   };
 };
 

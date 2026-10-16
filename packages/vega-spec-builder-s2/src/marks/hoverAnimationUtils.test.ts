@@ -111,25 +111,15 @@ describe('getHoverAnimStateData()', () => {
     expect(result.on).toStrictEqual([]);
   });
 
-  test('adds one on-trigger per key, keyed to the targets signal and modifying the matching row', () => {
+  test('adds a single on-trigger, keyed to the targets signal, that replaces every row', () => {
     const result = getHoverAnimStateData({ name: 'line0', keys: ['a', 'b'] });
-    expect(result.on).toHaveLength(2);
-    const [first, second] = result.on ?? [];
-    expect(first.trigger).toEqual(`line0_${HOVER_TARGETS}`);
-    expect(first.modify).toEqual(`data('line0_hoverAnimStateData')[0]`);
-    expect(second.modify).toEqual(`data('line0_hoverAnimStateData')[1]`);
-  });
-
-  test('on-trigger restarts the clock (now()) and captures the current fraction as startValue when the target changes', () => {
-    const { on } = getHoverAnimStateData({ name: 'line0', keys: ['a'] });
-    const values = (on?.[0] as { values: string }).values;
-    // restart time from now() and set the new target
-    expect(values).toContain('now()');
-    expect(values).toContain(`target: line0_${HOVER_TARGETS}[0]`);
-    // startValue is snapshotted from the live fraction so mid-animation reversals are smooth
-    // the outer `|| []` guards against `data(...)` itself resolving before hoverFractionData's
-    // first computation, not just an out-of-range index
-    expect(values).toContain(`((data('line0_hoverFractionData') || [])[0] || {fraction: 1}).fraction`);
+    expect(result.on).toStrictEqual([
+      {
+        trigger: `line0_${HOVER_TARGETS}`,
+        remove: `data('line0_hoverAnimStateData')`,
+        insert: `hoverAnimState(data('line0_hoverAnimStateData'), line0_${HOVER_TARGETS}, data('line0_hoverFractionData'), now())`,
+      },
+    ]);
   });
 });
 

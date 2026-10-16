@@ -48,6 +48,7 @@ export const getExpressionFunctions = (
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
+    hoverAnimState,
     hoverFraction,
     isDonutLabelVisible,
     truncateText,
@@ -367,6 +368,34 @@ export const hoverFraction = (
   return (index.get(key)?.[field] as number | undefined) ?? fallback;
 };
 
+type HoverAnimStateRow = Record<string, unknown> & { startTime: number; startValue: number; target: unknown };
+
+/**
+ * Returns the next hover animation state rows, restarting the transition for each row whose target changed.
+ * @param rows - the current hoverAnimStateData values
+ * @param targets - the hover target for each row, by index
+ * @param fractionRows - the current hoverFractionData values, by index
+ * @param now - the current time
+ * @returns HoverAnimStateRow[]
+ */
+export const hoverAnimState = (
+  rows: HoverAnimStateRow[] | undefined,
+  targets: unknown[] | undefined,
+  fractionRows: HoverFractionRow[] | undefined,
+  now: number
+): HoverAnimStateRow[] =>
+  (rows ?? []).map((row, i) => {
+    // copies string keys only, so vega's symbol tuple id isn't carried onto the inserted row
+    const next = Object.fromEntries(Object.keys(row).map((key) => [key, row[key]])) as HoverAnimStateRow;
+    const target = targets?.[i];
+    if (target !== row.target) {
+      next.startTime = now;
+      next.startValue = fractionRows?.[i]?.fraction ?? 1;
+      next.target = target;
+    }
+    return next;
+  });
+
 const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
 
 /**
@@ -446,6 +475,7 @@ export const expressionFunctions = {
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   getLabelWidth,
+  hoverAnimState,
   hoverFraction,
   isDonutLabelVisible,
   truncateText,

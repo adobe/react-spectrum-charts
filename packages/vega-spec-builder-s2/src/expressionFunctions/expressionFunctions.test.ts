@@ -26,6 +26,7 @@ import {
   formatShortNumber,
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
+  hoverAnimState,
   hoverFraction,
   isDonutLabelVisible,
 } from './expressionFunctions.js';
@@ -500,6 +501,92 @@ describe('hoverFraction()', () => {
 
       await view.change('fractions', changeset().insert({ id: 'c', fraction: 0.9 })).runAsync();
       expect(getOpacities(view)).toEqual([0.5, 0.1, 0.9]);
+    });
+  });
+});
+
+describe('hoverAnimState()', () => {
+  const rows = [
+    { id: 'a', startTime: 0, startValue: 1, target: 1 },
+    { id: 'b', startTime: 0, startValue: 1, target: 1 },
+  ];
+
+  test('keeps rows whose target is unchanged', () => {
+    expect(hoverAnimState(rows, [1, 1], [], 100)).toStrictEqual(rows);
+  });
+
+  test('restarts the transition from the current fraction for rows whose target changed', () => {
+    expect(hoverAnimState(rows, [1, 0], [{ fraction: 1 }, { fraction: 0.7 }], 100)).toStrictEqual([
+      rows[0],
+      { id: 'b', startTime: 100, startValue: 0.7, target: 0 },
+    ]);
+  });
+
+  test('starts from a fraction of 1 when there is no fraction row yet', () => {
+    expect(hoverAnimState(rows, [0, 1], undefined, 50)[0]).toStrictEqual({
+      id: 'a',
+      startTime: 50,
+      startValue: 1,
+      target: 0,
+    });
+  });
+
+  test('returns new row objects without symbol keys', () => {
+    const id = Symbol('vega_id');
+    const [next] = hoverAnimState([{ ...rows[0], [id]: 1 }], [1], [], 0);
+    expect(next).not.toBe(rows[0]);
+    expect(Object.getOwnPropertySymbols(next)).toEqual([]);
+  });
+
+  test('returns no rows when there are none', () => {
+    expect(hoverAnimState(undefined, [1], [], 0)).toEqual([]);
+  });
+
+  describe('in a Vega view with the CSP-safe interpreter', () => {
+    let view: View | undefined;
+
+    beforeEach(() => {
+      expressionFunction('hoverAnimState', hoverAnimState);
+    });
+
+    afterEach(() => {
+      view?.finalize();
+      view = undefined;
+    });
+
+    const spec: Spec = {
+      signals: [{ name: 'targets', value: [1, 1] }],
+      data: [
+        {
+          name: 'state',
+          values: rows,
+          on: [
+            {
+              trigger: 'targets',
+              remove: "data('state')",
+              insert: "hoverAnimState(data('state'), targets, data('fractions'), 10)",
+            },
+          ],
+        },
+        { name: 'fractions', source: 'state', transform: [{ type: 'formula', as: 'fraction', expr: '0.4' }] },
+      ],
+    };
+
+    test('keeps the seeded rows when the trigger fires before the data loads', async () => {
+      view = new View(parse(spec, undefined, { ast: true }), { renderer: 'none', expr: expressionInterpreter });
+      await view.runAsync();
+      expect(view.data('state')).toStrictEqual(rows);
+    });
+
+    test('replaces the rows in order when the targets signal changes', async () => {
+      view = new View(parse(spec, undefined, { ast: true }), { renderer: 'none', expr: expressionInterpreter });
+      await view.runAsync();
+      await view.signal('targets', [0, 1]).runAsync();
+      // drops vega's symbol tuple ids so only the row fields are compared
+      expect(view.data('state').map((row: object) => Object.fromEntries(Object.entries(row)))).toStrictEqual([
+        { id: 'a', startTime: 10, startValue: 0.4, target: 0 },
+        { id: 'b', startTime: 0, startValue: 1, target: 1 },
+      ]);
     });
   });
 });
