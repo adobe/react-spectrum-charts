@@ -311,12 +311,9 @@ export const addHoverAnimationSignals = (signals: Signal[], name: string): void 
     });
   }
 
-  signals.push({
-    name: `${name}_${HOVER_TARGETS}`,
-    update: `pluck(data('${name}_${HOVER_TARGET_DATA}'), 'target')`,
-  });
-  // signal updates are parsed after data, so triggers can read these without referencing unregistered data
   signals.push(
+    { name: `${name}_${HOVER_TARGETS}`, update: `pluck(data('${name}_${HOVER_TARGET_DATA}'), 'target')` },
+    // signal updates are parsed after data, so triggers can read these without referencing unregistered data
     { name: `${name}_${HOVER_ANIM_STATE_ROWS}`, update: `data('${name}_${HOVER_ANIM_STATE_DATA}')` },
     { name: `${name}_${HOVER_FRACTION_ROWS}`, update: `data('${name}_${HOVER_FRACTION_DATA}')` }
   );
