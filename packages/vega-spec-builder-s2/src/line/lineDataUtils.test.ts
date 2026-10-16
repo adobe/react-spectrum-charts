@@ -46,6 +46,14 @@ describe('getLineHighlightedData()', () => {
     ).expr;
     expect(expr.includes(GROUP_ID)).toBeTruthy();
   });
+  test('should limit controlled items to the highlighted series and legend-hovered series', () => {
+    const expr = (
+      getLineHighlightedData({ ...defaultLineOptions, legendHighlightSignals: ['legend0_hoveredSeries'] })
+        .transform?.[0] as FilterTransform
+    ).expr;
+    expect(expr).toContain(`(!isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) || ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID})`);
+    expect(expr).toContain(`(!isValid(legend0_hoveredSeries) || legend0_hoveredSeries === datum.${SERIES_ID})`);
+  });
 });
 
 describe('getHoverLabelData()', () => {
