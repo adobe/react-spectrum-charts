@@ -9,19 +9,59 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Spec, View, changeset, expressionFunction, parse } from 'vega';
+import { expressionInterpreter } from 'vega-interpreter';
+
 import { numberLocales } from '@spectrum-charts/core-s2/locales';
 
 import {
   LabelDatum,
+  cubicBezier,
+  donutSliceStrokeWidth,
   expressionFunctions,
+  getExpressionFunctions,
   formatHorizontalTimeAxisLabels,
   formatLocaleCurrency,
   formatPercentWithValue,
   formatShortNumber,
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
+  hoverFraction,
   isDonutLabelVisible,
 } from './expressionFunctions.js';
+
+describe('cubicBezier()', () => {
+  test('maps the endpoints to themselves and clamps outside 0-1', () => {
+    expect(cubicBezier(0.45, 0, 0.4, 1, 0)).toBe(0);
+    expect(cubicBezier(0.45, 0, 0.4, 1, 1)).toBe(1);
+    expect(cubicBezier(0.45, 0, 0.4, 1, -1)).toBe(0);
+    expect(cubicBezier(0.45, 0, 0.4, 1, 2)).toBe(1);
+  });
+
+  test('is the identity for a linear curve', () => {
+    [0.1, 0.25, 0.5, 0.9].forEach((t) => expect(cubicBezier(0.25, 0.25, 0.75, 0.75, t)).toBeCloseTo(t, 5));
+  });
+
+  test('matches CSS cubic-bezier values for the S2 curves', () => {
+    // symmetric control points give an exact midpoint
+    expect(cubicBezier(0.42, 0, 0.58, 1, 0.5)).toBeCloseTo(0.5, 5);
+    // an ease-out front-loads progress; S2 in-out starts slow
+    expect(cubicBezier(0, 0, 0.4, 1, 0.5)).toBeGreaterThan(0.75);
+    expect(cubicBezier(0.45, 0, 0.4, 1, 0.2)).toBeLessThan(0.1);
+  });
+
+  test('is undone by swapping the x and y control points', () => {
+    [0.05, 0.3, 0.6, 0.95].forEach((t) => {
+      expect(cubicBezier(0, 0, 1, 0.4, cubicBezier(0, 0, 0.4, 1, t))).toBeCloseTo(t, 4);
+      expect(cubicBezier(0, 0.45, 1, 0.4, cubicBezier(0.45, 0, 0.4, 1, t))).toBeCloseTo(t, 4);
+    });
+  });
+
+  test('handles flat-sloped curves where Newton-Raphson stalls', () => {
+    expect(cubicBezier(1, 0, 1, 0, 0.5)).toBeGreaterThanOrEqual(0);
+    expect(cubicBezier(0, 1, 0, 1, 0.5)).toBeLessThanOrEqual(1);
+  });
+});
 
 describe('isDonutLabelVisible()', () => {
   const data = [
@@ -71,6 +111,37 @@ describe('isDonutLabelVisible()', () => {
         expect(isVisibleWhileHovering(datum, hoveredId)).toBe(isVisible(datum));
       });
     });
+  });
+});
+
+describe('donutSliceStrokeWidth()', () => {
+  test('should be registered as an expression function', () => {
+    expect(expressionFunctions.donutSliceStrokeWidth).toBe(donutSliceStrokeWidth);
+    expect(getExpressionFunctions()).toHaveProperty('donutSliceStrokeWidth', donutSliceStrokeWidth);
+  });
+
+  test('should return the requested width for wide slices', () => {
+    expect(donutSliceStrokeWidth(2, 152, 0, 0.5)).toBe(2);
+    expect(donutSliceStrokeWidth(2, 152, 1, 1 + 2 * Math.PI)).toBe(2);
+  });
+
+  test('should clamp the width toward 0 for tiny slices', () => {
+    const width = donutSliceStrokeWidth(2, 152, 0, 0.01);
+    expect(width).toBeGreaterThan(0);
+    expect(width).toBeLessThan(2);
+    expect(width).toBeCloseTo(2 * 152 * Math.sin(0.005) - 1);
+    expect(donutSliceStrokeWidth(2, 152, 0, 0.001)).toBe(0);
+    expect(donutSliceStrokeWidth(2, 152, 0.5, 0.5)).toBe(0);
+  });
+
+  test('should clip the arc to the draw-in cutoff', () => {
+    expect(donutSliceStrokeWidth(2, 152, 0, 0.5, 1)).toBe(2);
+    expect(donutSliceStrokeWidth(2, 152, 0, 0.5, 0.01)).toBe(donutSliceStrokeWidth(2, 152, 0, 0.01));
+    expect(donutSliceStrokeWidth(2, 152, 1, 1.5, 0.5)).toBe(0);
+  });
+
+  test('should treat a negative inner radius as 0', () => {
+    expect(donutSliceStrokeWidth(2, -10, 0, 0.5)).toBe(0);
   });
 });
 
@@ -133,6 +204,82 @@ describe('formatLocaleCurrency()', () => {
 
       expect(formatter(datum, 'en-US', 'JPY', '.invalidf')).toBe('1.234,56 €');
       expect(console.error).toHaveBeenCalled();
+    });
+  });
+});
+
+describe('getLabelWidth()', () => {
+  let measureText: jest.SpyInstance;
+  let getLabelWidth: typeof expressionFunctions.getLabelWidth;
+
+  beforeEach(() => {
+    measureText = jest.spyOn(CanvasRenderingContext2D.prototype, 'measureText');
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      ({ getLabelWidth } = require('./expressionFunctions.js').expressionFunctions);
+    });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  test('should reuse one canvas and cache repeated measurements', () => {
+    const createElement = jest.spyOn(document, 'createElement');
+    const first = getLabelWidth('cache me', 'bold', 13);
+    const second = getLabelWidth('cache me', 'bold', 13);
+    getLabelWidth('cache me too', 'bold', 13);
+
+    expect(second).toBe(first);
+    expect(measureText).toHaveBeenCalledTimes(2);
+    expect(createElement.mock.calls.filter(([tag]) => tag === 'canvas')).toHaveLength(1);
+  });
+
+  test('should cache by font as well as text', () => {
+    getLabelWidth('font key', 'bold', 14);
+    getLabelWidth('font key', 'normal', 14);
+    getLabelWidth('font key', 'bold', 16);
+    getLabelWidth('font key', 'bold', 16);
+
+    expect(measureText).toHaveBeenCalledTimes(3);
+  });
+
+  test('should evict only the oldest entry when the cache is full', () => {
+    for (let i = 0; i < 5000; i++) getLabelWidth(`label ${i}`, 'bold', 12);
+    getLabelWidth('overflow', 'bold', 12);
+    measureText.mockClear();
+
+    getLabelWidth('label 1', 'bold', 12);
+    expect(measureText).not.toHaveBeenCalled();
+    getLabelWidth('label 0', 'bold', 12);
+    expect(measureText).toHaveBeenCalledTimes(1);
+  });
+
+  describe('with document.fonts', () => {
+    const listeners: Record<string, () => void> = {};
+    const fonts = {
+      status: 'loaded',
+      addEventListener: (type: string, listener: () => void) => (listeners[type] = listener),
+    };
+    beforeEach(() => {
+      fonts.status = 'loaded';
+      Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
+    });
+    afterEach(() => {
+      delete (document as { fonts?: unknown }).fonts;
+    });
+
+    test('should not cache while fonts are loading', () => {
+      fonts.status = 'loading';
+      getLabelWidth('loading', 'bold', 12);
+      getLabelWidth('loading', 'bold', 12);
+
+      expect(measureText).toHaveBeenCalledTimes(2);
+    });
+
+    test('should clear the cache when fonts finish loading', () => {
+      getLabelWidth('font swap', 'bold', 12);
+      listeners.loadingdone();
+      getLabelWidth('font swap', 'bold', 12);
+
+      expect(measureText).toHaveBeenCalledTimes(2);
     });
   });
 });
@@ -268,5 +415,91 @@ describe('formatPercentWithValue()', () => {
   });
   test('should fall back to en-US percent formatting when only a time locale is provided', () => {
     expect(formatPercentWithValue({ time: 'fr-FR' })(0.652, 900)).toBe('65.2% (900)');
+  });
+});
+
+describe('hoverFraction()', () => {
+  test('returns the fraction for the matching row', () => {
+    const rows = [
+      { id: 'a', fraction: 0.2 },
+      { id: 'b', fraction: 0.8 },
+    ];
+    expect(hoverFraction(rows, 'id', 'b', 0.5)).toBe(0.8);
+  });
+
+  test('returns the fallback when there are no rows or no match', () => {
+    expect(hoverFraction(undefined, 'id', 'a', 0.5)).toBe(0.5);
+    expect(hoverFraction([{ id: 'a', fraction: 0.2 }], 'id', 'z', 0.5)).toBe(0.5);
+  });
+
+  test('uses the first row when keys repeat, matching indexof', () => {
+    const rows = [
+      { id: 'a', fraction: 0.1 },
+      { id: 'a', fraction: 0.9 },
+    ];
+    expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.1);
+  });
+
+  test('reads the requested field instead of the fraction', () => {
+    const rows = [{ id: 'a', fraction: 0.2, deemphasisOpacity: 0.6 }];
+    expect(hoverFraction(rows, 'id', 'a', 1, 'deemphasisOpacity')).toBe(0.6);
+    expect(hoverFraction(rows, 'id', 'z', 1, 'deemphasisOpacity')).toBe(1);
+  });
+
+  test('reads fractions live when rows are modified in place', () => {
+    const rows = [{ id: 'a', fraction: 0.2 }];
+    expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.2);
+    rows[0].fraction = 0.7;
+    expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.7);
+  });
+
+  describe('in a Vega view with the CSP-safe interpreter', () => {
+    let view: View | undefined;
+
+    beforeEach(() => {
+      expressionFunction('hoverFraction', hoverFraction);
+    });
+
+    afterEach(() => {
+      view?.finalize();
+      view = undefined;
+    });
+
+    const spec: Spec = {
+      data: [
+        { name: 'items', values: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] },
+        {
+          name: 'fractions',
+          values: [
+            { id: 'a', fraction: 0.5 },
+            { id: 'b', fraction: 0.5 },
+          ],
+        },
+      ],
+      marks: [
+        {
+          type: 'rect',
+          name: 'rects',
+          from: { data: 'items' },
+          encode: { update: { opacity: { signal: "hoverFraction(data('fractions'), 'id', datum.id, 0.25)" } } },
+        },
+      ],
+    };
+
+    type SceneRoot = { items: { items: { items: { opacity: number }[] }[] }[] };
+    const getOpacities = (chart: View) =>
+      (chart as unknown as { scenegraph: () => { root: SceneRoot } }).scenegraph().root.items[0].items[0].items.map(({ opacity }) => opacity);
+
+    test('re-encodes when the fraction data is modified or grows', async () => {
+      view = new View(parse(spec, undefined, { ast: true }), { renderer: 'none', expr: expressionInterpreter });
+      await view.runAsync();
+      expect(getOpacities(view)).toEqual([0.5, 0.5, 0.25]);
+
+      await view.change('fractions', changeset().modify((d: { id: string }) => d.id === 'b', 'fraction', 0.1)).runAsync();
+      expect(getOpacities(view)).toEqual([0.5, 0.1, 0.25]);
+
+      await view.change('fractions', changeset().insert({ id: 'c', fraction: 0.9 })).runAsync();
+      expect(getOpacities(view)).toEqual([0.5, 0.1, 0.9]);
+    });
   });
 });

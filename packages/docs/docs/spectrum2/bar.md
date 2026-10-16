@@ -4,6 +4,8 @@ sidebar_position: 3
 
 # Bar (S2)
 
+[<span className="badge badge--primary">Alpha</span>](./stages.md)
+
 The `Bar` component in the S2 package supports nearly all props from the [base Bar component](/docs/api/visualizations/Bar) plus S2-exclusive features: inline direct labels and Spectrum 2 styled visuals.
 
 :::note
@@ -129,6 +131,24 @@ Set `diverging` on `Bar` for a metric that spans positive and negative values (e
 :::note Single-series only
 `diverging` only supports a single-series bar (no `color`, `lineType`, or `opacity` facet, and not `type="dodged"`) that is the only bar mark on the chart. It is also a no-op on a trellised chart or when the axis has `subLabels`. In any of these cases the axis stays at its normal position and `diverging` has no effect.
 :::
+
+---
+
+## Draw-in animation
+
+Add `'drawIn'` to the chart's `animationTypes` to grow the bars from the baseline over 700ms with the
+Spectrum 2 ease-in-out curve. Stacked segments fill in order from the baseline outward. Direct labels and
+annotations start a 150ms linear fade as soon as their own bar or segment finishes drawing.
+
+```jsx
+<Chart data={data} animationTypes={['hover', 'drawIn']}>
+  <Bar dimension="browser" metric="downloads" />
+</Chart>
+```
+
+Draw-in is off by default. `animations={false}` disables it even when `'drawIn'` is listed. When a chart
+draws in more than one mark type, every mark uses the longest duration so they finish together. When the
+user prefers reduced motion, draw-in is skipped and hover fades still run.
 
 ---
 

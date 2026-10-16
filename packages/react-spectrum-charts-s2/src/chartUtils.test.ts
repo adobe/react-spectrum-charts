@@ -9,7 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { applyChartPropsDefaults, resolveAnimations } from './chartUtils.js';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
+
+import { applyChartPropsDefaults, resolveAnimationTypes } from './chartUtils.js';
 
 describe('applyChartPropsDefaults', () => {
   test('should return default props', () => {
@@ -41,17 +43,32 @@ describe('applyChartPropsDefaults', () => {
     const props = applyChartPropsDefaults({ data: [], colors });
     expect(props.colors).toBe(colors);
   });
+
+  test('should apply defaults for props explicitly set to undefined', () => {
+    const props = applyChartPropsDefaults({
+      data: [],
+      colorScheme: undefined,
+      backgroundColor: undefined,
+      height: undefined,
+    });
+    expect(props.colorScheme).toBe(DEFAULT_COLOR_SCHEME);
+    expect(props.backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
+    expect(props.height).toBe(300);
+  });
 });
 
-describe('resolveAnimations', () => {
-  test('disables animations when reduced motion is preferred', () => {
-    expect(resolveAnimations(undefined, true)).toBe(false);
-    expect(resolveAnimations(true, true)).toBe(false);
+describe('resolveAnimationTypes', () => {
+  test('keeps fades and drops motion when reduced motion is preferred', () => {
+    expect(resolveAnimationTypes(['hover', 'drawIn'], true)).toEqual(['hover']);
+    expect(resolveAnimationTypes(['drawIn'], true)).toEqual([]);
   });
 
-  test('preserves the animations prop when reduced motion is not preferred', () => {
-    expect(resolveAnimations(undefined, false)).toBeUndefined();
-    expect(resolveAnimations(false, false)).toBe(false);
-    expect(resolveAnimations(true, false)).toBe(true);
+  test('applies the defaults before filtering when animation types are unset', () => {
+    expect(resolveAnimationTypes(undefined, true)).toEqual(['hover']);
+  });
+
+  test('preserves the animation types when reduced motion is not preferred', () => {
+    expect(resolveAnimationTypes(undefined, false)).toBeUndefined();
+    expect(resolveAnimationTypes(['hover', 'drawIn'], false)).toEqual(['hover', 'drawIn']);
   });
 });

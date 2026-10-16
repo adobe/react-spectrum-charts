@@ -19,7 +19,7 @@ import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { RscChart } from './RscChart.js';
-import { applyChartPropsDefaults, resolveAnimations } from './chartUtils.js';
+import { applyChartPropsDefaults, resolveAnimationTypes } from './chartUtils.js';
 import { EmptyState } from './components/index.js';
 import { LoadingState } from './components/LoadingState/index.js';
 import { ChartProvider } from './context/RscChartContext.js';
@@ -37,6 +37,10 @@ interface PlaceholderContentProps {
   emptyStateText: string;
 }
 
+/**
+ * Root container that renders a Spectrum 2 chart from its child components.
+ * @alpha
+ */
 export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }) => {
   const {
     backgroundColor,
@@ -64,6 +68,11 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const prefersReducedMotion = usePrefersReducedMotion();
+  // Stable reference so parent re-renders don't rebuild the spec and replay draw-in.
+  const animationTypes = useMemo(
+    () => resolveAnimationTypes(otherProps.animationTypes, prefersReducedMotion),
+    [otherProps.animationTypes, prefersReducedMotion]
+  );
 
   useChartImperativeHandle(ref, { chartView, title });
 
@@ -92,11 +101,12 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
     throw new Error('Chart cannot accept both children and `UNSAFE_vegaSpec` prop. Please choose one or the other.');
   }
 
-  // Chart requires children or a Vega spec to configure what is drawn. If there aren't any children or a Vega spec, throw an error and return a fragment.
+  // Chart needs children or a Vega spec to draw; without either, log an error and render nothing.
   if (!props.children && !UNSAFE_vegaSpec) {
-    throw new Error(
+    console.error(
       'No children in the <Chart/> component. Chart is a collection components and requires children to draw correctly.'
     );
+    return null;
   }
 
   const rscChartProps: RscChartProps = {
@@ -109,7 +119,7 @@ export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }
     UNSAFE_vegaSpec,
     onVegaViewReady,
     ...otherProps,
-    animations: resolveAnimations(otherProps.animations, prefersReducedMotion),
+    animationTypes,
   };
 
   const chartContent = <RscChart {...rscChartProps}>{props.children}</RscChart>;

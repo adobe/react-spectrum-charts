@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart.js';
-import { Axis, Bar, BarDirectLabel, Legend } from '../../../components/index.js';
+import { Axis, Bar, BarDirectLabel, ChartInspect, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
 import { newSubscribersData } from '../../../storyShared/components/Bar/data.js';
 import { BarDirectLabelProps } from '../../../types/index.js';
@@ -22,6 +22,7 @@ import { bindStory } from './storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Direct Label',
+  tags: ['alpha'],
   component: BarDirectLabel,
 };
 
@@ -90,4 +91,29 @@ DataKey.argTypes = {
   position: { control: 'select', options: ['start', 'middle', 'end', 'end-outside'] },
 };
 
-export { Basic, Position, Format, Overflow, DataKey };
+const CollisionStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
+  const data = ['A', 'B', 'C', 'D'].map((channel) => ({
+    channel,
+    series: 'Subscribers',
+    subscribers: 100000000,
+    callout: channel === 'D',
+  }));
+  const chartProps = useChartProps({ data, width: 320, height: 240, animations: false });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+      <Bar dimension="channel" metric="subscribers" color="series" type="dodged">
+        <BarDirectLabel {...args} />
+        <ChartInspect />
+      </Bar>
+    </Chart>
+  );
+};
+
+const Collision = bindStory(CollisionStory);
+Collision.args = {};
+Collision.parameters = { controls: { include: ['dataKey'] } };
+Collision.argTypes = { dataKey: { control: 'select', options: [undefined, 'callout'] } };
+
+export { Basic, Position, Format, Overflow, DataKey, Collision };

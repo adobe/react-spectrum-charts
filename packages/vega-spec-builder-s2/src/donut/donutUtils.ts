@@ -12,13 +12,11 @@
 import { ArcMark, ColorValueRef, NumericValueRef, ProductionRule, Signal, SourceData, ThresholdScale } from 'vega';
 
 import {
-  ANIMATION_TIMER,
   BACKGROUND_COLOR,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_HOLE_RATIO,
   DONUT_BOOLEAN_SECONDARY_COLOR,
-  DONUT_DRAW_IN_LABEL_FADE_DURATION_MS,
   DONUT_LABEL_MIN_SPACE_RATIO,
   DONUT_LABEL_RING_GAPS,
   DONUT_RADIUS,
@@ -29,8 +27,6 @@ import {
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SLICE_GAPS,
   DRAW_IN_ANIM_CUTOFF,
-  DRAW_IN_ANIMATION_DURATION_MS,
-  DRAW_IN_START,
   FADE_FACTOR,
   FILTERED_TABLE,
   HOVERED_ITEM,
@@ -40,7 +36,8 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils.js';
-import { getDeemphasisRamp, getHoverFractionSignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
+import { getDrawInLabelFadeExpr } from '../marks/drawInAnimationUtils.js';
+import { getHoverDeemphasisOpacitySignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
 import {
   getColorProductionRule,
   getCursor,
@@ -49,8 +46,6 @@ import {
   isInteractive,
 } from '../marks/markUtils.js';
 import { DonutSpecOptions } from '../types/index.js';
-
-const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
 
 /** Returns whether a donut needs hover state for its labels, interactions, or a highlighted legend. */
 export const isDonutInteractive = (options: DonutSpecOptions): boolean =>
@@ -92,8 +87,7 @@ export const getDonutHoverRules = (options: DonutSpecOptions): HoverMatchRule[] 
 /** Gets the shared arc and label opacity, animated when hover animations are enabled. */
 export const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } & NumericValueRef)[] => {
   if (options.isHoverAnimate) {
-    const ramp = getDeemphasisRamp(getHoverFractionSignal(options.name, getDonutAnimIdField(options.name)));
-    return [{ signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` }];
+    return [{ signal: getHoverDeemphasisOpacitySignal(options.name, getDonutAnimIdField(options.name)) }];
   }
   const opacity = getMarkOpacity(options);
   if (!isInteractive(options) && isDonutInteractive(options)) {
@@ -109,10 +103,7 @@ export const getDonutLabelFadeProgressExpr = (options: DonutSpecOptions): string
   const drawStartAngle = getDonutStartAngle(options);
   const sweep = getDonutSweepExpr(options);
   const endProgress = `clamp((${endAngle} - ${drawStartAngle}) / (${sweep}), 0, 1)`;
-  const sliceEndTime = `${DRAW_IN_ANIMATION_DURATION_MS} * sqrt(${endProgress})`;
-  const elapsed = `${ANIMATION_TIMER} - ${DRAW_IN_START}`;
-  const linearFade = `clamp(((${elapsed}) - (${sliceEndTime})) / ${DONUT_DRAW_IN_LABEL_FADE_DURATION_MS}, 0, 1)`;
-  return `(${endAngle} > ${startAngle} ? ${linearFade} : 0)`;
+  return `(${endAngle} > ${startAngle} ? ${getDrawInLabelFadeExpr(endProgress)} : 0)`;
 };
 
 /** Combines the draw-in label fade with the donut's existing highlight opacity rules. */
@@ -233,11 +224,25 @@ export const getSizeTierValueExpr = (name: string, values: (number | string)[]):
   `[${values.join(', ')}][${getDonutSizeTierSignalName(name)}]`;
 
 /**
+ * Gets the name of the signal holding the donut's outer radius.
+ * @param donutOptions
+ * @returns signal name
+ */
+export const getDonutOuterRadiusExpr = ({ name }: Pick<DonutSpecOptions, 'name'>): string => `${name}_outerRadius`;
+
+/**
+ * Gets the name of the signal holding the donut's inner radius.
+ * @param donutOptions
+ * @returns signal name
+ */
+export const getDonutInnerRadiusExpr = ({ name }: Pick<DonutSpecOptions, 'name'>): string => `${name}_innerRadius`;
+
+/**
  * Gets the donut's outer radius; with labels, shrinks the donut so its labels fit inside the chart, keeping it within its size tier.
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutOuterRadiusExpr = (options: DonutSpecOptions): string => {
+const getDonutOuterRadiusUpdate = (options: DonutSpecOptions): string => {
   const baseRadius = getDonutBaseRadiusExpr(options);
   if (!isDonutLabelSpaceReserved(options)) {
     return baseRadius;
@@ -326,17 +331,25 @@ export const getSliceGapSignal = ({ holeRatio, name }: DonutSpecOptions): Signal
 });
 
 /**
- * Gets the donut's inner radius expression, relative to the label-reserved outer radius. Uses the
- * fixed per-tier ring width when holeRatio is left at its default, otherwise honors an explicitly
- * customized holeRatio as a proportional ring.
+ * Gets the donut's inner radius: the fixed per-tier ring width at the default holeRatio, otherwise a proportional ring.
  * @param donutOptions
  * @returns vega expression string
  */
-export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
+const getDonutInnerRadiusUpdate = (options: DonutSpecOptions): string => {
   const { holeRatio, name } = options;
   const outerRadius = getDonutOuterRadiusExpr(options);
   return holeRatio === DEFAULT_HOLE_RATIO ? `(${outerRadius} - ${name}_ringWidth)` : `${holeRatio} * ${outerRadius}`;
 };
+
+/**
+ * Gets the signals resolving the donut's outer and inner radius once per chart size.
+ * @param donutOptions
+ * @returns Signal[]
+ */
+export const getDonutRadiusSignals = (options: DonutSpecOptions): Signal[] => [
+  { name: getDonutOuterRadiusExpr(options), update: getDonutOuterRadiusUpdate(options) },
+  { name: getDonutInnerRadiusExpr(options), update: getDonutInnerRadiusUpdate(options) },
+];
 
 /**
  * Preserves fixed pie outlines and clamps donut outlines to preserve fill at the inner radius.
@@ -347,15 +360,8 @@ export const getDonutInnerRadiusExpr = (options: DonutSpecOptions): string => {
 export const getSliceStrokeWidthExpr = (options: DonutSpecOptions, requestedWidth: string): string => {
   const { holeRatio, isDrawInAnimate, name } = options;
   if (holeRatio === 0) return requestedWidth;
-  const radius = `max(0, ${getDonutInnerRadiusExpr(options)})`;
-  const cutoff = `${name}_${DRAW_IN_ANIM_CUTOFF}`;
-  const drawnStart = `min(datum['${name}_startAngle'], ${cutoff})`;
-  const drawnEnd = `min(datum['${name}_endAngle'], ${cutoff})`;
-  const arcLength = isDrawInAnimate ? `(${drawnEnd}) - (${drawnStart})` : `datum['${name}_arcLength']`;
-  const arcAngle = `min(PI, max(0, ${arcLength}))`;
-  const availableWidth = `2 * (${radius}) * sin((${arcAngle}) / 2)`;
-  const visibleWidth = `max(0, (${availableWidth}) - ${DONUT_MIN_VISIBLE_SLICE_WIDTH})`;
-  return `min(${requestedWidth}, ${visibleWidth})`;
+  const cutoff = isDrawInAnimate ? `, ${name}_${DRAW_IN_ANIM_CUTOFF}` : '';
+  return `donutSliceStrokeWidth(${requestedWidth}, ${getDonutInnerRadiusExpr(options)}, datum['${name}_startAngle'], datum['${name}_endAngle']${cutoff})`;
 };
 
 /**

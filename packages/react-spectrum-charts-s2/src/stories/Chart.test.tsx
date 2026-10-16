@@ -518,4 +518,12 @@ describe('Chart', () => {
       expect(chart).toBeInTheDocument();
     });
   });
+
+  test('should log an error and render nothing when there are no children', () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const { container } = render(<Chart data={data}>{false}</Chart>);
+    expect(container.querySelector('.rsc-container')).toBeNull();
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('No children in the <Chart/> component'));
+    consoleSpy.mockRestore();
+  });
 });

@@ -125,12 +125,6 @@ export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
 export const HOVER_FRACTION_DATA = 'hoverFractionData';
 /** Series-level (max) aggregate of a per-item-animated mark's hoverFractionData, for ungrouped legends that need one fraction per series */
 export const HOVER_SERIES_FRACTION_DATA = 'hoverSeriesFractionData';
-/** Draw-in animation: the already-drawn portion, the single lerping tip point, and their merge (source the line mark renders from) */
-export const DRAW_IN_PREV_DATA = 'drawInPrev'; // suffix: ${name}_drawInPrev
-export const DRAW_IN_TIP_DATA = 'drawInTip'; // suffix: ${name}_drawInTip
-export const DRAW_IN_LERP_DATA = 'drawInLerp'; // suffix: ${name}_drawInLerp
-/** Point-scale-only: derived source carrying each row's ordinal index (see DRAW_IN_POINT_INDEX_FIELD) */
-export const DRAW_IN_POINT_INDEX_DATA = 'drawInIndexed'; // suffix: ${name}_drawInIndexed
 
 // vega data field names
 export const DIMENSION_FIELD = 'rscDimensionField';
@@ -143,19 +137,6 @@ export const BAR_ANIM_ID = 'rscBarAnimId';
 export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
-/** Numeric-ms formula field added to `table` for time-scale lines so draw-in cutoff/tween math can compare raw numbers */
-export const DRAW_IN_TIME_MS_FIELD = 'rscDrawInTimeMs';
-/** Lead-window fields on filteredTable: each row's next point's dimension/metric value */
-export const DRAW_IN_NEXT_DIM_FIELD = 'drawInNextDimValue'; // suffix: ${name}_drawInNextDimValue
-export const DRAW_IN_NEXT_METRIC_FIELD = 'drawInNextMetricValue'; // suffix: ${name}_drawInNextMetricValue
-/** Point-scale-only: this row's ordinal index within the x scale's domain — a numeric sort key standing
- *  in for the (usually non-numeric) category value, since draw-in's cutoff/tween math needs raw numbers */
-export const DRAW_IN_POINT_INDEX_FIELD = 'drawInPointIndex'; // suffix: ${name}_drawInPointIndex
-/** Point-scale-only: next point's actual category value (for scale lookup), separate from
- *  DRAW_IN_NEXT_DIM_FIELD (next ordinal index, for cutoff/tween math) since the two diverge for point scales */
-export const DRAW_IN_NEXT_CATEGORY_FIELD = 'drawInNextCategoryValue'; // suffix: ${name}_drawInNextCategoryValue
-/** Flag marking the tip row within DRAW_IN_TIP_DATA/DRAW_IN_LERP_DATA */
-export const DRAW_IN_TIP_FLAG = 'isDrawInTip';
 
 // signal names
 export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
@@ -169,16 +150,18 @@ export const SELECTED_GROUP = 'selectedGroup'; // data point
 export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
 export const ANIMATION_TIMER = 'animationTimer'; // main animation timer signal
+export const ANIMATION_ACTIVE = 'animationActive'; // true while any animation (or its final grace tick) still needs timer ticks
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
 export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's one-tick grace period after hoverAnimating goes false
-export const DRAW_IN_START = 'drawInStart'; // mount timestamp, captured once
+export const DRAW_IN_START = 'drawInStart'; // timestamp of the first animation timer tick, captured once
+export const DRAW_IN_DURATION = 'drawInDuration'; // ms the chart's draw-in lasts: the longest of its marks' durations
 export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
-export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-out) progress
-export const DRAW_IN_DOMAIN_MIN = 'drawInDomainMin'; // draw-in animation: dimension scale domain min, captured once at mount
-export const DRAW_IN_DOMAIN_MAX = 'drawInDomainMax'; // draw-in animation: dimension scale domain max, captured once at mount
+export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // progress eased with S2_EASE_IN_OUT
 export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
+export const DRAW_IN_DONE = 'drawInDone'; // true once draw-in finishes; flips once so dependents re-encode once
+export const DRAW_IN_CLIP_X = 'drawInClipX'; // suffix: ${name}_drawInClipX — line draw-in clip edge, in pixels
 export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
 export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
 export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
@@ -215,8 +198,12 @@ export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover'];
 // hover animation constants
 /** Timer signal update interval in ms. Caps timer signal update at ~30fps. */
 export const ANIMATION_THROTTLE = 33;
+/** Minimum ms between host animation ticker frames. 0 = native display rate; set to ANIMATION_THROTTLE for ~30fps. */
+export const ANIMATION_MIN_FRAME_INTERVAL = 0;
+/** Per-frame time budget (ms) for ticking animated charts; charts past the budget tick on the next frame */
+export const ANIMATION_FRAME_BUDGET_MS = 8;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
-export const ANIMATION_HOVER_SPEED = 250;
+export const ANIMATION_HOVER_SPEED = 150;
 /**
  * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
  * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
@@ -225,11 +212,22 @@ export const ANIMATION_HOVER_SPEED = 250;
  */
 export const HOVER_NEUTRAL_TARGET = 0.5;
 
+/** Cubic-bezier control points (x1, y1, x2, y2) for an animation easing curve. */
+export type CubicBezierEasing = [number, number, number, number];
+/** Spectrum 2 ease-in-out curve. */
+export const S2_EASE_IN_OUT: CubicBezierEasing = [0.45, 0, 0.4, 1];
+
 // draw-in animation constants
-/** Time in ms it takes to animate the draw-in animation */
-export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
-/** Duration of the linear fade-in for donut labels after their slice finishes drawing. */
-export const DONUT_DRAW_IN_LABEL_FADE_DURATION_MS = 50;
+/** Line draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_SWEEP_DURATION_MS = 850;
+/** Bar draw-in duration in ms; the growth is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_GROW_DURATION_MS = 700;
+/** Donut draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_DONUT_DURATION_MS = 750;
+/** Pixels the line draw-in clip extends past the plot so strokes and points at the edges aren't cut off. */
+export const DRAW_IN_CLIP_OVERFLOW = 1000;
+/** Duration of the linear fade-in for labels after their own mark finishes drawing. */
+export const DRAW_IN_LABEL_FADE_DURATION_MS = 150;
 
 // donut constants
 /** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */

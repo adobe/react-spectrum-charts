@@ -25,11 +25,18 @@ import {
   HOVER_TARGET_DATA,
   HOVER_TARGETS,
   ANIMATION_TIMER,
+  FADE_FACTOR,
+  S2_EASE_IN_OUT,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
 import { hasSignalByName } from '../signal/signalSpecBuilder.js';
+import { addAnimationTimerSignal } from './animationTimerUtils.js';
+import { getCubicBezierExpr } from './drawInAnimationUtils.js';
+
+/** hoverFractionData field holding each item's animated deemphasis opacity. */
+export const HOVER_DEEMPHASIS_OPACITY = 'deemphasisOpacity';
 
 /** One hover condition. expr must evaluate to 1 | 0 | null. */
 export interface HoverMatchRule {
@@ -131,7 +138,7 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
  * @returns SourceData - the source data for the hover fraction data
  */
 export const getHoverFractionData = (name: string): SourceData => {
-  const easedProgress = `datum.progress < 0.5 ? 2 * pow(datum.progress, 2) : 1 - pow(-2 * datum.progress + 2, 2) / 2`;
+  const easedProgress = getCubicBezierExpr(S2_EASE_IN_OUT, 'datum.progress');
 
   return {
     name: `${name}_${HOVER_FRACTION_DATA}`,
@@ -146,6 +153,11 @@ export const getHoverFractionData = (name: string): SourceData => {
         type: 'formula',
         as: 'fraction',
         expr: `lerp([datum.startValue, datum.target], ${easedProgress})`,
+      },
+      {
+        type: 'formula',
+        as: HOVER_DEEMPHASIS_OPACITY,
+        expr: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${getDeemphasisRamp('datum.fraction')}`,
       },
     ],
   };
@@ -185,7 +197,18 @@ export const getHoverSeriesFractionData = (name: string, keyField: string = SERI
 export const addHoverAnimLastChangeData = (data: Data[], name: string): void => {
   let lastChangeData = data.find((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA) as ValuesData | undefined;
   if (!lastChangeData) {
-    lastChangeData = { name: HOVER_ANIM_LAST_CHANGE_DATA, values: [{ lastChange: 0 }], on: [] };
+    lastChangeData = {
+      name: HOVER_ANIM_LAST_CHANGE_DATA,
+      values: [{ lastChange: 0, settled: false }],
+      // settled lets the animation timer's event filter (which can't read signals) stop ticking once the grace tick has run
+      on: [
+        {
+          trigger: HOVER_IDLE_TICKS,
+          modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
+          values: `{settled: ${HOVER_IDLE_TICKS} >= 2}`,
+        },
+      ],
+    };
     data.push(lastChangeData);
   }
   if (lastChangeData.on === undefined) {
@@ -194,7 +217,7 @@ export const addHoverAnimLastChangeData = (data: Data[], name: string): void => 
   lastChangeData.on.push({
     trigger: `${name}_${HOVER_TARGETS}`,
     modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
-    values: '{lastChange: now()}',
+    values: '{lastChange: now(), settled: false}',
   });
 };
 
@@ -207,11 +230,18 @@ export const addHoverAnimLastChangeData = (data: Data[], name: string): void => 
  * @returns string - the signal for the hover fraction
  */
 export const getHoverFractionSignal = (name: string, keyField: string = SERIES_ID): string => {
-  const fractionData = `data('${name}_${HOVER_FRACTION_DATA}')`;
-  const lookup = `indexof(pluck(${fractionData}, '${keyField}'), datum.${keyField})`;
-  // default to the neutral emphasis level when this datum has no animation row
-  return `(${fractionData}[${lookup}] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`;
+  // falls back to the neutral emphasis level when this datum has no animation row
+  return `hoverFraction(data('${name}_${HOVER_FRACTION_DATA}'), '${keyField}', datum.${keyField}, ${HOVER_NEUTRAL_TARGET})`;
 };
+
+/**
+ * Returns a Vega expression for `datum`'s animated deemphasis opacity, computed once per item in hoverFractionData.
+ * @param name - the name of the mark
+ * @param keyField - the identity field used to match the animation row (defaults to SERIES_ID)
+ * @returns string
+ */
+export const getHoverDeemphasisOpacitySignal = (name: string, keyField: string = SERIES_ID): string =>
+  `hoverFraction(data('${name}_${HOVER_FRACTION_DATA}'), '${keyField}', datum.${keyField}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`;
 
 /**
  * Reads emphasis level expression (0 = deemphasized, neutral in the middle, 1 = emphasized)
@@ -234,18 +264,22 @@ export const getEmphasisRamp = (fractionExpr: string): string =>
   `clamp((${fractionExpr} - ${HOVER_NEUTRAL_TARGET}) / (1 - ${HOVER_NEUTRAL_TARGET}), 0, 1)`;
 
 /**
+ * Gets the data-only condition that is true while a hover animation (or its grace tick) is pending.
+ * @param clock - vega expression for the current time
+ * @returns string
+ */
+export const getHoverAnimationActiveCondition = (clock: string): string => {
+  const lastChangeRow = `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`;
+  return `!${lastChangeRow}.settled || ${clock} - ${lastChangeRow}.lastChange < ${ANIMATION_HOVER_SPEED + ANIMATION_THROTTLE}`;
+};
+
+/**
  * Adds the hover animation signals to the signals array.
  * @param signals - the signals array to add the hover animation signals to
  * @param name - the name of the mark
  */
 export const addHoverAnimationSignals = (signals: Signal[], name: string): void => {
-  if (!hasSignalByName(signals, ANIMATION_TIMER)) {
-    signals.push({
-      name: ANIMATION_TIMER,
-      value: 0,
-      on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
-    });
-  }
+  addAnimationTimerSignal(signals, getHoverAnimationActiveCondition);
   if (!hasSignalByName(signals, HOVER_ANIMATING)) {
     signals.push({
       name: HOVER_ANIMATING,

@@ -9,12 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Donut } from '../../../pre-alpha/index.js';
+import { Donut } from '../../../components/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { DonutDashboard } from './donut.dashboard.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Dashboards',
+  title: 'React Spectrum Charts 2/Donut/Dashboards',
+  tags: ['alpha'],
   component: Donut,
   parameters: {
     controls: { disable: true },

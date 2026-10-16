@@ -144,11 +144,12 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
  * @param scatterOptions ScatterSpecOptions
  */
 export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scatterOptions) => {
-  const { name: scatterName } = scatterOptions;
+  const { highlightedItem, name: scatterName } = scatterOptions;
   // trendline signals
   setTrendlineSignals(signals, scatterOptions);
 
-  if (!isInteractive(scatterOptions)) return;
+  // highlightedItem alone still needs the hovered item signal that the voronoi and opacity rules reference
+  if (!isInteractive(scatterOptions) && highlightedItem === undefined) return;
   // interactive signals
   addHoveredItemSignal(signals, scatterName, `${scatterName}_voronoi`, 2);
   addInspectSignals(signals, scatterOptions);
@@ -160,19 +161,16 @@ export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scat
  * @param scatterOptions ScatterSpecOptions
  */
 export const setScales = produce<Scale[], [ScatterSpecOptions]>((scales, scatterOptions) => {
-  const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size } =
+  const { color, colorScaleType, dimension, dimensionScaleType, lineType, lineWidth, metric, opacity, size, stroke } =
     scatterOptions;
   // add dimension scale
   addContinuousDimensionScale(scales, { scaleType: dimensionScaleType, dimension });
   // add metric scale
   addMetricScale(scales, [metric]);
-  if (colorScaleType === 'linear') {
-    // add color to the color domain
-    addFieldToFacetScaleDomain(scales, LINEAR_COLOR_SCALE, color);
-  } else {
-    // add color to the color domain
-    addFieldToFacetScaleDomain(scales, COLOR_SCALE, color);
-  }
+  // add color and stroke to the color domain, since both are encoded with the color scale
+  const colorScaleName = colorScaleType === 'linear' ? LINEAR_COLOR_SCALE : COLOR_SCALE;
+  addFieldToFacetScaleDomain(scales, colorScaleName, color);
+  addFieldToFacetScaleDomain(scales, colorScaleName, stroke);
   // add lineType to the lineType domain
   addFieldToFacetScaleDomain(scales, LINE_TYPE_SCALE, lineType);
   // add lineWidth to the lineWidth domain

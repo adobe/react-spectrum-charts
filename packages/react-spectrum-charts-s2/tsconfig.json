@@ -6,6 +6,6 @@
     "outDir": "./dist",
     "declarationDir": "./dist/@types/"
   },
-  "include": ["src/**/*", "index.ts", "pre-alpha/**/*"],
+  "include": ["src/**/*", "index.ts", "lab/**/*"],
   "exclude": ["**/*.test.ts", "**/*.test.tsx", "src/stories/**/*", "src/storyShared/**/*"]
 }

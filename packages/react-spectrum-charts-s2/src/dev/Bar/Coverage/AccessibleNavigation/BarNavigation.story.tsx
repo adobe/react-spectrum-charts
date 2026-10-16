@@ -23,6 +23,7 @@ import { barData, barSeriesData } from '../../../../storyShared/components/Bar/d
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Accessible Navigation',
+  tags: ['alpha'],
   component: Bar,
   argTypes: {
     // Inline radio so a tester can flip orientation and confirm arrow keys follow the bars' layout.

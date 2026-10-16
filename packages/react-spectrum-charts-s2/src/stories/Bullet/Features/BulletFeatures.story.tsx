@@ -18,7 +18,7 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import { ChartInspect } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Bullet } from '../../../pre-alpha/index.js';
+import { Bullet } from '../../../lab/index.js';
 import {
   customLabelBulletData,
   quarterlyKpiData,
@@ -29,7 +29,8 @@ import { bindWithProps } from '../../../test-utils/index.js';
 import { BulletProps, ChartProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Features',
+  title: 'React Spectrum Charts 2/Lab/Bullet/Features',
+  tags: ['lab'],
   component: Bullet,
 };
 

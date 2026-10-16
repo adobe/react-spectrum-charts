@@ -13,7 +13,13 @@ import { formatLocale } from 'd3-format';
 import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 
 import { DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/core-s2/constants';
-import { LocaleCode, NumberLocaleCode, TimeLocaleCode, getLocale, numberLocales } from '@spectrum-charts/core-s2/locales';
+import {
+  LocaleCode,
+  NumberLocaleCode,
+  TimeLocaleCode,
+  getLocale,
+  numberLocales,
+} from '@spectrum-charts/core-s2/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/core-s2/tokens';
 
 import { NumberFormat } from '../types/index.js';
@@ -37,9 +43,12 @@ export const getExpressionFunctions = (
     formatLocaleCurrency: formatLocaleCurrency(numberLocale),
     formatShortNumber: formatShortNumber(localeCode),
     consoleLog,
+    cubicBezier,
+    donutSliceStrokeWidth,
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
+    hoverFraction,
     isDonutLabelVisible,
     truncateText,
   };
@@ -75,7 +84,7 @@ export const formatShortNumber = (numberLocale?: string | NumberLocale) => {
 export const formatPercentWithValue = (locale: Parameters<typeof getLocale>[0] = 'en-US') => {
   const { number: numberLocale } = getLocale(locale);
   const localeCode = typeof locale === 'string' ? locale : locale?.number;
-  const formatPercent = formatLocale((numberLocale ?? numberLocales['en-US'])).format('.1%');
+  const formatPercent = formatLocale(numberLocale ?? numberLocales['en-US']).format('.1%');
   // matches getTextNumberFormat's 'shortNumber' so the value reads the same as the segment label
   const formatValue = formatShortNumber(localeCode);
   return (percent: number, value: number) => `${formatPercent(percent)} (${formatValue(value)})`;
@@ -187,6 +196,23 @@ const consoleLog = (value) => {
   return value;
 };
 
+const LABEL_WIDTH_CACHE_MAX_SIZE = 5000;
+const labelWidthCache = new Map<string, number>();
+let measureContext: CanvasRenderingContext2D | null | undefined;
+
+/**
+ * Gets the shared canvas context used to measure text, creating it on first use.
+ * @returns canvas 2d context or null if unavailable
+ */
+const getMeasureContext = (): CanvasRenderingContext2D | null => {
+  if (measureContext === undefined) {
+    measureContext = document.createElement('canvas').getContext('2d');
+    // Widths measured before a web font loads use the fallback font, so drop them once fonts finish loading.
+    document.fonts?.addEventListener?.('loadingdone', () => labelWidthCache.clear());
+  }
+  return measureContext;
+};
+
 /**
  * Figures out the rendered width of text by drawing it on a canvas
  * @param text
@@ -195,12 +221,23 @@ const consoleLog = (value) => {
  * @returns width in pixels
  */
 const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: number = 12) => {
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
+  const font = `${fontWeight} ${fontSize}px ${ADOBE_CLEAN_FONT}`;
+  const key = `${font}|${text}`;
+  const cached = labelWidthCache.get(key);
+  if (cached !== undefined) return cached;
+
+  const context = getMeasureContext();
   if (context === null) return 0;
 
-  context.font = `${fontWeight} ${fontSize}px ${ADOBE_CLEAN_FONT}`;
-  return context.measureText(text).width;
+  context.font = font;
+  const width = context.measureText(text).width;
+  if (document.fonts?.status !== 'loading') {
+    if (labelWidthCache.size >= LABEL_WIDTH_CACHE_MAX_SIZE) {
+      labelWidthCache.delete(labelWidthCache.keys().next().value as string);
+    }
+    labelWidthCache.set(key, width);
+  }
+  return width;
 };
 
 /**
@@ -299,11 +336,117 @@ const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = '
   return truncatedText + '\u2026';
 };
 
+type HoverFractionRow = Record<string, unknown> & { fraction?: number };
+const hoverFractionIndexes = new WeakMap<HoverFractionRow[], Map<unknown, HoverFractionRow>>();
+
+/**
+ * Returns a hover animation value (the fraction by default) for `key`, indexing the rows once per data array.
+ * @param rows - the hoverFractionData values
+ * @param keyField - the identity field the rows are keyed by
+ * @param key - the identity of the item being encoded
+ * @param fallback - the value to use when no row matches
+ * @param field - the row field to read
+ * @returns number
+ */
+export const hoverFraction = (
+  rows: HoverFractionRow[] | undefined,
+  keyField: string,
+  key: unknown,
+  fallback: number,
+  field = 'fraction'
+): number => {
+  if (!rows) return fallback;
+  let index = hoverFractionIndexes.get(rows);
+  if (!index) {
+    index = new Map();
+    for (const row of rows) {
+      if (!index.has(row[keyField])) index.set(row[keyField], row);
+    }
+    hoverFractionIndexes.set(rows, index);
+  }
+  return (index.get(key)?.[field] as number | undefined) ?? fallback;
+};
+
+const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
+
+/**
+ * Clamps a slice's stroke width so a sliver of fill stays visible at the inner radius.
+ * @param requestedWidth
+ * @param innerRadius
+ * @param startAngle
+ * @param endAngle
+ * @param cutoff - draw-in sweep angle; omit when not animating
+ * @returns stroke width in px
+ */
+export const donutSliceStrokeWidth = (
+  requestedWidth: number,
+  innerRadius: number,
+  startAngle: number,
+  endAngle: number,
+  cutoff?: number
+): number => {
+  const arcLength =
+    cutoff === undefined ? endAngle - startAngle : Math.min(endAngle, cutoff) - Math.min(startAngle, cutoff);
+  const arcAngle = Math.min(Math.PI, Math.max(0, arcLength));
+  const availableWidth = 2 * Math.max(0, innerRadius) * Math.sin(arcAngle / 2);
+  return Math.min(requestedWidth, Math.max(0, availableWidth - DONUT_MIN_VISIBLE_SLICE_WIDTH));
+};
+
+const BEZIER_EPSILON = 1e-6;
+
+/**
+ * Evaluates a CSS-style cubic-bezier easing curve (P0 = 0,0 and P3 = 1,1) at progress `t`.
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @param t - linear progress, clamped to 0-1
+ * @returns eased progress
+ */
+export const cubicBezier = (x1: number, y1: number, x2: number, y2: number, t: number): number => {
+  if (Number.isNaN(t) || t <= 0) return 0;
+  if (t >= 1) return 1;
+  const cx = 3 * x1;
+  const bx = 3 * (x2 - x1) - cx;
+  const ax = 1 - cx - bx;
+  const cy = 3 * y1;
+  const by = 3 * (y2 - y1) - cy;
+  const ay = 1 - cy - by;
+  const sampleX = (s: number) => ((ax * s + bx) * s + cx) * s;
+  const sampleY = (s: number) => ((ay * s + by) * s + cy) * s;
+
+  // Newton-Raphson converges in a few steps for typical curves
+  let s = t;
+  for (let i = 0; i < 8; i++) {
+    const error = sampleX(s) - t;
+    if (Math.abs(error) < BEZIER_EPSILON) return sampleY(s);
+    const slope = (3 * ax * s + 2 * bx) * s + cx;
+    if (Math.abs(slope) < BEZIER_EPSILON) break;
+    s -= error / slope;
+  }
+
+  // bisection fallback for flat slopes, where Newton can't make progress
+  let low = 0;
+  let high = 1;
+  s = t;
+  for (let i = 0; i < 30; i++) {
+    const x = sampleX(s);
+    if (Math.abs(x - t) < BEZIER_EPSILON) break;
+    if (x < t) low = s;
+    else high = s;
+    s = (low + high) / 2;
+  }
+  return sampleY(s);
+};
+
 export const expressionFunctions = {
   consoleLog,
+  cubicBezier,
+  donutSliceStrokeWidth,
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   getLabelWidth,
+  hoverFraction,
   isDonutLabelVisible,
   truncateText,
 };

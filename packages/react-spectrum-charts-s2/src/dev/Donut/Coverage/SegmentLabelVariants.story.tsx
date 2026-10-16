@@ -15,13 +15,14 @@ import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, SegmentLabel } from '../../../pre-alpha/index.js';
+import { Donut, SegmentLabel } from '../../../components/index.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Coverage/SegmentLabel Variants',
+  title: 'React Spectrum Charts 2/Donut/Coverage/SegmentLabel Variants',
+  tags: ['alpha'],
   component: SegmentLabel,
 };
 

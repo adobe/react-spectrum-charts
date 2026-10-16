@@ -119,6 +119,7 @@ export interface BarSpecOptions extends PartiallyRequired<BarOptions, BarOptions
   interactiveMarkName: string | undefined;
   isHighlightedByGroup?: boolean;
   isHoverAnimate?: boolean;
+  isDrawInAnimate?: boolean;
   legendHighlightSignals?: string[];
   popoverMarkName?: string;
 }

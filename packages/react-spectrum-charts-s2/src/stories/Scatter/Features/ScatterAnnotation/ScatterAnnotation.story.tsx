@@ -16,13 +16,14 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../../Chart.js';
 import { Axis, Legend } from '../../../../components/index.js';
 import useChartProps from '../../../../hooks/useChartProps.js';
-import { Scatter, ScatterAnnotation } from '../../../../pre-alpha/index.js';
+import { Scatter, ScatterAnnotation } from '../../../../lab/index.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
 import { ScatterAnnotationProps } from '../../../../types/index.js';
 import { characterData } from '../../../data/marioKartData.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Scatter Annotation',
+  title: 'React Spectrum Charts 2/Lab/Scatter/Features/Scatter Annotation',
+  tags: ['lab'],
   component: ScatterAnnotation,
 };
 

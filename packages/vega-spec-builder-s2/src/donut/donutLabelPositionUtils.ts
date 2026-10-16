@@ -12,7 +12,7 @@
 import { FormulaTransform } from 'vega';
 
 /** Suffixes of the derived label position fields */
-type LabelFieldSuffix =
+export type LabelFieldSuffix =
   | 'hemisphere'
   | 'idealY'
   | 'radius'
@@ -22,7 +22,11 @@ type LabelFieldSuffix =
   | 'bottomY'
   | 'labelHalfWidth'
   | 'leftX'
-  | 'rightX';
+  | 'rightX'
+  | 'nameWidth'
+  | 'valueWidth'
+  | 'detailValueWidth'
+  | 'detailSuffixWidth';
 
 /**
  * Gets the derived label field name for a given field prefix and suffix

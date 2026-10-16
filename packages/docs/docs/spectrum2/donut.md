@@ -4,17 +4,13 @@ sidebar_position: 10
 
 # Donut (S2)
 
-:::note Pre-alpha component
-`Donut` is a [pre-alpha component](./pre-alpha) — it has no finalized Spectrum 2 design yet
-and is imported from the `pre-alpha` subpath.
-:::
+[<span className="badge badge--primary">Alpha</span>](./stages.md)
 
 The `Donut` component displays a donut (or pie, via `holeRatio={0}`) chart. Each data point
 becomes a segment sized by `metric` and colored by `color`.
 
 ```jsx
-import { Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+import { Chart, Donut, DonutSummary, Legend, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
 ```
 
 ```jsx
@@ -60,11 +56,11 @@ replaces the default content.
 
 ## Draw-in animation
 
-Add `'drawIn'` to the chart's `animationTypes` to sweep the segments clockwise over one
-second with a quadratic ease-in. Full-circle donuts and pies start at the top;
-semicircle donuts start at the left. Direct and advanced labels start a 50ms linear fade
+Add `'drawIn'` to the chart's `animationTypes` to sweep the segments clockwise over 750ms
+with the Spectrum 2 ease-in-out curve. Full-circle donuts and pies start at the top;
+semicircle donuts start at the left. Direct and advanced labels start a 150ms linear fade
 as soon as their own slice finishes drawing. All text rows and swatches fade together;
-the final label finishes about 50ms after the donut.
+the final label finishes about 150ms after the donut.
 Hover dimming and existing small-segment and collision rules still apply. The center
 summary stays visible throughout.
 
@@ -79,6 +75,7 @@ summary stays visible throughout.
 Draw-in is off by default. `animations={false}` disables it even when `'drawIn'` is
 listed. It runs when the Vega view is created, including after data or spec changes;
 resizing an existing view does not replay it. Empty-state rings remain static.
+When the user prefers reduced motion, draw-in is skipped and hover fades still run.
 
 ---
 

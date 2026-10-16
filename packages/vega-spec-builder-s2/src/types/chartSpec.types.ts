@@ -68,13 +68,13 @@ export type MarkOptions =
 // Notice that things like data and width/height are not included here
 // This is intentional as we don't want to have to rebuild the entire spec anytime data updates or the width/height change
 export interface ChartOptions {
-  /** Master kill switch for all chart animations. Reduced motion preferences disable animations automatically. */
+  /** Master kill switch for all chart animations. Reduced motion preferences disable motion (e.g. draw-in) automatically. */
   animations?: boolean;
   /** Which animation types are enabled. Defaults to `['hover']`. */
   animationTypes?: AnimationType[];
   /** Background color of the chart. */
   backgroundColor?: string;
-  /** Color scale. Defaults to the `categorical16' color scale. */
+  /** Color scale: a named scale, a list of Spectrum color tokens or CSS colors, or a 2D list. Defaults to `s2Categorical20`. */
   colors?: ChartColors;
   /** react-spectrum color scheme. @see https://react-spectrum.adobe.com/react-spectrum/Provider.html#props */
   colorScheme?: ColorScheme;

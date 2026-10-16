@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef } from 'vega';
+import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef, View, expressionFunction, parse } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -23,10 +23,13 @@ import {
   SERIES_ID,
   DEFAULT_FONT_COLOR,
   MIN_THUMBNAIL_SIZE,
+  TABLE,
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { SubLabel } from '../types/index.js';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
+import { ReferenceLineOptions, SubLabel } from '../types/index.js';
 import {
   addAxes,
   addAxesMarks,
@@ -886,6 +889,111 @@ describe('Spec builder, Axis', () => {
   });
 
   describe('addAxesMarks()', () => {
+    test('out-of-range references do not change plot layout through hover and resize', async () => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', (width: number) => width);
+      const data = [
+        { datetime: Date.UTC(2026, 0, 1), series: 'A', value: -1200 },
+        { datetime: Date.UTC(2026, 0, 2), series: 'A', value: 1400 },
+        { datetime: Date.UTC(2026, 0, 1), series: 'B', value: -300 },
+        { datetime: Date.UTC(2026, 0, 2), series: 'B', value: 480 },
+      ];
+      const createView = (referenceLines: ReferenceLineOptions[]) => {
+        const spec = buildSpec({
+          data,
+          axes: [
+            { position: 'left', referenceLines },
+            { position: 'bottom', labelFormat: 'time' },
+          ],
+          marks: [{ markType: 'line', name: 'testLine', color: 'series', chartInspects: [{}] }],
+          legends: [{ highlight: true }],
+        });
+        spec.autosize = { type: 'fit', contains: 'padding' };
+        return new View(parse(spec), { renderer: 'none' }).width(360).height(216).insert(TABLE, data);
+      };
+      const baseline = createView([]);
+      const view = createView([
+        { value: 4000, label: 'Above range' },
+        { value: -4000, label: 'Below range' },
+        { value: -600, label: 'In range', secondary: true },
+      ]);
+
+      try {
+        await baseline.runAsync();
+        await view.runAsync();
+        const assertLayout = async () => {
+          expect(view.width()).toBe(baseline.width());
+          expect(view.height()).toBe(baseline.height());
+          expect(view.height()).toBeGreaterThan(100);
+          expect(view.scale('yLinear').domain()).toEqual(baseline.scale('yLinear').domain());
+
+          const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+          const group = svg.querySelector('.axis0ReferenceLines');
+          expect(group).not.toBeNull();
+          const clipPath = group?.getAttribute('clip-path');
+          expect(clipPath).toMatch(/^url\(#.+\)$/);
+          const clipId = clipPath?.slice(5, -1);
+          const rect = svg.getElementById(clipId ?? '')?.querySelector('rect');
+          expect(Number(rect?.getAttribute('width'))).toBe(view.width());
+          expect(Number(rect?.getAttribute('height'))).toBe(view.height());
+          expect(group?.querySelector('.axis0ReferenceLine2 line')?.getAttribute('transform')).toBe(
+            `translate(0,${view.scale('yLinear')(-600)})`
+          );
+          expect(group?.querySelector('.axis0ReferenceLine2_label text')?.getAttribute('transform')).toEqual(
+            expect.stringContaining(`translate(${view.width()},`)
+          );
+        };
+
+        await assertLayout();
+        await view.signal('testLine_hoveredItem', view.data(FILTERED_TABLE)[0]).runAsync();
+        await assertLayout();
+        await view.signal('testLine_hoveredItem', null).runAsync();
+        await assertLayout();
+        await view.signal('legend0_hoveredSeries', 'A').runAsync();
+        await assertLayout();
+        await view.signal('legend0_hoveredSeries', null).runAsync();
+        await assertLayout();
+        await baseline.width(480).height(288).resize().runAsync();
+        await view.width(480).height(288).resize().runAsync();
+        await assertLayout();
+      } finally {
+        baseline.finalize();
+        view.finalize();
+      }
+    });
+
+    test('clips reference rules, caps, and labels together inside the plot', () => {
+      const marks = addAxesMarks([], {
+        ...defaultAxisOptions,
+        position: 'left',
+        referenceLines: [{ value: 4000, label: 'Goal' }],
+        scaleName: 'yLinear',
+        usermeta: {},
+      });
+
+      expect(marks).toHaveLength(1);
+      expect(marks[0]).toHaveProperty('name', 'axis0ReferenceLines');
+      expect(marks[0]).toHaveProperty('type', 'group');
+      expect(marks[0]).toHaveProperty('interactive', false);
+      expect(marks[0]).toHaveProperty('clip', true);
+      expect(marks[0]).toHaveProperty('marks', expect.arrayContaining([
+        expect.objectContaining({ name: 'axis0ReferenceLine0', type: 'rule' }),
+        expect.objectContaining({ name: 'axis0ReferenceLine0_startCap_S', type: 'path' }),
+        expect.objectContaining({ name: 'axis0ReferenceLine0_endCap_S', type: 'path' }),
+        expect.objectContaining({ name: 'axis0ReferenceLine0_labelBackground', type: 'text' }),
+        expect.objectContaining({ name: 'axis0ReferenceLine0_label', type: 'text' }),
+      ]));
+    });
+
+    test.each(['left', 'bottom'] as const)('does not add an empty reference-line group on the %s axis', (position) => {
+      expect(addAxesMarks([], {
+        ...defaultAxisOptions,
+        position,
+        scaleName: 'yLinear',
+        usermeta: {},
+      })).toHaveLength(0);
+    });
+
     test('should add baseline to the end of the marks if baseline offset is 0', () => {
       const marks = addAxesMarks([defaultYBaselineMark], {
         ...defaultAxisOptions,

@@ -22,6 +22,10 @@ import {
 
 import { AxisProps } from '../../types/index.js';
 
+/**
+ * Adds an axis to the chart.
+ * @alpha
+ */
 const Axis: FC<AxisProps> = ({
   position,
   baseline = false,

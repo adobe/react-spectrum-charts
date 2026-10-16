@@ -32,6 +32,8 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
   DIMENSION_HOVER_AREA,
+  DRAW_IN_ANIM_T_EASED,
+  DRAW_IN_DONE,
   FILTERED_TABLE,
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
@@ -59,12 +61,11 @@ import {
   addScales,
   addSecondaryScales,
   addSignals,
-  getDodgedGroupAggregateData,
   getDodgeGroupTransform,
+  getDodgedGroupAggregateData,
   getRepeatedScale,
   getStackAggregateData,
   getStackIdTransform,
-  insertAfterMark,
 } from './barSpecBuilder.js';
 import {
   defaultBarOptions,
@@ -359,6 +360,64 @@ describe('barSpecBuilder', () => {
       });
     });
 
+    describe('isDrawInAnimate gate', () => {
+      const findMark = (marks: Mark[] | undefined, name: string): Mark | undefined => {
+        for (const mark of marks ?? []) {
+          if (mark.name === name) return mark;
+          const nested = findMark((mark as GroupMark).marks, name);
+          if (nested) return nested;
+        }
+        return undefined;
+      };
+
+      test('a bar does not draw in by default', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' });
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(false);
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(false);
+        expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: FILTERED_TABLE });
+      });
+
+      test('animationTypes with "drawIn" adds the clock, the draw-in data, and points the bars at it', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_ANIM_T_EASED)).toBe(true);
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(true);
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(true);
+        expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: 'bar0_drawInData' });
+        // the background keeps final geometry so it never animates
+        expect(findMark(spec.marks, 'bar0_background')?.from).toStrictEqual({ data: FILTERED_TABLE });
+      });
+
+      test("stacked bars get each stack's totals so segments can fill in order", () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
+        const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
+        expect(filteredTable.transform).toContainEqual(
+          expect.objectContaining({ type: 'joinaggregate', as: ['bar0_drawInStackMax', 'bar0_drawInStackMin'] })
+        );
+      });
+
+      test('dodged bars facet the draw-in data', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          type: 'dodged',
+          animationTypes: ['drawIn'],
+        });
+        expect(findMark(spec.marks, 'bar0_group')?.from).toHaveProperty('facet.data', 'bar0_drawInData');
+        const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
+        expect(filteredTable.transform?.some((t) => t.type === 'joinaggregate')).toBe(false);
+      });
+
+      test('the chart-level animations: false master switch disables draw-in', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          animations: false,
+          animationTypes: ['drawIn'],
+        });
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(false);
+      });
+    });
+
     describe('isHoverAnimate gate', () => {
       test('an interactive bar does not animate by default -- animations must be explicitly opted into', () => {
         const spec = addBar(startingSpec, {
@@ -436,9 +495,7 @@ describe('barSpecBuilder', () => {
           animations: true,
           data,
         });
-        const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as
-          | SourceData
-          | undefined;
+        const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as SourceData | undefined;
         const aggregateTransform = hoverTargetData?.transform?.find(
           (t): t is AggregateTransform => t.type === 'aggregate'
         );
@@ -497,7 +554,11 @@ describe('barSpecBuilder', () => {
         test('highlightBy: "dimension" derives the groupId from the dimension after the aggregate', () => {
           const [aggregate, groupId] = getHoverTargetTransforms('dimension');
           expect(aggregate).toHaveProperty('groupby', expect.arrayContaining([DEFAULT_CATEGORICAL_DIMENSION]));
-          expect(groupId).toEqual({ type: 'formula', as: `bar0_${GROUP_ID}`, expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}` });
+          expect(groupId).toEqual({
+            type: 'formula',
+            as: `bar0_${GROUP_ID}`,
+            expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
+          });
         });
 
         test('highlightBy: "series" derives the groupId from the series id after the aggregate', () => {
@@ -548,9 +609,9 @@ describe('barSpecBuilder', () => {
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
     });
-    test('should add the direct label layout size signal when a label uses collision layout', () => {
+    test('should not need an extra layout size signal for direct labels', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, barDirectLabels: [{}] });
-      expect(signals.at(-1)).toHaveProperty('name', 'bar0_directLabelLayoutSize');
+      expect(signals).toEqual(addSignals(defaultSignals, defaultBarOptions));
     });
     test('should add focus signals when accessibleNavigation is enabled', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
@@ -804,9 +865,7 @@ describe('barSpecBuilder', () => {
         const signal = signals.find(
           (signal) => signal.name === `${defaultBarOptions.name}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`
         );
-        expect(signal?.on).toContainEqual(
-          expect.objectContaining({ events: `@${defaultBarOptions.name}:mouseover` })
-        );
+        expect(signal?.on).toContainEqual(expect.objectContaining({ events: `@${defaultBarOptions.name}:mouseover` }));
       });
 
       test('should not add dimension hover area signal if the bar is not interactive', () => {
@@ -1123,16 +1182,30 @@ describe('barSpecBuilder', () => {
         expect(marks.find((mark) => mark.name === 'bar0_focusRing')).toBeUndefined();
       });
       test('should add the per-stack group focus ring when enabled on a stacked bar', () => {
-        const marks = addMarks([], { ...defaultBarOptions, type: 'stacked', accessibleNavigation: true, color: 'series' });
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          type: 'stacked',
+          accessibleNavigation: true,
+          color: 'series',
+        });
         expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeDefined();
       });
       test('should not add the stack group focus ring on a basic (single-series) bar', () => {
         // a static {value} color (no series field) → basic bar, so no per-stack group ring
-        const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          accessibleNavigation: true,
+          color: { value: 'categorical-100' },
+        });
         expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
       });
       test('should add the per-group focus ring when enabled on a dodged bar', () => {
-        const marks = addMarks([], { ...defaultBarOptions, type: 'dodged', accessibleNavigation: true, color: 'series' });
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          type: 'dodged',
+          accessibleNavigation: true,
+          color: 'series',
+        });
         const ring = marks.find((mark) => mark.name === 'bar0_stackFocusRing');
         expect(ring).toBeDefined();
         expect(ring?.from).toEqual({ data: 'bar0_groups' });
@@ -1164,31 +1237,32 @@ describe('barSpecBuilder', () => {
     });
 
     describe('with direct labels', () => {
-      test('should insert direct label marks right after the bar mark', () => {
+      test('should add a shared direct label layer after the stacked bars', () => {
         const marks = addMarks([], {
           ...defaultBarOptions,
           barDirectLabels: [{ position: 'end' }],
         });
 
         expect(marks).toHaveLength(defaultStackedBarMarks.length + 1);
-        const barIndex = marks.findIndex((mark) => mark.name === 'bar0');
-        expect(marks[barIndex + 1].name).toEqual('bar0DirectLabel0');
+        expect(marks.at(-1)).toHaveProperty('name', 'bar0_directLabels');
+        expect((marks.at(-1) as GroupMark).marks).toHaveLength(1);
       });
 
-      test('should insert direct label marks inside the dodged group', () => {
+      test('should share direct label layout across dodged groups', () => {
         const marks = addMarks([], {
           ...defaultBarOptions,
           type: 'dodged',
           barDirectLabels: [{ position: 'end' }],
         });
 
-        const groupMarks = (marks[0] as GroupMark).marks ?? [];
-        const barIndex = groupMarks.findIndex((mark) => mark.name === 'bar0');
-        expect(groupMarks[barIndex + 1].name).toEqual('bar0DirectLabel0');
+        expect(marks.at(-1)).toHaveProperty('name', 'bar0_directLabels');
+        const layer = marks.at(-1) as GroupMark;
+        expect(layer.data?.[0]).toHaveProperty('source', 'bar0_group');
+        expect(layer.marks).toHaveLength(1);
       });
     });
 
-        test('stacked and dodged with annotations', () => {
+    test('stacked and dodged with annotations', () => {
       const addedMarks = addMarks([], {
         ...defaultBarOptions,
         color: ['#000', '#fff'],
@@ -1319,17 +1393,17 @@ describe('barSpecBuilder', () => {
         const data = addData(defaultData, { ...defaultBarOptions, type: 'dodged' });
         expect(data).toHaveLength(3);
         expect(data[2].name).toEqual('bar0_groups');
-      }),
-        test('should add dodged group aggregate if stacked and dodged', () => {
-          const data = addData(defaultData, {
-            ...defaultBarOptions,
-            type: 'stacked',
-            color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
-          });
-          expect(data).toHaveLength(4);
-          expect(data[2].name).toEqual('bar0_stacks');
-          expect(data[3].name).toEqual('bar0_groups');
+      });
+      test('should add dodged group aggregate if stacked and dodged', () => {
+        const data = addData(defaultData, {
+          ...defaultBarOptions,
+          type: 'stacked',
+          color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
         });
+        expect(data).toHaveLength(4);
+        expect(data[2].name).toEqual('bar0_stacks');
+        expect(data[3].name).toEqual('bar0_groups');
+      });
     });
 
     describe('transform already exists', () => {
@@ -1606,7 +1680,11 @@ describe('barSpecBuilder', () => {
     // one, or it undershoots a group whose secondary-axis bar is actually taller.
     test('aggregates separate raw extrema for dual-metric-axis series', () => {
       const data = getDodgedGroupAggregateData({ ...defaultBarOptions, type: 'dodged', dualMetricAxis: true });
-      const [primary, secondary, aggregate] = data.transform as [FormulaTransform, FormulaTransform, AggregateTransform];
+      const [primary, secondary, aggregate] = data.transform as [
+        FormulaTransform,
+        FormulaTransform,
+        AggregateTransform
+      ];
       expect(primary.expr).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
       expect(secondary.expr).toContain(`datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`);
       expect(aggregate.fields).toEqual([
@@ -1674,19 +1752,5 @@ describe('barSpecBuilder', () => {
         getRepeatedScale({ ...defaultBarOptions, orientation: 'vertical', trellisOrientation: 'horizontal' })
       ).toHaveProperty('type', 'band');
     });
-  });
-});
-
-describe('insertAfterMark()', () => {
-  test('should insert marks after a nested mark', () => {
-    const marks: Mark[] = [{ name: 'group', type: 'group', marks: [{ name: 'a', type: 'rect' }, { name: 'b', type: 'rect' }] }];
-    expect(insertAfterMark(marks, 'a', [{ name: 'c', type: 'text' }])).toBe(true);
-    expect((marks[0] as GroupMark).marks?.map((mark) => mark.name)).toEqual(['a', 'c', 'b']);
-  });
-
-  test('should return false if the mark is not found', () => {
-    const marks: Mark[] = [{ name: 'a', type: 'rect' }];
-    expect(insertAfterMark(marks, 'missing', [{ name: 'c', type: 'text' }])).toBe(false);
-    expect(marks).toHaveLength(1);
   });
 });

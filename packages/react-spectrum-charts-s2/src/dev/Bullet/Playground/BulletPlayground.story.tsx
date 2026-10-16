@@ -19,7 +19,7 @@ import { action } from 'storybook/actions';
 import { Chart } from '../../../Chart.js';
 import { ChartInspect, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Bullet } from '../../../pre-alpha/index.js';
+import { Bullet } from '../../../lab/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { BulletProps } from '../../../types/index.js';
 import { BulletDataPreset, getBulletData, playgroundThresholds } from '../../playgroundData.js';
@@ -38,7 +38,8 @@ interface BulletPlaygroundArgs extends BulletProps {
 }
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Playground',
+  title: 'React Spectrum Charts 2/Lab/Bullet/Playground',
+  tags: ['lab'],
   component: Bullet,
   argTypes: {
     ...chartArgTypes,

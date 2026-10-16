@@ -7,6 +7,8 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTA
 OF ANY KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License. -->
 
+<!-- Process: planning/README.md. Save as rfcs/<slug>.md (no number). -->
+
 - Start Date: (fill me in with today's date, YYYY-MM-DD)
 - RFC PR: (leave this empty, to be filled in later)
 - Authors: (the names of everyone contributing to this RFC)
@@ -31,6 +33,25 @@ outcome? -->
    can implement it by reading this document. Please get into specifics
    of your approach, corner cases, and examples of how the change will be
    used. Be sure to define any new terms in this section.
+-->
+
+## Scope
+
+<!--
+    One row per piece of work, each linked to a GitHub issue. This table records what was
+    agreed; after acceptance, milestones track scheduling.
+
+    | Issue | Description |
+    |---|---|
+    | #123 | ... |
+-->
+
+## Cross-Cutting Concerns
+
+<!--
+    Which of these does the design touch, and how? See planning/README.md.
+    Hover animation, controlled highlight, legend interaction, tooltip/popover,
+    new signal or scale, S1/S2 parity.
 -->
 
 ## Documentation

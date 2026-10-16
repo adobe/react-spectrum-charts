@@ -164,6 +164,7 @@ Always use `yarn` for all package management and script execution — never `npm
 Every PR that changes anything under `packages/` needs a `.changeset/*.md` file, or the PR's `changeset` check fails. Add it in the same PR:
 
 - Release-worthy change: write `.changeset/<slug>.md` with frontmatter listing each changed package and its bump (`patch`, `minor`, `major`), then one consumer-facing summary line. Keep change descriptions brief and relevant. The S1 pair (`@adobe/react-spectrum-charts`, `@spectrum-charts/vega-spec-builder`) and S2 pair (`@spectrum-charts/react-spectrum-charts-s2`, `@spectrum-charts/vega-spec-builder-s2`) release together; list both, as existing changesets do.
+- Describe what consumers will notice (a new prop, a fixed behavior, a smoother animation), not how it was done. Don't name internal functions, signals, or data sources.
 - No release needed (tests, stories, docs, CI, internal refactor): `yarn changeset:empty`.
 
 Run `yarn changeset:status` before finishing. See `PUBLISHING.md`.
@@ -223,6 +224,11 @@ yarn build:s2
 
 # Build a single package
 yarn workspace @spectrum-charts/vega-spec-builder build
+
+# S2 animation refactors that should not change rendering: record on the base branch, compare on yours
+# (yarn build:s2 after each checkout). Exits 1 if any sampled scenegraph frame differs; also reports µs/frame.
+yarn perf:parity --out perf-results/parity-before.json
+yarn perf:parity --compare perf-results/parity-before.json
 ```
 
 ---
@@ -264,7 +270,7 @@ Demo stories in `src/stories/<ComponentName>/` use:
 
 - `<ComponentName>Examples.story.tsx` — realistic app examples or Figma design equivalents with `title: 'React Spectrum Charts 2/<ComponentName>/Examples'`.
 - `Features/` — one representative story per feature. Title prefix: `'React Spectrum Charts 2/<ComponentName>/Features'`.
-- **Pre-alpha components** keep the `React Spectrum Charts 2/Pre-Alpha/<ComponentName>/...` title prefix.
+- **Lab components** (exported from `src/lab/`) use the `React Spectrum Charts 2/Lab/<ComponentName>/...` title prefix and `tags: ['lab']`.
 
 The dev Storybook is the demo plus extra per-chart folders (`src/dev/<Chart>/<Folder>/`, titled `React Spectrum Charts 2/<Chart>/<Folder>/...`):
 
@@ -362,6 +368,16 @@ When adding a new page under `packages/docs/docs/spectrum2/`:
 
 ---
 
+## S2 Component Stage Markers
+
+Every exported S2 component, including `lab`, shows its stage (see `packages/docs/docs/spectrum2/stages.md`) in three places. Add all three for a new component, and update all three when a component changes stage:
+
+1. **TSDoc** — a one-line description plus `@experimental` (lab), `@alpha`, or `@beta` on the component declaration, e.g. `components/Line/Line.tsx` or `lab/components/Scatter/Scatter.tsx`.
+2. **Storybook** — `tags: ['alpha']` (or `'lab'`, `'beta'`, `'rc'`) in the meta of every story file for the component, in both `src/stories/` and `src/dev/`. This one tag drives the sidebar and canvas-toolbar badges (`.storybook-s2/stageBadge.ts`) and the autodocs page badge (`.storybook-s2/StageDocsPage.tsx`); stage labels live in `.storybook-s2/stages.ts`.
+3. **Docs** — a badge line under the page's H1: `[<span className="badge badge--primary">Alpha</span>](./stages.md)`, or `[<span className="badge badge--secondary">Lab</span>](./stages.md#lab)` for lab.
+
+---
+
 ## S2 Variant
 
 `vega-spec-builder-s2` overrides specific functions from `vega-spec-builder` (color resolution, background signals) to use Spectrum 2 tokens. `react-spectrum-charts-s2` wraps the S2 spec builder. When working on S2 features, build with `yarn build:s2` and run Storybook with `yarn storybook:s2`.
@@ -383,7 +399,7 @@ Before writing any code, always:
    - New component used directly inside `<Chart>` → `.claude/commands/implement-new-chart-mark.md`
    - New component nested inside an existing mark (e.g. `<Line><NewChild /></Line>`) → `.claude/commands/implement-new-child-component.md`
    - New prop on an existing component → `.claude/commands/implement-new-prop.md`
-4. Check for an approved spec matching the work — features at `planning/specs/<chartType>/`, bugs at `planning/specs/<chartType>/issues/` — if one exists, the matched skill file's Step 0 has you read it and treat it as authoritative
+4. Check for a linked GitHub issue or an accepted RFC in `rfcs/` — if one exists, the matched skill file's Step 0 has you read it and start from it
 5. Follow the steps in the matched skill file
 
 ---
@@ -405,34 +421,25 @@ Chart-level props (on `<Chart>` itself, not a mark) follow a different file path
 
 ---
 
-## Issue Tracking
+## Planning: Issues, RFCs, and Research
 
-Known bugs that are not being acted on immediately go in
-`planning/specs/<chartType>/issues/<slug>.json` as a `kind: "bug"` spec, validated against
-`planning/specs/schema.json`. When the user describes a bug or observation and says they
-want to note it for later, use the `file-issue` skill (`.claude/commands/file-issue.md`) —
-it investigates the root cause and writes the spec without being asked for the exact format.
+The full process is in `planning/README.md`. In short:
 
----
-
-## Chart Feature & Bug Spec System
-
-Specs live in `planning/specs/<chartType>/<slug>.json` (features) or
-`planning/specs/<chartType>/issues/<slug>.json` (bugs), one JSON file per feature/bug,
-validated against `planning/specs/schema.json`. Features: gather design tokens/requirements
-informally, convert them into a spec via the `generate-chart-spec` skill
-(`.claude/commands/generate-chart-spec.md`), submit the spec as a PR for review, then
-implement against the approved spec — the `implement-new-*` skills check for one first.
-Bugs: investigate and file via the `file-issue` skill
-(`.claude/commands/file-issue.md`), submit as a PR, then `implement-bug-fix` checks for one
-first. Full field-by-field guidance, the complexity rubric, and the `crossCutting` flag
-definitions are in `planning/specs/README.md`.
-
-When implementing a whole batch of related specs for one chart type as a sequence of stacked
-PRs (rather than a single spec in isolation), use the `implement-spec-cluster` skill
-(`.claude/commands/implement-spec-cluster.md`) — it covers clustering specs by dependency,
-the parent spec-batch PR, per-chart-type design-token checks, S1-reuse checks, and keeping
-every PR linked into the GitHub stack.
+- **Bugs and small features** are GitHub issues. When the user describes a bug or
+  observation and wants to note it for later, use the `file-issue` skill
+  (`.claude/commands/file-issue.md`). It investigates the root cause and drafts the issue for
+  the user's approval before creating it.
+- **New chart types** start in lab (no RFC); see `planning/README.md`.
+- **Significant or uncertain changes** (new subsystems, cross-chart API or behavior changes)
+  get an RFC in `rfcs/<slug>.md`, reviewed as a PR. Use the `write-rfc` skill
+  (`.claude/commands/write-rfc.md`). An RFC is accepted when two maintainers approve and it
+  merges; its scope becomes issues.
+- **Stage planning** (what a component's alpha, beta, or RC includes) is done by maintainers
+  as per-component milestones (e.g. `Line beta`), not RFCs.
+- **Implementing a milestone** as stacked PRs uses the `implement-milestone` skill
+  (`.claude/commands/implement-milestone.md`).
+- **Open-ended investigation** goes in `planning/research/` (see `TEMPLATE.md`), and feeds an
+  RFC or issues once it reaches a recommendation.
 
 ---
 

@@ -9,22 +9,25 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH } from '@spectrum-charts/core-s2/constants';
-import { LabelTransform, Mark, TextMark } from 'vega';
+import { GroupMark, LabelTransform, Spec, TextMark, View, changeset, expressionFunction, parse } from 'vega';
+
+import {
+  ANIMATION_TIMER,
+  BACKGROUND_COLOR,
+  CHART_SIZE_FONT_SIZE,
+  DRAW_IN_START,
+} from '@spectrum-charts/core-s2/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils.js';
-import { BarDirectLabelSpecOptions } from '../types/index.js';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
+import { BarDirectLabelSpecOptions, BarOptions, BarSpecOptions, Orientation } from '../types/index.js';
 import {
   getBarDirectLabelFitsTest,
-  getBarDirectLabelLayoutSizeSignal,
-  getBarDirectLabelMarkName,
-  getBarDirectLabelMarks,
   getBarDirectLabelSpecOptions,
-  getBarDirectLabelsMarks,
   getBarDirectLabelText,
+  getBarDirectLabelsMarks,
   getInsideLabelGeometry,
-  getOutsideLabelGeometry,
-  hasCollisionDirectLabels,
   usesCollisionLayout,
 } from './barDirectLabelUtils.js';
 
@@ -33,11 +36,102 @@ const specOptions = (overrides: Partial<BarDirectLabelSpecOptions> = {}): BarDir
   ...overrides,
 });
 
-const names = (marks: Mark[]) => marks.map((mark) => mark.name);
-const getLabelTransform = (mark: Mark) => (mark as TextMark).transform?.[0] as LabelTransform;
+const getLayer = (overrides: Partial<BarSpecOptions> = {}): GroupMark =>
+  getBarDirectLabelsMarks({ ...defaultBarOptions, barDirectLabels: [{}], ...overrides })[0] as GroupMark;
 
-describe('getBarDirectLabelSpecOptions()', () => {
-  it('inherits bar context and applies defaults', () => {
+interface SceneNode {
+  name?: string;
+  items?: SceneNode[];
+  x?: number;
+  y?: number;
+  opacity?: number;
+  fontSize?: number;
+  text?: string;
+  datum?: { datum?: { id?: string } };
+}
+
+const getItems = (view: View, name: string): SceneNode[] => {
+  const find = (node: SceneNode): SceneNode[] => {
+    if (node.name === name) return node.items ?? [];
+    return (node.items ?? []).flatMap(find);
+  };
+  const scene: SceneNode & { root?: SceneNode } = view.scenegraph();
+  if (!scene.root) throw new Error('Missing scenegraph root');
+  return find(scene.root);
+};
+
+const outsideItems = (view: View) =>
+  ['positive', 'negative'].flatMap((sign) => getItems(view, `bar0DirectLabel0_${sign}`));
+
+interface BarRow {
+  id: string;
+  value: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  callout?: boolean;
+}
+
+const rows: BarRow[] = [
+  { id: 'a', value: 100000000, x: 10, y: 30, width: 10, height: 60, callout: false },
+  { id: 'b', value: 100000000, x: 15, y: 30, width: 10, height: 60, callout: true },
+];
+
+const runtimeSpec = (values: BarRow[], overrides: Partial<BarSpecOptions> = {}, grouped = true): Spec => {
+  const bar = {
+    name: 'bar0',
+    type: 'rect' as const,
+    from: { data: grouped ? 'facet' : 'table' },
+    encode: {
+      update: {
+        x: { field: grouped ? 'localX' : 'x' },
+        y: { field: 'y' },
+        width: { field: 'width' },
+        height: { field: 'height' },
+        fill: { value: 'blue' },
+        opacity: { value: 1 },
+      },
+    },
+  };
+  return {
+    width: 200,
+    height: 100,
+    signals: [
+      { name: CHART_SIZE_FONT_SIZE, value: 12 },
+      { name: BACKGROUND_COLOR, value: 'white' },
+    ],
+    data: [
+      {
+        name: 'table',
+        values,
+        transform: [{ type: 'formula', expr: '0', as: 'localX' }],
+      },
+    ],
+    marks: [
+      grouped
+        ? {
+            name: 'bar0_group',
+            type: 'group',
+            from: { facet: { name: 'facet', data: 'table', groupby: 'id' } },
+            encode: { update: { x: { signal: "data('table')[datum.id === 'a' ? 0 : 1].x * width / 200" } } },
+            marks: [bar],
+          }
+        : bar,
+      ...getBarDirectLabelsMarks({
+        ...defaultBarOptions,
+        type: grouped ? 'dodged' : 'stacked',
+        metric: 'value',
+        orientation: 'vertical',
+        barDirectLabels: [{ format: ',.0f' }],
+        ...overrides,
+      }),
+    ],
+  };
+};
+
+describe('bar direct label options and geometry', () => {
+  it('inherits context and preserves overflow defaults', () => {
     expect(getBarDirectLabelSpecOptions({}, 2, defaultBarOptions)).toEqual({
       barName: defaultBarOptions.name,
       dataKey: undefined,
@@ -48,186 +142,257 @@ describe('getBarDirectLabelSpecOptions()', () => {
       overflow: 'hide',
       position: 'end-outside',
     });
-  });
-
-  it('defaults overflow to spill for start position only', () => {
     expect(getBarDirectLabelSpecOptions({ position: 'start' }, 0, defaultBarOptions).overflow).toBe('spill');
-    expect(getBarDirectLabelSpecOptions({ dataKey: 'callout', position: 'end' }, 0, defaultBarOptions).overflow).toBe('hide');
-    expect(getBarDirectLabelSpecOptions({ position: 'middle' }, 0, defaultBarOptions).overflow).toBe('hide');
-  });
-
-  it('respects provided values', () => {
-    const options = getBarDirectLabelSpecOptions(
-      { dataKey: 'callout', format: '$,.0f', overflow: 'hide', position: 'middle' },
-      0,
-      defaultBarOptions
+    expect(getBarDirectLabelSpecOptions({ position: 'start', overflow: 'hide' }, 0, defaultBarOptions).overflow).toBe(
+      'hide'
     );
-    expect(options).toMatchObject({ dataKey: 'callout', format: '$,.0f', overflow: 'hide', position: 'middle' });
+  });
+
+  it.each([
+    ['', 'format(datum.datum["value"], ",.2~f")'],
+    ['percentage', 'format(datum.datum["value"], "~%")'],
+    ['currency', 'format(datum.datum["value"], "$,.2f")'],
+    ['shortNumber', 'formatShortNumber(datum.datum["value"])'],
+    ['.1f', 'format(datum.datum["value"], ".1f")'],
+  ])('formats %s from the bar data', (format, expected) => {
+    expect(getBarDirectLabelText('datum', specOptions({ metric: 'value', format }))).toBe(expected);
+  });
+
+  it('escapes format specifiers', () => {
+    const format = '.1f\\"';
+    expect(getBarDirectLabelText('datum', specOptions({ metric: 'value', format }))).toBe(
+      `format(datum.datum["value"], ${JSON.stringify(format)})`
+    );
+  });
+
+  it('tests both bar dimensions for fit', () => {
+    expect(getBarDirectLabelFitsTest('datum', specOptions({ orientation: 'vertical' }))).toContain(
+      `datum.height >= ${CHART_SIZE_FONT_SIZE} + 16 && datum.width >= getLabelWidth`
+    );
+    expect(getBarDirectLabelFitsTest('datum', specOptions({ orientation: 'horizontal' }))).toContain(
+      `datum.height >= ${CHART_SIZE_FONT_SIZE} + 4`
+    );
+  });
+
+  it.each<Orientation>(['vertical', 'horizontal'])('centers %s middle labels in the actual segment', (orientation) => {
+    expect(getInsideLabelGeometry('datum', specOptions({ orientation, position: 'middle' }))).toEqual({
+      x: '(datum.x + datum.width / 2)',
+      y: '(datum.y + datum.height / 2)',
+      align: "'center'",
+      baseline: "'middle'",
+    });
+  });
+
+  it('only requests outside layout for outside or spill labels', () => {
+    expect(usesCollisionLayout(specOptions())).toBe(true);
+    expect(usesCollisionLayout(specOptions({ position: 'end', overflow: 'spill' }))).toBe(true);
+    expect(usesCollisionLayout(specOptions({ position: 'end', overflow: 'hide' }))).toBe(false);
   });
 });
 
-describe('getBarDirectLabelText()', () => {
-  it('formats the metric from the bar item datum', () => {
-    expect(getBarDirectLabelText('datum', specOptions())).toContain(`datum.datum["${defaultBarOptions.metric}"]`);
+describe('shared native label layout', () => {
+  it('returns no layer without labels', () => {
+    expect(getBarDirectLabelsMarks(defaultBarOptions)).toEqual([]);
   });
 
-  it('uses the provided format', () => {
-    expect(getBarDirectLabelText('datum', specOptions({ format: '$,.0f' }))).toContain('$,.0f');
+  it('uses native bar-bound anchors and separates candidates by sign', () => {
+    const layer = getLayer();
+    expect(layer.data?.map((data) => data.name)).toEqual([
+      'bar0_directLabelBars',
+      'bar0DirectLabel0_positive_candidates',
+      'bar0DirectLabel0_negative_candidates',
+    ]);
+    const positive = layer.marks?.[0] as TextMark;
+    expect(positive.from).toEqual({ data: 'bar0DirectLabel0_positive_candidates' });
+    expect(positive.transform?.[0]).toMatchObject({
+      type: 'label',
+      size: { signal: '[width, height]' },
+      anchor: ['top'],
+      offset: [6],
+      padding: null,
+      avoidMarks: ['bar0_directLabelBars'],
+    });
+    expect((layer.marks?.[3] as TextMark).transform?.[0]).toHaveProperty('anchor', ['bottom']);
+  });
+
+  it('uses left and right anchors for horizontal bars', () => {
+    const layer = getLayer({ orientation: 'horizontal' });
+    expect((layer.marks?.[0] as TextMark).transform?.[0]).toHaveProperty('anchor', ['right']);
+    expect((layer.marks?.[3] as TextMark).transform?.[0]).toHaveProperty('anchor', ['left']);
+  });
+
+  it('places later label sets around earlier labels', () => {
+    const layer = getLayer({ barDirectLabels: [{ position: 'middle' }, {}] });
+    const placement = layer.marks?.find((mark) => mark.name === 'bar0DirectLabel1_positive_placement') as TextMark;
+    expect((placement.transform?.[0] as LabelTransform).avoidMarks).toContain('bar0DirectLabel0_inside');
+  });
+
+  it('shares collision rejection and animation opacity between the halo and foreground', () => {
+    const layer = getLayer({ isDrawInAnimate: true });
+    const [, halo, foreground] = layer.marks as TextMark[];
+    expect(halo.encode?.update).toHaveProperty('opacity', { signal: 'datum.opacity * datum.datum.labelOpacity' });
+    expect(foreground.encode?.update?.opacity).toEqual(halo.encode?.update?.opacity);
+    expect(JSON.stringify(layer.data?.[0])).toContain('drawInDuration');
+  });
+
+  it('uses stacked segment data for draw-in timing', () => {
+    const layer = getLayer({ type: 'stacked', isDrawInAnimate: true });
+    expect(JSON.stringify(layer.data?.[0])).toContain('datum.datum.bar0_drawInStackMax');
   });
 });
 
-describe('getBarDirectLabelFitsTest()', () => {
-  it('checks height for the font and width for the text on vertical bars', () => {
-    const test = getBarDirectLabelFitsTest('datum', specOptions({ orientation: 'vertical' }));
-    expect(test).toMatch(new RegExp(`^datum.height >= ${CHART_SIZE_FONT_SIZE} \\+ 16 && datum.width >= getLabelWidth`));
+describe('Vega label layout regressions', () => {
+  let view: View;
+
+  beforeEach(() => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
   });
 
-  it('checks width for the text and height for the font on horizontal bars', () => {
-    const test = getBarDirectLabelFitsTest('datum', specOptions({ orientation: 'horizontal' }));
-    expect(test).toMatch(/^datum.width >= getLabelWidth/);
-    expect(test).toContain(`datum.height >= ${CHART_SIZE_FONT_SIZE} + 4`);
-  });
-});
+  afterEach(() => view?.finalize());
 
-describe('getInsideLabelGeometry()', () => {
-  it('centers middle labels', () => {
-    for (const orientation of ['vertical', 'horizontal'] as const) {
-      const geometry = getInsideLabelGeometry('datum', specOptions({ orientation, position: 'middle' }));
-      expect(geometry).toEqual({
-        x: '(datum.x + datum.width / 2)',
-        y: '(datum.y + datum.height / 2)',
-        align: "'center'",
-        baseline: "'middle'",
-      });
+  const run = async (spec: Spec) => {
+    view = new View(parse(spec), { renderer: 'none' })
+      .width(typeof spec.width === 'number' ? spec.width : 400)
+      .height(typeof spec.height === 'number' ? spec.height : 300);
+    await view.runAsync();
+    return view;
+  };
+
+  it('rejects overlapping labels across dodged categories and restores them after resize', async () => {
+    await run(runtimeSpec(rows));
+    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(1);
+    await view.width(2000).runAsync();
+    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(2);
+    await view.width(200).runAsync();
+    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(1);
+  });
+
+  it('removes unselected rows before layout and updates selection reactively', async () => {
+    await run(runtimeSpec(rows, { barDirectLabels: [{ dataKey: 'callout', format: ',.0f' }] }));
+    expect(outsideItems(view)).toHaveLength(1);
+    expect(outsideItems(view)[0].opacity).toBe(1);
+    await view
+      .change(
+        'table',
+        changeset().modify(() => true, 'callout', false)
+      )
+      .runAsync();
+    expect(outsideItems(view)).toHaveLength(0);
+  });
+
+  it('keeps the top-edge label using an in-bounds bar anchor', async () => {
+    await run(runtimeSpec([{ ...rows[0], y: 0 }]));
+    const [label] = outsideItems(view);
+    expect(label.opacity).toBe(1);
+    expect(label.y).toBe(-6);
+  });
+
+  it('keeps inside-fit spill candidates out of outside layout', async () => {
+    await run(
+      runtimeSpec(
+        [
+          { ...rows[0], width: 150 },
+          { ...rows[1], width: 5 },
+        ],
+        { barDirectLabels: [{ position: 'end', overflow: 'spill', format: ',.0f' }] }
+      )
+    );
+    expect(outsideItems(view)).toHaveLength(1);
+    expect(outsideItems(view)[0].opacity).toBe(1);
+    expect(getItems(view, 'bar0DirectLabel0_inside').filter((item) => item.fontSize === 12)).toHaveLength(1);
+  });
+
+  it('updates inside fit and outside candidates when bar geometry changes', async () => {
+    await run(
+      runtimeSpec([{ ...rows[0], width: 150 }], {
+        barDirectLabels: [{ position: 'end', overflow: 'spill' }],
+      })
+    );
+    expect(outsideItems(view)).toHaveLength(0);
+    await view
+      .change(
+        'table',
+        changeset().modify(() => true, 'width', 5)
+      )
+      .runAsync();
+    expect(outsideItems(view)).toHaveLength(1);
+    expect(getItems(view, 'bar0DirectLabel0_inside')[0].fontSize).toBe(0);
+  });
+
+  it.each<Orientation>(['vertical', 'horizontal'])('places signed %s bars on opposite tips', async (orientation) => {
+    await run(
+      runtimeSpec(
+        [
+          { ...rows[0], x: 40, y: 30, width: 20, height: 20 },
+          { ...rows[1], value: -100, x: 120, y: 60, width: 20, height: 20 },
+        ],
+        { orientation },
+        false
+      )
+    );
+    const positive = getItems(view, 'bar0DirectLabel0_positive')[0];
+    const negative = getItems(view, 'bar0DirectLabel0_negative')[0];
+    expect(positive.opacity).toBe(1);
+    expect(negative.opacity).toBe(1);
+    if (orientation === 'vertical') {
+      expect(positive.y).toBe(24);
+      expect(negative.y).toBe(86);
+    } else {
+      expect(positive.x).toBe(68);
+      expect(negative.x).toBe(112);
     }
   });
 
-  it('places vertical end labels inside the tip', () => {
-    const geometry = getInsideLabelGeometry('datum', specOptions({ orientation: 'vertical', position: 'end' }));
-    expect(geometry.y).toContain('datum.y - -8');
-    expect(geometry.baseline).toContain("'top'");
-  });
-
-  it('places horizontal start labels inside the base', () => {
-    const geometry = getInsideLabelGeometry('datum', specOptions({ orientation: 'horizontal', position: 'start' }));
-    expect(geometry.x).toContain('datum.x + 8');
-    expect(geometry.align).toContain("'left'");
-  });
-});
-
-describe('getOutsideLabelGeometry()', () => {
-  it('places vertical labels above positive bars and below negative bars', () => {
-    const geometry = getOutsideLabelGeometry('datum', specOptions({ orientation: 'vertical' }));
-    expect(geometry.y).toContain('datum.y - 6');
-    expect(geometry.y).toContain('(datum.y + datum.height) + 6');
-    expect(geometry.baseline).toContain("'top' : 'bottom'");
-  });
-
-  it('places horizontal labels past the right of positive bars and the left of negative bars', () => {
-    const geometry = getOutsideLabelGeometry('datum', specOptions({ orientation: 'horizontal' }));
-    expect(geometry.x).toContain('(datum.x + datum.width) + 8');
-    expect(geometry.x).toContain('datum.x - 8');
-    expect(geometry.align).toContain("'right' : 'left'");
-  });
-});
-
-describe('usesCollisionLayout()', () => {
-  it('uses collision layout for end-outside and spill labels', () => {
-    expect(usesCollisionLayout(specOptions({ position: 'end-outside' }))).toBe(true);
-    expect(usesCollisionLayout(specOptions({ position: 'end', overflow: 'spill' }))).toBe(true);
-    expect(usesCollisionLayout(specOptions({ position: 'end', overflow: 'hide' }))).toBe(false);
-    expect(usesCollisionLayout(specOptions({ position: 'end-outside', dataKey: 'callout' }))).toBe(true);
-  });
-});
-
-describe('getBarDirectLabelMarks()', () => {
-  it('hides inside labels that do not fit when overflow is hide', () => {
-    const marks = getBarDirectLabelMarks(specOptions({ position: 'end', overflow: 'hide' }), ['bar0']);
-    expect(names(marks)).toEqual(['bar0DirectLabel0']);
-    const update = (marks[0] as TextMark).encode?.update;
-    expect(marks[0]).toHaveProperty('from', { data: 'bar0' });
-    expect(update).toHaveProperty('fill', { signal: BACKGROUND_COLOR });
-    expect(update?.fontSize).toHaveProperty('signal', expect.stringMatching(/\? .* : 0$/));
-  });
-
-  it('builds collision layout marks for end-outside labels', () => {
-    const marks = getBarDirectLabelMarks(specOptions(), ['bar0']);
-    expect(names(marks)).toEqual([
-      'bar0DirectLabel0_anchor',
-      'bar0DirectLabel0_placement',
-      'bar0DirectLabel0_bg',
-      'bar0DirectLabel0',
-    ]);
-    expect(marks[1]).toHaveProperty('from', { data: 'bar0DirectLabel0_anchor' });
-    expect(getLabelTransform(marks[1])).toMatchObject({
-      type: 'label',
-      size: { signal: 'bar0_directLabelLayoutSize' },
-      anchor: ['top'],
-      avoidBaseMark: false,
-      avoidMarks: ['bar0'],
+  const runChart = async (bar: Partial<BarOptions> = {}, animations = false) => {
+    const data = [
+      { category: 'A', series: 'S', group: 'G', panel: 'P', value: 10 },
+      { category: 'B', series: 'S', group: 'G', panel: 'P', value: 20 },
+    ];
+    const spec = buildSpec({
+      chartWidth: 400,
+      chartHeight: 300,
+      animations,
+      animationTypes: animations ? ['drawIn'] : [],
+      data,
+      marks: [
+        {
+          markType: 'bar',
+          type: 'dodged',
+          color: 'series',
+          name: 'bar0',
+          dimension: 'category',
+          metric: 'value',
+          barDirectLabels: [{}],
+          ...bar,
+        },
+      ],
     });
-    expect(marks[2]).toHaveProperty('from', { data: 'bar0DirectLabel0_placement' });
-    expect((marks[2] as TextMark).encode?.update).toHaveProperty('strokeWidth', {
-      value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
-    });
-    expect((marks[3] as TextMark).encode?.update).toHaveProperty('fill', { signal: 'datum.datum.datum.fill' });
+    const table = spec.data?.find(({ name }) => name === 'table');
+    if (!table || !('values' in table)) throw new Error('Missing inline table');
+    table.values = data;
+    await run(spec);
+  };
+
+  it.each<Partial<BarOptions>>([
+    { type: 'dodged' },
+    { type: 'stacked' },
+    { type: 'dodged', color: ['series', 'group'] },
+    { type: 'dodged', trellis: 'panel' },
+  ])('renders labels through the full chart builder: %o', async (bar) => {
+    await runChart(bar);
+    expect(outsideItems(view)).toHaveLength(2);
+    expect(outsideItems(view).every((item) => Number.isFinite(item.x) && Number.isFinite(item.y))).toBe(true);
   });
 
-  it('adds an inside mark for spill labels, and only places labels that do not fit', () => {
-    const marks = getBarDirectLabelMarks(specOptions({ position: 'end', overflow: 'spill' }), ['bar0']);
-    expect(names(marks)[0]).toBe('bar0DirectLabel0_inside');
-    const placementUpdate = (marks[2] as TextMark).encode?.update;
-    expect(placementUpdate?.fontSize).toHaveProperty('signal', expect.stringContaining('!(datum.datum.height'));
-  });
-
-  it('limits dataKey labels to matching rows and still hides them when they do not fit', () => {
-    const marks = getBarDirectLabelMarks(specOptions({ dataKey: 'callout', overflow: 'hide', position: 'end' }), ['bar0']);
-    const fontSize = (marks[0] as TextMark).encode?.update?.fontSize;
-    expect(fontSize).toHaveProperty('signal', expect.stringMatching(/^\(datum\.datum\["callout"\]\) && \(datum\.height/));
-  });
-
-  it('limits dataKey labels to matching rows in collision layout', () => {
-    const marks = getBarDirectLabelMarks(specOptions({ dataKey: 'callout', overflow: 'spill', position: 'end' }), ['bar0']);
-    const insideFontSize = (marks[0] as TextMark).encode?.update?.fontSize;
-    const placementFontSize = (marks[2] as TextMark).encode?.update?.fontSize;
-    expect(insideFontSize).toHaveProperty('signal', expect.stringContaining('(datum.datum["callout"]) && '));
-    expect(placementFontSize).toHaveProperty('signal', expect.stringContaining('(datum.datum.datum["callout"]) && '));
-    expect(getLabelTransform(marks[2])).toHaveProperty('type', 'label');
-  });
-});
-
-describe('getBarDirectLabelsMarks()', () => {
-  it('has later labels avoid earlier ones', () => {
-    const marks = getBarDirectLabelsMarks({
-      ...defaultBarOptions,
-      barDirectLabels: [{ dataKey: 'callout', position: 'end' }, {}],
-    });
-    const placement = marks.find((mark) => mark.name === 'bar0DirectLabel1_placement') as Mark;
-    expect(getLabelTransform(placement).avoidMarks).toEqual(['bar0', 'bar0DirectLabel0']);
-  });
-
-  it('returns no marks without direct labels', () => {
-    expect(getBarDirectLabelsMarks({ ...defaultBarOptions, barDirectLabels: [] })).toEqual([]);
-  });
-});
-
-describe('getBarDirectLabelMarkName()', () => {
-  it('combines the bar name and index', () => {
-    expect(getBarDirectLabelMarkName(specOptions({ index: 3 }))).toBe('bar0DirectLabel3');
-  });
-});
-
-describe('layout size signal', () => {
-  it('captures the top-level chart size', () => {
-    expect(getBarDirectLabelLayoutSizeSignal('bar0')).toEqual({
-      name: 'bar0_directLabelLayoutSize',
-      update: '[width, height]',
-    });
-  });
-
-  it('is only needed when a label uses collision layout', () => {
-    expect(hasCollisionDirectLabels({ ...defaultBarOptions, barDirectLabels: [{}] })).toBe(true);
-    expect(hasCollisionDirectLabels({ ...defaultBarOptions, barDirectLabels: [{ position: 'middle' }] })).toBe(false);
-    expect(hasCollisionDirectLabels({ ...defaultBarOptions, barDirectLabels: [] })).toBe(false);
+  it('fades labels in after draw-in and keeps their halo opacity synchronized', async () => {
+    await runChart({}, true);
+    await view.signal(ANIMATION_TIMER, Date.now()).runAsync();
+    expect(outsideItems(view).every((item) => item.opacity === 0)).toBe(true);
+    await view.signal(ANIMATION_TIMER, view.signal(DRAW_IN_START) + 2000).runAsync();
+    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(2);
+    expect(getItems(view, 'bar0DirectLabel0_positive_bg').map((item) => item.opacity)).toEqual(
+      getItems(view, 'bar0DirectLabel0_positive').map((item) => item.opacity)
+    );
   });
 });

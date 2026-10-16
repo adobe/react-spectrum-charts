@@ -44,6 +44,7 @@ interface AxisPlaygroundArgs extends AxisProps {
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Playground',
+  tags: ['alpha'],
   component: Axis,
   argTypes: {
     ...chartArgTypes,

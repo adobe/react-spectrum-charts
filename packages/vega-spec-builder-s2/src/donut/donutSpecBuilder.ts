@@ -21,14 +21,15 @@ import {
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
   DRAW_IN_ANIM_CUTOFF,
-  DRAW_IN_ANIM_T,
+  DRAW_IN_ANIM_T_EASED,
+  DRAW_IN_DONUT_DURATION_MS,
   FILTERED_TABLE,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
-import { addDrawInClockSignals } from '../marks/drawInAnimationUtils.js';
+import { addDrawInClockSignals, addDrawInLabelFadeTimer } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -55,6 +56,7 @@ import {
   getDonutSweepExpr,
   getEmptyStateArcMark,
   isDonutInteractive,
+  getDonutRadiusSignals,
   getRingWidthSignal,
   getLabelRingGapSignals,
   getSizeTierScale,
@@ -265,12 +267,13 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
     addHoverAnimationSignals(signals, name);
   }
   if (options.isDrawInAnimate) {
-    addDrawInClockSignals(signals);
+    addDrawInClockSignals(signals, DRAW_IN_DONUT_DURATION_MS);
+    addDrawInLabelFadeTimer(signals);
     const sweep = getDonutSweepExpr(options);
     const startAngle = getDonutStartAngle(options);
     signals.push({
       name: `${name}_${DRAW_IN_ANIM_CUTOFF}`,
-      update: `${startAngle} + (${sweep}) * pow(${DRAW_IN_ANIM_T}, 2)`,
+      update: `${startAngle} + (${sweep}) * ${DRAW_IN_ANIM_T_EASED}`,
     });
   }
   if (holeRatio === DEFAULT_HOLE_RATIO) {
@@ -278,6 +281,7 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   }
   signals.push(
     getSizeTierSignal(options),
+    ...getDonutRadiusSignals(options),
     ...getLabelRingGapSignals(options),
     getSliceGapSignal(options),
     ...getDonutSummarySignals(options),

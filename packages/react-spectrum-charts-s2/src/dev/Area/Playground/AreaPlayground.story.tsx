@@ -19,7 +19,7 @@ import { action } from 'storybook/actions';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Area } from '../../../pre-alpha/index.js';
+import { Area } from '../../../lab/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { AreaProps } from '../../../types/index.js';
 import { CartesianDataPreset, playgroundTimeSeriesData } from '../../playgroundData.js';
@@ -65,7 +65,8 @@ interface AreaPlaygroundArgs extends AreaProps {
 }
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Area/Playground',
+  title: 'React Spectrum Charts 2/Lab/Area/Playground',
+  tags: ['lab'],
   component: Area,
   argTypes: {
     ...chartArgTypes,

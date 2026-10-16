@@ -26,7 +26,7 @@ import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DIMENSION_HOVER_AREA,
-  FADE_FACTOR,
+  DRAW_IN_DONE,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
@@ -40,14 +40,20 @@ import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils.js';
 import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
-import { getDeemphasisRamp, getHoverFractionSignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
+import {
+  getBarDrawInSettleProgressExpr,
+  getBarDrawInValueField,
+  getBarMarkDataSource,
+  getDrawInLabelFadeExpr,
+} from '../marks/drawInAnimationUtils.js';
+import { HoverMatchRule, getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import {
   getColorProductionRule,
   getCursor,
+  getInspectEncoding,
   getMarkOpacity,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
-  getInspectEncoding,
   hasPopover,
   isInteractive,
 } from '../marks/markUtils.js';
@@ -65,6 +71,26 @@ export const getBarAnimIdField = (name: string): string => `${name}_${BAR_ANIM_I
  */
 export const isDodgedAndStacked = ({ color, lineType, opacity }: BarSpecOptions): boolean => {
   return [color, lineType, opacity].some((facet) => Array.isArray(facet) && facet.length === 2);
+};
+
+/**
+ * Checks whether the bar stacks its segments, either as a stacked bar or within each dodged group.
+ * @param options
+ * @returns boolean
+ */
+export const isBarStacked = (options: BarSpecOptions): boolean =>
+  options.type === 'stacked' || isDodgedAndStacked(options);
+
+/**
+ * Gets a bar label's 0-1 draw-in fade, which starts once the bar (or, per segment, its stacked segment) finishes.
+ * @param options
+ * @param perSegment - whether the label belongs to a single stacked segment rather than the whole bar
+ * @param datum - expression path to the data row
+ * @returns expression string
+ */
+export const getBarDrawInLabelFadeExpr = (options: BarSpecOptions, perSegment: boolean, datum = 'datum'): string => {
+  const stacked = perSegment && isBarStacked(options);
+  return getDrawInLabelFadeExpr(getBarDrawInSettleProgressExpr(options.name, options.metric, stacked, datum));
 };
 
 /**
@@ -87,7 +113,7 @@ export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
     type: 'group',
     from: {
       facet: {
-        data: isTrellised(options) ? getTrellisProperties(options).facetName : FILTERED_TABLE,
+        data: isTrellised(options) ? getTrellisProperties(options).facetName : getBarMarkDataSource(options),
         name: `${name}_facet`,
         groupby: dimension,
       },
@@ -136,8 +162,14 @@ export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEnc
   };
 };
 
-export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => {
-  const { metric, type } = options;
+/**
+ * Gets the metric-axis encodings for a bar.
+ * @param options
+ * @param drawIn - read the animated draw-in value instead of the final metric
+ * @returns RectEncodeEntry
+ */
+export const getMetricEncodings = (options: BarSpecOptions, drawIn = false): RectEncodeEntry => {
+  const { metric, name, type } = options;
   const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
     options.orientation,
     options.metricAxis
@@ -145,8 +177,9 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
   const endKey = `${startKey}2`;
 
   if (type === 'stacked' || isDodgedAndStacked(options)) {
-    return getStackedMetricEncodings(options);
+    return getStackedMetricEncodings(options, drawIn);
   }
+  const end = { field: drawIn ? getBarDrawInValueField(name) : metric };
 
   if (isDualMetricAxis(options)) {
     return {
@@ -165,11 +198,11 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
         {
           test: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}`,
           scale: `${scaleKey}Secondary`,
-          field: metric,
+          ...end,
         },
         {
           scale: `${scaleKey}Primary`,
-          field: metric,
+          ...end,
         },
       ],
     };
@@ -177,12 +210,18 @@ export const getMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => 
 
   return {
     [startKey]: { scale: scaleKey, value: 0 },
-    [endKey]: { scale: scaleKey, field: metric },
+    [endKey]: { scale: scaleKey, ...end },
   };
 };
 
-export const getStackedMetricEncodings = (options: BarSpecOptions): RectEncodeEntry => {
-  const { metric, orientation } = options;
+/**
+ * Gets the metric-axis encodings for a stacked bar segment, leaving a small gap between segments.
+ * @param options
+ * @param drawIn - read the animated draw-in value instead of the segment's final end
+ * @returns RectEncodeEntry
+ */
+export const getStackedMetricEncodings = (options: BarSpecOptions, drawIn = false): RectEncodeEntry => {
+  const { metric, name, orientation } = options;
   const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
     options.orientation,
     options.metricAxis
@@ -190,7 +229,8 @@ export const getStackedMetricEncodings = (options: BarSpecOptions): RectEncodeEn
   const endKey = `${startKey}2`;
 
   const startValue = `datum.${metric}0`;
-  const endValue = `datum.${metric}1`;
+  const endField = drawIn ? getBarDrawInValueField(name) : `${metric}1`;
+  const endValue = `datum.${endField}`;
 
   const pixelGapBetweenBars = 1.5;
 
@@ -209,7 +249,7 @@ export const getStackedMetricEncodings = (options: BarSpecOptions): RectEncodeEn
           signal: `min(scale('${scaleKey}', ${startValue}) + ${pixelGapBetweenBars}, scale('${scaleKey}', ${endValue}))`,
         },
       ],
-      [endKey]: { scale: scaleKey, field: `${metric}1` },
+      [endKey]: { scale: scaleKey, field: endField },
     };
   }
 
@@ -227,7 +267,7 @@ export const getStackedMetricEncodings = (options: BarSpecOptions): RectEncodeEn
         signal: `max(scale('${scaleKey}', ${startValue}) - ${pixelGapBetweenBars}, scale('${scaleKey}', ${endValue}))`,
       },
     ],
-    [endKey]: { scale: scaleKey, field: `${metric}1` },
+    [endKey]: { scale: scaleKey, field: endField },
   };
 };
 
@@ -284,9 +324,25 @@ export const rotateRectClockwiseIfNeeded = (
 };
 
 export const getBaseBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
-  ...getMetricEncodings(options),
+  ...(options.isDrawInAnimate ? {} : getMetricEncodings(options)),
   ...getCornerRadiusEncodings(options),
 });
+
+/**
+ * Gets the metric encodings that animate during draw-in; they must live in update so they track the clock.
+ * @param options
+ * @returns EncodeEntry
+ */
+export const getBarDrawInUpdateEncodings = (options: BarSpecOptions): EncodeEntry =>
+  options.isDrawInAnimate ? getMetricEncodings(options, true) : {};
+
+/**
+ * Gets the background bar's draw-in encodings: final geometry, hidden until draw-in finishes so it never animates.
+ * @param options
+ * @returns EncodeEntry
+ */
+export const getBarBackgroundDrawInUpdateEncodings = (options: BarSpecOptions): EncodeEntry =>
+  options.isDrawInAnimate ? { ...getMetricEncodings(options), opacity: { signal: `${DRAW_IN_DONE} ? 1 : 0` } } : {};
 
 /**
  * Returns the Vega fill encoding for the bar. When {@link BarSpecOptions.colorOverride} is set
@@ -360,10 +416,9 @@ export const getBarHoverRules = (options: BarSpecOptions): HoverMatchRule[] => {
 };
 
 /** Animated deemphasis-opacity signal for a per-item-keyed mark. Mirrors line's `getLineDeemphasisOpacitySignal`. */
-const getBarDeemphasisOpacitySignal = (name: string, keyField: string): ProductionRule<NumericValueRef> => {
-  const ramp = getDeemphasisRamp(getHoverFractionSignal(name, keyField));
-  return { signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}` };
-};
+const getBarDeemphasisOpacitySignal = (name: string, keyField: string): ProductionRule<NumericValueRef> => ({
+  signal: getHoverDeemphasisOpacitySignal(name, keyField),
+});
 
 /**
  * Bar's opacity encoding: the animated per-bar fraction when hover-animated, else `getMarkOpacity`.
@@ -504,10 +559,7 @@ const getSelectionRingUpdateEncodings = (
     [metricEndKey]: { signal: `max(${metricStartExpr}, ${metricEndExpr}) + ${SELECTION_RING_PADDING}` },
     [dimensionAxis]: { signal: `${dimensionPosExpr} - ${SELECTION_RING_PADDING}` },
     [dimensionSizeSignal]: { signal: `${dimensionSizeExpr} + ${2 * SELECTION_RING_PADDING}` },
-    opacity: [
-      { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, value: 1 },
-      { value: 0 },
-    ],
+    opacity: [{ test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, value: 1 }, { value: 0 }],
   };
 };
 
