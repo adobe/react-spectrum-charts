@@ -16,11 +16,11 @@ import {
   AnimationType,
   COLOR_SCALE,
   DEFAULT_ANIMATION_TYPES,
-  DRAW_IN_GROW_DURATION_MS,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DIMENSION_HOVER_AREA,
+  DRAW_IN_GROW_DURATION_MS,
   FILTERED_TABLE,
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
@@ -36,7 +36,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
-import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils.js';
+import { getBarDirectLabelsMarks } from '../barDirectLabel/barDirectLabelUtils.js';
 import {
   addInspectData,
   addInspectSignals,
@@ -44,6 +44,7 @@ import {
   getInspects,
   isHighlightedByGroup,
 } from '../chartInspect/chartInspectUtils.js';
+import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils.js';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils.js';
 import {
   addDrawInClockSignals,
@@ -83,7 +84,6 @@ import {
   addUserMetaInteractiveMark,
   getFacetsFromOptions,
 } from '../specUtils.js';
-import { getBarDirectLabelMarks, getBarDirectLabelSpecOptions } from '../barDirectLabel/barDirectLabelUtils.js';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline/index.js';
 import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types/index.js';
 import { getChartFocusRing } from './barFocusRingUtils.js';
@@ -196,8 +196,7 @@ export const addBar = produce<
     };
     barOptions.isHighlightedByGroup = isHighlightedByGroup(barOptions);
     barOptions.isHoverAnimate = usesBarHoverAnimation(animations, animationTypes, barOptions);
-    barOptions.isDrawInAnimate =
-      animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
+    barOptions.isDrawInAnimate = animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
 
     spec.usermeta = {
       ...spec.usermeta,
@@ -279,7 +278,11 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   signals.push(getGenericValueSignal('paddingInner', paddingInner));
 
   if (options.accessibleNavigation) {
-    signals.push(getGenericValueSignal(FOCUSED_ITEM), getGenericValueSignal(FOCUSED_REGION), getGenericValueSignal(FOCUSED_DIMENSION));
+    signals.push(
+      getGenericValueSignal(FOCUSED_ITEM),
+      getGenericValueSignal(FOCUSED_REGION),
+      getGenericValueSignal(FOCUSED_DIMENSION)
+    );
   }
 
   if (isDualMetricAxis(options)) {
@@ -361,7 +364,16 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
 
 /** Adds the hover-animation engine's data sources for a bar mark (see `marks/hoverAnimationUtils.ts`). */
 const addBarHoverData = (data: Data[], options: BarSpecOptions): void => {
-  const { color, dimension, isHighlightedByGroup: highlightedByGroup, isHoverAnimate, lineType, name, opacity, trellis } = options;
+  const {
+    color,
+    dimension,
+    isHighlightedByGroup: highlightedByGroup,
+    isHoverAnimate,
+    lineType,
+    name,
+    opacity,
+    trellis,
+  } = options;
   if (!isHoverAnimate) return;
 
   const { facets, secondaryFacets } = getFacetsFromOptions({ color, lineType, opacity });
@@ -614,6 +626,8 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
     barMarks.push(...getDodgedMarks(options));
   }
 
+  barMarks.push(...getBarDirectLabelsMarks(options));
+
   const popovers = getPopovers(chartPopovers, name);
   if (popovers.some((popover) => popover.UNSAFE_highlightBy === 'dimension')) {
     barMarks.push(getDimensionSelectionRing(options));
@@ -628,10 +642,6 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
   }
 
   marks.push(...getTrendlineMarks(options));
-
-  for (const [i, label] of options.barDirectLabels.entries()) {
-    marks.push(...getBarDirectLabelMarks(getBarDirectLabelSpecOptions(label, i, options), options));
-  }
 
   if (options.accessibleNavigation) {
     marks.push(getChartFocusRing(options));

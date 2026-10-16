@@ -46,14 +46,14 @@ import {
   getBarMarkDataSource,
   getDrawInLabelFadeExpr,
 } from '../marks/drawInAnimationUtils.js';
-import { getHoverDeemphasisOpacitySignal, HoverMatchRule } from '../marks/hoverAnimationUtils.js';
+import { HoverMatchRule, getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import {
   getColorProductionRule,
   getCursor,
+  getInspectEncoding,
   getMarkOpacity,
   getOpacityProductionRule,
   getStrokeDashProductionRule,
-  getInspectEncoding,
   hasPopover,
   isInteractive,
 } from '../marks/markUtils.js';
@@ -85,11 +85,12 @@ export const isBarStacked = (options: BarSpecOptions): boolean =>
  * Gets a bar label's 0-1 draw-in fade, which starts once the bar (or, per segment, its stacked segment) finishes.
  * @param options
  * @param perSegment - whether the label belongs to a single stacked segment rather than the whole bar
+ * @param datum - expression path to the data row
  * @returns expression string
  */
-export const getBarDrawInLabelFadeExpr = (options: BarSpecOptions, perSegment: boolean): string => {
+export const getBarDrawInLabelFadeExpr = (options: BarSpecOptions, perSegment: boolean, datum = 'datum'): string => {
   const stacked = perSegment && isBarStacked(options);
-  return getDrawInLabelFadeExpr(getBarDrawInSettleProgressExpr(options.name, options.metric, stacked));
+  return getDrawInLabelFadeExpr(getBarDrawInSettleProgressExpr(options.name, options.metric, stacked, datum));
 };
 
 /**
@@ -558,10 +559,7 @@ const getSelectionRingUpdateEncodings = (
     [metricEndKey]: { signal: `max(${metricStartExpr}, ${metricEndExpr}) + ${SELECTION_RING_PADDING}` },
     [dimensionAxis]: { signal: `${dimensionPosExpr} - ${SELECTION_RING_PADDING}` },
     [dimensionSizeSignal]: { signal: `${dimensionSizeExpr} + ${2 * SELECTION_RING_PADDING}` },
-    opacity: [
-      { test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, value: 1 },
-      { value: 0 },
-    ],
+    opacity: [{ test: `isValid(${SELECTED_ITEM}) && ${SELECTED_ITEM} === datum.${idKey}`, value: 1 }, { value: 0 }],
   };
 };
 
