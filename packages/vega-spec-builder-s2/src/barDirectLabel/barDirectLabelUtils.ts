@@ -16,9 +16,11 @@ import {
   CHART_SIZE_FONT_SIZE,
   DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
   DIRECT_LABEL_FONT_WEIGHT,
+  MARK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getBarDrawInLabelFadeExpr, isDodgedAndStacked } from '../bar/barUtils.js';
+import { isDodgedAndStacked } from '../bar/barUtils.js';
+import { getDrawInLabelFadeExpr } from '../marks/drawInAnimationUtils.js';
 import { getNumberFormatExpression } from '../specUtils.js';
 import {
   BarDirectLabelOptions,
@@ -38,6 +40,7 @@ const FIT_PADDING = 2 * INSIDE_LABEL_OFFSET;
 const THICKNESS_PADDING = 4;
 const DEFAULT_NUMBER_FORMAT = ',.2~f';
 const FONT_SIZE = CHART_SIZE_FONT_SIZE;
+const LAYOUT_PADDING = 'directLabelLayoutPadding';
 
 export interface LabelGeometry {
   x: string;
@@ -216,6 +219,7 @@ const getOutsideLabelMarks = (
   const vertical = orientation === 'vertical';
   const anchors = vertical ? (['top', 'bottom'] as const) : (['right', 'left'] as const);
   const obstacles = avoidMarks.map((mark) => `data(${JSON.stringify(mark)}) || []`).join(', ');
+  // Vega's obstacle rasterizer requires integer canvas dimensions.
   const placementMark: TextMark = {
     name: `${name}_placement`,
     type: 'text',
@@ -232,7 +236,7 @@ const getOutsideLabelMarks = (
     transform: [
       {
         type: 'label',
-        size: { signal: '[width, height]' },
+        size: { signal: `[ceil(width + 2 * ${LAYOUT_PADDING}), ceil(height + 2 * ${LAYOUT_PADDING})]` },
         anchor: [anchors[negative ? 1 : 0]],
         offset: [vertical ? VERTICAL_LABEL_OFFSET : HORIZONTAL_LABEL_OFFSET],
         avoidBaseMark: false,
@@ -240,6 +244,9 @@ const getOutsideLabelMarks = (
         avoidMarks: { signal: `[${obstacles}]` },
         padding: null,
       },
+      { type: 'formula', as: 'x', expr: `datum.opacity > 0 ? datum.x : ${LAYOUT_PADDING}` },
+      { type: 'formula', as: 'y', expr: `datum.opacity > 0 ? datum.y : ${LAYOUT_PADDING}` },
+      { type: 'formula', as: 'fontSize', expr: `datum.opacity > 0 ? ${FONT_SIZE} : 0` },
     ],
   };
 
@@ -278,9 +285,16 @@ const getOutsideLabelName = (options: BarDirectLabelSpecOptions, negative: boole
  */
 const getLabelBars = (options: BarSpecOptions): Data => {
   const grouped = options.type === 'dodged' || isDodgedAndStacked(options);
-  const fields = ['datum', 'mark', 'width', 'height', 'fill', 'opacity'];
+  const geometry = options.isDrawInAnimate ? 'layoutBar' : 'bar';
+  const backgroundName = `${options.name}_background`;
+  const background = `datum.bar.mark.group.items[indexof(pluck(datum.bar.mark.group.items, 'name'), ${JSON.stringify(
+    backgroundName
+  )})]`;
+  const markId = `datum.${MARK_ID}`;
+  const backgroundItem = `${background}.items[indexof(pluck(${background}.items, '${markId}'), datum.bar.${markId})]`;
+  const fields = ['datum', 'mark', 'fill', 'opacity'];
   return {
-    name: getLabelBarsName(options.name),
+    name: `${getLabelBarsName(options.name)}_source`,
     source: grouped ? `${options.name}_group` : options.name,
     transform: [
       ...(grouped
@@ -291,24 +305,25 @@ const getLabelBars = (options: BarSpecOptions): Data => {
             { type: 'flatten' as const, fields: ['childMark.items'], as: ['bar'] },
           ]
         : [{ type: 'formula' as const, expr: 'datum', as: 'bar' }]),
+      ...(options.isDrawInAnimate ? [{ type: 'formula' as const, as: 'layoutBar', expr: backgroundItem }] : []),
       {
         type: 'project',
         fields: [
           ...fields.map((field) => `bar.${field}`),
-          'bar.x',
-          'bar.y',
+          `${geometry}.width`,
+          `${geometry}.height`,
+          `${geometry}.x`,
+          `${geometry}.y`,
           ...(grouped ? ['group.x', 'group.y'] : []),
         ],
-        as: [...fields, 'barX', 'barY', ...(grouped ? ['groupX', 'groupY'] : [])],
+        as: [...fields, 'width', 'height', 'barX', 'barY', ...(grouped ? ['groupX', 'groupY'] : [])],
       },
       { type: 'formula', as: 'x', expr: grouped ? 'datum.barX + (datum.groupX || 0)' : 'datum.barX' },
       { type: 'formula', as: 'y', expr: grouped ? 'datum.barY + (datum.groupY || 0)' : 'datum.barY' },
       {
         type: 'formula',
         as: 'labelOpacity',
-        expr: options.isDrawInAnimate
-          ? `datum.opacity * (${getBarDrawInLabelFadeExpr(options, true, 'datum.datum')})`
-          : 'datum.opacity',
+        expr: 'datum.opacity',
       },
       {
         type: 'formula',
@@ -327,7 +342,34 @@ export const getBarDirectLabelsMarks = (barOptions: BarSpecOptions): Mark[] => {
   if (!barOptions.barDirectLabels.length) return [];
   const labels = barOptions.barDirectLabels.map((label, i) => getBarDirectLabelSpecOptions(label, i, barOptions));
   const barsName = getLabelBarsName(barOptions.name);
-  const data: Data[] = [getLabelBars(barOptions)];
+  const source = getLabelBars(barOptions);
+  const textWidths = labels.map((label) => getTextWidth(getBarDirectLabelText('datum', label))).join(', ');
+  const sizesName = `${barsName}_sizes`;
+  // Keep outside labels inside the collision bitmap without changing their rendered coordinates.
+  const data: Data[] = [
+    source,
+    {
+      name: sizesName,
+      source: source.name,
+      transform: [
+        { type: 'formula', as: 'labelWidth', expr: `max(${textWidths})` },
+        { type: 'aggregate', fields: ['labelWidth'], ops: ['max'], as: ['labelWidth'] },
+      ],
+    },
+    {
+      name: barsName,
+      source: source.name,
+      transform: [
+        { type: 'formula', as: 'x', expr: `datum.x + ${LAYOUT_PADDING}` },
+        { type: 'formula', as: 'y', expr: `datum.y + ${LAYOUT_PADDING}` },
+        {
+          type: 'formula',
+          as: 'bounds',
+          expr: '{x1: datum.x, x2: datum.x + datum.width, y1: datum.y, y2: datum.y + datum.height}',
+        },
+      ],
+    },
+  ];
   const insideLabels = labels.filter((label) => label.position !== 'end-outside');
   const marks: Mark[] = insideLabels.map(getInsideLabelMark);
   const avoidMarks = [barsName, ...insideLabels.map((label) => `${getBarDirectLabelMarkName(label)}_inside`)];
@@ -340,15 +382,38 @@ export const getBarDirectLabelsMarks = (barOptions: BarSpecOptions): Mark[] => {
       data.push({
         name: `${name}_candidates`,
         source: barsName,
-        transform: [
-          { type: 'filter', expr: `(${rowTest}) && (${outside}) && (${signTest}) && datum.labelOpacity > 0` },
-        ],
+        transform: [{ type: 'filter', expr: `(${rowTest}) && (${outside}) && (${signTest})` }],
       });
       marks.push(...getOutsideLabelMarks(label, negative, [...avoidMarks]));
       avoidMarks.push(name);
     }
   }
-  const group: GroupMark = { name: `${barOptions.name}_directLabels`, type: 'group', interactive: false, data, marks };
+  const group: GroupMark = {
+    name: `${barOptions.name}_directLabels`,
+    type: 'group',
+    interactive: false,
+    signals: [
+      {
+        name: LAYOUT_PADDING,
+        update: `max(${FONT_SIZE}, length(data('${sizesName}')) ? data('${sizesName}')[0].labelWidth || 0 : 0) + ${
+          HORIZONTAL_LABEL_OFFSET + DIRECT_LABEL_BACKGROUND_STROKE_WIDTH
+        }`,
+      },
+    ],
+    encode: {
+      update: { opacity: barOptions.isDrawInAnimate ? { signal: getDrawInLabelFadeExpr('1') } : { value: 1 } },
+    },
+    data,
+    marks: [
+      {
+        type: 'group',
+        name: `${barOptions.name}_directLabelLayout`,
+        interactive: false,
+        encode: { update: { x: { signal: `-${LAYOUT_PADDING}` }, y: { signal: `-${LAYOUT_PADDING}` } } },
+        marks,
+      },
+    ],
+  };
   return [group];
 };
 
