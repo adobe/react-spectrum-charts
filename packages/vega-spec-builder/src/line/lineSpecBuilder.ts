@@ -24,6 +24,7 @@ import {
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/constants';
 import { toCamelCase } from '@spectrum-charts/utils';
 
@@ -193,12 +194,12 @@ export const addDualMetricAxisData = (data: Data[], options: LineSpecOptions) =>
       data.push(
         {
           name: scaleNames.primaryDomain,
-          source: FILTERED_TABLE,
+          source: TABLE,
           transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
         },
         {
           name: scaleNames.secondaryDomain,
-          source: FILTERED_TABLE,
+          source: TABLE,
           transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
         }
       );

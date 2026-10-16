@@ -206,6 +206,16 @@ describe('addLegend()', () => {
       expect(addLegend(defaultSpec, { title: 'My title' }).legends?.[0].title).toStrictEqual('My title');
     });
 
+    test('hidden entries exclude an empty legend and its title from layout', () => {
+      const legend = addLegend(defaultSpec, { hiddenEntries: ['test'], position: 'right', title: 'Series' }).legends?.[0];
+      expect(legend).toHaveProperty('orient', {
+        signal: "length(domain('legend0Entries')) > 0 ? 'right' : 'none'",
+      });
+      expect(legend).toHaveProperty('title', {
+        signal: "length(domain('legend0Entries')) > 0 ? \"Series\" : null",
+      });
+    });
+
     test('should add labels to signals using legendLabels', () => {
       expect(
         addLegend(defaultSpec, {

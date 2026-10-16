@@ -218,6 +218,12 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
     columns: usePreferredColumns ? { signal: `${name}_columnLayout.columns` } : getColumns(position, name, labelLimit),
     labelLimit: usePreferredColumns ? { signal: `${name}_columnLayout.labelLimit` } : labelLimit,
   };
+  // Empty Vega legends have invalid bounds and must not participate in chart layout.
+  if (options.hiddenEntries.length) {
+    const hasEntries = `length(domain('${name}Entries')) > 0`;
+    legend.orient = { signal: `${hasEntries} ? '${position}' : 'none'` };
+    if (title !== undefined) legend.title = { signal: `${hasEntries} ? ${JSON.stringify(title)} : null` };
+  }
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
   if (_labelWrap && _labelWrap > 1) {
     // for the legend label offset to work, gridAlign needs to be none to stop the auto-centering

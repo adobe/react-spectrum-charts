@@ -134,7 +134,7 @@ export function buildSpec({
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const specOptions = { colorScheme, idKey, highlightedItem, s2 };
-  
+
   // Collect granularity first, so Line can use it when axis is time-based
   spec = [...axes].reduce((acc: ScSpec, axis) => {
     if (axis.labelFormat === 'time' && axis.granularity) {
@@ -142,7 +142,7 @@ export function buildSpec({
     }
     return acc;
   }, spec);
-  
+
   spec = [...marks].reduce((acc: ScSpec, mark) => {
     switch (mark.markType) {
       case 'area':
@@ -209,6 +209,14 @@ export function buildSpec({
   // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
   if (highlightedSeries) {
     setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
+  }
+
+  if (marks.every(({ markType }) => markType === 'line')) {
+    for (const scale of spec.scales ?? []) {
+      if (scale.domain && 'data' in scale.domain && scale.domain.data === FILTERED_TABLE) {
+        scale.domain.data = TABLE;
+      }
+    }
   }
 
   // clear out all scales that don't have any fields on the domain

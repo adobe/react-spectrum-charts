@@ -222,6 +222,12 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
     columns: getColumns(position, name, labelLimit),
     labelLimit,
   };
+  // Empty Vega legends have invalid bounds and must not participate in chart layout.
+  if (options.hiddenEntries.length) {
+    const hasEntries = `length(domain('${name}Entries')) > 0`;
+    legend.orient = { signal: `${hasEntries} ? '${position}' : 'none'` };
+    if (title !== undefined) legend.title = { signal: `${hasEntries} ? ${JSON.stringify(title)} : null` };
+  }
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
   return legend;
 };

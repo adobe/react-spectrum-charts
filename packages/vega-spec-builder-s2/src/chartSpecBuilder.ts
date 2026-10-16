@@ -245,6 +245,14 @@ export function buildSpec({
     setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
   }
 
+  if (marks.every(({ markType }) => markType === 'line')) {
+    for (const scale of spec.scales ?? []) {
+      if (scale.domain && 'data' in scale.domain && scale.domain.data === FILTERED_TABLE) {
+        scale.domain.data = TABLE;
+      }
+    }
+  }
+
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);
 
