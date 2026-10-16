@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { DONUT_BASE_PADDING } from '@spectrum-charts/core-s2/constants';
@@ -40,6 +40,11 @@ jest.mock('../../../hooks/useChartProps.js', () => ({
 beforeAll(stubS2BrowserApis);
 beforeEach(() => localStorage.clear());
 
+const getSizeButton = (variant: 'Full' | 'Semicircle', label: string): HTMLElement =>
+  within(screen.getByRole('radiogroup', { name: `${variant} size presets` })).getByRole('radio', {
+    name: new RegExp(`^${label} \\(`),
+  });
+
 test.each([
   { label: 'XS', diameter: 60, width: 80 },
   { label: 'S', diameter: 120, width: 140 },
@@ -48,9 +53,11 @@ test.each([
   { label: 'XL', diameter: 400, width: 420 },
 ])('uses the $label width preset for both variants', async ({ label, diameter, width }) => {
   const { container } = render(<PropVariations />);
-  await userEvent.click(screen.getByRole('radio', { name: `${label} (${width}px width)` }));
+  await userEvent.click(getSizeButton('Full', label));
 
   expect(screen.getByRole('slider', { name: 'Container width (px)' })).toHaveValue(String(width));
+  expect(getSizeButton('Full', label)).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', label)).toHaveAttribute('aria-checked', 'true');
   expect(screen.getByText(`Full-circle diameter: ${diameter}px;`, { exact: false })).toBeInTheDocument();
   const circle = container.querySelector('[data-variation-id="defaults"] [data-testid="variation-chart"]');
   const semicircle = container.querySelector('[data-variation-id="semicircle"] [data-testid="variation-chart"]');
@@ -67,29 +74,30 @@ test.each([
   expect(semicircle).toHaveAttribute('data-min-width', '0');
 });
 
-test.each(['Direct labels', 'Advanced labels'])('applies the label-adjusted width in %s mode', async (viewMode) => {
+test.each(['Direct labels', 'Advanced labels'])('keeps the container width unchanged in %s mode', async (viewMode) => {
   const { container } = render(<PropVariations />);
-  await userEvent.click(screen.getByRole('radio', { name: 'S (140px width)' }));
+  await userEvent.click(getSizeButton('Semicircle', 'S'));
   await userEvent.click(screen.getByRole('radio', { name: viewMode }));
 
-  expect(screen.getByRole('slider', { name: 'Container width (px)' })).toHaveValue('206');
-  expect(screen.getByText('Full-circle diameter: 120px;', { exact: false })).toBeInTheDocument();
+  expect(screen.getByRole('slider', { name: 'Container width (px)' })).toHaveValue('140');
+  expect(getSizeButton('Full', 'XS')).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', 'S')).toHaveAttribute('aria-checked', 'true');
   const circle = container.querySelector('[data-variation-id="defaults"] [data-testid="variation-chart"]');
   const semicircle = container.querySelector('[data-variation-id="semicircle"] [data-testid="variation-chart"]');
   expect(circle?.parentElement).toHaveStyle({ width: '100%', minWidth: '0' });
   expect(semicircle?.parentElement).toHaveStyle({ width: '100%', minWidth: '0' });
   expect(circle?.closest('[data-variation-id]')?.parentElement).toHaveStyle({
-    gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 208px), 208px))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 142px), 142px))',
   });
-  expect(circle).toHaveAttribute('data-height', '206');
-  expect(semicircle).toHaveAttribute('data-height', String(103 + DONUT_BASE_PADDING));
+  expect(circle).toHaveAttribute('data-height', '140');
+  expect(semicircle).toHaveAttribute('data-height', String(70 + DONUT_BASE_PADDING));
 });
 
 test('keeps slider widths and preset selection in sync', async () => {
   const { container } = render(<PropVariations />);
   const slider = screen.getByRole('slider', { name: 'Container width (px)' });
-  const small = screen.getByRole('radio', { name: 'S (140px width)' });
-  const medium = screen.getByRole('radio', { name: 'M (220px width)' });
+  const small = getSizeButton('Semicircle', 'S');
+  const medium = getSizeButton('Semicircle', 'M');
   const semicircle = container.querySelector('[data-variation-id="semicircle"] [data-testid="variation-chart"]');
   const grid = semicircle?.closest('[data-variation-id]')?.parentElement;
 
@@ -124,13 +132,15 @@ test('keeps slider widths and preset selection in sync', async () => {
   expect(semicircle).toHaveAttribute('data-height', String(70 + DONUT_BASE_PADDING));
 });
 
-test('selects the active size range while dragging across every breakpoint in both directions', () => {
+test.each(['No added labels', 'Direct labels', 'Advanced labels'])('selects the active size range across every breakpoint in %s mode', async (viewMode) => {
   render(<PropVariations />);
+  await userEvent.click(screen.getByRole('radio', { name: viewMode }));
   const slider = screen.getByRole('slider', { name: 'Container width (px)' });
   const cases = [
     { width: 80, label: 'XS' },
     { width: 139, label: 'XS' },
     { width: 140, label: 'S' },
+    { width: 217, label: 'S' },
     { width: 219, label: 'S' },
     { width: 220, label: 'M' },
     { width: 299, label: 'M' },
@@ -142,25 +152,107 @@ test('selects the active size range while dragging across every breakpoint in bo
   for (const { width, label } of [...cases, ...[...cases].reverse()]) {
     fireEvent.change(slider, { target: { value: String(width) } });
     expect(slider).toHaveValue(String(width));
-    expect(screen.getByRole('radio', { name: new RegExp(`^${label} \\(`) })).toHaveAttribute('aria-checked', 'true');
+    expect(getSizeButton('Semicircle', label)).toHaveAttribute('aria-checked', 'true');
+    if (viewMode === 'No added labels') {
+      expect(getSizeButton('Full', label)).toHaveAttribute('aria-checked', 'true');
+    }
   }
 });
 
-test.each(['Direct labels', 'Advanced labels'])('uses label-adjusted size ranges in %s mode', async (viewMode) => {
-  render(<PropVariations />);
-  await userEvent.click(screen.getByRole('radio', { name: 'S (140px width)' }));
-  await userEvent.click(screen.getByRole('radio', { name: viewMode }));
+test.each(['Direct labels', 'Advanced labels'])('preserves custom width and size selection when toggling %s', async (viewMode) => {
+  const { container } = render(<PropVariations />);
   const slider = screen.getByRole('slider', { name: 'Container width (px)' });
+  const chart = container.querySelector('[data-variation-id="semicircle"] [data-testid="variation-chart"]');
+  fireEvent.change(slider, { target: { value: '217' } });
+  await userEvent.click(screen.getByRole('radio', { name: viewMode }));
+  expect(slider).toHaveValue('217');
+  expect(getSizeButton('Full', 'S')).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', 'S')).toHaveAttribute('aria-checked', 'true');
 
   for (const { width, label } of [
-    { width: 205, label: 'XS' },
-    { width: 206, label: 'S' },
-    { width: 207, label: 'S' },
+    { width: 220, label: 'M' },
+    { width: 217, label: 'S' },
   ]) {
     fireEvent.change(slider, { target: { value: String(width) } });
     expect(slider).toHaveValue(String(width));
-    expect(screen.getByRole('radio', { name: new RegExp(`^${label} \\(`) })).toHaveAttribute('aria-checked', 'true');
+    expect(getSizeButton('Full', 'S')).toHaveAttribute('aria-checked', 'true');
+    expect(getSizeButton('Semicircle', label)).toHaveAttribute('aria-checked', 'true');
   }
+  await userEvent.click(screen.getByRole('radio', { name: 'No added labels' }));
+  expect(slider).toHaveValue('217');
+  expect(getSizeButton('Full', 'S')).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', 'S')).toHaveAttribute('aria-checked', 'true');
+  expect(chart?.isConnected).toBe(true);
+});
+
+test.each(['Direct labels', 'Advanced labels'])('tracks full-circle label-space breakpoints in %s mode', async (viewMode) => {
+  render(<PropVariations />);
+  await userEvent.click(screen.getByRole('radio', { name: viewMode }));
+  const slider = screen.getByRole('slider', { name: 'Container width (px)' });
+  expect(slider).toHaveAttribute('min', '80');
+  expect(slider).toHaveAttribute('max', '674');
+  const cases = [
+    { width: 80, label: 'XS' },
+    { width: 205, label: 'XS' },
+    { width: 206, label: 'S' },
+    { width: 343, label: 'S' },
+    { width: 344, label: 'M' },
+    { width: 471, label: 'M' },
+    { width: 472, label: 'L' },
+    { width: 673, label: 'L' },
+    { width: 674, label: 'XL' },
+  ];
+  for (const { width, label } of [...cases, ...[...cases].reverse()]) {
+    fireEvent.change(slider, { target: { value: String(width) } });
+    expect(slider).toHaveValue(String(width));
+    expect(getSizeButton('Full', label)).toHaveAttribute('aria-checked', 'true');
+  }
+});
+
+test.each(['Direct labels', 'Advanced labels'])('sizes the shared container from either row in %s mode', async (viewMode) => {
+  const { container } = render(<PropVariations />);
+  const chart = container.querySelector('[data-variation-id="semicircle"] [data-testid="variation-chart"]');
+  const slider = screen.getByRole('slider', { name: 'Container width (px)' });
+  await userEvent.click(screen.getByRole('radio', { name: viewMode }));
+
+  await userEvent.click(getSizeButton('Full', 'M'));
+  expect(slider).toHaveValue('344');
+  expect(getSizeButton('Full', 'M')).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', 'L')).toHaveAttribute('aria-checked', 'true');
+
+  await userEvent.click(getSizeButton('Semicircle', 'M'));
+  expect(slider).toHaveValue('220');
+  expect(getSizeButton('Full', 'S')).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', 'M')).toHaveAttribute('aria-checked', 'true');
+
+  await userEvent.click(getSizeButton('Full', 'S'));
+  expect(slider).toHaveValue('206');
+  expect(getSizeButton('Full', 'S')).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', 'S')).toHaveAttribute('aria-checked', 'true');
+
+  await userEvent.click(getSizeButton('Semicircle', 'S'));
+  expect(slider).toHaveValue('140');
+  expect(getSizeButton('Full', 'XS')).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', 'S')).toHaveAttribute('aria-checked', 'true');
+  expect(chart?.isConnected).toBe(true);
+});
+
+test('keeps the container width and slider range when switching label modes at XL', async () => {
+  render(<PropVariations />);
+  const slider = screen.getByRole('slider', { name: 'Container width (px)' });
+  await userEvent.click(screen.getByRole('radio', { name: 'Direct labels' }));
+  await userEvent.click(getSizeButton('Full', 'XL'));
+  expect(slider).toHaveValue('674');
+
+  await userEvent.click(screen.getByRole('radio', { name: 'No added labels' }));
+  expect(slider).toHaveValue('674');
+  expect(slider).toHaveAttribute('max', '674');
+  expect(getSizeButton('Full', 'XL')).toHaveAttribute('aria-checked', 'true');
+  expect(getSizeButton('Semicircle', 'XL')).toHaveAttribute('aria-checked', 'true');
+
+  await userEvent.click(getSizeButton('Full', 'XL'));
+  expect(slider).toHaveValue('420');
+  expect(slider).toHaveAttribute('max', '674');
 });
 
 test('wires the dashboard animation toggle into all donut charts while switching datasets', async () => {

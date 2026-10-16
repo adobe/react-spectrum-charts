@@ -41,6 +41,7 @@ import {
   VariationDashboard,
   VariationFilter,
   VariationSizePreset,
+  VariationSizePresetGroup,
   VariationViewMode,
   useVariationAnimations,
   useVariationDataset,
@@ -99,12 +100,13 @@ const donutVariationFilters: VariationFilter[] = [
   { label: 'Semicircle', value: 'semicircle', matches: isSemicircleVariation },
 ];
 
-const getDonutContainerSize = (diameter: number, viewMode?: string): number => {
-  if (viewMode === 'none') {
-    return diameter + 2 * DONUT_BASE_PADDING;
-  }
-  return getContainerWidthForDiameter(diameter);
-};
+const getDonutContainerSize = (diameter: number, viewMode?: string): number =>
+  viewMode === 'none' ? diameter + 2 * DONUT_BASE_PADDING : getContainerWidthForDiameter(diameter);
+
+const donutSizePresetGroups: VariationSizePresetGroup[] = [
+  { label: 'Full', resolvePresetSize: getDonutContainerSize },
+  { label: 'Semicircle', resolvePresetSize: (diameter) => getDonutContainerSize(diameter, 'none') },
+];
 
 const getEffectiveDonutDiameter = (containerSize: number, viewMode?: string): number => {
   if (viewMode === 'none') {
@@ -788,8 +790,8 @@ export const DonutDashboard = (): ReactElement => (
     initialDataset="standard"
     initialFilter="all"
     initialViewMode="none"
-    resolvePresetSize={getDonutContainerSize}
     sizeAxis="width"
+    sizePresetGroups={donutSizePresetGroups}
     sizePresets={donutSizePresets}
     showAnimationControls
     viewModes={donutViewModes}

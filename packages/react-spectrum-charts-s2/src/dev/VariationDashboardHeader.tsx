@@ -41,6 +41,7 @@ import type {
   VariationFilter,
   VariationRenderer,
   VariationSizePreset,
+  VariationSizePresetGroup,
   VariationViewMode,
 } from './VariationDashboard.js';
 import type { DashboardDefinition } from './dashboardCoverage.js';
@@ -56,9 +57,9 @@ export interface VariationDashboardHeaderProps {
   onSizeChange: (size: number) => void;
   sizeDescription?: string;
   sizeAxis?: 'width' | 'height';
+  sizePresetGroups?: VariationSizePresetGroup[];
   sizePresets: VariationSizePreset[];
-  selectedPreset?: string;
-  getPresetSize: (preset: VariationSizePreset) => number;
+  resolvePresetSize: (size: number, viewMode?: string) => number;
   datasets: VariationDataset[];
   dataset?: string;
   onDatasetChange: (dataset: string) => void;
@@ -109,9 +110,9 @@ export const VariationDashboardHeader = ({
   onSizeChange,
   sizeDescription,
   sizeAxis,
+  sizePresetGroups,
   sizePresets,
-  selectedPreset,
-  getPresetSize,
+  resolvePresetSize,
   datasets,
   dataset,
   onDatasetChange,
@@ -141,6 +142,7 @@ export const VariationDashboardHeader = ({
     entries.filter(({ entry }) => !('skip' in entry)).map(({ prop }) => `${component}.${prop}`)
   );
   const datasetDescription = datasets.find((option) => option.value === dataset)?.description;
+  const presetGroups = sizePresetGroups ?? [{ label: 'Size presets', resolvePresetSize }];
 
   const removeProps = (keys: Set<string | number>): void => {
     onSelectedPropsChange(new Set([...selectedProps].filter((key) => !keys.has(key))));
@@ -214,28 +216,37 @@ export const VariationDashboardHeader = ({
                 ))}
               </SegmentedControl>
             )}
-            <ToggleButtonGroup
-              aria-label="Size presets"
-              onSelectionChange={(keys) => {
-                const preset = sizePresets.find(({ label }) =>
-                  keys.size === 0 ? label === selectedPreset : keys.has(label)
-                );
-                if (preset) onSizeChange(getPresetSize(preset));
-              }}
-              selectedKeys={selectedPreset ? [selectedPreset] : []}
-              selectionMode="single"
-              size="S"
-            >
-              {sizePresets.map((preset) => (
-                <ToggleButton
-                  key={preset.label}
-                  aria-label={`${preset.label} (${Math.round(getPresetSize(preset))}px ${sizeAxis ?? 'container'})`}
-                  id={preset.label}
-                >
-                  {preset.label}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
+            {presetGroups.map((group) => {
+              const sizes = sizePresets.map((preset) => group.resolvePresetSize(preset.size, viewMode));
+              const selectedPreset = sizePresets.find((_, index) => size < (sizes[index + 1] ?? Infinity));
+              return (
+                <div key={group.label} style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {sizePresetGroups && <span style={{ fontSize: 13 }}>{group.label}</span>}
+                  <ToggleButtonGroup
+                    aria-label={sizePresetGroups ? `${group.label} size presets` : 'Size presets'}
+                    onSelectionChange={(keys) => {
+                      const preset = sizePresets.find(({ label }) =>
+                        keys.size === 0 ? label === selectedPreset?.label : keys.has(label)
+                      );
+                      if (preset) onSizeChange(group.resolvePresetSize(preset.size, viewMode));
+                    }}
+                    selectedKeys={selectedPreset ? [selectedPreset.label] : []}
+                    selectionMode="single"
+                    size="S"
+                  >
+                    {sizePresets.map((preset, index) => (
+                      <ToggleButton
+                        key={preset.label}
+                        aria-label={`${preset.label} (${Math.round(sizes[index])}px ${sizeAxis ?? 'container'})`}
+                        id={preset.label}
+                      >
+                        {preset.label}
+                      </ToggleButton>
+                    ))}
+                  </ToggleButtonGroup>
+                </div>
+              );
+            })}
             <SegmentedControl
               aria-label="Renderer"
               onSelectionChange={(key) => onRendererChange(key as VariationRenderer)}

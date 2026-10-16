@@ -37,6 +37,11 @@ export interface VariationSizePreset {
   size: number;
 }
 
+export interface VariationSizePresetGroup {
+  label: string;
+  resolvePresetSize: (size: number, viewMode?: string) => number;
+}
+
 export interface VariationViewMode {
   label: string;
   value: string;
@@ -80,6 +85,7 @@ interface VariationDashboardProps {
   initialViewMode?: string;
   resolvePresetSize?: (size: number, viewMode?: string) => number;
   sizeAxis?: 'width' | 'height';
+  sizePresetGroups?: VariationSizePresetGroup[];
   sizePresets?: VariationSizePreset[];
   showAnimationControls?: boolean;
   viewModes?: VariationViewMode[];
@@ -140,6 +146,7 @@ export const VariationDashboard = ({
   initialViewMode,
   resolvePresetSize = (size) => size,
   sizeAxis,
+  sizePresetGroups,
   sizePresets = defaultSizePresets,
   showAnimationControls = false,
   viewModes = [],
@@ -184,10 +191,14 @@ export const VariationDashboard = ({
     (value) => Array.isArray(value) && value.every(isOneOf(coveredPropKeys))
   );
   const selectedProps = useMemo(() => new Set(selectedPropList), [selectedPropList]);
-  const presetSizes = sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
+  const presetViewModes = viewModes.length ? viewModes.map((mode) => mode.value) : [viewMode];
+  const presetSizes = sizePresetGroups
+    ? sizePresetGroups.flatMap((group) =>
+        sizePresets.flatMap((preset) => presetViewModes.map((mode) => group.resolvePresetSize(preset.size, mode)))
+      )
+    : sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
   const minSize = Math.min(...presetSizes, initialSize);
   const maxSize = Math.max(...presetSizes, initialSize);
-  const selectedPreset = sizePresets.find((_, index) => size < (presetSizes[index + 1] ?? Infinity));
   const minimumCardWidth = sizeAxis === 'width' ? size + 2 : Math.max(320, size + 2);
   const maximumCardWidth = sizeAxis === 'width' ? `${minimumCardWidth}px` : '1fr';
   const activeFilter = filters.find((option) => option.value === filter);
@@ -199,7 +210,8 @@ export const VariationDashboard = ({
 
   const updateViewMode = (nextViewMode: string): void => {
     setViewMode(nextViewMode);
-    if (selectedPreset && size === resolvePresetSize(selectedPreset.size, viewMode)) {
+    const selectedPreset = sizePresets.find((preset) => size === resolvePresetSize(preset.size, viewMode));
+    if (!sizePresetGroups && selectedPreset) {
       setSize(resolvePresetSize(selectedPreset.size, nextViewMode));
     }
   };
@@ -217,9 +229,9 @@ export const VariationDashboard = ({
           onSizeChange={setSize}
           sizeDescription={getSizeDescription?.(size, viewMode)}
           sizeAxis={sizeAxis}
+          sizePresetGroups={sizePresetGroups}
           sizePresets={sizePresets}
-          selectedPreset={selectedPreset?.label}
-          getPresetSize={(preset) => resolvePresetSize(preset.size, viewMode)}
+          resolvePresetSize={resolvePresetSize}
           datasets={datasets}
           dataset={dataset}
           onDatasetChange={setDataset}
