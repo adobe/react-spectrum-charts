@@ -12,11 +12,11 @@
 
 import { FC } from 'react';
 
-import { ChartActionBarProps } from '../../types/index.js';
+import { ChartActionBarProps } from '../../../types/index.js';
 
 /**
  * Renders a floating contextual toolbar near the clicked data point.
- * @alpha
+ * @experimental
  */
 const ChartActionBar: FC<ChartActionBarProps> = ({
   children: _children,

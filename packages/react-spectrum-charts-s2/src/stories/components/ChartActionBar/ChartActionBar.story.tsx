@@ -22,7 +22,7 @@ import Info from '@react-spectrum/s2/icons/InfoCircle';
 import Note from '@react-spectrum/s2/icons/StickyNote';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ChartActionBar } from '../../../components/index.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import {
   ActionBarLineStory,
   actionButton,
@@ -31,8 +31,8 @@ import { bindWithProps } from '../../../test-utils/index.js';
 import { StoryWithParameters, actionBarContent, setControlInclude } from './chartActionBarStoryTemplates.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Chart Action Bar/Features',
-  tags: ['alpha'],
+  title: 'React Spectrum Charts 2/Lab/Chart Action Bar/Features',
+  tags: ['lab'],
   component: ChartActionBar,
   argTypes: {
     children: {
