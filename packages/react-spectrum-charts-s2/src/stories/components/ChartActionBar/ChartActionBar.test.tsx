@@ -161,6 +161,69 @@ describe('ChartActionBar', () => {
     expect(parseFloat(actionBar.style.top)).toBe(window.innerHeight);
   });
 
+  test('ignores pointer moves when no drag is in progress', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+
+    await clickNthElement(points, 0);
+    const actionBar = await screen.findByTestId('rsc-action-bar');
+    const { left, top } = actionBar.style;
+    await userEvent.pointer({ target: screen.getByTestId('rsc-action-bar-drag-handle'), coords: { x: 40, y: 25 } });
+
+    expect(actionBar.style.left).toBe(left);
+    expect(actionBar.style.top).toBe(top);
+  });
+
+  test('arrow keys move the bar and stay within the viewport', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+
+    await clickNthElement(points, 0);
+    const actionBar = await screen.findByTestId('rsc-action-bar');
+    const dragHandle = screen.getByTestId('rsc-action-bar-drag-handle');
+    dragHandle.focus();
+
+    // jsdom's getBoundingClientRect() is always a zero rect, so each key moves from (0, 0).
+    await userEvent.keyboard('{ArrowRight}');
+    expect(parseFloat(actionBar.style.left)).toBe(10);
+    await userEvent.keyboard('{ArrowDown}');
+    expect(parseFloat(actionBar.style.top)).toBe(10);
+    await userEvent.keyboard('{ArrowLeft}');
+    expect(parseFloat(actionBar.style.left)).toBe(0);
+    await userEvent.keyboard('{ArrowUp}');
+    expect(parseFloat(actionBar.style.top)).toBe(0);
+  });
+
+  test('other keys on the drag handle do not move the bar', async () => {
+    render(<Basic {...Basic.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+
+    await clickNthElement(points, 0);
+    const actionBar = await screen.findByTestId('rsc-action-bar');
+    screen.getByTestId('rsc-action-bar-drag-handle').focus();
+    const { left, top } = actionBar.style;
+    await userEvent.keyboard('a');
+
+    expect(actionBar.style.left).toBe(left);
+    expect(actionBar.style.top).toBe(top);
+  });
+
+  test('keeps showing actions after a window resize', async () => {
+    render(<MaxActions {...MaxActions.args} />);
+    const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'line0_voronoi');
+
+    await clickNthElement(points, 0);
+    const actionBar = await screen.findByTestId('rsc-action-bar');
+    const actionCount = within(actionBar).getAllByRole('button').length;
+    window.dispatchEvent(new Event('resize'));
+
+    await waitFor(() => expect(within(actionBar).getAllByRole('button')).toHaveLength(actionCount));
+  });
+
   test('releases focus back to the document when the bar closes', async () => {
     render(<Basic {...Basic.args} />);
     const chart = await findChart();
