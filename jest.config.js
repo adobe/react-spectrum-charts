@@ -40,7 +40,7 @@ module.exports = {
     'node_modules/(?!(vega|vega-.*|d3-.*|internmap|json-stringify-pretty-compact)/)',
   ],
   testPathIgnorePatterns: ['<rootDir>/dist/'],
-  setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock'],
+  setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock', '<rootDir>/jest.setup.js'],
   testMatch: [
     '<rootDir>/packages/*/src/**/*.test.{js,jsx,ts,tsx}',
     '<rootDir>/packages/*/src/**/*.spec.{js,jsx,ts,tsx}',

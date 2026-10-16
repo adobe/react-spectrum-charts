@@ -330,9 +330,9 @@ const displayPointMarks = [line0_groupMark, staticPointBackgroundMark, staticPoi
 describe('lineSpecBuilder', () => {
   describe('addLine()', () => {
     test('should add line', () => {
-      expect(addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' })).toStrictEqual(
-        defaultSpec
-      );
+      expect(
+        addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line', animationTypes: ['hover'] })
+      ).toStrictEqual(defaultSpec);
     });
 
     describe('isHoverAnimate gate', () => {
@@ -470,8 +470,18 @@ describe('lineSpecBuilder', () => {
         expect(spec.signals?.some((s) => s.name === 'line0_drawInClipX')).toBe(false);
       });
 
-      test('omitting the animationTypes prop does not add the draw-in clip signal', () => {
+      test('omitting the animationTypes prop adds the draw-in clip signal', () => {
         const spec = addLine(startingSpec, { idKey: MARK_ID, color: DEFAULT_COLOR, markType: 'line' });
+        expect(spec.signals?.some((s) => s.name === 'line0_drawInClipX')).toBe(true);
+      });
+
+      test('animationTypes without "drawIn" does not add the draw-in clip signal', () => {
+        const spec = addLine(startingSpec, {
+          idKey: MARK_ID,
+          color: DEFAULT_COLOR,
+          markType: 'line',
+          animationTypes: ['hover'],
+        });
         expect(spec.signals?.some((s) => s.name === 'line0_drawInClipX')).toBe(false);
       });
     });

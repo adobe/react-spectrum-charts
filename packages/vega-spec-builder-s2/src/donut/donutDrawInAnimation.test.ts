@@ -125,7 +125,6 @@ describe('donut draw-in animations', () => {
 
   test.each([
     { animations: false, animationTypes: ['drawIn'] },
-    { animationTypes: undefined },
     { animationTypes: [] },
     { animationTypes: ['hover'] },
   ] satisfies Partial<ChartOptions>[])('keeps static encodings unless draw-in is enabled: %o', (options) => {
@@ -134,6 +133,11 @@ describe('donut draw-in animations', () => {
     const arc = spec.marks?.find(({ name }) => name === 'donut');
     expect(arc?.encode?.update).toHaveProperty('startAngle', { field: 'donut_startAngle' });
     expect(arc?.encode?.update).toHaveProperty('endAngle', { field: 'donut_endAngle' });
+  });
+
+  test('draws in by default', () => {
+    const spec = buildSpec({ ...chartOptions, animationTypes: undefined });
+    expect(spec.signals?.some(({ name }) => name === DRAW_IN_START)).toBe(true);
   });
 
   test('shares the clock with Line draw-in and hover without duplicate timer signals', () => {

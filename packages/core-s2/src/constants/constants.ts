@@ -196,8 +196,8 @@ export const TRELLIS_PADDING = 0.2;
 // animation constants
 /** Individual animation systems that can be toggled on via the `animationTypes` chart prop. */
 export type AnimationType = 'hover' | 'drawIn';
-/** Default `animationTypes` value: hover animations on, draw-in animations off. */
-export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover'];
+/** Default `animationTypes` value: every animation type on. */
+export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover', 'drawIn'];
 
 // hover animation constants
 /** Timer signal update interval in ms. Caps timer signal update at ~30fps. */

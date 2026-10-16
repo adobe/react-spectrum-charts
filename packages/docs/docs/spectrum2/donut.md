@@ -56,7 +56,7 @@ replaces the default content.
 
 ## Draw-in animation
 
-Add `'drawIn'` to the chart's `animationTypes` to sweep the segments clockwise over 750ms
+Donuts draw in by default, sweeping the segments clockwise over 750ms
 with the Spectrum 2 ease-in-out curve. Full-circle donuts and pies start at the top;
 semicircle donuts start at the left. Direct and advanced labels start a 50ms linear fade
 as soon as their own slice finishes drawing. All text rows and swatches fade together;
@@ -65,16 +65,16 @@ Hover dimming and existing small-segment and collision rules still apply. The ce
 summary stays visible throughout.
 
 ```jsx
-<Chart data={data} animationTypes={['hover', 'drawIn']}>
+<Chart data={data}>
   <Donut metric="count" color="browser">
     <SegmentLabel value />
   </Donut>
 </Chart>
 ```
 
-Draw-in is off by default. `animations={false}` disables it even when `'drawIn'` is
-listed. It plays once per chart mount; re-renders and data updates do not replay it.
-Empty-state rings remain static.
+Draw-in is on by default and plays once per chart mount; re-renders and updates do not
+replay it. Set `animationTypes={['hover']}` to turn off draw-in only, or
+`animations={false}` to turn off all animations. Empty-state rings remain static.
 When the user prefers reduced motion, draw-in is skipped and hover fades still run.
 The chart fades in over 150ms on first paint, and draw-in waits until the page is rendering frames on time
 (at most 300ms) so it doesn't start while other content is still loading.

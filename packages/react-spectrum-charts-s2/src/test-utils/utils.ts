@@ -12,11 +12,15 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion.js';
 import { findAllMarksByGroupName } from './customQueries.js';
 
 export const findChart = async () => {
   return screen.findByRole('graphics-document');
 };
+
+/** Lets charts draw in; jest.setup.js skips draw-in by default so timing can't make tests flaky. */
+export const enableDrawIn = () => jest.mocked(usePrefersReducedMotion).mockReturnValue(false);
 
 export const hoverNthElement = async (elements: HTMLElement[], index: number) => {
   await userEvent.hover(elements[index]);

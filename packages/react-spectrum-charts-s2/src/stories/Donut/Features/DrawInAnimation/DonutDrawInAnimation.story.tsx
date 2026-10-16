@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics */
 import { ComponentProps, ReactElement } from 'react';
 
@@ -21,19 +22,16 @@ import { basicDonutData, booleanDonutData } from '../../../../storyShared/Donut/
 import { bindWithProps } from '../../../../test-utils/index.js';
 import { ChartProps } from '../../../../types/index.js';
 
-type DrawInAnimationArgs = ComponentProps<typeof Donut> &
-  Pick<ChartProps, 'animations' | 'animationTypes'> & {
-    data?: ChartProps['data'];
-    labelStyle?: 'none' | 'direct' | 'advanced';
-  };
+type DrawInAnimationArgs = ComponentProps<typeof Donut> & {
+  data?: ChartProps['data'];
+  labelStyle?: 'none' | 'direct' | 'advanced';
+};
 
 export default {
   title: 'React Spectrum Charts 2/Donut/Features/DrawInAnimation',
   tags: ['alpha'],
   component: Donut,
   argTypes: {
-    animations: { control: 'boolean' },
-    animationTypes: { control: { type: 'check' }, options: ['hover', 'drawIn'] },
     data: { control: false },
     labelStyle: {
       control: 'select',
@@ -41,26 +39,19 @@ export default {
       options: ['none', 'direct', 'advanced'],
     },
   },
-  args: { animations: true, animationTypes: ['hover', 'drawIn'] },
 };
 
 const defaultChartProps = { data: basicDonutData, width: 500, height: 500 };
 const defaultArgs = { color: 'browser', metric: 'count' };
 
-const DrawInStory: StoryFn<DrawInAnimationArgs> = ({
-  animations,
-  animationTypes,
-  data,
-  labelStyle = 'none',
-  ...args
-}): ReactElement => {
+const DrawInStory: StoryFn<DrawInAnimationArgs> = ({ data, labelStyle = 'none', ...args }): ReactElement => {
   const chartProps = useChartProps({
     ...defaultChartProps,
     data: data ?? (args.isBoolean ? booleanDonutData : basicDonutData),
   });
   const isAdvancedLabel = labelStyle === 'advanced';
   return (
-    <Chart {...chartProps} animations={animations} animationTypes={animationTypes}>
+    <Chart {...chartProps}>
       <Donut {...args}>
         <DonutSummary label="Visitors" />
         {labelStyle !== 'none' && (
@@ -71,13 +62,7 @@ const DrawInStory: StoryFn<DrawInAnimationArgs> = ({
   );
 };
 
-const WithHoverStory: StoryFn<DrawInAnimationArgs> = ({
-  animations,
-  animationTypes,
-  data,
-  labelStyle = 'direct',
-  ...args
-}): ReactElement => {
+const WithHoverStory: StoryFn<DrawInAnimationArgs> = ({ data, labelStyle = 'direct', ...args }): ReactElement => {
   const chartProps = useChartProps({
     ...defaultChartProps,
     width: 600,
@@ -85,7 +70,7 @@ const WithHoverStory: StoryFn<DrawInAnimationArgs> = ({
   });
   const isAdvancedLabel = labelStyle === 'advanced';
   return (
-    <Chart {...chartProps} animations={animations} animationTypes={animationTypes}>
+    <Chart {...chartProps}>
       <Donut {...args}>
         {labelStyle !== 'none' && (
           <SegmentLabel

@@ -28,7 +28,7 @@ import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from './Chart.js';
 import { Axis, Bar, Donut, Legend, Line } from './components/index.js';
 import { Combo } from './lab/components/index.js';
-import { act, render, waitFor } from './test-utils/index.js';
+import { act, enableDrawIn, render, waitFor } from './test-utils/index.js';
 import { ChartProps } from './types/index.js';
 
 type MarkType = 'bar' | 'line' | 'donut';
@@ -77,15 +77,12 @@ const lastOf = (list: View[]): View => {
 };
 const latestView = () => lastOf(views);
 
-const DRAW_IN: ChartProps['animationTypes'] = ['hover', 'drawIn'];
-
 const chart = (markType: MarkType, props: Partial<ChartProps> = {}) => (
   <Chart
     data={[...fixtures[markType].data]}
     width={400}
     height={300}
     onVegaViewReady={(view) => views.push(view)}
-    animationTypes={DRAW_IN}
     {...props}
   >
     {fixtures[markType].children}
@@ -120,13 +117,14 @@ const rebuild = async (rerender: (element: ReactElement) => void, element: React
 const sleep = (ms: number) => act(() => new Promise((resolve) => setTimeout(resolve, ms)));
 
 beforeEach(() => {
+  enableDrawIn();
   views.length = 0;
 });
 
 describe.each(['bar', 'line', 'donut'] satisfies MarkType[])('%s draw-in continuity', (markType) => {
   const { duration, data } = fixtures[markType];
 
-  test('draws in', async () => {
+  test('draws in by default', async () => {
     const { start } = await mount(chart(markType));
     expect(start).toBeGreaterThan(0);
     expect(latestView().signal(DRAW_IN_ANIM_T)).toBeLessThan(1);
@@ -143,6 +141,7 @@ describe.each(['bar', 'line', 'donut'] satisfies MarkType[])('%s draw-in continu
     ['controlled hidden series', { hiddenSeries: ['a'] }],
     ['a locale', { locale: 'de-DE' }],
     ['padding', { padding: 12 }],
+    ['an explicit animationTypes default', { animationTypes: ['hover', 'drawIn'] }],
   ])('a rebuild mid draw-in from %s continues from the original start', async (_, props) => {
     const { rerender, start } = await mount(chart(markType));
 
@@ -308,7 +307,7 @@ describe('draw-in continuity edge cases', () => {
     expect(hasDrawIn(view)).toBe(false);
   });
 
-  test('combo charts continue across rebuilds', async () => {
+  test('combo charts draw in by default and continue across rebuilds', async () => {
     const combo = (title?: string) => (
       <Chart
         data={[
@@ -318,7 +317,6 @@ describe('draw-in continuity edge cases', () => {
         width={400}
         height={300}
         title={title}
-        animationTypes={DRAW_IN}
         onVegaViewReady={(view) => views.push(view)}
       >
         <Combo dimension="datetime">
