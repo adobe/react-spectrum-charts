@@ -49,4 +49,33 @@ SingleSeriesToggleableLegend.parameters = {
   },
 };
 
-export { SingleSeriesToggleableLegend };
+const ToggleableLegendRescalingStory: StoryFn<typeof Chart> = (args): ReactElement => {
+  const chartProps = useChartProps(args);
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid />
+      <Axis position="bottom" />
+      <Line color="series" dimension="x" scaleType="linear" />
+      <Legend isToggleable />
+    </Chart>
+  );
+};
+
+const ToggleableLegendRescaling = bindWithProps(ToggleableLegendRescalingStory);
+ToggleableLegendRescaling.args = {
+  data: [
+    { series: 'A', x: 1, value: 1000 },
+    { series: 'A', x: 2, value: 1000 },
+    { series: 'B', x: 1, value: 10 },
+    { series: 'B', x: 2, value: 10 },
+  ],
+  width: 360,
+  height: 216,
+};
+ToggleableLegendRescaling.parameters = {
+  regression: {
+    description: 'Hiding the larger series must rescale the axes while hiding every series keeps valid axes.',
+  },
+};
+
+export { SingleSeriesToggleableLegend, ToggleableLegendRescaling };

@@ -91,10 +91,12 @@ const defaultBarOptions: BarOptions = { markType: 'bar', dimension: 'browser', m
 
 describe('hidden-series axis domains', () => {
   const data = [
-    { series: 'A', x: 1, value: 10 },
-    { series: 'A', x: 2, value: 20 },
-    { series: 'B', x: 3, value: 100 },
-    { series: 'B', x: 4, value: 200 },
+    { series: 'A', x: 1, value: 1000 },
+    { series: 'A', x: 2, value: 1000 },
+    { series: 'B', x: 3, value: 10 },
+    { series: 'B', x: 4, value: 10 },
+    { series: 'C', x: 5, value: 100 },
+    { series: 'C', x: 6, value: 100 },
   ];
 
   beforeAll(() => {
@@ -106,8 +108,9 @@ describe('hidden-series axis domains', () => {
     { dualMetricAxis: false, metricAxis: undefined },
     { dualMetricAxis: true, metricAxis: undefined },
     { dualMetricAxis: true, metricAxis: 'customMetric' },
+    { dualMetricAxis: true, metricAxis: 'custom-metric' },
   ])(
-    'line axes stay fixed when toggling series with %j',
+    'line axes fit visible series and fall back only when empty with %j',
     async ({ dualMetricAxis, metricAxis }) => {
       const spec = buildSpec({
         data,
@@ -128,18 +131,27 @@ describe('hidden-series axis domains', () => {
         ];
         const getDomains = () => scaleNames.map((name) => view.scale(name).domain().map(Number));
         const fullDomains = getDomains();
+        expect(fullDomains).toEqual([[0, 6], [0, 1000], ...(dualMetricAxis ? [[0, 1000], [0, 100]] : [])]);
+        expect(view.data(FILTERED_TABLE)).toHaveLength(6);
+
+        await view.signal('hiddenSeries', ['A']).runAsync();
         expect(view.data(FILTERED_TABLE)).toHaveLength(4);
+        expect(getDomains()).toEqual([[0, 6], [0, 100], ...(dualMetricAxis ? [[0, 10], [0, 100]] : [])]);
 
-        await view.signal('hiddenSeries', ['B']).runAsync();
+        await view.signal('hiddenSeries', ['A', 'C']).runAsync();
         expect(view.data(FILTERED_TABLE)).toHaveLength(2);
-        expect(getDomains()).toEqual(fullDomains);
+        expect(getDomains()).toEqual([[0, 4], [0, 10], ...(dualMetricAxis ? [[0, 10], [0, 100]] : [])]);
 
-        await view.signal('hiddenSeries', ['A', 'B']).runAsync();
+        await view.signal('hiddenSeries', ['A', 'B', 'C']).runAsync();
         expect(view.data(FILTERED_TABLE)).toHaveLength(0);
         expect(getDomains()).toEqual(fullDomains);
 
+        await view.signal('hiddenSeries', ['A', 'B']).runAsync();
+        expect(view.data(FILTERED_TABLE)).toHaveLength(2);
+        expect(getDomains()).toEqual([[0, 6], [0, 100], ...(dualMetricAxis ? [[0, 1000], [0, 100]] : [])]);
+
         await view.signal('hiddenSeries', []).runAsync();
-        expect(view.data(FILTERED_TABLE)).toHaveLength(4);
+        expect(view.data(FILTERED_TABLE)).toHaveLength(6);
         expect(getDomains()).toEqual(fullDomains);
       } finally {
         view.finalize();
@@ -150,7 +162,7 @@ describe('hidden-series axis domains', () => {
   test('controlled hidden series preserve domains on the initial render', async () => {
     const spec = buildSpec({
       data,
-      hiddenSeries: ['A', 'B'],
+      hiddenSeries: ['A', 'B', 'C'],
       marks: [{ markType: 'line', dimension: 'x', color: 'series', scaleType: 'linear' }],
     });
     const table = spec.data?.find(({ name }) => name === TABLE);
@@ -160,21 +172,26 @@ describe('hidden-series axis domains', () => {
     try {
       await view.runAsync();
       expect(view.data(FILTERED_TABLE)).toHaveLength(0);
-      expect(view.scale('yLinear').domain()[1]).toBeGreaterThanOrEqual(200);
-      expect(view.scale('xLinear').domain()).toEqual([0, 4]);
+      expect(view.scale('yLinear').domain()).toEqual([0, 1000]);
+      expect(view.scale('xLinear').domain()).toEqual([0, 6]);
     } finally {
       view.finalize();
     }
   });
 
-  test('line axes use the full table without adding domain datasets', () => {
+  test('line axes share one additional domain dataset', () => {
     const spec = buildSpec({
       data,
       marks: [{ markType: 'line', dimension: 'x', color: 'series', scaleType: 'linear' }],
     });
-    expect(spec.scales?.find(({ name }) => name === 'xLinear')).toHaveProperty('domain.data', TABLE);
-    expect(spec.scales?.find(({ name }) => name === 'yLinear')).toHaveProperty('domain.data', TABLE);
-    expect(spec.data?.map(({ name }) => name)).toEqual([TABLE, FILTERED_TABLE, CONTROLLED_HIGHLIGHTED_TABLE]);
+    expect(spec.scales?.find(({ name }) => name === 'xLinear')).toHaveProperty('domain.data', 'lineDomainTable');
+    expect(spec.scales?.find(({ name }) => name === 'yLinear')).toHaveProperty('domain.data', 'lineDomainTable');
+    expect(spec.data?.map(({ name }) => name)).toEqual([
+      TABLE,
+      FILTERED_TABLE,
+      CONTROLLED_HIGHLIGHTED_TABLE,
+      'lineDomainTable',
+    ]);
   });
 
   test.each(['bar', 'area'] as const)('%s charts keep their existing axis domain sources', (markType) => {

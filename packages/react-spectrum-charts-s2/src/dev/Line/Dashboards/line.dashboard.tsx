@@ -1122,7 +1122,7 @@ const legendVariations: Variation[] = [
   {
     id: 'legend-toggleable',
     title: 'Toggleable legend',
-    description: 'Click entries to hide or show lines without changing the axes; the first series starts hidden.',
+    description: 'Axes fit visible lines and stay valid when all are hidden; the first series starts hidden.',
     dataset: 'standard',
     coverage: ['Legend.isToggleable', 'Legend.defaultHiddenSeries=[first]'],
     render: () => (

@@ -3,4 +3,4 @@
 '@spectrum-charts/vega-spec-builder-s2': patch
 ---
 
-Keep Line chart axes unchanged when hiding or showing series, and keep charts visible when every legend entry is hidden.
+Keep Line chart axes valid when every series is hidden while preserving rescaling to visible series, and keep charts visible when every legend entry is hidden.

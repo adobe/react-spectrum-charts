@@ -25,7 +25,7 @@ import {
 } from '../../../test-utils/index.js';
 import { lineVariationDatasets } from '../Dashboards/lineVariationData.js';
 import { SingleSeriesHiddenLegendEntry } from './SingleSeriesHiddenLegendEntry.story.js';
-import { SingleSeriesToggleableLegend } from './SingleSeriesToggleableLegend.story.js';
+import { SingleSeriesToggleableLegend, ToggleableLegendRescaling } from './SingleSeriesToggleableLegend.story.js';
 
 test('hiding the only legend entry preserves the line and chart layout', async () => {
   const onView = jest.fn<void, [View]>();
@@ -105,6 +105,32 @@ test.each(['top', 'bottom', 'left', 'right'] as const)(
     await waitFor(expectHiddenLegend);
   }
 );
+
+test('legend toggles rescale visible lines and use the full domain only when all lines are hidden', async () => {
+  const onView = jest.fn<void, [View]>();
+  render(
+    <ToggleableLegendRescaling {...ToggleableLegendRescaling.args} animations={false} onVegaViewReady={onView} />
+  );
+  const chart = await findChart();
+  const expectDomainAndLines = async (upperBound: number, lineCount: number) => {
+    await waitFor(() => {
+      const view = onView.mock.calls.at(-1)?.[0];
+      expect(view?.scale('yLinear').domain()).toEqual([0, upperBound]);
+      expect(chart.querySelectorAll('g.line0 > path')).toHaveLength(lineCount);
+    });
+  };
+  await waitFor(() => expect(getAllLegendEntries(chart)).toHaveLength(2));
+  await expectDomainAndLines(1000, 2);
+
+  await clickNthElement(getAllLegendEntries(chart), 0);
+  await expectDomainAndLines(10, 1);
+  await clickNthElement(getAllLegendEntries(chart), 1);
+  await expectDomainAndLines(1000, 0);
+  await clickNthElement(getAllLegendEntries(chart), 1);
+  await expectDomainAndLines(10, 1);
+  await clickNthElement(getAllLegendEntries(chart), 0);
+  await expectDomainAndLines(1000, 2);
+});
 
 test.each([false, true])('single-series toggling preserves valid axes with animations=%s', async (animations) => {
   const onView = jest.fn<void, [View]>();

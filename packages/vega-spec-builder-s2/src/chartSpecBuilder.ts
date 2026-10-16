@@ -62,7 +62,7 @@ import { addDonutLegendLayout } from './donut/donutLegendLayoutUtils.js';
 import { addDonut } from './donut/donutSpecBuilder.js';
 import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils.js';
 import { addLegend } from './legend/legendSpecBuilder.js';
-import { addLine } from './line/lineSpecBuilder.js';
+import { addLine, getLineDomainData } from './line/lineSpecBuilder.js';
 import { getOrdinalScale } from './scale/scaleSpecBuilder.js';
 import { addScatter } from './scatter/scatterSpecBuilder.js';
 import { getGenericValueSignal } from './signal/signalSpecBuilder.js';
@@ -245,11 +245,13 @@ export function buildSpec({
     setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
   }
 
-  // Keep Line axes based on all data so legend toggles only hide or show lines.
-  if (marks.every(({ markType }) => markType === 'line')) {
+  // Fit Line axes to visible series, falling back to all data only when every series is hidden.
+  if (marks.length && marks.every(({ markType }) => markType === 'line')) {
+    const domainData = getLineDomainData('lineDomainTable');
+    spec.data = [...(spec.data ?? []), domainData];
     for (const scale of spec.scales ?? []) {
       if (scale.domain && 'data' in scale.domain && scale.domain.data === FILTERED_TABLE) {
-        scale.domain.data = TABLE;
+        scale.domain.data = domainData.name;
       }
     }
   }
