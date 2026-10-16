@@ -34,6 +34,8 @@ interface DonutSceneNode {
   limit?: number;
   x?: number;
   y?: number;
+  dy?: number;
+  fontSize?: number;
   outerRadius?: number;
   innerRadius?: number;
   strokeWidth?: number;
@@ -41,7 +43,12 @@ interface DonutSceneNode {
 }
 
 describe('addData', () => {
-  test.each([false, true])('centers semicircles and preserves visible ring width on resize: isBoolean=%s', async (isBoolean) => {
+  test.each([
+    { isBoolean: false, delta: undefined },
+    { isBoolean: true, delta: undefined },
+    { isBoolean: false, delta: 0.025 },
+    { isBoolean: true, delta: 0.025 },
+  ])('bottom-aligns semicircles on resize: isBoolean=$isBoolean, delta=$delta', async ({ isBoolean, delta }) => {
     const functions = getExpressionFunctions('en-US');
     Object.entries(functions).forEach(([name, fn]) => expressionFunction(name, fn));
     expressionFunction('rscContainerWidth', (width: number) => width);
@@ -55,7 +62,7 @@ describe('addData', () => {
         metric: 'value',
         variant: 'semicircle',
         isBoolean,
-        donutSummaries: [{ label: 'Total' }],
+        donutSummaries: [{ label: 'Total', delta }],
       }],
     });
     const table = spec.data?.find(({ name }) => name === TABLE);
@@ -76,17 +83,16 @@ describe('addData', () => {
       await view.runAsync();
       const initialArc = getMarkItems('centeredDonut')[0];
       expect(view.signal('centeredDonut_ringWidth')).toBe(40);
-      for (const [width, height] of [[1200, 420], [420, 420], [1000, 300], [1200, 420]]) {
+      for (const [width, height] of [[1200, 420], [420, 420], [1000, 300], [140, 140], [80, 80], [220, 220], [1200, 420]]) {
         await view.width(width).height(height).runAsync();
         const outerRadius = view.signal('centeredDonut_outerRadius');
-        const top = (height - outerRadius) / 2;
-        const centerY = height - top;
+        const top = height - outerRadius;
         expect(top).toBeGreaterThanOrEqual(10);
         expect(width / 2 - outerRadius).toBeGreaterThanOrEqual(10);
         for (const name of ['centeredDonut', 'centeredDonut_emptyState']) {
           for (const item of getMarkItems(name)) {
             expect(item.x).toBe(width / 2);
-            expect(item.y).toBe(centerY);
+            expect(item.y).toBe(height);
           }
         }
         for (const item of getMarkItems('centeredDonut')) {
@@ -98,9 +104,19 @@ describe('addData', () => {
           );
           expect(item.outerRadius - item.strokeWidth / 2).toBeCloseTo(outerRadius, 10);
         }
-        const summaryName = isBoolean ? 'centeredDonut_booleanSummaryLabel' : 'centeredDonut_summaryLabel';
-        const summary = getMarkItems(summaryName)[0];
-        expect(summary.y).toBeLessThan(centerY);
+        const prefix = isBoolean ? 'centeredDonut_booleanSummary' : 'centeredDonut_summary';
+        const deltaVisible = delta !== undefined && view.signal('centeredDonut_sizeTier') >= 2;
+        const lastRow = deltaVisible ? 'Delta' : 'Label';
+        const summary = getMarkItems(`${prefix}${lastRow}`)[0];
+        if (summary.y === undefined || summary.dy === undefined || summary.fontSize === undefined) {
+          throw new Error('Expected resolved summary position and font size');
+        }
+        expect(summary.y + summary.dy + view.signal('centeredDonut_summaryLabelFontSize') / 2).toBeCloseTo(height - 2, 10);
+        if (delta !== undefined) {
+          expect(getMarkItems(`${prefix}Delta`)[0].fontSize).toBe(
+            deltaVisible ? view.signal('centeredDonut_summaryLabelFontSize') : 0
+          );
+        }
         expect(getMarkItems('centeredDonut')[0]).toBe(initialArc);
       }
     } finally {

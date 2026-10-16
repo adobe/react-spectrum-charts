@@ -23,7 +23,7 @@ export interface DonutSummaryOptions {
   label?: string;
   /** Hides the value portion of the donut summary, only showing the label */
   hideValue?: boolean;
-  /** Sentiment-colored delta value (e.g. 0.025 renders as "+2.5%") shown below the label; unsupported for semicircles. */
+  /** Sentiment-colored delta (e.g. 0.025 renders as "+2.5%") shown below the label; hidden at XS/S for semicircles. */
   delta?: number;
 }
 

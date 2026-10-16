@@ -55,6 +55,7 @@ export interface VariationDashboardHeaderProps {
   maxSize: number;
   onSizeChange: (size: number) => void;
   sizeDescription?: string;
+  sizeAxis?: 'width' | 'height';
   sizePresets: VariationSizePreset[];
   selectedPreset?: string;
   getPresetSize: (preset: VariationSizePreset) => number;
@@ -107,6 +108,7 @@ export const VariationDashboardHeader = ({
   maxSize,
   onSizeChange,
   sizeDescription,
+  sizeAxis,
   sizePresets,
   selectedPreset,
   getPresetSize,
@@ -167,7 +169,7 @@ export const VariationDashboardHeader = ({
         </div>
         <div style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 4, minWidth: 240 }}>
           <Slider
-            label="Container size (px)"
+            label={sizeAxis ? `Container ${sizeAxis} (px)` : 'Container size (px)'}
             maxValue={maxSize}
             minValue={minSize}
             onChange={onSizeChange}
@@ -215,7 +217,9 @@ export const VariationDashboardHeader = ({
             <ToggleButtonGroup
               aria-label="Size presets"
               onSelectionChange={(keys) => {
-                const preset = sizePresets.find(({ label }) => keys.has(label));
+                const preset = sizePresets.find(({ label }) =>
+                  keys.size === 0 ? label === selectedPreset : keys.has(label)
+                );
                 if (preset) onSizeChange(getPresetSize(preset));
               }}
               selectedKeys={selectedPreset ? [selectedPreset] : []}
@@ -225,7 +229,7 @@ export const VariationDashboardHeader = ({
               {sizePresets.map((preset) => (
                 <ToggleButton
                   key={preset.label}
-                  aria-label={`${preset.label} (${Math.round(getPresetSize(preset))}px container)`}
+                  aria-label={`${preset.label} (${Math.round(getPresetSize(preset))}px ${sizeAxis ?? 'container'})`}
                   id={preset.label}
                 >
                   {preset.label}

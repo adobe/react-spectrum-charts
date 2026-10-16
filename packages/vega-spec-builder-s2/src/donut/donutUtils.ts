@@ -276,14 +276,17 @@ export const getSizeTierScale = (options: DonutSpecOptions): ThresholdScale => (
 });
 
 /**
- * Gets the signal resolving the donut's size tier index from chart size, shared by every size-tiered value.
+ * Gets the donut's size tier from its available full-diameter space.
  * @param donutOptions
  * @returns Signal
  */
-export const getSizeTierSignal = (options: DonutSpecOptions): Signal => ({
-  name: getDonutSizeTierSignalName(options.name),
-  update: `scale('${options.name}_sizeTierScale', min(width, height))`,
-});
+export const getSizeTierSignal = (options: DonutSpecOptions): Signal => {
+  const chartSize = options.variant === 'semicircle' ? 'min(width, 2 * height)' : 'min(width, height)';
+  return {
+    name: getDonutSizeTierSignalName(options.name),
+    update: `scale('${options.name}_sizeTierScale', ${chartSize})`,
+  };
+};
 
 /**
  * Gets the signal resolving the size-tiered gap (px) between the ring's outer edge and its segment labels.
@@ -436,12 +439,12 @@ export const getDonutDrawInLabelVisibilityRules = (options: DonutSpecOptions): (
   options.isDrawInAnimate ? [{ test: `${getDonutLabelFadeProgressExpr(options)} <= 0`, value: 0 }] : [];
 
 /**
- * Gets the y anchor that centers the visible bounds of each donut variant.
+ * Gets the y anchor for a centered circle or bottom-aligned semicircle.
  * @param donutOptions
  * @returns vega signal string
  */
 export const getDonutCenterYSignal = (options: DonutSpecOptions): string =>
-  options.variant === 'semicircle' ? `(height + ${getDonutOuterRadiusExpr(options)}) / 2` : 'height / 2';
+  options.variant === 'semicircle' ? 'height' : 'height / 2';
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;

@@ -149,7 +149,8 @@ const DonutVariationChart = ({
     emphasizedItemCount === undefined
       ? donutProps?.emphasizedItems
       : getLargestDonutSeries(chartData as DonutVariationDatum[], emphasizedItemCount);
-  const chartProps = useChartProps({ data: chartData, width: 'auto', height: chartSize });
+  const chartHeight = donutProps?.variant === 'semicircle' ? chartSize / 2 + DONUT_BASE_PADDING : chartSize;
+  const chartProps = useChartProps({ data: chartData, width: 'auto', height: chartHeight, minWidth: 0, minHeight: 0 });
   const overrides =
     typeof chartPropOverrides === 'function'
       ? chartPropOverrides(chartData as DonutVariationDatum[])
@@ -161,7 +162,7 @@ const DonutVariationChart = ({
     dashboardSegmentLabel = <SegmentLabel percent showValueRow swatch value={false} />;
   }
   return (
-    <div style={{ width: '100%', minWidth: chartSize }}>
+    <div style={{ width: '100%', minWidth: 0 }}>
       <Chart
         {...chartProps}
         animations={animations}
@@ -523,7 +524,7 @@ const baseDonutVariations: Variation[] = [
   {
     id: 'semicircle',
     title: 'Semicircle',
-    description: 'Centers a top-half arc using the same size-tier breakpoints as a full-circle donut.',
+    description: 'Bottom-aligns a top-half arc using the same size-tier breakpoints as a full-circle donut.',
     dataset: 'canonical',
     coverage: ['variant=semicircle'],
     render: () => <DonutVariationChart donutProps={{ variant: 'semicircle' }} />,
@@ -537,6 +538,18 @@ const baseDonutVariations: Variation[] = [
     render: () => (
       <DonutVariationChart donutProps={{ variant: 'semicircle' }}>
         <DonutSummary label="Visitors" numberFormat="standardNumber" />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'semicircle-negative-delta',
+    title: 'Semicircle with negative delta',
+    description: 'Keeps a negative delta at the bottom and shifts the value up without a summary label.',
+    dataset: 'canonical',
+    coverage: ['variant=semicircle', 'DonutSummary.delta<0', 'DonutSummary.label=undefined'],
+    render: () => (
+      <DonutVariationChart donutProps={{ variant: 'semicircle' }}>
+        <DonutSummary delta={-0.074} />
       </DonutVariationChart>
     ),
   },
@@ -555,17 +568,18 @@ const baseDonutVariations: Variation[] = [
   {
     id: 'semicircle-all-summary-options',
     title: 'Semicircle with all summary options',
-    description: 'Renders a semicircle with every supported DonutSummary option configured.',
+    description: 'Shows all summary options at M and larger; actual XS/S tiers hide the delta without reserving a row.',
     dataset: 'canonical',
     coverage: [
       'variant=semicircle',
+      'DonutSummary.delta>0',
       'DonutSummary.label',
       'DonutSummary.numberFormat',
       'DonutSummary.hideValue=false',
     ],
     render: () => (
       <DonutVariationChart donutProps={{ variant: 'semicircle' }}>
-        <DonutSummary hideValue={false} label="Visitors" numberFormat="standardNumber" />
+        <DonutSummary delta={0.025} hideValue={false} label="Visitors" numberFormat="standardNumber" />
       </DonutVariationChart>
     ),
   },
@@ -768,13 +782,14 @@ export const DonutDashboard = (): ReactElement => (
     datasets={donutDatasetOptions}
     filters={donutVariationFilters}
     getSizeDescription={(size, viewMode) =>
-      `Effective donut diameter: ${Math.round(getEffectiveDonutDiameter(size, viewMode))}px`
+      `Full-circle diameter: ${Math.round(getEffectiveDonutDiameter(size, viewMode))}px; both variants fill the container width.`
     }
     initialSize={getDonutContainerSize(200, 'none')}
     initialDataset="standard"
     initialFilter="all"
     initialViewMode="none"
     resolvePresetSize={getDonutContainerSize}
+    sizeAxis="width"
     sizePresets={donutSizePresets}
     showAnimationControls
     viewModes={donutViewModes}
@@ -795,7 +810,7 @@ const donutCoverage: PropCoverage<DonutProps> = {
 };
 
 const donutSummaryCoverage: PropCoverage<DonutSummaryProps> = {
-  delta: ['summary-positive-delta', 'summary-negative-delta'],
+  delta: ['summary-positive-delta', 'summary-negative-delta', 'semicircle-negative-delta', 'semicircle-all-summary-options'],
   hideValue: ['summary-hidden-value', 'semicircle-hidden-value-summary'],
   label: ['summary-format', 'summary-negative-delta'],
   numberFormat: ['summary-format', 'semicircle-formatted-summary', 'locale'],

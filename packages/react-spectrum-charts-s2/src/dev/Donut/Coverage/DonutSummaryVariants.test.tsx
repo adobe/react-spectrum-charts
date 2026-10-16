@@ -31,8 +31,8 @@ describe('DonutSummary renders properly', () => {
   test('metric value should be above center if there is a label', async () => {
     render(<Basic {...Basic.args} />);
     const metricValue = await screen.findByText('40K');
-    expect(metricValue).toHaveAttribute('transform', 'translate(175,171.5)');
-    expect(screen.getByText('Visitors')).toHaveAttribute('transform', 'translate(175,203.5)');
+    expect(metricValue).toHaveAttribute('transform', 'translate(175,175)');
+    expect(screen.getByText('Visitors')).toHaveAttribute('transform', 'translate(175,200)');
   });
 
   test('metric value and label sizes should follow their own independent per-tier font sizes', async () => {

@@ -234,8 +234,8 @@ export const DRAW_IN_LABEL_FADE_DURATION_MS = 150;
 export const DONUT_BASE_PADDING = 10;
 /** Radius of a donut without segment labels. */
 export const DONUT_RADIUS = `(min(width, height) / 2 - ${DONUT_BASE_PADDING})`;
-/** Radius of a semicircle donut with base insets on every edge. */
-export const DONUT_SEMICIRCLE_RADIUS = `(min(width / 2 - ${DONUT_BASE_PADDING}, height - ${2 * DONUT_BASE_PADDING}))`;
+/** Radius of a bottom-aligned semicircle donut with top and side insets. */
+export const DONUT_SEMICIRCLE_RADIUS = `(min(width / 2, height) - ${DONUT_BASE_PADDING})`;
 /** Base radius used when reserving space for segment labels. */
 export const DONUT_LABELED_RADIUS = '(min(width, height) / 2 - 2)';
 /** Fill color of a boolean donut's secondary segment */

@@ -248,7 +248,7 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
         { width: 1200, height: 420 },
         { width: 420, height: 674 },
         { width: 1000, height: 80 },
-      ])('centers the semicircle bounds with at least 10px on every edge: %o', ({ width, height }) => {
+      ])('bottom-aligns the semicircle with at least 10px above and beside it: %o', ({ width, height }) => {
         const options: DonutSpecOptions = { ...defaultDonutOptions, variant: 'semicircle' };
         const scope = evaluateRadiusSignals(options, {
           width,
@@ -259,8 +259,7 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
         const outerRadius = scope.testName_outerRadius;
         const centerY = evaluateExpr(getDonutCenterYSignal(options), { ...scope, width, height });
         const top = centerY - outerRadius;
-        const bottom = height - centerY;
-        expect(top).toBe(bottom);
+        expect(centerY).toBe(height);
         expect(top).toBeGreaterThanOrEqual(10);
         expect(width / 2 - outerRadius).toBeGreaterThanOrEqual(10);
         expect(evaluateExpr(getDonutCenterYSignal(defaultDonutOptions), { height })).toBe(height / 2);
@@ -274,10 +273,13 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
       });
     });
 
-    test('should use the same tier scale and chart size for a semicircle as for a circle', () => {
+    test('should use the same diameter cutpoints for a semicircle while allowing its full height', () => {
       const options: DonutSpecOptions = { ...defaultDonutOptions, variant: 'semicircle' };
       expect(getSizeTierScale(options)).toEqual(getSizeTierScale(defaultDonutOptions));
-      expect(getSizeTierSignal(options)).toEqual(getSizeTierSignal(defaultDonutOptions));
+      DONUT_SIZE_TIER_CUTPOINTS.forEach((cutpoint, index) => {
+        expect(evaluateTier(options, 1000, (cutpoint + 19) / 2)).toBe(index);
+        expect(evaluateTier(options, 1000, (cutpoint + 20) / 2)).toBe(index + 1);
+      });
     });
 
     test.each([
@@ -294,12 +296,13 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
       [419, 3, 22],
       [420, 4, 40],
       [421, 4, 40],
-    ])('uses chart size %s to select tier %s and a %spx ring for both variants', (size, tier, ringWidth) => {
+    ])('uses diameter space %s to select tier %s and a %spx ring for both variants', (size, tier, ringWidth) => {
       for (const variant of ['circle', 'semicircle'] as const) {
         const options = { ...defaultDonutOptions, variant };
         const signal = getRingWidthSignal(options);
         if (!('update' in signal) || !signal.update) throw new Error('Expected a ring width update expression');
-        for (const [width, height] of [[1000, size], [size, 1000], [size, size]]) {
+        const chartHeight = variant === 'semicircle' ? size / 2 : size;
+        for (const [width, height] of [[1000, chartHeight], [size, 1000], [size, chartHeight]]) {
           const resolvedTier = evaluateTier(options, width, height);
           expect(resolvedTier).toBe(tier);
           expect(evaluateExpr(signal.update, { testName_sizeTier: resolvedTier })).toBe(ringWidth);
@@ -613,31 +616,31 @@ describe('getArcMark()', () => {
     expect(arcMark.encode?.update).toHaveProperty('y', { signal: 'height / 2' });
   });
 
-  test('should center the visible bounds of a semicircle donut', () => {
+  test('should anchor a semicircle donut at the bottom', () => {
     const arcMark = getArcMark({ ...defaultDonutOptions, variant: 'semicircle' });
     expect(arcMark.encode?.update).toHaveProperty('x', { signal: 'width / 2' });
-    expect(arcMark.encode?.update).toHaveProperty('y', { signal: '(height + testName_outerRadius) / 2' });
+    expect(arcMark.encode?.update).toHaveProperty('y', { signal: 'height' });
   });
 
-  test('should remain centered when a semicircle summary specifies an unsupported delta', () => {
+  test('should remain bottom-aligned when a semicircle summary specifies a delta', () => {
     const arcMark = getArcMark({
       ...defaultDonutOptions,
       variant: 'semicircle',
       donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
     });
-    expect(arcMark.encode?.update).toHaveProperty('y', { signal: '(height + testName_outerRadius) / 2' });
+    expect(arcMark.encode?.update).toHaveProperty('y', { signal: 'height' });
   });
 
   test.each([
     [{ delta: 0.025 }, 'value and delta'],
     [{ delta: 0.025, hideValue: true, label: 'Visitors' }, 'label and delta'],
-  ])('should remain centered with only %s', (summary, _description) => {
+  ])('should remain bottom-aligned with only %s', (summary, _description) => {
     const arcMark = getArcMark({
       ...defaultDonutOptions,
       variant: 'semicircle',
       donutSummaries: [summary],
     });
-    expect(arcMark.encode?.update).toHaveProperty('y', { signal: '(height + testName_outerRadius) / 2' });
+    expect(arcMark.encode?.update).toHaveProperty('y', { signal: 'height' });
   });
 });
 
@@ -651,9 +654,9 @@ describe('getEmptyStateArcMark()', () => {
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: 0 });
     expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: '0 + 2 * PI' });
   });
-  test('should mirror the semicircle sweep and centered anchor', () => {
+  test('should mirror the semicircle sweep and bottom anchor', () => {
     const emptyStateMark = getEmptyStateArcMark({ ...defaultDonutOptions, variant: 'semicircle' });
-    expect(emptyStateMark.encode?.update).toHaveProperty('y', { signal: '(height + testName_outerRadius) / 2' });
+    expect(emptyStateMark.encode?.update).toHaveProperty('y', { signal: 'height' });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
     expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
   });
@@ -663,7 +666,7 @@ describe('getEmptyStateArcMark()', () => {
       variant: 'semicircle',
       donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
     });
-    expect(emptyStateMark.encode?.update).toHaveProperty('y', { signal: '(height + testName_outerRadius) / 2' });
+    expect(emptyStateMark.encode?.update).toHaveProperty('y', { signal: 'height' });
   });
   test('should only be visible when the donut is in the empty state', () => {
     const emptyStateMark = getEmptyStateArcMark(defaultDonutOptions);

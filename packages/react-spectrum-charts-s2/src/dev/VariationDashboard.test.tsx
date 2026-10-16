@@ -89,6 +89,18 @@ describe('VariationDashboard', () => {
     expect(card?.firstElementChild).not.toHaveStyle({ padding: '8px' });
   });
 
+  test.each([80, 140, 220, 300, 420])('sizes width-controlled containers to %ipx without stretching', (size) => {
+    const { container } = render(
+      <VariationDashboard variations={variations} chartType="Test" initialSize={size} sizeAxis="width" />
+    );
+    const card = container.querySelector('section[data-variation-id="probe"]');
+    expect(card?.parentElement).toHaveStyle({
+      gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${size + 2}px), ${size + 2}px))`,
+    });
+    expect(card?.firstElementChild).toHaveStyle({ minHeight: '0' });
+    expect(screen.getByRole('slider', { name: 'Container width (px)' })).toHaveValue(String(size));
+  });
+
   test('toggles animations for every variation and preserves the setting across datasets', async () => {
     const AnimationProbe = (): ReactElement => {
       const animations = useVariationAnimations();
@@ -147,6 +159,27 @@ describe('VariationDashboard', () => {
     await userEvent.click(screen.getByRole('radio', { name: 'Direct labels' }));
 
     expect(screen.getByText('standard:direct:364')).not.toBeNull();
+  });
+
+  test('preserves a custom slider value when the view mode changes', async () => {
+    render(
+      <VariationDashboard
+        variations={variations}
+        chartType="Test"
+        datasets={datasets}
+        initialDataset="standard"
+        initialSize={250}
+        initialViewMode="none"
+        resolvePresetSize={resolvePresetSize}
+        sizePresets={sizePresets}
+        viewModes={viewModes}
+      />
+    );
+
+    expect(screen.getByRole('radio', { name: 'L (204px container)' })).toHaveAttribute('aria-checked', 'true');
+    await userEvent.click(screen.getByRole('radio', { name: 'Direct labels' }));
+    expect(screen.getByRole('slider', { name: 'Container size (px)' })).toHaveValue('250');
+    expect(screen.getByText('standard:direct:250')).toBeInTheDocument();
   });
 
   test('provides the selected dataset to every variation', async () => {

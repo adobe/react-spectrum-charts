@@ -79,6 +79,7 @@ interface VariationDashboardProps {
   initialSize?: number;
   initialViewMode?: string;
   resolvePresetSize?: (size: number, viewMode?: string) => number;
+  sizeAxis?: 'width' | 'height';
   sizePresets?: VariationSizePreset[];
   showAnimationControls?: boolean;
   viewModes?: VariationViewMode[];
@@ -138,6 +139,7 @@ export const VariationDashboard = ({
   initialSize = DEFAULT_SIZE,
   initialViewMode,
   resolvePresetSize = (size) => size,
+  sizeAxis,
   sizePresets = defaultSizePresets,
   showAnimationControls = false,
   viewModes = [],
@@ -185,8 +187,9 @@ export const VariationDashboard = ({
   const presetSizes = sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
   const minSize = Math.min(...presetSizes, initialSize);
   const maxSize = Math.max(...presetSizes, initialSize);
-  const selectedPreset = sizePresets.find((preset) => resolvePresetSize(preset.size, viewMode) === size);
-  const minimumCardWidth = Math.max(320, size + 2);
+  const selectedPreset = sizePresets.find((_, index) => size < (presetSizes[index + 1] ?? Infinity));
+  const minimumCardWidth = sizeAxis === 'width' ? size + 2 : Math.max(320, size + 2);
+  const maximumCardWidth = sizeAxis === 'width' ? `${minimumCardWidth}px` : '1fr';
   const activeFilter = filters.find((option) => option.value === filter);
   const propVariationIds = getPropVariationIds(coverage, selectedProps);
   const visibleVariations = variations.filter(
@@ -196,7 +199,7 @@ export const VariationDashboard = ({
 
   const updateViewMode = (nextViewMode: string): void => {
     setViewMode(nextViewMode);
-    if (selectedPreset) {
+    if (selectedPreset && size === resolvePresetSize(selectedPreset.size, viewMode)) {
       setSize(resolvePresetSize(selectedPreset.size, nextViewMode));
     }
   };
@@ -213,6 +216,7 @@ export const VariationDashboard = ({
           maxSize={maxSize}
           onSizeChange={setSize}
           sizeDescription={getSizeDescription?.(size, viewMode)}
+          sizeAxis={sizeAxis}
           sizePresets={sizePresets}
           selectedPreset={selectedPreset?.label}
           getPresetSize={(preset) => resolvePresetSize(preset.size, viewMode)}
@@ -240,7 +244,7 @@ export const VariationDashboard = ({
                 alignItems: 'start',
                 display: 'grid',
                 gap: 16,
-                gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minimumCardWidth}px), 1fr))`,
+                gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minimumCardWidth}px), ${maximumCardWidth}))`,
               }}
             >
               {visibleVariations.map(
@@ -260,7 +264,7 @@ export const VariationDashboard = ({
                         alignItems: 'center',
                         display: 'flex',
                         justifyContent: 'center',
-                        minHeight: size,
+                        minHeight: sizeAxis === 'width' ? 0 : size,
                         overflow: 'auto',
                       }}
                     >
