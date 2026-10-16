@@ -256,8 +256,7 @@ Circle donuts start at 12 o'clock. These start positions are fixed.
 ```
 
 :::note Segment labels unsupported
-`SegmentLabel` children are not supported for `variant="semicircle"` and are silently
-omitted.
+`SegmentLabel` children are not supported for `variant="semicircle"` and are omitted.
 :::
 
 ---
@@ -326,7 +325,7 @@ omitted.
             <td>sortOrder</td>
             <td>'valueDescending' | 'data'</td>
             <td>'valueDescending'</td>
-            <td>Controls semicircle segment ordering. <code>'data'</code> preserves source order for ordinal categories.</td>
+            <td>Sorts categorical segments largest-first in both variants. <code>'data'</code> preserves source order. Boolean donuts always preserve source order.</td>
         </tr>
         <tr>
             <td>variant</td>

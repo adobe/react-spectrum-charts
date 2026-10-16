@@ -11,10 +11,7 @@
  */
 import { View, expressionFunction, parse } from 'vega';
 
-import {
-  DONUT_SUMMARY_LABEL_FONT_SIZES,
-  DONUT_SUMMARY_VALUE_FONT_SIZES,
-} from '@spectrum-charts/core-s2/constants';
+import { DONUT_SUMMARY_LABEL_FONT_SIZES, DONUT_SUMMARY_VALUE_FONT_SIZES } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { DonutSummarySpecOptions } from '../types/index.js';
@@ -22,13 +19,13 @@ import {
   getBooleanDonutSummaryGroupMark,
   getDonutSummaryData,
   getDonutSummaryGroupMark,
+  getDonutSummaryMarks,
   getDonutSummarySignals,
   getSummaryDeltaEncode,
   getSummaryDeltaFill,
   getSummaryDeltaText,
   getSummaryLabelEncode,
   getSummaryTextFontSize,
-  getSummaryValueBaseline,
   getSummaryValueEncode,
   getSummaryValueLimit,
   getSummaryValueText,
@@ -40,6 +37,34 @@ const defaultDonutSummaryOptions: DonutSummarySpecOptions = {
   hideValue: false,
   label: 'Visitors',
   numberFormat: 'shortNumber',
+};
+
+const evaluateSummarySignal = async (encoding: unknown, innerRadius = 100, sizeTier = 2): Promise<number> => {
+  if (!encoding || typeof encoding !== 'object' || !('signal' in encoding) || typeof encoding.signal !== 'string') {
+    throw new Error('Expected a summary signal expression');
+  }
+  const view = new View(
+    parse({
+      height: 400,
+      signals: [
+        { name: 'testName_outerRadius', value: 200 },
+        { name: 'testName_innerRadius', value: innerRadius },
+        { name: 'testName_sizeTier', value: sizeTier },
+        { name: 'testName_summaryValueFontSize', value: 50 },
+        { name: 'testName_summaryLabelFontSize', value: 24 },
+        { name: 'result', update: encoding.signal },
+      ],
+    }),
+    { renderer: 'none' }
+  );
+  try {
+    await view.runAsync();
+    const result: unknown = view.signal('result');
+    if (typeof result !== 'number') throw new Error('Expected a numeric summary signal');
+    return result;
+  } finally {
+    view.finalize();
+  }
 };
 
 describe('getDonutSummaryData()', () => {
@@ -80,31 +105,19 @@ describe('getDonutSummarySignals()', () => {
     });
   });
 
-  test('should reserve the delta row below a semicircle with summary content above it', () => {
-    const signals = getDonutSummarySignals({
-      ...defaultDonutOptions,
-      variant: 'semicircle',
-      donutSummaries: [{ delta: 0.025, label: 'Visitors' }],
-    });
-    expect(signals[2]).toEqual({
-      name: 'testName_summaryBottomOffset',
-      update: 'ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize',
-    });
-  });
-
   test.each([
-    [{ delta: 0.025 }, 'value and delta'],
-    [{ delta: 0.025, hideValue: true, label: 'Visitors' }, 'label and delta'],
-  ])('should not reserve space below a semicircle with only %s', (summary, _description) => {
+    { delta: 0.025, label: 'Visitors' },
+    { delta: 0.025 },
+    { delta: 0.025, hideValue: true, label: 'Visitors' },
+    { delta: 0.025, hideValue: true },
+  ])('should not reserve delta space below a semicircle: %o', (summary) => {
     const signals = getDonutSummarySignals({
       ...defaultDonutOptions,
       variant: 'semicircle',
       donutSummaries: [summary],
     });
-    expect(signals[2]).toEqual({
-      name: 'testName_summaryBottomOffset',
-      update: '0',
-    });
+    expect(signals).toHaveLength(2);
+    expect(signals.map(({ name }) => name)).toEqual(['testName_summaryValueFontSize', 'testName_summaryLabelFontSize']);
   });
 });
 
@@ -212,6 +225,7 @@ describe('getSummaryTextFontSize()', () => {
 
   test.each([
     { scenario: 'only an ellipsis fits', text: '123', limit: 19, hidden: true },
+    { scenario: 'the font size is zero', text: '123', limit: 100, fontSize: 0, hidden: true },
     { scenario: 'first character plus ellipsis exactly matches the limit', text: '123', limit: 20, hidden: true },
     { scenario: 'first character plus ellipsis fits', text: '123', limit: 21, hidden: false },
     { scenario: 'the full value fits', text: '123', limit: 25, hidden: false },
@@ -220,9 +234,9 @@ describe('getSummaryTextFontSize()', () => {
     { scenario: 'the text is empty', text: '', limit: 19, hidden: false },
     { scenario: 'the text is null', text: null, limit: 19, hidden: false },
     { scenario: 'surrounding whitespace is ignored', text: ' 123 ', limit: 19, hidden: true },
-    { scenario: 'a zero limit disables truncation', text: '123', limit: 0, hidden: false },
-    { scenario: 'a negative limit disables truncation', text: '123', limit: -1, hidden: false },
-  ])('should select the correct font size when $scenario', async ({ text, limit, hidden }) => {
+    { scenario: 'no width is available', text: '123', limit: 0, hidden: true },
+    { scenario: 'the available width is negative', text: '123', limit: -1, hidden: true },
+  ])('should select the correct font size when $scenario', async ({ text, limit, hidden, fontSize = 22 }) => {
     const result = getSummaryTextFontSize(defaultDonutOptions, 'text', 'summaryFontSize', 800, 'availableWidth');
     if (!Array.isArray(result)) throw new Error('Expected summary font size production rules');
     const hideRule = result[1];
@@ -235,7 +249,7 @@ describe('getSummaryTextFontSize()', () => {
         signals: [
           { name: 'text', value: text },
           { name: 'availableWidth', value: limit },
-          { name: 'summaryFontSize', value: 22 },
+          { name: 'summaryFontSize', value: fontSize },
           { name: 'shouldHide', update: hideRule.test },
           { name: 'fontSize', update: `shouldHide ? ${hideRule.value} : ${fallback.signal}` },
         ],
@@ -245,60 +259,142 @@ describe('getSummaryTextFontSize()', () => {
     try {
       await view.runAsync();
       expect(view.signal('shouldHide')).toBe(hidden);
-      expect(view.signal('fontSize')).toBe(hidden ? 0 : 22);
+      expect(view.signal('fontSize')).toBe(hidden ? 0 : fontSize);
     } finally {
       view.finalize();
     }
   });
 });
 
-describe('getSummaryValueBaseline()', () => {
-  test('should return alphabetic if label is truthy', () => {
-    const baseline = getSummaryValueBaseline('Visitors');
-    expect(baseline).toHaveProperty('value', 'alphabetic');
+describe('summary stack centering', () => {
+  test.each([
+    { label: undefined, delta: undefined, hideValue: false, offsets: [0] },
+    { label: 'Visitors', delta: undefined, hideValue: true, offsets: [0] },
+    { label: undefined, delta: 0.025, hideValue: true, offsets: [0] },
+    { label: 'Visitors', delta: undefined, hideValue: false, offsets: [-13.5, 26.5] },
+    { label: undefined, delta: 0, hideValue: false, offsets: [-13.5, 26.5] },
+    { label: 'Visitors', delta: -0.074, hideValue: true, offsets: [-15, 15] },
+    { label: 'Visitors', delta: 0.025, hideValue: false, offsets: [-28.5, 11.5, 41.5] },
+  ])('centers the visible rows with $offsets offsets', async ({ offsets, ...summary }) => {
+    const group = getDonutSummaryGroupMark({ ...defaultDonutSummaryOptions, ...summary });
+    expect(group.marks).toHaveLength(offsets.length);
+    for (const [index, mark] of (group.marks ?? []).entries()) {
+      if (mark.type !== 'text') throw new Error('Expected a summary text mark');
+      expect(mark).toHaveProperty('encode.update.baseline', { value: 'middle' });
+      expect(await evaluateSummarySignal(mark.encode?.update?.dy)).toBe(offsets[index]);
+      expect(await evaluateSummarySignal(mark.encode?.update?.y)).toBe(200);
+    }
   });
 
-  test('should return middle if label is falsey', () => {
-    const baseline = getSummaryValueBaseline(undefined);
-    expect(baseline).toHaveProperty('value', 'middle');
+  test.each(['circle', 'semicircle'] as const)('preserves the original value-to-label spacing at every %s tier', async (variant) => {
+    for (const [tier, valueFontSize] of DONUT_SUMMARY_VALUE_FONT_SIZES.entries()) {
+      const labelFontSize = DONUT_SUMMARY_LABEL_FONT_SIZES[tier];
+      const options = {
+        ...defaultDonutSummaryOptions,
+        donutOptions: { ...defaultDonutOptions, variant },
+        label: 'Visitors',
+      };
+      const view = new View(parse({
+        width: 400,
+        height: 400,
+        signals: [
+          { name: 'testName_innerRadius', value: 200 },
+          { name: 'testName_sizeTier', value: tier },
+          { name: 'testName_summaryValueFontSize', value: valueFontSize },
+          { name: 'testName_summaryLabelFontSize', value: labelFontSize },
+        ],
+        marks: [
+          {
+            type: 'text',
+            encode: { update: {
+              text: { value: '123' },
+              fontSize: { value: valueFontSize },
+              baseline: { value: 'alphabetic' },
+            } },
+          },
+          {
+            type: 'text',
+            encode: { update: {
+              text: { value: 'Visitors' },
+              fontSize: { value: labelFontSize },
+              baseline: { value: 'top' },
+              dy: { value: Math.ceil(valueFontSize * 0.25) },
+            } },
+          },
+          {
+            type: 'text',
+            encode: { update: {
+              ...getSummaryValueEncode(options).update,
+              text: { value: '123' },
+              fontSize: { value: valueFontSize },
+            } },
+          },
+          {
+            type: 'text',
+            encode: { update: {
+              ...getSummaryLabelEncode(options).update,
+              fontSize: { value: labelFontSize },
+            } },
+          },
+        ],
+      }), { renderer: 'none' });
+      try {
+        await view.runAsync();
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const positions = [...svg.querySelectorAll('text')].map((text) => {
+          const transform = text.getAttribute('transform');
+          const match = transform?.match(/^translate\([^,]+,([^)]+)\)/);
+          if (!match) throw new Error('Expected a rendered text position');
+          return Number(match[1]);
+        });
+        expect(positions).toHaveLength(4);
+        expect(positions[3] - positions[2]).toBeCloseTo(positions[1] - positions[0], 10);
+      } finally {
+        view.finalize();
+      }
+    }
   });
 });
 
 describe('getSummaryValueLimit()', () => {
-  test('should use full font size in signal if label is truthy', () => {
-    expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: 'Visitors' })).toEqual({
-      signal:
-        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryValueFontSize) + (0), 2))',
-    });
+  test('uses the value row edge in a two-row stack', async () => {
+    const limit = getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: 'Visitors' });
+    expect(await evaluateSummarySignal(limit)).toBeCloseTo(2 * Math.sqrt(100 ** 2 - 38.5 ** 2));
   });
 
-  test('should use 1/2 font size in signal if label is falsey', () => {
-    expect(getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' })).toEqual({
-      signal:
-        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryValueFontSize * 0.5) + (0), 2))',
+  test('uses half the font size for a centered single row', async () => {
+    const limit = getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: '' });
+    expect(await evaluateSummarySignal(limit)).toBeCloseTo(2 * Math.sqrt(100 ** 2 - 25 ** 2));
+  });
+
+  test('clamps the width to zero when the stack extends outside the hole', async () => {
+    const limit = getSummaryValueLimit({
+      ...defaultDonutSummaryOptions,
+      donutOptions: { ...defaultDonutOptions, variant: 'semicircle' },
     });
+    expect(await evaluateSummarySignal(limit, 40)).toBe(0);
   });
 });
 
 describe('getSummaryLabelEncode() with hideValue', () => {
-  test('should center label vertically when hideValue is true', () => {
+  test('should center label vertically when hideValue is true', async () => {
     const encode = getSummaryLabelEncode({
       ...defaultDonutSummaryOptions,
       hideValue: true,
       label: 'Visitors',
     });
-    expect(encode.update?.baseline).toEqual({ value: 'middle' });
-    expect(encode.update?.dy).toEqual({ signal: '0' });
+    expect(encode).toHaveProperty('update.baseline', { value: 'middle' });
+    expect(await evaluateSummarySignal(encode.update?.dy)).toBe(0);
   });
 
-  test('should position label below value when hideValue is false', () => {
+  test('should position label below value when hideValue is false', async () => {
     const encode = getSummaryLabelEncode({
       ...defaultDonutSummaryOptions,
       hideValue: false,
       label: 'Visitors',
     });
-    expect(encode.update?.baseline).toEqual({ value: 'top' });
-    expect(encode.update?.dy).toEqual({ signal: 'ceil(testName_summaryValueFontSize * 0.25)' });
+    expect(encode).toHaveProperty('update.baseline', { value: 'middle' });
+    expect(await evaluateSummarySignal(encode.update?.dy)).toBe(26.5);
   });
 
   test('should use the label font size signal directly, not derived from the value font size', () => {
@@ -314,20 +410,14 @@ describe('getSummaryLabelEncode() with hideValue', () => {
     expect(encode).toHaveProperty('update.fontSize.2', { signal: 'testName_summaryLabelFontSize' });
   });
 
-  test('should compute the limit from label height alone when hideValue is true', () => {
+  test('should compute the limit from label height alone when hideValue is true', async () => {
     const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: true, label: 'Visitors' });
-    expect(encode.update?.limit).toEqual({
-      signal:
-        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryLabelFontSize * 0.5) + (0), 2))',
-    });
+    expect(await evaluateSummarySignal(encode.update?.limit)).toBeCloseTo(2 * Math.sqrt(100 ** 2 - 12 ** 2));
   });
 
-  test('should compute the limit from the value dy offset plus label height when hideValue is false', () => {
+  test('should compute the limit from the centered label row edge when hideValue is false', async () => {
     const encode = getSummaryLabelEncode({ ...defaultDonutSummaryOptions, hideValue: false, label: 'Visitors' });
-    expect(encode.update?.limit).toEqual({
-      signal:
-        '2 * sqrt(pow(testName_innerRadius, 2) - pow((ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize) + (0), 2))',
-    });
+    expect(await evaluateSummarySignal(encode.update?.limit)).toBeCloseTo(2 * Math.sqrt(100 ** 2 - 38.5 ** 2));
   });
 });
 
@@ -358,49 +448,102 @@ describe('semicircle summary anchoring', () => {
     ...defaultDonutSummaryOptions,
     donutOptions: semicircleDonutOptions,
   };
-  test('getSummaryValueEncode bottom-aligns the value and label stack', () => {
+  test('getSummaryValueEncode anchors the stack above the bottom gap', async () => {
     const encode = getSummaryValueEncode(semicircleSummaryOptions);
-    expect(encode.update?.y).toEqual({
-      signal: 'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
-    });
+    expect(await evaluateSummarySignal(encode.update?.y)).toBe(359.5);
   });
 
-  test('getSummaryLabelEncode uses the same bottom-aligned anchor', () => {
+  test('getSummaryLabelEncode ends the stack 2px above the bottom', async () => {
     const encode = getSummaryLabelEncode({ ...semicircleSummaryOptions, label: 'Visitors' });
-    expect(encode.update?.y).toEqual({
-      signal: 'height - (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize)',
-    });
+    const y = await evaluateSummarySignal(encode.update?.y);
+    const dy = await evaluateSummarySignal(encode.update?.dy);
+    expect(y).toBe(359.5);
+    expect(y + dy + 24 / 2).toBe(398);
   });
 
-  test('hideValue removes the value and bottom-aligns the remaining label', () => {
+  test('hideValue bottom-aligns the remaining label with a 2px gap', async () => {
     const groupMark = getDonutSummaryGroupMark({ ...semicircleSummaryOptions, hideValue: true });
     expect(groupMark.marks).toHaveLength(1);
     expect(groupMark.marks?.[0]).toHaveProperty('name', 'testName_summaryLabel');
-    expect(groupMark.marks?.[0]).toHaveProperty(
-      'encode.update.y.signal',
-      'height - (3 + testName_summaryLabelFontSize * 0.5)'
-    );
+    const encode = getSummaryLabelEncode({ ...semicircleSummaryOptions, hideValue: true, label: 'Visitors' });
+    const y = await evaluateSummarySignal(encode.update?.y);
+    const dy = await evaluateSummarySignal(encode.update?.dy);
+    expect(y + dy + 24 / 2).toBe(398);
   });
 
-  test('getSummaryDeltaEncode aligns the complete three-line stack to the flat edge', () => {
-    const encode = getSummaryDeltaEncode({ ...semicircleSummaryOptions, delta: 0.025 });
-    expect(encode.update?.y).toEqual({
-      signal:
-        'height - (ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize) - (3 + (ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize) - (ceil(testName_summaryLabelFontSize * 0.25) + testName_summaryLabelFontSize))',
+  test('bottom-aligns a lone value with a 2px gap', async () => {
+    const encode = getSummaryValueEncode({ ...semicircleSummaryOptions, label: undefined });
+    const y = await evaluateSummarySignal(encode.update?.y);
+    const dy = await evaluateSummarySignal(encode.update?.dy);
+    expect(y + dy + 50 / 2).toBe(398);
+  });
+
+  test.each(['circle', 'semicircle'] as const)('selects delta visibility from the actual tier for %s donuts', async (variant) => {
+    const encode = getSummaryDeltaEncode({
+      ...defaultDonutSummaryOptions,
+      donutOptions: { ...defaultDonutOptions, variant },
+      delta: 0.025,
     });
-    expect(encode).toHaveProperty('update.limit.signal', 'width');
+    const fontSize = encode.update?.fontSize;
+    if (!Array.isArray(fontSize)) throw new Error('Expected font size production rules');
+    for (const tier of [0, 1, 2, 3, 4]) {
+      expect(await evaluateSummarySignal(fontSize[fontSize.length - 1], 100, tier)).toBe(
+        variant === 'semicircle' && tier < 2 ? 0 : 24
+      );
+    }
   });
 
-  test.each([
-    { label: undefined, hideValue: false },
-    { label: 'Visitors', hideValue: true },
-    { label: undefined, hideValue: true },
-  ])('keeps hole-based limits for delta rows inside the semicircle: %s', (summary) => {
-    const encode = getSummaryDeltaEncode({ ...semicircleSummaryOptions, ...summary, delta: 0.025 });
-    expect(encode).toHaveProperty(
-      'update.limit.signal',
-      expect.stringContaining('2 * sqrt(pow(testName_innerRadius, 2)')
-    );
+  test.each([0, 1])('reserves no delta row or gap at semicircle tier %s', async (tier) => {
+    for (const summary of [
+      { label: 'Visitors', hideValue: false },
+      { label: undefined, hideValue: false },
+      { label: 'Visitors', hideValue: true },
+      { label: undefined, hideValue: true },
+    ]) {
+      const options = { ...semicircleSummaryOptions, ...summary };
+      const originalMarks = getDonutSummaryGroupMark(options).marks ?? [];
+      const marks = getDonutSummaryGroupMark({ ...options, delta: 0.025 }).marks ?? [];
+      expect(marks).toHaveLength(originalMarks.length + 1);
+      for (const [index, originalMark] of originalMarks.entries()) {
+        const mark = marks[index];
+        if (originalMark.type !== 'text' || mark.type !== 'text') throw new Error('Expected summary text marks');
+        expect(await evaluateSummarySignal(mark.encode?.update?.y, 100, tier)).toBe(
+          await evaluateSummarySignal(originalMark.encode?.update?.y, 100, tier)
+        );
+        expect(await evaluateSummarySignal(mark.encode?.update?.dy, 100, tier)).toBe(
+          await evaluateSummarySignal(originalMark.encode?.update?.dy, 100, tier)
+        );
+      }
+    }
+  });
+
+  test.each([false, true])('places delta at the bottom and shifts other rows up when isBoolean=%s', async (isBoolean) => {
+    for (const summary of [{ label: 'Visitors' }, {}, { hideValue: true, label: 'Visitors' }, { hideValue: true }]) {
+      const options = { ...semicircleDonutOptions, isBoolean, donutSummaries: [summary] };
+      const originalMarks = getDonutSummaryMarks(options)[0].marks ?? [];
+      for (const delta of [0.025, -0.074, 0]) {
+        const marks = getDonutSummaryMarks({ ...options, donutSummaries: [{ ...summary, delta }] })[0].marks ?? [];
+        expect(marks).toHaveLength(originalMarks.length + 1);
+        const deltaMark = marks[marks.length - 1];
+        if (deltaMark.type !== 'text') throw new Error('Expected a delta text mark');
+        expect(deltaMark.name).toBe(isBoolean ? 'testName_booleanSummaryDelta' : 'testName_summaryDelta');
+        expect(deltaMark.encode?.update).toHaveProperty('text', getSummaryDeltaText(delta));
+        const y = await evaluateSummarySignal(deltaMark.encode?.update?.y);
+        const dy = await evaluateSummarySignal(deltaMark.encode?.update?.dy);
+        expect(y + dy + 24 / 2).toBe(398);
+        for (const [index, originalMark] of originalMarks.entries()) {
+          const mark = marks[index];
+          if (originalMark.type !== 'text' || mark.type !== 'text') throw new Error('Expected summary text marks');
+          const originalY =
+            await evaluateSummarySignal(originalMark.encode?.update?.y) +
+            await evaluateSummarySignal(originalMark.encode?.update?.dy);
+          const shiftedY =
+            await evaluateSummarySignal(mark.encode?.update?.y) +
+            await evaluateSummarySignal(mark.encode?.update?.dy);
+          expect(originalY - shiftedY).toBe(summary.label ? 30 : 27);
+        }
+      }
+    }
   });
 
   test('a full circle still anchors directly at the arc center (no offset)', () => {
@@ -408,12 +551,9 @@ describe('semicircle summary anchoring', () => {
     expect(encode.update?.y).toEqual({ signal: 'height / 2' });
   });
 
-  test('getSummaryValueLimit adds the anchor offset to the Pythagorean width-limit math', () => {
+  test('getSummaryValueLimit accounts for the bottom-aligned stack', async () => {
     const limit = getSummaryValueLimit({ ...semicircleSummaryOptions, label: 'Visitors' });
-    expect(limit).toEqual({
-      signal:
-        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryValueFontSize) + (3 + ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize), 2))',
-    });
+    expect(await evaluateSummarySignal(limit)).toBeCloseTo(2 * Math.sqrt(100 ** 2 - 79 ** 2));
   });
 });
 
@@ -460,46 +600,41 @@ describe('getBooleanDonutSummaryGroupMark() with delta', () => {
 });
 
 describe('getSummaryDeltaEncode() stacking', () => {
-  test('value + label + delta: delta stacks below the label, past the value-to-label gap', () => {
+  test('value + label + delta: delta stacks below the label', async () => {
     const encode = getSummaryDeltaEncode({ ...defaultDonutSummaryOptions, label: 'Visitors', delta: 0.025 });
-    expect(encode.update?.dy).toEqual({
-      signal:
-        'ceil(testName_summaryValueFontSize * 0.25) + testName_summaryLabelFontSize + ceil(testName_summaryLabelFontSize * 0.25)',
-    });
-    expect(encode.update?.baseline).toEqual({ value: 'top' });
+    expect(await evaluateSummarySignal(encode.update?.dy)).toBe(41.5);
+    expect(encode).toHaveProperty('update.baseline', { value: 'middle' });
   });
 
-  test("value + delta, no label: delta takes over the label's usual gap below the value", () => {
+  test('value + delta, no label: delta sits below the centered value', async () => {
     const encode = getSummaryDeltaEncode({
       ...defaultDonutSummaryOptions,
       label: undefined,
       delta: 0.025,
     });
-    expect(encode.update?.dy).toEqual({ signal: 'ceil(testName_summaryValueFontSize * 0.25)' });
-    expect(encode.update?.baseline).toEqual({ value: 'top' });
+    expect(await evaluateSummarySignal(encode.update?.dy)).toBe(26.5);
+    expect(encode).toHaveProperty('update.baseline', { value: 'middle' });
   });
 
-  test('label + delta, hideValue: delta sits a quarter-gap below the label acting as the anchor line', () => {
+  test('label + delta, hideValue: delta sits below the centered label', async () => {
     const encode = getSummaryDeltaEncode({
       ...defaultDonutSummaryOptions,
       hideValue: true,
       label: 'Visitors',
       delta: 0.025,
     });
-    expect(encode.update?.dy).toEqual({
-      signal: 'ceil(testName_summaryLabelFontSize * 0.25)',
-    });
+    expect(await evaluateSummarySignal(encode.update?.dy)).toBe(15);
   });
 
-  test('delta alone (hideValue, no label): centered with no dy offset', () => {
+  test('delta alone (hideValue, no label): centered with no dy offset', async () => {
     const encode = getSummaryDeltaEncode({
       ...defaultDonutSummaryOptions,
       hideValue: true,
       label: undefined,
       delta: 0.025,
     });
-    expect(encode.update?.dy).toEqual({ signal: '0' });
-    expect(encode.update?.baseline).toEqual({ value: 'middle' });
+    expect(await evaluateSummarySignal(encode.update?.dy)).toBe(0);
+    expect(encode).toHaveProperty('update.baseline', { value: 'middle' });
   });
 
   test('reuses the label font-size signal directly rather than a separate delta signal', () => {
@@ -517,28 +652,25 @@ describe('getSummaryDeltaEncode() stacking', () => {
   });
 });
 
-describe('interaction: value/label baseline when delta is present without a label', () => {
-  test('value becomes alphabetic (not middle) when only a delta follows, with no label', () => {
+describe('interaction: value/label centering when delta is present', () => {
+  test('value retains the middle baseline when only a delta follows', () => {
     const encode = getSummaryValueEncode({ ...defaultDonutSummaryOptions, label: undefined, delta: 0.025 });
-    expect(encode.update?.baseline).toEqual({ value: 'alphabetic' });
+    expect(encode).toHaveProperty('update.baseline', { value: 'middle' });
   });
 
-  test('value limit uses full font height when only a delta follows, with no label', () => {
+  test('value limit uses its centered row edge when only a delta follows', async () => {
     const limit = getSummaryValueLimit({ ...defaultDonutSummaryOptions, label: undefined, delta: 0.025 });
-    expect(limit).toEqual({
-      signal:
-        '2 * sqrt(pow(testName_innerRadius, 2) - pow((testName_summaryValueFontSize) + (0), 2))',
-    });
+    expect(await evaluateSummarySignal(limit)).toBeCloseTo(2 * Math.sqrt(100 ** 2 - 38.5 ** 2));
   });
 
-  test('label becomes the anchor line (alphabetic) when hideValue and a delta follows it', () => {
+  test('label sits above center when hideValue and a delta follows it', async () => {
     const encode = getSummaryLabelEncode({
       ...defaultDonutSummaryOptions,
       hideValue: true,
       label: 'Visitors',
       delta: 0.025,
     });
-    expect(encode.update?.baseline).toEqual({ value: 'alphabetic' });
-    expect(encode.update?.dy).toEqual({ signal: '0' });
+    expect(encode).toHaveProperty('update.baseline', { value: 'middle' });
+    expect(await evaluateSummarySignal(encode.update?.dy)).toBe(-15);
   });
 });

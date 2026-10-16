@@ -208,7 +208,9 @@ const getMeasureContext = (): CanvasRenderingContext2D | null => {
   if (measureContext === undefined) {
     measureContext = document.createElement('canvas').getContext('2d');
     // Widths measured before a web font loads use the fallback font, so drop them once fonts finish loading.
-    document.fonts?.addEventListener?.('loadingdone', () => labelWidthCache.clear());
+    document.fonts?.addEventListener?.('loadingdone', () => {
+      labelWidthCache.clear();
+    });
   }
   return measureContext;
 };

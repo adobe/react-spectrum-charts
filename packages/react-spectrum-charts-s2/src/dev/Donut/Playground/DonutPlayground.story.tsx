@@ -104,7 +104,10 @@ export default {
     summaryLabel: { control: 'text', table: { category: 'Summary' } },
     summaryNumberFormat: { control: 'text', table: { category: 'Summary' } },
     summaryHideValue: { control: 'boolean', table: { category: 'Summary' } },
-    summaryDelta: { control: { type: 'range', min: -1, max: 1, step: 0.01 }, table: { category: 'Summary' } },
+    summaryDelta: {
+      control: { type: 'range', min: -1, max: 1, step: 0.01 },
+      table: { category: 'Summary' },
+    },
     showSegmentLabel: { control: 'boolean', table: { category: 'Segment label' } },
     segmentLabelMode: {
       control: 'select',

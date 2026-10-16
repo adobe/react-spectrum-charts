@@ -24,8 +24,8 @@ describe('ResponsiveDonut', () => {
 
     expect(await findChart()).toBeInTheDocument();
     expect(screen.getByText('300px')).toBeInTheDocument();
-    expect(screen.getByText('173px')).toBeInTheDocument();
-    expect(screen.getByText('M')).toBeInTheDocument();
+    expect(screen.getByText('179px')).toBeInTheDocument();
+    expect(screen.getByText('S')).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: 'Chart width' })).toHaveValue('300');
   });
 
