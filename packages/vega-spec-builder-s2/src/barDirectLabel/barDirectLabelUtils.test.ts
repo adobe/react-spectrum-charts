@@ -9,12 +9,14 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GroupMark, LabelTransform, Spec, TextMark, View, changeset, expressionFunction, parse } from 'vega';
+import { GroupMark, Spec, TextMark, View, changeset, expressionFunction, parse } from 'vega';
 
 import {
   ANIMATION_TIMER,
   BACKGROUND_COLOR,
   CHART_SIZE_FONT_SIZE,
+  DRAW_IN_DURATION,
+  DRAW_IN_LABEL_FADE_DURATION_MS,
   DRAW_IN_START,
 } from '@spectrum-charts/core-s2/constants';
 
@@ -210,7 +212,7 @@ describe('shared native label layout', () => {
       anchor: ['top'],
       offset: [6],
       padding: null,
-      avoidMarks: ['bar0_directLabelBars'],
+      avoidMarks: { signal: '[data("bar0_directLabelBars") || []]' },
     });
     expect((layer.marks?.[3] as TextMark).transform?.[0]).toHaveProperty('anchor', ['bottom']);
   });
@@ -224,7 +226,10 @@ describe('shared native label layout', () => {
   it('places later label sets around earlier labels', () => {
     const layer = getLayer({ barDirectLabels: [{ position: 'middle' }, {}] });
     const placement = layer.marks?.find((mark) => mark.name === 'bar0DirectLabel1_positive_placement') as TextMark;
-    expect((placement.transform?.[0] as LabelTransform).avoidMarks).toContain('bar0DirectLabel0_inside');
+    expect(placement.transform?.[0]).toHaveProperty(
+      'avoidMarks.signal',
+      expect.stringContaining('data("bar0DirectLabel0_inside") || []')
+    );
   });
 
   it('shares collision rejection and animation opacity between the halo and foreground', () => {
@@ -243,21 +248,41 @@ describe('shared native label layout', () => {
 
 describe('Vega label layout regressions', () => {
   let view: View;
+  const errors = jest.fn();
 
   beforeEach(() => {
+    errors.mockClear();
     Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
     expressionFunction('rscContainerWidth', (width: number) => width);
   });
 
-  afterEach(() => view?.finalize());
+  afterEach(() => {
+    view?.finalize();
+    expect(errors).not.toHaveBeenCalled();
+  });
 
   const run = async (spec: Spec) => {
     view = new View(parse(spec), { renderer: 'none' })
       .width(typeof spec.width === 'number' ? spec.width : 400)
       .height(typeof spec.height === 'number' ? spec.height : 300);
+    view.logger().error = errors;
     await view.runAsync();
     return view;
   };
+
+  it.each([1, -1])('handles empty sign sets while laying out multiple label children: %s', async (sign) => {
+    const data = rows.map((row) => ({ ...row, value: sign * Math.abs(row.value) }));
+    await run(runtimeSpec(data, { barDirectLabels: [{}, {}] }));
+    expect(outsideItems(view).some((item) => item.opacity === 1)).toBe(true);
+    await view
+      .change(
+        'table',
+        changeset().remove(() => true)
+      )
+      .runAsync();
+    await view.change('table', changeset().insert(data)).runAsync();
+    expect(outsideItems(view).some((item) => item.opacity === 1)).toBe(true);
+  });
 
   it('rejects overlapping labels across dodged categories and restores them after resize', async () => {
     await run(runtimeSpec(rows));
@@ -388,7 +413,15 @@ describe('Vega label layout regressions', () => {
   it('fades labels in after draw-in and keeps their halo opacity synchronized', async () => {
     await runChart({}, true);
     await view.signal(ANIMATION_TIMER, Date.now()).runAsync();
-    expect(outsideItems(view).every((item) => item.opacity === 0)).toBe(true);
+    expect(outsideItems(view)).toHaveLength(0);
+    expect(getItems(view, 'bar0DirectLabel0_positive_placement')).toHaveLength(0);
+    const settled = view.signal(DRAW_IN_START) + view.signal(DRAW_IN_DURATION);
+    await view.signal(ANIMATION_TIMER, settled + DRAW_IN_LABEL_FADE_DURATION_MS / 2).runAsync();
+    expect(outsideItems(view)).toHaveLength(2);
+    expect(outsideItems(view).some((item) => item.opacity === 0.5)).toBe(true);
+    expect(getItems(view, 'bar0DirectLabel0_positive_bg').map((item) => item.opacity)).toEqual(
+      getItems(view, 'bar0DirectLabel0_positive').map((item) => item.opacity)
+    );
     await view.signal(ANIMATION_TIMER, view.signal(DRAW_IN_START) + 2000).runAsync();
     expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(2);
     expect(getItems(view, 'bar0DirectLabel0_positive_bg').map((item) => item.opacity)).toEqual(

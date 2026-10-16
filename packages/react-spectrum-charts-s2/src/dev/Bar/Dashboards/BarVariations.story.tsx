@@ -12,6 +12,7 @@
 import { Bar } from '../../../components/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { BarDashboard } from './bar.dashboard.js';
+import { BarDirectLabelRegressionDashboard } from './barDirectLabel.dashboard.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Dashboards',
@@ -23,5 +24,6 @@ export default {
 };
 
 const PropVariations = bindWithProps(BarDashboard);
+const DirectLabelRegressions = bindWithProps(BarDirectLabelRegressionDashboard);
 
-export { PropVariations };
+export { PropVariations, DirectLabelRegressions };

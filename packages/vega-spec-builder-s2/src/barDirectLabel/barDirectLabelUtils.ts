@@ -215,6 +215,7 @@ const getOutsideLabelMarks = (
   const name = getOutsideLabelName(labelOptions, negative);
   const vertical = orientation === 'vertical';
   const anchors = vertical ? (['top', 'bottom'] as const) : (['right', 'left'] as const);
+  const obstacles = avoidMarks.map((mark) => `data(${JSON.stringify(mark)}) || []`).join(', ');
   const placementMark: TextMark = {
     name: `${name}_placement`,
     type: 'text',
@@ -235,7 +236,8 @@ const getOutsideLabelMarks = (
         anchor: [anchors[negative ? 1 : 0]],
         offset: [vertical ? VERTICAL_LABEL_OFFSET : HORIZONTAL_LABEL_OFFSET],
         avoidBaseMark: false,
-        avoidMarks,
+        // @ts-expect-error Vega supports signal-valued data parameters; its LabelTransform type omits them.
+        avoidMarks: { signal: `[${obstacles}]` },
         padding: null,
       },
     ],
@@ -338,7 +340,9 @@ export const getBarDirectLabelsMarks = (barOptions: BarSpecOptions): Mark[] => {
       data.push({
         name: `${name}_candidates`,
         source: barsName,
-        transform: [{ type: 'filter', expr: `(${rowTest}) && (${outside}) && (${signTest})` }],
+        transform: [
+          { type: 'filter', expr: `(${rowTest}) && (${outside}) && (${signTest}) && datum.labelOpacity > 0` },
+        ],
       });
       marks.push(...getOutsideLabelMarks(label, negative, [...avoidMarks]));
       avoidMarks.push(name);
