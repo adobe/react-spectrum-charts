@@ -142,6 +142,16 @@ describe('getLineMark()', () => {
 });
 
 describe('getLineHoverMarks()', () => {
+  test('should omit points and the hover label for a basis curve', () => {
+    const marks = getLineHoverMarks(
+      { ...defaultLineMarkOptions, chartPopovers: [{}], interpolate: 'basis' },
+      'line0_facet'
+    );
+    const withPoints = getLineHoverMarks({ ...defaultLineMarkOptions, chartPopovers: [{}] }, 'line0_facet');
+    expect(withPoints.length - marks.length).toBe(4);
+    expect(marks.some((mark) => mark.type === 'text')).toBe(false);
+    expect(marks[0]).toHaveProperty('type', 'rule');
+  });
   test('should omit the rule, points and hover label when highlighting by series', () => {
     const marks = getLineHoverMarks(
       { ...defaultLineMarkOptions, chartInspects: [{ highlightBy: 'series' }], isHighlightedByGroup: true },

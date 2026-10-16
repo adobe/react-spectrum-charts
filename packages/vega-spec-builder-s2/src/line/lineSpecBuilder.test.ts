@@ -895,6 +895,11 @@ describe('lineSpecBuilder', () => {
       expect(addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint' })).toStrictEqual(displayPointMarks);
     });
 
+    test('should not add static points for a basis curve', () => {
+      const marks = addLineMarks([], { ...defaultLineOptions, staticPoint: 'staticPoint', interpolate: 'basis' });
+      expect(marks.some((mark) => mark.name?.includes('staticPoint'))).toBe(false);
+    });
+
     describe('with annotations', () => {
       test('adds background and foreground annotation marks when staticPoint is set', () => {
         const marks = addLineMarks([], {
