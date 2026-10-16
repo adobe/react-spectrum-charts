@@ -42,6 +42,7 @@ import { BarDirectLabelProps, BarProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Bar Variants',
+  tags: ['alpha'],
   component: Bar,
 };
 

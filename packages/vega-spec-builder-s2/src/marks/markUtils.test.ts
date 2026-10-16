@@ -40,6 +40,7 @@ import {
   getDirectLabelFontSizeProductionRule,
   getHighlightOpacityValue,
   getInteractiveMarkName,
+  getItemHoverArea,
   getLineWidthProductionRule,
   getMarkOpacity,
   getOpacityProductionRule,
@@ -344,5 +345,11 @@ describe('getInteractiveMarkName()', () => {
   });
   test('should return the aggregated trendline name if the line has a trendline with any interactive children', () => {
     expect(getInteractiveMarkName({ trendlines: [{ chartInspects: [{}] }] }, 'line0')).toEqual('line0Trendline');
+  });
+});
+
+describe('getItemHoverArea()', () => {
+  test('clips the hover shapes to the plot so edge points don\'t grow the chart bounds', () => {
+    expect(getItemHoverArea([], 'table', 'datetime', 'value', 'line0', 'time')).toHaveProperty('clip', true);
   });
 });

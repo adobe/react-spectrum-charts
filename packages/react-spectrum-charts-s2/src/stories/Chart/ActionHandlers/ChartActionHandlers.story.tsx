@@ -18,6 +18,7 @@ import { ChartLineStory, StoryWithParameters, setControlInclude } from '../chart
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/Action Handlers',
+  tags: ['alpha'],
   component: Chart,
 };
 

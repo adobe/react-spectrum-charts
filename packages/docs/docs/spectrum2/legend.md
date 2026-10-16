@@ -4,6 +4,8 @@ sidebar_position: 4
 
 # Legend (S2)
 
+[<span className="badge badge--primary">Alpha</span>](./stages.md)
+
 The `Legend` component in the S2 package supports all props from the [base Legend component](/docs/api/components/Legend), including `align` for controlling legend alignment along its edge.
 
 ```jsx

@@ -4,6 +4,8 @@ sidebar_position: 2
 
 # Line (S2)
 
+[<span className="badge badge--primary">Alpha</span>](https://opensource.adobe.com/react-spectrum-charts/docs/docs/spectrum2/stages)
+
 The `Line` component in the S2 package supports all the props from the [base Line component](https://opensource.adobe.com/react-spectrum-charts/docs/docs/api/visualizations/Line) plus several S2-exclusive features: gradients, interpolation, inline direct labels, and Spectrum 2 styled point display.
 
 ```jsx

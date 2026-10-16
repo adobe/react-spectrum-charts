@@ -21,6 +21,7 @@ import { downloadsByBrowserData } from './axisStoryData.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Thumbnail',
+  tags: ['alpha'],
   component: AxisThumbnail,
 };
 

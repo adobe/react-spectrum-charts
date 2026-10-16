@@ -21,6 +21,7 @@ import { LineProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Dual Metric Axis',
+  tags: ['alpha'],
   component: Line,
   parameters: { controls: { include: ['dimension', 'metric', 'color', 'scaleType'] } },
 };

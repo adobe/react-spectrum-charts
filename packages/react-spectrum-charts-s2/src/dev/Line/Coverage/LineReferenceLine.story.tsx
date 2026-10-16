@@ -22,6 +22,7 @@ import { ChartProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Reference Line',
+  tags: ['alpha'],
   component: ReferenceLine,
   parameters: { controls: { include: ['position', 'value', 'label', 'axis'] } },
 };

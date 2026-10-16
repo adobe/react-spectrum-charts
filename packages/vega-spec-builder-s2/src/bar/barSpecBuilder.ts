@@ -10,12 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { BandScale, Data, FormulaTransform, Mark, OrdinalScale, Scale, Signal } from 'vega';
+import { BandScale, Data, FormulaTransform, JoinAggregateTransform, Mark, OrdinalScale, Scale, Signal } from 'vega';
 
 import {
   AnimationType,
   COLOR_SCALE,
   DEFAULT_ANIMATION_TYPES,
+  DRAW_IN_GROW_DURATION_MS,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
@@ -24,7 +25,6 @@ import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
   FOCUSED_REGION,
-  GROUP_ID,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -45,6 +45,13 @@ import {
   isHighlightedByGroup,
 } from '../chartInspect/chartInspectUtils.js';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils.js';
+import {
+  addDrawInClockSignals,
+  addDrawInDoneSignal,
+  addDrawInLabelFadeTimer,
+  getBarDrawInData,
+  getBarDrawInStackFields,
+} from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -88,6 +95,7 @@ import {
   getDimensionSelectionRing,
   getOrientationProperties,
   getScaleValues,
+  isBarStacked,
   isDodgedAndStacked,
   isDualMetricAxis,
 } from './barUtils.js';
@@ -188,6 +196,8 @@ export const addBar = produce<
     };
     barOptions.isHighlightedByGroup = isHighlightedByGroup(barOptions);
     barOptions.isHoverAnimate = usesBarHoverAnimation(animations, animationTypes, barOptions);
+    barOptions.isDrawInAnimate =
+      animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
 
     spec.usermeta = {
       ...spec.usermeta,
@@ -254,6 +264,7 @@ const getUniqueBarIds = (
 export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options) => {
   const {
     barAnnotations,
+    barDirectLabels,
     chartInspects,
     chartPopovers,
     hasOnClick,
@@ -275,6 +286,12 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
   }
 
+  if (options.isDrawInAnimate) {
+    addDrawInClockSignals(signals, DRAW_IN_GROW_DURATION_MS);
+    addDrawInDoneSignal(signals);
+    if (barAnnotations.length || barDirectLabels.length) addDrawInLabelFadeTimer(signals);
+  }
+
   if (isHoverAnimate) {
     addHoverAnimationSignals(signals, name);
   }
@@ -285,7 +302,8 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     !chartInspects.length &&
     !trendlines.length &&
     !hasOnClick &&
-    !options.accessibleNavigation
+    !options.accessibleNavigation &&
+    options.highlightedItem === undefined
   ) {
     return;
   }
@@ -310,11 +328,9 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
 
-  addBarHoverData(data, options);
-
   const index = data.findIndex((d) => d.name === FILTERED_TABLE);
   data[index].transform = data[index].transform ?? [];
-  if (type === 'stacked' || isDodgedAndStacked(options)) {
+  if (isBarStacked(options)) {
     data[index].transform?.push({
       type: 'stack',
       groupby: getStackFields(options),
@@ -324,17 +340,23 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     });
 
     data[index].transform?.push(getStackIdTransform(options));
+    if (options.isDrawInAnimate) data[index].transform?.push(getDrawInStackTotalsTransform(options));
     data.push(getStackAggregateData(options));
   }
   if (type === 'dodged' || isDodgedAndStacked(options)) {
     data.push(getDodgedGroupAggregateData(options));
     data[index].transform?.push(getDodgeGroupTransform(options));
   }
+  if (options.isDrawInAnimate) {
+    data.push(getBarDrawInData(options.name, metric, isBarStacked(options)));
+  }
 
   addDualMetricAxisData(data, options);
   addTrendlineData(data, options);
   addInspectData(data, options);
   addPopoverData(data, options);
+  // after addInspectData so the hover target formulas can read the highlighted data
+  addBarHoverData(data, options);
 });
 
 /** Adds the hover-animation engine's data sources for a bar mark (see `marks/hoverAnimationUtils.ts`). */
@@ -356,16 +378,13 @@ const addBarHoverData = (data: Data[], options: BarSpecOptions): void => {
 
   // dimension must be its own groupby field since dimensionHoverMatch compares datum.${dimension} directly
   const groupby = [barAnimIdField, options.idKey, SERIES_ID, dimension];
-  if (highlightedByGroup) {
-    const groupFields = getGroupHighlightFields(options);
-    if (groupFields) {
-      tableData.transform.push(getGroupIdTransform(groupFields, name));
-      groupby.push(`${name}_${GROUP_ID}`);
-    }
-  }
+  const groupFields = highlightedByGroup ? getGroupHighlightFields(options) : undefined;
+  // SERIES_ID isn't on the table until after the mark transforms, so the group id is derived post-aggregate
+  const formulas = groupFields ? [getGroupIdTransform(groupFields, name)] : [];
+  groupby.push(...(groupFields ?? []).filter((field) => !groupby.includes(field)));
 
   data.push(
-    getHoverTargetData({ name, groupby, rules: getBarHoverRules(options) }),
+    getHoverTargetData({ name, groupby, rules: getBarHoverRules(options), formulas }),
     getHoverAnimStateData({ name, keys: options.barIds ?? [], keyField: barAnimIdField }),
     getHoverFractionData(name),
     getHoverSeriesFractionData(name, barAnimIdField)
@@ -404,6 +423,18 @@ export const getStackAggregateData = (options: BarSpecOptions): Data => {
       },
       getStackIdTransform(options),
     ],
+  };
+};
+
+/** Adds each stack's positive and negative totals to every row so stacked segments can draw in sequentially. */
+const getDrawInStackTotalsTransform = (options: BarSpecOptions): JoinAggregateTransform => {
+  const { metric, name } = options;
+  return {
+    type: 'joinaggregate',
+    groupby: getStackFields(options),
+    fields: [`${metric}1`, `${metric}1`],
+    ops: ['max', 'min'],
+    as: getBarDrawInStackFields(name),
   };
 };
 

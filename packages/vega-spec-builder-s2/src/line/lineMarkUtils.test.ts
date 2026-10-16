@@ -142,6 +142,34 @@ describe('getLineMark()', () => {
 });
 
 describe('getLineHoverMarks()', () => {
+  test('should omit points and the hover label for a basis curve', () => {
+    const marks = getLineHoverMarks(
+      { ...defaultLineMarkOptions, chartPopovers: [{}], interpolate: 'basis' },
+      'line0_facet'
+    );
+    const withPoints = getLineHoverMarks({ ...defaultLineMarkOptions, chartPopovers: [{}] }, 'line0_facet');
+    expect(withPoints.length - marks.length).toBe(4);
+    expect(marks.some((mark) => mark.type === 'text')).toBe(false);
+    expect(marks[0]).toHaveProperty('type', 'rule');
+  });
+  test('should omit the rule, points and hover label when highlighting by series', () => {
+    const marks = getLineHoverMarks(
+      { ...defaultLineMarkOptions, chartInspects: [{ highlightBy: 'series' }], isHighlightedByGroup: true },
+      'line0_facet'
+    );
+    const names = marks.map((mark) => mark.name);
+    expect(names).not.toContain('line0_hoverRule');
+    expect(marks.some((mark) => mark.type === 'text')).toBe(false);
+    expect(names).toEqual(['line0_pointsForVoronoi', 'line0_voronoi']);
+  });
+  test('should keep the rule and points when highlighting by dimension', () => {
+    const marks = getLineHoverMarks(
+      { ...defaultLineMarkOptions, dimensionHover: true, isHighlightedByGroup: true },
+      'line0_facet'
+    );
+    expect(marks[0]).toHaveProperty('type', 'rule');
+    expect(marks.some((mark) => mark.type === 'symbol')).toBe(true);
+  });
   test('should return 6 marks by default', () => {
     expect(
       getLineHoverMarks({ ...defaultLineMarkOptions, isHighlightedByDimension: true }, 'line0_facet')
@@ -215,6 +243,45 @@ describe('getLineOpacity()', () => {
       },
       { value: 1 },
     ]);
+  });
+
+  test('should not thicken a single series', () => {
+    expect(
+      getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}], seriesIds: ['a'] })
+    ).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+  });
+
+  test('should not thicken on hover when highlighting by dimension', () => {
+    const hoverTest = `isValid(line0_${HOVERED_ITEM})`;
+    const groupTest = `length(data('line0_highlightedData'))`;
+    for (const options of [
+      { dimensionHover: true },
+      { chartInspects: [{ highlightBy: 'dimension' as const }], isHighlightedByGroup: true },
+      { chartPopovers: [{ UNSAFE_highlightBy: 'dimension' as const }] },
+    ]) {
+      const tests = (
+        getLineStrokeWidth({
+          ...defaultLineMarkOptions,
+          interactiveMarkName: 'line0',
+          seriesIds: ['a', 'b'],
+          ...options,
+        }) as { test?: string }[]
+      ).map((rule) => rule.test);
+      expect(tests).not.toContain(hoverTest);
+      expect(tests).not.toContain(groupTest);
+    }
+  });
+
+  test('should thicken the hovered series when there are several', () => {
+    const tests = (
+      getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        seriesIds: ['a', 'b'],
+      }) as { test?: string }[]
+    ).map((rule) => rule.test);
+    expect(tests).toContain(`isValid(line0_${HOVERED_ITEM})`);
   });
 
   test('should include select rules if line has a popover', () => {

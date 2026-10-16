@@ -32,6 +32,7 @@ import { StoryWithParameters, actionBarContent, setControlInclude } from './char
 
 export default {
   title: 'React Spectrum Charts 2/Chart Action Bar/Features',
+  tags: ['alpha'],
   component: ChartActionBar,
   argTypes: {
     children: {

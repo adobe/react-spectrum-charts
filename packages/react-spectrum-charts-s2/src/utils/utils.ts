@@ -33,27 +33,27 @@ import {
   ChartActionBar,
   ChartInspect,
   ChartPopover,
+  Donut,
+  DonutSummary,
   Legend,
   Line,
   LineDirectLabel,
   LineForecast,
   LinePointAnnotation,
   ReferenceLine,
+  SegmentLabel,
   Title,
 } from '../components/index.js';
 import {
   Area,
   Bullet,
   Combo,
-  Donut,
-  DonutSummary,
   Scatter,
   ScatterAnnotation,
   ScatterPath,
-  SegmentLabel,
   Trendline,
   TrendlineAnnotation,
-} from '../pre-alpha/index.js';
+} from '../lab/index.js';
 import {
   AreaElement,
   AxisChildElement,

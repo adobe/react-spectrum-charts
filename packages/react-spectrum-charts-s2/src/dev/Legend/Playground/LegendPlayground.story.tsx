@@ -44,6 +44,7 @@ interface LegendPlaygroundArgs extends LegendProps {
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Playground',
+  tags: ['alpha'],
   component: Legend,
   argTypes: {
     ...chartArgTypes,

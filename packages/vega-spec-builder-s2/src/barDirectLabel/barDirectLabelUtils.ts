@@ -19,9 +19,10 @@ import {
   FILTERED_TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getOrientationProperties } from '../bar/barUtils.js';
+import { getBarDrawInLabelFadeExpr, getOrientationProperties } from '../bar/barUtils.js';
+import { applyDrawInReveal } from '../marks/drawInAnimationUtils.js';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule, getMarkOpacity } from '../marks/markUtils.js';
-import { escapeD3FormatSpecifier, getD3FormatSpecifierFromNumberFormat } from '../specUtils.js';
+import { getNumberFormatExpression } from '../specUtils.js';
 import { BarDirectLabelOptions, BarDirectLabelPositionType, BarDirectLabelSpecOptions, BarSpecOptions } from '../types/index.js';
 
 // Gap between the bar tip and an outside label
@@ -182,14 +183,14 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
 
   // Label text computed inline — no derived dataset needed
   const resolvedFormat = format || DEFAULT_NUMBER_FORMAT;
-  const d3Spec = getD3FormatSpecifierFromNumberFormat(resolvedFormat);
-  const textSignal = `format(datum["${metric}"], "${escapeD3FormatSpecifier(d3Spec)}")`;
+  const textSignal = getNumberFormatExpression(`datum["${metric}"]`, resolvedFormat);
 
   // Dimension axis: center of the bar's band
   const dimensionBandCenter = { scale: dimensionScaleKey, field: dimension, band: 0.5 };
 
   const { metricAxisEncoding, verticalBaseline, horizontalAlign, seriesFill, isInsideTest } =
     getBarDirectLabelPositionEncodings(position, isVertical, metric, metricScaleKey, fillEncoding, textSignal);
+  const drawInReveal = getBarDrawInLabelFadeExpr(barOptions, true);
 
   const baseEnter = isVertical
     ? {
@@ -226,6 +227,7 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
       },
       update: {
         fontSize: fontSizeEncoding,
+        ...(barOptions.isDrawInAnimate ? { opacity: { signal: drawInReveal } } : {}),
       },
     },
   };
@@ -241,7 +243,9 @@ export const getBarDirectLabelMarks = (labelOptions: BarDirectLabelSpecOptions, 
         fill: seriesFill,
       },
       update: {
-        opacity: getMarkOpacity(barOptions),
+        opacity: barOptions.isDrawInAnimate
+          ? applyDrawInReveal(getMarkOpacity(barOptions), drawInReveal)
+          : getMarkOpacity(barOptions),
         fontSize: fontSizeEncoding,
       },
     },

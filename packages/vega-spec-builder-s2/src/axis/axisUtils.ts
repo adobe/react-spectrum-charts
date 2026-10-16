@@ -496,8 +496,8 @@ export const getTickCount = (position: Position, tickCountMinimum?: number, tick
     return {
       signal: `clamp(ceil(${range}/100), ${tickCountMinimum}, 10)`,
     };
-  } else if (grid) {
-    // divide the range by 100 to get the ideal number of ticks (grid lines)
+  } else if (grid || isVerticalAxis(position)) {
+    // divide the range by 100 to get the ideal number of ticks; vertical axes always do so their ticks match a gridded opposite axis
     return {
       signal: `clamp(ceil(${range}/100), 2, 10)`,
     };

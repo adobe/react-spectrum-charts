@@ -16,7 +16,7 @@ import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { Chart } from '../../Chart.js';
 import { Legend } from '../../components/index.js';
-import { Donut } from '../../pre-alpha/components/Donut/index.js';
+import { Donut } from '../../components/Donut/index.js';
 import { basicDonutData } from '../../storyShared/Donut/data.js';
 import {
   allElementsHaveAttributeValue,

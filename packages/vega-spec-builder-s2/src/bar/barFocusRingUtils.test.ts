@@ -24,6 +24,11 @@ describe('getBarFocusRing()', () => {
     expect(ring.interactive).toBe(false);
   });
 
+  test('sources the ring from the background mark during draw-in so it keeps final geometry', () => {
+    const ring = getBarFocusRing({ ...defaultBarOptions, isDrawInAnimate: true });
+    expect(ring.from).toEqual({ data: 'bar0_background' });
+  });
+
   test('keys a single-color (string) bar on the dimension + series composite', () => {
     // defaultBarOptions.color is a string series field → composite leaf id
     const opacity = JSON.stringify(getBarFocusRing(defaultBarOptions).encode?.update?.opacity);

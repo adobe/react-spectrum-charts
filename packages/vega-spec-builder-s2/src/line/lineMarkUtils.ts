@@ -313,21 +313,42 @@ export const getLineOpacityRules = ({
 };
 
 /**
+ * Checks whether hovering highlights every series at the hovered dimension value.
+ * @param lineMarkOptions
+ * @returns boolean
+ */
+export const isLineHighlightedByDimension = ({
+  chartInspects,
+  chartPopovers,
+  dimensionHover,
+}: Pick<LineMarkOptions, 'chartInspects' | 'chartPopovers' | 'dimensionHover'>): boolean =>
+  Boolean(dimensionHover) ||
+  Boolean(chartInspects?.some(({ highlightBy }) => highlightBy === 'dimension')) ||
+  Boolean(chartPopovers?.some(({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'));
+
+/**
  * Gets the production rules for strokeWidth
  */
 export const getLineStrokeWidth = ({
+  chartInspects,
+  chartPopovers,
+  dimensionHover,
   displayOnHover,
   comboSiblingNames,
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
   highlightedItem,
+  seriesIds,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
   // No interactivity -> use default (no hover)
   if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_STROKE_WIDTH_RULE];
+  // Thickening emphasizes one series over others, so a single series never thickens
+  if (seriesIds && seriesIds.length <= 1) return [DEFAULT_STROKE_WIDTH_RULE];
+  const highlightsByDimension = isLineHighlightedByDimension({ chartInspects, chartPopovers, dimensionHover });
   const strokeWidthRules: ProductionRule<NumericValueRef> = [];
 
-  if (interactiveMarkName) {
+  if (interactiveMarkName && !highlightsByDimension) {
     if (isHighlightedByGroup) {
       strokeWidthRules.push({
         test: `length(data('${interactiveMarkName}_highlightedData'))`,
@@ -372,32 +393,46 @@ export const getLineStrokeWidth = ({
   return strokeWidthRules;
 };
 
+/** Data sources that defer a line's voronoi until draw-in finishes. */
+export interface LineDrawInVoronoiSources {
+  points: string;
+  extent: string;
+}
+
 /**
  * All the marks that get displayed when hovering or selecting a point on a line
  * @param lineMarkOptions
  * @param dataSource
  * @param secondaryHighlightedMetric
+ * @param drawInVoronoi - data that defers the voronoi points until draw-in finishes
  * @returns
  */
 export const getLineHoverMarks = (
   lineOptions: LineMarkOptions,
   dataSource: string,
-  secondaryHighlightedMetric?: string
+  secondaryHighlightedMetric?: string,
+  drawInVoronoi?: LineDrawInVoronoiSources
 ): Mark[] => {
-  const { dimension, name, scaleType, showHoverLabel = true } = lineOptions;
+  const { dimension, interpolate, isHighlightedByGroup, name, scaleType, showHoverLabel = true } = lineOptions;
+  // highlighting by series (or other keys) emphasizes whole lines, not a single point
+  const highlightsBySeries = Boolean(isHighlightedByGroup) && !isLineHighlightedByDimension(lineOptions);
+  // a basis curve doesn't pass through the data, so points and their labels would sit off the line
+  const showsPoints = interpolate !== 'basis' && !highlightsBySeries;
   return [
     // vertical rule shown for the hovered or selected point
-    getHoverRule(dimension, name, scaleType),
+    ...(highlightsBySeries ? [] : [getHoverRule(dimension, name, scaleType)]),
     // if has popover or action bar, add selection point
-    ...(hasPopover(lineOptions) || hasActionBar(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
+    ...(showsPoints && (hasPopover(lineOptions) || hasActionBar(lineOptions)) ? [getSelectionPoint(lineOptions)] : []),
     // hover or select point
-    getHighlightPoint(lineOptions),
+    ...(showsPoints ? [getHighlightPoint(lineOptions)] : []),
     // additional point that gets highlighted like the trendline or raw line point
-    ...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
+    ...(showsPoints && secondaryHighlightedMetric
+      ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)]
+      : []),
     // hover value label: background halo + foreground text — omitted when showHoverLabel is false
-    ...(showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
+    ...(showsPoints && showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
     // get interactive marks for the line
-    ...getInteractiveMarks(dataSource, lineOptions),
+    ...getInteractiveMarks(dataSource, lineOptions, drawInVoronoi),
   ];
 };
 
@@ -463,25 +498,55 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
   };
 };
 
-const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): Mark[] => {
+const getInteractiveMarks = (
+  dataSource: string,
+  lineOptions: LineMarkOptions,
+  drawInVoronoi?: LineDrawInVoronoiSources
+): Mark[] => {
   const { interactionMode = DEFAULT_INTERACTION_MODE } = lineOptions;
 
   const inspectMarks = {
-    nearest: getVoronoiMarks,
-    item: getItemHoverMarks,
+    nearest: () => getVoronoiMarks(lineOptions, dataSource, drawInVoronoi),
+    item: () => getItemHoverMarks(lineOptions, dataSource),
   };
 
-  return inspectMarks[interactionMode](lineOptions, dataSource);
+  return inspectMarks[interactionMode]();
 };
 
-const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
+const getVoronoiMarks = (
+  lineOptions: LineMarkOptions,
+  dataSource: string,
+  drawInVoronoi?: LineDrawInVoronoiSources
+): Mark[] => {
   const { name } = lineOptions;
 
   return [
+    // stand in for the voronoi's bounds until its points load after draw-in
+    ...(drawInVoronoi ? getDrawInExtentMarks(lineOptions, drawInVoronoi.extent) : []),
     // points used for the voronoi transform
-    getLinePointsForVoronoi(lineOptions, dataSource),
+    getLinePointsForVoronoi(lineOptions, drawInVoronoi?.points ?? dataSource),
     // voronoi transform used to get nearest point paths
     getVoronoiPath(lineOptions, `${name}_pointsForVoronoi`),
+  ];
+};
+
+/**
+ * Gets non-interactive copies of the voronoi marks that keep the voronoi's bounds during draw-in.
+ * @param lineOptions
+ * @param dataSource - each series' extreme points
+ * @returns Mark[]
+ */
+const getDrawInExtentMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
+  const { name } = lineOptions;
+  const pointsName = `${name}_drawInExtentPoints`;
+  return [
+    getLinePointsForVoronoi(lineOptions, dataSource, pointsName),
+    {
+      ...getVoronoiPath(lineOptions, pointsName),
+      name: `${name}_drawInExtentVoronoi`,
+      description: `${name}_drawInExtentVoronoi`,
+      interactive: false,
+    },
   ];
 };
 
@@ -489,14 +554,19 @@ const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark
  * Gets the points used for the voronoi calculation for line charts with dual metric axis support
  * @param lineOptions - Line options including dual metric axis settings
  * @param dataSource - the name of the data source that will be used in the voronoi calculation
+ * @param markName
  * @returns SymbolMark
  */
-const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: string): Mark => {
-  const { dimension, metric, name, pointSize, scaleType } = lineOptions;
+const getLinePointsForVoronoi = (
+  lineOptions: LineMarkOptions,
+  dataSource: string,
+  markName = `${lineOptions.name}_pointsForVoronoi`
+): Mark => {
+  const { dimension, metric, pointSize, scaleType } = lineOptions;
 
   return {
-    name: `${name}_pointsForVoronoi`,
-    description: `${name}_pointsForVoronoi`,
+    name: markName,
+    description: markName,
     type: 'symbol',
     from: { data: dataSource },
     interactive: false,

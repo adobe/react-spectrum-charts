@@ -32,6 +32,8 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
   DIMENSION_HOVER_AREA,
+  DRAW_IN_ANIM_T_EASED,
+  DRAW_IN_DONE,
   FILTERED_TABLE,
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
@@ -50,6 +52,7 @@ import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { defaultSignals } from '../specTestUtils.js';
 import { baseData, initializeSpec } from '../specUtils.js';
+import { ChartInspectOptions } from '../types/dialogs/chartInspectSpec.types.js';
 import { ScSpec } from '../types/specUtil.types.js';
 import {
   addBar,
@@ -357,6 +360,64 @@ describe('barSpecBuilder', () => {
       });
     });
 
+    describe('isDrawInAnimate gate', () => {
+      const findMark = (marks: Mark[] | undefined, name: string): Mark | undefined => {
+        for (const mark of marks ?? []) {
+          if (mark.name === name) return mark;
+          const nested = findMark((mark as GroupMark).marks, name);
+          if (nested) return nested;
+        }
+        return undefined;
+      };
+
+      test('a bar does not draw in by default', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar' });
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(false);
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(false);
+        expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: FILTERED_TABLE });
+      });
+
+      test('animationTypes with "drawIn" adds the clock, the draw-in data, and points the bars at it', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_ANIM_T_EASED)).toBe(true);
+        expect(spec.signals?.some((s) => s.name === DRAW_IN_DONE)).toBe(true);
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(true);
+        expect(findMark(spec.marks, 'bar0')?.from).toStrictEqual({ data: 'bar0_drawInData' });
+        // the background keeps final geometry so it never animates
+        expect(findMark(spec.marks, 'bar0_background')?.from).toStrictEqual({ data: FILTERED_TABLE });
+      });
+
+      test('stacked bars get each stack\'s totals so segments can fill in order', () => {
+        const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
+        const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
+        expect(filteredTable.transform).toContainEqual(
+          expect.objectContaining({ type: 'joinaggregate', as: ['bar0_drawInStackMax', 'bar0_drawInStackMin'] })
+        );
+      });
+
+      test('dodged bars facet the draw-in data', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          type: 'dodged',
+          animationTypes: ['drawIn'],
+        });
+        expect(findMark(spec.marks, 'bar0_group')?.from).toHaveProperty('facet.data', 'bar0_drawInData');
+        const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
+        expect(filteredTable.transform?.some((t) => t.type === 'joinaggregate')).toBe(false);
+      });
+
+      test('the chart-level animations: false master switch disables draw-in', () => {
+        const spec = addBar(startingSpec, {
+          idKey: MARK_ID,
+          markType: 'bar',
+          animations: false,
+          animationTypes: ['drawIn'],
+        });
+        expect(spec.data?.some((d) => d.name === 'bar0_drawInData')).toBe(false);
+      });
+    });
+
     describe('isHoverAnimate gate', () => {
       test('an interactive bar does not animate by default -- animations must be explicitly opted into', () => {
         const spec = addBar(startingSpec, {
@@ -479,53 +540,45 @@ describe('barSpecBuilder', () => {
       });
 
       describe('group-highlighted-by', () => {
-        test('highlightBy: "dimension" adds a groupId transform keyed by the dimension and includes it in the hoverTargetData groupby', () => {
+        const getHoverTargetTransforms = (highlightBy: ChartInspectOptions['highlightBy']) => {
           const spec = addBar(startingSpecWithHighlightSignals, {
             idKey: MARK_ID,
             markType: 'bar',
-            chartInspects: [{ highlightBy: 'dimension' }],
+            chartInspects: [{ highlightBy }],
             animations: true,
           });
-          const tableData = spec.data?.find((d) => d.name === TABLE);
-          expect(tableData?.transform).toContainEqual({
-            type: 'formula',
-            as: `bar0_${GROUP_ID}`,
-            expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
-          });
-          const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as SourceData | undefined;
-          const aggregateTransform = hoverTargetData?.transform?.find(
-            (t): t is AggregateTransform => t.type === 'aggregate'
-          );
-          expect(aggregateTransform?.groupby).toContain(`bar0_${GROUP_ID}`);
+          const hoverTargetData = spec.data?.find((d) => d.name === 'bar0_hoverTargetData') as SourceData;
+          return hoverTargetData.transform ?? [];
+        };
+
+        test('highlightBy: "dimension" derives the groupId from the dimension after the aggregate', () => {
+          const [aggregate, groupId] = getHoverTargetTransforms('dimension');
+          expect(aggregate).toHaveProperty('groupby', expect.arrayContaining([DEFAULT_CATEGORICAL_DIMENSION]));
+          expect(groupId).toEqual({ type: 'formula', as: `bar0_${GROUP_ID}`, expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}` });
         });
 
-        test('highlightBy: "series" adds a groupId transform keyed by the series id', () => {
+        test('highlightBy: "series" derives the groupId from the series id after the aggregate', () => {
+          const [aggregate, groupId] = getHoverTargetTransforms('series');
+          expect(aggregate).toHaveProperty('groupby', expect.arrayContaining([SERIES_ID]));
+          expect(groupId).toEqual({ type: 'formula', as: `bar0_${GROUP_ID}`, expr: `datum.${SERIES_ID}` });
+        });
+
+        test('highlightBy: [fields] groups by the supplied fields and joins them into the groupId', () => {
+          const [aggregate, groupId] = getHoverTargetTransforms(['fieldA', 'fieldB']);
+          expect(aggregate).toHaveProperty('groupby', expect.arrayContaining(['fieldA', 'fieldB']));
+          expect(groupId).toHaveProperty('expr', 'datum.fieldA + " | " + datum.fieldB');
+        });
+
+        test('declares the highlighted data before the hover target data that reads it', () => {
           const spec = addBar(startingSpecWithHighlightSignals, {
             idKey: MARK_ID,
             markType: 'bar',
             chartInspects: [{ highlightBy: 'series' }],
             animations: true,
           });
-          const tableData = spec.data?.find((d) => d.name === TABLE);
-          expect(tableData?.transform).toContainEqual({
-            type: 'formula',
-            as: `bar0_${GROUP_ID}`,
-            expr: `datum.${SERIES_ID}`,
-          });
-        });
-
-        test('highlightBy: [fields] adds a groupId transform joining the supplied fields', () => {
-          const spec = addBar(startingSpecWithHighlightSignals, {
-            idKey: MARK_ID,
-            markType: 'bar',
-            chartInspects: [{ highlightBy: ['fieldA', 'fieldB'] }],
-            animations: true,
-          });
-          const tableData = spec.data?.find((d) => d.name === TABLE);
-          const groupIdTransform = tableData?.transform?.find(
-            (t): t is FormulaTransform => 'as' in t && t.as === `bar0_${GROUP_ID}`
-          );
-          expect(groupIdTransform?.expr).toBe('datum.fieldA + " | " + datum.fieldB');
+          const names = spec.data?.map((d) => d.name) ?? [];
+          expect(names.indexOf('bar0_highlightedData')).toBeGreaterThan(-1);
+          expect(names.indexOf('bar0_highlightedData')).toBeLessThan(names.indexOf('bar0_hoverTargetData'));
         });
 
         test('highlightBy: "item" does not add a groupId transform', () => {
@@ -543,6 +596,10 @@ describe('barSpecBuilder', () => {
   });
 
   describe('addSignals()', () => {
+    test('should add the hovered item signal for a controlled highlightedItem on a non-interactive bar', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, highlightedItem: 1 });
+      expect(signals.find((signal) => signal.name === 'bar0_hoveredItem')).toBeDefined();
+    });
     test('should add padding signal', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals).toHaveLength(defaultSignals.length + 1);
@@ -1180,8 +1237,8 @@ describe('barSpecBuilder', () => {
 
         // getBarDirectLabelMarks returns 2 marks (halo + label text) per entry
         expect(marks).toHaveLength(defaultStackedBarMarks.length + 2);
-        expect(marks[marks.length - 2].name).toEqual('bar0DirectLabel0_bg');
-        expect(marks[marks.length - 1].name).toEqual('bar0DirectLabel0');
+        expect(marks.at(-2)?.name).toEqual('bar0DirectLabel0_bg');
+        expect(marks.at(-1)?.name).toEqual('bar0DirectLabel0');
       });
     });
 

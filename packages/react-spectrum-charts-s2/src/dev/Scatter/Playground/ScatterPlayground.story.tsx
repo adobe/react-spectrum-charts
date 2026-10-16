@@ -19,7 +19,7 @@ import { action } from 'storybook/actions';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Scatter, ScatterAnnotation, ScatterPath, Trendline, TrendlineAnnotation } from '../../../pre-alpha/index.js';
+import { Scatter, ScatterAnnotation, ScatterPath, Trendline, TrendlineAnnotation } from '../../../lab/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ScatterProps } from '../../../types/index.js';
 import { ScatterDataPreset, getScatterData } from '../../playgroundData.js';
@@ -79,7 +79,8 @@ interface ScatterPlaygroundArgs extends ScatterProps {
 }
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Playground',
+  title: 'React Spectrum Charts 2/Lab/Scatter/Playground',
+  tags: ['lab'],
   component: Scatter,
   argTypes: {
     ...chartArgTypes,

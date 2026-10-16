@@ -23,6 +23,7 @@ import { setControls } from '../../lineStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Hover Label',
+  tags: ['alpha'],
   component: Line,
 };
 

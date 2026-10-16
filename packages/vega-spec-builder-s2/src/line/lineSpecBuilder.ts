@@ -50,7 +50,6 @@ import {
   getLineForecastLabelMarks,
   getLineForecastSpecOptions,
 } from '../lineForecast/index.js';
-import { addLineDrawInAnimationSignals, getLineGeometryClip } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -102,6 +101,15 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation/index.js';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils.js';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils.js';
+import {
+  addDrawInDoneSignal,
+  addLineDrawInAnimationSignals,
+  getLineGeometryClip,
+  getLineDrawInExtentData,
+  getLineDrawInExtentDataName,
+  getLineDrawInVoronoiData,
+  getLineDrawInVoronoiDataName,
+} from '../marks/drawInAnimationUtils.js';
 
 export const addLine = produce<
   ScSpec,
@@ -227,18 +235,19 @@ export const addLine = produce<
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
     spec.scales = scales;
-    const hoverDataSource =
-      lineOptions.hasFixedMetricAxis && (isInteractive(lineOptions) || lineOptions.highlightedItem !== undefined)
-        ? `${lineName}_visibleHoverData`
-        : undefined;
-    if (hoverDataSource) {
-      spec.data = [...(spec.data ?? []), getInBoundsHoverData(lineOptions, `${FILTERED_TABLE}ForInspect`)];
-    }
-    spec.marks = addLineMarks(spec.marks ?? [], lineOptions, hoverDataSource);
+    spec.marks = addLineMarks(spec.marks ?? [], lineOptions);
 
     return spec;
   }
 );
+
+/**
+ * Gets the data that feeds the line's hover marks.
+ * @param options - line spec options
+ * @returns data source name
+ */
+const getLineHoverDataSource = ({ hasFixedMetricAxis, name }: LineSpecOptions): string =>
+  hasFixedMetricAxis ? `${name}_visibleHoverData` : `${FILTERED_TABLE}ForInspect`;
 
 /**
  * Whether an axis fixes the range of one of the line's metric scales.
@@ -387,8 +396,17 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
   const { chartInspects, highlightedItem, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
+    if (options.hasFixedMetricAxis) {
+      data.push(getInBoundsHoverData(options, `${FILTERED_TABLE}ForInspect`));
+    }
     if (showHoverLabel) {
       data.push(getHoverLabelData(options));
+    }
+    if (options.isDrawInAnimate) {
+      data.push(
+        getLineDrawInVoronoiData(name, getLineHoverDataSource(options)),
+        getLineDrawInExtentData({ ...options, metric: getEffectiveMetricField(options) }, getLineHoverDataSource(options))
+      );
     }
   }
   if (isHoverAnimate) {
@@ -443,6 +461,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
 
   if (options.isDrawInAnimate) {
     addLineDrawInAnimationSignals(signals, options);
+    addDrawInDoneSignal(signals);
   }
 
   if (!isInteractive(options) && options.highlightedItem === undefined) return;
@@ -489,34 +508,35 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 });
 
 // The order that marks are added is important since it determines the draw order.
-export const addLineMarks = produce<Mark[], [LineSpecOptions, string?]>(
-  (marks, options, hoverDataSource = `${FILTERED_TABLE}ForInspect`) => {
-    const { highlightedItem, legendHighlightSignals, name } = options;
-    const forecasts = options.forecasts ?? [];
-    const { facetData, facetGroupby, markOptions } = getLineFacetContext(options);
+export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
+  const { highlightedItem, legendHighlightSignals, name } = options;
+  const forecasts = options.forecasts ?? [];
+  const { facetData, facetGroupby, markOptions } = getLineFacetContext(options);
 
-    const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
-    const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
+  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
+  const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
 
-    // boundary rules are drawn behind everything
-    addLineForecastBoundaryMarks(marks, forecasts, options);
-    addLineGroupMark(marks, name, markOptions, facetData, facetGroupby);
-    addLineStaticPointMarks(marks, options);
-    marks.push(...getMetricRangeGroupMarks(options), ...getTrendlineMarks(options));
+  // boundary rules are drawn behind everything
+  addLineForecastBoundaryMarks(marks, forecasts, options);
+  addLineGroupMark(marks, name, markOptions, facetData, facetGroupby);
+  addLineStaticPointMarks(marks, options);
+  marks.push(...getMetricRangeGroupMarks(options), ...getTrendlineMarks(options));
 
-    const labelSpecOpts = getLineDirectLabelSpecOptionsList(options);
-    addLineDirectLabelMarks(marks, options, labelSpecOpts);
-    if (hasHighlightState) {
-      addLineHighlightOverlayMarks(marks, options, markOptions, facetData, facetGroupby, labelSpecOpts);
-    }
-    // hover marks are last so hollow points and interaction marks always render above everything
-    if (hasInteractiveHighlight) {
-      marks.push(...getLineHoverMarks(markOptions, hoverDataSource));
-    }
-    // forecast labels are drawn last so they appear on top of other marks
-    addLineForecastLabelMarks(marks, forecasts, options);
+  const labelSpecOpts = getLineDirectLabelSpecOptionsList(options);
+  addLineDirectLabelMarks(marks, options, labelSpecOpts);
+  if (hasHighlightState) {
+    addLineHighlightOverlayMarks(marks, options, markOptions, facetData, facetGroupby, labelSpecOpts);
   }
-);
+  // hover marks are last so hollow points and interaction marks always render above everything
+  if (hasInteractiveHighlight) {
+    const drawInVoronoi = options.isDrawInAnimate
+      ? { points: getLineDrawInVoronoiDataName(name), extent: getLineDrawInExtentDataName(name) }
+      : undefined;
+    marks.push(...getLineHoverMarks(markOptions, getLineHoverDataSource(options), undefined, drawInVoronoi));
+  }
+  // forecast labels are drawn last so they appear on top of other marks
+  addLineForecastLabelMarks(marks, forecasts, options);
+});
 
 /**
  * Computes the facet source/groupby that the line's main group mark and highlight overlay both
@@ -586,8 +606,9 @@ const addLineGroupMark = (
 };
 
 const addLineStaticPointMarks = (marks: Mark[], options: LineSpecOptions): void => {
-  const { isSparkline, linePointAnnotations, staticPoint } = options;
-  if (!staticPoint && !isSparkline) return;
+  const { interpolate, isSparkline, linePointAnnotations, staticPoint } = options;
+  // a basis curve doesn't pass through the data, so points would sit off the line
+  if ((!staticPoint && !isSparkline) || interpolate === 'basis') return;
   marks.push(getLineStaticPointBackground(options), getLineStaticPoint(options));
   if (linePointAnnotations.length > 0) {
     marks.push(...getLinePointAnnotationMarks(options));

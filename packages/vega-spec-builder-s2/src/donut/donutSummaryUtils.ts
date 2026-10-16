@@ -18,7 +18,6 @@ import {
   ProductionRule,
   Signal,
   SourceData,
-  TextBaselineValueRef,
   TextEncodeEntry,
   TextValueRef,
 } from 'vega';
@@ -38,69 +37,56 @@ import { getTextRuleExpr } from './segmentLabelUtils.js';
 
 type DonutSummaryLayoutOptions = Pick<DonutSummarySpecOptions, 'donutOptions' | 'hideValue' | 'label' | 'delta'>;
 
-/**
- * Gets the distance from the summary anchor to the bottom of its text stack.
- * @param options
- * @returns vega expression string
- */
-const getDonutSummaryStackBottomExpr = ({
-  donutOptions,
-  hideValue,
-  label,
-  delta,
-}: DonutSummaryLayoutOptions): string => {
-  const { name } = donutOptions;
-  const hasValue = !hideValue;
-  const hasLabel = Boolean(label);
+/** Gets the delta font size, hiding semicircle deltas below M. */
+const getSummaryDeltaFontSizeExpr = ({ name, variant }: DonutSpecOptions): string => {
+  const fontSize = `${name}_summaryLabelFontSize`;
+  return variant === 'semicircle' ? getSizeTierValueExpr(name, [0, 0, fontSize, fontSize, fontSize]) : fontSize;
+};
+
+/** Gets the summary anchor offset and each row's center within its stack. */
+const getDonutSummaryLayout = (options: DonutSummaryLayoutOptions) => {
+  const {
+    donutOptions: { name, variant },
+    hideValue,
+    label,
+    delta,
+  } = options;
   const hasDelta = delta !== undefined;
-  const valueGap = `ceil(${name}_summaryValueFontSize * 0.25)`;
-  const labelGap = `ceil(${name}_summaryLabelFontSize * 0.25)`;
-
-  if (hasValue && hasLabel && hasDelta) {
-    return `${valueGap} + ${name}_summaryLabelFontSize + ${labelGap} + ${name}_summaryLabelFontSize`;
-  }
-  if (hasValue && (hasLabel || hasDelta)) {
-    return `${valueGap} + ${name}_summaryLabelFontSize`;
-  }
-  if (!hasValue && hasLabel && hasDelta) {
-    return `${labelGap} + ${name}_summaryLabelFontSize`;
-  }
-  const fontSize = hasValue ? `${name}_summaryValueFontSize` : `${name}_summaryLabelFontSize`;
-  return `${fontSize} * 0.5`;
+  const valueFont = `${name}_summaryValueFontSize`;
+  const labelFont = `${name}_summaryLabelFontSize`;
+  const deltaFont = getSummaryDeltaFontSizeExpr(options.donutOptions);
+  const valueHeight = hideValue ? '0' : valueFont;
+  const labelHeight = label ? labelFont : '0';
+  const deltaHeight = hasDelta ? deltaFont : '0';
+  const nextRowHeight = label ? labelHeight : deltaHeight;
+  // Keep the original value-to-label gap when positioning both rows by their vertical centers.
+  const valueBaseline = `round(${valueFont} * 0.3)`;
+  const nextRowBaseline = `round(${nextRowHeight} * 0.79) - round(${nextRowHeight} * 0.3)`;
+  const rowGap = `ceil(${valueFont} * 0.25) + ${valueBaseline} + ${nextRowBaseline} - (${valueFont} + ${nextRowHeight}) / 2`;
+  const valueGap = !hideValue && (label || hasDelta) ? `(${nextRowHeight} > 0 ? ${rowGap} : 0)` : '0';
+  const labelGap = label && hasDelta ? `ceil(${deltaFont} * 0.25)` : '0';
+  const height =
+    [valueHeight, labelHeight, deltaHeight, valueGap, labelGap].filter((part) => part !== '0').join(' + ') || '0';
+  return {
+    anchorOffset: variant === 'semicircle' ? `2 + (${height}) / 2` : '0',
+    value: `${valueFont} / 2 - (${height}) / 2`,
+    label: `${valueHeight} + ${valueGap} + ${labelFont} / 2 - (${height}) / 2`,
+    delta: `${valueHeight} + ${valueGap} + ${labelHeight} + ${labelGap} + ${deltaFont} / 2 - (${height}) / 2`,
+  };
 };
 
-/**
- * Gets the summary height reserved below a semicircle's flat edge.
- * @param options
- * @returns vega expression string
- */
-const getDonutSummaryBottomOffsetExpr = ({
-  donutOptions,
-  hideValue,
-  label,
-  delta,
-}: DonutSummaryLayoutOptions): string => {
-  if (delta === undefined || hideValue || !label) {
-    return '0';
-  }
-  const { name } = donutOptions;
-  const gapFontSize = label ? `${name}_summaryLabelFontSize` : `${name}_summaryValueFontSize`;
-  return `ceil(${gapFontSize} * 0.25) + ${name}_summaryLabelFontSize`;
-};
-
-/**
- * Gets the vertical offset from the donut center to the summary anchor.
- * @param options
- * @returns vega expression string
- */
-const getDonutSummaryAnchorOffsetExpr = (options: DonutSummaryLayoutOptions): string => {
-  if (options.donutOptions.variant !== 'semicircle') {
-    return '0';
-  }
-  const stackBottom = getDonutSummaryStackBottomExpr(options);
-  const bottomOffset = getDonutSummaryBottomOffsetExpr(options);
-  // Keep the summary stack 3px from the semicircle's bottom edge.
-  return bottomOffset === '0' ? `3 + ${stackBottom}` : `3 + (${stackBottom}) - (${bottomOffset})`;
+/** Gets the available chord width at a summary row's farthest edge. */
+const getDonutSummaryTextLimit = (
+  options: DonutSummaryLayoutOptions,
+  fontSize: string,
+  dy: string
+): { signal: string } => {
+  const innerRadius = getDonutInnerRadiusExpr(options.donutOptions);
+  const centerOffset = getDonutSummaryLayout(options).anchorOffset;
+  const distance = `abs((${dy}) - (${centerOffset})) + ${fontSize} / 2`;
+  return {
+    signal: `2 * sqrt(max(0, pow(${innerRadius}, 2) - pow(${distance}, 2)))`,
+  };
 };
 
 /**
@@ -109,13 +95,9 @@ const getDonutSummaryAnchorOffsetExpr = (options: DonutSummaryLayoutOptions): st
  * @returns vega expression string
  */
 const getDonutSummaryAnchorYSignal = (options: DonutSummaryLayoutOptions): string => {
-  const offset = getDonutSummaryAnchorOffsetExpr(options);
-  const bottomOffset = getDonutSummaryBottomOffsetExpr(options);
-  const center =
-    options.donutOptions.variant === 'semicircle' && bottomOffset !== '0'
-      ? `height - (${bottomOffset})`
-      : getDonutCenterYSignal(options.donutOptions);
-  return offset === '0' ? center : `${center} - (${offset})`;
+  const center = getDonutCenterYSignal(options.donutOptions);
+  const { anchorOffset } = getDonutSummaryLayout(options);
+  return anchorOffset === '0' ? center : `${center} - (${anchorOffset})`;
 };
 
 /**
@@ -183,17 +165,10 @@ export const getDonutSummarySignals = (donutOptions: DonutSpecOptions): Signal[]
     return [];
   }
   const { name } = donutOptions;
-  const signals: Signal[] = [
+  return [
     { name: `${name}_summaryValueFontSize`, update: getSizeTierValueExpr(name, DONUT_SUMMARY_VALUE_FONT_SIZES) },
     { name: `${name}_summaryLabelFontSize`, update: getSizeTierValueExpr(name, DONUT_SUMMARY_LABEL_FONT_SIZES) },
   ];
-  if (donutOptions.variant === 'semicircle') {
-    signals.push({
-      name: `${name}_summaryBottomOffset`,
-      update: getDonutSummaryBottomOffsetExpr(donutSummary),
-    });
-  }
-  return signals;
 };
 
 /**
@@ -316,7 +291,7 @@ export const getSummaryTextFontSize = (
   return [
     { test: `${getDonutInnerRadiusExpr(donutOptions)} < ${DONUT_SUMMARY_MIN_RADIUS_S2}`, value: 0 },
     {
-      test: `(${limitSignal}) > 0 && ${textWidth} >= (${limitSignal}) && ${firstCharacterWidth} >= (${limitSignal}) - ${ellipsisWidth}`,
+      test: `(${fontSize}) <= 0 || (${limitSignal}) <= 0 || (${textWidth} >= (${limitSignal}) && ${firstCharacterWidth} >= (${limitSignal}) - ${ellipsisWidth})`,
       value: 0,
     },
     { signal: fontSize },
@@ -331,8 +306,7 @@ export const getSummaryTextFontSize = (
 export const getSummaryValueEncode = (
   options: DonutSummarySpecOptions
 ): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-  const { donutOptions, label, delta } = options;
-  const hasLineBelow = Boolean(label) || delta !== undefined;
+  const { donutOptions } = options;
   const text = getSummaryValueText(options);
   const fontSize = `${donutOptions.name}_summaryValueFontSize`;
   const limit = getSummaryValueLimit(options);
@@ -340,11 +314,12 @@ export const getSummaryValueEncode = (
     update: {
       x: { signal: 'width / 2' },
       y: { signal: getDonutSummaryAnchorYSignal(options) },
+      dy: { signal: getDonutSummaryLayout(options).value },
       text,
       fontSize: getSummaryTextFontSize(donutOptions, getTextRuleExpr(text), fontSize, 800, limit.signal),
       fontWeight: { value: 800 }, // S2 font weight for value
       align: { value: 'center' },
-      baseline: getSummaryValueBaseline(hasLineBelow),
+      baseline: { value: 'middle' },
       limit,
     },
   };
@@ -366,38 +341,16 @@ export const getSummaryValueText = ({
 };
 
 /**
- * Gets the baseline for the summary value
- * @param hasLineBelow whether a label or delta line renders below the value
- * @returns TextBaselineValueRef
- */
-export const getSummaryValueBaseline = (hasLineBelow?: string | boolean): TextBaselineValueRef => {
-  if (hasLineBelow) {
-    return { value: 'alphabetic' };
-  }
-  // If nothing renders below it, the text should be vertically centered
-  return { value: 'middle' };
-};
-
-/**
  * Gets the limit for the summary value
  * @param donutSummaryOptions
  * @returns NumericValueRef
  */
-export const getSummaryValueLimit = ({ donutOptions, label, delta }: DonutSummarySpecOptions): { signal: string } => {
-  const { name } = donutOptions;
-  const hasLineBelow = Boolean(label) || delta !== undefined;
-  // if nothing renders below it, the height of the font from the center of the donut is 1/2 the font size
-  const fontHeight = hasLineBelow ? `${name}_summaryValueFontSize` : `${name}_summaryValueFontSize * 0.5`;
-  const donutInnerRadius = getDonutInnerRadiusExpr(donutOptions);
-  const anchorOffset = getDonutSummaryAnchorOffsetExpr({ donutOptions, hideValue: false, label, delta });
-
-  return {
-    // This is the max length of the text that can be displayed in the donut summary
-    // If the text is longer than this, it will be truncated
-    // It is calculated using the Pythagorean theorem, offset by the anchor's own distance from
-    // the arc's true center (0 for a full circle, non-zero for a semicircle)
-    signal: `2 * sqrt(pow(${donutInnerRadius}, 2) - pow((${fontHeight}) + (${anchorOffset}), 2))`,
-  };
+export const getSummaryValueLimit = (options: DonutSummarySpecOptions): { signal: string } => {
+  return getDonutSummaryTextLimit(
+    options,
+    `${options.donutOptions.name}_summaryValueFontSize`,
+    getDonutSummaryLayout(options).value
+  );
 };
 
 /**
@@ -405,61 +358,30 @@ export const getSummaryValueLimit = ({ donutOptions, label, delta }: DonutSummar
  * @param donutSummaryOptions
  * @returns encode
  */
-export const getSummaryLabelEncode = ({
-  donutOptions,
-  hideValue,
-  label,
-  delta,
-}: DonutSummarySpecOptions & { label: string }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+export const getSummaryLabelEncode = (
+  options: DonutSummarySpecOptions & { label: string }
+): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
+  const { donutOptions, label } = options;
   const { name } = donutOptions;
-  const hasValue = !hideValue;
-  const hasDelta = delta !== undefined;
-  // label always continues below the value when it's shown; otherwise it becomes the anchor line
-  // (flush at center) if a delta follows it, or renders centered alone if nothing else is present
-  let baseline: 'top' | 'alphabetic' | 'middle';
-  if (hasValue) {
-    baseline = 'top';
-  } else if (hasDelta) {
-    baseline = 'alphabetic';
-  } else {
-    baseline = 'middle';
-  }
-  // height of the label block from the donut's center, matching its own baseline: half its own font
-  // size when centered alone, its full font size when flush at center with a delta below it, or the
-  // value's dy offset plus the label's full font size when stacked below the value
-  let heightFromCenter: string;
-  if (baseline === 'middle') {
-    heightFromCenter = `${name}_summaryLabelFontSize * 0.5`;
-  } else if (baseline === 'alphabetic') {
-    heightFromCenter = `${name}_summaryLabelFontSize`;
-  } else {
-    heightFromCenter = `ceil(${name}_summaryValueFontSize * 0.25) + ${name}_summaryLabelFontSize`;
-  }
-  const anchorOffset = getDonutSummaryAnchorOffsetExpr({ donutOptions, hideValue, label, delta });
-  const verticalOffset =
-    donutOptions.variant === 'semicircle' && baseline !== 'middle'
-      ? `abs((${heightFromCenter}) - (${anchorOffset}))`
-      : `(${heightFromCenter}) + (${anchorOffset})`;
-  const limitSignal = `2 * sqrt(pow(${getDonutInnerRadiusExpr(donutOptions)}, 2) - pow(${verticalOffset}, 2))`;
+  const dy = getDonutSummaryLayout(options).label;
+  const limit = getDonutSummaryTextLimit(options, `${name}_summaryLabelFontSize`, dy);
   return {
     update: {
       x: { signal: 'width / 2' },
-      y: { signal: getDonutSummaryAnchorYSignal({ donutOptions, hideValue, label, delta }) },
-      dy: { signal: hasValue ? `ceil(${name}_summaryValueFontSize * 0.25)` : '0' },
+      y: { signal: getDonutSummaryAnchorYSignal(options) },
+      dy: { signal: dy },
       text: { value: label },
       fontSize: getSummaryTextFontSize(
         donutOptions,
         JSON.stringify(label),
         `${name}_summaryLabelFontSize`,
         700,
-        limitSignal
+        limit.signal
       ),
       fontWeight: { value: 700 },
       align: { value: 'center' },
-      baseline: { value: baseline },
-      limit: {
-        signal: limitSignal,
-      },
+      baseline: { value: 'middle' },
+      limit,
     },
   };
 };
@@ -475,51 +397,29 @@ export const getSummaryDeltaEncode = ({
   label,
   delta,
 }: DonutSummarySpecOptions & { delta: number }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
-  const { name, colorScheme } = donutOptions;
-  const hasValue = !hideValue;
-  const hasLabel = Boolean(label);
-  // delta always renders last: below the label if present, otherwise directly below the value
-  // (taking over the label's usual gap), or centered alone if neither value nor label render
-  const valueGapExpr = hasValue ? `ceil(${name}_summaryValueFontSize * 0.25) + ` : '';
-  let dyExpr: string | undefined;
-  if (hasLabel && hasValue) {
-    dyExpr = `${valueGapExpr}${name}_summaryLabelFontSize + ceil(${name}_summaryLabelFontSize * 0.25)`;
-  } else if (hasLabel) {
-    dyExpr = `ceil(${name}_summaryLabelFontSize * 0.25)`;
-  } else if (hasValue) {
-    dyExpr = `ceil(${name}_summaryValueFontSize * 0.25)`;
-  } else {
-    dyExpr = undefined;
-  }
-  const baseline = dyExpr === undefined ? 'middle' : 'top';
-  const heightFromCenter =
-    baseline === 'middle' ? `${name}_summaryLabelFontSize * 0.5` : `${dyExpr} + ${name}_summaryLabelFontSize`;
-  const anchorOffset = getDonutSummaryAnchorOffsetExpr({ donutOptions, hideValue, label, delta });
-  const holeLimit = `2 * sqrt(pow(${getDonutInnerRadiusExpr(
-    donutOptions
-  )}, 2) - pow((${heightFromCenter}) + (${anchorOffset}), 2))`;
-  const isBelowSemicircle = donutOptions.variant === 'semicircle' && hasValue && hasLabel;
-  const limitSignal = isBelowSemicircle ? 'width' : holeLimit;
+  const { colorScheme } = donutOptions;
+  const options = { donutOptions, hideValue, label, delta };
+  const dy = getDonutSummaryLayout(options).delta;
+  const fontSize = getSummaryDeltaFontSizeExpr(donutOptions);
+  const limit = getDonutSummaryTextLimit(options, fontSize, dy);
   return {
     update: {
       x: { signal: 'width / 2' },
-      y: { signal: getDonutSummaryAnchorYSignal({ donutOptions, hideValue, label, delta }) },
-      dy: { signal: dyExpr ?? '0' },
+      y: { signal: getDonutSummaryAnchorYSignal(options) },
+      dy: { signal: dy },
       text: getSummaryDeltaText(delta),
       fontSize: getSummaryTextFontSize(
         donutOptions,
         getTextRuleExpr(getSummaryDeltaText(delta)),
-        `${name}_summaryLabelFontSize`,
+        fontSize,
         800,
-        limitSignal
+        limit.signal
       ),
       fontWeight: { value: 800 },
       fill: getSummaryDeltaFill(delta, colorScheme),
       align: { value: 'center' },
-      baseline: { value: baseline },
-      limit: {
-        signal: limitSignal,
-      },
+      baseline: { value: 'middle' },
+      limit,
     },
   };
 };
