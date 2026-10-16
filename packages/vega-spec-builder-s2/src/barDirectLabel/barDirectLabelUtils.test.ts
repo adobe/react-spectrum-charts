@@ -38,8 +38,10 @@ const specOptions = (overrides: Partial<BarDirectLabelSpecOptions> = {}): BarDir
   ...overrides,
 });
 
-const getLayer = (overrides: Partial<BarSpecOptions> = {}): GroupMark =>
-  getBarDirectLabelsMarks({ ...defaultBarOptions, barDirectLabels: [{}], ...overrides })[0] as GroupMark;
+const getLayer = (overrides: Partial<BarSpecOptions> = {}): GroupMark => {
+  const layer = getBarDirectLabelsMarks({ ...defaultBarOptions, barDirectLabels: [{}], ...overrides })[0] as GroupMark;
+  return { ...layer, marks: (layer.marks?.[0] as GroupMark).marks };
+};
 
 interface SceneNode {
   name?: string;
@@ -50,12 +52,22 @@ interface SceneNode {
   fontSize?: number;
   text?: string;
   datum?: { datum?: { id?: string } };
+  mark?: { marktype?: string };
 }
 
 const getItems = (view: View, name: string): SceneNode[] => {
-  const find = (node: SceneNode): SceneNode[] => {
-    if (node.name === name) return node.items ?? [];
-    return (node.items ?? []).flatMap(find);
+  const find = (node: SceneNode, parentX = 0, parentY = 0, parentOpacity = 1): SceneNode[] => {
+    const x = parentX + (node.mark?.marktype === 'group' ? node.x ?? 0 : 0);
+    const y = parentY + (node.mark?.marktype === 'group' ? node.y ?? 0 : 0);
+    const opacity = parentOpacity * (node.mark?.marktype === 'group' ? node.opacity ?? 1 : 1);
+    if (node.name === name)
+      return (node.items ?? []).map((item) => ({
+        ...item,
+        x: (item.x ?? 0) + x,
+        y: (item.y ?? 0) + y,
+        opacity: (item.opacity ?? 1) * opacity,
+      }));
+    return (node.items ?? []).flatMap((item) => find(item, x, y, opacity));
   };
   const scene: SceneNode & { root?: SceneNode } = view.scenegraph();
   if (!scene.root) throw new Error('Missing scenegraph root');
@@ -200,6 +212,8 @@ describe('shared native label layout', () => {
   it('uses native bar-bound anchors and separates candidates by sign', () => {
     const layer = getLayer();
     expect(layer.data?.map((data) => data.name)).toEqual([
+      'bar0_directLabelBars_source',
+      'bar0_directLabelBars_sizes',
       'bar0_directLabelBars',
       'bar0DirectLabel0_positive_candidates',
       'bar0DirectLabel0_negative_candidates',
@@ -208,7 +222,7 @@ describe('shared native label layout', () => {
     expect(positive.from).toEqual({ data: 'bar0DirectLabel0_positive_candidates' });
     expect(positive.transform?.[0]).toMatchObject({
       type: 'label',
-      size: { signal: '[width, height]' },
+      size: { signal: '[ceil(width + 2 * directLabelLayoutPadding), ceil(height + 2 * directLabelLayoutPadding)]' },
       anchor: ['top'],
       offset: [6],
       padding: null,
@@ -237,12 +251,13 @@ describe('shared native label layout', () => {
     const [, halo, foreground] = layer.marks as TextMark[];
     expect(halo.encode?.update).toHaveProperty('opacity', { signal: 'datum.opacity * datum.datum.labelOpacity' });
     expect(foreground.encode?.update?.opacity).toEqual(halo.encode?.update?.opacity);
-    expect(JSON.stringify(layer.data?.[0])).toContain('drawInDuration');
+    expect(JSON.stringify(layer.encode)).toContain('drawInDuration');
   });
 
-  it('uses stacked segment data for draw-in timing', () => {
+  it('reserves final stacked geometry and fades the layer after draw-in', () => {
     const layer = getLayer({ type: 'stacked', isDrawInAnimate: true });
-    expect(JSON.stringify(layer.data?.[0])).toContain('datum.datum.bar0_drawInStackMax');
+    expect(JSON.stringify(layer.data?.[0])).toContain('bar0_background');
+    expect(JSON.stringify(layer.encode)).toContain('drawInDuration');
   });
 });
 
@@ -287,6 +302,9 @@ describe('Vega label layout regressions', () => {
   it('rejects overlapping labels across dodged categories and restores them after resize', async () => {
     await run(runtimeSpec(rows));
     expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(1);
+    const rejected = getItems(view, 'bar0DirectLabel0_positive_placement').filter((item) => item.opacity === 0);
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0]).toMatchObject({ x: 0, y: 0, fontSize: 0 });
     await view.width(2000).runAsync();
     expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(2);
     await view.width(200).runAsync();
@@ -410,22 +428,31 @@ describe('Vega label layout regressions', () => {
     expect(outsideItems(view).every((item) => Number.isFinite(item.x) && Number.isFinite(item.y))).toBe(true);
   });
 
-  it('fades labels in after draw-in and keeps their halo opacity synchronized', async () => {
-    await runChart({}, true);
-    await view.signal(ANIMATION_TIMER, Date.now()).runAsync();
-    expect(outsideItems(view)).toHaveLength(0);
-    expect(getItems(view, 'bar0DirectLabel0_positive_placement')).toHaveLength(0);
-    const settled = view.signal(DRAW_IN_START) + view.signal(DRAW_IN_DURATION);
-    await view.signal(ANIMATION_TIMER, settled + DRAW_IN_LABEL_FADE_DURATION_MS / 2).runAsync();
-    expect(outsideItems(view)).toHaveLength(2);
-    expect(outsideItems(view).some((item) => item.opacity === 0.5)).toBe(true);
-    expect(getItems(view, 'bar0DirectLabel0_positive_bg').map((item) => item.opacity)).toEqual(
-      getItems(view, 'bar0DirectLabel0_positive').map((item) => item.opacity)
-    );
-    await view.signal(ANIMATION_TIMER, view.signal(DRAW_IN_START) + 2000).runAsync();
-    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(2);
-    expect(getItems(view, 'bar0DirectLabel0_positive_bg').map((item) => item.opacity)).toEqual(
-      getItems(view, 'bar0DirectLabel0_positive').map((item) => item.opacity)
-    );
-  });
+  it.each<Partial<BarOptions>>([{ type: 'dodged' }, { type: 'stacked' }, { type: 'dodged', trellis: 'panel' }])(
+    'fades labels in after draw-in and keeps their halo opacity synchronized: %o',
+    async (bar) => {
+      await runChart(bar, true);
+      await view.signal(ANIMATION_TIMER, Date.now()).runAsync();
+      expect(outsideItems(view)).toHaveLength(2);
+      expect(outsideItems(view).every((item) => item.opacity === 0)).toBe(true);
+      const initialPositions = outsideItems(view).map(({ x, y }) => ({ x, y }));
+      expect(getItems(view, 'bar0DirectLabel0_positive_placement')).toHaveLength(2);
+      const settled = view.signal(DRAW_IN_START) + view.signal(DRAW_IN_DURATION);
+      await view.signal(ANIMATION_TIMER, settled - 1).runAsync();
+      expect(outsideItems(view).every((item) => item.opacity === 0)).toBe(true);
+      expect(outsideItems(view).map(({ x, y }) => ({ x, y }))).toEqual(initialPositions);
+      await view.signal(ANIMATION_TIMER, settled + DRAW_IN_LABEL_FADE_DURATION_MS / 2).runAsync();
+      expect(outsideItems(view)).toHaveLength(2);
+      expect(outsideItems(view).some((item) => item.opacity === 0.5)).toBe(true);
+      expect(getItems(view, 'bar0DirectLabel0_positive_bg').map((item) => item.opacity)).toEqual(
+        getItems(view, 'bar0DirectLabel0_positive').map((item) => item.opacity)
+      );
+      await view.signal(ANIMATION_TIMER, view.signal(DRAW_IN_START) + 2000).runAsync();
+      expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(2);
+      expect(outsideItems(view).map(({ x, y }) => ({ x, y }))).toEqual(initialPositions);
+      expect(getItems(view, 'bar0DirectLabel0_positive_bg').map((item) => item.opacity)).toEqual(
+        getItems(view, 'bar0DirectLabel0_positive').map((item) => item.opacity)
+      );
+    }
+  );
 });
