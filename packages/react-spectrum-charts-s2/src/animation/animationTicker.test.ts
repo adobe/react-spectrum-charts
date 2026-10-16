@@ -11,7 +11,13 @@
  */
 import { Spec, View } from 'vega';
 
-import { ANIMATION_ACTIVE, ANIMATION_FRAME_BUDGET_MS, ANIMATION_TIMER } from '@spectrum-charts/core-s2/constants';
+import {
+  ANIMATION_ACTIVE,
+  ANIMATION_FRAME_BUDGET_MS,
+  ANIMATION_TIMER,
+  DRAW_IN_MAX_HOLD_MS,
+  DRAW_IN_STEADY_FRAMES,
+} from '@spectrum-charts/core-s2/constants';
 
 // loaded fresh per test so module-level frame state (e.g. lastFrameTime) doesn't leak between fake-timer clocks
 let ticker: typeof import('./animationTicker.js');
@@ -233,6 +239,38 @@ describe('animationTicker', () => {
       views.forEach(({ view }) => attach(view));
       await flushFrames(1);
       expect(views.map(({ timerValues }) => timerValues.length)).toEqual([1, 1, 1]);
+    });
+  });
+
+  describe('start gate', () => {
+    test('holds a view until it sees steady on-time frames', async () => {
+      const { view, timerValues } = createMockView({ activeTicks: 10 });
+      detachers.push(ticker.attachAnimationTicker(view, document.createElement('div'), true));
+      // the first frame has no previous frame to measure, so it never counts as on time
+      await flushFrames(DRAW_IN_STEADY_FRAMES);
+      expect(timerValues).toHaveLength(0);
+      await flushFrames(1);
+      expect(timerValues).toHaveLength(1);
+    });
+
+    test('releases a held view at the max hold deadline', async () => {
+      let clockMs = 0;
+      jest.spyOn(performance, 'now').mockImplementation(() => clockMs);
+      const { view, timerValues } = createMockView({ activeTicks: 10 });
+      detachers.push(ticker.attachAnimationTicker(view, document.createElement('div'), true));
+      clockMs = DRAW_IN_MAX_HOLD_MS;
+      await flushFrames(1);
+      expect(timerValues).toHaveLength(1);
+    });
+
+    test('does not hold views attached without the gate', async () => {
+      const held = createMockView({ activeTicks: 10 });
+      const free = createMockView({ activeTicks: 10 });
+      detachers.push(ticker.attachAnimationTicker(held.view, document.createElement('div'), true));
+      attach(free.view);
+      await flushFrames(1);
+      expect(held.timerValues).toHaveLength(0);
+      expect(free.timerValues).toHaveLength(1);
     });
   });
 

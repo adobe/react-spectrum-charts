@@ -15,7 +15,7 @@ import { Config, Padding, Renderers, Spec, View, expressionFunction } from 'vega
 import embed from 'vega-embed';
 import { Options as TooltipOptions } from 'vega-tooltip';
 
-import { TABLE } from '@spectrum-charts/core-s2/constants';
+import { DRAW_IN_PAINT_FADE_MS, S2_EASE_OUT, TABLE } from '@spectrum-charts/core-s2/constants';
 import { getLocale } from '@spectrum-charts/core-s2/locales';
 import {
   ChartData,
@@ -25,7 +25,7 @@ import {
 } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from './animation/animationTicker.js';
-import { getDrawInStart, hasTableRows, restoreDrawInStart } from './animation/drawInContinuity.js';
+import { getDrawInStart, hasDrawIn, hasTableRows, restoreDrawInStart } from './animation/drawInContinuity.js';
 import { useDebugSpec } from './hooks/useDebugSpec.js';
 import { extractValues, isVegaData } from './hooks/useSpec.js';
 import { ChartProps } from './types/index.js';
@@ -162,6 +162,7 @@ export const VegaChart: FC<VegaChartProps> = ({
       const isAnimated = isAnimatedSpec(specCopy);
       // an empty chart has nothing drawn, so the next data draws in fresh
       if (!hasTableRows(specCopy)) drawInStart.current = undefined;
+      const freshDrawIn = hasDrawIn(specCopy) && hasTableRows(specCopy) && !drawInStart.current;
       restoreDrawInStart(specCopy, drawInStart.current, embeddedAt);
       if (isAnimated) {
         // animated charts are driven by the shared animation ticker instead of Vega's always-on timer
@@ -169,6 +170,8 @@ export const VegaChart: FC<VegaChartProps> = ({
       }
       // captured so the async .then attaches the ticker to the element this view was embedded into
       const container = containerRef.current;
+      // hidden until the first paint, which then fades in instead of flickering in
+      if (freshDrawIn) container.style.opacity = '0';
 
       void embed(container, specCopy, { ...embedOptions, config: finalConfig, tooltip })
         .then(({ view }) => {
@@ -178,8 +181,15 @@ export const VegaChart: FC<VegaChartProps> = ({
             return;
           }
           chartView.current = view;
+          if (freshDrawIn) {
+            container.style.opacity = '';
+            container.animate?.([{ opacity: 0 }, { opacity: 1 }], {
+              duration: DRAW_IN_PAINT_FADE_MS,
+              easing: `cubic-bezier(${S2_EASE_OUT.join(', ')})`,
+            });
+          }
           if (isAnimated) {
-            detachAnimationTicker.current = attachAnimationTicker(view, container);
+            detachAnimationTicker.current = attachAnimationTicker(view, container, freshDrawIn);
           }
           onNewView(view);
           view.resize();
@@ -191,6 +201,7 @@ export const VegaChart: FC<VegaChartProps> = ({
     }
     return () => {
       cancelled = true;
+      if (containerRef.current) containerRef.current.style.opacity = '';
       // destroy the chart on unmount
       detachAnimationTicker.current?.();
       detachAnimationTicker.current = undefined;
