@@ -313,21 +313,42 @@ export const getLineOpacityRules = ({
 };
 
 /**
+ * Checks whether hovering highlights every series at the hovered dimension value.
+ * @param lineMarkOptions
+ * @returns boolean
+ */
+export const isLineHighlightedByDimension = ({
+  chartInspects,
+  chartPopovers,
+  dimensionHover,
+}: Pick<LineMarkOptions, 'chartInspects' | 'chartPopovers' | 'dimensionHover'>): boolean =>
+  Boolean(dimensionHover) ||
+  Boolean(chartInspects?.some(({ highlightBy }) => highlightBy === 'dimension')) ||
+  Boolean(chartPopovers?.some(({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'));
+
+/**
  * Gets the production rules for strokeWidth
  */
 export const getLineStrokeWidth = ({
+  chartInspects,
+  chartPopovers,
+  dimensionHover,
   displayOnHover,
   comboSiblingNames,
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
   highlightedItem,
+  seriesIds,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
   // No interactivity -> use default (no hover)
   if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_STROKE_WIDTH_RULE];
+  // Thickening emphasizes one series over others, so a single series never thickens
+  if (seriesIds && seriesIds.length <= 1) return [DEFAULT_STROKE_WIDTH_RULE];
+  const highlightsByDimension = isLineHighlightedByDimension({ chartInspects, chartPopovers, dimensionHover });
   const strokeWidthRules: ProductionRule<NumericValueRef> = [];
 
-  if (interactiveMarkName) {
+  if (interactiveMarkName && !highlightsByDimension) {
     if (isHighlightedByGroup) {
       strokeWidthRules.push({
         test: `length(data('${interactiveMarkName}_highlightedData'))`,
