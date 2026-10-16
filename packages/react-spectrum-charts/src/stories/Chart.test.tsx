@@ -280,6 +280,30 @@ describe('Chart', () => {
         await expect(ref.current.download()).resolves.toBe('Chart downloaded as chart_export.png');
       }
     });
+    test('copy writes to the clipboard synchronously with a pending image', async () => {
+      const ref = createRef<ChartHandle>();
+      render(
+        <Chart data={data} ref={ref}>
+          <Line dimension="x" metric="y" />
+        </Chart>
+      );
+      await findChart();
+      const write = jest.fn((items: { items: Record<string, Promise<Blob>> }[]) => items[0].items['image/png'].then(() => undefined));
+      const originalFetch = global.fetch;
+      Object.assign(global, {
+        ClipboardItem: class {
+          constructor(public items: Record<string, Promise<Blob>>) {}
+        },
+        fetch: jest.fn(() => Promise.resolve({ blob: () => Promise.resolve(new Blob()) })),
+      });
+      Object.defineProperty(navigator, 'clipboard', { value: { write }, configurable: true });
+      const copied = ref.current?.copy();
+      expect(write).toHaveBeenCalledTimes(1);
+      await expect(copied).resolves.toBe('Chart copied to clipboard');
+      Object.assign(global, { fetch: originalFetch });
+      delete (global as { ClipboardItem?: unknown }).ClipboardItem;
+      delete (navigator as { clipboard?: unknown }).clipboard;
+    });
     test('download uses supplied filename', async () => {
       const ref = createRef<ChartHandle>();
       render(

@@ -36,25 +36,40 @@ export default function useChartImperativeHandle(forwardedRef: Ref<ChartHandle> 
  */
 const copy = ({ chartView }: ChartImperativeHandleProps) =>
   new Promise<string>((resolve, reject) => {
-    if (chartView.current) {
-      chartView.current.toImageURL('png').then(
-        async (url) => {
-          try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(
-              () => resolve('Chart copied to clipboard'),
-              () => reject(new Error('Error occurred while writing to clipboard, copy to clipboard failed'))
-            );
-          } catch {
-            reject(new Error('Error occurred while fetching image, copy to clipboard failed'));
-          }
-        },
-        () => reject(new Error('Error occurred while converting image to URL, copy to clipboard failed'))
-      );
-    } else {
+    if (!chartView.current) {
       reject(new Error("There isn't a chart to copy, copy to clipboard failed"));
+      return;
     }
+    let imageError: Error | undefined;
+    const blob = chartView.current.toImageURL('png').then(
+      async (url) => {
+        try {
+          const response = await fetch(url);
+          return await response.blob();
+        } catch {
+          throw (imageError = new Error('Error occurred while fetching image, copy to clipboard failed'));
+        }
+      },
+      () => {
+        throw (imageError = new Error('Error occurred while converting image to URL, copy to clipboard failed'));
+      }
+    );
+    blob.catch(() => undefined);
+    // Clipboard writes must start synchronously in the user gesture, so the image is passed as a promise.
+    let written: Promise<void>;
+    try {
+      written = navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    } catch (error) {
+      written = Promise.reject(error);
+    }
+    written.then(
+      () => resolve('Chart copied to clipboard'),
+      () =>
+        blob.then(
+          () => reject(new Error('Error occurred while writing to clipboard, copy to clipboard failed')),
+          () => reject(imageError)
+        )
+    );
   });
 
 /**
