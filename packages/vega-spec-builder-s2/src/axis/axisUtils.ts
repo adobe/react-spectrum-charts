@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, Mark, Scale, SignalRef } from 'vega';
+import { Axis, Clip, Mark, Scale, SignalRef } from 'vega';
 
 import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
@@ -513,6 +513,7 @@ export const getTickCount = (position: Position, tickCountMinimum?: number, tick
  */
 export const getBaselineRule = (baselineOffset: number, position: Position): Mark => {
   const orientation = isVerticalAxis(position) ? 'y' : 'x';
+  const scaleName = orientation === 'x' ? 'yLinear' : 'xLinear';
 
   const positionOptions = {
     x: {
@@ -527,11 +528,14 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
     },
   };
 
+
   return {
     name: `${orientation}Baseline`,
     description: `${orientation}Baseline`,
     type: 'rule',
     interactive: false,
+    // clip to the plot only when the baseline value is outside the domain; vega supports signal clips but its typings don't
+    clip: { signal: `!inrange(${baselineOffset}, domain('${scaleName}'))` } as unknown as Clip,
     encode: {
       update: {
         ...positionOptions[orientation],

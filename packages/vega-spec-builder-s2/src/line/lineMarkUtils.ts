@@ -41,7 +41,7 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
-import { getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
+import { getLineGeometryClip } from '../marks/drawInAnimationUtils.js';
 import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
@@ -677,7 +677,7 @@ export const getLineHighlightOverlayGroup = (
     name: `${name}_highlightOverlay_group`,
     type: 'group',
     interactive: false,
-    ...(markOptions.isDrawInAnimate ? { clip: getLineDrawInClip(name) } : {}),
+    ...getLineGeometryClip(markOptions),
     from: {
       facet: {
         name: `${name}_highlightOverlay_facet`,

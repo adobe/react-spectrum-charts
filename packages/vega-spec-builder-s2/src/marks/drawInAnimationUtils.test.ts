@@ -44,6 +44,7 @@ import {
   getLineDrawInExtentData,
   getLineDrawInVoronoiData,
   getLineDrawInRevealExpr,
+  getLineGeometryClip,
 } from './drawInAnimationUtils.js';
 
 /** Evaluates a Vega expression with the given signals/datum in scope. */
@@ -199,6 +200,26 @@ describe('getLineDrawInClip()', () => {
       },
     });
   });
+
+  test('clips vertically at the plot edges when requested', () => {
+    expect(getLineDrawInClip('line0', true)).toStrictEqual({
+      path: {
+        signal:
+          "'M-1000,0' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + height + 'H-1000' + 'Z'",
+      },
+    });
+  });
+});
+
+describe('getLineGeometryClip()', () => {
+  test.each([
+    [{}, {}],
+    [{ hasFixedMetricAxis: true }, { clip: true }],
+    [{ isDrawInAnimate: true }, { clip: getLineDrawInClip('line0') }],
+    [{ isDrawInAnimate: true, hasFixedMetricAxis: true }, { clip: getLineDrawInClip('line0', true) }],
+  ])('returns the clip for %j', (options, expected) => {
+    expect(getLineGeometryClip({ name: 'line0', ...options })).toStrictEqual(expected);
+  });
 });
 
 describe('getLineDrawInRevealExpr()', () => {
@@ -254,6 +275,19 @@ describe('getLineDrawInVoronoiData()', () => {
       source: `${FILTERED_TABLE}ForInspect`,
       transform: [{ type: 'filter', expr: DRAW_IN_DONE }],
     });
+  });
+
+  test('reads from the provided source', () => {
+    expect(getLineDrawInVoronoiData('line0', 'line0_visibleHoverData')).toHaveProperty(
+      'source',
+      'line0_visibleHoverData'
+    );
+    expect(
+      getLineDrawInExtentData(
+        { name: 'line0', dimension: 'datetime', metric: 'value', scaleType: 'time' },
+        'line0_visibleHoverData'
+      )
+    ).toHaveProperty('source', 'line0_visibleHoverData');
   });
 });
 
