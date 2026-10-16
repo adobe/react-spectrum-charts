@@ -325,15 +325,16 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
     };
 
     test('should map chart size to the tier using the labeled breakpoints', () => {
-      expect(DONUT_SIZE_TIER_LABELED_CHART_SIZES).toEqual([206, 280, 344, 674]);
+      expect(DONUT_SIZE_TIER_LABELED_CHART_SIZES).toEqual([206, 344, 472, 674]);
       expect(getSizeTierScale(labeledOptions)).toHaveProperty('domain', DONUT_SIZE_TIER_LABELED_CHART_SIZES);
     });
 
     test.each([
       [150, 0],
       [250, 1],
-      [300, 2],
-      [400, 3],
+      [300, 1],
+      [400, 2],
+      [500, 3],
       [700, 4],
     ])('should resolve chart size %s to tier %s', (size, tier) => {
       expect(evaluateTier(labeledOptions, size)).toBe(tier);
@@ -359,10 +360,10 @@ describe('getSizeTierScale() / getSizeTierSignal()', () => {
     });
 
     test('should pause the donut at the cutpoint when the next tier has a bigger gap', () => {
-      // S -> M steps the gap from 5 to 10, so the donut holds at 160 until the chart reaches 280
-      expect(getOuterDiameter(270)).toBe(160);
-      expect(getOuterDiameter(279)).toBe(160);
-      expect(evaluateTier(labeledOptions, 279)).toBe(1);
+      // S -> M steps the gap from 5 to 10, so the donut holds at 200 until the chart reaches 344
+      expect(getOuterDiameter(334)).toBe(200);
+      expect(getOuterDiameter(343)).toBe(200);
+      expect(evaluateTier(labeledOptions, 343)).toBe(1);
     });
   });
 });

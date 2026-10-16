@@ -216,7 +216,9 @@ describe('donut hover animations', () => {
           expect(fraction).toBeLessThan(0.5);
         }
         await settleHover();
-        expect(await getArcOpacities(chart)).toEqual(expected.map((match) => (match ? 1 : FADE_FACTOR)));
+        expect(await getArcOpacities(chart)).toEqual(
+          chart.data(FILTERED_TABLE).map(({ id }) => (id === hovered.id ? 1 : FADE_FACTOR))
+        );
         const legendLabels = Array.from(container.querySelectorAll('g.mark-text.role-legend-label text'));
         expect(legendLabels.length).toBeGreaterThan(0);
         legendLabels.forEach((legendLabel) => {
@@ -249,7 +251,7 @@ describe('donut hover animations', () => {
   test('animates each segment independently, including duplicate color categories, and restores neutral on leave', async () => {
     const chart = await createView();
     await settle(chart);
-    const hovered = chart.data(FILTERED_TABLE)[0];
+    const hovered = chart.data(TABLE)[0];
     await chart.signal('donut_hoveredItem', hovered).runAsync();
     expect(chart.data('donut_hoverTargetData').map((row) => row.target)).toEqual([1, 0, 0]);
     const startTime = chart.data('donut_hoverAnimStateData')[1].startTime;
@@ -263,7 +265,9 @@ describe('donut hover animations', () => {
     expect(opacity).toBeLessThan(1);
     await settle(chart);
     expect(chart.data('donut_hoverFractionData').map((row) => row.fraction)).toEqual([1, 0, 0]);
-    expect(await getArcOpacities(chart)).toEqual([1, FADE_FACTOR, FADE_FACTOR]);
+    expect(await getArcOpacities(chart)).toEqual(
+      chart.data(FILTERED_TABLE).map(({ id }) => (id === hovered.id ? 1 : FADE_FACTOR))
+    );
     expect(chart.data('donut_hoverSeriesFractionData').find((row) => row.rscSeriesId === 'Chrome').fraction).toBe(1);
     await chart.signal('donut_hoveredItem', null).runAsync();
     await settle(chart);
@@ -287,11 +291,11 @@ describe('donut hover animations', () => {
   test('resumes an interrupted transition from its current fraction', async () => {
     const chart = await createView();
     await settle(chart);
-    await chart.signal('donut_hoveredItem', chart.data(FILTERED_TABLE)[0]).runAsync();
+    await chart.signal('donut_hoveredItem', chart.data(TABLE)[0]).runAsync();
     now += 50;
     await chart.signal(ANIMATION_TIMER, now).runAsync();
     const fraction = chart.data('donut_hoverFractionData')[1].fraction;
-    await chart.signal('donut_hoveredItem', chart.data(FILTERED_TABLE)[1]).runAsync();
+    await chart.signal('donut_hoveredItem', chart.data(TABLE)[1]).runAsync();
     expect(chart.data('donut_hoverAnimStateData')[1].startValue).toBe(fraction);
     await settle(chart);
     expect(chart.data('donut_hoverFractionData').map((row) => row.fraction)).toEqual([0, 1, 0]);

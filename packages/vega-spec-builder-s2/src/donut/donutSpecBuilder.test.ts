@@ -382,11 +382,12 @@ describe('addData', () => {
   test('should add data correctly for non-boolean donut', () => {
     const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
     expect(data).toHaveLength(3);
-    expect(data[1].transform).toHaveLength(4);
-    expect(data[1].transform?.[0].type).toBe('pie');
-    expect(data[1].transform?.[1]).toHaveProperty('as', 'testName_arcTheta');
-    expect(data[1].transform?.[2]).toHaveProperty('as', 'testName_arcLength');
-    expect(data[1].transform?.[3]).toHaveProperty('as', 'testName_arcPercent');
+    expect(data[1].transform).toHaveLength(5);
+    expect(data[1].transform?.[0]).toEqual({ type: 'collect', sort: { field: 'testMetric', order: 'descending' } });
+    expect(data[1].transform?.[1].type).toBe('pie');
+    expect(data[1].transform?.[2]).toHaveProperty('as', 'testName_arcTheta');
+    expect(data[1].transform?.[3]).toHaveProperty('as', 'testName_arcLength');
+    expect(data[1].transform?.[4]).toHaveProperty('as', 'testName_arcPercent');
   });
 
   test('should add the sum data used to detect the empty state', () => {
@@ -402,8 +403,8 @@ describe('addData', () => {
   test('should add a SERIES_ID transform when interactive, so legend hover-highlight can match this donut', () => {
     const interactiveOptions = { ...defaultDonutOptions, segmentLabels: [{ value: true }] };
     const data = addData(initializeSpec().data ?? [], interactiveOptions);
-    expect(data[1].transform).toHaveLength(5);
-    expect(data[1].transform?.[4]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
+    expect(data[1].transform).toHaveLength(6);
+    expect(data[1].transform?.[5]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
   });
 
   test('should add a SERIES_ID transform when paired with a highlighted legend', () => {
@@ -411,34 +412,36 @@ describe('addData', () => {
       ...defaultDonutOptions,
       legendHighlightSignals: ['legend0_hoveredSeries'],
     });
-    expect(data[1].transform).toHaveLength(5);
-    expect(data[1].transform?.[4]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
+    expect(data[1].transform).toHaveLength(6);
+    expect(data[1].transform?.[5]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
   });
 
   test('should not add a SERIES_ID transform when not interactive', () => {
     const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
-    expect(data[1].transform).toHaveLength(4);
+    expect(data[1].transform).toHaveLength(5);
+    expect(data[1].transform?.some((transform) => 'as' in transform && transform.as === 'rscSeriesId')).toBe(false);
   });
 
-  test('should add a descending sort transform ahead of the pie transform for a semicircle donut', () => {
-    const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, variant: 'semicircle' });
+  test.each(['circle', 'semicircle'] as const)('should sort a %s donut descending before computing slices', (variant) => {
+    const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, variant });
     expect(data[1].transform).toHaveLength(5);
     expect(data[1].transform?.[0]).toEqual({ type: 'collect', sort: { field: 'testMetric', order: 'descending' } });
     expect(data[1].transform?.[1].type).toBe('pie');
   });
 
-  test('should preserve source order for a semicircle donut when sortOrder is data', () => {
+  test.each(['circle', 'semicircle'] as const)('should preserve source order for a %s donut when sortOrder is data', (variant) => {
     const data = addData(initializeSpec().data ?? [], {
       ...defaultDonutOptions,
       sortOrder: 'data',
-      variant: 'semicircle',
+      variant,
     });
     expect(data[1].transform).toHaveLength(4);
     expect(data[1].transform?.[0].type).toBe('pie');
   });
 
-  test('should not add a sort transform for a circle donut', () => {
-    const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
+  test.each(['circle', 'semicircle'] as const)('should preserve source order for a boolean %s donut', (variant) => {
+    const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, isBoolean: true, variant });
+    expect(data[1].transform?.some(({ type }) => type === 'collect')).toBe(false);
     expect(data[1].transform?.[0].type).toBe('pie');
   });
 
@@ -452,7 +455,7 @@ describe('addData', () => {
 
   test('should sweep a circle donut the full circle', () => {
     const data = addData(initializeSpec().data ?? [], defaultDonutOptions);
-    const pieTransform = data[1].transform?.[0];
+    const pieTransform = data[1].transform?.[1];
     expect(pieTransform).toHaveProperty('startAngle', 0);
     expect(pieTransform).toHaveProperty('endAngle', { signal: '0 + 2 * PI' });
   });
