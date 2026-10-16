@@ -21,7 +21,7 @@ import {
   VariationFilter,
   VariationSizePreset,
   VariationViewMode,
-  useVariationAnimations,
+  useVariationAnimationTypes,
   useVariationDataset,
   useVariationRenderer,
   useVariationSize,
@@ -101,42 +101,52 @@ describe('VariationDashboard', () => {
     expect(screen.getByRole('slider', { name: 'Container width (px)' })).toHaveValue(String(size));
   });
 
-  test('toggles animations for every variation and preserves the setting across datasets', async () => {
+  test('toggles each animation type for every variation and preserves the setting across datasets', async () => {
     const AnimationProbe = (): ReactElement => {
-      const animations = useVariationAnimations();
-      return <output aria-label="Animation state">{String(animations)}</output>;
+      const animationTypes = useVariationAnimationTypes();
+      return <output aria-label="Animation state">{animationTypes?.join(',')}</output>;
     };
     render(
       <VariationDashboard
         variations={variations.map((variation) => ({ ...variation, render: () => <AnimationProbe /> }))}
         chartType="Test"
         datasets={datasets}
-        showAnimationControls
+        animationControls={['hover', 'drawIn']}
       />
     );
+    const expectState = (state: string) =>
+      screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe(state));
 
-    const toggle = screen.getByRole('switch', { name: 'Test animations' });
-    expect(toggle).toHaveProperty('checked', true);
-    screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe('true'));
+    const hover = screen.getByRole('switch', { name: 'Test hover opacity animation' });
+    const drawIn = screen.getByRole('switch', { name: 'Test draw-in animation' });
+    expect(hover).toHaveProperty('checked', true);
+    expect(drawIn).toHaveProperty('checked', true);
+    expectState('hover,drawIn');
 
-    await userEvent.click(toggle);
-    expect(toggle).toHaveProperty('checked', false);
-    screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe('false'));
+    await userEvent.click(hover);
+    expect(hover).toHaveProperty('checked', false);
+    expectState('drawIn');
 
     await userEvent.click(screen.getByRole('button', { name: /Dataset/ }));
     await userEvent.click(screen.getByRole('option', { name: 'Dense' }));
-    expect(toggle).toHaveProperty('checked', false);
-    screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe('false'));
+    expectState('drawIn');
 
-    await userEvent.click(toggle);
-    screen.getAllByLabelText('Animation state').forEach((output) => expect(output.textContent).toBe('true'));
+    await userEvent.click(drawIn);
+    expectState('');
+
+    await userEvent.click(hover);
+    expectState('hover');
   });
 
-  test('can initialize animations as disabled', () => {
-    render(
-      <VariationDashboard variations={variations} chartType="Test" initialAnimations={false} showAnimationControls />
+  test('omits animation switches and types without animation controls', () => {
+    const AnimationProbe = (): ReactElement => (
+      <output aria-label="Animation state">{String(useVariationAnimationTypes())}</output>
     );
-    expect(screen.getByRole('switch', { name: 'Test animations' })).toHaveProperty('checked', false);
+    render(
+      <VariationDashboard variations={[{ ...variations[0], render: () => <AnimationProbe /> }]} chartType="Test" />
+    );
+    expect(screen.queryByRole('switch')).toBeNull();
+    expect(screen.getByLabelText('Animation state').textContent).toBe('undefined');
   });
 
   test('preserves the selected effective size tier when the view mode changes', async () => {
