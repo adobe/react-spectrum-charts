@@ -17,12 +17,8 @@ import { stubS2BrowserApis } from '../../dashboardTestUtils.js';
 import { PropVariations } from './ScatterVariations.story.js';
 
 jest.mock('../../../Chart.js', () => ({
-  Chart: ({ animations, animationTypes }: ChartProps) => (
-    <div
-      data-testid="variation-chart"
-      data-animations={String(animations)}
-      data-animation-types={animationTypes?.join(',')}
-    />
+  Chart: ({ animationTypes }: ChartProps) => (
+    <div data-testid="variation-chart" data-animation-types={animationTypes?.join(',')} />
   ),
 }));
 
@@ -34,26 +30,24 @@ jest.mock('../../../hooks/useChartProps.js', () => ({
 beforeAll(stubS2BrowserApis);
 beforeEach(() => localStorage.clear());
 
-test('wires the dashboard animation toggle into all scatter charts while switching datasets', async () => {
+test('wires the dashboard hover switch into all scatter charts while switching datasets', async () => {
   render(<PropVariations />);
-  const toggle = screen.getByRole('switch', { name: 'Scatter animations' });
-  const expectAnimations = (enabled: boolean) => {
+  const hover = screen.getByRole('switch', { name: 'Scatter hover opacity animation' });
+  expect(screen.queryByRole('switch', { name: 'Scatter draw-in animation' })).toBeNull();
+  const expectAnimationTypes = (types: string) => {
     const charts = screen.getAllByTestId('variation-chart');
     expect(charts.length).toBeGreaterThan(1);
-    charts.forEach((chart) => {
-      expect(chart.getAttribute('data-animations')).toBe(String(enabled));
-      expect(chart.getAttribute('data-animation-types')).toBe('hover');
-    });
+    charts.forEach((chart) => expect(chart.getAttribute('data-animation-types')).toBe(types));
   };
-  expectAnimations(true);
+  expectAnimationTypes('hover');
 
-  await userEvent.click(toggle);
-  expectAnimations(false);
+  await userEvent.click(hover);
+  expectAnimationTypes('');
 
   await userEvent.click(screen.getByRole('button', { name: /Dataset/ }));
   await userEvent.click(screen.getAllByRole('option')[1]);
-  expectAnimations(false);
+  expectAnimationTypes('');
 
-  await userEvent.click(toggle);
-  expectAnimations(true);
+  await userEvent.click(hover);
+  expectAnimationTypes('hover');
 });

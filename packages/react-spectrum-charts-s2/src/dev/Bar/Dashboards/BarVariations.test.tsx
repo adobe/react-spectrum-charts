@@ -17,12 +17,8 @@ import { stubS2BrowserApis } from '../../dashboardTestUtils.js';
 import { PropVariations } from './BarVariations.story.js';
 
 jest.mock('../../../Chart.js', () => ({
-  Chart: ({ animations, animationTypes }: ChartProps) => (
-    <div
-      data-testid="variation-chart"
-      data-animations={String(animations)}
-      data-animation-types={animationTypes?.join(',')}
-    />
+  Chart: ({ animationTypes }: ChartProps) => (
+    <div data-testid="variation-chart" data-animation-types={animationTypes?.join(',')} />
   ),
 }));
 
@@ -34,26 +30,30 @@ jest.mock('../../../hooks/useChartProps.js', () => ({
 beforeAll(stubS2BrowserApis);
 beforeEach(() => localStorage.clear());
 
-test('wires the dashboard animation toggle into all bar charts while switching datasets', async () => {
+test('wires each dashboard animation switch into all bar charts while switching datasets', async () => {
   render(<PropVariations />);
-  const toggle = screen.getByRole('switch', { name: 'Bar animations' });
-  const expectAnimations = (enabled: boolean) => {
+  const hover = screen.getByRole('switch', { name: 'Bar hover opacity animation' });
+  const drawIn = screen.getByRole('switch', { name: 'Bar draw-in animation' });
+  const expectAnimationTypes = (types: string) => {
     const charts = screen.getAllByTestId('variation-chart');
     expect(charts.length).toBeGreaterThan(1);
-    charts.forEach((chart) => {
-      expect(chart.getAttribute('data-animations')).toBe(String(enabled));
-      expect(chart.getAttribute('data-animation-types')).toBe('hover');
-    });
+    charts.forEach((chart) => expect(chart.getAttribute('data-animation-types')).toBe(types));
   };
-  expectAnimations(true);
+  expectAnimationTypes('hover,drawIn');
 
-  await userEvent.click(toggle);
-  expectAnimations(false);
+  await userEvent.click(drawIn);
+  expectAnimationTypes('hover');
+
+  await userEvent.click(hover);
+  expectAnimationTypes('');
 
   await userEvent.click(screen.getByRole('button', { name: /Dataset/ }));
   await userEvent.click(screen.getAllByRole('option')[1]);
-  expectAnimations(false);
+  expectAnimationTypes('');
 
-  await userEvent.click(toggle);
-  expectAnimations(true);
+  await userEvent.click(drawIn);
+  expectAnimationTypes('drawIn');
+
+  await userEvent.click(hover);
+  expectAnimationTypes('hover,drawIn');
 });

@@ -11,6 +11,8 @@
  */
 import { ReactElement, ReactNode, createContext, useContext, useMemo } from 'react';
 
+import { AnimationType } from '@spectrum-charts/core-s2/constants';
+
 import { VariationDashboardHeader } from './VariationDashboardHeader.js';
 import type { DashboardDefinition } from './dashboardCoverage.js';
 import { usePersistedState } from './usePersistedState.js';
@@ -22,7 +24,7 @@ export type VariationRenderer = 'svg' | 'canvas';
 
 const VariationDisplayContext = createContext<{
   viewMode?: string;
-  animations?: boolean;
+  animationTypes?: AnimationType[];
   renderer?: VariationRenderer;
 }>({});
 
@@ -79,7 +81,6 @@ interface VariationDashboardProps {
   filters?: VariationFilter[];
   getSizeDescription?: (size: number, viewMode?: string) => string;
   initialDataset?: string;
-  initialAnimations?: boolean;
   initialFilter?: string;
   initialSize?: number;
   initialViewMode?: string;
@@ -87,7 +88,8 @@ interface VariationDashboardProps {
   sizeAxis?: 'width' | 'height';
   sizePresetGroups?: VariationSizePresetGroup[];
   sizePresets?: VariationSizePreset[];
-  showAnimationControls?: boolean;
+  /** Animation types the chart supports; each gets a header switch. Hidden when omitted. */
+  animationControls?: AnimationType[];
   viewModes?: VariationViewMode[];
 }
 
@@ -129,7 +131,8 @@ const getPropVariationIds = (
 export const useVariationSize = (): number => useContext(VariationSizeContext);
 export const useVariationDataset = (): string | undefined => useContext(VariationDatasetContext);
 export const useVariationViewMode = (): string | undefined => useContext(VariationDisplayContext).viewMode;
-export const useVariationAnimations = (): boolean | undefined => useContext(VariationDisplayContext).animations;
+export const useVariationAnimationTypes = (): AnimationType[] | undefined =>
+  useContext(VariationDisplayContext).animationTypes;
 export const useVariationRenderer = (): VariationRenderer | undefined => useContext(VariationDisplayContext).renderer;
 
 export const VariationDashboard = ({
@@ -139,7 +142,6 @@ export const VariationDashboard = ({
   datasets = [],
   filters = [],
   getSizeDescription,
-  initialAnimations = true,
   initialDataset,
   initialFilter,
   initialSize = DEFAULT_SIZE,
@@ -148,7 +150,7 @@ export const VariationDashboard = ({
   sizeAxis,
   sizePresetGroups,
   sizePresets = defaultSizePresets,
-  showAnimationControls = false,
+  animationControls,
   viewModes = [],
 }: VariationDashboardProps): ReactElement => {
   const storageKey = `rsc-s2-variation-dashboard:${chartType}`;
@@ -161,7 +163,11 @@ export const VariationDashboard = ({
     initialDataset ?? datasets[0]?.value,
     isOneOf(datasets.map(({ value }) => value))
   );
-  const [animations, setAnimations] = usePersistedState(`${storageKey}:animations`, initialAnimations);
+  const [animationTypes, setAnimationTypes] = usePersistedState<AnimationType[]>(
+    `${storageKey}:animationTypes`,
+    animationControls ?? [],
+    (value) => Array.isArray(value) && value.every(isOneOf(animationControls ?? []))
+  );
   const [renderer, setRenderer] = usePersistedState<VariationRenderer>(
     `${storageKey}:renderer`,
     'svg',
@@ -179,8 +185,8 @@ export const VariationDashboard = ({
     isOneOf(viewModes.map(({ value }) => value))
   );
   const displayContextValue = useMemo(
-    () => ({ viewMode, animations: showAnimationControls ? animations : undefined, renderer }),
-    [viewMode, animations, showAnimationControls, renderer]
+    () => ({ viewMode, animationTypes: animationControls ? animationTypes : undefined, renderer }),
+    [viewMode, animationTypes, animationControls, renderer]
   );
   const coveredPropKeys = Object.entries(coverage ?? {}).flatMap(([component, props]) =>
     Object.keys(props).map((prop) => `${component}.${prop}`)
@@ -244,8 +250,9 @@ export const VariationDashboard = ({
           coverage={coverage}
           selectedProps={selectedProps}
           onSelectedPropsChange={(props) => setSelectedPropList([...props])}
-          animations={showAnimationControls ? animations : undefined}
-          onAnimationsChange={setAnimations}
+          animationControls={animationControls}
+          animationTypes={animationTypes}
+          onAnimationTypesChange={setAnimationTypes}
           renderer={renderer}
           onRendererChange={setRenderer}
         />
