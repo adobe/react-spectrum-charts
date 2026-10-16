@@ -38,6 +38,7 @@ import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { AxisSpecOptions, ReferenceLineSpecOptions } from '../types/index.js';
 import {
+  getBaseReferenceLineRuleMark,
   getPositionEncoding,
   getReferenceLineEndCapMark,
   getReferenceLineMarks,
@@ -45,6 +46,7 @@ import {
   getReferenceLineStartCapMark,
   getReferenceLineTextMark,
   getReferenceLines,
+  isBaseAxis,
   scaleTypeSupportsReferenceLines,
 } from './axisReferenceLineUtils.js';
 
@@ -146,13 +148,44 @@ describe('getPositionEncoding()', () => {
   });
 });
 
-describe('getReferenceLineMarks() — S2 vertical-only', () => {
-  test('returns empty marks for horizontal axes (top/bottom)', () => {
-    const bottom = getReferenceLineMarks({ ...defaultAxisOptions, position: 'bottom' }, 'xLinear');
-    expect(bottom).toHaveLength(0);
+describe('isBaseAxis()', () => {
+  test('top and bottom axes are base axes', () => {
+    expect(isBaseAxis({ ...defaultAxisOptions, position: 'bottom', scaleType: 'linear' })).toBe(true);
+    expect(isBaseAxis({ ...defaultAxisOptions, position: 'top', scaleType: 'time' })).toBe(true);
+  });
 
-    const top = getReferenceLineMarks({ ...defaultAxisOptions, position: 'top' }, 'xLinear');
-    expect(top).toHaveLength(0);
+  test('left and right axes are base axes only for band, point and time scales', () => {
+    expect(isBaseAxis({ ...defaultAxisOptions, position: 'left', scaleType: 'linear' })).toBe(false);
+    expect(isBaseAxis({ ...defaultAxisOptions, position: 'right', scaleType: 'linear' })).toBe(false);
+    expect(isBaseAxis({ ...defaultAxisOptions, position: 'left', scaleType: 'band' })).toBe(true);
+    expect(isBaseAxis({ ...defaultAxisOptions, position: 'left', scaleType: 'point' })).toBe(true);
+    expect(isBaseAxis({ ...defaultAxisOptions, position: 'right', scaleType: 'time' })).toBe(true);
+  });
+});
+
+describe('getReferenceLineMarks()', () => {
+  test('returns a full-height rule without caps on top and bottom axes', () => {
+    for (const position of ['bottom', 'top'] as const) {
+      const marks = getReferenceLineMarks({ ...defaultAxisOptions, position, scaleType: 'time' }, 'xTime');
+      expect(marks).toHaveLength(1);
+      expect(marks[0].type).toBe('rule');
+      expect(marks[0].encode?.update).toStrictEqual({
+        x: { scale: 'xTime', value: 10 },
+        y: { value: 0 },
+        y2: { signal: 'height' },
+      });
+    }
+  });
+
+  test('returns a full-width rule without caps on a left band axis', () => {
+    const marks = getReferenceLineMarks(
+      { ...defaultAxisOptions, position: 'left', scaleType: 'band', referenceLines: [{ value: 'a', label: 'A' }] },
+      'yBand'
+    );
+    expect(marks.map((m) => m.type)).toStrictEqual(['rule', 'text', 'text']);
+    expect(marks.some((m) => m.name?.includes('Cap'))).toBe(false);
+    expect(marks[0].encode?.update).toHaveProperty('x', { value: 0 });
+    expect(marks[0].encode?.update).toHaveProperty('x2', { signal: 'width' });
   });
 
   test('returns marks for vertical axes (left/right)', () => {
@@ -405,12 +438,36 @@ describe('getReferenceLineTextMark() — S2 direct label pattern', () => {
       defaultYPositionEncoding
     );
     for (const mark of marks) {
-      expect(mark.encode?.enter?.x).toStrictEqual({ signal: 'width' });
-      expect(mark.encode?.enter?.y).toStrictEqual(defaultYPositionEncoding);
-      expect(mark.encode?.enter?.dy).toStrictEqual({ value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE });
+      expect(mark.encode?.update?.x).toStrictEqual({ signal: 'width' });
+      expect(mark.encode?.update?.y).toStrictEqual(defaultYPositionEncoding);
+      expect(mark.encode?.update?.dy).toStrictEqual({ value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE });
       expect(mark.encode?.enter?.baseline).toStrictEqual({ value: 'top' });
       expect(mark.encode?.enter?.align).toStrictEqual({ value: 'right' });
     }
+  });
+
+  test('vertical label sits at the top of the line, to its right, flipping left and hiding when it does not fit', () => {
+    const position = { scale: 'xTime', value: 10 };
+    const marks = getReferenceLineTextMark({ ...defaultReferenceLineOptions, label: 'Launch' }, position, true);
+    const gap = REFERENCE_LINE_LABEL_OFFSET_FROM_LINE;
+    const fitsRight = `scale('xTime', 10) + ${gap} + getLabelWidth("Launch", 'bold', ${CHART_SIZE_FONT_SIZE}) <= width`;
+    const fitsLeft = `scale('xTime', 10) - ${gap} - getLabelWidth("Launch", 'bold', ${CHART_SIZE_FONT_SIZE}) >= 0`;
+    for (const mark of marks) {
+      expect(mark.encode?.update?.x).toStrictEqual(position);
+      expect(mark.encode?.update?.y).toStrictEqual({ value: 0 });
+      expect(mark.encode?.update?.dx).toStrictEqual({ signal: `${fitsRight} ? ${gap} : -${gap}` });
+      expect(mark.encode?.update?.align).toStrictEqual({ signal: `${fitsRight} ? 'left' : 'right'` });
+      expect(mark.encode?.update?.opacity).toStrictEqual({ signal: `${fitsRight} || ${fitsLeft} ? 1 : 0` });
+      expect(mark.encode?.enter?.baseline).toStrictEqual({ value: 'top' });
+      expect(mark.encode?.enter).not.toHaveProperty('align');
+    }
+  });
+
+  test('vertical label on a band axis uses the position signal', () => {
+    const marks = getReferenceLineTextMark({ ...defaultReferenceLineOptions, label: 'Q2' }, { signal: 'pos' }, true);
+    expect(marks[0].encode?.update?.align).toStrictEqual({
+      signal: `pos + ${REFERENCE_LINE_LABEL_OFFSET_FROM_LINE} + getLabelWidth("Q2", 'bold', ${CHART_SIZE_FONT_SIZE}) <= width ? 'left' : 'right'`,
+    });
   });
 });
 
@@ -585,5 +642,17 @@ describe('secondary prop', () => {
     expect(marks.some((m) => m.name?.includes('_label'))).toBe(true);
     expect(marks.some((m) => m.name?.includes('_startCap'))).toBe(false);
     expect(marks.some((m) => m.name?.includes('_endCap'))).toBe(false);
+  });
+});
+
+describe('getBaseReferenceLineRuleMark()', () => {
+  test('secondary lines use the secondary stroke', () => {
+    const mark = getBaseReferenceLineRuleMark(
+      defaultAxisOptions,
+      { ...defaultReferenceLineOptions, secondary: true },
+      { scale: 'xTime', value: 10 },
+      true
+    );
+    expect(mark.encode?.enter).toHaveProperty('strokeWidth', { value: REFERENCE_LINE_SECONDARY_STROKE_WIDTH });
   });
 });
