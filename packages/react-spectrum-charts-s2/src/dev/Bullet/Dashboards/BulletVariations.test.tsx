@@ -20,7 +20,7 @@ import { PropVariations } from './BulletVariations.story.js';
 
 jest.mock('../../../Chart.js', () => {
   const { Children, isValidElement } = jest.requireActual('react');
-  const { Bullet } = jest.requireActual('../../../pre-alpha/index.js');
+  const { Bullet } = jest.requireActual('../../../lab/index.js');
   return {
     Chart: ({ animations, children, data }: ChartProps) => {
       const bullet = Children.toArray(children).find(
