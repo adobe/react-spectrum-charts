@@ -117,7 +117,8 @@ annotations start a 150ms linear fade as soon as their own bar or segment finish
 </Chart>
 ```
 
-Draw-in is off by default. `animations={false}` disables it even when `'drawIn'` is listed. When a chart
+Draw-in is off by default. `animations={false}` disables it even when `'drawIn'` is listed. It plays once per
+chart mount; re-renders and data updates do not replay it. When a chart
 draws in more than one mark type, every mark uses the longest duration so they finish together. When the
 user prefers reduced motion, draw-in is skipped and hover fades still run.
 
