@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_spectrum_charts_docs=self.webpackChunk_spectrum_charts_docs||[]).push([[647],{3216:(s,e,r)=>{r.r(e),r.d(e,{default:()=>n});r(6540);var c=r(4357),t=r(8669),u=r(194),a=r(2831),d=r(9457),h=r(4848);function n(s){return(0,h.jsx)(t.e3,{className:(0,c.A)(u.G.wrapper.docsPages),children:(0,h.jsx)(d.A,{children:(0,a.v)(s.route.routes)})})}}}]);
