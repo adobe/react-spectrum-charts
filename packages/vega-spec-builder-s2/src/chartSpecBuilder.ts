@@ -245,6 +245,7 @@ export function buildSpec({
     setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
   }
 
+  // Keep Line axes based on all data so legend toggles only hide or show lines.
   if (marks.every(({ markType }) => markType === 'line')) {
     for (const scale of spec.scales ?? []) {
       if (scale.domain && 'data' in scale.domain && scale.domain.data === FILTERED_TABLE) {
