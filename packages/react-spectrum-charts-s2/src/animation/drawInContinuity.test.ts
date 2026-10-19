@@ -71,25 +71,25 @@ describe('restoreDrawInStart()', () => {
 describe('getDrawInStart()', () => {
   test('returns the latched start', async () => {
     const spec = drawInSpec();
-    expect(getDrawInStart(await viewWithStart(spec, 1000), spec, 900)).toBe(1000);
+    expect(getDrawInStart(await viewWithStart(spec, 1000), spec)).toBe(1000);
   });
 
-  test('falls back to the embed time before the start latches', async () => {
+  test('returns undefined before the start latches', async () => {
     const spec = drawInSpec();
-    expect(getDrawInStart(await viewWithStart(spec, 0), spec, 900)).toBe(900);
+    expect(getDrawInStart(await viewWithStart(spec, 0), spec)).toBeUndefined();
   });
 
-  test('falls back to the embed time when the embed never resolved', () => {
-    expect(getDrawInStart(undefined, drawInSpec(), 900)).toBe(900);
+  test('returns undefined when the embed never resolved', () => {
+    expect(getDrawInStart(undefined, drawInSpec())).toBeUndefined();
   });
 
   test('returns undefined when the spec has no data to draw in', async () => {
     const spec = drawInSpec([]);
-    expect(getDrawInStart(await viewWithStart(spec, 1000), spec, 900)).toBeUndefined();
+    expect(getDrawInStart(await viewWithStart(spec, 1000), spec)).toBeUndefined();
   });
 
   test('returns undefined when the spec has no draw-in', () => {
     const spec: Spec = { data: [{ name: TABLE, values: [{ x: 1 }] }], signals: [{ name: ANIMATION_TIMER, value: 1 }] };
-    expect(getDrawInStart(undefined, spec, 900)).toBeUndefined();
+    expect(getDrawInStart(undefined, spec)).toBeUndefined();
   });
 });

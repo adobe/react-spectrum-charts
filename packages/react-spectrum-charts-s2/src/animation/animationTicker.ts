@@ -16,6 +16,9 @@ import {
   ANIMATION_FRAME_BUDGET_MS,
   ANIMATION_MIN_FRAME_INTERVAL,
   ANIMATION_TIMER,
+  DRAW_IN_MAX_HOLD_MS,
+  DRAW_IN_STEADY_FRAMES,
+  DRAW_IN_STEADY_FRAME_MS,
 } from '@spectrum-charts/core-s2/constants';
 
 // Framework-agnostic, page-wide animation scheduler: one frame loop drives every animating chart
@@ -31,6 +34,10 @@ interface TickerEntry {
   visible: boolean;
   /** A `runAsync` is in flight; prevents overlapping runs on the same view */
   running: boolean;
+  /** clock() deadline while held until frames are steady; undefined once ticking */
+  holdUntil?: number;
+  /** Consecutive on-time frames seen while held */
+  steadyFrames: number;
   onActiveChange: (name: string, active: boolean) => void;
 }
 
@@ -42,6 +49,8 @@ let frameHandle: number | undefined;
 // true while a frame's async runs are pending; the next frame is requested after they finish, so frames never overlap
 let frameRunning = false;
 let lastFrameTime = Number.NEGATIVE_INFINITY;
+// rAF time of the previous frame callback, to tell on-time frames from late ones
+let previousFrameTime = Number.NEGATIVE_INFINITY;
 let observer: IntersectionObserver | undefined;
 
 // setTimeout fallback for environments without rAF (SSR, some test runners)
@@ -111,7 +120,9 @@ const tick = async (entry: TickerEntry, now: number): Promise<void> => {
  */
 const runFrame = async (now: number, frameStart: number): Promise<void> => {
   // snapshot, because the loop reorders entries
-  const due = [...entries.values()].filter((entry) => entry.awake && entry.visible && !entry.running);
+  const due = [...entries.values()].filter(
+    (entry) => entry.awake && entry.visible && !entry.running && entry.holdUntil === undefined
+  );
   // sequential so the budget can be measured; the check is after the tick, so at least one chart always ticks
   for (const entry of due) {
     await tick(entry, now);
@@ -124,8 +135,23 @@ const runFrame = async (now: number, frameStart: number): Promise<void> => {
   }
 };
 
+/**
+ * Releases held charts once enough frames in a row arrive on time, or once their hold expires.
+ * @param onTime - whether this frame arrived on time
+ */
+const releaseHeld = (onTime: boolean): void => {
+  const now = clock();
+  for (const entry of entries.values()) {
+    if (entry.holdUntil === undefined) continue;
+    entry.steadyFrames = onTime ? entry.steadyFrames + 1 : 0;
+    if (entry.steadyFrames >= DRAW_IN_STEADY_FRAMES || now >= entry.holdUntil) entry.holdUntil = undefined;
+  }
+};
+
 function frame(time: number): void {
   frameHandle = undefined;
+  releaseHeld(time - previousFrameTime <= DRAW_IN_STEADY_FRAME_MS);
+  previousFrameTime = time;
   if (time - lastFrameTime >= ANIMATION_MIN_FRAME_INTERVAL) {
     lastFrameTime = time;
     frameRunning = true;
@@ -177,6 +203,19 @@ function detach(entry: TickerEntry): void {
 }
 
 /**
+ * Gets the latest time a fresh draw-in waits for on-time frames before it starts.
+ * @returns deadline for `attachAnimationTicker`
+ */
+export const getDrawInHoldDeadline = (): number => clock() + DRAW_IN_MAX_HOLD_MS;
+
+/**
+ * Checks whether a deadline from `getDrawInHoldDeadline` has passed.
+ * @param deadline - hold deadline
+ * @returns boolean
+ */
+export const isDrawInHoldOver = (deadline: number): boolean => clock() >= deadline;
+
+/**
  * Checks whether a spec contains the shared animation timer that the ticker drives.
  * @param spec - vega spec
  * @returns boolean
@@ -198,9 +237,10 @@ export const removeAnimationTimerEvents = (spec: Spec): void => {
  * Registers a view with the shared animation ticker; its spec should have had `removeAnimationTimerEvents` applied.
  * @param view - vega view whose spec contains the animation timer and animationActive signals
  * @param container - element the view renders into, used to pause ticking while off-screen
+ * @param holdUntil - deadline from `getDrawInHoldDeadline`; until then the first tick waits for on-time frames, so a fresh draw-in doesn't start during mount work
  * @returns function that detaches the view from the ticker
  */
-export const attachAnimationTicker = (view: View, container: Element): (() => void) => {
+export const attachAnimationTicker = (view: View, container: Element, holdUntil?: number): (() => void) => {
   // re-attaching the same view replaces its entry
   const existing = entries.get(view);
   if (existing) detach(existing);
@@ -212,6 +252,8 @@ export const attachAnimationTicker = (view: View, container: Element): (() => vo
     // assume visible until the observer's first callback so the first frames aren't skipped
     visible: true,
     running: false,
+    holdUntil: holdUntil !== undefined && holdUntil > clock() ? holdUntil : undefined,
+    steadyFrames: 0,
     // only wakes; sleeping waits for a tick to see animationActive false so the final grace tick still runs
     onActiveChange: (_name, active) => {
       if (active) wake(entry);

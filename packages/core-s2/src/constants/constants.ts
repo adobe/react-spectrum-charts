@@ -220,6 +220,8 @@ export const HOVER_NEUTRAL_TARGET = 0.5;
 export type CubicBezierEasing = [number, number, number, number];
 /** Spectrum 2 ease-in-out curve. */
 export const S2_EASE_IN_OUT: CubicBezierEasing = [0.45, 0, 0.4, 1];
+/** Spectrum 2 ease-out curve. */
+export const S2_EASE_OUT: CubicBezierEasing = [0, 0, 0.4, 1];
 
 // draw-in animation constants
 /** Line draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
@@ -228,10 +230,18 @@ export const DRAW_IN_SWEEP_DURATION_MS = 850;
 export const DRAW_IN_GROW_DURATION_MS = 700;
 /** Donut draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
 export const DRAW_IN_DONUT_DURATION_MS = 750;
+/** Consecutive on-time frames the ticker waits for before a fresh draw-in starts, so it doesn't start during mount work. */
+export const DRAW_IN_STEADY_FRAMES = 3;
+/** Longest frame (ms) that counts as on time for DRAW_IN_STEADY_FRAMES. */
+export const DRAW_IN_STEADY_FRAME_MS = 20;
+/** Longest a fresh draw-in waits (ms) for steady frames before starting anyway. */
+export const DRAW_IN_MAX_HOLD_MS = 300;
+/** Duration (ms) of the fade-in of a chart's first paint when it draws in. */
+export const DRAW_IN_PAINT_FADE_MS = 150;
 /** Pixels the line draw-in clip extends past the plot so strokes and points at the edges aren't cut off. */
 export const DRAW_IN_CLIP_OVERFLOW = 1000;
 /** Duration of the linear fade-in for labels after their own mark finishes drawing. */
-export const DRAW_IN_LABEL_FADE_DURATION_MS = 150;
+export const DRAW_IN_LABEL_FADE_DURATION_MS = 50;
 
 // donut constants
 /** Base inset (px) around a donut without segment labels. */

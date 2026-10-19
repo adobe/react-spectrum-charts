@@ -19,6 +19,8 @@ import {
   DRAW_IN_ANIM_T,
   DRAW_IN_DONUT_DURATION_MS,
   DRAW_IN_GROW_DURATION_MS,
+  DRAW_IN_MAX_HOLD_MS,
+  DRAW_IN_PAINT_FADE_MS,
   DRAW_IN_START,
   DRAW_IN_SWEEP_DURATION_MS,
 } from '@spectrum-charts/core-s2/constants';
@@ -232,28 +234,29 @@ describe.each(['bar', 'line', 'donut'] satisfies MarkType[])('%s draw-in continu
 });
 
 describe('draw-in continuity edge cases', () => {
-  test('rebuilds before the first tick keep the first embed time', async () => {
+  test('rebuilds before the first tick draw in fresh', async () => {
     const mountedAt = Date.now();
     const { rerender } = render(chart('bar'));
     for (let i = 0; i < 5; i++) rerender(withProvider(chart('bar', { title: `Fast ${i}` })));
+    const rebuiltAt = Date.now();
     await waitForView();
 
     const start = await waitForStart();
 
-    expect(start).toBeGreaterThanOrEqual(mountedAt);
-    expect(start).toBeLessThan(mountedAt + 50);
+    expect(start).toBeGreaterThanOrEqual(rebuiltAt);
+    expect(start).toBeLessThan(mountedAt + DRAW_IN_MAX_HOLD_MS + 150);
   });
 
-  test('streaming updates faster than a frame still draw in from mount', async () => {
+  test('rebuilds that never let a view tick still start draw-in once the hold is over', async () => {
     const mountedAt = Date.now();
     const { rerender } = render(chart('bar'));
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; Date.now() < mountedAt + DRAW_IN_MAX_HOLD_MS * 2; i++) {
       rerender(withProvider(chart('bar', { title: `Stream ${i}` })));
       await sleep(5);
     }
     await waitForView();
 
-    expect(await waitForStart()).toBeLessThan(mountedAt + 50);
+    expect(await waitForStart()).toBeLessThan(mountedAt + DRAW_IN_MAX_HOLD_MS + 150);
   });
 
   test('StrictMode double effects do not delay or replay draw-in', async () => {
@@ -331,5 +334,52 @@ describe('draw-in continuity edge cases', () => {
     const view = await rebuild(rerender, combo('Rebuilt'));
 
     expect(startOf(view)).toBe(start);
+  });
+});
+
+describe('first paint fade', () => {
+  const animate = jest.fn();
+
+  beforeEach(() => {
+    animate.mockClear();
+    Element.prototype.animate = animate;
+  });
+
+  afterEach(() => {
+    delete (Element.prototype as Partial<Element>).animate;
+  });
+
+  test('fades in a fresh draw-in once and leaves no inline opacity', async () => {
+    const { rerender, container } = await mount(chart('bar'));
+    expect(animate).toHaveBeenCalledTimes(1);
+    expect(animate).toHaveBeenCalledWith([{ opacity: 0 }, { opacity: 1 }], {
+      duration: DRAW_IN_PAINT_FADE_MS,
+      easing: 'cubic-bezier(0, 0, 0.4, 1)',
+    });
+    const rsc = container.querySelector<HTMLElement>('.rsc');
+    expect(animate.mock.contexts[0]).toBe(rsc);
+    expect(rsc?.style.opacity).toBe('');
+
+    await rebuild(rerender, chart('bar', { title: 'Rebuilt' }));
+    await rebuild(rerender, chart('bar', { title: 'Rebuilt again' }));
+    expect(animate).toHaveBeenCalledTimes(1);
+  });
+
+  test.each<[string, Partial<ChartProps>]>([
+    ['animations are off', { animations: false }],
+    ['draw-in is off', { animationTypes: ['hover'] }],
+    ['there is no data', { data: [], loading: false }],
+  ])('does not fade when %s', async (_, props) => {
+    const { container } = render(chart('bar', props));
+    await waitForView();
+    expect(animate).not.toHaveBeenCalled();
+    expect(container.querySelector<HTMLElement>('.rsc')?.style.opacity).toBe('');
+  });
+
+  test('fades again when data arrives after being emptied', async () => {
+    const { rerender } = await mount(chart('bar', { loading: false }));
+    await rebuild(rerender, chart('bar', { loading: false, data: [] }));
+    await rebuild(rerender, chart('bar', { loading: false }));
+    expect(animate).toHaveBeenCalledTimes(2);
   });
 });

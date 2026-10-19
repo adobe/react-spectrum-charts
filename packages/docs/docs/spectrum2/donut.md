@@ -58,9 +58,9 @@ replaces the default content.
 
 Add `'drawIn'` to the chart's `animationTypes` to sweep the segments clockwise over 750ms
 with the Spectrum 2 ease-in-out curve. Full-circle donuts and pies start at the top;
-semicircle donuts start at the left. Direct and advanced labels start a 150ms linear fade
+semicircle donuts start at the left. Direct and advanced labels start a 50ms linear fade
 as soon as their own slice finishes drawing. All text rows and swatches fade together;
-the final label finishes about 150ms after the donut.
+the final label finishes about 50ms after the donut.
 Hover dimming and existing small-segment and collision rules still apply. The center
 summary stays visible throughout.
 
@@ -76,6 +76,8 @@ Draw-in is off by default. `animations={false}` disables it even when `'drawIn'`
 listed. It plays once per chart mount; re-renders and data updates do not replay it.
 Empty-state rings remain static.
 When the user prefers reduced motion, draw-in is skipped and hover fades still run.
+The chart fades in over 150ms on first paint, and draw-in waits until the page is rendering frames on time
+(at most 300ms) so it doesn't start while other content is still loading.
 
 ---
 

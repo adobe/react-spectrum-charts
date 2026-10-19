@@ -48,14 +48,13 @@ export const hasTableRows = (spec: Spec): boolean => {
 };
 
 /**
- * Gets the draw-in start to carry into the next view: the latched start, else when the embed began.
+ * Gets the draw-in start to carry into the next view; undefined until the view latches one, so an unstarted draw-in plays fresh.
  * @param view - vega view, if the embed resolved
  * @param spec - the spec the view was built from
- * @param embeddedAt - wall-clock time the embed began
- * @returns start time, or undefined when the spec draws nothing in
+ * @returns start time, or undefined when nothing has started drawing in
  */
-export const getDrawInStart = (view: View | undefined, spec: Spec, embeddedAt: number): number | undefined => {
+export const getDrawInStart = (view: View | undefined, spec: Spec): number | undefined => {
   if (!hasDrawIn(spec) || !hasTableRows(spec)) return undefined;
   const latched = Number(view?.signal(DRAW_IN_START));
-  return latched > 0 ? latched : embeddedAt;
+  return latched > 0 ? latched : undefined;
 };

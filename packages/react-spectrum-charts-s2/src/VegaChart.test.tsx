@@ -189,7 +189,7 @@ describe('VegaChart init render cycle', () => {
 			expect((mockEmbed.mock.calls[0][1] as Spec).signals).toEqual([{ name: ANIMATION_TIMER, value: 0 }]);
 			// the original spec is not mutated
 			expect(animatedSpec.signals?.[0]).toHaveProperty('on');
-			expect(mockAttachAnimationTicker).toHaveBeenCalledWith(expect.anything(), container.querySelector('.rsc'));
+			expect(mockAttachAnimationTicker).toHaveBeenCalledWith(expect.anything(), container.querySelector('.rsc'), undefined);
 		});
 
 		test('detaches the ticker on unmount', async () => {
