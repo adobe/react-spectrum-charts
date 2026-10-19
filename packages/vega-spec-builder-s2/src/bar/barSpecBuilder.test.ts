@@ -419,22 +419,11 @@ describe('barSpecBuilder', () => {
     });
 
     describe('isHoverAnimate gate', () => {
-      test('an interactive bar does not animate by default -- animations must be explicitly opted into', () => {
+      test('an interactive bar animates by default, registers usermeta.animatedMarks, and creates hover-animation data', () => {
         const spec = addBar(startingSpec, {
           idKey: MARK_ID,
           markType: 'bar',
           chartInspects: [{}],
-        });
-        expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
-        expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
-      });
-
-      test('an interactive bar with animations explicitly true resolves isHoverAnimate true, registers usermeta.animatedMarks, and creates hover-animation data', () => {
-        const spec = addBar(startingSpec, {
-          idKey: MARK_ID,
-          markType: 'bar',
-          chartInspects: [{}],
-          animations: true,
         });
         expect(spec.usermeta?.animatedMarks).toStrictEqual(['bar0']);
         expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(true);
@@ -450,12 +439,11 @@ describe('barSpecBuilder', () => {
         expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
       });
 
-      test('an animationTypes list without "hover" disables animation even for an interactive, animations:true bar', () => {
+      test('an animationTypes list without "hover" disables animation even for an interactive bar', () => {
         const spec = addBar(startingSpec, {
           idKey: MARK_ID,
           markType: 'bar',
           chartInspects: [{}],
-          animations: true,
           animationTypes: [],
         });
         expect(spec.usermeta?.animatedMarks ?? []).toStrictEqual([]);
@@ -473,12 +461,11 @@ describe('barSpecBuilder', () => {
         expect(spec.data?.some((d) => d.name === 'bar0_hoverTargetData')).toBe(false);
       });
 
-      test('a chart-level highlightedSeries alone (no other bar interactivity) resolves isHoverAnimate true when animations is opted into', () => {
+      test('a chart-level highlightedSeries alone (no other bar interactivity) resolves isHoverAnimate true', () => {
         const spec = addBar(startingSpec, {
           idKey: MARK_ID,
           markType: 'bar',
           highlightedSeries: 'seriesA',
-          animations: true,
         });
         expect(spec.usermeta?.animatedMarks).toStrictEqual(['bar0']);
       });

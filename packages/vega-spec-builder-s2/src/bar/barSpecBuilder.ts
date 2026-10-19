@@ -233,16 +233,18 @@ export const addBar = produce<
 );
 
 /**
- * Whether the bar participates in the hover-animation system. Unlike line's `usesHoverAnimation`
- * (opt-out via `animations === false`), bar requires an explicit `animations={true}` -- bar's
- * animated path is new and not yet the default experience, so it must be opted into per chart.
+ * Whether the bar participates in the hover-animation system.
+ * @param animations
+ * @param animationTypes
+ * @param options
+ * @returns boolean
  */
 const usesBarHoverAnimation = (
   animations: boolean | undefined,
   animationTypes: AnimationType[] | undefined,
   options: BarSpecOptions
 ): boolean =>
-  animations === true &&
+  animations !== false &&
   (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
   (isInteractive(options) ||
     options.highlightedItem !== undefined ||
