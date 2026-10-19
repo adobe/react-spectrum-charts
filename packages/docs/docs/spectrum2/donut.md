@@ -73,8 +73,8 @@ summary stays visible throughout.
 ```
 
 Draw-in is off by default. `animations={false}` disables it even when `'drawIn'` is
-listed. It runs when the Vega view is created, including after data or spec changes;
-resizing an existing view does not replay it. Empty-state rings remain static.
+listed. It plays once per chart mount; re-renders and data updates do not replay it.
+Empty-state rings remain static.
 When the user prefers reduced motion, draw-in is skipped and hover fades still run.
 
 ---
