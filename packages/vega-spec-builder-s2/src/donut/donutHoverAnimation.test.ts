@@ -100,7 +100,7 @@ describe('donut hover animations', () => {
   });
 
   test('does not animate a noninteractive donut', () => {
-    const spec = buildSpec({ data, marks: [{ markType: 'donut', color: 'series' }] });
+    const spec = buildSpec({ data, animationTypes: ['hover'], marks: [{ markType: 'donut', color: 'series' }] });
     expect(spec.usermeta?.animatedMarks).toBeUndefined();
     expect(spec.signals?.some(({ name }) => name === ANIMATION_TIMER)).toBe(false);
   });

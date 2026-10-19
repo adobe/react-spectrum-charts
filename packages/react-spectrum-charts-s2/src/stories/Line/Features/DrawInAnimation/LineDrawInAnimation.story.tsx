@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics */
 import { ComponentProps, ReactElement } from 'react';
 
@@ -22,24 +23,20 @@ import { ChartProps } from '../../../../types/index.js';
 import { paidSearchVisitsData, visitsByChannelData } from '../../lineData.js';
 import { visitsProps } from '../lineStoryTemplates.js';
 
-type DrawInArgs = ComponentProps<typeof Line> &
-  Pick<ChartProps, 'animations' | 'animationTypes'> & { data: ChartProps['data'] };
+type DrawInArgs = ComponentProps<typeof Line> & { data: ChartProps['data'] };
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Draw In Animation',
   component: Line,
   argTypes: {
-    animations: { control: 'boolean' },
-    animationTypes: { control: { type: 'check' }, options: ['hover', 'drawIn'] },
     data: { control: false },
   },
-  args: { animations: true, animationTypes: ['hover', 'drawIn'] },
 };
 
-const DrawInStory: StoryFn<DrawInArgs> = ({ animations, animationTypes, data, ...args }): ReactElement => {
+const DrawInStory: StoryFn<DrawInArgs> = ({ data, ...args }): ReactElement => {
   const chartProps = useChartProps({ data, width: 640, height: 400 });
   return (
-    <Chart {...chartProps} animations={animations} animationTypes={animationTypes}>
+    <Chart {...chartProps}>
       <Axis position="left" grid title="Visits" />
       <Axis position="bottom" labelFormat="time" baseline ticks />
       <Line {...args} />

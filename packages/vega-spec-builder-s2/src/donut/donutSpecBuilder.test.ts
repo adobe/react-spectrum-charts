@@ -598,7 +598,7 @@ describe('donutSpecBuilder', () => {
   test('should add donut correctly', () => {
     const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
     const options = { ...defaultDonutOptions, holeRatio: 0.85 };
-    const result = addDonut(spec, options);
+    const result = addDonut(spec, { ...options, animationTypes: ['hover'] });
     const expectedSpec = {
       data: addData(spec.data, options),
       scales: addScales([], options),

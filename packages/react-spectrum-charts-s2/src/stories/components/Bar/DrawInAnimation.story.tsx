@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics */
 import { ComponentProps, ReactElement } from 'react';
 
@@ -30,37 +31,26 @@ import {
 import { BarDirectLabelProps, ChartProps } from '../../../types/index.js';
 import { bindStory } from './storyUtils.js';
 
-type DrawInArgs = ComponentProps<typeof Bar> &
-  Pick<ChartProps, 'animations' | 'animationTypes'> & {
-    data: ChartProps['data'];
-    colors?: SpectrumColor[][];
-    labelPosition?: NonNullable<BarDirectLabelProps['position']>;
-  };
+type DrawInArgs = ComponentProps<typeof Bar> & {
+  data: ChartProps['data'];
+  colors?: SpectrumColor[][];
+  labelPosition?: NonNullable<BarDirectLabelProps['position']>;
+};
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Draw In Animation',
   component: Bar,
   argTypes: {
-    animations: { control: 'boolean' },
-    animationTypes: { control: { type: 'check' }, options: ['hover', 'drawIn'] },
     data: { control: false },
     colors: { control: false },
   },
-  args: { animations: true, animationTypes: ['hover', 'drawIn'] },
 };
 
-const DrawInStory: StoryFn<DrawInArgs> = ({
-  animations,
-  animationTypes,
-  data,
-  colors,
-  labelPosition,
-  ...args
-}): ReactElement => {
+const DrawInStory: StoryFn<DrawInArgs> = ({ data, colors, labelPosition, ...args }): ReactElement => {
   const chartProps = useChartProps({ data, width: 640, height: 400, ...(colors ? { colors } : {}) });
   const isHorizontal = args.orientation === 'horizontal';
   return (
-    <Chart {...chartProps} animations={animations} animationTypes={animationTypes}>
+    <Chart {...chartProps}>
       <Axis position={isHorizontal ? 'left' : 'bottom'} baseline />
       <Axis position={isHorizontal ? 'bottom' : 'left'} grid />
       <Bar {...args}>
@@ -72,7 +62,13 @@ const DrawInStory: StoryFn<DrawInArgs> = ({
   );
 };
 
-const stackedArgs = { data: channelDeviceData, dimension: 'channel', metric: 'signups', color: 'device', order: 'order' };
+const stackedArgs = {
+  data: channelDeviceData,
+  dimension: 'channel',
+  metric: 'signups',
+  color: 'device',
+  order: 'order',
+};
 
 const Stacked = bindStory(DrawInStory);
 Stacked.args = { ...stackedArgs };
