@@ -18,13 +18,13 @@ export type Icon = 'date' | 'sentimentNegative' | 'sentimentNeutral' | 'sentimen
 export interface ReferenceLineOptions {
   /** The value on the axis where the reference line should be drawn. */
   value: number | string;
-  /** Position the line on the value, or between the previous/next value. Only supported in Bar visualizations. */
+  /** Places the line on a category's center, or before or after it; only for band scales. Defaults to `center`. */
   position?: 'before' | 'after' | 'center';
-  /** Axis text label. */
+  /** Label shown below the line at the right edge, or at the top right of a vertical line. */
   label?: string;
-  /** Size variant controlling stroke weight and caret triangle dimensions. When omitted, stroke width reacts to chart size automatically. */
+  /** Stroke and caret size (base axis lines have no carets); when omitted, the size follows the chart width. */
   size?: ReferenceLineSize;
-  /** When true, renders a lighter secondary style: no caret caps, and a lighter stroke color for XS size. */
+  /** Draws the line without carets, in a lighter color at `XS` size. Defaults to `false`. */
   secondary?: boolean;
 }
 
