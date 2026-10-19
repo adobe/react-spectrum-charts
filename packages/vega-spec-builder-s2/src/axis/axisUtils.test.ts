@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Scale } from 'vega';
+import { Scale, Scene, View, parse } from 'vega';
 
 import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
@@ -43,9 +43,80 @@ describe('getBaselineRule', () => {
   });
   describe('baselineOffset', () => {
     test('should apply offset', () => {
-      expect(getBaselineRule(1, 'bottom').encode?.update?.y).toHaveProperty('value', 1);
-      expect(getBaselineRule(100, 'bottom').encode?.update?.y).toHaveProperty('value', 100);
-      expect(getBaselineRule(-100, 'bottom').encode?.update?.y).toHaveProperty('value', -100);
+      for (const offset of [1, 100, -100]) {
+        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty(
+          'scale',
+          'yLinear'
+        );
+        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty('value', offset);
+        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty(
+          'scale',
+          'xLinear'
+        );
+        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty('value', offset);
+      }
+    });
+
+    test.each<['bottom' | 'left', [number, number], number, number]>([
+      ['bottom', [400, 550], 0, 1100 / 3],
+      ['bottom', [-550, -400], 0, -800 / 3],
+      ['bottom', [-100, 100], 25, 37.5],
+      ['bottom', [-500, 10000], 0, 2000 / 21],
+      ['bottom', [-500, 10000], -500, 100],
+      ['left', [400, 550], 0, -1600 / 3],
+      ['left', [-550, -400], 0, 2200 / 3],
+      ['left', [-100, 100], 25, 125],
+      ['left', [-500, 10000], 0, 200 / 21],
+      ['left', [-500, 10000], -500, 0],
+    ])('clips the %s baseline only outside domain %j at offset %s', async (position, domain, offset, coordinate) => {
+      const horizontal = position === 'bottom';
+      const inDomain = offset >= Math.min(...domain) && offset <= Math.max(...domain);
+      const view = new View(
+        parse({
+          width: 200,
+          height: 100,
+          autosize: 'none',
+          scales: [
+            {
+              name: horizontal ? 'yLinear' : 'xLinear',
+              type: 'linear',
+              domain,
+              range: horizontal ? 'height' : 'width',
+              zero: false,
+            },
+          ],
+          marks: [getBaselineRule(offset, position)],
+        }),
+        { renderer: 'none' }
+      );
+      try {
+        await view.runAsync();
+        const { root } = view.scenegraph() as Scene & { root: Scene };
+        const baseline = root.items[0].items[0].items[0];
+        expect(baseline[horizontal ? 'y' : 'x']).toBeCloseTo(coordinate);
+        const expectBounds = (width: number, height: number, scale: number) => {
+          const { bounds } = root.items[0];
+          if (inDomain) {
+            const position = coordinate * scale;
+            expect(horizontal ? bounds.y1 : bounds.x1).toBeLessThan(position);
+            expect(horizontal ? bounds.y2 : bounds.x2).toBeGreaterThan(position);
+            expect(horizontal ? bounds.x2 - bounds.x1 : bounds.y2 - bounds.y1).toBeGreaterThan(
+              horizontal ? width : height
+            );
+          } else {
+            expect(bounds.x1).toBeGreaterThanOrEqual(0);
+            expect(bounds.y1).toBeGreaterThanOrEqual(0);
+            expect(bounds.x2).toBeLessThanOrEqual(width);
+            expect(bounds.y2).toBeLessThanOrEqual(height);
+          }
+        };
+        expectBounds(200, 100, 1);
+        await view.width(300).height(150).resize().runAsync();
+        expect(baseline[horizontal ? 'y' : 'x']).toBeCloseTo(coordinate * 1.5);
+        expectBounds(300, 150, 1.5);
+      } finally {
+        view.finalize();
+      }
     });
   });
 });
@@ -217,10 +288,10 @@ describe('getSubLabelAxis()', () => {
 
 describe('getTickCount()', () => {
   test('when maxTicks is provided, it should use maxTicks as the max value', () => {
-    expect(getTickCount('left', undefined,5)).toEqual({
+    expect(getTickCount('left', undefined, 5)).toEqual({
       signal: 'clamp(ceil(height/100), 2, 5)',
     });
-    expect(getTickCount('bottom', undefined,15)).toEqual({
+    expect(getTickCount('bottom', undefined, 15)).toEqual({
       signal: 'clamp(ceil(width/100), 2, 15)',
     });
   });
@@ -380,7 +451,7 @@ describe('getDivergingTickIsNegativeTest()', () => {
 
 describe('getDivergingLabelEncode()', () => {
   describe('vertical axes flip align + compensate dx', () => {
-    test("left axis: default labelPadding (8) → 2*8 gap compensation", () => {
+    test('left axis: default labelPadding (8) → 2*8 gap compensation', () => {
       expect(getDivergingLabelEncode('left', 'isNeg')).toStrictEqual({
         update: {
           align: [{ test: 'isNeg', value: 'left' }, { value: 'right' }],

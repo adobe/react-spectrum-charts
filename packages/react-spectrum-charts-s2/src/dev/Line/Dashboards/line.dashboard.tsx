@@ -1045,7 +1045,7 @@ const axisVariations: Variation[] = [
   },
   {
     id: 'axis-range',
-    title: 'Fixed metric range',
+    title: 'Fixed metric axis',
     description: 'Pins the metric axis to 0–10,000.',
     dataset: 'standard',
     coverage: ['Axis.range=[0,10000]'],
@@ -1056,6 +1056,25 @@ const axisVariations: Variation[] = [
           <Axis key="bottom" position="bottom" labelFormat="time" baseline ticks />,
         ]}
       />
+    ),
+  },
+  {
+    id: 'axis-range-out-of-bounds',
+    title: 'Fixed range with out-of-bounds points',
+    description: 'Sparse data crosses both ends of the fixed range; hover must not collapse the plot.',
+    dataset: 'sparse',
+    usesDashboardDataset: false,
+    coverage: ['Axis.range=[400000,550000]'],
+    render: () => (
+      <LineVariationChart
+        axes={() => [
+          <Axis key="left" position="left" grid numberFormat="shortNumber" range={[400000, 550000]} />,
+          <Axis key="bottom" position="bottom" labelFormat="time" baseline ticks />,
+        ]}
+        data={sparseLineData}
+      >
+        <ChartInspect>{inspectContent}</ChartInspect>
+      </LineVariationChart>
     ),
   },
   {
@@ -1444,7 +1463,7 @@ const linePointAnnotationCoverage: PropCoverage<LinePointAnnotationProps> = {
 };
 
 const axisCoverage: SiblingCoverage<AxisProps> = {
-  baseline: ['axis-titles-format'],
+  baseline: ['axis-titles-format', 'axis-range-out-of-bounds'],
   children: ['axis-reference-lines'],
   granularity: ['axis-granularity-month'],
   grid: ['axis-titles-format'],
@@ -1452,7 +1471,7 @@ const axisCoverage: SiblingCoverage<AxisProps> = {
   labelOrientation: ['axis-tick-limits'],
   numberFormat: ['axis-titles-format'],
   position: ['dual-metric-axis'],
-  range: ['axis-range'],
+  range: ['axis-range', 'axis-range-out-of-bounds'],
   tickCountLimit: ['axis-tick-limits'],
   ticks: ['axis-titles-format'],
   title: ['axis-titles-format'],

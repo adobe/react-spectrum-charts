@@ -16,7 +16,15 @@ import { combineNames, toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addBar } from '../bar/barSpecBuilder.js';
 import { addLine } from '../line/lineSpecBuilder.js';
-import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions, ScSpec } from '../types/index.js';
+import {
+  AxisOptions,
+  BarOptions,
+  ColorScheme,
+  ComboOptions,
+  HighlightedItem,
+  LineOptions,
+  ScSpec,
+} from '../types/index.js';
 
 export const addCombo = produce<
   ScSpec,
@@ -24,6 +32,7 @@ export const addCombo = produce<
     ComboOptions & {
       animations?: boolean;
       animationTypes?: AnimationType[];
+      axes?: AxisOptions[];
       colorScheme?: ColorScheme;
       highlightedItem?: HighlightedItem;
       index?: number;
@@ -36,6 +45,7 @@ export const addCombo = produce<
     {
       animations,
       animationTypes,
+      axes,
       colorScheme = DEFAULT_COLOR_SCHEME,
       highlightedItem,
       idKey,
@@ -97,6 +107,7 @@ export const addCombo = produce<
             ...mark,
             animations,
             animationTypes,
+            axes,
             colorScheme,
             comboSiblingNames,
             highlightedItem,

@@ -164,6 +164,7 @@ export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOpti
   seriesIds?: string[];
   isHoverAnimate?: boolean;
   isDrawInAnimate?: boolean;
+  hasFixedMetricAxis?: boolean;
   backgroundColor?: string;
   colorScheme: ColorScheme;
   comboSiblingNames?: string[];

@@ -29,6 +29,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
+import { getScale } from '../axis/axisUtils.js';
 import {
   addInspectData,
   addInspectSignals,
@@ -37,7 +38,11 @@ import {
 } from '../chartInspect/chartInspectUtils.js';
 import { addPopoverData } from '../chartPopover/chartPopoverUtils.js';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils.js';
-import { getLineDirectLabelData, getLineDirectLabelMarks, getLineDirectLabelSpecOptions } from '../lineDirectLabel/index.js';
+import {
+  getLineDirectLabelData,
+  getLineDirectLabelMarks,
+  getLineDirectLabelSpecOptions,
+} from '../lineDirectLabel/index.js';
 import {
   getEffectiveMetricField,
   getForecastAlternateFlagTransform,
@@ -59,10 +64,15 @@ import { getInteractiveMarkName, isInteractive } from '../marks/markUtils.js';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils.js';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
-import { addHoveredItemSignal, getFirstRscSeriesIdSignal, getLastRscSeriesIdSignal } from '../signal/signalSpecBuilder.js';
+import {
+  addHoveredItemSignal,
+  getFirstRscSeriesIdSignal,
+  getLastRscSeriesIdSignal,
+} from '../signal/signalSpecBuilder.js';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils.js';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
 import {
+  AxisOptions,
   ChartData,
   ColorScheme,
   HighlightedItem,
@@ -74,6 +84,8 @@ import {
 } from '../types/index.js';
 import {
   getHoverLabelData,
+  getInBoundsHoverData,
+  getInPlotMetricFilter,
   getLineHighlightedData,
   getLineHoverRules,
   getLineStaticPointData,
@@ -93,7 +105,7 @@ import { getPopoverMarkName, isDualMetricAxis } from './lineUtils.js';
 import {
   addDrawInDoneSignal,
   addLineDrawInAnimationSignals,
-  getLineDrawInClip,
+  getLineGeometryClip,
   getLineDrawInExtentData,
   getLineDrawInExtentDataName,
   getLineDrawInVoronoiData,
@@ -104,6 +116,7 @@ export const addLine = produce<
   ScSpec,
   [
     LineOptions & {
+      axes?: AxisOptions[];
       animations?: boolean;
       animationTypes?: AnimationType[];
       colorScheme?: ColorScheme;
@@ -121,6 +134,7 @@ export const addLine = produce<
     {
       animations,
       animationTypes,
+      axes = [],
       chartActionBars = [],
       chartPopovers = [],
       chartInspects = [],
@@ -217,14 +231,47 @@ export const addLine = produce<
     lineOptions.isDrawInAnimate = isLineDrawInSupported(animations, animationTypes, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     if (lineOptions.isHoverAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
+    const scales = setScales(spec.scales ?? [], lineOptions);
+    lineOptions.hasFixedMetricAxis = hasFixedMetricAxis(axes, scales, lineOptions);
     spec.data = addData(spec.data ?? [], lineOptions);
     spec.signals = addSignals(spec.signals ?? [], lineOptions);
-    spec.scales = setScales(spec.scales ?? [], lineOptions);
+    spec.scales = scales;
     spec.marks = addLineMarks(spec.marks ?? [], lineOptions);
 
     return spec;
   }
 );
+
+/**
+ * Gets the data that feeds the line's hover marks.
+ * @param options - line spec options
+ * @returns data source name
+ */
+const getLineHoverDataSource = ({ hasFixedMetricAxis, name }: LineSpecOptions): string =>
+  hasFixedMetricAxis ? `${name}_visibleHoverData` : `${FILTERED_TABLE}ForInspect`;
+
+/**
+ * Whether an axis fixes the range of one of the line's metric scales.
+ * @param axes - chart axes
+ * @param scales - chart scales
+ * @param options - line spec options
+ * @returns boolean
+ */
+const hasFixedMetricAxis = (
+  axes: AxisOptions[],
+  scales: Scale[],
+  { dualMetricAxis, metricAxis }: LineSpecOptions
+): boolean => {
+  const metricScaleName = metricAxis || 'yLinear';
+  const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleName);
+  const metricScaleNames = dualMetricAxis ? [primaryScale, secondaryScale] : [metricScaleName];
+  return axes.some(
+    (axis) =>
+      Boolean(axis.range) &&
+      ['left', 'right'].includes(axis.position) &&
+      metricScaleNames.includes(getScale([...scales], axis.position).name)
+  );
+};
 
 /**
  * Whether the line participates in the hover-animation system.
@@ -284,7 +331,11 @@ export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   addLineHoverData(data, options);
 
   if (staticPoint || isSparkline) {
-    data.push(getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast));
+    const staticPointData = getLineStaticPointData(name, staticPoint, FILTERED_TABLE, isSparkline, isMethodLast);
+    if (options.hasFixedMetricAxis) {
+      staticPointData.transform = [...(staticPointData.transform ?? []), getInPlotMetricFilter(options)];
+    }
+    data.push(staticPointData);
   }
 
   addDualMetricAxisData(data, options);
@@ -346,13 +397,16 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
   const { chartInspects, highlightedItem, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
   if (isInteractive(options) || highlightedItem !== undefined) {
     data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
+    if (options.hasFixedMetricAxis) {
+      data.push(getInBoundsHoverData(options, `${FILTERED_TABLE}ForInspect`));
+    }
     if (showHoverLabel) {
       data.push(getHoverLabelData(options));
     }
     if (options.isDrawInAnimate) {
       data.push(
-        getLineDrawInVoronoiData(name),
-        getLineDrawInExtentData({ ...options, metric: getEffectiveMetricField(options) })
+        getLineDrawInVoronoiData(name, getLineHoverDataSource(options)),
+        getLineDrawInExtentData({ ...options, metric: getEffectiveMetricField(options) }, getLineHoverDataSource(options))
       );
     }
   }
@@ -488,7 +542,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
     const drawInVoronoi = options.isDrawInAnimate
       ? { points: getLineDrawInVoronoiDataName(name), extent: getLineDrawInExtentDataName(name) }
       : undefined;
-    marks.push(...getLineHoverMarks(markOptions, `${FILTERED_TABLE}ForInspect`, undefined, drawInVoronoi));
+    marks.push(...getLineHoverMarks(markOptions, getLineHoverDataSource(options), undefined, drawInVoronoi));
   }
   // forecast labels are drawn last so they appear on top of other marks
   addLineForecastLabelMarks(marks, forecasts, options);
@@ -546,7 +600,7 @@ const addLineGroupMark = (
   marks.push({
     name: `${name}_group`,
     type: 'group',
-    ...(markOptions.isDrawInAnimate ? { clip: getLineDrawInClip(name) } : {}),
+    ...getLineGeometryClip(markOptions),
     from: {
       facet: {
         name: `${name}_facet`,
