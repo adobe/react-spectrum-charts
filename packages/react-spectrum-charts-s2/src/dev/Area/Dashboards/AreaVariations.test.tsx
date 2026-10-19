@@ -18,10 +18,10 @@ import { PropVariations } from './AreaVariations.story.js';
 import { areaVariationDatasets } from './areaVariationData.js';
 
 jest.mock('../../../Chart.js', () => ({
-  Chart: ({ animations, data, renderer }: ChartProps) => (
+  Chart: ({ animationTypes, data, renderer }: ChartProps) => (
     <div
       data-testid="variation-chart"
-      data-animations={String(animations)}
+      data-animation-types={String(animationTypes)}
       data-renderer={renderer}
       data-rows={data?.length}
     />
@@ -38,10 +38,10 @@ beforeEach(() => localStorage.clear());
 
 const getCharts = () => screen.getAllByTestId('variation-chart');
 
-test('has no animation toggle because Area has no S2 animations', () => {
+test('has no animation switches because Area has no S2 animations', () => {
   render(<PropVariations />);
-  expect(screen.queryByRole('switch', { name: 'Area animations' })).toBeNull();
-  getCharts().forEach((chart) => expect(chart.getAttribute('data-animations')).toBe('undefined'));
+  expect(screen.queryByRole('switch')).toBeNull();
+  getCharts().forEach((chart) => expect(chart.getAttribute('data-animation-types')).toBe('undefined'));
 });
 
 test('wires the renderer control into all area charts while switching datasets', async () => {
