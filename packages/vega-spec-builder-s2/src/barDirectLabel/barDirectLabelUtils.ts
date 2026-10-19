@@ -128,12 +128,6 @@ const getGeometryEncoding = ({ x, y, align, baseline }: LabelGeometry): TextEnco
   baseline: { signal: baseline },
 });
 
-const getFontSizeEncoding = (tests: (string | undefined)[]): TextEncodeEntry['fontSize'] => {
-  const definedTests = tests.filter(Boolean);
-  if (!definedTests.length) return { signal: FONT_SIZE };
-  return { signal: `(${definedTests.join(') && (')}) ? ${FONT_SIZE} : 0` };
-};
-
 const getHaloMark = (
   name: string,
   from: string,
@@ -182,6 +176,8 @@ const getRowTest = (bar: string, { dataKey }: BarDirectLabelSpecOptions): string
  */
 const getInsideLabelMark = (labelOptions: BarDirectLabelSpecOptions): TextMark => {
   const name = getBarDirectLabelMarkName(labelOptions);
+  const rowTest = getRowTest('datum', labelOptions) ?? 'true';
+  const fits = getBarDirectLabelFitsTest('datum', labelOptions);
   return {
     name: `${name}_inside`,
     type: 'text',
@@ -191,10 +187,7 @@ const getInsideLabelMark = (labelOptions: BarDirectLabelSpecOptions): TextMark =
       update: {
         ...getGeometryEncoding(getInsideLabelGeometry('datum', labelOptions)),
         text: { signal: getBarDirectLabelText('datum', labelOptions) },
-        fontSize: getFontSizeEncoding([
-          getRowTest('datum', labelOptions),
-          getBarDirectLabelFitsTest('datum', labelOptions),
-        ]),
+        fontSize: [{ test: `(${rowTest}) && (${fits})`, signal: FONT_SIZE }, { value: 0 }],
         fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
         fill: { signal: BACKGROUND_COLOR },
         opacity: { field: 'labelOpacity' },
