@@ -14,7 +14,7 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart.js';
-import { Axis, Bar, BarDirectLabel, Legend } from '../../../components/index.js';
+import { Axis, Bar, BarDirectLabel, ChartInspect, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
 import { newSubscribersData } from '../../../storyShared/components/Bar/data.js';
 import { BarDirectLabelProps } from '../../../types/index.js';
@@ -26,8 +26,10 @@ export default {
   component: BarDirectLabel,
 };
 
+const calloutData = newSubscribersData.map((datum) => ({ ...datum, callout: datum.channel === 'Social' }));
+
 const BarDirectLabelStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: newSubscribersData, width: 640, height: 400 });
+  const chartProps = useChartProps({ data: calloutData, width: 640, height: 400 });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" baseline title="Acquisition channel" />
@@ -60,4 +62,58 @@ Format.argTypes = {
   format: { control: 'select', options: ['.2~s', 'standardNumber', ',.0f', 'currency'] },
 };
 
-export { Basic, Position, Format };
+// Narrow chart so the smaller bars are too short to hold their labels.
+const OverflowStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: calloutData, width: 320, height: 240 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" baseline />
+      <Axis position="bottom" grid />
+      <Bar dimension="channel" metric="subscribers" orientation="horizontal">
+        <BarDirectLabel {...args} />
+      </Bar>
+    </Chart>
+  );
+};
+
+const Overflow = bindStory(OverflowStory);
+Overflow.args = { position: 'end', overflow: 'spill' };
+Overflow.parameters = { controls: { include: ['position', 'overflow'] } };
+Overflow.argTypes = {
+  position: { control: 'select', options: ['start', 'middle', 'end'] },
+  overflow: { control: 'select', options: ['hide', 'spill'] },
+};
+
+const DataKey = bindStory(BarDirectLabelStory);
+DataKey.args = { dataKey: 'callout' };
+DataKey.parameters = { controls: { include: ['position'] } };
+DataKey.argTypes = {
+  position: { control: 'select', options: ['start', 'middle', 'end', 'end-outside'] },
+};
+
+const CollisionStory: StoryFn<BarDirectLabelProps> = (args): ReactElement => {
+  const data = ['A', 'B', 'C', 'D'].map((channel) => ({
+    channel,
+    series: 'Subscribers',
+    subscribers: 100000000,
+    callout: channel === 'D',
+  }));
+  const chartProps = useChartProps({ data, width: 320, height: 240, animations: false });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="bottom" baseline />
+      <Axis position="left" grid />
+      <Bar dimension="channel" metric="subscribers" color="series" type="dodged">
+        <BarDirectLabel {...args} />
+        <ChartInspect />
+      </Bar>
+    </Chart>
+  );
+};
+
+const Collision = bindStory(CollisionStory);
+Collision.args = {};
+Collision.parameters = { controls: { include: ['dataKey'] } };
+Collision.argTypes = { dataKey: { control: 'select', options: [undefined, 'callout'] } };
+
+export { Basic, Position, Format, Overflow, DataKey, Collision };

@@ -396,7 +396,7 @@ describe('barSpecBuilder', () => {
         expect(findMark(spec.marks, 'bar0_background')?.from).toStrictEqual({ data: FILTERED_TABLE });
       });
 
-      test('stacked bars get each stack\'s totals so segments can fill in order', () => {
+      test("stacked bars get each stack's totals so segments can fill in order", () => {
         const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
         const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
         expect(filteredTable.transform).toContainEqual(
@@ -550,7 +550,11 @@ describe('barSpecBuilder', () => {
         test('highlightBy: "dimension" derives the groupId from the dimension after the aggregate', () => {
           const [aggregate, groupId] = getHoverTargetTransforms('dimension');
           expect(aggregate).toHaveProperty('groupby', expect.arrayContaining([DEFAULT_CATEGORICAL_DIMENSION]));
-          expect(groupId).toEqual({ type: 'formula', as: `bar0_${GROUP_ID}`, expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}` });
+          expect(groupId).toEqual({
+            type: 'formula',
+            as: `bar0_${GROUP_ID}`,
+            expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
+          });
         });
 
         test('highlightBy: "series" derives the groupId from the series id after the aggregate', () => {
@@ -600,6 +604,10 @@ describe('barSpecBuilder', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals).toHaveLength(defaultSignals.length + 1);
       expect(signals.at(-1)).toHaveProperty('name', 'paddingInner');
+    });
+    test('should not need an extra layout size signal for direct labels', () => {
+      const signals = addSignals(defaultSignals, { ...defaultBarOptions, barDirectLabels: [{}] });
+      expect(signals).toEqual(addSignals(defaultSignals, defaultBarOptions));
     });
     test('should add focus signals when accessibleNavigation is enabled', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
@@ -1225,16 +1233,28 @@ describe('barSpecBuilder', () => {
     });
 
     describe('with direct labels', () => {
-      test('should add direct label marks for each barDirectLabels entry', () => {
+      test('should add a shared direct label layer after the stacked bars', () => {
         const marks = addMarks([], {
           ...defaultBarOptions,
-          barDirectLabels: [{}],
+          barDirectLabels: [{ position: 'end' }],
         });
 
-        // getBarDirectLabelMarks returns 2 marks (halo + label text) per entry
-        expect(marks).toHaveLength(defaultStackedBarMarks.length + 2);
-        expect(marks.at(-2)?.name).toEqual('bar0DirectLabel0_bg');
-        expect(marks.at(-1)?.name).toEqual('bar0DirectLabel0');
+        expect(marks).toHaveLength(defaultStackedBarMarks.length + 1);
+        expect(marks.at(-1)).toHaveProperty('name', 'bar0_directLabels');
+        expect((marks.at(-1) as GroupMark).marks).toHaveLength(1);
+      });
+
+      test('should share direct label layout across dodged groups', () => {
+        const marks = addMarks([], {
+          ...defaultBarOptions,
+          type: 'dodged',
+          barDirectLabels: [{ position: 'end' }],
+        });
+
+        expect(marks.at(-1)).toHaveProperty('name', 'bar0_directLabels');
+        const layer = marks.at(-1) as GroupMark;
+        expect(layer.data?.[0]).toHaveProperty('source', 'bar0_group');
+        expect(layer.marks).toHaveLength(1);
       });
     });
 

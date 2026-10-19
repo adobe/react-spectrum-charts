@@ -9,316 +9,390 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
-import { TextMark } from 'vega';
+import { GroupMark, LabelTransform, Spec, TextMark, View, changeset, expressionFunction, parse } from 'vega';
+
+import {
+  ANIMATION_TIMER,
+  BACKGROUND_COLOR,
+  CHART_SIZE_FONT_SIZE,
+  DRAW_IN_START,
+} from '@spectrum-charts/core-s2/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils.js';
-import { BarDirectLabelSpecOptions } from '../types/index.js';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
+import { BarDirectLabelSpecOptions, BarOptions, BarSpecOptions, Orientation } from '../types/index.js';
 import {
-  getBarDirectLabelMarks,
-  getBarDirectLabelPositionEncodings,
+  getBarDirectLabelFitsTest,
   getBarDirectLabelSpecOptions,
+  getBarDirectLabelText,
+  getBarDirectLabelsMarks,
+  getInsideLabelGeometry,
+  usesCollisionLayout,
 } from './barDirectLabelUtils.js';
 
-const defaultSpecOptions: BarDirectLabelSpecOptions = getBarDirectLabelSpecOptions({}, 0, defaultBarOptions);
+const specOptions = (overrides: Partial<BarDirectLabelSpecOptions> = {}): BarDirectLabelSpecOptions => ({
+  ...getBarDirectLabelSpecOptions({}, 0, defaultBarOptions),
+  ...overrides,
+});
 
-describe('getBarDirectLabelSpecOptions()', () => {
-  it('inherits color, dimension, metric, orientation from bar options', () => {
-    expect(defaultSpecOptions.barName).toBe(defaultBarOptions.name);
-    expect(defaultSpecOptions.color).toBe(defaultBarOptions.color);
-    expect(defaultSpecOptions.colorScheme).toBe(defaultBarOptions.colorScheme);
-    expect(defaultSpecOptions.dimension).toBe(defaultBarOptions.dimension);
-    expect(defaultSpecOptions.metric).toBe(defaultBarOptions.metric);
-    expect(defaultSpecOptions.orientation).toBe(defaultBarOptions.orientation);
-    expect(defaultSpecOptions.index).toBe(0);
+const getLayer = (overrides: Partial<BarSpecOptions> = {}): GroupMark =>
+  getBarDirectLabelsMarks({ ...defaultBarOptions, barDirectLabels: [{}], ...overrides })[0] as GroupMark;
+
+interface SceneNode {
+  name?: string;
+  items?: SceneNode[];
+  x?: number;
+  y?: number;
+  opacity?: number;
+  fontSize?: number;
+  text?: string;
+  datum?: { datum?: { id?: string } };
+}
+
+const getItems = (view: View, name: string): SceneNode[] => {
+  const find = (node: SceneNode): SceneNode[] => {
+    if (node.name === name) return node.items ?? [];
+    return (node.items ?? []).flatMap(find);
+  };
+  const scene: SceneNode & { root?: SceneNode } = view.scenegraph();
+  if (!scene.root) throw new Error('Missing scenegraph root');
+  return find(scene.root);
+};
+
+const outsideItems = (view: View) =>
+  ['positive', 'negative'].flatMap((sign) => getItems(view, `bar0DirectLabel0_${sign}`));
+
+interface BarRow {
+  id: string;
+  value: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  callout?: boolean;
+}
+
+const rows: BarRow[] = [
+  { id: 'a', value: 100000000, x: 10, y: 30, width: 10, height: 60, callout: false },
+  { id: 'b', value: 100000000, x: 15, y: 30, width: 10, height: 60, callout: true },
+];
+
+const runtimeSpec = (values: BarRow[], overrides: Partial<BarSpecOptions> = {}, grouped = true): Spec => {
+  const bar = {
+    name: 'bar0',
+    type: 'rect' as const,
+    from: { data: grouped ? 'facet' : 'table' },
+    encode: {
+      update: {
+        x: { field: grouped ? 'localX' : 'x' },
+        y: { field: 'y' },
+        width: { field: 'width' },
+        height: { field: 'height' },
+        fill: { value: 'blue' },
+        opacity: { value: 1 },
+      },
+    },
+  };
+  return {
+    width: 200,
+    height: 100,
+    signals: [
+      { name: CHART_SIZE_FONT_SIZE, value: 12 },
+      { name: BACKGROUND_COLOR, value: 'white' },
+    ],
+    data: [
+      {
+        name: 'table',
+        values,
+        transform: [{ type: 'formula', expr: '0', as: 'localX' }],
+      },
+    ],
+    marks: [
+      grouped
+        ? {
+            name: 'bar0_group',
+            type: 'group',
+            from: { facet: { name: 'facet', data: 'table', groupby: 'id' } },
+            encode: { update: { x: { signal: "data('table')[datum.id === 'a' ? 0 : 1].x * width / 200" } } },
+            marks: [bar],
+          }
+        : bar,
+      ...getBarDirectLabelsMarks({
+        ...defaultBarOptions,
+        type: grouped ? 'dodged' : 'stacked',
+        metric: 'value',
+        orientation: 'vertical',
+        barDirectLabels: [{ format: ',.0f' }],
+        ...overrides,
+      }),
+    ],
+  };
+};
+
+describe('bar direct label options and geometry', () => {
+  it('inherits context and preserves overflow defaults', () => {
+    expect(getBarDirectLabelSpecOptions({}, 2, defaultBarOptions)).toEqual({
+      barName: defaultBarOptions.name,
+      dataKey: undefined,
+      format: '',
+      index: 2,
+      metric: defaultBarOptions.metric,
+      orientation: defaultBarOptions.orientation,
+      overflow: 'hide',
+      position: 'end-outside',
+    });
+    expect(getBarDirectLabelSpecOptions({ position: 'start' }, 0, defaultBarOptions).overflow).toBe('spill');
+    expect(getBarDirectLabelSpecOptions({ position: 'start', overflow: 'hide' }, 0, defaultBarOptions).overflow).toBe(
+      'hide'
+    );
   });
 
-  it('defaults position to end-outside when not provided', () => {
-    expect(defaultSpecOptions.position).toBe('end-outside');
+  it.each([
+    ['', 'format(datum.datum["value"], ",.2~f")'],
+    ['percentage', 'format(datum.datum["value"], "~%")'],
+    ['currency', 'format(datum.datum["value"], "$,.2f")'],
+    ['shortNumber', 'formatShortNumber(datum.datum["value"])'],
+    ['.1f', 'format(datum.datum["value"], ".1f")'],
+  ])('formats %s from the bar data', (format, expected) => {
+    expect(getBarDirectLabelText('datum', specOptions({ metric: 'value', format }))).toBe(expected);
   });
 
-  it('respects a provided position', () => {
-    const options = getBarDirectLabelSpecOptions({ position: 'middle' }, 0, defaultBarOptions);
-    expect(options.position).toBe('middle');
+  it('escapes format specifiers', () => {
+    const format = '.1f\\"';
+    expect(getBarDirectLabelText('datum', specOptions({ metric: 'value', format }))).toBe(
+      `format(datum.datum["value"], ${JSON.stringify(format)})`
+    );
   });
 
-  it('defaults format to an empty string when not provided', () => {
-    expect(defaultSpecOptions.format).toBe('');
+  it('tests both bar dimensions for fit', () => {
+    expect(getBarDirectLabelFitsTest('datum', specOptions({ orientation: 'vertical' }))).toContain(
+      `datum.height >= ${CHART_SIZE_FONT_SIZE} + 16 && datum.width >= getLabelWidth`
+    );
+    expect(getBarDirectLabelFitsTest('datum', specOptions({ orientation: 'horizontal' }))).toContain(
+      `datum.height >= ${CHART_SIZE_FONT_SIZE} + 4`
+    );
   });
 
-  it('respects a provided format', () => {
-    const options = getBarDirectLabelSpecOptions({ format: 'percentage' }, 0, defaultBarOptions);
-    expect(options.format).toBe('percentage');
+  it.each<Orientation>(['vertical', 'horizontal'])('centers %s middle labels in the actual segment', (orientation) => {
+    expect(getInsideLabelGeometry('datum', specOptions({ orientation, position: 'middle' }))).toEqual({
+      x: '(datum.x + datum.width / 2)',
+      y: '(datum.y + datum.height / 2)',
+      align: "'center'",
+      baseline: "'middle'",
+    });
+  });
+
+  it('only requests outside layout for outside or spill labels', () => {
+    expect(usesCollisionLayout(specOptions())).toBe(true);
+    expect(usesCollisionLayout(specOptions({ position: 'end', overflow: 'spill' }))).toBe(true);
+    expect(usesCollisionLayout(specOptions({ position: 'end', overflow: 'hide' }))).toBe(false);
   });
 });
 
-
-const mockSeriesFill = { scale: 'color', field: 'series' };
-const mockTextSignal = 'datum.value';
-
-describe('getBarDirectLabelPositionEncodings()', () => {
-  describe('end-outside (always outside)', () => {
-    it('vertical: offsets the label away from the bar tip, fill uses series color', () => {
-      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end-outside', true, 'value', 'y', mockSeriesFill, mockTextSignal);
-      const [neg, pos] = metricAxisEncoding as { field?: string; offset: number }[];
-      expect(neg).toMatchObject({ field: 'value', offset: 6 }); // negative bar: outside, below the tip
-      expect(pos).toMatchObject({ field: 'value', offset: -6 }); // positive bar: outside, above the tip
-      expect(seriesFill).toBe(mockSeriesFill);
-    });
-
-    it('horizontal: offsets the label away from the bar tip, fill uses series color', () => {
-      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end-outside', false, 'value', 'x', mockSeriesFill, mockTextSignal);
-      const [neg, pos] = metricAxisEncoding as { field?: string; offset: number }[];
-      expect(neg).toMatchObject({ field: 'value', offset: -8 }); // negative bar: outside, left of the tip
-      expect(pos).toMatchObject({ field: 'value', offset: 8 }); // positive bar: outside, right of the tip
-      expect(seriesFill).toBe(mockSeriesFill);
-    });
-
-    it('baseline points away from bar (top for negative, bottom for positive)', () => {
-      const { verticalBaseline } = getBarDirectLabelPositionEncodings('end-outside', true, 'value', 'y', mockSeriesFill, mockTextSignal);
-      const [neg, pos] = verticalBaseline as { value: string }[];
-      expect(neg.value).toBe('top');
-      expect(pos.value).toBe('bottom');
-    });
+describe('shared native label layout', () => {
+  it('returns no layer without labels', () => {
+    expect(getBarDirectLabelsMarks(defaultBarOptions)).toEqual([]);
   });
 
-  describe('end', () => {
-    it('vertical: offsets label inward from bar tip, fill uses background color', () => {
-      const { metricAxisEncoding, seriesFill } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill, mockTextSignal);
-      expect(Array.isArray(metricAxisEncoding)).toBe(true);
-      const [neg, pos] = metricAxisEncoding as { offset: number }[];
-      expect(neg.offset).toBeLessThan(0); // negative bar: label offset upward (inward)
-      expect(pos.offset).toBeGreaterThan(0); // positive bar: label offset downward (inward)
-      expect(seriesFill).toHaveProperty('signal', BACKGROUND_COLOR);
-    });
-
-    it('baseline points toward bar interior (bottom for negative, top for positive)', () => {
-      const { verticalBaseline } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill, mockTextSignal);
-      const [neg, pos] = verticalBaseline as { value: string }[];
-      expect(neg.value).toBe('bottom');
-      expect(pos.value).toBe('top');
-    });
-
-    it('anchors to the bar tip (field: metric)', () => {
-      const { metricAxisEncoding } = getBarDirectLabelPositionEncodings('end', true, 'value', 'y', mockSeriesFill, mockTextSignal);
-      const [, pos] = metricAxisEncoding as { field?: string }[];
-      expect(pos.field).toBe('value');
-    });
-  });
-
-  describe('start (adaptive inside)', () => {
-    it('vertical: inside at the baseline when it fits, outside at the tip otherwise', () => {
-      const { metricAxisEncoding, seriesFill, isInsideTest } = getBarDirectLabelPositionEncodings('start', true, 'value', 'y', mockSeriesFill, mockTextSignal);
-      const rules = metricAxisEncoding as { value?: number; field?: string; offset: number }[];
-      expect(rules).toHaveLength(4);
-      // fits-inside rules anchor at the zero baseline; no-fit rules anchor at the bar tip (field)
-      expect(rules[0]).toMatchObject({ value: 0, offset: 8 });
-      expect(rules[1]).toMatchObject({ field: 'value', offset: 6 });
-      expect(rules[2]).toMatchObject({ value: 0, offset: -8 });
-      expect(rules[3]).toMatchObject({ field: 'value', offset: -6 });
-      // background fill when it fits (inside), series color otherwise (outside)
-      expect(seriesFill).toStrictEqual([{ test: isInsideTest, signal: BACKGROUND_COLOR }, mockSeriesFill]);
-    });
-
-    it('horizontal: fit test measures the real rendered text width', () => {
-      const { metricAxisEncoding, seriesFill, isInsideTest } = getBarDirectLabelPositionEncodings('start', false, 'value', 'x', mockSeriesFill, mockTextSignal);
-      const rules = metricAxisEncoding as { value?: number; field?: string; offset: number }[];
-      expect(rules).toHaveLength(4);
-      expect(rules[0]).toMatchObject({ value: 0, offset: -8 });
-      expect(rules[1]).toMatchObject({ field: 'value', offset: -8 });
-      expect(rules[2]).toMatchObject({ value: 0, offset: 8 });
-      expect(rules[3]).toMatchObject({ field: 'value', offset: 8 });
-      expect(seriesFill).toStrictEqual([{ test: isInsideTest, signal: BACKGROUND_COLOR }, mockSeriesFill]);
-      expect(isInsideTest).toContain(`getLabelWidth(${mockTextSignal}`);
-    });
-  });
-
-  describe('middle', () => {
-    it('returns a signal expression for the midpoint, fill uses background color', () => {
-      const { metricAxisEncoding, seriesFill, verticalBaseline, horizontalAlign } = getBarDirectLabelPositionEncodings('middle', true, 'value', 'y', mockSeriesFill, mockTextSignal);
-      expect(metricAxisEncoding).toHaveProperty('signal');
-      expect((metricAxisEncoding as { signal: string }).signal).toContain("scale('y', 0)");
-      expect((metricAxisEncoding as { signal: string }).signal).toContain("datum['value']");
-      expect(seriesFill).toHaveProperty('signal', BACKGROUND_COLOR);
-      expect(verticalBaseline).toHaveProperty('value', 'middle');
-      expect(horizontalAlign).toHaveProperty('value', 'center');
-    });
-  });
-});
-
-describe('getBarDirectLabelMarks()', () => {
-  it('end-outside returns two marks: background halo and main text', () => {
-    const marks = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    expect(marks).toHaveLength(2);
-    expect(marks[0].type).toBe('text');
-    expect(marks[1].type).toBe('text');
-  });
-
-  it('inside positions return one mark (no background halo)', () => {
-    for (const position of ['end', 'middle'] as const) {
-      const options = getBarDirectLabelSpecOptions({ position }, 0, defaultBarOptions);
-      const marks = getBarDirectLabelMarks(options, defaultBarOptions);
-      expect(marks).toHaveLength(1);
-    }
-  });
-
-  it('inside positions use background color for fill', () => {
-    for (const position of ['end', 'middle'] as const) {
-      const options = getBarDirectLabelSpecOptions({ position }, 0, defaultBarOptions);
-      const [main] = getBarDirectLabelMarks(options, defaultBarOptions);
-      expect((main as TextMark).encode?.enter?.fill).toHaveProperty('signal', BACKGROUND_COLOR);
-    }
-  });
-
-  it('end-outside background mark has a transparent-filled halo at full stroke width', () => {
-    const [bg] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    const enter = (bg as TextMark).encode?.enter;
-    expect(enter?.fill).toHaveProperty('value', 'transparent');
-    expect(enter?.stroke).toHaveProperty('signal', BACKGROUND_COLOR);
-    expect(enter?.strokeWidth).toHaveProperty('value', DIRECT_LABEL_BACKGROUND_STROKE_WIDTH);
-  });
-
-  it('adaptive start returns a background halo whose stroke is suppressed inside, shown outside', () => {
-    const options = getBarDirectLabelSpecOptions({ position: 'start' }, 0, defaultBarOptions);
-    const marks = getBarDirectLabelMarks(options, defaultBarOptions);
-    expect(marks).toHaveLength(2);
-    // no halo when the label fits inside, full halo when it spills outside
-    expect((marks[0] as TextMark).encode?.enter?.strokeWidth).toStrictEqual([
-      { test: expect.any(String), value: 0 },
-      { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
+  it('uses native bar-bound anchors and separates candidates by sign', () => {
+    const layer = getLayer();
+    expect(layer.data?.map((data) => data.name)).toEqual([
+      'bar0_directLabelBars',
+      'bar0DirectLabel0_positive_candidates',
+      'bar0DirectLabel0_negative_candidates',
     ]);
-  });
-
-  it('main mark has colored fill and correct font weight', () => {
-    const [, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    const enter = (main as TextMark).encode?.enter;
-    expect(enter?.fill).toBeDefined();
-    expect(enter?.fontWeight).toHaveProperty('value', DIRECT_LABEL_FONT_WEIGHT);
-  });
-
-  it('vertical bar: x uses xBand centered on dimension, y is a production rule', () => {
-    const [, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    const enter = (main as TextMark).encode?.enter;
-    expect(enter?.x).toHaveProperty('scale', 'xBand');
-    expect(enter?.x).toHaveProperty('band', 0.5);
-    expect(enter?.align).toHaveProperty('value', 'center');
-    expect(Array.isArray(enter?.y)).toBe(true);
-    expect(Array.isArray(enter?.baseline)).toBe(true);
-  });
-
-  it('horizontal bar: y uses yBand centered on dimension, x is a production rule', () => {
-    const hBarOptions = { ...defaultBarOptions, orientation: 'horizontal' as const };
-    const hOptions = getBarDirectLabelSpecOptions({}, 0, hBarOptions);
-    const [, main] = getBarDirectLabelMarks(hOptions, hBarOptions);
-    const enter = (main as TextMark).encode?.enter;
-    expect(enter?.y).toHaveProperty('scale', 'yBand');
-    expect(enter?.y).toHaveProperty('band', 0.5);
-    expect(enter?.baseline).toHaveProperty('value', 'middle');
-    expect(Array.isArray(enter?.x)).toBe(true);
-    expect(Array.isArray(enter?.align)).toBe(true);
-  });
-
-  it('marks are non-interactive', () => {
-    const marks = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    expect(marks[0].interactive).toBe(false);
-    expect(marks[1].interactive).toBe(false);
-  });
-
-  it("main mark has update.opacity; background mark's update has no opacity", () => {
-    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    expect((main as TextMark).encode?.update?.opacity).toBeDefined();
-    expect((bg as TextMark).encode?.update?.opacity).toBeUndefined();
-  });
-
-  it('both marks use the chart-size signal for fontSize', () => {
-    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    expect((bg as TextMark).encode?.update?.fontSize).toHaveProperty('signal', CHART_SIZE_FONT_SIZE);
-    expect((main as TextMark).encode?.update?.fontSize).toHaveProperty('signal', CHART_SIZE_FONT_SIZE);
-  });
-
-  it('marks source directly from FILTERED_TABLE', () => {
-    const marks = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-    marks.forEach(mark => expect((mark as TextMark).from?.data).toBe(FILTERED_TABLE));
-  });
-
-  describe('format', () => {
-    it('falls back to the default d3 spec when format is not provided', () => {
-      const [, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions);
-      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
-        'signal',
-        `format(datum["${defaultBarOptions.metric}"], ",.2~f")`
-      );
+    const positive = layer.marks?.[0] as TextMark;
+    expect(positive.from).toEqual({ data: 'bar0DirectLabel0_positive_candidates' });
+    expect(positive.transform?.[0]).toMatchObject({
+      type: 'label',
+      size: { signal: '[width, height]' },
+      anchor: ['top'],
+      offset: [6],
+      padding: null,
+      avoidMarks: ['bar0_directLabelBars'],
     });
+    expect((layer.marks?.[3] as TextMark).transform?.[0]).toHaveProperty('anchor', ['bottom']);
+  });
 
-    it('resolves the "percentage" preset to the ~% d3 spec', () => {
-      const options = getBarDirectLabelSpecOptions({ format: 'percentage' }, 0, defaultBarOptions);
-      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
-      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
-        'signal',
-        `format(datum["${defaultBarOptions.metric}"], "~%")`
-      );
-    });
+  it('uses left and right anchors for horizontal bars', () => {
+    const layer = getLayer({ orientation: 'horizontal' });
+    expect((layer.marks?.[0] as TextMark).transform?.[0]).toHaveProperty('anchor', ['right']);
+    expect((layer.marks?.[3] as TextMark).transform?.[0]).toHaveProperty('anchor', ['left']);
+  });
 
-    it('resolves the "currency" preset to the $,.2f d3 spec', () => {
-      const options = getBarDirectLabelSpecOptions({ format: 'currency' }, 0, defaultBarOptions);
-      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
-      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
-        'signal',
-        `format(datum["${defaultBarOptions.metric}"], "$,.2f")`
-      );
-    });
+  it('places later label sets around earlier labels', () => {
+    const layer = getLayer({ barDirectLabels: [{ position: 'middle' }, {}] });
+    const placement = layer.marks?.find((mark) => mark.name === 'bar0DirectLabel1_positive_placement') as TextMark;
+    expect((placement.transform?.[0] as LabelTransform).avoidMarks).toContain('bar0DirectLabel0_inside');
+  });
 
-    it('passes a custom d3-format specifier string straight through', () => {
-      const options = getBarDirectLabelSpecOptions({ format: '.1f' }, 0, defaultBarOptions);
-      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
-      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
-        'signal',
-        `format(datum["${defaultBarOptions.metric}"], ".1f")`
-      );
-    });
+  it('shares collision rejection and animation opacity between the halo and foreground', () => {
+    const layer = getLayer({ isDrawInAnimate: true });
+    const [, halo, foreground] = layer.marks as TextMark[];
+    expect(halo.encode?.update).toHaveProperty('opacity', { signal: 'datum.opacity * datum.datum.labelOpacity' });
+    expect(foreground.encode?.update?.opacity).toEqual(halo.encode?.update?.opacity);
+    expect(JSON.stringify(layer.data?.[0])).toContain('drawInDuration');
+  });
 
-    it('resolves the "shortNumber" preset to formatShortNumber', () => {
-      const options = getBarDirectLabelSpecOptions({ format: 'shortNumber' }, 0, defaultBarOptions);
-      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
-      expect((main as TextMark).encode?.enter?.text).toHaveProperty(
-        'signal',
-        `formatShortNumber(datum["${defaultBarOptions.metric}"])`
-      );
-    });
-
-    it('escapes embedded quotes and backslashes so the generated expression stays a single well-formed call', () => {
-      const maliciousFormat = '.1f\\"'; // ends with a literal backslash followed by a quote
-      const options = getBarDirectLabelSpecOptions({ format: maliciousFormat }, 0, defaultBarOptions);
-      const [, main] = getBarDirectLabelMarks(options, defaultBarOptions);
-      const { signal } = (main as TextMark).encode?.enter?.text as { signal: string };
-      const match = signal.match(/^format\(datum\["[^"]*"\], "(.*)"\)$/);
-      expect(match).not.toBeNull();
-      const [, escapedSpec] = match as RegExpMatchArray;
-      expect(JSON.parse(`"${escapedSpec}"`)).toEqual(maliciousFormat);
-    });
+  it('uses stacked segment data for draw-in timing', () => {
+    const layer = getLayer({ type: 'stacked', isDrawInAnimate: true });
+    expect(JSON.stringify(layer.data?.[0])).toContain('datum.datum.bar0_drawInStackMax');
   });
 });
 
-describe('getBarDirectLabelMarks() draw-in', () => {
-  const drawInBarOptions = { ...defaultBarOptions, isDrawInAnimate: true };
+describe('Vega label layout regressions', () => {
+  let view: View;
 
-  test('fades the label and its halo in with the draw-in', () => {
-    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, drawInBarOptions) as TextMark[];
-    expect(JSON.stringify(bg.encode?.update?.opacity)).toContain('drawInDuration');
-    expect(JSON.stringify(main.encode?.update?.opacity)).toContain('drawInDuration');
+  beforeEach(() => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
   });
 
-  test('fades stacked segment labels in once their own segment settles', () => {
-    const [, main] = getBarDirectLabelMarks(defaultSpecOptions, {
-      ...drawInBarOptions,
-      type: 'stacked',
-    }) as TextMark[];
-    expect(JSON.stringify(main.encode?.update?.opacity)).toContain('bar0_drawInStackMax');
+  afterEach(() => view?.finalize());
+
+  const run = async (spec: Spec) => {
+    view = new View(parse(spec), { renderer: 'none' })
+      .width(typeof spec.width === 'number' ? spec.width : 400)
+      .height(typeof spec.height === 'number' ? spec.height : 300);
+    await view.runAsync();
+    return view;
+  };
+
+  it('rejects overlapping labels across dodged categories and restores them after resize', async () => {
+    await run(runtimeSpec(rows));
+    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(1);
+    await view.width(2000).runAsync();
+    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(2);
+    await view.width(200).runAsync();
+    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(1);
   });
 
-  test('does not fade labels when draw-in is off', () => {
-    const [bg, main] = getBarDirectLabelMarks(defaultSpecOptions, defaultBarOptions) as TextMark[];
-    expect(bg.encode?.update).not.toHaveProperty('opacity');
-    expect(JSON.stringify(main.encode?.update?.opacity)).not.toContain('drawInDuration');
+  it('removes unselected rows before layout and updates selection reactively', async () => {
+    await run(runtimeSpec(rows, { barDirectLabels: [{ dataKey: 'callout', format: ',.0f' }] }));
+    expect(outsideItems(view)).toHaveLength(1);
+    expect(outsideItems(view)[0].opacity).toBe(1);
+    await view
+      .change(
+        'table',
+        changeset().modify(() => true, 'callout', false)
+      )
+      .runAsync();
+    expect(outsideItems(view)).toHaveLength(0);
+  });
+
+  it('keeps the top-edge label using an in-bounds bar anchor', async () => {
+    await run(runtimeSpec([{ ...rows[0], y: 0 }]));
+    const [label] = outsideItems(view);
+    expect(label.opacity).toBe(1);
+    expect(label.y).toBe(-6);
+  });
+
+  it('keeps inside-fit spill candidates out of outside layout', async () => {
+    await run(
+      runtimeSpec(
+        [
+          { ...rows[0], width: 150 },
+          { ...rows[1], width: 5 },
+        ],
+        { barDirectLabels: [{ position: 'end', overflow: 'spill', format: ',.0f' }] }
+      )
+    );
+    expect(outsideItems(view)).toHaveLength(1);
+    expect(outsideItems(view)[0].opacity).toBe(1);
+    expect(getItems(view, 'bar0DirectLabel0_inside').filter((item) => item.fontSize === 12)).toHaveLength(1);
+  });
+
+  it('updates inside fit and outside candidates when bar geometry changes', async () => {
+    await run(
+      runtimeSpec([{ ...rows[0], width: 150 }], {
+        barDirectLabels: [{ position: 'end', overflow: 'spill' }],
+      })
+    );
+    expect(outsideItems(view)).toHaveLength(0);
+    await view
+      .change(
+        'table',
+        changeset().modify(() => true, 'width', 5)
+      )
+      .runAsync();
+    expect(outsideItems(view)).toHaveLength(1);
+    expect(getItems(view, 'bar0DirectLabel0_inside')[0].fontSize).toBe(0);
+  });
+
+  it.each<Orientation>(['vertical', 'horizontal'])('places signed %s bars on opposite tips', async (orientation) => {
+    await run(
+      runtimeSpec(
+        [
+          { ...rows[0], x: 40, y: 30, width: 20, height: 20 },
+          { ...rows[1], value: -100, x: 120, y: 60, width: 20, height: 20 },
+        ],
+        { orientation },
+        false
+      )
+    );
+    const positive = getItems(view, 'bar0DirectLabel0_positive')[0];
+    const negative = getItems(view, 'bar0DirectLabel0_negative')[0];
+    expect(positive.opacity).toBe(1);
+    expect(negative.opacity).toBe(1);
+    if (orientation === 'vertical') {
+      expect(positive.y).toBe(24);
+      expect(negative.y).toBe(86);
+    } else {
+      expect(positive.x).toBe(68);
+      expect(negative.x).toBe(112);
+    }
+  });
+
+  const runChart = async (bar: Partial<BarOptions> = {}, animations = false) => {
+    const data = [
+      { category: 'A', series: 'S', group: 'G', panel: 'P', value: 10 },
+      { category: 'B', series: 'S', group: 'G', panel: 'P', value: 20 },
+    ];
+    const spec = buildSpec({
+      chartWidth: 400,
+      chartHeight: 300,
+      animations,
+      animationTypes: animations ? ['drawIn'] : [],
+      data,
+      marks: [
+        {
+          markType: 'bar',
+          type: 'dodged',
+          color: 'series',
+          name: 'bar0',
+          dimension: 'category',
+          metric: 'value',
+          barDirectLabels: [{}],
+          ...bar,
+        },
+      ],
+    });
+    const table = spec.data?.find(({ name }) => name === 'table');
+    if (!table || !('values' in table)) throw new Error('Missing inline table');
+    table.values = data;
+    await run(spec);
+  };
+
+  it.each<Partial<BarOptions>>([
+    { type: 'dodged' },
+    { type: 'stacked' },
+    { type: 'dodged', color: ['series', 'group'] },
+    { type: 'dodged', trellis: 'panel' },
+  ])('renders labels through the full chart builder: %o', async (bar) => {
+    await runChart(bar);
+    expect(outsideItems(view)).toHaveLength(2);
+    expect(outsideItems(view).every((item) => Number.isFinite(item.x) && Number.isFinite(item.y))).toBe(true);
+  });
+
+  it('fades labels in after draw-in and keeps their halo opacity synchronized', async () => {
+    await runChart({}, true);
+    await view.signal(ANIMATION_TIMER, Date.now()).runAsync();
+    expect(outsideItems(view).every((item) => item.opacity === 0)).toBe(true);
+    await view.signal(ANIMATION_TIMER, view.signal(DRAW_IN_START) + 2000).runAsync();
+    expect(outsideItems(view).filter((item) => item.opacity === 1)).toHaveLength(2);
+    expect(getItems(view, 'bar0DirectLabel0_positive_bg').map((item) => item.opacity)).toEqual(
+      getItems(view, 'bar0DirectLabel0_positive').map((item) => item.opacity)
+    );
   });
 });
