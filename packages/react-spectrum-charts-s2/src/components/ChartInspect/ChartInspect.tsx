@@ -16,7 +16,7 @@ import { FC } from 'react';
 import { ChartInspectProps } from '../../types/index.js';
 
 /**
- * Opens an inspect dialog with details about the clicked data point.
+ * Opens an inspect dialog with details about the hovered data point.
  * @alpha
  */
 const ChartInspect: FC<ChartInspectProps> = ({

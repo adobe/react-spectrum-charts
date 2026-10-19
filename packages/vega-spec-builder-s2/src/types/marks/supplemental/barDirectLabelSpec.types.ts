@@ -17,6 +17,7 @@ export type BarDirectLabelPositionType = 'start' | 'middle' | 'end' | 'end-outsi
 export type BarDirectLabelOverflow = 'hide' | 'spill';
 
 export interface BarDirectLabelOptions {
+  /** Where to place the label: outside the tip (`end-outside`), inside near the tip (`end`), centered (`middle`), or inside near the baseline (`start`). @default 'end-outside' */
   position?: BarDirectLabelPositionType;
   /** Number format for the label value — a named preset or custom d3-format specifier. @default ',.2~f' */
   format?: NumberFormat;

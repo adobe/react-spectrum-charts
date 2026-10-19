@@ -1,0 +1,59 @@
+---
+sidebar_position: 1
+title: Overview
+description: React Spectrum Charts for Spectrum 2, a declarative React library for building Spectrum 2 data visualizations.
+---
+
+import { GuideFirstChartExample } from '@site/src/playgrounds/guides-start';
+
+# React Spectrum Charts for Spectrum 2
+
+`@spectrum-charts/react-spectrum-charts-s2` is React Spectrum Charts built on
+[Spectrum 2](https://react-spectrum.adobe.com/). You describe a chart as a tree of components, like
+`Chart`, `Axis`, `Line`, and `Legend`, and the library draws it with Spectrum 2 colors, type, and
+interactions.
+
+If you use `@adobe/react-spectrum-charts` today, see
+[Migrating from S1](./guides/migrating-from-s1.mdx).
+
+## Your first chart
+
+`Chart` holds the data. Its children name the fields to draw: here, `visits` per `date`, with a
+line per `device`.
+
+<GuideFirstChartExample />
+
+```bash
+npm install @spectrum-charts/react-spectrum-charts-s2
+```
+
+See [Getting started](./guides/getting-started.mdx) for peer dependencies and setup.
+
+## Guides
+
+- [Getting started](./guides/getting-started.mdx)
+- [Data](./guides/data.mdx)
+- [Sizing](./guides/sizing.mdx)
+- [Colors and theming](./guides/colors-and-theming.mdx)
+- [Localization](./guides/localization.mdx)
+- [Interactivity](./guides/interactivity.mdx)
+- [Animation](./guides/animation.mdx)
+- [Accessibility](./guides/accessibility.mdx)
+- [Exporting](./guides/exporting.mdx)
+- [Testing and troubleshooting](./guides/testing-and-troubleshooting.mdx)
+- [Stages and lab](./guides/stages-and-lab.mdx)
+
+## Migration
+
+- [Migrating from S1](./guides/migrating-from-s1.mdx)
+- [Upgrading to 0.10.0](./guides/upgrading-to-0-10-0.mdx)
+
+## Components
+
+- [Chart](./chart.mdx): the container for every chart.
+- Charts: [Line](./line.mdx), [Bar](./bar.mdx), and [Donut](./donut.mdx).
+- Lab charts: [Area](./area.mdx), [Bullet](./bullet.mdx), [Combo](./combo.mdx), and
+  [Scatter](./scatter.mdx).
+- [Axis](./axis.mdx), [Legend](./legend.mdx), and [Title](./title.mdx).
+- [ChartInspect and ChartPopover](./interaction.mdx): details on hover and click.
+- [ChartActionBar](./chart-action-bar.mdx) (lab): actions for a selected point.

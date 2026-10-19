@@ -180,6 +180,8 @@ S2-exclusive components (like `BarDirectLabel`, `LineDirectLabel`) only exist in
 
 Add variations for the child component to the parent mark's dashboard and add a `PropCoverage<NameProps>` entry to its coverage map. See CLAUDE.md's "Variation Dashboards".
 
+Then add a `## <Name>` section with a playground to the parent mark's `packages/docs-s2` page and a `<PropsTable component="<Name>" />` under its API section (see `write-s2-docs-page.md`).
+
 ---
 
 ## Checklist
@@ -203,6 +205,7 @@ Add variations for the child component to the parent mark's dashboard and add a 
 - [ ] Story and integration test created
 - [ ] S2 parity applied where parent mark exists in S2
 - [ ] S2 parent mark dashboard — variations and coverage map updated
+- [ ] S2 parent mark docs page — section, playground, and PropsTable added
 - [ ] `yarn verify` passes
 
 ---

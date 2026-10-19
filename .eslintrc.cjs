@@ -69,6 +69,11 @@ module.exports = {
   },
   overrides: [
     {
+      // Docusaurus plugins are CommonJS.
+      files: ['packages/docs-s2/plugins/**/*.js'],
+      rules: { '@typescript-eslint/no-var-requires': 'off', '@typescript-eslint/no-require-imports': 'off' },
+    },
+    {
       // ESM packages: Node requires fully specified relative imports. Fix with scripts/addRelativeImportExtensions.mjs.
       files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}'],
       rules: {

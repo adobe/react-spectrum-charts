@@ -12,19 +12,27 @@
 import React from 'react';
 
 import { Controls, Description, Primary, Stories, Subtitle, Title, useOf } from '@storybook/addon-docs/blocks';
+import { useDarkMode } from 'storybook-dark-mode';
 
-import { STAGE_BADGE_STYLE, getStageLabel } from './stages';
+import { Badge, Provider } from '@react-spectrum/s2';
+
+import { STAGES, getStageFromTags } from './stages';
 
 const StageBadge = () => {
   const { preparedMeta } = useOf('meta');
-  const label = getStageLabel(preparedMeta.tags);
-  if (!label) return null;
+  const isDark = useDarkMode();
+  const stage = getStageFromTags(preparedMeta.tags);
+  if (!stage) return null;
   return (
-    <div style={{ marginBottom: 16 }}>
-      <span style={{ ...STAGE_BADGE_STYLE, fontSize: 12, lineHeight: '18px', padding: '0 7px' }} title={`${label} component`}>
-        {label}
-      </span>
-    </div>
+    <Provider colorScheme={isDark ? 'dark' : 'light'} UNSAFE_style={{ marginBottom: 16, background: 'none' }}>
+      <Badge
+        size="S"
+        variant={STAGES[stage].variant ?? undefined}
+        UNSAFE_style={{ width: 'fit-content', display: 'inline-flex' }}
+      >
+        {STAGES[stage].label}
+      </Badge>
+    </Provider>
   );
 };
 

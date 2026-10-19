@@ -53,3 +53,13 @@
 .footer__copyright {
   font-size: 0.75em;
 }
+
+/* Keep the page-title TOC link from scrolling content under the sticky navbar. */
+#__docusaurus_skipToContent_fallback {
+  scroll-margin-top: var(--ifm-navbar-height);
+}
+
+/* Lets the search dialog backdrop cover the sticky navbar. */
+html[data-docs-search-open] .navbar {
+  z-index: auto;
+}

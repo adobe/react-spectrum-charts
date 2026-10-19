@@ -16,14 +16,7 @@ import { BarDirectLabelOverflow, NumberFormat } from '@spectrum-charts/vega-spec
 export type BarDirectLabelPosition = 'start' | 'middle' | 'end' | 'end-outside';
 
 export interface BarDirectLabelProps {
-  /**
-   * Where to place the label relative to the bar.
-   * - 'end-outside': always outside the bar tip (default)
-   * - 'end': inside the bar, 8px from the tip
-   * - 'middle': centered within the bar
-   * - 'start': inside near the baseline
-   * @default 'end-outside'
-   */
+  /** Where to place the label: outside the tip (`end-outside`), inside near the tip (`end`), centered (`middle`), or inside near the baseline (`start`). @default 'end-outside' */
   position?: BarDirectLabelPosition;
   /** Number format for the label value — a named preset or custom d3-format specifier. @default ',.2~f' */
   format?: NumberFormat;

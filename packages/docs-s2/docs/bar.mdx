@@ -1,0 +1,330 @@
+---
+stage: alpha
+sidebar_position: 4
+title: Bar
+description: Vertical and horizontal bar charts, stacked or dodged, for comparing values across categories.
+---
+
+import { PropsTable } from '@site/src/components/PropsTable';
+import { DataCode } from '@site/src/components/examples/DataCode';
+import {
+  BarAnimationPlayground,
+  BarAppearancePlayground,
+  BarColorOverridePlayground,
+  BarDirectLabelPlayground,
+  BarDivergingPlayground,
+  BarDodgedStackedPlayground,
+  BarDualAxisPlayground,
+  BarHiddenSeriesPlayground,
+  BarHighlightPlayground,
+  BarInteractionPlayground,
+  BarLegendPlayground,
+  BarOrientationPlayground,
+  BarPlayground,
+  BarReferenceLinePlayground,
+  BarSpacingPlayground,
+  BarStackPlayground,
+  BarStatesPlayground,
+  BarTimePlayground,
+  BarTrellisPlayground,
+} from '@site/src/playgrounds/bar';
+
+# Bar
+
+<StageBadge />
+
+Bars compare values across categories. Each category gets a bar sized by its `metric` value, and
+series within a category are stacked or placed side by side.
+
+<BarPlayground />
+
+## Data
+
+`data` goes on `Chart` as an array of objects, one per bar or bar segment. On `Bar`, `dimension`
+names the field for the categories (default `category`) and `metric` names the numeric field that
+sizes each bar (default `value`). Set `color` to a field to split each category into series; each
+row is one segment. Without a `color` field, every bar uses the first categorical color. Most
+examples on this page use `barChannelData` or `barChannelDeviceData`:
+
+<DataCode name="barChannelData" />
+
+```tsx
+<Chart data={barChannelData}>
+  <Axis position="bottom" baseline title="Channel" />
+  <Axis position="left" grid title="Visits" />
+  <Bar dimension="channel" metric="visits" />
+</Chart>
+```
+
+<DataCode name="barChannelDeviceData" />
+
+Categories appear in the order they first occur in the data. `Bar` has no sort prop, so sort your
+data before passing it in to change the order.
+
+### Dates
+
+To use dates as categories, set `dimensionDataType="time"` and give the category `Axis`
+`labelFormat="time"` and a `granularity`. Each date is still its own bar, evenly spaced; bars don't
+leave gaps for missing dates.
+
+<DataCode name="barMonthlyData" />
+
+<BarTimePlayground />
+
+:::tip
+Write dates without a time zone, like `'2025-01-01 00:00:00'`, so they're read in the viewer's local
+time. A date-only string like `'2025-01-01'` is read as UTC and can show as the previous day or
+month west of UTC.
+:::
+
+### Zero, empty, and loading
+
+When every value is 0, the categories still show on the axis with no bars. When `data` is an empty
+array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to show a spinner while data
+loads.
+
+<DataCode name="barZeroData" />
+
+<BarStatesPlayground />
+
+## Orientation
+
+Bars are vertical by default. Set `orientation="horizontal"` to draw them left to right, which
+leaves more room for long category names. Swap the `Axis` positions to match: the category axis
+goes on the left and the value axis on the bottom.
+
+<BarOrientationPlayground />
+
+## Stacked and dodged
+
+With more than one series, `type` controls how they share a category.
+
+- `stacked` (default) piles segments on top of each other, so the bar shows the category total.
+- `dodged` places one bar per series side by side, so series are easy to compare.
+
+`order` names a numeric field that sets the stack order; segments with a higher value sit further
+from the baseline. Without it, segments stack in data order. Try `order="stackOrder"` to put
+Tablet at the bottom.
+
+<BarStackPlayground />
+
+### Dodged and stacked
+
+Pass two fields to `color` to dodge by the first and stack by the second. Each dodged bar is then a
+stack. Give `Chart` a nested `colors` list, one list of shades per dodged group, so each group
+keeps its own hue. `groupedPadding` sets the space between bars in a group as a ratio of the bar
+width; it defaults to `paddingRatio`.
+
+<DataCode name="barChannelVisitorData" />
+
+<BarDodgedStackedPlayground />
+
+`lineType` and `opacity` also accept two fields, and the same rule applies to them.
+
+## Spacing
+
+`paddingRatio` is the space between categories, as a share of each category's band: `0` makes bars
+touch and `0.9` makes them thin. The default is `0.4`. `paddingOuter` is the space before the first
+bar and after the last; it defaults to half of `paddingRatio`.
+
+<BarSpacingPlayground />
+
+Bar width comes from the chart width, the number of categories, and the padding. There's no prop to
+set a fixed bar width.
+
+## Appearance
+
+- Bars have rounded corners at their ends. Set `hasSquareCorners` to square them.
+- `opacity` takes `{ value }` for a static opacity, or a field name to vary it by series.
+- `lineWidth` adds a border in the bar's own color, and `lineType` makes that border `dashed` or
+  `dotted`. The border is easiest to see with reduced `opacity`. Like `opacity`, `lineType` can be
+  a field name to vary it by series.
+
+<BarAppearancePlayground />
+
+### colorOverride
+
+`colorOverride` names a field that holds a CSS color for each row, like a status color. It sets the
+bar fill directly instead of going through the color scale. A `Legend` still uses the color scale,
+so if you show one, set `color` to the matching category field and pass the same colors to `Chart`
+`colors`.
+
+<DataCode name="barGoalData" />
+
+<BarColorOverridePlayground />
+
+## Diverging
+
+For values that go both above and below zero, like a percent change, set `diverging`. The category
+axis moves to the zero line, and each label sits on the opposite side from its bar so labels never
+cover bars. Use `colorOverride` to color increases and decreases differently.
+
+<DataCode name="barChangeData" />
+
+<BarDivergingPlayground />
+
+:::note
+`diverging` only works on a single-series bar: no `color`, `lineType`, or `opacity` field and not
+`type="dodged"`. It has no effect on trellised bars or when the axis has `subLabels`.
+:::
+
+## Dual metric axis
+
+When two series have very different scales, like sessions and orders, set `dualMetricAxis` to scale
+the last series on its own axis. Add an `Axis` with `position="right"` for it. The right axis title
+and labels take the last series' color. The left axis takes the first series' color when only one
+series is on it.
+
+<DataCode name="barSessionsOrdersData" />
+
+<BarDualAxisPlayground />
+
+`dualMetricAxis` only applies when `type="dodged"`, `color` is a single field, and there's no
+`trellis`.
+
+## Trellis
+
+`trellis` names a field to split the chart into small multiples, one per value. Each panel shares
+the same scales, so panels are easy to compare.
+
+- `trellisOrientation="horizontal"` (default) lays panels out in a row; `vertical` stacks them in a
+  column.
+- `trellisPadding` is the space between panels as a ratio, `0.2` by default.
+
+<DataCode name="barRegionData" />
+
+<BarTrellisPlayground />
+
+Trellised charts don't draw grid lines on the shared value axis.
+
+## BarDirectLabel
+
+Add `BarDirectLabel` as a child of `Bar` to print each bar's value on or next to it.
+
+- `position` places the label: `end-outside` (default) outside the tip, `end` inside near the tip,
+  `middle` centered in the bar, or `start` inside near the baseline. A `start` label that doesn't
+  fit spills outside the tip.
+- `format` formats the value. It accepts `shortNumber`, `standardNumber`, `currency`,
+  `shortCurrency`, `percentage`, or a [d3-format](https://d3js.org/d3-format) specifier. The default
+  is `,.2~f`.
+
+Labels outside the bar use the bar's color; labels inside use the background color. For negative
+values, labels flip to the other side of the baseline. Numbers follow the chart's `locale`, like
+axis labels do.
+
+<BarDirectLabelPlayground />
+
+:::note
+`BarDirectLabel` labels each row at the center of its category, using the row's own value. Use it
+on single-series bars; on stacked, dodged, or trellised bars the labels don't line up with their
+segments.
+:::
+
+## Axis and ReferenceLine
+
+Bars need two `Axis` children on `Chart`: one for the categories and one for the values. Typical
+settings are `baseline` on the category axis and `grid` on the value axis. Hovering a category
+label on an interactive bar highlights that category.
+
+To mark a target or threshold, add a `ReferenceLine` as a child of the value `Axis`. For more axis
+options, see [Axis](./axis.mdx).
+
+<BarReferenceLinePlayground />
+
+## Legend
+
+Add `Legend` as a sibling of `Bar` to list the series. The plot shrinks to make room for it.
+
+- `isToggleable` lets users click an entry to hide or show its series. Stacks and value scales
+  update to fit what's visible.
+- `highlight` highlights a series while its entry is hovered.
+
+<BarLegendPlayground />
+
+See [Legend](./legend.mdx) for more options.
+
+### Hiding series
+
+`hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control.
+To start with series hidden but let users toggle them, set `defaultHiddenSeries` on a toggleable
+`Legend` instead.
+
+<BarHiddenSeriesPlayground />
+
+## Interaction
+
+### ChartInspect and ChartPopover
+
+Add `ChartInspect` to show details on hover and `ChartPopover` to show details on click. Pass a
+function as children that takes the bar's data row and returns the content; without children,
+neither shows anything, although the bar still responds to the pointer. `rightClick` on
+`ChartPopover` opens it on right-click instead. The bar with an open popover gets a selection ring.
+
+- `highlightBy` on `ChartInspect` sets what stays highlighted while the pointer is over a bar:
+  `item` (default) for the bar, `series` for every bar in its series, or `dimension` for every bar in
+  its category.
+- `targets={['dimensionArea', 'item']}` also shows the inspect when the pointer is in the empty
+  space of a category's column.
+
+<BarInteractionPlayground />
+
+Hovering an interactive bar fades the other bars. A bar without `ChartInspect`, `ChartPopover`,
+`onClick`, `onContextMenu`, or highlighting doesn't respond to the pointer. See
+[Interaction](./interaction.mdx) for more about inspects and popovers.
+
+### Callbacks
+
+`Bar` calls `onClick` with the bar's data row when a bar is clicked, and `onMouseOver` and
+`onMouseOut` when the pointer enters and leaves a bar. `onContextMenu` is called on right-click with
+the native event and the row, so you can show your own menu.
+
+```tsx
+<Bar
+  dimension="channel"
+  metric="visits"
+  onClick={(datum) => openReport(datum.channel)}
+  onContextMenu={(event, datum) => showMenu(event.clientX, event.clientY, datum)}
+/>
+```
+
+### Highlighting
+
+`highlightedSeries` on `Chart` highlights a series from outside the chart, for example from a table
+row. `highlightedItem` does the same by row ID and can take a list; set `idKey` on `Chart` to the
+field that uniquely identifies each row. `Legend` with `highlight` highlights a series when its
+entry is hovered.
+
+<BarHighlightPlayground />
+
+## Animation
+
+The chart's `animationTypes` lists which animations play. By default, `hover` eases bars in and out
+of their faded state, and `drawIn` grows bars from the baseline over 700ms. Stacked segments fill in
+order from the baseline outward, and direct labels fade in as their own segment finishes.
+
+<BarAnimationPlayground />
+
+Draw-in plays once when the chart mounts. Set `animationTypes={['hover']}` to turn off draw-in
+only, or `animations={false}` to turn off all animation. When the user prefers reduced motion,
+draw-in is skipped. See [Animation](./guides/animation.mdx).
+
+## Not supported yet
+
+:::note
+`Bar` doesn't take `BarAnnotation` or `Trendline` children yet. Use `BarDirectLabel` for value
+labels.
+:::
+
+## API
+
+### Bar
+
+`name` identifies the bar's marks and signals in the rendered Vega spec. It defaults to `bar0`,
+`bar1`, and so on. `metricAxis` gives the bar its own value scale, for combining it with other marks;
+see [Combo](./combo.mdx).
+
+<PropsTable component="Bar" />
+
+### BarDirectLabel
+
+<PropsTable component="BarDirectLabel" />

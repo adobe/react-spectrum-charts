@@ -17,6 +17,7 @@ import { ChartInspectElement } from '../dialogs/index.js';
 import { Children } from '../util.types.js';
 
 export interface BulletProps extends Omit<BulletOptions, 'chartInspects' | 'markType'> {
+  /** `ChartInspect` to show details when a bullet is hovered. */
   children?: Children<ChartInspectElement>;
 }
 

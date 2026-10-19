@@ -1,0 +1,156 @@
+---
+title: Testing and troubleshooting
+description: Set up Jest or Vitest for charts, debug the generated Vega spec, and fix common rendering problems.
+---
+
+# Testing and troubleshooting
+
+## Testing
+
+`@spectrum-charts/react-spectrum-charts-s2` is an ES module package (`"type": "module"`) that
+imports a CSS file, and it depends on Vega and d3, which are ES modules too. Test runners that
+expect CommonJS need to transform them.
+
+### Jest
+
+This setup works with Jest 29 and 30 and `jest-environment-jsdom`:
+
+1. Transform the ES module packages instead of ignoring all of `node_modules`.
+2. Map CSS imports to an empty module. If you already test React Spectrum S2 components, you
+   have this.
+3. Add `structuredClone`, which jsdom doesn't provide, with a custom environment.
+4. Add [`jest-canvas-mock`](https://www.npmjs.com/package/jest-canvas-mock). Vega measures text
+   with a canvas, and jsdom logs an error for every canvas it can't create.
+
+```js title="jest.config.js"
+// Transforms use your babel.config.js; a .babelrc doesn't apply to node_modules.
+module.exports = {
+  testEnvironment: './jest.environment.js',
+  transformIgnorePatterns: [
+    'node_modules/(?!(@spectrum-charts|vega|vega-.*|d3-.*|internmap|json-stringify-pretty-compact|delaunator|robust-predicates)/)',
+  ],
+  moduleNameMapper: {
+    '\\.css$': '<rootDir>/styleMock.js',
+    // Jest 30 otherwise loads vega-canvas's Node build, which uses top-level await.
+    '^vega-canvas$': '<rootDir>/node_modules/vega-canvas/build/vega-canvas.browser.js',
+  },
+  setupFiles: ['jest-canvas-mock'],
+};
+```
+
+```js title="jest.environment.js"
+const { TestEnvironment } = require('jest-environment-jsdom');
+
+module.exports = class extends TestEnvironment {
+  async setup() {
+    await super.setup();
+    this.global.structuredClone = structuredClone;
+  }
+};
+```
+
+`styleMock.js` is `module.exports = {};`. If Jest still reports `SyntaxError: Cannot use import
+statement outside a module`, add the package named in the stack trace to the
+`transformIgnorePatterns` list.
+
+### Vitest
+
+Vitest loads ES modules natively. Use the `jsdom` environment, and inline this package and
+`@react-spectrum/s2` so Vite handles their CSS imports. Otherwise Node fails with
+`Unknown file extension ".css"`.
+
+```ts title="vitest.config.ts"
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    server: {
+      deps: { inline: ['@spectrum-charts/react-spectrum-charts-s2', '@react-spectrum/s2'] },
+    },
+  },
+});
+```
+
+### Writing tests
+
+Charts render asynchronously. Wait for the chart element, which has the role `graphics-document`
+and is named by `description`:
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+test('renders the visits chart', async () => {
+  render(
+    <Chart data={data} description="Visits by device" animations={false}>
+      <Axis position="bottom" />
+      <Line dimension="datetime" metric="visits" color="device" />
+    </Chart>
+  );
+  const chart = await screen.findByRole('graphics-document', { name: 'Visits by device' });
+  expect(chart.querySelector('svg')).toBeTruthy();
+});
+```
+
+- **Size.** jsdom has no `ResizeObserver`, so the chart measures its container as 500 × 500 px.
+  If your setup adds a `ResizeObserver` mock that never reports a size, the chart's width stays at
+  0 and nothing renders; pass a numeric `width` in tests.
+- **Animation.** Hover and draw-in update marks over several frames. Set `animations={false}` so
+  the DOM reaches its final state right away, or wrap assertions in `waitFor`.
+- **Marks.** Each mark's elements are in an SVG group with the mark's `name` as a class (`line0`,
+  `bar0`, and so on by default). Query them with `container.querySelectorAll('g.line0 > path')`.
+- **Reduced motion.** Mock `window.matchMedia` so `(prefers-reduced-motion: reduce)` matches to
+  test the reduced-motion path.
+
+## Debugging
+
+These `Chart` props help when a chart doesn't look the way you expect:
+
+- `debug`: logs the generated Vega spec, with your data merged in, to the console whenever it
+  changes, plus each data row a `ChartInspect` shows. Paste the spec into the
+  [Vega editor](https://vega.github.io/editor/) to explore it.
+- `onVegaViewReady(view)`: called with the [Vega view](https://vega.github.io/vega/docs/api/view/)
+  each time it's created, for example after the data changes. Use it to read signals and data, or to
+  know when the chart has rendered.
+- `UNSAFE_vegaSpec`: renders a Vega spec you write instead of children. Use it to reproduce a
+  problem with a hand-edited spec. You lose the defaults the components apply.
+
+## Common problems
+
+### The chart is blank
+
+- **The container has no width.** With the default `width="auto"`, the chart is as wide as its
+  parent. If the parent is 0px wide, for example a flex item that can shrink to nothing or a
+  hidden tab, nothing renders. `minWidth` doesn't apply in this case. Give the parent a width, or
+  set a numeric `width`. The chart renders once the parent gets a size.
+- **A percentage height with no parent height.** `height="100%"` needs a parent with an explicit
+  height. See [Sizing](./sizing.mdx#height).
+- **`loading` is still `true`, or `data` is empty.** The chart shows a progress circle or
+  `emptyStateText` instead. See [Data](./data.mdx#empty-data-and-loading).
+
+### Dates are wrong or missing
+
+- **`Date` objects.** The chart copies `data` with `JSON.stringify`, so `Date` objects become ISO
+  strings. Pass dates as epoch milliseconds or ISO strings.
+- **Points land on the previous day.** Timestamps at UTC midnight, and date-only strings like
+  `'2026-03-02'`, display in the user's local time zone, which is the previous day west of UTC.
+- **The mark isn't on a time scale.** `Line` and `Area` default to `scaleType="time"`; check that
+  you haven't set it to another scale type.
+
+See [Dates](./data.mdx#dates).
+
+### The chart doesn't follow dark mode
+
+`Chart` renders its own Spectrum `Provider` and defaults to `colorScheme="light"`; it doesn't
+read the surrounding app's Provider. Pass `colorScheme` explicitly from your app's theme. See
+[Light and dark](./colors-and-theming.mdx#light-and-dark).
+
+### Exports reject
+
+`copy()`, `download()`, `getBase64Png()`, and `getSvg()` reject until the chart has rendered, and
+while it shows a placeholder. See [When exports fail](./exporting.mdx#when-exports-fail).
+
+### Chart throws on render
+
+`Chart` throws if it has no children and no `UNSAFE_vegaSpec`, or if it has both.

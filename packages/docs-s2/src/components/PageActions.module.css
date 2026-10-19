@@ -1,0 +1,16 @@
+.actions {
+  display: flex;
+  gap: 4px;
+  background: transparent;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
+  background: transparent;
+}

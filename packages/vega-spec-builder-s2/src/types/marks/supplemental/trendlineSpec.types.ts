@@ -32,21 +32,11 @@ export type WindowMethod = `movingAverage-${number}`;
 export type TrendlineMethod = AggregateMethod | RegressionMethod | WindowMethod;
 
 export interface TrendlineOptions {
-  /** The line color of the trendline. If undefined, will default to the color of the series that it represents. */
+  /** Trendline color. Defaults to the color of its series. */
   color?: SpectrumColor | string;
-  /**
-   * The dimenstion range to draw the trendline for. If undefined, the value will default to the value of dimensionRange.
-   *
-   * If 'domain' is used as a start or end value, this will extrapolate the trendline out to the beginning and end of the chart domain respectively.
-   *
-   * If null is used as a start or end value, the trendline will be be drawn from the first data point to the last data point respectively.
-   */
+  /** Range of `dimension` to draw the trendline over. `domain` extends it to the edge of the chart; `null` stops at the first or last row. Defaults to `dimensionRange`. */
   dimensionExtent?: [number | 'domain' | null, number | 'domain' | null];
-  /**
-   * The dimension range that the statistical transform should be calculated for. If undefined, the value will default to [null, null]
-   *
-   * If the start or end values are null, then the dimension range will not be bounded for the start or end respectively.
-   */
+  /** Range of `dimension` the trendline is calculated from; `null` leaves that end unbounded. Defaults to `[null, null]`. */
   dimensionRange?: [number | null, number | null];
   /** Whether the trendline should only be visible when hovering over the parent line */
   displayOnHover?: boolean;
@@ -54,21 +44,17 @@ export interface TrendlineOptions {
   excludeDataKeys?: string[];
   /** If there is an inspect on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
   highlightRawPoint?: boolean;
-  /**
-   * If true, the initial data points of the trendline that were calculated from fewer data points than the
-   * full window size will be hidden. Only applies to `movingAverage-${number}` methods.
-   * @default false
-   */
+  /** Hides the first points of a moving average, which are calculated from less than a full window. Defaults to `false`. */
   hidePartialWindows?: boolean;
-  /** The line type of the trend line. */
+  /** Line type of the trendline. Defaults to `dashed`. */
   lineType?: LineType;
-  /** The line width of the trend line. */
+  /** Line width of the trendline. Defaults to `M`. */
   lineWidth?: LineWidth;
-  /** The type of statistical transform that will be calculated. */
+  /** Statistical method used to calculate the trendline. Defaults to `linear`. */
   method?: TrendlineMethod;
-  /** The opacity of the trendlines */
+  /** Opacity of the trendline. Defaults to `1`. */
   opacity?: number;
-  /** Orientation of the trendline. Only supported on scatter plots. */
+  /** Orientation of the trendline; `vertical` calculates the dimension across the metric. Only supported on scatter plots. Defaults to `horizontal`. */
   orientation?: Orientation;
 
   // children

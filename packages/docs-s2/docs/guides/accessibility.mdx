@@ -1,0 +1,59 @@
+---
+title: Accessibility
+description: What charts expose to assistive technology today, what's still missing, and how they handle reduced motion.
+---
+
+# Accessibility
+
+Accessibility in data visualizations isn't fully supported yet and is a work in progress. This
+page covers what charts expose to assistive technology today and what's still missing.
+
+:::caution
+Charts don't support keyboard navigation, data tables, or screen reader access to individual data
+points yet. Experimental keyboard navigation for basic bar charts is available behind the
+`accessibleNavigation` prop on `Chart`; it may change or be removed.
+:::
+
+## Describe the chart
+
+`description` on `Chart` is the chart's accessible name. The element that holds the chart's SVG or
+canvas gets `role="graphics-document"`, `aria-roledescription="visualization"`, and
+`aria-label` set to `description`.
+
+```tsx
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart
+  data={data}
+  description="Daily visits by device for March. Desktop leads; mobile overtakes it on weekends."
+>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline />
+  <Line dimension="datetime" metric="visits" color="device" />
+</Chart>
+```
+
+Without `description`, the chart has no accessible name. Write it like alt text: say what the
+chart shows and the takeaway, not "line chart".
+
+## Titles
+
+`title` on `Chart`, or a [`Title`](../title.mdx) child, draws a visible title. With the default
+`svg` renderer, the title, axes, and legends get their own labels for screen readers, such as
+"Title text 'Visits by device'" and "X-axis titled 'Month' …". With `renderer="canvas"`, only
+the chart's `description` is exposed, so use `svg` when accessibility matters.
+
+A visible title and `description` do different jobs: the title names the chart for everyone, and
+`description` summarizes it for people who can't see it. Use both.
+
+## Hover-only content
+
+`ChartInspect` content, `ChartPopover` content, and legend
+[`descriptions`](../legend.mdx#descriptions) appear only on pointer hover or click, so keyboard and
+screen reader users can't reach them yet.
+
+## Reduced motion
+
+When the user's system asks for reduced motion, charts skip the draw-in animation automatically.
+Hover fading still plays. Set `animations={false}` to turn off every animation. See
+[Animation](./animation.mdx#reduced-motion).

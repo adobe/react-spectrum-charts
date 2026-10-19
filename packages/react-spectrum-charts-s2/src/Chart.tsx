@@ -41,7 +41,13 @@ interface PlaceholderContentProps {
  * Root container that renders a Spectrum 2 chart from its child components.
  * @alpha
  */
-export const Chart = ({ ref, ...props }: ChartProps & { ref?: Ref<ChartHandle> }) => {
+export const Chart = ({
+  ref,
+  ...props
+}: ChartProps & {
+  /** Handle for exporting the chart with `copy`, `download`, `getBase64Png` and `getSvg`. */
+  ref?: Ref<ChartHandle>;
+}) => {
   const {
     backgroundColor,
     colorScheme,

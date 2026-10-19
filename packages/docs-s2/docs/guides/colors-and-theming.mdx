@@ -1,0 +1,157 @@
+---
+title: Colors and theming
+description: Match a chart to light or dark themes, pick palettes, and control colors, line types, and other style scales.
+---
+
+import { DataCode } from '@site/src/components/examples/DataCode';
+import { GuidePalettePlayground, GuidePaletteSwatches } from '@site/src/playgrounds/guides-concepts';
+
+# Colors and theming
+
+A chart's colors come from three places: the color scheme (`light` or `dark`), the chart's
+palettes and style scales, and the encodings on each mark. This guide covers how they fit
+together. For the full prop reference, see [Chart](../chart.mdx#color-and-theme).
+
+<GuidePalettePlayground />
+
+The example uses `guideSourceSessionsData`:
+
+<DataCode name="guideSourceSessionsData" />
+
+## Light and dark
+
+`colorScheme` sets whether the chart uses the light or dark value of each Spectrum color token,
+for marks, axes, gridlines, and text. It defaults to `light`.
+
+`Chart` renders its own React Spectrum `Provider` with this `colorScheme`, so it doesn't pick up
+the color scheme of a `Provider` higher in your app. Pass the same value to both, usually from
+your app's theme state:
+
+```tsx
+import { Provider } from '@react-spectrum/s2';
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+function Dashboard({ colorScheme }: { colorScheme: 'light' | 'dark' }) {
+  return (
+    <Provider colorScheme={colorScheme}>
+      <Chart data={data} colorScheme={colorScheme}>
+        <Axis position="left" grid />
+        <Line dimension="month" metric="visits" color="device" scaleType="point" />
+      </Chart>
+    </Provider>
+  );
+}
+```
+
+### backgroundColor
+
+`backgroundColor` fills the chart. It takes a Spectrum color token, like `gray-25`, or any CSS
+color, and defaults to `transparent`.
+
+Some marks draw in the background color, like the outlines between donut segments and the fill
+behind a hovered line point. With a transparent background they use `gray-25` (white in light,
+`#111111` in dark). If the chart sits on a different color, set `backgroundColor` to that color
+so these details blend in.
+
+## Palettes
+
+`colors` sets the palette that a mark's `color` field draws from. Each series gets the next color
+in the order it first appears in `data`, and colors repeat when there are more series than
+colors. The default is `s2Categorical20`.
+
+`colors` takes one of these named palettes:
+
+<GuidePaletteSwatches />
+
+- **Categorical** palettes are for unordered series.
+- **Sequential** palettes are for ordered values, like low to high.
+- **Diverging** palettes are for values above and below a midpoint.
+
+The number at the end of each name is how many colors it has. Named palettes use the same colors
+in light and dark.
+
+### Custom colors
+
+Pass a list instead of a name to choose the colors yourself. Each entry is a Spectrum color token
+or a CSS color:
+
+```tsx
+<Chart data={data} colors={['blue-900', 'magenta-900', '#0fb5ae', 'rgb(246, 133, 17)']}>
+```
+
+Spectrum color tokens switch to their dark value when `colorScheme` is `dark`; CSS colors stay
+the same. The tokens you can use are `gray-25` to `gray-1000`, `categorical-100` to
+`categorical-2000`, and `100` to `1600` of `silver`, `cinnamon`, `red`, `orange`, `yellow`,
+`brown`, `chartreuse`, `celery`, `green`, `seafoam`, `turquoise`, `cyan`, `blue`, `indigo`,
+`purple`, `fuchsia`, `pink`, and `magenta`. For sequential and diverging colors, use the named
+palettes.
+
+### Color groups
+
+`colors` also takes a list of lists: one group of colors per series. Marks that encode color with
+two fields use the first field to pick the group and the second to pick a color within it. On a
+`Bar`, for example, `color={['device', 'visitor']}` dodges by device and stacks by visitor, and
+each device keeps its own hue:
+
+```tsx
+<Chart
+  data={barChannelVisitorData}
+  colors={[
+    ['blue-900', 'blue-500'],
+    ['fuchsia-900', 'fuchsia-500'],
+  ]}
+>
+  <Bar dimension="channel" metric="visits" color={['device', 'visitor']} type="dodged" />
+  <Legend />
+</Chart>
+```
+
+A group can be a named palette too, like `colors={['sequentialViridis5', 'sequentialMagma5']}`.
+See [Dodged and stacked](../bar.mdx#dodged-and-stacked) for the full example.
+
+## Other style scales
+
+Color isn't the only thing a field can set. These `Chart` props are palettes for the other
+encodings, and work the same way as `colors`:
+
+| Chart prop     | Values                                                                                            | Default                                                          | Used by                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `lineTypes`    | `solid`, `dashed`, `dotted`, `dotDash`, `shortDash`, `longDash`, `twoDash`, or a dash array       | `['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash']` | `lineType` on `Line`, `Bar`, `Scatter`, and `Legend`                    |
+| `lineWidths`   | `XS` to `XL`, or pixels                                                                           | `['M']`                                                          | `lineWidth` on `Scatter` and `Legend`                                   |
+| `opacities`    | Numbers from 0 to 1                                                                               | `[1]`                                                            | `opacity` on `Line`, `Bar`, `Scatter`, and `Legend`                     |
+| `symbolShapes` | `rounded-square`, Vega symbol shapes like `circle`, or SVG paths                                  | `['rounded-square']`                                             | `symbolShape` on `Legend`                                               |
+| `symbolSizes`  | A `[min, max]` pair of `XS` to `XL` or pixels                                                     | `['XS', 'XL']`                                                   | `size` on `Scatter`, which scales between the two                       |
+
+`lineTypes` and `opacities` also take a list of lists for two-field encodings, like `colors`.
+See [Other scales](../chart.mdx#other-scales) for an example.
+
+## Static and data-driven values
+
+Encoding props like `color`, `lineType`, and `opacity` take either a field name or a fixed value:
+
+- A string is a field name. Each value in that field gets the next entry from the chart's
+  palette, and an entry in the `Legend`.
+- `{ value: ... }` is a fixed value for every data point, like `{ value: 'gray-700' }` or
+  `{ value: 0.5 }`. It doesn't use the palette.
+
+```tsx
+// One color per device, from the chart's colors
+<Line dimension="month" metric="visits" color="device" scaleType="point" />
+
+// Every line is dashed gray-700
+<Line
+  dimension="month"
+  metric="visits"
+  color={{ value: 'gray-700' }}
+  lineType={{ value: 'dashed' }}
+  scaleType="point"
+/>
+```
+
+A fixed color can be a Spectrum color token or a CSS color, and tokens follow `colorScheme` the
+same way they do in `colors`.
+
+## Beyond props
+
+For styles the props don't cover, `config` merges into the chart's Vega config. See
+[config](../chart.mdx#config).

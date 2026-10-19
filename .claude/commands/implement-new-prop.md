@@ -157,6 +157,8 @@ Check whether the mark exists in S2 (`packages/vega-spec-builder-s2/src/` and `p
 
 For S2 props, add or adjust a variation in the mark's dashboard and map the prop in its coverage map. If the prop is on a sibling (Axis, Legend, Chart), update every dashboard where it interacts with the chart. See CLAUDE.md's "Variation Dashboards".
 
+Then update the component's `packages/docs-s2` page: add the prop to a playground or section, and make sure its TSDoc states what it does and its default (see `write-s2-docs-page.md`, Step 9).
+
 ---
 
 ## Checklist by Prop Type
@@ -170,6 +172,7 @@ For S2 props, add or adjust a variation in the mark's dashboard and map the prop
 - [ ] Story
 - [ ] S2 parity
 - [ ] S2 variation dashboard variation + coverage entry
+- [ ] S2 docs page — prop covered in a playground or section
 
 **Plain value prop without default (optional behavior):**
 - [ ] Same as above, but omit `OptionsWithDefaults` entry

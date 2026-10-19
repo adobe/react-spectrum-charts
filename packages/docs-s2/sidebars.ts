@@ -14,11 +14,48 @@ import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   sidebar: [
     'overview',
+    'chart',
+    {
+      type: 'category',
+      label: 'Charts',
+      collapsed: false,
+      items: ['line', 'bar', 'donut'],
+    },
+    {
+      type: 'category',
+      label: 'Lab charts',
+      collapsed: false,
+      items: ['area', 'bullet', 'combo', 'scatter'],
+    },
     {
       type: 'category',
       label: 'Components',
       collapsed: false,
-      items: ['line'],
+      items: ['axis', 'legend', 'title', 'interaction', 'chart-action-bar'],
+    },
+    {
+      type: 'category',
+      label: 'Guides',
+      collapsed: false,
+      items: [
+        'guides/getting-started',
+        'guides/data',
+        'guides/sizing',
+        'guides/colors-and-theming',
+        'guides/localization',
+        'guides/interactivity',
+        'guides/animation',
+        'guides/accessibility',
+        'guides/exporting',
+        'guides/testing-and-troubleshooting',
+        'guides/stages-and-lab',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Migration',
+      collapsed: false,
+      items: ['guides/migrating-from-s1', 'guides/upgrading-to-0-10-0'],
     },
   ],
 };

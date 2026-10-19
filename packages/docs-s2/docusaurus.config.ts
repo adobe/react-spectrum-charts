@@ -49,6 +49,16 @@ const config: Config = {
     ],
   ],
 
+  clientModules: [require.resolve('./src/clientModules/hashScroll.ts')],
+
+  plugins: [
+    require.resolve('./plugins/s2ServerAliasPlugin.js'),
+    require.resolve('./plugins/cssMinifyPlugin.js'),
+    require.resolve('./plugins/docgenPlugin.js'),
+    require.resolve('./plugins/llmsPlugin.js'),
+    require.resolve('./plugins/searchPlugin.js'),
+  ],
+
   themeConfig: {
     navbar: {
       title: 'React Spectrum Charts S2',
@@ -57,12 +67,6 @@ const config: Config = {
         src: 'img/logo.svg',
       },
       items: [
-        {
-          type: 'docSidebar',
-          sidebarId: 'sidebar',
-          position: 'left',
-          label: 'Documentation',
-        },
         {
           href: 'https://github.com/adobe/react-spectrum-charts',
           label: 'GitHub',

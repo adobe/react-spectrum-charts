@@ -24,8 +24,8 @@ export type ContextMenuCallback = (event: MouseEvent, datum: Datum) => void;
 export type AxisLabelClickCallback = (event: MouseEvent, value: string | number | Date, index: number) => void;
 
 export interface ClickableChartProps {
-  /** Callback that will be run when a point/section is clicked */
+  /** Called with the row's data when a mark is clicked. */
   onClick?: MarkCallback;
-  /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
+  /** Called with the event and the row's data when a mark is right-clicked. Use it to show a custom context menu. */
   onContextMenu?: ContextMenuCallback;
 }

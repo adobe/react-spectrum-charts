@@ -14,6 +14,7 @@ import React, { FC } from 'react';
 import { ProgressCircle } from '@react-spectrum/s2';
 
 interface LoadingStateProps {
+  /** Height of the loading state in pixels. */
   height?: number;
 }
 

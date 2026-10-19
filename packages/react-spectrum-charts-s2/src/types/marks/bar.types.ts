@@ -23,13 +23,13 @@ export interface BarProps
     'barAnnotations' | 'barDirectLabels' | 'chartPopovers' | 'chartInspects' | 'hasOnClick' | 'markType'
   > {
   children?: Children<BarAnnotationElement | BarDirectLabelElement | ChartPopoverElement | ChartInspectElement>;
-  /** Callback that will be run when a point/section is clicked */
+  /** Called with the row's data when a bar is clicked. */
   onClick?: MarkCallback;
-  /** Callback that will be run when a point/section is right-clicked. Use to show a custom context menu. */
+  /** Called with the event and the row's data when a bar is right-clicked. Use it to show a custom context menu. */
   onContextMenu?: ContextMenuCallback;
-  /** Callback that will be run when a point/section is hovered */
+  /** Called with the row's data when the pointer enters a bar. */
   onMouseOver?: MarkCallback;
-  /** Callback that will be run when a point/section is no longer hovered */
+  /** Called with the row's data when the pointer leaves a bar. */
   onMouseOut?: MarkCallback;
 }
 

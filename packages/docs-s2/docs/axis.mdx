@@ -1,0 +1,291 @@
+---
+stage: alpha
+sidebar_position: 10
+title: Axis
+description: Axes that label a chart's scales with formatted values, gridlines, reference lines, and thumbnails.
+---
+
+import { PropsTable } from '@site/src/components/PropsTable';
+import { DataCode } from '@site/src/components/examples/DataCode';
+import {
+  AxisClickPlayground,
+  AxisCustomLabelsPlayground,
+  AxisGranularityPlayground,
+  AxisGridPlayground,
+  AxisLabelFormatPlayground,
+  AxisLabelLayoutPlayground,
+  AxisNumberFormatPlayground,
+  AxisPlayground,
+  AxisPositionPlayground,
+  AxisRangePlayground,
+  AxisScaleTypePlayground,
+  AxisThumbnailPlayground,
+  AxisTickCountPlayground,
+  AxisTooltipPlayground,
+  ReferenceLinePlayground,
+} from '@site/src/playgrounds/axis';
+
+# Axis
+
+<StageBadge />
+
+An `Axis` labels one side of the chart. Add one `Axis` per side you want labeled, alongside the
+mark, as a child of `Chart`. A chart with no `Axis` draws only the plot.
+
+<AxisPlayground />
+
+## Data
+
+Axes don't take data. Each axis reads the scale of the mark it sits beside, so its labels come from
+the mark's `dimension` and `metric` fields. Line charts on this page use `axisVisitsData`, one row
+per day with `datetime` in epoch milliseconds:
+
+<DataCode name="axisVisitsData" />
+
+Bar charts use `axisBrowserData`:
+
+<DataCode name="axisBrowserData" />
+
+```tsx
+<Chart data={axisVisitsData}>
+  <Axis position="left" grid title="Visits" />
+  <Axis position="bottom" baseline labelFormat="time" />
+  <Line metric="visits" />
+</Chart>
+```
+
+## Scales
+
+`position` decides which scale the axis labels. `bottom` and `top` label the x scale, and `left`
+and `right` label the y scale. The scale type comes from the mark:
+
+- **Time**: `Line` uses a time scale by default (`scaleType="time"`). Set `labelFormat="time"` on
+  the axis. Without it, the axis shows a few long, truncated date strings such as
+  `Wed Mar 05 2025 00:00:…`.
+- **Linear**: `Line` with `scaleType="linear"` and a numeric `dimension`, and every value
+  (`metric`) axis.
+- **Point**: `Line` with `scaleType="point"` spaces categories evenly.
+- **Band**: `Bar` puts its `dimension` on a band scale, at the bottom by default or on the left
+  with `orientation="horizontal"`.
+
+<AxisScaleTypePlayground />
+
+Some props only apply to some scales. `range` works on linear and time scales, `tickMinStep` on
+linear scales, `granularity` on time scales, and `truncateLabels` and `AxisThumbnail` on band
+scales.
+
+## Position and titles
+
+Use two axes on the same scale, such as `left` and `right`, to repeat the labels on both sides.
+`title` takes a string, or an array of strings for a multi-line title.
+
+<AxisPositionPlayground />
+
+## Gridlines, ticks, and baseline
+
+- `grid` draws a gridline at each tick across the plot. It also spaces ticks about 100px apart;
+  without it, a value axis falls back to Vega's default tick count, which can crowd the labels.
+- `ticks` draws a short tick mark at each label.
+- `baseline` draws a solid line along the axis. When the opposite scale is linear, as with the
+  bottom axis of a bar chart, the baseline is drawn at that scale's `baselineOffset` value (default
+  `0`). `baselineOffset` is ignored when the opposite scale is categorical.
+
+<AxisGridPlayground />
+
+## Label formats
+
+`labelFormat` sets how values are written:
+
+| `labelFormat`      | Values                                           | Example            |
+| ------------------ | ------------------------------------------------ | ------------------ |
+| `linear` (default) | Numbers, formatted with `numberFormat`           | `1.2M`             |
+| `percentage`       | Fractions, where `0.05` is 5%                    | `5%`               |
+| `duration`         | Seconds, written as minutes and seconds or hours | `16:40`, `1:06:40` |
+| `time`             | Dates, labeled by `granularity`                  | `Mar`, `2025`      |
+
+<AxisLabelFormatPlayground />
+
+The data and charts used here are `axisConversionData` and `axisDurationData`:
+
+<DataCode name="axisConversionData" />
+
+<DataCode name="axisDurationData" />
+
+### Number formats
+
+`numberFormat` formats `linear` labels. It takes a preset or any
+[d3-format](https://d3js.org/d3-format) specifier:
+
+| `numberFormat`          | Example                           |
+| ----------------------- | --------------------------------- |
+| `shortNumber` (default) | `1.2M`                            |
+| `standardNumber`        | `1,200,000`                       |
+| `shortCurrency`         | `$1.2M`                           |
+| `currency`              | `$1,200,000.00`                   |
+| `,.0f`, `.2s`, `$,.0f`  | `1,200,000`, `1.2M`, `$1,200,000` |
+
+`locale` on `Chart` changes the separators and currency symbol, so `de-DE` writes
+`1.200.000,00 €`.
+
+<AxisNumberFormatPlayground />
+
+<DataCode name="axisRevenueData" />
+
+:::caution Limited support
+`currencyCode` and `currencyLocale` override the chart locale's currency symbol and its position.
+Both are required, and they only apply with `numberFormat="currency"` or a fixed-decimal
+specifier such as `,.0f`. Support for these props is limited; prefer the chart `locale` when it
+gives the right currency.
+:::
+
+`numberFormat="percentage"` multiplies values by 100. For rates stored as
+fractions, use `labelFormat="percentage"` instead.
+
+### Time and granularity
+
+With `labelFormat="time"`, `granularity` sets the unit for each tick (default `day`). A bottom or
+top time axis shows two rows: the unit on the first row and the next larger unit on the second,
+written once each time it changes.
+
+| `granularity` | First row | Second row |
+| ------------- | --------- | ---------- |
+| `second`      | `:05`     | `9:00 AM`  |
+| `minute`      | `9:10 AM` | `Mar 3`    |
+| `hour`        | `6 PM`    | `Mar 3`    |
+| `day`         | `14`      | `Mar`      |
+| `week`        | `14`      | `Mar`      |
+| `month`       | `Mar`     | `2025`     |
+| `quarter`     | `Q1`      | `2025`     |
+| `year`        | `2025`    |            |
+
+Labels use the browser's time zone. A `Bar` with a `datetime` dimension gets the same labels on its
+band axis. A left or right time axis, as on a horizontal bar chart, uses one row, such as `Mar 3`,
+`4`, `5`.
+
+<AxisGranularityPlayground />
+
+:::caution
+`tickCountLimit` and `tickCountMinimum` on a time axis replace the granularity's tick interval and
+can repeat labels, such as `Q1 Q1 Q2`. Match the tick count to the data if you set them.
+:::
+
+## Range
+
+`range` fixes the minimum and maximum of a linear or time axis, such as `[0, 0.05]`, instead of
+fitting the data. It is ignored on band scales.
+
+<AxisRangePlayground />
+
+## Tick count
+
+These props apply when ticks are spaced automatically:
+
+- `tickCountMinimum` sets the minimum number of ticks.
+- `tickCountLimit` sets the maximum, not counting the base tick: `0, 1, 2, 3` counts as 3.
+- `tickMinStep` sets the smallest step between ticks in data units, so `1` keeps a week axis on
+  whole weeks. It only applies to linear scales.
+
+Vega rounds to readable values, so the final count can differ slightly.
+
+<AxisTickCountPlayground />
+
+## Label layout
+
+- `labelOrientation="vertical"` rotates labels 90° to fit long category names.
+- `labelAlign` sets the label's alignment to its tick (default `center`). On a band axis, `start`
+  and `end` move labels to the edges of the band.
+- `labelFontWeight` sets `normal` or `bold`.
+- `truncateLabels` cuts category labels that are wider than their band, ending them with an
+  ellipsis. It works on bottom and top band axes with horizontal labels.
+- `labelLimit` sets the maximum label length in pixels (default `180`).
+
+Labels that would overlap are hidden, so long names without truncation can lose every other label.
+
+<AxisLabelLayoutPlayground />
+
+## Custom labels
+
+`labels` replaces the automatic labels with your own list. Pass values to label specific ticks,
+or `{ value, label, align, fontWeight }` objects to also change the text and style. `numberFormat`
+isn't applied to custom labels, so write the text you want in `label`.
+
+`hideDefaultLabels` hides an axis's labels while keeping its gridlines and title.
+
+`subLabels` adds a second row under specific labels as `{ value, subLabel, align, fontWeight }`
+objects. Labels with no sublabel show nothing on the second row. Sublabels only appear when labels
+are horizontal.
+
+<AxisCustomLabelsPlayground />
+
+:::note
+`hideDefaultLabels` also hides labels set with `labels`. Use one or the other.
+:::
+
+## ReferenceLine
+
+`ReferenceLine` is a child of a value `Axis`, such as a line chart's left axis. It draws a line
+across the plot at a `value`, with an optional `label`, to mark a threshold like a target. The line
+has carets at both ends.
+
+- `size` sets the stroke and caret size: `XS`, `S`, `M`, or `L`. When it isn't set, the size
+  follows the chart width.
+- `secondary` draws a thin 1px line without carets. With `size="XS"`, its line and label are also a
+  lighter gray.
+
+<ReferenceLinePlayground />
+
+## AxisThumbnail
+
+`AxisThumbnail` is a child of `Axis` that shows an image next to each label on a band axis. The
+image URL comes from the data field named by `urlKey` (default `thumbnail`). Images are up to 42px
+square, shrink with the band, and are hidden when the band is narrower than 16px. Combine with
+`hideDefaultLabels` to show images only.
+
+<AxisThumbnailPlayground />
+
+## Interaction
+
+### Label tooltips
+
+`hasTooltip` shows a tooltip with the full label value when a label is hovered, which helps with
+`truncateLabels` or `labelLimit`. `tooltipText` overrides the text for listed values as
+`{ value, text }` objects; set `text` to `null` to show no tooltip for a value.
+
+<AxisTooltipPlayground />
+
+### Label clicks and hover
+
+`onClick` runs when a label is clicked, with the mouse event, the label's value, and its index.
+It doesn't run when `hideDefaultLabels` is set.
+
+When a `Bar` is interactive, for example with `ChartInspect`, hovering a label on its category
+axis highlights that category's bars and fades the other labels.
+
+<AxisClickPlayground />
+
+:::note
+Time axes (`labelFormat="time"`) don't support `labels`, `hasTooltip`, or `onClick`.
+:::
+
+## API
+
+### Axis
+
+:::caution
+Don't set `name` on `Axis`. It's currently used as the axis's scale name, which stops the chart
+from rendering.
+:::
+
+<PropsTable component="Axis" />
+
+### ReferenceLine
+
+<PropsTable component="ReferenceLine" />
+
+### AxisThumbnail
+
+<PropsTable component="AxisThumbnail" />
+
+:::note
+`AxisAnnotation` from the Spectrum 1 package isn't available in Spectrum 2.
+:::

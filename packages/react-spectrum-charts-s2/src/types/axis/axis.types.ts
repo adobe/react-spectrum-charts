@@ -22,7 +22,7 @@ export type AxisChildElement = AxisThumbnailElement | ReferenceLineElement;
 export interface AxisProps extends Omit<AxisOptions, 'axisThumbnails' | 'referenceLines' | 'hasOnClick'> {
   /** Child components that add supplemental content to the axis */
   children?: Children<AxisChildElement>;
-  /** Callback that will be run when an axis label is clicked */
+  /** Called with the mouse event, label value, and label index when an axis label is clicked; not supported on time axes. */
   onClick?: AxisLabelClickCallback;
 }
 
