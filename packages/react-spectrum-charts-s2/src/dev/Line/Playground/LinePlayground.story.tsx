@@ -18,13 +18,13 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart.js';
 import {
   Axis,
-  ChartActionBar,
   Line,
   LineDirectLabel,
   LineForecast,
   LinePointAnnotation,
   ReferenceLine,
 } from '../../../components/index.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { LineProps } from '../../../types/index.js';
