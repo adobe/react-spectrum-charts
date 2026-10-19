@@ -14,6 +14,7 @@ import { SignalRef } from 'vega';
 import {
   CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_OPACITY_RULE,
@@ -50,8 +51,27 @@ import {
   getXProductionRule,
   getYProductionRule,
   hasInspect,
+  isAnimationTypeEnabled,
   isInteractive,
 } from './markUtils.js';
+
+describe('isAnimationTypeEnabled()', () => {
+  test('uses the default animation types when none are set', () => {
+    expect(isAnimationTypeEnabled(undefined, undefined, 'hover')).toBe(DEFAULT_ANIMATION_TYPES.includes('hover'));
+    expect(isAnimationTypeEnabled(undefined, undefined, 'drawIn')).toBe(DEFAULT_ANIMATION_TYPES.includes('drawIn'));
+  });
+
+  test('follows animationTypes', () => {
+    expect(isAnimationTypeEnabled(undefined, ['drawIn'], 'drawIn')).toBe(true);
+    expect(isAnimationTypeEnabled(true, ['drawIn'], 'hover')).toBe(false);
+    expect(isAnimationTypeEnabled(undefined, [], 'hover')).toBe(false);
+  });
+
+  test('animations false turns every type off', () => {
+    expect(isAnimationTypeEnabled(false, ['hover', 'drawIn'], 'hover')).toBe(false);
+    expect(isAnimationTypeEnabled(false, ['hover', 'drawIn'], 'drawIn')).toBe(false);
+  });
+});
 
 describe('getColorProductionRule', () => {
   test('should return scale reference if color is a string', () => {

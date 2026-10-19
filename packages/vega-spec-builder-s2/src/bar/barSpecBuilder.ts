@@ -15,7 +15,6 @@ import { BandScale, Data, FormulaTransform, JoinAggregateTransform, Mark, Ordina
 import {
   AnimationType,
   COLOR_SCALE,
-  DEFAULT_ANIMATION_TYPES,
   DRAW_IN_GROW_DURATION_MS,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
@@ -60,7 +59,7 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { getInteractiveMarkName, isInteractive } from '../marks/markUtils.js';
+import { getInteractiveMarkName, isAnimationTypeEnabled, isInteractive } from '../marks/markUtils.js';
 import {
   addDomainFields,
   addFieldToFacetScaleDomain,
@@ -196,8 +195,7 @@ export const addBar = produce<
     };
     barOptions.isHighlightedByGroup = isHighlightedByGroup(barOptions);
     barOptions.isHoverAnimate = usesBarHoverAnimation(animations, animationTypes, barOptions);
-    barOptions.isDrawInAnimate =
-      animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
+    barOptions.isDrawInAnimate = isAnimationTypeEnabled(animations, animationTypes, 'drawIn');
 
     spec.usermeta = {
       ...spec.usermeta,
@@ -244,8 +242,7 @@ const usesBarHoverAnimation = (
   animationTypes: AnimationType[] | undefined,
   options: BarSpecOptions
 ): boolean =>
-  animations !== false &&
-  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
+  isAnimationTypeEnabled(animations, animationTypes, 'hover') &&
   (isInteractive(options) ||
     options.highlightedItem !== undefined ||
     options.highlightedSeries !== undefined ||

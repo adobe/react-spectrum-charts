@@ -15,7 +15,6 @@ import { Data, Mark, Scale, Signal, Transforms } from 'vega';
 import {
   AnimationType,
   COLOR_SCALE,
-  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
@@ -60,7 +59,7 @@ import {
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
 import { getHoverMarkNames } from '../marks/hoverMarkUtils.js';
-import { getInteractiveMarkName, isInteractive } from '../marks/markUtils.js';
+import { getInteractiveMarkName, isAnimationTypeEnabled, isInteractive } from '../marks/markUtils.js';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils.js';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
@@ -288,8 +287,7 @@ const usesHoverAnimation = (
   animationTypes: AnimationType[] | undefined,
   options: LineSpecOptions
 ): boolean =>
-  animations !== false &&
-  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
+  isAnimationTypeEnabled(animations, animationTypes, 'hover') &&
   (isInteractive(options) ||
     options.highlightedItem !== undefined ||
     options.highlightedSeries !== undefined ||
@@ -305,8 +303,7 @@ const isLineDrawInSupported = (
   animationTypes: AnimationType[] | undefined,
   options: LineSpecOptions
 ): boolean =>
-  animations !== false &&
-  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn') &&
+  isAnimationTypeEnabled(animations, animationTypes, 'drawIn') &&
   (options.scaleType === 'time' || options.scaleType === 'linear' || options.scaleType === 'point');
 
 /**
