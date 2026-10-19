@@ -18,10 +18,9 @@ import { BarDirectLabelProps, BarProps, ChartProps } from '../../../types/index.
 import {
   Variation,
   VariationDashboard,
-  useVariationAnimations,
+  useVariationAnimationTypes,
   useVariationRenderer,
   useVariationSize,
-  useVariationViewMode,
 } from '../../VariationDashboard.js';
 import { DashboardDefinition } from '../../dashboardCoverage.js';
 
@@ -39,7 +38,7 @@ const makeData = (values: number[], seriesCount = 1): LabelDatum[] =>
   values.flatMap((value, category) =>
     Array.from({ length: seriesCount }, (_, series) => ({
       id: `${category}-${series}`,
-      category: String.fromCharCode(65 + category),
+      category: String.fromCodePoint(65 + category),
       series: `Series ${series + 1}`,
       group: `Group ${(series % 2) + 1}`,
       panel: category % 2 ? 'Panel 2' : 'Panel 1',
@@ -72,15 +71,13 @@ const LabelChart = ({
   dynamic = false,
 }: LabelChartProps): ReactElement => {
   const size = useVariationSize();
-  const animations = useVariationAnimations();
-  const mode = useVariationViewMode();
+  const animationTypes = useVariationAnimationTypes();
   const renderer = useVariationRenderer();
   const [updated, setUpdated] = useState(false);
   const chartData = updated
     ? data.map((row, index) => ({ ...row, value: index === 0 ? row.value : row.value / 100, callout: !row.callout }))
     : data;
   const props = useChartProps({ data: chartData, width: size, height: Math.max(280, Math.round(size * 0.8)) });
-  const animationTypes: ChartProps['animationTypes'] = mode === 'drawIn' ? ['drawIn'] : ['hover'];
   const horizontal = bar?.orientation === 'horizontal';
   return (
     <div>
@@ -89,19 +86,12 @@ const LabelChart = ({
           Toggle values and selection
         </button>
       )}
-      <Chart
-        {...props}
-        {...chart}
-        animations={animations}
-        animationTypes={animationTypes}
-        renderer={renderer}
-        idKey="id"
-      >
+      <Chart {...props} {...chart} animationTypes={animationTypes} renderer={renderer} idKey="id">
         <Axis position={horizontal ? 'left' : 'bottom'} baseline />
         <Axis position={horizontal ? 'bottom' : 'left'} grid numberFormat="shortNumber" />
         <Bar dimension="category" metric="value" color="series" {...bar}>
-          {labels.map((label, index) => (
-            <BarDirectLabel key={index} {...label} />
+          {labels.map((label) => (
+            <BarDirectLabel key={JSON.stringify(label)} {...label} />
           ))}
           <ChartInspect />
         </Bar>
@@ -307,12 +297,7 @@ export const BarDirectLabelRegressionDashboard = (): ReactElement => {
           { label: 'L', size: 480 },
           { label: 'XL', size: 640 },
         ]}
-        showAnimationControls
-        initialViewMode="hover"
-        viewModes={[
-          { value: 'hover', label: 'Hover opacity' },
-          { value: 'drawIn', label: 'Draw-in' },
-        ]}
+        animationControls={['hover', 'drawIn']}
         filters={[
           { value: 'all', label: 'All regressions', matches: () => true },
           {

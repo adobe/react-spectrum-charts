@@ -19,10 +19,9 @@ import { DirectLabelRegressions } from './BarVariations.story.js';
 import { barDirectLabelRegressions, dashboard } from './barDirectLabel.dashboard.js';
 
 jest.mock('../../../Chart.js', () => ({
-  Chart: ({ animations, animationTypes, children, data, renderer, width }: ChartProps) => (
+  Chart: ({ animationTypes, children, data, renderer, width }: ChartProps) => (
     <div
       data-testid="label-chart"
-      data-animations={String(animations)}
       data-animation-types={animationTypes?.join(',')}
       data-renderer={renderer}
       data-width={width}
@@ -66,23 +65,22 @@ test('covers positions, layouts, collisions, updates and animation baselines wit
   expect(screen.getAllByTestId('label-bar').some((bar) => bar.getAttribute('data-trellis') === 'panel')).toBe(true);
 });
 
-test('wires animation mode, master toggle and replay into every regression chart', async () => {
+test('wires animation switches and replay into every regression chart', async () => {
   render(<DirectLabelRegressions />);
-  const expectMode = (enabled: boolean, mode: string) => {
+  const expectTypes = (types: string) => {
     screen.getAllByTestId('label-chart').forEach((chart) => {
-      expect(chart).toHaveAttribute('data-animations', String(enabled));
-      expect(chart).toHaveAttribute('data-animation-types', mode);
+      expect(chart).toHaveAttribute('data-animation-types', types);
     });
   };
-  expectMode(true, 'hover');
-  await userEvent.click(screen.getByRole('radio', { name: 'Draw-in' }));
-  expectMode(true, 'drawIn');
-  await userEvent.click(screen.getByRole('switch', { name: 'Bar direct label regressions animations' }));
-  expectMode(false, 'drawIn');
+  expectTypes('hover,drawIn');
+  await userEvent.click(screen.getByRole('switch', { name: 'Bar direct label regressions hover opacity animation' }));
+  expectTypes('drawIn');
+  await userEvent.click(screen.getByRole('switch', { name: 'Bar direct label regressions draw-in animation' }));
+  expectTypes('');
   const firstChart = screen.getAllByTestId('label-chart')[0];
   await userEvent.click(screen.getByRole('button', { name: 'Replay draw-in' }));
   expect(firstChart.isConnected).toBe(false);
-  expectMode(false, 'drawIn');
+  expectTypes('');
 });
 
 test('isolates the five animation comparisons and applies size and renderer controls', async () => {
