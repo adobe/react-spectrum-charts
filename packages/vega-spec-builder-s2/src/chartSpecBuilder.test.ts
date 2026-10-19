@@ -516,13 +516,13 @@ describe('Chart spec builder', () => {
       ).toStrictEqual({ as: SERIES_ID, expr: 'datum.series + " | " + datum.subSeries', type: 'formula' });
     });
 
-    test('should filter the controlled highlighted table by the idKey', () => {
+    test('should filter the controlled highlighted table by the idKey and the controlled highlighted series', () => {
       const controlledTable = addData(baseData, { facets: [], idKey: 'id' }).find(
         (d) => d.name === CONTROLLED_HIGHLIGHTED_TABLE
       ) as SourceData;
       expect(controlledTable.transform?.[0]).toHaveProperty(
         'expr',
-        `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.id) > -1`
+        `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.id) > -1 && (!isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) || ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID})`
       );
     });
   });
